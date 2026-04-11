@@ -1471,5 +1471,177 @@
         "cancel": "Cancel"
       }
     }
+  },
+  "expenseTab": {
+    "title": "Expense Tracking",
+    "subtitle": "Manage budgets and track spending"
+  },
+  "expenseSummary": {
+    "error": {
+      "title": "Error Loading Summary",
+      "tryAgain": "Try Again",
+      "loadFailed": "Failed to load expense data",
+      "unexpected": "An unexpected error occurred while loading the summary"
+    },
+    "currencyBudget": "{currency} Budget",
+    "categoriesBudgeted": "{count} categories budgeted",
+    "spent": "spent",
+    "cards": {
+      "spent": {
+        "label": "Spent",
+        "expensesRecorded": "{count} expense recorded | {count} expenses recorded",
+        "recorded": "{count} recorded"
+      },
+      "remaining": {
+        "over": "Over",
+        "left": "Left",
+        "exceededBudgetLimit": "Exceeded budget limit",
+        "availableToSpend": "Available to spend",
+        "exceeded": "Exceeded",
+        "available": "Available"
+      },
+      "status": {
+        "label": "Status",
+        "over": "Over",
+        "onTrack": "On Track",
+        "reviewSpending": "Review spending to get back on track",
+        "budgetUnderControl": "Budget is under control",
+        "review": "Review",
+        "good": "Good"
+      }
+    },
+    "empty": {
+      "totalBudget": "Total Budget",
+      "zeroCategoriesBudgeted": "0 categories budgeted",
+      "zeroSpent": "$0.00 spent",
+      "spent": "Spent",
+      "left": "Left",
+      "noBudgetSetYet": "No budget set yet",
+      "noBudget": "No budget",
+      "status": "Status",
+      "noBudgetStatus": "No Budget",
+      "createBudgetToStart": "Create a budget to start tracking",
+      "createBudget": "Create budget",
+      "zeroExpensesRecorded": "0 expenses recorded",
+      "zeroRecorded": "0 recorded"
+    }
+  },
+  "expenseBudgets": {
+    "filter": {
+      "allCategories": "All Categories",
+      "select": "Select"
+    },
+    "budgetCount": "budget | budgets",
+    "quickAdd": "Quick Add",
+    "error": {
+      "title": "Error Loading Budgets",
+      "tryAgain": "Try Again"
+    },
+    "over": "Over",
+    "editBudget": "Edit budget",
+    "deleteBudget": "Delete budget",
+    "editExpense": "Edit expense",
+    "deleteExpense": "Delete expense",
+    "receipt": "Receipt",
+    "viewReceipt": "Click to view receipt",
+    "noExpensesYet": "No expenses recorded yet",
+    "empty": {
+      "addFirstBudget": "Add First Budget",
+      "startTracking": "Start tracking spending for different categories",
+      "noBudgetsYet": "No Budgets Yet",
+      "noBudgetsCreated": "No budgets have been created for this event",
+      "noBudgetFound": "No Budget Found",
+      "noBudgetForCategory": "The selected category doesn't have a budget yet",
+      "viewAllBudgets": "View all budgets"
+    },
+    "deleteModal": {
+      "budgetTitle": "Delete Budget",
+      "budgetFor": "Budget for {name}",
+      "expenseTitle": "Delete Expense",
+      "warningWithExpenses": "This will also delete {count} expense in this category. | This will also delete {count} expenses in this category.",
+      "warningNoExpenses": "This budget has no expenses."
+    },
+    "toast": {
+      "expenseDeleted": "Expense deleted successfully!",
+      "budgetDeleted": "Budget deleted successfully!",
+      "budgetAndExpensesDeleted": "Budget and {count} expense deleted successfully! | Budget and {count} expenses deleted successfully!"
+    }
+  },
+  "quickAdd": {
+    "title": "Quick Add",
+    "editTitle": "Edit",
+    "close": "Close",
+    "tabs": {
+      "expense": "Expense",
+      "budget": "Budget"
+    },
+    "category": {
+      "label": "Category",
+      "createCategory": "+ Create Category",
+      "cancel": "Cancel",
+      "newCategory": "New Category",
+      "namePlaceholder": "Category name *",
+      "descriptionPlaceholder": "Description (optional)",
+      "creating": "Creating...",
+      "create": "Create Category",
+      "selectCategory": "Select a category",
+      "editCategory": "Edit Category",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "deleteCategory": "Delete Category",
+      "deleteConfirm": "Are you sure you want to delete \"{name}\"?",
+      "cannotBeUndone": "This action cannot be undone!",
+      "deleting": "Deleting..."
+    },
+    "budgetInfo": {
+      "autoSetBudget": "Budget will be set to match this expense",
+      "baseline": "This becomes your baseline for tracking",
+      "setDifferent": "Or set a different budget",
+      "percentUsed": "{percent}% used",
+      "setBudgetTitle": "Set Budget for This Category",
+      "budgetAmount": "Budget Amount",
+      "currency": "Currency",
+      "creating": "Creating...",
+      "createBudget": "Create Budget",
+      "existingBudgetWarning": "This category already has a budget of {amount}. Creating a new budget will replace it."
+    },
+    "expense": {
+      "amount": "Amount",
+      "currency": "Currency",
+      "description": "Description",
+      "descriptionPlaceholder": "E.g., Venue rental, Catering service...",
+      "autoFilled": "Auto-filled:",
+      "moreDetails": "More Details",
+      "date": "Date",
+      "payment": "Payment",
+      "vendor": "Vendor",
+      "vendorPlaceholder": "E.g., Luxury Hotel Group",
+      "receipt": "Receipt",
+      "clickToUpload": "Click to upload",
+      "notes": "Notes",
+      "notesPlaceholder": "Additional notes...",
+      "publicExpense": "Public Expense",
+      "publicExpenseDesc": "Show this expense in public transparency view"
+    },
+    "budget": {
+      "budgetAmount": "Budget Amount",
+      "currency": "Currency",
+      "notes": "Notes",
+      "notesPlaceholder": "Add notes about this budget..."
+    },
+    "actions": {
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "addExpense": "Add Expense",
+      "addBudget": "Add Budget",
+      "add": "Add",
+      "updateExpense": "Update Expense",
+      "updateBudget": "Update Budget",
+      "update": "Update"
+    },
+    "validation": {
+      "requiredFields": "Please fill in all required fields",
+      "categoryRequired": "Category name is required"
+    }
   }
 }

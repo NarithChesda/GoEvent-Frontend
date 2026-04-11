@@ -1471,5 +1471,177 @@
         "cancel": "បោះបង់"
       }
     }
+  },
+  "expenseTab": {
+    "title": "តាមដានការចំណាយ",
+    "subtitle": "គ្រប់គ្រងថវិកា និងតាមដានការចំណាយ"
+  },
+  "expenseSummary": {
+    "error": {
+      "title": "កំហុសក្នុងការផ្ទុកសង្ខេប",
+      "tryAgain": "ព្យាយាមម្តងទៀត",
+      "loadFailed": "បរាជ័យក្នុងការផ្ទុកទិន្នន័យការចំណាយ",
+      "unexpected": "កំហុសដែលមិនបានរំពឹងទុកបានកើតឡើងពេលផ្ទុកសង្ខេប"
+    },
+    "currencyBudget": "ថវិកា {currency}",
+    "categoriesBudgeted": "{count} ប្រភេទមានថវិកា",
+    "spent": "បានចំណាយ",
+    "cards": {
+      "spent": {
+        "label": "បានចំណាយ",
+        "expensesRecorded": "{count} ការចំណាយបានកត់ត្រា",
+        "recorded": "{count} កត់ត្រា"
+      },
+      "remaining": {
+        "over": "លើស",
+        "left": "នៅសល់",
+        "exceededBudgetLimit": "លើសពីកម្រិតថវិកា",
+        "availableToSpend": "មានសម្រាប់ចំណាយ",
+        "exceeded": "លើស",
+        "available": "មាន"
+      },
+      "status": {
+        "label": "ស្ថានភាព",
+        "over": "លើស",
+        "onTrack": "កំពុងដំណើរការល្អ",
+        "reviewSpending": "ពិនិត្យការចំណាយដើម្បីត្រឡប់មកវិញ",
+        "budgetUnderControl": "ថវិកាស្ថិតក្រោមការគ្រប់គ្រង",
+        "review": "ពិនិត្យ",
+        "good": "ល្អ"
+      }
+    },
+    "empty": {
+      "totalBudget": "ថវិកាសរុប",
+      "zeroCategoriesBudgeted": "0 ប្រភេទមានថវិកា",
+      "zeroSpent": "$0.00 បានចំណាយ",
+      "spent": "បានចំណាយ",
+      "left": "នៅសល់",
+      "noBudgetSetYet": "មិនទាន់មានថវិកា",
+      "noBudget": "គ្មានថវិកា",
+      "status": "ស្ថានភាព",
+      "noBudgetStatus": "គ្មានថវិកា",
+      "createBudgetToStart": "បង្កើតថវិកាដើម្បីចាប់ផ្តើមតាមដាន",
+      "createBudget": "បង្កើតថវិកា",
+      "zeroExpensesRecorded": "0 ការចំណាយបានកត់ត្រា",
+      "zeroRecorded": "0 កត់ត្រា"
+    }
+  },
+  "expenseBudgets": {
+    "filter": {
+      "allCategories": "ប្រភេទទាំងអស់",
+      "select": "ជ្រើសរើស"
+    },
+    "budgetCount": "{count} ថវិកា",
+    "quickAdd": "បន្ថែមរហ័ស",
+    "error": {
+      "title": "កំហុសក្នុងការផ្ទុកថវិកា",
+      "tryAgain": "ព្យាយាមម្តងទៀត"
+    },
+    "over": "លើស",
+    "editBudget": "កែប្រែថវិកា",
+    "deleteBudget": "លុបថវិកា",
+    "editExpense": "កែប្រែការចំណាយ",
+    "deleteExpense": "លុបការចំណាយ",
+    "receipt": "បង្កាន់ដៃ",
+    "viewReceipt": "ចុចដើម្បីមើលបង្កាន់ដៃ",
+    "noExpensesYet": "មិនទាន់មានការចំណាយកត់ត្រា",
+    "empty": {
+      "addFirstBudget": "បន្ថែមថវិកាដំបូង",
+      "startTracking": "ចាប់ផ្តើមតាមដានការចំណាយសម្រាប់ប្រភេទផ្សេងៗ",
+      "noBudgetsYet": "មិនទាន់មានថវិកា",
+      "noBudgetsCreated": "មិនទាន់មានថវិកាបង្កើតសម្រាប់ព្រឹត្តិការណ៍នេះ",
+      "noBudgetFound": "រកមិនឃើញថវិកា",
+      "noBudgetForCategory": "ប្រភេទដែលបានជ្រើសរើសមិនទាន់មានថវិកា",
+      "viewAllBudgets": "មើលថវិកាទាំងអស់"
+    },
+    "deleteModal": {
+      "budgetTitle": "លុបថវិកា",
+      "budgetFor": "ថវិកាសម្រាប់ {name}",
+      "expenseTitle": "លុបការចំណាយ",
+      "warningWithExpenses": "នេះនឹងលុប {count} ការចំណាយក្នុងប្រភេទនេះផងដែរ។",
+      "warningNoExpenses": "ថវិកានេះមិនមានការចំណាយ។"
+    },
+    "toast": {
+      "expenseDeleted": "បានលុបការចំណាយដោយជោគជ័យ!",
+      "budgetDeleted": "បានលុបថវិកាដោយជោគជ័យ!",
+      "budgetAndExpensesDeleted": "បានលុបថវិកា និង {count} ការចំណាយដោយជោគជ័យ!"
+    }
+  },
+  "quickAdd": {
+    "title": "បន្ថែមរហ័ស",
+    "editTitle": "កែប្រែ",
+    "close": "បិទ",
+    "tabs": {
+      "expense": "ការចំណាយ",
+      "budget": "ថវិកា"
+    },
+    "category": {
+      "label": "ប្រភេទ",
+      "createCategory": "+ បង្កើតប្រភេទ",
+      "cancel": "បោះបង់",
+      "newCategory": "ប្រភេទថ្មី",
+      "namePlaceholder": "ឈ្មោះប្រភេទ *",
+      "descriptionPlaceholder": "ការពិពណ៌នា (ជម្រើស)",
+      "creating": "កំពុងបង្កើត...",
+      "create": "បង្កើតប្រភេទ",
+      "selectCategory": "ជ្រើសរើសប្រភេទ",
+      "editCategory": "កែប្រែប្រភេទ",
+      "saving": "កំពុងរក្សាទុក...",
+      "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ",
+      "deleteCategory": "លុបប្រភេទ",
+      "deleteConfirm": "តើអ្នកពិតជាចង់លុប \"{name}\" មែនទេ?",
+      "cannotBeUndone": "សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ!",
+      "deleting": "កំពុងលុប..."
+    },
+    "budgetInfo": {
+      "autoSetBudget": "ថវិកានឹងត្រូវបានកំណត់ស្មើនឹងការចំណាយនេះ",
+      "baseline": "នេះក្លាយជាមូលដ្ឋានសម្រាប់តាមដាន",
+      "setDifferent": "ឬកំណត់ថវិកាផ្សេង",
+      "percentUsed": "{percent}% បានប្រើ",
+      "setBudgetTitle": "កំណត់ថវិកាសម្រាប់ប្រភេទនេះ",
+      "budgetAmount": "ចំនួនថវិកា",
+      "currency": "រូបិយប័ណ្ណ",
+      "creating": "កំពុងបង្កើត...",
+      "createBudget": "បង្កើតថវិកា",
+      "existingBudgetWarning": "ប្រភេទនេះមានថវិកា {amount} រួចហើយ។ ការបង្កើតថវិកាថ្មីនឹងជំនួសវា។"
+    },
+    "expense": {
+      "amount": "ចំនួនទឹកប្រាក់",
+      "currency": "រូបិយប័ណ្ណ",
+      "description": "ការពិពណ៌នា",
+      "descriptionPlaceholder": "ឧ. ជួលទីតាំង, សេវាម្ហូបអាហារ...",
+      "autoFilled": "បំពេញស្វ័យប្រវត្តិ:",
+      "moreDetails": "ព័ត៌មានលម្អិត",
+      "date": "កាលបរិច្ឆេទ",
+      "payment": "ការទូទាត់",
+      "vendor": "អ្នកផ្គត់ផ្គង់",
+      "vendorPlaceholder": "ឧ. Luxury Hotel Group",
+      "receipt": "បង្កាន់ដៃ",
+      "clickToUpload": "ចុចដើម្បីផ្ទុកឡើង",
+      "notes": "កំណត់ចំណាំ",
+      "notesPlaceholder": "កំណត់ចំណាំបន្ថែម...",
+      "publicExpense": "ការចំណាយសាធារណៈ",
+      "publicExpenseDesc": "បង្ហាញការចំណាយនេះក្នុងទិដ្ឋភាពតម្លាភាពសាធារណៈ"
+    },
+    "budget": {
+      "budgetAmount": "ចំនួនថវិកា",
+      "currency": "រូបិយប័ណ្ណ",
+      "notes": "កំណត់ចំណាំ",
+      "notesPlaceholder": "បន្ថែមកំណត់ចំណាំអំពីថវិកានេះ..."
+    },
+    "actions": {
+      "saving": "កំពុងរក្សាទុក...",
+      "cancel": "បោះបង់",
+      "addExpense": "បន្ថែមការចំណាយ",
+      "addBudget": "បន្ថែមថវិកា",
+      "add": "បន្ថែម",
+      "updateExpense": "ធ្វើបច្ចុប្បន្នភាពការចំណាយ",
+      "updateBudget": "ធ្វើបច្ចុប្បន្នភាពថវិកា",
+      "update": "ធ្វើបច្ចុប្បន្នភាព"
+    },
+    "validation": {
+      "requiredFields": "សូមបំពេញគ្រប់វាលដែលត្រូវការ",
+      "categoryRequired": "ឈ្មោះប្រភេទត្រូវបានទាមទារ"
+    }
   }
 }

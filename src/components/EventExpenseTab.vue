@@ -2,8 +2,8 @@
   <div class="space-y-6">
     <!-- Header -->
     <div>
-      <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">Expense Tracking</h2>
-      <p class="text-xs sm:text-sm text-slate-600 mt-1">Manage budgets and track spending</p>
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">{{ t('management.expenseTab.title') }}</h2>
+      <p class="text-xs sm:text-sm text-slate-600 mt-1">{{ t('management.expenseTab.subtitle') }}</p>
     </div>
 
     <!-- Unified Content Area -->
@@ -44,6 +44,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import ExpenseSummaryView from './expense/ExpenseSummaryView.vue'
 import ExpenseBudgetsView from './expense/ExpenseBudgetsView.vue'
 import QuickAddModal from './expense/QuickAddModal.vue'
@@ -61,6 +62,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useAppLanguage()
 
 const showQuickAddModal = ref(false)
 const quickAddInitialType = ref<'expense' | 'budget' | 'category'>('expense')

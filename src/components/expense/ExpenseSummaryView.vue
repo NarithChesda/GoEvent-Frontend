@@ -12,10 +12,10 @@
           <AlertCircle class="w-5 h-5 text-red-600" />
         </div>
         <div>
-          <h4 class="font-semibold text-red-900 mb-1">Error Loading Summary</h4>
+          <h4 class="font-semibold text-red-900 mb-1">{{ t('management.expenseSummary.error.title') }}</h4>
           <p class="text-sm text-red-700">{{ error }}</p>
           <button @click="() => loadSummary()" class="mt-3 text-sm font-medium text-red-600 hover:text-red-700">
-            Try Again
+            {{ t('management.expenseSummary.error.tryAgain') }}
           </button>
         </div>
       </div>
@@ -33,11 +33,11 @@
           <!-- Currency Header with Budget Stats -->
           <div class="flex flex-wrap items-end justify-between gap-4 sm:gap-6">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{{ currency }} Budget</p>
+              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{{ t('management.expenseSummary.currencyBudget', { currency }) }}</p>
               <p class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 transition-all duration-300" aria-live="polite">
                 {{ formatCurrency(summary.overall_totals[currency].total_budget, currency) }}
               </p>
-              <p class="mt-1 text-xs sm:text-sm text-slate-500">{{ getBudgetedCategoriesCount(currency) }} categories budgeted</p>
+              <p class="mt-1 text-xs sm:text-sm text-slate-500">{{ t('management.expenseSummary.categoriesBudgeted', { count: getBudgetedCategoriesCount(currency) }) }}</p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
               <div
@@ -49,7 +49,7 @@
                 ]"
               >
                 <TrendingUp class="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
-                <span>{{ formatCurrency(summary.overall_totals[currency].total_expenses, currency) }} spent</span>
+                <span>{{ formatCurrency(summary.overall_totals[currency].total_expenses, currency) }} {{ t('management.expenseSummary.spent') }}</span>
               </div>
             </div>
           </div>
@@ -85,7 +85,7 @@
                       isOverBudget(currency) ? 'text-red-600' : 'text-emerald-600'
                     ]"
                   >
-                    Spent
+                    {{ t('management.expenseSummary.cards.spent.label') }}
                   </p>
                   <span
                     :class="[
@@ -103,10 +103,10 @@
                   {{ formatCurrency(summary.overall_totals[currency].total_expenses, currency, true) }}
                 </p>
                 <p class="hidden sm:block text-[10px] sm:text-xs mt-1 leading-tight" :class="isOverBudget(currency) ? 'text-red-700/70' : 'text-emerald-700/70'">
-                  {{ summary.overall_totals[currency].expense_count }} expense{{ summary.overall_totals[currency].expense_count !== 1 ? 's' : '' }} recorded
+                  {{ t('management.expenseSummary.cards.spent.expensesRecorded', { count: summary.overall_totals[currency].expense_count }, summary.overall_totals[currency].expense_count) }}
                 </p>
                 <p class="sm:hidden text-[9px] mt-0.5 leading-tight" :class="isOverBudget(currency) ? 'text-red-700/60' : 'text-emerald-700/60'">
-                  {{ summary.overall_totals[currency].expense_count }} recorded
+                  {{ t('management.expenseSummary.cards.spent.recorded', { count: summary.overall_totals[currency].expense_count }) }}
                 </p>
               </div>
 
@@ -126,7 +126,7 @@
                       isOverBudget(currency) ? 'text-red-600' : 'text-sky-600'
                     ]"
                   >
-                    {{ isOverBudget(currency) ? 'Over' : 'Left' }}
+                    {{ isOverBudget(currency) ? t('management.expenseSummary.cards.remaining.over') : t('management.expenseSummary.cards.remaining.left') }}
                   </p>
                   <span
                     :class="[
@@ -144,26 +144,26 @@
                   {{ formatCurrency(Math.abs(getRemainingBudget(currency)), currency, true) }}
                 </p>
                 <p class="hidden sm:block text-[10px] sm:text-xs mt-1 leading-tight" :class="isOverBudget(currency) ? 'text-red-700/70' : 'text-sky-700/70'">
-                  {{ isOverBudget(currency) ? 'Exceeded budget limit' : 'Available to spend' }}
+                  {{ isOverBudget(currency) ? t('management.expenseSummary.cards.remaining.exceededBudgetLimit') : t('management.expenseSummary.cards.remaining.availableToSpend') }}
                 </p>
                 <p class="sm:hidden text-[9px] mt-0.5 leading-tight" :class="isOverBudget(currency) ? 'text-red-700/60' : 'text-sky-700/60'">
-                  {{ isOverBudget(currency) ? 'Exceeded' : 'Available' }}
+                  {{ isOverBudget(currency) ? t('management.expenseSummary.cards.remaining.exceeded') : t('management.expenseSummary.cards.remaining.available') }}
                 </p>
               </div>
 
               <!-- Budget Status -->
               <div class="rounded-lg sm:rounded-2xl border border-transparent bg-slate-50 p-2.5 sm:p-4 shadow-sm shadow-slate-100/70">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                  <p class="text-[10px] sm:text-xs mb-1 sm:mb-0 font-semibold uppercase tracking-wide text-slate-600">Status</p>
+                  <p class="text-[10px] sm:text-xs mb-1 sm:mb-0 font-semibold uppercase tracking-wide text-slate-600">{{ t('management.expenseSummary.cards.status.label') }}</p>
                 </div>
                 <p class="mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">
-                  {{ isOverBudget(currency) ? 'Over' : 'On Track' }}
+                  {{ isOverBudget(currency) ? t('management.expenseSummary.cards.status.over') : t('management.expenseSummary.cards.status.onTrack') }}
                 </p>
                 <p class="hidden sm:block text-[10px] sm:text-xs mt-1 text-slate-500 leading-tight">
-                  {{ isOverBudget(currency) ? 'Review spending to get back on track' : 'Budget is under control' }}
+                  {{ isOverBudget(currency) ? t('management.expenseSummary.cards.status.reviewSpending') : t('management.expenseSummary.cards.status.budgetUnderControl') }}
                 </p>
                 <p class="sm:hidden text-[9px] mt-0.5 text-slate-500 leading-tight">
-                  {{ isOverBudget(currency) ? 'Review' : 'Good' }}
+                  {{ isOverBudget(currency) ? t('management.expenseSummary.cards.status.review') : t('management.expenseSummary.cards.status.good') }}
                 </p>
               </div>
             </div>
@@ -179,16 +179,16 @@
         <!-- Header with zero values -->
         <div class="flex flex-wrap items-end justify-between gap-4 sm:gap-6">
           <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Total Budget</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{{ t('management.expenseSummary.empty.totalBudget') }}</p>
             <p class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 transition-all duration-300">
               $0.00
             </p>
-            <p class="mt-1 text-xs sm:text-sm text-slate-500">0 categories budgeted</p>
+            <p class="mt-1 text-xs sm:text-sm text-slate-500">{{ t('management.expenseSummary.empty.zeroCategoriesBudgeted') }}</p>
           </div>
           <div class="flex flex-wrap items-center gap-3">
             <div class="inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm font-semibold ring-1 bg-slate-50 text-slate-500 ring-slate-200">
               <TrendingUp class="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
-              <span>$0.00 spent</span>
+              <span>{{ t('management.expenseSummary.empty.zeroSpent') }}</span>
             </div>
           </div>
         </div>
@@ -203,35 +203,35 @@
             <!-- Budget Spent -->
             <div class="rounded-lg sm:rounded-2xl border border-transparent bg-slate-50/80 p-2.5 sm:p-4 shadow-sm shadow-slate-100/70">
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <p class="text-[10px] sm:text-xs mb-1 sm:mb-0 font-semibold uppercase tracking-wide text-slate-500">Spent</p>
+                <p class="text-[10px] sm:text-xs mb-1 sm:mb-0 font-semibold uppercase tracking-wide text-slate-500">{{ t('management.expenseSummary.empty.spent') }}</p>
                 <span class="text-[10px] sm:text-xs font-semibold text-slate-500">0%</span>
               </div>
               <p class="hidden sm:block mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">$0.00</p>
               <p class="sm:hidden mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">$0</p>
-              <p class="hidden sm:block text-[10px] sm:text-xs mt-1 text-slate-400 leading-tight">0 expenses recorded</p>
-              <p class="sm:hidden text-[9px] mt-0.5 text-slate-400 leading-tight">0 recorded</p>
+              <p class="hidden sm:block text-[10px] sm:text-xs mt-1 text-slate-400 leading-tight">{{ t('management.expenseSummary.empty.zeroExpensesRecorded') }}</p>
+              <p class="sm:hidden text-[9px] mt-0.5 text-slate-400 leading-tight">{{ t('management.expenseSummary.empty.zeroRecorded') }}</p>
             </div>
 
             <!-- Remaining -->
             <div class="rounded-lg sm:rounded-2xl border border-transparent bg-slate-50/80 p-2.5 sm:p-4 shadow-sm shadow-slate-100/70">
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <p class="text-[10px] sm:text-xs mb-1 sm:mb-0 font-semibold uppercase tracking-wide text-slate-500">Left</p>
+                <p class="text-[10px] sm:text-xs mb-1 sm:mb-0 font-semibold uppercase tracking-wide text-slate-500">{{ t('management.expenseSummary.empty.left') }}</p>
                 <span class="text-[10px] sm:text-xs font-semibold text-slate-500">0%</span>
               </div>
               <p class="hidden sm:block mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">$0.00</p>
               <p class="sm:hidden mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">$0</p>
-              <p class="hidden sm:block text-[10px] sm:text-xs mt-1 text-slate-400 leading-tight">No budget set yet</p>
-              <p class="sm:hidden text-[9px] mt-0.5 text-slate-400 leading-tight">No budget</p>
+              <p class="hidden sm:block text-[10px] sm:text-xs mt-1 text-slate-400 leading-tight">{{ t('management.expenseSummary.empty.noBudgetSetYet') }}</p>
+              <p class="sm:hidden text-[9px] mt-0.5 text-slate-400 leading-tight">{{ t('management.expenseSummary.empty.noBudget') }}</p>
             </div>
 
             <!-- Budget Status -->
             <div class="rounded-lg sm:rounded-2xl border border-transparent bg-slate-50 p-2.5 sm:p-4 shadow-sm shadow-slate-100/70">
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <p class="text-[10px] sm:text-xs mb-1 sm:mb-0 font-semibold uppercase tracking-wide text-slate-600">Status</p>
+                <p class="text-[10px] sm:text-xs mb-1 sm:mb-0 font-semibold uppercase tracking-wide text-slate-600">{{ t('management.expenseSummary.empty.status') }}</p>
               </div>
-              <p class="mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">No Budget</p>
-              <p class="hidden sm:block text-[10px] sm:text-xs mt-1 text-slate-500 leading-tight">Create a budget to start tracking</p>
-              <p class="sm:hidden text-[9px] mt-0.5 text-slate-500 leading-tight">Create budget</p>
+              <p class="mt-1 sm:mt-3 text-lg sm:text-xl leading-tight font-bold text-slate-900 transition-all duration-300">{{ t('management.expenseSummary.empty.noBudgetStatus') }}</p>
+              <p class="hidden sm:block text-[10px] sm:text-xs mt-1 text-slate-500 leading-tight">{{ t('management.expenseSummary.empty.createBudgetToStart') }}</p>
+              <p class="sm:hidden text-[9px] mt-0.5 text-slate-500 leading-tight">{{ t('management.expenseSummary.empty.createBudget') }}</p>
             </div>
           </div>
         </div>
@@ -242,6 +242,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import {
   TrendingUp,
   AlertCircle
@@ -287,6 +288,7 @@ interface ExpenseSummary {
 }
 
 const props = defineProps<Props>()
+const { t } = useAppLanguage()
 
 const loading = ref(false)
 const error = ref<string | null>(null)
@@ -335,7 +337,7 @@ const loadSummary = async (silent = false) => {
     }
 
     if (!budgetsResponse.success || !expensesResponse.success) {
-      error.value = 'Failed to load expense data'
+      error.value = t('management.expenseSummary.error.loadFailed')
       return
     }
 
@@ -426,7 +428,7 @@ const loadSummary = async (silent = false) => {
     if (err.name === 'AbortError' || abortController.value?.signal.aborted) {
       return
     }
-    error.value = 'An unexpected error occurred while loading the summary'
+    error.value = t('management.expenseSummary.error.unexpected')
     console.error('Error loading expense summary:', err)
   } finally {
     loading.value = false

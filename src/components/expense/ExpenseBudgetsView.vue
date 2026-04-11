@@ -22,7 +22,7 @@
                 :class="activeFilter === 'all' ? 'text-slate-500' : 'text-white/80'"
               />
               <span class="truncate max-w-[100px] sm:max-w-[160px]">
-                {{ activeFilter === 'all' ? 'All Categories' : selectedCategory?.name || 'Select' }}
+                {{ activeFilter === 'all' ? t('management.expenseBudgets.filter.allCategories') : selectedCategory?.name || t('management.expenseBudgets.filter.select') }}
               </span>
               <ChevronDown
                 class="w-4 h-4 transition-transform flex-shrink-0"
@@ -49,7 +49,7 @@
                     ]"
                   >
                     <Filter class="w-4 h-4 text-slate-400" />
-                    <span class="flex-1 text-left">All Categories</span>
+                    <span class="flex-1 text-left">{{ t('management.expenseBudgets.filter.allCategories') }}</span>
                     <span class="text-xs text-slate-400 tabular-nums">{{ budgets.length }}</span>
                   </button>
 
@@ -104,7 +104,7 @@
           <!-- Budget Count -->
           <div class="hidden sm:flex items-center gap-1 text-sm text-slate-500 tabular-nums flex-shrink-0">
             <span class="font-medium text-slate-700">{{ filteredBudgets.length }}</span>
-            <span>budget{{ filteredBudgets.length !== 1 ? 's' : '' }}</span>
+            <span>{{ t('management.expenseBudgets.budgetCount', filteredBudgets.length) }}</span>
           </div>
 
           <!-- Spacer -->
@@ -117,7 +117,7 @@
             class="flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-all duration-200 flex-shrink-0"
           >
             <Plus class="w-4 h-4" />
-            <span class="hidden sm:inline">Quick Add</span>
+            <span class="hidden sm:inline">{{ t('management.expenseBudgets.quickAdd') }}</span>
           </button>
         </div>
       </div>
@@ -135,10 +135,10 @@
           <AlertCircle class="w-5 h-5 text-red-600" />
         </div>
         <div>
-          <h4 class="font-semibold text-red-900 mb-1">Error Loading Budgets</h4>
+          <h4 class="font-semibold text-red-900 mb-1">{{ t('management.expenseBudgets.error.title') }}</h4>
           <p class="text-sm text-red-700">{{ error }}</p>
           <button @click="loadBudgets" class="mt-3 text-sm font-medium text-red-600 hover:text-red-700">
-            Try Again
+            {{ t('management.expenseBudgets.error.tryAgain') }}
           </button>
         </div>
       </div>
@@ -180,7 +180,7 @@
                     v-if="budget.is_over_budget"
                     class="px-1.5 py-0.5 bg-red-50 text-red-600 text-[10px] font-bold rounded uppercase tracking-wide flex-shrink-0"
                   >
-                    Over
+                    {{ t('management.expenseBudgets.over') }}
                   </span>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
@@ -229,8 +229,8 @@
               <button
                 v-if="canEdit"
                 @click.stop="editBudget(budget)"
-                :aria-label="`Edit budget for ${budget.category_info.name}`"
-                title="Edit budget"
+                :aria-label="`${t('management.expenseBudgets.editBudget')} - ${budget.category_info.name}`"
+                :title="t('management.expenseBudgets.editBudget')"
                 class="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
               >
                 <Edit2 class="w-4 h-4" />
@@ -240,8 +240,8 @@
               <button
                 v-if="canEdit"
                 @click.stop="confirmDeleteBudget(budget)"
-                :aria-label="`Delete budget for ${budget.category_info.name}`"
-                title="Delete budget"
+                :aria-label="`${t('management.expenseBudgets.deleteBudget')} - ${budget.category_info.name}`"
+                :title="t('management.expenseBudgets.deleteBudget')"
                 class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
               >
                 <Trash2 class="w-4 h-4" />
@@ -298,10 +298,10 @@
                           target="_blank"
                           @click.stop
                           class="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-medium cursor-pointer transition-colors"
-                          title="Click to view receipt"
+                          :title="t('management.expenseBudgets.viewReceipt')"
                         >
                           <Paperclip class="w-3 h-3" />
-                          <span>Receipt</span>
+                          <span>{{ t('management.expenseBudgets.receipt') }}</span>
                           <Eye class="w-3 h-3 opacity-60" />
                         </a>
                       </div>
@@ -312,8 +312,8 @@
                       <!-- Edit -->
                       <button
                         @click.stop="editExpense(expense)"
-                        :aria-label="`Edit expense ${expense.description}`"
-                        title="Edit expense"
+                        :aria-label="`${t('management.expenseBudgets.editExpense')} - ${expense.description}`"
+                        :title="t('management.expenseBudgets.editExpense')"
                         class="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
                       >
                         <Edit2 class="w-4 h-4" />
@@ -322,8 +322,8 @@
                       <!-- Delete -->
                       <button
                         @click.stop="confirmDeleteExpense(expense)"
-                        :aria-label="`Delete expense ${expense.description}`"
-                        title="Delete expense"
+                        :aria-label="`${t('management.expenseBudgets.deleteExpense')} - ${expense.description}`"
+                        :title="t('management.expenseBudgets.deleteExpense')"
                         class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
                       >
                         <Trash2 class="w-4 h-4" />
@@ -335,7 +335,7 @@
 
               <!-- No expenses -->
               <div v-else class="text-center py-4">
-                <p class="text-xs text-slate-400">No expenses recorded yet</p>
+                <p class="text-xs text-slate-400">{{ t('management.expenseBudgets.noExpensesYet') }}</p>
               </div>
             </div>
           </div>
@@ -352,8 +352,8 @@
           <div class="w-16 h-16 bg-slate-200 group-hover:bg-emerald-100 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300">
             <Wallet class="w-8 h-8 text-slate-400 group-hover:text-emerald-600 transition-colors" />
           </div>
-          <h4 class="font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">Add First Budget</h4>
-          <p class="text-sm text-slate-400 mt-1">Start tracking spending for different categories</p>
+          <h4 class="font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">{{ t('management.expenseBudgets.empty.addFirstBudget') }}</h4>
+          <p class="text-sm text-slate-400 mt-1">{{ t('management.expenseBudgets.empty.startTracking') }}</p>
         </div>
       </div>
 
@@ -365,8 +365,8 @@
         <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
           <Wallet class="w-8 h-8 text-slate-400" />
         </div>
-        <h4 class="font-semibold text-slate-900 mb-2">No Budgets Yet</h4>
-        <p class="text-sm text-slate-500">No budgets have been created for this event</p>
+        <h4 class="font-semibold text-slate-900 mb-2">{{ t('management.expenseBudgets.empty.noBudgetsYet') }}</h4>
+        <p class="text-sm text-slate-500">{{ t('management.expenseBudgets.empty.noBudgetsCreated') }}</p>
       </div>
 
       <!-- Empty State - Filter has no results -->
@@ -377,13 +377,13 @@
         <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-3">
           <Filter class="w-6 h-6 text-slate-400" />
         </div>
-        <h4 class="font-semibold text-slate-900 mb-1">No Budget Found</h4>
-        <p class="text-sm text-slate-500 mb-3">The selected category doesn't have a budget yet</p>
+        <h4 class="font-semibold text-slate-900 mb-1">{{ t('management.expenseBudgets.empty.noBudgetFound') }}</h4>
+        <p class="text-sm text-slate-500 mb-3">{{ t('management.expenseBudgets.empty.noBudgetForCategory') }}</p>
         <button
           @click="selectFilter('all')"
           class="text-sm font-medium text-emerald-600 hover:text-emerald-700"
         >
-          View all budgets
+          {{ t('management.expenseBudgets.empty.viewAllBudgets') }}
         </button>
       </div>
     </div>
@@ -392,8 +392,8 @@
     <DeleteConfirmModal
       :show="!!deletingBudget"
       :loading="submitting"
-      title="Delete Budget"
-      :item-name="deletingBudget ? `Budget for ${deletingBudget.category_info.name}` : undefined"
+      :title="t('management.expenseBudgets.deleteModal.budgetTitle')"
+      :item-name="deletingBudget ? t('management.expenseBudgets.deleteModal.budgetFor', { name: deletingBudget.category_info.name }) : undefined"
       :warning-message="deletingBudgetWarning"
       @confirm="handleDelete"
       @cancel="deletingBudget = null"
@@ -403,7 +403,7 @@
     <DeleteConfirmModal
       :show="showDeleteExpenseModal"
       :loading="submitting"
-      title="Delete Expense"
+      :title="t('management.expenseBudgets.deleteModal.expenseTitle')"
       :item-name="deletingExpense ? deletingExpense.description : undefined"
       @confirm="handleDeleteExpense"
       @cancel="() => { showDeleteExpenseModal = false; deletingExpense = null }"
@@ -430,6 +430,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import {
   Edit2,
   Trash2,
@@ -466,6 +467,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useAppLanguage()
 
 // Emits
 const emit = defineEmits<{
@@ -514,9 +516,9 @@ const deletingBudgetWarning = computed(() => {
   if (!deletingBudget.value) return ''
   const expenseCount = expenses.value.filter(e => e.category === deletingBudget.value!.category).length
   if (expenseCount > 0) {
-    return `This will also delete ${expenseCount} expense${expenseCount !== 1 ? 's' : ''} in this category.`
+    return t('management.expenseBudgets.deleteModal.warningWithExpenses', { count: expenseCount }, expenseCount)
   }
-  return 'This budget has no expenses.'
+  return t('management.expenseBudgets.deleteModal.warningNoExpenses')
 })
 
 // Filter methods
@@ -662,7 +664,7 @@ const handleDeleteExpense = async () => {
     // Close modal immediately for better UX
     deletingExpense.value = null
     showDeleteExpenseModal.value = false
-    showSuccess('Expense deleted successfully!')
+    showSuccess(t('management.expenseBudgets.toast.expenseDeleted'))
 
     // Make API call
     const response = await expensesService.deleteExpense(
@@ -738,8 +740,8 @@ const handleDelete = async () => {
     } else {
       const expenseCount = categoryExpenses.length
       const message = expenseCount > 0
-        ? `Budget and ${expenseCount} expense${expenseCount !== 1 ? 's' : ''} deleted successfully!`
-        : 'Budget deleted successfully!'
+        ? t('management.expenseBudgets.toast.budgetAndExpensesDeleted', { count: expenseCount }, expenseCount)
+        : t('management.expenseBudgets.toast.budgetDeleted')
       showSuccess(message)
 
       // Emit event to notify parent to refresh summary

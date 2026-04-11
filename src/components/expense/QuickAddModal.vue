@@ -24,11 +24,11 @@
               <button
                 @click="handleClose"
                 class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
-                title="Close"
+                :title="t('management.quickAdd.close')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
-              <h2 class="text-base font-semibold text-white">{{ isEditMode ? 'Edit' : 'Quick Add' }}</h2>
+              <h2 class="text-base font-semibold text-white">{{ isEditMode ? t('management.quickAdd.editTitle') : t('management.quickAdd.title') }}</h2>
             </div>
           </div>
         </div>
@@ -55,7 +55,7 @@
                     ]"
                   >
                     <Banknote class="w-4 h-4 inline-block mr-1.5" />
-                    Expense
+                    {{ t('management.quickAdd.tabs.expense') }}
                   </button>
                   <button
                     type="button"
@@ -68,7 +68,7 @@
                     ]"
                   >
                     <Wallet class="w-4 h-4 inline-block mr-1.5" />
-                    Budget
+                    {{ t('management.quickAdd.tabs.budget') }}
                   </button>
                 </div>
               </div>
@@ -77,14 +77,14 @@
               <div v-if="selectedType === 'expense' || selectedType === 'budget'">
                 <div class="flex items-center justify-between mb-2">
                   <label for="quick-add-category" class="block text-sm font-medium text-slate-700">
-                    Category <span class="text-red-500">*</span>
+                    {{ t('management.quickAdd.category.label') }} <span class="text-red-500">*</span>
                   </label>
                   <button
                     type="button"
                     @click="showCreateCategoryForm = !showCreateCategoryForm"
                     class="text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors"
                   >
-                    {{ showCreateCategoryForm ? 'Cancel' : '+ Create Category' }}
+                    {{ showCreateCategoryForm ? t('management.quickAdd.category.cancel') : t('management.quickAdd.category.createCategory') }}
                   </button>
                 </div>
 
@@ -93,19 +93,19 @@
                   <div v-if="showCreateCategoryForm" class="mb-3 p-3 bg-purple-50 border border-purple-200 rounded-xl space-y-3">
                     <div class="flex items-center gap-2 text-purple-700 mb-2">
                       <FolderOpen class="w-4 h-4" />
-                      <span class="text-sm font-medium">New Category</span>
+                      <span class="text-sm font-medium">{{ t('management.quickAdd.category.newCategory') }}</span>
                     </div>
                     <input
                       v-model="newCategoryName"
                       type="text"
-                      placeholder="Category name *"
+                      :placeholder="t('management.quickAdd.category.namePlaceholder')"
                       maxlength="100"
                       class="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 bg-white"
                     />
                     <textarea
                       v-model="newCategoryDescription"
                       rows="2"
-                      placeholder="Description (optional)"
+                      :placeholder="t('management.quickAdd.category.descriptionPlaceholder')"
                       class="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 bg-white resize-none"
                     ></textarea>
                     <div class="flex items-center gap-2">
@@ -135,7 +135,7 @@
                       class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span v-if="isCreatingCategory" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-                      <span>{{ isCreatingCategory ? 'Creating...' : 'Create Category' }}</span>
+                      <span>{{ isCreatingCategory ? t('management.quickAdd.category.creating') : t('management.quickAdd.category.create') }}</span>
                     </button>
                   </div>
                 </Transition>
@@ -150,7 +150,7 @@
                   >
                     <FolderOpen class="w-4 h-4 text-purple-600 flex-shrink-0" />
                     <span class="flex-1 text-left text-slate-900 truncate">
-                      {{ selectedCategory?.name || 'Select a category' }}
+                      {{ selectedCategory?.name || t('management.quickAdd.category.selectCategory') }}
                     </span>
                     <ChevronDown
                       v-if="!isEditMode"
@@ -234,7 +234,7 @@
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2 text-blue-700">
                         <Edit2 class="w-4 h-4" />
-                        <span class="text-sm font-medium">Edit Category</span>
+                        <span class="text-sm font-medium">{{ t('management.quickAdd.category.editCategory') }}</span>
                       </div>
                       <button
                         type="button"
@@ -247,14 +247,14 @@
                     <input
                       v-model="editCategoryName"
                       type="text"
-                      placeholder="Category name *"
+                      :placeholder="t('management.quickAdd.category.namePlaceholder')"
                       maxlength="100"
                       class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white"
                     />
                     <textarea
                       v-model="editCategoryDescription"
                       rows="2"
-                      placeholder="Description (optional)"
+                      :placeholder="t('management.quickAdd.category.descriptionPlaceholder')"
                       class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white resize-none"
                     ></textarea>
                     <div class="flex items-center gap-2">
@@ -283,7 +283,7 @@
                         @click="closeEditCategoryForm"
                         class="flex-1 px-3 py-2 text-sm border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-100 font-medium transition-colors"
                       >
-                        Cancel
+                        {{ t('management.quickAdd.category.cancel') }}
                       </button>
                       <button
                         type="button"
@@ -292,7 +292,7 @@
                         class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span v-if="isUpdatingCategory" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-                        <span>{{ isUpdatingCategory ? 'Saving...' : 'Save Changes' }}</span>
+                        <span>{{ isUpdatingCategory ? t('management.quickAdd.category.saving') : t('management.quickAdd.category.saveChanges') }}</span>
                       </button>
                     </div>
                   </div>
@@ -303,13 +303,13 @@
                   <div v-if="showDeleteCategoryConfirm && deletingCategory" class="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl space-y-3">
                     <div class="flex items-center gap-2 text-red-700">
                       <Trash2 class="w-4 h-4" />
-                      <span class="text-sm font-medium">Delete Category</span>
+                      <span class="text-sm font-medium">{{ t('management.quickAdd.category.deleteCategory') }}</span>
                     </div>
                     <p class="text-sm text-red-800">
-                      Are you sure you want to delete "<span class="font-semibold">{{ deletingCategory.name }}</span>"?
+                      {{ t('management.quickAdd.category.deleteConfirm', { name: deletingCategory.name }) }}
                     </p>
                     <p class="text-xs text-red-600 bg-red-100 px-2 py-1.5 rounded-md">
-                      ⚠️ This action cannot be undone!
+                      ⚠️ {{ t('management.quickAdd.category.cannotBeUndone') }}
                     </p>
                     <div class="flex gap-2">
                       <button
@@ -317,7 +317,7 @@
                         @click="closeDeleteCategoryConfirm"
                         class="flex-1 px-3 py-2 text-sm border border-red-200 text-red-700 rounded-lg hover:bg-red-100 font-medium transition-colors"
                       >
-                        Cancel
+                        {{ t('management.quickAdd.category.cancel') }}
                       </button>
                       <button
                         type="button"
@@ -326,7 +326,7 @@
                         class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span v-if="isDeletingCategory" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-                        <span>{{ isDeletingCategory ? 'Deleting...' : 'Delete Category' }}</span>
+                        <span>{{ isDeletingCategory ? t('management.quickAdd.category.deleting') : t('management.quickAdd.category.deleteCategory') }}</span>
                       </button>
                     </div>
                   </div>
@@ -338,14 +338,14 @@
                 <div v-if="!categoryBudget" class="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <Sparkles class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
                   <div class="flex-1 min-w-0">
-                    <p class="text-sm text-blue-700 font-medium">Budget will be set to match this expense</p>
-                    <p class="text-xs text-blue-600 mt-0.5">This becomes your baseline for tracking</p>
+                    <p class="text-sm text-blue-700 font-medium">{{ t('management.quickAdd.budgetInfo.autoSetBudget') }}</p>
+                    <p class="text-xs text-blue-600 mt-0.5">{{ t('management.quickAdd.budgetInfo.baseline') }}</p>
                     <button
                       type="button"
                       @click="showInlineBudget = true"
                       class="text-xs text-blue-600 hover:text-blue-700 underline mt-1"
                     >
-                      Or set a different budget
+                      {{ t('management.quickAdd.budgetInfo.setDifferent') }}
                     </button>
                   </div>
                 </div>
@@ -367,7 +367,7 @@
                         : 'bg-emerald-100 text-emerald-600'
                     ]"
                   >
-                    {{ categoryBudget.percentage_used.toFixed(0) }}% used
+                    {{ t('management.quickAdd.budgetInfo.percentUsed', { percent: categoryBudget.percentage_used.toFixed(0) }) }}
                   </span>
                 </div>
 
@@ -375,7 +375,7 @@
                 <Transition name="slide-down">
                   <div v-if="showInlineBudget && selectedType === 'expense'" class="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
                     <div class="flex items-center justify-between">
-                      <span class="text-sm font-medium text-blue-900">Set Budget for This Category</span>
+                      <span class="text-sm font-medium text-blue-900">{{ t('management.quickAdd.budgetInfo.setBudgetTitle') }}</span>
                       <button
                         type="button"
                         @click="showInlineBudget = false"
@@ -387,7 +387,7 @@
                     <div class="grid grid-cols-2 gap-3">
                       <div>
                         <label for="inline-budget-amount" class="block text-xs font-medium text-slate-700 mb-1">
-                          Budget Amount <span class="text-red-500">*</span>
+                          {{ t('management.quickAdd.budgetInfo.budgetAmount') }} <span class="text-red-500">*</span>
                         </label>
                         <input
                           id="inline-budget-amount"
@@ -401,7 +401,7 @@
                       </div>
                       <div>
                         <label for="inline-budget-currency" class="block text-xs font-medium text-slate-700 mb-1">
-                          Currency <span class="text-red-500">*</span>
+                          {{ t('management.quickAdd.budgetInfo.currency') }} <span class="text-red-500">*</span>
                         </label>
                         <select
                           id="inline-budget-currency"
@@ -424,7 +424,7 @@
                       :disabled="!inlineBudgetAmount || creatingInlineBudget"
                       class="w-full px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {{ creatingInlineBudget ? 'Creating...' : 'Create Budget' }}
+                      {{ creatingInlineBudget ? t('management.quickAdd.budgetInfo.creating') : t('management.quickAdd.budgetInfo.createBudget') }}
                     </button>
                   </div>
                 </Transition>
@@ -436,7 +436,7 @@
                   <!-- Amount -->
                   <div>
                     <label for="expense-amount" class="block text-sm font-medium text-slate-700 mb-2">
-                      Amount <span class="text-red-500">*</span>
+                      {{ t('management.quickAdd.expense.amount') }} <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
                       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -459,7 +459,7 @@
                   <!-- Currency -->
                   <div>
                     <label for="expense-currency" class="block text-sm font-medium text-slate-700 mb-2">
-                      Currency <span class="text-red-500">*</span>
+                      {{ t('management.quickAdd.expense.currency') }} <span class="text-red-500">*</span>
                     </label>
                     <select
                       id="expense-currency"
@@ -482,13 +482,13 @@
                 <!-- Description -->
                 <div>
                   <label for="expense-description" class="block text-sm font-medium text-slate-700 mb-2">
-                    Description <span class="text-red-500">*</span>
+                    {{ t('management.quickAdd.expense.description') }} <span class="text-red-500">*</span>
                   </label>
                   <input
                     id="expense-description"
                     type="text"
                     v-model="formData.description"
-                    placeholder="E.g., Venue rental, Catering service..."
+                    :placeholder="t('management.quickAdd.expense.descriptionPlaceholder')"
                     aria-required="true"
                     class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
                     required
@@ -499,7 +499,7 @@
                 <div class="flex items-center gap-2 px-4 py-3 bg-slate-50 rounded-lg border border-slate-200">
                   <Sparkles class="w-4 h-4 text-slate-400" />
                   <span class="text-sm text-slate-600">
-                    Auto-filled: <strong>{{ new Date(formData.date).toLocaleDateString() }}</strong>,
+                    {{ t('management.quickAdd.expense.autoFilled') }} <strong>{{ new Date(formData.date).toLocaleDateString() }}</strong>,
                     <strong>{{ formatPaymentMethod(formData.payment_method) }}</strong>
                   </span>
                 </div>
@@ -513,7 +513,7 @@
                     :aria-expanded="showMoreDetails"
                     aria-controls="more-details-section"
                   >
-                    <span class="text-sm font-medium text-slate-700">More Details</span>
+                    <span class="text-sm font-medium text-slate-700">{{ t('management.quickAdd.expense.moreDetails') }}</span>
                     <ChevronDown
                       class="w-4 h-4 text-slate-500 transition-transform"
                       :class="showMoreDetails ? 'rotate-180' : ''"
@@ -524,7 +524,7 @@
                       <div class="grid grid-cols-2 gap-3">
                         <!-- Date -->
                         <div>
-                          <label for="expense-date" class="block text-sm font-medium text-slate-700 mb-2">Date</label>
+                          <label for="expense-date" class="block text-sm font-medium text-slate-700 mb-2">{{ t('management.quickAdd.expense.date') }}</label>
                           <input
                             id="expense-date"
                             type="date"
@@ -535,7 +535,7 @@
 
                         <!-- Payment Method -->
                         <div>
-                          <label for="expense-payment-method" class="block text-sm font-medium text-slate-700 mb-2">Payment</label>
+                          <label for="expense-payment-method" class="block text-sm font-medium text-slate-700 mb-2">{{ t('management.quickAdd.expense.payment') }}</label>
                           <select
                             id="expense-payment-method"
                             v-model="formData.payment_method"
@@ -554,19 +554,19 @@
 
                       <!-- Vendor -->
                       <div>
-                        <label for="expense-paid-to" class="block text-sm font-medium text-slate-700 mb-2">Vendor</label>
+                        <label for="expense-paid-to" class="block text-sm font-medium text-slate-700 mb-2">{{ t('management.quickAdd.expense.vendor') }}</label>
                         <input
                           id="expense-paid-to"
                           type="text"
                           v-model="formData.paid_to"
-                          placeholder="E.g., Luxury Hotel Group"
+                          :placeholder="t('management.quickAdd.expense.vendorPlaceholder')"
                           class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
                         />
                       </div>
 
                       <!-- Receipt -->
                       <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Receipt</label>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('management.quickAdd.expense.receipt') }}</label>
                         <input
                           type="file"
                           ref="receiptInput"
@@ -582,7 +582,7 @@
                           <div class="flex items-center justify-center gap-2">
                             <Upload class="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
                             <p class="text-sm font-medium text-slate-600 group-hover:text-slate-900">
-                              {{ selectedFile ? selectedFile.name : 'Click to upload' }}
+                              {{ selectedFile ? selectedFile.name : t('management.quickAdd.expense.clickToUpload') }}
                             </p>
                           </div>
                         </button>
@@ -590,12 +590,12 @@
 
                       <!-- Notes -->
                       <div>
-                        <label for="expense-notes" class="block text-sm font-medium text-slate-700 mb-2">Notes</label>
+                        <label for="expense-notes" class="block text-sm font-medium text-slate-700 mb-2">{{ t('management.quickAdd.expense.notes') }}</label>
                         <textarea
                           id="expense-notes"
                           v-model="formData.notes"
                           rows="2"
-                          placeholder="Additional notes..."
+                          :placeholder="t('management.quickAdd.expense.notesPlaceholder')"
                           class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 resize-none"
                         ></textarea>
                       </div>
@@ -613,8 +613,8 @@
                       <Eye class="w-4 h-4 text-sky-500" />
                     </div>
                     <div>
-                      <p class="text-sm font-medium text-slate-700">Public Expense</p>
-                      <p class="text-xs text-slate-500">Show this expense in public transparency view</p>
+                      <p class="text-sm font-medium text-slate-700">{{ t('management.quickAdd.expense.publicExpense') }}</p>
+                      <p class="text-xs text-slate-500">{{ t('management.quickAdd.expense.publicExpenseDesc') }}</p>
                     </div>
                   </div>
                   <div
@@ -639,7 +639,7 @@
                   <!-- Budget Amount -->
                   <div>
                     <label for="budget-amount" class="block text-sm font-medium text-slate-700 mb-2">
-                      Budget Amount <span class="text-red-500">*</span>
+                      {{ t('management.quickAdd.budget.budgetAmount') }} <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
                       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -662,7 +662,7 @@
                   <!-- Currency -->
                   <div>
                     <label for="budget-currency" class="block text-sm font-medium text-slate-700 mb-2">
-                      Currency <span class="text-red-500">*</span>
+                      {{ t('management.quickAdd.budget.currency') }} <span class="text-red-500">*</span>
                     </label>
                     <select
                       id="budget-currency"
@@ -687,21 +687,19 @@
                   <div class="flex items-start gap-2">
                     <AlertCircle class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                     <p class="text-sm text-amber-700">
-                      This category already has a budget of
-                      <strong>{{ formatCurrency(categoryBudget.budgeted_amount, categoryBudget.currency) }}</strong>.
-                      Creating a new budget will replace it.
+                      {{ t('management.quickAdd.budgetInfo.existingBudgetWarning', { amount: formatCurrency(categoryBudget.budgeted_amount, categoryBudget.currency) }) }}
                     </p>
                   </div>
                 </div>
 
                 <!-- Notes -->
                 <div>
-                  <label for="budget-notes" class="block text-sm font-medium text-slate-700 mb-2">Notes</label>
+                  <label for="budget-notes" class="block text-sm font-medium text-slate-700 mb-2">{{ t('management.quickAdd.budget.notes') }}</label>
                   <textarea
                     id="budget-notes"
                     v-model="formData.notes"
                     rows="3"
-                    placeholder="Add notes about this budget..."
+                    :placeholder="t('management.quickAdd.budget.notesPlaceholder')"
                     class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 resize-none"
                   ></textarea>
                 </div>
@@ -723,7 +721,7 @@
                 v-if="submitting"
                 class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
               ></span>
-              <span>{{ submitting ? 'Saving...' : getSubmitButtonText() }}</span>
+              <span>{{ submitting ? t('management.quickAdd.actions.saving') : getSubmitButtonText() }}</span>
             </button>
 
             <button
@@ -731,7 +729,7 @@
               @click="handleClose"
               class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
             >
-              Cancel
+              {{ t('management.quickAdd.actions.cancel') }}
             </button>
           </div>
         </div>
@@ -742,6 +740,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import { onClickOutside } from '@vueuse/core'
 import {
   X,
@@ -782,6 +781,8 @@ interface Props {
   editMode?: boolean
   editData?: ExpenseBudget | ExpenseRecord
 }
+
+const { t } = useAppLanguage()
 
 const props = withDefaults(defineProps<Props>(), {
   initialType: 'expense',
@@ -901,21 +902,21 @@ const getSubmitButtonText = () => {
   if (isEditMode.value) {
     switch (selectedType.value) {
       case 'expense':
-        return 'Update Expense'
+        return t('management.quickAdd.actions.updateExpense')
       case 'budget':
-        return 'Update Budget'
+        return t('management.quickAdd.actions.updateBudget')
       default:
-        return 'Update'
+        return t('management.quickAdd.actions.update')
     }
   }
 
   switch (selectedType.value) {
     case 'expense':
-      return 'Add Expense'
+      return t('management.quickAdd.actions.addExpense')
     case 'budget':
-      return 'Add Budget'
+      return t('management.quickAdd.actions.addBudget')
     default:
-      return 'Add'
+      return t('management.quickAdd.actions.add')
   }
 }
 
@@ -1146,7 +1147,7 @@ const handleSubmit = async () => {
 
 const submitExpense = async () => {
   if (!formData.value.category_id || !formData.value.description || !formData.value.amount) {
-    error.value = 'Please fill in all required fields'
+    error.value = t('management.quickAdd.validation.requiredFields')
     return
   }
 
@@ -1206,7 +1207,7 @@ const submitExpense = async () => {
 
 const submitBudget = async () => {
   if (!formData.value.category_id || !formData.value.budgeted_amount) {
-    error.value = 'Please fill in all required fields'
+    error.value = t('management.quickAdd.validation.requiredFields')
     return
   }
 
@@ -1231,7 +1232,7 @@ const submitBudget = async () => {
 
 const updateExpense = async () => {
   if (!formData.value.category_id || !formData.value.description || !formData.value.amount || !props.editData?.id) {
-    error.value = 'Please fill in all required fields'
+    error.value = t('management.quickAdd.validation.requiredFields')
     return
   }
 
@@ -1266,7 +1267,7 @@ const updateExpense = async () => {
 
 const updateBudget = async () => {
   if (!formData.value.category_id || !formData.value.budgeted_amount || !props.editData?.id) {
-    error.value = 'Please fill in all required fields'
+    error.value = t('management.quickAdd.validation.requiredFields')
     return
   }
 
@@ -1292,7 +1293,7 @@ const updateBudget = async () => {
 
 const submitCategory = async () => {
   if (!formData.value.name) {
-    error.value = 'Category name is required'
+    error.value = t('management.quickAdd.validation.categoryRequired')
     return
   }
 
