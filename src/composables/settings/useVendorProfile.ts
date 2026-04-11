@@ -1,4 +1,5 @@
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { vendorService } from '@/services/api'
 import { apiClient } from '@/services/api/core/ApiClient'
 import type {
@@ -29,6 +30,7 @@ export interface UseVendorProfileOptions {
 
 export function useVendorProfile(options: UseVendorProfileOptions = {}) {
   const { autoLoad = true } = options
+  const { t } = useI18n()
 
   // State
   const vendorProfile = ref<VendorProfile | null>(null)
@@ -141,7 +143,7 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
         vendorProfile.value = null
         resetForm()
       } else {
-        error.value = 'Failed to load vendor profile'
+        error.value = t('settings.vendor.messages.loadFailed')
         console.error('Error loading vendor profile:', err)
       }
     } finally {
@@ -176,14 +178,14 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
       if (response.success && response.data) {
         vendorProfile.value = response.data
         syncFormFromProfile()
-        successMessage.value = 'Vendor profile created successfully!'
+        successMessage.value = t('settings.vendor.messages.createSuccess')
         return { success: true }
       } else {
-        error.value = response.message || 'Failed to create vendor profile'
+        error.value = response.message || t('settings.vendor.messages.createFailed')
         return { success: false, error: error.value }
       }
     } catch (err: any) {
-      error.value = err?.message || 'An unexpected error occurred'
+      error.value = err?.message || t('settings.vendor.messages.unexpectedError')
       return { success: false, error: error.value }
     } finally {
       isSaving.value = false
@@ -217,14 +219,14 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
       if (response.success && response.data) {
         vendorProfile.value = response.data
         syncFormFromProfile()
-        successMessage.value = 'Vendor profile updated successfully!'
+        successMessage.value = t('settings.vendor.messages.updateSuccess')
         return { success: true }
       } else {
-        error.value = response.message || 'Failed to update vendor profile'
+        error.value = response.message || t('settings.vendor.messages.updateFailed')
         return { success: false, error: error.value }
       }
     } catch (err: any) {
-      error.value = err?.message || 'An unexpected error occurred'
+      error.value = err?.message || t('settings.vendor.messages.unexpectedError')
       return { success: false, error: error.value }
     } finally {
       isSaving.value = false
@@ -246,14 +248,14 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
 
       if (response.success && response.data) {
         vendorProfile.value = response.data
-        successMessage.value = 'Logo uploaded successfully!'
+        successMessage.value = t('settings.vendor.messages.logoSuccess')
         return { success: true }
       } else {
-        error.value = response.message || 'Failed to upload logo'
+        error.value = response.message || t('settings.vendor.messages.logoFailed')
         return { success: false, error: error.value }
       }
     } catch (err: any) {
-      error.value = err?.message || 'An unexpected error occurred'
+      error.value = err?.message || t('settings.vendor.messages.unexpectedError')
       return { success: false, error: error.value }
     } finally {
       isSaving.value = false
@@ -275,14 +277,14 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
 
       if (response.success && response.data) {
         vendorProfile.value = response.data
-        successMessage.value = 'Cover image uploaded successfully!'
+        successMessage.value = t('settings.vendor.messages.coverSuccess')
         return { success: true }
       } else {
-        error.value = response.message || 'Failed to upload cover image'
+        error.value = response.message || t('settings.vendor.messages.coverFailed')
         return { success: false, error: error.value }
       }
     } catch (err: any) {
-      error.value = err?.message || 'An unexpected error occurred'
+      error.value = err?.message || t('settings.vendor.messages.unexpectedError')
       return { success: false, error: error.value }
     } finally {
       isSaving.value = false

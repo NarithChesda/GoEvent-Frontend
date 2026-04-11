@@ -4,7 +4,7 @@
       <div class="flex-1">
         <div class="flex items-center gap-3 flex-wrap">
           <h2 class="text-xl font-semibold text-gray-900">
-            {{ mode === 'create' ? 'Create Vendor Profile' : 'Vendor Profile' }}
+            {{ mode === 'create' ? t('settings.vendor.form.createTitle') : t('settings.vendor.form.editTitle') }}
           </h2>
           <!-- Verification Status Badge -->
           <span
@@ -30,7 +30,7 @@
             <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            {{ verificationStatus === 'verified' ? 'Verified' : verificationStatus === 'pending' ? 'Pending' : 'Unverified' }}
+            {{ verificationStatus === 'verified' ? t('settings.vendor.form.verified') : verificationStatus === 'pending' ? t('settings.vendor.form.pending') : t('settings.vendor.form.unverified') }}
           </span>
           <!-- Featured Badge -->
           <span
@@ -41,18 +41,15 @@
             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
-            Featured
+            {{ t('settings.vendor.form.featured') }}
           </span>
         </div>
         <p class="text-sm text-gray-500 mt-1">
-          {{ mode === 'create'
-            ? 'Fill in your business details to get started'
-            : 'Manage your business profile and contact information'
-          }}
+          {{ mode === 'create' ? t('settings.vendor.form.createSubtitle') : t('settings.vendor.form.editSubtitle') }}
         </p>
         <!-- Listings Count (minimalist stat) -->
         <p v-if="mode === 'edit' && vendorProfile?.listings_count" class="text-xs text-gray-400 mt-1">
-          {{ vendorProfile.listings_count }} {{ vendorProfile.listings_count === 1 ? 'listing' : 'listings' }}
+          {{ t('settings.vendor.form.listingCount', { n: vendorProfile.listings_count }, vendorProfile.listings_count) }}
         </p>
       </div>
       <button
@@ -91,90 +88,90 @@
           <!-- Business Name -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
-              Business Name <span class="text-red-500">*</span>
+              {{ t('settings.vendor.form.businessName') }} <span class="text-red-500">*</span>
             </label>
             <input
               v-model="localForm.business_name"
               type="text"
               required
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-              placeholder="Your business or brand name"
+              :placeholder="t('settings.vendor.form.businessNamePlaceholder')"
             />
           </div>
 
           <!-- Short Tagline -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Short Tagline</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.tagline') }}</label>
             <input
               v-model="localForm.short_tagline"
               type="text"
               maxlength="100"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-              placeholder="A brief description of what you do"
+              :placeholder="t('settings.vendor.form.taglinePlaceholder')"
             />
-            <p class="mt-1 text-xs text-gray-500">{{ localForm.short_tagline?.length || 0 }}/100 characters</p>
+            <p class="mt-1 text-xs text-gray-500">{{ t('settings.vendor.form.taglineCount', { count: localForm.short_tagline?.length || 0 }) }}</p>
           </div>
 
           <!-- Description -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.description') }}</label>
             <textarea
               v-model="localForm.description"
               rows="4"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none bg-white"
-              placeholder="Tell potential clients about your services, experience, and what makes you unique..."
+              :placeholder="t('settings.vendor.form.descriptionPlaceholder')"
             ></textarea>
           </div>
 
           <!-- Contact Information Section -->
           <div class="border-t border-gray-200 pt-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-4">{{ t('settings.vendor.form.contactSection') }}</h3>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <!-- Email -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Business Email</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.businessEmail') }}</label>
                 <input
                   v-model="localForm.email"
                   type="email"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-                  placeholder="contact@yourbusiness.com"
+                  :placeholder="t('settings.vendor.form.emailPlaceholder')"
                 />
               </div>
 
               <!-- Phone -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.phone') }}</label>
                 <input
                   v-model="localForm.phone"
                   type="tel"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-                  placeholder="+1 234 567 8900"
+                  :placeholder="t('settings.vendor.form.phonePlaceholder')"
                 />
               </div>
 
               <!-- Telegram Username -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Telegram Username</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.telegramUsername') }}</label>
                 <div class="relative">
                   <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">@</span>
                   <input
                     v-model="localForm.telegram_username"
                     type="text"
                     class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-                    placeholder="yourusername"
+                    :placeholder="t('settings.vendor.form.telegramPlaceholder')"
                   />
                 </div>
               </div>
 
               <!-- Website -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.website') }}</label>
                 <input
                   v-model="localForm.website"
                   type="url"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-                  placeholder="https://yourbusiness.com"
+                  :placeholder="t('settings.vendor.form.websitePlaceholder')"
                 />
               </div>
             </div>
@@ -182,40 +179,40 @@
 
           <!-- Location Section -->
           <div class="border-t border-gray-200 pt-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Location</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-4">{{ t('settings.vendor.form.locationSection') }}</h3>
 
             <div class="space-y-4">
               <!-- Address -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.address') }}</label>
                 <input
                   v-model="localForm.address"
                   type="text"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-                  placeholder="Street address"
+                  :placeholder="t('settings.vendor.form.addressPlaceholder')"
                 />
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <!-- City -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.city') }}</label>
                   <input
                     v-model="localForm.city"
                     type="text"
                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-                    placeholder="City"
+                    :placeholder="t('settings.vendor.form.cityPlaceholder')"
                   />
                 </div>
 
                 <!-- Country -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.country') }}</label>
                   <input
                     v-model="localForm.country"
                     type="text"
                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-                    placeholder="Country"
+                    :placeholder="t('settings.vendor.form.countryPlaceholder')"
                   />
                 </div>
               </div>
@@ -228,7 +225,7 @@
           <div class="sticky top-8 space-y-8">
             <!-- Logo Upload -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-3 text-center">Business Logo</label>
+              <label class="block text-sm font-medium text-gray-700 mb-3 text-center">{{ t('settings.vendor.form.businessLogo') }}</label>
               <div class="relative w-32 h-32 mx-auto mb-4">
                 <div
                   v-if="logoUrl"
@@ -262,7 +259,7 @@
                   </svg>
                 </button>
               </div>
-              <p class="text-xs text-gray-500 text-center">Recommended: 200x200px, PNG or JPG</p>
+              <p class="text-xs text-gray-500 text-center">{{ t('settings.vendor.form.logoHint') }}</p>
 
               <input
                 ref="logoInputRef"
@@ -275,7 +272,7 @@
 
             <!-- Cover Image Upload -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-3 text-center">Cover Image</label>
+              <label class="block text-sm font-medium text-gray-700 mb-3 text-center">{{ t('settings.vendor.form.coverImage') }}</label>
               <div class="relative w-full aspect-video mx-auto mb-4">
                 <div
                   v-if="coverImageUrl"
@@ -309,7 +306,7 @@
                   </svg>
                 </button>
               </div>
-              <p class="text-xs text-gray-500 text-center">Recommended: 1200x400px, PNG or JPG</p>
+              <p class="text-xs text-gray-500 text-center">{{ t('settings.vendor.form.coverHint') }}</p>
 
               <input
                 ref="coverInputRef"
@@ -340,7 +337,7 @@
           <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
           </svg>
-          {{ isSaving ? 'Saving...' : (mode === 'create' ? 'Create Profile' : 'Save Changes') }}
+          {{ isSaving ? t('settings.vendor.form.saving') : (mode === 'create' ? t('settings.vendor.form.createProfile') : t('settings.vendor.form.saveChanges')) }}
         </button>
 
         <button
@@ -349,7 +346,7 @@
           @click="$emit('cancel')"
           class="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium transition-colors"
         >
-          Cancel
+          {{ t('settings.vendor.form.cancel') }}
         </button>
       </div>
     </form>
@@ -358,6 +355,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { VendorProfile } from '@/services/api/types'
 import type { VendorFormData } from '@/composables/settings/useVendorProfile'
 
@@ -374,6 +372,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   submit: []
@@ -417,9 +417,9 @@ const isFormValid = computed(() => {
 })
 
 const featuredUntilText = computed(() => {
-  if (!props.vendorProfile?.featured_until) return 'Featured vendor'
+  if (!props.vendorProfile?.featured_until) return t('settings.vendor.form.featuredVendor')
   const date = new Date(props.vendorProfile.featured_until)
-  return `Featured until ${date.toLocaleDateString()}`
+  return t('settings.vendor.form.featuredUntil', { date: date.toLocaleDateString() })
 })
 
 // Methods
