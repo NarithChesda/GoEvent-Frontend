@@ -1341,6 +1341,135 @@
         "description": "Organize guests into groups to easily manage different invitation lists (e.g., Family, Friends, Colleagues)."
       },
       "closeBtn": "Got it"
+    },
+    "statsCard": {
+      "invitedGuests": "Invited Guests",
+      "totalAudienceDesc": "Total audience you're keeping in the loop.",
+      "sent": "sent",
+      "viewed": "Viewed",
+      "viewedDesc": "Already engaged with their invite.",
+      "viewedShort": "Engaged",
+      "awaiting": "Awaiting",
+      "awaitingDesc": "Haven't opened their invitation yet.",
+      "awaitingShort": "Not opened",
+      "pending": "Pending",
+      "pendingDesc": "Still waiting to receive an invite.",
+      "pendingShort": "Not sent"
+    },
+    "addGuestModal": {
+      "title": "Add Guest",
+      "close": "Close",
+      "modes": {
+        "singleGuest": "Single Guest",
+        "bulkImport": "Bulk Import"
+      },
+      "group": {
+        "selectLabel": "Select Group",
+        "createBtn": "+ Create Group",
+        "cancelBtn": "Cancel",
+        "choosePlaceholder": "Choose a group...",
+        "createFirstSingle": "Please create a group first before adding guests.",
+        "createFirstBulk": "Please create a group first before importing guests.",
+        "newGroupForm": {
+          "title": "New Group",
+          "namePlaceholder": "Group name *",
+          "descPlaceholder": "Description (optional)",
+          "creating": "Creating...",
+          "createBtn": "Create Group"
+        },
+        "editGroupForm": {
+          "title": "Edit Group",
+          "namePlaceholder": "Group name *",
+          "descPlaceholder": "Description (optional)",
+          "saving": "Saving...",
+          "saveBtn": "Save Changes",
+          "cancelBtn": "Cancel"
+        },
+        "deleteGroupConfirm": {
+          "title": "Delete Group",
+          "deleteConfirm": "Are you sure you want to delete",
+          "guestWarning": "⚠️ This will also delete {count} guest(s) in this group!",
+          "cancelBtn": "Cancel",
+          "deleting": "Deleting...",
+          "deleteBtn": "Delete Group"
+        }
+      },
+      "guestName": {
+        "label": "Guest Name",
+        "placeholder": "Enter guest's full name",
+        "errorRequired": "Guest name is required",
+        "errorMin": "Name must be at least 2 characters",
+        "errorMax": "Name must be less than 100 characters"
+      },
+      "bulkImport": {
+        "downloadTemplate": "Download Template (CSV)",
+        "parsing": "Parsing file...",
+        "dropFile": "Drop your file here or click to browse",
+        "supportedFormats": "Supported formats: CSV, Excel (.xlsx, .xls), TXT",
+        "formatLabel": "Format:",
+        "formatDesc": "CSV must have \"name\" as the header in the first row. Excel/TXT: one guest name per line.",
+        "guestsFound": "{count} guest(s) found",
+        "removeFile": "Remove file",
+        "preview": {
+          "title": "Preview (click name to edit)",
+          "colNum": "#",
+          "colName": "Name",
+          "colStatus": "Status",
+          "namePlaceholder": "Enter name",
+          "removeFromList": "Remove from list",
+          "statsTotal": "Total",
+          "statsValid": "Valid",
+          "statsInvalid": "Invalid",
+          "statusValid": "Valid",
+          "statusInvalid": "Invalid",
+          "invalidSkipped": "{count} invalid entries will be skipped during import."
+        }
+      },
+      "actions": {
+        "adding": "Adding...",
+        "addGuest": "Add Guest",
+        "importing": "Importing...",
+        "importGuests": "Import {count} Guest(s)",
+        "cancel": "Cancel"
+      }
+    },
+    "editGuestModal": {
+      "title": "Edit Guest",
+      "close": "Close",
+      "group": {
+        "selectLabel": "Select Group",
+        "choosePlaceholder": "Choose a group...",
+        "guestsSuffix": "guests"
+      },
+      "guestName": {
+        "label": "Guest Name",
+        "placeholder": "Enter guest's full name"
+      },
+      "contactInfo": {
+        "title": "Contact Information",
+        "optional": "Optional",
+        "emailLabel": "Email",
+        "emailPlaceholder": "guest{'@'}example.com",
+        "phoneLabel": "Phone Number"
+      },
+      "cashGift": {
+        "title": "Cash Gift Information",
+        "amountLabel": "Amount",
+        "currencyLabel": "Currency",
+        "currencyPlaceholder": "Select..."
+      },
+      "quickActions": {
+        "title": "Quick Actions",
+        "copyLinkKh": "Copy Link (KH)",
+        "copyLinkEn": "Copy Link (EN)",
+        "markAsSent": "Mark as Sent",
+        "deleteGuest": "Delete Guest"
+      },
+      "actions": {
+        "updating": "Updating...",
+        "updateGuest": "Update Guest",
+        "cancel": "Cancel"
+      }
     }
   }
 }

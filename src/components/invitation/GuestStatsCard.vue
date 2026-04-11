@@ -9,7 +9,7 @@
             compact ? 'text-xs font-medium tracking-wide text-slate-400' : 'text-xs font-semibold tracking-[0.2em] text-slate-400'
           ]"
         >
-          Invited Guests
+          {{ t('management.guestGroupsView.statsCard.invitedGuests') }}
         </p>
         <p
           :class="[
@@ -21,7 +21,7 @@
           {{ loading ? '...' : totalGuests }}
         </p>
         <p v-if="!compact" class="mt-1 text-sm text-slate-500">
-          Total audience you're keeping in the loop.
+          {{ t('management.guestGroupsView.statsCard.totalAudienceDesc') }}
         </p>
       </div>
       <div class="flex flex-wrap items-center gap-3">
@@ -32,7 +32,7 @@
           ]"
         >
           <Send :class="compact ? 'h-3.5 w-3.5' : 'h-4 w-4'" aria-hidden="true" />
-          <span>{{ loading ? '...' : `${sentInvitations} sent` }}</span>
+          <span>{{ loading ? '...' : `${sentInvitations} ${t('management.guestGroupsView.statsCard.sent')}` }}</span>
         </div>
       </div>
     </div>
@@ -85,7 +85,7 @@
               compact ? 'font-medium text-emerald-700' : 'font-semibold uppercase tracking-wide text-emerald-600'
             ]"
           >
-            Viewed
+            {{ t('management.guestGroupsView.statsCard.viewed') }}
           </p>
           <span :class="['text-[10px] sm:text-xs font-semibold', compact ? 'text-emerald-600' : 'text-emerald-600']">
             {{ loading ? '...' : `${viewedPercentage}%` }}
@@ -95,10 +95,10 @@
           {{ loading ? '...' : viewedInvitations }}
         </p>
         <p v-if="!compact" class="hidden sm:block text-[10px] sm:text-xs text-emerald-700/70 leading-tight mt-1">
-          Already engaged with their invite.
+          {{ t('management.guestGroupsView.statsCard.viewedDesc') }}
         </p>
         <p v-if="!compact" class="sm:hidden text-[9px] text-emerald-700/60 leading-tight mt-0.5">
-          Engaged
+          {{ t('management.guestGroupsView.statsCard.viewedShort') }}
         </p>
       </div>
 
@@ -116,7 +116,7 @@
               compact ? 'font-medium text-sky-700' : 'font-semibold uppercase tracking-wide text-sky-600'
             ]"
           >
-            Awaiting
+            {{ t('management.guestGroupsView.statsCard.awaiting') }}
           </p>
           <span :class="['text-[10px] sm:text-xs font-semibold', compact ? 'text-sky-600' : 'text-sky-600']">
             {{ loading ? '...' : `${awaitingViewPercentage}%` }}
@@ -126,10 +126,10 @@
           {{ loading ? '...' : awaitingViewInvitations }}
         </p>
         <p v-if="!compact" class="hidden sm:block text-[10px] sm:text-xs text-sky-700/70 leading-tight mt-1">
-          Haven't opened their invitation yet.
+          {{ t('management.guestGroupsView.statsCard.awaitingDesc') }}
         </p>
         <p v-if="!compact" class="sm:hidden text-[9px] text-sky-700/60 leading-tight mt-0.5">
-          Not opened
+          {{ t('management.guestGroupsView.statsCard.awaitingShort') }}
         </p>
       </div>
 
@@ -146,7 +146,7 @@
               compact ? 'font-medium text-slate-600' : 'font-semibold uppercase tracking-wide text-slate-600'
             ]"
           >
-            Pending
+            {{ t('management.guestGroupsView.statsCard.pending') }}
           </p>
           <span :class="['text-[10px] sm:text-xs font-semibold', compact ? 'text-slate-500' : 'text-slate-600']">
             {{ loading ? '...' : `${pendingPercentage}%` }}
@@ -156,10 +156,10 @@
           {{ loading ? '...' : pendingInvitations }}
         </p>
         <p v-if="!compact" class="hidden sm:block text-[10px] sm:text-xs text-slate-500 leading-tight mt-1">
-          Still waiting to receive an invite.
+          {{ t('management.guestGroupsView.statsCard.pendingDesc') }}
         </p>
         <p v-if="!compact" class="sm:hidden text-[9px] text-slate-500 leading-tight mt-0.5">
-          Not sent
+          {{ t('management.guestGroupsView.statsCard.pendingShort') }}
         </p>
       </div>
     </div>
@@ -168,6 +168,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Send } from 'lucide-vue-next'
 import type { GuestStats } from '../../services/api'
 
@@ -181,6 +182,8 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
   compact: false,
 })
+
+const { t } = useI18n()
 
 // Computed properties for guest statistics
 const totalGuests = computed(() => props.stats?.total_guests || 0)

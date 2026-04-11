@@ -27,12 +27,12 @@
                 <div class="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm text-white flex items-center justify-center">
                   <UserCog class="w-5 h-5" />
                 </div>
-                <h2 class="text-lg font-semibold text-white">Edit Guest</h2>
+                <h2 class="text-lg font-semibold text-white">{{ t('management.guestGroupsView.editGuestModal.title') }}</h2>
               </div>
               <button
                 @click="$emit('close')"
                 class="w-8 h-8 rounded-full hover:bg-white/20 text-white flex items-center justify-center transition-colors"
-                aria-label="Close"
+                :aria-label="t('management.guestGroupsView.editGuestModal.close')"
               >
                 <X class="w-5 h-5" />
               </button>
@@ -45,7 +45,7 @@
               <!-- Group Selection -->
               <div>
                 <label for="editGuestGroup" class="block text-sm font-medium text-slate-700 mb-2">
-                  Select Group <span class="text-red-500">*</span>
+                  {{ t('management.guestGroupsView.editGuestModal.group.selectLabel') }} <span class="text-red-500">*</span>
                 </label>
                 <div class="relative">
                   <select
@@ -54,9 +54,9 @@
                     required
                     class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
                   >
-                    <option :value="null" disabled>Choose a group...</option>
+                    <option :value="null" disabled>{{ t('management.guestGroupsView.editGuestModal.group.choosePlaceholder') }}</option>
                     <option v-for="group in groups" :key="group.id" :value="group.id">
-                      {{ group.name }} ({{ group.guest_count }} guests)
+                      {{ group.name }} ({{ group.guest_count }} {{ t('management.guestGroupsView.editGuestModal.group.guestsSuffix') }})
                     </option>
                   </select>
                   <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -68,14 +68,14 @@
               <!-- Guest Name -->
               <div>
                 <label for="editGuestName" class="block text-sm font-medium text-slate-700 mb-2">
-                  Guest Name <span class="text-red-500">*</span>
+                  {{ t('management.guestGroupsView.editGuestModal.guestName.label') }} <span class="text-red-500">*</span>
                 </label>
                 <input
                   id="editGuestName"
                   v-model="formData.name"
                   type="text"
                   required
-                  placeholder="Enter guest's full name"
+                  :placeholder="t('management.guestGroupsView.editGuestModal.guestName.placeholder')"
                   class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                   :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.name }"
                 />
@@ -91,8 +91,8 @@
                 >
                   <div class="flex items-center gap-2">
                     <Mail class="w-4 h-4" />
-                    <span>Contact Information</span>
-                    <span class="text-xs text-slate-500">(Optional)</span>
+                    <span>{{ t('management.guestGroupsView.editGuestModal.contactInfo.title') }}</span>
+                    <span class="text-xs text-slate-500">({{ t('management.guestGroupsView.editGuestModal.contactInfo.optional') }})</span>
                   </div>
                   <ChevronDown
                     class="w-4 h-4 transition-transform duration-200"
@@ -105,13 +105,13 @@
                     <!-- Email -->
                     <div>
                       <label for="editGuestEmail" class="block text-sm font-medium text-slate-700 mb-2">
-                        Email
+                        {{ t('management.guestGroupsView.editGuestModal.contactInfo.emailLabel') }}
                       </label>
                       <input
                         id="editGuestEmail"
                         v-model="formData.email"
                         type="email"
-                        placeholder="guest@example.com"
+                        :placeholder="t('management.guestGroupsView.editGuestModal.contactInfo.emailPlaceholder')"
                         class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                         :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.email }"
                       />
@@ -121,7 +121,7 @@
                     <!-- Phone Number -->
                     <div>
                       <label for="editGuestPhone" class="block text-sm font-medium text-slate-700 mb-2">
-                        Phone Number
+                        {{ t('management.guestGroupsView.editGuestModal.contactInfo.phoneLabel') }}
                       </label>
                       <input
                         id="editGuestPhone"
@@ -141,14 +141,14 @@
               <div class="space-y-3 pt-2">
                 <h3 class="text-sm font-medium text-slate-700 flex items-center gap-2">
                   <Coins class="w-4 h-4" />
-                  Cash Gift Information
+                  {{ t('management.guestGroupsView.editGuestModal.cashGift.title') }}
                 </h3>
 
                 <div class="grid grid-cols-2 gap-3">
                   <!-- Cash Gift Amount -->
                   <div>
                     <label for="editCashGiftAmount" class="block text-sm font-medium text-slate-700 mb-2">
-                      Amount
+                      {{ t('management.guestGroupsView.editGuestModal.cashGift.amountLabel') }}
                     </label>
                     <input
                       id="editCashGiftAmount"
@@ -166,7 +166,7 @@
                   <!-- Cash Gift Currency -->
                   <div>
                     <label for="editCashGiftCurrency" class="block text-sm font-medium text-slate-700 mb-2">
-                      Currency
+                      {{ t('management.guestGroupsView.editGuestModal.cashGift.currencyLabel') }}
                     </label>
                     <div class="relative">
                       <select
@@ -175,7 +175,7 @@
                         class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
                         :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.cash_gift_currency }"
                       >
-                        <option value="">Select...</option>
+                        <option value="">{{ t('management.guestGroupsView.editGuestModal.cashGift.currencyPlaceholder') }}</option>
                         <option value="USD">USD - US Dollar</option>
                         <option value="KHR">KHR - Cambodian Riel</option>
                         <option value="EUR">EUR - Euro</option>
@@ -206,7 +206,7 @@
               <div class="md:hidden space-y-3 pt-2">
                 <h3 class="text-sm font-medium text-slate-700 flex items-center gap-2">
                   <Link class="w-4 h-4" />
-                  Quick Actions
+                  {{ t('management.guestGroupsView.editGuestModal.quickActions.title') }}
                 </h3>
 
                 <div class="space-y-2">
@@ -219,7 +219,7 @@
                       class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-lg transition-colors disabled:opacity-50"
                     >
                       <Globe class="w-4 h-4" />
-                      <span>Copy Link (KH)</span>
+                      <span>{{ t('management.guestGroupsView.editGuestModal.quickActions.copyLinkKh') }}</span>
                     </button>
                     <button
                       type="button"
@@ -228,7 +228,7 @@
                       class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-lg transition-colors disabled:opacity-50"
                     >
                       <Globe class="w-4 h-4" />
-                      <span>Copy Link (EN)</span>
+                      <span>{{ t('management.guestGroupsView.editGuestModal.quickActions.copyLinkEn') }}</span>
                     </button>
                   </div>
 
@@ -241,7 +241,7 @@
                     class="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 border border-emerald-200 rounded-lg transition-colors disabled:opacity-50"
                   >
                     <Send class="w-4 h-4" />
-                    <span>Mark as Sent</span>
+                    <span>{{ t('management.guestGroupsView.editGuestModal.quickActions.markAsSent') }}</span>
                   </button>
 
                   <!-- Delete Button -->
@@ -253,7 +253,7 @@
                     class="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 active:bg-red-200 border border-red-200 rounded-lg transition-colors disabled:opacity-50"
                   >
                     <Trash2 class="w-4 h-4" />
-                    <span>Delete Guest</span>
+                    <span>{{ t('management.guestGroupsView.editGuestModal.quickActions.deleteGuest') }}</span>
                   </button>
                 </div>
               </div>
@@ -273,7 +273,7 @@
                   v-if="isUpdating"
                   class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
                 ></span>
-                <span>{{ isUpdating ? 'Updating...' : 'Update Guest' }}</span>
+                <span>{{ isUpdating ? t('management.guestGroupsView.editGuestModal.actions.updating') : t('management.guestGroupsView.editGuestModal.actions.updateGuest') }}</span>
               </button>
 
               <button
@@ -282,7 +282,7 @@
                 class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
                 :disabled="isUpdating"
               >
-                Cancel
+                {{ t('management.guestGroupsView.editGuestModal.actions.cancel') }}
               </button>
             </div>
           </div>
@@ -295,8 +295,11 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { UserCog, X, Coins, ChevronDown, Mail, Send, Link, Trash2, Globe } from 'lucide-vue-next'
 import type { EventGuest, GuestGroup } from '../../services/api'
+
+const { t } = useI18n()
 
 // Props
 const props = defineProps<{

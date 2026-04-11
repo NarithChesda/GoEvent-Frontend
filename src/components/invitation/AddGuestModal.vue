@@ -24,12 +24,12 @@
               <button
                 @click="$emit('close')"
                 class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
-                title="Close"
+                :title="t('management.guestGroupsView.addGuestModal.close')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
               <div class="flex items-center gap-2">
-                <h2 class="text-base font-semibold text-white">Add Guest</h2>
+                <h2 class="text-base font-semibold text-white">{{ t('management.guestGroupsView.addGuestModal.title') }}</h2>
               </div>
             </div>
           </div>
@@ -52,7 +52,7 @@
                   ]"
                 >
                   <UserPlus class="w-4 h-4 inline-block mr-1.5" />
-                  Single Guest
+                  {{ t('management.guestGroupsView.addGuestModal.modes.singleGuest') }}
                 </button>
                 <button
                   type="button"
@@ -65,7 +65,7 @@
                   ]"
                 >
                   <Upload class="w-4 h-4 inline-block mr-1.5" />
-                  Bulk Import
+                  {{ t('management.guestGroupsView.addGuestModal.modes.bulkImport') }}
                 </button>
               </div>
             </div>
@@ -76,14 +76,14 @@
               <div>
                 <div class="flex items-center justify-between mb-2">
                   <label for="guestGroup" class="block text-sm font-medium text-slate-700">
-                    Select Group <span class="text-red-500">*</span>
+                    {{ t('management.guestGroupsView.addGuestModal.group.selectLabel') }} <span class="text-red-500">*</span>
                   </label>
                   <button
                     type="button"
                     @click="showCreateGroupForm = !showCreateGroupForm"
                     class="text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors"
                   >
-                    {{ showCreateGroupForm ? 'Cancel' : '+ Create Group' }}
+                    {{ showCreateGroupForm ? t('management.guestGroupsView.addGuestModal.group.cancelBtn') : t('management.guestGroupsView.addGuestModal.group.createBtn') }}
                   </button>
                 </div>
 
@@ -92,18 +92,18 @@
                   <div v-if="showCreateGroupForm" class="mb-3 p-3 bg-purple-50 border border-purple-200 rounded-xl space-y-3">
                     <div class="flex items-center gap-2 text-purple-700 mb-2">
                       <Users class="w-4 h-4" />
-                      <span class="text-sm font-medium">New Group</span>
+                      <span class="text-sm font-medium">{{ t('management.guestGroupsView.addGuestModal.group.newGroupForm.title') }}</span>
                     </div>
                     <input
                       v-model="newGroupName"
                       type="text"
-                      placeholder="Group name *"
+                      :placeholder="t('management.guestGroupsView.addGuestModal.group.newGroupForm.namePlaceholder')"
                       class="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 bg-white"
                     />
                     <input
                       v-model="newGroupDescription"
                       type="text"
-                      placeholder="Description (optional)"
+                      :placeholder="t('management.guestGroupsView.addGuestModal.group.newGroupForm.descPlaceholder')"
                       class="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 bg-white"
                     />
                     <div class="flex items-center gap-2">
@@ -133,7 +133,7 @@
                       class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span v-if="isCreatingGroup" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-                      <span>{{ isCreatingGroup ? 'Creating...' : 'Create Group' }}</span>
+                      <span>{{ isCreatingGroup ? t('management.guestGroupsView.addGuestModal.group.newGroupForm.creating') : t('management.guestGroupsView.addGuestModal.group.newGroupForm.createBtn') }}</span>
                     </button>
                   </div>
                 </Transition>
@@ -141,13 +141,13 @@
                 <GroupDropdown
                   v-model="localSelectedGroup"
                   :groups="groups"
-                  placeholder="Choose a group..."
+                  :placeholder="t('management.guestGroupsView.addGuestModal.group.choosePlaceholder')"
                   :show-actions="true"
                   @edit-group="openInlineEditGroup"
                   @delete-group="openInlineDeleteGroup"
                 />
                 <p v-if="groups.length === 0 && !showCreateGroupForm" class="mt-2 text-xs text-red-600">
-                  Please create a group first before adding guests.
+                  {{ t('management.guestGroupsView.addGuestModal.group.createFirstSingle') }}
                 </p>
 
                 <!-- Inline Edit Group Form -->
@@ -156,7 +156,7 @@
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2 text-blue-700">
                         <Edit2 class="w-4 h-4" />
-                        <span class="text-sm font-medium">Edit Group</span>
+                        <span class="text-sm font-medium">{{ t('management.guestGroupsView.addGuestModal.group.editGroupForm.title') }}</span>
                       </div>
                       <button
                         type="button"
@@ -169,13 +169,13 @@
                     <input
                       v-model="editGroupName"
                       type="text"
-                      placeholder="Group name *"
+                      :placeholder="t('management.guestGroupsView.addGuestModal.group.editGroupForm.namePlaceholder')"
                       class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white"
                     />
                     <input
                       v-model="editGroupDescription"
                       type="text"
-                      placeholder="Description (optional)"
+                      :placeholder="t('management.guestGroupsView.addGuestModal.group.editGroupForm.descPlaceholder')"
                       class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white"
                     />
                     <div class="flex items-center gap-2">
@@ -204,7 +204,7 @@
                         @click="closeInlineEditGroup"
                         class="flex-1 px-3 py-2 text-sm border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-100 font-medium transition-colors"
                       >
-                        Cancel
+                        {{ t('management.guestGroupsView.addGuestModal.group.editGroupForm.cancelBtn') }}
                       </button>
                       <button
                         type="button"
@@ -213,7 +213,7 @@
                         class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span v-if="isUpdatingGroup" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-                        <span>{{ isUpdatingGroup ? 'Saving...' : 'Save Changes' }}</span>
+                        <span>{{ isUpdatingGroup ? t('management.guestGroupsView.addGuestModal.group.editGroupForm.saving') : t('management.guestGroupsView.addGuestModal.group.editGroupForm.saveBtn') }}</span>
                       </button>
                     </div>
                   </div>
@@ -224,13 +224,13 @@
                   <div v-if="showDeleteGroupConfirm && deletingGroup" class="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl space-y-3">
                     <div class="flex items-center gap-2 text-red-700">
                       <Trash2 class="w-4 h-4" />
-                      <span class="text-sm font-medium">Delete Group</span>
+                      <span class="text-sm font-medium">{{ t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.title') }}</span>
                     </div>
                     <p class="text-sm text-red-800">
-                      Are you sure you want to delete "<span class="font-semibold">{{ deletingGroup.name }}</span>"?
+                      {{ t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.deleteConfirm') }} "<span class="font-semibold">{{ deletingGroup.name }}</span>"?
                     </p>
                     <p v-if="deletingGroup.guest_count > 0" class="text-xs text-red-600 bg-red-100 px-2 py-1.5 rounded-md">
-                      ⚠️ This will also delete {{ deletingGroup.guest_count }} guest(s) in this group!
+                      {{ t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.guestWarning', { count: deletingGroup.guest_count }) }}
                     </p>
                     <div class="flex gap-2">
                       <button
@@ -238,7 +238,7 @@
                         @click="closeInlineDeleteGroup"
                         class="flex-1 px-3 py-2 text-sm border border-red-200 text-red-700 rounded-lg hover:bg-red-100 font-medium transition-colors"
                       >
-                        Cancel
+                        {{ t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.cancelBtn') }}
                       </button>
                       <button
                         type="button"
@@ -247,7 +247,7 @@
                         class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span v-if="isDeletingGroup" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-                        <span>{{ isDeletingGroup ? 'Deleting...' : 'Delete Group' }}</span>
+                        <span>{{ isDeletingGroup ? t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.deleting') : t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.deleteBtn') }}</span>
                       </button>
                     </div>
                   </div>
@@ -257,14 +257,14 @@
               <!-- Guest Name -->
               <div>
                 <label for="guestName" class="block text-sm font-medium text-slate-700 mb-2">
-                  Guest Name <span class="text-red-500">*</span>
+                  {{ t('management.guestGroupsView.addGuestModal.guestName.label') }} <span class="text-red-500">*</span>
                 </label>
                 <input
                   id="guestName"
                   v-model="localGuestName"
                   type="text"
                   required
-                  placeholder="Enter guest's full name"
+                  :placeholder="t('management.guestGroupsView.addGuestModal.guestName.placeholder')"
                   @blur="guestNameTouched = true"
                   :class="[
                     'w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200',
@@ -285,14 +285,14 @@
               <div>
                 <div class="flex items-center justify-between mb-2">
                   <label for="importGroup" class="block text-sm font-medium text-slate-700">
-                    Select Group <span class="text-red-500">*</span>
+                    {{ t('management.guestGroupsView.addGuestModal.group.selectLabel') }} <span class="text-red-500">*</span>
                   </label>
                   <button
                     type="button"
                     @click="showCreateGroupForm = !showCreateGroupForm"
                     class="text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors"
                   >
-                    {{ showCreateGroupForm ? 'Cancel' : '+ Create Group' }}
+                    {{ showCreateGroupForm ? t('management.guestGroupsView.addGuestModal.group.cancelBtn') : t('management.guestGroupsView.addGuestModal.group.createBtn') }}
                   </button>
                 </div>
 
@@ -301,18 +301,18 @@
                   <div v-if="showCreateGroupForm" class="mb-3 p-3 bg-purple-50 border border-purple-200 rounded-xl space-y-3">
                     <div class="flex items-center gap-2 text-purple-700 mb-2">
                       <Users class="w-4 h-4" />
-                      <span class="text-sm font-medium">New Group</span>
+                      <span class="text-sm font-medium">{{ t('management.guestGroupsView.addGuestModal.group.newGroupForm.title') }}</span>
                     </div>
                     <input
                       v-model="newGroupName"
                       type="text"
-                      placeholder="Group name *"
+                      :placeholder="t('management.guestGroupsView.addGuestModal.group.newGroupForm.namePlaceholder')"
                       class="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 bg-white"
                     />
                     <input
                       v-model="newGroupDescription"
                       type="text"
-                      placeholder="Description (optional)"
+                      :placeholder="t('management.guestGroupsView.addGuestModal.group.newGroupForm.descPlaceholder')"
                       class="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 bg-white"
                     />
                     <div class="flex items-center gap-2">
@@ -342,7 +342,7 @@
                       class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span v-if="isCreatingGroup" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-                      <span>{{ isCreatingGroup ? 'Creating...' : 'Create Group' }}</span>
+                      <span>{{ isCreatingGroup ? t('management.guestGroupsView.addGuestModal.group.newGroupForm.creating') : t('management.guestGroupsView.addGuestModal.group.newGroupForm.createBtn') }}</span>
                     </button>
                   </div>
                 </Transition>
@@ -350,14 +350,14 @@
                 <GroupDropdown
                   v-model="localSelectedGroupForImport"
                   :groups="groups"
-                  placeholder="Choose a group..."
+                  :placeholder="t('management.guestGroupsView.addGuestModal.group.choosePlaceholder')"
                   :show-actions="true"
                   @change="handleImportGroupChange"
                   @edit-group="openInlineEditGroup"
                   @delete-group="openInlineDeleteGroup"
                 />
                 <p v-if="groups.length === 0 && !showCreateGroupForm" class="mt-2 text-xs text-red-600">
-                  Please create a group first before importing guests.
+                  {{ t('management.guestGroupsView.addGuestModal.group.createFirstBulk') }}
                 </p>
 
                 <!-- Inline Edit Group Form (Bulk Import Mode) -->
@@ -366,7 +366,7 @@
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2 text-blue-700">
                         <Edit2 class="w-4 h-4" />
-                        <span class="text-sm font-medium">Edit Group</span>
+                        <span class="text-sm font-medium">{{ t('management.guestGroupsView.addGuestModal.group.editGroupForm.title') }}</span>
                       </div>
                       <button
                         type="button"
@@ -379,13 +379,13 @@
                     <input
                       v-model="editGroupName"
                       type="text"
-                      placeholder="Group name *"
+                      :placeholder="t('management.guestGroupsView.addGuestModal.group.editGroupForm.namePlaceholder')"
                       class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white"
                     />
                     <input
                       v-model="editGroupDescription"
                       type="text"
-                      placeholder="Description (optional)"
+                      :placeholder="t('management.guestGroupsView.addGuestModal.group.editGroupForm.descPlaceholder')"
                       class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white"
                     />
                     <div class="flex items-center gap-2">
@@ -414,7 +414,7 @@
                         @click="closeInlineEditGroup"
                         class="flex-1 px-3 py-2 text-sm border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-100 font-medium transition-colors"
                       >
-                        Cancel
+                        {{ t('management.guestGroupsView.addGuestModal.group.editGroupForm.cancelBtn') }}
                       </button>
                       <button
                         type="button"
@@ -423,7 +423,7 @@
                         class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span v-if="isUpdatingGroup" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-                        <span>{{ isUpdatingGroup ? 'Saving...' : 'Save Changes' }}</span>
+                        <span>{{ isUpdatingGroup ? t('management.guestGroupsView.addGuestModal.group.editGroupForm.saving') : t('management.guestGroupsView.addGuestModal.group.editGroupForm.saveBtn') }}</span>
                       </button>
                     </div>
                   </div>
@@ -434,13 +434,13 @@
                   <div v-if="showDeleteGroupConfirm && deletingGroup" class="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl space-y-3">
                     <div class="flex items-center gap-2 text-red-700">
                       <Trash2 class="w-4 h-4" />
-                      <span class="text-sm font-medium">Delete Group</span>
+                      <span class="text-sm font-medium">{{ t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.title') }}</span>
                     </div>
                     <p class="text-sm text-red-800">
-                      Are you sure you want to delete "<span class="font-semibold">{{ deletingGroup.name }}</span>"?
+                      {{ t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.deleteConfirm') }} "<span class="font-semibold">{{ deletingGroup.name }}</span>"?
                     </p>
                     <p v-if="deletingGroup.guest_count > 0" class="text-xs text-red-600 bg-red-100 px-2 py-1.5 rounded-md">
-                      ⚠️ This will also delete {{ deletingGroup.guest_count }} guest(s) in this group!
+                      {{ t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.guestWarning', { count: deletingGroup.guest_count }) }}
                     </p>
                     <div class="flex gap-2">
                       <button
@@ -448,7 +448,7 @@
                         @click="closeInlineDeleteGroup"
                         class="flex-1 px-3 py-2 text-sm border border-red-200 text-red-700 rounded-lg hover:bg-red-100 font-medium transition-colors"
                       >
-                        Cancel
+                        {{ t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.cancelBtn') }}
                       </button>
                       <button
                         type="button"
@@ -457,7 +457,7 @@
                         class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span v-if="isDeletingGroup" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-                        <span>{{ isDeletingGroup ? 'Deleting...' : 'Delete Group' }}</span>
+                        <span>{{ isDeletingGroup ? t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.deleting') : t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.deleteBtn') }}</span>
                       </button>
                     </div>
                   </div>
@@ -471,7 +471,7 @@
                 class="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium"
               >
                 <Download class="w-4 h-4" />
-                Download Template (CSV)
+                {{ t('management.guestGroupsView.addGuestModal.bulkImport.downloadTemplate') }}
               </button>
 
               <!-- File Upload Area (shown when no preview) -->
@@ -492,17 +492,17 @@
                     <!-- Parsing Indicator -->
                     <div v-if="isParsing" class="flex flex-col items-center">
                       <div class="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 animate-spin border-4 border-sky-500 border-t-transparent rounded-full"></div>
-                      <p class="text-sm font-medium text-slate-700">Parsing file...</p>
+                      <p class="text-sm font-medium text-slate-700">{{ t('management.guestGroupsView.addGuestModal.bulkImport.parsing') }}</p>
                     </div>
                     <template v-else>
                       <Upload
                         :class="['w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3', isDragging ? 'text-sky-500' : 'text-slate-400']"
                       />
                       <p class="text-sm font-medium text-slate-700 mb-1">
-                        {{ selectedFile ? selectedFile.name : 'Drop your file here or click to browse' }}
+                        {{ selectedFile ? selectedFile.name : t('management.guestGroupsView.addGuestModal.bulkImport.dropFile') }}
                       </p>
                       <p class="text-xs text-slate-500">
-                        Supported formats: CSV, Excel (.xlsx, .xls), TXT
+                        {{ t('management.guestGroupsView.addGuestModal.bulkImport.supportedFormats') }}
                       </p>
                     </template>
                     <input
@@ -523,7 +523,7 @@
 
                 <div class="bg-sky-50 border border-sky-200 rounded-lg p-3 text-xs text-slate-600">
                   <FileText class="w-4 h-4 inline-block mr-1.5 text-sky-600" />
-                  <strong>Format:</strong> CSV must have "name" as the header in the first row. Excel/TXT: one guest name per line.
+                  <strong>{{ t('management.guestGroupsView.addGuestModal.bulkImport.formatLabel') }}</strong> {{ t('management.guestGroupsView.addGuestModal.bulkImport.formatDesc') }}
                 </div>
               </div>
 
@@ -535,14 +535,14 @@
                     <FileSpreadsheet class="w-5 h-5 text-emerald-600" />
                     <div>
                       <p class="text-sm font-medium text-slate-900 truncate max-w-[200px]">{{ filePreview.fileName }}</p>
-                      <p class="text-xs text-slate-500">{{ filePreview.totalRows }} guest(s) found</p>
+                      <p class="text-xs text-slate-500">{{ t('management.guestGroupsView.addGuestModal.bulkImport.guestsFound', { count: filePreview.totalRows }) }}</p>
                     </div>
                   </div>
                   <button
                     type="button"
                     @click="$emit('clear-preview')"
                     class="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-700 transition-colors"
-                    title="Remove file"
+                    :title="t('management.guestGroupsView.addGuestModal.bulkImport.removeFile')"
                   >
                     <X class="w-4 h-4" />
                   </button>
@@ -552,30 +552,30 @@
                 <div class="grid grid-cols-3 gap-3">
                   <div class="bg-slate-50 rounded-lg p-3 text-center">
                     <p class="text-2xl font-bold text-slate-900">{{ filePreview.totalRows }}</p>
-                    <p class="text-xs text-slate-500">Total</p>
+                    <p class="text-xs text-slate-500">{{ t('management.guestGroupsView.addGuestModal.bulkImport.preview.statsTotal') }}</p>
                   </div>
                   <div class="bg-emerald-50 rounded-lg p-3 text-center">
                     <p class="text-2xl font-bold text-emerald-600">{{ filePreview.validCount }}</p>
-                    <p class="text-xs text-emerald-600">Valid</p>
+                    <p class="text-xs text-emerald-600">{{ t('management.guestGroupsView.addGuestModal.bulkImport.preview.statsValid') }}</p>
                   </div>
                   <div class="bg-red-50 rounded-lg p-3 text-center">
                     <p class="text-2xl font-bold text-red-600">{{ filePreview.invalidCount }}</p>
-                    <p class="text-xs text-red-600">Invalid</p>
+                    <p class="text-xs text-red-600">{{ t('management.guestGroupsView.addGuestModal.bulkImport.preview.statsInvalid') }}</p>
                   </div>
                 </div>
 
                 <!-- Preview Table -->
                 <div class="border border-slate-200 rounded-xl overflow-hidden">
                   <div class="bg-slate-100 px-4 py-2.5 border-b border-slate-200">
-                    <p class="text-xs font-semibold text-slate-700 uppercase tracking-wider">Preview (click name to edit)</p>
+                    <p class="text-xs font-semibold text-slate-700 uppercase tracking-wider">{{ t('management.guestGroupsView.addGuestModal.bulkImport.preview.title') }}</p>
                   </div>
                   <div class="max-h-[250px] overflow-y-auto">
                     <table class="w-full">
                       <thead class="bg-slate-50 sticky top-0">
                         <tr>
-                          <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 w-12">#</th>
-                          <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600">Name</th>
-                          <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 w-24">Status</th>
+                          <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 w-12">{{ t('management.guestGroupsView.addGuestModal.bulkImport.preview.colNum') }}</th>
+                          <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600">{{ t('management.guestGroupsView.addGuestModal.bulkImport.preview.colName') }}</th>
+                          <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600 w-24">{{ t('management.guestGroupsView.addGuestModal.bulkImport.preview.colStatus') }}</th>
                           <th class="px-2 py-2 text-center text-xs font-semibold text-slate-600 w-10"></th>
                         </tr>
                       </thead>
@@ -597,7 +597,7 @@
                                   ? 'border-slate-200 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20'
                                   : 'border-red-300 bg-red-50 text-red-700 focus:border-red-400 focus:ring-1 focus:ring-red-400/20'
                               ]"
-                              placeholder="Enter name"
+                              :placeholder="t('management.guestGroupsView.addGuestModal.bulkImport.preview.namePlaceholder')"
                             />
                             <span v-if="guest.error" class="block text-xs text-red-500 mt-0.5">{{ guest.error }}</span>
                           </td>
@@ -607,14 +607,14 @@
                               class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700"
                             >
                               <CheckCircle class="w-3 h-3" />
-                              Valid
+                              {{ t('management.guestGroupsView.addGuestModal.bulkImport.preview.statusValid') }}
                             </span>
                             <span
                               v-else
                               class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700"
                             >
                               <AlertCircle class="w-3 h-3" />
-                              Invalid
+                              {{ t('management.guestGroupsView.addGuestModal.bulkImport.preview.statusInvalid') }}
                             </span>
                           </td>
                           <td class="px-2 py-2.5 text-center">
@@ -622,7 +622,7 @@
                               type="button"
                               @click="handleDeleteGuest(index)"
                               class="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                              title="Remove from list"
+                              :title="t('management.guestGroupsView.addGuestModal.bulkImport.preview.removeFromList')"
                             >
                               <Trash2 class="w-4 h-4" />
                             </button>
@@ -636,7 +636,7 @@
                 <!-- Warning for invalid entries -->
                 <div v-if="filePreview.invalidCount > 0" class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
                   <AlertCircle class="w-4 h-4 inline-block mr-1.5 text-amber-600" />
-                  {{ filePreview.invalidCount }} invalid entries will be skipped during import.
+                  {{ t('management.guestGroupsView.addGuestModal.bulkImport.preview.invalidSkipped', { count: filePreview.invalidCount }) }}
                 </div>
               </div>
             </div>
@@ -659,7 +659,7 @@
                   class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
                 ></span>
                 <UserPlus v-else class="w-4 h-4" />
-                <span>{{ isAdding ? 'Adding...' : 'Add Guest' }}</span>
+                <span>{{ isAdding ? t('management.guestGroupsView.addGuestModal.actions.adding') : t('management.guestGroupsView.addGuestModal.actions.addGuest') }}</span>
               </button>
             </template>
 
@@ -676,7 +676,7 @@
                   class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
                 ></span>
                 <Upload v-else class="w-4 h-4" />
-                <span>{{ isImporting ? 'Importing...' : `Import ${filePreview?.validCount || 0} Guest(s)` }}</span>
+                <span>{{ isImporting ? t('management.guestGroupsView.addGuestModal.actions.importing') : t('management.guestGroupsView.addGuestModal.actions.importGuests', { count: filePreview?.validCount || 0 }) }}</span>
               </button>
             </template>
 
@@ -685,7 +685,7 @@
               @click="$emit('close')"
               class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
             >
-              Cancel
+              {{ t('management.guestGroupsView.addGuestModal.actions.cancel') }}
             </button>
           </div>
         </div>
@@ -696,10 +696,13 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { UserPlus, X, Upload, Download, FileText, FileSpreadsheet, CheckCircle, AlertCircle, Trash2, ArrowRight, Users, Edit2 } from 'lucide-vue-next'
 import GroupDropdown from './GroupDropdown.vue'
 import type { GuestGroup } from '../../services/api'
 import type { FilePreview } from '../../composables/invitation/useBulkImport'
+
+const { t } = useI18n()
 
 // Props
 const props = defineProps<{
@@ -771,9 +774,9 @@ const isDeletingGroup = ref(false)
 // Validation computed properties
 const guestNameErrorMessage = computed(() => {
   const name = localGuestName.value.trim()
-  if (!name) return 'Guest name is required'
-  if (name.length < 2) return 'Name must be at least 2 characters'
-  if (name.length > 100) return 'Name must be less than 100 characters'
+  if (!name) return t('management.guestGroupsView.addGuestModal.guestName.errorRequired')
+  if (name.length < 2) return t('management.guestGroupsView.addGuestModal.guestName.errorMin')
+  if (name.length > 100) return t('management.guestGroupsView.addGuestModal.guestName.errorMax')
   return ''
 })
 
