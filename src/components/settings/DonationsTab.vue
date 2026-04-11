@@ -10,13 +10,13 @@
       <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
         <AlertCircle class="w-8 h-8 text-red-600" />
       </div>
-      <h3 class="text-lg font-medium text-gray-900 mb-2">Failed to load donations</h3>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">{{ t('settings.donations.errorTitle') }}</h3>
       <p class="text-gray-500 mb-4">{{ error }}</p>
       <button
         @click="loadDonations"
         class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
       >
-        Try Again
+        {{ t('settings.donations.tryAgain') }}
       </button>
     </div>
 
@@ -25,9 +25,9 @@
       <!-- Header -->
       <div class="flex items-start justify-between gap-4">
         <div class="flex-1">
-          <h2 class="text-xl font-semibold text-gray-900">My Donations</h2>
+          <h2 class="text-xl font-semibold text-gray-900">{{ t('settings.donations.title') }}</h2>
           <p class="text-sm text-gray-500 mt-1">
-            Track your donations across all events
+            {{ t('settings.donations.subtitle') }}
           </p>
         </div>
       </div>
@@ -35,13 +35,13 @@
       <!-- Quick Stats (inline) -->
       <div v-if="donations.length > 0" class="flex items-center gap-6 text-sm">
         <span class="text-gray-500">
-          <span class="font-medium text-emerald-600">{{ verifiedCount }}</span> verified
+          <span class="font-medium text-emerald-600">{{ verifiedCount }}</span> {{ t('settings.donations.stats.verified') }}
         </span>
         <span class="text-gray-500">
-          <span class="font-medium text-amber-600">{{ pendingCount }}</span> pending
+          <span class="font-medium text-amber-600">{{ pendingCount }}</span> {{ t('settings.donations.stats.pending') }}
         </span>
         <span class="text-gray-500">
-          <span class="font-medium text-gray-600">{{ totalCount }}</span> total
+          <span class="font-medium text-gray-600">{{ totalCount }}</span> {{ t('settings.donations.stats.total') }}
         </span>
       </div>
 
@@ -59,7 +59,7 @@
             >
               <Filter class="w-4 h-4 flex-shrink-0" :class="selectedStatus === '' ? 'text-slate-500' : ''" />
               <span class="truncate max-w-[80px] sm:max-w-[120px]">
-                {{ selectedStatus === '' ? 'All Status' : statusLabels[selectedStatus] }}
+                {{ selectedStatus === '' ? t('settings.donations.filter.allStatus') : statusLabels[selectedStatus] }}
               </span>
               <ChevronDown
                 class="w-4 h-4 transition-transform flex-shrink-0"
@@ -85,7 +85,7 @@
                     ]"
                   >
                     <Filter class="w-4 h-4 text-slate-400" />
-                    <span class="flex-1 text-left">All Status</span>
+                    <span class="flex-1 text-left">{{ t('settings.donations.filter.allStatus') }}</span>
                   </button>
 
                   <div class="my-1.5 border-t border-slate-100"></div>
@@ -139,9 +139,9 @@
             <Heart class="w-7 h-7 text-emerald-600" />
           </div>
           <div class="flex-1">
-            <h3 class="text-xl font-semibold text-gray-900 mb-2">No donations yet</h3>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ t('settings.donations.empty.title') }}</h3>
             <p class="text-gray-600">
-              When you make donations to events, they will appear here.
+              {{ t('settings.donations.empty.subtitle') }}
             </p>
           </div>
         </div>
@@ -205,7 +205,7 @@
                     </span>
                     <span v-if="donation.event_info?.start_date" class="hidden sm:flex items-center gap-1">
                       <CalendarDays class="w-3 h-3" />
-                      Event: {{ formatDate(donation.event_info.start_date) }}
+                      {{ t('settings.donations.list.eventDate', { date: formatDate(donation.event_info.start_date) }) }}
                     </span>
                   </div>
 
@@ -219,7 +219,7 @@
                       title="View receipt"
                     >
                       <ImageIcon class="w-3 h-3" />
-                      <span class="hidden sm:inline">Receipt</span>
+                      <span class="hidden sm:inline">{{ t('settings.donations.list.receipt') }}</span>
                     </button>
 
                     <!-- Edit (for pending donations) -->
@@ -229,7 +229,7 @@
                       class="px-2.5 py-1 text-xs font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors flex items-center gap-1"
                     >
                       <Pencil class="w-3 h-3" />
-                      <span class="hidden sm:inline">Edit</span>
+                      <span class="hidden sm:inline">{{ t('settings.donations.list.edit') }}</span>
                     </button>
                   </div>
                 </div>
@@ -237,7 +237,7 @@
                 <!-- Rejection Reason -->
                 <div v-if="donation.status === 'rejected' && donation.rejection_reason" class="mt-2 p-2 bg-red-50 rounded-lg">
                   <p class="text-xs text-red-700">
-                    <span class="font-medium">Rejected:</span> {{ donation.rejection_reason }}
+                    <span class="font-medium">{{ t('settings.donations.list.rejectedLabel') }}</span> {{ donation.rejection_reason }}
                   </p>
                 </div>
               </div>
@@ -252,7 +252,7 @@
             :disabled="isLoading"
             class="px-6 py-2.5 text-gray-700 hover:text-gray-900 font-medium transition-colors disabled:opacity-50"
           >
-            {{ isLoading ? 'Loading...' : 'Load More' }}
+            {{ isLoading ? t('settings.donations.list.loading') : t('settings.donations.list.loadMore') }}
           </button>
         </div>
       </div>
@@ -268,7 +268,7 @@
         >
           <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-              <h3 class="text-lg font-semibold text-gray-900">Donation Receipt</h3>
+              <h3 class="text-lg font-semibold text-gray-900">{{ t('settings.donations.receiptModal.title') }}</h3>
               <button
                 @click="showReceiptModal = false"
                 class="p-2 hover:bg-slate-100 rounded-lg transition-colors"
@@ -279,10 +279,10 @@
             <div class="p-6">
               <div class="mb-4">
                 <p class="text-sm text-slate-600">
-                  <span class="font-medium">Amount:</span> {{ selectedDonationForReceipt.donation_display }}
+                  <span class="font-medium">{{ t('settings.donations.receiptModal.amount') }}</span> {{ selectedDonationForReceipt.donation_display }}
                 </p>
                 <p class="text-sm text-slate-600">
-                  <span class="font-medium">Date:</span> {{ formatDate(selectedDonationForReceipt.created_at) }}
+                  <span class="font-medium">{{ t('settings.donations.receiptModal.date') }}</span> {{ formatDate(selectedDonationForReceipt.created_at) }}
                 </p>
               </div>
               <img
@@ -308,6 +308,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   Heart,
   DollarSign,
@@ -327,6 +328,7 @@ import type { UserDonation, DonationStatus } from '@/services/api/types/donation
 import DonationEditDrawer from './DonationEditDrawer.vue'
 
 // Auth store
+const { t } = useI18n()
 const authStore = useAuthStore()
 
 // State
@@ -351,11 +353,11 @@ const selectedDonationForEdit = ref<UserDonation | null>(null)
 const statusOptions: DonationStatus[] = ['pending', 'verified', 'rejected']
 
 // Status display config
-const statusLabels: Record<DonationStatus, string> = {
-  pending: 'Pending',
-  verified: 'Verified',
-  rejected: 'Rejected'
-}
+const statusLabels = computed<Record<DonationStatus, string>>(() => ({
+  pending: t('settings.donations.status.pending'),
+  verified: t('settings.donations.status.verified'),
+  rejected: t('settings.donations.status.rejected'),
+}))
 
 const statusBadgeClass: Record<DonationStatus, string> = {
   pending: 'bg-amber-100 text-amber-700',
@@ -426,7 +428,7 @@ const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined =>
 const loadDonations = async (page = 1) => {
   // Check if user is authenticated
   if (!authStore.isAuthenticated) {
-    error.value = 'Please sign in to view your donations'
+    error.value = t('settings.donations.messages.signInRequired')
     return
   }
 
@@ -467,10 +469,10 @@ const loadDonations = async (page = 1) => {
       }
       currentPage.value = page
     } else {
-      error.value = response.message || 'Failed to load donations'
+      error.value = response.message || t('settings.donations.messages.loadFailed')
     }
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred'
+    const errorMessage = err instanceof Error ? err.message : t('settings.donations.messages.unexpectedError')
     error.value = errorMessage
   } finally {
     isLoading.value = false

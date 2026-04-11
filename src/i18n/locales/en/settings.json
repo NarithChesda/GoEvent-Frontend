@@ -168,6 +168,78 @@
       "unexpectedError": "An unexpected error occurred"
     }
   },
+  "donations": {
+    "errorTitle": "Failed to load donations",
+    "tryAgain": "Try Again",
+    "title": "My Donations",
+    "subtitle": "Track your donations across all events",
+    "stats": {
+      "verified": "verified",
+      "pending": "pending",
+      "total": "total"
+    },
+    "filter": {
+      "allStatus": "All Status"
+    },
+    "status": {
+      "pending": "Pending",
+      "verified": "Verified",
+      "rejected": "Rejected"
+    },
+    "empty": {
+      "title": "No donations yet",
+      "subtitle": "When you make donations to events, they will appear here."
+    },
+    "list": {
+      "eventDate": "Event: {date}",
+      "receipt": "Receipt",
+      "edit": "Edit",
+      "rejectedLabel": "Rejected:",
+      "loadMore": "Load More",
+      "loading": "Loading..."
+    },
+    "receiptModal": {
+      "title": "Donation Receipt",
+      "amount": "Amount:",
+      "date": "Date:"
+    },
+    "editDrawer": {
+      "title": "Edit Donation",
+      "dismiss": "Dismiss",
+      "updateDetails": "Update Details",
+      "amount": "Amount",
+      "donorName": "Donor Name",
+      "showNamePublicly": "Show my name publicly",
+      "nameHidden": "Your name will be hidden",
+      "nameVisible": "Your name will be visible to others",
+      "email": "Email",
+      "phone": "Phone",
+      "message": "Message",
+      "receiptImage": "Receipt Image",
+      "currentReceipt": "Current receipt:",
+      "replace": "Replace",
+      "uploadPrompt": "Click or drag to upload receipt",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "donorNamePlaceholder": "Your name",
+      "emailPlaceholder": "email{'@'}example.com",
+      "phonePlaceholder": "+1234567890",
+      "amountPlaceholder": "0.00",
+      "messagePlaceholder": "Add a message..."
+    },
+    "messages": {
+      "signInRequired": "Please sign in to view your donations",
+      "loadFailed": "Failed to load donations",
+      "unexpectedError": "An unexpected error occurred",
+      "donorNameRequired": "Donor name is required",
+      "invalidAmount": "Please enter a valid amount",
+      "updateSuccess": "Donation updated successfully",
+      "updateFailed": "Failed to update donation",
+      "updateError": "An error occurred while updating the donation",
+      "fileTooLarge": "File size must be less than 10MB"
+    }
+  },
   "messages": {
     "saveSuccess": "Settings saved successfully",
     "saveError": "Failed to save settings"

@@ -29,7 +29,7 @@
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
               <h2 class="text-base font-semibold text-white">
-                Edit Donation
+                {{ t('settings.donations.editDrawer.title') }}
               </h2>
             </div>
           </div>
@@ -50,7 +50,7 @@
                 @click="submitError = null"
                 class="text-xs text-red-600 hover:text-red-700 underline mt-1"
               >
-                Dismiss
+                {{ t('settings.donations.editDrawer.dismiss') }}
               </button>
             </div>
           </div>
@@ -78,12 +78,12 @@
 
             <!-- Form -->
             <form id="edit-donation-form" @submit.prevent="handleSubmit" class="space-y-4">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Update Details</h3>
+              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('settings.donations.editDrawer.updateDetails') }}</h3>
 
               <!-- Amount (for cash donations) -->
               <div v-if="donation?.donation_type === 'cash'">
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                  Amount <span class="text-red-500">*</span>
+                  {{ t('settings.donations.editDrawer.amount') }} <span class="text-red-500">*</span>
                 </label>
                 <div class="relative">
                   <input
@@ -105,13 +105,13 @@
               <!-- Donor Name -->
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                  Donor Name <span class="text-red-500">*</span>
+                  {{ t('settings.donations.editDrawer.donorName') }} <span class="text-red-500">*</span>
                 </label>
                 <input
                   v-model="form.donor_name"
                   type="text"
                   class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 bg-white"
-                  placeholder="Your name"
+                  :placeholder="t('settings.donations.editDrawer.donorNamePlaceholder')"
                   required
                 />
                 <p v-if="errors.donor_name" class="mt-1.5 text-xs text-red-600">{{ errors.donor_name }}</p>
@@ -120,9 +120,9 @@
               <!-- Anonymous Toggle -->
               <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                 <div class="flex-1">
-                  <label class="text-sm font-medium text-slate-700">Show my name publicly</label>
+                  <label class="text-sm font-medium text-slate-700">{{ t('settings.donations.editDrawer.showNamePublicly') }}</label>
                   <p class="text-xs text-slate-500 mt-0.5">
-                    {{ form.is_anonymous ? 'Your name will be hidden' : 'Your name will be visible to others' }}
+                    {{ form.is_anonymous ? t('settings.donations.editDrawer.nameHidden') : t('settings.donations.editDrawer.nameVisible') }}
                   </p>
                 </div>
                 <button
@@ -146,24 +146,24 @@
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                    Email
+                    {{ t('settings.donations.editDrawer.email') }}
                   </label>
                   <input
                     v-model="form.donor_email"
                     type="email"
                     class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 bg-white"
-                    placeholder="email@example.com"
+                    :placeholder="t('settings.donations.editDrawer.emailPlaceholder')"
                   />
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                    Phone
+                    {{ t('settings.donations.editDrawer.phone') }}
                   </label>
                   <input
                     v-model="form.donor_phone"
                     type="tel"
                     class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 bg-white"
-                    placeholder="+1234567890"
+                    :placeholder="t('settings.donations.editDrawer.phonePlaceholder')"
                   />
                 </div>
               </div>
@@ -171,23 +171,23 @@
               <!-- Message -->
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                  Message
+                  {{ t('settings.donations.editDrawer.message') }}
                 </label>
                 <textarea
                   v-model="form.message"
                   rows="3"
                   class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 resize-none bg-white"
-                  placeholder="Add a message..."
+                  :placeholder="t('settings.donations.editDrawer.messagePlaceholder')"
                 ></textarea>
               </div>
 
               <!-- Receipt Image -->
               <div class="space-y-3 border-t border-slate-100 pt-4">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Receipt Image</h3>
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('settings.donations.editDrawer.receiptImage') }}</h3>
 
                 <!-- Current Receipt -->
                 <div v-if="donation.receipt_image && !newReceiptFile" class="space-y-2">
-                  <p class="text-sm text-slate-600">Current receipt:</p>
+                  <p class="text-sm text-slate-600">{{ t('settings.donations.editDrawer.currentReceipt') }}</p>
                   <div class="relative inline-block">
                     <img
                       :src="getMediaUrl(donation.receipt_image)"
@@ -199,7 +199,7 @@
                       @click="showReplaceReceipt = true"
                       class="absolute bottom-2 right-2 px-2 py-1 bg-white/90 hover:bg-white text-xs font-medium text-slate-700 rounded-lg shadow transition-colors"
                     >
-                      Replace
+                      {{ t('settings.donations.editDrawer.replace') }}
                     </button>
                   </div>
                 </div>
@@ -245,7 +245,7 @@
                     <!-- Upload Prompt -->
                     <div v-else class="py-2">
                       <Upload class="w-7 h-7 text-slate-400 mx-auto mb-1" />
-                      <p class="text-xs text-slate-600">Click or drag to upload receipt</p>
+                      <p class="text-xs text-slate-600">{{ t('settings.donations.editDrawer.uploadPrompt') }}</p>
                     </div>
                   </div>
 
@@ -255,7 +255,7 @@
                     @click="showReplaceReceipt = false"
                     class="mt-2 text-sm text-slate-600 hover:text-slate-800"
                   >
-                    Cancel
+                    {{ t('settings.donations.editDrawer.cancel') }}
                   </button>
                 </div>
               </div>
@@ -274,7 +274,7 @@
             >
               <Loader2 v-if="isSubmitting" class="w-4 h-4 animate-spin" />
               <Save v-else class="w-4 h-4" />
-              <span>{{ isSubmitting ? 'Saving...' : 'Save Changes' }}</span>
+              <span>{{ isSubmitting ? t('settings.donations.editDrawer.saving') : t('settings.donations.editDrawer.saveChanges') }}</span>
             </button>
 
             <button
@@ -283,7 +283,7 @@
               :disabled="isSubmitting"
               class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
-              Cancel
+              {{ t('settings.donations.editDrawer.cancel') }}
             </button>
           </div>
         </div>
@@ -308,6 +308,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   ArrowRight,
   AlertCircle,
@@ -330,6 +331,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   donation: null
 })
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
@@ -479,7 +482,7 @@ function handleFileDrop(event: DragEvent) {
 
 function processFile(file: File) {
   if (file.size > 10 * 1024 * 1024) {
-    showToast('error', 'File size must be less than 10MB')
+    showToast('error', t('settings.donations.messages.fileTooLarge'))
     return
   }
 
@@ -507,14 +510,14 @@ async function handleSubmit() {
   submitError.value = null
 
   if (!form.value.donor_name?.trim()) {
-    errors.value.donor_name = 'Donor name is required'
+    errors.value.donor_name = t('settings.donations.messages.donorNameRequired')
     return
   }
 
   // Validate amount for cash donations
   if (props.donation.donation_type === 'cash') {
     if (!form.value.amount || form.value.amount <= 0) {
-      errors.value.amount = 'Please enter a valid amount'
+      errors.value.amount = t('settings.donations.messages.invalidAmount')
       return
     }
   }
@@ -544,7 +547,7 @@ async function handleSubmit() {
     )
 
     if (response.success && response.data) {
-      showToast('success', 'Donation updated successfully')
+      showToast('success', t('settings.donations.messages.updateSuccess'))
 
       // Emit the updated donation with preserved event_info
       const updatedDonation: UserDonation = {
@@ -558,11 +561,11 @@ async function handleSubmit() {
         emit('update:modelValue', false)
       }, 1000)
     } else {
-      submitError.value = response.message || 'Failed to update donation'
+      submitError.value = response.message || t('settings.donations.messages.updateFailed')
     }
   } catch (err) {
     console.error('Error updating donation:', err)
-    submitError.value = 'An error occurred while updating the donation'
+    submitError.value = t('settings.donations.messages.updateError')
   } finally {
     isSubmitting.value = false
   }
