@@ -1841,5 +1841,44 @@
     "sending": "Sending...",
     "sendInvitation": "Send Invitation",
     "cancel": "Cancel"
+  },
+  "reviewTab": {
+    "title": "Event Review",
+    "subtitle": "Share your experience hosting this event on GoEvent",
+    "loading": "Loading review...",
+    "unknownUser": "Unknown User",
+    "ratingDisplay": "{rating} out of 5 stars",
+    "editReview": "Edit review",
+    "deleteReview": "Delete review",
+    "form": {
+      "ratingLabel": "Rate your hosting experience",
+      "ratingHint": "Rate the GoEvent platform's tools, features, and support",
+      "ratingError": "Please select a rating between 1 and 5 stars",
+      "feedbackLabel": "Your feedback",
+      "feedbackPlaceholder": "Share your experience hosting this event on GoEvent. How were the planning tools? Was the support helpful? Any suggestions for improvement?",
+      "feedbackHint": "Tell us about your experience with GoEvent's platform and services",
+      "cancel": "Cancel",
+      "updating": "Updating...",
+      "submitting": "Submitting...",
+      "updateReview": "Update Review",
+      "submitReview": "Submit Review"
+    },
+    "info": {
+      "title": "About Event Reviews",
+      "description": "Your review helps us improve GoEvent's platform and services. Share your honest feedback about the event creation tools, guest management features, showcase templates, and any support you received. You can edit or delete your review at any time."
+    },
+    "deleteModal": {
+      "title": "Delete Review",
+      "message": "Are you sure you want to delete your review? You can always submit a new review later."
+    },
+    "toast": {
+      "updated": "Review updated successfully!",
+      "submitted": "Review submitted successfully!",
+      "submitFailed": "Failed to submit review",
+      "submitError": "An error occurred while submitting your review",
+      "deleted": "Review deleted successfully",
+      "deleteFailed": "Failed to delete review",
+      "deleteError": "An error occurred while deleting your review"
+    }
   }
 }

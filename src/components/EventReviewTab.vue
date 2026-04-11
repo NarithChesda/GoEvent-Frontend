@@ -4,10 +4,10 @@
     <div class="flex items-center justify-between">
       <div>
         <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
-          Event Review
+          {{ t('management.reviewTab.title') }}
         </h2>
         <p class="text-xs sm:text-sm text-slate-600 mt-1">
-          Share your experience hosting this event on GoEvent
+          {{ t('management.reviewTab.subtitle') }}
         </p>
       </div>
       <button
@@ -26,7 +26,7 @@
     >
       <div class="flex items-center justify-center">
         <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
-        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">Loading review...</span>
+        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">{{ t('management.reviewTab.loading') }}</span>
       </div>
     </div>
 
@@ -57,14 +57,14 @@
             <button
               @click="startEdit"
               class="text-[#1e90ff] hover:text-[#1873cc] p-2 rounded-lg hover:bg-[#E6F4FF] transition-colors"
-              title="Edit review"
+              :title="t('management.reviewTab.editReview')"
             >
               <Pencil class="w-4 h-4" />
             </button>
             <button
               @click="confirmDelete"
               class="text-red-600 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
-              title="Delete review"
+              :title="t('management.reviewTab.deleteReview')"
             >
               <Trash2 class="w-4 h-4" />
             </button>
@@ -82,7 +82,7 @@
             />
           </div>
           <span class="ml-2 text-sm font-medium text-slate-700">
-            {{ existingReview.rating }} out of 5 stars
+            {{ t('management.reviewTab.ratingDisplay', { rating: existingReview.rating }) }}
           </span>
         </div>
 
@@ -99,7 +99,7 @@
           <!-- Rating Selection -->
           <div>
             <label class="block text-sm font-semibold text-slate-900 mb-2">
-              Rate your hosting experience
+              {{ t('management.reviewTab.form.ratingLabel') }}
               <span class="text-red-500">*</span>
             </label>
             <div class="flex items-center space-x-2">
@@ -122,11 +122,11 @@
                 />
               </button>
               <span v-if="formData.rating" class="ml-2 text-sm font-medium text-slate-700">
-                {{ formData.rating }} out of 5 stars
+                {{ t('management.reviewTab.ratingDisplay', { rating: formData.rating }) }}
               </span>
             </div>
             <p class="text-xs text-slate-500 mt-1">
-              Rate the GoEvent platform's tools, features, and support
+              {{ t('management.reviewTab.form.ratingHint') }}
             </p>
             <p v-if="errors.rating" class="text-xs text-red-600 mt-1">{{ errors.rating }}</p>
           </div>
@@ -134,19 +134,19 @@
           <!-- Review Text -->
           <div>
             <label for="review-text" class="block text-sm font-semibold text-slate-900 mb-2">
-              Your feedback
+              {{ t('management.reviewTab.form.feedbackLabel') }}
               <span class="text-red-500">*</span>
             </label>
             <textarea
               id="review-text"
               v-model="formData.review_text"
               rows="6"
-              placeholder="Share your experience hosting this event on GoEvent. How were the planning tools? Was the support helpful? Any suggestions for improvement?"
+              :placeholder="t('management.reviewTab.form.feedbackPlaceholder')"
               class="w-full px-4 py-3 bg-white/60 backdrop-blur-md border border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff]/30 transition-all duration-200 text-sm resize-none text-slate-800 placeholder-slate-400"
               :class="{ 'border-red-300 focus:ring-red-500': errors.review_text }"
             ></textarea>
             <p class="text-xs text-slate-500 mt-1">
-              Tell us about your experience with GoEvent's platform and services
+              {{ t('management.reviewTab.form.feedbackHint') }}
             </p>
             <p v-if="errors.review_text" class="text-xs text-red-600 mt-1">{{ errors.review_text }}</p>
           </div>
@@ -159,7 +159,7 @@
               @click="cancelEdit"
               class="px-4 py-2 text-sm font-medium text-slate-700 bg-white/60 border border-white/30 rounded-xl hover:bg-white/80 transition-colors"
             >
-              Cancel
+              {{ t('management.reviewTab.form.cancel') }}
             </button>
             <button
               type="submit"
@@ -168,11 +168,11 @@
             >
               <span v-if="submitting" class="flex items-center">
                 <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                {{ isEditing ? 'Updating...' : 'Submitting...' }}
+                {{ isEditing ? t('management.reviewTab.form.updating') : t('management.reviewTab.form.submitting') }}
               </span>
               <span v-else class="flex items-center">
                 <Send class="w-4 h-4 mr-2" />
-                {{ isEditing ? 'Update Review' : 'Submit Review' }}
+                {{ isEditing ? t('management.reviewTab.form.updateReview') : t('management.reviewTab.form.submitReview') }}
               </span>
             </button>
           </div>
@@ -184,11 +184,9 @@
         <div class="flex items-start space-x-3">
           <Info class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <div class="text-sm text-blue-900">
-            <p class="font-semibold mb-1">About Event Reviews</p>
+            <p class="font-semibold mb-1">{{ t('management.reviewTab.info.title') }}</p>
             <p class="text-blue-800">
-              Your review helps us improve GoEvent's platform and services. Share your honest feedback
-              about the event creation tools, guest management features, showcase templates, and any
-              support you received. You can edit or delete your review at any time.
+              {{ t('management.reviewTab.info.description') }}
             </p>
           </div>
         </div>
@@ -212,8 +210,8 @@
     <!-- Delete Confirmation Modal -->
     <DeleteConfirmModal
       :show="showDeleteConfirm"
-      title="Delete Review"
-      message="Are you sure you want to delete your review? You can always submit a new review later."
+      :title="t('management.reviewTab.deleteModal.title')"
+      :message="t('management.reviewTab.deleteModal.message')"
       :loading="deleting"
       @confirm="deleteReview"
       @cancel="showDeleteConfirm = false"
@@ -223,6 +221,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import {
   Star,
   RefreshCw,
@@ -245,6 +244,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useAppLanguage()
 
 // Auth store
 const authStore = useAuthStore()
@@ -275,7 +275,7 @@ const sanitizedReviewText = computed(() => {
 })
 
 const displayUserName = computed(() => {
-  if (!existingReview.value?.user_info) return 'Unknown User'
+  if (!existingReview.value?.user_info) return t('management.reviewTab.unknownUser')
 
   const firstName = existingReview.value.user_info.first_name || ''
   const lastName = existingReview.value.user_info.last_name || ''
@@ -349,7 +349,7 @@ const validateForm = (): boolean => {
 
   // Validate rating
   if (!formData.value.rating || formData.value.rating < 1 || formData.value.rating > 5) {
-    errors.value.rating = 'Please select a rating between 1 and 5 stars'
+    errors.value.rating = t('management.reviewTab.form.ratingError')
   }
 
   // Validate review text using inputValidator
@@ -402,7 +402,7 @@ const submitReview = async () => {
         rating: 0,
         review_text: '',
       }
-      showMessage('success', wasEditing ? 'Review updated successfully!' : 'Review submitted successfully!')
+      showMessage('success', wasEditing ? t('management.reviewTab.toast.updated') : t('management.reviewTab.toast.submitted'))
     } else {
       // Handle validation errors
       if (response.errors) {
@@ -412,11 +412,11 @@ const submitReview = async () => {
           }
         })
       }
-      showMessage('error', response.message || 'Failed to submit review')
+      showMessage('error', response.message || t('management.reviewTab.toast.submitFailed'))
     }
   } catch (error) {
     console.error('Failed to submit review:', error)
-    showMessage('error', 'An error occurred while submitting your review')
+    showMessage('error', t('management.reviewTab.toast.submitError'))
   } finally {
     submitting.value = false
   }
@@ -444,13 +444,13 @@ const deleteReview = async () => {
         rating: 0,
         review_text: '',
       }
-      showMessage('success', 'Review deleted successfully')
+      showMessage('success', t('management.reviewTab.toast.deleted'))
     } else {
-      showMessage('error', response.message || 'Failed to delete review')
+      showMessage('error', response.message || t('management.reviewTab.toast.deleteFailed'))
     }
   } catch (error) {
     console.error('Failed to delete review:', error)
-    showMessage('error', 'An error occurred while deleting your review')
+    showMessage('error', t('management.reviewTab.toast.deleteError'))
   } finally {
     deleting.value = false
   }
