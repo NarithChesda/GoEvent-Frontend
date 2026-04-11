@@ -154,7 +154,7 @@ import { useAppLanguage } from '@/composables/useAppLanguage'
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
-const { t, locale } = useAppLanguage()
+const { t } = useAppLanguage()
 
 // Global search
 const { open: openSearch } = useGlobalSearch()
@@ -219,10 +219,8 @@ const loadLikedEvents = async () => {
   }
 }
 
-// Group events by date (re-computes when locale changes)
+// Group events by date
 const groupedByDate = computed(() => {
-  // Access locale so Vue tracks it as a dependency for re-computation on language switch
-  void locale.value
   // Filter events based on date filter
   const now = new Date()
   // Get start of today (midnight) for date-only comparison
