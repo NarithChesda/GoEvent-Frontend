@@ -41,6 +41,7 @@ npm run format           # Format code with Prettier
 - **Pinia stores** ([src/stores/](src/stores/)):
   - `auth.ts`: Authentication state, login/logout, profile management, Google/Telegram OAuth
   - `guestManagement.ts`: Guest list state management with optimistic updates and local filtering
+  - `language.ts`: App-wide locale state, kept in sync with vue-i18n, localStorage, and `<html lang>` (prefer the `useAppLanguage` composable in components)
   - `counter.ts`: Example counter store
 - Authentication uses JWT tokens stored in secure storage with automatic refresh
 - Auth initialization happens in [App.vue](src/App.vue) on mount
@@ -169,9 +170,9 @@ Required env vars (see [.env.example](.env.example)):
 - `VITE_API_BASE_URL`: Backend API URL (default: http://127.0.0.1:8000)
 - `VITE_GOOGLE_CLIENT_ID`: Google OAuth client ID
 - `VITE_TELEGRAM_BOT_USERNAME`: Telegram bot username for login
-- `VITE_GENERATE_SOURCEMAP`: Generate source maps (true/false)
 
 Optional env vars:
+- `VITE_GENERATE_SOURCEMAP`: Emit JS source maps in production builds (default: off). Enable for easier debugging of minified bundles; disable for public deploys to avoid shipping original source.
 - `VITE_TELEGRAM_BOT_TOKEN`: Bot token for admin notifications
 - `VITE_TELEGRAM_ADMIN_CHAT_ID`: Admin chat ID for notifications
 - `VITE_IMAGEKIT_ENABLED`: Enable ImageKit CDN image optimization (default: true, can toggle via `localStorage.setItem('imagekit_enabled', 'false')`)
