@@ -4,8 +4,8 @@
     <div class="flex-shrink-0 px-4 sm:px-6 py-4 border-b border-slate-200 bg-white">
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-base font-semibold text-slate-900">My Templates</h3>
-          <p class="text-xs text-slate-500 mt-0.5">Create and manage your custom templates</p>
+          <h3 class="text-base font-semibold text-slate-900">{{ t('management.partnerTemplatesPanel.title') }}</h3>
+          <p class="text-xs text-slate-500 mt-0.5">{{ t('management.partnerTemplatesPanel.subtitle') }}</p>
         </div>
         <button
           type="button"
@@ -13,8 +13,8 @@
           class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white hover:from-[#27ae60] hover:to-[#1873cc] transition-all shadow-sm"
         >
           <Plus class="w-4 h-4" />
-          <span class="hidden sm:inline">New Template</span>
-          <span class="sm:hidden">New</span>
+          <span class="hidden sm:inline">{{ t('management.partnerTemplatesPanel.newTemplate') }}</span>
+          <span class="sm:hidden">{{ t('management.partnerTemplatesPanel.newShort') }}</span>
         </button>
       </div>
     </div>
@@ -29,8 +29,8 @@
       <!-- Error -->
       <div v-else-if="loadError" class="flex flex-col items-center justify-center py-16 text-center">
         <AlertCircle class="w-10 h-10 text-red-400 mb-3" />
-        <p class="text-sm font-medium text-slate-700">Failed to load templates</p>
-        <button type="button" @click="loadTemplates" class="mt-3 text-sm text-sky-600 hover:underline">Try again</button>
+        <p class="text-sm font-medium text-slate-700">{{ t('management.partnerTemplatesPanel.loadError') }}</p>
+        <button type="button" @click="loadTemplates" class="mt-3 text-sm text-sky-600 hover:underline">{{ t('management.partnerTemplatesPanel.tryAgain') }}</button>
       </div>
 
       <!-- Empty State -->
@@ -38,10 +38,9 @@
         <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
           <LayoutTemplate class="w-8 h-8 text-slate-400" />
         </div>
-        <h4 class="text-base font-semibold text-slate-700 mb-1">No templates yet</h4>
+        <h4 class="text-base font-semibold text-slate-700 mb-1">{{ t('management.partnerTemplatesPanel.empty.title') }}</h4>
         <p class="text-sm text-slate-500 max-w-xs">
-          Create your first custom template and submit it for review.
-          Once approved, you can use it for your events.
+          {{ t('management.partnerTemplatesPanel.empty.description') }}
         </p>
         <button
           type="button"
@@ -49,7 +48,7 @@
           class="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white hover:from-[#27ae60] hover:to-[#1873cc] transition-all"
         >
           <Plus class="w-4 h-4" />
-          Create your first template
+          {{ t('management.partnerTemplatesPanel.empty.createFirst') }}
         </button>
       </div>
 
@@ -109,20 +108,20 @@
               <Trash2 class="w-5 h-5 text-red-500" />
             </div>
             <div>
-              <h4 class="text-sm font-semibold text-slate-900">Delete Template</h4>
-              <p class="text-xs text-slate-500">This action cannot be undone.</p>
+              <h4 class="text-sm font-semibold text-slate-900">{{ t('management.partnerTemplatesPanel.deleteModal.title') }}</h4>
+              <p class="text-xs text-slate-500">{{ t('management.partnerTemplatesPanel.deleteModal.undoneHint') }}</p>
             </div>
           </div>
-          <p class="text-sm text-slate-600 mb-4">
-            Are you sure you want to delete <strong>{{ templateToDelete.name }}</strong>?
-          </p>
+          <i18n-t keypath="management.partnerTemplatesPanel.deleteModal.confirm" tag="p" class="text-sm text-slate-600 mb-4">
+            <template #name><strong>{{ templateToDelete.name }}</strong></template>
+          </i18n-t>
           <div class="flex gap-2">
             <button
               type="button"
               @click="templateToDelete = null"
               class="flex-1 px-3 py-2 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
             >
-              Cancel
+              {{ t('management.partnerTemplatesPanel.deleteModal.cancel') }}
             </button>
             <button
               type="button"
@@ -131,7 +130,7 @@
               class="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold bg-red-500 text-white hover:bg-red-600 disabled:opacity-60"
             >
               <Loader2 v-if="deleting" class="w-4 h-4 animate-spin" />
-              {{ deleting ? 'Deleting...' : 'Delete' }}
+              {{ deleting ? t('management.partnerTemplatesPanel.deleteModal.deleting') : t('management.partnerTemplatesPanel.deleteModal.delete') }}
             </button>
           </div>
         </div>
@@ -150,6 +149,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   Plus,
   LayoutTemplate,
@@ -166,6 +166,8 @@ import { partnerTemplateService } from '../../services/api'
 import type { PartnerTemplate } from '../../services/api'
 import PartnerTemplateCard from './PartnerTemplateCard.vue'
 import PartnerTemplateForm from './PartnerTemplateForm.vue'
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   'template-selected': [template: PartnerTemplate]
@@ -185,14 +187,14 @@ const feedback = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
 const statusStats = computed(() => {
   const counts = { draft: 0, pending_review: 0, approved: 0, rejected: 0 }
-  for (const t of templates.value) {
-    counts[t.status]++
+  for (const tpl of templates.value) {
+    counts[tpl.status]++
   }
   const items: Array<{ status: string; count: number; label: string; class: string; icon: LucideComponent }> = []
-  if (counts.approved > 0) items.push({ status: 'approved', count: counts.approved, label: 'approved', class: 'bg-emerald-100 text-emerald-700', icon: CheckCircle })
-  if (counts.pending_review > 0) items.push({ status: 'pending_review', count: counts.pending_review, label: 'pending review', class: 'bg-amber-100 text-amber-700', icon: Clock })
-  if (counts.draft > 0) items.push({ status: 'draft', count: counts.draft, label: 'draft', class: 'bg-slate-100 text-slate-600', icon: FileEdit })
-  if (counts.rejected > 0) items.push({ status: 'rejected', count: counts.rejected, label: 'rejected', class: 'bg-red-100 text-red-700', icon: XCircle })
+  if (counts.approved > 0) items.push({ status: 'approved', count: counts.approved, label: t('management.partnerTemplatesPanel.status.approved'), class: 'bg-emerald-100 text-emerald-700', icon: CheckCircle })
+  if (counts.pending_review > 0) items.push({ status: 'pending_review', count: counts.pending_review, label: t('management.partnerTemplatesPanel.status.pendingReview'), class: 'bg-amber-100 text-amber-700', icon: Clock })
+  if (counts.draft > 0) items.push({ status: 'draft', count: counts.draft, label: t('management.partnerTemplatesPanel.status.draft'), class: 'bg-slate-100 text-slate-600', icon: FileEdit })
+  if (counts.rejected > 0) items.push({ status: 'rejected', count: counts.rejected, label: t('management.partnerTemplatesPanel.status.rejected'), class: 'bg-red-100 text-red-700', icon: XCircle })
   return items
 })
 
@@ -251,14 +253,14 @@ async function handleSubmit(template: PartnerTemplate): Promise<void> {
   try {
     const response = await partnerTemplateService.submitForReview(template.id)
     if (response.success && response.data) {
-      const idx = templates.value.findIndex((t) => t.id === template.id)
+      const idx = templates.value.findIndex((tpl) => tpl.id === template.id)
       if (idx !== -1) templates.value[idx] = response.data.template
-      showFeedback('success', 'Template submitted for review!')
+      showFeedback('success', t('management.partnerTemplatesPanel.toast.submitted'))
     } else {
-      showFeedback('error', response.message || 'Failed to submit. Ensure a preview image is uploaded.')
+      showFeedback('error', response.message || t('management.partnerTemplatesPanel.toast.submitFailed'))
     }
   } catch {
-    showFeedback('error', 'Unable to submit. Please try again.')
+    showFeedback('error', t('management.partnerTemplatesPanel.toast.submitError'))
   }
 }
 
@@ -271,14 +273,14 @@ async function confirmDelete(): Promise<void> {
   deleting.value = true
   try {
     await partnerTemplateService.deleteTemplate(templateToDelete.value.id)
-    templates.value = templates.value.filter((t) => t.id !== templateToDelete.value!.id)
+    templates.value = templates.value.filter((tpl) => tpl.id !== templateToDelete.value!.id)
     if (selectedTemplateId.value === templateToDelete.value.id) {
       selectedTemplateId.value = null
     }
-    showFeedback('success', 'Template deleted.')
+    showFeedback('success', t('management.partnerTemplatesPanel.toast.deleted'))
     templateToDelete.value = null
   } catch {
-    showFeedback('error', 'Failed to delete template.')
+    showFeedback('error', t('management.partnerTemplatesPanel.toast.deleteFailed'))
   } finally {
     deleting.value = false
   }
@@ -286,14 +288,14 @@ async function confirmDelete(): Promise<void> {
 
 function handleSaved(template: PartnerTemplate): void {
   const wasEditing = !!editingTemplate.value
-  const idx = templates.value.findIndex((t) => t.id === template.id)
+  const idx = templates.value.findIndex((tpl) => tpl.id === template.id)
   if (idx !== -1) {
     templates.value[idx] = template
   } else {
     templates.value.unshift(template)
   }
   closeForm()
-  showFeedback('success', wasEditing ? 'Template updated!' : 'Template created!')
+  showFeedback('success', wasEditing ? t('management.partnerTemplatesPanel.toast.updated') : t('management.partnerTemplatesPanel.toast.created'))
 }
 
 let feedbackTimer: ReturnType<typeof setTimeout> | null = null

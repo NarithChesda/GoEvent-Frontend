@@ -1880,5 +1880,214 @@
       "deleteFailed": "Failed to delete review",
       "deleteError": "An error occurred while deleting your review"
     }
+  },
+  "partnerTemplatesPanel": {
+    "title": "My Templates",
+    "subtitle": "Create and manage your custom templates",
+    "newTemplate": "New Template",
+    "newShort": "New",
+    "loadError": "Failed to load templates",
+    "tryAgain": "Try again",
+    "empty": {
+      "title": "No templates yet",
+      "description": "Create your first custom template and submit it for review. Once approved, you can use it for your events.",
+      "createFirst": "Create your first template"
+    },
+    "status": {
+      "approved": "approved",
+      "pendingReview": "pending review",
+      "draft": "draft",
+      "rejected": "rejected"
+    },
+    "deleteModal": {
+      "title": "Delete Template",
+      "undoneHint": "This action cannot be undone.",
+      "confirm": "Are you sure you want to delete {name}?",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleting": "Deleting..."
+    },
+    "toast": {
+      "submitted": "Template submitted for review!",
+      "submitFailed": "Failed to submit. Ensure a preview image is uploaded.",
+      "submitError": "Unable to submit. Please try again.",
+      "deleted": "Template deleted.",
+      "deleteFailed": "Failed to delete template.",
+      "updated": "Template updated!",
+      "created": "Template created!"
+    }
+  },
+  "partnerTemplateForm": {
+    "header": {
+      "goBack": "Go back",
+      "edit": "Edit Template",
+      "create": "Create Template"
+    },
+    "fields": {
+      "nameLabel": "Template Name",
+      "namePlaceholder": "e.g. Elegant Gold Wedding",
+      "planLabel": "Package Plan",
+      "planLoading": "Loading plans...",
+      "planSelect": "Select a package plan",
+      "previewUrlLabel": "Preview URL",
+      "liquidGlass": "Liquid Glass Background",
+      "liquidGlassHint": "Show liquid glass visual effect",
+      "previewImageLabel": "Preview Image",
+      "previewImageChange": "Change",
+      "previewImageUpload": "Upload preview",
+      "previewImageAspect": "9:16 portrait"
+    },
+    "colors": {
+      "sectionTitle": "Template Colors",
+      "colorLabel": "Color",
+      "hexLabel": "Hex",
+      "nameLabel": "Name",
+      "namePlaceholder": "Primary",
+      "hexPlaceholder": "#FF0000",
+      "editBtn": "Edit",
+      "deleteBtn": "Delete",
+      "addBtn": "Add",
+      "updateBtn": "Update",
+      "cancelBtn": "Cancel"
+    },
+    "fonts": {
+      "sectionTitle": "Template Fonts",
+      "languageLabel": "Language",
+      "fontLabel": "Font",
+      "typeLabel": "Type",
+      "fontSelect": "Select",
+      "fontSelectLoading": "...",
+      "editBtn": "Edit",
+      "deleteBtn": "Delete",
+      "addBtn": "Add",
+      "updateBtn": "Update",
+      "cancelBtn": "Cancel"
+    },
+    "backgroundStage": {
+      "sectionTitle": "Background Stage",
+      "backgroundPhoto": "Background Photo",
+      "backgroundVideo": "Background Video",
+      "topDecoration": "Top Decoration",
+      "bottomDecoration": "Bottom Decoration",
+      "leftDecoration": "Left Decoration",
+      "rightDecoration": "Right Decoration"
+    },
+    "coverDecorations": {
+      "sectionTitle": "Cover Stage Decorations",
+      "coverBackground": "Cover Stage Background",
+      "coverTop": "Cover Top",
+      "coverBottom": "Cover Bottom",
+      "coverLeft": "Cover Left",
+      "coverRight": "Cover Right",
+      "frameLeft": "Frame Left",
+      "frameMid": "Frame Mid",
+      "frameRight": "Frame Right"
+    },
+    "coverLayout": {
+      "sectionTitle": "Cover Stage Layout",
+      "animationType": "Animation Type",
+      "animationDecoration": "Decoration (slide out)",
+      "animationDoor": "Door (split open)",
+      "containerPositioning": "Container Positioning (vh)",
+      "contentTop": "Content Top",
+      "innerHeight": "Inner Height",
+      "rowHeights": "Row Heights (%)",
+      "eventTitle": "Event Title",
+      "logo": "Logo",
+      "inviteText": "Invite Text",
+      "guestName": "Guest Name",
+      "swipeArrowBottom": "Swipe Arrow Bottom (vh)",
+      "zIndexes": "Decoration Z-Indexes",
+      "left": "Left",
+      "right": "Right",
+      "top": "Top",
+      "bottom": "Bottom"
+    },
+    "fallingEffect": {
+      "sectionTitle": "Falling Effect",
+      "enabled": "enabled",
+      "disabled": "disabled",
+      "enableLabel": "Enable Falling Particles",
+      "enableHint": "Animated petals, confetti, snowflakes, etc.",
+      "particleType": "Particle Type",
+      "intensity": "Intensity",
+      "intensityLight": "Light",
+      "intensityNormal": "Normal",
+      "intensityHeavy": "Heavy",
+      "colorSource": "Color Source",
+      "sourcePrimary": "Primary (from template colors)",
+      "sourceAccent": "Accent (from template colors)",
+      "sourceCustom": "Custom hex color",
+      "pickLabel": "Pick",
+      "hexLabel": "Hex",
+      "customImage": "Custom Particle Image (optional)",
+      "customImageHint": "Transparent PNG or SVG, 64–128 px, under 20 KB. Overrides the built-in shape.",
+      "currentImage": "Current image",
+      "replace": "Replace",
+      "remove": "Remove",
+      "uploadCustom": "Upload custom particle",
+      "types": {
+        "petals": "Petals",
+        "confetti": "Confetti",
+        "snowflakes": "Snowflakes",
+        "stars": "Stars",
+        "leaves": "Leaves",
+        "none": "None (container only)"
+      }
+    },
+    "ambientCreatures": {
+      "sectionTitle": "Ambient Creatures",
+      "enabled": "enabled",
+      "disabled": "disabled",
+      "enableLabel": "Enable Ambient Creatures",
+      "enableHint": "Butterflies, doves, fireflies, dragonflies drifting across the page.",
+      "count": "Count (1–15)",
+      "speed": "Speed",
+      "speedSlow": "Slow",
+      "speedNormal": "Normal",
+      "speedFast": "Fast",
+      "colorSource": "Color Source",
+      "sourcePrimary": "Primary",
+      "sourceAccent": "Accent",
+      "sourceCustom": "Custom hex color",
+      "pickLabel": "Pick",
+      "hexLabel": "Hex",
+      "creaturesLabel": "Creatures",
+      "addCreature": "+ Add creature",
+      "typeLabel": "Type",
+      "weightLabel": "Weight (1–10)",
+      "minSize": "Min Size (px)",
+      "maxSize": "Max Size (px)",
+      "sizeAuto": "auto",
+      "removeBtn": "Remove",
+      "types": {
+        "butterfly": "Butterfly",
+        "dove": "Dove",
+        "firefly": "Firefly",
+        "dragonfly": "Dragonfly"
+      }
+    },
+    "footer": {
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "createTemplate": "Create Template"
+    },
+    "errors": {
+      "colorSaveFailed": "Failed to save color.",
+      "colorSaveConnection": "Unable to save color. Please check your connection.",
+      "colorDeleteFailed": "Failed to delete color.",
+      "colorDeleteConnection": "Unable to delete color. Please check your connection.",
+      "fontSaveFailed": "Failed to save font.",
+      "fontSaveConnection": "Unable to save font. Please check your connection.",
+      "fontDeleteFailed": "Failed to delete font.",
+      "fontDeleteConnection": "Unable to delete font. Please check your connection.",
+      "partialSave": "Template created, but failed to save {warnings}. You can add them again by editing the template.",
+      "colorsCount": "{count} color(s)",
+      "fontsCount": "{count} font(s)",
+      "warningsJoin": " and ",
+      "saveFailed": "Failed to save template. Please try again.",
+      "connectionFailed": "Unable to connect. Please check your connection and try again."
+    }
   }
 }

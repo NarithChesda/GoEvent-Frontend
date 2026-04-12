@@ -255,10 +255,12 @@ export interface PartnerTemplateCreatePayload {
   display_liquid_glass_background?: boolean
   open_envelope_button?: File
   cover_stage_layout?: CoverStageLayout
-  falling_effect?: FallingEffectConfig
-  /** Custom particle image file (uploaded as part of template creation) */
-  falling_effect_custom_image?: File
-  ambient_creatures?: AmbientCreaturesConfig
+  /** Falling particle effect config. Pass `null` to disable the effect. */
+  falling_effect?: FallingEffectConfig | null
+  /** Custom particle image. Pass a File to upload, or `''` to clear an existing one. */
+  falling_effect_custom_image?: File | ''
+  /** Ambient creature effect config. Pass `null` to disable the effect. */
+  ambient_creatures?: AmbientCreaturesConfig | null
 }
 
 // Custom fonts (available via core-data endpoint)

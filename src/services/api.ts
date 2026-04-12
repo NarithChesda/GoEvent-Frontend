@@ -85,6 +85,11 @@ export type {
   TemplateLanguageCode,
   CreateTemplateFontPayload,
   UpdateTemplateFontPayload,
+  FallingEffectType,
+  FallingEffectConfig,
+  AmbientCreatureEffectType,
+  AmbientCreatureEntry,
+  AmbientCreaturesConfig,
 } from './api/types/template.types'
 
 export {

@@ -1880,5 +1880,214 @@
       "deleteFailed": "បរាជ័យក្នុងការលុបការពិនិត្យ",
       "deleteError": "កំហុសបានកើតឡើងពេលលុបការពិនិត្យរបស់អ��នក"
     }
+  },
+  "partnerTemplatesPanel": {
+    "title": "គំរូរបស់ខ្ញុំ",
+    "subtitle": "បង្កើត និងគ្រប់គ្រងគំរូផ្ទាល់ខ្លួនរបស់អ្នក",
+    "newTemplate": "គំរូថ្មី",
+    "newShort": "ថ្មី",
+    "loadError": "បរាជ័យក្នុងការផ្ទុកគំរូ",
+    "tryAgain": "សាកល្បងម្ដងទៀត",
+    "empty": {
+      "title": "មិនទាន់មានគំរូនៅឡើយទេ",
+      "description": "បង្កើតគំរូផ្ទាល់ខ្លួនដំបូងរបស់អ្នក ហើយបញ្ជូនសម្រាប់ការពិនិត្យ។ នៅពេលបានអនុម័ត អ្នកអាចប្រើវាសម្រាប់ព្រឹត្តិការណ៍របស់អ្នក។",
+      "createFirst": "បង្កើតគំរូដំបូងរបស់អ្នក"
+    },
+    "status": {
+      "approved": "បានអនុម័ត",
+      "pendingReview": "កំពុងរង់ចាំការពិនិត្យ",
+      "draft": "ព្រាង",
+      "rejected": "បដិសេធ"
+    },
+    "deleteModal": {
+      "title": "លុបគំរូ",
+      "undoneHint": "សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+      "confirm": "តើអ្នកពិតជាចង់លុប {name} មែនទេ?",
+      "cancel": "បោះបង់",
+      "delete": "លុប",
+      "deleting": "កំពុងលុប..."
+    },
+    "toast": {
+      "submitted": "បានបញ្ជូនគំរូសម្រាប់ការពិនិត្យ!",
+      "submitFailed": "បរាជ័យក្នុងការបញ្ជូន។ សូមប្រាកដថាបានផ្ទុករូបភាពមើលជាមុន។",
+      "submitError": "មិនអាចបញ្ជូនបានទេ។ សូមសាកល្បងម្ដងទៀត។",
+      "deleted": "បានលុបគំរូ។",
+      "deleteFailed": "បរាជ័យក្នុងការលុបគំរូ។",
+      "updated": "បានធ្វើបច្ចុប្បន្នភាពគំរូ!",
+      "created": "បានបង្កើតគំរូ!"
+    }
+  },
+  "partnerTemplateForm": {
+    "header": {
+      "goBack": "ត្រឡប់ក្រោយ",
+      "edit": "កែសម្រួលគំរូ",
+      "create": "បង្កើតគំរូ"
+    },
+    "fields": {
+      "nameLabel": "ឈ្មោះគំរូ",
+      "namePlaceholder": "ឧ. អាពាហ៍ពិពាហ៍មាសដ៏ស្រស់ស្អាត",
+      "planLabel": "គម្រោងកញ្ចប់",
+      "planLoading": "កំពុងផ្ទុកគម្រោង...",
+      "planSelect": "ជ្រើសរើសគម្រោងកញ្ចប់",
+      "previewUrlLabel": "URL មើលជាមុន",
+      "liquidGlass": "ផ្ទៃខាងក្រោយកញ្ចក់រាវ",
+      "liquidGlassHint": "បង្ហាញបែបផែនកញ្ចក់រាវ",
+      "previewImageLabel": "រូបភាពមើលជាមុន",
+      "previewImageChange": "ផ្លាស់ប្ដូរ",
+      "previewImageUpload": "ផ្ទុកឡើងរូបមើលជាមុន",
+      "previewImageAspect": "ទ្រង់ទ្រាយបញ្ឈរ 9:16"
+    },
+    "colors": {
+      "sectionTitle": "ពណ៌គំរូ",
+      "colorLabel": "ពណ៌",
+      "hexLabel": "កូដ Hex",
+      "nameLabel": "ឈ្មោះ",
+      "namePlaceholder": "បឋម",
+      "hexPlaceholder": "#FF0000",
+      "editBtn": "កែសម្រួល",
+      "deleteBtn": "លុប",
+      "addBtn": "បន្ថែម",
+      "updateBtn": "ធ្វើបច្ចុប្បន្នភាព",
+      "cancelBtn": "បោះបង់"
+    },
+    "fonts": {
+      "sectionTitle": "ពុម្ពអក្សរគំរូ",
+      "languageLabel": "ភាសា",
+      "fontLabel": "ពុម្ពអក្សរ",
+      "typeLabel": "ប្រភេទ",
+      "fontSelect": "ជ្រើសរើស",
+      "fontSelectLoading": "...",
+      "editBtn": "កែសម្រួល",
+      "deleteBtn": "លុប",
+      "addBtn": "បន្ថែម",
+      "updateBtn": "ធ្វើបច្ចុប្បន្នភាព",
+      "cancelBtn": "បោះបង់"
+    },
+    "backgroundStage": {
+      "sectionTitle": "ដំណាក់កាលផ្ទៃខាងក្រោយ",
+      "backgroundPhoto": "រូបភាពផ្ទៃខាងក្រោយ",
+      "backgroundVideo": "វីដេអូផ្ទៃខាងក្រោយ",
+      "topDecoration": "តុបតែងខាងលើ",
+      "bottomDecoration": "តុបតែងខាងក្រោម",
+      "leftDecoration": "តុបតែងខាងឆ្វេង",
+      "rightDecoration": "តុបតែងខាងស្ដាំ"
+    },
+    "coverDecorations": {
+      "sectionTitle": "តុបតែងដំណាក់កាលក្រប",
+      "coverBackground": "ផ្ទៃខាងក្រោយដំណាក់កាលក្រប",
+      "coverTop": "ក្របខាងលើ",
+      "coverBottom": "ក្របខាងក្រោម",
+      "coverLeft": "ក្របខាងឆ្វេង",
+      "coverRight": "ក្របខាងស្ដាំ",
+      "frameLeft": "ស៊ុមឆ្វេង",
+      "frameMid": "ស៊ុមកណ្ដាល",
+      "frameRight": "ស៊ុមស្ដាំ"
+    },
+    "coverLayout": {
+      "sectionTitle": "ប្លង់ដំណាក់កាលក្រប",
+      "animationType": "ប្រភេទចលនា",
+      "animationDecoration": "តុបតែង (រំកិលចេញ)",
+      "animationDoor": "ទ្វារ (បើកពីរ)",
+      "containerPositioning": "ទីតាំងស៊ុម (vh)",
+      "contentTop": "ខាងលើខ្លឹមសារ",
+      "innerHeight": "កម្ពស់ខាងក្នុង",
+      "rowHeights": "កម្ពស់ជួរ (%)",
+      "eventTitle": "ចំណងជើងព្រឹត្តិការណ៍",
+      "logo": "ឡូហ្គូ",
+      "inviteText": "អត្ថបទអញ្ជើញ",
+      "guestName": "ឈ្មោះភ្ញៀវ",
+      "swipeArrowBottom": "ព្រួញរុញខាងក្រោម (vh)",
+      "zIndexes": "លំដាប់ Z-Index តុបតែង",
+      "left": "ឆ្វេង",
+      "right": "ស្ដាំ",
+      "top": "លើ",
+      "bottom": "ក្រោម"
+    },
+    "fallingEffect": {
+      "sectionTitle": "បែបផែនធ្លាក់",
+      "enabled": "បើក",
+      "disabled": "បិទ",
+      "enableLabel": "បើកភាគល្អិតធ្លាក់",
+      "enableHint": "ក្លែបផ្កា សមាភារ ព្រិល ជាដើម ដែលមានចលនា",
+      "particleType": "ប្រភេទភាគល្អិត",
+      "intensity": "កម្រិតខ្លាំង",
+      "intensityLight": "ស្រាល",
+      "intensityNormal": "ធម្មតា",
+      "intensityHeavy": "ខ្លាំង",
+      "colorSource": "ប្រភពពណ៌",
+      "sourcePrimary": "បឋម (ពីពណ៌គំរូ)",
+      "sourceAccent": "ពណ៌ជួយ (ពីពណ៌គំរូ)",
+      "sourceCustom": "កូដ Hex ផ្ទាល់ខ្លួន",
+      "pickLabel": "ជ្រើស",
+      "hexLabel": "កូដ Hex",
+      "customImage": "រូបភាគល្អិតផ្ទាល់ខ្លួន (ស្រេចចិត្ត)",
+      "customImageHint": "PNG ឬ SVG ថ្លា ទំហំ 64–128 px តិចជាង 20 KB។ ជំនួសរូបរាងដើម។",
+      "currentImage": "រូបភាពបច្ចុប្បន្ន",
+      "replace": "ជំនួស",
+      "remove": "យកចេញ",
+      "uploadCustom": "ផ្ទុកឡើងភាគល្អិតផ្ទាល់ខ្លួន",
+      "types": {
+        "petals": "ក្លែបផ្កា",
+        "confetti": "សមាភារ",
+        "snowflakes": "ព្រិល",
+        "stars": "ផ្កាយ",
+        "leaves": "ស្លឹកឈើ",
+        "none": "គ្មាន (តែស៊ុម)"
+      }
+    },
+    "ambientCreatures": {
+      "sectionTitle": "សត្វបរិយាកាស",
+      "enabled": "បើក",
+      "disabled": "បិទ",
+      "enableLabel": "បើកសត្វបរិយាកាស",
+      "enableHint": "មេអំបៅ ព្រាប អំពិលអំពែក កន្ថែង ហើរឆ្លងកាត់ទំព័រ",
+      "count": "ចំនួន (1–15)",
+      "speed": "ល្បឿន",
+      "speedSlow": "យឺត",
+      "speedNormal": "ធម្មតា",
+      "speedFast": "លឿន",
+      "colorSource": "ប្រភពពណ៌",
+      "sourcePrimary": "បឋម",
+      "sourceAccent": "ពណ៌ជួយ",
+      "sourceCustom": "កូដ Hex ផ្ទាល់ខ្លួន",
+      "pickLabel": "ជ្រើស",
+      "hexLabel": "កូដ Hex",
+      "creaturesLabel": "សត្វ",
+      "addCreature": "+ បន្ថែមសត្វ",
+      "typeLabel": "ប្រភេទ",
+      "weightLabel": "ទម្ងន់ (1–10)",
+      "minSize": "ទំហំអប្បបរមា (px)",
+      "maxSize": "ទំហំអតិបរមា (px)",
+      "sizeAuto": "ស្វ័យប្រវត្តិ",
+      "removeBtn": "យកចេញ",
+      "types": {
+        "butterfly": "មេអំបៅ",
+        "dove": "ព្រាប",
+        "firefly": "អំពិលអំពែក",
+        "dragonfly": "កន្ថែង"
+      }
+    },
+    "footer": {
+      "cancel": "បោះបង់",
+      "saving": "កំពុងរក្សាទុក...",
+      "saveChanges": "រក្សាទុកការផ្លាស់ប្ដូរ",
+      "createTemplate": "បង្កើតគំរូ"
+    },
+    "errors": {
+      "colorSaveFailed": "បរាជ័យក្នុងការរក្សាទុកពណ៌។",
+      "colorSaveConnection": "មិនអាចរក្សាទុកពណ៌បានទេ។ សូមពិនិត្យការតភ្ជាប់របស់អ្នក។",
+      "colorDeleteFailed": "បរាជ័យក្នុងការលុបពណ៌។",
+      "colorDeleteConnection": "មិនអាចលុបពណ៌បានទេ។ សូមពិនិត្យការតភ្ជាប់របស់អ្នក។",
+      "fontSaveFailed": "បរាជ័យក្នុងការរក្សាទុកពុម្ពអក្សរ។",
+      "fontSaveConnection": "មិនអាចរក្សាទុកពុម្ពអក្សរបានទេ។ សូមពិនិត្យការតភ្ជាប់របស់អ្នក។",
+      "fontDeleteFailed": "បរាជ័យក្នុងការលុបពុម្ពអក្សរ។",
+      "fontDeleteConnection": "មិនអាចលុបពុម្ពអក្សរបានទេ។ សូមពិនិត្យការតភ្ជាប់របស់អ្នក។",
+      "partialSave": "គំរូត្រូវបានបង្កើត ប៉ុន្តែបរាជ័យក្នុងការរក្សាទុក {warnings}។ អ្នកអាចបន្ថែមពួកវាម្ដងទៀតដោយកែសម្រួលគំរូ។",
+      "colorsCount": "ពណ៌ {count}",
+      "fontsCount": "ពុម្ពអក្សរ {count}",
+      "warningsJoin": " និង ",
+      "saveFailed": "បរាជ័យក្នុងការរក្សាទុកគំរូ។ សូមសាកល្បងម្ដងទៀត។",
+      "connectionFailed": "មិនអាចតភ្ជាប់បានទេ។ សូមពិនិត្យការតភ្ជាប់ ហើយសាកល្បងម្ដងទៀត។"
+    }
   }
 }

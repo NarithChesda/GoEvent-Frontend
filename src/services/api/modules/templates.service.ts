@@ -101,11 +101,16 @@ export const partnerTemplateService = {
     if (payload.cover_stage_layout) {
       formData.append('cover_stage_layout', JSON.stringify(payload.cover_stage_layout))
     }
-    if (payload.falling_effect) {
+    if (payload.falling_effect !== undefined) {
       formData.append('falling_effect', JSON.stringify(payload.falling_effect))
+    }
+    if (payload.ambient_creatures !== undefined) {
+      formData.append('ambient_creatures', JSON.stringify(payload.ambient_creatures))
     }
     if (payload.falling_effect_custom_image instanceof File) {
       formData.append('falling_effect_custom_image', payload.falling_effect_custom_image)
+    } else if (payload.falling_effect_custom_image === '') {
+      formData.append('falling_effect_custom_image', '')
     }
     return apiClient.postFormData<PartnerTemplate>('/api/core-data/partner-templates/', formData)
   },
@@ -144,11 +149,16 @@ export const partnerTemplateService = {
     if (payload.cover_stage_layout) {
       formData.append('cover_stage_layout', JSON.stringify(payload.cover_stage_layout))
     }
-    if (payload.falling_effect) {
+    if (payload.falling_effect !== undefined) {
       formData.append('falling_effect', JSON.stringify(payload.falling_effect))
+    }
+    if (payload.ambient_creatures !== undefined) {
+      formData.append('ambient_creatures', JSON.stringify(payload.ambient_creatures))
     }
     if (payload.falling_effect_custom_image instanceof File) {
       formData.append('falling_effect_custom_image', payload.falling_effect_custom_image)
+    } else if (payload.falling_effect_custom_image === '') {
+      formData.append('falling_effect_custom_image', '')
     }
     return apiClient.patchFormData<PartnerTemplate>(
       `/api/core-data/partner-templates/${templateId}/`,
