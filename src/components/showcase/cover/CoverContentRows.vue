@@ -83,7 +83,6 @@
           :guest-title-frame-left="guestTitleFrameLeft"
           :guest-title-frame-mid="guestTitleFrameMid"
           :guest-title-frame-right="guestTitleFrameRight"
-          :is-overflowing="isGuestNameOverflowing"
           :max-width-px="guestNameMaxWidthPx"
         />
       </div>
@@ -130,6 +129,8 @@ interface Props {
   guestTitleFrameLeft?: string | null
   guestTitleFrameMid?: string | null
   guestTitleFrameRight?: string | null
+  /** Max width of the guest name as % of the row container (default: 60) */
+  guestNameMaxWidthPercent?: number
   /** Show fade-in animations (for decoration mode) */
   showAnimations?: boolean
 }
@@ -137,14 +138,14 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   showAnimations: false,
   displayLiquidGlass: true,
+  guestNameMaxWidthPercent: 60,
 })
 
 const { protectionAttrs } = useAssetProtection()
 
-// Refs for guest name overflow detection
+// Refs for guest name sizing (pixel max-width derived from container width)
 const guestContainerRef = ref<HTMLElement | null>(null)
 const guestNameFrameRef = ref<InstanceType<typeof GuestNameFrame> | null>(null)
-const isGuestNameOverflowing = ref(false)
 const guestNameMaxWidthPx = ref<number | null>(null)
 
 // Text content helpers
@@ -202,47 +203,20 @@ const fallbackLogoStyle = computed(() => ({
   filter: `drop-shadow(0 4px 20px ${props.primaryColor}40)`,
 }))
 
-// Detect if guest name overflows the 60% max width and compute the pixel cap
-const checkGuestNameOverflow = () => {
-  if (!guestContainerRef.value || !guestNameFrameRef.value?.guestNameElementRef) return
-
-  const fullName = props.guestName || ''
-  const containerWidth = guestContainerRef.value.offsetWidth
-  const maxWidth = containerWidth * 0.6
-  guestNameMaxWidthPx.value = maxWidth
-
-  if (!fullName) {
-    isGuestNameOverflowing.value = false
-    return
-  }
-
-  // Measure text width via canvas using the h2 element's computed font
-  const el = guestNameFrameRef.value.guestNameElementRef
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')
-  if (!ctx) {
-    isGuestNameOverflowing.value = false
-    return
-  }
-
-  const styles = window.getComputedStyle(el)
-  ctx.font = `${styles.fontStyle} ${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`
-
-  isGuestNameOverflowing.value = ctx.measureText(fullName).width > maxWidth
+// Compute pixel cap on guest name width from container width × configured percent
+const updateGuestNameMaxWidth = () => {
+  if (!guestContainerRef.value) return
+  const percent = Math.max(1, Math.min(100, props.guestNameMaxWidthPercent ?? 60))
+  guestNameMaxWidthPx.value = guestContainerRef.value.offsetWidth * (percent / 100)
 }
 
-// ResizeObserver for responsive scaling
 let resizeObserver: ResizeObserver | null = null
 
 onMounted(() => {
-  nextTick(() => {
-    checkGuestNameOverflow()
-  })
+  nextTick(updateGuestNameMaxWidth)
 
   if (guestContainerRef.value) {
-    resizeObserver = new ResizeObserver(() => {
-      checkGuestNameOverflow()
-    })
+    resizeObserver = new ResizeObserver(() => updateGuestNameMaxWidth())
     resizeObserver.observe(guestContainerRef.value)
   }
 })
@@ -254,11 +228,9 @@ onUnmounted(() => {
   }
 })
 
-// Watch for guest name changes
-watch(() => props.guestName, () => {
-  nextTick(() => {
-    checkGuestNameOverflow()
-  })
+// Re-compute max-width when the configured percent changes
+watch(() => props.guestNameMaxWidthPercent, () => {
+  nextTick(updateGuestNameMaxWidth)
 })
 </script>
 

@@ -20,6 +20,10 @@
         :class="{ 'is-marquee': isOverflowing }"
         :style="[textStyle, scaleStyle, widthCapStyle]"
       >
+        <!-- Hidden probe used for accurate DOM-based width measurement.
+             Inherits font styles from the h2, so it reflects the exact
+             rendered width (including letter-spacing and custom fonts). -->
+        <span ref="measureProbeRef" class="guest-name-measure-probe" aria-hidden="true">{{ formattedGuestName }}</span>
         <template v-if="!isOverflowing">
           <template v-if="isEnglishGuestName">
             <span
@@ -48,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, toRef, watch, onMounted, nextTick } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useAssetProtection } from '@/composables/showcase/useAssetProtection'
 
 // Default liquid glass frames
@@ -73,23 +77,24 @@ interface Props {
   guestTitleFrameRight?: string | null
   /** External scale value (optional, for controlled scaling) */
   scale?: number
-  /** Whether the guest name overflows the max width and should marquee */
-  isOverflowing?: boolean
-  /** Pixel cap on the guest name width (60% of background) */
+  /** Pixel cap on the guest name width (derived from template percentage) */
   maxWidthPx?: number | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   displayLiquidGlass: true,
   scale: 1,
-  isOverflowing: false,
   maxWidthPx: null,
 })
 
 const { protectionAttrs } = useAssetProtection()
 
-// Element ref for external scale calculation
+// Element refs for DOM measurement
 const guestNameElementRef = ref<HTMLElement | null>(null)
+const measureProbeRef = ref<HTMLElement | null>(null)
+
+// Internal overflow state — detected via DOM measurement of the probe span
+const isOverflowing = ref(false)
 
 // Check if guest name is English/Latin
 const isEnglishGuestName = computed(() => {
@@ -133,7 +138,7 @@ const scaleStyle = computed(() => ({
 // Pixel max-width / width cap from parent (overrides CSS percentage constraint)
 const widthCapStyle = computed(() => {
   if (props.maxWidthPx == null) return {}
-  if (props.isOverflowing) {
+  if (isOverflowing.value) {
     return {
       maxWidth: `${props.maxWidthPx}px`,
       width: `${props.maxWidthPx}px`,
@@ -143,6 +148,74 @@ const widthCapStyle = computed(() => {
     maxWidth: `${props.maxWidthPx}px`,
   }
 })
+
+// ---------------------------------------------------------------------------
+// Overflow detection
+//
+// We measure the rendered width of the hidden probe span (which inherits the
+// exact font-family / font-size / letter-spacing / font-weight of the h2) and
+// compare it against the available content width of the h2 (maxWidthPx minus
+// horizontal padding). This is more accurate than canvas measureText because:
+//   - letter-spacing is applied by the browser, not by canvas
+//   - padding on the h2 is included in the cap
+//   - custom fonts (Great Vibes, Khmer fonts) are used once loaded
+// ---------------------------------------------------------------------------
+
+// Horizontal padding on the h2 (.guest-name-single-line has padding: 0 4px)
+const H2_HORIZONTAL_PADDING_PX = 8
+// Safety margin to absorb subpixel rounding and font metric jitter
+const OVERFLOW_MARGIN_PX = 1
+
+const checkOverflow = () => {
+  const probe = measureProbeRef.value
+  if (!probe || props.maxWidthPx == null) {
+    isOverflowing.value = false
+    return
+  }
+  const available = props.maxWidthPx - H2_HORIZONTAL_PADDING_PX - OVERFLOW_MARGIN_PX
+  if (available <= 0) {
+    isOverflowing.value = true
+    return
+  }
+  // getBoundingClientRect gives subpixel-accurate width
+  const probeWidth = probe.getBoundingClientRect().width
+  isOverflowing.value = probeWidth > available
+}
+
+let probeResizeObserver: ResizeObserver | null = null
+
+const scheduleCheck = () => {
+  // Wait for layout to settle before measuring
+  nextTick(checkOverflow)
+}
+
+onMounted(() => {
+  scheduleCheck()
+
+  // Re-check after webfonts load — initial measurement may use a fallback font
+  if (typeof document !== 'undefined' && document.fonts) {
+    document.fonts.ready.then(scheduleCheck).catch(() => {})
+  }
+
+  // Re-check whenever the probe resizes (font swap, name change, orientation)
+  if (typeof ResizeObserver !== 'undefined' && measureProbeRef.value) {
+    probeResizeObserver = new ResizeObserver(() => checkOverflow())
+    probeResizeObserver.observe(measureProbeRef.value)
+  }
+})
+
+onUnmounted(() => {
+  if (probeResizeObserver) {
+    probeResizeObserver.disconnect()
+    probeResizeObserver = null
+  }
+})
+
+// Re-check when inputs that affect measurement change
+watch(
+  () => [props.maxWidthPx, props.guestName, props.primaryFont, props.currentFont],
+  () => scheduleCheck(),
+)
 
 // Frame style
 const frameStyle = computed(() => ({
@@ -280,6 +353,23 @@ defineExpose({
   max-width: 100%;
   padding: 0 4px;
   margin: 0;
+  /* Establish containing block for the absolutely-positioned measurement probe */
+  position: relative;
+}
+
+/* Hidden probe used to measure the true rendered width of the guest name,
+   including letter-spacing and custom fonts. Absolutely positioned so it
+   has no effect on layout, but still lays out its text and reports
+   getBoundingClientRect(). */
+.guest-name-measure-probe {
+  position: absolute;
+  left: -99999px;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: nowrap;
+  /* Font metrics (family/size/weight/letter-spacing) are inherited from the h2,
+     so measurements reflect the exact rendered glyphs. */
 }
 
 .bounce-char,

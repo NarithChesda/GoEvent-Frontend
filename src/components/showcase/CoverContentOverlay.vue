@@ -50,6 +50,7 @@
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
         :guest-title-frame-mid="templateAssets?.guest_title_frame_mid"
         :guest-title-frame-right="templateAssets?.guest_title_frame_right"
+        :guest-name-max-width-percent="guestNameMaxWidthPercent"
         :background-color="backgroundColor"
         :background-image-url="doorBackgroundImageUrl"
       />
@@ -81,6 +82,7 @@
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
         :guest-title-frame-mid="templateAssets?.guest_title_frame_mid"
         :guest-title-frame-right="templateAssets?.guest_title_frame_right"
+        :guest-name-max-width-percent="guestNameMaxWidthPercent"
         :background-color="backgroundColor"
         :background-image-url="doorBackgroundImageUrl"
       />
@@ -128,6 +130,7 @@
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
         :guest-title-frame-mid="templateAssets?.guest_title_frame_mid"
         :guest-title-frame-right="templateAssets?.guest_title_frame_right"
+        :guest-name-max-width-percent="guestNameMaxWidthPercent"
         :show-animations="true"
       />
 
@@ -228,6 +231,9 @@ const {
 
 // Swipe arrow bottom position
 const swipeArrowBottom = computed(() => layout.value.swipeArrowBottom)
+
+// Guest name max width (% of container width), configurable per template
+const guestNameMaxWidthPercent = computed(() => layout.value.guestNameMaxWidthPercent)
 
 // Showcase animation configuration
 const animationClasses = useShowcaseAnimation({

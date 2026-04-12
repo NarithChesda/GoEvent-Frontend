@@ -430,6 +430,13 @@
                 <input v-model.number="form.cover_stage_layout.guestNameHeight" type="number" step="0.25" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
               </div>
             </div>
+            <!-- Guest Name Max Width -->
+            <div class="grid grid-cols-2 gap-3">
+              <div class="space-y-1">
+                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.guestNameMaxWidthPercent') }}</label>
+                <input v-model.number="form.cover_stage_layout.guestNameMaxWidthPercent" type="number" min="10" max="100" step="1" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+              </div>
+            </div>
             <!-- Swipe Arrow -->
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1">
@@ -827,6 +834,7 @@ const defaultCoverStageLayout = (): CoverStageLayout => ({
   logoHeight: 48,
   inviteTextHeight: 8.75,
   guestNameHeight: 16,
+  guestNameMaxWidthPercent: 60,
   swipeArrowBottom: 5,
   leftDecorationZIndex: 24,
   rightDecorationZIndex: 24,

@@ -12,11 +12,13 @@ export const COVER_STAGE_LAYOUT_DEFAULTS: Required<CoverStageLayout> = {
   logoHeight: 48,
   inviteTextHeight: 8.75,
   guestNameHeight: 16,
+  guestNameMaxWidthPercent: 60,
   swipeArrowBottom: 5,
   leftDecorationZIndex: 24,
   rightDecorationZIndex: 24,
   topDecorationZIndex: 25,
   bottomDecorationZIndex: 25,
+  showcaseAnimationType: 'decoration',
 }
 
 /**
@@ -49,6 +51,8 @@ export function useCoverStageLayout(
       logoHeight: config.logoHeight ?? COVER_STAGE_LAYOUT_DEFAULTS.logoHeight,
       inviteTextHeight: config.inviteTextHeight ?? COVER_STAGE_LAYOUT_DEFAULTS.inviteTextHeight,
       guestNameHeight: config.guestNameHeight ?? COVER_STAGE_LAYOUT_DEFAULTS.guestNameHeight,
+      guestNameMaxWidthPercent:
+        config.guestNameMaxWidthPercent ?? COVER_STAGE_LAYOUT_DEFAULTS.guestNameMaxWidthPercent,
       swipeArrowBottom: config.swipeArrowBottom ?? COVER_STAGE_LAYOUT_DEFAULTS.swipeArrowBottom,
       leftDecorationZIndex:
         config.leftDecorationZIndex ?? COVER_STAGE_LAYOUT_DEFAULTS.leftDecorationZIndex,
@@ -58,6 +62,8 @@ export function useCoverStageLayout(
         config.topDecorationZIndex ?? COVER_STAGE_LAYOUT_DEFAULTS.topDecorationZIndex,
       bottomDecorationZIndex:
         config.bottomDecorationZIndex ?? COVER_STAGE_LAYOUT_DEFAULTS.bottomDecorationZIndex,
+      showcaseAnimationType:
+        config.showcaseAnimationType ?? COVER_STAGE_LAYOUT_DEFAULTS.showcaseAnimationType,
     }
   })
 

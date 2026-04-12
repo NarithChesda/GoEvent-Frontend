@@ -78,6 +78,9 @@ export interface CoverStageLayout {
   inviteTextHeight?: number         // default: 8.75
   guestNameHeight?: number          // default: 16
 
+  // Guest name max width as a percentage of the row container width (%)
+  guestNameMaxWidthPercent?: number // default: 60
+
   // Swipe arrow positioning (vh units)
   swipeArrowBottom?: number         // default: 5
 

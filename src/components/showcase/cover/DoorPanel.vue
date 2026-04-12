@@ -67,6 +67,7 @@
           :guest-title-frame-left="guestTitleFrameLeft"
           :guest-title-frame-mid="guestTitleFrameMid"
           :guest-title-frame-right="guestTitleFrameRight"
+          :guest-name-max-width-percent="guestNameMaxWidthPercent"
           :show-animations="false"
         />
       </div>
@@ -126,6 +127,8 @@ interface Props {
   guestTitleFrameLeft?: string | null
   guestTitleFrameMid?: string | null
   guestTitleFrameRight?: string | null
+  /** Guest name max width as % of row container (overrides default 60) */
+  guestNameMaxWidthPercent?: number
   // Door background
   backgroundColor?: string
   backgroundImageUrl?: string | null

@@ -1996,6 +1996,7 @@
       "logo": "Logo",
       "inviteText": "Invite Text",
       "guestName": "Guest Name",
+      "guestNameMaxWidthPercent": "Guest Name Max Width (%)",
       "swipeArrowBottom": "Swipe Arrow Bottom (vh)",
       "zIndexes": "Decoration Z-Indexes",
       "left": "Left",
