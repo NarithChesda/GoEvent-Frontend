@@ -46,8 +46,6 @@
         :key="photo.id"
         :ref="(el) => setPhotoRef(el as HTMLElement | null, index)"
         class="photo-item"
-        :class="{ 'photo-visible': visiblePhotos.has(index) }"
-        :style="{ '--stagger-delay': `${(index % 3) * 0.08}s` }"
         @click="handlePhotoClick(photo)"
       >
         <!-- Loading Placeholder -->
@@ -170,18 +168,95 @@ const MAX_RETRIES = 3
 // IntersectionObserver for lazy image loading states
 const lazyImageObserver = ref<IntersectionObserver | null>(null)
 
-// Scroll animation state
-const visiblePhotos = ref<Set<number>>(new Set())
+// Scroll-driven zoom animation state
 const photoRefs = ref<Map<number, HTMLElement>>(new Map())
-const scrollAnimationObserver = ref<IntersectionObserver | null>(null)
+const scrollContainerEl = ref<HTMLElement | null>(null)
+const rafId = ref<number | null>(null)
 
 // Set photo element refs for scroll animation
 const setPhotoRef = (el: HTMLElement | null, index: number) => {
   if (el) {
     photoRefs.value.set(index, el)
+    el.style.setProperty('--scroll-progress', '0')
   } else {
     photoRefs.value.delete(index)
   }
+}
+
+// Cubic ease-out for a smoother, more "modern" feel
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
+
+// Compute scale/opacity progress for every photo based on visible height
+const updatePhotoTransforms = () => {
+  rafId.value = null
+
+  // Resolve viewport bounds (custom scroll container if present, else window)
+  let viewportTop = 0
+  let viewportBottom = window.innerHeight
+  if (scrollContainerEl.value) {
+    const containerRect = scrollContainerEl.value.getBoundingClientRect()
+    viewportTop = containerRect.top
+    viewportBottom = containerRect.bottom
+  }
+  const viewportHeight = viewportBottom - viewportTop
+  if (viewportHeight <= 0) return
+
+  // Read all rects first, then write — avoids interleaved layout thrash
+  const updates: Array<[HTMLElement, string]> = []
+  photoRefs.value.forEach((el) => {
+    const rect = el.getBoundingClientRect()
+    if (rect.height === 0) return
+
+    const visibleTop = Math.max(rect.top, viewportTop)
+    const visibleBottom = Math.min(rect.bottom, viewportBottom)
+    const visibleHeight = Math.max(0, visibleBottom - visibleTop)
+
+    // Normalize against the smaller of photoHeight / viewportHeight so
+    // a photo taller than the viewport can still reach progress 1
+    const maxVisible = Math.min(rect.height, viewportHeight)
+    const rawProgress = maxVisible > 0 ? visibleHeight / maxVisible : 0
+    const progress = easeOutCubic(Math.min(1, Math.max(0, rawProgress)))
+
+    updates.push([el, progress.toFixed(3)])
+  })
+
+  for (const [el, value] of updates) {
+    el.style.setProperty('--scroll-progress', value)
+  }
+}
+
+const scheduleUpdate = () => {
+  if (rafId.value !== null) return
+  rafId.value = requestAnimationFrame(updatePhotoTransforms)
+}
+
+const setupScrollListener = () => {
+  scrollContainerEl.value = document.querySelector(
+    '.liquid-glass-card .custom-scrollbar',
+  ) as HTMLElement | null
+
+  if (scrollContainerEl.value) {
+    scrollContainerEl.value.addEventListener('scroll', scheduleUpdate, { passive: true })
+  } else {
+    window.addEventListener('scroll', scheduleUpdate, { passive: true })
+  }
+  window.addEventListener('resize', scheduleUpdate, { passive: true })
+
+  // Prime initial state for photos already in view on mount
+  scheduleUpdate()
+}
+
+const teardownScrollListener = () => {
+  if (scrollContainerEl.value) {
+    scrollContainerEl.value.removeEventListener('scroll', scheduleUpdate)
+  }
+  window.removeEventListener('scroll', scheduleUpdate)
+  window.removeEventListener('resize', scheduleUpdate)
+  if (rafId.value !== null) {
+    cancelAnimationFrame(rafId.value)
+    rafId.value = null
+  }
+  scrollContainerEl.value = null
 }
 
 // Initialize loading states for all photos
@@ -295,66 +370,24 @@ const setupLazyImageObserver = () => {
   })
 }
 
-// Setup scroll animation observer for photo reveal
-const setupScrollAnimationObserver = () => {
-  // Disconnect existing observer
-  if (scrollAnimationObserver.value) {
-    scrollAnimationObserver.value.disconnect()
-  }
-
-  // Find the scroll container for proper intersection detection
-  const scrollContainer = document.querySelector('.liquid-glass-card .custom-scrollbar') as Element | null
-
-  scrollAnimationObserver.value = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const index = parseInt(entry.target.getAttribute('data-photo-index') || '-1', 10)
-          if (index >= 0) {
-            visiblePhotos.value.add(index)
-            // Unobserve after animation triggered - no need to track anymore
-            scrollAnimationObserver.value?.unobserve(entry.target)
-          }
-        }
-      })
-    },
-    {
-      root: scrollContainer,
-      threshold: 0.15, // Trigger when 15% visible
-      rootMargin: '0px 0px -50px 0px', // Trigger slightly before fully in view
-    }
-  )
-
-  // Observe all photo items
-  photoRefs.value.forEach((el, index) => {
-    el.setAttribute('data-photo-index', String(index))
-    scrollAnimationObserver.value?.observe(el)
-  })
-}
-
 onMounted(() => {
-  // Initialize image loading states
   initializeImageStates()
 
-  // Setup observers after DOM is ready
+  // Wait for DOM/layout, then attach observers and scroll listener
   setTimeout(() => {
     setupLazyImageObserver()
-    setupScrollAnimationObserver()
+    setupScrollListener()
   }, 100)
 })
 
 // Watch for photo changes to reinitialize states
 watch(() => props.photos, (newPhotos, oldPhotos) => {
   if (newPhotos !== oldPhotos) {
-    // Disconnect old observers
     if (lazyImageObserver.value) {
       lazyImageObserver.value.disconnect()
     }
-    if (scrollAnimationObserver.value) {
-      scrollAnimationObserver.value.disconnect()
-    }
+    teardownScrollListener()
 
-    // Clear old states
     Object.keys(imageLoadingStates).forEach(key => {
       delete imageLoadingStates[key]
     })
@@ -365,33 +398,24 @@ watch(() => props.photos, (newPhotos, oldPhotos) => {
       delete imageRetryCount[key]
     })
 
-    // Reset scroll animation state
-    visiblePhotos.value.clear()
     photoRefs.value.clear()
 
-    // Initialize new states
     initializeImageStates()
 
-    // Re-setup observers for new photos
     setTimeout(() => {
       setupLazyImageObserver()
-      setupScrollAnimationObserver()
+      setupScrollListener()
     }, 100)
   }
 }, { deep: false })
 
 onUnmounted(() => {
-  // Disconnect observers
   if (lazyImageObserver.value) {
     lazyImageObserver.value.disconnect()
     lazyImageObserver.value = null
   }
-  if (scrollAnimationObserver.value) {
-    scrollAnimationObserver.value.disconnect()
-    scrollAnimationObserver.value = null
-  }
+  teardownScrollListener()
 
-  // Clear image states
   Object.keys(imageLoadingStates).forEach(key => {
     delete imageLoadingStates[key]
   })
@@ -402,8 +426,6 @@ onUnmounted(() => {
     delete imageRetryCount[key]
   })
 
-  // Clear scroll animation state
-  visiblePhotos.value.clear()
   photoRefs.value.clear()
 })
 </script>
@@ -416,20 +438,16 @@ onUnmounted(() => {
 }
 
 .photo-item {
+  --scroll-progress: 0;
   width: 100%;
   cursor: pointer;
   overflow: hidden;
   border-radius: 0.5rem;
-  /* Initial state for scroll animation */
-  opacity: 0;
-  transform: translateY(20px) scale(0.97);
-  transition: opacity 0.5s ease-out, transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  transition-delay: var(--stagger-delay, 0s);
-}
-
-.photo-item.photo-visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
+  /* Scroll-driven zoom: starts small, fills 100% width when fully visible */
+  opacity: calc(0.2 + 0.8 * var(--scroll-progress));
+  transform: scale(calc(0.68 + 0.32 * var(--scroll-progress)));
+  transform-origin: center center;
+  will-change: transform, opacity;
 }
 
 .photo-item img {
@@ -520,12 +538,8 @@ onUnmounted(() => {
   }
 
   .photo-item {
+    --scroll-progress: 1;
     opacity: 1;
-    transform: none;
-    transition: none;
-  }
-
-  .photo-item.photo-visible {
     transform: none;
   }
 }
