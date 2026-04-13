@@ -726,21 +726,27 @@ const handleSignInClick = () => {
   openAuthModal()
 }
 
+const buildFullName = (firstName?: string | null, lastName?: string | null): string => {
+  return [firstName, lastName]
+    .map((part) => part?.trim())
+    .filter((part): part is string => Boolean(part))
+    .join(' ')
+}
+
 const getCommentDisplayName = (comment: EventComment): string => {
   // If this is the current user's comment and we have auth store data, use it
   if (authStore.isAuthenticated && authStore.user && comment.user === authStore.user.id) {
-    if (authStore.user.first_name && authStore.user.last_name) {
-      return `${authStore.user.first_name} ${authStore.user.last_name}`
-    }
-    if (authStore.user.username) {
-      return authStore.user.username
-    }
+    const fullName = buildFullName(authStore.user.first_name, authStore.user.last_name)
+    if (fullName) return fullName
+    if (authStore.user.username) return authStore.user.username
   }
 
   // Use user_info from the API response (updated backend)
-  if (comment.user_info?.first_name && comment.user_info?.last_name) {
-    return `${comment.user_info.first_name} ${comment.user_info.last_name}`
-  }
+  const userInfoFullName = buildFullName(
+    comment.user_info?.first_name,
+    comment.user_info?.last_name,
+  )
+  if (userInfoFullName) return userInfoFullName
 
   if (comment.user_info?.username) {
     return comment.user_info.username
