@@ -147,7 +147,7 @@
 
           <!-- Countdown Display - Below Map, Above RSVP -->
           <div
-            v-if="countdown && showCountdown"
+            v-if="countdown && showCountdown && isCountdownActive"
             class="countdown-container px-4 pt-2 pb-2 bounce-in-element"
             :style="{ animationDelay: `${animationDelays.countdown}s` }"
           >
@@ -217,7 +217,7 @@
 
           <!-- Divider between Countdown and RSVP -->
           <div
-            v-if="countdown && showCountdown && showRsvp"
+            v-if="countdown && showCountdown && isCountdownActive && showRsvp"
             class="countdown-divider bounce-in-element"
             :style="{ animationDelay: `${animationDelays.divider}s` }"
           >
@@ -387,6 +387,13 @@ const animationDelays = computed(() => {
 
 // Countdown logic
 const countdown = props.eventStartDate ? useCountdown(props.eventStartDate) : null
+
+// Hide countdown once it reaches zero (event has started/passed)
+const isCountdownActive = computed(() => {
+  if (!countdown) return false
+  if (countdown.hasPassed.value) return false
+  return !(countdown.daysRemaining.value === 0 && countdown.hoursRemaining.value === 0)
+})
 
 defineEmits<{
   openMap: []
