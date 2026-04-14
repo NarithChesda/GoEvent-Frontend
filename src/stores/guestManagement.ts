@@ -20,6 +20,7 @@ import {
   type GuestGroup,
   type GuestStats,
   type CreateGuestRequest,
+  type UpdateGuestRequest,
   type CreateGuestGroupRequest,
   type PaginatedResponse,
 } from '../services/api'
@@ -491,7 +492,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
   /**
    * Update a guest
    */
-  async function updateGuest(eventId: string, guestId: number, groupId: number, data: Partial<CreateGuestRequest>) {
+  async function updateGuest(eventId: string, guestId: number, groupId: number, data: UpdateGuestRequest) {
     try {
       const response = await guestService.updateGuest(eventId, guestId, data)
 

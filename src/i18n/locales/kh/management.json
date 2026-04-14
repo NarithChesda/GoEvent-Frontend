@@ -1356,6 +1356,19 @@
       "pendingDesc": "នៅតែរង់ចាំទទួលការអញ្ជើញ។",
       "pendingShort": "មិនទាន់ផ្ញើ"
     },
+    "rsvpStatsCard": {
+      "header": "ការឆ្លើយតប RSVP",
+      "loading": "កំពុងផ្ទុកសង្ខេបការឆ្លើយតប…",
+      "respondedDesc": "ភ្ញៀវដែលបានអញ្ជើញបានឆ្លើយតប {percent}%",
+      "expectedSuffix": "រំពឹងទុក",
+      "expectedTooltip": "រាប់ភ្ញៀវដែលនឹងចូលរួម រួមជាមួយភ្ញៀវបន្ថែមរបស់ពួកគេ",
+      "cards": {
+        "going": "នឹងចូលរួម",
+        "maybe": "មិនប្រាកដ",
+        "declined": "មិនចូលរួម",
+        "pending": "មិនទាន់ឆ្លើយតប"
+      }
+    },
     "addGuestModal": {
       "title": "បន្ថែមភ្ញៀវ",
       "close": "បិទ",
@@ -1457,6 +1470,20 @@
         "amountLabel": "ចំនួន",
         "currencyLabel": "រូបិយប័ណ្ណ",
         "currencyPlaceholder": "ជ្រើសរើស..."
+      },
+      "rsvp": {
+        "title": "ការឆ្លើយតប RSVP",
+        "updatedAt": "· បានកែប្រែ {date}",
+        "statusLabel": "ស្ថានភាព",
+        "maxPlusOnesLabel": "ភ្ញៀវបន្ថែមអតិបរមា",
+        "bringingLabel": "នឹងនាំមក:",
+        "privateNoteLabel": "សារឯកជន:",
+        "statusOptions": {
+          "pending": "មិនទាន់ឆ្លើយតប",
+          "attending": "នឹងចូលរួម",
+          "maybe": "មិនប្រាកដ",
+          "notAttending": "មិនអាចចូលរួម"
+        }
       },
       "quickActions": {
         "title": "សកម្មភាពរហ័ស",

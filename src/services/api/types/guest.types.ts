@@ -36,6 +36,9 @@ export interface GuestGroupStats {
   viewed: number
 }
 
+/** RSVP response state stored on the guest row (private-event flow). */
+export type GuestRsvpStatusValue = 'pending' | 'attending' | 'not_attending' | 'maybe'
+
 export interface EventGuest {
   id: number
   name: string
@@ -75,6 +78,14 @@ export interface EventGuest {
       profile_picture: string | null
     }
   }
+  // ---- RSVP fields (private-event guest-shortcode flow) -----------------
+  rsvp_status?: GuestRsvpStatusValue
+  rsvp_status_display?: string
+  rsvp_responded_at?: string | null
+  plus_ones_count?: number
+  plus_ones_names?: string
+  private_note_to_host?: string
+  max_plus_ones?: number
   created_at: string
   updated_at: string
 }
@@ -86,6 +97,23 @@ export interface CreateGuestRequest {
   phone_number?: string
   cash_gift_amount?: string
   cash_gift_currency?: string
+}
+
+/**
+ * Patch payload for `PATCH /api/events/{id}/guests/{id}/`.
+ *
+ * Extends the create fields with host-editable RSVP fields. Hosts can
+ * override a guest's `rsvp_status` (e.g. record an RSVP collected offline)
+ * and raise `max_plus_ones` when a particular guest needs a higher cap.
+ * `plus_ones_*` and `private_note_to_host` are also writable so the host can
+ * correct mistakes — but the guest is the primary author via the showcase.
+ */
+export interface UpdateGuestRequest extends Partial<CreateGuestRequest> {
+  rsvp_status?: GuestRsvpStatusValue
+  max_plus_ones?: number
+  plus_ones_count?: number
+  plus_ones_names?: string
+  private_note_to_host?: string
 }
 
 export interface GuestListFilters extends QueryParams {
@@ -108,4 +136,43 @@ export interface GuestStats {
 export interface BulkOperationResponse {
   status: string
   count: number
+}
+
+/**
+ * Aggregated RSVP dashboard for the host.
+ * Backed by `GET /api/events/{id}/guests/rsvp-summary/`.
+ *
+ * - `total_expected_attendees` counts the guest themselves plus their
+ *   plus-ones for every guest whose status is `attending`.
+ * - `question_breakdowns[*].breakdown` is null for free-text question types.
+ */
+export interface GuestRsvpStatusCounts {
+  pending: number
+  attending: number
+  not_attending: number
+  maybe: number
+}
+
+export interface GuestRsvpPendingGuest {
+  id: number
+  name: string
+  email: string
+  invitation_status: 'not_sent' | 'sent' | 'viewed'
+}
+
+export interface GuestRsvpQuestionBreakdown {
+  question_id: number
+  question_text: string
+  question_type: string
+  is_required: boolean
+  total_answers: number
+  breakdown: Record<string, number> | null
+}
+
+export interface GuestRsvpSummary {
+  total_invited: number
+  status_counts: GuestRsvpStatusCounts
+  total_expected_attendees: number
+  pending_guests: GuestRsvpPendingGuest[]
+  question_breakdowns: GuestRsvpQuestionBreakdown[]
 }

@@ -10,10 +10,12 @@ import type {
   EventGuest,
   GuestGroup,
   CreateGuestRequest,
+  UpdateGuestRequest,
   CreateGuestGroupRequest,
   GuestListFilters,
   GuestStats,
   GuestGroupStats,
+  GuestRsvpSummary,
   BulkOperationResponse,
 } from '../types'
 
@@ -42,13 +44,20 @@ export const guestService = {
     return apiClient.post<EventGuest>(`/api/events/${eventId}/guests/`, data)
   },
 
-  // Update a guest
+  // Update a guest. Accepts standard fields plus host-editable RSVP fields
+  // (rsvp_status, max_plus_ones, plus_ones_*, private_note_to_host).
   async updateGuest(
     eventId: string,
     guestId: number,
-    data: Partial<CreateGuestRequest>,
+    data: UpdateGuestRequest,
   ): Promise<ApiResponse<EventGuest>> {
     return apiClient.patch<EventGuest>(`/api/events/${eventId}/guests/${guestId}/`, data)
+  },
+
+  // Aggregated RSVP dashboard for the host (status counts, expected
+  // attendees, pending list, per-question breakdowns).
+  async getGuestsRsvpSummary(eventId: string): Promise<ApiResponse<GuestRsvpSummary>> {
+    return apiClient.get<GuestRsvpSummary>(`/api/events/${eventId}/guests/rsvp-summary/`)
   },
 
   // Delete a guest

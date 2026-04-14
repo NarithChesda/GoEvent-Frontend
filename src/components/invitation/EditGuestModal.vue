@@ -137,6 +137,103 @@
                 </Transition>
               </div>
 
+              <!-- RSVP Section (private-event response state) -->
+              <div class="space-y-3 pt-2">
+                <h3 class="text-sm font-medium text-slate-700 flex items-center gap-2">
+                  <CalendarCheck class="w-4 h-4" />
+                  {{ t('management.guestGroupsView.editGuestModal.rsvp.title') }}
+                  <span
+                    v-if="guest?.rsvp_responded_at"
+                    class="text-[11px] font-normal text-slate-500"
+                  >
+                    {{ t('management.guestGroupsView.editGuestModal.rsvp.updatedAt', { date: formatRespondedAt(guest.rsvp_responded_at) }) }}
+                  </span>
+                </h3>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <!-- RSVP Status -->
+                  <div>
+                    <label
+                      for="editRsvpStatus"
+                      class="block text-sm font-medium text-slate-700 mb-2"
+                    >
+                      {{ t('management.guestGroupsView.editGuestModal.rsvp.statusLabel') }}
+                    </label>
+                    <div class="relative">
+                      <select
+                        id="editRsvpStatus"
+                        v-model="formData.rsvp_status"
+                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                      >
+                        <option value="pending">
+                          {{ t('management.guestGroupsView.editGuestModal.rsvp.statusOptions.pending') }}
+                        </option>
+                        <option value="attending">
+                          {{ t('management.guestGroupsView.editGuestModal.rsvp.statusOptions.attending') }}
+                        </option>
+                        <option value="maybe">
+                          {{ t('management.guestGroupsView.editGuestModal.rsvp.statusOptions.maybe') }}
+                        </option>
+                        <option value="not_attending">
+                          {{ t('management.guestGroupsView.editGuestModal.rsvp.statusOptions.notAttending') }}
+                        </option>
+                      </select>
+                      <div
+                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+                      >
+                        <ChevronDown class="w-4 h-4 text-slate-500" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Max plus-ones (host-controlled cap) -->
+                  <div>
+                    <label
+                      for="editMaxPlusOnes"
+                      class="block text-sm font-medium text-slate-700 mb-2"
+                    >
+                      {{ t('management.guestGroupsView.editGuestModal.rsvp.maxPlusOnesLabel') }}
+                    </label>
+                    <input
+                      id="editMaxPlusOnes"
+                      v-model.number="formData.max_plus_ones"
+                      type="number"
+                      min="0"
+                      step="1"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                    />
+                  </div>
+                </div>
+
+                <!-- Read-only guest-supplied details -->
+                <div
+                  v-if="hasGuestRsvpDetails"
+                  class="rounded-lg border border-slate-200 bg-slate-50/70 p-3 space-y-2"
+                >
+                  <div
+                    v-if="(guest?.plus_ones_count ?? 0) > 0"
+                    class="text-xs text-slate-600"
+                  >
+                    <span class="font-medium text-slate-700">
+                      {{ t('management.guestGroupsView.editGuestModal.rsvp.bringingLabel') }}
+                    </span>
+                    {{ guest?.plus_ones_count }}
+                    <span v-if="guest?.plus_ones_names">
+                      — {{ guest.plus_ones_names }}
+                    </span>
+                  </div>
+                  <div
+                    v-if="guest?.private_note_to_host"
+                    class="text-xs text-slate-600"
+                  >
+                    <span class="font-medium text-slate-700">
+                      {{ t('management.guestGroupsView.editGuestModal.rsvp.privateNoteLabel') }}
+                    </span>
+                    <span class="ml-1 italic">"{{ guest.private_note_to_host }}"</span>
+                  </div>
+                </div>
+              </div>
+
               <!-- Cash Gift Section -->
               <div class="space-y-3 pt-2">
                 <h3 class="text-sm font-medium text-slate-700 flex items-center gap-2">
@@ -296,8 +393,19 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { UserCog, X, Coins, ChevronDown, Mail, Send, Link, Trash2, Globe } from 'lucide-vue-next'
-import type { EventGuest, GuestGroup } from '../../services/api'
+import {
+  UserCog,
+  X,
+  Coins,
+  ChevronDown,
+  Mail,
+  Send,
+  Link,
+  Trash2,
+  Globe,
+  CalendarCheck,
+} from 'lucide-vue-next'
+import type { EventGuest, GuestGroup, GuestRsvpStatusValue } from '../../services/api'
 
 const { t } = useI18n()
 
@@ -326,6 +434,8 @@ interface FormData {
   phone_number: string
   cash_gift_amount: string
   cash_gift_currency: string
+  rsvp_status: GuestRsvpStatusValue
+  max_plus_ones: number
 }
 
 const formData = ref<FormData>({
@@ -335,6 +445,8 @@ const formData = ref<FormData>({
   phone_number: '',
   cash_gift_amount: '',
   cash_gift_currency: '',
+  rsvp_status: 'pending',
+  max_plus_ones: 0,
 })
 
 const errorMessage = ref('')
@@ -370,11 +482,32 @@ watch(() => props.guest, (newGuest) => {
       phone_number: newGuest.phone_number || '',
       cash_gift_amount: newGuest.cash_gift_amount || '',
       cash_gift_currency: newGuest.cash_gift_currency || '',
+      rsvp_status: newGuest.rsvp_status ?? 'pending',
+      max_plus_ones: newGuest.max_plus_ones ?? 0,
     }
     errorMessage.value = ''
     fieldErrors.value = {}
   }
 }, { immediate: true })
+
+// Whether to render the read-only guest-supplied details box
+const hasGuestRsvpDetails = computed(() => {
+  if (!props.guest) return false
+  return (
+    (props.guest.plus_ones_count ?? 0) > 0 ||
+    Boolean(props.guest.private_note_to_host?.trim())
+  )
+})
+
+const formatRespondedAt = (iso: string) => {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  return d.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
 
 // Reset form when modal is closed
 watch(() => props.show, (newShow) => {
@@ -420,6 +553,20 @@ const handleSubmit = () => {
 
   if (formData.value.cash_gift_currency && formData.value.cash_gift_currency.trim()) {
     updateData.cash_gift_currency = formData.value.cash_gift_currency.trim()
+  }
+
+  // Only include RSVP fields when the host actually changed them so we
+  // don't accidentally clobber a guest's recent self-update.
+  if (formData.value.rsvp_status !== (props.guest.rsvp_status ?? 'pending')) {
+    updateData.rsvp_status = formData.value.rsvp_status
+  }
+
+  const originalMaxPlusOnes = props.guest.max_plus_ones ?? 0
+  const nextMaxPlusOnes = Number.isFinite(formData.value.max_plus_ones)
+    ? Math.max(0, Math.floor(formData.value.max_plus_ones))
+    : originalMaxPlusOnes
+  if (nextMaxPlusOnes !== originalMaxPlusOnes) {
+    updateData.max_plus_ones = nextMaxPlusOnes
   }
 
   emit('update-guest', props.guest.id, updateData)

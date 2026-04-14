@@ -7,8 +7,16 @@
     </div>
 
     <!-- Guest Statistics Card -->
-    <div class="rounded-3xl border border-white/70 bg-white p-6 sm:p-8 shadow-lg shadow-slate-200/60">
+    <div class="rounded-3xl border border-white/70 bg-white p-6 sm:p-8 shadow-lg shadow-slate-200/60 space-y-6">
       <GuestStatsCard :stats="guestStats" :loading="loadingStats" />
+      <div class="border-t border-slate-100 pt-6">
+        <GuestRsvpStatsCard
+          :summary="rsvpSummary"
+          :loading="loadingRsvpSummary"
+          :active-status="activeRsvpStatus"
+          @select-status="handleSelectRsvpStatus"
+        />
+      </div>
     </div>
 
     <!-- Loading State -->
@@ -430,7 +438,14 @@ import { useI18n } from 'vue-i18n'
 import { UserPlus, Search, Filter, Users, X, Send, Trash2, ChevronDown, Info, FileSpreadsheet, Link, Mail, DollarSign } from 'lucide-vue-next'
 import GuestListItem from './GuestListItem.vue'
 import GuestStatsCard from './GuestStatsCard.vue'
-import type { GuestGroup, EventGuest, GuestStats } from '../../services/api'
+import GuestRsvpStatsCard from './GuestRsvpStatsCard.vue'
+import type {
+  GuestGroup,
+  EventGuest,
+  GuestStats,
+  GuestRsvpStatusValue,
+  GuestRsvpSummary,
+} from '../../services/api'
 
 interface GroupPaginationData {
   currentPage: number
@@ -458,6 +473,9 @@ interface Props {
   // Guest statistics
   guestStats: GuestStats | null
   loadingStats: boolean
+  // RSVP summary
+  rsvpSummary: GuestRsvpSummary | null
+  loadingRsvpSummary: boolean
 }
 
 const props = defineProps<Props>()
@@ -484,12 +502,19 @@ const emit = defineEmits<{
 
 // Local state
 const activeFilter = ref('all')
+const activeRsvpStatus = ref<GuestRsvpStatusValue | null>(null)
 const groupSearchQuery = ref('')
 const selectedGuestIds = ref<Set<number>>(new Set())
 const isDropdownOpen = ref(false)
 const isSearchExpanded = ref(false)
 const showInstructionModal = ref(false)
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
+
+// Toggle the RSVP-status filter (driven by GuestRsvpStatsCard clicks)
+const handleSelectRsvpStatus = (status: GuestRsvpStatusValue | null) => {
+  activeRsvpStatus.value = status
+  selectedGuestIds.value.clear()
+}
 
 // Tab container ref
 const tabsContainer = ref<HTMLElement | null>(null)
@@ -559,18 +584,28 @@ const filteredGroups = computed(() => {
 })
 
 const allFilteredGuests = computed(() => {
+  let guests: EventGuest[]
   if (activeFilter.value === 'all') {
     // Return guests from allGroupsPagination
     // Now properly reactive since it's a prop, not a function call
-    return props.allGuestsPagination.guests
+    guests = props.allGuestsPagination.guests
+  } else {
+    // For specific group filter, return guests from that group
+    guests = []
+    filteredGroups.value.forEach(group => {
+      const groupGuests = props.getGroupGuests(group.id)
+      guests.push(...groupGuests)
+    })
   }
 
-  // For specific group filter, return guests from that group
-  const guests: EventGuest[] = []
-  filteredGroups.value.forEach(group => {
-    const groupGuests = props.getGroupGuests(group.id)
-    guests.push(...groupGuests)
-  })
+  // Apply RSVP-status filter client-side over already-loaded guests.
+  // (Server-side filter would require a backend query-param the docs
+  // don't yet promise — keeping it local avoids that dependency.)
+  if (activeRsvpStatus.value) {
+    const target = activeRsvpStatus.value
+    guests = guests.filter((g) => (g.rsvp_status ?? 'pending') === target)
+  }
+
   return guests
 })
 

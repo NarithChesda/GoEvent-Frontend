@@ -70,6 +70,8 @@
         :load-all-guests="loadAllGuests"
         :guest-stats="guestStats"
         :loading-stats="loadingStats"
+        :rsvp-summary="rsvpSummary"
+        :loading-rsvp-summary="loadingRsvpSummary"
         @add-guest="showAddGuestModal = true"
         @toggle-group="handleGroupToggle"
         @edit-group="openEditGroupModal"
@@ -211,7 +213,8 @@ import {
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { useGuestManagementStore } from '../stores/guestManagement'
 import { useBulkImport } from '../composables/invitation/useBulkImport'
-import type { Event, EventGuest, GuestGroup } from '../services/api'
+import type { Event, EventGuest, GuestGroup, GuestRsvpSummary } from '../services/api'
+import { guestService } from '../services/api'
 import { getGuestSSRMetaUrl } from '../utils/metaUtils'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import CreateGroupModal from './invitation/CreateGroupModal.vue'
@@ -248,6 +251,23 @@ const PAGE_SIZE = store.PAGE_SIZE
 // Wrap allGuestsPagination in computed to maintain reactivity when passed as prop
 // This ensures the child component receives reactive updates when the store's ref changes
 const allGuestsPaginationValue = computed(() => store.allGuestsPagination)
+
+// RSVP summary (response funnel) — fetched directly from the service since
+// the store doesn't own this resource. Loaded alongside guest stats.
+const rsvpSummary = ref<GuestRsvpSummary | null>(null)
+const loadingRsvpSummary = ref(false)
+
+const loadRsvpSummary = async () => {
+  loadingRsvpSummary.value = true
+  try {
+    const response = await guestService.getGuestsRsvpSummary(props.eventId)
+    if (response.success && response.data) {
+      rsvpSummary.value = response.data
+    }
+  } finally {
+    loadingRsvpSummary.value = false
+  }
+}
 
 // Store action wrappers that include eventId
 const loadGroups = () => store.loadGroups(props.eventId)
@@ -693,6 +713,8 @@ const handleUpdateGuest = async (guestId: number, data: any) => {
 
     // Counts are now updated reactively via callbacks when group changes
     // No need for loadGuestStats() or loadGroups()
+    // Refresh RSVP summary in case the host overrode the response state.
+    loadRsvpSummary()
   } else {
     // Handle validation errors
     if (response.errors && typeof response.errors === 'object') {
@@ -854,6 +876,7 @@ watch(hasTemplatePayment, (isActivated) => {
   if (isActivated) {
     loadGroups()
     loadGuestStats()
+    loadRsvpSummary()
   }
 })
 

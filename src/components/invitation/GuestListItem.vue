@@ -44,6 +44,21 @@
             <span>Sent</span>
           </div>
 
+          <!-- RSVP status badge (private-event response) -->
+          <div
+            v-if="rsvpBadge"
+            class="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-xs font-medium"
+            :class="rsvpBadge.classes"
+            :title="rsvpBadge.title"
+          >
+            <component :is="rsvpBadge.icon" class="w-3 h-3" />
+            <span>{{ rsvpBadge.label }}</span>
+            <span
+              v-if="rsvpBadge.plusOnes"
+              class="ml-0.5 px-1 rounded-md bg-white/60 text-[10px] tabular-nums"
+            >+{{ rsvpBadge.plusOnes }}</span>
+          </div>
+
           <!-- Cash Gift badge -->
           <div v-if="guest.cash_gift_amount" class="flex items-center gap-1 px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-medium">
             <Coins class="w-3 h-3" />
@@ -141,7 +156,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import {
   Trash2,
   Send,
@@ -150,6 +165,9 @@ import {
   Link,
   Globe,
   CheckCheck,
+  Check,
+  HelpCircle,
+  X as XIcon,
 } from 'lucide-vue-next'
 import type { EventGuest } from '../../services/api'
 
@@ -221,6 +239,54 @@ const handleMobileCopyLink = () => {
     showCopiedFeedback.value = false
   }, 1500)
 }
+
+// RSVP badge config — drives the badge rendered next to the existing
+// group / sent / cash-gift badges. Hidden for `pending` (default state)
+// to avoid noise; the absence of a badge already implies "no response yet".
+type RsvpBadgeConfig = {
+  label: string
+  classes: string
+  icon: typeof Check | typeof HelpCircle | typeof XIcon
+  title: string
+  plusOnes: number
+}
+
+const rsvpBadge = computed<RsvpBadgeConfig | null>(() => {
+  const status = props.guest.rsvp_status
+  if (!status || status === 'pending') return null
+
+  const plusOnes = props.guest.plus_ones_count ?? 0
+  const baseTitle = props.guest.rsvp_status_display || status
+
+  if (status === 'attending') {
+    return {
+      label: 'Going',
+      classes: 'bg-emerald-50 text-emerald-700',
+      icon: Check,
+      title: baseTitle,
+      plusOnes,
+    }
+  }
+
+  if (status === 'maybe') {
+    return {
+      label: 'Maybe',
+      classes: 'bg-amber-50 text-amber-700',
+      icon: HelpCircle,
+      title: baseTitle,
+      plusOnes,
+    }
+  }
+
+  // not_attending
+  return {
+    label: 'Declined',
+    classes: 'bg-rose-50 text-rose-700',
+    icon: XIcon,
+    title: baseTitle,
+    plusOnes: 0,
+  }
+})
 
 // Methods
 const handleCardClick = (event: MouseEvent) => {

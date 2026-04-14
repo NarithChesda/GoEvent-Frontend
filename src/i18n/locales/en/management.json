@@ -1356,6 +1356,19 @@
       "pendingDesc": "Still waiting to receive an invite.",
       "pendingShort": "Not sent"
     },
+    "rsvpStatsCard": {
+      "header": "RSVP responses",
+      "loading": "Loading response summary…",
+      "respondedDesc": "{percent}% of invited guests responded",
+      "expectedSuffix": "expected",
+      "expectedTooltip": "Counts each attending guest plus their plus-ones",
+      "cards": {
+        "going": "Going",
+        "maybe": "Maybe",
+        "declined": "Declined",
+        "pending": "Pending"
+      }
+    },
     "addGuestModal": {
       "title": "Add Guest",
       "close": "Close",
@@ -1457,6 +1470,20 @@
         "amountLabel": "Amount",
         "currencyLabel": "Currency",
         "currencyPlaceholder": "Select..."
+      },
+      "rsvp": {
+        "title": "RSVP",
+        "updatedAt": "· updated {date}",
+        "statusLabel": "Status",
+        "maxPlusOnesLabel": "Max plus-ones",
+        "bringingLabel": "Bringing:",
+        "privateNoteLabel": "Private note:",
+        "statusOptions": {
+          "pending": "Pending",
+          "attending": "Attending",
+          "maybe": "Maybe",
+          "notAttending": "Can't attend"
+        }
       },
       "quickActions": {
         "title": "Quick Actions",

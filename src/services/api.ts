@@ -104,8 +104,14 @@ export type {
   GuestGroupStats,
   EventGuest,
   CreateGuestRequest,
+  UpdateGuestRequest,
   GuestListFilters,
   GuestStats,
+  GuestRsvpStatusValue,
+  GuestRsvpStatusCounts,
+  GuestRsvpPendingGuest,
+  GuestRsvpQuestionBreakdown,
+  GuestRsvpSummary,
 } from './api/types/guest.types'
 
 // Payment types
