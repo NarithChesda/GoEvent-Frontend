@@ -56,12 +56,18 @@
     </div>
 
     <!-- Content Area -->
-    <div v-else class="min-h-[400px]">
+    <div v-else class="min-h-[400px] space-y-6">
       <!-- Cash Gift Analytics Section -->
       <CashGiftAnalytics
         ref="cashGiftAnalyticsRef"
         :event-id="props.eventId"
         :groups="groups"
+      />
+
+      <!-- RSVP Analytics Section -->
+      <RsvpAnalytics
+        ref="rsvpAnalyticsRef"
+        :event-id="props.eventId"
       />
     </div>
   </div>
@@ -74,6 +80,7 @@ import { BarChart3, Lock, CreditCard, Mail } from 'lucide-vue-next'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { useGuestManagementStore } from '../stores/guestManagement'
 import CashGiftAnalytics from './invitation/CashGiftAnalytics.vue'
+import RsvpAnalytics from './invitation/RsvpAnalytics.vue'
 import type { Event } from '../services/api'
 
 // Props

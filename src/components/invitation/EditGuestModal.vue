@@ -232,6 +232,119 @@
                     <span class="ml-1 italic">"{{ guest.private_note_to_host }}"</span>
                   </div>
                 </div>
+
+                <!-- Per-question answers (shown whenever the guest has at least one) -->
+                <div
+                  v-if="showAnswersSection"
+                  class="mt-2"
+                >
+                  <h4 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
+                    {{ t('management.guestGroupsView.editGuestModal.rsvp.answersTitle') }}
+                  </h4>
+
+                  <!-- Loading placeholder while the detail fetch is in flight -->
+                  <div
+                    v-if="isLoadingAnswers && !guest?.rsvp_answers"
+                    class="rounded-lg border border-slate-200 bg-slate-50/70 p-4 flex items-center gap-2"
+                  >
+                    <div class="w-4 h-4 animate-spin border-2 border-slate-400 border-t-transparent rounded-full" />
+                    <span class="text-xs text-slate-500">
+                      {{ t('management.guestGroupsView.editGuestModal.rsvp.answersLoading') }}
+                    </span>
+                  </div>
+
+                  <!-- Empty safeguard (count > 0 but detail came back empty) -->
+                  <div
+                    v-else-if="(guest?.rsvp_answers?.length ?? 0) === 0"
+                    class="rounded-lg border border-slate-200 bg-slate-50/70 p-3"
+                  >
+                    <p class="text-xs text-slate-500">
+                      {{ t('management.guestGroupsView.editGuestModal.rsvp.answersEmpty') }}
+                    </p>
+                  </div>
+
+                  <!-- Answer rows -->
+                  <div
+                    v-else
+                    class="rounded-lg border border-slate-200 bg-slate-50/70 divide-y divide-slate-200"
+                  >
+                    <div
+                      v-for="answer in sortedAnswers"
+                      :key="answer.question_id"
+                      class="p-3 space-y-1.5"
+                    >
+                      <!-- Question text (muted label) -->
+                      <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 break-words">
+                        {{ answer.question_text }}
+                      </p>
+
+                      <!-- Text / long_text -->
+                      <p
+                        v-if="
+                          (answer.question_type === 'text' ||
+                            answer.question_type === 'long_text') &&
+                          answer.answer_text.trim()
+                        "
+                        class="text-sm text-slate-800 break-words whitespace-pre-wrap italic"
+                      >
+                        "{{ answer.answer_text }}"
+                      </p>
+
+                      <!-- Yes / No chip -->
+                      <div
+                        v-else-if="answer.question_type === 'yes_no' && answer.answer_text"
+                        class="flex flex-wrap gap-1.5"
+                      >
+                        <span
+                          class="px-2 py-0.5 rounded-md text-xs font-medium"
+                          :class="
+                            answer.answer_text.toLowerCase() === 'yes'
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-rose-100 text-rose-700'
+                          "
+                        >
+                          {{
+                            answer.answer_text.toLowerCase() === 'yes'
+                              ? t('management.guestGroupsView.rsvpQuestions.types.yes_no').split(' / ')[0]
+                              : t('management.guestGroupsView.rsvpQuestions.types.yes_no').split(' / ')[1]
+                          }}
+                        </span>
+                      </div>
+
+                      <!-- Single choice chip -->
+                      <div
+                        v-else-if="answer.question_type === 'single_choice' && answer.answer_text"
+                        class="flex flex-wrap gap-1.5"
+                      >
+                        <span class="px-2 py-0.5 rounded-md text-xs font-medium bg-sky-100 text-sky-700">
+                          {{ answer.answer_text }}
+                        </span>
+                      </div>
+
+                      <!-- Multi choice chip list -->
+                      <div
+                        v-else-if="
+                          answer.question_type === 'multi_choice' &&
+                          (answer.answer_choices?.length ?? 0) > 0
+                        "
+                        class="flex flex-wrap gap-1.5"
+                      >
+                        <span
+                          v-for="choice in answer.answer_choices"
+                          :key="choice"
+                          class="px-2 py-0.5 rounded-md text-xs font-medium bg-violet-100 text-violet-700"
+                        >
+                          {{ choice }}
+                        </span>
+                      </div>
+
+                      <!-- No answer fallback -->
+                      <p v-else class="text-xs text-slate-400 italic">
+                        {{ t('management.guestGroupsView.editGuestModal.rsvp.answerMissing') }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- Cash Gift Section -->
@@ -410,12 +523,17 @@ import type { EventGuest, GuestGroup, GuestRsvpStatusValue } from '../../service
 const { t } = useI18n()
 
 // Props
-const props = defineProps<{
-  show: boolean
-  guest: EventGuest | null
-  groups: GuestGroup[]
-  isUpdating: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    show: boolean
+    guest: EventGuest | null
+    groups: GuestGroup[]
+    isUpdating: boolean
+    /** True while the parent fetches the guest detail with `rsvp_answers`. */
+    isLoadingAnswers?: boolean
+  }>(),
+  { isLoadingAnswers: false },
+)
 
 // Emits
 const emit = defineEmits<{
@@ -497,6 +615,22 @@ const hasGuestRsvpDetails = computed(() => {
     (props.guest.plus_ones_count ?? 0) > 0 ||
     Boolean(props.guest.private_note_to_host?.trim())
   )
+})
+
+// Show the Answers panel whenever the list endpoint told us the guest has
+// answered at least one question, OR the detail endpoint has already
+// hydrated the array. Covers both the "show loader while fetching" and
+// the "already loaded" cases.
+const showAnswersSection = computed(() => {
+  if (!props.guest) return false
+  if ((props.guest.rsvp_answered_count ?? 0) > 0) return true
+  return (props.guest.rsvp_answers?.length ?? 0) > 0
+})
+
+// Preserve the host's authored question order.
+const sortedAnswers = computed(() => {
+  const answers = props.guest?.rsvp_answers ?? []
+  return [...answers].sort((a, b) => a.question_order - b.question_order)
 })
 
 const formatRespondedAt = (iso: string) => {

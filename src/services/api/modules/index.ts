@@ -30,4 +30,4 @@ export {
   serviceListingsService,
 } from './services.service'
 export { donationService } from './donation.service'
-export { guestRsvpService } from './rsvp.service'
+export { guestRsvpService, rsvpQuestionsService } from './rsvp.service'

@@ -1369,6 +1369,63 @@
         "pending": "មិនទាន់ឆ្លើយតប"
       }
     },
+    "rsvpQuestions": {
+      "header": "សំណួរ RSVP ផ្ទាល់ខ្លួន",
+      "subtitle": "សួរភ្ញៀវបន្ថែមពីលើការឆ្លើយ​ចូលរួម/មិនចូលរួម។",
+      "addButton": "បន្ថែមសំណួរ",
+      "loading": "កំពុងផ្ទុកសំណួរ…",
+      "empty": {
+        "title": "មិនទាន់មានសំណួរទេ",
+        "description": "បន្ថែមសំណួរដើម្បីប្រមូលចំណូលចិត្តអាហារ សំណើចម្រៀង ឬសំណួរផ្សេងទៀត។"
+      },
+      "requiredBadge": "ចាំបាច់",
+      "types": {
+        "text": "ចម្លើយខ្លី",
+        "long_text": "ចម្លើយវែង",
+        "yes_no": "បាទ/ចាស ឬ ទេ",
+        "single_choice": "ជ្រើសរើសមួយ",
+        "multi_choice": "ជ្រើសរើសច្រើន"
+      },
+      "actions": {
+        "moveUp": "រំកិលឡើងលើ",
+        "moveDown": "រំកិលចុះក្រោម",
+        "edit": "កែសំណួរ",
+        "delete": "លុបសំណួរ",
+        "saving": "កំពុងរក្សាទុក…",
+        "save": "រក្សាទុក",
+        "cancel": "បោះបង់"
+      },
+      "modal": {
+        "addTitle": "បន្ថែមសំណួរ",
+        "editTitle": "កែសំណួរ",
+        "typeLabel": "ប្រភេទសំណួរ",
+        "requiredLabel": "ចាំបាច់ឆ្លើយ",
+        "requiredHint": "អនុវត្តតែនៅពេលភ្ញៀវឆ្លើយ \"នឹងចូលរួម\" ឬ \"មិនប្រាកដ\"។",
+        "questionTextLabel": "អត្ថបទសំណួរ",
+        "questionTextEnglish": "អង់គ្លេស",
+        "questionTextKhmer": "ខ្មែរ",
+        "questionTextPlaceholder": "ឧ. តើអ្នកចូលចិត្តអាហារអ្វី?",
+        "questionTextKhmerPlaceholder": "ការបកប្រែ (ស្រេចចិត្ត)",
+        "choicesLabel": "ជម្រើសចម្លើយ",
+        "choicesHint": "អង់គ្លេស និង ខ្មែរ ត្រូវបានភ្ជាប់គ្នាតាមជួរ — បន្ថែម លុប ឬ​រៀបរៀងទាំងពីរជាមួយគ្នា។",
+        "choiceEnglishPlaceholder": "ជម្រើសជាភាសាអង់គ្លេស",
+        "choiceKhmerPlaceholder": "ការបកប្រែ (ស្រេចចិត្ត)",
+        "addChoice": "បន្ថែមជម្រើស",
+        "removeChoice": "លុបជម្រើសនេះ",
+        "validation": {
+          "questionRequired": "ត្រូវការអត្ថបទសំណួរ។",
+          "choicesRequired": "ប្រភេទសំណួរនេះត្រូវការជម្រើសយ៉ាងហោចណាស់មួយ។",
+          "choiceTextRequired": "ជម្រើសមិនអាចទទេទេ។"
+        },
+        "errorGeneric": "មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្ដងទៀត។"
+      },
+      "deleteConfirm": {
+        "title": "លុបសំណួរ?",
+        "body": "វានឹងលុបសំណួរនិងចម្លើយទាំងអស់ដែលភ្ញៀវបានបញ្ជូនសម្រាប់សំណួរនេះ។",
+        "confirm": "លុប",
+        "cancel": "បោះបង់"
+      }
+    },
     "addGuestModal": {
       "title": "បន្ថែមភ្ញៀវ",
       "close": "បិទ",
@@ -1478,6 +1535,10 @@
         "maxPlusOnesLabel": "ភ្ញៀវបន្ថែមអតិបរមា",
         "bringingLabel": "នឹងនាំមក:",
         "privateNoteLabel": "សារឯកជន:",
+        "answersTitle": "ចម្លើយ",
+        "answersLoading": "កំពុងផ្ទុកចម្លើយ…",
+        "answersEmpty": "មិនទាន់មានចម្លើយទេ។",
+        "answerMissing": "មិនបានឆ្លើយ",
         "statusOptions": {
           "pending": "មិនទាន់ឆ្លើយតប",
           "attending": "នឹងចូលរួម",
@@ -1787,6 +1848,66 @@
     "chart": {
       "fromGuests": "ពី {count} ភ្ញៀវ · មធ្យម {avg}",
       "guestsContributed": "{count} ភ្ញៀវបានរួមចំណែក"
+    }
+  },
+  "rsvpAnalytics": {
+    "title": "ការវិភាគ RSVP",
+    "subtitle": "តាមដានការឆ្លើយតប និងមើលរបៀបដែលភ្ញៀវឆ្លើយសំណួរផ្ទាល់ខ្លួន",
+    "loading": "កំពុងផ្ទុកការវិភាគ RSVP...",
+    "empty": {
+      "title": "មិនទាន់មានទិន្នន័យ RSVP ទេ",
+      "description": "នៅពេលអ្នកអញ្ជើញភ្ញៀវ ការឆ្លើយតបរបស់ពួកគេនឹងបង្ហាញនៅទីនេះ។"
+    },
+    "metrics": {
+      "invited": "បានអញ្ជើញ",
+      "invitedDesc": "ភ្ញៀវសរុបដែលបានអញ្ជើញ",
+      "responded": "បានឆ្លើយតប",
+      "respondedDesc": "{percent}% នៃអ្នកដែលបានអញ្ជើញ",
+      "expected": "រំពឹងទុក",
+      "expectedDesc": "ចូលរួម {attending} នាក់ + ភ្ញៀវបន្ថែម {plusOnes} នាក់",
+      "pending": "មិនទាន់ឆ្លើយ",
+      "pendingDesc": "កំពុងរង់ចាំការឆ្លើយតប",
+      "plusOnes": "ភ្ញៀវបន្ថែម",
+      "plusOnesDesc": "ភ្ញៀវបន្ថែមដែលត្រូវនាំមកជាមួយ"
+    },
+    "distribution": {
+      "title": "ការបែងចែកការឆ្លើយតប",
+      "description": "របៀបដែលភ្ញៀវកំពុងឆ្លើយតបជារួម។",
+      "legendCount": "{count} នាក់",
+      "legendPercent": "{percent}%"
+    },
+    "chase": {
+      "title": "ត្រូវតាមដាន",
+      "description": "ភ្ញៀវដែលមិនទាន់បានឆ្លើយតប — រំឭកពួកគេមុនពេលថ្ងៃធំ។",
+      "allResponded": "ភ្ញៀវទាំងអស់នៅក្នុងបញ្ជីរបស់អ្នកបានឆ្លើយតបហើយ។",
+      "unnamedGuest": "ភ្ញៀវគ្មានឈ្មោះ",
+      "moreHidden": "…និង {count} នាក់ទៀតដែលមិនទាន់ឆ្លើយ",
+      "status": {
+        "not_sent": "មិនទាន់ផ្ញើ",
+        "sent": "បានអញ្ជើញ",
+        "viewed": "បានមើល"
+      }
+    },
+    "questions": {
+      "title": "ការបែងចែកតាមសំណួរ",
+      "description": "ចុចលើសំណួរ ដើម្បីមើលថាអ្នកណាបានឆ្លើយអ្វី។",
+      "answersCount": "ចម្លើយ {count}",
+      "freeTextCollected": "បានប្រមូលចម្លើយជាអក្សរ {count}",
+      "noAnswers": "មិនទាន់មានចម្លើយទេ",
+      "choicePercent": "{percent}% នៃអ្នកឆ្លើយ",
+      "emptyState": {
+        "title": "មិនទាន់មានសំណួរផ្ទាល់ខ្លួន",
+        "description": "បន្ថែមសំណួរ RSVP នៅក្នុងផ្ទាំងការគ្រប់គ្រងភ្ញៀវ ដើម្បីចាប់ផ្ដើមប្រមូលទិន្នន័យ។"
+      }
+    },
+    "drill": {
+      "loading": "កំពុងផ្ទុកការឆ្លើយតប…",
+      "loadError": "មិនអាចផ្ទុកការឆ្លើយតបសម្រាប់សំណួរនេះបានទេ។",
+      "guestsCount": "ភ្ញៀវ {count} នាក់",
+      "noFreeText": "មិនទាន់មានចម្លើយជាអក្សរទេ។",
+      "missingTitle": "នៅរង់ចាំចម្លើយ",
+      "missingCount": "ភ្ញៀវ {count} នាក់",
+      "missingTruncated": "បង្ហាញតែ ៥០ ដំបូង — បើកផ្ទាំងភ្ញៀវសម្រាប់បញ្ជីពេញ។"
     }
   },
   "collaboratorsTab": {

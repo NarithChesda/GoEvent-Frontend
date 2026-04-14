@@ -17,6 +17,15 @@
           @select-status="handleSelectRsvpStatus"
         />
       </div>
+      <div class="border-t border-slate-100 pt-6">
+        <RsvpQuestionsManager
+          :event-id="eventId"
+          :questions="rsvpQuestions"
+          :loading="loadingRsvpQuestions"
+          @refresh="$emit('refresh-rsvp-questions')"
+          @message="(type, text) => $emit('rsvp-questions-message', type, text)"
+        />
+      </div>
     </div>
 
     <!-- Loading State -->
@@ -439,9 +448,11 @@ import { UserPlus, Search, Filter, Users, X, Send, Trash2, ChevronDown, Info, Fi
 import GuestListItem from './GuestListItem.vue'
 import GuestStatsCard from './GuestStatsCard.vue'
 import GuestRsvpStatsCard from './GuestRsvpStatsCard.vue'
+import RsvpQuestionsManager from './RsvpQuestionsManager.vue'
 import type {
   GuestGroup,
   EventGuest,
+  EventRsvpQuestion,
   GuestStats,
   GuestRsvpStatusValue,
   GuestRsvpSummary,
@@ -476,6 +487,10 @@ interface Props {
   // RSVP summary
   rsvpSummary: GuestRsvpSummary | null
   loadingRsvpSummary: boolean
+  // Custom RSVP questions (host-defined questionnaire)
+  eventId: string
+  rsvpQuestions: EventRsvpQuestion[]
+  loadingRsvpQuestions: boolean
 }
 
 const props = defineProps<Props>()
@@ -498,6 +513,8 @@ const emit = defineEmits<{
   'bulk-mark-sent': [groupId: number, selectedIds: number[]]
   'bulk-delete': [groupId: number, selectedIds: number[]]
   'register-group-card': [groupId: number, el: any]
+  'refresh-rsvp-questions': []
+  'rsvp-questions-message': [type: 'success' | 'error', text: string]
 }>()
 
 // Local state

@@ -72,6 +72,11 @@
         :loading-stats="loadingStats"
         :rsvp-summary="rsvpSummary"
         :loading-rsvp-summary="loadingRsvpSummary"
+        :event-id="props.eventId"
+        :rsvp-questions="rsvpQuestions"
+        :loading-rsvp-questions="loadingRsvpQuestions"
+        @refresh-rsvp-questions="loadRsvpQuestions"
+        @rsvp-questions-message="handleRsvpQuestionsMessage"
         @add-guest="showAddGuestModal = true"
         @toggle-group="handleGroupToggle"
         @edit-group="openEditGroupModal"
@@ -166,6 +171,7 @@
       :guest="editTargetGuest"
       :groups="groups"
       :is-updating="isUpdatingGuest"
+      :is-loading-answers="isLoadingEditTargetDetail"
       @close="handleCloseEditGuestModal"
       @update-guest="handleUpdateGuest"
       @mark-sent="handleMarkAsSent"
@@ -213,8 +219,14 @@ import {
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { useGuestManagementStore } from '../stores/guestManagement'
 import { useBulkImport } from '../composables/invitation/useBulkImport'
-import type { Event, EventGuest, GuestGroup, GuestRsvpSummary } from '../services/api'
-import { guestService } from '../services/api'
+import type {
+  Event,
+  EventGuest,
+  EventRsvpQuestion,
+  GuestGroup,
+  GuestRsvpSummary,
+} from '../services/api'
+import { guestService, rsvpQuestionsService } from '../services/api'
 import { getGuestSSRMetaUrl } from '../utils/metaUtils'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import CreateGroupModal from './invitation/CreateGroupModal.vue'
@@ -267,6 +279,26 @@ const loadRsvpSummary = async () => {
   } finally {
     loadingRsvpSummary.value = false
   }
+}
+
+// Custom RSVP questions (host-defined questionnaire).
+const rsvpQuestions = ref<EventRsvpQuestion[]>([])
+const loadingRsvpQuestions = ref(false)
+
+const loadRsvpQuestions = async () => {
+  loadingRsvpQuestions.value = true
+  try {
+    const response = await rsvpQuestionsService.listQuestions(props.eventId)
+    if (response.success && response.data) {
+      rsvpQuestions.value = response.data
+    }
+  } finally {
+    loadingRsvpQuestions.value = false
+  }
+}
+
+const handleRsvpQuestionsMessage = (type: 'success' | 'error', text: string) => {
+  showMessage(type, text)
 }
 
 // Store action wrappers that include eventId
@@ -366,6 +398,7 @@ const guestGroupsViewRef = ref<InstanceType<typeof GuestGroupsView> | null>(null
 const showEditGuestModal = ref(false)
 const editTargetGuest = ref<EventGuest | null>(null)
 const isUpdatingGuest = ref(false)
+const isLoadingEditTargetDetail = ref(false)
 const editGuestModalRef = ref<InstanceType<typeof EditGuestModal> | null>(null)
 
 // Edit group modal state
@@ -686,9 +719,34 @@ const handleMarkAsSent = async (guest: EventGuest) => {
   }
 }
 
-const openEditGuestModal = (guest: EventGuest) => {
+const openEditGuestModal = async (guest: EventGuest) => {
+  // Open the modal immediately with the lightweight list data so the user
+  // doesn't see any click-to-open delay. The detail fetch runs in the
+  // background and merges `rsvp_answers` in when it lands.
   editTargetGuest.value = guest
   showEditGuestModal.value = true
+
+  if ((guest.rsvp_answered_count ?? 0) === 0) {
+    // Nothing to fetch — the guest hasn't answered any questions.
+    return
+  }
+
+  isLoadingEditTargetDetail.value = true
+  try {
+    const response = await guestService.getGuest(props.eventId, guest.id)
+    // Guard against race: user might have closed the modal or opened a
+    // different guest before this fetch resolved.
+    if (
+      response.success &&
+      response.data &&
+      showEditGuestModal.value &&
+      editTargetGuest.value?.id === guest.id
+    ) {
+      editTargetGuest.value = response.data
+    }
+  } finally {
+    isLoadingEditTargetDetail.value = false
+  }
 }
 
 const handleCloseEditGuestModal = () => {
@@ -877,6 +935,7 @@ watch(hasTemplatePayment, (isActivated) => {
     loadGroups()
     loadGuestStats()
     loadRsvpSummary()
+    loadRsvpQuestions()
   }
 })
 

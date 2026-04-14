@@ -39,6 +39,22 @@ export interface GuestGroupStats {
 /** RSVP response state stored on the guest row (private-event flow). */
 export type GuestRsvpStatusValue = 'pending' | 'attending' | 'not_attending' | 'maybe'
 
+/**
+ * One hydrated RSVP answer as returned by the host guest-detail endpoint
+ * (`GET /api/events/{id}/guests/{guest_id}/`). Each row embeds the question's
+ * text/type/order so the frontend can render without cross-referencing the
+ * question list.
+ */
+export interface GuestRsvpAnswerDetail {
+  question_id: number
+  question_text: string
+  question_type: 'text' | 'long_text' | 'yes_no' | 'single_choice' | 'multi_choice'
+  question_order: number
+  answer_text: string
+  answer_choices: string[]
+  updated_at: string
+}
+
 export interface EventGuest {
   id: number
   name: string
@@ -86,6 +102,17 @@ export interface EventGuest {
   plus_ones_names?: string
   private_note_to_host?: string
   max_plus_ones?: number
+  /**
+   * How many custom RSVP questions this guest has answered. Present on the
+   * list endpoint (cheap SQL count) and echoed on the detail endpoint.
+   */
+  rsvp_answered_count?: number
+  /**
+   * Fully-hydrated per-question answers. Only present on the **detail**
+   * endpoint (`GET /api/events/{id}/guests/{guest_id}/`) — the list endpoint
+   * deliberately omits this to stay lightweight.
+   */
+  rsvp_answers?: GuestRsvpAnswerDetail[]
   created_at: string
   updated_at: string
 }
@@ -119,7 +146,13 @@ export interface UpdateGuestRequest extends Partial<CreateGuestRequest> {
 export interface GuestListFilters extends QueryParams {
   search?: string
   invitation_status?: 'not_sent' | 'sent' | 'viewed'
+  /** Server-side RSVP status filter (`pending` / `attending` / `not_attending` / `maybe`). */
+  rsvp_status?: GuestRsvpStatusValue
   group?: number
+  /**
+   * Field to order by — e.g. `rsvp_responded_at` for most-recent-first, or
+   * `-rsvp_status` to group by status.
+   */
   ordering?: string
   page?: number
   page_size?: number

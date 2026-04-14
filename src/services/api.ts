@@ -112,6 +112,7 @@ export type {
   GuestRsvpPendingGuest,
   GuestRsvpQuestionBreakdown,
   GuestRsvpSummary,
+  GuestRsvpAnswerDetail,
 } from './api/types/guest.types'
 
 // Payment types
@@ -296,7 +297,7 @@ export {
 export { donationService } from './api/modules/donation.service'
 
 // Guest RSVP service (private-event shortcode flow)
-export { guestRsvpService } from './api/modules/rsvp.service'
+export { guestRsvpService, rsvpQuestionsService } from './api/modules/rsvp.service'
 
 // Guest RSVP types
 export type {
@@ -307,6 +308,15 @@ export type {
   GuestRsvpAnswer,
   GuestRsvpFormState,
   GuestRsvpSubmitRequest,
+  CreateRsvpQuestionRequest,
+  UpdateRsvpQuestionRequest,
+  BulkReorderRsvpQuestionsRequest,
+  BulkReorderRsvpQuestionsResponse,
+  RsvpQuestionResponses,
+  RsvpQuestionResponseGuest,
+  RsvpQuestionResponseGroupedBucket,
+  RsvpQuestionFreeTextAnswer,
+  RsvpQuestionResponsesFilters,
 } from './api/types/rsvp.types'
 
 // ============================================================================

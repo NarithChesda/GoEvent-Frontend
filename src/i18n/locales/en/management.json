@@ -1369,6 +1369,63 @@
         "pending": "Pending"
       }
     },
+    "rsvpQuestions": {
+      "header": "Custom RSVP questions",
+      "subtitle": "Ask guests anything beyond the basic yes/no response.",
+      "addButton": "Add question",
+      "loading": "Loading questions…",
+      "empty": {
+        "title": "No custom questions yet",
+        "description": "Add a question to collect meal preferences, song requests, or anything else."
+      },
+      "requiredBadge": "Required",
+      "types": {
+        "text": "Short answer",
+        "long_text": "Long answer",
+        "yes_no": "Yes / No",
+        "single_choice": "Single choice",
+        "multi_choice": "Multi choice"
+      },
+      "actions": {
+        "moveUp": "Move up",
+        "moveDown": "Move down",
+        "edit": "Edit question",
+        "delete": "Delete question",
+        "saving": "Saving…",
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "modal": {
+        "addTitle": "Add question",
+        "editTitle": "Edit question",
+        "typeLabel": "Question type",
+        "requiredLabel": "Required answer",
+        "requiredHint": "Only enforced when the guest replies with Attending or Maybe.",
+        "questionTextLabel": "Question text",
+        "questionTextEnglish": "English",
+        "questionTextKhmer": "Khmer",
+        "questionTextPlaceholder": "e.g. What's your meal preference?",
+        "questionTextKhmerPlaceholder": "Translation (optional)",
+        "choicesLabel": "Answer choices",
+        "choicesHint": "English and Khmer are paired by row — add, remove, or reorder both sides together.",
+        "choiceEnglishPlaceholder": "Choice in English",
+        "choiceKhmerPlaceholder": "Translation (optional)",
+        "addChoice": "Add choice",
+        "removeChoice": "Remove this choice",
+        "validation": {
+          "questionRequired": "Question text is required.",
+          "choicesRequired": "This question type needs at least one choice.",
+          "choiceTextRequired": "Choices cannot be empty."
+        },
+        "errorGeneric": "Something went wrong. Please try again."
+      },
+      "deleteConfirm": {
+        "title": "Delete question?",
+        "body": "This will remove the question and any answers guests have already submitted for it.",
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      }
+    },
     "addGuestModal": {
       "title": "Add Guest",
       "close": "Close",
@@ -1478,6 +1535,10 @@
         "maxPlusOnesLabel": "Max plus-ones",
         "bringingLabel": "Bringing:",
         "privateNoteLabel": "Private note:",
+        "answersTitle": "Answers",
+        "answersLoading": "Loading answers…",
+        "answersEmpty": "No answers yet.",
+        "answerMissing": "Not answered",
         "statusOptions": {
           "pending": "Pending",
           "attending": "Attending",
@@ -1787,6 +1848,66 @@
     "chart": {
       "fromGuests": "From {count} guest · Avg {avg} | From {count} guests · Avg {avg}",
       "guestsContributed": "{count} guest contributed | {count} guests contributed"
+    }
+  },
+  "rsvpAnalytics": {
+    "title": "RSVP Analytics",
+    "subtitle": "Track responses and see how guests answered your custom questions",
+    "loading": "Loading RSVP analytics...",
+    "empty": {
+      "title": "No RSVP data yet",
+      "description": "Once you invite guests, their responses will show up here."
+    },
+    "metrics": {
+      "invited": "Invited",
+      "invitedDesc": "Total guests invited",
+      "responded": "Responded",
+      "respondedDesc": "{percent}% of invited",
+      "expected": "Expected",
+      "expectedDesc": "{attending} attending + {plusOnes} plus-ones",
+      "pending": "Pending",
+      "pendingDesc": "Awaiting a reply",
+      "plusOnes": "Plus-ones",
+      "plusOnesDesc": "Additional guests being brought"
+    },
+    "distribution": {
+      "title": "Response distribution",
+      "description": "How your guests are replying overall.",
+      "legendCount": "{count} guest | {count} guests",
+      "legendPercent": "{percent}%"
+    },
+    "chase": {
+      "title": "Follow up",
+      "description": "Guests who haven't replied yet — nudge them before the big day.",
+      "allResponded": "Everyone on your guest list has responded.",
+      "unnamedGuest": "Unnamed guest",
+      "moreHidden": "…and {count} more pending | …and {count} more pending",
+      "status": {
+        "not_sent": "Not sent",
+        "sent": "Invited",
+        "viewed": "Viewed"
+      }
+    },
+    "questions": {
+      "title": "Custom question breakdowns",
+      "description": "Click a question to see who answered what.",
+      "answersCount": "{count} answer | {count} answers",
+      "freeTextCollected": "Collected {count} free-text response | Collected {count} free-text responses",
+      "noAnswers": "No answers yet",
+      "choicePercent": "{percent}% of respondents",
+      "emptyState": {
+        "title": "No custom questions",
+        "description": "Add RSVP questions in the Guest Management tab to start collecting data."
+      }
+    },
+    "drill": {
+      "loading": "Loading responses…",
+      "loadError": "Couldn't load responses for this question.",
+      "guestsCount": "{count} guest | {count} guests",
+      "noFreeText": "No free-text answers submitted yet.",
+      "missingTitle": "Still expected to answer",
+      "missingCount": "{count} guest | {count} guests",
+      "missingTruncated": "Showing the first 50 — open the Guest tab for the full list."
     }
   },
   "collaboratorsTab": {
