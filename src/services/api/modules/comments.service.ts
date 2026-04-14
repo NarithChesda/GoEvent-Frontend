@@ -1,6 +1,12 @@
 /**
  * Comments API Service
- * Handles event comments and feedback
+ * Handles event comments and feedback.
+ *
+ * Auth model is privacy-partitioned:
+ *  - public events  → JWT only (Authorization header injected by ApiClient)
+ *  - private events → guest_shortcode in body (no JWT required)
+ *
+ * Listings (GET) are public. Writes (POST/PATCH/DELETE) require one credential.
  */
 
 import { apiClient } from '../core/ApiClient'
@@ -39,34 +45,52 @@ export const commentsService = {
     return apiClient.get<EventComment>(`/api/feedback/comments/${commentId}/`)
   },
 
-  // Create a new comment
-  async createComment(eventId: string, commentText: string): Promise<ApiResponse<EventComment>> {
-    // Get user ID from auth store
-    const authStore = useAuthStore()
-    const userId = authStore.user?.id
-
-    const data = {
+  /**
+   * Create a comment.
+   * Pass `guestShortcode` for guests on private events. The backend's
+   * privacy partition ensures the right credential wins:
+   *   - private event → shortcode wins (JWT ignored)
+   *   - public event  → JWT wins (shortcode silently ignored)
+   */
+  async createComment(
+    eventId: string,
+    commentText: string,
+    guestShortcode?: string | null,
+  ): Promise<ApiResponse<EventComment>> {
+    const data: Record<string, string> = {
       event: eventId,
-      user: userId,
       comment_text: commentText,
     }
-
+    if (guestShortcode) {
+      data.guest_shortcode = guestShortcode
+    }
     return apiClient.post<EventComment>('/api/feedback/comments/', data)
   },
 
-  // Update a comment (partial update)
-  async updateComment(commentId: number, commentText: string): Promise<ApiResponse<EventComment>> {
-    return apiClient.patch<EventComment>(`/api/feedback/comments/${commentId}/`, {
-      comment_text: commentText,
-    })
+  // Update a comment (partial update). Guest comments must re-send the shortcode.
+  async updateComment(
+    commentId: number,
+    commentText: string,
+    guestShortcode?: string | null,
+  ): Promise<ApiResponse<EventComment>> {
+    const data: Record<string, string> = { comment_text: commentText }
+    if (guestShortcode) {
+      data.guest_shortcode = guestShortcode
+    }
+    return apiClient.patch<EventComment>(`/api/feedback/comments/${commentId}/`, data)
   },
 
-  // Delete a comment
-  async deleteComment(commentId: number): Promise<ApiResponse<void>> {
-    return apiClient.delete(`/api/feedback/comments/${commentId}/`)
+  // Delete a comment. Guest comments must re-send the shortcode in the body.
+  async deleteComment(
+    commentId: number,
+    guestShortcode?: string | null,
+  ): Promise<ApiResponse<void>> {
+    const body = guestShortcode ? { guest_shortcode: guestShortcode } : undefined
+    return apiClient.delete(`/api/feedback/comments/${commentId}/`, body)
   },
 
-  // Check if user has already commented on an event
+  // Check if the logged-in user has already commented on an event.
+  // Only meaningful for public events (private events use the guest channel).
   async hasUserCommented(eventId: string): Promise<boolean> {
     const response = await this.getEventComments(eventId)
 
@@ -83,5 +107,21 @@ export const commentsService = {
     }
 
     return response.data.results.some((comment) => comment.user === userId)
+  },
+
+  // Check if the guest identified by `guestShortcode` (via stored guest name)
+  // has already commented on this event. We compare by guest_info.name because
+  // the shortcode itself is write-only and never echoed back in responses.
+  async hasGuestCommented(eventId: string, guestName: string): Promise<boolean> {
+    if (!guestName) return false
+    const response = await this.getEventComments(eventId)
+
+    if (!response.success || !response.data) {
+      return false
+    }
+
+    return response.data.results.some(
+      (comment) => comment.guest_info?.name === guestName,
+    )
   },
 }

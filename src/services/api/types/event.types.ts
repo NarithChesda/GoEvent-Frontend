@@ -345,21 +345,32 @@ export interface CreateEventTextRequest {
 export interface EventComment {
   id: number
   event: string
-  user: number
+  user: number | null
   user_info?: {
     id: number
     username: string
     first_name: string
     last_name: string
     profile_picture: string
-  }
+  } | null
+  guest?: number | null
+  guest_info?: {
+    id: number
+    name: string
+  } | null
   comment_text: string
   created_at: string
+  /** Canonical display name — works for both user- and guest-authored comments. */
+  author_name: string
+  /** Absolute avatar URL for user comments; null for guest comments. */
+  author_avatar?: string | null
 }
 
 export interface CreateCommentRequest {
   event: string
   comment_text: string
+  /** Write-only. Required to author a comment as a guest on a private event. */
+  guest_shortcode?: string
 }
 
 export interface CommentFilters extends QueryParams {

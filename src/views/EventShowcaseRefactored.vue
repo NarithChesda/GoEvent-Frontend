@@ -85,6 +85,7 @@
             :available-languages="availableLanguages"
             :current-language="currentLanguage"
             :guest-name="guestName"
+            :guest-shortcode="guestShortcode"
             :is-music-playing="isMusicPlaying"
             :is-authenticated="authStore.isAuthenticated"
             :content-loading="contentLoading"
@@ -199,6 +200,7 @@ const {
   // Computed properties
   event,
   guestName,
+  guestShortcode,
   templateAssets,
   templateColors,
   eventTexts,

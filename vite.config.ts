@@ -80,6 +80,18 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       strictPort: true,
       host: true,
+      proxy: {
+        // Forward guest shortlinks (/g/{shortcode}) to the backend SSR endpoint.
+        // Backend resolves the shortcode and returns a 302 redirect back to the
+        // showcase URL with `guest_name` + `g` query params attached. The dev
+        // backend must be configured to redirect to http://localhost:5173 (not
+        // the production host) for this to land back in Vite.
+        '/g': {
+          target: env.VITE_API_BASE_URL || 'http://127.0.0.1:8000',
+          changeOrigin: true,
+          followRedirects: false,
+        },
+      },
     },
     // Preview server configuration (for local testing)
     preview: {

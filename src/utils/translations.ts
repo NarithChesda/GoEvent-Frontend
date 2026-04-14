@@ -99,6 +99,8 @@ export const rsvpTranslations: Record<
     comment_already_commented: string
     comment_one_per_user: string
     comment_you_badge: string
+    comment_invite_only_prompt: string
+    comment_commenting_as: string
 
     // Payment section
     payment_wedding_gift: string
@@ -264,6 +266,8 @@ export const rsvpTranslations: Record<
     comment_already_commented: 'You have already left a comment for this event',
     comment_one_per_user: 'Each user can only comment once per event',
     comment_you_badge: 'You',
+    comment_invite_only_prompt: 'This is a private event. Please open your invitation link to leave a message.',
+    comment_commenting_as: 'Commenting as',
 
     // Payment section
     payment_wedding_gift: 'Wedding Gift',
@@ -429,6 +433,8 @@ export const rsvpTranslations: Record<
     comment_already_commented: 'អ្នកបានជូនពររួចហើយ',
     comment_one_per_user: 'អ្នកប្រើប្រាស់ម្នាក់អាចមតិយោបល់បានជំនាញសម្រាប់ព្រឹត្តិការណ៍មួយ',
     comment_you_badge: 'You',
+    comment_invite_only_prompt: 'នេះជាកម្មវិធីឯកជន។ សូមបើកតំណរអញ្ជើញរបស់អ្នក ដើម្បីផ្ញើសារ។',
+    comment_commenting_as: 'ជូនពរក្នុងនាម',
 
     // Payment section
     payment_wedding_gift: 'ចំណងដៃ',
@@ -594,6 +600,8 @@ export const rsvpTranslations: Record<
     comment_already_commented: '您已经为此活动留言了',
     comment_one_per_user: '每个用户每个活动只能评论一次',
     comment_you_badge: '您',
+    comment_invite_only_prompt: '这是一个私密活动。请打开您的邀请链接以留言。',
+    comment_commenting_as: '以此身份留言：',
 
     // Payment section
     payment_wedding_gift: '结婚礼品',

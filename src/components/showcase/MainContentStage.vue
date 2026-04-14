@@ -354,7 +354,9 @@
                 >
                   <CommentSection
                     :event-id="event.id"
+                    :event-privacy="event.privacy"
                     :guest-name="guestName as string"
+                    :guest-shortcode="guestShortcode"
                     :primary-color="primaryColor"
                     :secondary-color="secondaryColor"
                     :accent-color="accentColor"
@@ -937,6 +939,8 @@ interface Props {
   availableLanguages?: Array<{ id: number; language: string; language_display: string }>
   currentLanguage?: string
   guestName?: string
+  /** Guest shortcode from `?g=...` — credential for commenting on private events. */
+  guestShortcode?: string | null
   isMusicPlaying?: boolean
   isAuthenticated?: boolean
   contentLoading?: boolean

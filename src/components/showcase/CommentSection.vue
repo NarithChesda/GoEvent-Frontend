@@ -24,8 +24,18 @@
         border: `1px solid ${backgroundColor}40`,
       }"
     >
-      <!-- Sign In Prompt for Unauthenticated Users -->
-      <div v-if="!isUserAuthenticated" class="text-center py-4">
+      <!-- Private event without an invitation link -->
+      <div v-if="showInviteOnlyPrompt" class="text-center py-4">
+        <p
+          class="text-sm"
+          :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
+        >
+          {{ commentInviteOnlyPromptText }}
+        </p>
+      </div>
+
+      <!-- Sign In Prompt for Unauthenticated Users on PUBLIC events -->
+      <div v-else-if="showLoginPrompt" class="text-center py-4">
         <p
           class="text-sm mb-3"
           :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
@@ -57,8 +67,20 @@
         </p>
       </div>
 
-      <!-- Comment Form for Authenticated Users -->
-      <form v-else @submit.prevent="submitComment">
+      <!-- Comment Form (visible whenever the form can be shown) -->
+      <form v-else-if="canShowCommentForm" @submit.prevent="submitComment">
+        <!-- "Commenting as <guestName>" hint for guest authors -->
+        <p
+          v-if="commentAuthMode === 'guest' && guestName"
+          class="text-xs mb-2"
+          :style="{
+            color: primaryColor,
+            opacity: 0.85,
+            fontFamily: secondaryFont || currentFont,
+          }"
+        >
+          {{ commentCommentingAsText }} <strong>{{ guestName }}</strong>
+        </p>
         <!-- Comment Textarea -->
         <div class="mb-3">
           <textarea
@@ -491,7 +513,16 @@ interface EventText {
 
 interface Props {
   eventId: string
+  /**
+   * Event privacy. Determines which auth flow is required to comment:
+   *  - 'public'  → JWT only (login required)
+   *  - 'private' → guest_shortcode only (invitation link required)
+   * Defaults to 'public' if not provided (preserves legacy behavior).
+   */
+  eventPrivacy?: 'public' | 'private'
   guestName?: string
+  /** Guest shortcode from `?g=...`. Required to comment on a private event. */
+  guestShortcode?: string | null
   primaryColor: string
   secondaryColor?: string | null
   accentColor: string
@@ -559,6 +590,8 @@ const getTextContent = (textType: string, fallback = ''): string => {
     comment_already_commented: 'comment_already_commented',
     comment_one_per_user: 'comment_one_per_user',
     comment_you_badge: 'comment_you_badge',
+    comment_invite_only_prompt: 'comment_invite_only_prompt',
+    comment_commenting_as: 'comment_commenting_as',
   }
 
   const translationKey = keyMap[textType]
@@ -603,6 +636,15 @@ const commentOnePerUserText = computed(() =>
   getTextContent('comment_one_per_user', 'Each user can only comment once per event'),
 )
 const commentYouBadgeText = computed(() => getTextContent('comment_you_badge', 'You'))
+const commentInviteOnlyPromptText = computed(() =>
+  getTextContent(
+    'comment_invite_only_prompt',
+    'This is a private event. Please open your invitation link to leave a message.',
+  ),
+)
+const commentCommentingAsText = computed(() =>
+  getTextContent('comment_commenting_as', 'Commenting as'),
+)
 
 // Router and Auth
 const router = useRouter()
@@ -675,50 +717,51 @@ const canLoadMore = computed(() => hasMoreComments.value && !loadingMoreComments
 // Background color with fallback to primaryColor
 const backgroundColor = computed(() => props.backgroundColor || props.primaryColor)
 
-// Helper function to process comments (simplified since backend now provides user_info)
+// Helper function to process comments
 const processComments = (comments: EventComment[]): EventComment[] => {
-  const processedComments = comments.map((comment) => {
-    // Backend now provides user_info, so we sanitize and return the comment
-    const sanitizedComment = sanitizeApiResponse(comment)
+  const processedComments = comments.map((comment) => sanitizeApiResponse(comment))
 
-    // If for some reason user_info is missing, we can add minimal fallback
-    if (!sanitizedComment.user_info) {
-      sanitizedComment.user_info = {
-        id: sanitizedComment.user,
-        username: sanitizePlainText(`user_${sanitizedComment.user}`, 50),
-        first_name: '',
-        last_name: '',
-        profile_picture: '',
-      }
-    }
-    return sanitizedComment
-  })
-
-  // Sort comments to show user's own comment at the top
-  return sortCommentsWithUserFirst(processedComments)
+  // Sort comments so the current author's own comment surfaces at the top.
+  return sortCommentsWithOwnerFirst(processedComments)
 }
 
-// Helper function to sort comments with user's own comment at the top
-const sortCommentsWithUserFirst = (comments: EventComment[]): EventComment[] => {
-  if (!authStore.isAuthenticated || !authStore.user) {
-    return comments
-  }
-
-  const currentUserId = authStore.user.id
-  const userComment = comments.find((comment) => comment.user === currentUserId)
-  const otherComments = comments.filter((comment) => comment.user !== currentUserId)
-
-  // If user has a comment, put it first, otherwise return original order
-  if (userComment) {
-    return [userComment, ...otherComments]
-  }
-
-  return comments
+// Float the current author's comment to the top regardless of whether they
+// authored it as a logged-in user or as a guest via shortlink.
+const sortCommentsWithOwnerFirst = (comments: EventComment[]): EventComment[] => {
+  const ownIndex = comments.findIndex((c) => isUserCommentOwner(c))
+  if (ownIndex <= 0) return comments
+  const own = comments[ownIndex]
+  return [own, ...comments.slice(0, ownIndex), ...comments.slice(ownIndex + 1)]
 }
 
 const isUserAuthenticated = computed(() => {
   return authStore.isAuthenticated
 })
+
+// ---- Privacy partition ---------------------------------------------------
+// Private events are shortcode-only; public events are JWT-only. Comment auth
+// is decided here so the rest of the component can branch on it cleanly.
+
+const isPrivateEvent = computed(() => props.eventPrivacy === 'private')
+
+const hasGuestCredential = computed(
+  () => Boolean(props.guestShortcode && props.guestName),
+)
+
+const commentAuthMode = computed<'guest' | 'user' | null>(() => {
+  if (isPrivateEvent.value) {
+    return hasGuestCredential.value ? 'guest' : null
+  }
+  return isUserAuthenticated.value ? 'user' : null
+})
+
+const canShowCommentForm = computed(() => commentAuthMode.value !== null)
+const showInviteOnlyPrompt = computed(
+  () => isPrivateEvent.value && !hasGuestCredential.value,
+)
+const showLoginPrompt = computed(
+  () => !isPrivateEvent.value && !isUserAuthenticated.value,
+)
 
 // Methods
 const handleSignInClick = () => {
@@ -734,14 +777,18 @@ const buildFullName = (firstName?: string | null, lastName?: string | null): str
 }
 
 const getCommentDisplayName = (comment: EventComment): string => {
-  // If this is the current user's comment and we have auth store data, use it
+  // Backend-provided canonical name covers both author types.
+  if (comment.author_name) return comment.author_name
+
+  // Fallbacks below only matter if the backend response is malformed.
+  if (comment.guest_info?.name) return comment.guest_info.name
+
   if (authStore.isAuthenticated && authStore.user && comment.user === authStore.user.id) {
     const fullName = buildFullName(authStore.user.first_name, authStore.user.last_name)
     if (fullName) return fullName
     if (authStore.user.username) return authStore.user.username
   }
 
-  // Use user_info from the API response (updated backend)
   const userInfoFullName = buildFullName(
     comment.user_info?.first_name,
     comment.user_info?.last_name,
@@ -752,8 +799,7 @@ const getCommentDisplayName = (comment: EventComment): string => {
     return comment.user_info.username
   }
 
-  // Fallback for cases where user_info is missing
-  return `Guest User ${comment.user}`
+  return 'Guest'
 }
 
 const getCommentInitial = (comment: EventComment): string => {
@@ -762,6 +808,12 @@ const getCommentInitial = (comment: EventComment): string => {
 }
 
 const getCommentAvatarUrl = (comment: EventComment): string | null => {
+  // Guest comments have no avatar — render initials placeholder.
+  if (comment.guest) return null
+
+  // Backend now ships an absolute URL for the user's avatar.
+  if (comment.author_avatar) return comment.author_avatar
+
   // If this is the current user's comment, try to use auth store profile picture
   if (authStore.isAuthenticated && authStore.user && comment.user === authStore.user.id) {
     if (authStore.user.profile_picture) {
@@ -769,7 +821,6 @@ const getCommentAvatarUrl = (comment: EventComment): string | null => {
     }
   }
 
-  // Use user_info profile picture if available (backend now provides full URLs)
   if (comment.user_info?.profile_picture) {
     return comment.user_info.profile_picture
   }
@@ -786,8 +837,15 @@ const setAvatarError = (commentId: number) => {
 }
 
 const isUserCommentOwner = (comment: EventComment): boolean => {
-  if (!authStore.isAuthenticated || !authStore.user) return false
-  return comment.user === authStore.user.id
+  // Guest-authored comment: stored shortcode + matching guest name claims it.
+  if (comment.guest_info && hasGuestCredential.value) {
+    return comment.guest_info.name === props.guestName
+  }
+  // User-authored comment: JWT identifies the author.
+  if (comment.user_info && authStore.isAuthenticated && authStore.user) {
+    return comment.user_info.id === authStore.user.id
+  }
+  return false
 }
 
 const capitalizeFirstLetter = (text: string): string => {
@@ -821,6 +879,11 @@ const sanitizeApiResponse = (comment: EventComment): EventComment => {
   // Sanitize comment text
   sanitizedComment.comment_text = sanitizeComment(comment.comment_text)
 
+  // Canonical author name (always present for both author types)
+  if (sanitizedComment.author_name) {
+    sanitizedComment.author_name = sanitizePlainText(sanitizedComment.author_name, 100)
+  }
+
   // Sanitize user info if present
   if (sanitizedComment.user_info) {
     sanitizedComment.user_info = {
@@ -828,6 +891,14 @@ const sanitizeApiResponse = (comment: EventComment): EventComment => {
       first_name: sanitizePlainText(sanitizedComment.user_info.first_name || '', 50),
       last_name: sanitizePlainText(sanitizedComment.user_info.last_name || '', 50),
       username: sanitizePlainText(sanitizedComment.user_info.username || '', 50),
+    }
+  }
+
+  // Sanitize guest info if present
+  if (sanitizedComment.guest_info) {
+    sanitizedComment.guest_info = {
+      ...sanitizedComment.guest_info,
+      name: sanitizePlainText(sanitizedComment.guest_info.name || '', 100),
     }
   }
 
@@ -902,7 +973,7 @@ const handleEditFromMenu = (comment: EventComment | undefined) => {
 const handleDeleteFromMenu = (comment: EventComment | undefined) => {
   if (!comment) return
   closeCommentMenu()
-  openDeleteModal(comment.id, comment.user_info?.first_name || 'this comment')
+  openDeleteModal(comment.id, getCommentDisplayName(comment) || 'this comment')
 }
 
 const startEditComment = (comment: EventComment) => {
@@ -930,8 +1001,15 @@ const updateComment = async (commentId: number) => {
   isUpdatingComment.value = true
   errorMessage.value = ''
 
+  // Guest comments must re-send the shortcode on every write.
+  const shortcode = isPrivateEvent.value ? props.guestShortcode : null
+
   try {
-    const response = await commentsService.updateComment(commentId, validation.sanitized)
+    const response = await commentsService.updateComment(
+      commentId,
+      validation.sanitized,
+      shortcode,
+    )
 
     if (response.success && response.data) {
       // Sanitize the response data
@@ -970,18 +1048,18 @@ const handleDeleteConfirm = async () => {
   isDeletingComment.value = commentToDelete.value
   errorMessage.value = ''
 
+  const shortcode = isPrivateEvent.value ? props.guestShortcode : null
+
   try {
-    const response = await commentsService.deleteComment(commentToDelete.value)
+    const response = await commentsService.deleteComment(commentToDelete.value, shortcode)
 
     if (response.success) {
       // Remove comment from local array
       comments.value = comments.value.filter((c) => c.id !== commentToDelete.value)
       totalComments.value--
 
-      // Reset already commented state if this was the user's comment
-      if (authStore.isAuthenticated) {
-        hasAlreadyCommented.value = false
-      }
+      // Reset already commented state — applies to both flows.
+      hasAlreadyCommented.value = false
 
       // Close modal
       showDeleteModal.value = false
@@ -1040,13 +1118,20 @@ const submitComment = async () => {
     return
   }
 
-  // Double-check authentication
-  if (!authStore.isAuthenticated) {
+  // Decide credential per privacy partition.
+  if (isPrivateEvent.value) {
+    if (!hasGuestCredential.value) {
+      // No invitation → can't comment on a private event. UI hides the form,
+      // but guard here in case of race conditions.
+      errorMessage.value = commentInviteOnlyPromptText.value
+      return
+    }
+  } else if (!authStore.isAuthenticated) {
     openAuthModal()
     return
   }
 
-  // Check if user has already commented (API constraint: one comment per user per event)
+  // Check if user/guest has already commented (one per author per event)
   if (hasAlreadyCommented.value) {
     errorMessage.value = 'You have already commented on this event.'
     setTimeout(() => {
@@ -1058,28 +1143,22 @@ const submitComment = async () => {
   isSubmittingComment.value = true
   errorMessage.value = ''
 
+  // Pass shortcode only on private events; backend ignores it on public.
+  const shortcode = isPrivateEvent.value ? props.guestShortcode : null
+
   try {
-    // Call the actual API with sanitized content
-    const response = await commentsService.createComment(props.eventId, validation.sanitized)
+    const response = await commentsService.createComment(
+      props.eventId,
+      validation.sanitized,
+      shortcode,
+    )
 
     if (response.success && response.data) {
-      // Add user info to the comment for display (if not provided by backend)
-      const commentWithUserInfo: EventComment = {
-        ...response.data,
-        user_info: response.data.user_info || {
-          id: authStore.user?.id || response.data.user,
-          username: authStore.user?.username || '',
-          first_name: authStore.user?.first_name || '',
-          last_name: authStore.user?.last_name || '',
-          profile_picture: authStore.user?.profile_picture || '',
-        },
-      }
+      // Sanitize the response data (backend now provides author_name/avatar,
+      // user_info or guest_info — no need to synthesise user_info anymore).
+      const sanitizedComment = sanitizeApiResponse(response.data)
 
-      // Sanitize the response data
-      const sanitizedComment = sanitizeApiResponse(commentWithUserInfo)
-
-      // Since user can only comment once per event, just add to beginning
-      // The backend constraint ensures there won't be duplicates
+      // Since each author can only comment once per event, just add to beginning.
       comments.value.unshift(sanitizedComment)
       totalComments.value++
       hasAlreadyCommented.value = true
@@ -1123,9 +1202,17 @@ const loadComments = async () => {
       hasMoreComments.value = response.data.next !== null
       currentPage.value = 1
 
-      // Check if current user has already commented
-      if (authStore.isAuthenticated) {
-        hasAlreadyCommented.value = await commentsService.hasUserCommented(props.eventId)
+      // Check if the current author (user OR guest) has already commented.
+      if (isPrivateEvent.value) {
+        if (hasGuestCredential.value) {
+          hasAlreadyCommented.value = comments.value.some(
+            (c) => c.guest_info?.name === props.guestName,
+          )
+        }
+      } else if (authStore.isAuthenticated && authStore.user) {
+        hasAlreadyCommented.value = comments.value.some(
+          (c) => c.user_info?.id === authStore.user!.id,
+        )
       }
     } else {
       comments.value = []
@@ -1156,54 +1243,24 @@ const loadMoreComments = async () => {
     )
 
     if (response.success && response.data) {
-      // Process new comments (backend now provides user_info directly)
-      const processedNewComments = response.data.results.map((comment) => {
-        // Sanitize the comment data
-        const sanitizedComment = sanitizeApiResponse(comment)
+      const processedNewComments = response.data.results.map((c) => sanitizeApiResponse(c))
 
-        // If for some reason user_info is missing, we can add minimal fallback
-        if (!sanitizedComment.user_info) {
-          sanitizedComment.user_info = {
-            id: sanitizedComment.user,
-            username: sanitizePlainText(`user_${sanitizedComment.user}`, 50),
-            first_name: '',
-            last_name: '',
-            profile_picture: '',
-          }
-        }
-        return sanitizedComment
-      })
+      // Append the new page, then float the current author's comment to the
+      // top (handles both user- and guest-authored cases via isUserCommentOwner).
+      const ownIndexExisting = comments.value.findIndex((c) => isUserCommentOwner(c))
+      const ownComment = ownIndexExisting >= 0 ? comments.value[ownIndexExisting] : null
 
-      // For pagination, we don't want to re-sort everything, just append
-      // But we need to make sure user's comment stays at the top if it exists
-      const currentUserId = authStore.user?.id
-      if (currentUserId) {
-        // Check if any of the new comments belongs to current user
-        const userCommentFromNewPage = processedNewComments.find(
-          (comment) => comment.user === currentUserId,
-        )
-        const otherNewComments = processedNewComments.filter(
-          (comment) => comment.user !== currentUserId,
-        )
+      const merged = [...comments.value, ...processedNewComments]
+      const newOwnIndex = merged.findIndex((c) => isUserCommentOwner(c))
 
-        if (userCommentFromNewPage) {
-          // Remove user's comment from existing comments if it exists there
-          const existingCommentsWithoutUser = comments.value.filter(
-            (comment) => comment.user !== currentUserId,
-          )
-          // Put user comment at the top, then existing comments, then other new comments
-          comments.value = [
-            userCommentFromNewPage,
-            ...existingCommentsWithoutUser,
-            ...otherNewComments,
-          ]
-        } else {
-          // No user comment in new batch, just append normally
-          comments.value.push(...processedNewComments)
-        }
+      if (newOwnIndex > 0) {
+        const own = ownComment || merged[newOwnIndex]
+        comments.value = [
+          own,
+          ...merged.filter((_, idx) => idx !== newOwnIndex),
+        ]
       } else {
-        // User not authenticated, just append normally
-        comments.value.push(...processedNewComments)
+        comments.value = merged
       }
 
       hasMoreComments.value = response.data.next !== null
@@ -1239,22 +1296,19 @@ const handleScroll = () => {
 watch(
   () => authStore.isAuthenticated,
   async (isAuth, wasAuth) => {
+    // Auth changes only matter for the JWT (public) flow. Private events
+    // are shortcode-only and the JWT is irrelevant.
+    if (isPrivateEvent.value) return
+
     if (isAuth && !wasAuth) {
-      // User just logged in, check if they have already commented
-      hasAlreadyCommented.value = await commentsService.hasUserCommented(props.eventId)
-
-      // Reload comments to get proper sorting with user's comment at top
+      // User just logged in — reload comments to surface their own comment
+      // at the top and update hasAlreadyCommented.
       await loadComments()
-
-      // Check if we should scroll to comment section (after login redirect)
       checkForCommentRedirect()
     } else if (!isAuth) {
-      // User logged out, reset comment state
       hasAlreadyCommented.value = false
       newComment.value.message = ''
       errorMessage.value = ''
-
-      // Cancel any ongoing edit
       cancelEditComment()
     }
   },

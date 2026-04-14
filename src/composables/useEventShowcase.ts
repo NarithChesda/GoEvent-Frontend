@@ -217,6 +217,7 @@ export interface EventData {
   rsvp_enabled?: boolean
   comments_enabled?: boolean
   countdown_enabled?: boolean
+  privacy?: 'public' | 'private'
   category?: number | null
   category_name?: string | null
   category_color?: string | null
@@ -341,6 +342,43 @@ export function useEventShowcase() {
       ? guestNameFromQuery[0]
       : guestNameFromQuery
     return meta.value.guest_name || guestNameStr || ''
+  })
+
+  // Guest shortcode (`g=...`) — write-only credential for commenting on private
+  // events. Captured once from the URL on showcase load and stashed in
+  // sessionStorage so it survives intra-session navigation. Treated like a
+  // short-lived bearer token: never written to localStorage, cookies, or logs.
+  const guestShortcode = computed<string | null>(() => {
+    const eventId = (route.params.id as string) || event.value?.id
+    if (!eventId) return null
+
+    const fromQuery = route.query.g
+    const queryShortcode = Array.isArray(fromQuery) ? fromQuery[0] : fromQuery
+    const storageKey = `guest:${eventId}`
+
+    if (queryShortcode) {
+      try {
+        const guestNameStr = guestName.value || ''
+        sessionStorage.setItem(
+          storageKey,
+          JSON.stringify({ shortcode: queryShortcode, guestName: guestNameStr }),
+        )
+      } catch {
+        // sessionStorage may be unavailable (privacy mode) — non-fatal.
+      }
+      return queryShortcode
+    }
+
+    try {
+      const stored = sessionStorage.getItem(storageKey)
+      if (stored) {
+        const parsed = JSON.parse(stored) as { shortcode?: string }
+        return parsed.shortcode || null
+      }
+    } catch {
+      // ignore
+    }
+    return null
   })
   const templateAssets = computed(() => {
     const assets = event.value?.template_assets?.assets || null
@@ -1060,6 +1098,7 @@ export function useEventShowcase() {
     event,
     meta,
     guestName,
+    guestShortcode,
     templateAssets,
     templateColors,
     templateFonts,
