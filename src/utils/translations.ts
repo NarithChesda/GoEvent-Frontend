@@ -64,6 +64,30 @@ export const rsvpTranslations: Record<
     rsvp_guest_update_success: string
     rsvp_thank_you_simple: string
 
+    // Private-event guest RSVP (shortcode flow)
+    rsvp_status_placeholder: string
+    rsvp_status_attending_label: string
+    rsvp_status_not_attending_label: string
+    rsvp_status_maybe_label: string
+    rsvp_plus_ones_label: string
+    rsvp_plus_ones_helper: string
+    rsvp_plus_ones_names_label: string
+    rsvp_plus_ones_names_placeholder: string
+    rsvp_private_note_label: string
+    rsvp_private_note_placeholder: string
+    rsvp_submit_button: string
+    rsvp_update_button: string
+    rsvp_need_invitation_link: string
+    rsvp_required_missing: string
+    rsvp_required_indicator: string
+    rsvp_responded_at: string
+    rsvp_yes_option: string
+    rsvp_no_option: string
+    rsvp_text_placeholder: string
+    rsvp_long_text_placeholder: string
+    rsvp_load_failed: string
+    rsvp_submit_success: string
+
     // Host section
     hosts_header_funeral: string
 
@@ -230,6 +254,30 @@ export const rsvpTranslations: Record<
     rsvp_unregister_success: "We're sorry you can't make it. Thank you for letting us know.",
     rsvp_guest_update_success: 'Updated guest count to {count} {unit}',
     rsvp_thank_you_simple: 'Thank you for your response.',
+
+    // Private-event guest RSVP (shortcode flow)
+    rsvp_status_placeholder: 'Choose your response',
+    rsvp_status_attending_label: 'Attending',
+    rsvp_status_not_attending_label: "Can't attend",
+    rsvp_status_maybe_label: 'Maybe',
+    rsvp_plus_ones_label: 'Bringing guests',
+    rsvp_plus_ones_helper: 'Up to {max} additional',
+    rsvp_plus_ones_names_label: 'Names of plus-ones',
+    rsvp_plus_ones_names_placeholder: 'e.g. Alex Smith, Jordan Lee',
+    rsvp_private_note_label: 'Private note to host',
+    rsvp_private_note_placeholder: 'Optional — only the host will see this',
+    rsvp_submit_button: 'Send RSVP',
+    rsvp_update_button: 'Update RSVP',
+    rsvp_need_invitation_link: 'Please open this page from your personal invitation link to RSVP.',
+    rsvp_required_missing: 'Please answer the required questions before sending.',
+    rsvp_required_indicator: 'Required',
+    rsvp_responded_at: 'Last updated {date}',
+    rsvp_yes_option: 'Yes',
+    rsvp_no_option: 'No',
+    rsvp_text_placeholder: 'Your answer',
+    rsvp_long_text_placeholder: 'Share your thoughts',
+    rsvp_load_failed: "We couldn't load your RSVP. Please try again.",
+    rsvp_submit_success: 'Your RSVP has been saved. Thank you!',
 
     // Host section
     hosts_header_funeral: 'Event Hosts',
@@ -398,6 +446,30 @@ export const rsvpTranslations: Record<
     rsvp_guest_update_success: 'បានកែប្រែចំនួនភ្ញៀវទៅ {count} {unit}',
     rsvp_thank_you_simple: 'សូមអរគុណចំពោះការឆ្លើយតប។',
 
+    // Private-event guest RSVP (shortcode flow)
+    rsvp_status_placeholder: 'ជ្រើសរើសការឆ្លើយតប',
+    rsvp_status_attending_label: 'ចូលរួម',
+    rsvp_status_not_attending_label: 'មិនចូលរួម',
+    rsvp_status_maybe_label: 'មិនប្រាកដ',
+    rsvp_plus_ones_label: 'នាំភ្ញៀវបន្ថែម',
+    rsvp_plus_ones_helper: 'បាននាំបន្ថែមរហូតដល់ {max} នាក់',
+    rsvp_plus_ones_names_label: 'ឈ្មោះភ្ញៀវបន្ថែម',
+    rsvp_plus_ones_names_placeholder: 'ឧ. សុខ សុភា, ចាន់ ដារ៉ា',
+    rsvp_private_note_label: 'សារឯកជនជូនម្ចាស់បុណ្យ',
+    rsvp_private_note_placeholder: 'ស្រេចចិត្ត — មានតែម្ចាស់បុណ្យប៉ុណ្ណោះឃើញ',
+    rsvp_submit_button: 'បញ្ជូន RSVP',
+    rsvp_update_button: 'កែប្រែ RSVP',
+    rsvp_need_invitation_link: 'សូមបើកទំព័រនេះតាមរយៈតំណអញ្ជើញផ្ទាល់ខ្លួនរបស់អ្នក ដើម្បីឆ្លើយតប។',
+    rsvp_required_missing: 'សូមឆ្លើយសំណួរដែលត្រូវការ មុនពេលបញ្ជូន។',
+    rsvp_required_indicator: 'ចាំបាច់',
+    rsvp_responded_at: 'បានកែប្រែចុងក្រោយ {date}',
+    rsvp_yes_option: 'បាទ/ចាស',
+    rsvp_no_option: 'ទេ',
+    rsvp_text_placeholder: 'ចម្លើយរបស់អ្នក',
+    rsvp_long_text_placeholder: 'ចែករំលែកគំនិតរបស់អ្នក',
+    rsvp_load_failed: 'មិនអាចផ្ទុក RSVP របស់អ្នក។ សូមព្យាយាមម្ដងទៀត។',
+    rsvp_submit_success: 'RSVP របស់អ្នកត្រូវបានរក្សាទុក។ សូមអរគុណ!',
+
     // Host section
     hosts_header_funeral: 'អ្នកផ្តើមបុណ្យ',
 
@@ -564,6 +636,30 @@ export const rsvpTranslations: Record<
     rsvp_unregister_success: '很遗憾您无法参加。感谢您告知我们。',
     rsvp_guest_update_success: '已将客人数量更新为{count}{unit}',
     rsvp_thank_you_simple: '谢谢您的回复。',
+
+    // Private-event guest RSVP (shortcode flow)
+    rsvp_status_placeholder: '选择您的回覆',
+    rsvp_status_attending_label: '出席',
+    rsvp_status_not_attending_label: '无法出席',
+    rsvp_status_maybe_label: '可能出席',
+    rsvp_plus_ones_label: '携带宾客',
+    rsvp_plus_ones_helper: '最多可再带 {max} 位',
+    rsvp_plus_ones_names_label: '同行宾客姓名',
+    rsvp_plus_ones_names_placeholder: '例如：陈小明、林大华',
+    rsvp_private_note_label: '给主人的私密留言',
+    rsvp_private_note_placeholder: '可选 — 只有主人能看到',
+    rsvp_submit_button: '提交回覆',
+    rsvp_update_button: '更新回覆',
+    rsvp_need_invitation_link: '请通过您的专属邀请链接打开此页以进行回覆。',
+    rsvp_required_missing: '请先回答必填问题。',
+    rsvp_required_indicator: '必填',
+    rsvp_responded_at: '最后更新于 {date}',
+    rsvp_yes_option: '是',
+    rsvp_no_option: '否',
+    rsvp_text_placeholder: '请输入您的答案',
+    rsvp_long_text_placeholder: '分享您的想法',
+    rsvp_load_failed: '无法加载您的回覆，请稍后再试。',
+    rsvp_submit_success: '您的回覆已保存，谢谢！',
 
     // Host section
     hosts_header_funeral: '活动主持人',

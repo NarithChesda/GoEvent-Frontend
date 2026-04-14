@@ -289,6 +289,20 @@ export {
 // Donation service
 export { donationService } from './api/modules/donation.service'
 
+// Guest RSVP service (private-event shortcode flow)
+export { guestRsvpService } from './api/modules/rsvp.service'
+
+// Guest RSVP types
+export type {
+  GuestRsvpStatus,
+  EventRsvpQuestionType,
+  EventRsvpQuestionTranslation,
+  EventRsvpQuestion,
+  GuestRsvpAnswer,
+  GuestRsvpFormState,
+  GuestRsvpSubmitRequest,
+} from './api/types/rsvp.types'
+
 // ============================================================================
 // NOTES FOR DEVELOPERS
 // ============================================================================

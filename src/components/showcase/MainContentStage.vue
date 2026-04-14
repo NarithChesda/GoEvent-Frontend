@@ -169,7 +169,28 @@
                   >
                     <template #rsvp>
                       <div id="rsvp-section" ref="rsvpSectionRef">
+                        <!-- Private events: guest-shortcode based questionnaire -->
+                        <GuestRSVPSection
+                          v-if="event.privacy === 'private'"
+                          :event-id="event.id"
+                          :guest-shortcode="guestShortcode"
+                          :guest-name="guestName"
+                          :event-start-date="event.start_date"
+                          :event-end-date="event.end_date"
+                          :primary-color="primaryColor"
+                          :secondary-color="secondaryColor"
+                          :accent-color="accentColor"
+                          :background-color="backgroundColor"
+                          :event-texts="eventTexts"
+                          :current-language="currentLanguage"
+                          :event-type="eventType"
+                          :current-font="currentFont"
+                          :primary-font="primaryFont"
+                          :secondary-font="secondaryFont"
+                        />
+                        <!-- Public events: JWT / account-based RSVP -->
                         <RSVPSection
+                          v-else
                           :event-id="event.id"
                           :event-start-date="event.start_date"
                           :event-end-date="event.end_date"
@@ -890,6 +911,7 @@ const { protectionAttrs } = useAssetProtection()
 import HostInfo from './HostInfo.vue'
 import EventInfo from './EventInfo.vue'
 import RSVPSection from './RSVPSection.vue'
+import GuestRSVPSection from './GuestRSVPSection.vue'
 import AgendaSection from './AgendaSection.vue'
 import HostMessageSection from './HostMessageSection.vue'
 import DressCodeSection from './DressCodeSection.vue'
