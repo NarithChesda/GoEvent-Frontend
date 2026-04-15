@@ -88,8 +88,10 @@
       :can-view-review="canViewReview"
       @tab-change="activeTab = $event"
     />
-    <!-- Spacer for fixed mobile tab bar (h-[52px] = py-2 + button height) -->
-    <div v-if="event" class="md:hidden h-[52px]"></div>
+    <!-- Spacer for fixed mobile/tablet tab bar (h-[52px] = py-2 + button
+         height). Breakpoint must match EventManageMobileTabBar.vue
+         (`lg:hidden`) so tablet portrait keeps the right offset. -->
+    <div v-if="event" class="lg:hidden h-[52px]"></div>
 
     <!-- Event Detail -->
     <div

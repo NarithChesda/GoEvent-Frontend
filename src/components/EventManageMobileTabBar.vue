@@ -1,6 +1,11 @@
 <template>
-  <!-- Fixed position wrapper for stable mobile scrolling -->
-  <div class="md:hidden fixed top-16 left-0 right-0 z-40 glass-manage-mobile-tabs tab-bar-container">
+  <!-- Fixed position wrapper for stable mobile scrolling.
+       Uses `lg:hidden` (not `md:hidden`) so it still appears on tablet
+       portrait (768–1023px), where the desktop sidebar is not shown yet.
+       Desktop sidebar breakpoint is `lg:flex` in EventNavigationTabs.vue,
+       so these two must stay in sync or the 768–1023 range loses navigation
+       entirely. -->
+  <div class="lg:hidden fixed top-16 left-0 right-0 z-40 glass-manage-mobile-tabs tab-bar-container">
     <div class="relative">
       <!-- Left scroll fade -->
       <div
