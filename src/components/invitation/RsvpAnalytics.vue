@@ -33,141 +33,100 @@
     </div>
 
     <!-- Content -->
-    <div v-else class="flex flex-col gap-8">
-      <!-- Key Metrics Overview -->
-      <div class="grid gap-3 grid-cols-2 lg:grid-cols-4">
-        <!-- Invited -->
-        <div class="rounded-2xl border border-transparent bg-slate-50 p-4 shadow-sm shadow-slate-100/70">
-          <div class="flex items-center justify-between">
-            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">
-              {{ t('management.rsvpAnalytics.metrics.invited') }}
-            </p>
-            <Users class="h-4 w-4 text-slate-600" />
-          </div>
-          <p class="mt-3 text-2xl font-bold text-slate-900 leading-tight">
-            {{ summary.total_invited }}
-          </p>
-          <p class="text-xs text-slate-500 mt-1">
-            {{ t('management.rsvpAnalytics.metrics.invitedDesc') }}
-          </p>
-        </div>
-
-        <!-- Responded -->
-        <div class="rounded-2xl border border-transparent bg-emerald-50/80 p-4 shadow-sm shadow-emerald-100/70">
-          <div class="flex items-center justify-between">
-            <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600">
-              {{ t('management.rsvpAnalytics.metrics.responded') }}
-            </p>
-            <CheckCircle2 class="h-4 w-4 text-emerald-600" />
-          </div>
-          <p class="mt-3 text-2xl font-bold text-slate-900 leading-tight">
-            {{ respondedCount }}
-          </p>
-          <p class="text-xs text-emerald-700/70 mt-1">
-            {{ t('management.rsvpAnalytics.metrics.respondedDesc', { percent: respondedPercent }) }}
-          </p>
-        </div>
-
-        <!-- Expected attendees -->
-        <div class="rounded-2xl border border-transparent bg-sky-50/80 p-4 shadow-sm shadow-sky-100/70">
-          <div class="flex items-center justify-between">
-            <p class="text-xs font-semibold uppercase tracking-wide text-sky-600">
-              {{ t('management.rsvpAnalytics.metrics.expected') }}
-            </p>
-            <UserCheck class="h-4 w-4 text-sky-600" />
-          </div>
-          <p class="mt-3 text-2xl font-bold text-slate-900 leading-tight">
-            {{ summary.total_expected_attendees }}
-          </p>
-          <p class="text-xs text-sky-700/70 mt-1">
-            {{
-              t('management.rsvpAnalytics.metrics.expectedDesc', {
-                attending: summary.status_counts.attending,
-                plusOnes: plusOnesCount,
-              })
-            }}
-          </p>
-        </div>
-
-        <!-- Plus-ones -->
-        <div class="rounded-2xl border border-transparent bg-violet-50/80 p-4 shadow-sm shadow-violet-100/70">
-          <div class="flex items-center justify-between">
-            <p class="text-xs font-semibold uppercase tracking-wide text-violet-600">
-              {{ t('management.rsvpAnalytics.metrics.plusOnes') }}
-            </p>
-            <UsersRound class="h-4 w-4 text-violet-600" />
-          </div>
-          <p class="mt-3 text-2xl font-bold text-slate-900 leading-tight">
-            {{ plusOnesCount }}
-          </p>
-          <p class="text-xs text-violet-700/70 mt-1">
-            {{ t('management.rsvpAnalytics.metrics.plusOnesDesc') }}
-          </p>
-        </div>
-      </div>
-
-      <!-- Response Distribution + Chase list -->
-      <div class="grid grid-cols-1 xl:grid-cols-5 gap-8">
-        <!-- Doughnut + rows -->
-        <div class="xl:col-span-3">
-          <div class="mb-4">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-              {{ t('management.rsvpAnalytics.distribution.title') }}
-            </p>
-            <p class="mt-1 text-sm text-slate-500">
-              {{ t('management.rsvpAnalytics.distribution.description') }}
-            </p>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
-            <!-- Doughnut chart -->
-            <div class="flex items-center justify-center">
-              <div class="w-full max-w-[220px]">
-                <Doughnut :data="distributionChartData" :options="chartOptions" />
-              </div>
+    <div v-else class="flex flex-col gap-10">
+      <!-- ================================================================
+        Section 1 · Hero
+        Responded ratio as the primary stat, with Expected attendees as a
+        secondary readout. Distribution is shown as a single stacked bar
+        (replaces the old doughnut + 4-card grid).
+      ================================================================= -->
+      <section>
+        <div class="flex flex-wrap items-end justify-between gap-6">
+          <!-- Primary: responded / invited -->
+          <div class="min-w-0">
+            <div class="flex items-baseline gap-2">
+              <p class="text-5xl font-bold tracking-tight text-slate-900 tabular-nums leading-none">
+                {{ respondedCount }}
+              </p>
+              <p class="text-2xl font-semibold text-slate-300 tabular-nums leading-none">
+                / {{ summary.total_invited }}
+              </p>
+              <span class="ml-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                {{ respondedPercent }}%
+              </span>
             </div>
+            <p class="mt-2 text-sm text-slate-500">
+              {{ t('management.rsvpAnalytics.hero.respondedLabel') }}
+            </p>
+          </div>
 
-            <!-- Legend rows -->
-            <div class="space-y-2">
-              <div
-                v-for="row in distributionRows"
-                :key="row.key"
-                class="rounded-2xl border border-transparent p-3 shadow-sm"
-                :style="{ backgroundColor: row.bg }"
-              >
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2 min-w-0">
-                    <div
-                      class="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                      :style="{ backgroundColor: row.color }"
-                    />
-                    <p class="text-xs font-semibold uppercase tracking-wide truncate" :style="{ color: row.color }">
-                      {{ row.label }}
-                    </p>
-                  </div>
-                  <span class="text-xs font-semibold tabular-nums" :style="{ color: row.color }">
-                    {{ t('management.rsvpAnalytics.distribution.legendPercent', { percent: row.percent }) }}
-                  </span>
-                </div>
-                <div class="mt-2 flex items-center gap-2">
-                  <p class="text-lg font-semibold text-slate-900 tabular-nums flex-shrink-0">
-                    {{ row.count }}
-                  </p>
-                  <div class="flex-1 h-1.5 rounded-full bg-white/70 overflow-hidden">
-                    <div
-                      class="h-full rounded-full transition-all duration-500"
-                      :style="{ width: `${row.percent}%`, backgroundColor: row.color }"
-                    />
-                  </div>
-                </div>
-              </div>
+          <!-- Secondary: expected attendees -->
+          <div class="text-right">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-400">
+              {{ t('management.rsvpAnalytics.hero.expectedLabel') }}
+            </p>
+            <p class="mt-1 text-3xl font-semibold text-slate-900 tabular-nums leading-none">
+              {{ summary.total_expected_attendees }}
+            </p>
+            <p class="mt-1.5 text-xs text-slate-500">
+              {{
+                t('management.rsvpAnalytics.hero.expectedBreakdown', {
+                  attending: summary.status_counts.attending,
+                  plusOnes: plusOnesCount,
+                })
+              }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Stacked distribution bar -->
+        <div class="mt-5">
+          <div class="flex h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+            <div
+              v-for="row in distributionRows"
+              :key="row.key"
+              class="transition-all duration-500"
+              :style="{
+                width: `${row.percent}%`,
+                backgroundColor: row.color,
+              }"
+              :title="`${row.label}: ${row.count}`"
+            />
+          </div>
+
+          <!-- Inline legend -->
+          <div class="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 sm:flex sm:flex-wrap sm:gap-x-6">
+            <div
+              v-for="row in distributionRows"
+              :key="row.key"
+              class="flex items-baseline gap-2"
+            >
+              <span
+                class="h-2 w-2 rounded-full flex-shrink-0 self-center"
+                :style="{ backgroundColor: row.color }"
+              />
+              <p class="text-[11px] font-medium uppercase tracking-wide text-slate-500">
+                {{ row.label }}
+              </p>
+              <p class="text-sm font-semibold text-slate-900 tabular-nums">
+                {{ row.count }}
+              </p>
+              <p class="text-[11px] text-slate-400 tabular-nums">
+                {{ row.percent }}%
+              </p>
             </div>
           </div>
         </div>
+      </section>
 
-        <!-- Follow-up / chase list -->
-        <div class="xl:col-span-2">
-          <div class="mb-4">
+      <!-- ================================================================
+        Section 2 · Follow-up
+        Compact chip row of pending guests. Dot color encodes invitation
+        status. Hides entirely when nothing is pending.
+      ================================================================= -->
+      <section v-if="summary.status_counts.pending > 0">
+        <div class="mb-3 flex items-baseline justify-between gap-4">
+          <div class="min-w-0">
             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
               {{ t('management.rsvpAnalytics.chase.title') }}
             </p>
@@ -175,85 +134,57 @@
               {{ t('management.rsvpAnalytics.chase.description') }}
             </p>
           </div>
-
-          <div
-            class="rounded-2xl border border-amber-200/70 bg-amber-50/50 p-4 h-full"
-          >
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-2">
-                <Clock class="h-4 w-4 text-amber-600" />
-                <p class="text-xs font-semibold uppercase tracking-wide text-amber-700">
-                  {{ t('management.rsvpAnalytics.metrics.pending') }}
-                </p>
-              </div>
-              <span class="text-lg font-bold text-slate-900 tabular-nums">
-                {{ summary.status_counts.pending }}
-              </span>
-            </div>
-
-            <!-- No pending -->
-            <div
-              v-if="summary.status_counts.pending === 0"
-              class="rounded-xl bg-white/60 border border-dashed border-amber-200 p-4 text-center"
-            >
-              <PartyPopper class="w-8 h-8 text-emerald-500 mx-auto mb-1.5" />
-              <p class="text-xs font-medium text-slate-700">
-                {{ t('management.rsvpAnalytics.chase.allResponded') }}
-              </p>
-            </div>
-
-            <!-- Pending guest list -->
-            <div v-else class="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
-              <div
-                v-for="guest in summary.pending_guests"
-                :key="guest.id"
-                class="flex items-center justify-between gap-3 rounded-lg bg-white/70 px-3 py-2"
-              >
-                <div class="min-w-0 flex-1">
-                  <p class="text-sm font-medium text-slate-900 truncate">
-                    {{ guest.name || t('management.rsvpAnalytics.chase.unnamedGuest') }}
-                  </p>
-                  <p
-                    v-if="guest.email"
-                    class="text-xs text-slate-500 truncate"
-                  >
-                    {{ guest.email }}
-                  </p>
-                </div>
-                <span
-                  class="flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium"
-                  :class="invitationStatusClass(guest.invitation_status)"
-                >
-                  {{ t(`management.rsvpAnalytics.chase.status.${guest.invitation_status}`) }}
-                </span>
-              </div>
-
-              <p
-                v-if="hiddenPendingCount > 0"
-                class="text-xs text-center text-amber-700/70 pt-2"
-              >
-                {{
-                  t('management.rsvpAnalytics.chase.moreHidden', {
-                    count: hiddenPendingCount,
-                  }, hiddenPendingCount)
-                }}
-              </p>
-            </div>
-          </div>
+          <p class="text-sm font-semibold text-amber-600 tabular-nums flex-shrink-0">
+            {{ summary.status_counts.pending }}
+          </p>
         </div>
-      </div>
 
-      <!-- Per-question breakdowns -->
-      <div>
-        <div class="flex flex-wrap items-end justify-between gap-4 mb-4">
-          <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-              {{ t('management.rsvpAnalytics.questions.title') }}
-            </p>
-            <p class="mt-1 text-sm text-slate-500">
-              {{ t('management.rsvpAnalytics.questions.description') }}
-            </p>
-          </div>
+        <div class="flex flex-wrap gap-1.5">
+          <span
+            v-for="guest in summary.pending_guests"
+            :key="guest.id"
+            class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] text-slate-700"
+            :title="guest.email || ''"
+          >
+            <span
+              class="h-1.5 w-1.5 rounded-full flex-shrink-0"
+              :class="pendingDotClass(guest.invitation_status)"
+            />
+            <span class="font-medium truncate max-w-[180px]">
+              {{ guest.name || t('management.rsvpAnalytics.chase.unnamedGuest') }}
+            </span>
+          </span>
+          <span
+            v-if="hiddenPendingCount > 0"
+            class="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-700"
+          >
+            +{{ hiddenPendingCount }} {{ t('management.rsvpAnalytics.chase.moreShort') }}
+          </span>
+        </div>
+      </section>
+
+      <!-- No pending (only when data exists) -->
+      <section
+        v-else-if="summary.total_invited > 0"
+        class="-mt-4 flex items-center gap-2 text-sm text-emerald-700"
+      >
+        <PartyPopper class="h-4 w-4" />
+        <p>{{ t('management.rsvpAnalytics.chase.allResponded') }}</p>
+      </section>
+
+      <!-- ================================================================
+        Section 3 · Per-question breakdowns
+        Each question is a clickable card. Expanding loads drill-through
+        and renders guest chips inline under each bar (no duplicate list).
+      ================================================================= -->
+      <section>
+        <div class="mb-4">
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+            {{ t('management.rsvpAnalytics.questions.title') }}
+          </p>
+          <p class="mt-1 text-sm text-slate-500">
+            {{ t('management.rsvpAnalytics.questions.description') }}
+          </p>
         </div>
 
         <!-- No questions yet -->
@@ -271,49 +202,37 @@
         </div>
 
         <!-- Question list -->
-        <div v-else class="space-y-4">
-          <div
+        <div v-else class="space-y-3">
+          <article
             v-for="(q, qIdx) in summary.question_breakdowns"
             :key="q.question_id"
-            class="rounded-2xl border border-slate-200 bg-slate-50/40 overflow-hidden"
+            class="rounded-2xl border border-slate-200/80 bg-white transition-colors hover:border-slate-300"
           >
-            <!-- Question header (clickable to drill through) -->
+            <!-- Header (clickable) -->
             <button
               type="button"
-              class="w-full flex flex-wrap items-start justify-between gap-3 p-4 sm:p-5 text-left hover:bg-slate-100/60 transition-colors"
+              class="flex w-full items-start justify-between gap-4 rounded-2xl p-4 sm:p-5 text-left"
               @click="toggleQuestion(q.question_id)"
             >
               <div class="min-w-0 flex-1">
                 <p class="text-sm font-semibold text-slate-900 break-words">
-                  <span class="text-slate-400 tabular-nums mr-1.5">Q{{ qIdx + 1 }}.</span>
+                  <span class="font-normal text-slate-300 tabular-nums mr-1.5">Q{{ qIdx + 1 }}.</span>
                   {{ localizeQuestionText(q.question_id, q.question_text) }}
                 </p>
-                <div class="mt-1.5 flex items-center gap-1.5 flex-wrap">
-                  <span class="px-1.5 py-0.5 rounded-md text-[10px] font-medium text-slate-600 bg-white border border-slate-200">
-                    {{ getTypeLabel(q.question_type) }}
+                <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500">
+                  <span>{{ getTypeLabel(q.question_type) }}</span>
+                  <span v-if="q.is_required" class="text-rose-600">
+                    · {{ t('management.guestGroupsView.rsvpQuestions.requiredBadge') }}
                   </span>
-                  <span
-                    v-if="q.is_required"
-                    class="px-1.5 py-0.5 rounded-md text-[10px] font-medium text-rose-700 bg-rose-50"
-                  >
-                    {{ t('management.guestGroupsView.rsvpQuestions.requiredBadge') }}
+                  <span>
+                    · {{ t('management.rsvpAnalytics.questions.answersCount', { count: q.total_answers }, q.total_answers) }}
                   </span>
                 </div>
               </div>
-              <div class="flex items-center gap-3 flex-shrink-0">
-                <div class="text-right">
-                  <p class="text-lg font-bold text-slate-900 tabular-nums leading-tight">
-                    {{ q.total_answers }}
-                  </p>
-                  <p class="text-[11px] text-slate-500">
-                    {{ t('management.rsvpAnalytics.questions.answersCount', { count: q.total_answers }, q.total_answers) }}
-                  </p>
-                </div>
-                <ChevronDown
-                  class="h-4 w-4 text-slate-400 transition-transform duration-200"
-                  :class="{ 'rotate-180': expandedQuestionId === q.question_id }"
-                />
-              </div>
+              <ChevronDown
+                class="mt-1 h-4 w-4 flex-shrink-0 text-slate-400 transition-transform duration-200"
+                :class="{ 'rotate-180': isExpanded(q.question_id) }"
+              />
             </button>
 
             <!-- Body -->
@@ -321,232 +240,199 @@
               <!-- No answers yet -->
               <div
                 v-if="q.total_answers === 0"
-                class="rounded-lg bg-white border border-dashed border-slate-200 p-3 text-center"
+                class="rounded-lg bg-slate-50 p-3 text-center"
               >
                 <p class="text-xs text-slate-400">
                   {{ t('management.rsvpAnalytics.questions.noAnswers') }}
                 </p>
               </div>
 
-              <!-- Choice breakdown bars -->
+              <!-- Choice breakdown: bars + inline guests when expanded -->
               <div
                 v-else-if="q.breakdown && Object.keys(q.breakdown).length > 0"
-                class="space-y-2"
+                class="space-y-3"
               >
                 <div
                   v-for="(row, rowIdx) in getSortedBreakdown(q)"
                   :key="row.label"
-                  class="flex items-center gap-3"
                 >
-                  <div
-                    class="w-32 sm:w-40 flex-shrink-0 text-xs font-medium text-slate-700 truncate"
-                    :title="localizeChoice(q.question_id, row.label)"
-                  >
-                    {{ localizeChoice(q.question_id, row.label) }}
-                  </div>
-                  <div class="flex-1 min-w-0 relative">
-                    <div class="h-6 rounded-md bg-white border border-slate-200 overflow-hidden">
-                      <div
-                        class="h-full rounded-md transition-all duration-500"
-                        :style="{
-                          width: `${Math.max(row.percentOfMax, 3)}%`,
-                          backgroundColor: palette[rowIdx % palette.length],
-                          opacity: 0.85,
-                        }"
-                      />
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="w-28 sm:w-36 flex-shrink-0 truncate text-xs font-medium text-slate-700"
+                      :title="localizeChoice(q.question_id, row.label)"
+                    >
+                      {{ localizeChoice(q.question_id, row.label) }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="h-5 rounded-md bg-slate-100 overflow-hidden">
+                        <div
+                          class="h-full rounded-md transition-all duration-500"
+                          :style="{
+                            width: `${Math.max(row.percentOfMax, 3)}%`,
+                            backgroundColor: palette[rowIdx % palette.length],
+                          }"
+                        />
+                      </div>
+                    </div>
+                    <div class="flex flex-shrink-0 items-baseline gap-1.5 min-w-[4rem] text-right">
+                      <span class="text-sm font-semibold text-slate-900 tabular-nums">
+                        {{ row.count }}
+                      </span>
+                      <span class="text-[10px] text-slate-400 tabular-nums">
+                        {{ row.percentOfTotal }}%
+                      </span>
                     </div>
                   </div>
-                  <div class="flex items-baseline gap-1.5 flex-shrink-0 min-w-[4.5rem] text-right">
-                    <span class="text-sm font-semibold text-slate-900 tabular-nums">
-                      {{ row.count }}
-                    </span>
-                    <span class="text-[11px] text-slate-500 tabular-nums">
-                      ({{ row.percentOfTotal }}%)
+
+                  <!-- Inline guest chips for this bar (only when expanded + loaded) -->
+                  <div
+                    v-if="isExpanded(q.question_id) && getBucketGuests(row.label).length > 0"
+                    class="mt-2 ml-[7.75rem] sm:ml-[9.75rem] flex flex-wrap gap-1"
+                  >
+                    <span
+                      v-for="guest in getBucketGuests(row.label)"
+                      :key="guest.id"
+                      class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-700"
+                    >
+                      <span
+                        v-if="guest.group_color"
+                        class="h-1 w-1 rounded-full flex-shrink-0"
+                        :style="{ backgroundColor: guest.group_color }"
+                      />
+                      {{ guest.name }}
+                      <span
+                        v-if="(guest.plus_ones_count ?? 0) > 0"
+                        class="text-slate-400"
+                      >+{{ guest.plus_ones_count }}</span>
                     </span>
                   </div>
                 </div>
               </div>
 
-              <!-- Free-text (no per-value breakdown) -->
-              <div v-else class="rounded-lg bg-white border border-slate-200 p-3">
-                <p class="text-xs text-slate-600">
+              <!-- Free-text: compact summary, full list when expanded -->
+              <div v-else>
+                <!-- Collapsed hint -->
+                <p
+                  v-if="!isExpanded(q.question_id)"
+                  class="text-xs text-slate-500"
+                >
                   {{ t('management.rsvpAnalytics.questions.freeTextCollected', { count: q.total_answers }, q.total_answers) }}
                 </p>
-              </div>
-            </div>
 
-            <!-- Drill-through panel -->
-            <div
-              v-if="expandedQuestionId === q.question_id"
-              class="border-t border-slate-200 bg-white px-4 py-4 sm:px-5 sm:py-5"
-            >
-              <!-- Loading -->
-              <div
-                v-if="drillLoading"
-                class="flex items-center justify-center py-6"
-              >
-                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-emerald-600"></div>
-                <span class="ml-3 text-xs text-slate-500">
-                  {{ t('management.rsvpAnalytics.drill.loading') }}
-                </span>
-              </div>
-
-              <!-- Error -->
-              <div
-                v-else-if="drillError"
-                class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700"
-              >
-                {{ drillError }}
-              </div>
-
-              <!-- Content -->
-              <div v-else-if="drillData" class="space-y-5">
-                <!-- Grouped by answer (choice types) -->
-                <div v-if="drillData.grouped_by_answer" class="space-y-3">
-                  <div
-                    v-for="(bucket, bIdx) in drillData.grouped_by_answer"
-                    :key="`${bucket.answer}-${bIdx}`"
-                    class="rounded-xl border border-slate-200 bg-slate-50/60 overflow-hidden"
-                  >
-                    <div class="flex items-center justify-between px-3 py-2 bg-white border-b border-slate-200">
-                      <div class="flex items-center gap-2 min-w-0">
-                        <span
-                          class="inline-block h-2 w-2 rounded-full flex-shrink-0"
-                          :style="{ backgroundColor: palette[bIdx % palette.length] }"
-                        />
-                        <p class="text-xs font-semibold text-slate-900 truncate">
-                          {{ localizeChoice(drillData.question_id, bucket.answer) }}
-                        </p>
-                      </div>
-                      <span class="text-xs font-semibold text-slate-600 tabular-nums flex-shrink-0">
-                        {{ t('management.rsvpAnalytics.drill.guestsCount', { count: bucket.count }, bucket.count) }}
-                      </span>
-                    </div>
-                    <div class="p-2 flex flex-wrap gap-1.5">
-                      <span
-                        v-for="guest in bucket.guests"
-                        :key="guest.id"
-                        class="inline-flex items-center gap-1 rounded-full bg-white border border-slate-200 px-2 py-0.5 text-[11px] text-slate-700"
-                      >
-                        <span
-                          v-if="guest.group_color"
-                          class="h-1.5 w-1.5 rounded-full flex-shrink-0"
-                          :style="{ backgroundColor: guest.group_color }"
-                        />
-                        {{ guest.name }}
-                        <span
-                          v-if="(guest.plus_ones_count ?? 0) > 0"
-                          class="text-slate-400"
-                        >+{{ guest.plus_ones_count }}</span>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Free-text answers -->
-                <div v-else-if="drillData.free_text_answers" class="space-y-2">
-                  <div
-                    v-if="drillData.free_text_answers.length === 0"
-                    class="rounded-lg bg-slate-50 border border-dashed border-slate-200 p-3 text-center"
-                  >
-                    <p class="text-xs text-slate-400">
-                      {{ t('management.rsvpAnalytics.drill.noFreeText') }}
-                    </p>
-                  </div>
+                <!-- Expanded list -->
+                <div
+                  v-else-if="drillData?.free_text_answers?.length"
+                  class="space-y-2"
+                >
                   <div
                     v-for="entry in drillData.free_text_answers"
                     :key="entry.id"
-                    class="rounded-xl border border-slate-200 bg-slate-50/60 p-3"
+                    class="rounded-lg bg-slate-50 p-3"
                   >
-                    <div class="flex items-center justify-between gap-3 mb-1.5">
-                      <div class="flex items-center gap-2 min-w-0">
+                    <div class="mb-1 flex items-center justify-between gap-2">
+                      <div class="flex items-center gap-1.5 min-w-0">
                         <span
                           v-if="entry.group_color"
-                          class="h-2 w-2 rounded-full flex-shrink-0"
+                          class="h-1.5 w-1.5 rounded-full flex-shrink-0"
                           :style="{ backgroundColor: entry.group_color }"
                         />
-                        <p class="text-xs font-semibold text-slate-900 truncate">
+                        <p class="truncate text-xs font-semibold text-slate-900">
                           {{ entry.name }}
                         </p>
                         <span
                           v-if="entry.group_name"
-                          class="text-[10px] text-slate-400 truncate"
-                        >
-                          · {{ entry.group_name }}
-                        </span>
+                          class="truncate text-[10px] text-slate-400"
+                        >· {{ entry.group_name }}</span>
                       </div>
-                      <span class="text-[10px] text-slate-400 flex-shrink-0">
+                      <p class="text-[10px] text-slate-400 flex-shrink-0">
                         {{ formatRelativeDate(entry.updated_at) }}
-                      </span>
+                      </p>
                     </div>
-                    <p class="text-sm text-slate-700 break-words whitespace-pre-line">
+                    <p class="text-sm text-slate-700 whitespace-pre-line break-words">
                       {{ entry.answer_text }}
                     </p>
                   </div>
                 </div>
 
-                <!-- Guests without answer (attending / maybe) -->
-                <div v-if="drillData.guests_without_answer.length > 0">
-                  <div class="flex items-center justify-between mb-2">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-600">
-                      {{ t('management.rsvpAnalytics.drill.missingTitle') }}
-                    </p>
-                    <span class="text-[11px] text-amber-700/70">
-                      {{
-                        t('management.rsvpAnalytics.drill.missingCount', {
-                          count: drillData.guests_without_answer.length,
-                        }, drillData.guests_without_answer.length)
-                      }}
-                    </span>
-                  </div>
-                  <div class="rounded-xl bg-amber-50/60 border border-amber-200 p-2 flex flex-wrap gap-1.5">
-                    <span
-                      v-for="guest in drillData.guests_without_answer"
-                      :key="guest.id"
-                      class="inline-flex items-center gap-1 rounded-full bg-white border border-amber-200 px-2 py-0.5 text-[11px] text-amber-800"
-                    >
-                      <span
-                        v-if="guest.group_color"
-                        class="h-1.5 w-1.5 rounded-full flex-shrink-0"
-                        :style="{ backgroundColor: guest.group_color }"
-                      />
-                      {{ guest.name }}
-                    </span>
-                  </div>
-                  <p
-                    v-if="drillData.guests_without_answer_truncated"
-                    class="mt-2 text-[11px] text-amber-700/70"
-                  >
-                    {{ t('management.rsvpAnalytics.drill.missingTruncated') }}
+                <!-- Expanded but no answers -->
+                <div
+                  v-else-if="isExpanded(q.question_id) && !drillLoading && !drillError"
+                  class="rounded-lg bg-slate-50 p-3 text-center"
+                >
+                  <p class="text-xs text-slate-400">
+                    {{ t('management.rsvpAnalytics.drill.noFreeText') }}
                   </p>
                 </div>
               </div>
+
+              <!-- Drill-through loading / error (shared across types) -->
+              <div
+                v-if="isExpanded(q.question_id) && drillLoading"
+                class="mt-3 flex items-center justify-center py-3"
+              >
+                <div class="h-4 w-4 animate-spin rounded-full border-b-2 border-emerald-600" />
+                <span class="ml-2 text-xs text-slate-500">
+                  {{ t('management.rsvpAnalytics.drill.loading') }}
+                </span>
+              </div>
+              <div
+                v-else-if="isExpanded(q.question_id) && drillError"
+                class="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700"
+              >
+                {{ drillError }}
+              </div>
+
+              <!-- Still-expected list -->
+              <div
+                v-if="
+                  isExpanded(q.question_id) &&
+                  drillData &&
+                  drillData.guests_without_answer.length > 0
+                "
+                class="mt-4 border-t border-dashed border-amber-200 pt-3"
+              >
+                <div class="mb-2 flex items-center justify-between">
+                  <p class="text-[10px] font-semibold uppercase tracking-wide text-amber-600">
+                    {{ t('management.rsvpAnalytics.drill.missingTitle') }}
+                  </p>
+                  <span class="text-[10px] text-amber-700/70 tabular-nums">
+                    {{ drillData.guests_without_answer.length }}
+                  </span>
+                </div>
+                <div class="flex flex-wrap gap-1">
+                  <span
+                    v-for="guest in drillData.guests_without_answer"
+                    :key="guest.id"
+                    class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-800"
+                  >
+                    <span
+                      v-if="guest.group_color"
+                      class="h-1 w-1 rounded-full flex-shrink-0"
+                      :style="{ backgroundColor: guest.group_color }"
+                    />
+                    {{ guest.name }}
+                  </span>
+                </div>
+                <p
+                  v-if="drillData.guests_without_answer_truncated"
+                  class="mt-2 text-[10px] text-amber-700/70"
+                >
+                  {{ t('management.rsvpAnalytics.drill.missingTruncated') }}
+                </p>
+              </div>
             </div>
-          </div>
+          </article>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { Doughnut } from 'vue-chartjs'
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-  type ChartOptions,
-} from 'chart.js'
 import {
   ChevronDown,
   ClipboardList,
-  Users,
-  UsersRound,
-  UserCheck,
-  CheckCircle2,
-  Clock,
   MessageSquareText,
   PartyPopper,
 } from 'lucide-vue-next'
@@ -559,8 +445,6 @@ import type {
   GuestRsvpSummary,
   RsvpQuestionResponses,
 } from '../../services/api'
-
-ChartJS.register(ArcElement, Tooltip, Legend)
 
 const { t, locale } = useAppLanguage()
 
@@ -601,11 +485,6 @@ const questionsById = computed(() => {
   return map
 })
 
-/**
- * Return the best available label for a question in the current locale.
- * Falls back to the base `question_text` if no translation exists for the
- * current locale (or if the translation is blank).
- */
 const localizeQuestionText = (
   questionId: number,
   fallback: string,
@@ -617,12 +496,6 @@ const localizeQuestionText = (
   return match?.question_text?.trim() || fallback
 }
 
-/**
- * Return the localised label for a choice value. The backend stores
- * breakdown keys + drill-through `answer` values in the base language,
- * so we look up the choice index in the parent question's `choices` and
- * read the same index from the translated `choices` array.
- */
 const localizeChoice = (
   questionId: number,
   baseChoice: string,
@@ -650,31 +523,32 @@ const respondedPercent = computed(() => {
 })
 
 // Plus-ones = expected - attending guests themselves. `total_expected_attendees`
-// already counts guest + their plus-ones for attendees only, so subtracting
-// the attending head count yields just the plus-ones subtotal.
+// counts guest + their plus-ones for attendees only, so subtracting the
+// attending head count yields just the plus-ones subtotal.
 const plusOnesCount = computed(() => {
   if (!summary.value) return 0
   const diff = summary.value.total_expected_attendees - summary.value.status_counts.attending
   return Math.max(0, diff)
 })
 
-// The summary only returns the first N pending guests inline (the backend
-// caps the list so /rsvp-summary/ stays cheap). If there are more pending
-// guests than the array length, surface the remainder as a "…and N more".
+// The summary only returns the first N pending guests inline. If there
+// are more than what's shown, surface the remainder as a "+N more" chip.
 const hiddenPendingCount = computed(() => {
   if (!summary.value) return 0
   const listed = summary.value.pending_guests.length
   return Math.max(0, summary.value.status_counts.pending - listed)
 })
 
-const invitationStatusClass = (status: 'not_sent' | 'sent' | 'viewed'): string => {
+// Dot color for pending guest chips encodes invitation progression:
+// viewed (green) > sent (blue) > not_sent (grey).
+const pendingDotClass = (status: 'not_sent' | 'sent' | 'viewed'): string => {
   switch (status) {
     case 'viewed':
-      return 'bg-emerald-100 text-emerald-700'
+      return 'bg-emerald-500'
     case 'sent':
-      return 'bg-sky-100 text-sky-700'
+      return 'bg-sky-500'
     default:
-      return 'bg-slate-100 text-slate-600'
+      return 'bg-slate-300'
   }
 }
 
@@ -683,14 +557,7 @@ const statusColors = {
   attending: '#10b981', // emerald-500
   maybe: '#f59e0b', // amber-500
   not_attending: '#f43f5e', // rose-500
-  pending: '#94a3b8', // slate-400
-}
-
-const statusBgs = {
-  attending: '#ecfdf5',
-  maybe: '#fffbeb',
-  not_attending: '#fff1f2',
-  pending: '#f8fafc',
+  pending: '#cbd5e1', // slate-300 — quieter so the responded colours pop
 }
 
 interface DistributionRow {
@@ -699,7 +566,6 @@ interface DistributionRow {
   count: number
   percent: number
   color: string
-  bg: string
 }
 
 const distributionRows = computed<DistributionRow[]>(() => {
@@ -715,7 +581,6 @@ const distributionRows = computed<DistributionRow[]>(() => {
       count: c.attending,
       percent: pct(c.attending),
       color: statusColors.attending,
-      bg: statusBgs.attending,
     },
     {
       key: 'maybe',
@@ -723,7 +588,6 @@ const distributionRows = computed<DistributionRow[]>(() => {
       count: c.maybe,
       percent: pct(c.maybe),
       color: statusColors.maybe,
-      bg: statusBgs.maybe,
     },
     {
       key: 'not_attending',
@@ -731,7 +595,6 @@ const distributionRows = computed<DistributionRow[]>(() => {
       count: c.not_attending,
       percent: pct(c.not_attending),
       color: statusColors.not_attending,
-      bg: statusBgs.not_attending,
     },
     {
       key: 'pending',
@@ -739,44 +602,9 @@ const distributionRows = computed<DistributionRow[]>(() => {
       count: c.pending,
       percent: pct(c.pending),
       color: statusColors.pending,
-      bg: statusBgs.pending,
     },
   ]
 })
-
-const distributionChartData = computed(() => ({
-  labels: distributionRows.value.map((r) => r.label),
-  datasets: [
-    {
-      data: distributionRows.value.map((r) => r.count),
-      backgroundColor: distributionRows.value.map((r) => r.color),
-      borderColor: '#ffffff',
-      borderWidth: 2,
-    },
-  ],
-}))
-
-const chartOptions: ChartOptions<'doughnut'> = {
-  responsive: true,
-  maintainAspectRatio: true,
-  cutout: '62%',
-  plugins: {
-    legend: {
-      display: false,
-    },
-    tooltip: {
-      callbacks: {
-        label: (context) => {
-          const label = context.label || ''
-          const value = (context.parsed as number) || 0
-          const total = (context.dataset.data as number[]).reduce((a, b) => a + b, 0)
-          const percentage = total === 0 ? 0 : Math.round((value / total) * 100)
-          return `${label}: ${value} (${percentage}%)`
-        },
-      },
-    },
-  },
-}
 
 // ---- Question breakdowns -------------------------------------------------
 // Rotating palette for choice bars. Kept inside the analytics card so each
@@ -808,9 +636,7 @@ const getTypeLabel = (type: string) => {
 interface BreakdownRow {
   label: string
   count: number
-  /** Percentage of respondents who picked this option (of total_answers). */
   percentOfTotal: number
-  /** Percentage relative to the most-picked option (for bar width). */
   percentOfMax: number
 }
 
@@ -840,6 +666,8 @@ const drillError = ref<string | null>(null)
 const drillData = ref<RsvpQuestionResponses | null>(null)
 const drillCache = new Map<number, RsvpQuestionResponses>()
 
+const isExpanded = (questionId: number) => expandedQuestionId.value === questionId
+
 const toggleQuestion = async (questionId: number) => {
   if (expandedQuestionId.value === questionId) {
     expandedQuestionId.value = null
@@ -866,8 +694,6 @@ const toggleQuestion = async (questionId: number) => {
     )
     if (response.success && response.data) {
       drillCache.set(questionId, response.data)
-      // Guard against stale responses if the user clicked another question
-      // before this one resolved.
       if (expandedQuestionId.value === questionId) {
         drillData.value = response.data
       }
@@ -880,6 +706,19 @@ const toggleQuestion = async (questionId: number) => {
   } finally {
     drillLoading.value = false
   }
+}
+
+/**
+ * Return the guest list for a given choice bucket in the currently-expanded
+ * question's drill-through. Returns an empty array if drill data isn't
+ * loaded yet or if this bucket isn't in `grouped_by_answer`. Used to
+ * render guest chips inline under each breakdown bar.
+ */
+const getBucketGuests = (answerLabel: string) => {
+  const buckets = drillData.value?.grouped_by_answer
+  if (!buckets) return []
+  const bucket = buckets.find((b) => b.answer === answerLabel)
+  return bucket?.guests ?? []
 }
 
 const formatRelativeDate = (iso: string): string => {

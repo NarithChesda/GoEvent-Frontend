@@ -1858,6 +1858,11 @@
       "title": "No RSVP data yet",
       "description": "Once you invite guests, their responses will show up here."
     },
+    "hero": {
+      "respondedLabel": "Replied to your invitation",
+      "expectedLabel": "Expected attendees",
+      "expectedBreakdown": "{attending} attending + {plusOnes} plus-ones"
+    },
     "metrics": {
       "invited": "Invited",
       "invitedDesc": "Total guests invited",
@@ -1877,11 +1882,12 @@
       "legendPercent": "{percent}%"
     },
     "chase": {
-      "title": "Follow up",
-      "description": "Guests who haven't replied yet — nudge them before the big day.",
-      "allResponded": "Everyone on your guest list has responded.",
+      "title": "Needs follow-up",
+      "description": "Haven't replied yet — nudge them before the big day.",
+      "allResponded": "Everyone has responded.",
       "unnamedGuest": "Unnamed guest",
       "moreHidden": "…and {count} more pending | …and {count} more pending",
+      "moreShort": "more",
       "status": {
         "not_sent": "Not sent",
         "sent": "Invited",
