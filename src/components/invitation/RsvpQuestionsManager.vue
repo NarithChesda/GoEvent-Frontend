@@ -61,7 +61,7 @@
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <p class="text-sm font-medium text-slate-900 break-words">
-                  {{ q.question_text }}
+                  {{ localizeQuestionText(q) }}
                 </p>
                 <span
                   class="px-1.5 py-0.5 rounded-md text-[10px] font-medium text-slate-600 bg-slate-100"
@@ -79,7 +79,7 @@
                 v-if="q.choices && q.choices.length > 0"
                 class="mt-1 text-xs text-slate-500 break-words"
               >
-                {{ q.choices.join(', ') }}
+                {{ localizeChoices(q).join(', ') }}
               </p>
             </div>
 
@@ -143,7 +143,7 @@
     <DeleteConfirmModal
       :show="showDeleteModal"
       :title="t('management.guestGroupsView.rsvpQuestions.deleteConfirm.title')"
-      :item-name="deleteTarget?.question_text || ''"
+      :item-name="deleteTarget ? localizeQuestionText(deleteTarget) : ''"
       :loading="isDeleting"
       @confirm="confirmDeleteQuestion"
       @cancel="cancelDelete"
@@ -153,7 +153,6 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import {
   MessageSquareText,
   Plus,
@@ -162,6 +161,7 @@ import {
   Edit2,
   Trash2,
 } from 'lucide-vue-next'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import DeleteConfirmModal from '../DeleteConfirmModal.vue'
 import RsvpQuestionModal from './RsvpQuestionModal.vue'
 import { rsvpQuestionsService } from '../../services/api'
@@ -171,7 +171,32 @@ import type {
   EventRsvpQuestionType,
 } from '../../services/api'
 
-const { t } = useI18n()
+const { t, locale } = useAppLanguage()
+
+/**
+ * Return the question label in the current locale, falling back to the
+ * base `question_text` when no translation exists for the current locale.
+ */
+const localizeQuestionText = (q: EventRsvpQuestion): string => {
+  if (locale.value === 'en') return q.question_text
+  const match = q.translations?.find((tr) => tr.language === locale.value)
+  return match?.question_text?.trim() || q.question_text
+}
+
+/**
+ * Return the localised preview line of choices for a question. The
+ * translated `choices` array is index-paired with the base `choices`, so
+ * each slot falls back individually if its translation is blank.
+ */
+const localizeChoices = (q: EventRsvpQuestion): string[] => {
+  if (!q.choices || q.choices.length === 0) return []
+  if (locale.value === 'en') return q.choices
+  const match = q.translations?.find((tr) => tr.language === locale.value)
+  if (!match?.choices) return q.choices
+  return q.choices.map(
+    (base, idx) => match.choices?.[idx]?.trim() || base,
+  )
+}
 
 interface Props {
   eventId: string

@@ -286,7 +286,7 @@
               <div class="min-w-0 flex-1">
                 <p class="text-sm font-semibold text-slate-900 break-words">
                   <span class="text-slate-400 tabular-nums mr-1.5">Q{{ qIdx + 1 }}.</span>
-                  {{ q.question_text }}
+                  {{ localizeQuestionText(q.question_id, q.question_text) }}
                 </p>
                 <div class="mt-1.5 flex items-center gap-1.5 flex-wrap">
                   <span class="px-1.5 py-0.5 rounded-md text-[10px] font-medium text-slate-600 bg-white border border-slate-200">
@@ -338,8 +338,11 @@
                   :key="row.label"
                   class="flex items-center gap-3"
                 >
-                  <div class="w-32 sm:w-40 flex-shrink-0 text-xs font-medium text-slate-700 truncate" :title="row.label">
-                    {{ row.label }}
+                  <div
+                    class="w-32 sm:w-40 flex-shrink-0 text-xs font-medium text-slate-700 truncate"
+                    :title="localizeChoice(q.question_id, row.label)"
+                  >
+                    {{ localizeChoice(q.question_id, row.label) }}
                   </div>
                   <div class="flex-1 min-w-0 relative">
                     <div class="h-6 rounded-md bg-white border border-slate-200 overflow-hidden">
@@ -412,7 +415,7 @@
                           :style="{ backgroundColor: palette[bIdx % palette.length] }"
                         />
                         <p class="text-xs font-semibold text-slate-900 truncate">
-                          {{ bucket.answer }}
+                          {{ localizeChoice(drillData.question_id, bucket.answer) }}
                         </p>
                       </div>
                       <span class="text-xs font-semibold text-slate-600 tabular-nums flex-shrink-0">
@@ -550,6 +553,7 @@ import {
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { guestService, rsvpQuestionsService } from '../../services/api'
 import type {
+  EventRsvpQuestion,
   EventRsvpQuestionType,
   GuestRsvpQuestionBreakdown,
   GuestRsvpSummary,
@@ -558,7 +562,7 @@ import type {
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
-const { t } = useAppLanguage()
+const { t, locale } = useAppLanguage()
 
 const props = defineProps<{
   eventId: string
@@ -566,17 +570,71 @@ const props = defineProps<{
 
 const loading = ref(false)
 const summary = ref<GuestRsvpSummary | null>(null)
+// Full question list (with translations) — the `rsvp-summary/` endpoint
+// only echoes the base-language `question_text`, so we fetch the question
+// list in parallel to get the `translations[]` array for localised labels.
+const questions = ref<EventRsvpQuestion[]>([])
 
 const loadSummary = async () => {
   loading.value = true
   try {
-    const response = await guestService.getGuestsRsvpSummary(props.eventId)
-    if (response.success && response.data) {
-      summary.value = response.data
+    const [summaryRes, questionsRes] = await Promise.all([
+      guestService.getGuestsRsvpSummary(props.eventId),
+      rsvpQuestionsService.listQuestions(props.eventId),
+    ])
+    if (summaryRes.success && summaryRes.data) {
+      summary.value = summaryRes.data
+    }
+    if (questionsRes.success && questionsRes.data) {
+      questions.value = questionsRes.data
     }
   } finally {
     loading.value = false
   }
+}
+
+// Map question_id → full question record (with translations) for quick
+// lookup during render. Rebuilt whenever the questions array changes.
+const questionsById = computed(() => {
+  const map = new Map<number, EventRsvpQuestion>()
+  for (const q of questions.value) map.set(q.id, q)
+  return map
+})
+
+/**
+ * Return the best available label for a question in the current locale.
+ * Falls back to the base `question_text` if no translation exists for the
+ * current locale (or if the translation is blank).
+ */
+const localizeQuestionText = (
+  questionId: number,
+  fallback: string,
+): string => {
+  if (locale.value === 'en') return fallback
+  const q = questionsById.value.get(questionId)
+  if (!q?.translations) return fallback
+  const match = q.translations.find((tr) => tr.language === locale.value)
+  return match?.question_text?.trim() || fallback
+}
+
+/**
+ * Return the localised label for a choice value. The backend stores
+ * breakdown keys + drill-through `answer` values in the base language,
+ * so we look up the choice index in the parent question's `choices` and
+ * read the same index from the translated `choices` array.
+ */
+const localizeChoice = (
+  questionId: number,
+  baseChoice: string,
+): string => {
+  if (locale.value === 'en') return baseChoice
+  const q = questionsById.value.get(questionId)
+  if (!q?.choices || !q.translations) return baseChoice
+  const idx = q.choices.indexOf(baseChoice)
+  if (idx === -1) return baseChoice
+  const match = q.translations.find((tr) => tr.language === locale.value)
+  const translated = match?.choices?.[idx]?.trim()
+  return translated || baseChoice
 }
 
 // ---- Metrics -------------------------------------------------------------
