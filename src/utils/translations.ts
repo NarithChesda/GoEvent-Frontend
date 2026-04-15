@@ -87,6 +87,14 @@ export const rsvpTranslations: Record<
     rsvp_long_text_placeholder: string
     rsvp_load_failed: string
     rsvp_submit_success: string
+    rsvp_summary_attending: string
+    rsvp_summary_maybe: string
+    rsvp_summary_not_attending: string
+    rsvp_summary_plus_one: string
+    rsvp_summary_plus_ones: string
+    rsvp_edit_response: string
+    rsvp_wizard_back: string
+    rsvp_wizard_next: string
 
     // Host section
     hosts_header_funeral: string
@@ -265,7 +273,15 @@ export const rsvpTranslations: Record<
     rsvp_plus_ones_names_label: 'Names of plus-ones',
     rsvp_plus_ones_names_placeholder: 'e.g. Alex Smith, Jordan Lee',
     rsvp_private_note_label: 'Private note to host',
-    rsvp_private_note_placeholder: 'Optional — only the host will see this',
+    rsvp_private_note_placeholder: 'Note to the organizer (optional)',
+    rsvp_summary_attending: "You're attending",
+    rsvp_summary_maybe: "You're tentatively attending",
+    rsvp_summary_not_attending: "You can't make it",
+    rsvp_summary_plus_one: 'Bringing 1 additional guest',
+    rsvp_summary_plus_ones: 'Bringing {count} additional guests',
+    rsvp_edit_response: 'Edit response',
+    rsvp_wizard_back: 'Back',
+    rsvp_wizard_next: 'Next',
     rsvp_submit_button: 'Send RSVP',
     rsvp_update_button: 'Update RSVP',
     rsvp_need_invitation_link: 'Please open this page from your personal invitation link to RSVP.',
@@ -455,8 +471,16 @@ export const rsvpTranslations: Record<
     rsvp_plus_ones_helper: 'បាននាំបន្ថែមរហូតដល់ {max} នាក់',
     rsvp_plus_ones_names_label: 'ឈ្មោះភ្ញៀវបន្ថែម',
     rsvp_plus_ones_names_placeholder: 'ឧ. សុខ សុភា, ចាន់ ដារ៉ា',
-    rsvp_private_note_label: 'សារឯកជនជូនម្ចាស់បុណ្យ',
-    rsvp_private_note_placeholder: 'ស្រេចចិត្ត — មានតែម្ចាស់បុណ្យប៉ុណ្ណោះឃើញ',
+    rsvp_private_note_label: 'សារឯកជនជូនម្ចាស់កម្មវិធី',
+    rsvp_private_note_placeholder: 'សារជូនម្ចាស់កម្មវិធី (ស្រេចចិត្ត)',
+    rsvp_summary_attending: 'អ្នកនឹងចូលរួម',
+    rsvp_summary_maybe: 'អ្នកប្រហែលជាចូលរួម',
+    rsvp_summary_not_attending: 'អ្នកមិនអាចចូលរួមបាន',
+    rsvp_summary_plus_one: 'នាំភ្ញៀវបន្ថែម ១ នាក់',
+    rsvp_summary_plus_ones: 'នាំភ្ញៀវបន្ថែម {count} នាក់',
+    rsvp_edit_response: 'កែប្រែការឆ្លើយតប',
+    rsvp_wizard_back: 'ថយក្រោយ',
+    rsvp_wizard_next: 'បន្ទាប់',
     rsvp_submit_button: 'បញ្ជូន RSVP',
     rsvp_update_button: 'កែប្រែ RSVP',
     rsvp_need_invitation_link: 'សូមបើកទំព័រនេះតាមរយៈតំណអញ្ជើញផ្ទាល់ខ្លួនរបស់អ្នក ដើម្បីឆ្លើយតប។',
@@ -647,7 +671,15 @@ export const rsvpTranslations: Record<
     rsvp_plus_ones_names_label: '同行宾客姓名',
     rsvp_plus_ones_names_placeholder: '例如：陈小明、林大华',
     rsvp_private_note_label: '给主人的私密留言',
-    rsvp_private_note_placeholder: '可选 — 只有主人能看到',
+    rsvp_private_note_placeholder: '给主办方的留言（可选）',
+    rsvp_summary_attending: '您将出席',
+    rsvp_summary_maybe: '您可能出席',
+    rsvp_summary_not_attending: '您无法出席',
+    rsvp_summary_plus_one: '携带 1 位宾客',
+    rsvp_summary_plus_ones: '携带 {count} 位宾客',
+    rsvp_edit_response: '编辑回覆',
+    rsvp_wizard_back: '上一步',
+    rsvp_wizard_next: '下一步',
     rsvp_submit_button: '提交回覆',
     rsvp_update_button: '更新回覆',
     rsvp_need_invitation_link: '请通过您的专属邀请链接打开此页以进行回覆。',

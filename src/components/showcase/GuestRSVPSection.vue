@@ -9,6 +9,27 @@
       >
         {{ rsvpHeaderText }}
       </span>
+      <!-- Trailing checkmark in a circle — only on the completed state -->
+      <span
+        v-if="showCollapsedSummary"
+        class="rsvp-title-check"
+        aria-hidden="true"
+      >
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 24 24"
+          fill="none"
+        >
+          <path
+            d="M5 12.5l4.5 4.5L19 7.5"
+            stroke="currentColor"
+            stroke-width="2.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </span>
     </div>
 
     <!-- Missing invitation shortcode -->
@@ -43,303 +64,282 @@
       </button>
     </div>
 
-    <!-- Form -->
+    <!-- Collapsed summary (after submit) — the header already reads as a
+         thank-you, so the whole pill collapses down to a single edit
+         button. Success toast still renders briefly right after a submit. -->
+    <div
+      v-else-if="formState && showCollapsedSummary"
+      class="rsvp-summary"
+    >
+      <button
+        type="button"
+        class="edit-btn"
+        :style="{ fontFamily: secondaryFont || currentFont }"
+        @click="enterEditMode"
+        :aria-label="editResponseText"
+      >
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M11 2l3 3-8.5 8.5H2.5V10.5L11 2z"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <span>{{ editResponseText }}</span>
+      </button>
+
+      <div v-if="successMessage" class="rsvp-message">
+        <span class="message-text success">{{ successMessage }}</span>
+      </div>
+    </div>
+
+    <!-- Wizard form -->
     <form
       v-else-if="formState"
-      class="rsvp-form"
+      class="rsvp-wizard"
       @submit.prevent="handleSubmit"
     >
-      <!-- Status dropdown -->
-      <div ref="statusDropdownRef" class="status-dropdown">
-        <button
-          type="button"
-          class="dropdown-trigger"
-          :class="{ open: isStatusDropdownOpen, filled: rsvpStatus !== 'pending' }"
-          :style="{ fontFamily: secondaryFont || currentFont }"
-          :aria-haspopup="'listbox'"
-          :aria-expanded="isStatusDropdownOpen"
-          @click="toggleStatusDropdown"
-        >
-          <span class="dropdown-chevron-spacer" aria-hidden="true"></span>
-          <span
-            class="dropdown-label"
-            :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
-          >{{ selectedStatusLabel }}</span>
-          <svg
-            class="dropdown-chevron"
-            :class="{ open: isStatusDropdownOpen }"
-            width="12"
-            height="12"
-            viewBox="0 0 12 12"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M3 4.5l3 3 3-3"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
+      <!-- Progress bar (only when we have more than one step) -->
+      <div v-if="steps.length > 1" class="wizard-progress">
+        <div
+          class="wizard-progress-fill"
+          :style="{ width: `${progressPercent}%` }"
+        />
+      </div>
 
-        <transition name="dropdown-fade">
-          <ul
-            v-if="isStatusDropdownOpen"
-            class="dropdown-menu"
-            role="listbox"
-            :style="{ fontFamily: secondaryFont || currentFont }"
-          >
-            <li v-for="opt in statusOptions" :key="opt.value">
+      <!-- Step content with fade-slide transition -->
+      <transition name="step-fade" mode="out-in">
+        <div :key="currentStepIndex" class="wizard-step">
+          <!-- STATUS -->
+          <template v-if="currentStep?.kind === 'status'">
+            <p
+              class="step-prompt"
+              :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+              :style="{ fontFamily: secondaryFont || currentFont }"
+            >
+              {{ statusPlaceholderText }}
+            </p>
+            <div class="status-options">
               <button
+                v-for="opt in statusOptions"
+                :key="opt.value"
                 type="button"
-                class="dropdown-option"
-                :class="{ selected: rsvpStatus === opt.value }"
-                role="option"
-                :aria-selected="rsvpStatus === opt.value"
+                class="status-option"
+                :class="{ active: rsvpStatus === opt.value }"
+                :style="{
+                  fontFamily: secondaryFont || currentFont,
+                  color: rsvpStatus === opt.value ? (backgroundColor || primaryColor) : 'white',
+                  background: rsvpStatus === opt.value ? 'white' : 'transparent',
+                }"
                 @click="selectStatus(opt.value)"
               >
                 <span
                   :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
                 >{{ opt.label }}</span>
-                <svg
-                  v-if="rsvpStatus === opt.value"
-                  width="12"
-                  height="12"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  aria-hidden="true"
-                >
+              </button>
+            </div>
+          </template>
+
+          <!-- PLUS-ONES (count + names combined) -->
+          <template v-else-if="currentStep?.kind === 'plus_ones'">
+            <p
+              class="step-prompt"
+              :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+              :style="{ fontFamily: secondaryFont || currentFont }"
+            >
+              {{ plusOnesLabel }}
+            </p>
+            <p
+              class="step-hint"
+              :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+              :style="{ fontFamily: secondaryFont || currentFont }"
+            >
+              {{ plusOnesHelperText }}
+            </p>
+            <div class="stepper stepper-center">
+              <button
+                type="button"
+                class="stepper-btn"
+                :disabled="plusOnesCount <= 0"
+                :aria-label="'−'"
+                @click="decrementPlusOnes"
+              >
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
                   <path
-                    d="M3 8.5l3 3 7-7"
+                    d="M2 6H10"
                     stroke="currentColor"
                     stroke-width="2"
                     stroke-linecap="round"
-                    stroke-linejoin="round"
                   />
                 </svg>
               </button>
-            </li>
-          </ul>
-        </transition>
-      </div>
-
-      <!-- Plus-ones stepper: inline compact -->
-      <div
-        v-if="showAttendingExtras && formState.max_plus_ones > 0"
-        class="inline-row"
-      >
-        <div class="inline-label-group">
-          <span
-            class="inline-label"
-            :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
-            :style="{ fontFamily: secondaryFont || currentFont }"
-          >{{ plusOnesLabel }}</span>
-          <span
-            class="inline-hint"
-            :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
-            :style="{ fontFamily: secondaryFont || currentFont }"
-          >{{ plusOnesHelperText }}</span>
-        </div>
-        <div class="stepper">
-          <button
-            type="button"
-            class="stepper-btn"
-            :disabled="plusOnesCount <= 0"
-            :aria-label="'−'"
-            @click="decrementPlusOnes"
-          >
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-              <path
-                d="M2 6H10"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
+              <span
+                class="stepper-value"
+                :style="{ fontFamily: secondaryFont || currentFont }"
+              >{{ plusOnesCount }}</span>
+              <button
+                type="button"
+                class="stepper-btn"
+                :disabled="plusOnesCount >= formState.max_plus_ones"
+                :aria-label="'+'"
+                @click="incrementPlusOnes"
+              >
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                  <path
+                    d="M6 2V10M2 6H10"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div v-if="plusOnesCount > 0" class="field">
+              <input
+                v-model="plusOnesNames"
+                type="text"
+                class="line-input line-input-center"
+                :placeholder="plusOnesNamesPlaceholder"
+                :maxlength="300"
+                :aria-label="plusOnesNamesLabel"
+                :style="{ fontFamily: secondaryFont || currentFont }"
               />
-            </svg>
-          </button>
-          <span
-            class="stepper-value"
-            :style="{ fontFamily: secondaryFont || currentFont }"
-          >{{ plusOnesCount }}</span>
-          <button
-            type="button"
-            class="stepper-btn"
-            :disabled="plusOnesCount >= formState.max_plus_ones"
-            :aria-label="'+'"
-            @click="incrementPlusOnes"
-          >
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-              <path
-                d="M6 2V10M2 6H10"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-            </svg>
-          </button>
+            </div>
+          </template>
+
+          <!-- QUESTION (one per step) -->
+          <template v-else-if="currentStep?.kind === 'question' && currentQuestion">
+            <p
+              class="step-prompt"
+              :class="[
+                currentLanguage === 'kh' && 'khmer-text-fix',
+                requiredMissingIds.has(currentQuestion.id) && 'label-error',
+              ]"
+              :style="{ fontFamily: secondaryFont || currentFont }"
+            >
+              <span>{{ currentQuestion.question_text }}</span>
+              <span
+                v-if="currentQuestion.is_required"
+                class="required-star"
+                aria-hidden="true"
+              >*</span>
+            </p>
+
+            <!-- text -->
+            <input
+              v-if="currentQuestion.question_type === 'text'"
+              v-model="answers[currentQuestion.id].answer_text"
+              type="text"
+              class="line-input line-input-center"
+              :placeholder="textPlaceholder"
+              :maxlength="200"
+              :style="{ fontFamily: secondaryFont || currentFont }"
+            />
+
+            <!-- long_text -->
+            <textarea
+              v-else-if="currentQuestion.question_type === 'long_text'"
+              v-model="answers[currentQuestion.id].answer_text"
+              class="line-textarea line-input-center"
+              :placeholder="longTextPlaceholder"
+              :maxlength="2000"
+              rows="3"
+              :style="{ fontFamily: secondaryFont || currentFont }"
+            />
+
+            <!-- yes_no -->
+            <div
+              v-else-if="currentQuestion.question_type === 'yes_no'"
+              class="chips-row chips-center"
+            >
+              <button
+                type="button"
+                class="chip"
+                :class="{ active: answers[currentQuestion.id].answer_text === 'yes' }"
+                :style="{
+                  fontFamily: secondaryFont || currentFont,
+                  color: answers[currentQuestion.id].answer_text === 'yes' ? (backgroundColor || primaryColor) : 'white',
+                  background: answers[currentQuestion.id].answer_text === 'yes' ? 'white' : 'transparent',
+                }"
+                @click="setYesNo(currentQuestion.id, 'yes')"
+              >{{ yesOptionText }}</button>
+              <button
+                type="button"
+                class="chip"
+                :class="{ active: answers[currentQuestion.id].answer_text === 'no' }"
+                :style="{
+                  fontFamily: secondaryFont || currentFont,
+                  color: answers[currentQuestion.id].answer_text === 'no' ? (backgroundColor || primaryColor) : 'white',
+                  background: answers[currentQuestion.id].answer_text === 'no' ? 'white' : 'transparent',
+                }"
+                @click="setYesNo(currentQuestion.id, 'no')"
+              >{{ noOptionText }}</button>
+            </div>
+
+            <!-- single_choice -->
+            <div
+              v-else-if="currentQuestion.question_type === 'single_choice'"
+              class="chips-wrap chips-center"
+            >
+              <button
+                v-for="(display, idx) in currentQuestion.displayChoices"
+                :key="currentQuestion.originalChoices[idx]"
+                type="button"
+                class="chip"
+                :class="{ active: answers[currentQuestion.id].answer_text === currentQuestion.originalChoices[idx] }"
+                :style="{
+                  fontFamily: secondaryFont || currentFont,
+                  color: answers[currentQuestion.id].answer_text === currentQuestion.originalChoices[idx] ? (backgroundColor || primaryColor) : 'white',
+                  background: answers[currentQuestion.id].answer_text === currentQuestion.originalChoices[idx] ? 'white' : 'transparent',
+                }"
+                @click="selectSingleChoice(currentQuestion.id, currentQuestion.originalChoices[idx])"
+              >{{ display }}</button>
+            </div>
+
+            <!-- multi_choice -->
+            <div
+              v-else-if="currentQuestion.question_type === 'multi_choice'"
+              class="chips-wrap chips-center"
+            >
+              <button
+                v-for="(display, idx) in currentQuestion.displayChoices"
+                :key="currentQuestion.originalChoices[idx]"
+                type="button"
+                class="chip"
+                :class="{ active: isChoiceSelected(currentQuestion.id, currentQuestion.originalChoices[idx]) }"
+                :style="{
+                  fontFamily: secondaryFont || currentFont,
+                  color: isChoiceSelected(currentQuestion.id, currentQuestion.originalChoices[idx]) ? (backgroundColor || primaryColor) : 'white',
+                  background: isChoiceSelected(currentQuestion.id, currentQuestion.originalChoices[idx]) ? 'white' : 'transparent',
+                }"
+                @click="toggleMultiChoice(currentQuestion.id, currentQuestion.originalChoices[idx])"
+              >{{ display }}</button>
+            </div>
+          </template>
+
+          <!-- PRIVATE NOTE -->
+          <template v-else-if="currentStep?.kind === 'private_note'">
+            <p
+              class="step-prompt"
+              :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+              :style="{ fontFamily: secondaryFont || currentFont }"
+            >
+              {{ privateNoteLabel }}
+            </p>
+            <textarea
+              v-model="privateNote"
+              class="line-textarea line-input-center"
+              :placeholder="privateNotePlaceholder"
+              :maxlength="500"
+              rows="3"
+              :aria-label="privateNoteLabel"
+              :style="{ fontFamily: secondaryFont || currentFont }"
+            />
+          </template>
         </div>
-      </div>
-
-      <!-- Plus-ones names (line input) -->
-      <div
-        v-if="showAttendingExtras && plusOnesCount > 0"
-        class="field"
-      >
-        <input
-          v-model="plusOnesNames"
-          type="text"
-          class="line-input"
-          :placeholder="plusOnesNamesPlaceholder"
-          :maxlength="300"
-          :aria-label="plusOnesNamesLabel"
-          :style="{ fontFamily: secondaryFont || currentFont }"
-        />
-      </div>
-
-      <!-- Dynamic questions -->
-      <div
-        v-if="showAttendingExtras && localizedQuestions.length > 0"
-        class="questions-list"
-      >
-        <div
-          v-for="q in localizedQuestions"
-          :key="q.id"
-          class="question-item"
-        >
-          <label
-            class="question-label"
-            :class="[
-              currentLanguage === 'kh' && 'khmer-text-fix',
-              requiredMissingIds.has(q.id) && 'label-error',
-            ]"
-            :style="{ fontFamily: secondaryFont || currentFont }"
-          >
-            <span>{{ q.question_text }}</span>
-            <span v-if="q.is_required" class="required-star" aria-hidden="true">*</span>
-          </label>
-
-          <!-- text -->
-          <input
-            v-if="q.question_type === 'text'"
-            v-model="answers[q.id].answer_text"
-            type="text"
-            class="line-input"
-            :placeholder="textPlaceholder"
-            :maxlength="200"
-            :style="{ fontFamily: secondaryFont || currentFont }"
-          />
-
-          <!-- long_text -->
-          <textarea
-            v-else-if="q.question_type === 'long_text'"
-            v-model="answers[q.id].answer_text"
-            class="line-textarea"
-            :placeholder="longTextPlaceholder"
-            :maxlength="2000"
-            rows="2"
-            :style="{ fontFamily: secondaryFont || currentFont }"
-          />
-
-          <!-- yes_no -->
-          <div
-            v-else-if="q.question_type === 'yes_no'"
-            class="chips-row"
-          >
-            <button
-              type="button"
-              class="chip"
-              :class="{ active: answers[q.id].answer_text === 'yes' }"
-              :style="{
-                fontFamily: secondaryFont || currentFont,
-                color: answers[q.id].answer_text === 'yes' ? (backgroundColor || primaryColor) : 'white',
-                background: answers[q.id].answer_text === 'yes' ? 'white' : 'transparent',
-              }"
-              @click="setYesNo(q.id, 'yes')"
-            >{{ yesOptionText }}</button>
-            <button
-              type="button"
-              class="chip"
-              :class="{ active: answers[q.id].answer_text === 'no' }"
-              :style="{
-                fontFamily: secondaryFont || currentFont,
-                color: answers[q.id].answer_text === 'no' ? (backgroundColor || primaryColor) : 'white',
-                background: answers[q.id].answer_text === 'no' ? 'white' : 'transparent',
-              }"
-              @click="setYesNo(q.id, 'no')"
-            >{{ noOptionText }}</button>
-          </div>
-
-          <!-- single_choice -->
-          <div
-            v-else-if="q.question_type === 'single_choice'"
-            class="chips-wrap"
-          >
-            <button
-              v-for="(display, idx) in q.displayChoices"
-              :key="q.originalChoices[idx]"
-              type="button"
-              class="chip"
-              :class="{ active: answers[q.id].answer_text === q.originalChoices[idx] }"
-              :style="{
-                fontFamily: secondaryFont || currentFont,
-                color: answers[q.id].answer_text === q.originalChoices[idx] ? (backgroundColor || primaryColor) : 'white',
-                background: answers[q.id].answer_text === q.originalChoices[idx] ? 'white' : 'transparent',
-              }"
-              @click="selectSingleChoice(q.id, q.originalChoices[idx])"
-            >{{ display }}</button>
-          </div>
-
-          <!-- multi_choice -->
-          <div
-            v-else-if="q.question_type === 'multi_choice'"
-            class="chips-wrap"
-          >
-            <button
-              v-for="(display, idx) in q.displayChoices"
-              :key="q.originalChoices[idx]"
-              type="button"
-              class="chip"
-              :class="{ active: isChoiceSelected(q.id, q.originalChoices[idx]) }"
-              :style="{
-                fontFamily: secondaryFont || currentFont,
-                color: isChoiceSelected(q.id, q.originalChoices[idx]) ? (backgroundColor || primaryColor) : 'white',
-                background: isChoiceSelected(q.id, q.originalChoices[idx]) ? 'white' : 'transparent',
-              }"
-              @click="toggleMultiChoice(q.id, q.originalChoices[idx])"
-            >{{ display }}</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Private note (line textarea) -->
-      <div v-if="rsvpStatus !== 'pending'" class="field">
-        <textarea
-          v-model="privateNote"
-          class="line-textarea"
-          :placeholder="privateNotePlaceholder"
-          :maxlength="500"
-          rows="2"
-          :aria-label="privateNoteLabel"
-          :style="{ fontFamily: secondaryFont || currentFont }"
-        />
-      </div>
-
-      <!-- Submit -->
-      <button
-        v-if="rsvpStatus !== 'pending'"
-        type="submit"
-        class="submit-btn"
-        :disabled="isSubmitting"
-        :style="{
-          fontFamily: secondaryFont || currentFont,
-          color: backgroundColor || primaryColor,
-        }"
-      >
-        <div v-if="isSubmitting" class="spinner-inline"></div>
-        <span v-else>{{ submitButtonLabel }}</span>
-      </button>
+      </transition>
 
       <!-- Status messages -->
       <div v-if="successMessage || errorMessage" class="rsvp-message">
@@ -351,13 +351,63 @@
         </span>
       </div>
 
-      <!-- Last-updated timestamp -->
-      <div
-        v-if="formState.rsvp_responded_at && !successMessage && !errorMessage"
-        class="responded-at"
-        :style="{ fontFamily: secondaryFont || currentFont }"
-      >
-        {{ respondedAtText }}
+      <!-- Wizard navigation -->
+      <div class="wizard-nav">
+        <button
+          v-if="!isFirstStep"
+          type="button"
+          class="nav-btn back"
+          :style="{ fontFamily: secondaryFont || currentFont }"
+          @click="goBack"
+        >
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path
+              d="M7.5 2.5L3 6l4.5 3.5"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span>{{ backText }}</span>
+        </button>
+
+        <button
+          v-if="!isLastStep"
+          type="button"
+          class="nav-btn next"
+          :disabled="!canProceed"
+          :style="{
+            fontFamily: secondaryFont || currentFont,
+            color: backgroundColor || primaryColor,
+          }"
+          @click="goNext"
+        >
+          <span>{{ nextText }}</span>
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path
+              d="M4.5 2.5L9 6l-4.5 3.5"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+
+        <button
+          v-else
+          type="submit"
+          class="nav-btn submit"
+          :disabled="!canProceed || isSubmitting"
+          :style="{
+            fontFamily: secondaryFont || currentFont,
+            color: backgroundColor || primaryColor,
+          }"
+        >
+          <div v-if="isSubmitting" class="spinner-inline"></div>
+          <span v-else>{{ submitButtonLabel }}</span>
+        </button>
       </div>
     </form>
   </div>
@@ -416,10 +466,25 @@ type AnswerState = { answer_text: string; answer_choices: string[] }
 const answers = reactive<Record<number, AnswerState>>({})
 const requiredMissingIds = ref<Set<number>>(new Set())
 
-const isStatusDropdownOpen = ref(false)
-const statusDropdownRef = ref<HTMLElement | null>(null)
+// Drives the submit → collapsed-summary transition. After a successful
+// submit (or on fresh page loads where the guest already responded), the
+// form hides and a compact summary card takes its place. Clicking "Edit"
+// flips this back to `true` so the guest can revise.
+const isEditing = ref(false)
 
+// ---- Wizard state --------------------------------------------------------
+// The form is rendered as a step-by-step wizard: status → plus-ones →
+// each custom question → private note. The active step list is recomputed
+// from `rsvpStatus` + the current question list so irrelevant steps (plus
+// ones when declining, questions when declining) are skipped.
+const currentStepIndex = ref(0)
 let successTimeout: ReturnType<typeof setTimeout> | null = null
+
+type WizardStepKind = 'status' | 'plus_ones' | 'question' | 'private_note'
+interface WizardStep {
+  kind: WizardStepKind
+  questionId?: number
+}
 
 // ---- Computed ------------------------------------------------------------
 const eventStatus = computed(() => {
@@ -432,8 +497,18 @@ const eventStatus = computed(() => {
   return 'upcoming'
 })
 
-const showAttendingExtras = computed(
-  () => rsvpStatus.value === 'attending' || rsvpStatus.value === 'maybe',
+// The guest has a recorded RSVP when the backend has stamped a response
+// date. Used to decide whether to render the collapsed summary or the
+// editable form. A `pending` status after a timestamp (shouldn't happen in
+// normal flow) still counts as "not yet answered" and shows the form.
+const hasSubmittedRsvp = computed(() => {
+  return !!formState.value?.rsvp_responded_at && rsvpStatus.value !== 'pending'
+})
+
+// Show the collapsed summary when the guest has already answered AND is
+// not actively editing. Clicking "Edit" toggles `isEditing` on.
+const showCollapsedSummary = computed(
+  () => hasSubmittedRsvp.value && !isEditing.value,
 )
 
 const currentLang = computed<SupportedLanguage>(
@@ -451,6 +526,13 @@ const getTextContent = (textType: string, fallback = ''): string => {
 }
 
 const rsvpHeaderText = computed(() => {
+  // Once the guest has responded and is viewing the collapsed summary,
+  // the "Will you be joining us?" question is no longer accurate — swap
+  // it for a thank-you line. Returning to edit mode brings the question
+  // header back so the form context is clear.
+  if (showCollapsedSummary.value) {
+    return translateRSVP('rsvp_thank_you', currentLang.value)
+  }
   const eventType = props.eventType?.toLowerCase() || 'default'
   const headerKeyMap: Record<
     string,
@@ -483,12 +565,6 @@ const statusOptions = computed(() => [
 const statusPlaceholderText = computed(() =>
   translateRSVP('rsvp_status_placeholder', currentLang.value),
 )
-
-const selectedStatusLabel = computed(() => {
-  if (rsvpStatus.value === 'pending') return statusPlaceholderText.value
-  const opt = statusOptions.value.find((o) => o.value === rsvpStatus.value)
-  return opt?.label || statusPlaceholderText.value
-})
 
 const plusOnesLabel = computed(() =>
   translateRSVP('rsvp_plus_ones_label', currentLang.value),
@@ -527,6 +603,8 @@ const needInvitationLinkText = computed(() =>
   translateRSVP('rsvp_need_invitation_link', currentLang.value),
 )
 const retryText = computed(() => translateRSVP('rsvp_dismiss', currentLang.value))
+const backText = computed(() => translateRSVP('rsvp_wizard_back', currentLang.value))
+const nextText = computed(() => translateRSVP('rsvp_wizard_next', currentLang.value))
 
 const submitButtonLabel = computed(() => {
   if (formState.value?.rsvp_responded_at) {
@@ -535,19 +613,16 @@ const submitButtonLabel = computed(() => {
   return translateRSVP('rsvp_submit_button', currentLang.value)
 })
 
-const respondedAtText = computed(() => {
-  if (!formState.value?.rsvp_responded_at) return ''
-  const template = translateRSVP('rsvp_responded_at', currentLang.value)
-  const date = new Date(formState.value.rsvp_responded_at)
-  const formatted = Number.isNaN(date.getTime())
-    ? formState.value.rsvp_responded_at
-    : date.toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
-  return template.replace('{date}', formatted)
-})
+const editResponseText = computed(() =>
+  translateRSVP('rsvp_edit_response', currentLang.value),
+)
+
+const enterEditMode = () => {
+  isEditing.value = true
+  currentStepIndex.value = 0
+  errorMessage.value = ''
+  successMessage.value = ''
+}
 
 interface LocalizedQuestion {
   id: number
@@ -614,35 +689,120 @@ const setYesNo = (questionId: number, value: 'yes' | 'no') => {
   requiredMissingIds.value.delete(questionId)
 }
 
-// ---- Dropdown helpers ----------------------------------------------------
-const toggleStatusDropdown = () => {
-  isStatusDropdownOpen.value = !isStatusDropdownOpen.value
-}
-
-const closeStatusDropdown = () => {
-  isStatusDropdownOpen.value = false
-}
-
 const selectStatus = (status: GuestRsvpStatus) => {
   rsvpStatus.value = status
   requiredMissingIds.value.clear()
   errorMessage.value = ''
-  closeStatusDropdown()
 }
 
-const handleDocumentClick = (event: MouseEvent) => {
-  if (!isStatusDropdownOpen.value) return
-  const el = statusDropdownRef.value
-  if (el && !el.contains(event.target as Node)) {
-    closeStatusDropdown()
+// ---- Wizard navigation ---------------------------------------------------
+// The active step list is recomputed from rsvpStatus + question list so
+// irrelevant steps are skipped. Declining ("not_attending") jumps straight
+// from status to private-note; attending/maybe walks through plus-ones
+// and each custom question.
+const steps = computed<WizardStep[]>(() => {
+  if (!formState.value) return []
+  const out: WizardStep[] = [{ kind: 'status' }]
+  if (rsvpStatus.value === 'pending') return out
+
+  const attendingLike =
+    rsvpStatus.value === 'attending' || rsvpStatus.value === 'maybe'
+
+  if (attendingLike && formState.value.max_plus_ones > 0) {
+    out.push({ kind: 'plus_ones' })
   }
+
+  if (attendingLike) {
+    for (const q of localizedQuestions.value) {
+      out.push({ kind: 'question', questionId: q.id })
+    }
+  }
+
+  out.push({ kind: 'private_note' })
+  return out
+})
+
+const currentStep = computed<WizardStep | null>(
+  () => steps.value[currentStepIndex.value] ?? null,
+)
+
+const currentQuestion = computed<LocalizedQuestion | null>(() => {
+  if (currentStep.value?.kind !== 'question') return null
+  const qid = currentStep.value.questionId
+  return localizedQuestions.value.find((q) => q.id === qid) ?? null
+})
+
+const isFirstStep = computed(() => currentStepIndex.value === 0)
+const isLastStep = computed(
+  () => currentStepIndex.value >= steps.value.length - 1,
+)
+
+// Progress indicator fill: (current+1)/total, so step 1 shows some fill
+// and the last step reads 100%.
+const progressPercent = computed(() => {
+  const total = steps.value.length
+  if (total <= 1) return 100
+  return Math.round(((currentStepIndex.value + 1) / total) * 100)
+})
+
+// Gate the Next/Submit button. Only the currently-visible step is
+// validated — required questions block progression, everything else is
+// free to skip forward.
+const canProceed = computed(() => {
+  const step = currentStep.value
+  if (!step) return false
+  switch (step.kind) {
+    case 'status':
+      return rsvpStatus.value !== 'pending'
+    case 'plus_ones':
+      return true
+    case 'question': {
+      const q = currentQuestion.value
+      if (!q || !q.is_required) return true
+      const slot = answers[q.id]
+      if (!slot) return false
+      if (q.question_type === 'multi_choice') {
+        return slot.answer_choices.length > 0
+      }
+      return slot.answer_text.trim().length > 0
+    }
+    case 'private_note':
+      return true
+    default:
+      return false
+  }
+})
+
+const goNext = () => {
+  if (!canProceed.value) {
+    // Flag the required question visually if the user tried to skip it.
+    if (
+      currentStep.value?.kind === 'question' &&
+      currentQuestion.value?.is_required
+    ) {
+      requiredMissingIds.value.add(currentQuestion.value.id)
+    }
+    return
+  }
+  if (isLastStep.value) return // submit button handles the last step
+  currentStepIndex.value++
+  errorMessage.value = ''
 }
 
-const handleEscape = (event: KeyboardEvent) => {
-  if (event.key === 'Escape' && isStatusDropdownOpen.value) {
-    closeStatusDropdown()
-  }
+const goBack = () => {
+  if (isFirstStep.value) return
+  currentStepIndex.value--
+  errorMessage.value = ''
 }
+
+// If the active step list shrinks (e.g. user flips from attending to
+// not_attending on step 0), clamp the index so we never render past the
+// end of the array.
+watch(steps, (newSteps) => {
+  if (currentStepIndex.value >= newSteps.length) {
+    currentStepIndex.value = Math.max(0, newSteps.length - 1)
+  }
+})
 
 const incrementPlusOnes = () => {
   if (!formState.value) return
@@ -682,6 +842,7 @@ const applyFormState = (state: GuestRsvpFormState) => {
     }
   }
   requiredMissingIds.value.clear()
+  currentStepIndex.value = 0
 }
 
 const loadFormState = async () => {
@@ -786,6 +947,9 @@ const handleSubmit = async () => {
     const response = await guestRsvpService.submitGuestRsvp(props.eventId, payload)
     if (response.success && response.data) {
       applyFormState(response.data)
+      // Collapse the form into the minimal summary card. The guest can
+      // reopen it via the "Edit response" button.
+      isEditing.value = false
       successMessage.value = translateRSVP('rsvp_submit_success', currentLang.value)
       if (successTimeout) clearTimeout(successTimeout)
       successTimeout = setTimeout(() => {
@@ -812,13 +976,9 @@ watch(
 
 onMounted(() => {
   if (props.guestShortcode) loadFormState()
-  document.addEventListener('click', handleDocumentClick)
-  document.addEventListener('keydown', handleEscape)
 })
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', handleDocumentClick)
-  document.removeEventListener('keydown', handleEscape)
   if (successTimeout) clearTimeout(successTimeout)
 })
 </script>
@@ -836,6 +996,36 @@ onBeforeUnmount(() => {
   font-weight: 500;
   line-height: 1.3;
   text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.rsvp-title-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: white;
+  flex-shrink: 0;
+  animation: check-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes check-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .rsvp-placeholder {
@@ -902,160 +1092,129 @@ onBeforeUnmount(() => {
   opacity: 1;
 }
 
-/* Form */
-.rsvp-form {
+/* Wizard container */
+.rsvp-wizard {
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
   align-items: stretch;
 }
 
-/* Status dropdown */
-.status-dropdown {
-  position: relative;
-  display: flex;
-  justify-content: center;
+/* Thin progress bar — hides entirely when there's only one step
+   (guest hasn't picked a status yet). */
+.wizard-progress {
+  width: 100%;
+  max-width: 14rem;
+  height: 2px;
+  margin: 0 auto 0.15rem;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  overflow: hidden;
 }
 
-.dropdown-trigger {
-  display: inline-flex;
+.wizard-progress-fill {
+  height: 100%;
+  background: white;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Step container — center everything within each step */
+.wizard-step {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
   gap: 0.55rem;
-  min-width: 10rem;
-  max-width: 100%;
-  padding: 0.5rem 0.95rem;
-  background: transparent;
+  min-height: 4.5rem;
+  text-align: center;
+}
+
+.step-prompt {
+  font-size: 0.82rem;
+  font-weight: 500;
   color: white;
-  border: 1.2px solid rgba(255, 255, 255, 0.55);
+  line-height: 1.35;
+  max-width: 22rem;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.step-hint {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.3;
+  margin-top: -0.15rem;
+}
+
+/* Step transition */
+.step-fade-enter-active,
+.step-fade-leave-active {
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.step-fade-enter-from {
+  opacity: 0;
+  transform: translateX(12px);
+}
+
+.step-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-12px);
+}
+
+/* Status options — pill buttons for the first step */
+.status-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.1rem;
+}
+
+.status-option {
+  padding: 0.42rem 1rem;
   border-radius: 999px;
-  font-size: 0.8rem;
+  border: 1.2px solid rgba(255, 255, 255, 0.5);
+  font-size: 0.76rem;
   font-weight: 500;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: background 0.15s ease, border-color 0.2s ease, color 0.15s ease,
+    transform 0.12s ease;
+  white-space: nowrap;
 }
 
-.dropdown-trigger:hover {
-  background: rgba(255, 255, 255, 0.08);
+.status-option:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.1) !important;
   border-color: rgba(255, 255, 255, 0.85);
 }
 
-.dropdown-trigger.open,
-.dropdown-trigger.filled {
+.status-option.active {
   border-color: white;
 }
 
-.dropdown-trigger.filled {
-  background: rgba(255, 255, 255, 0.1);
+.status-option:active {
+  transform: scale(0.97);
 }
 
-.dropdown-label {
-  flex: 1;
+/* Centered variants for step layouts */
+.stepper-center {
+  justify-content: center;
+  margin-top: 0.2rem;
+}
+
+.chips-center {
+  justify-content: center;
+  margin-top: 0.1rem;
+}
+
+.line-input-center {
   text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.dropdown-chevron-spacer {
-  width: 12px;
-  flex-shrink: 0;
-}
-
-.dropdown-chevron {
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-  opacity: 0.85;
-}
-
-.dropdown-chevron.open {
-  transform: rotate(180deg);
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: calc(100% + 0.35rem);
-  left: 50%;
-  transform: translateX(-50%);
-  min-width: 11rem;
-  max-width: 14rem;
-  list-style: none;
-  margin: 0;
-  padding: 0.25rem;
-  background: rgba(20, 20, 20, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 0.75rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  z-index: 20;
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-}
-
-.dropdown-option {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  background: transparent;
-  border: none;
-  color: white;
-  font-size: 0.78rem;
-  text-align: left;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.dropdown-option:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.dropdown-option.selected {
-  background: rgba(255, 255, 255, 0.18);
-  font-weight: 500;
-}
-
-/* Dropdown transition */
-.dropdown-fade-enter-active,
-.dropdown-fade-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
-}
-
-.dropdown-fade-enter-from,
-.dropdown-fade-leave-to {
-  opacity: 0;
-  transform: translate(-50%, -4px);
-}
-
-/* Inline row (label + stepper) */
-.inline-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.15rem 0.1rem;
-}
-
-.inline-label-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  min-width: 0;
-}
-
-.inline-label {
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: white;
-  line-height: 1.2;
-}
-
-.inline-hint {
-  font-size: 0.68rem;
-  color: rgba(255, 255, 255, 0.65);
-  line-height: 1.2;
+.line-input-center::placeholder {
+  text-align: center;
 }
 
 /* Stepper */
@@ -1143,29 +1302,6 @@ onBeforeUnmount(() => {
   border-bottom-color: white;
 }
 
-/* Questions */
-.questions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.question-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.question-label {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.74rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-  letter-spacing: 0.01em;
-}
-
 .label-error {
   color: #fecaca;
 }
@@ -1212,37 +1348,69 @@ onBeforeUnmount(() => {
   transform: scale(0.96);
 }
 
-/* Submit */
-.submit-btn {
-  align-self: center;
-  min-width: 8.5rem;
-  padding: 0.5rem 1.3rem;
-  border-radius: 999px;
-  background: white;
-  border: none;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
-  display: inline-flex;
+/* Wizard navigation bar */
+.wizard-nav {
+  display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 0.5rem;
-  margin-top: 0.15rem;
+  margin-top: 0.25rem;
+  min-height: 2rem;
 }
 
-.submit-btn:hover:not(:disabled) {
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.42rem 0.95rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.2s ease, color 0.15s ease,
+    transform 0.12s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  white-space: nowrap;
+}
+
+.nav-btn.back {
+  margin-right: auto;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.nav-btn.back:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
+  color: white;
+}
+
+.nav-btn.next,
+.nav-btn.submit {
+  background: white;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  min-width: 5.5rem;
+  justify-content: center;
+}
+
+.nav-btn.submit {
+  min-width: 7rem;
+}
+
+.nav-btn.next:hover:not(:disabled),
+.nav-btn.submit:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
 }
 
-.submit-btn:active:not(:disabled) {
-  transform: scale(0.98);
+.nav-btn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
-.submit-btn:disabled {
-  opacity: 0.7;
+.nav-btn:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -1272,21 +1440,63 @@ onBeforeUnmount(() => {
   color: rgba(255, 255, 255, 0.65);
 }
 
+/* Collapsed summary (post-submit minimal state) — just the edit button.
+   The section header already reads as a thank-you, so no status text,
+   no metadata, no timestamp. */
+.rsvp-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  animation: summary-fade-in 0.3s ease-out;
+}
+
+@keyframes summary-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.42rem 1rem;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.2s ease, color 0.2s ease,
+    transform 0.12s ease;
+}
+
+.edit-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
+  color: white;
+}
+
+.edit-btn:active {
+  transform: scale(0.96);
+}
+
+.edit-btn svg {
+  opacity: 0.85;
+}
+
 /* Mobile */
 @media (max-width: 639px) {
-  .dropdown-trigger {
-    min-width: 9rem;
-    font-size: 0.76rem;
-    padding: 0.45rem 0.85rem;
-  }
-
-  .dropdown-option {
-    font-size: 0.75rem;
-    padding: 0.5rem 0.7rem;
-  }
-
-  .inline-row {
-    gap: 0.5rem;
+  .status-option {
+    font-size: 0.72rem;
+    padding: 0.4rem 0.85rem;
   }
 
   .chip {
@@ -1294,45 +1504,61 @@ onBeforeUnmount(() => {
     padding: 0.3rem 0.7rem;
   }
 
-  .submit-btn {
-    width: 100%;
-    min-width: 0;
+  .nav-btn {
+    font-size: 0.68rem;
+    padding: 0.38rem 0.8rem;
+  }
+
+  .nav-btn.next,
+  .nav-btn.submit {
+    min-width: 5rem;
   }
 }
 
 /* 13-inch laptops — align with the rest of EventInfo's tight scale */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  .rsvp-form {
+  .rsvp-wizard {
     gap: 0.5rem;
   }
 
   .rsvp-title {
     font-size: 0.66rem;
+    gap: 0.3rem;
   }
 
-  .dropdown-trigger {
-    min-width: 7.5rem;
-    padding: 0.35rem 0.7rem;
-    font-size: 0.6rem;
+  .rsvp-title-check {
+    width: 0.85rem;
+    height: 0.85rem;
     border-width: 1px;
   }
 
-  .dropdown-menu {
-    min-width: 8.5rem;
-    padding: 0.2rem;
+  .rsvp-title-check svg {
+    width: 8px;
+    height: 8px;
   }
 
-  .dropdown-option {
-    font-size: 0.6rem;
-    padding: 0.35rem 0.55rem;
+  .wizard-progress {
+    max-width: 10rem;
+    height: 1.5px;
   }
 
-  .inline-label {
-    font-size: 0.6rem;
+  .wizard-step {
+    gap: 0.4rem;
+    min-height: 3.5rem;
   }
 
-  .inline-hint {
+  .step-prompt {
+    font-size: 0.64rem;
+  }
+
+  .step-hint {
     font-size: 0.52rem;
+  }
+
+  .status-option {
+    padding: 0.32rem 0.75rem;
+    font-size: 0.58rem;
+    border-width: 1px;
   }
 
   .stepper-btn {
@@ -1351,10 +1577,6 @@ onBeforeUnmount(() => {
     min-width: 1rem;
   }
 
-  .question-label {
-    font-size: 0.58rem;
-  }
-
   .line-input,
   .line-textarea {
     font-size: 0.6rem;
@@ -1367,10 +1589,23 @@ onBeforeUnmount(() => {
     border-width: 1px;
   }
 
-  .submit-btn {
-    min-width: 6.5rem;
-    padding: 0.38rem 0.9rem;
-    font-size: 0.62rem;
+  .nav-btn {
+    padding: 0.3rem 0.75rem;
+    font-size: 0.56rem;
+  }
+
+  .nav-btn.next,
+  .nav-btn.submit {
+    min-width: 4.5rem;
+  }
+
+  .nav-btn.back {
+    border-width: 1px;
+  }
+
+  .nav-btn svg {
+    width: 8px;
+    height: 8px;
   }
 
   .spinner-inline {
@@ -1389,6 +1624,22 @@ onBeforeUnmount(() => {
 
   .rsvp-placeholder {
     font-size: 0.58rem;
+  }
+
+  .rsvp-summary {
+    gap: 0.2rem;
+  }
+
+  .edit-btn {
+    padding: 0.3rem 0.75rem;
+    font-size: 0.56rem;
+    border-width: 1px;
+    gap: 0.25rem;
+  }
+
+  .edit-btn svg {
+    width: 8px;
+    height: 8px;
   }
 }
 </style>
