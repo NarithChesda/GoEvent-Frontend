@@ -7,29 +7,21 @@
  * @module composables/useMobileTopBar
  */
 
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-
-export interface Language {
-  code: string
-  name: string
-  flag: string
-}
-
-const defaultLanguages: Language[] = [
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'km', name: 'ខ្មែរ', flag: '🇰🇭' },
-]
+import { useAppLanguage } from '@/composables/useAppLanguage'
+import type { AppLocale } from '@/i18n'
 
 /**
  * Composable for mobile top bar state and functionality
  */
-export function useMobileTopBar(languages: Language[] = defaultLanguages) {
+export function useMobileTopBar() {
   const router = useRouter()
+  const { locale, setLocale, availableLocales } = useAppLanguage()
 
   const isScrolled = ref(false)
   const showLanguageMenu = ref(false)
-  const currentLanguage = ref('en')
+  const currentLanguage = computed(() => locale.value)
 
   const handleMobileScroll = () => {
     isScrolled.value = window.scrollY > 0
@@ -44,9 +36,8 @@ export function useMobileTopBar(languages: Language[] = defaultLanguages) {
   }
 
   const selectLanguage = (code: string) => {
-    currentLanguage.value = code
+    setLocale(code as AppLocale)
     showLanguageMenu.value = false
-    // TODO: Implement actual language switching logic
   }
 
   const closeLanguageMenu = () => {
@@ -80,7 +71,7 @@ export function useMobileTopBar(languages: Language[] = defaultLanguages) {
     isScrolled,
     showLanguageMenu,
     currentLanguage,
-    languages,
+    languages: availableLocales,
 
     // Methods
     handleLogoClick,
