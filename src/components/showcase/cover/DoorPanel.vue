@@ -51,6 +51,12 @@
         <CoverContentRows
           :event-title="eventTitle"
           :event-logo="eventLogo"
+          :sample-logo-one="sampleLogoOne"
+          :sample-logo-two="sampleLogoTwo"
+          :first-host-image="firstHostImage"
+          :first-host-name="firstHostName"
+          :host-clip-style="hostClipStyle"
+          :show-cover-header-text="showCoverHeaderText"
           :guest-name="guestName"
           :primary-color="primaryColor"
           :secondary-color="secondaryColor"
@@ -111,6 +117,18 @@ interface Props {
   // Content props
   eventTitle: string
   eventLogo?: string | null
+  /** Template-provided base logo (transparency). Shown in the merged logo row when showCoverHeaderText is false. */
+  sampleLogoOne?: string | null
+  /** Template-provided overlay logo (transparency). Its opaque shape is used as a clip mask for the first host image. */
+  sampleLogoTwo?: string | null
+  /** First host profile image — clipped by sample_logo_2 in the merged logo row. */
+  firstHostImage?: string | null
+  /** First host display name — alt text for the clipped host image. */
+  firstHostName?: string
+  /** CSS variables driving host-clip size/offset (from cover_stage_layout). */
+  hostClipStyle?: Record<string, string>
+  /** Render the cover text header row; when false, the row collapses and its space is merged into the logo row. */
+  showCoverHeaderText?: boolean
   guestName?: string | null
   primaryColor: string
   secondaryColor?: string | null
@@ -139,6 +157,7 @@ import { computed } from 'vue'
 const props = withDefaults(defineProps<Props>(), {
   displayLiquidGlass: true,
   backgroundColor: '#000000',
+  showCoverHeaderText: true,
 })
 
 const { protectionAttrs } = useAssetProtection()

@@ -34,6 +34,12 @@
         :decoration-z-indexes="decorationZIndexes"
         :event-title="eventTitle"
         :event-logo="eventLogo"
+        :sample-logo-one="sampleLogoOne"
+        :sample-logo-two="sampleLogoTwo"
+        :first-host-image="firstHostImage"
+        :first-host-name="firstHostName"
+        :host-clip-style="hostClipStyle"
+        :show-cover-header-text="showCoverHeaderText"
         :guest-name="guestName"
         :primary-color="primaryColor"
         :secondary-color="secondaryColor"
@@ -66,6 +72,12 @@
         :decoration-z-indexes="decorationZIndexes"
         :event-title="eventTitle"
         :event-logo="eventLogo"
+        :sample-logo-one="sampleLogoOne"
+        :sample-logo-two="sampleLogoTwo"
+        :first-host-image="firstHostImage"
+        :first-host-name="firstHostName"
+        :host-clip-style="hostClipStyle"
+        :show-cover-header-text="showCoverHeaderText"
         :guest-name="guestName"
         :primary-color="primaryColor"
         :secondary-color="secondaryColor"
@@ -114,6 +126,12 @@
       <CoverContentRows
         :event-title="eventTitle"
         :event-logo="eventLogo"
+        :sample-logo-one="sampleLogoOne"
+        :sample-logo-two="sampleLogoTwo"
+        :first-host-image="firstHostImage"
+        :first-host-name="firstHostName"
+        :host-clip-style="hostClipStyle"
+        :show-cover-header-text="showCoverHeaderText"
         :guest-name="guestName"
         :primary-color="primaryColor"
         :secondary-color="secondaryColor"
@@ -158,6 +176,9 @@ interface CoverTemplateAssets {
   guest_title_frame_mid?: string | null
   guest_title_frame_right?: string | null
   basic_decoration_photo?: string | null
+  sample_logo_1?: string | null
+  sample_logo_2?: string | null
+  header_text_image?: string | null
 }
 
 interface EventText {
@@ -170,6 +191,10 @@ interface Props {
   isContentHidden: boolean
   eventTitle: string
   eventLogo?: string | null
+  /** First host profile image — clipped by sample_logo_2 in the merged logo row when the cover header is hidden. */
+  firstHostImage?: string | null
+  /** First host display name — used as the alt text for the clipped host image. */
+  firstHostName?: string
   guestName?: string | null
   templateAssets?: CoverTemplateAssets | null
   primaryColor: string
@@ -234,6 +259,22 @@ const swipeArrowBottom = computed(() => layout.value.swipeArrowBottom)
 
 // Guest name max width (% of container width), configurable per template
 const guestNameMaxWidthPercent = computed(() => layout.value.guestNameMaxWidthPercent)
+
+// Whether to render the cover text header row (template-controlled)
+const showCoverHeaderText = computed(() => layout.value.showCoverHeaderText)
+
+// Sample logos from template_assets — used in place of the event logo when
+// the cover header row is hidden (sample_logo_1 as base, sample_logo_2 overlaid).
+const sampleLogoOne = computed(() => props.templateAssets?.sample_logo_1 ?? null)
+const sampleLogoTwo = computed(() => props.templateAssets?.sample_logo_2 ?? null)
+
+// Panning of the host image within sample_logo_2's shape, exposed as CSS
+// variables so per-template overrides from cover_stage_layout flow straight
+// into CoverContentRows without extra props on every element.
+const hostClipStyle = computed<Record<string, string>>(() => ({
+  '--host-clip-offset-x': `${layout.value.hostClipOffsetX}%`,
+  '--host-clip-offset-y': `${layout.value.hostClipOffsetY}%`,
+}))
 
 // Showcase animation configuration
 const animationClasses = useShowcaseAnimation({

@@ -59,6 +59,12 @@ export interface TemplateAssets {
   basic_background_photo?: string
   standard_cover_video?: string
   standard_background_video?: string
+  /** Primary sample logo (transparency). Rendered in the merged logo row when showCoverHeaderText is false. */
+  sample_logo_1?: string | null
+  /** Secondary sample logo (transparency). Overlaid on top of sample_logo_1 at the same position. */
+  sample_logo_2?: string | null
+  /** Header text rendered as an image (transparency). */
+  header_text_image?: string | null
   ambient_creatures?: AmbientCreaturesConfig | null
   [key: string]: unknown
 }
@@ -80,6 +86,21 @@ export interface CoverStageLayout {
 
   // Guest name max width as a percentage of the row container width (%)
   guestNameMaxWidthPercent?: number // default: 60
+
+  // Render the welcome header text on the main (background) stage.
+  showWelcomeHeaderText?: boolean   // default: true
+
+  // Render the cover header text row on the cover stage. When false, the event
+  // title row is hidden and its height is absorbed by the logo row so
+  // sample_logo_1 / sample_logo_2 render in the merged space.
+  showCoverHeaderText?: boolean     // default: true
+
+  // Host image clipped into sample_logo_2's shape (merged logo row).
+  // Pans the host photo within the clip square via CSS object-position —
+  // use this to keep the face inside a head-region shape, for example.
+  // 0 = left/top edge, 50 = center, 100 = right/bottom edge.
+  hostClipOffsetX?: number          // default: 50
+  hostClipOffsetY?: number          // default: 50
 
   // Swipe arrow positioning (vh units)
   swipeArrowBottom?: number         // default: 5
@@ -231,6 +252,9 @@ export interface PartnerTemplate {
   guest_title_frame_right: string | null
   standard_cover_video: string | null
   standard_background_video: string | null
+  sample_logo_1: string | null
+  sample_logo_2: string | null
+  header_text_image: string | null
   created_at: string
   updated_at: string
 }
@@ -255,6 +279,9 @@ export interface PartnerTemplateCreatePayload {
   guest_title_frame_right?: File
   standard_cover_video?: File
   standard_background_video?: File
+  sample_logo_1?: File
+  sample_logo_2?: File
+  header_text_image?: File
   display_liquid_glass_background?: boolean
   open_envelope_button?: File
   cover_stage_layout?: CoverStageLayout

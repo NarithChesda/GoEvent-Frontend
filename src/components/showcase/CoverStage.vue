@@ -35,6 +35,8 @@
       :is-content-hidden="videoState.isContentHidden.value"
       :event-title="eventTitle"
       :event-logo="eventLogo"
+      :first-host-image="firstHostImage"
+      :first-host-name="firstHostName"
       :guest-name="guestName || null"
       :template-assets="templateAssets"
       :primary-color="primaryColor"
@@ -110,6 +112,10 @@ interface Props {
   guestName: string
   eventTitle: string
   eventLogo?: string | null
+  /** First host profile image — clipped by sample_logo_2 in the merged logo row when the cover header is hidden. */
+  firstHostImage?: string | null
+  /** First host display name — used as the alt text for the clipped host image. */
+  firstHostName?: string
   eventVideoUrl?: string | null
   backgroundVideoUrl?: string | null
   primaryColor: string

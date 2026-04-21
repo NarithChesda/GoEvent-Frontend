@@ -29,6 +29,8 @@
         :guest-name="guestName"
         :event-title="event.title"
         :event-logo="event.logo_one"
+        :first-host-image="hosts[0]?.profile_image || null"
+        :first-host-name="hosts[0]?.name || ''"
         :event-video-url="eventVideoUrl"
         :background-video-url="backgroundVideoUrl"
         :primary-color="primaryColor"

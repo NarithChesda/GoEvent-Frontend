@@ -13,6 +13,10 @@ export const COVER_STAGE_LAYOUT_DEFAULTS: Required<CoverStageLayout> = {
   inviteTextHeight: 8.75,
   guestNameHeight: 16,
   guestNameMaxWidthPercent: 60,
+  showWelcomeHeaderText: true,
+  showCoverHeaderText: true,
+  hostClipOffsetX: 50,
+  hostClipOffsetY: 50,
   swipeArrowBottom: 5,
   leftDecorationZIndex: 24,
   rightDecorationZIndex: 24,
@@ -53,6 +57,14 @@ export function useCoverStageLayout(
       guestNameHeight: config.guestNameHeight ?? COVER_STAGE_LAYOUT_DEFAULTS.guestNameHeight,
       guestNameMaxWidthPercent:
         config.guestNameMaxWidthPercent ?? COVER_STAGE_LAYOUT_DEFAULTS.guestNameMaxWidthPercent,
+      showWelcomeHeaderText:
+        config.showWelcomeHeaderText ?? COVER_STAGE_LAYOUT_DEFAULTS.showWelcomeHeaderText,
+      showCoverHeaderText:
+        config.showCoverHeaderText ?? COVER_STAGE_LAYOUT_DEFAULTS.showCoverHeaderText,
+      hostClipOffsetX:
+        config.hostClipOffsetX ?? COVER_STAGE_LAYOUT_DEFAULTS.hostClipOffsetX,
+      hostClipOffsetY:
+        config.hostClipOffsetY ?? COVER_STAGE_LAYOUT_DEFAULTS.hostClipOffsetY,
       swipeArrowBottom: config.swipeArrowBottom ?? COVER_STAGE_LAYOUT_DEFAULTS.swipeArrowBottom,
       leftDecorationZIndex:
         config.leftDecorationZIndex ?? COVER_STAGE_LAYOUT_DEFAULTS.leftDecorationZIndex,
@@ -76,14 +88,25 @@ export function useCoverStageLayout(
   }))
 
   /**
-   * Pre-computed styles for content rows
+   * Pre-computed styles for content rows.
+   * When showCoverHeaderText is false, the event title row collapses and its
+   * height is absorbed by the logo row so sample_logo_1 / sample_logo_2
+   * occupy the combined space.
    */
-  const rowStyles = computed(() => ({
-    eventTitle: { height: `${layout.value.eventTitleHeight}%` },
-    logo: { height: `${layout.value.logoHeight}%` },
-    inviteText: { height: `${layout.value.inviteTextHeight}%` },
-    guestName: { height: `${layout.value.guestNameHeight}%` },
-  }))
+  const rowStyles = computed(() => {
+    const headerVisible = layout.value.showCoverHeaderText
+    const eventTitleHeight = headerVisible ? layout.value.eventTitleHeight : 0
+    const logoHeight = headerVisible
+      ? layout.value.logoHeight
+      : layout.value.logoHeight + layout.value.eventTitleHeight
+
+    return {
+      eventTitle: { height: `${eventTitleHeight}%` },
+      logo: { height: `${logoHeight}%` },
+      inviteText: { height: `${layout.value.inviteTextHeight}%` },
+      guestName: { height: `${layout.value.guestNameHeight}%` },
+    }
+  })
 
   /**
    * Pre-computed style for swipe arrow positioning

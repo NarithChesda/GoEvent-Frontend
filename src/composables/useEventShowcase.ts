@@ -134,6 +134,9 @@ export interface TemplateAssets {
     cover_bottom_decoration?: string
     cover_left_decoration?: string
     cover_right_decoration?: string
+    sample_logo_1?: string | null
+    sample_logo_2?: string | null
+    header_text_image?: string | null
   }
   colors?: TemplateColor[]
   fonts?: TemplateFont[]
