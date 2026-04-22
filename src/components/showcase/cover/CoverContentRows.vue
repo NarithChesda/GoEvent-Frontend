@@ -29,16 +29,25 @@
       :style="rowStyles.logo"
     >
       <div class="flex items-center justify-center h-full w-full px-4">
-        <!-- Template-provided sample logos: sample_logo_1 as base; sample_logo_2's opaque shape
-             either overlays directly or clips the first host's profile image into the shape. -->
+        <!-- Merged logo row: stack with a three-tier base (event logo → sample_logo_1 →
+             recoloured temp SVG). sample_logo_2's opaque shape either overlays directly
+             or clips the first host's profile image into the shape. -->
         <div v-if="useSampleLogos" class="sample-logo-stack">
           <img
-            :src="getMediaUrl(sampleLogoOne as string)"
+            v-if="resolvedBaseLogoSrc"
+            :src="resolvedBaseLogoSrc"
             :alt="eventTitle + ' logo'"
             class="sample-logo sample-logo-base"
             fetchpriority="high"
             v-bind="protectionAttrs"
           />
+          <div
+            v-else
+            class="sample-logo-base fallback-logo-container"
+            :style="fallbackLogoStyle"
+          >
+            <div class="fallback-logo" v-html="processedFallbackLogo" />
+          </div>
           <!-- Host image clipped into sample_logo_2's shape. Bounds auto-detected
                from the PNG's alpha channel so the host photo fills exactly the
                opaque region of the shape, whatever its silhouette. -->
@@ -196,11 +205,22 @@ const props = withDefaults(defineProps<Props>(), {
   showCoverHeaderText: true,
 })
 
-// When the cover header row is hidden and sample_logo_1 is provided, render
-// the sample logos in the merged logo row (sample_logo_2 overlaid on sample_logo_1).
-const useSampleLogos = computed(
-  () => !props.showCoverHeaderText && !!props.sampleLogoOne,
-)
+// When the cover header row is hidden, render the merged logo row as a
+// stack. The base slot of that stack now resolves via a three-tier fallback
+// (event primary logo → template sample_logo_1 → the recoloured
+// temp-showcase-logo.svg), so the stack renders even when the template
+// omits sample_logo_1.
+const useSampleLogos = computed(() => !props.showCoverHeaderText)
+
+// Resolved URL for the stack's base-image slot. Prefers the event's own
+// logo (event.logo_one at the call site, passed in as eventLogo), then the
+// template-provided sample_logo_1. Returns null when neither is available,
+// which triggers the inline recoloured SVG fallback in the template below.
+const resolvedBaseLogoSrc = computed(() => {
+  if (props.eventLogo) return props.getMediaUrl(props.eventLogo)
+  if (props.sampleLogoOne) return props.getMediaUrl(props.sampleLogoOne)
+  return null
+})
 
 const { protectionAttrs } = useAssetProtection()
 
