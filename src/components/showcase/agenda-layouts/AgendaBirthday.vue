@@ -90,10 +90,8 @@
           <!-- Agenda Items for this date -->
           <div class="space-y-0">
             <div
-              v-for="(item, index) in agendaByDate[date] || []"
+              v-for="item in agendaByDate[date] || []"
               :key="item.id"
-              class="agenda-item-animate bounce-in-element"
-              :style="{ animationDelay: `${getItemDelay(index)}s` }"
             >
               <AgendaItem
                 :item="item"
@@ -224,14 +222,11 @@ const animationDelays = computed(() => {
   const header = getNextDelay(agendaHeaderText.value)
   const tabs = addBounceDelay()
   const description = currentDelay
-  currentDelay += 0.15
-  const items = currentDelay
 
   return {
     header,
     tabs,
     description,
-    items,
   }
 })
 
@@ -265,8 +260,6 @@ const getTextContent = (textType: string, fallback = ''): string => {
 }
 
 const activeTab = ref<string | null>(null)
-// Track if user has switched tabs (to use immediate animation on tab switch)
-const hasTabSwitched = ref(false)
 
 const agendaByDate = computed(() => {
   const grouped: Record<string, AgendaItemData[]> = {}
@@ -298,7 +291,6 @@ const agendaTabs = computed(() => {
 const agendaHeaderText = computed(() => getTextContent('agenda_header_birthday', 'Party Schedule'))
 
 const selectTab = (date: string) => {
-  hasTabSwitched.value = true
   activeTab.value = date
 }
 
@@ -312,16 +304,6 @@ const getTabStyle = (date: string) => {
     transform: isActive ? 'scale(1.05)' : 'scale(1)',
     boxShadow: isActive ? `0 4px 12px ${props.primaryColor}30` : 'none',
   }
-}
-
-// Get animation delay for agenda items - immediate on tab switch, delayed on initial scroll
-const getItemDelay = (index: number): number => {
-  if (hasTabSwitched.value) {
-    // Immediate cascade when switching tabs (starts from 0)
-    return index * 0.1
-  }
-  // Use scroll-triggered delay on initial load
-  return animationDelays.value.items + index * 0.1
 }
 
 const formatAgendaDate = (dateString: string): string => {

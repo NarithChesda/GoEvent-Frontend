@@ -1,5 +1,5 @@
 <template>
-  <div class="agenda-card-wrapper flex items-center">
+  <div ref="cardRef" class="agenda-card-wrapper flex items-center">
     <!-- Icon Section (Left) - Outside the card border -->
     <div class="flex-shrink-0 agenda-icon-wrapper">
       <div
@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { Calendar } from 'lucide-vue-next'
 
 interface AgendaItemIcon {
@@ -139,14 +139,97 @@ const timeText = computed(() => {
 
   return null
 })
+
+// Scroll-driven zoom/fade — mirrors the PhotoGallery animation so agenda
+// cards scale and fade in as they scroll through the showcase viewport.
+// Progress is read from the same scroll container as PhotoGallery (the
+// liquid-glass card's custom scrollbar) and exposed via --scroll-progress
+// for the CSS below to drive opacity/scale. Updates coalesce through rAF
+// to keep scroll handling paint-aligned.
+const cardRef = ref<HTMLElement | null>(null)
+let scrollContainerEl: HTMLElement | null = null
+let rafId: number | null = null
+
+const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3)
+
+const updateProgress = () => {
+  rafId = null
+  const el = cardRef.value
+  if (!el) return
+
+  let viewportTop = 0
+  let viewportBottom = window.innerHeight
+  if (scrollContainerEl) {
+    const containerRect = scrollContainerEl.getBoundingClientRect()
+    viewportTop = containerRect.top
+    viewportBottom = containerRect.bottom
+  }
+  const viewportHeight = viewportBottom - viewportTop
+  if (viewportHeight <= 0) return
+
+  const rect = el.getBoundingClientRect()
+  if (rect.height === 0) return
+
+  const visibleTop = Math.max(rect.top, viewportTop)
+  const visibleBottom = Math.min(rect.bottom, viewportBottom)
+  const visibleHeight = Math.max(0, visibleBottom - visibleTop)
+  const maxVisible = Math.min(rect.height, viewportHeight)
+  const raw = maxVisible > 0 ? visibleHeight / maxVisible : 0
+  const progress = easeOutCubic(Math.min(1, Math.max(0, raw)))
+  el.style.setProperty('--scroll-progress', progress.toFixed(3))
+}
+
+const scheduleUpdate = () => {
+  if (rafId !== null) return
+  rafId = requestAnimationFrame(updateProgress)
+}
+
+onMounted(() => {
+  if (cardRef.value) {
+    cardRef.value.style.setProperty('--scroll-progress', '0')
+  }
+  scrollContainerEl = document.querySelector(
+    '.liquid-glass-card .custom-scrollbar',
+  ) as HTMLElement | null
+  const target: EventTarget = scrollContainerEl ?? window
+  target.addEventListener('scroll', scheduleUpdate, { passive: true })
+  window.addEventListener('resize', scheduleUpdate, { passive: true })
+  scheduleUpdate()
+})
+
+onUnmounted(() => {
+  const target: EventTarget = scrollContainerEl ?? window
+  target.removeEventListener('scroll', scheduleUpdate)
+  window.removeEventListener('resize', scheduleUpdate)
+  if (rafId !== null) {
+    cancelAnimationFrame(rafId)
+    rafId = null
+  }
+  scrollContainerEl = null
+})
 </script>
 
 <style scoped>
 /* Wrapper for card and icon */
 .agenda-card-wrapper {
+  --scroll-progress: 0;
   transition: all 0.2s ease;
   position: relative;
   gap: 2rem;
+  /* Scroll-driven zoom/fade matched to PhotoGallery so stacked agenda items
+     scale up and fade in as they scroll through the showcase viewport. */
+  opacity: calc(0.2 + 0.8 * var(--scroll-progress));
+  transform: scale(calc(0.68 + 0.32 * var(--scroll-progress)));
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agenda-card-wrapper {
+    --scroll-progress: 1;
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* Divider Container */
