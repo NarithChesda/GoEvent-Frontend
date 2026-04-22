@@ -2,6 +2,7 @@
   <div class="host-info-funeral" :class="{ 'khmer-text': currentLanguage === 'kh' }">
     <!-- Welcome Message -->
     <WelcomeHeader
+      v-if="showWelcomeHeaderText !== false"
       :message="welcomeMessage"
       default-message="In Loving Memory"
       :color="primaryColor"
@@ -143,7 +144,9 @@ const animationDelays = computed(() => {
     return startDelay
   }
 
-  const welcome = getNextDelay(props.welcomeMessage || 'In Loving Memory')
+  const welcome = getNextDelay(
+    props.showWelcomeHeaderText === false ? undefined : (props.welcomeMessage || 'In Loving Memory'),
+  )
   const logo = currentDelay
   currentDelay += 0.25
   const instruction = getNextDelay(props.instructionText)

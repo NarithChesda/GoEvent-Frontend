@@ -3,6 +3,7 @@
     <div class="host-info-grid">
       <!-- Row 1: Welcome Header -->
       <WelcomeHeader
+        v-if="showWelcomeHeaderText !== false"
         :message="welcomeMessage"
         default-message="Welcome to Our Event"
         :color="primaryColor"
@@ -254,7 +255,9 @@ const animationDelays = computed(() => {
     return startDelay
   }
 
-  const welcome = getNextDelay(props.welcomeMessage || 'Welcome to Our Event')
+  const welcome = getNextDelay(
+    props.showWelcomeHeaderText === false ? undefined : (props.welcomeMessage || 'Welcome to Our Event'),
+  )
   const parentALeft = getNextDelay(props.hosts[0]?.parent_a_name || props.hosts[0]?.parent_b_name)
   const parentARight = getNextDelay(
     props.hosts.length > 1 ? (props.hosts[1]?.parent_a_name || props.hosts[1]?.parent_b_name) : null

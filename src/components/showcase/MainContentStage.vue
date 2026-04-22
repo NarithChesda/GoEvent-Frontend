@@ -133,6 +133,16 @@
                     :instruction-text="getInstructionText()"
                     :current-language="currentLanguage"
                     :event-type="eventType"
+                    :show-welcome-header-text="showWelcomeHeaderText"
+                    :sample-logo-one="templateAssets?.sample_logo_1"
+                    :sample-logo-two="templateAssets?.sample_logo_2"
+                    :first-host-image="firstHostImage"
+                    :first-host-name="firstHostName"
+                    :host-clip-style="hostClipStyle"
+                    :event-start-date="event.start_date"
+                    :time-text="getTimeText()"
+                    :location-text="getLocationText()"
+                    :rsvp-contact="getRsvpContact()"
                   />
                 </div>
 
@@ -930,6 +940,10 @@ import WhiteLogoSvg from '../../assets/white-kh-logo.svg'
 interface TemplateAssets {
   standard_background_video?: string
   display_liquid_glass_background?: boolean
+  /** Base sample logo forwarded to host-layout variants that render the cover-stage sample-logo overlay. */
+  sample_logo_1?: string | null
+  /** Overlay sample logo — its opaque shape clips the first host image. */
+  sample_logo_2?: string | null
 }
 
 interface VideoResourceManager {
@@ -980,11 +994,25 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Main stage layout configuration (for decoration z-indexes)
-const { decorationZIndexes } = useCoverStageLayout(
+// Main stage layout configuration (decoration z-indexes + welcome header visibility)
+const { decorationZIndexes, layout: mainStageLayoutResolved } = useCoverStageLayout(
   computed(() => props.mainStageLayout),
   computed(() => undefined)
 )
+
+// Template-controlled: whether HostInfo renders the welcome header row
+const showWelcomeHeaderText = computed(() => mainStageLayoutResolved.value.showWelcomeHeaderText)
+
+// CSS vars that pan the host photo inside sample_logo_2's clip shape (shared with cover stage)
+const hostClipStyle = computed<Record<string, string>>(() => ({
+  '--host-clip-offset-x': `${mainStageLayoutResolved.value.hostClipOffsetX}%`,
+  '--host-clip-offset-y': `${mainStageLayoutResolved.value.hostClipOffsetY}%`,
+}))
+
+// First host info forwarded to layouts that render the sample-logo avatar overlay
+const firstHost = computed(() => props.hosts[0])
+const firstHostImage = computed(() => firstHost.value?.profile_image ?? null)
+const firstHostName = computed(() => firstHost.value?.name ?? '')
 
 // Animation type from prop with fallback to 'decoration'
 const currentAnimationType = computed(() => props.animationType || 'decoration')
@@ -1322,6 +1350,7 @@ const getWelcomeMessage = (): string | undefined => findEventText('welcome_messa
 const getDateText = (): string | undefined => findEventText('date_text')?.content
 const getTimeText = (): string | undefined => findEventText('time_text')?.content
 const getLocationText = (): string | undefined => findEventText('location_text')?.content
+const getRsvpContact = (): string | undefined => findEventText('rsvp_contact')?.content
 const getDescriptionText = (): string | undefined => findEventText('description')?.content
 const getDescriptionTitle = (): string | undefined => findEventText('description')?.title
 const getInstructionText = (): string | undefined => findEventText('instructions')?.content

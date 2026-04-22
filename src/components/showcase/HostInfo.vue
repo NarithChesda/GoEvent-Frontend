@@ -30,6 +30,26 @@ interface Props {
   instructionText?: string
   currentLanguage?: string
   eventType?: string  // NEW: Event category name for auto-detection
+  /** Render the welcome header row above the host content. Driven by cover_stage_layout.showWelcomeHeaderText. */
+  showWelcomeHeaderText?: boolean
+  /** Template-provided base sample logo (transparency) — used by layouts that render the cover-stage sample-logo overlay. */
+  sampleLogoOne?: string | null
+  /** Template-provided overlay sample logo (transparency) — its opaque shape clips the first host image. */
+  sampleLogoTwo?: string | null
+  /** First host profile image — clipped by sample_logo_2's shape when both are available. */
+  firstHostImage?: string | null
+  /** First host display name — used as alt text for the clipped host image. */
+  firstHostName?: string
+  /** CSS variables (--host-clip-offset-*) from cover_stage_layout for panning the host photo inside the clip shape. */
+  hostClipStyle?: Record<string, string>
+  /** Raw ISO start date — used by layouts that render a standalone date/time card (e.g. Birthday). */
+  eventStartDate?: string
+  /** Pre-formatted time range. */
+  timeText?: string
+  /** Pre-formatted location string. */
+  locationText?: string
+  /** RSVP contact (phone number) rendered in the event details card. */
+  rsvpContact?: string
 }
 
 const props = defineProps<Props>()
