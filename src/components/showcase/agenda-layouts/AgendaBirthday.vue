@@ -56,18 +56,18 @@
         </div>
       </div>
 
-      <!-- Tab Content -->
+      <!-- Tab Content - only the active tab's panel renders; keying on
+           activeTab forces Vue to tear down and re-mount the panel (and
+           every AgendaItem inside) on each tab switch, so the scroll
+           reveal animation re-plays from --scroll-progress 0. -->
       <div class="tab-content-area">
         <div
-          v-for="date in agendaTabs"
-          :key="date"
-          v-show="activeTab === date"
+          v-if="activeTab"
+          :key="activeTab"
           class="tab-panel"
         >
-
-
           <!-- First agenda description at top center -->
-          <div v-if="getFirstAgendaDescription(date)" class="text-center mb-4 px-2">
+          <div v-if="getFirstAgendaDescription(activeTab)" class="text-center mb-4 px-2">
             <h4
               :class="[
                 'font-semibold text-sm sm:text-base',
@@ -79,18 +79,18 @@
               }"
             >
               <span
-                v-for="(word, index) in splitToWords(getFirstAgendaDescription(date))"
+                v-for="(word, index) in splitToWords(getFirstAgendaDescription(activeTab))"
                 :key="`desc-${currentLanguage}-${index}`"
                 class="bounce-word"
                 :style="{ animationDelay: `${animationDelays.description + index * WORD_DELAY}s` }"
-              >{{ word }}{{ index < splitToWords(getFirstAgendaDescription(date)).length - 1 ? ' ' : '' }}</span>
+              >{{ word }}{{ index < splitToWords(getFirstAgendaDescription(activeTab)).length - 1 ? ' ' : '' }}</span>
             </h4>
           </div>
 
           <!-- Agenda Items for this date -->
           <div class="space-y-0">
             <div
-              v-for="item in agendaByDate[date] || []"
+              v-for="item in agendaByDate[activeTab] || []"
               :key="item.id"
             >
               <AgendaItem

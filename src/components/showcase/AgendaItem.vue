@@ -184,9 +184,20 @@ const scheduleUpdate = () => {
   rafId = requestAnimationFrame(updateProgress)
 }
 
+let revealTimer: number | null = null
+
 onMounted(() => {
   if (cardRef.value) {
     cardRef.value.style.setProperty('--scroll-progress', '0')
+    // Enable the CSS reveal transition only for the first ~600ms after mount
+    // (covers initial showcase entry and every tab switch, since those also
+    // re-mount the AgendaItem). Stripping the class afterwards keeps normal
+    // scroll updates instant instead of easing for every scroll tick.
+    cardRef.value.classList.add('is-revealing')
+    revealTimer = window.setTimeout(() => {
+      cardRef.value?.classList.remove('is-revealing')
+      revealTimer = null
+    }, 600)
   }
   scrollContainerEl = document.querySelector(
     '.liquid-glass-card .custom-scrollbar',
@@ -205,6 +216,10 @@ onUnmounted(() => {
     cancelAnimationFrame(rafId)
     rafId = null
   }
+  if (revealTimer !== null) {
+    clearTimeout(revealTimer)
+    revealTimer = null
+  }
   scrollContainerEl = null
 })
 </script>
@@ -222,6 +237,15 @@ onUnmounted(() => {
   transform: scale(calc(0.68 + 0.32 * var(--scroll-progress)));
   transform-origin: center center;
   will-change: transform, opacity;
+}
+
+/* Reveal-only transition: kept for the first ~600ms after mount so the item
+   eases from progress 0 to its real scroll progress (for items already in
+   view on tab switch). Removed afterwards so live scrolling stays instant. */
+.agenda-card-wrapper.is-revealing {
+  transition:
+    opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 @media (prefers-reduced-motion: reduce) {
