@@ -6,7 +6,7 @@
     class="agenda-birthday mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6"
     :class="{ 'animate-active': isVisible }"
   >
-    <!-- Fun Header -->
+    <!-- Header -->
     <div
       :class="[
         'text-center laptop-sm:mb-1 laptop-md:mb-2 laptop-lg:mb-3 desktop:mb-4 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3',
@@ -28,12 +28,12 @@
           :key="`header-${currentLanguage}-${index}`"
           class="bounce-word"
           :style="{ animationDelay: `${animationDelays.header + index * WORD_DELAY}s` }"
-        >{{ word }}{{ index < splitToWords(agendaHeaderText).length - 1 ? '\u00A0' : '' }}</span>
+        >{{ word }}{{ index < splitToWords(agendaHeaderText).length - 1 ? ' ' : '' }}</span>
       </h2>
     </div>
 
-    <!-- Colorful Tab Navigation -->
-    <div class="birthday-tab-container" :style="{ '--primary-color': primaryColor, '--accent-color': accentColor }">
+    <!-- Tab Navigation -->
+    <div class="birthday-tab-container" :style="{ '--primary-color': primaryColor }">
       <div
         class="tab-bar-scroll-wrapper bounce-in-element"
         :style="{ animationDelay: `${animationDelays.tabs}s` }"
@@ -42,17 +42,12 @@
           <button
             v-for="date in agendaTabs"
             :key="date"
-            class="birthday-tab-button"
-            :class="{ active: activeTab === date }"
-            :style="{
-              backgroundColor: 'transparent',
-              color: primaryColor,
-              borderColor: activeTab === date ? primaryColor : 'transparent',
-            }"
+            class="tab-button"
+            :style="getTabStyle(date)"
             @click="selectTab(date)"
           >
             <span
-              :class="['tab-date font-regular', currentLanguage === 'kh' && 'khmer-text-fix']"
+              :class="['tab-date font-semibold', currentLanguage === 'kh' && 'khmer-text-fix']"
               :style="{ fontFamily: primaryFont || currentFont }"
             >
               {{ formatAgendaDate(date) }}
@@ -61,7 +56,7 @@
         </div>
       </div>
 
-      <!-- Tab Content with Fun Cards -->
+      <!-- Tab Content -->
       <div class="tab-content-area">
         <div
           v-for="date in agendaTabs"
@@ -69,11 +64,13 @@
           v-show="activeTab === date"
           class="tab-panel"
         >
-          <!-- First agenda description -->
-          <div v-if="getFirstAgendaDescription(date)" class="text-center mb-6 px-2">
+
+
+          <!-- First agenda description at top center -->
+          <div v-if="getFirstAgendaDescription(date)" class="text-center mb-4 px-2">
             <h4
               :class="[
-                'font-regular text-sm sm:text-base',
+                'font-semibold text-sm sm:text-base',
                 currentLanguage === 'kh' && 'khmer-text-fix',
               ]"
               :style="{
@@ -86,52 +83,26 @@
                 :key="`desc-${currentLanguage}-${index}`"
                 class="bounce-word"
                 :style="{ animationDelay: `${animationDelays.description + index * WORD_DELAY}s` }"
-              >{{ word }}{{ index < splitToWords(getFirstAgendaDescription(date)).length - 1 ? '\u00A0' : '' }}</span>
+              >{{ word }}{{ index < splitToWords(getFirstAgendaDescription(date)).length - 1 ? ' ' : '' }}</span>
             </h4>
           </div>
 
-          <!-- Vertical List Layout -->
-          <div class="list-container">
+          <!-- Agenda Items for this date -->
+          <div class="space-y-0">
             <div
               v-for="(item, index) in agendaByDate[date] || []"
               :key="item.id"
-              class="agenda-item-wrapper bounce-in-element"
+              class="agenda-item-animate bounce-in-element"
               :style="{ animationDelay: `${getItemDelay(index)}s` }"
             >
-              <div class="agenda-item-content">
-                <!-- Title -->
-                <h3
-                  :class="[
-                    'font-regular leading-tight text-center capitalize mb-2 agenda-item-title',
-                    currentLanguage === 'kh' && 'khmer-text-fix',
-                    currentLanguage === 'kh'
-                      ? 'text-sm sm:text-sm md:text-base'
-                      : 'text-sm sm:text-base md:text-lg'
-                  ]"
-                  :style="{
-                    color: primaryColor,
-                    fontFamily: primaryFont || currentFont,
-                  }"
-                >
-                  {{ item.title || 'Event Activity' }}
-                </h3>
-
-                <!-- Time -->
-                <div
-                  :class="[
-                    'text-center text-sm agenda-item-time',
-                    currentLanguage === 'kh' && 'khmer-text-fix',
-                  ]"
-                  :style="{
-                    color: primaryColor,
-                    opacity: '0.7',
-                    fontFamily: secondaryFont || currentFont
-                  }"
-                >
-                  <span v-if="getTimeText(item)">{{ getTimeText(item) }}</span>
-                  <span v-else>Time TBD</span>
-                </div>
-              </div>
+              <AgendaItem
+                :item="item"
+                :primary-color="primaryColor"
+                :accent-color="accentColor"
+                :current-font="currentFont"
+                :primary-font="primaryFont"
+                :secondary-font="secondaryFont"
+              />
             </div>
           </div>
         </div>
@@ -142,6 +113,7 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import AgendaItem from '../AgendaItem.vue'
 import {
   translateRSVP,
   formatDateLocalized,
@@ -330,6 +302,18 @@ const selectTab = (date: string) => {
   activeTab.value = date
 }
 
+// Style helper for tabs - matching AgendaWedding pill style
+const getTabStyle = (date: string) => {
+  const isActive = activeTab.value === date
+  return {
+    backgroundColor: isActive ? props.primaryColor : `${props.primaryColor}10`,
+    color: isActive ? '#ffffff' : props.primaryColor,
+    fontFamily: props.primaryFont || props.currentFont,
+    transform: isActive ? 'scale(1.05)' : 'scale(1)',
+    boxShadow: isActive ? `0 4px 12px ${props.primaryColor}30` : 'none',
+  }
+}
+
 // Get animation delay for agenda items - immediate on tab switch, delayed on initial scroll
 const getItemDelay = (index: number): number => {
   if (hasTabSwitched.value) {
@@ -364,21 +348,6 @@ const firstAgendaDescriptions = computed(() => {
 const getFirstAgendaDescription = (date: string): string => {
   const description = firstAgendaDescriptions.value[date] || ''
   return description ? description.charAt(0).toUpperCase() + description.slice(1) : ''
-}
-
-const getTimeText = (item: AgendaItemData): string | null => {
-  const start = item.start_time_text
-  const end = item.end_time_text
-
-  if (start && end) {
-    return `${start} - ${end}`
-  } else if (start) {
-    return start
-  } else if (end) {
-    return `Until ${end}`
-  }
-
-  return null
 }
 
 onMounted(() => {
@@ -427,13 +396,12 @@ watch(
 
 .tab-bar-scroll-wrapper {
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
   margin-bottom: 1.5rem;
   display: flex;
   justify-content: center;
-  padding: 0.5rem 0;
 }
 
 .tab-bar-scroll-wrapper::-webkit-scrollbar {
@@ -445,8 +413,7 @@ watch(
   gap: 0.5rem;
   min-width: min-content;
   justify-content: center;
-  flex-wrap: nowrap;
-  padding: 0.25rem 0;
+  flex-wrap: wrap;
 }
 
 @media (min-width: 640px) {
@@ -455,32 +422,34 @@ watch(
   }
 }
 
-/* Fun Birthday Tab Buttons */
-.birthday-tab-button {
+/* Tab Buttons - Pill style matching AgendaWedding */
+.tab-button {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0.625rem 1.25rem;
-  border-radius: 0.75rem;
-  border: 1px solid;
+  border-radius: 9999px;
+  border: none;
+  outline: none;
   transition: all 0.3s ease;
   cursor: pointer;
-  font-weight: 600;
+  white-space: nowrap;
 }
 
 @media (min-width: 640px) {
-  .birthday-tab-button {
+  .tab-button {
     padding: 0.75rem 1.75rem;
   }
 }
 
-.birthday-tab-button:hover {
-  transform: translateY(-3px) scale(1.05);
+.tab-button:hover {
+  transform: scale(1.05) !important;
 }
 
-.birthday-tab-button.active {
-  transform: scale(1.05);
+.tab-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 
 .tab-date {
@@ -510,13 +479,6 @@ watch(
 
 .tab-panel {
   animation: fadeIn 0.3s ease-in-out;
-}
-
-/* Vertical List Layout */
-.list-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 1rem;
 }
 
 /* Word-by-word reveal animation - only active when in view */
@@ -572,37 +534,6 @@ watch(
   }
 }
 
-.agenda-item-wrapper {
-  margin-bottom: 1rem;
-}
-
-@media (min-width: 640px) {
-  .agenda-item-wrapper {
-    margin-bottom: 1.5rem;
-  }
-}
-
-.agenda-item-wrapper:last-child {
-  margin-bottom: 0;
-}
-
-.agenda-item-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.agenda-item-content h3 {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.agenda-item-content:hover h3 {
-  transform: scale(1.05);
-  letter-spacing: 0.02em;
-}
-
 /* Animations */
 @keyframes fadeIn {
   from {
@@ -615,24 +546,13 @@ watch(
   }
 }
 
-/* Khmer text fix */
+/* Enhanced Khmer font rendering */
 .khmer-text-fix {
   line-height: 1.8 !important;
   padding-top: 0.3em !important;
   padding-bottom: 0.3em !important;
   margin-top: 0.2em;
   margin-bottom: 0.2em;
-  word-break: keep-all !important;
-  overflow-wrap: anywhere !important;
-  hyphens: none !important;
-  -webkit-hyphens: none !important;
-}
-
-/* Responsive adjustments */
-@media (min-width: 640px) {
-  .list-container {
-    padding: 0 2rem;
-  }
 }
 
 /* Small laptops 13-inch (1024px-1365px) - Scaled to 67.5% matching mobile exactly */
@@ -655,26 +575,12 @@ watch(
     gap: 0.375rem !important;
   }
 
-  .birthday-tab-button {
+  .tab-button {
     padding: 0.4rem 0.875rem !important;
   }
 
   .tab-date {
     font-size: 0.5625rem !important; /* 9px - match AgendaWedding */
-  }
-
-  /* Item title - match AgendaWedding AgendaItem h3 */
-  .agenda-item-title {
-    font-size: 0.625rem !important; /* 10px - match AgendaWedding */
-  }
-
-  /* Item time - match AgendaWedding AgendaItem time */
-  .agenda-item-time {
-    font-size: 0.625rem !important; /* 10px - match AgendaWedding */
-  }
-
-  .agenda-item-wrapper {
-    margin-bottom: 1.16rem !important; /* 1.5rem * 0.77625 */
   }
 }
 
@@ -698,26 +604,12 @@ watch(
     gap: 0.5rem !important;
   }
 
-  .birthday-tab-button {
+  .tab-button {
     padding: 0.5rem 1rem !important;
   }
 
   .tab-date {
     font-size: 0.625rem !important; /* 10px - match AgendaWedding */
-  }
-
-  /* Item title - match AgendaWedding AgendaItem h3 */
-  .agenda-item-title {
-    font-size: 0.625rem !important; /* 10px - match AgendaWedding */
-  }
-
-  /* Item time - match AgendaWedding AgendaItem time */
-  .agenda-item-time {
-    font-size: 0.6875rem !important; /* 11px - match AgendaWedding */
-  }
-
-  .agenda-item-wrapper {
-    margin-bottom: 1.29rem !important; /* 1.5rem * 0.8625 */
   }
 }
 
@@ -730,8 +622,7 @@ watch(
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .birthday-tab-button,
-  .agenda-item-wrapper,
+  .tab-button,
   .bounce-word,
   .bounce-in-element {
     animation: none !important;
@@ -740,13 +631,8 @@ watch(
     filter: none !important;
   }
 
-  .birthday-tab-button:hover {
+  .tab-button:hover {
     transform: none;
-  }
-
-  .agenda-item-content:hover h3 {
-    transform: none;
-    letter-spacing: normal;
   }
 }
 </style>

@@ -480,8 +480,11 @@ const countdownNumberFont = computed(() =>
   max-width: 420px;
   margin: 0 auto;
   padding: 0.75rem 0.5rem;
-  border-top: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
+  /* Thin frame matched to the agenda's 1px divider weight so the card reads
+     as part of the same line-based decorative system. color-mix mutes the
+     alpha slightly without using opacity (which would cascade to children). */
+  border-top: 1px solid color-mix(in srgb, currentColor 60%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, currentColor 60%, transparent);
   box-sizing: border-box;
 }
 
@@ -527,8 +530,7 @@ const countdownNumberFont = computed(() =>
 .details-divider {
   width: 1px;
   align-self: stretch;
-  background-color: currentColor;
-  opacity: 0.8;
+  background-color: color-mix(in srgb, currentColor 60%, transparent);
 }
 
 .details-column {
