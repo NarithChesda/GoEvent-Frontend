@@ -12,26 +12,33 @@
       :base-delay="animationDelays.welcome"
     />
 
-    <!-- Host Avatar: sample_logo_1 base + sample_logo_2-clipped host photo (same pattern as cover stage).
-         Falls back to the plain circular profile picture when sample_logo_1 is not provided. -->
+    <!-- Host Avatar: three-tier base logo (event logoUrl → template sample_logo_1 →
+         recoloured temp-showcase-logo.svg) with sample_logo_2-clipped host photo
+         on top when both sampleLogoTwo and the host image are available. -->
     <div
-      v-if="hosts[0]?.profile_image || sampleLogoOne"
+      v-if="hosts[0]?.profile_image || logoUrl || sampleLogoOne"
       :key="`avatar-${currentLanguage}`"
       class="flex justify-center mb-3 sm:mb-4"
     >
-      <!-- Sample-logo overlay avatar -->
       <div
-        v-if="useSampleLogos"
         class="avatar-container bounce-in-element"
         :style="{ ...avatarContainerStyle, animationDelay: `${animationDelays.profile}s` }"
       >
         <div class="sample-logo-stack">
           <img
-            :src="getMediaUrl(sampleLogoOne as string)"
+            v-if="resolvedBaseLogoSrc"
+            :src="resolvedBaseLogoSrc"
             :alt="`${hosts[0]?.name || ''} logo`"
             class="sample-logo sample-logo-base"
             fetchpriority="high"
           />
+          <div
+            v-else
+            class="sample-logo-base fallback-logo-container"
+            :style="fallbackLogoStyle"
+          >
+            <div class="fallback-logo" v-html="processedFallbackLogo" />
+          </div>
           <!-- Host image clipped into sample_logo_2's shape -->
           <div v-if="showClippedHost" class="sample-logo-shape-layer" aria-hidden="false">
             <div class="host-clip-box" :style="hostClipBoxStyle">
@@ -54,21 +61,6 @@
           />
         </div>
       </div>
-      <!-- Fallback: original gradient-ring profile picture when no sample_logo_1 is provided -->
-      <div
-        v-else-if="hosts[0]?.profile_image"
-        class="profile-picture-large bounce-in-element"
-        :style="{
-          background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
-          animationDelay: `${animationDelays.profile}s`,
-        }"
-      >
-        <img
-          :src="getMediaUrl(hosts[0].profile_image)"
-          :alt="`${hosts[0].name} profile`"
-          class="profile-image"
-        />
-      </div>
     </div>
   </div>
 </template>
@@ -83,27 +75,43 @@ import {
   ANIMATION_CONSTANTS,
   getTextAnimationDuration,
 } from './shared'
+import fallbackLogoSvg from '@/assets/temp-showcase-logo.svg?raw'
 
 const props = defineProps<HostInfoProps>()
 
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 
-// Only render the sample-logo avatar when a base logo is provided by the template.
-const useSampleLogos = computed(() => !!props.sampleLogoOne)
+// Base-slot fallback chain — mirrors CoverContentRows: the event's primary
+// logo (already media-resolved upstream as logoUrl) takes priority, then
+// the template-provided sample_logo_1, then an inline recoloured copy of
+// temp-showcase-logo.svg (handled in the template via processedFallbackLogo).
+const resolvedBaseLogoSrc = computed<string | null>(() => {
+  if (props.logoUrl) return props.logoUrl
+  if (props.sampleLogoOne) return getMediaUrl(props.sampleLogoOne) ?? null
+  return null
+})
 
-// Detect sample_logo_1's natural aspect ratio so the container matches the
-// logo's rendered footprint exactly — keeps the base + sample_logo_2 overlay +
-// clipped host image perfectly aligned. Without this, a square container
-// letterboxes landscape logos and the absolute-positioned layers visibly
-// diverge from the base logo's contain-fit bounds.
-const sampleLogoOneUrl = computed<string | null>(() =>
-  props.sampleLogoOne ? (getMediaUrl(props.sampleLogoOne) ?? null) : null,
+// Inline recoloured fallback SVG — replacing <path fill> with currentColor
+// lets the container's color (primaryColor) drive the brand mark's tone.
+const processedFallbackLogo = computed(() =>
+  fallbackLogoSvg.replace(/<path /g, '<path fill="currentColor" '),
 )
-const sampleLogoOneAspect = ref<number | null>(null)
+
+const fallbackLogoStyle = computed(() => ({
+  color: props.primaryColor,
+  filter: `drop-shadow(0 4px 20px ${props.primaryColor}40)`,
+}))
+
+// Detect the active base logo's natural aspect ratio so the avatar container
+// matches its rendered footprint exactly — keeps the base + sample_logo_2
+// overlay + clipped host image perfectly aligned. For the SVG fallback we
+// can't measure via Image(), so the aspect falls back to 1 (square), which
+// matches temp-showcase-logo.svg's viewBox.
+const baseLogoAspect = ref<number | null>(null)
 watch(
-  sampleLogoOneUrl,
+  resolvedBaseLogoSrc,
   (url, _prev, onCleanup) => {
-    sampleLogoOneAspect.value = null
+    baseLogoAspect.value = null
     if (!url || typeof window === 'undefined') return
     let cancelled = false
     onCleanup(() => {
@@ -114,7 +122,7 @@ watch(
     img.onload = () => {
       if (cancelled) return
       if (img.naturalWidth && img.naturalHeight) {
-        sampleLogoOneAspect.value = img.naturalWidth / img.naturalHeight
+        baseLogoAspect.value = img.naturalWidth / img.naturalHeight
       }
     }
     img.src = url
@@ -126,7 +134,7 @@ watch(
 // box. width/height auto-derive via aspect-ratio while both max-* constraints
 // are honored (browsers scale both dims proportionally).
 const avatarContainerStyle = computed<Record<string, string>>(() => ({
-  '--logo-aspect': `${sampleLogoOneAspect.value ?? 1}`,
+  '--logo-aspect': `${baseLogoAspect.value ?? 1}`,
 }))
 
 // Auto-detect sample_logo_2's opaque bounding box so the host photo fills the
@@ -240,6 +248,39 @@ const animationDelays = computed(() => {
 .sample-logo-base {
   position: relative;
   z-index: 1;
+}
+
+/* Recoloured SVG fallback — fills the base slot when neither the event logo
+   nor sample_logo_1 is available. color is set inline via fallbackLogoStyle
+   so the currentColor-patched <path> fills pick up the template primary. */
+.fallback-logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0.5rem;
+}
+
+.fallback-logo {
+  transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.fallback-logo :deep(svg) {
+  display: block;
+  width: auto !important;
+  height: 100% !important;
+  max-width: 90% !important;
+  max-height: 100% !important;
+  object-fit: contain;
+  margin: 0 auto;
 }
 
 .sample-logo-overlay {
