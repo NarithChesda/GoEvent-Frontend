@@ -739,6 +739,15 @@ const countdownNumberFont = computed(() =>
   transform: translateY(-0.38em);
 }
 
+/* Desktop/laptop viewports use a shallower upward shift — at larger column
+   widths and label sizes the mobile-tuned -0.38em lifts the colon above
+   the Khmer digits' optical center. */
+@media (min-width: 1024px) {
+  .countdown-separator.is-khmer {
+    transform: translateY(-0.28em);
+  }
+}
+
 /* Divider between Countdown and RSVP */
 .countdown-divider {
   width: 100%;
