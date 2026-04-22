@@ -139,10 +139,6 @@
                     :first-host-image="firstHostImage"
                     :first-host-name="firstHostName"
                     :host-clip-style="hostClipStyle"
-                    :event-start-date="event.start_date"
-                    :time-text="getTimeText()"
-                    :location-text="getLocationText()"
-                    :rsvp-contact="getRsvpContact()"
                   />
                 </div>
 
@@ -1350,7 +1346,6 @@ const getWelcomeMessage = (): string | undefined => findEventText('welcome_messa
 const getDateText = (): string | undefined => findEventText('date_text')?.content
 const getTimeText = (): string | undefined => findEventText('time_text')?.content
 const getLocationText = (): string | undefined => findEventText('location_text')?.content
-const getRsvpContact = (): string | undefined => findEventText('rsvp_contact')?.content
 const getDescriptionText = (): string | undefined => findEventText('description')?.content
 const getDescriptionTitle = (): string | undefined => findEventText('description')?.title
 const getInstructionText = (): string | undefined => findEventText('instructions')?.content

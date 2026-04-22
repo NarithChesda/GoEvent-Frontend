@@ -52,6 +52,45 @@
       </div>
     </div>
 
+    <!-- Stylish Event Details Card: sits ABOVE the glass card so it shows against
+         the page background, styled with primaryColor (theme accent). Two-column
+         panel framed with top+bottom borders. Left column: stacked weekday /
+         day-number / month (from eventStartDate). Right column: locationText.
+         When eventStartDate is missing, the left column and vertical divider
+         collapse so locationText spans the card. -->
+    <div
+      v-if="hasDateParts || locationText"
+      class="event-details-card bounce-in-element"
+      :class="[hasDateParts ? 'has-date-column' : 'no-date-column']"
+      :style="{
+        color: primaryColor,
+        animationDelay: `${animationDelays.date}s`,
+      }"
+    >
+      <div
+        v-if="hasDateParts"
+        :class="['date-column', currentLanguage === 'kh' && 'khmer-text-fix']"
+        :style="{ fontFamily: primaryFont || currentFont }"
+      >
+        <div v-if="dateParts.weekday" class="date-weekday">{{ dateParts.weekday }}</div>
+        <div v-if="dateParts.day" class="date-day">{{ dateParts.day }}</div>
+        <div v-if="dateParts.month" class="date-month">{{ dateParts.month }}</div>
+      </div>
+
+      <div
+        v-if="hasDateParts && locationText"
+        class="details-divider"
+        aria-hidden="true"
+      ></div>
+
+      <div v-if="locationText" class="details-column">
+        <div
+          :class="['details-location', currentLanguage === 'kh' && 'khmer-text-fix']"
+          :style="{ fontFamily: secondaryFont || currentFont }"
+        >{{ locationText }}</div>
+      </div>
+    </div>
+
     <!-- Event Details Block -->
     <div class="space-y-3">
       <div
@@ -70,56 +109,6 @@
            background: `${backgroundColor || primaryColor}60`,
           }"
         >
-          <!-- Date Text -->
-          <p
-            :class="[
-              'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-line text-white',
-              currentLanguage === 'kh' && 'khmer-text-fix',
-            ]"
-            :style="{
-              fontFamily: secondaryFont || currentFont,
-              whiteSpace: 'pre-line',
-              wordWrap: 'break-word',
-              hyphens: 'auto',
-            }"
-            v-if="dateText"
-          >
-            <template v-for="(line, lineIndex) in splitToLines(dateText)" :key="`date-line-${currentLanguage}-${lineIndex}`">
-              <br v-if="lineIndex > 0" />
-              <span
-                v-for="(word, wordIndex) in line"
-                :key="`date-${currentLanguage}-${lineIndex}-${wordIndex}`"
-                class="bounce-word"
-                :style="{ animationDelay: `${animationDelays.date + getGlobalWordIndex(splitToLines(dateText), lineIndex, wordIndex) * WORD_DELAY}s` }"
-              >{{ word }}{{ wordIndex < line.length - 1 ? '\u00A0' : '' }}</span>
-            </template>
-          </p>
-
-          <!-- Location Text -->
-          <p
-            :class="[
-              'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-line text-white',
-              currentLanguage === 'kh' && 'khmer-text-fix',
-            ]"
-            :style="{
-              fontFamily: secondaryFont || currentFont,
-              whiteSpace: 'pre-line',
-              wordWrap: 'break-word',
-              hyphens: 'auto',
-            }"
-            v-if="locationText"
-          >
-            <template v-for="(line, lineIndex) in splitToLines(locationText)" :key="`location-line-${currentLanguage}-${lineIndex}`">
-              <br v-if="lineIndex > 0" />
-              <span
-                v-for="(word, wordIndex) in line"
-                :key="`location-${currentLanguage}-${lineIndex}-${wordIndex}`"
-                class="bounce-word"
-                :style="{ animationDelay: `${animationDelays.location + getGlobalWordIndex(splitToLines(locationText), lineIndex, wordIndex) * WORD_DELAY}s` }"
-              >{{ word }}{{ wordIndex < line.length - 1 ? '\u00A0' : '' }}</span>
-            </template>
-          </p>
-
           <!-- Google Map Embed -->
           <div
             v-if="hasGoogleMap && googleMapEmbedLink"
@@ -170,9 +159,9 @@
                 <div class="countdown-unit">
                   <div
                     class="countdown-number"
-                    style="font-family: 'Rajdhani', sans-serif;"
+                    :style="{ fontFamily: countdownNumberFont }"
                   >
-                    {{ countdown.formattedDays }}
+                    {{ countdownDaysDisplay }}
                   </div>
                   <div
                     class="countdown-unit-label"
@@ -188,7 +177,8 @@
                 <!-- Separator -->
                 <div
                   class="countdown-separator"
-                  style="font-family: 'Rajdhani', sans-serif;"
+                  :class="[currentLanguage === 'kh' && 'is-khmer']"
+                  :style="{ fontFamily: countdownNumberFont }"
                 >
                   :
                 </div>
@@ -197,9 +187,9 @@
                 <div class="countdown-unit">
                   <div
                     class="countdown-number"
-                    style="font-family: 'Rajdhani', sans-serif;"
+                    :style="{ fontFamily: countdownNumberFont }"
                   >
-                    {{ countdown.formattedHours }}
+                    {{ countdownHoursDisplay }}
                   </div>
                   <div
                     class="countdown-unit-label"
@@ -241,7 +231,12 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useCountdown } from '../../composables/useCountdown'
-import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
+import {
+  translateRSVP,
+  getLocalizedDateParts,
+  toKhmerNumerals,
+  type SupportedLanguage,
+} from '../../utils/translations'
 import {
   splitToWords,
   splitToLines,
@@ -343,6 +338,21 @@ watch(
   }
 )
 
+// Break the ISO start date into weekday / day-number / month parts so the
+// card can render a stylish stacked date block instead of plain dateText.
+// Delegates to getLocalizedDateParts so Khmer uses explicit translated names
+// (Intl km-KH output varies across browsers).
+const dateParts = computed<{ weekday: string; day: string; month: string }>(() => {
+  if (!props.eventStartDate) return { weekday: '', day: '', month: '' }
+  return getLocalizedDateParts(props.eventStartDate, props.currentLanguage ?? 'en')
+})
+
+// Convenience flag: drives the card's 2-column vs 1-column grid layout
+// in the template (left date-column collapses when no eventStartDate).
+const hasDateParts = computed(
+  () => !!(dateParts.value.weekday || dateParts.value.day || dateParts.value.month),
+)
+
 // Animation delays calculation
 const animationDelays = computed(() => {
   let currentDelay = props.baseDelay
@@ -431,9 +441,158 @@ const hourLabel = computed(() => {
   const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
   return translateRSVP('countdown_hour', currentLang)
 })
+
+// Display numerals in Khmer script for the 'kh' locale; other locales keep
+// Arabic digits so the Rajdhani display font renders correctly.
+const countdownDaysDisplay = computed(() => {
+  const raw = countdown?.formattedDays.value ?? ''
+  return props.currentLanguage === 'kh' ? toKhmerNumerals(raw) : raw
+})
+
+const countdownHoursDisplay = computed(() => {
+  const raw = countdown?.formattedHours.value ?? ''
+  return props.currentLanguage === 'kh' ? toKhmerNumerals(raw) : raw
+})
+
+// Rajdhani has no Khmer glyphs — fall back to the showcase primary font so
+// the Khmer numerals render consistently with the rest of the card.
+const countdownNumberFont = computed(() =>
+  props.currentLanguage === 'kh'
+    ? props.primaryFont || props.currentFont
+    : `'Rajdhani', sans-serif`,
+)
 </script>
 
 <style scoped>
+/* Stylish event details card — two-column panel framed with top+bottom borders.
+   Left column stacks weekday / day-number / month; right column stacks dateText
+   (time/description) + locationText, separated by a horizontal rule. When no
+   eventStartDate is available, the left column and vertical divider collapse
+   to a single-column layout with no-date-column. */
+/* Card sits on the page background now (above the glass card), so borders and
+   the vertical divider inherit from the element's color (set inline to
+   primaryColor) instead of the white-on-glass palette. */
+.event-details-card {
+  display: grid;
+  align-items: stretch;
+  gap: 1rem;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 0.75rem 0.5rem;
+  border-top: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  box-sizing: border-box;
+}
+
+/* Mobile: strict 1:2 ratio — date column gets 1/3, location 2/3. minmax(0, ...)
+   lets the grid tracks ignore content-driven min-widths so the ratio is honored
+   even when weekday names (e.g. Khmer) would otherwise force the left track wider. */
+.event-details-card.has-date-column {
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 2fr);
+}
+
+.event-details-card.no-date-column {
+  grid-template-columns: 1fr;
+}
+
+.date-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-width: 0;
+  gap: 0.15rem;
+}
+
+/* Mobile: scaled down for the 1/3-width date column so "WEDNESDAY"/"SEPTEMBER"
+   don't overflow or wrap. Full sizes restored at ≥640px where the column widens. */
+.date-weekday,
+.date-month {
+  font-size: 0.6875rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.date-day {
+  font-size: 2.125rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.1rem 0;
+}
+
+.details-divider {
+  width: 1px;
+  align-self: stretch;
+  background-color: currentColor;
+  opacity: 0.8;
+}
+
+.details-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  min-width: 0;
+  text-align: left;
+}
+
+.details-location {
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  white-space: pre-line;
+  word-break: break-word;
+}
+
+@media (min-width: 640px) {
+  .event-details-card {
+    max-width: 460px;
+    padding: 1rem 1.25rem;
+  }
+
+  /* Above mobile, let the date column hug its content and give location the rest. */
+  .event-details-card.has-date-column {
+    grid-template-columns: auto 1px 1fr;
+  }
+
+  .date-column {
+    min-width: 5.5rem;
+  }
+
+  .date-weekday,
+  .date-month {
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+  }
+
+  .date-day {
+    font-size: 3.25rem;
+  }
+
+  .details-location {
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .event-details-card {
+    max-width: 500px;
+  }
+
+  .date-day {
+    font-size: 3.5rem;
+  }
+}
+
+/* Khmer subscripts sit lower; relax line-height so the day-number isn't clipped. */
+.date-column.khmer-text-fix .date-day {
+  line-height: 1.15;
+}
+
 /* Word-by-word reveal animation - only active when in view */
 .bounce-word {
   display: inline-block;
@@ -563,6 +722,19 @@ const hourLabel = computed(() => {
   letter-spacing: 0.1em;
   text-align: center;
   white-space: nowrap;
+}
+
+/* Khmer fallback fonts position the colon glyph differently within its em-box
+   than Rajdhani, so the baseline-alignment trick (margin-bottom) can't center
+   it reliably. Switch to flex-center on the row and counter-shift upward by
+   roughly half the label height so the colon sits on the number's vertical
+   center instead of the whole column's center. */
+.countdown-separator.is-khmer {
+  align-self: center;
+  margin-bottom: 0 !important;
+  /* Uses em (relative to the colon's own font-size) so the upward shift
+     scales with the responsive number size across breakpoints. */
+  transform: translateY(-0.38em);
 }
 
 /* Divider between Countdown and RSVP */

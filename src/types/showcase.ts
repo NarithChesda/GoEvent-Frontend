@@ -280,14 +280,6 @@ export interface HostInfoProps {
   firstHostName?: string
   /** CSS variables (--host-clip-offset-*) from cover_stage_layout for panning the host photo inside the clip shape. */
   hostClipStyle?: Record<string, string>
-  /** Raw ISO start date — used by layouts that render a standalone date/time card (e.g. Birthday). */
-  eventStartDate?: string
-  /** Pre-formatted time range ("7:00 PM - 10:00 PM") — layouts can pass through EventInfo's time helper. */
-  timeText?: string
-  /** Pre-formatted location string — layouts can pass through EventInfo's location helper. */
-  locationText?: string
-  /** RSVP contact (typically a phone number) rendered in the event details card. */
-  rsvpContact?: string
 }
 
 // Error boundary types

@@ -70,57 +70,6 @@
         />
       </div>
     </div>
-
-    <!-- Event Details Card: two-column date + location/time/RSVP panel -->
-    <div
-      v-if="eventStartDate || timeText || locationText || rsvpContact"
-      class="event-details-card bounce-in-element"
-      :style="{
-        borderColor: primaryColor,
-        animationDelay: `${animationDelays.detailsCard}s`,
-      }"
-    >
-      <!-- Left column: stacked weekday / day-number / month -->
-      <div class="date-column" :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }">
-        <div v-if="dateParts.weekday" class="date-weekday">{{ dateParts.weekday }}</div>
-        <div v-if="dateParts.day" class="date-day">{{ dateParts.day }}</div>
-        <div v-if="dateParts.month" class="date-month">{{ dateParts.month }}</div>
-      </div>
-
-      <!-- Vertical divider -->
-      <div class="details-divider" :style="{ backgroundColor: primaryColor }" aria-hidden="true"></div>
-
-      <!-- Right column: time / location / RSVP contact -->
-      <div class="details-column" :style="{ color: primaryColor }">
-        <div
-          v-if="timeText"
-          class="details-time"
-          :style="{ fontFamily: primaryFont || currentFont }"
-        >
-          {{ timeText }}
-        </div>
-        <div
-          v-if="timeText && (locationText || rsvpContact)"
-          class="details-time-divider"
-          :style="{ backgroundColor: primaryColor }"
-          aria-hidden="true"
-        ></div>
-        <div
-          v-if="locationText"
-          class="details-location"
-          :style="{ fontFamily: secondaryFont || currentFont }"
-        >
-          {{ locationText }}
-        </div>
-        <div
-          v-if="rsvpContact"
-          class="details-rsvp"
-          :style="{ fontFamily: secondaryFont || currentFont }"
-        >
-          RSVP: {{ rsvpContact }}
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -215,39 +164,6 @@ const clippedHostStyle = computed<Record<string, string>>(() => {
   }
 })
 
-// Map app language codes to BCP-47 locales for Intl.DateTimeFormat. Falls back
-// to the raw code when no mapping is needed (Intl tolerates most standard codes).
-const LOCALE_MAP: Record<string, string> = {
-  en: 'en-US',
-  kh: 'km-KH',
-  fr: 'fr-FR',
-  ja: 'ja-JP',
-  ko: 'ko-KR',
-  'zh-cn': 'zh-CN',
-  th: 'th-TH',
-  vn: 'vi-VN',
-}
-
-// Break the start date into weekday / day-number / month parts for the
-// two-column event-details card. Returns empty strings when the date is
-// missing or invalid so the template can render partial data gracefully.
-const dateParts = computed<{ weekday: string; day: string; month: string }>(() => {
-  const empty = { weekday: '', day: '', month: '' }
-  if (!props.eventStartDate) return empty
-  const parsed = new Date(props.eventStartDate)
-  if (Number.isNaN(parsed.getTime())) return empty
-  const locale = LOCALE_MAP[props.currentLanguage ?? 'en'] ?? props.currentLanguage ?? 'en-US'
-  try {
-    return {
-      weekday: new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(parsed),
-      day: new Intl.DateTimeFormat(locale, { day: 'numeric' }).format(parsed),
-      month: new Intl.DateTimeFormat(locale, { month: 'long' }).format(parsed),
-    }
-  } catch {
-    return empty
-  }
-})
-
 // Animation delays calculation
 const animationDelays = computed(() => {
   let currentDelay = 0.1
@@ -264,13 +180,10 @@ const animationDelays = computed(() => {
     props.showWelcomeHeaderText === false ? undefined : (props.welcomeMessage || 'Happy Birthday!'),
   )
   const profile = currentDelay
-  currentDelay += 0.45
-  const detailsCard = currentDelay
 
   return {
     welcome,
     profile,
-    detailsCard,
   }
 })
 </script>
@@ -402,126 +315,6 @@ const animationDelays = computed(() => {
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-}
-
-/* Event details card — two-column panel with a thin border in primaryColor.
-   Left column stacks weekday / day-number / month. Right column stacks
-   time (with a horizontal rule below) / location / RSVP contact. */
-.event-details-card {
-  display: grid;
-  grid-template-columns: auto 1px 1fr;
-  align-items: stretch;
-  gap: 1rem;
-  width: 100%;
-  max-width: 420px;
-  margin: 0.75rem auto 0;
-  padding: 1rem 1.25rem;
-  border-top: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  box-sizing: border-box;
-}
-
-.date-column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  min-width: 5.5rem;
-  gap: 0.15rem;
-}
-
-.date-weekday,
-.date-month {
-  font-size: 0.875rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-weight: 600;
-  line-height: 1.1;
-}
-
-.date-day {
-  font-size: 2.75rem;
-  font-weight: 700;
-  line-height: 1;
-  /* Slight vertical breathing room from weekday/month labels */
-  padding: 0.1rem 0;
-}
-
-.details-divider {
-  width: 1px;
-  align-self: stretch;
-  opacity: 0.8;
-}
-
-.details-column {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0;
-  min-width: 0;
-}
-
-.details-time {
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
-}
-
-.details-time-divider {
-  height: 1px;
-  width: 100%;
-  opacity: 0.6;
-}
-
-.details-location,
-.details-rsvp {
-  font-size: 0.8125rem;
-  line-height: 1.35;
-  word-break: break-word;
-}
-
-/* Responsive tuning for the details card */
-@media (min-width: 640px) {
-  .event-details-card {
-    padding: 1.125rem 1.5rem;
-  }
-
-  .date-weekday,
-  .date-month {
-    font-size: 1rem;
-  }
-
-  .date-day {
-    font-size: 3.25rem;
-  }
-
-  .details-time {
-    font-size: 1.125rem;
-  }
-
-  .details-location,
-  .details-rsvp {
-    font-size: 0.9rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .event-details-card {
-    max-width: 480px;
-  }
-
-  .date-day {
-    font-size: 3.5rem;
-  }
-}
-
-/* Khmer text typically renders a touch taller — relax line-height so tall
-   subscripts don't clip the day-number cell. */
-.host-info-birthday.khmer-text .date-day {
-  line-height: 1.15;
 }
 
 /* Bounce In Animation */

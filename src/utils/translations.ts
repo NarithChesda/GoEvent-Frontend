@@ -821,6 +821,81 @@ export function translateRSVP(
   return translation
 }
 
+// Khmer month/day names used by the custom date formatters below and exported
+// via getLocalizedDateParts so the Intl.DateTimeFormat km-KH output (which
+// varies across browsers and sometimes prepends "ថ្ងៃ") doesn't leak into UI.
+export const KHMER_MONTHS = [
+  'មករា',
+  'កុម្ភៈ',
+  'មីនា',
+  'មេសា',
+  'ឧសភា',
+  'មិថុនា',
+  'កក្កដា',
+  'សីហា',
+  'កញ្ញា',
+  'តុលា',
+  'វិច្ឆិកា',
+  'ធ្នូ',
+] as const
+
+export const KHMER_DAYS = [
+  'អាទិត្យ',
+  'ចន្ទ',
+  'អង្គារ',
+  'ពុធ',
+  'ព្រហស្បតិ៍',
+  'សុក្រ',
+  'សៅរ៍',
+] as const
+
+// Khmer numerals ០-៩, indexed by the corresponding Arabic digit.
+const KHMER_DIGITS = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'] as const
+
+export function toKhmerNumerals(value: number | string): string {
+  return String(value).replace(/\d/g, (d) => KHMER_DIGITS[Number(d)])
+}
+
+// Returns { weekday, day, month } for stacked date displays (e.g. the event
+// details card). Uses explicit Khmer names for 'kh' so the output stays
+// consistent; falls back to Intl.DateTimeFormat for other locales.
+export function getLocalizedDateParts(
+  date: Date | string,
+  language: string = 'en',
+): { weekday: string; day: string; month: string } {
+  const empty = { weekday: '', day: '', month: '' }
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  if (Number.isNaN(dateObj.getTime())) return empty
+
+  if (language === 'kh') {
+    return {
+      weekday: KHMER_DAYS[dateObj.getDay()],
+      day: toKhmerNumerals(dateObj.getDate()),
+      month: KHMER_MONTHS[dateObj.getMonth()],
+    }
+  }
+
+  const localeMap: Record<string, string> = {
+    en: 'en-US',
+    'zh-cn': 'zh-CN',
+    fr: 'fr-FR',
+    ja: 'ja-JP',
+    ko: 'ko-KR',
+    th: 'th-TH',
+    vn: 'vi-VN',
+  }
+  const locale = localeMap[language] ?? language ?? 'en-US'
+  try {
+    return {
+      weekday: new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(dateObj),
+      day: new Intl.DateTimeFormat(locale, { day: 'numeric' }).format(dateObj),
+      month: new Intl.DateTimeFormat(locale, { month: 'long' }).format(dateObj),
+    }
+  } catch {
+    return empty
+  }
+}
+
 // Date formatting with localization support
 export function formatDateLocalized(
   date: Date | string,
@@ -831,27 +906,10 @@ export function formatDateLocalized(
     const dateObj = typeof date === 'string' ? new Date(date) : date
 
     if (language === 'kh') {
-      // Custom Khmer date formatting
-      const khmerMonths = [
-        'មករា',
-        'កុម្ភៈ',
-        'មីនា',
-        'មេសា',
-        'ឧសភា',
-        'មិថុនា',
-        'កក្កដា',
-        'សីហា',
-        'កញ្ញា',
-        'តុលា',
-        'វិច្ឆិកា',
-        'ធ្នូ',
-      ]
-      const khmerDays = ['អាទិត្យ', 'ចន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍']
-
       if (format === 'long') {
-        return `${khmerDays[dateObj.getDay()]} ទី ${dateObj.getDate()} ខែ${khmerMonths[dateObj.getMonth()]} ឆ្នាំ ${dateObj.getFullYear()}`
+        return `${KHMER_DAYS[dateObj.getDay()]} ទី ${dateObj.getDate()} ខែ${KHMER_MONTHS[dateObj.getMonth()]} ឆ្នាំ ${dateObj.getFullYear()}`
       } else {
-        return `${dateObj.getDate()} ${khmerMonths[dateObj.getMonth()]}`
+        return `${dateObj.getDate()} ${KHMER_MONTHS[dateObj.getMonth()]}`
       }
     }
 

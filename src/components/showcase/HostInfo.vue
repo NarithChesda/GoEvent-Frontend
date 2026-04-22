@@ -42,14 +42,6 @@ interface Props {
   firstHostName?: string
   /** CSS variables (--host-clip-offset-*) from cover_stage_layout for panning the host photo inside the clip shape. */
   hostClipStyle?: Record<string, string>
-  /** Raw ISO start date — used by layouts that render a standalone date/time card (e.g. Birthday). */
-  eventStartDate?: string
-  /** Pre-formatted time range. */
-  timeText?: string
-  /** Pre-formatted location string. */
-  locationText?: string
-  /** RSVP contact (phone number) rendered in the event details card. */
-  rsvpContact?: string
 }
 
 const props = defineProps<Props>()
