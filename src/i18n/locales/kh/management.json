@@ -381,7 +381,8 @@
         "replace": "ជំនួស",
         "crop": "កាត់",
         "delete": "លុប",
-        "clickToUpload": "ចុចដើម្បីបញ្ចូល"
+        "clickToUpload": "ចុចដើម្បីបញ្ចូល",
+        "downloadSample": "ទាញយកគំរូ"
       },
       "primaryLogo": {
         "title": "រូបសញ្ញាចម្បង",

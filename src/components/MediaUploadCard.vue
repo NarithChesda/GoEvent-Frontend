@@ -16,8 +16,27 @@
         class="hidden"
       />
 
-      <!-- Options button when content exists -->
-      <div v-if="canEdit && hasContent" class="relative">
+      <!-- Right-side controls grouped so justify-between keeps them together
+           opposite the title even when only one of them renders. -->
+      <div class="flex items-center gap-2">
+        <!-- Download sample button — shown whenever a downloadable source
+             URL is provided (e.g. the template's sample_logo_1 for the
+             primary-logo slot). Stays visible even before the user has
+             uploaded their own asset. -->
+        <button
+          v-if="downloadUrl"
+          type="button"
+          @click.stop="handleDownload"
+          :disabled="isDownloading"
+          :title="t('management.media.mediaUploads.card.downloadSample')"
+          :aria-label="t('management.media.mediaUploads.card.downloadSample')"
+          class="text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 rounded-xl font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Download class="w-5 h-5" />
+        </button>
+
+        <!-- Options button when content exists -->
+        <div v-if="canEdit && hasContent" class="relative">
         <button
           @click.stop="emit('toggle-dropdown')"
           :disabled="isUploading"
@@ -58,6 +77,7 @@
             <span>{{ t('management.media.mediaUploads.card.delete') }}</span>
           </button>
         </div>
+      </div>
       </div>
     </div>
 
@@ -153,7 +173,7 @@
 
 <script setup lang="ts">
 import { ref, computed, type Component } from 'vue'
-import { Upload, X, MoreHorizontal, Plus, ImageIcon, Play, Music, Crop } from 'lucide-vue-next'
+import { Upload, X, MoreHorizontal, Plus, ImageIcon, Play, Music, Crop, Download } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 
 const { t } = useAppLanguage()
@@ -172,6 +192,11 @@ interface Props {
   imageClass?: string
   emptyStatePadding?: string
   enableCropping?: boolean
+  /** Optional URL exposed as a "download sample" button in the card header
+      (e.g. template sample_logo_1 offered alongside the primary-logo slot). */
+  downloadUrl?: string | null
+  /** Filename used for the downloaded file; falls back to the URL's last segment. */
+  downloadFilename?: string
 }
 
 interface Emits {
@@ -226,5 +251,34 @@ const handleFileChange = (event: Event) => {
 
   // Reset input to allow re-uploading the same file
   target.value = ''
+}
+
+// Download the provided URL as a file. Fetch-and-blob ensures a real "Save
+// As" download instead of the browser navigating to the asset; on CORS
+// failure we fall back to opening the URL in a new tab so the user can
+// still save it manually.
+const isDownloading = ref(false)
+const handleDownload = async () => {
+  if (!props.downloadUrl || isDownloading.value) return
+  isDownloading.value = true
+  try {
+    const response = await fetch(props.downloadUrl)
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    const blob = await response.blob()
+    const objectUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = objectUrl
+    const fallback = props.downloadUrl.split('?')[0].split('/').pop() || 'sample-logo'
+    a.download = props.downloadFilename || fallback
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(objectUrl)
+  } catch (err) {
+    console.error('Download failed, opening URL instead:', err)
+    window.open(props.downloadUrl, '_blank', 'noopener,noreferrer')
+  } finally {
+    isDownloading.value = false
+  }
 }
 </script>

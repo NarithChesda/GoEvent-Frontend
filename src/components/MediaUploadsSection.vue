@@ -14,6 +14,7 @@
         content-type="image"
         image-class="h-[100px] object-contain bg-slate-50 p-4"
         :empty-state-text="t('management.media.mediaUploads.primaryLogo.empty')"
+        :download-url="eventData?.event_template_details?.sample_logo_1 ?? null"
         @upload="(file) => handleUpload('logo_one', file, 'image')"
         @remove="confirmRemove('logo_one', t('management.media.mediaUploads.primaryLogo.deleteTitle'), t('management.media.mediaUploads.primaryLogo.title'))"
         @toggle-dropdown="dropdownManager.toggleDropdown('logoOne')"

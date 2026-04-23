@@ -49,6 +49,12 @@ export interface EventTemplate {
   basic_background_photo?: string
   standard_cover_video?: string
   standard_background_video?: string
+  /** Primary sample logo (transparency). Rendered in the merged logo row when showCoverHeaderText is false. */
+  sample_logo_1?: string | null
+  /** Secondary sample logo (transparency). Overlaid on top of sample_logo_1 at the same position. */
+  sample_logo_2?: string | null
+  /** Header text rendered as an image (transparency). */
+  header_text_image?: string | null
   created_at?: string
   updated_at?: string
 }
@@ -96,9 +102,11 @@ export interface CoverStageLayout {
   showCoverHeaderText?: boolean     // default: true
 
   // Host image clipped into sample_logo_2's shape (merged logo row).
-  // Pans the host photo within the clip square via CSS object-position —
-  // use this to keep the face inside a head-region shape, for example.
+  // hostClipScale sets image size as % of the clip square (0–100).
+  // hostClipOffsetX/Y pan the host photo within the clip square via CSS
+  // object-position — use this to keep the face inside a head-region shape.
   // 0 = left/top edge, 50 = center, 100 = right/bottom edge.
+  hostClipScale?: number            // default: 60
   hostClipOffsetX?: number          // default: 50
   hostClipOffsetY?: number          // default: 50
 

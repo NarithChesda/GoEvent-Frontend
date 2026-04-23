@@ -381,7 +381,8 @@
         "replace": "Replace",
         "crop": "Crop",
         "delete": "Delete",
-        "clickToUpload": "Click to upload"
+        "clickToUpload": "Click to upload",
+        "downloadSample": "Download sample"
       },
       "primaryLogo": {
         "title": "Primary Logo",
