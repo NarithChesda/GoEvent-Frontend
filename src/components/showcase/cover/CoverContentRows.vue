@@ -28,11 +28,15 @@
       :class="{ 'animate-fadeIn animation-delay-200': showAnimations }"
       :style="rowStyles.logo"
     >
-      <div class="flex items-center justify-center h-full w-full px-4">
+      <div class="flex items-center justify-center h-full w-full px-4 cover-logo-wrapper">
         <!-- Merged logo row: stack with a three-tier base (event logo → sample_logo_1 →
              recoloured temp SVG). sample_logo_2's opaque shape either overlays directly
              or clips the first host's profile image into the shape. -->
-        <div v-if="useSampleLogos" class="sample-logo-stack">
+        <div
+          v-if="useSampleLogos"
+          class="sample-logo-stack"
+          :style="sampleLogoStackStyle"
+        >
           <img
             v-if="resolvedBaseLogoSrc"
             :src="resolvedBaseLogoSrc"
@@ -222,6 +226,41 @@ const resolvedBaseLogoSrc = computed(() => {
   return null
 })
 
+// Detect the active base logo's natural aspect ratio so the stack container
+// can size to match its rendered footprint. Without this the stack fills the
+// row and the absolute-positioned sample_logo_2 overlay + host-clip box span
+// a box whose aspect diverges from the base image's — most visible on narrow
+// mobile rows, where the combined layer reads as vertically stretched. For
+// the inline SVG fallback we can't measure via Image(); aspect falls back to
+// 1 (square), which matches temp-showcase-logo.svg's viewBox.
+const baseLogoAspect = ref<number | null>(null)
+watch(
+  resolvedBaseLogoSrc,
+  (url, _prev, onCleanup) => {
+    baseLogoAspect.value = null
+    if (!url || typeof window === 'undefined') return
+    let cancelled = false
+    onCleanup(() => {
+      cancelled = true
+    })
+    const img = new Image()
+    img.decoding = 'async'
+    img.onload = () => {
+      if (cancelled) return
+      if (img.naturalWidth && img.naturalHeight) {
+        baseLogoAspect.value = img.naturalWidth / img.naturalHeight
+      }
+    }
+    img.src = url
+  },
+  { immediate: true },
+)
+
+// --logo-aspect drives both aspect-ratio and the width formula on the stack.
+const sampleLogoStackStyle = computed<Record<string, string>>(() => ({
+  '--logo-aspect': `${baseLogoAspect.value ?? 1}`,
+}))
+
 const { protectionAttrs } = useAssetProtection()
 
 // Auto-detect the opaque bounding box of sample_logo_2 so the host photo can
@@ -400,14 +439,29 @@ watch(() => props.guestNameMaxWidthPercent, () => {
   margin: 0 auto;
 }
 
-/* Sample logo stack — base logo fills the merged logo row, overlay sits on top at the same position. */
+/* The flex wrapper around the stack becomes a size container so the stack
+   below can derive its width from the wrapper's actual dimensions (including
+   px-4 padding already applied to the wrapper). */
+.cover-logo-wrapper {
+  container-type: size;
+}
+
+/* Sample logo stack — sized to the active base logo's natural aspect so the
+   absolute-positioned sample_logo_2 overlay and host-clip box align with the
+   base image's visible footprint (no letterbox offset inside the stack).
+   Width is the larger size that fits inside both wrapper-width and
+   wrapper-height × aspect; height: auto + aspect-ratio derives the matching
+   height so the box stays logo-shaped on portrait phones too. */
 .sample-logo-stack {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
+  aspect-ratio: var(--logo-aspect, 1);
+  width: min(100cqw, calc(100cqh * var(--logo-aspect, 1)));
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .sample-logo {
