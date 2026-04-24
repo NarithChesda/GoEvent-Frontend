@@ -209,18 +209,19 @@ const animationDelays = computed(() => {
   font-size: 0.7906rem;
 }
 
-/* Sample-logo avatar container — sized to match sample_logo_1's natural
+/* Sample-logo avatar container — sized to match the base logo's natural
    aspect ratio (via --logo-aspect inline var) within a bounding box. Keeping
    the container's aspect equal to the base logo's aspect ensures the absolute
    positioned sample_logo_2 overlay and host-clip layers align exactly with
-   the base logo's contain-fit footprint (no letterbox offset). */
+   the base logo's contain-fit footprint (no letterbox offset).
+   Width is capped by the parent (100%), the static max-w, and the width that
+   would make height hit max-h at this aspect — whichever is smallest — and
+   aspect-ratio derives the height so narrow parents don't break the ratio. */
 .avatar-container {
   --max-w: 340px;
   --max-h: 261px;
-  /* Pick whichever dimension is the binding constraint while preserving aspect. */
-  width: min(var(--max-w), calc(var(--max-h) * var(--logo-aspect, 1)));
-  height: min(var(--max-h), calc(var(--max-w) / var(--logo-aspect, 1)));
-  max-width: 100%;
+  aspect-ratio: var(--logo-aspect, 1);
+  width: min(100%, var(--max-w), calc(var(--max-h) * var(--logo-aspect, 1)));
   display: flex;
   align-items: center;
   justify-content: center;
