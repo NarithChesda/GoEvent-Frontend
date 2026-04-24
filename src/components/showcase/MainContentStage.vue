@@ -134,6 +134,7 @@
                     :current-language="currentLanguage"
                     :event-type="eventType"
                     :show-welcome-header-text="showWelcomeHeaderText"
+                    :show-host-name-under-logo="showHostNameUnderLogo"
                     :sample-logo-one="templateAssets?.sample_logo_1"
                     :sample-logo-two="templateAssets?.sample_logo_2"
                     :first-host-image="firstHostImage"
@@ -998,6 +999,9 @@ const { decorationZIndexes, layout: mainStageLayoutResolved } = useCoverStageLay
 
 // Template-controlled: whether HostInfo renders the welcome header row
 const showWelcomeHeaderText = computed(() => mainStageLayoutResolved.value.showWelcomeHeaderText)
+
+// Template-controlled: render the first host's name beneath the sample-logo avatar
+const showHostNameUnderLogo = computed(() => mainStageLayoutResolved.value.showHostNameUnderLogo)
 
 // CSS vars that pan the host photo inside sample_logo_2's clip shape (shared with cover stage)
 const hostClipStyle = computed<Record<string, string>>(() => ({

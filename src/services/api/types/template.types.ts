@@ -96,6 +96,10 @@ export interface CoverStageLayout {
   // Render the welcome header text on the main (background) stage.
   showWelcomeHeaderText?: boolean   // default: true
 
+  // Render the first host's name directly below the sample-logo avatar on the
+  // main (background) stage. Currently honoured by HostInfoBirthday.
+  showHostNameUnderLogo?: boolean   // default: false
+
   // Render the cover header text row on the cover stage. When false, the event
   // title row is hidden and its height is absorbed by the logo row so
   // sample_logo_1 / sample_logo_2 render in the merged space.

@@ -62,6 +62,20 @@
         </div>
       </div>
     </div>
+
+    <!-- Host Name (rendered under the avatar only when the template opts in via showHostNameUnderLogo) -->
+    <p
+      v-if="showHostNameUnderLogo && displayHostName"
+      class="host-name-under-logo bounce-in-element"
+      :class="{ 'khmer-text-fix': currentLanguage === 'kh' }"
+      :style="{
+        color: primaryColor,
+        fontFamily: primaryFont || currentFont,
+        animationDelay: `${animationDelays.hostName}s`,
+      }"
+    >
+      {{ displayHostName }}
+    </p>
   </div>
 </template>
 
@@ -172,6 +186,16 @@ const clippedHostStyle = computed<Record<string, string>>(() => {
   }
 })
 
+// First host's name, resolved once for both the optional under-logo label
+// and the bounce-in delay below.
+const displayHostName = computed(
+  () => props.firstHostName || props.hosts[0]?.name || '',
+)
+
+// Avatar uses the shared bounceInElement keyframe (0.5s). Downstream elements
+// should start after that so the sequence reads avatar → name.
+const AVATAR_BOUNCE_DURATION = 0.5
+
 // Animation delays calculation
 const animationDelays = computed(() => {
   let currentDelay = 0.1
@@ -188,10 +212,16 @@ const animationDelays = computed(() => {
     props.showWelcomeHeaderText === false ? undefined : (props.welcomeMessage || 'Happy Birthday!'),
   )
   const profile = currentDelay
+  currentDelay = profile + AVATAR_BOUNCE_DURATION + ELEMENT_GAP
+
+  const hostName = getNextDelay(
+    props.showHostNameUnderLogo && displayHostName.value ? displayHostName.value : undefined,
+  )
 
   return {
     welcome,
     profile,
+    hostName,
   }
 })
 </script>
@@ -207,6 +237,17 @@ const animationDelays = computed(() => {
 /* Title text - matches wedding parent-name-text sizes */
 .birthday-title-text {
   font-size: 0.7906rem;
+}
+
+/* Optional host name label under the sample-logo avatar. Sizes step up via the
+   same breakpoints used for .avatar-container so the two stay proportional. */
+.host-name-under-logo {
+  margin: 0.5rem 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+  word-break: break-word;
 }
 
 /* Sample-logo avatar container — sized to match the base logo's natural
@@ -417,6 +458,10 @@ const animationDelays = computed(() => {
     --max-h: 264px;
   }
 
+  .host-name-under-logo {
+    font-size: 1.125rem;
+  }
+
   .profile-picture-large {
     width: 250px;
     height: 250px;
@@ -436,6 +481,10 @@ const animationDelays = computed(() => {
   .avatar-container {
     --max-w: 396px;
     --max-h: 308px;
+  }
+
+  .host-name-under-logo {
+    font-size: 1.25rem;
   }
 
   .profile-picture-large {
@@ -465,6 +514,11 @@ const animationDelays = computed(() => {
   .avatar-container {
     --max-w: 242px;
     --max-h: 176px;
+  }
+
+  .host-name-under-logo {
+    font-size: 0.85rem !important;
+    margin-top: 0.35rem;
   }
 
   .profile-picture-large {
@@ -497,6 +551,11 @@ const animationDelays = computed(() => {
     --max-h: 176px;
   }
 
+  .host-name-under-logo {
+    font-size: 0.85rem !important;
+    margin-top: 0.35rem;
+  }
+
   .profile-picture-large {
     width: 160px;
     height: 160px;
@@ -512,6 +571,10 @@ const animationDelays = computed(() => {
   .avatar-container {
     --max-w: 440px;
     --max-h: 330px;
+  }
+
+  .host-name-under-logo {
+    font-size: 1.35rem;
   }
 
   .profile-picture-large {

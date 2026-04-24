@@ -32,6 +32,8 @@ interface Props {
   eventType?: string  // NEW: Event category name for auto-detection
   /** Render the welcome header row above the host content. Driven by cover_stage_layout.showWelcomeHeaderText. */
   showWelcomeHeaderText?: boolean
+  /** Render the first host's name directly beneath the sample-logo avatar. Driven by cover_stage_layout.showHostNameUnderLogo. */
+  showHostNameUnderLogo?: boolean
   /** Template-provided base sample logo (transparency) — used by layouts that render the cover-stage sample-logo overlay. */
   sampleLogoOne?: string | null
   /** Template-provided overlay sample logo (transparency) — its opaque shape clips the first host image. */

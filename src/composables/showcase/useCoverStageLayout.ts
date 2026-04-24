@@ -15,6 +15,7 @@ export const COVER_STAGE_LAYOUT_DEFAULTS: Required<CoverStageLayout> = {
   guestNameMaxWidthPercent: 60,
   showWelcomeHeaderText: true,
   showCoverHeaderText: true,
+  showHostNameUnderLogo: false,
   hostClipOffsetX: 50,
   hostClipOffsetY: 50,
   swipeArrowBottom: 5,
@@ -61,6 +62,8 @@ export function useCoverStageLayout(
         config.showWelcomeHeaderText ?? COVER_STAGE_LAYOUT_DEFAULTS.showWelcomeHeaderText,
       showCoverHeaderText:
         config.showCoverHeaderText ?? COVER_STAGE_LAYOUT_DEFAULTS.showCoverHeaderText,
+      showHostNameUnderLogo:
+        config.showHostNameUnderLogo ?? COVER_STAGE_LAYOUT_DEFAULTS.showHostNameUnderLogo,
       hostClipOffsetX:
         config.hostClipOffsetX ?? COVER_STAGE_LAYOUT_DEFAULTS.hostClipOffsetX,
       hostClipOffsetY:
