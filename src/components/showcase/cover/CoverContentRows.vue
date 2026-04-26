@@ -209,12 +209,19 @@ const props = withDefaults(defineProps<Props>(), {
   showCoverHeaderText: true,
 })
 
-// When the cover header row is hidden, render the merged logo row as a
-// stack. The base slot of that stack now resolves via a three-tier fallback
-// (event primary logo → template sample_logo_1 → the recoloured
-// temp-showcase-logo.svg), so the stack renders even when the template
-// omits sample_logo_1.
-const useSampleLogos = computed(() => !props.showCoverHeaderText)
+// Render the merged logo row as a stack whenever it can carry the
+// sample_logo_2 overlay (or always when the cover header row is hidden,
+// so the stack absorbs the title row's height). Previously this was
+// gated solely on !showCoverHeaderText, which meant templates that ship
+// sample_logo_2 + a host portrait still rendered as a plain logo on
+// cover when the header text was visible — diverging from
+// HostInfoBirthday, which always renders the stack and thus always shows
+// the overlay. Keying on sampleLogoTwo too closes that gap. The base
+// slot of the stack still resolves via the three-tier fallback (event
+// primary logo → template sample_logo_1 → recoloured temp SVG).
+const useSampleLogos = computed(
+  () => !props.showCoverHeaderText || !!props.sampleLogoTwo,
+)
 
 // Resolved URL for the stack's base-image slot. Prefers the event's own
 // logo (event.logo_one at the call site, passed in as eventLogo), then the
