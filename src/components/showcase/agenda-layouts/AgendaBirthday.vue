@@ -294,12 +294,20 @@ const selectTab = (date: string) => {
   activeTab.value = date
 }
 
-// Style helper for tabs - matching AgendaWedding pill style
+// Style helper for tabs - matching AgendaWedding pill style.
+// Active background mirrors the EventInfo glass card formula
+// (`${backgroundColor || primaryColor}60`) so the tab visually ties into the
+// card below it. When a backgroundColor is provided, text switches to
+// primaryColor for contrast against the tinted background; otherwise fall
+// back to white-on-primary so the active state stays legible.
 const getTabStyle = (date: string) => {
   const isActive = activeTab.value === date
+  const hasBackground = !!props.backgroundColor
   return {
-    backgroundColor: isActive ? props.primaryColor : `${props.primaryColor}10`,
-    color: isActive ? '#ffffff' : props.primaryColor,
+    backgroundColor: isActive
+      ? `${props.backgroundColor || props.primaryColor}60`
+      : `${props.primaryColor}10`,
+    color: isActive ? (hasBackground ? props.primaryColor : '#ffffff') : props.primaryColor,
     fontFamily: props.primaryFont || props.currentFont,
     transform: isActive ? 'scale(1.05)' : 'scale(1)',
     boxShadow: isActive ? `0 4px 12px ${props.primaryColor}30` : 'none',
