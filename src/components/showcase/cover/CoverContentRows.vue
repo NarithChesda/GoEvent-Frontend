@@ -83,8 +83,8 @@
           />
         </div>
         <img
-          v-else-if="eventLogo"
-          :src="getMediaUrl(eventLogo)"
+          v-else-if="resolvedBaseLogoSrc"
+          :src="resolvedBaseLogoSrc"
           :alt="eventTitle + ' logo'"
           class="scaled-logo mx-auto"
           fetchpriority="high"

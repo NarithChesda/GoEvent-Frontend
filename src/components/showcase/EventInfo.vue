@@ -70,11 +70,22 @@
       <div
         v-if="hasDateParts"
         :class="['date-column', currentLanguage === 'kh' && 'khmer-text-fix']"
-        :style="{ fontFamily: primaryFont || currentFont }"
       >
-        <div v-if="dateParts.weekday" class="date-weekday">{{ dateParts.weekday }}</div>
-        <div v-if="dateParts.day" class="date-day">{{ dateParts.day }}</div>
-        <div v-if="dateParts.month" class="date-month">{{ dateParts.month }}</div>
+        <div
+          v-if="dateParts.weekday"
+          class="date-weekday"
+          :style="{ fontFamily: secondaryFont || currentFont }"
+        >{{ dateParts.weekday }}</div>
+        <div
+          v-if="dateParts.day"
+          class="date-day"
+          :style="{ fontFamily: primaryFont || currentFont }"
+        >{{ dateParts.day }}</div>
+        <div
+          v-if="dateParts.month"
+          class="date-month"
+          :style="{ fontFamily: secondaryFont || currentFont }"
+        >{{ dateParts.month }}</div>
       </div>
 
       <div
