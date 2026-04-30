@@ -548,10 +548,11 @@ const countdownNumberFont = computed(() =>
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   gap: 0.5rem;
   padding: 0.25rem 0;
   min-width: 0;
-  text-align: left;
+  text-align: center;
 }
 
 .details-location {
