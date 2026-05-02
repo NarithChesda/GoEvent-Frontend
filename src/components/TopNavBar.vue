@@ -78,16 +78,8 @@
             <Search class="w-[18px] h-[18px]" />
           </button>
 
-          <!-- Notifications Button (authenticated only) -->
-          <button
-            v-if="authStore.isAuthenticated"
-            class="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all duration-200 relative"
-            aria-label="Notifications"
-          >
-            <Bell class="w-[18px] h-[18px]" />
-            <!-- Notification badge (hidden for now) -->
-            <!-- <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span> -->
-          </button>
+          <!-- Notifications Bell (authenticated only) -->
+          <NotificationBell v-if="authStore.isAuthenticated" variant="desktop" />
 
           <!-- Language Button -->
           <div class="relative">
@@ -249,7 +241,6 @@ import {
   Compass,
   Sparkles,
   Search,
-  Bell,
   User,
   Globe
 } from 'lucide-vue-next'
@@ -258,6 +249,7 @@ import { apiService } from '../services/api'
 import IconSvg from '@/assets/icon.svg'
 import { sanitizePlainText } from '@/utils/sanitize'
 import GlobalSearchModal from './GlobalSearchModal.vue'
+import NotificationBell from './notifications/NotificationBell.vue'
 import { useGlobalSearch } from '@/composables/useGlobalSearch'
 import { useVendorProfile } from '@/composables/settings/useVendorProfile'
 import { useAppLanguage } from '@/composables/useAppLanguage'

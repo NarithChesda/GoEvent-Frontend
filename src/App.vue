@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { onMounted, watch } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import { RouterView, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
+import { useNotificationsStore } from './stores/notifications'
 import { secureStorage } from './utils/secureStorage'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const notificationsStore = useNotificationsStore()
 
 /**
  * Handle pending collaborator invitation after authentication
@@ -26,15 +28,22 @@ async function handlePendingInvitation() {
   router.push(`/invitation/${token}`)
 }
 
-// Watch for authentication changes to handle pending invitations
+// Watch for authentication changes to handle pending invitations + notifications polling
 watch(
   () => authStore.isAuthenticated,
   async (isAuthenticated) => {
     if (isAuthenticated) {
+      notificationsStore.startPolling()
       await handlePendingInvitation()
+    } else {
+      notificationsStore.reset()
     }
   }
 )
+
+onUnmounted(() => {
+  notificationsStore.stopPolling()
+})
 
 /**
  * App initialization
@@ -52,7 +61,7 @@ onMounted(async () => {
 
     // Initialize authentication
     await authStore.initializeAuth()
-  } catch (error) {
+  } catch {
     // Don't let initialization failures prevent the app from loading
   }
 })

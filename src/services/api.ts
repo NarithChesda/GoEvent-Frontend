@@ -299,6 +299,22 @@ export { donationService } from './api/modules/donation.service'
 // Guest RSVP service (private-event shortcode flow)
 export { guestRsvpService, rsvpQuestionsService } from './api/modules/rsvp.service'
 
+// Notifications service
+export { notificationsService } from './api/modules/notifications.service'
+
+// Notification types
+export type {
+  NotificationType,
+  NotificationChannel,
+  NotificationItem,
+  NotificationListFilters,
+  NotificationPreferences,
+  UpdateNotificationPreferencesRequest,
+  MarkReadResponse,
+  MarkAllReadResponse,
+  UnreadCountResponse,
+} from './api/types/notification.types'
+
 // Guest RSVP types
 export type {
   GuestRsvpStatus,

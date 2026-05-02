@@ -24,13 +24,8 @@
           <Search class="w-5 h-5" />
         </button>
 
-        <!-- Notifications Button -->
-        <button
-          class="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 relative"
-          aria-label="Notifications"
-        >
-          <Bell class="w-5 h-5" />
-        </button>
+        <!-- Notifications Bell (authenticated only) -->
+        <NotificationBell v-if="authStore.isAuthenticated" variant="mobile" />
 
         <!-- Language Button -->
         <button
@@ -72,9 +67,13 @@
 </template>
 
 <script setup lang="ts">
-import { Search, Bell, Globe } from 'lucide-vue-next'
+import { Search, Globe } from 'lucide-vue-next'
 import IconSvg from '@/assets/icon.svg'
 import { useMobileTopBar } from '@/composables/useMobileTopBar'
+import { useAuthStore } from '@/stores/auth'
+import NotificationBell from '@/components/notifications/NotificationBell.vue'
+
+const authStore = useAuthStore()
 
 defineEmits<{
   search: []

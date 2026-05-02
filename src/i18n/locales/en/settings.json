@@ -65,6 +65,65 @@
     "dateFormat": "Date Format",
     "theme": "Theme"
   },
+  "notifications": {
+    "title": "Notification Preferences",
+    "subtitle": "Choose which notifications you receive and where they're delivered.",
+    "channels": {
+      "title": "Delivery channels",
+      "inApp": {
+        "label": "In-app notifications",
+        "description": "Receive notifications in the bell menu while using GoEvent."
+      },
+      "telegram": {
+        "label": "Telegram messages",
+        "description": "Get a direct message from our bot on Telegram.",
+        "hint": "To receive Telegram messages, sign in once with the Telegram bot from the sign-in page."
+      }
+    },
+    "types": {
+      "title": "Notify me about",
+      "eventRegistration": {
+        "label": "New event registrations",
+        "description": "Someone registers for one of your events."
+      },
+      "rsvpResponse": {
+        "label": "RSVP responses",
+        "description": "A guest responds to your invitation."
+      },
+      "eventComment": {
+        "label": "Event comments",
+        "description": "A new comment is posted on your event."
+      },
+      "collaboratorInvite": {
+        "label": "Collaboration invites",
+        "description": "Someone invites you to collaborate on their event."
+      },
+      "collaboratorAdded": {
+        "label": "Added as collaborator",
+        "description": "You're added to a new event as a collaborator."
+      },
+      "paymentStatus": {
+        "label": "Payment updates",
+        "description": "Your payment is confirmed or rejected."
+      },
+      "eventReminder": {
+        "label": "Event reminders",
+        "description": "Your event starts in the next 24 hours."
+      },
+      "checkIn": {
+        "label": "Guest check-ins",
+        "description": "A guest checks into your event."
+      },
+      "guestCashGift": {
+        "label": "Cash gifts",
+        "description": "A cash gift is recorded against you."
+      }
+    },
+    "messages": {
+      "saved": "Notification preferences saved.",
+      "saveFailed": "Failed to save notification preferences."
+    }
+  },
   "account": {
     "title": "Your Profile",
     "subtitle": "Choose how you are displayed as a host or guest.",

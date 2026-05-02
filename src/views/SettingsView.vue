@@ -34,6 +34,8 @@
 
         <SecurityTab v-if="activeTab === 'security'" />
 
+        <NotificationsTab v-if="activeTab === 'notifications'" />
+
         <VendorTab v-if="activeTab === 'vendor'" />
 
         <DonationsTab v-if="activeTab === 'donations'" />
@@ -52,13 +54,14 @@ import { useI18n } from 'vue-i18n'
 import MainLayout from '@/components/MainLayout.vue'
 import AccountTab from '@/components/settings/AccountTab.vue'
 import SecurityTab from '@/components/settings/SecurityTab.vue'
+import NotificationsTab from '@/components/settings/NotificationsTab.vue'
 import VendorTab from '@/components/settings/VendorTab.vue'
 import ListingsTab from '@/components/settings/ListingsTab.vue'
 import DonationsTab from '@/components/settings/DonationsTab.vue'
 import { useAuthStore } from '@/stores/auth'
 
 // Types
-type TabId = 'account' | 'security' | 'vendor' | 'donations' | 'listings'
+type TabId = 'account' | 'security' | 'notifications' | 'vendor' | 'donations' | 'listings'
 
 interface Tab {
   id: TabId
@@ -75,13 +78,14 @@ const { t } = useI18n()
 const tabs = computed<Tab[]>(() => [
   { id: 'account', label: t('settings.tabs.account') },
   { id: 'security', label: t('settings.tabs.security') },
+  { id: 'notifications', label: t('settings.tabs.notifications') },
   { id: 'vendor', label: t('settings.tabs.vendor') },
   { id: 'donations', label: t('settings.tabs.donations') },
   { id: 'listings', label: t('settings.tabs.listings') },
 ])
 
 // Valid tab IDs for validation
-const validTabIds: TabId[] = ['account', 'security', 'vendor', 'donations', 'listings']
+const validTabIds: TabId[] = ['account', 'security', 'notifications', 'vendor', 'donations', 'listings']
 
 // Get initial tab from URL query or default to 'account'
 const getInitialTab = (): TabId => {

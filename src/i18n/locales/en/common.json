@@ -125,5 +125,17 @@
       "delete": "Delete",
       "deleting": "Deleting..."
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "actions": {
+      "markAllRead": "Mark all read",
+      "delete": "Delete notification",
+      "preferences": "Notification settings"
+    },
+    "empty": {
+      "title": "You're all caught up",
+      "subtitle": "New notifications will appear here."
+    }
   }
 }
