@@ -247,20 +247,23 @@
             </details>
 
             <!-- Liquid Glass Toggle -->
-            <div class="flex items-center justify-between py-2 px-1">
+            <button
+              type="button"
+              @click="form.display_liquid_glass_background = !form.display_liquid_glass_background"
+              role="switch"
+              :aria-checked="form.display_liquid_glass_background"
+              class="w-full flex items-center justify-between py-2 px-1 -mx-1 rounded-lg hover:bg-slate-50 transition-colors text-left"
+            >
               <div>
                 <p class="text-sm font-medium text-slate-700">{{ t('management.partnerTemplateForm.fields.liquidGlass') }}</p>
                 <p class="text-xs text-slate-400">{{ t('management.partnerTemplateForm.fields.liquidGlassHint') }}</p>
               </div>
-              <button
-                type="button"
-                @click="form.display_liquid_glass_background = !form.display_liquid_glass_background"
+              <span
                 :class="[
-                  'relative w-10 h-6 rounded-full transition-colors',
+                  'relative w-10 h-6 rounded-full transition-colors flex-shrink-0',
                   form.display_liquid_glass_background ? 'bg-sky-500' : 'bg-slate-300',
                 ]"
-                role="switch"
-                :aria-checked="form.display_liquid_glass_background"
+                aria-hidden="true"
               >
                 <span
                   :class="[
@@ -268,8 +271,8 @@
                     form.display_liquid_glass_background ? 'left-5' : 'left-1',
                   ]"
                 />
-              </button>
-            </div>
+              </span>
+            </button>
           </div>
 
           <!-- Right column: Preview Image (1/3 width) -->
@@ -377,6 +380,11 @@
               <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameMid')" accept="image/*" :file-name="form.guest_title_frame_mid?.name" :has-existing-file="!!existingTemplate?.guest_title_frame_mid" @change="handleFileChange('guest_title_frame_mid', $event)" />
               <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameRight')" accept="image/*" :file-name="form.guest_title_frame_right?.name" :has-existing-file="!!existingTemplate?.guest_title_frame_right" @change="handleFileChange('guest_title_frame_right', $event)" />
             </div>
+            <div class="grid grid-cols-3 gap-3">
+              <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo1')" accept="image/png,image/svg+xml,image/*" :file-name="form.sample_logo_1?.name" :has-existing-file="!!existingTemplate?.sample_logo_1" @change="handleFileChange('sample_logo_1', $event)" />
+              <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo2')" accept="image/png,image/svg+xml,image/*" :file-name="form.sample_logo_2?.name" :has-existing-file="!!existingTemplate?.sample_logo_2" @change="handleFileChange('sample_logo_2', $event)" />
+              <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.headerTextImage')" accept="image/png,image/svg+xml,image/*" :file-name="form.header_text_image?.name" :has-existing-file="!!existingTemplate?.header_text_image" @change="handleFileChange('header_text_image', $event)" />
+            </div>
           </div>
         </details>
 
@@ -444,6 +452,90 @@
                 <input v-model.number="form.cover_stage_layout.swipeArrowBottom" type="number" step="0.5" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
               </div>
             </div>
+            <!-- Visibility Toggles -->
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">{{ t('management.partnerTemplateForm.coverLayout.visibilityToggles') }}</p>
+            <div class="space-y-1">
+              <button
+                type="button"
+                @click="form.cover_stage_layout.showWelcomeHeaderText = !form.cover_stage_layout.showWelcomeHeaderText"
+                role="switch"
+                :aria-checked="form.cover_stage_layout.showWelcomeHeaderText"
+                class="w-full flex items-center justify-between py-2 px-2 rounded-lg hover:bg-slate-50 transition-colors text-left"
+              >
+                <div class="min-w-0 pr-3">
+                  <p class="text-sm text-slate-700">{{ t('management.partnerTemplateForm.coverLayout.showWelcomeHeaderText') }}</p>
+                  <p class="text-xs text-slate-400">{{ t('management.partnerTemplateForm.coverLayout.showWelcomeHeaderTextHint') }}</p>
+                </div>
+                <span
+                  :class="[
+                    'relative w-10 h-6 rounded-full transition-colors flex-shrink-0',
+                    form.cover_stage_layout.showWelcomeHeaderText ? 'bg-sky-500' : 'bg-slate-300',
+                  ]"
+                  aria-hidden="true"
+                >
+                  <span :class="['absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform', form.cover_stage_layout.showWelcomeHeaderText ? 'left-5' : 'left-1']" />
+                </span>
+              </button>
+              <button
+                type="button"
+                @click="form.cover_stage_layout.showCoverHeaderText = !form.cover_stage_layout.showCoverHeaderText"
+                role="switch"
+                :aria-checked="form.cover_stage_layout.showCoverHeaderText"
+                class="w-full flex items-center justify-between py-2 px-2 rounded-lg hover:bg-slate-50 transition-colors text-left"
+              >
+                <div class="min-w-0 pr-3">
+                  <p class="text-sm text-slate-700">{{ t('management.partnerTemplateForm.coverLayout.showCoverHeaderText') }}</p>
+                  <p class="text-xs text-slate-400">{{ t('management.partnerTemplateForm.coverLayout.showCoverHeaderTextHint') }}</p>
+                </div>
+                <span
+                  :class="[
+                    'relative w-10 h-6 rounded-full transition-colors flex-shrink-0',
+                    form.cover_stage_layout.showCoverHeaderText ? 'bg-sky-500' : 'bg-slate-300',
+                  ]"
+                  aria-hidden="true"
+                >
+                  <span :class="['absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform', form.cover_stage_layout.showCoverHeaderText ? 'left-5' : 'left-1']" />
+                </span>
+              </button>
+              <button
+                type="button"
+                @click="form.cover_stage_layout.showHostNameUnderLogo = !form.cover_stage_layout.showHostNameUnderLogo"
+                role="switch"
+                :aria-checked="form.cover_stage_layout.showHostNameUnderLogo"
+                class="w-full flex items-center justify-between py-2 px-2 rounded-lg hover:bg-slate-50 transition-colors text-left"
+              >
+                <div class="min-w-0 pr-3">
+                  <p class="text-sm text-slate-700">{{ t('management.partnerTemplateForm.coverLayout.showHostNameUnderLogo') }}</p>
+                  <p class="text-xs text-slate-400">{{ t('management.partnerTemplateForm.coverLayout.showHostNameUnderLogoHint') }}</p>
+                </div>
+                <span
+                  :class="[
+                    'relative w-10 h-6 rounded-full transition-colors flex-shrink-0',
+                    form.cover_stage_layout.showHostNameUnderLogo ? 'bg-sky-500' : 'bg-slate-300',
+                  ]"
+                  aria-hidden="true"
+                >
+                  <span :class="['absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform', form.cover_stage_layout.showHostNameUnderLogo ? 'left-5' : 'left-1']" />
+                </span>
+              </button>
+            </div>
+            <!-- Host Clip (host image positioning inside sample_logo_2) -->
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">{{ t('management.partnerTemplateForm.coverLayout.hostClip') }}</p>
+            <p class="text-[11px] text-slate-400 leading-tight -mt-2">{{ t('management.partnerTemplateForm.coverLayout.hostClipHint') }}</p>
+            <div class="grid grid-cols-3 gap-3">
+              <div class="space-y-1">
+                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.hostClipScale') }}</label>
+                <input v-model.number="form.cover_stage_layout.hostClipScale" type="number" min="0" max="100" step="1" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+              </div>
+              <div class="space-y-1">
+                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.hostClipOffsetX') }}</label>
+                <input v-model.number="form.cover_stage_layout.hostClipOffsetX" type="number" min="0" max="100" step="1" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+              </div>
+              <div class="space-y-1">
+                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.hostClipOffsetY') }}</label>
+                <input v-model.number="form.cover_stage_layout.hostClipOffsetY" type="number" min="0" max="100" step="1" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+              </div>
+            </div>
             <!-- Z-Indexes -->
             <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">{{ t('management.partnerTemplateForm.coverLayout.zIndexes') }}</p>
             <div class="grid grid-cols-2 gap-3">
@@ -475,20 +567,23 @@
           </summary>
           <div class="p-4 space-y-4 border-t border-slate-100">
             <!-- Enable toggle -->
-            <div class="flex items-center justify-between">
-              <div>
+            <button
+              type="button"
+              @click="form.falling_effect_enabled = !form.falling_effect_enabled"
+              role="switch"
+              :aria-checked="form.falling_effect_enabled"
+              class="w-full flex items-center justify-between py-2 px-2 -mx-2 rounded-lg hover:bg-slate-50 transition-colors text-left"
+            >
+              <div class="min-w-0 pr-3">
                 <p class="text-sm font-medium text-slate-700">{{ t('management.partnerTemplateForm.fallingEffect.enableLabel') }}</p>
                 <p class="text-xs text-slate-400">{{ t('management.partnerTemplateForm.fallingEffect.enableHint') }}</p>
               </div>
-              <button
-                type="button"
-                @click="form.falling_effect_enabled = !form.falling_effect_enabled"
+              <span
                 :class="[
-                  'relative w-10 h-6 rounded-full transition-colors',
+                  'relative w-10 h-6 rounded-full transition-colors flex-shrink-0',
                   form.falling_effect_enabled ? 'bg-sky-500' : 'bg-slate-300',
                 ]"
-                role="switch"
-                :aria-checked="form.falling_effect_enabled"
+                aria-hidden="true"
               >
                 <span
                   :class="[
@@ -496,8 +591,8 @@
                     form.falling_effect_enabled ? 'left-5' : 'left-1',
                   ]"
                 />
-              </button>
-            </div>
+              </span>
+            </button>
 
             <div v-if="form.falling_effect_enabled" class="space-y-3">
               <!-- Particle Type -->
@@ -589,20 +684,23 @@
           </summary>
           <div class="p-4 space-y-4 border-t border-slate-100">
             <!-- Enable toggle -->
-            <div class="flex items-center justify-between">
-              <div>
+            <button
+              type="button"
+              @click="form.ambient_creatures_enabled = !form.ambient_creatures_enabled"
+              role="switch"
+              :aria-checked="form.ambient_creatures_enabled"
+              class="w-full flex items-center justify-between py-2 px-2 -mx-2 rounded-lg hover:bg-slate-50 transition-colors text-left"
+            >
+              <div class="min-w-0 pr-3">
                 <p class="text-sm font-medium text-slate-700">{{ t('management.partnerTemplateForm.ambientCreatures.enableLabel') }}</p>
                 <p class="text-xs text-slate-400">{{ t('management.partnerTemplateForm.ambientCreatures.enableHint') }}</p>
               </div>
-              <button
-                type="button"
-                @click="form.ambient_creatures_enabled = !form.ambient_creatures_enabled"
+              <span
                 :class="[
-                  'relative w-10 h-6 rounded-full transition-colors',
+                  'relative w-10 h-6 rounded-full transition-colors flex-shrink-0',
                   form.ambient_creatures_enabled ? 'bg-sky-500' : 'bg-slate-300',
                 ]"
-                role="switch"
-                :aria-checked="form.ambient_creatures_enabled"
+                aria-hidden="true"
               >
                 <span
                   :class="[
@@ -610,8 +708,8 @@
                     form.ambient_creatures_enabled ? 'left-5' : 'left-1',
                   ]"
                 />
-              </button>
-            </div>
+              </span>
+            </button>
 
             <div v-if="form.ambient_creatures_enabled" class="space-y-4">
               <!-- Global controls -->
@@ -836,6 +934,12 @@ const defaultCoverStageLayout = (): CoverStageLayout => ({
   guestNameHeight: 16,
   guestNameMaxWidthPercent: 60,
   swipeArrowBottom: 5,
+  showWelcomeHeaderText: true,
+  showCoverHeaderText: true,
+  showHostNameUnderLogo: true,
+  hostClipScale: 60,
+  hostClipOffsetX: 50,
+  hostClipOffsetY: 50,
   leftDecorationZIndex: 24,
   rightDecorationZIndex: 24,
   topDecorationZIndex: 25,
@@ -879,6 +983,9 @@ interface FormState {
   guest_title_frame_left: File | null
   guest_title_frame_mid: File | null
   guest_title_frame_right: File | null
+  sample_logo_1: File | null
+  sample_logo_2: File | null
+  header_text_image: File | null
   cover_stage_layout: CoverStageLayout
   falling_effect_enabled: boolean
   falling_effect: FallingEffectFormState
@@ -924,6 +1031,9 @@ const defaultForm = (): FormState => ({
   guest_title_frame_left: null,
   guest_title_frame_mid: null,
   guest_title_frame_right: null,
+  sample_logo_1: null,
+  sample_logo_2: null,
+  header_text_image: null,
   cover_stage_layout: defaultCoverStageLayout(),
   falling_effect_enabled: false,
   falling_effect: defaultFallingEffect(),
@@ -1411,6 +1521,7 @@ async function handleSave(): Promise<void> {
       'top_decoration', 'bottom_decoration', 'left_decoration', 'right_decoration',
       'cover_top_decoration', 'cover_bottom_decoration', 'cover_left_decoration', 'cover_right_decoration',
       'guest_title_frame_left', 'guest_title_frame_mid', 'guest_title_frame_right',
+      'sample_logo_1', 'sample_logo_2', 'header_text_image',
     ] as const
     for (const field of fileFields) {
       const file = form[field]
