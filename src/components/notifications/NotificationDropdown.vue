@@ -1,7 +1,7 @@
 <template>
   <div
-    class="glass-dropdown absolute right-0 top-full mt-2 rounded-2xl overflow-hidden z-[100] flex flex-col"
-    :class="panelSizeClass"
+    class="glass-dropdown rounded-2xl overflow-hidden z-[100] flex flex-col"
+    :class="panelPositionClass"
     role="menu"
     aria-label="Notifications"
   >
@@ -136,10 +136,15 @@ const { t } = useAppLanguage()
 
 const markingAll = ref(false)
 
-const panelSizeClass = computed(() =>
+// Mobile: span the viewport with horizontal margins, anchored under the
+// fixed top bar (h-14). Fixed positioning so it ignores the bell's right edge
+// and reads as a centered sheet — like the FB notifications panel.
+//
+// Desktop: classic right-aligned dropdown anchored to the bell.
+const panelPositionClass = computed(() =>
   props.variant === 'mobile'
-    ? 'w-[calc(100vw-1.5rem)] max-w-sm max-h-[70vh]'
-    : 'w-[380px] max-h-[70vh]',
+    ? 'fixed inset-x-3 top-[60px] max-h-[80vh]'
+    : 'absolute right-0 top-full mt-2 w-[380px] max-h-[70vh]',
 )
 
 onMounted(() => {
@@ -173,8 +178,10 @@ async function handleMarkAllRead() {
 </script>
 
 <style scoped>
+/* Match the language dropdown / global search modal so the brand glass look
+   is consistent across the top-bar surfaces. */
 .glass-dropdown {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.5);
