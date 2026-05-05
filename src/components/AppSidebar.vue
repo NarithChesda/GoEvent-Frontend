@@ -199,7 +199,7 @@
                 <span class="font-medium">Profile</span>
               </RouterLink>
               <RouterLink
-                to="/my-tickets"
+                to="/settings?tab=tickets"
                 @click="userMenuOpen = false"
                 class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:gradient-text transition-all duration-200 group"
                 role="menuitem"

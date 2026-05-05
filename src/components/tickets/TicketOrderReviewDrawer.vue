@@ -164,7 +164,7 @@
               </div>
 
               <!-- Proof file preview -->
-              <div v-if="rawProofUrl" class="mt-3">
+              <div v-if="proofUrl" class="mt-3">
                 <p class="text-xs text-slate-500 mb-1.5">
                   {{ t('management.tickets.orders.review.proofFile') }}
                 </p>
@@ -414,26 +414,17 @@ const formatDateTime = (iso: string): string => {
 }
 
 // ---- Proof file preview --------------------------------------------------
-// Backend serializer currently emits the FileField as `payment_proof`; the
-// docs call it `payment_proof_url`. Read either so we don't break when the
-// backend reconciles the rename.
-const rawProofUrl = computed<string | null>(() => {
-  const o = order.value
-  if (!o) return null
-  return o.payment_proof_url ?? o.payment_proof ?? null
-})
-
 const proofUrl = computed<string>(() => {
-  const raw = rawProofUrl.value
+  const raw = order.value?.payment_proof
   if (!raw) return ''
   return apiClient.getProfilePictureUrl(raw) || raw
 })
 
 const proofIsImage = computed<boolean>(() => {
-  const url = rawProofUrl.value
-  if (!url) return false
+  const raw = order.value?.payment_proof
+  if (!raw) return false
   // Strip query string before extension check; preview only inline-able formats.
-  const path = url.split('?')[0]?.toLowerCase() ?? ''
+  const path = raw.split('?')[0]?.toLowerCase() ?? ''
   return /\.(jpe?g|png|gif|webp)$/.test(path)
 })
 

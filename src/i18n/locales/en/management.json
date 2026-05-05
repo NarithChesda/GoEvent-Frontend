@@ -657,6 +657,7 @@
         "namePlaceholder": "e.g., Wedding Gift Fund, ABA Bank",
         "type": "Type",
         "typeSelect": "Select",
+        "typeTicketSales": "Ticket Sales",
         "typeDonation": "Donation",
         "typeGift": "Gift",
         "typeSponsorship": "Sponsorship",

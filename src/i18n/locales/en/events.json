@@ -206,6 +206,7 @@
         "methodLabel": "Payment method",
         "loadingMethods": "Loading payment options…",
         "noMethods": "No payment methods are available for this event yet. Please reach out to the organizer.",
+        "noMethodsForTickets": "The organizer has set up payment methods, but none are tagged for ticket sales yet. Please reach out to them.",
         "methods": {
           "bank": "Bank transfer",
           "qr": "QR code",

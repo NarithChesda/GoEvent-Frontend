@@ -864,6 +864,8 @@ const getPaymentMethodIconColor = (method: string) => {
 
 const getPaymentTypeStyle = (type: string) => {
   switch (type) {
+    case 'ticket_sales':
+      return 'bg-emerald-100 text-emerald-800'
     case 'donation':
       return 'bg-green-100 text-green-800'
     case 'gift':
@@ -876,6 +878,7 @@ const getPaymentTypeStyle = (type: string) => {
 }
 
 const formatPaymentType = (type: string) => {
+  if (type === 'ticket_sales') return t('management.paymentMethods.modal.fields.typeTicketSales')
   return type.charAt(0).toUpperCase() + type.slice(1)
 }
 

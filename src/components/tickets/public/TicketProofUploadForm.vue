@@ -26,7 +26,11 @@
         v-else-if="methods.length === 0"
         class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"
       >
-        {{ t('events.tickets.order.proof.noMethods') }}
+        {{
+          rawMethodCount > 0
+            ? t('events.tickets.order.proof.noMethodsForTickets')
+            : t('events.tickets.order.proof.noMethods')
+        }}
       </div>
       <div v-else class="space-y-2">
         <button
@@ -245,6 +249,7 @@ const emit = defineEmits<{
 const { t } = useAppLanguage()
 
 const methods = ref<EventPaymentMethod[]>([])
+const rawMethodCount = ref(0)
 const loadingMethods = ref(false)
 const selectedMethodId = ref<number | null>(null)
 
@@ -293,6 +298,7 @@ const loadMethods = async () => {
       const list: EventPaymentMethod[] = Array.isArray(raw)
         ? raw
         : (raw as { results?: EventPaymentMethod[] }).results ?? []
+      rawMethodCount.value = list.length
       // Backend requires `payment_type === 'ticket_sales'` for ticket payments
       // (TICKETS_FRONTEND_GUIDE Backend Decision #2): the submit-proof endpoint
       // validates the chosen method belongs to this event AND is tagged for

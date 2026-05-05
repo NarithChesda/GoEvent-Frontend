@@ -11,7 +11,8 @@
     "language": "Language",
     "listings": "Listings",
     "paymentMethods": "Payment Methods",
-    "commission": "Commission"
+    "commission": "Commission",
+    "tickets": "My Tickets"
   },
   "profile": {
     "title": "Profile Information",

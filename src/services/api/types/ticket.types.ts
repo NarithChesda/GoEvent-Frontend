@@ -122,6 +122,10 @@ export interface OrderEventBrief {
   slug: string
   start_date: string
   end_date: string
+  location?: string | null
+  is_virtual?: boolean
+  banner_image?: string | null
+  timezone?: string | null
 }
 
 export interface TicketBuyerBrief {
@@ -164,7 +168,27 @@ export interface TicketRefund {
 export interface TicketOrderDetail {
   id: string
   confirmation_code: string
-  event: OrderEventBrief
+  /**
+   * Backend reality vs report (2026-05-05): the backend dev claimed the
+   * detail endpoint ships `event` as a nested `OrderEventBrief` (per docs).
+   * The live response disagrees — `event` is a flat UUID string (FK PK)
+   * and the slim list serializer's flat companions are still emitted:
+   * `event_id`, `event_title`, `event_slug`, `event_start_date`,
+   * `event_end_date`, `event_location`. Either the serializer override
+   * didn't ship to the running Django, or the docs and code drifted again.
+   *
+   * Until that's reconciled we read through `event_id` / `event_title`
+   * (flat — guaranteed present today). When the backend really ships the
+   * nested shape, `event` will widen to `OrderEventBrief` and we can drop
+   * the flat fields below.
+   */
+  event: string | OrderEventBrief
+  event_id: string
+  event_title: string
+  event_slug?: string
+  event_start_date?: string
+  event_end_date?: string
+  event_location?: string | null
   buyer: TicketBuyerBrief
   buyer_name: string
   buyer_email: string
@@ -184,18 +208,8 @@ export interface TicketOrderDetail {
    */
   payment_method: number | null
   payment_method_name: string | null
-  /**
-   * URL of the uploaded receipt/screenshot.
-   *
-   * Backend reality vs docs: the live serializer returns the FileField as
-   * `payment_proof` (the raw model field name → URL string). The
-   * TICKETS_FRONTEND_GUIDE documents it as `payment_proof_url`. We keep both
-   * keys here so we tolerate either; renderers should prefer
-   * `payment_proof_url ?? payment_proof`. Once the backend reconciles the
-   * mismatch we can drop the legacy key.
-   */
-  payment_proof?: string | null
-  payment_proof_url?: string | null
+  /** Absolute URL of the uploaded receipt/screenshot, populated after submit-proof. */
+  payment_proof: string | null
   transaction_reference: string
   buyer_notes: string
   admin_notes: string

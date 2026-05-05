@@ -38,7 +38,7 @@
                 <p class="font-mono text-lg font-bold text-slate-900 break-all">
                   {{ order.confirmation_code }}
                 </p>
-                <p class="mt-1 text-sm text-slate-600">{{ order.event.title }}</p>
+                <p class="mt-1 text-sm text-slate-600">{{ order.event_title }}</p>
               </div>
               <span
                 :class="[
@@ -119,10 +119,13 @@
             </div>
           </section>
 
-          <!-- Pending: proof upload -->
+          <!-- Pending: proof upload.
+               Reads the flat `event_id` (always present in the live response).
+               When the backend ships the documented nested `event` shape we
+               can switch back to `order.event.id` — see ticket.types.ts. -->
           <TicketProofUploadForm
             v-if="order.status === 'pending'"
-            :event-id="order.event.id"
+            :event-id="order.event_id"
             :confirmation-code="order.confirmation_code"
             @submitted="handleOrderUpdated"
             @message="handleMessage"

@@ -88,6 +88,7 @@
                       class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-8"
                     >
                       <option value="">{{ t('management.paymentMethods.modal.fields.typeSelect') }}</option>
+                      <option value="ticket_sales">{{ t('management.paymentMethods.modal.fields.typeTicketSales') }}</option>
                       <option value="donation">{{ t('management.paymentMethods.modal.fields.typeDonation') }}</option>
                       <option value="gift">{{ t('management.paymentMethods.modal.fields.typeGift') }}</option>
                       <option value="sponsorship">{{ t('management.paymentMethods.modal.fields.typeSponsorship') }}</option>
