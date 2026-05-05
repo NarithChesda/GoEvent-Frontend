@@ -69,6 +69,7 @@ interface Props {
   canViewExpenses?: boolean
   canViewDonation?: boolean
   canViewReview?: boolean
+  canViewTickets?: boolean
 }
 
 const props = defineProps<Props>()
@@ -90,6 +91,7 @@ const visibleTabs = computed(() => {
     if (tab.id === 'expenses' && !props.canViewExpenses) return false
     if (tab.id === 'donation' && !props.canViewDonation) return false
     if (tab.id === 'review' && !props.canViewReview) return false
+    if (tab.id === 'tickets' && !props.canViewTickets) return false
     return tab.visible !== false
   })
 })

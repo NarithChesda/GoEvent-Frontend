@@ -199,6 +199,15 @@
                 <span class="font-medium">Profile</span>
               </RouterLink>
               <RouterLink
+                to="/my-tickets"
+                @click="userMenuOpen = false"
+                class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:gradient-text transition-all duration-200 group"
+                role="menuitem"
+              >
+                <Ticket class="w-5 h-5 group-hover:gradient-text" aria-hidden="true" />
+                <span class="font-medium">My Tickets</span>
+              </RouterLink>
+              <RouterLink
                 to="/security"
                 @click="userMenuOpen = false"
                 class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:gradient-text transition-all duration-200 group"
@@ -260,7 +269,8 @@ import {
   Wallet,
   LogOut,
   ChevronLeft,
-  ChevronUp
+  ChevronUp,
+  Ticket
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'

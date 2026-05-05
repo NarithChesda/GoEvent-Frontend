@@ -32,6 +32,7 @@
       :can-view-expenses="canViewExpenses"
       :can-view-donation="canViewDonation"
       :can-view-review="canViewReview"
+      :can-view-tickets="canViewTickets"
       :can-edit="event?.can_edit"
       @tab-change="activeTab = $event"
     />
@@ -86,6 +87,7 @@
       :can-view-expenses="canViewExpenses"
       :can-view-donation="canViewDonation"
       :can-view-review="canViewReview"
+      :can-view-tickets="canViewTickets"
       @tab-change="activeTab = $event"
     />
     <!-- Spacer for fixed mobile/tablet tab bar (h-[52px] = py-2 + button
@@ -316,6 +318,26 @@
               />
             </div>
 
+            <!-- Tickets Tab -->
+            <div v-if="activeTab === 'tickets'">
+              <div v-if="!canViewTickets" class="text-center py-12">
+                <div
+                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
+                  <Lock class="w-8 h-8 text-slate-400" />
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">{{ t('management.tickets.accessRestricted.title') }}</h3>
+                <p class="text-slate-600 max-w-md mx-auto">
+                  {{ t('management.tickets.accessRestricted.description') }}
+                </p>
+              </div>
+              <EventTicketsTab
+                v-else-if="event?.id"
+                :event-id="event.id"
+                :can-edit="event.can_edit || false"
+              />
+            </div>
+
             <!-- Review Tab -->
             <div v-if="activeTab === 'review'">
               <div v-if="!canViewReview" class="text-center py-12">
@@ -439,6 +461,7 @@ const EventAnalyticsTab = defineAsyncComponent(() => import('../components/Event
 const EventExpenseTab = defineAsyncComponent(() => import('../components/EventExpenseTab.vue'))
 const EventReviewTab = defineAsyncComponent(() => import('../components/EventReviewTab.vue'))
 const EventDonationTab = defineAsyncComponent(() => import('../components/EventDonationTab.vue'))
+const EventTicketsTab = defineAsyncComponent(() => import('../components/EventTicketsTab.vue'))
 
 const route = useRoute()
 const router = useRouter()
@@ -522,6 +545,7 @@ const navigationTabs = computed<TabConfig[]>(() => [
   { id: 'guest-management', label: t('management.tabs.guestManagement'), icon: 'users', mobileLabel: t('management.tabs.guests') },
   { id: 'expenses', label: t('management.tabs.expenseTracking'), icon: 'wallet', mobileLabel: t('management.tabs.expensesMobile') },
   { id: 'donation', label: t('management.tabs.donations'), icon: 'heart', mobileLabel: t('management.tabs.donations') },
+  { id: 'tickets', label: t('management.tabs.tickets'), icon: 'ticket', mobileLabel: t('management.tabs.ticketsMobile') },
   { id: 'registration', label: t('management.tabs.registration'), icon: 'user-plus' },
   { id: 'analytics', label: t('management.tabs.analytics'), icon: 'bar-chart', mobileLabel: t('management.tabs.analytics') },
   { id: 'collaborator', label: t('management.tabs.collaborators'), icon: 'users', mobileLabel: t('management.tabs.teamMobile') },
@@ -593,6 +617,10 @@ const canViewDonation = computed(() => {
 })
 
 const canViewReview = computed(() => {
+  return canViewRestrictedTabs.value
+})
+
+const canViewTickets = computed(() => {
   return canViewRestrictedTabs.value
 })
 

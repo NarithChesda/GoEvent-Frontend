@@ -142,6 +142,24 @@ const router = createRouter({
       component: () => import('../views/InvitationView.vue'),
       meta: { title: 'Collaborator Invitation - GoEvent' },
     },
+    {
+      path: '/events/:id/checkout',
+      name: 'event-checkout',
+      component: () => import('../views/TicketCheckoutView.vue'),
+      meta: { requiresAuth: true, title: 'Checkout - GoEvent' },
+    },
+    {
+      path: '/my-tickets',
+      name: 'my-tickets',
+      component: () => import('../views/MyTicketsView.vue'),
+      meta: { requiresAuth: true, title: 'My Tickets - GoEvent' },
+    },
+    {
+      path: '/my-tickets/:code',
+      name: 'my-ticket-order',
+      component: () => import('../views/MyTicketOrderView.vue'),
+      meta: { requiresAuth: true, title: 'Ticket Order - GoEvent' },
+    },
   ],
 })
 

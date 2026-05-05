@@ -335,7 +335,9 @@
     "payment": "Payment",
     "expenses": "Expenses",
     "collaborators": "Collaborators",
-    "settings": "Settings"
+    "settings": "Settings",
+    "tickets": "Tickets",
+    "ticketsMobile": "Tickets"
   },
   "actions": {
     "publish": "Publish",
@@ -2259,6 +2261,195 @@
       "warningsJoin": " and ",
       "saveFailed": "Failed to save template. Please try again.",
       "connectionFailed": "Unable to connect. Please check your connection and try again."
+    }
+  },
+  "tickets": {
+    "title": "Tickets",
+    "subtitle": "Manage ticket tiers, checkout questions, and orders for your event.",
+    "accessRestricted": {
+      "title": "Access Restricted",
+      "description": "Only the event organizer and collaborators can manage tickets."
+    },
+    "subTabs": {
+      "orders": "Orders",
+      "tiers": "Tiers",
+      "questions": "Checkout Questions"
+    },
+    "orders": {
+      "header": "Ticket orders",
+      "subtitle": "Review payment proofs, confirm orders, and track sales for this event.",
+      "refresh": "Refresh",
+      "loadFailed": "Couldn't load orders. Please try again.",
+      "loadMore": "Load more",
+      "loadingMore": "Loading…",
+      "compBadge": "Comp",
+      "ticketCount": "{count} ticket | {count} tickets",
+      "filters": {
+        "all": "All",
+        "awaiting_review": "Awaiting review",
+        "pending": "Pending payment",
+        "paid": "Confirmed",
+        "refund_requested": "Refund requested",
+        "refunded": "Refunded",
+        "cancelled": "Cancelled"
+      },
+      "statuses": {
+        "pending": "Pending",
+        "awaiting_review": "Awaiting review",
+        "paid": "Confirmed",
+        "refund_requested": "Refund requested",
+        "refunded": "Refunded",
+        "cancelled": "Cancelled",
+        "expired": "Expired"
+      },
+      "empty": {
+        "title": "No orders yet",
+        "description": "Orders show up here as soon as buyers start checking out.",
+        "descriptionFiltered": "No orders match the current filter."
+      },
+      "review": {
+        "codeLabel": "Order code",
+        "close": "Close",
+        "loadFailed": "Couldn't load this order. Please try again.",
+        "buyerHeader": "Buyer",
+        "itemsHeader": "Items",
+        "subtotal": "Subtotal",
+        "discount": "Discount",
+        "total": "Total",
+        "paymentHeader": "Payment",
+        "method": "Method",
+        "transactionRef": "Transaction reference",
+        "proofSubmittedAt": "Proof submitted at",
+        "buyerNotes": "Buyer notes",
+        "proofFile": "Payment proof",
+        "openProof": "Open proof file",
+        "noProofYet": "Buyer hasn't uploaded payment proof yet.",
+        "compTitle": "Complimentary order",
+        "compDescription": "This is a free organizer-issued order — no proof to verify.",
+        "reviewHeader": "Review",
+        "reviewedBy": "Reviewed by",
+        "reviewedAt": "Reviewed at",
+        "adminNotes": "Notes",
+        "refundHeader": "Refund",
+        "adminNotesLabel": "Notes for the buyer / your records",
+        "adminNotesPlaceholder": "Optional — visible internally and to the buyer in their order timeline.",
+        "adminNotesRejectPlaceholder": "Required — explain why the proof was rejected so the buyer can resubmit.",
+        "rejectNotesRequired": "Please add a note explaining why you're rejecting this proof.",
+        "confirm": "Confirm payment",
+        "reject": "Reject",
+        "actionHint": "Confirming issues tickets and starts the 24h refund window. Rejecting cancels the order and releases the seats.",
+        "actionFailed": "Couldn't update the order. Please try again.",
+        "confirmedToast": "Order confirmed — tickets issued.",
+        "rejectedToast": "Order rejected — seats released."
+      }
+    },
+    "tiers": {
+      "header": "Ticket tiers",
+      "subtitle": "Define what buyers can purchase: VIP, GA, Early Bird, etc.",
+      "addButton": "Add tier",
+      "empty": {
+        "title": "No tiers yet",
+        "description": "Create at least one tier to start selling tickets for this event."
+      },
+      "soldOut": "Sold out",
+      "saleClosed": "Sales closed",
+      "saleNotStarted": "Opens {when}",
+      "soldRemaining": "{sold} sold · {remaining} left",
+      "active": "Active",
+      "inactive": "Inactive",
+      "reentry": "Re-entry allowed",
+      "actions": {
+        "moveUp": "Move up",
+        "moveDown": "Move down",
+        "edit": "Edit",
+        "delete": "Delete",
+        "toggleActive": "Toggle active",
+        "save": "Save",
+        "saving": "Saving…",
+        "cancel": "Cancel"
+      },
+      "deleteConfirm": {
+        "title": "Delete tier"
+      },
+      "modal": {
+        "addTitle": "Add tier",
+        "editTitle": "Edit tier",
+        "nameLabel": "Tier name",
+        "namePlaceholder": "e.g. VIP, General Admission",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "What this tier includes (optional)",
+        "priceLabel": "Price",
+        "currencyLabel": "Currency",
+        "quantityLabel": "Total inventory",
+        "quantityHint": "Number of tickets available across this tier.",
+        "maxPerOrderLabel": "Max per order",
+        "saleStartLabel": "Sale starts",
+        "saleEndLabel": "Sale ends",
+        "saleWindowHint": "Leave both blank to keep the tier on sale until the event begins.",
+        "isActiveLabel": "On sale",
+        "allowReentryLabel": "Allow re-entry on this tier",
+        "allowReentryHint": "Tickets in this tier can be scanned more than once at the door.",
+        "errorGeneric": "Could not save tier. Please try again.",
+        "validation": {
+          "nameRequired": "Tier name is required.",
+          "priceInvalid": "Enter a valid non-negative price.",
+          "quantityInvalid": "Inventory must be at least 1.",
+          "maxPerOrderInvalid": "Max per order must be at least 1.",
+          "saleWindowInvalid": "Sale start must be before sale end."
+        }
+      }
+    },
+    "questions": {
+      "header": "Checkout questions",
+      "subtitle": "Collect dietary, t-shirt size, or any other info during checkout.",
+      "addButton": "Add question",
+      "empty": {
+        "title": "No checkout questions",
+        "description": "Add questions to gather information from buyers during the ticket purchase flow."
+      },
+      "scopeAllTiers": "All tiers",
+      "scopeTier": "{tier} only",
+      "requiredBadge": "Required",
+      "inactiveBadge": "Inactive",
+      "actions": {
+        "moveUp": "Move up",
+        "moveDown": "Move down",
+        "edit": "Edit",
+        "delete": "Delete",
+        "save": "Save",
+        "saving": "Saving…",
+        "cancel": "Cancel"
+      },
+      "types": {
+        "text": "Short text",
+        "long_text": "Long text",
+        "yes_no": "Yes / No",
+        "single_choice": "Single choice",
+        "multi_choice": "Multiple choice"
+      },
+      "deleteConfirm": {
+        "title": "Delete question"
+      },
+      "modal": {
+        "addTitle": "Add checkout question",
+        "editTitle": "Edit checkout question",
+        "questionLabel": "Question text",
+        "questionPlaceholder": "e.g. Dietary restrictions?",
+        "typeLabel": "Answer type",
+        "scopeLabel": "Applies to",
+        "scopeAllOption": "All tiers",
+        "isRequiredLabel": "Required",
+        "isActiveLabel": "Active (visible at checkout)",
+        "choicesLabel": "Choices",
+        "choicesHint": "One option per row. Buyers will pick from these.",
+        "addChoice": "Add choice",
+        "removeChoice": "Remove choice",
+        "errorGeneric": "Could not save question. Please try again.",
+        "validation": {
+          "questionRequired": "Question text is required.",
+          "choicesRequired": "Add at least one choice."
+        }
+      }
     }
   }
 }

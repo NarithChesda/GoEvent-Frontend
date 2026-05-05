@@ -14,6 +14,15 @@ export type NotificationType =
   | 'event_reminder'
   | 'check_in'
   | 'guest_cash_gift'
+  // Ticketing
+  | 'ticket_order_submitted'
+  | 'ticket_order_confirmed'
+  | 'ticket_order_rejected'
+  | 'ticket_refund_requested'
+  | 'ticket_refund_approved'
+  | 'ticket_refund_rejected'
+  | 'ticket_checked_in'
+  | 'ticket_comp_issued'
 
 export type NotificationChannel = 'in_app' | 'telegram'
 
@@ -68,6 +77,11 @@ export interface NotificationPreferences {
   notify_event_reminder: boolean
   notify_check_in: boolean
   notify_guest_cash_gift: boolean
+  /**
+   * Master gate for all ticket-related notifications EXCEPT `ticket_checked_in`,
+   * which reuses `notify_check_in`.
+   */
+  notify_ticket_status: boolean
   updated_at: string
 }
 

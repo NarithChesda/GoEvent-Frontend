@@ -302,6 +302,17 @@ export { guestRsvpService, rsvpQuestionsService } from './api/modules/rsvp.servi
 // Notifications service
 export { notificationsService } from './api/modules/notifications.service'
 
+// ----------------------------------------------------------------------------
+// Ticketing services
+// ----------------------------------------------------------------------------
+export { ticketTypesService } from './api/modules/ticket-types.service'
+export { checkoutQuestionsService } from './api/modules/checkout-questions.service'
+export { ticketOrdersService } from './api/modules/ticket-orders.service'
+export { ticketsService } from './api/modules/tickets.service'
+export { ticketRefundsService } from './api/modules/ticket-refunds.service'
+export { ticketAnalyticsService, type AttendeesCsvDownload } from './api/modules/ticket-analytics.service'
+export { promoCodesService } from './api/modules/promo-codes.service'
+
 // Notification types
 export type {
   NotificationType,
@@ -334,6 +345,59 @@ export type {
   RsvpQuestionFreeTextAnswer,
   RsvpQuestionResponsesFilters,
 } from './api/types/rsvp.types'
+
+// Ticketing types
+export type {
+  TicketCurrency,
+  TicketOrderStatus,
+  TicketStatus,
+  TicketRefundStatus,
+  CheckoutQuestionType,
+  PromoDiscountType,
+  TicketType,
+  TicketTypeBrief,
+  TicketCheckoutQuestion,
+  TicketAnswer,
+  TicketAnswerSubmission,
+  TicketOrderItem,
+  OrderEventBrief,
+  TicketBuyerBrief,
+  Ticket,
+  TicketRefund,
+  TicketOrderDetail,
+  TicketOrderListItem,
+  TicketAnalyticsSummary,
+  TicketAnalyticsByTier,
+  TicketAnalyticsByDay,
+  TicketAnalyticsByRefund,
+  TicketAnalytics,
+  AttendeeListItem,
+  PromoValidationItem,
+  PromoValidationRequest,
+  PromoValidationSuccess,
+  CheckInRequest,
+  CheckInResponse,
+  CreateTicketTypeRequest,
+  UpdateTicketTypeRequest,
+  CreateCheckoutQuestionRequest,
+  UpdateCheckoutQuestionRequest,
+  BulkReorderCheckoutQuestionsRequest,
+  BulkReorderCheckoutQuestionsResponse,
+  CreateTicketOrderItem,
+  CreateTicketOrderRequest,
+  RefundRequestPayload,
+  ConfirmOrderRequest,
+  RejectOrderRequest,
+  ApproveRefundRequest,
+  RejectRefundRequest,
+  CompTicketRequest,
+  TicketOrderFilters,
+  RefundFilters,
+  AttendeeFilters,
+  TicketNotificationMetadataBase,
+  TicketRefundNotificationMetadata,
+  TicketCheckInNotificationMetadata,
+} from './api/types/ticket.types'
 
 // ============================================================================
 // NOTES FOR DEVELOPERS

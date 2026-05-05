@@ -5,7 +5,9 @@
     "hostedBy": "By {names}",
     "guestCount": "{count} guest | {count} guests",
     "hostOthers": "& {count} other | & {count} others",
-    "today": "Today"
+    "today": "Today",
+    "fromPrice": "From {price}",
+    "freeRsvp": "Free RSVP"
   },
   "createEvent": "Create Event",
   "createFirstEvent": "Create Your First Event",
@@ -82,6 +84,190 @@
       "creating": "Creating...",
       "create": "Create Event",
       "cancel": "Cancel"
+    }
+  },
+  "tickets": {
+    "public": {
+      "title": "Tickets",
+      "empty": "No tickets are available for this event yet.",
+      "remaining": "{remaining} left",
+      "soldOut": "Sold out",
+      "salesClosed": "Sales closed",
+      "opensOn": "Opens {when}",
+      "unavailable": "Unavailable",
+      "decrease": "Decrease quantity",
+      "increase": "Increase quantity",
+      "subtotalLabel": "Subtotal",
+      "selectTickets": "Select tickets",
+      "proceedToCheckout": "Buy {count} ticket | Buy {count} tickets",
+      "loginToBuy": "Sign in to buy tickets",
+      "mixedCurrencyError": "Tickets in your cart use different currencies. Remove one to continue."
+    },
+    "checkout": {
+      "back": "Back",
+      "title": "Checkout",
+      "emptyCart": "Your cart is empty. Pick a ticket on the event page first.",
+      "backToEvent": "Back to event",
+      "cartHeader": "Your tickets",
+      "buyerHeader": "Buyer information",
+      "buyerName": "Full name",
+      "buyerEmail": "Email",
+      "buyerPhone": "Phone (optional)",
+      "questionsHeader": "A few questions",
+      "yes": "Yes",
+      "no": "No",
+      "promoCode": "Promo code",
+      "promoPlaceholder": "Enter code",
+      "apply": "Apply",
+      "validating": "Checking…",
+      "promoApplied": "Code {code} applied — {discount} off",
+      "promoInvalid": "This promo code isn't valid for your cart.",
+      "subtotalLabel": "Subtotal",
+      "discountLabel": "Discount",
+      "totalLabel": "Total",
+      "placeOrder": "Place order",
+      "placingOrder": "Placing order…",
+      "errors": {
+        "nameRequired": "Please enter your full name.",
+        "emailRequired": "Please enter a valid email address.",
+        "answerRequired": "Please answer this question.",
+        "submitFailed": "We couldn't place your order. Please check your details and try again."
+      }
+    },
+    "order": {
+      "back": "All my tickets",
+      "notFound": "We couldn't find that order.",
+      "loadFailed": "Couldn't load this order. Please try again.",
+      "confirmationCodeLabel": "Order code",
+      "itemsHeader": "Items",
+      "subtotalLabel": "Subtotal",
+      "discountLabel": "Discount",
+      "totalLabel": "Total",
+      "ticketsHeader": "Your tickets",
+      "ticketType": "Ticket type",
+      "checkInCodeLabel": "Check-in code",
+      "qrAlt": "Ticket QR code",
+      "qrUnavailable": "QR unavailable — use the code below at the door.",
+      "cancel": "Cancel order",
+      "cancelling": "Cancelling…",
+      "cancelConfirm": "Cancel this order? Reserved seats will be released.",
+      "cancelSuccess": "Order cancelled.",
+      "cancelFailed": "Couldn't cancel the order. Please try again.",
+      "requestRefund": "Request refund",
+      "statuses": {
+        "pending": "Awaiting payment",
+        "awaiting_review": "Awaiting review",
+        "paid": "Confirmed",
+        "refund_requested": "Refund requested",
+        "refunded": "Refunded",
+        "cancelled": "Cancelled",
+        "expired": "Expired"
+      },
+      "ticketStatus": {
+        "valid": "Valid",
+        "used": "Used",
+        "refunded": "Refunded",
+        "cancelled": "Cancelled",
+        "transferred": "Transferred"
+      },
+      "banners": {
+        "pending": {
+          "line": "Awaiting your payment proof.",
+          "help": "Pay using one of the methods below, then upload a screenshot or PDF receipt to confirm."
+        },
+        "awaiting_review": {
+          "line": "Proof received — we're reviewing it.",
+          "help": "We'll email you and update this page when the organizer confirms."
+        },
+        "paid": {
+          "line": "You're confirmed. Show your QR code at the door.",
+          "help": ""
+        },
+        "refund_requested": {
+          "line": "Your refund request is being reviewed.",
+          "help": "We'll notify you once the organizer responds."
+        },
+        "refunded": {
+          "line": "This order has been refunded.",
+          "help": ""
+        },
+        "cancelled": {
+          "line": "This order was cancelled.",
+          "help": ""
+        },
+        "expired": {
+          "line": "This order expired before payment proof was uploaded.",
+          "help": "You'll need to start a new order if you still want tickets."
+        }
+      },
+      "proof": {
+        "header": "Upload payment proof",
+        "subtitle": "Pick a payment method, send the funds, then upload your receipt or screenshot.",
+        "methodLabel": "Payment method",
+        "loadingMethods": "Loading payment options…",
+        "noMethods": "No payment methods are available for this event yet. Please reach out to the organizer.",
+        "methods": {
+          "bank": "Bank transfer",
+          "qr": "QR code",
+          "url": "Payment link"
+        },
+        "detailsHeader": "Payment details",
+        "bankName": "Bank",
+        "accountName": "Account name",
+        "accountNumber": "Account number",
+        "copyAccountNumber": "Copy account number",
+        "accountNumberCopied": "Account number copied",
+        "openPaymentLink": "Open payment link",
+        "fileLabel": "Receipt or screenshot",
+        "fileHint": "PDF, JPG, PNG, GIF, or WebP. Max 10 MB.",
+        "transactionRefLabel": "Transaction reference (optional)",
+        "transactionRefPlaceholder": "Bank reference, txn ID, etc.",
+        "notesLabel": "Notes for the organizer (optional)",
+        "notesPlaceholder": "Anything we should know?",
+        "submit": "Upload proof",
+        "submitting": "Uploading…",
+        "successMessage": "Proof uploaded — we'll review it shortly.",
+        "errors": {
+          "fileType": "File must be a PDF or image (JPG, PNG, GIF, WebP).",
+          "fileSize": "File is larger than 10 MB.",
+          "submitFailed": "Couldn't upload proof. Please try again."
+        }
+      },
+      "refund": {
+        "title": "Request a refund",
+        "subtitle": "Tell us briefly why you'd like a refund. The organizer will review and respond.",
+        "reasonPlaceholder": "Plans changed…",
+        "reasonRequired": "Please share a short reason (at least 5 characters).",
+        "submit": "Submit request",
+        "submitting": "Submitting…",
+        "cancel": "Cancel",
+        "successMessage": "Refund request submitted.",
+        "errorGeneric": "Couldn't submit your refund request. Please try again.",
+        "windowClosing": "Refund window closes in {hours}h {minutes}m",
+        "summaryHeader": "Refund",
+        "statusLabel": "Status",
+        "reasonLabel": "Reason",
+        "adminNotesLabel": "Organizer notes",
+        "statuses": {
+          "pending": "Pending review",
+          "approved": "Approved",
+          "rejected": "Rejected",
+          "completed": "Completed"
+        }
+      }
+    },
+    "list": {
+      "title": "My Tickets",
+      "subtitle": "Your past and upcoming ticket orders.",
+      "empty": {
+        "title": "No tickets yet",
+        "description": "Once you buy tickets they'll appear here so you can show them at the door.",
+        "exploreLink": "Browse events"
+      },
+      "ticketCount": "{count} ticket | {count} tickets",
+      "compBadge": "Comp",
+      "loadMore": "Load more",
+      "loadingMore": "Loading…"
     }
   }
 }

@@ -62,6 +62,7 @@ import {
   Star,
   Mic,
   Heart,
+  Ticket,
 } from 'lucide-vue-next'
 
 export interface TabConfig {
@@ -85,6 +86,7 @@ interface Props {
   canViewExpenses?: boolean
   canViewDonation?: boolean
   canViewReview?: boolean
+  canViewTickets?: boolean
   canEdit?: boolean
 }
 
@@ -129,6 +131,7 @@ const getIconComponent = (iconName: string) => {
     star: Star,
     mic: Mic,
     heart: Heart,
+    ticket: Ticket,
   }
   return iconMap[iconName] || FileText
 }
@@ -145,6 +148,7 @@ const visibleTabs = computed(() => {
     if (tab.id === 'expenses' && !props.canViewExpenses) return false
     if (tab.id === 'donation' && !props.canViewDonation) return false
     if (tab.id === 'review' && !props.canViewReview) return false
+    if (tab.id === 'tickets' && !props.canViewTickets) return false
 
     return tab.visible !== false
   })

@@ -97,6 +97,15 @@ export interface Event {
   fundraising_currency?: 'USD' | 'KHR'
   show_donation_progress?: boolean
   show_donor_list?: boolean
+  // Ticketing fields (returned by EventListSerializer; null when no active tier).
+  // Frontend uses `has_ticketed_sales` to discriminate ticketed vs RSVP flows.
+  has_ticketed_sales?: boolean
+  min_ticket_price?: string | null
+  min_ticket_currency?: 'USD' | 'KHR' | null
+  // Capacity summary across active tiers — useful for "only X left" badges.
+  // Both null when the event has no active ticketed tiers.
+  total_capacity?: number | null
+  total_tickets_remaining?: number | null
   created_at: string
   updated_at: string
   // Additional fields from detailed event response
@@ -282,6 +291,13 @@ export interface EventFilters extends QueryParams {
   ordering?: string
   is_registered?: boolean
   page?: number
+  // Ticketing discovery filters (per TICKETS_FRONTEND_GUIDE Endpoint Map →
+  // Discovery). All optional and additive to the existing filters.
+  has_ticketed_sales?: boolean
+  on_sale?: boolean
+  min_price?: number
+  max_price?: number
+  currency?: 'USD' | 'KHR'
 }
 
 export interface EventRegistration {

@@ -5,7 +5,13 @@
 export interface EventPaymentMethod {
   id: number
   name: string
-  payment_type: 'donation' | 'gift' | 'sponsorship'
+  /**
+   * Discriminator for what the method is intended to receive.
+   * `ticket_sales` was added in events migration 0048 — `TicketOrder.payment_method`
+   * requires this value (see TICKETS_API_DOCS Backend Decisions #2). Existing
+   * `donation`/`gift`/`sponsorship` values keep their meaning.
+   */
+  payment_type: 'donation' | 'gift' | 'sponsorship' | 'ticket_sales'
   payment_method: 'bank_transfer' | 'qr_code' | 'payment_url'
   currency?: string
   is_active: boolean
@@ -25,7 +31,7 @@ export interface EventPaymentMethod {
 
 export interface CreatePaymentMethodRequest {
   name: string
-  payment_type: 'donation' | 'gift' | 'sponsorship'
+  payment_type: 'donation' | 'gift' | 'sponsorship' | 'ticket_sales'
   payment_method: 'bank_transfer' | 'qr_code' | 'payment_url'
   currency?: string
   is_active?: boolean

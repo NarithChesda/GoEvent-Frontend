@@ -131,8 +131,21 @@
                 @open-map="sharing.openMap(event.location)"
               />
 
-              <!-- Registration Section -->
+              <!-- Ticket sales (paid events) — takes precedence over RSVP/registration.
+                   We fetch tiers in the drawer so we can use "tier exists" as the
+                   discriminator (the event-detail endpoint doesn't reliably return
+                   `has_ticketed_sales`); the fetched list is handed down to
+                   `TicketTierList` to avoid a duplicate request. -->
+              <TicketTierList
+                v-if="hasTicketedSales"
+                :event-id="event.id"
+                :tiers="ticketTiers"
+                @login-required="handleLoginToRegister"
+              />
+
+              <!-- Registration Section (free RSVP / display-only events) -->
               <PublicEventRegistrationCard
+                v-else
                 :registration-required="event.registration_required"
                 :is-registered="isUserRegistered"
                 :status-label="registrationStatusLabel"
@@ -318,6 +331,8 @@ import PublicEventQRModal from './event/PublicEventQRModal.vue'
 import AllDonorsModal from './event/AllDonorsModal.vue'
 import TopDonorsSection from './event/TopDonorsSection.vue'
 import PublicEventExpenseSection from './event/PublicEventExpenseSection.vue'
+import TicketTierList from './tickets/public/TicketTierList.vue'
+import { ticketTypesService, type TicketType } from '@/services/api'
 
 // Composables
 import {
@@ -416,6 +431,33 @@ const googleMapEmbedUrl = computed(() => {
   return extractGoogleMapsEmbedUrl(event.value.google_map_embed_link)
 })
 
+// Tier list fetched per drawer-open. We use "tier exists" rather than the
+// event-detail's `has_ticketed_sales` because the detail endpoint may not
+// expose that field — it lives on `EventListSerializer`. Fetching tiers
+// directly is also free in our flow since `TicketTierList` would otherwise
+// fetch them itself; we hand the result down to skip the duplicate call.
+const ticketTiers = ref<TicketType[]>([])
+
+const loadTicketTiers = async (eventId: string) => {
+  try {
+    const response = await ticketTypesService.listPublic(eventId)
+    ticketTiers.value = response.success && response.data ? response.data : []
+  } catch {
+    ticketTiers.value = []
+  }
+}
+
+// Discriminator: when ticketed, the buyer flow takes over and the legacy
+// RSVP / registration card is hidden so the user isn't shown two competing
+// CTAs. Falls back to the event flag when present (cheaper signal once the
+// backend ships it on detail), otherwise relies on the fetched tier count.
+const hasTicketedSales = computed(() => {
+  if (event.value?.has_ticketed_sales != null) {
+    return Boolean(event.value.has_ticketed_sales)
+  }
+  return ticketTiers.value.length > 0
+})
+
 // Methods
 const closeDrawer = () => {
   emit('update:modelValue', false)
@@ -430,6 +472,10 @@ const navigateNext = () => {
 }
 
 const loadEventData = () => {
+  if (props.eventId) {
+    // Fire the tier fetch in parallel with the event detail — independent calls.
+    loadTicketTiers(props.eventId)
+  }
   loadEvent(props.eventId)
 }
 
@@ -482,7 +528,10 @@ watch(
   () => props.eventId,
   (newId) => {
     if (newId && props.modelValue) {
+      loadTicketTiers(newId)
       loadEvent(newId)
+    } else {
+      ticketTiers.value = []
     }
   },
   { immediate: true }
@@ -492,6 +541,7 @@ watch(
   () => props.modelValue,
   (isOpen) => {
     if (isOpen && props.eventId) {
+      loadTicketTiers(props.eventId)
       loadEvent(props.eventId)
     }
     // Prevent body scroll when drawer is open
@@ -512,6 +562,7 @@ watch(
 
 onMounted(() => {
   if (props.modelValue && props.eventId) {
+    loadTicketTiers(props.eventId)
     loadEvent(props.eventId)
   }
 })

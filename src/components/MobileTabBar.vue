@@ -65,6 +65,15 @@
             </RouterLink>
 
             <RouterLink
+              to="/my-tickets"
+              @click="userMenuOpen = false"
+              class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
+              role="menuitem"
+            >
+              <span class="text-sm font-medium">My Tickets</span>
+            </RouterLink>
+
+            <RouterLink
               v-if="authStore.user?.is_partner"
               to="/commission"
               @click="userMenuOpen = false"
