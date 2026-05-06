@@ -1,13 +1,24 @@
 <template>
   <section class="space-y-6">
     <!-- Header -->
-    <header>
-      <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
-        {{ t('management.tickets.title') }}
-      </h2>
-      <p class="text-xs sm:text-sm text-slate-600 mt-1">
-        {{ t('management.tickets.subtitle') }}
-      </p>
+    <header class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+      <div class="min-w-0">
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+          {{ t('management.tickets.title') }}
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">
+          {{ t('management.tickets.subtitle') }}
+        </p>
+      </div>
+      <button
+        v-if="canEdit"
+        type="button"
+        class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium shadow-sm hover:bg-slate-800 transition-colors whitespace-nowrap"
+        @click="goToScanner"
+      >
+        <ScanLine class="w-4 h-4" aria-hidden="true" />
+        {{ t('management.tickets.scan.entrypoint.button') }}
+      </button>
     </header>
 
     <!-- Sub-tab pills -->
@@ -70,6 +81,12 @@
         </div>
       </div>
     </Transition>
+
+    <!-- Door-scan drawer — slides over the tab while the camera is in use. -->
+    <TicketScanDrawer
+      v-model:show="showScanDrawer"
+      :event-id="eventId"
+    />
   </section>
 </template>
 
@@ -82,11 +99,13 @@ import {
   Inbox,
   Ticket,
   MessageSquareText,
+  ScanLine,
 } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import TicketOrdersList from './tickets/TicketOrdersList.vue'
 import TicketTypesManager from './tickets/TicketTypesManager.vue'
 import CheckoutQuestionsManager from './tickets/CheckoutQuestionsManager.vue'
+import TicketScanDrawer from './tickets/scan/TicketScanDrawer.vue'
 
 interface Props {
   eventId: string
@@ -126,6 +145,12 @@ const activeSubTab = ref<SubTabId>(initialSub())
 
 const setSubTab = (id: SubTabId) => {
   activeSubTab.value = id
+}
+
+const showScanDrawer = ref(false)
+
+const goToScanner = () => {
+  showScanDrawer.value = true
 }
 
 // Sync `?sub=` to the URL whenever it changes — preserves any other query

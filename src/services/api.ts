@@ -311,6 +311,7 @@ export { ticketOrdersService } from './api/modules/ticket-orders.service'
 export { ticketsService } from './api/modules/tickets.service'
 export { ticketRefundsService } from './api/modules/ticket-refunds.service'
 export { ticketAnalyticsService, type AttendeesCsvDownload } from './api/modules/ticket-analytics.service'
+export { ticketCheckinLogService } from './api/modules/ticket-checkin-log.service'
 export { promoCodesService } from './api/modules/promo-codes.service'
 
 // Notification types
@@ -375,8 +376,24 @@ export type {
   PromoValidationItem,
   PromoValidationRequest,
   PromoValidationSuccess,
+  CheckInSource,
+  CheckInOutcome,
+  DoorPaymentType,
   CheckInRequest,
   CheckInResponse,
+  UndoCheckInRequest,
+  UndoCheckInResponse,
+  OrderCheckInRequest,
+  OrderCheckInResultItem,
+  OrderCheckInResponse,
+  CheckInBatchSummary,
+  BatchScanItem,
+  BatchSyncRequest,
+  BatchSyncResultItem,
+  BatchSyncResponse,
+  CheckInLogEntry,
+  CheckInLogFilters,
+  DoorSaleRequest,
   CreateTicketTypeRequest,
   UpdateTicketTypeRequest,
   CreateCheckoutQuestionRequest,

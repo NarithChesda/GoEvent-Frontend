@@ -50,6 +50,22 @@ export type CheckoutQuestionType =
 
 export type PromoDiscountType = 'percentage' | 'fixed_amount'
 
+export type CheckInSource =
+  | 'qr'
+  | 'manual'
+  | 'attendee_search'
+  | 'order'
+  | 'batch_sync'
+
+export type CheckInOutcome =
+  | 'entry'
+  | 'reentry'
+  | 'rejected'
+  | 'undone'
+  | 'replayed'
+
+export type DoorPaymentType = 'cash' | 'card_offline' | 'other'
+
 // ============================================================================
 // Core resources
 // ============================================================================
@@ -141,6 +157,12 @@ export interface Ticket {
   ticket_type: TicketTypeBrief
   order: { confirmation_code: string }
   event?: { id: string; title: string; start_date: string }
+  /**
+   * Flat event UUID. Per TICKETS_CHECKIN_API_DOCS.md the check-in response
+   * always populates this for the cross-event guard. Older list/detail
+   * payloads may still omit it — treat as optional.
+   */
+  event_id?: string
   attendee_name: string
   attendee_email: string
   status: TicketStatus
@@ -188,7 +210,12 @@ export interface TicketOrderDetail {
   event_start_date?: string
   event_end_date?: string
   event_location?: string | null
-  buyer: TicketBuyerBrief
+  /**
+   * Now nullable per the door check-in release: walk-up door sales create
+   * orders without a registered buyer account. The display name/email fall
+   * back to the snapshot fields below.
+   */
+  buyer: TicketBuyerBrief | null
   buyer_name: string
   buyer_email: string
   buyer_phone: string
@@ -200,6 +227,13 @@ export interface TicketOrderDetail {
   currency: TicketCurrency
   status: TicketOrderStatus
   is_comp: boolean
+  /** True for orders created via POST /api/events/{id}/door-sales/. */
+  is_door_sale?: boolean
+  /**
+   * Out-of-band payment classification for door sales. Empty string for
+   * orders created before the door-sale release or via online checkout.
+   */
+  door_payment_type?: DoorPaymentType | ''
   /**
    * FK ID of the chosen `events.EventPayment` row. The display name lives in
    * the sibling `payment_method_name` field — backend serializer flattens the
@@ -235,6 +269,8 @@ export interface TicketOrderListItem {
   status: TicketOrderStatus
   ticket_count: number
   is_comp: boolean
+  is_door_sale?: boolean
+  door_payment_type?: DoorPaymentType | ''
   created_at: string
   confirmed_at: string | null
 }
@@ -332,19 +368,194 @@ export interface PromoValidationSuccess {
 }
 
 // ============================================================================
-// Check-in
+// Check-in — single scan, undo, group, batch sync, audit log
 // ============================================================================
 
+/**
+ * Single-scan check-in request. Provide exactly one of `qr_code` or
+ * `check_in_code`. `idempotency_key` is strongly recommended on every real
+ * scan — replays return the cached outcome with `replayed: true` instead of
+ * double-counting on a flaky retry.
+ */
 export interface CheckInRequest {
   qr_code?: string
   check_in_code?: string
+  idempotency_key?: string
+  device_id?: string
+  source?: CheckInSource
+  /**
+   * Per-gate scoping. If set, tickets in tiers other than these are rejected
+   * with `wrong_tier: true`. Server-enforced; the rejected scan is recorded
+   * in the audit log but the ticket is not mutated.
+   */
+  allowed_tier_ids?: number[]
 }
 
+/**
+ * Common check-in response envelope. Single endpoints return this directly;
+ * batch + group endpoints wrap this shape (plus a couple of identifiers) in
+ * `results[]`. HTTP is `200` for both `ok: true` and the rejection branches —
+ * `ok` is the source of truth, not the status code.
+ */
 export interface CheckInResponse {
   ok: boolean
   was_reentry: boolean
   message: string
+  /**
+   * Advisory flag. True when the ticket was scanned from a different
+   * `device_id` within the last 30 seconds. Independent of `ok` — show as a
+   * warning even on a successful entry.
+   */
+  suspicious: boolean
+  /** True when the response came from the idempotency cache (no mutation). */
+  replayed: boolean
+  /** True when the rejection was specifically a tier-scope mismatch. */
+  wrong_tier: boolean
+  /** UUID of the audit row written for this scan. */
+  audit_id: string
   ticket?: Ticket
+}
+
+// ---------------------------------------------------------------- undo
+
+export interface UndoCheckInRequest {
+  reason?: string
+  idempotency_key?: string
+  device_id?: string
+}
+
+export interface UndoCheckInResponse {
+  ok: boolean
+  message: string
+  replayed: boolean
+  audit_id: string
+  ticket: Ticket
+}
+
+// --------------------------------------------------- group / order check-in
+
+export interface OrderCheckInRequest {
+  /**
+   * If omitted, every valid ticket on the order is processed. If provided,
+   * only the listed UUIDs are touched.
+   */
+  ticket_ids?: string[]
+  /**
+   * One key for the whole batch — backend expands to per-ticket sub-keys via
+   * UUID5 so retries are safe end-to-end.
+   */
+  idempotency_key?: string
+  device_id?: string
+  allowed_tier_ids?: number[]
+}
+
+export interface CheckInBatchSummary {
+  total: number
+  entered: number
+  reentered: number
+  rejected: number
+  replayed: number
+}
+
+export interface OrderCheckInResultItem extends CheckInResponse {
+  /** Sub-key derived from the request idempotency_key for this ticket. */
+  idempotency_key?: string
+  ticket_id: string
+  check_in_code: string
+}
+
+export interface OrderCheckInResponse {
+  order_code: string
+  summary: CheckInBatchSummary
+  results: OrderCheckInResultItem[]
+}
+
+// --------------------------------------------------------- offline batch sync
+
+export interface BatchScanItem {
+  qr_code?: string
+  check_in_code?: string
+  /** Required per-scan key. Without it, network retries will double-count. */
+  idempotency_key: string
+  /**
+   * Client-claimed scan time (ISO 8601). Stored on the audit row so reports
+   * reflect actual door-time. Anything older than 7 days is rejected per-row.
+   */
+  scanned_at: string
+  device_id?: string
+  source?: CheckInSource
+  allowed_tier_ids?: number[]
+}
+
+export interface BatchSyncRequest {
+  /** Maximum 200 scans per batch. */
+  scans: BatchScanItem[]
+}
+
+export interface BatchSyncResultItem extends CheckInResponse {
+  idempotency_key: string
+}
+
+export interface BatchSyncResponse {
+  summary: CheckInBatchSummary
+  /** Results preserve input order; key by `idempotency_key` for reconciliation. */
+  results: BatchSyncResultItem[]
+}
+
+// -------------------------------------------------------------- audit log
+
+export interface CheckInLogEntry {
+  id: string
+  ticket_id: string
+  check_in_code: string
+  attendee_name: string
+  ticket_type: number
+  ticket_type_name: string
+  scanned_by: number
+  scanned_by_email: string
+  device_id: string | null
+  /** Client-claimed time of the scan. Drives report timestamps. */
+  scanned_at: string
+  /** Server-side persistence time. Drives ordering + dedupe. */
+  server_recorded_at: string
+  source: CheckInSource
+  outcome: CheckInOutcome
+  rejection_reason: string
+  notes: string
+  idempotency_key: string
+}
+
+export interface CheckInLogFilters extends QueryParams {
+  ticket?: string
+  staff?: number
+  outcome?: CheckInOutcome
+  source?: CheckInSource
+  device_id?: string
+  /** ISO 8601 lower bound (inclusive). */
+  since?: string
+  /** ISO 8601 upper bound (inclusive). */
+  until?: string
+  page?: number
+  page_size?: number
+}
+
+// -------------------------------------------------------- walk-up door sales
+
+export interface DoorSaleRequest {
+  items: CreateTicketOrderItem[]
+  /** Defaults to `cash` server-side. */
+  door_payment_type?: DoorPaymentType
+  buyer_name?: string
+  buyer_email?: string
+  buyer_phone?: string
+  transaction_reference?: string
+  admin_notes?: string
+  /**
+   * When true the issued tickets are checked in immediately via the
+   * audit-logged service. Failures here do NOT roll back the sale.
+   */
+  auto_check_in?: boolean
+  device_id?: string
 }
 
 // ============================================================================
@@ -463,6 +674,12 @@ export interface RefundFilters extends QueryParams {
 export interface AttendeeFilters extends QueryParams {
   status?: TicketStatus
   ticket_type_id?: number
+  /**
+   * Case-insensitive contains match across `attendee_name`, `attendee_email`,
+   * `buyer_name`, `buyer_email`, `confirmation_code`, and `check_in_code`.
+   * Composes with `status` and `ticket_type_id`.
+   */
+  search?: string
   page?: number
   page_size?: number
 }

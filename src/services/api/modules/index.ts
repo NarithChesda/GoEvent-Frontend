@@ -31,3 +31,4 @@ export {
 } from './services.service'
 export { donationService } from './donation.service'
 export { guestRsvpService, rsvpQuestionsService } from './rsvp.service'
+export { ticketCheckinLogService } from './ticket-checkin-log.service'

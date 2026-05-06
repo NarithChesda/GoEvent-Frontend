@@ -2451,6 +2451,101 @@
           "choicesRequired": "Add at least one choice."
         }
       }
+    },
+    "scan": {
+      "title": "Scan Tickets",
+      "subtitle": "Check guests in at the door",
+      "counter": {
+        "checkedIn": "Checked in",
+        "of": "of",
+        "refresh": "Refresh"
+      },
+      "modes": {
+        "qr": "QR scanner",
+        "manual": "Manual code"
+      },
+      "manualEntry": {
+        "label": "Check-in code",
+        "placeholder": "10-character code",
+        "submit": "Check in",
+        "helper": "Letters and numbers only — 0/O and 1/I/L are not used.",
+        "invalidChar": "This character isn't valid in a check-in code."
+      },
+      "outcomes": {
+        "entry": "ENTRY",
+        "reentry": "RE-ENTRY",
+        "rejected": "REJECTED",
+        "invalid": "INVALID",
+        "wrongEvent": "WRONG EVENT",
+        "wrongTier": "WRONG GATE",
+        "alreadyCheckedIn": "Already checked in",
+        "refunded": "Ticket refunded",
+        "cancelled": "Ticket cancelled",
+        "eventNotRunning": "Event isn't running yet",
+        "replayed": "Already synced"
+      },
+      "suspicious": {
+        "warning": "Possible duplicate — same code seen at another station within 30 seconds.",
+        "viewAudit": "View activity"
+      },
+      "actions": {
+        "scanNext": "Scan next",
+        "findAttendee": "Find attendee",
+        "undoLast": "Undo last scan",
+        "exit": "Exit scanner",
+        "toggleSound": "Sound",
+        "toggleHaptic": "Vibration",
+        "configureGates": "Configure gates"
+      },
+      "gateConfig": {
+        "title": "Configure gates for this scanner",
+        "allTiers": "All tiers",
+        "selectedCount": "{count} selected",
+        "save": "Save"
+      },
+      "attendeeSearch": {
+        "title": "Find attendee",
+        "placeholder": "Name, email, or order code",
+        "empty": "No attendees match.",
+        "loading": "Searching…",
+        "checkInLabel": "Check in",
+        "alreadyChecked": "Checked in earlier"
+      },
+      "recent": {
+        "heading": "Recent scans",
+        "empty": "No scans yet."
+      },
+      "offline": {
+        "banner": "Offline — scans are queued",
+        "queued": "{count} queued",
+        "syncing": "Syncing {count} scans…",
+        "syncFailed": "Sync failed — will retry",
+        "synced": "Synced {ok} of {total}"
+      },
+      "group": {
+        "title": "Group check-in",
+        "summary": "{entered} of {total} entered",
+        "allEntered": "Everyone is in",
+        "partial": "Some tickets couldn't be checked in",
+        "alreadyUsed": "Checked in earlier"
+      },
+      "undo": {
+        "confirm": "Undo check-in for {name}?",
+        "expired": "Too late to undo",
+        "success": "Check-in undone"
+      },
+      "access": {
+        "restricted": "Only the event organizer and editor collaborators can scan tickets."
+      },
+      "errors": {
+        "cameraDenied": "Camera access denied. Allow camera access in your browser settings.",
+        "cameraNotFound": "No camera was found on this device.",
+        "scanFailed": "Couldn't read that code. Try again.",
+        "networkError": "Network error — check your connection."
+      },
+      "entrypoint": {
+        "button": "Scan tickets at the door"
+      }
     }
   }
 }

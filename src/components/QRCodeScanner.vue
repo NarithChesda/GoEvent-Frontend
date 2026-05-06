@@ -47,6 +47,27 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { Html5Qrcode } from 'html5-qrcode'
 import { CheckCircle, AlertCircle } from 'lucide-vue-next'
 
+interface Props {
+  /**
+   * When true, the camera stays live after a successful decode so staff can
+   * keep scanning. Duplicate decodes of the same code are suppressed within
+   * `dedupeWindowMs` to avoid firing dozens of `scan-success` events for one
+   * QR held in frame. The default (false) preserves single-shot behavior for
+   * existing callers like RegistrationCheckinModal.
+   */
+  continuous?: boolean
+  /** Cooldown for re-emitting the same code, in ms. Default 1500. */
+  dedupeWindowMs?: number
+  /** Cooldown between any two emissions, in ms. Default 500. */
+  globalCooldownMs?: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  continuous: false,
+  dedupeWindowMs: 1500,
+  globalCooldownMs: 500,
+})
+
 const emit = defineEmits<{
   scanSuccess: [code: string]
   scanError: [error: string]
@@ -75,6 +96,10 @@ const error = ref<string>('')
 const html5QrCode = ref<Html5Qrcode | null>(null)
 const isStopping = ref(false)
 
+// Continuous-mode dedupe state (unused when props.continuous=false)
+const lastEmissionAt = ref(0)
+const recentEmissions = new Map<string, number>()
+
 // Helpers
 const getErrorMessage = (err: any): string => {
   switch (err.name) {
@@ -90,7 +115,25 @@ const getErrorMessage = (err: any): string => {
 }
 
 const handleScanSuccess = (decodedText: string) => {
-  // Only process first scan
+  if (props.continuous) {
+    const now = Date.now()
+    if (now - lastEmissionAt.value < props.globalCooldownMs) return
+    const previous = recentEmissions.get(decodedText)
+    if (previous && now - previous < props.dedupeWindowMs) return
+    lastEmissionAt.value = now
+    recentEmissions.set(decodedText, now)
+    // Trim the dedupe map opportunistically — keep only entries within window
+    if (recentEmissions.size > 64) {
+      const cutoff = now - props.dedupeWindowMs
+      for (const [code, ts] of recentEmissions) {
+        if (ts < cutoff) recentEmissions.delete(code)
+      }
+    }
+    emit('scanSuccess', decodedText)
+    return
+  }
+
+  // Single-shot mode: only process first scan
   if (scannedCode.value) return
 
   scannedCode.value = decodedText

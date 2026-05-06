@@ -15,6 +15,8 @@
  *   POST   /api/ticket-orders/{code}/confirm/                          approve proof, issue tickets
  *   POST   /api/ticket-orders/{code}/reject/                           reject proof, release seats
  *   POST   /api/events/{event_id}/comp-tickets/                        issue complimentary tickets (by recipient_email)
+ *   POST   /api/ticket-orders/{code}/check-in/                         group check-in: scan one code, enter the whole party
+ *   POST   /api/events/{event_id}/door-sales/                          walk-up sale (cash / card_offline / other), optional auto-check-in
  *
  * The organizer routes live under `/events/{id}/organizer/...` to keep
  * permissions clear — those endpoints require `IsEventOwnerOrCollaborator`,
@@ -36,6 +38,9 @@ import type {
   RejectOrderRequest,
   CompTicketRequest,
   TicketRefund,
+  OrderCheckInRequest,
+  OrderCheckInResponse,
+  DoorSaleRequest,
 } from '../types/ticket.types'
 
 const orderRoot = (code: string) => `/api/ticket-orders/${code}/`
@@ -152,6 +157,49 @@ export const ticketOrdersService = {
   ): Promise<ApiResponse<TicketOrderDetail>> {
     return apiClient.post<TicketOrderDetail>(
       `/api/events/${eventId}/comp-tickets/`,
+      payload,
+    )
+  },
+
+  // ----------------------------------------------------------- door check-in
+  /**
+   * Group check-in for everyone on a single order. Scan one code (the order's
+   * `confirmation_code`, e.g. `TIX-A4Z9PXKR`) and enter the whole party in
+   * one round-trip. If `ticket_ids` is omitted, every valid ticket on the
+   * order is processed; if provided, only those UUIDs are touched.
+   *
+   * The single `idempotency_key` is expanded server-side to per-ticket
+   * sub-keys via UUID5, so retries are safe end-to-end. Per-ticket outcomes
+   * come back in `results[]`; `summary` gives entered/reentered/rejected
+   * counts for the UI.
+   */
+  groupCheckIn(
+    confirmationCode: string,
+    payload: OrderCheckInRequest = {},
+  ): Promise<ApiResponse<OrderCheckInResponse>> {
+    return apiClient.post<OrderCheckInResponse>(
+      `${orderRoot(confirmationCode)}check-in/`,
+      payload,
+    )
+  },
+
+  /**
+   * Walk-up sale at the door. Creates a paid order and issues tickets in one
+   * atomic call. Set `auto_check_in: true` to mark the issued tickets `used`
+   * immediately so the customer walks straight in. The customer does not
+   * need an account — buyer fields are captured as snapshots.
+   *
+   * Currency is inferred from the tier(s); mixed-currency carts are
+   * rejected. Sale-window enforcement is bypassed (staff can sell after the
+   * online window closes), but tier `is_active=false` is still respected.
+   * `auto_check_in` failures do NOT roll back the sale.
+   */
+  createDoorSale(
+    eventId: string,
+    payload: DoorSaleRequest,
+  ): Promise<ApiResponse<TicketOrderDetail>> {
+    return apiClient.post<TicketOrderDetail>(
+      `/api/events/${eventId}/door-sales/`,
       payload,
     )
   },
