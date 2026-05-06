@@ -1,5 +1,5 @@
 <template>
-  <section class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+  <section class="bg-white/80 border border-slate-200/60 rounded-2xl overflow-hidden shadow-sm">
     <!-- Header -->
     <div class="px-4 py-3 border-b border-slate-100 flex items-center gap-2">
       <Ticket class="w-4 h-4 text-emerald-600" />
@@ -10,13 +10,13 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-8">
-      <div class="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div class="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
     </div>
 
     <!-- Empty / error -->
     <div
       v-else-if="tiers.length === 0"
-      class="px-4 py-6 text-center text-sm text-slate-500"
+      class="px-4 py-8 text-center text-sm text-slate-500"
     >
       {{ t('events.tickets.public.empty') }}
     </div>
@@ -30,14 +30,14 @@
       >
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2 flex-wrap">
+            <div class="flex items-center gap-1.5 flex-wrap">
               <p class="text-sm font-semibold text-slate-900 break-words">
                 {{ tier.name }}
               </p>
               <span
                 v-if="tierState(tier).label"
                 :class="[
-                  'px-1.5 py-0.5 rounded-md text-[10px] font-medium',
+                  'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[10px] font-medium',
                   tierState(tier).className,
                 ]"
               >
@@ -63,7 +63,7 @@
             <template v-if="tier.is_on_sale && !tier.is_sold_out">
               <button
                 type="button"
-                class="w-8 h-8 rounded-full border border-slate-300 text-slate-700 hover:bg-slate-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                class="w-9 h-9 sm:w-8 sm:h-8 rounded-full border border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
                 :disabled="store.getQuantity(tier.id) === 0"
                 :aria-label="t('events.tickets.public.decrease')"
                 @click="decrement(tier)"
@@ -77,7 +77,7 @@
               </span>
               <button
                 type="button"
-                class="w-8 h-8 rounded-full border border-emerald-300 text-emerald-700 hover:bg-emerald-50 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                class="w-9 h-9 sm:w-8 sm:h-8 rounded-full border border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
                 :disabled="!canIncrement(tier)"
                 :aria-label="t('events.tickets.public.increase')"
                 @click="increment(tier)"
@@ -99,7 +99,7 @@
     <!-- Footer: cart summary + CTA -->
     <div
       v-if="tiers.length > 0"
-      class="px-4 py-3 bg-slate-50 border-t border-slate-100"
+      class="px-4 py-3 bg-slate-50/80 border-t border-slate-100"
     >
       <div class="flex items-center justify-between mb-2">
         <span class="text-xs text-slate-500">
@@ -118,7 +118,7 @@
       <button
         v-if="!isAuthenticated"
         type="button"
-        class="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition-colors"
+        class="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold py-2.5 px-4 rounded-xl transition-colors"
         @click="$emit('login-required')"
       >
         {{ t('events.tickets.public.loginToBuy') }}
@@ -126,7 +126,7 @@
       <button
         v-else
         type="button"
-        class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition-all shadow-sm"
+        class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:opacity-90 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white text-sm font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm"
         :disabled="!canCheckout"
         @click="goToCheckout"
       >

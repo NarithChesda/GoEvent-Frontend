@@ -2,17 +2,17 @@
   <section class="space-y-6">
     <!-- Header -->
     <header>
-      <h2 class="text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
         {{ t('management.tickets.title') }}
       </h2>
-      <p class="mt-1 text-sm text-slate-600">
+      <p class="text-xs sm:text-sm text-slate-600 mt-1">
         {{ t('management.tickets.subtitle') }}
       </p>
     </header>
 
     <!-- Sub-tab pills -->
     <nav
-      class="flex gap-1 p-1 bg-slate-100 rounded-xl w-full sm:w-fit"
+      class="flex gap-1 p-1 bg-slate-100 rounded-xl w-full sm:w-fit overflow-x-auto scrollbar-hide"
       role="tablist"
       :aria-label="t('management.tickets.title')"
     >
@@ -20,22 +20,23 @@
         v-for="tab in subTabs"
         :key="tab.id"
         type="button"
-        class="flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+        class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap"
         :class="
           activeSubTab === tab.id
             ? 'bg-white text-slate-900 shadow-sm'
-            : 'text-slate-500 hover:text-slate-700'
+            : 'text-slate-500 hover:text-slate-700 hover:bg-white/60'
         "
         :aria-selected="activeSubTab === tab.id"
         role="tab"
         @click="setSubTab(tab.id)"
       >
-        {{ tab.label }}
+        <component :is="tab.icon" class="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+        <span>{{ tab.label }}</span>
       </button>
     </nav>
 
     <!-- Active sub-tab body -->
-    <div>
+    <div class="min-h-[400px]">
       <TicketOrdersList
         v-if="activeSubTab === 'orders'"
         :event-id="eventId"
@@ -56,17 +57,16 @@
       />
     </div>
 
-    <!-- Local toast (the parent EventManageView has its own; we keep a lightweight one
-         here so feedback is local to the tab and doesn't need plumbing back up). -->
+    <!-- Local toast (matches the guest-tab toast pattern) -->
     <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-20 lg:bottom-4 right-6 z-50">
+      <div v-if="message" class="fixed bottom-20 lg:bottom-8 right-4 sm:right-8 left-4 sm:left-auto z-[100]">
         <div
-          :class="message.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'"
-          class="text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-2 max-w-sm"
+          :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
+          class="text-white px-4 sm:px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-lg flex items-center text-sm sm:text-base"
         >
-          <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 flex-shrink-0" />
-          <AlertCircle v-else class="w-5 h-5 flex-shrink-0" />
-          <span class="text-sm">{{ message.text }}</span>
+          <CheckCircle v-if="message.type === 'success'" class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+          <AlertCircle v-else class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+          <span class="flex-1">{{ message.text }}</span>
         </div>
       </div>
     </Transition>
@@ -76,7 +76,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { CheckCircle, AlertCircle } from 'lucide-vue-next'
+import {
+  CheckCircle,
+  AlertCircle,
+  Inbox,
+  Ticket,
+  MessageSquareText,
+} from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import TicketOrdersList from './tickets/TicketOrdersList.vue'
 import TicketTypesManager from './tickets/TicketTypesManager.vue'
@@ -97,9 +103,9 @@ const router = useRouter()
 type SubTabId = 'orders' | 'tiers' | 'questions'
 
 const subTabs = computed(() => [
-  { id: 'orders' as const, label: t('management.tickets.subTabs.orders') },
-  { id: 'tiers' as const, label: t('management.tickets.subTabs.tiers') },
-  { id: 'questions' as const, label: t('management.tickets.subTabs.questions') },
+  { id: 'orders' as const, label: t('management.tickets.subTabs.orders'), icon: Inbox },
+  { id: 'tiers' as const, label: t('management.tickets.subTabs.tiers'), icon: Ticket },
+  { id: 'questions' as const, label: t('management.tickets.subTabs.questions'), icon: MessageSquareText },
 ])
 
 const validSubTabs: SubTabId[] = ['orders', 'tiers', 'questions']
@@ -182,5 +188,16 @@ const showMessage = (type: Toast['type'], text: string) => {
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 </style>

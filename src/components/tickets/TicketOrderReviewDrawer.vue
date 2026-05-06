@@ -4,7 +4,7 @@
     <Transition name="fade">
       <div
         v-if="isOpen"
-        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70]"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
         @click="handleClose"
       />
     </Transition>
@@ -13,63 +13,79 @@
     <Transition name="slide-right">
       <div
         v-if="isOpen"
-        class="fixed inset-x-0 bottom-0 md:inset-y-0 md:right-0 md:left-auto w-full md:w-[560px] lg:w-[640px] bg-white md:rounded-l-3xl rounded-t-3xl md:rounded-tr-none shadow-2xl z-[71] flex flex-col max-h-[92vh] md:max-h-none"
+        class="fixed bottom-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[580px] lg:w-[640px] md:max-w-[calc(100vw-32px)] max-h-[85vh] md:max-h-none bg-white rounded-t-3xl md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
         @click.stop
       >
         <!-- Header -->
-        <header class="flex-shrink-0 px-5 py-4 border-b border-slate-200 bg-white">
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0 flex-1">
-              <p class="text-[11px] uppercase tracking-wide text-slate-500 mb-0.5">
-                {{ t('management.tickets.orders.review.codeLabel') }}
-              </p>
-              <p class="text-base font-mono font-semibold text-slate-900 break-all">
-                {{ confirmationCode }}
-              </p>
-              <span
-                v-if="order"
-                :class="[
-                  'inline-block mt-1 px-2 py-0.5 rounded-md text-[11px] font-medium',
-                  statusBadgeClasses(order.status),
-                ]"
+        <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
+          <div class="flex items-center justify-between gap-3 px-4 py-3">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <div
+                class="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm text-white flex items-center justify-center flex-shrink-0"
               >
-                {{ statusLabel(order.status) }}
-              </span>
+                <Receipt class="w-5 h-5" />
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-[10px] sm:text-[11px] uppercase tracking-wide text-white/80 mb-0.5">
+                  {{ t('management.tickets.orders.review.codeLabel') }}
+                </p>
+                <p class="text-sm sm:text-base font-mono font-semibold text-white break-all leading-tight">
+                  {{ confirmationCode }}
+                </p>
+              </div>
             </div>
             <button
               type="button"
-              class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center flex-shrink-0"
+              class="w-8 h-8 rounded-full hover:bg-white/20 text-white flex items-center justify-center transition-colors flex-shrink-0"
               :aria-label="t('management.tickets.orders.review.close')"
               @click="handleClose"
             >
-              <X class="w-5 h-5 text-slate-500" />
+              <X class="w-5 h-5" />
             </button>
           </div>
-        </header>
+        </div>
 
         <!-- Body -->
         <div class="flex-1 overflow-y-auto overscroll-contain">
           <!-- Loading -->
           <div v-if="loading" class="flex items-center justify-center py-12">
-            <div class="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+            <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
           </div>
 
           <!-- Error -->
-          <div v-else-if="loadError" class="p-5">
-            <div class="rounded-lg bg-red-50 border border-red-200 p-3">
+          <div v-else-if="loadError" class="p-4 sm:p-5">
+            <div class="rounded-xl bg-red-50 border border-red-200 p-3">
               <p class="text-sm text-red-800">{{ loadError }}</p>
             </div>
           </div>
 
-          <div v-else-if="order" class="p-5 space-y-5">
+          <div v-else-if="order" class="p-4 sm:p-5 space-y-5">
+            <!-- Status row -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <span
+                :class="[
+                  'inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-medium',
+                  statusBadgeClasses(order.status),
+                ]"
+              >
+                {{ statusLabel(order.status) }}
+              </span>
+              <span
+                v-if="order.is_comp"
+                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-medium text-sky-700 bg-sky-50"
+              >
+                {{ t('management.tickets.orders.compBadge') }}
+              </span>
+            </div>
+
             <!-- Buyer info -->
             <section>
               <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                 {{ t('management.tickets.orders.review.buyerHeader') }}
               </h3>
-              <div class="bg-slate-50 rounded-xl p-3 space-y-1.5 text-sm">
-                <p class="font-medium text-slate-900">{{ order.buyer_name || order.buyer.name }}</p>
-                <p class="text-slate-600">{{ order.buyer_email }}</p>
+              <div class="bg-white/80 border border-slate-200/60 rounded-2xl p-3 sm:p-4 space-y-1.5 text-sm">
+                <p class="font-semibold text-slate-900">{{ order.buyer_name || order.buyer.name }}</p>
+                <p class="text-slate-600 break-all">{{ order.buyer_email }}</p>
                 <p v-if="order.buyer_phone" class="text-slate-600">{{ order.buyer_phone }}</p>
               </div>
             </section>
@@ -79,11 +95,11 @@
               <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                 {{ t('management.tickets.orders.review.itemsHeader') }}
               </h3>
-              <ul class="rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+              <ul class="bg-white/80 border border-slate-200/60 rounded-2xl divide-y divide-slate-100 overflow-hidden">
                 <li
                   v-for="(item, idx) in order.items"
                   :key="idx"
-                  class="px-3 py-2.5 flex items-center justify-between gap-3 bg-white"
+                  class="px-3 sm:px-4 py-2.5 flex items-center justify-between gap-3"
                 >
                   <div class="min-w-0">
                     <p class="text-sm font-medium text-slate-900 truncate">
@@ -99,7 +115,7 @@
                   </p>
                 </li>
               </ul>
-              <div class="mt-2 px-3 py-2 bg-slate-50 rounded-lg space-y-1 text-sm">
+              <div class="mt-2 px-3 sm:px-4 py-3 bg-slate-50/80 border border-slate-200/60 rounded-2xl space-y-1 text-sm">
                 <div class="flex justify-between">
                   <span class="text-slate-600">
                     {{ t('management.tickets.orders.review.subtotal') }}
@@ -132,7 +148,7 @@
               <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                 {{ t('management.tickets.orders.review.paymentHeader') }}
               </h3>
-              <div class="bg-slate-50 rounded-xl p-3 space-y-2 text-sm">
+              <div class="bg-white/80 border border-slate-200/60 rounded-2xl p-3 sm:p-4 space-y-2 text-sm">
                 <div v-if="order.payment_method_name" class="flex justify-between gap-3">
                   <span class="text-slate-500">
                     {{ t('management.tickets.orders.review.method') }}
@@ -170,7 +186,7 @@
                 </p>
                 <div
                   v-if="proofIsImage"
-                  class="rounded-xl border border-slate-200 overflow-hidden bg-slate-100"
+                  class="rounded-2xl border border-slate-200/60 overflow-hidden bg-slate-100"
                 >
                   <a :href="proofUrl" target="_blank" rel="noopener noreferrer">
                     <img
@@ -185,7 +201,7 @@
                   :href="proofUrl"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="flex items-center gap-2 px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-50"
+                  class="flex items-center gap-2 px-3 py-2.5 border border-slate-200 hover:border-slate-300 rounded-xl text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                 >
                   <FileText class="w-4 h-4" />
                   {{ t('management.tickets.orders.review.openProof') }}
@@ -203,9 +219,9 @@
             <!-- Comp callout -->
             <section
               v-if="order.is_comp"
-              class="rounded-xl border border-sky-200 bg-sky-50 p-3"
+              class="rounded-2xl border border-sky-200 bg-sky-50/80 p-3 sm:p-4"
             >
-              <p class="text-sm font-medium text-sky-900">
+              <p class="text-sm font-semibold text-sky-900">
                 {{ t('management.tickets.orders.review.compTitle') }}
               </p>
               <p class="mt-0.5 text-xs text-sky-800">
@@ -218,12 +234,12 @@
               <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                 {{ t('management.tickets.orders.review.reviewHeader') }}
               </h3>
-              <div class="bg-slate-50 rounded-xl p-3 space-y-2 text-sm">
+              <div class="bg-white/80 border border-slate-200/60 rounded-2xl p-3 sm:p-4 space-y-2 text-sm">
                 <div v-if="order.confirmed_by" class="flex justify-between gap-3">
                   <span class="text-slate-500">
                     {{ t('management.tickets.orders.review.reviewedBy') }}
                   </span>
-                  <span class="text-slate-900 text-right">{{ order.confirmed_by.email }}</span>
+                  <span class="text-slate-900 text-right break-all">{{ order.confirmed_by.email }}</span>
                 </div>
                 <div v-if="order.confirmed_at" class="flex justify-between gap-3">
                   <span class="text-slate-500">
@@ -245,9 +261,9 @@
             <!-- Refund summary -->
             <section
               v-if="order.refund"
-              class="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm"
+              class="rounded-2xl border border-rose-200 bg-rose-50/80 p-3 sm:p-4 text-sm"
             >
-              <p class="font-medium text-rose-900">
+              <p class="font-semibold text-rose-900">
                 {{ t('management.tickets.orders.review.refundHeader') }}
                 ({{ order.refund.status }})
               </p>
@@ -262,7 +278,7 @@
               class="border-t border-slate-200 pt-4 space-y-3"
             >
               <label class="block">
-                <span class="text-xs font-medium text-slate-700">
+                <span class="block text-sm font-medium text-slate-700 mb-2">
                   {{ t('management.tickets.orders.review.adminNotesLabel') }}
                   <span v-if="rejecting" class="text-red-500">*</span>
                 </span>
@@ -275,7 +291,7 @@
                       ? t('management.tickets.orders.review.adminNotesRejectPlaceholder')
                       : t('management.tickets.orders.review.adminNotesPlaceholder')
                   "
-                  class="mt-1 w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 resize-y"
+                  class="w-full px-3.5 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-y"
                   :class="actionFieldError ? 'border-red-300' : 'border-slate-300'"
                 />
                 <p v-if="actionFieldError" class="mt-1 text-xs text-red-600">
@@ -283,43 +299,46 @@
                 </p>
               </label>
 
-              <div v-if="actionError" class="rounded-lg bg-red-50 border border-red-200 p-3">
+              <div v-if="actionError" class="rounded-xl bg-red-50 border border-red-200 p-3">
                 <p class="text-sm text-red-800">{{ actionError }}</p>
               </div>
-
-              <div class="flex flex-col sm:flex-row gap-2">
-                <button
-                  type="button"
-                  class="flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  :disabled="submitting"
-                  @click="confirmOrder"
-                >
-                  <span
-                    v-if="submitting && action === 'confirm'"
-                    class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
-                  />
-                  <Check v-else class="w-4 h-4" />
-                  {{ t('management.tickets.orders.review.confirm') }}
-                </button>
-                <button
-                  type="button"
-                  class="flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg border border-rose-200 bg-white text-rose-700 hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  :disabled="submitting"
-                  @click="rejectOrder"
-                >
-                  <span
-                    v-if="submitting && action === 'reject'"
-                    class="w-4 h-4 animate-spin border-2 border-rose-600 border-t-transparent rounded-full"
-                  />
-                  <X v-else class="w-4 h-4" />
-                  {{ t('management.tickets.orders.review.reject') }}
-                </button>
-              </div>
-              <p class="text-[11px] text-slate-500 text-center">
-                {{ t('management.tickets.orders.review.actionHint') }}
-              </p>
             </section>
           </div>
+        </div>
+
+        <!-- Footer (only shows for actionable orders) -->
+        <div v-if="canReview" class="flex-shrink-0 border-t border-slate-200 bg-white">
+          <div class="flex flex-col sm:flex-row gap-2 px-4 py-3">
+            <button
+              type="button"
+              class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              :disabled="submitting"
+              @click="confirmOrder"
+            >
+              <span
+                v-if="submitting && action === 'confirm'"
+                class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
+              />
+              <Check v-else class="w-4 h-4" />
+              {{ t('management.tickets.orders.review.confirm') }}
+            </button>
+            <button
+              type="button"
+              class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg border border-rose-200 bg-white text-rose-700 hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              :disabled="submitting"
+              @click="rejectOrder"
+            >
+              <span
+                v-if="submitting && action === 'reject'"
+                class="w-4 h-4 animate-spin border-2 border-rose-600 border-t-transparent rounded-full"
+              />
+              <X v-else class="w-4 h-4" />
+              {{ t('management.tickets.orders.review.reject') }}
+            </button>
+          </div>
+          <p class="px-4 pb-3 text-[11px] text-slate-500 text-center">
+            {{ t('management.tickets.orders.review.actionHint') }}
+          </p>
         </div>
       </div>
     </Transition>
@@ -333,6 +352,7 @@ import {
   Check,
   FileText,
   ExternalLink,
+  Receipt,
 } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import {
@@ -387,15 +407,15 @@ const statusLabel = (s: TicketOrderStatus) =>
 const statusBadgeClasses = (s: TicketOrderStatus): string => {
   switch (s) {
     case 'paid':
-      return 'bg-emerald-100 text-emerald-800'
+      return 'bg-emerald-50 text-emerald-700'
     case 'awaiting_review':
-      return 'bg-amber-100 text-amber-800'
+      return 'bg-amber-50 text-amber-700'
     case 'pending':
       return 'bg-slate-100 text-slate-700'
     case 'refund_requested':
-      return 'bg-sky-100 text-sky-800'
+      return 'bg-sky-50 text-sky-700'
     case 'refunded':
-      return 'bg-rose-100 text-rose-800'
+      return 'bg-rose-50 text-rose-700'
     default:
       return 'bg-slate-100 text-slate-600'
   }

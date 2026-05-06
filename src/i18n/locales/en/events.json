@@ -136,6 +136,7 @@
     },
     "order": {
       "back": "All my tickets",
+      "backToList": "Back to my tickets",
       "notFound": "We couldn't find that order.",
       "loadFailed": "Couldn't load this order. Please try again.",
       "confirmationCodeLabel": "Order code",
@@ -267,6 +268,7 @@
       },
       "ticketCount": "{count} ticket | {count} tickets",
       "compBadge": "Comp",
+      "refresh": "Refresh",
       "loadMore": "Load more",
       "loadingMore": "Loading…"
     }

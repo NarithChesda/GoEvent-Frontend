@@ -1,64 +1,139 @@
 <template>
-  <div>
-    <!-- Header -->
-    <div class="flex flex-wrap items-start justify-between gap-3">
-      <div class="min-w-0">
-        <h3 class="text-sm font-semibold text-slate-900 flex items-center gap-2">
-          <Inbox class="w-4 h-4 text-slate-500" />
-          {{ t('management.tickets.orders.header') }}
-        </h3>
-        <p class="mt-1 text-xs text-slate-500">
-          {{ t('management.tickets.orders.subtitle') }}
-        </p>
-      </div>
-      <button
-        type="button"
-        class="flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-lg transition-colors flex-shrink-0"
-        :disabled="loading"
-        @click="loadFirstPage"
-      >
-        <RefreshCw class="w-3.5 h-3.5" :class="loading ? 'animate-spin' : ''" />
-        {{ t('management.tickets.orders.refresh') }}
-      </button>
-    </div>
+  <div class="space-y-4">
+    <!-- Filter and Actions Bar (sticky, matches guest/expense pattern) -->
+    <div class="sticky top-0 z-20">
+      <div class="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-sm">
+        <!-- Mobile: title row on top -->
+        <div class="px-3 pt-3 sm:hidden">
+          <div class="flex items-center gap-2">
+            <Inbox class="w-4 h-4 text-slate-500 flex-shrink-0" />
+            <h3 class="text-sm font-semibold text-slate-900">
+              {{ t('management.tickets.orders.header') }}
+            </h3>
+          </div>
+          <p class="mt-1 text-xs text-slate-500">
+            {{ t('management.tickets.orders.subtitle') }}
+          </p>
+        </div>
 
-    <!-- Status filter pills -->
-    <div class="mt-3 -mx-1 overflow-x-auto">
-      <div class="flex gap-1 px-1 py-1 min-w-max">
-        <button
-          v-for="filter in statusFilters"
-          :key="filter.value ?? 'all'"
-          type="button"
-          class="px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-colors"
-          :class="
-            activeStatus === filter.value
-              ? 'bg-slate-900 text-white'
-              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-          "
-          @click="setStatusFilter(filter.value)"
-        >
-          {{ filter.label }}
-        </button>
+        <!-- Filter pills + actions row -->
+        <div class="flex items-center gap-2 sm:gap-3 p-3">
+          <!-- Status filter dropdown trigger -->
+          <div class="relative" ref="filterContainer">
+            <button
+              type="button"
+              class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 border"
+              :class="
+                activeStatus === null
+                  ? 'text-slate-700 bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                  : 'text-white border-transparent bg-slate-900 hover:bg-slate-800'
+              "
+              :aria-expanded="isFilterDropdownOpen"
+              :aria-label="t('management.tickets.orders.filters.all')"
+              @click="isFilterDropdownOpen = !isFilterDropdownOpen"
+            >
+              <Filter
+                class="w-4 h-4 flex-shrink-0"
+                :class="activeStatus === null ? 'text-slate-500' : 'text-white/80'"
+              />
+              <span class="truncate max-w-[120px] sm:max-w-[180px]">
+                {{ activeFilterLabel }}
+              </span>
+              <ChevronDown
+                class="w-4 h-4 transition-transform flex-shrink-0"
+                :class="[
+                  { 'rotate-180': isFilterDropdownOpen },
+                  activeStatus === null ? 'text-slate-400' : 'text-white/80',
+                ]"
+              />
+            </button>
+
+            <Transition name="dropdown">
+              <div
+                v-if="isFilterDropdownOpen"
+                class="absolute top-full left-0 mt-2 min-w-[220px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100] max-h-[320px] overflow-y-auto"
+                @click.stop
+              >
+                <div class="p-1.5">
+                  <button
+                    v-for="filter in statusFilters"
+                    :key="filter.value ?? 'all'"
+                    type="button"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150"
+                    :class="
+                      activeStatus === filter.value
+                        ? 'bg-slate-900 text-white'
+                        : 'text-slate-700 hover:bg-slate-50'
+                    "
+                    @click="setStatusFilter(filter.value)"
+                  >
+                    <span class="flex-1 text-left">{{ filter.label }}</span>
+                  </button>
+                </div>
+              </div>
+            </Transition>
+
+            <!-- Click outside to close dropdown -->
+            <div
+              v-if="isFilterDropdownOpen"
+              class="fixed inset-0 z-[90]"
+              @click="isFilterDropdownOpen = false"
+            ></div>
+          </div>
+
+          <!-- Divider -->
+          <div class="w-px h-5 bg-slate-200 hidden sm:block"></div>
+
+          <!-- Desktop title (sm+) -->
+          <div class="hidden sm:flex items-center gap-2 min-w-0 flex-shrink">
+            <Inbox class="w-4 h-4 text-slate-500 flex-shrink-0" />
+            <span class="text-sm font-semibold text-slate-900 truncate">
+              {{ t('management.tickets.orders.header') }}
+            </span>
+          </div>
+
+          <!-- Order count -->
+          <div class="hidden sm:flex items-center gap-1 text-sm text-slate-500 tabular-nums flex-shrink-0">
+            <span class="font-medium text-slate-700">{{ orders.length }}</span>
+          </div>
+
+          <!-- Spacer -->
+          <div class="flex-1"></div>
+
+          <!-- Refresh -->
+          <button
+            type="button"
+            class="flex items-center justify-center gap-1.5 px-3 py-2 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-xl transition-all duration-200 flex-shrink-0 disabled:opacity-50"
+            :disabled="loading"
+            :aria-label="t('management.tickets.orders.refresh')"
+            @click="loadFirstPage"
+          >
+            <RefreshCw class="w-4 h-4" :class="loading ? 'animate-spin' : ''" />
+            <span class="hidden sm:inline">{{ t('management.tickets.orders.refresh') }}</span>
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- Body -->
-    <div class="mt-4">
+    <div>
       <!-- Loading -->
-      <div v-if="loading && orders.length === 0" class="flex items-center justify-center py-8">
-        <div class="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div v-if="loading && orders.length === 0" class="flex justify-center items-center py-12">
+        <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
 
       <!-- Empty -->
       <div
         v-else-if="orders.length === 0"
-        class="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/40 px-4 py-8 text-center"
+        class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-2xl p-8 sm:p-12 text-center"
       >
-        <Inbox class="w-8 h-8 text-slate-300 mx-auto mb-2" />
-        <p class="text-sm font-medium text-slate-600">
+        <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <Inbox class="w-8 h-8 text-slate-400" />
+        </div>
+        <h4 class="font-semibold text-slate-900 mb-1.5 sm:mb-2">
           {{ t('management.tickets.orders.empty.title') }}
-        </p>
-        <p class="mt-1 text-xs text-slate-400 max-w-sm mx-auto">
+        </h4>
+        <p class="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto">
           {{ activeStatus
               ? t('management.tickets.orders.empty.descriptionFiltered')
               : t('management.tickets.orders.empty.description') }}
@@ -70,60 +145,62 @@
         <li
           v-for="o in orders"
           :key="o.confirmation_code"
-          class="rounded-xl border bg-white hover:border-slate-300 transition-colors cursor-pointer"
-          :class="
-            o.status === 'awaiting_review'
-              ? 'border-amber-300 bg-amber-50/30'
-              : 'border-slate-200'
-          "
+          class="bg-white/80 border border-slate-200/60 rounded-2xl hover:border-slate-300 hover:bg-white transition-all duration-200 cursor-pointer"
+          :class="o.status === 'awaiting_review' ? 'ring-1 ring-amber-200/80' : ''"
           @click="openOrder(o.confirmation_code)"
         >
-          <div class="flex items-start gap-3 p-3">
+          <div class="flex items-center gap-3 px-4 py-3">
             <!-- Status icon -->
             <div
-              class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+              class="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
               :class="statusIconClasses(o.status)"
             >
-              <component :is="statusIcon(o.status)" class="w-4 h-4" />
+              <component :is="statusIcon(o.status)" class="w-4.5 h-4.5" />
             </div>
 
             <!-- Body -->
             <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 flex-wrap">
-                <p class="text-sm font-mono font-semibold text-slate-900">
-                  {{ o.confirmation_code }}
-                </p>
-                <span
-                  :class="[
-                    'px-1.5 py-0.5 rounded-md text-[10px] font-medium',
-                    statusBadgeClasses(o.status),
-                  ]"
-                >
-                  {{ statusLabel(o.status) }}
-                </span>
-                <span
-                  v-if="o.is_comp"
-                  class="px-1.5 py-0.5 rounded-md text-[10px] font-medium text-sky-700 bg-sky-50"
-                >
-                  {{ t('management.tickets.orders.compBadge') }}
+              <!-- Top row: code, status, comp -->
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
+                  <p class="text-sm font-mono font-semibold text-slate-900 truncate">
+                    {{ o.confirmation_code }}
+                  </p>
+                  <span
+                    class="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[10px] font-medium"
+                    :class="statusBadgeClasses(o.status)"
+                  >
+                    {{ statusLabel(o.status) }}
+                  </span>
+                  <span
+                    v-if="o.is_comp"
+                    class="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[10px] font-medium text-sky-700 bg-sky-50"
+                  >
+                    {{ t('management.tickets.orders.compBadge') }}
+                  </span>
+                </div>
+                <!-- Total amount -->
+                <span class="font-bold text-slate-900 tabular-nums flex-shrink-0">
+                  {{ formatCurrency(o.total, o.currency as CurrencyCode) }}
                 </span>
               </div>
-              <p class="mt-0.5 text-xs text-slate-600 truncate">
-                {{ o.buyer_email }}
-              </p>
-              <p class="mt-0.5 text-xs text-slate-500">
-                {{ t('management.tickets.orders.ticketCount', { count: o.ticket_count }) }}
-                · {{ formatDate(o.created_at) }}
-              </p>
+
+              <!-- Bottom row: buyer + meta -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs text-slate-600 truncate min-w-0 max-w-full sm:max-w-xs">
+                  {{ o.buyer_email }}
+                </span>
+                <span class="text-xs text-slate-300">•</span>
+                <span class="text-xs text-slate-500 tabular-nums">
+                  {{ t('management.tickets.orders.ticketCount', { count: o.ticket_count }, o.ticket_count) }}
+                </span>
+                <span class="text-xs text-slate-300">•</span>
+                <span class="text-xs text-slate-500">{{ formatDate(o.created_at) }}</span>
+              </div>
             </div>
 
-            <!-- Total -->
-            <div class="flex-shrink-0 text-right">
-              <p class="text-sm font-semibold text-slate-900 tabular-nums">
-                {{ formatCurrency(o.total, o.currency as CurrencyCode) }}
-              </p>
-              <ChevronRight class="w-4 h-4 text-slate-400 ml-auto mt-0.5" />
-            </div>
+            <!-- Chevron -->
+            <ChevronRight class="w-4 h-4 text-slate-400 flex-shrink-0" />
           </div>
         </li>
       </ul>
@@ -132,10 +209,14 @@
       <div v-if="hasMore && !loading" class="mt-4 text-center">
         <button
           type="button"
-          class="px-4 py-2 text-sm font-medium border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+          class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-slate-200 hover:border-slate-300 rounded-xl text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-all duration-200"
           :disabled="loadingMore"
           @click="loadMore"
         >
+          <span
+            v-if="loadingMore"
+            class="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"
+          />
           {{ loadingMore
               ? t('management.tickets.orders.loadingMore')
               : t('management.tickets.orders.loadMore') }}
@@ -161,6 +242,8 @@ import {
   Inbox,
   RefreshCw,
   ChevronRight,
+  ChevronDown,
+  Filter,
   Clock,
   AlertCircle,
   CheckCircle2,
@@ -200,6 +283,8 @@ const hasMore = ref(false)
 const nextPage = ref(2)
 const activeStatus = ref<TicketOrderStatus | null>(null)
 const openOrderCode = ref<string | null>(null)
+const isFilterDropdownOpen = ref(false)
+const filterContainer = ref<HTMLElement | null>(null)
 
 // ---- Status filter -------------------------------------------------------
 const statusFilters = computed<Array<{ value: TicketOrderStatus | null; label: string }>>(() => [
@@ -212,7 +297,13 @@ const statusFilters = computed<Array<{ value: TicketOrderStatus | null; label: s
   { value: 'cancelled', label: t('management.tickets.orders.filters.cancelled') },
 ])
 
+const activeFilterLabel = computed(() => {
+  const match = statusFilters.value.find((f) => f.value === activeStatus.value)
+  return match ? match.label : t('management.tickets.orders.filters.all')
+})
+
 const setStatusFilter = (status: TicketOrderStatus | null) => {
+  isFilterDropdownOpen.value = false
   if (activeStatus.value === status) return
   activeStatus.value = status
   loadFirstPage()
@@ -225,15 +316,15 @@ const statusLabel = (s: TicketOrderStatus) =>
 const statusBadgeClasses = (s: TicketOrderStatus): string => {
   switch (s) {
     case 'paid':
-      return 'bg-emerald-100 text-emerald-800'
+      return 'bg-emerald-50 text-emerald-700'
     case 'awaiting_review':
-      return 'bg-amber-100 text-amber-800'
+      return 'bg-amber-50 text-amber-700'
     case 'pending':
       return 'bg-slate-100 text-slate-700'
     case 'refund_requested':
-      return 'bg-sky-100 text-sky-800'
+      return 'bg-sky-50 text-sky-700'
     case 'refunded':
-      return 'bg-rose-100 text-rose-800'
+      return 'bg-rose-50 text-rose-700'
     case 'cancelled':
     case 'expired':
       return 'bg-slate-100 text-slate-600'
@@ -374,3 +465,16 @@ const honourOrderQuery = () => {
 
 watch(() => route.query.order, honourOrderQuery, { immediate: true })
 </script>
+
+<style scoped>
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+</style>

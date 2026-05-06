@@ -4,7 +4,7 @@
     <Transition name="fade">
       <div
         v-if="show"
-        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70]"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
         @click="handleClose"
       />
     </Transition>
@@ -13,7 +13,7 @@
     <Transition name="slide-up">
       <div
         v-if="show"
-        class="fixed inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center w-full md:w-auto z-[71]"
+        class="fixed inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center w-full md:w-auto z-[999]"
         @click.self="handleClose"
       >
         <div

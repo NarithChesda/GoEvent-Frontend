@@ -5,51 +5,55 @@
         <!-- Back link -->
         <button
           type="button"
-          class="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 mb-4"
+          class="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 mb-4 px-2 py-1.5 -mx-2 rounded-lg hover:bg-slate-100/60 transition-colors"
           @click="goBack"
         >
           <ArrowLeft class="w-4 h-4" />
           {{ t('events.tickets.checkout.back') }}
         </button>
 
-        <h1 class="text-2xl font-bold text-slate-900 mb-1">
-          {{ t('events.tickets.checkout.title') }}
-        </h1>
-        <p v-if="event" class="text-sm text-slate-600 mb-6">
-          {{ event.title }}
-        </p>
+        <!-- Page header (canonical) -->
+        <div class="mb-5 sm:mb-6">
+          <h1 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+            {{ t('events.tickets.checkout.title') }}
+          </h1>
+          <p v-if="event" class="text-xs sm:text-sm text-slate-600 mt-1">
+            {{ event.title }}
+          </p>
+        </div>
 
         <!-- Loading -->
         <div v-if="loadingMeta" class="flex items-center justify-center py-12">
-          <div class="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
         </div>
 
         <!-- Empty cart guard -->
         <div
           v-else-if="store.totalQuantity === 0 || store.eventId !== eventId"
-          class="bg-white border border-slate-200 rounded-xl p-6 text-center"
+          class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-2xl p-8 sm:p-12 text-center"
         >
-          <p class="text-sm text-slate-600 mb-4">
+          <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <ShoppingCart class="w-8 h-8 text-slate-400" />
+          </div>
+          <p class="text-sm text-slate-600 mb-4 max-w-sm mx-auto">
             {{ t('events.tickets.checkout.emptyCart') }}
           </p>
           <button
             type="button"
-            class="text-sm text-emerald-700 font-medium hover:text-emerald-800"
+            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-slate-200 hover:border-slate-300 rounded-xl text-slate-700 hover:bg-slate-50 transition-all duration-200"
             @click="goBack"
           >
             {{ t('events.tickets.checkout.backToEvent') }}
           </button>
         </div>
 
-        <div v-else class="space-y-5">
+        <div v-else class="space-y-4">
           <!-- Cart -->
-          <section class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <div class="px-4 py-3 border-b border-slate-100">
-              <h2 class="text-sm font-semibold text-slate-900">
-                {{ t('events.tickets.checkout.cartHeader') }}
-              </h2>
-            </div>
-            <ul class="divide-y divide-slate-100">
+          <section>
+            <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+              {{ t('events.tickets.checkout.cartHeader') }}
+            </h2>
+            <ul class="bg-white/80 border border-slate-200/60 rounded-2xl divide-y divide-slate-100 overflow-hidden">
               <li
                 v-for="item in store.items"
                 :key="item.ticketTypeId"
@@ -57,11 +61,11 @@
               >
                 <div class="min-w-0 flex-1">
                   <p class="text-sm font-medium text-slate-900 truncate">{{ item.name }}</p>
-                  <p class="text-xs text-slate-500 tabular-nums">
+                  <p class="text-xs text-slate-500 tabular-nums mt-0.5">
                     {{ item.quantity }} × {{ formatCurrency(item.unitPrice, item.currency as CurrencyCode) }}
                   </p>
                 </div>
-                <p class="text-sm font-semibold text-slate-900 tabular-nums">
+                <p class="text-sm font-semibold text-slate-900 tabular-nums flex-shrink-0">
                   {{ formatCurrency(lineTotal(item), item.currency as CurrencyCode) }}
                 </p>
               </li>
@@ -69,207 +73,225 @@
           </section>
 
           <!-- Buyer info -->
-          <section class="bg-white border border-slate-200 rounded-xl p-4">
-            <h2 class="text-sm font-semibold text-slate-900 mb-3">
+          <section>
+            <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
               {{ t('events.tickets.checkout.buyerHeader') }}
             </h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-medium text-slate-700 mb-1">
-                  {{ t('events.tickets.checkout.buyerName') }} <span class="text-red-500">*</span>
-                </label>
-                <input
-                  v-model="buyer.name"
-                  type="text"
-                  maxlength="120"
-                  class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400"
-                  :class="fieldErrors.buyerName ? 'border-red-300' : 'border-slate-300'"
-                />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-700 mb-1">
-                  {{ t('events.tickets.checkout.buyerEmail') }} <span class="text-red-500">*</span>
-                </label>
-                <input
-                  v-model="buyer.email"
-                  type="email"
-                  maxlength="255"
-                  class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400"
-                  :class="fieldErrors.buyerEmail ? 'border-red-300' : 'border-slate-300'"
-                />
-              </div>
-              <div class="sm:col-span-2">
-                <label class="block text-xs font-medium text-slate-700 mb-1">
-                  {{ t('events.tickets.checkout.buyerPhone') }}
-                </label>
-                <input
-                  v-model="buyer.phone"
-                  type="tel"
-                  maxlength="40"
-                  class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400"
-                />
+            <div class="bg-white/80 border border-slate-200/60 rounded-2xl p-4 sm:p-5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    {{ t('events.tickets.checkout.buyerName') }} <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model="buyer.name"
+                    type="text"
+                    maxlength="120"
+                    class="w-full px-3.5 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                    :class="fieldErrors.buyerName ? 'border-red-300' : 'border-slate-300'"
+                  />
+                  <p v-if="fieldErrors.buyerName" class="mt-1 text-xs text-red-600">
+                    {{ fieldErrors.buyerName }}
+                  </p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    {{ t('events.tickets.checkout.buyerEmail') }} <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model="buyer.email"
+                    type="email"
+                    maxlength="255"
+                    class="w-full px-3.5 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                    :class="fieldErrors.buyerEmail ? 'border-red-300' : 'border-slate-300'"
+                  />
+                  <p v-if="fieldErrors.buyerEmail" class="mt-1 text-xs text-red-600">
+                    {{ fieldErrors.buyerEmail }}
+                  </p>
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    {{ t('events.tickets.checkout.buyerPhone') }}
+                  </label>
+                  <input
+                    v-model="buyer.phone"
+                    type="tel"
+                    maxlength="40"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                  />
+                </div>
               </div>
             </div>
           </section>
 
           <!-- Checkout questions -->
-          <section
-            v-if="questions.length > 0"
-            class="bg-white border border-slate-200 rounded-xl p-4 space-y-4"
-          >
-            <h2 class="text-sm font-semibold text-slate-900">
+          <section v-if="questions.length > 0">
+            <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
               {{ t('events.tickets.checkout.questionsHeader') }}
             </h2>
-            <div v-for="q in questions" :key="q.id">
-              <label class="block text-xs font-medium text-slate-700 mb-1">
-                {{ q.question_text }}
-                <span v-if="q.is_required" class="text-red-500">*</span>
-              </label>
-              <!-- Text -->
-              <input
-                v-if="q.question_type === 'text'"
-                v-model="(answers[q.id] as { text: string }).text"
-                type="text"
-                maxlength="500"
-                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400"
-                :class="fieldErrors.answers[q.id] ? 'border-red-300' : 'border-slate-300'"
-              />
-              <!-- Long text -->
-              <textarea
-                v-else-if="q.question_type === 'long_text'"
-                v-model="(answers[q.id] as { text: string }).text"
-                rows="3"
-                maxlength="2000"
-                class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 resize-y"
-                :class="fieldErrors.answers[q.id] ? 'border-red-300' : 'border-slate-300'"
-              />
-              <!-- Yes / no -->
-              <div v-else-if="q.question_type === 'yes_no'" class="flex gap-2">
-                <button
-                  type="button"
-                  class="px-4 py-1.5 text-sm rounded-lg border transition-colors"
-                  :class="
-                    (answers[q.id] as { text: string }).text === 'yes'
-                      ? 'bg-emerald-600 border-emerald-600 text-white'
-                      : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
-                  "
-                  @click="(answers[q.id] as { text: string }).text = 'yes'"
-                >
-                  {{ t('events.tickets.checkout.yes') }}
-                </button>
-                <button
-                  type="button"
-                  class="px-4 py-1.5 text-sm rounded-lg border transition-colors"
-                  :class="
-                    (answers[q.id] as { text: string }).text === 'no'
-                      ? 'bg-slate-900 border-slate-900 text-white'
-                      : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
-                  "
-                  @click="(answers[q.id] as { text: string }).text = 'no'"
-                >
-                  {{ t('events.tickets.checkout.no') }}
-                </button>
-              </div>
-              <!-- Single choice -->
-              <div v-else-if="q.question_type === 'single_choice'" class="space-y-1.5">
-                <label
-                  v-for="choice in q.choices"
-                  :key="choice"
-                  class="flex items-center gap-2 cursor-pointer text-sm text-slate-700"
-                >
-                  <input
-                    type="radio"
-                    :name="`q-${q.id}`"
-                    :value="choice"
-                    v-model="(answers[q.id] as { text: string }).text"
-                    class="w-4 h-4 text-emerald-600 focus:ring-2 focus:ring-emerald-500/20"
-                  />
-                  <span>{{ choice }}</span>
+            <div class="bg-white/80 border border-slate-200/60 rounded-2xl p-4 sm:p-5 space-y-4">
+              <div v-for="q in questions" :key="q.id">
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                  {{ q.question_text }}
+                  <span v-if="q.is_required" class="text-red-500">*</span>
                 </label>
+                <!-- Text -->
+                <input
+                  v-if="q.question_type === 'text'"
+                  :value="answerText(q.id)"
+                  @input="setAnswerText(q.id, ($event.target as HTMLInputElement).value)"
+                  type="text"
+                  maxlength="500"
+                  class="w-full px-3.5 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                  :class="fieldErrors.answers[q.id] ? 'border-red-300' : 'border-slate-300'"
+                />
+                <!-- Long text -->
+                <textarea
+                  v-else-if="q.question_type === 'long_text'"
+                  :value="answerText(q.id)"
+                  @input="setAnswerText(q.id, ($event.target as HTMLTextAreaElement).value)"
+                  rows="3"
+                  maxlength="2000"
+                  class="w-full px-3.5 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-y"
+                  :class="fieldErrors.answers[q.id] ? 'border-red-300' : 'border-slate-300'"
+                />
+                <!-- Yes / no -->
+                <div v-else-if="q.question_type === 'yes_no'" class="flex gap-2">
+                  <button
+                    type="button"
+                    class="px-4 py-2 min-h-[44px] text-sm rounded-lg border transition-colors"
+                    :class="
+                      answerText(q.id) === 'yes'
+                        ? 'bg-emerald-600 border-emerald-600 text-white'
+                        : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+                    "
+                    @click="setAnswerText(q.id, 'yes')"
+                  >
+                    {{ t('events.tickets.checkout.yes') }}
+                  </button>
+                  <button
+                    type="button"
+                    class="px-4 py-2 min-h-[44px] text-sm rounded-lg border transition-colors"
+                    :class="
+                      answerText(q.id) === 'no'
+                        ? 'bg-slate-900 border-slate-900 text-white'
+                        : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+                    "
+                    @click="setAnswerText(q.id, 'no')"
+                  >
+                    {{ t('events.tickets.checkout.no') }}
+                  </button>
+                </div>
+                <!-- Single choice -->
+                <div v-else-if="q.question_type === 'single_choice'" class="space-y-2">
+                  <label
+                    v-for="choice in q.choices"
+                    :key="choice"
+                    class="flex items-center gap-2.5 cursor-pointer text-sm text-slate-700 py-1.5"
+                  >
+                    <input
+                      type="radio"
+                      :name="`q-${q.id}`"
+                      :value="choice"
+                      :checked="answerText(q.id) === choice"
+                      @change="setAnswerText(q.id, choice)"
+                      class="w-4 h-4 text-emerald-600 focus:ring-2 focus:ring-emerald-500/20"
+                    />
+                    <span>{{ choice }}</span>
+                  </label>
+                </div>
+                <!-- Multi choice -->
+                <div v-else-if="q.question_type === 'multi_choice'" class="space-y-2">
+                  <label
+                    v-for="choice in q.choices"
+                    :key="choice"
+                    class="flex items-center gap-2.5 cursor-pointer text-sm text-slate-700 py-1.5"
+                  >
+                    <input
+                      type="checkbox"
+                      :value="choice"
+                      :checked="answerChoices(q.id).includes(choice)"
+                      @change="toggleAnswerChoice(q.id, choice, ($event.target as HTMLInputElement).checked)"
+                      class="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-2 focus:ring-emerald-500/20"
+                    />
+                    <span>{{ choice }}</span>
+                  </label>
+                </div>
+                <p v-if="fieldErrors.answers[q.id]" class="mt-1 text-xs text-red-600">
+                  {{ fieldErrors.answers[q.id] }}
+                </p>
               </div>
-              <!-- Multi choice -->
-              <div v-else-if="q.question_type === 'multi_choice'" class="space-y-1.5">
-                <label
-                  v-for="choice in q.choices"
-                  :key="choice"
-                  class="flex items-center gap-2 cursor-pointer text-sm text-slate-700"
-                >
-                  <input
-                    type="checkbox"
-                    :value="choice"
-                    v-model="(answers[q.id] as { choices: string[] }).choices"
-                    class="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-2 focus:ring-emerald-500/20"
-                  />
-                  <span>{{ choice }}</span>
-                </label>
-              </div>
-              <p v-if="fieldErrors.answers[q.id]" class="mt-1 text-xs text-red-600">
-                {{ fieldErrors.answers[q.id] }}
-              </p>
             </div>
           </section>
 
           <!-- Promo code -->
-          <section class="bg-white border border-slate-200 rounded-xl p-4">
-            <label class="block text-xs font-medium text-slate-700 mb-1">
+          <section>
+            <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
               {{ t('events.tickets.checkout.promoCode') }}
-            </label>
-            <div class="flex gap-2">
-              <input
-                v-model="promoInput"
-                type="text"
-                maxlength="40"
-                :placeholder="t('events.tickets.checkout.promoPlaceholder')"
-                class="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 uppercase tracking-wide"
-              />
-              <button
-                type="button"
-                class="px-4 py-2 text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors disabled:opacity-50"
-                :disabled="!promoInput.trim() || isValidatingPromo"
-                @click="validatePromo"
-              >
-                {{ isValidatingPromo ? t('events.tickets.checkout.validating') : t('events.tickets.checkout.apply') }}
-              </button>
+            </h2>
+            <div class="bg-white/80 border border-slate-200/60 rounded-2xl p-4 sm:p-5">
+              <div class="flex gap-2">
+                <input
+                  v-model="promoInput"
+                  type="text"
+                  maxlength="40"
+                  :placeholder="t('events.tickets.checkout.promoPlaceholder')"
+                  class="flex-1 px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 uppercase tracking-wide"
+                />
+                <button
+                  type="button"
+                  class="px-4 py-2.5 min-h-[44px] text-sm font-medium border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  :disabled="!promoInput.trim() || isValidatingPromo"
+                  @click="validatePromo"
+                >
+                  {{ isValidatingPromo ? t('events.tickets.checkout.validating') : t('events.tickets.checkout.apply') }}
+                </button>
+              </div>
+              <p v-if="promoError" class="mt-2 text-xs text-red-600">
+                {{ promoError }}
+              </p>
+              <p v-if="promoApplied" class="mt-2 text-xs text-emerald-700">
+                {{ t('events.tickets.checkout.promoApplied', { code: promoApplied.code, discount: formatCurrency(promoApplied.discount, cartCurrency!) }) }}
+              </p>
             </div>
-            <p v-if="promoError" class="mt-1 text-xs text-red-600">
-              {{ promoError }}
-            </p>
-            <p v-if="promoApplied" class="mt-1 text-xs text-emerald-700">
-              {{ t('events.tickets.checkout.promoApplied', { code: promoApplied.code, discount: formatCurrency(promoApplied.discount, cartCurrency!) }) }}
-            </p>
           </section>
 
           <!-- Totals -->
-          <section class="bg-white border border-slate-200 rounded-xl p-4 space-y-1">
-            <div class="flex items-center justify-between text-sm">
-              <span class="text-slate-600">{{ t('events.tickets.checkout.subtotalLabel') }}</span>
-              <span class="text-slate-900 tabular-nums">
-                {{ formatCurrency(store.subtotal, cartCurrency!) }}
-              </span>
-            </div>
-            <div v-if="promoApplied" class="flex items-center justify-between text-sm">
-              <span class="text-slate-600">{{ t('events.tickets.checkout.discountLabel') }}</span>
-              <span class="text-emerald-700 tabular-nums">
-                − {{ formatCurrency(promoApplied.discount, cartCurrency!) }}
-              </span>
-            </div>
-            <div class="flex items-center justify-between text-base font-semibold pt-2 border-t border-slate-100">
-              <span class="text-slate-900">{{ t('events.tickets.checkout.totalLabel') }}</span>
-              <span class="text-slate-900 tabular-nums">
-                {{ formatCurrency(grandTotal, cartCurrency!) }}
-              </span>
+          <section>
+            <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+              {{ t('events.tickets.checkout.totalLabel') }}
+            </h2>
+            <div class="bg-slate-50/80 border border-slate-200/60 rounded-2xl p-4 sm:p-5 space-y-1.5 text-sm">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-600">{{ t('events.tickets.checkout.subtotalLabel') }}</span>
+                <span class="text-slate-900 tabular-nums">
+                  {{ formatCurrency(store.subtotal, cartCurrency!) }}
+                </span>
+              </div>
+              <div v-if="promoApplied" class="flex items-center justify-between">
+                <span class="text-slate-600">{{ t('events.tickets.checkout.discountLabel') }}</span>
+                <span class="text-emerald-700 tabular-nums">
+                  − {{ formatCurrency(promoApplied.discount, cartCurrency!) }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between text-base font-semibold pt-2 border-t border-slate-200">
+                <span class="text-slate-900">{{ t('events.tickets.checkout.totalLabel') }}</span>
+                <span class="text-slate-900 tabular-nums">
+                  {{ formatCurrency(grandTotal, cartCurrency!) }}
+                </span>
+              </div>
             </div>
           </section>
 
           <!-- Generic error -->
-          <div v-if="submitError" class="rounded-lg bg-red-50 border border-red-200 p-3">
+          <div v-if="submitError" class="rounded-xl bg-red-50 border border-red-200 p-3">
             <p class="text-sm text-red-800">{{ submitError }}</p>
           </div>
 
           <!-- Submit -->
           <button
             type="button"
-            class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+            class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:opacity-90 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
             :disabled="isSubmitting"
             @click="submitOrder"
           >
@@ -290,7 +312,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft } from 'lucide-vue-next'
+import { ArrowLeft, ShoppingCart } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useAuthStore } from '@/stores/auth'
@@ -329,6 +351,30 @@ const buyer = reactive({
 interface AnswerState { text: string; choices: string[] }
 const answers = reactive<Record<number, AnswerState>>({})
 
+// Helper accessors so the template can write/read answer fields without
+// inline `as { text: string }` casts (vue-tsc rejected those in v-model).
+const ensureAnswer = (id: number): AnswerState => {
+  if (!answers[id]) {
+    answers[id] = { text: '', choices: [] }
+  }
+  return answers[id]
+}
+
+const answerText = (id: number): string => answers[id]?.text ?? ''
+
+const setAnswerText = (id: number, value: string) => {
+  ensureAnswer(id).text = value
+}
+
+const answerChoices = (id: number): string[] => answers[id]?.choices ?? []
+
+const toggleAnswerChoice = (id: number, choice: string, checked: boolean) => {
+  const a = ensureAnswer(id)
+  const idx = a.choices.indexOf(choice)
+  if (checked && idx === -1) a.choices.push(choice)
+  else if (!checked && idx !== -1) a.choices.splice(idx, 1)
+}
+
 const promoInput = ref('')
 const isValidatingPromo = ref(false)
 const promoError = ref('')
@@ -365,9 +411,7 @@ const grandTotal = computed<string>(() => {
 // ---- Load ----------------------------------------------------------------
 const ensureCheckoutQuestionDefaults = (qs: TicketCheckoutQuestion[]) => {
   for (const q of qs) {
-    if (!answers[q.id]) {
-      answers[q.id] = { text: '', choices: [] }
-    }
+    ensureAnswer(q.id)
   }
 }
 

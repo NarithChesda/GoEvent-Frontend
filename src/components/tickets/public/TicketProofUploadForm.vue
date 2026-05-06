@@ -1,5 +1,5 @@
 <template>
-  <section class="bg-white border border-slate-200 rounded-xl p-4 space-y-4">
+  <section class="bg-white/80 border border-slate-200/60 rounded-2xl p-4 sm:p-5 space-y-4">
     <div>
       <h2 class="text-sm font-semibold text-slate-900">
         {{ t('events.tickets.order.proof.header') }}
@@ -15,7 +15,7 @@
          methods at /api/payment/payment-methods/ are for buyers paying GoEvent
          for templates/plans, which is a separate flow. -->
     <div>
-      <label class="block text-xs font-medium text-slate-700 mb-2">
+      <label class="block text-sm font-medium text-slate-700 mb-2">
         {{ t('events.tickets.order.proof.methodLabel') }}
         <span class="text-red-500">*</span>
       </label>
@@ -24,7 +24,7 @@
       </div>
       <div
         v-else-if="methods.length === 0"
-        class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"
+        class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"
       >
         {{
           rawMethodCount > 0
@@ -38,15 +38,15 @@
           :key="method.id"
           type="button"
           :class="[
-            'w-full p-3 text-left rounded-xl border-2 transition-all',
+            'w-full p-3 text-left rounded-xl border-2 transition-all duration-200 min-h-[56px]',
             selectedMethodId === method.id
               ? 'border-emerald-500 bg-emerald-50'
-              : 'border-slate-200 hover:border-emerald-300',
+              : 'border-slate-200 hover:border-emerald-300 hover:bg-slate-50',
           ]"
           @click="selectedMethodId = method.id"
         >
           <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
+            <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
               <Building2
                 v-if="method.payment_method === 'bank_transfer'"
                 class="w-4 h-4 text-slate-600"
@@ -58,7 +58,7 @@
               <LinkIcon v-else class="w-4 h-4 text-slate-600" />
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-slate-900">{{ method.name }}</p>
+              <p class="text-sm font-medium text-slate-900 truncate">{{ method.name }}</p>
               <p class="text-xs text-slate-500 truncate">
                 <template v-if="method.payment_method === 'bank_transfer'">
                   {{ method.bank_name }}<template v-if="method.account_number"> · {{ method.account_number }}</template>
@@ -76,9 +76,9 @@
     <!-- Selected method details — bank info / QR / payment URL -->
     <div
       v-if="selectedPaymentMethod"
-      class="bg-slate-50 rounded-xl p-4 space-y-3"
+      class="bg-slate-50/80 border border-slate-200/60 rounded-2xl p-4 space-y-3"
     >
-      <h4 class="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+      <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
         {{ t('events.tickets.order.proof.detailsHeader') }}
       </h4>
 
@@ -105,13 +105,14 @@
         >
           <span class="text-slate-500">{{ t('events.tickets.order.proof.accountNumber') }}</span>
           <div class="flex items-center gap-2">
-            <span class="font-mono font-medium text-slate-900">
+            <span class="font-mono font-medium text-slate-900 break-all">
               {{ selectedPaymentMethod.account_number }}
             </span>
             <button
               type="button"
-              class="p-1 hover:bg-slate-200 rounded transition-colors"
+              class="p-2 rounded-xl hover:bg-slate-200/80 transition-colors flex-shrink-0"
               :title="t('events.tickets.order.proof.copyAccountNumber')"
+              :aria-label="t('events.tickets.order.proof.copyAccountNumber')"
               @click="copyAccountNumber"
             >
               <Copy class="w-3.5 h-3.5 text-slate-500" />
@@ -128,7 +129,7 @@
         <img
           :src="resolveMediaUrl(selectedPaymentMethod.qr_code_image)"
           :alt="selectedPaymentMethod.name"
-          class="w-36 h-36 rounded-lg border border-slate-200 bg-white object-contain"
+          class="w-36 h-36 rounded-xl border border-slate-200 bg-white object-contain"
         />
       </div>
 
@@ -138,7 +139,7 @@
           :href="selectedPaymentMethod.payment_url"
           target="_blank"
           rel="noopener noreferrer"
-          class="flex items-center justify-center gap-2 w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
+          class="flex items-center justify-center gap-2 w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors"
         >
           <ExternalLink class="w-4 h-4" />
           {{ t('events.tickets.order.proof.openPaymentLink') }}
@@ -148,7 +149,7 @@
       <!-- Optional method description -->
       <p
         v-if="selectedPaymentMethod.description"
-        class="text-xs text-slate-500 pt-1 border-t border-slate-200"
+        class="text-xs text-slate-500 pt-2 border-t border-slate-200"
       >
         {{ selectedPaymentMethod.description }}
       </p>
@@ -156,7 +157,7 @@
 
     <!-- File picker -->
     <div>
-      <label class="block text-xs font-medium text-slate-700 mb-1">
+      <label class="block text-sm font-medium text-slate-700 mb-2">
         {{ t('events.tickets.order.proof.fileLabel') }}
         <span class="text-red-500">*</span>
       </label>
@@ -164,10 +165,10 @@
         ref="fileInput"
         type="file"
         accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
-        class="block w-full text-sm text-slate-700 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-700 file:text-sm hover:file:bg-slate-200"
+        class="block w-full text-sm text-slate-700 file:mr-3 file:py-2.5 file:px-3.5 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-700 file:text-sm file:font-medium hover:file:bg-slate-200 file:cursor-pointer cursor-pointer"
         @change="onFileChange"
       />
-      <p class="mt-1 text-[11px] text-slate-500">
+      <p class="mt-1.5 text-[11px] text-slate-500">
         {{ t('events.tickets.order.proof.fileHint') }}
       </p>
       <p v-if="fileError" class="mt-1 text-xs text-red-600">{{ fileError }}</p>
@@ -175,7 +176,7 @@
 
     <!-- Transaction reference -->
     <div>
-      <label class="block text-xs font-medium text-slate-700 mb-1">
+      <label class="block text-sm font-medium text-slate-700 mb-2">
         {{ t('events.tickets.order.proof.transactionRefLabel') }}
       </label>
       <input
@@ -183,13 +184,13 @@
         type="text"
         maxlength="120"
         :placeholder="t('events.tickets.order.proof.transactionRefPlaceholder')"
-        class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400"
+        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
       />
     </div>
 
     <!-- Notes -->
     <div>
-      <label class="block text-xs font-medium text-slate-700 mb-1">
+      <label class="block text-sm font-medium text-slate-700 mb-2">
         {{ t('events.tickets.order.proof.notesLabel') }}
       </label>
       <textarea
@@ -197,19 +198,19 @@
         rows="2"
         maxlength="500"
         :placeholder="t('events.tickets.order.proof.notesPlaceholder')"
-        class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 resize-y"
+        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-y"
       />
     </div>
 
     <!-- Generic error -->
-    <div v-if="submitError" class="rounded-lg bg-red-50 border border-red-200 p-3">
+    <div v-if="submitError" class="rounded-xl bg-red-50 border border-red-200 p-3">
       <p class="text-sm text-red-800">{{ submitError }}</p>
     </div>
 
     <!-- Submit -->
     <button
       type="button"
-      class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition-all shadow-sm flex items-center justify-center gap-2"
+      class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:opacity-90 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white text-sm font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
       :disabled="!canSubmit || isSubmitting"
       @click="submit"
     >
