@@ -1,7 +1,7 @@
 <template>
   <MainLayout :hide-mobile-tab-bar="true">
     <div class="min-h-screen bg-slate-50/50">
-      <div class="max-w-2xl mx-auto px-4 sm:px-6 py-6">
+      <div class="max-w-2xl mx-auto px-4 sm:px-6 pt-6 [padding-bottom:calc(env(safe-area-inset-bottom)+10rem)] lg:[padding-bottom:calc(env(safe-area-inset-bottom)+2rem)]">
         <!-- Back link -->
         <button
           type="button"
@@ -38,7 +38,7 @@
                 <p class="font-mono text-lg font-bold text-slate-900 break-all">
                   {{ order.confirmation_code }}
                 </p>
-                <p class="mt-1 text-sm text-slate-600">{{ order.event_title }}</p>
+                <p class="mt-1 text-sm text-slate-600">{{ eventTitle }}</p>
               </div>
               <span
                 :class="[
@@ -119,13 +119,12 @@
             </div>
           </section>
 
-          <!-- Pending: proof upload.
-               Reads the flat `event_id` (always present in the live response).
-               When the backend ships the documented nested `event` shape we
-               can switch back to `order.event.id` — see ticket.types.ts. -->
+          <!-- Pending: proof upload. The detail endpoint may serve either the
+               nested `event` object (documented shape) or the slim shape with
+               a flat UUID `event` + `event_id`; `eventId` resolves both. -->
           <TicketProofUploadForm
-            v-if="order.status === 'pending'"
-            :event-id="order.event_id"
+            v-if="order.status === 'pending' && eventId"
+            :event-id="eventId"
             :confirmation-code="order.confirmation_code"
             @submitted="handleOrderUpdated"
             @message="handleMessage"
@@ -289,6 +288,25 @@ const loadOrder = async () => {
 }
 
 onMounted(loadOrder)
+
+// ---- Event identity ------------------------------------------------------
+// `event` is either a nested OrderEventBrief or a bare UUID string (FK PK)
+// depending on which serializer the backend is currently serving. Flat
+// companions (`event_id`, `event_title`) may or may not be present.
+const eventId = computed<string>(() => {
+  const o = order.value
+  if (!o) return ''
+  if (o.event && typeof o.event === 'object') return o.event.id
+  if (typeof o.event === 'string') return o.event
+  return o.event_id ?? ''
+})
+
+const eventTitle = computed<string>(() => {
+  const o = order.value
+  if (!o) return ''
+  if (o.event && typeof o.event === 'object') return o.event.title
+  return o.event_title ?? ''
+})
 
 // ---- Status presentation -------------------------------------------------
 const statusLabel = computed(() => {

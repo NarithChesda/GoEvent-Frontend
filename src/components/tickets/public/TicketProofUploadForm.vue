@@ -289,6 +289,9 @@ const selectedPaymentMethod = computed<EventPaymentMethod | null>(() => {
 })
 
 const loadMethods = async () => {
+  // Guard: a missing event id would be sent to the backend as the literal
+  // string "undefined" and crash with a UUID ValidationError.
+  if (!props.eventId) return
   loadingMethods.value = true
   try {
     const response = await paymentMethodsService.getPaymentMethods(props.eventId)

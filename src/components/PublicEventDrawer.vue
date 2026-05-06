@@ -310,7 +310,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import DOMPurify from 'dompurify'
 import {
@@ -565,6 +565,11 @@ onMounted(() => {
     loadTicketTiers(props.eventId)
     loadEvent(props.eventId)
   }
+})
+
+onBeforeUnmount(() => {
+  document.body.style.overflow = ''
+  document.body.style.paddingRight = ''
 })
 </script>
 

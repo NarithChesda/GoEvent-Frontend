@@ -169,22 +169,21 @@ export interface TicketOrderDetail {
   id: string
   confirmation_code: string
   /**
-   * Backend reality vs report (2026-05-05): the backend dev claimed the
-   * detail endpoint ships `event` as a nested `OrderEventBrief` (per docs).
-   * The live response disagrees — `event` is a flat UUID string (FK PK)
-   * and the slim list serializer's flat companions are still emitted:
-   * `event_id`, `event_title`, `event_slug`, `event_start_date`,
-   * `event_end_date`, `event_location`. Either the serializer override
-   * didn't ship to the running Django, or the docs and code drifted again.
+   * The detail endpoint has shipped two different shapes over time:
+   *   - Slim list-serializer fallback: `event` is a flat UUID string (FK PK),
+   *     accompanied by flat `event_id`, `event_title`, `event_slug`,
+   *     `event_start_date`, `event_end_date`, `event_location`.
+   *   - Documented detail serializer: `event` is a nested `OrderEventBrief`
+   *     and the flat companions are dropped.
    *
-   * Until that's reconciled we read through `event_id` / `event_title`
-   * (flat — guaranteed present today). When the backend really ships the
-   * nested shape, `event` will widen to `OrderEventBrief` and we can drop
-   * the flat fields below.
+   * Both have been observed in the wild on the dev instance, so every flat
+   * companion is optional. Consumers should resolve the event id/title via
+   * the nested object first, then fall back to the flat fields. See
+   * `MyTicketOrderView.vue`.
    */
   event: string | OrderEventBrief
-  event_id: string
-  event_title: string
+  event_id?: string
+  event_title?: string
   event_slug?: string
   event_start_date?: string
   event_end_date?: string

@@ -1,7 +1,7 @@
 <template>
   <MainLayout :hide-mobile-tab-bar="true">
     <div class="min-h-screen bg-slate-50/50">
-      <div class="max-w-2xl mx-auto px-4 sm:px-6 py-6">
+      <div class="max-w-2xl mx-auto px-4 sm:px-6 pt-6 [padding-bottom:calc(env(safe-area-inset-bottom)+10rem)] lg:[padding-bottom:calc(env(safe-area-inset-bottom)+2rem)]">
         <!-- Back link -->
         <button
           type="button"
