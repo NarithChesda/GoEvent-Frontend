@@ -621,7 +621,7 @@ const canViewReview = computed(() => {
 })
 
 const canViewTickets = computed(() => {
-  return canViewRestrictedTabs.value
+  return canViewRestrictedTabs.value && event.value?.privacy === 'public'
 })
 
 const canDeleteEvent = computed(() => {
