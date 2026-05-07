@@ -1,14 +1,14 @@
 <template>
   <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-    <!-- Mode toggle pills -->
-    <div class="flex gap-1 p-1 bg-slate-100 border-b border-slate-200">
+    <!-- Mode toggle — gradient pill tabs to match QuickAddModal style guide. -->
+    <div class="flex gap-2 p-3 sm:p-4 pb-0">
       <button
         type="button"
-        class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200"
+        class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg font-medium text-sm transition-all duration-200"
         :class="
           mode === 'qr'
-            ? 'bg-white text-slate-900 shadow-sm'
-            : 'text-slate-500 hover:text-slate-700 hover:bg-white/60'
+            ? 'bg-gradient-to-r from-emerald-500 to-sky-500 text-white shadow-md'
+            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
         "
         :aria-pressed="mode === 'qr'"
         @click="setMode('qr')"
@@ -18,11 +18,11 @@
       </button>
       <button
         type="button"
-        class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200"
+        class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg font-medium text-sm transition-all duration-200"
         :class="
           mode === 'manual'
-            ? 'bg-white text-slate-900 shadow-sm'
-            : 'text-slate-500 hover:text-slate-700 hover:bg-white/60'
+            ? 'bg-gradient-to-r from-emerald-500 to-sky-500 text-white shadow-md'
+            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
         "
         :aria-pressed="mode === 'manual'"
         @click="setMode('manual')"

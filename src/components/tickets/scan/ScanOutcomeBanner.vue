@@ -60,6 +60,7 @@ import { computed, type Component } from 'vue'
 import {
   AlertCircle,
   CheckCircle2,
+  CloudOff,
   RefreshCw,
   ShieldAlert,
   X,
@@ -86,6 +87,11 @@ const containerClass = computed(() => {
       return 'bg-emerald-500 border-emerald-400 text-white'
     case 'reentry':
       return 'bg-amber-400 border-amber-300 text-slate-900'
+    // Sky for queued — visually distinct from green/amber/red so staff
+    // develop pattern recognition: green = entry, sky = queued (let in,
+    // pending sync), amber = reentry, red = rejected.
+    case 'queued':
+      return 'bg-sky-500 border-sky-400 text-white'
     case 'rejected':
     case 'wrong_event':
     case 'invalid':
@@ -102,6 +108,8 @@ const iconComponent = computed<Component>(() => {
       return CheckCircle2
     case 'reentry':
       return RefreshCw
+    case 'queued':
+      return CloudOff
     case 'rejected':
     case 'wrong_event':
       return XCircle
@@ -119,6 +127,8 @@ const headline = computed(() => {
       return t('management.tickets.scan.outcomes.entry')
     case 'reentry':
       return `${t('management.tickets.scan.outcomes.reentry')} #${o.checkInCount}`
+    case 'queued':
+      return t('management.tickets.scan.outcomes.queued')
     case 'rejected':
       return o.reason === 'wrong_tier'
         ? t('management.tickets.scan.outcomes.wrongTier')
@@ -150,6 +160,8 @@ const subline = computed(() => {
     case 'entry':
     case 'reentry':
       return o.ticket.ticket_type?.name ?? ''
+    case 'queued':
+      return t('management.tickets.scan.offline.banner')
     case 'rejected':
       switch (o.reason) {
         case 'already_checked_in':

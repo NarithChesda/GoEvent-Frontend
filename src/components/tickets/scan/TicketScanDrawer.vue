@@ -9,13 +9,13 @@
       />
     </Transition>
 
-    <!-- Drawer Panel — slides from right on desktop, from bottom on mobile.
-         Same dimensions and transitions as RegistrationCheckinModal +
-         TicketOrderReviewDrawer for visual consistency across the platform. -->
+    <!-- Drawer Panel — matches the QuickAddModal style guide: full-height on
+         mobile (not a bottom sheet), white chrome, and the same responsive
+         width steps used across other drawers in the platform. -->
     <Transition name="slide-right">
       <div
         v-if="show"
-        class="fixed bottom-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[580px] lg:w-[640px] md:max-w-[calc(100vw-32px)] max-h-[90vh] md:max-h-none bg-slate-50 rounded-t-3xl md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
+        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[520px] laptop-sm:w-[560px] laptop-md:w-[620px] desktop:w-[680px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
         role="dialog"
         aria-modal="true"
         @click.stop
@@ -75,12 +75,25 @@
             :total="totalIssued"
             :sound-enabled="feedback.soundEnabled.value"
             :gates-active="(allowedTierIds?.length ?? 0) > 0"
+            :gate-label="gateLabel"
+            :gate-config-open="showGateConfig"
+            :pending-count="queue.pendingCount.value"
+            :is-online="queue.isOnline.value"
+            :is-flushing="queue.isFlushing.value"
             @back="onClose"
             @toggle-sound="feedback.toggleSound()"
-            @open-gate-config="showGateConfig = true"
+            @toggle-gate-config="showGateConfig = !showGateConfig"
+            @flush-queue="() => queue.flush()"
           />
 
-          <main class="flex-1 overflow-y-auto overscroll-contain px-3 sm:px-4 py-3 sm:py-4 space-y-3">
+          <ScanGateScopePanel
+            :open="showGateConfig"
+            :tiers="tiers"
+            :allowed-tier-ids="allowedTierIds"
+            @change="onGateScopeChange"
+          />
+
+          <main class="flex-1 overflow-y-auto overscroll-contain bg-slate-50 px-3 sm:px-4 py-3 sm:py-4 space-y-3">
             <ScanCaptureArea
               ref="captureRef"
               v-model:mode="mode"
@@ -110,14 +123,6 @@
             />
           </main>
         </template>
-
-        <ScanGateConfigDrawer
-          :open="showGateConfig"
-          :tiers="tiers"
-          :allowed-tier-ids="allowedTierIds"
-          @update:open="showGateConfig = $event"
-          @save="onSaveGateConfig"
-        />
 
         <!-- Toast — anchored to drawer, not viewport, so it doesn't fight
              with toasts the parent page may be showing. -->
@@ -149,13 +154,14 @@ import ScanCaptureArea from './ScanCaptureArea.vue'
 import ScanOutcomeBanner from './ScanOutcomeBanner.vue'
 import ScanActionRow from './ScanActionRow.vue'
 import ScanRecentList from './ScanRecentList.vue'
-import ScanGateConfigDrawer from './ScanGateConfigDrawer.vue'
+import ScanGateScopePanel from './ScanGateScopePanel.vue'
 
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { eventsService } from '@/services/api/modules/events.service'
 import { ticketTypesService } from '@/services/api/modules/ticket-types.service'
 import { ticketAnalyticsService } from '@/services/api/modules/ticket-analytics.service'
 import { useTicketCheckIn, type ScanOutcome } from '@/composables/tickets/useTicketCheckIn'
+import { useScanQueue } from '@/composables/tickets/useScanQueue'
 import { useUndoCheckIn } from '@/composables/tickets/useUndoCheckIn'
 import { useScanFeedback, type FeedbackKind } from '@/composables/tickets/useScanFeedback'
 import type { Event } from '@/services/api/types'
@@ -222,27 +228,53 @@ function loadGateConfig() {
   }
 }
 
-function onSaveGateConfig(next: number[]) {
+// Auto-save: every toggle in ScanGateScopePanel emits the new tier list,
+// which we persist immediately. The panel itself stays open so staff can
+// add/remove more tiers without re-tapping the gear.
+function onGateScopeChange(next: number[]) {
   if (next.length === 0) {
     allowedTierIds.value = null
     try { window.localStorage.removeItem(gatesKeyFor(props.eventId)) } catch { /* ignore */ }
-  } else {
-    allowedTierIds.value = [...next]
-    try {
-      window.localStorage.setItem(gatesKeyFor(props.eventId), JSON.stringify(allowedTierIds.value))
-    } catch {
-      // ignore
-    }
+    return
   }
-  showGateConfig.value = false
+  allowedTierIds.value = [...next]
+  try {
+    window.localStorage.setItem(gatesKeyFor(props.eventId), JSON.stringify(allowedTierIds.value))
+  } catch {
+    // ignore
+  }
 }
+
+// Compact label for the header chip. Single-tier shows the name (e.g. "VIP"),
+// multi-tier shows "VIP +N" so the active scope is visible at a glance —
+// the full list lives inside the inline panel.
+const gateLabel = computed(() => {
+  const ids = allowedTierIds.value ?? []
+  if (ids.length === 0) return ''
+  const first = tiers.value.find((tier) => tier.id === ids[0])
+  if (!first) return String(ids.length)
+  if (ids.length === 1) return first.name
+  return `${first.name} +${ids.length - 1}`
+})
 
 // ----------------------------------------------------------- composables
 const eventIdRef = computed(() => props.eventId)
+
+// Offline queue: scans pre-enqueue here before the live request fires, the
+// flusher drains via batchSync when connectivity is back. Once a flush
+// confirms a row, refresh analytics so the live counter picks up the entry.
+const queue = useScanQueue({
+  eventId: eventIdRef,
+  onResultProcessed: () => {
+    void loadAnalytics()
+  },
+})
+
 const checkIn = useTicketCheckIn({
   eventId: eventIdRef,
   deviceId,
   allowedTierIds,
+  queue,
 })
 
 const undoer = useUndoCheckIn(() => deviceId.value)
@@ -324,6 +356,10 @@ function feedbackKindFor(outcome: ScanOutcome): FeedbackKind {
       return 'entry'
     case 'reentry':
       return 'reentry'
+    // Treat 'queued' as a positive "let them in" feedback — the door
+    // keeps moving and the audit trail catches up later.
+    case 'queued':
+      return 'entry'
     case 'rejected':
     case 'wrong_event':
       return 'rejected'
@@ -440,6 +476,10 @@ watch(
       checkIn.clearLast()
       undoer.clear()
       mode.value = 'qr'
+      // Re-read the queue from storage in case rows were enqueued from a
+      // previous shift on the same device, and start the auto-flush loop.
+      queue.refresh()
+      queue.startAutoFlush()
       await loadEvent()
       if (canScan.value) {
         await Promise.all([loadTiers(), loadAnalytics()])
@@ -448,6 +488,7 @@ watch(
     } else {
       unlockBodyScroll()
       stopAnalyticsPolling()
+      queue.stopAutoFlush()
       showGateConfig.value = false
       if (toastTimer !== null) {
         window.clearTimeout(toastTimer)

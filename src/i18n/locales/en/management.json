@@ -2478,6 +2478,7 @@
         "invalid": "INVALID",
         "wrongEvent": "WRONG EVENT",
         "wrongTier": "WRONG GATE",
+        "queued": "QUEUED",
         "alreadyCheckedIn": "Already checked in",
         "refunded": "Ticket refunded",
         "cancelled": "Ticket cancelled",

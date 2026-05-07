@@ -71,6 +71,8 @@ function dotClass(o: ScanOutcome): string {
       return 'bg-emerald-500'
     case 'reentry':
       return 'bg-amber-400'
+    case 'queued':
+      return 'bg-sky-500'
     case 'rejected':
     case 'wrong_event':
       return 'bg-red-500'
@@ -86,6 +88,11 @@ function label(o: ScanOutcome): string {
   }
   if (o.kind === 'rejected' && o.ticket) {
     return o.ticket.attendee_name || o.ticket.attendee_email || '—'
+  }
+  // For queued: we don't have a ticket payload yet (no API response). Show
+  // the code so staff can correlate with the audit log later.
+  if (o.kind === 'queued') {
+    return o.code
   }
   return o.rawMessage
 }
