@@ -11,18 +11,27 @@
             {{ t('settings.title') }}
           </h1>
 
-          <!-- Tab Navigation -->
-          <div class="flex border-b border-slate-200 bg-slate-50/50">
+          <!-- Tab Navigation — horizontally scrollable on mobile, justifies
+               from the start so first tab is always reachable. Active tab
+               scrolls into view via the ref below. -->
+          <div
+            ref="tabBarEl"
+            class="flex border-b border-slate-200 bg-slate-50/50 overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0 snap-x snap-mandatory"
+            role="tablist"
+          >
             <button
               v-for="tab in tabs"
               :key="tab.id"
+              :ref="(el) => setTabRef(tab.id, el as HTMLElement | null)"
               @click="activeTab = tab.id"
               :class="[
-                'px-4 py-3 text-sm font-medium transition-colors relative',
+                'flex-shrink-0 snap-start px-4 sm:px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors relative',
                 activeTab === tab.id
                   ? 'text-sky-600 bg-white border-b-2 border-sky-600'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50 border-b-2 border-transparent'
               ]"
+              role="tab"
+              :aria-selected="activeTab === tab.id"
             >
               {{ tab.label }}
             </button>
@@ -50,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, nextTick, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import MainLayout from '@/components/MainLayout.vue'
@@ -118,9 +127,34 @@ const getInitialTab = (): TabId => {
 // Active tab state
 const activeTab = ref<TabId>(getInitialTab())
 
+// Refs for the scrollable tab bar — used to scroll the active tab into
+// view on mobile when the user picks one near the right edge or arrives
+// via a deep link.
+const tabBarEl = ref<HTMLElement | null>(null)
+const tabRefs = ref<Record<string, HTMLElement | null>>({})
+
+const setTabRef = (id: TabId, el: HTMLElement | null) => {
+  tabRefs.value[id] = el
+}
+
+const scrollActiveTabIntoView = () => {
+  const bar = tabBarEl.value
+  const btn = tabRefs.value[activeTab.value]
+  if (!bar || !btn) return
+  // Centre the active tab in the scroll viewport when it would otherwise
+  // be clipped on either side. `inline: 'center'` is what makes 'Listings'
+  // (last tab) reachable on a 360px screen.
+  btn.scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'center',
+  })
+}
+
 // Update URL when tab changes
 watch(activeTab, (newTab) => {
   router.replace({ query: { ...route.query, tab: newTab } })
+  nextTick(scrollActiveTabIntoView)
 })
 
 // Watch for URL query changes (e.g., when navigating from menu)
@@ -137,6 +171,11 @@ watch(
 onMounted(() => {
   if (!authStore.isAuthenticated) {
     router.push('/signin')
+    return
   }
+  // If the user landed on a tab that's off-screen on mobile (e.g. deep
+  // link to ?tab=listings on a phone), pull it into view after the DOM
+  // has had a chance to lay out.
+  nextTick(scrollActiveTabIntoView)
 })
 </script>

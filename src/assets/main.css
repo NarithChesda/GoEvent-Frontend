@@ -22,6 +22,17 @@ body {
   min-height: 100vh;
 }
 
+/* Utility: hide native scrollbars while preserving scroll behaviour.
+ * Used by horizontally-scrollable tab bars and similar overflow rows
+ * across the app (settings, event-management tabs, guest groups, etc). */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE / old Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, modern Edge */
+}
+
 /* Multi-language font configuration */
 /* Figtree is primary font for English/Latin characters */
 /* Kantumruy Pro will automatically be used for Khmer characters (unicode fallback) */
