@@ -1,27 +1,28 @@
 <template>
   <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
-    <div class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3">
+    <div class="flex items-center gap-1.5 px-3 py-2.5">
+      <!-- Close — same shape/size as RegistrationCheckinModal so the two
+           check-in flows have a single recognisable back affordance. -->
       <button
         type="button"
-        class="w-8 h-8 rounded-full hover:bg-white/20 text-white flex items-center justify-center transition-colors flex-shrink-0"
+        class="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
         :aria-label="t('management.tickets.scan.actions.exit')"
         @click="emit('back')"
       >
-        <ArrowRight class="w-5 h-5" />
+        <ArrowRight class="w-5 h-5 text-white" />
       </button>
 
-      <div class="min-w-0 flex-1">
-        <p class="text-[10px] sm:text-[11px] uppercase tracking-wide text-white/80 leading-tight truncate">
-          {{ t('management.tickets.scan.title') }}
-        </p>
-        <p class="text-sm sm:text-base font-semibold text-white truncate leading-tight">
-          {{ eventTitle || '—' }}
-        </p>
-      </div>
+      <!-- Title — single bold line matching the modal's pattern. The event
+           name is the load-bearing context here, the gradient + back arrow
+           already telegraph that this is a scanner. -->
+      <h2 class="flex-1 min-w-0 text-base font-semibold text-white truncate">
+        {{ eventTitle || t('management.tickets.scan.title') }}
+      </h2>
 
       <!--
-        Offline / queue-pending indicator. Tap to force a flush attempt.
-        Hidden when there is nothing pending AND we are online.
+        Offline / queue-pending pill. Tap to force a flush attempt. Hidden
+        when the queue is empty AND we are online so the header stays calm in
+        the common case.
       -->
       <button
         v-if="pendingCount > 0 || !isOnline"
@@ -46,30 +47,32 @@
         <span v-if="pendingCount > 0" class="tabular-nums">{{ pendingCount }}</span>
       </button>
 
+      <!-- At-a-glance counter — primary KPI for door staff. items-center
+           keeps both segments vertically centred inside the 32px pill;
+           items-baseline drifts the smaller "/ total" below the cap-line. -->
       <div
-        class="flex items-baseline gap-1 px-2.5 py-1 rounded-lg bg-white/20 backdrop-blur-sm text-white flex-shrink-0"
+        class="inline-flex items-center gap-1 h-8 px-2.5 rounded-full bg-white/15 text-white flex-shrink-0 leading-none"
         :title="t('management.tickets.scan.counter.checkedIn')"
       >
-        <span class="text-base sm:text-lg font-bold leading-none tabular-nums">{{ checkedIn }}</span>
-        <span class="text-xs opacity-80">/ {{ total }}</span>
+        <span class="text-sm font-bold tabular-nums">{{ checkedIn }}</span>
+        <span class="text-[11px] opacity-80">/ {{ total }}</span>
       </div>
 
       <button
         type="button"
-        class="w-8 h-8 rounded-full hover:bg-white/20 text-white flex items-center justify-center transition-colors flex-shrink-0"
+        class="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
         :aria-label="t('management.tickets.scan.actions.toggleSound')"
         :title="t('management.tickets.scan.actions.toggleSound')"
         @click="emit('toggleSound')"
       >
-        <Volume2 v-if="soundEnabled" class="w-4 h-4 sm:w-5 sm:h-5" />
-        <VolumeX v-else class="w-4 h-4 sm:w-5 sm:h-5 opacity-60" />
+        <Volume2 v-if="soundEnabled" class="w-5 h-5 text-white" />
+        <VolumeX v-else class="w-5 h-5 text-white opacity-60" />
       </button>
 
       <!--
-        Smart gear pill: a 32px circle when no scope is active, expands to a
-        chip showing the active tier (or count) when scoping is on. Replaces
-        the old amber dot — the chip itself is the "active" signal so staff
-        see *which* gate they are filtering, not just "something is on".
+        Gate config: tight icon button when no scope is active, expands to a
+        chip showing the active tier (or "VIP +N") when scoping is on so the
+        active gate is visible at a glance.
       -->
       <button
         type="button"
@@ -77,7 +80,7 @@
         :class="[
           gatesActive
             ? 'gap-1.5 h-8 pl-2 pr-2.5 rounded-full bg-white/15 hover:bg-white/25'
-            : 'w-8 h-8 rounded-full justify-center hover:bg-white/20',
+            : 'p-1.5 rounded-lg hover:bg-white/20',
           gateConfigOpen ? 'ring-2 ring-white/40' : '',
         ]"
         :aria-label="t('management.tickets.scan.actions.configureGates')"
@@ -85,7 +88,7 @@
         :aria-expanded="gateConfigOpen"
         @click="emit('toggleGateConfig')"
       >
-        <Settings class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+        <Settings class="w-5 h-5 flex-shrink-0" />
         <span
           v-if="gatesActive && gateLabel"
           class="text-xs font-semibold whitespace-nowrap max-w-[88px] truncate leading-none"

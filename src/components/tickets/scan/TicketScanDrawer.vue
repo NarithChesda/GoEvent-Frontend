@@ -9,13 +9,14 @@
       />
     </Transition>
 
-    <!-- Drawer Panel — matches the QuickAddModal style guide: full-height on
-         mobile (not a bottom sheet), white chrome, and the same responsive
-         width steps used across other drawers in the platform. -->
+    <!-- Drawer Panel — matches RegistrationCheckinModal's sizing exactly so
+         the two check-in surfaces feel like the same product: bottom sheet on
+         mobile (rounded top, capped at 85vh), floating panel with 16px gutters
+         on desktop. -->
     <Transition name="slide-right">
       <div
         v-if="show"
-        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[520px] laptop-sm:w-[560px] laptop-md:w-[620px] desktop:w-[680px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
+        class="fixed bottom-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[580px] lg:w-[640px] md:max-w-[calc(100vw-32px)] max-h-[85vh] md:max-h-none bg-white rounded-t-3xl md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
         role="dialog"
         aria-modal="true"
         @click.stop
@@ -93,7 +94,7 @@
             @change="onGateScopeChange"
           />
 
-          <main class="flex-1 overflow-y-auto overscroll-contain bg-slate-50 px-3 sm:px-4 py-3 sm:py-4 space-y-3">
+          <main class="flex-1 overflow-y-auto overscroll-contain bg-slate-50 p-4 space-y-4">
             <ScanCaptureArea
               ref="captureRef"
               v-model:mode="mode"
@@ -475,7 +476,7 @@ watch(
       // doesn't reappear.
       checkIn.clearLast()
       undoer.clear()
-      mode.value = 'qr'
+      mode.value = 'manual'
       // Re-read the queue from storage in case rows were enqueued from a
       // previous shift on the same device, and start the auto-flush loop.
       queue.refresh()
