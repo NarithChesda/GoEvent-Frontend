@@ -1,8 +1,8 @@
 <template>
   <section class="space-y-6">
     <!-- Header -->
-    <header class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-      <div class="min-w-0">
+    <header class="flex items-start justify-between gap-3">
+      <div class="min-w-0 flex-1">
         <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
           {{ t('management.tickets.title') }}
         </h2>
@@ -11,25 +11,27 @@
         </p>
       </div>
       <div v-if="canEdit" class="flex items-center gap-2 flex-shrink-0">
+        <!-- Door sale: secondary action (walk-up sales only). -->
         <button
           type="button"
-          class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-medium shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap"
+          class="flex bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 font-semibold p-2 sm:py-2 sm:px-4 rounded-xl transition-colors items-center text-sm sm:text-base"
+          :title="t('management.tickets.doorSale.entrypoint.button')"
+          :aria-label="t('management.tickets.doorSale.entrypoint.button')"
           @click="openDoorSale"
         >
-          <Receipt class="w-4 h-4" aria-hidden="true" />
-          <span>
-            {{ t('management.tickets.doorSale.entrypoint.button') }}
-          </span>
+          <Receipt class="w-4 h-4 sm:mr-2" aria-hidden="true" />
+          <span class="hidden sm:inline">{{ t('management.tickets.doorSale.entrypoint.button') }}</span>
         </button>
+        <!-- Scan: primary action during live event. -->
         <button
           type="button"
-          class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium shadow-sm hover:bg-slate-800 transition-colors whitespace-nowrap"
+          class="flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold p-2 sm:py-2 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 items-center text-sm sm:text-base"
+          :title="t('management.tickets.scan.entrypoint.button')"
+          :aria-label="t('management.tickets.scan.entrypoint.button')"
           @click="goToScanner"
         >
-          <ScanLine class="w-4 h-4" aria-hidden="true" />
-          <span class="hidden sm:inline">
-            {{ t('management.tickets.scan.entrypoint.button') }}
-          </span>
+          <ScanLine class="w-4 h-4 sm:mr-2" aria-hidden="true" />
+          <span class="hidden sm:inline">{{ t('management.tickets.scan.entrypoint.button') }}</span>
         </button>
       </div>
     </header>
