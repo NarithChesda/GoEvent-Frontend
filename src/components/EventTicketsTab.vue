@@ -10,15 +10,28 @@
           {{ t('management.tickets.subtitle') }}
         </p>
       </div>
-      <button
-        v-if="canEdit"
-        type="button"
-        class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium shadow-sm hover:bg-slate-800 transition-colors whitespace-nowrap"
-        @click="goToScanner"
-      >
-        <ScanLine class="w-4 h-4" aria-hidden="true" />
-        {{ t('management.tickets.scan.entrypoint.button') }}
-      </button>
+      <div v-if="canEdit" class="flex items-center gap-2 flex-shrink-0">
+        <button
+          type="button"
+          class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-medium shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap"
+          @click="openDoorSale"
+        >
+          <Receipt class="w-4 h-4" aria-hidden="true" />
+          <span>
+            {{ t('management.tickets.doorSale.entrypoint.button') }}
+          </span>
+        </button>
+        <button
+          type="button"
+          class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium shadow-sm hover:bg-slate-800 transition-colors whitespace-nowrap"
+          @click="goToScanner"
+        >
+          <ScanLine class="w-4 h-4" aria-hidden="true" />
+          <span class="hidden sm:inline">
+            {{ t('management.tickets.scan.entrypoint.button') }}
+          </span>
+        </button>
+      </div>
     </header>
 
     <!-- Sub-tab pills -->
@@ -50,6 +63,7 @@
     <div class="min-h-[400px]">
       <TicketOrdersList
         v-if="activeSubTab === 'orders'"
+        ref="ordersListRef"
         :event-id="eventId"
         :can-edit="canEdit"
         @message="showMessage"
@@ -87,6 +101,15 @@
       v-model:show="showScanDrawer"
       :event-id="eventId"
     />
+
+    <!-- Walk-up door sale: organizer issues a paid ticket on the spot. -->
+    <DoorSaleModal
+      :show="showDoorSaleModal"
+      :event-id="eventId"
+      @close="closeDoorSale"
+      @sale-completed="handleSaleCompleted"
+      @message="showMessage"
+    />
   </section>
 </template>
 
@@ -100,12 +123,15 @@ import {
   Ticket,
   MessageSquareText,
   ScanLine,
+  Receipt,
 } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import TicketOrdersList from './tickets/TicketOrdersList.vue'
 import TicketTypesManager from './tickets/TicketTypesManager.vue'
 import CheckoutQuestionsManager from './tickets/CheckoutQuestionsManager.vue'
 import TicketScanDrawer from './tickets/scan/TicketScanDrawer.vue'
+import DoorSaleModal from './tickets/DoorSaleModal.vue'
+import type { TicketOrderDetail } from '@/services/api'
 
 interface Props {
   eventId: string
@@ -151,6 +177,34 @@ const showScanDrawer = ref(false)
 
 const goToScanner = () => {
   showScanDrawer.value = true
+}
+
+// Walk-up door sale entry point — opened from the header, fully self-contained.
+const showDoorSaleModal = ref(false)
+const ordersListRef = ref<InstanceType<typeof TicketOrdersList> | null>(null)
+
+const openDoorSale = () => {
+  showDoorSaleModal.value = true
+}
+
+const closeDoorSale = () => {
+  showDoorSaleModal.value = false
+}
+
+const handleSaleCompleted = (order: TicketOrderDetail) => {
+  // Make sure the new sale shows up in the Orders sub-tab without a manual
+  // refresh. If the user is already viewing it, refetch in place; otherwise
+  // jump to the tab so the badge / new row is visible immediately.
+  if (activeSubTab.value === 'orders') {
+    ordersListRef.value?.refresh?.()
+  } else {
+    setSubTab('orders')
+  }
+  showMessage(
+    'success',
+    t('management.tickets.doorSale.receipt.subtitleCheckedIn'),
+  )
+  void order
 }
 
 // Sync `?sub=` to the URL whenever it changes — preserves any other query

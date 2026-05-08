@@ -178,6 +178,13 @@
                   >
                     {{ t('management.tickets.orders.compBadge') }}
                   </span>
+                  <span
+                    v-if="o.is_door_sale"
+                    class="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[10px] font-medium text-emerald-700 bg-emerald-50"
+                  >
+                    <Receipt class="w-3 h-3" />
+                    {{ t('management.tickets.orders.doorBadge') }}
+                  </span>
                 </div>
                 <!-- Total amount -->
                 <span class="font-bold text-slate-900 tabular-nums flex-shrink-0">
@@ -188,7 +195,7 @@
               <!-- Bottom row: buyer + meta -->
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-xs text-slate-600 truncate min-w-0 max-w-full sm:max-w-xs">
-                  {{ o.buyer_email }}
+                  {{ o.buyer_email || (o.is_door_sale ? t('management.tickets.orders.walkUpLabel') : '') }}
                 </span>
                 <span class="text-xs text-slate-300">•</span>
                 <span class="text-xs text-slate-500 tabular-nums">
@@ -250,6 +257,7 @@ import {
   RotateCcw,
   Ban,
   Hourglass,
+  Receipt,
 } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import TicketOrderReviewDrawer from './TicketOrderReviewDrawer.vue'
@@ -464,6 +472,11 @@ const honourOrderQuery = () => {
 }
 
 watch(() => route.query.order, honourOrderQuery, { immediate: true })
+
+// Parent components (e.g. EventTicketsTab) can imperatively trigger a refetch
+// after they create a new order out-of-band — the door-sale flow uses this so
+// the just-issued order shows up without a manual reload.
+defineExpose({ refresh: loadFirstPage })
 </script>
 
 <style scoped>

@@ -2284,6 +2284,8 @@
       "loadMore": "ផ្ទុកបន្ថែម",
       "loadingMore": "កំពុងផ្ទុក…",
       "compBadge": "ឥតគិតថ្លៃ",
+      "doorBadge": "ច្រកចូល",
+      "walkUpLabel": "មកដោយផ្ទាល់",
       "ticketCount": "សំបុត្រ {count}",
       "filters": {
         "all": "ទាំងអស់",
@@ -2341,7 +2343,15 @@
         "actionHint": "ការបញ្ជាក់នឹងចេញសំបុត្រ និងចាប់ផ្តើមបង្អួចសងវិញ ២៤ ម៉ោង។ ការបដិសេធនឹងបោះបង់ការបញ្ជាទិញ និងបញ្ចេញកន្លែង។",
         "actionFailed": "មិនអាចធ្វើបច្ចុប្បន្នភាពការបញ្ជាទិញបានទេ។ សូមសាកល្បងម្ដងទៀត។",
         "confirmedToast": "បានបញ្ជាក់ការបញ្ជាទិញ — សំបុត្រត្រូវបានចេញ។",
-        "rejectedToast": "បានបដិសេធការបញ្ជាទិញ — កន្លែងត្រូវបានបញ្ចេញ។"
+        "rejectedToast": "បានបដិសេធការបញ្ជាទិញ — កន្លែងត្រូវបានបញ្ចេញ។",
+        "doorSaleHeader": "លក់នៅច្រកចូល",
+        "doorPaymentType": "ប្រភេទការទូទាត់",
+        "doorPaymentTypes": {
+          "cash": "សាច់ប្រាក់",
+          "card_offline": "កាត (Offline)",
+          "other": "ផ្សេងទៀត"
+        },
+        "walkUpBuyer": "អតិថិជនមកដោយផ្ទាល់ (គ្មានគណនី)"
       }
     },
     "tiers": {
@@ -2546,6 +2556,83 @@
       },
       "entrypoint": {
         "button": "ស្កេនសំបុត្រនៅច្រកចូល"
+      }
+    },
+    "doorSale": {
+      "entrypoint": {
+        "button": "លក់នៅច្រកចូល",
+        "buttonShort": "លក់"
+      },
+      "modal": {
+        "title": "ការលក់នៅច្រកចូលថ្មី",
+        "subtitle": "លក់ដោយផ្ទាល់៖ សាច់ប្រាក់ កាត ឬផ្សេងទៀត",
+        "close": "បិទ",
+        "loadingTiers": "កំពុងផ្ទុកប្រភេទ…",
+        "loadFailed": "មិនអាចផ្ទុកប្រភេទសំបុត្របានទេ។ សូមសាកល្បងម្ដងទៀត។",
+        "noActiveTiers": "មិនមានប្រភេទសកម្ម",
+        "noActiveTiersHint": "សូមធ្វើឲ្យសកម្មយ៉ាងហោចណាស់មួយប្រភេទនៅក្នុងផ្ទាំងប្រភេទ មុនពេលលក់នៅច្រកចូល។",
+        "manageTiers": "គ្រប់គ្រងប្រភេទ",
+        "tiersHeader": "សំបុត្រ",
+        "tiersHint": "ជ្រើសរើសចំនួនសំបុត្រនៃប្រភេទនីមួយៗ ដែលអតិថិជនកំពុងទិញ។",
+        "soldOutBadge": "លក់អស់",
+        "remaining": "នៅសល់ {count}",
+        "remainingZero": "លក់អស់",
+        "decrementAria": "បន្ថយចំនួន",
+        "incrementAria": "បង្កើនចំនួន",
+        "buyerHeader": "អតិថិជន (ស្រេចចិត្ត)",
+        "buyerHint": "ព័ត៌មានទាំងអស់ស្រេចចិត្ត។",
+        "nameLabel": "ឈ្មោះ",
+        "namePlaceholder": "ឧ. លោកស្រី Jane Doe",
+        "emailLabel": "អ៊ីមែល",
+        "emailPlaceholder": "jane{'@'}example.com",
+        "phoneLabel": "លេខទូរស័ព្ទ",
+        "phonePlaceholder": "+855…",
+        "paymentHeader": "ការទូទាត់",
+        "paymentTypeLabel": "បង់ដោយរបៀបណា?",
+        "transactionRefLabel": "លេខយោង / លេខបង្កាន់ដៃ",
+        "transactionRefPlaceholder": "ស្រេចចិត្ត — លេខធុង លេខស្ថានីយ៍ ឬលេខបង្កាន់ដៃ",
+        "adminNotesLabel": "កំណត់ត្រាខាងក្នុង",
+        "adminNotesPlaceholder": "ស្រេចចិត្ត — បង្ហាញសម្រាប់អ្នករៀបចំតែប៉ុណ្ណោះ",
+        "autoCheckInLabel": "ឆែកអ៊ីនភ្លាមៗ",
+        "autoCheckInHint": "កំណត់សំបុត្រដែលបានចេញថា «បានប្រើ» ដើម្បីឲ្យអតិថិជនអាចចូលបានភ្លាមៗ។ បិទប្រសិនបើលក់ជាមុនសម្រាប់ពេលក្រោយ។",
+        "summaryHeader": "សរុប",
+        "summaryItems": "សំបុត្រ {count}",
+        "summaryTotal": "សរុប",
+        "validation": {
+          "noItems": "សូមបន្ថែមយ៉ាងហោចណាស់មួយសំបុត្រដើម្បីបន្ត។",
+          "mixedCurrency": "សំបុត្រទាំងអស់ក្នុងការលក់មួយត្រូវប្រើរូបិយប័ណ្ណដូចគ្នា។",
+          "exceedsRemaining": "នៅសល់ត្រឹមតែ {count} សំបុត្រសម្រាប់ {tier}។",
+          "exceedsMaxPerOrder": "{tier} ត្រូវបានកំណត់ត្រឹម {count} ក្នុងមួយការលក់។",
+          "emailInvalid": "សូមបញ្ចូលអ៊ីមែលត្រឹមត្រូវ។"
+        },
+        "submit": "ចេញសំបុត្រ",
+        "submitting": "កំពុងចេញ…",
+        "submitFailed": "មិនអាចបញ្ចប់ការលក់បានទេ។ សូមសាកល្បងម្ដងទៀត។",
+        "cancel": "បោះបង់"
+      },
+      "receipt": {
+        "title": "ការលក់បានជោគជ័យ",
+        "subtitleCheckedIn": "បានចេញសំបុត្រ និងឆែកអ៊ីនរួចហើយ",
+        "subtitleIssued": "បានចេញសំបុត្រ",
+        "orderCode": "លេខបញ្ជា",
+        "paid": "បានបង់",
+        "paymentType": "ការទូទាត់",
+        "buyer": "អតិថិជន",
+        "anonymousBuyer": "(មកដោយផ្ទាល់)",
+        "ticketsHeader": "សំបុត្រ",
+        "ticketsCount": "សំបុត្រ {count}",
+        "issuedAt": "បានចេញ",
+        "checkedInBadge": "បានឆែកអ៊ីន",
+        "validBadge": "ត្រឹមត្រូវ",
+        "qrCaption": "ស្កេនកូដ ឬប្រើកូដខ្លីខាងក្រោមនៅច្រកចូល។",
+        "qrUnavailable": "មិនមាន QR",
+        "checkInCodeLabel": "កូដ",
+        "actions": {
+          "newSale": "លក់បន្ទាប់",
+          "print": "បោះពុម្ពបង្កាន់ដៃ",
+          "viewOrder": "មើលការបញ្ជាទិញ",
+          "done": "រួចរាល់"
+        }
       }
     }
   }

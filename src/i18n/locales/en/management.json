@@ -2284,6 +2284,8 @@
       "loadMore": "Load more",
       "loadingMore": "Loading…",
       "compBadge": "Comp",
+      "doorBadge": "Door",
+      "walkUpLabel": "Walk-up",
       "ticketCount": "{count} ticket | {count} tickets",
       "filters": {
         "all": "All",
@@ -2341,7 +2343,15 @@
         "actionHint": "Confirming issues tickets and starts the 24h refund window. Rejecting cancels the order and releases the seats.",
         "actionFailed": "Couldn't update the order. Please try again.",
         "confirmedToast": "Order confirmed — tickets issued.",
-        "rejectedToast": "Order rejected — seats released."
+        "rejectedToast": "Order rejected — seats released.",
+        "doorSaleHeader": "Door sale",
+        "doorPaymentType": "Payment type",
+        "doorPaymentTypes": {
+          "cash": "Cash",
+          "card_offline": "Card (offline)",
+          "other": "Other"
+        },
+        "walkUpBuyer": "Walk-up customer (no account)"
       }
     },
     "tiers": {
@@ -2546,6 +2556,83 @@
       },
       "entrypoint": {
         "button": "Scan tickets at the door"
+      }
+    },
+    "doorSale": {
+      "entrypoint": {
+        "button": "Door sale",
+        "buttonShort": "Sell"
+      },
+      "modal": {
+        "title": "New door sale",
+        "subtitle": "Walk-up cash, card, or other in-person sale",
+        "close": "Close",
+        "loadingTiers": "Loading tiers…",
+        "loadFailed": "Couldn't load tiers. Please try again.",
+        "noActiveTiers": "No active tiers",
+        "noActiveTiersHint": "Activate at least one tier in the Tiers tab before selling at the door.",
+        "manageTiers": "Manage tiers",
+        "tiersHeader": "Tickets",
+        "tiersHint": "Pick how many of each tier the customer is buying.",
+        "soldOutBadge": "Sold out",
+        "remaining": "{count} left",
+        "remainingZero": "Sold out",
+        "decrementAria": "Decrease quantity",
+        "incrementAria": "Increase quantity",
+        "buyerHeader": "Customer (optional)",
+        "buyerHint": "Capture as much or as little as the customer wants. All optional.",
+        "nameLabel": "Name",
+        "namePlaceholder": "e.g. Jane Doe",
+        "emailLabel": "Email",
+        "emailPlaceholder": "jane{'@'}example.com",
+        "phoneLabel": "Phone",
+        "phonePlaceholder": "+855…",
+        "paymentHeader": "Payment",
+        "paymentTypeLabel": "How did they pay?",
+        "transactionRefLabel": "Reference / receipt #",
+        "transactionRefPlaceholder": "Optional — drawer #, terminal id, receipt number",
+        "adminNotesLabel": "Internal notes",
+        "adminNotesPlaceholder": "Optional — visible to organizers only",
+        "autoCheckInLabel": "Check in immediately",
+        "autoCheckInHint": "Mark the issued tickets used so the customer walks straight in. Turn off if you're pre-selling for later.",
+        "summaryHeader": "Summary",
+        "summaryItems": "{count} ticket | {count} tickets",
+        "summaryTotal": "Total",
+        "validation": {
+          "noItems": "Add at least one ticket to continue.",
+          "mixedCurrency": "All tickets in one sale must use the same currency.",
+          "exceedsRemaining": "Only {count} tickets remaining for {tier}.",
+          "exceedsMaxPerOrder": "{tier} is limited to {count} per sale.",
+          "emailInvalid": "Enter a valid email address."
+        },
+        "submit": "Issue tickets",
+        "submitting": "Issuing…",
+        "submitFailed": "Couldn't complete the sale. Please try again.",
+        "cancel": "Cancel"
+      },
+      "receipt": {
+        "title": "Sale complete",
+        "subtitleCheckedIn": "Tickets issued and checked in",
+        "subtitleIssued": "Tickets issued",
+        "orderCode": "Order code",
+        "paid": "Paid",
+        "paymentType": "Payment",
+        "buyer": "Customer",
+        "anonymousBuyer": "(walk-up)",
+        "ticketsHeader": "Tickets",
+        "ticketsCount": "{count} ticket | {count} tickets",
+        "issuedAt": "Issued",
+        "checkedInBadge": "Checked in",
+        "validBadge": "Valid",
+        "qrCaption": "Scan or use the short code below at the door.",
+        "qrUnavailable": "QR unavailable",
+        "checkInCodeLabel": "Code",
+        "actions": {
+          "newSale": "New sale",
+          "print": "Print receipt",
+          "viewOrder": "View order",
+          "done": "Done"
+        }
       }
     }
   }

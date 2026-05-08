@@ -76,6 +76,13 @@
               >
                 {{ t('management.tickets.orders.compBadge') }}
               </span>
+              <span
+                v-if="order.is_door_sale"
+                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-medium text-emerald-700 bg-emerald-50"
+              >
+                <Receipt class="w-3 h-3" />
+                {{ t('management.tickets.orders.doorBadge') }}
+              </span>
             </div>
 
             <!-- Buyer info -->
@@ -84,9 +91,15 @@
                 {{ t('management.tickets.orders.review.buyerHeader') }}
               </h3>
               <div class="bg-white/80 border border-slate-200/60 rounded-2xl p-3 sm:p-4 space-y-1.5 text-sm">
-                <p class="font-semibold text-slate-900">{{ order.buyer_name || order.buyer.name }}</p>
-                <p class="text-slate-600 break-all">{{ order.buyer_email }}</p>
+                <p class="font-semibold text-slate-900">{{ buyerDisplayName }}</p>
+                <p v-if="order.buyer_email" class="text-slate-600 break-all">{{ order.buyer_email }}</p>
                 <p v-if="order.buyer_phone" class="text-slate-600">{{ order.buyer_phone }}</p>
+                <p
+                  v-if="order.is_door_sale && !order.buyer"
+                  class="text-xs text-slate-500 italic pt-1"
+                >
+                  {{ t('management.tickets.orders.review.walkUpBuyer') }}
+                </p>
               </div>
             </section>
 
@@ -146,10 +159,18 @@
             <!-- Payment / proof -->
             <section v-if="!order.is_comp">
               <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                {{ t('management.tickets.orders.review.paymentHeader') }}
+                {{ order.is_door_sale
+                    ? t('management.tickets.orders.review.doorSaleHeader')
+                    : t('management.tickets.orders.review.paymentHeader') }}
               </h3>
               <div class="bg-white/80 border border-slate-200/60 rounded-2xl p-3 sm:p-4 space-y-2 text-sm">
-                <div v-if="order.payment_method_name" class="flex justify-between gap-3">
+                <div v-if="order.is_door_sale" class="flex justify-between gap-3">
+                  <span class="text-slate-500">
+                    {{ t('management.tickets.orders.review.doorPaymentType') }}
+                  </span>
+                  <span class="text-slate-900 text-right">{{ doorPaymentLabel }}</span>
+                </div>
+                <div v-else-if="order.payment_method_name" class="flex justify-between gap-3">
                   <span class="text-slate-500">
                     {{ t('management.tickets.orders.review.method') }}
                   </span>
@@ -179,8 +200,8 @@
                 </div>
               </div>
 
-              <!-- Proof file preview -->
-              <div v-if="proofUrl" class="mt-3">
+              <!-- Proof file preview (online checkouts only) -->
+              <div v-if="proofUrl && !order.is_door_sale" class="mt-3">
                 <p class="text-xs text-slate-500 mb-1.5">
                   {{ t('management.tickets.orders.review.proofFile') }}
                 </p>
@@ -209,7 +230,7 @@
                 </a>
               </div>
               <div
-                v-else-if="order.status === 'pending'"
+                v-else-if="!order.is_door_sale && order.status === 'pending'"
                 class="mt-2 text-xs text-slate-500 italic"
               >
                 {{ t('management.tickets.orders.review.noProofYet') }}
@@ -354,6 +375,7 @@ import {
   ExternalLink,
   Receipt,
 } from 'lucide-vue-next'
+// `Receipt` is also used inline in the template as the door-sale chip icon.
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import {
   apiClient,
@@ -446,6 +468,27 @@ const proofIsImage = computed<boolean>(() => {
   // Strip query string before extension check; preview only inline-able formats.
   const path = raw.split('?')[0]?.toLowerCase() ?? ''
   return /\.(jpe?g|png|gif|webp)$/.test(path)
+})
+
+// ---- Door sale -----------------------------------------------------------
+const doorPaymentLabel = computed<string>(() => {
+  const code = order.value?.door_payment_type
+  // Empty string is the documented default for non-door orders; treat as cash
+  // for the door-sale section since we only render this when is_door_sale.
+  const key = code && code.length > 0 ? code : 'cash'
+  return t(`management.tickets.orders.review.doorPaymentTypes.${key}`)
+})
+
+// Walk-up door sales have `buyer = null` per the backend release notes; fall
+// back to the snapshot fields so the panel never crashes.
+const buyerDisplayName = computed<string>(() => {
+  const o = order.value
+  if (!o) return ''
+  if (o.buyer_name) return o.buyer_name
+  if (o.buyer && o.buyer.name) return o.buyer.name
+  if (o.buyer_email) return o.buyer_email
+  if (o.is_door_sale) return t('management.tickets.orders.review.walkUpBuyer')
+  return ''
 })
 
 // ---- Load ----------------------------------------------------------------
