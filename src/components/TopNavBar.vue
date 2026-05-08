@@ -206,6 +206,14 @@
                   {{ t('common.nav.settings') }}
                 </RouterLink>
                 <RouterLink
+                  to="/settings?tab=tickets"
+                  @click="userMenuOpen = false"
+                  class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                  role="menuitem"
+                >
+                  {{ t('common.nav.myTickets') }}
+                </RouterLink>
+                <RouterLink
                   v-if="authStore.user?.is_partner"
                   to="/commission"
                   @click="userMenuOpen = false"
