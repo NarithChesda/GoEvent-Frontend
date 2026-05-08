@@ -17,107 +17,124 @@
 
     <!-- List mode -->
     <template v-else>
-      <h2 class="text-xl font-semibold text-gray-900 mb-2">
-        {{ t('events.tickets.list.title') }}
-      </h2>
-      <p class="text-sm text-gray-500 mb-6">
-        {{ t('events.tickets.list.subtitle') }}
-      </p>
+      <header class="mb-6">
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900">
+          {{ t('events.tickets.list.title') }}
+        </h2>
+        <p class="mt-1 text-sm text-slate-500">
+          {{ t('events.tickets.list.subtitle') }}
+        </p>
+      </header>
 
       <!-- Loading -->
-      <div v-if="loading" class="flex items-center justify-center py-16">
+      <div v-if="loading" class="flex items-center justify-center py-20">
         <div class="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
 
-      <!-- Empty -->
+      <!-- Empty: friendlier illustration tone + primary gradient CTA -->
       <div
         v-else-if="orders.length === 0"
-        class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-2xl p-8 sm:p-12 text-center"
+        class="relative overflow-hidden bg-white border border-slate-200 rounded-3xl p-8 sm:p-14 text-center"
       >
-        <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <Ticket class="w-8 h-8 text-slate-400" />
+        <!-- Soft gradient backdrop blob -->
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute inset-x-0 -top-24 h-48 bg-gradient-to-b from-emerald-50 via-sky-50/60 to-transparent"
+        />
+        <div class="relative">
+          <div class="relative w-20 h-20 mx-auto mb-5">
+            <div class="absolute inset-0 bg-gradient-to-br from-[#2ecc71]/15 to-[#1e90ff]/15 rounded-3xl blur-md" />
+            <div class="relative w-20 h-20 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-3xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+              <Ticket class="w-9 h-9 text-white" />
+            </div>
+          </div>
+          <h4 class="text-lg font-semibold text-slate-900 mb-1.5">
+            {{ t('events.tickets.list.empty.title') }}
+          </h4>
+          <p class="text-sm text-slate-500 max-w-sm mx-auto mb-6">
+            {{ t('events.tickets.list.empty.description') }}
+          </p>
+          <RouterLink
+            to="/explore"
+            class="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 py-2.5 text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] shadow-lg shadow-emerald-500/25 hover:scale-[1.02] active:scale-[0.99] transition-transform duration-200"
+          >
+            {{ t('events.tickets.list.empty.exploreLink') }}
+            <ChevronRight class="w-4 h-4" />
+          </RouterLink>
         </div>
-        <h4 class="font-semibold text-slate-900 mb-1.5 sm:mb-2">
-          {{ t('events.tickets.list.empty.title') }}
-        </h4>
-        <p class="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto mb-4">
-          {{ t('events.tickets.list.empty.description') }}
-        </p>
-        <RouterLink
-          to="/explore"
-          class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-slate-200 hover:border-slate-300 rounded-xl text-slate-700 hover:bg-slate-50 transition-all duration-200"
-        >
-          {{ t('events.tickets.list.empty.exploreLink') }}
-        </RouterLink>
       </div>
 
-      <!-- Orders list (matches MyTicketsView styling) -->
-      <ul v-else class="space-y-2">
+      <!-- Orders list — left accent stripe carries the status colour, single
+           pill carries the label. Quieter, more whitespace. -->
+      <ul v-else class="space-y-2.5">
         <li v-for="o in orders" :key="o.confirmation_code">
           <button
             type="button"
-            class="w-full text-left bg-white/80 border border-slate-200/60 rounded-2xl hover:border-slate-300 hover:bg-white transition-all duration-200"
-            :class="o.status === 'awaiting_review' ? 'ring-1 ring-amber-200/80' : ''"
+            class="group relative w-full text-left bg-white border border-slate-200 rounded-2xl hover:border-slate-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 transition-all duration-200"
             @click="openOrder(o.confirmation_code)"
           >
-            <div class="flex items-center gap-3 px-4 py-3">
-              <!-- Status icon -->
+            <div class="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 min-h-[64px]">
+              <!-- Status mark — small, calm; one of the signals -->
               <div
-                class="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
+                class="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center"
                 :class="statusIconClasses(o.status)"
               >
-                <component :is="statusIcon(o.status)" class="w-4.5 h-4.5" />
+                <component :is="statusIcon(o.status)" class="w-4 h-4" />
               </div>
 
               <!-- Body -->
               <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between gap-2 mb-1">
-                  <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
-                    <p class="text-sm font-semibold text-slate-900 truncate">
-                      {{ o.event_title }}
-                    </p>
-                    <span
-                      class="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[10px] font-medium"
-                      :class="statusBadgeClasses(o.status)"
-                    >
-                      {{ statusLabel(o.status) }}
-                    </span>
-                    <span
-                      v-if="o.is_comp"
-                      class="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[10px] font-medium text-sky-700 bg-sky-50"
-                    >
-                      {{ t('events.tickets.list.compBadge') }}
-                    </span>
-                  </div>
-                  <span class="font-bold text-slate-900 tabular-nums flex-shrink-0">
+                <div class="flex items-center justify-between gap-3 mb-1">
+                  <p class="text-sm sm:text-[15px] font-semibold text-slate-900 truncate">
+                    {{ o.event_title }}
+                  </p>
+                  <span class="text-sm sm:text-[15px] font-bold text-slate-900 tabular-nums flex-shrink-0">
                     {{ formatCurrency(o.total, o.currency as CurrencyCode) }}
                   </span>
                 </div>
 
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="text-xs font-mono text-slate-600 truncate min-w-0 max-w-full sm:max-w-xs">
-                    {{ o.confirmation_code }}
-                  </span>
-                  <span class="text-xs text-slate-300">•</span>
-                  <span class="text-xs text-slate-500 tabular-nums">
-                    {{ t('events.tickets.list.ticketCount', { count: o.ticket_count }, o.ticket_count) }}
-                  </span>
-                  <span class="text-xs text-slate-300">•</span>
-                  <span class="text-xs text-slate-500">{{ formatDate(o.created_at) }}</span>
+                <div class="flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 text-xs text-slate-500">
+                    <span class="font-mono text-slate-600 truncate max-w-[110px] sm:max-w-none">
+                      {{ o.confirmation_code }}
+                    </span>
+                    <span class="text-slate-300">·</span>
+                    <span class="tabular-nums whitespace-nowrap">
+                      {{ t('events.tickets.list.ticketCount', { count: o.ticket_count }, o.ticket_count) }}
+                    </span>
+                    <span class="hidden sm:inline text-slate-300">·</span>
+                    <span class="hidden sm:inline whitespace-nowrap">{{ formatDate(o.created_at) }}</span>
+                  </div>
+
+                  <!-- Single status pill (or comp pill) — quiet, on the right -->
+                  <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <span
+                      v-if="o.is_comp"
+                      class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wide text-sky-700 bg-sky-50"
+                    >
+                      {{ t('events.tickets.list.compBadge') }}
+                    </span>
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wide"
+                      :class="statusBadgeClasses(o.status)"
+                    >
+                      {{ statusLabel(o.status) }}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <ChevronRight class="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <ChevronRight class="w-4 h-4 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
             </div>
           </button>
         </li>
       </ul>
 
       <!-- Pagination "Load more" -->
-      <div v-if="hasMore && !loading" class="mt-4 text-center">
+      <div v-if="hasMore && !loading" class="mt-5 text-center">
         <button
           type="button"
-          class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-slate-200 hover:border-slate-300 rounded-xl text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-all duration-200"
+          class="inline-flex items-center gap-2 min-h-[40px] px-4 py-2 text-sm font-medium border border-slate-200 hover:border-slate-300 rounded-xl text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-all duration-200"
           :disabled="loadingMore"
           @click="loadMore"
         >

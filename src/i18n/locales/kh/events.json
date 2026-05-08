@@ -146,6 +146,7 @@
       "totalLabel": "សរុប",
       "ticketsHeader": "សំបុត្ររបស់អ្នក",
       "ticketType": "ប្រភេទសំបុត្រ",
+      "attendeeLabel": "អ្នកចូលរួម",
       "checkInCodeLabel": "កូដចូល",
       "qrAlt": "កូដ QR សំបុត្រ",
       "qrUnavailable": "QR មិនអាចបង្ហាញ — សូមប្រើកូដខាងក្រោមនៅទ្វារ។",

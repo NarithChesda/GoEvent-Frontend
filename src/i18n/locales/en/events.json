@@ -146,6 +146,7 @@
       "totalLabel": "Total",
       "ticketsHeader": "Your tickets",
       "ticketType": "Ticket type",
+      "attendeeLabel": "Attendee",
       "checkInCodeLabel": "Check-in code",
       "qrAlt": "Ticket QR code",
       "qrUnavailable": "QR unavailable — use the code below at the door.",
