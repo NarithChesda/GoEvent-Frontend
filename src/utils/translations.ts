@@ -907,9 +907,9 @@ export function formatDateLocalized(
 
     if (language === 'kh') {
       if (format === 'long') {
-        return `${KHMER_DAYS[dateObj.getDay()]} ទី ${dateObj.getDate()} ខែ${KHMER_MONTHS[dateObj.getMonth()]} ឆ្នាំ ${dateObj.getFullYear()}`
+        return `${KHMER_DAYS[dateObj.getDay()]} ទី ${toKhmerNumerals(dateObj.getDate())} ខែ${KHMER_MONTHS[dateObj.getMonth()]} ឆ្នាំ ${toKhmerNumerals(dateObj.getFullYear())}`
       } else {
-        return `${dateObj.getDate()} ${KHMER_MONTHS[dateObj.getMonth()]}`
+        return `${toKhmerNumerals(dateObj.getDate())} ${KHMER_MONTHS[dateObj.getMonth()]}`
       }
     }
 
