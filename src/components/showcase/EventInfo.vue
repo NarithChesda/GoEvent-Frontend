@@ -280,73 +280,85 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   showRsvp: false,
   showCountdown: true,
-  baseDelay: 0.1,
+  baseDelay: 0.25,
 })
 
 const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 
-// Intersection Observer for scroll-triggered animations
+// Visibility tracking for scroll-triggered animations
 const containerRef = ref<HTMLElement | null>(null)
 const isVisible = ref(false)
-let observer: IntersectionObserver | null = null
+let classObserver: MutationObserver | null = null
 
-const setupObserver = () => {
-  if (observer) {
-    observer.disconnect()
+const cleanupObserver = () => {
+  if (classObserver) {
+    classObserver.disconnect()
+    classObserver = null
   }
+}
 
-  observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          isVisible.value = true
-        }
-      })
-    },
-    {
-      threshold: 0.3, // Trigger when 30% of element is visible
-      rootMargin: '0px 0px -100px 0px', // Wait until element is 100px into viewport
+const setupVisibilityTracking = () => {
+  cleanupObserver()
+
+  const parent = containerRef.value?.parentElement
+  if (!parent) return
+
+  // When the parent wrapper uses the showcase animate-reveal pattern, watch for
+  // is-visible being added to it instead of running our own IntersectionObserver.
+  // This guarantees our internal bounce animations start at the exact moment the
+  // outer CSS transition begins — including any stagger delay applied by the parent
+  // showcase — so HostInfo and EventInfo animate in sequence rather than racing.
+  if (parent.classList.contains('animate-reveal')) {
+    if (parent.classList.contains('is-visible')) {
+      isVisible.value = true
+      return
     }
-  )
-
-  if (containerRef.value) {
-    observer.observe(containerRef.value)
+    classObserver = new MutationObserver(() => {
+      if (parent.classList.contains('is-visible')) {
+        isVisible.value = true
+        cleanupObserver()
+      }
+    })
+    classObserver.observe(parent, { attributes: true, attributeFilter: ['class'] })
+  } else {
+    // Fallback for use outside the showcase (e.g. preview / admin)
+    const scrollContainer = document.querySelector(
+      '.liquid-glass-card .custom-scrollbar',
+    ) as Element | null
+    const fallback = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            isVisible.value = true
+            fallback.disconnect()
+          }
+        })
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -60px 0px', root: scrollContainer },
+    )
+    if (containerRef.value) fallback.observe(containerRef.value)
   }
 }
 
 onMounted(() => {
-  setupObserver()
+  setupVisibilityTracking()
 })
 
 onUnmounted(() => {
-  if (observer) {
-    observer.disconnect()
-    observer = null
-  }
+  cleanupObserver()
 })
 
-// Re-setup observer and reset visibility when language changes
+// Re-run on language change — the component is re-keyed so the parent DOM node
+// is the same but the component root is replaced; re-observe after tick.
 watch(
   () => props.currentLanguage,
   async () => {
     isVisible.value = false
-    // Wait for DOM to update with new key, then re-observe
+    cleanupObserver()
     await nextTick()
-    // Additional delay to ensure the new element is fully rendered
-    setTimeout(() => {
-      setupObserver()
-      // If element is already in view, trigger animation immediately
-      if (containerRef.value) {
-        const rect = containerRef.value.getBoundingClientRect()
-        const windowHeight = window.innerHeight
-        // Check if element is already visible in viewport
-        if (rect.top < windowHeight - 100 && rect.bottom > 0) {
-          isVisible.value = true
-        }
-      }
-    }, 100)
-  }
+    setTimeout(() => setupVisibilityTracking(), 50)
+  },
 )
 
 // Break the ISO start date into weekday / day-number / month parts so the
@@ -366,44 +378,27 @@ const hasDateParts = computed(
 
 // Animation delays calculation
 const animationDelays = computed(() => {
-  let currentDelay = props.baseDelay
-  const BOUNCE_DURATION = 0.2 // Duration for bounce-in elements
+  const base = props.baseDelay // 0.1s
 
-  const getNextDelay = (text: string | null | undefined, skipIfEmpty = true): number => {
-    if (skipIfEmpty && !text) return currentDelay
-    const startDelay = currentDelay
-    const duration = getTextAnimationDuration(text)
-    currentDelay = startDelay + duration + ELEMENT_GAP
-    return startDelay
+  // Track A: text word animations — these form their own chain and can be slow.
+  let textCursor = base
+  const title = textCursor
+  if (props.descriptionTitle) {
+    textCursor += getTextAnimationDuration(props.descriptionTitle) + ELEMENT_GAP
   }
+  const description = textCursor
 
-  const addBounceDelay = (): number => {
-    const startDelay = currentDelay
-    currentDelay += BOUNCE_DURATION
-    return startDelay
-  }
+  // Track B: structural / bounce-in elements — fixed small offsets from base so
+  // they never wait for text word counts. All visible within ~0.75s regardless of
+  // how long the title/description text is.
+  const date = base + 0.15      // date+location card (topmost, appears first)
+  const card = base + 0.25      // gradient-stroke-container (map card shell)
+  const map = base + 0.35       // map embed inside the card
+  const countdown = base + 0.45 // countdown block
+  const divider = base + 0.45   // countdown↔RSVP divider
+  const rsvp = base + 0.55      // RSVP section
 
-  const title = getNextDelay(props.descriptionTitle)
-  const description = getNextDelay(props.descriptionText)
-  const card = addBounceDelay()
-  const date = getNextDelay(props.dateText)
-  const location = getNextDelay(props.locationText)
-  const map = props.hasGoogleMap && props.googleMapEmbedLink ? addBounceDelay() : currentDelay
-  const countdown = props.eventStartDate ? addBounceDelay() : currentDelay
-  const divider = props.eventStartDate && props.showRsvp ? addBounceDelay() : currentDelay
-  const rsvp = props.showRsvp ? addBounceDelay() : currentDelay
-
-  return {
-    title,
-    description,
-    card,
-    date,
-    location,
-    map,
-    countdown,
-    divider,
-    rsvp,
-  }
+  return { title, description, date, card, map, countdown, divider, rsvp }
 })
 
 // Countdown logic

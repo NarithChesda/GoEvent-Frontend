@@ -1087,10 +1087,6 @@ const injectedVideoResourceManager = inject<VideoResourceManager | null>('videoR
 
 const videoResourceManager = ref<VideoResourceManager | null>(null)
 
-// Mobile/tablet detection function - called at usage time to handle resize/rotation
-// Tablets (768-1024px) also use nested scroll container like mobile, so need same IntersectionObserver root
-const getUseScrollContainerRoot = (): boolean => window.innerWidth < 1024
-
 // Create IntersectionObserver ref
 const revealObserver = ref<IntersectionObserver | null>(null)
 
@@ -1106,34 +1102,35 @@ onMounted(async () => {
     videoResourceManager.value = injectedVideoResourceManager
   }
 
-  // Determine if we should use scroll container as root (mobile/tablet)
-  const useScrollContainerRoot = getUseScrollContainerRoot()
+  // The liquid-glass-card is always 85vh with an inner overflow-y-auto scroll container.
+  // All scrolling happens inside that inner container on every screen size, so we always
+  // use it as the IntersectionObserver root. Using root:null (viewport) would cause every
+  // section to appear intersecting at mount and fire all at once instead of on scroll.
+  const scrollContainer = document.querySelector(
+    '.liquid-glass-card .custom-scrollbar',
+  ) as Element | null
 
-  // Create observer with proper configuration for mobile+tablet vs desktop
-  const observerConfig: IntersectionObserverInit = useScrollContainerRoot
-    ? {
-        threshold: 0.05,
-        rootMargin: '0px 0px -20px 0px',
-        root: document.querySelector('.liquid-glass-card .custom-scrollbar') as Element | null,
-      }
-    : {
-        threshold: 0.1,
-        rootMargin: '0px 0px -100px 0px',
-        root: null,
-      }
+  const observerConfig: IntersectionObserverInit = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -60px 0px',
+    root: scrollContainer,
+  }
 
   // Create the IntersectionObserver directly
   revealObserver.value = new IntersectionObserver(
     (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          // Add the .is-visible class to trigger CSS transition
-          entry.target.classList.add('is-visible')
-          // Unobserve after reveal to improve performance and track for cleanup
-          if (revealObserver.value) {
-            revealObserver.value.unobserve(entry.target)
-            observedElements.value.delete(entry.target)
-          }
+      const intersecting = entries.filter((entry) => entry.isIntersecting)
+      intersecting.forEach((entry, i) => {
+        const el = entry.target as HTMLElement
+        // Stagger when multiple sections fire in the same batch (initial load).
+        // Single scroll-triggered reveals get no delay so they feel instant.
+        const staggerDelay = intersecting.length > 1 ? i * 150 : 0
+        setTimeout(() => {
+          el.classList.add('is-visible')
+        }, staggerDelay)
+        if (revealObserver.value) {
+          revealObserver.value.unobserve(entry.target)
+          observedElements.value.delete(entry.target)
         }
       })
     },
@@ -1784,10 +1781,10 @@ onUnmounted(() => {
 /* Base reveal animation styles */
 .animate-reveal {
   opacity: 0;
-  transform: translateY(40px);
+  transform: translateY(28px);
   transition:
-    opacity 0.6s cubic-bezier(0.19, 1, 0.22, 1),
-    transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity, transform;
 }
 
@@ -1803,7 +1800,7 @@ onUnmounted(() => {
 /* Mobile-specific reveal animation adjustments */
 @media (max-width: 640px) {
   .animate-reveal {
-    transform: translateY(20px);
+    transform: translateY(16px);
   }
 }
 
@@ -1811,14 +1808,14 @@ onUnmounted(() => {
 @media (max-width: 1023px) {
   /* Ensure gallery section becomes visible even if IntersectionObserver doesn't fire */
   .animate-reveal[data-reveal-id='gallery-section'] {
-    animation: mobile-gallery-reveal 0.6s cubic-bezier(0.19, 1, 0.22, 1) 1.5s forwards;
+    animation: mobile-gallery-reveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.5s forwards;
   }
 }
 
 @keyframes mobile-gallery-reveal {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
