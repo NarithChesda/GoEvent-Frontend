@@ -89,6 +89,7 @@ interface Props {
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
+  entranceDelay?: number
 }
 
 const props = defineProps<Props>()
@@ -187,17 +188,15 @@ const scheduleUpdate = () => {
 let revealTimer: number | null = null
 
 onMounted(() => {
+  const delayMs = (props.entranceDelay || 0) * 1000
   if (cardRef.value) {
     cardRef.value.style.setProperty('--scroll-progress', '0')
-    // Enable the CSS reveal transition only for the first ~600ms after mount
-    // (covers initial showcase entry and every tab switch, since those also
-    // re-mount the AgendaItem). Stripping the class afterwards keeps normal
-    // scroll updates instant instead of easing for every scroll tick.
     cardRef.value.classList.add('is-revealing')
+    // Remove the reveal class only after the entrance delay + transition duration
     revealTimer = window.setTimeout(() => {
       cardRef.value?.classList.remove('is-revealing')
       revealTimer = null
-    }, 600)
+    }, delayMs + 600)
   }
   scrollContainerEl = document.querySelector(
     '.liquid-glass-card .custom-scrollbar',
@@ -205,7 +204,12 @@ onMounted(() => {
   const target: EventTarget = scrollContainerEl ?? window
   target.addEventListener('scroll', scheduleUpdate, { passive: true })
   window.addEventListener('resize', scheduleUpdate, { passive: true })
-  scheduleUpdate()
+  // Delay the first progress update so cards animate in one at a time
+  if (delayMs > 0) {
+    setTimeout(scheduleUpdate, delayMs)
+  } else {
+    scheduleUpdate()
+  }
 })
 
 onUnmounted(() => {

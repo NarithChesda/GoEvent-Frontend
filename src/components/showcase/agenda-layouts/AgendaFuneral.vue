@@ -57,7 +57,7 @@
       </div>
 
       <!-- Tab Content -->
-      <div class="tab-content-area">
+      <div class="tab-content-area" :class="{ 'content-hidden': !hasRevealed }">
         <div
           v-if="activeTab"
           :key="activeTab"
@@ -89,8 +89,8 @@
           <!-- Agenda Items for this date -->
           <div class="space-y-0">
             <div
-              v-for="item in agendaByDate[activeTab] || []"
-              :key="item.id"
+              v-for="(item, index) in agendaByDate[activeTab] || []"
+              :key="`${item.id}-${hasRevealed}`"
             >
               <AgendaItem
                 :item="item"
@@ -99,6 +99,7 @@
                 :current-font="currentFont"
                 :primary-font="primaryFont"
                 :secondary-font="secondaryFont"
+                :entrance-delay="index * (isInitialReveal ? 0.15 : 0.07)"
               />
             </div>
           </div>
@@ -163,6 +164,8 @@ const props = defineProps<Props>()
 
 const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
+const WORD_ANIMATION_DURATION = 0.2
+const BOUNCE_ANIMATION_DURATION = 0.5
 
 // Intersection Observer for scroll-triggered animations
 const containerRef = ref<HTMLElement | null>(null)
@@ -202,29 +205,32 @@ const setupObserver = () => {
 // Animation delays calculation
 const animationDelays = computed(() => {
   let currentDelay = 0.1
-  const BOUNCE_DURATION = 0.2
 
   const getNextDelay = (text: string | null | undefined, skipIfEmpty = true): number => {
     if (skipIfEmpty && !text) return currentDelay
     const startDelay = currentDelay
-    const duration = getTextAnimationDuration(text)
+    const wordCount = splitToWords(text).length
+    // Stagger to last word + that word's own animation duration
+    const duration = Math.max(0, wordCount - 1) * WORD_DELAY + WORD_ANIMATION_DURATION
     currentDelay = startDelay + duration + ELEMENT_GAP
     return startDelay
   }
 
   const addBounceDelay = (): number => {
     const startDelay = currentDelay
-    currentDelay += BOUNCE_DURATION
+    currentDelay += BOUNCE_ANIMATION_DURATION + ELEMENT_GAP
     return startDelay
   }
 
   const header = getNextDelay(agendaHeaderText.value)
   const tabs = addBounceDelay()
+  const cards = currentDelay
   const description = currentDelay
 
   return {
     header,
     tabs,
+    cards,
     description,
   }
 })
@@ -332,6 +338,26 @@ const getFirstAgendaDescription = (date: string): string => {
   return description ? description.charAt(0).toUpperCase() + description.slice(1) : ''
 }
 
+// Gates tab content visibility so cards only appear after header + tabs have animated
+const hasRevealed = ref(false)
+const isInitialReveal = ref(false)
+let revealTimer: number | null = null
+
+watch(isVisible, (newVal) => {
+  if (newVal && !hasRevealed.value) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      hasRevealed.value = true
+      return
+    }
+    revealTimer = window.setTimeout(() => {
+      isInitialReveal.value = true
+      hasRevealed.value = true
+      revealTimer = null
+      setTimeout(() => { isInitialReveal.value = false }, 3000)
+    }, animationDelays.value.cards * 1000)
+  }
+})
+
 onMounted(() => {
   if (agendaTabs.value.length > 0) {
     activeTab.value = agendaTabs.value[0]
@@ -344,6 +370,10 @@ onUnmounted(() => {
     observer.disconnect()
     observer = null
   }
+  if (revealTimer !== null) {
+    clearTimeout(revealTimer)
+    revealTimer = null
+  }
 })
 
 // Re-setup observer and reset visibility when language changes
@@ -351,6 +381,12 @@ watch(
   () => props.currentLanguage,
   async () => {
     isVisible.value = false
+    hasRevealed.value = false
+    isInitialReveal.value = false
+    if (revealTimer !== null) {
+      clearTimeout(revealTimer)
+      revealTimer = null
+    }
     await nextTick()
     setTimeout(() => {
       setupObserver()
@@ -457,6 +493,12 @@ watch(
 /* Tab Content */
 .tab-content-area {
   position: relative;
+  transition: opacity 0.4s ease;
+}
+
+.tab-content-area.content-hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .tab-panel {
@@ -615,6 +657,11 @@ watch(
 
   .tab-button:hover {
     transform: none;
+  }
+
+  .tab-content-area.content-hidden {
+    opacity: 1;
+    pointer-events: auto;
   }
 }
 </style>
