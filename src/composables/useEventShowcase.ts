@@ -546,6 +546,8 @@ export function useEventShowcase() {
 
   const templateColor = computed(() => extractedColors.value.templateColor)
 
+  const blurEffectColor = computed(() => extractedColors.value.blurEffectColor)
+
   const isEventPast = computed(() => {
     if (!event.value?.end_date) return false
     return new Date(event.value.end_date) < new Date()
@@ -1117,6 +1119,7 @@ export function useEventShowcase() {
     backgroundColor,
     guestnameColor,
     templateColor,
+    blurEffectColor,
     currentFont: primaryFont, // Deprecated: use primaryFont instead
     primaryFont,
     secondaryFont,

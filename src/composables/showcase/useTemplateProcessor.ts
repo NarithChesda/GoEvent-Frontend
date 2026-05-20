@@ -375,6 +375,12 @@ export function useTemplateProcessor() {
     )
     const templateColor = templateColorObj?.hex_color_code || templateColorObj?.hex_code || null
 
+    // Extract blur-effect color by name, fallback to white
+    const blurEffectColorObj = templateColors?.find(
+      (color) => color.name?.toLowerCase() === 'blur-effect'
+    )
+    const blurEffectColor = blurEffectColorObj?.hex_color_code || blurEffectColorObj?.hex_code || '#ffffff'
+
     return {
       primaryColor,
       secondaryColor,
@@ -382,6 +388,7 @@ export function useTemplateProcessor() {
       guestnameColor,
       backgroundColor,
       templateColor,
+      blurEffectColor,
     }
   }
 

@@ -26,13 +26,13 @@
       <!-- Save the Date text on top of the cloud -->
       <div class="save-the-date-container">
         <!-- Decorative flourish above -->
-        <div class="flourish" :style="{ color: accentColor || '#c9a96e' }">
+        <div class="flourish" :style="{ color: flourishTextColor }">
           &#8212;&thinsp;&#10045;&thinsp;&#8212;
         </div>
         <p
           class="save-the-date-label"
           :style="{
-            color: accentColor || '#c9a96e',
+            color: saveDateTextColor,
           }"
         >
           Save the Date
@@ -42,7 +42,7 @@
           class="event-date"
           :style="{
             fontFamily: primaryFont || currentFont,
-            color: secondaryColor || primaryColor || '#333',
+            color: dateTextColor,
           }"
         >
           {{ formattedDate }}
@@ -65,6 +65,7 @@ interface Props {
   secondaryColor?: string | null
   accentColor: string
   backgroundColor?: string
+  blurEffectColor?: string
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
@@ -97,10 +98,17 @@ const featureImageUrl = computed(() => {
 })
 
 const cloudMistStyle = computed(() => {
+  const c = props.blurEffectColor || '#ffffff'
   return {
-    background: 'linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.3) 25%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0.92) 70%, #fff 85%)',
+    background: `linear-gradient(to bottom, transparent 0%, ${c}66 30%, ${c}aa 55%, ${c}cc 75%, ${c}ee 100%)`,
   }
 })
+
+const flourishTextColor = computed(() => props.primaryColor || '#333')
+
+const saveDateTextColor = computed(() => props.primaryColor || '#333')
+
+const dateTextColor = computed(() => props.primaryColor || '#333')
 
 const formattedDate = computed(() => {
   if (!props.eventStartDate) return null
@@ -253,8 +261,8 @@ onUnmounted(() => {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   /* Gradient mask: transparent at top → opaque at bottom, so blur fades in smoothly */
-  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.9) 65%, black 80%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.9) 65%, black 80%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
   /* Promote to its own layer so GPU handles blur independently from opacity animation */
   will-change: transform;
   transform: translateZ(0);
