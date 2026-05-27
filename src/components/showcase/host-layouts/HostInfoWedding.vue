@@ -87,9 +87,8 @@
       <HostLogo
         :key="`logo-${currentLanguage}`"
         :logo-url="logoUrl"
-        :event-initial="eventInitial"
+        :sample-logo-one="sampleLogoOne"
         :primary-color="primaryColor"
-        :font-family="primaryFont || currentFont"
         :animated="true"
         :animation-delay="animationDelays.logo"
       />

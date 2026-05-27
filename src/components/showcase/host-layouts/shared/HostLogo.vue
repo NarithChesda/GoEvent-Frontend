@@ -5,10 +5,10 @@
       :class="{ 'bounce-in-element': animated }"
       :style="animated ? { animationDelay: `${animationDelay}s` } : undefined"
     >
-      <!-- Custom logo image -->
+      <!-- Custom logo image (event logo → sample_logo_1 → SVG fallback) -->
       <img
-        v-if="logoUrl"
-        :src="logoUrl"
+        v-if="resolvedLogoSrc"
+        :src="resolvedLogoSrc"
         alt="Event Logo"
         class="host-logo-showcase"
         loading="eager"
@@ -16,49 +16,47 @@
       />
       <!-- Fallback SVG logo -->
       <div
-        v-else-if="useSvgFallback"
-        class="fallback-logo-wrapper"
+        v-else
+        class="fallback-logo-container"
         :style="fallbackLogoStyle"
       >
         <div
-          class="host-logo-showcase fallback-logo-svg"
+          class="fallback-logo"
           v-html="fallbackLogoSvgContent"
         />
-      </div>
-      <!-- Circle fallback with initial -->
-      <div
-        v-else
-        class="logo-fallback"
-        :style="{ backgroundColor: primaryColor }"
-      >
-        <span class="logo-initial" :style="{ fontFamily }">
-          {{ eventInitial }}
-        </span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useFallbackLogo } from '@/composables/showcase/useHostInfoUtils'
-import { toRef } from 'vue'
+import { computed, toRef } from 'vue'
+import { useFallbackLogo, getMediaUrl } from '@/composables/showcase/useHostInfoUtils'
 
 interface Props {
   logoUrl?: string
-  eventInitial: string
+  /** Template-provided base sample logo — used when no event logo exists. Mirrors cover stage fallback chain. */
+  sampleLogoOne?: string | null
   primaryColor: string
-  fontFamily?: string
-  useSvgFallback?: boolean
   animated?: boolean
   animationDelay?: number
   logoRowClass?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  useSvgFallback: true,
   animated: false,
   animationDelay: 0,
   logoRowClass: 'my-6',
+})
+
+// Three-tier fallback chain matching CoverContentRows and HostInfoBirthday:
+// 1. Event's own logo (already media-resolved upstream as logoUrl)
+// 2. Template-provided sample_logo_1 (raw URL — needs getMediaUrl)
+// 3. null → inline recoloured SVG rendered in template
+const resolvedLogoSrc = computed<string | null>(() => {
+  if (props.logoUrl) return props.logoUrl
+  if (props.sampleLogoOne) return getMediaUrl(props.sampleLogoOne) ?? null
+  return null
 })
 
 const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
@@ -99,30 +97,7 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
   transform: scale(1.05);
 }
 
-.logo-fallback {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow:
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  transition: transform 0.3s ease;
-}
-
-.logo-fallback:hover {
-  transform: scale(1.05);
-}
-
-.logo-initial {
-  color: white;
-  font-weight: 700;
-  font-size: 1.5rem;
-}
-
-.fallback-logo-wrapper {
+.fallback-logo-container {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -130,27 +105,32 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
   max-width: 100%;
   height: auto;
   overflow: hidden;
+  padding: 0.5rem;
 }
 
-.fallback-logo-svg {
+.fallback-logo {
   transition: transform 0.3s ease;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: auto;
   height: auto;
   max-width: min(330px, 95%);
   max-height: 180px;
 }
 
-.fallback-logo-svg:hover {
+.fallback-logo:hover {
   transform: scale(1.05);
 }
 
-.fallback-logo-svg :deep(svg) {
+.fallback-logo :deep(svg) {
   display: block;
   width: auto !important;
   height: auto !important;
   max-width: min(330px, 95vw);
   max-height: 180px;
+  object-fit: contain;
+  margin: 0 auto;
 }
 
 /* Bounce In Animation */
@@ -186,21 +166,12 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
     max-width: min(350px, 95%);
   }
 
-  .logo-fallback {
-    width: 112px;
-    height: 112px;
-  }
-
-  .logo-initial {
-    font-size: 1.875rem;
-  }
-
-  .fallback-logo-svg {
+  .fallback-logo {
     max-width: min(350px, 95%);
     max-height: 140px;
   }
 
-  .fallback-logo-svg :deep(svg) {
+  .fallback-logo :deep(svg) {
     max-width: min(350px, 95vw);
     max-height: 140px;
   }
@@ -212,21 +183,12 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
     max-width: min(375px, 95%);
   }
 
-  .logo-fallback {
-    width: 128px;
-    height: 128px;
-  }
-
-  .logo-initial {
-    font-size: 2.25rem;
-  }
-
-  .fallback-logo-svg {
+  .fallback-logo {
     max-width: min(375px, 95%);
     max-height: 150px;
   }
 
-  .fallback-logo-svg :deep(svg) {
+  .fallback-logo :deep(svg) {
     max-width: min(375px, 95vw);
     max-height: 150px;
   }
@@ -243,15 +205,6 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
     max-height: 180px;
     max-width: min(330px, 95%);
   }
-
-  .logo-fallback {
-    width: 96px;
-    height: 96px;
-  }
-
-  .logo-initial {
-    font-size: 1.5rem;
-  }
 }
 
 @media (min-width: 1920px) {
@@ -264,21 +217,12 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
     padding: 1.5rem 1rem;
   }
 
-  .logo-fallback {
-    width: 180px;
-    height: 180px;
-  }
-
-  .logo-initial {
-    font-size: 4rem;
-  }
-
-  .fallback-logo-svg {
+  .fallback-logo {
     max-width: min(450px, 95%);
     max-height: 180px;
   }
 
-  .fallback-logo-svg :deep(svg) {
+  .fallback-logo :deep(svg) {
     max-width: min(450px, 95vw);
     max-height: 180px;
   }
@@ -294,28 +238,22 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
     padding: 1.5rem 0.5rem;
   }
 
-  .logo-fallback {
-    width: 80px;
-    height: 80px;
-  }
-
-  .logo-initial {
-    font-size: 1.25rem;
+  .fallback-logo {
+    max-height: 100px;
+    max-width: min(240px, 90%);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .host-logo-showcase,
-  .logo-fallback,
-  .fallback-logo-svg,
+  .fallback-logo,
   .bounce-in-element {
     transition: none;
     animation: none;
   }
 
   .host-logo-showcase:hover,
-  .logo-fallback:hover,
-  .fallback-logo-svg:hover {
+  .fallback-logo:hover {
     transform: none;
   }
 
