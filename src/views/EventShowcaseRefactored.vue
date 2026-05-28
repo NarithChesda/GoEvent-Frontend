@@ -285,9 +285,14 @@ const handleCommentSubmitted = () => {
   markMainContentSeen()
 }
 
-// Check if this is a wedding event with basic template (needs transition stage)
+// Check if this is a wedding event with basic template (needs transition stage).
+// "Basic mode" mirrors CoverStage's own definition: template exists but has no
+// standard_cover_video. This covers both the decoration-photo variant and the
+// background-photo/video variant (basic_background_photo + standard_background_video)
+// which intentionally omits basic_decoration_photo.
 const isBasicWedding = computed(() => {
-  const isBasicMode = Boolean(templateAssets.value?.basic_decoration_photo)
+  if (!templateAssets.value) return false
+  const isBasicMode = !templateAssets.value.standard_cover_video
   const categoryName = (event.value.category_details?.name || event.value.category_name || '').toLowerCase()
   return isBasicMode && categoryName === 'wedding'
 })
