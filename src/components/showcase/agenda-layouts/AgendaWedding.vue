@@ -31,7 +31,7 @@
           currentLanguage === 'kh' && 'khmer-text-fix',
         ]"
         :style="{
-          color: accentColor,
+          color: primaryColor,
           fontFamily: secondaryFont || currentFont,
         }"
       >
