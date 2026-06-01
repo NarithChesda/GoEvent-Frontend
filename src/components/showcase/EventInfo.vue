@@ -984,9 +984,10 @@ const countdownNumberFont = computed(() =>
     border-radius: calc(1.3rem - 1.5px) !important;
   }
 
-  /* Map container - maintain aspect ratio */
+  /* Map container */
   .aspect-video {
     aspect-ratio: 16 / 9;
+    border-radius: 0.5rem !important;
   }
 
   /* Date/location card */
@@ -1068,6 +1069,15 @@ const countdownNumberFont = computed(() =>
     line-height: 1.35 !important;
   }
 
+  /* Map border radius and spacing */
+  .aspect-video {
+    border-radius: 0.625rem !important;
+  }
+
+  .space-y-3 > * + * {
+    margin-top: 0.6rem !important;
+  }
+
   h2 {
     font-size: 1rem !important; /* Restore original size for medium laptops */
   }
@@ -1132,6 +1142,15 @@ const countdownNumberFont = computed(() =>
   .details-location {
     font-size: 0.9rem !important;
     line-height: 1.35 !important;
+  }
+
+  /* Map border radius and spacing */
+  .aspect-video {
+    border-radius: 0.75rem !important;
+  }
+
+  .space-y-3 > * + * {
+    margin-top: 0.65rem !important;
   }
 
   h2 {
