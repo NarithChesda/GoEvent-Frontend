@@ -839,12 +839,12 @@ const countdownNumberFont = computed(() =>
 
   /* Card shell */
   .gradient-stroke-container {
-    border-radius: 1.25rem !important;
+    border-radius: 0.9rem !important;
     padding: 1.5px !important;
   }
 
   .gradient-stroke-container > div {
-    border-radius: calc(1.25rem - 1.5px) !important;
+    border-radius: calc(0.9rem - 1.5px) !important;
   }
 
   /* Date/location card */
@@ -1088,12 +1088,12 @@ const countdownNumberFont = computed(() =>
 
   /* Card shell border radius */
   .gradient-stroke-container {
-    border-radius: 1.4rem !important;
+    border-radius: 1.1rem !important;
     padding: 1.5px !important;
   }
 
   .gradient-stroke-container > div {
-    border-radius: calc(1.4rem - 1.5px) !important;
+    border-radius: calc(1.1rem - 1.5px) !important;
   }
 
   /* Card inner padding */
@@ -1199,12 +1199,12 @@ const countdownNumberFont = computed(() =>
 
   /* Card shell border radius */
   .gradient-stroke-container {
-    border-radius: 1.6rem !important;
+    border-radius: 1.3rem !important;
     padding: 1.5px !important;
   }
 
   .gradient-stroke-container > div {
-    border-radius: calc(1.6rem - 1.5px) !important;
+    border-radius: calc(1.3rem - 1.5px) !important;
   }
 
   /* Card inner padding */
