@@ -792,6 +792,65 @@ const countdownNumberFont = computed(() =>
   .countdown-time-row {
     gap: 0.5rem;
   }
+
+  /* Spacing — ~62% of desktop base to match the proportionally smaller text/card */
+  .space-y-6 > * + * {
+    margin-top: 0.875rem !important;
+  }
+
+  .space-y-8 > * + * {
+    margin-top: 0.875rem !important;
+  }
+
+  .space-y-4 > * + * {
+    margin-top: 0.625rem !important;
+  }
+
+  .space-y-3 > * + * {
+    margin-top: 0.5rem !important;
+  }
+
+  .space-y-2 > * + * {
+    margin-top: 0.375rem !important;
+  }
+
+  /* Card inner padding */
+  .px-4 {
+    padding-left: 0.625rem !important;
+    padding-right: 0.625rem !important;
+  }
+
+  .pt-3 {
+    padding-top: 0.5rem !important;
+  }
+
+  .pb-4 {
+    padding-bottom: 0.625rem !important;
+  }
+
+  /* Map top padding inside card */
+  .pt-2 {
+    padding-top: 0.3rem !important;
+  }
+
+  .pb-2 {
+    padding-bottom: 0.3rem !important;
+  }
+
+  /* Card shell */
+  .gradient-stroke-container {
+    border-radius: 1.25rem !important;
+    padding: 1.5px !important;
+  }
+
+  .gradient-stroke-container > div {
+    border-radius: calc(1.25rem - 1.5px) !important;
+  }
+
+  /* Date/location card */
+  .event-details-card {
+    padding: 0.625rem 0.75rem !important;
+  }
 }
 
 /* Small laptops 13-inch (1024px-1365px) - Match mobile base scale */
@@ -867,92 +926,94 @@ const countdownNumberFont = computed(() =>
     font-size: 0.6rem !important; /* 9.6px - match description text size */
   }
 
-  /* Scale spacing to match mobile base - reduced for tighter layout */
+  /* Spacing — ~65% of desktop base */
   .space-y-6 > * + * {
-    margin-top: 1rem !important; /* Reduced from 1.5rem */
+    margin-top: 1rem !important;
   }
 
   .space-y-8 > * + * {
-    margin-top: 1rem !important; /* Reduced from 1.5rem */
+    margin-top: 1rem !important;
   }
 
   .space-y-4 > * + * {
-    margin-top: 0.25rem !important; /* Reduced from 1rem */
+    margin-top: 0.65rem !important;
   }
 
   .space-y-3 > * + * {
-    margin-top: 0.5rem !important; /* Reduced from 0.75rem */
+    margin-top: 0.5rem !important;
   }
 
   .space-y-2 > * + * {
-    margin-top: 0.35rem !important; /* Reduced from 0.5rem */
+    margin-top: 0.325rem !important;
   }
 
-  /* Padding - reduced for tighter layout */
+  /* Card inner padding */
   .px-4 {
-    padding-left: 0.75rem !important; /* Reduced from 1rem */
-    padding-right: 0.75rem !important;
+    padding-left: 0.65rem !important;
+    padding-right: 0.65rem !important;
   }
 
   .pt-3 {
-    padding-top: 0.5rem !important; /* Reduced from 0.75rem */
+    padding-top: 0.5rem !important;
   }
 
   .pb-4 {
-    padding-bottom: 0.75rem !important; /* Reduced from 1rem */
+    padding-bottom: 0.65rem !important;
   }
 
+  /* Map top padding inside card */
   .pt-2 {
-    padding-top: 0.35rem !important; /* Reduced from 0.5rem */
+    padding-top: 0.325rem !important;
   }
 
   .pt-4 {
-    padding-top: 0.75rem !important; /* Reduced from 1rem */
+    padding-top: 0.65rem !important;
   }
 
   .pb-2 {
-    padding-bottom: 0.35rem !important; /* Reduced for countdown */
+    padding-bottom: 0.325rem !important;
   }
 
-  /* Border radius and stroke - reduce to match mobile more closely */
+  /* Card shell */
   .gradient-stroke-container {
-    border-radius: 1.5rem !important; /* Reduced from 2rem */
-    padding: 1.5px !important; /* Reduced from 2px */
+    border-radius: 1.3rem !important;
+    padding: 1.5px !important;
   }
 
-  /* Adjust inner border radius to match new outer radius */
   .gradient-stroke-container > div {
-    border-radius: calc(1.5rem - 1.5px) !important; /* Match new stroke size */
+    border-radius: calc(1.3rem - 1.5px) !important;
   }
 
   /* Map container - maintain aspect ratio */
   .aspect-video {
-    aspect-ratio: 16 / 9; /* Standard video aspect ratio */
+    aspect-ratio: 16 / 9;
   }
 
-  /* Countdown spacing adjustments */
+  /* Date/location card */
+  .event-details-card {
+    padding: 0.65rem 0.8rem !important;
+  }
+
+  /* Countdown spacing */
   .countdown-container {
-    padding-top: 0.35rem !important;
-    padding-bottom: 0.35rem !important;
+    padding-top: 0.325rem !important;
+    padding-bottom: 0.325rem !important;
   }
 
   .countdown-wrapper {
-    gap: 0.1rem !important; /* Reduced from 0.2rem - space between header and numbers */
+    gap: 0.1rem !important;
   }
 
-  /* Reduce gap between countdown number and label */
   .countdown-unit {
-    gap: -0.35rem !important; /* Increased negative gap to bring label even closer to number */
+    gap: -0.35rem !important;
   }
 
-  /* Adjust separator alignment */
   .countdown-separator {
-    margin-bottom: 0.65rem !important; /* Reduced to align with labels */
+    margin-bottom: 0.65rem !important;
   }
 
-  /* Countdown divider spacing */
   .countdown-divider {
-    padding-bottom: 0.5rem !important; /* Reduced from 0.75rem */
+    padding-bottom: 0.5rem !important;
   }
 }
 
