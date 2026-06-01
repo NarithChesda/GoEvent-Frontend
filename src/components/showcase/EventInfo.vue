@@ -974,13 +974,10 @@ const countdownNumberFont = computed(() =>
     padding-bottom: 0.325rem !important;
   }
 
-  /* Card shell — constrain width so the map scales down proportionally */
+  /* Card shell */
   .gradient-stroke-container {
     border-radius: 1.3rem !important;
     padding: 1.5px !important;
-    max-width: 65% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
   }
 
   .gradient-stroke-container > div {
@@ -1047,13 +1044,6 @@ const countdownNumberFont = computed(() =>
     gap: -0.3rem !important; /* Bring label even closer to number */
   }
 
-  /* Card shell — constrain width for medium laptops */
-  .gradient-stroke-container {
-    max-width: 80% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-
   /* Date column — 1/4 width, medium size */
   .event-details-card.has-date-column {
     grid-template-columns: minmax(0, 1fr) 1px minmax(0, 3fr) !important;
@@ -1118,13 +1108,6 @@ const countdownNumberFont = computed(() =>
 
   .countdown-unit {
     gap: -0.25rem !important; /* Bring label even closer to number */
-  }
-
-  /* Card shell — constrain width for large laptops */
-  .gradient-stroke-container {
-    max-width: 90% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
   }
 
   /* Date column — 1/4 width, large size */
