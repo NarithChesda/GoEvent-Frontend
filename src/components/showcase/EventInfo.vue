@@ -1086,6 +1086,16 @@ const countdownNumberFont = computed(() =>
     margin-top: 0 !important;
   }
 
+  /* Card shell border radius */
+  .gradient-stroke-container {
+    border-radius: 1.4rem !important;
+    padding: 1.5px !important;
+  }
+
+  .gradient-stroke-container > div {
+    border-radius: calc(1.4rem - 1.5px) !important;
+  }
+
   /* Card inner padding */
   .px-4 {
     padding-left: 0.75rem !important;
@@ -1185,6 +1195,16 @@ const countdownNumberFont = computed(() =>
 
   .space-y-1 > * + * {
     margin-top: 0 !important;
+  }
+
+  /* Card shell border radius */
+  .gradient-stroke-container {
+    border-radius: 1.6rem !important;
+    padding: 1.5px !important;
+  }
+
+  .gradient-stroke-container > div {
+    border-radius: calc(1.6rem - 1.5px) !important;
   }
 
   /* Card inner padding */
