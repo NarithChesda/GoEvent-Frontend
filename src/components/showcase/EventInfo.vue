@@ -990,6 +990,10 @@ const countdownNumberFont = computed(() =>
     border-radius: 0.5rem !important;
   }
 
+  .space-y-1 > * + * {
+    margin-top: 0 !important;
+  }
+
   /* Date/location card */
   .event-details-card {
     padding: 0.65rem 0.8rem !important;
@@ -1076,6 +1080,10 @@ const countdownNumberFont = computed(() =>
 
   .space-y-3 > * + * {
     margin-top: 0.6rem !important;
+  }
+
+  .space-y-1 > * + * {
+    margin-top: 0 !important;
   }
 
   /* Card inner padding */
@@ -1173,6 +1181,10 @@ const countdownNumberFont = computed(() =>
 
   .space-y-3 > * + * {
     margin-top: 0.65rem !important;
+  }
+
+  .space-y-1 > * + * {
+    margin-top: 0 !important;
   }
 
   /* Card inner padding */
