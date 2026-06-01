@@ -1078,6 +1078,28 @@ const countdownNumberFont = computed(() =>
     margin-top: 0.6rem !important;
   }
 
+  /* Card inner padding */
+  .px-4 {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  .pt-3 {
+    padding-top: 0.5rem !important;
+  }
+
+  .pb-4 {
+    padding-bottom: 0.75rem !important;
+  }
+
+  .pt-2 {
+    padding-top: 0.35rem !important;
+  }
+
+  .pb-2 {
+    padding-bottom: 0.35rem !important;
+  }
+
   h2 {
     font-size: 1rem !important; /* Restore original size for medium laptops */
   }
@@ -1151,6 +1173,28 @@ const countdownNumberFont = computed(() =>
 
   .space-y-3 > * + * {
     margin-top: 0.65rem !important;
+  }
+
+  /* Card inner padding */
+  .px-4 {
+    padding-left: 0.875rem !important;
+    padding-right: 0.875rem !important;
+  }
+
+  .pt-3 {
+    padding-top: 0.6rem !important;
+  }
+
+  .pb-4 {
+    padding-bottom: 0.875rem !important;
+  }
+
+  .pt-2 {
+    padding-top: 0.4rem !important;
+  }
+
+  .pb-2 {
+    padding-bottom: 0.4rem !important;
   }
 
   h2 {
