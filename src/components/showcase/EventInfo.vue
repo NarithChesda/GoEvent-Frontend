@@ -839,12 +839,12 @@ const countdownNumberFont = computed(() =>
 
   /* Card shell */
   .gradient-stroke-container {
-    border-radius: 0.9rem !important;
+    border-radius: 1.25rem !important;
     padding: 1.5px !important;
   }
 
   .gradient-stroke-container > div {
-    border-radius: calc(0.9rem - 1.5px) !important;
+    border-radius: calc(1.25rem - 1.5px) !important;
   }
 
   /* Date/location card */
