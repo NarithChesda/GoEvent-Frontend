@@ -813,6 +813,30 @@ const countdownNumberFont = computed(() =>
     gap: 0.65rem;
   }
 
+  /* Date column — 1/4 width, text scaled to fit the narrower column */
+  .event-details-card.has-date-column {
+    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 3fr) !important;
+  }
+
+  .date-column {
+    min-width: 0 !important;
+  }
+
+  .date-weekday,
+  .date-month {
+    font-size: 0.515rem !important; /* 0.6875rem × 0.75 — fits 1/4-width column */
+    letter-spacing: 0.04em;
+  }
+
+  .date-day {
+    font-size: 1.6rem !important; /* 2.125rem × 0.75 */
+  }
+
+  .details-location {
+    font-size: 0.6rem !important;
+    line-height: 1.3 !important;
+  }
+
   /* Title - match host name text size */
   h2 {
     font-size: 0.7rem !important; /* 11.2px - match HostInfoWedding host name text */
@@ -959,6 +983,30 @@ const countdownNumberFont = computed(() =>
     gap: -0.3rem !important; /* Bring label even closer to number */
   }
 
+  /* Date column — 1/4 width, medium size */
+  .event-details-card.has-date-column {
+    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 3fr) !important;
+  }
+
+  .date-column {
+    min-width: 0 !important;
+  }
+
+  .date-weekday,
+  .date-month {
+    font-size: 0.65rem !important;
+    letter-spacing: 0.06em;
+  }
+
+  .date-day {
+    font-size: 2rem !important;
+  }
+
+  .details-location {
+    font-size: 0.875rem !important;
+    line-height: 1.35 !important;
+  }
+
   h2 {
     font-size: 1rem !important; /* Restore original size for medium laptops */
   }
@@ -999,6 +1047,30 @@ const countdownNumberFont = computed(() =>
 
   .countdown-unit {
     gap: -0.25rem !important; /* Bring label even closer to number */
+  }
+
+  /* Date column — 1/4 width, large size */
+  .event-details-card.has-date-column {
+    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 3fr) !important;
+  }
+
+  .date-column {
+    min-width: 0 !important;
+  }
+
+  .date-weekday,
+  .date-month {
+    font-size: 0.75rem !important;
+    letter-spacing: 0.08em;
+  }
+
+  .date-day {
+    font-size: 2.375rem !important;
+  }
+
+  .details-location {
+    font-size: 0.9rem !important;
+    line-height: 1.35 !important;
   }
 
   h2 {
