@@ -676,6 +676,24 @@
           </div>
         </details>
 
+        <!-- Date & Location Design (collapsible) -->
+        <details :open="detailsOpenState.eventDetailsDesign" @toggle="(e) => detailsOpenState.eventDetailsDesign = (e.target as HTMLDetailsElement).open" class="border border-slate-200 rounded-lg overflow-hidden">
+          <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
+            <span>{{ t('management.partnerTemplateForm.eventDetailsDesign.sectionTitle') }} <span class="text-xs text-slate-400 font-normal">({{ t(`management.partnerTemplateForm.eventDetailsDesign.types.${form.event_details_design_type}`) }})</span></span>
+            <ChevronDown class="w-4 h-4 text-slate-400" />
+          </summary>
+          <div class="p-4 space-y-3 border-t border-slate-100">
+            <div class="space-y-1.5">
+              <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.eventDetailsDesign.designLabel') }}</label>
+              <select v-model="form.event_details_design_type" :class="selectClass">
+                <option value="panel">{{ t('management.partnerTemplateForm.eventDetailsDesign.types.panel') }}</option>
+                <option value="calendar">{{ t('management.partnerTemplateForm.eventDetailsDesign.types.calendar') }}</option>
+              </select>
+              <p class="text-[11px] text-slate-400 leading-tight">{{ t('management.partnerTemplateForm.eventDetailsDesign.designHint') }}</p>
+            </div>
+          </div>
+        </details>
+
         <!-- Ambient Creatures (collapsible) -->
         <details :open="detailsOpenState.ambientCreatures" @toggle="(e) => detailsOpenState.ambientCreatures = (e.target as HTMLDetailsElement).open" class="border border-slate-200 rounded-lg overflow-hidden">
           <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
@@ -853,6 +871,7 @@ import type {
   TemplateLanguageCode,
   FallingEffectConfig,
   FallingEffectType,
+  EventDetailsDesignType,
   AmbientCreaturesConfig,
   AmbientCreatureEntry,
   AmbientCreatureEffectType,
@@ -993,6 +1012,8 @@ interface FormState {
   clear_falling_effect_custom_image: boolean
   ambient_creatures_enabled: boolean
   ambient_creatures: AmbientCreaturesFormState
+  /** Date/location block design rendered in the showcase (panel | calendar). */
+  event_details_design_type: EventDetailsDesignType
 }
 
 const defaultFallingEffect = (): FallingEffectFormState => ({
@@ -1041,6 +1062,7 @@ const defaultForm = (): FormState => ({
   clear_falling_effect_custom_image: false,
   ambient_creatures_enabled: false,
   ambient_creatures: defaultAmbientCreatures(),
+  event_details_design_type: 'panel',
 })
 
 const CREATURE_TYPES: AmbientCreatureEffectType[] = ['butterfly', 'dove', 'firefly', 'dragonfly']
@@ -1134,6 +1156,7 @@ const detailsOpenState = reactive({
   coverLayout: false,
   fallingEffect: false,
   ambientCreatures: false,
+  eventDetailsDesign: false,
 })
 
 // --- Colors handlers ---
@@ -1379,6 +1402,8 @@ watch(
       } else {
         form.falling_effect_enabled = false
       }
+      // Hydrate event details design (panel | calendar)
+      form.event_details_design_type = template.event_details_design?.type ?? 'panel'
       // Hydrate ambient creatures
       if (template.ambient_creatures) {
         form.ambient_creatures_enabled = true
@@ -1512,6 +1537,7 @@ async function handleSave(): Promise<void> {
       cover_stage_layout: form.cover_stage_layout,
       falling_effect: buildFallingEffectPayload(),
       ambient_creatures: buildAmbientCreaturesPayload(),
+      event_details_design: { type: form.event_details_design_type },
     }
 
     // Add file fields that have been set

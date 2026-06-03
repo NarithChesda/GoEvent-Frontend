@@ -172,6 +172,7 @@
                     :show-rsvp="event.rsvp_enabled !== false"
                     :show-countdown="event.countdown_enabled !== false"
                     :event-start-date="event.start_date"
+                    :details-design="eventDetailsDesign?.type"
                     @open-map="$emit('openMap')"
                   >
                     <template #rsvp>
@@ -909,7 +910,11 @@ import { translateRSVP } from '../../utils/translations'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
 import { useCoverStageLayout } from '../../composables/showcase/useCoverStageLayout'
-import type { CoverStageLayout, FallingEffectConfig } from '../../services/api/types/template.types'
+import type {
+  CoverStageLayout,
+  FallingEffectConfig,
+  EventDetailsDesignConfig,
+} from '../../services/api/types/template.types'
 
 // Asset protection (production-only)
 const { protectionAttrs } = useAssetProtection()
@@ -987,6 +992,8 @@ interface Props {
   mainStageLayout?: CoverStageLayout
   /** Falling particle effect configuration from template */
   fallingEffect?: FallingEffectConfig | null
+  /** Date + location block design from template (panel | calendar) */
+  eventDetailsDesign?: EventDetailsDesignConfig | null
 }
 
 const props = defineProps<Props>()

@@ -4,7 +4,11 @@ import { useRoute } from 'vue-router'
 
 // Imports - Services & API
 import { eventsService, type EventPaymentMethod } from '../services/api'
-import type { CoverStageLayout } from '../services/api/types/template.types'
+import type {
+  CoverStageLayout,
+  FallingEffectConfig,
+  EventDetailsDesignConfig,
+} from '../services/api/types/template.types'
 
 // Imports - Composables
 import { usePerformance, ResourceManager } from '../utils/performance'
@@ -144,6 +148,10 @@ export interface TemplateAssets {
   cover_content_top_position?: number
   /** Comprehensive cover stage layout configuration */
   cover_stage_layout?: CoverStageLayout
+  /** Falling particle effect configuration */
+  falling_effect?: FallingEffectConfig | null
+  /** Date + location block design (panel | calendar). Defaults to `panel`. */
+  event_details_design?: EventDetailsDesignConfig | null
   display_liquid_glass_background?: boolean
   guest_title_frame_left?: string | null
   guest_title_frame_mid?: string | null

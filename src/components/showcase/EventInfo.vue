@@ -59,7 +59,7 @@
          When eventStartDate is missing, the left column and vertical divider
          collapse so locationText spans the card. -->
     <div
-      v-if="hasDateParts || locationText"
+      v-if="!isCalendarDesign && (hasDateParts || locationText)"
       class="event-details-card bounce-in-element"
       :class="[hasDateParts ? 'has-date-column' : 'no-date-column']"
       :style="{
@@ -102,6 +102,62 @@
       </div>
     </div>
 
+    <!-- Calendar design: a full month grid with the event day circled. Driven
+         by template_assets.event_details_design.type === 'calendar'. Falls back
+         to the panel design above when no parseable start date is available.
+         Location renders beneath the grid. -->
+    <div
+      v-if="isCalendarDesign"
+      class="calendar-card bounce-in-element"
+      :style="{
+        color: primaryColor,
+        animationDelay: `${animationDelays.date}s`,
+      }"
+    >
+      <div
+        :class="['calendar-heading', currentLanguage === 'kh' && 'khmer-text-fix']"
+        :style="{ fontFamily: primaryFont || currentFont }"
+      >
+        {{ calendarModel.heading }}
+      </div>
+
+      <div
+        :class="['calendar-grid', currentLanguage === 'kh' && 'khmer-text-fix']"
+        role="table"
+      >
+        <div
+          v-for="(label, i) in calendarWeekdayLabels"
+          :key="`cal-wd-${i}`"
+          class="calendar-weekday"
+          :style="{ fontFamily: secondaryFont || currentFont }"
+        >{{ label }}</div>
+
+        <div
+          v-for="(cell, i) in calendarModel.cells"
+          :key="`cal-day-${i}`"
+          class="calendar-day"
+          :class="{ 'is-event': cell.isEvent, 'is-blank': cell.day === null }"
+          :style="{ fontFamily: secondaryFont || currentFont }"
+        >
+          <span class="calendar-day-num">{{ cell.label }}</span>
+          <svg
+            v-if="cell.isEvent"
+            class="calendar-day-ring"
+            viewBox="0 0 64 56"
+            aria-hidden="true"
+          >
+            <path
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              d="M32 50C18 44 6 36 6 24 6 14 14 8 22 10c5 1.3 8 5 10 9 2-4 5-7.7 10-9 8-2 16 4 16 14 0 12-12 20-26 26z"
+            />
+          </svg>
+        </div>
+      </div>
+    </div>
+
     <!-- Event Details Block -->
     <div class="space-y-3">
       <div
@@ -120,6 +176,18 @@
            background: `${backgroundColor || primaryColor}60`,
           }"
         >
+          <!-- Location header (calendar design): centered above the map frame,
+               replacing the panel design's location card. -->
+          <div
+            v-if="isCalendarDesign && locationText"
+            class="map-location-header px-2 pt-2 pb-1 bounce-in-element"
+            :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+            :style="{
+              fontFamily: secondaryFont || currentFont,
+              animationDelay: `${animationDelays.map}s`,
+            }"
+          >{{ locationText }}</div>
+
           <!-- Google Map Embed -->
           <div
             v-if="hasGoogleMap && googleMapEmbedLink"
@@ -246,6 +314,8 @@ import {
   translateRSVP,
   getLocalizedDateParts,
   toKhmerNumerals,
+  KHMER_MONTHS,
+  KHMER_DAYS,
   type SupportedLanguage,
 } from '../../utils/translations'
 import {
@@ -275,12 +345,15 @@ interface Props {
   showCountdown?: boolean
   eventStartDate?: string
   baseDelay?: number
+  /** Date/location block design from the template package. Defaults to 'panel'. */
+  detailsDesign?: 'panel' | 'calendar'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showRsvp: false,
   showCountdown: true,
   baseDelay: 0.25,
+  detailsDesign: 'panel',
 })
 
 const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
@@ -375,6 +448,104 @@ const dateParts = computed<{ weekday: string; day: string; month: string }>(() =
 const hasDateParts = computed(
   () => !!(dateParts.value.weekday || dateParts.value.day || dateParts.value.month),
 )
+
+// Active design: 'calendar' only renders when we also have a parseable start
+// date to build the month grid from; otherwise fall back to the panel design.
+const isCalendarDesign = computed(
+  () => props.detailsDesign === 'calendar' && hasDateParts.value,
+)
+
+// Localized SUN–SAT weekday header labels for the calendar grid. Uses the
+// explicit Khmer short names for 'kh' and Intl 'short' weekday names otherwise,
+// built off a known week (2024-01-07 is a Sunday) so order is guaranteed.
+const calendarWeekdayLabels = computed<string[]>(() => {
+  const lang = props.currentLanguage ?? 'en'
+  if (lang === 'kh') {
+    return KHMER_DAYS.map((d) => d.slice(0, 3))
+  }
+  const localeMap: Record<string, string> = {
+    en: 'en-US',
+    'zh-cn': 'zh-CN',
+    fr: 'fr-FR',
+    ja: 'ja-JP',
+    ko: 'ko-KR',
+    th: 'th-TH',
+    vn: 'vi-VN',
+  }
+  const locale = localeMap[lang] ?? lang ?? 'en-US'
+  try {
+    const fmt = new Intl.DateTimeFormat(locale, { weekday: 'short' })
+    // 2024-01-07 is a Sunday — step through 7 days in UTC for a stable order.
+    return Array.from({ length: 7 }, (_, i) =>
+      fmt.format(new Date(Date.UTC(2024, 0, 7 + i))),
+    )
+  } catch {
+    return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  }
+})
+
+interface CalendarCell {
+  /** Display label for the day number (Khmer numerals for 'kh'). Empty for leading blanks. */
+  label: string
+  /** The day-of-month this cell represents, or null for leading blanks. */
+  day: number | null
+  /** True for the event day — gets the circled highlight. */
+  isEvent: boolean
+}
+
+// Month-grid model for the calendar design: a flat array of cells (leading
+// blanks + each day of the event's month), with the event day flagged so the
+// template can circle it. Heading shows the localized month + year.
+const calendarModel = computed(() => {
+  const d = props.eventStartDate ? new Date(props.eventStartDate) : null
+  if (!d || Number.isNaN(d.getTime())) {
+    return { heading: '', cells: [] as CalendarCell[] }
+  }
+
+  const lang = props.currentLanguage ?? 'en'
+  const year = d.getFullYear()
+  const month = d.getMonth()
+  const eventDay = d.getDate()
+
+  const firstWeekday = new Date(year, month, 1).getDay() // 0 = Sunday
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+
+  const cells: CalendarCell[] = []
+  for (let i = 0; i < firstWeekday; i++) {
+    cells.push({ label: '', day: null, isEvent: false })
+  }
+  for (let day = 1; day <= daysInMonth; day++) {
+    cells.push({
+      label: lang === 'kh' ? toKhmerNumerals(day) : String(day),
+      day,
+      isEvent: day === eventDay,
+    })
+  }
+
+  let heading: string
+  if (lang === 'kh') {
+    heading = `${KHMER_MONTHS[month]} ${toKhmerNumerals(year)}`
+  } else {
+    const localeMap: Record<string, string> = {
+      en: 'en-US',
+      'zh-cn': 'zh-CN',
+      fr: 'fr-FR',
+      ja: 'ja-JP',
+      ko: 'ko-KR',
+      th: 'th-TH',
+      vn: 'vi-VN',
+    }
+    const locale = localeMap[lang] ?? lang ?? 'en-US'
+    try {
+      const monthName = new Intl.DateTimeFormat(locale, { month: 'long' }).format(d)
+      heading = `${monthName} ${year}`
+    } catch {
+      heading = `${dateParts.value.month} ${year}`
+    }
+  }
+
+  return { heading, cells }
+})
 
 // Animation delays calculation
 const animationDelays = computed(() => {
@@ -555,6 +726,132 @@ const countdownNumberFont = computed(() =>
   line-height: 1.35;
   white-space: pre-line;
   word-break: break-word;
+}
+
+/* ============================================================
+   Calendar design — full month grid with the event day circled.
+   Sits on the page background like the panel design and inherits
+   the theme accent via inline color (currentColor). Sizing is
+   self-contained and responsive; the laptop media-query blocks
+   below only adjust the panel design, not this one.
+   ============================================================ */
+.calendar-card {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 1rem 0.75rem;
+  box-sizing: border-box;
+  border-top: 1px solid color-mix(in srgb, currentColor 60%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, currentColor 60%, transparent);
+}
+
+.calendar-heading {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  text-align: center;
+  margin-bottom: 0.85rem;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.15rem 0;
+  row-gap: 0.2rem;
+}
+
+.calendar-weekday {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  opacity: 0.85;
+  padding-bottom: 0.35rem;
+}
+
+.calendar-day {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 7 / 6;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.calendar-day.is-blank {
+  visibility: hidden;
+}
+
+.calendar-day-num {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hand-drawn-style heart ring drawn around the event day. Slightly larger than
+   the cell so it reads as circling the number, matched to the accent color. */
+.calendar-day-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150%;
+  height: 150%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  color: #b3261e; /* warm red, reminiscent of the reference image's hand-drawn heart */
+  opacity: 0.9;
+}
+
+.calendar-day.is-event .calendar-day-num {
+  font-weight: 700;
+}
+
+/* Location header for the calendar design — sits inside the glass map card,
+   centered above the Google Map frame. White-on-glass to match the card's
+   countdown text. */
+.map-location-header {
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: center;
+  color: white;
+  white-space: pre-line;
+  word-break: break-word;
+}
+
+/* Khmer day numbers sit lower in their em-box; relax line-height so they don't
+   clip against the heart ring. */
+.calendar-grid.khmer-text-fix .calendar-day {
+  line-height: 1.2;
+}
+
+@media (min-width: 640px) {
+  .calendar-card {
+    max-width: 460px;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .calendar-heading {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .calendar-weekday {
+    font-size: 0.8125rem;
+  }
+
+  .calendar-day {
+    font-size: 1.05rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .calendar-card {
+    max-width: 500px;
+  }
 }
 
 @media (min-width: 640px) {
@@ -851,6 +1148,11 @@ const countdownNumberFont = computed(() =>
   .event-details-card {
     padding: 0.625rem 0.75rem !important;
   }
+
+  /* Calendar design — mobile padding */
+  .calendar-card {
+    padding: 0.75rem 0.625rem !important;
+  }
 }
 
 /* Small laptops 13-inch (1024px-1365px) - Match mobile base scale */
@@ -999,6 +1301,30 @@ const countdownNumberFont = computed(() =>
     padding: 0.65rem 0.8rem !important;
   }
 
+  /* Calendar design — scaled to match the compact laptop layout */
+  .calendar-card {
+    max-width: 320px !important;
+    padding: 0.65rem 0.8rem !important;
+  }
+
+  .calendar-heading {
+    font-size: 1rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .calendar-weekday {
+    font-size: 0.5rem !important;
+    padding-bottom: 0.2rem !important;
+  }
+
+  .calendar-day {
+    font-size: 0.65rem !important;
+  }
+
+  .map-location-header {
+    font-size: 0.6rem !important;
+  }
+
   /* Countdown spacing */
   .countdown-container {
     padding-top: 0.325rem !important;
@@ -1071,6 +1397,29 @@ const countdownNumberFont = computed(() =>
   .details-location {
     font-size: 0.875rem !important;
     line-height: 1.35 !important;
+  }
+
+  /* Calendar design — medium laptop sizing */
+  .calendar-card {
+    max-width: 380px !important;
+    padding: 0.8rem 1rem !important;
+  }
+
+  .calendar-heading {
+    font-size: 1.25rem !important;
+    margin-bottom: 0.65rem !important;
+  }
+
+  .calendar-weekday {
+    font-size: 0.625rem !important;
+  }
+
+  .calendar-day {
+    font-size: 0.8rem !important;
+  }
+
+  .map-location-header {
+    font-size: 0.8rem !important;
   }
 
   /* Map border radius and spacing */
@@ -1182,6 +1531,29 @@ const countdownNumberFont = computed(() =>
   .details-location {
     font-size: 0.9rem !important;
     line-height: 1.35 !important;
+  }
+
+  /* Calendar design — large laptop sizing */
+  .calendar-card {
+    max-width: 420px !important;
+    padding: 1rem 1.25rem !important;
+  }
+
+  .calendar-heading {
+    font-size: 1.4rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .calendar-weekday {
+    font-size: 0.7rem !important;
+  }
+
+  .calendar-day {
+    font-size: 0.9rem !important;
+  }
+
+  .map-location-header {
+    font-size: 0.9rem !important;
   }
 
   /* Map border radius and spacing */

@@ -98,6 +98,7 @@
             :animation-type="event.template_assets?.cover_stage_layout?.showcaseAnimationType"
             :main-stage-layout="event.template_assets?.cover_stage_layout"
             :falling-effect="event.template_assets?.falling_effect"
+            :event-details-design="resolvedEventDetailsDesign"
             @open-map="openGoogleMap"
             @open-photo="openPhotoModal"
             @register="registerForEvent"
@@ -254,6 +255,28 @@ const {
   // Video Resource Manager
   videoResourceManager,
 } = useEventShowcase()
+
+// Date/location block design forwarded to the showcase. Normally this comes
+// straight from the template package (event.template_assets.event_details_design).
+// TEMP/dev: VITE_FORCE_EVENT_DETAILS_DESIGN ('panel' | 'calendar') overrides it
+// so the design can be previewed before the backend ships the field.
+//
+// TODO(event-details-design): once the backend serves
+// template_assets.event_details_design (see
+// docs/backend-api-requirements/event-details-design.md), DELETE this whole
+// computed + the VITE_FORCE_EVENT_DETAILS_DESIGN env var (.env.local) and bind
+// the prop directly:
+//   :event-details-design="event.template_assets?.event_details_design"
+const resolvedEventDetailsDesign = computed(() => {
+  const forced = import.meta.env.VITE_FORCE_EVENT_DETAILS_DESIGN as
+    | 'panel'
+    | 'calendar'
+    | undefined
+  if (forced === 'panel' || forced === 'calendar') {
+    return { type: forced }
+  }
+  return event.value?.template_assets?.event_details_design ?? null
+})
 
 // Provide video resource manager to child components using Vue's provide/inject
 provide('videoResourceManager', videoResourceManager)

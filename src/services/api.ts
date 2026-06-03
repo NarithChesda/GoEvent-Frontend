@@ -87,6 +87,8 @@ export type {
   UpdateTemplateFontPayload,
   FallingEffectType,
   FallingEffectConfig,
+  EventDetailsDesignType,
+  EventDetailsDesignConfig,
   AmbientCreatureEffectType,
   AmbientCreatureEntry,
   AmbientCreaturesConfig,
