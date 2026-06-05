@@ -2241,6 +2241,15 @@
         "dragonfly": "Dragonfly"
       }
     },
+    "eventDetailsDesign": {
+      "sectionTitle": "Date & Location Design",
+      "designLabel": "Layout style",
+      "designHint": "Controls how the event date and location are displayed in the showcase.",
+      "types": {
+        "panel": "Panel (stacked date + location)",
+        "calendar": "Calendar (month grid, day circled)"
+      }
+    },
     "footer": {
       "cancel": "Cancel",
       "saving": "Saving...",

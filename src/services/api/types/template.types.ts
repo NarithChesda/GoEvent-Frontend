@@ -128,6 +128,31 @@ export interface CoverStageLayout {
 }
 
 /**
+ * Visual style used to render the event date + location block in EventInfo.
+ *
+ * - `panel`    — the default two-column framed panel: stacked weekday / day /
+ *                month on the left, location on the right (the original look).
+ * - `calendar` — a full month-grid calendar with the event day circled, with
+ *                the location rendered below it.
+ *
+ * Selected per template via `template_assets.event_details_design` and flows
+ * through the showcase exactly like `falling_effect`.
+ */
+export type EventDetailsDesignType = 'panel' | 'calendar'
+
+/**
+ * Configuration for the event date + location block on the showcase.
+ *
+ * Mirrors the `FallingEffectConfig` pattern: a small JSON object sent inside
+ * the template package and forwarded down to EventInfo.vue. When omitted the
+ * showcase falls back to the `panel` design.
+ */
+export interface EventDetailsDesignConfig {
+  /** Which date/location layout to render. Defaults to `panel`. */
+  type: EventDetailsDesignType
+}
+
+/**
  * Built-in falling particle effect types.
  * Each maps to a predefined SVG shape in the particle registry.
  */
@@ -246,6 +271,7 @@ export interface PartnerTemplate {
   template_fonts: EventTemplateLanguageFont[]
   cover_stage_layout: CoverStageLayout | null
   falling_effect: FallingEffectConfig | null
+  event_details_design: EventDetailsDesignConfig | null
   ambient_creatures: AmbientCreaturesConfig | null
   display_liquid_glass_background: boolean
   open_envelope_button: string | null
@@ -301,6 +327,8 @@ export interface PartnerTemplateCreatePayload {
   falling_effect?: FallingEffectConfig | null
   /** Custom particle image. Pass a File to upload, or `''` to clear an existing one. */
   falling_effect_custom_image?: File | ''
+  /** Event date/location block design. Pass `null` to fall back to the `panel` design. */
+  event_details_design?: EventDetailsDesignConfig | null
   /** Ambient creature effect config. Pass `null` to disable the effect. */
   ambient_creatures?: AmbientCreaturesConfig | null
 }

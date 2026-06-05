@@ -107,6 +107,9 @@ export const partnerTemplateService = {
     if (payload.ambient_creatures !== undefined) {
       formData.append('ambient_creatures', JSON.stringify(payload.ambient_creatures))
     }
+    if (payload.event_details_design !== undefined) {
+      formData.append('event_details_design', JSON.stringify(payload.event_details_design))
+    }
     if (payload.falling_effect_custom_image instanceof File) {
       formData.append('falling_effect_custom_image', payload.falling_effect_custom_image)
     } else if (payload.falling_effect_custom_image === '') {
@@ -154,6 +157,9 @@ export const partnerTemplateService = {
     }
     if (payload.ambient_creatures !== undefined) {
       formData.append('ambient_creatures', JSON.stringify(payload.ambient_creatures))
+    }
+    if (payload.event_details_design !== undefined) {
+      formData.append('event_details_design', JSON.stringify(payload.event_details_design))
     }
     if (payload.falling_effect_custom_image instanceof File) {
       formData.append('falling_effect_custom_image', payload.falling_effect_custom_image)
