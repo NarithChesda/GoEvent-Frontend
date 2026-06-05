@@ -38,6 +38,11 @@ const PARTICLE_SHAPES: Record<Exclude<FallingEffectType, 'none'>, ParticleShape>
     viewBox: '0 0 32 32',
     opacity: 0.65,
   },
+  hearts: {
+    path: 'M16 29C16 29 2 20.5 2 11.2 2 6.6 5.7 3 10.1 3c2.7 0 5.1 1.4 5.9 3.4C16.8 4.4 19.2 3 21.9 3 26.3 3 30 6.6 30 11.2 30 20.5 16 29 16 29z',
+    viewBox: '0 0 32 32',
+    opacity: 0.7,
+  },
 }
 
 /** Intensity presets mapping to spawn interval (ms) and max particle count */

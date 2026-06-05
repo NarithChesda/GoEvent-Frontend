@@ -1078,6 +1078,7 @@ const fallingTypeLabels = computed<Record<FallingEffectType, string>>(() => ({
   snowflakes: t('management.partnerTemplateForm.fallingEffect.types.snowflakes'),
   stars: t('management.partnerTemplateForm.fallingEffect.types.stars'),
   leaves: t('management.partnerTemplateForm.fallingEffect.types.leaves'),
+  hearts: t('management.partnerTemplateForm.fallingEffect.types.hearts'),
   none: t('management.partnerTemplateForm.fallingEffect.types.none'),
 }))
 

@@ -156,7 +156,14 @@ export interface EventDetailsDesignConfig {
  * Built-in falling particle effect types.
  * Each maps to a predefined SVG shape in the particle registry.
  */
-export type FallingEffectType = 'petals' | 'confetti' | 'snowflakes' | 'stars' | 'leaves' | 'none'
+export type FallingEffectType =
+  | 'petals'
+  | 'confetti'
+  | 'snowflakes'
+  | 'stars'
+  | 'leaves'
+  | 'hearts'
+  | 'none'
 
 /**
  * Configuration for the falling particle effect on the showcase main stage.
