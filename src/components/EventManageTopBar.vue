@@ -234,13 +234,16 @@ const statusLabel = computed(() => {
   return t(`management.topBar.status.${props.eventStatus}`)
 })
 
-// Categories that support showcase preview
+// Categories that support showcase preview. Backend category names may carry a
+// suffix (e.g. "Housewarming Party", "Birthday Party", "Funeral Service"), so we
+// match by prefix rather than exact equality.
 const SHOWCASE_CATEGORIES = ['wedding', 'birthday', 'housewarming', 'funeral']
 
 // Check if event category supports showcase preview
 const canPreviewShowcase = computed(() => {
   if (!props.eventCategory) return false
-  return SHOWCASE_CATEGORIES.includes(props.eventCategory.toLowerCase())
+  const normalized = props.eventCategory.toLowerCase()
+  return SHOWCASE_CATEGORIES.some((c) => normalized.startsWith(c))
 })
 
 // Actions
