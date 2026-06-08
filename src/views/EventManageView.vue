@@ -566,8 +566,18 @@ const canViewRestrictedTabs = computed(() => {
   return event.value.can_edit
 })
 
-// Categories that support showcase/template features
+// Categories that support showcase/template features. Backend category names
+// may include a suffix (e.g. "Housewarming Party", "Birthday Party",
+// "Funeral Service"), so we match by prefix rather than exact equality.
 const SHOWCASE_CATEGORIES = ['wedding', 'birthday', 'housewarming', 'funeral']
+
+const isShowcaseCategory = (
+  category: string | null | undefined,
+): boolean => {
+  if (!category) return false
+  const normalized = category.toLowerCase()
+  return SHOWCASE_CATEGORIES.some((c) => normalized.startsWith(c))
+}
 
 const canViewMedia = computed(() => {
   // Show showcase/media tab for all events that the user can edit
@@ -576,9 +586,9 @@ const canViewMedia = computed(() => {
 
 // Check if event category supports category-specific showcase features
 const showCategorySpecificSections = computed(() => {
-  const category = event.value?.category_details?.name || event.value?.category_name
-  if (!category) return false
-  return SHOWCASE_CATEGORIES.includes(category.toLowerCase())
+  return isShowcaseCategory(
+    event.value?.category_details?.name || event.value?.category_name,
+  )
 })
 
 const canViewCollaborators = computed(() => {
@@ -587,9 +597,10 @@ const canViewCollaborators = computed(() => {
 
 const canViewTemplate = computed(() => {
   // Only show template tab for wedding, birthday, housewarming events
-  const category = event.value?.category_details?.name || event.value?.category_name
-  if (!category) return false
-  return canViewRestrictedTabs.value && SHOWCASE_CATEGORIES.includes(category.toLowerCase())
+  return (
+    canViewRestrictedTabs.value &&
+    isShowcaseCategory(event.value?.category_details?.name || event.value?.category_name)
+  )
 })
 
 const canViewPayment = computed(() => {
@@ -598,9 +609,10 @@ const canViewPayment = computed(() => {
 
 const canViewGuestManagement = computed(() => {
   // Only show guest management tab for wedding, birthday, housewarming events
-  const category = event.value?.category_details?.name || event.value?.category_name
-  if (!category) return false
-  return canViewRestrictedTabs.value && SHOWCASE_CATEGORIES.includes(category.toLowerCase())
+  return (
+    canViewRestrictedTabs.value &&
+    isShowcaseCategory(event.value?.category_details?.name || event.value?.category_name)
+  )
 })
 
 const canViewAnalytics = computed(() => {
