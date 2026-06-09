@@ -1,19 +1,12 @@
 <template>
   <div
-    class="group relative flex items-start gap-3 px-4 py-3 transition-colors"
+    class="group relative flex items-start gap-3 px-4 py-3.5 transition-colors"
     :class="[
       notification.is_read
-        ? 'bg-white hover:bg-slate-50'
-        : 'bg-[#2ecc71]/[0.04] hover:bg-[#2ecc71]/[0.07]',
+        ? 'hover:bg-slate-50'
+        : 'bg-[#2ecc71]/[0.05] hover:bg-[#2ecc71]/[0.08]',
     ]"
   >
-    <!-- Unread dot -->
-    <div
-      v-if="!notification.is_read"
-      class="absolute left-1.5 top-5 w-1.5 h-1.5 rounded-full bg-[#2ecc71]"
-      aria-hidden="true"
-    ></div>
-
     <!-- Type icon -->
     <div
       class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center"
@@ -28,24 +21,37 @@
       class="min-w-0 flex-1 text-left"
       @click="handleActivate"
     >
-      <div class="font-medium text-sm text-slate-900 truncate">
+      <div
+        class="text-sm truncate"
+        :class="notification.is_read ? 'font-medium text-slate-600' : 'font-semibold text-slate-900'"
+      >
         {{ notification.title }}
       </div>
-      <div class="text-sm text-slate-600 line-clamp-2 mt-0.5">
+      <div
+        class="text-sm line-clamp-2 mt-0.5"
+        :class="notification.is_read ? 'text-slate-400' : 'text-slate-500'"
+      >
         {{ notification.message }}
       </div>
-      <div class="text-xs text-slate-400 mt-1">{{ relativeTime }}</div>
+      <div class="text-xs text-slate-400 mt-1.5">{{ relativeTime }}</div>
     </button>
 
-    <!-- Delete button -->
-    <button
-      type="button"
-      class="opacity-0 group-hover:opacity-100 focus:opacity-100 flex-shrink-0 p-1 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
-      :aria-label="t('common.notifications.actions.delete')"
-      @click.stop="$emit('delete', notification.id)"
-    >
-      <X class="w-4 h-4" />
-    </button>
+    <!-- Right slot: unread dot by default, delete on hover -->
+    <div class="relative flex-shrink-0 w-6 flex justify-center pt-1">
+      <span
+        v-if="!notification.is_read"
+        class="mt-1 w-2 h-2 rounded-full bg-[#2ecc71] transition-opacity group-hover:opacity-0"
+        aria-hidden="true"
+      ></span>
+      <button
+        type="button"
+        class="absolute right-0 top-0 opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+        :aria-label="t('common.notifications.actions.delete')"
+        @click.stop="$emit('delete', notification.id)"
+      >
+        <X class="w-4 h-4" />
+      </button>
+    </div>
   </div>
 </template>
 

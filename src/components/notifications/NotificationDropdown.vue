@@ -179,14 +179,15 @@ async function handleMarkAllRead() {
 
 <style scoped>
 /* Match the language dropdown / global search modal so the brand glass look
-   is consistent across the top-bar surfaces. */
+   is consistent across the top-bar surfaces. Kept near-opaque so the
+   notification list stays readable over busy page content behind it. */
 .glass-dropdown {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
   box-shadow:
-    0 8px 32px rgba(46, 204, 113, 0.1),
+    0 12px 40px rgba(15, 23, 42, 0.12),
     0 4px 12px rgba(30, 144, 255, 0.08);
 }
 </style>
