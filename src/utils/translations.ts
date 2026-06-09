@@ -138,6 +138,7 @@ export const rsvpTranslations: Record<
     payment_wedding_gift: string
     payment_birthday_gift: string
     payment_funeral_gift: string
+    payment_pay_now: string
 
     // Footer section
     footer_thank_you: string
@@ -337,6 +338,7 @@ export const rsvpTranslations: Record<
     payment_wedding_gift: 'Wedding Gift',
     payment_birthday_gift: 'Birthday Gift',
     payment_funeral_gift: 'Condolence Contribution',
+    payment_pay_now: 'Send',
 
     // Footer section
     footer_thank_you: 'Thank you for celebrating with us',
@@ -536,6 +538,7 @@ export const rsvpTranslations: Record<
     payment_wedding_gift: 'ចំណងដៃ',
     payment_birthday_gift: 'អំណោយ',
     payment_funeral_gift: 'ថវិកាចូលបុណ្យ',
+    payment_pay_now: 'បញ្ជូន',
 
     // Footer section
     footer_thank_you: 'អរគុណសម្រាប់ការចូលរួមអបអរសាទរជាមួយយើង',
@@ -735,6 +738,7 @@ export const rsvpTranslations: Record<
     payment_wedding_gift: '结婚礼品',
     payment_birthday_gift: '生日礼品',
     payment_funeral_gift: '慰问捐款',
+    payment_pay_now: '发送',
 
     // Footer section
     footer_thank_you: '感谢您与我们一同庆祝',

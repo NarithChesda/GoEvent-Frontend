@@ -1,9 +1,9 @@
 <template>
   <div class="mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6">
-    <!-- Payment Section Header - First Payment Method Name + Type -->
+    <!-- Payment Section Header - "{Bank} QR" (same pattern for all languages) -->
     <div class="text-center laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-5 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
       <h2
-        v-if="paymentMethods.length > 0"
+        v-if="paymentSectionTitle"
         :class="[
           'leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize',
           currentLanguage === 'kh' && 'khmer-text-fix',
@@ -294,7 +294,7 @@
                       `,
                         }"
                       >
-                        <span class="font-regular">{{ getPaymentTypeLabel(method) }}</span>
+                        <span class="font-regular">{{ paymentButtonLabel }}</span>
                       </a>
                     </div>
                   </div>
@@ -363,7 +363,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { EventPaymentMethod } from '../../services/api'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
@@ -397,111 +397,33 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Enhanced translation function that combines database content with frontend translations
-const getTextContent = (textType: string, fallback = ''): string => {
-  // First, try to get content from database (eventTexts)
-  if (props.eventTexts && props.currentLanguage) {
-    const text = props.eventTexts.find(
-      (text) => text.text_type === textType && text.language === props.currentLanguage,
-    )
-    if (text?.content) {
-      return text.content
-    }
-  }
-
-  // Fallback to frontend translation system
-  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
-
-  // Map text types to translation keys
-  const keyMap: Record<
-    string,
-    keyof typeof import('../../utils/translations').rsvpTranslations.en
-  > = {
-    payment_wedding_gift: 'payment_wedding_gift',
-    payment_birthday_gift: 'payment_birthday_gift',
-    payment_funeral_gift: 'payment_funeral_gift',
-  }
-
-  const translationKey = keyMap[textType]
-  if (translationKey) {
-    return translateRSVP(translationKey, currentLang)
-  }
-
-  return fallback
-}
-
 // State
 const expandedCards = ref<Set<string>>(new Set())
 
-// Computed
-const getCategoryForTranslation = (): string | null => {
-  // First, try category_details.name (most reliable)
-  if (props.eventCategoryDetails?.name) {
-    return props.eventCategoryDetails.name.toLowerCase()
-  }
-
-  // Second, try category_name string field
-  if (props.eventCategoryName) {
-    return props.eventCategoryName.toLowerCase()
-  }
-
-  // Third, try eventCategory as string
-  if (props.eventCategory && typeof props.eventCategory === 'string') {
-    return props.eventCategory.toLowerCase()
-  }
-
-  // Finally, try numeric category ID mapping (common category IDs)
-  if (props.eventCategory && typeof props.eventCategory === 'number') {
-    const numericCategory = props.eventCategory
-    // Common category ID mappings based on typical database structure
-    if (numericCategory === 1 || numericCategory === 7) return 'wedding'
-    if (numericCategory === 2) return 'birthday'
-  }
-
-  return null
-}
-
-const paymentSectionTitle = computed(() => {
-  const categoryName = getCategoryForTranslation()
-
-  // Handle specific category translations
-  if (categoryName === 'wedding') {
-    return getTextContent('payment_wedding_gift', 'Wedding Gift')
-  }
-
-  if (categoryName === 'birthday') {
-    return getTextContent('payment_birthday_gift', 'Birthday Gift')
-  }
-
-  if (categoryName === 'funeral') {
-    return getTextContent('payment_funeral_gift', 'Condolence Contribution')
-  }
-
-  // For other recognized categories, create a generic gift translation
-  // This allows for extensibility if more categories are added
-  if (categoryName) {
-    // Try to find a specific translation first, fallback to generic pattern
-    const specificKey = `payment_${categoryName}_gift`
-    const specificTranslation = getTextContent(specificKey, '')
-    if (specificTranslation) {
-      return specificTranslation
+// Auto-expand the card when there's only a single payment method
+watch(
+  () => props.paymentMethods,
+  (methods) => {
+    if (methods.length === 1) {
+      expandedCards.value = new Set([methods[0].id.toString()])
     }
+  },
+  { immediate: true },
+)
 
-    // Fallback to category name with "Gift" suffix
-    const capitalizedCategory = categoryName.charAt(0).toUpperCase() + categoryName.slice(1)
-    return `${capitalizedCategory} Gift`
-  }
+// Section header: "{Bank} QR" from the first payment method (same pattern for all languages)
+const paymentSectionTitle = computed(() => {
+  const firstMethod = props.paymentMethods[0]
+  if (!firstMethod) return ''
 
-  // Fallback to first payment method name + type (existing logic)
-  if (props.paymentMethods.length > 0) {
-    const firstMethod = props.paymentMethods[0]
-    const paymentType =
-      firstMethod.payment_type.charAt(0).toUpperCase() + firstMethod.payment_type.slice(1)
-    return `${firstMethod.name} ${paymentType}`
-  }
+  const bankName = firstMethod.bank_name || firstMethod.name
+  return bankName ? `${bankName} QR` : 'QR'
+})
 
-  // Final fallback
-  return 'Payment'
+// Generic, user-friendly payment button label (translated, same for every method)
+const paymentButtonLabel = computed(() => {
+  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
+  return translateRSVP('payment_pay_now', currentLang)
 })
 
 // Methods
@@ -524,42 +446,6 @@ const toggleCard = (method: EventPaymentMethod) => {
 
 const hasVisibleBankInfo = (method: EventPaymentMethod): boolean => {
   return !!(method.bank_name || method.account_name || method.account_number)
-}
-
-const getPaymentTypeLabel = (method: EventPaymentMethod): string => {
-  const paymentType = (method.payment_type || '').toLowerCase().trim()
-  if (paymentType !== 'gift') {
-    return capitalizeText(method.payment_type)
-  }
-
-  const categoryName = getCategoryForTranslation()
-
-  if (categoryName === 'wedding') {
-    return getTextContent('payment_wedding_gift', 'Wedding Gift')
-  }
-
-  if (categoryName === 'birthday') {
-    return getTextContent('payment_birthday_gift', 'Birthday Gift')
-  }
-
-  if (categoryName === 'funeral') {
-    return getTextContent('payment_funeral_gift', 'Condolence Contribution')
-  }
-
-  if (categoryName) {
-    const specificKey = `payment_${categoryName}_gift`
-    const specificTranslation = getTextContent(specificKey, '')
-    if (specificTranslation) {
-      return specificTranslation
-    }
-
-    const capitalizedCategory = categoryName.charAt(0).toUpperCase() + categoryName.slice(1)
-    return `${capitalizedCategory} Gift`
-  }
-
-  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
-  const fallbackGift = translateRSVP('floating_menu_gift', currentLang) || 'Gift'
-  return currentLang === 'en' ? fallbackGift.toUpperCase() : fallbackGift
 }
 
 const copyToClipboard = async (text: string) => {
