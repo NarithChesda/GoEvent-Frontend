@@ -1,6 +1,63 @@
 <template>
   <div class="host-info-wrapper" :class="{ 'khmer-text': currentLanguage === 'kh' }">
-    <div class="host-info-grid">
+    <!-- Simple design: a minimal invitation — the welcome header above large
+         script host names stacked and joined by an ampersand. Driven by
+         template_assets.host_info_design.type === 'simple'. -->
+    <div v-if="isSimpleDesign" class="host-info-simple">
+      <WelcomeHeader
+        v-if="showWelcomeHeaderText !== false"
+        :message="welcomeMessage"
+        default-message="Welcome to Our Event"
+        :color="primaryColor"
+        :font-family="primaryFont || currentFont"
+        :current-language="currentLanguage"
+        :animated="true"
+        :base-delay="0.1"
+      />
+
+      <div :class="['simple-names', getKhmerClass(currentLanguage)]">
+        <h2
+          v-if="hosts.length > 0"
+          class="simple-name-text leading-tight"
+          :style="simpleNameStyle"
+        >
+          <span
+            v-for="(word, index) in splitToWords(hosts[0].name)"
+            :key="`simple-name-left-${currentLanguage}-${index}`"
+            class="bounce-word"
+            :style="{ animationDelay: `${simpleAnimationDelays.nameLeft + index * WORD_DELAY}s` }"
+          >{{ word }}{{ index < splitToWords(hosts[0].name).length - 1 ? ' ' : '' }}</span>
+        </h2>
+
+        <div
+          v-if="hosts.length > 1"
+          class="simple-amp"
+          :style="simpleNameStyle"
+        >
+          <span
+            class="bounce-word"
+            :style="{ animationDelay: `${simpleAnimationDelays.amp}s` }"
+          >&amp;</span>
+        </div>
+
+        <h2
+          v-if="hosts.length > 1"
+          class="simple-name-text leading-tight"
+          :style="simpleNameStyle"
+        >
+          <span
+            v-for="(word, index) in splitToWords(hosts[1]?.name)"
+            :key="`simple-name-right-${currentLanguage}-${index}`"
+            class="bounce-word"
+            :style="{ animationDelay: `${simpleAnimationDelays.nameRight + index * WORD_DELAY}s` }"
+          >{{ word }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? ' ' : '' }}</span>
+        </h2>
+      </div>
+    </div>
+
+    <!-- Standard design (default): rich layout with parent names, logo, titles,
+         host names and profile pictures arranged in a 7-row grid. -->
+    <div v-else class="host-info-grid">
       <!-- Row 1: Welcome Header -->
       <WelcomeHeader
         v-if="showWelcomeHeaderText !== false"
@@ -242,6 +299,37 @@ const nameTextStyle = computed(() => ({
   fontFamily: props.primaryFont || props.secondaryFont || props.currentFont,
 }))
 
+// Active design: 'simple' renders the minimal welcome + script-names layout;
+// anything else falls back to the rich 'standard' grid below.
+const isSimpleDesign = computed(() => props.designType === 'simple')
+
+// Script-name styling for the simple design — uses the primary (typically script)
+// font and the theme accent color, matching the standard layout's host names.
+const simpleNameStyle = computed(() => ({
+  color: props.primaryColor,
+  fontFamily: props.primaryFont || props.secondaryFont || props.currentFont,
+}))
+
+// Animation delays for the simple design: welcome → first name → ampersand →
+// second name. Mirrors the standard layout's sequential cascade so the two
+// designs feel consistent when switching templates.
+const simpleAnimationDelays = computed(() => {
+  let cursor = 0.1
+  const welcomeText =
+    props.showWelcomeHeaderText === false
+      ? ''
+      : props.welcomeMessage || 'You Are Invited to Our Wedding'
+  if (welcomeText) cursor += getTextAnimationDuration(welcomeText) + ELEMENT_GAP
+
+  const nameLeft = cursor
+  cursor += getTextAnimationDuration(props.hosts[0]?.name) + ELEMENT_GAP
+  const amp = cursor
+  if (props.hosts.length > 1) cursor += 0.2
+  const nameRight = cursor
+
+  return { nameLeft, amp, nameRight }
+})
+
 // Animation delays calculation
 const animationDelays = computed(() => {
   let currentDelay = 0.1
@@ -311,5 +399,86 @@ const animationDelays = computed(() => {
 /* Reduce spacing between title and name rows */
 .name-row {
   margin-top: -0.125rem;
+}
+
+/* ============================================================
+   Simple design — minimal welcome header above large script
+   host names stacked and joined by an ampersand. Sizing uses
+   clamp() with a capped max so the names read as the hero on
+   mobile while staying elegant (not oversized) on the wide
+   desktop card. A laptop override keeps the compact look the
+   rest of the showcase uses at those widths.
+   ============================================================ */
+.host-info-simple {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 1rem 0.5rem 1.5rem;
+  box-sizing: border-box;
+}
+
+.simple-names {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 0.75rem;
+  gap: 0.1rem;
+}
+
+.simple-name-text {
+  font-size: clamp(2rem, 7vw, 3.25rem);
+  line-height: 1.05;
+  text-align: center;
+  width: 100%;
+  word-break: break-word;
+}
+
+.simple-amp {
+  font-size: clamp(1.5rem, 5vw, 2.25rem);
+  line-height: 1;
+  text-align: center;
+  opacity: 0.9;
+  /* Equal space above and below so the '&' sits centered between the two names
+     with room to breathe (the flex gap alone reads as too tight). */
+  margin: 0.9rem 0;
+}
+
+/* Khmer clusters reserve space above for vowel signs ("heads") and below for
+   subscript consonants ("tails"). With a Latin-tuned line box that reservation
+   sits empty under a name that has no subscript, reading as a larger gap to the
+   ampersand than the gap to a name that does use its tail. line-height only
+   trims leading, not that intrinsic reservation, so tighten the box below 1 to
+   let it hug the ink — the head/tail glyphs render past the box (nothing sets
+   overflow:hidden here) so they are not clipped — and add a small gap so ink
+   doesn't collide where names do carry heads/tails. Tune `line-height`/`gap`
+   together if the spacing still reads uneven. */
+.simple-names.khmer-text-fix {
+  gap: 0.35rem;
+}
+
+.simple-names.khmer-text-fix .simple-name-text {
+  line-height: 0.95;
+}
+
+/* Khmer clusters crowd the ampersand on both sides — host-2's vowel signs
+   (heads) ride up toward the '&' from below, while host-1's subscripts (tails)
+   hang toward it from above. Keep the space equal above and below (centered) but
+   a touch larger than the Latin default to clear those heads/tails. */
+.simple-names.khmer-text-fix .simple-amp {
+  margin-top: 1.1rem;
+  margin-bottom: 1.1rem;
+}
+
+/* Laptop (13") — match the compact scale the rest of the showcase uses here. */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .simple-name-text {
+    font-size: 1.75rem;
+  }
+
+  .simple-amp {
+    font-size: 1.25rem;
+  }
 }
 </style>

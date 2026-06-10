@@ -89,6 +89,8 @@ export type {
   FallingEffectConfig,
   EventDetailsDesignType,
   EventDetailsDesignConfig,
+  HostInfoDesignType,
+  HostInfoDesignConfig,
   AmbientCreatureEffectType,
   AmbientCreatureEntry,
   AmbientCreaturesConfig,

@@ -153,6 +153,31 @@ export interface EventDetailsDesignConfig {
 }
 
 /**
+ * Visual style used to render the host information block in HostInfo.
+ *
+ * - `standard` — the default rich layout: welcome header, parent names, logo,
+ *                host titles, host names and profile pictures (the original look).
+ * - `simple`   — a minimal layout: the welcome header above large script host
+ *                names stacked and joined by an ampersand.
+ *
+ * Selected per template via `template_assets.host_info_design` and flows through
+ * the showcase exactly like `event_details_design`.
+ */
+export type HostInfoDesignType = 'standard' | 'simple'
+
+/**
+ * Configuration for the host information block on the showcase.
+ *
+ * Mirrors the `EventDetailsDesignConfig` pattern: a small JSON object sent inside
+ * the template package and forwarded down to HostInfo.vue. When omitted the
+ * showcase falls back to the `standard` design.
+ */
+export interface HostInfoDesignConfig {
+  /** Which host info layout to render. Defaults to `standard`. */
+  type: HostInfoDesignType
+}
+
+/**
  * Built-in falling particle effect types.
  * Each maps to a predefined SVG shape in the particle registry.
  */
@@ -279,6 +304,7 @@ export interface PartnerTemplate {
   cover_stage_layout: CoverStageLayout | null
   falling_effect: FallingEffectConfig | null
   event_details_design: EventDetailsDesignConfig | null
+  host_info_design: HostInfoDesignConfig | null
   ambient_creatures: AmbientCreaturesConfig | null
   display_liquid_glass_background: boolean
   open_envelope_button: string | null
@@ -336,6 +362,8 @@ export interface PartnerTemplateCreatePayload {
   falling_effect_custom_image?: File | ''
   /** Event date/location block design. Pass `null` to fall back to the `panel` design. */
   event_details_design?: EventDetailsDesignConfig | null
+  /** Host info block design. Pass `null` to fall back to the `standard` design. */
+  host_info_design?: HostInfoDesignConfig | null
   /** Ambient creature effect config. Pass `null` to disable the effect. */
   ambient_creatures?: AmbientCreaturesConfig | null
 }

@@ -140,6 +140,7 @@
                     :first-host-image="firstHostImage"
                     :first-host-name="firstHostName"
                     :host-clip-style="hostClipStyle"
+                    :design-type="hostInfoDesign?.type"
                   />
                 </div>
 
@@ -914,6 +915,7 @@ import type {
   CoverStageLayout,
   FallingEffectConfig,
   EventDetailsDesignConfig,
+  HostInfoDesignConfig,
 } from '../../services/api/types/template.types'
 
 // Asset protection (production-only)
@@ -994,6 +996,8 @@ interface Props {
   fallingEffect?: FallingEffectConfig | null
   /** Date + location block design from template (panel | calendar) */
   eventDetailsDesign?: EventDetailsDesignConfig | null
+  /** Host info block design from template (standard | simple) */
+  hostInfoDesign?: HostInfoDesignConfig | null
 }
 
 const props = defineProps<Props>()

@@ -2251,6 +2251,15 @@
         "calendar": "Calendar (month grid, day circled)"
       }
     },
+    "hostInfoDesign": {
+      "sectionTitle": "Host Info Design",
+      "designLabel": "Layout style",
+      "designHint": "Controls how the host information is displayed in the showcase.",
+      "types": {
+        "standard": "Standard (parents, logo, titles, photos)",
+        "simple": "Simple (welcome + large names)"
+      }
+    },
     "footer": {
       "cancel": "Cancel",
       "saving": "Saving...",

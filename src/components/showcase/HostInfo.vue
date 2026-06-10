@@ -8,6 +8,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Host } from '../../composables/useEventShowcase'
+import type { HostInfoDesignType } from '../../services/api/types/template.types'
 
 // Import all layout variants
 import HostInfoWedding from './host-layouts/HostInfoWedding.vue'
@@ -44,6 +45,8 @@ interface Props {
   firstHostName?: string
   /** CSS variables (--host-clip-offset-*) from cover_stage_layout for panning the host photo inside the clip shape. */
   hostClipStyle?: Record<string, string>
+  /** Host info block design from template (standard | simple). Forwarded to the layout variant. */
+  designType?: HostInfoDesignType
 }
 
 const props = defineProps<Props>()

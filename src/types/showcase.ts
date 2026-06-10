@@ -7,6 +7,7 @@ import type {
   CoverStageLayout,
   FallingEffectConfig,
   EventDetailsDesignConfig,
+  HostInfoDesignType,
 } from '@/services/api/types/template.types'
 
 // Core showcase data types
@@ -288,6 +289,8 @@ export interface HostInfoProps {
   firstHostName?: string
   /** CSS variables (--host-clip-offset-*) from cover_stage_layout for panning the host photo inside the clip shape. */
   hostClipStyle?: Record<string, string>
+  /** Host info block design from the template package. Defaults to 'standard'. */
+  designType?: HostInfoDesignType
 }
 
 // Error boundary types

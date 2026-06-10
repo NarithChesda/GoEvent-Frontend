@@ -8,6 +8,7 @@ import type {
   CoverStageLayout,
   FallingEffectConfig,
   EventDetailsDesignConfig,
+  HostInfoDesignConfig,
 } from '../services/api/types/template.types'
 
 // Imports - Composables
@@ -152,6 +153,8 @@ export interface TemplateAssets {
   falling_effect?: FallingEffectConfig | null
   /** Date + location block design (panel | calendar). Defaults to `panel`. */
   event_details_design?: EventDetailsDesignConfig | null
+  /** Host info block design (standard | simple). Defaults to `standard`. */
+  host_info_design?: HostInfoDesignConfig | null
   display_liquid_glass_background?: boolean
   guest_title_frame_left?: string | null
   guest_title_frame_mid?: string | null
