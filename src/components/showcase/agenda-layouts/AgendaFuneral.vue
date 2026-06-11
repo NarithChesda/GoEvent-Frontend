@@ -43,9 +43,17 @@
             v-for="date in agendaTabs"
             :key="date"
             class="tab-button"
+            :class="{ active: activeTab === date }"
             :style="getTabStyle(date)"
             @click="selectTab(date)"
           >
+            <span
+              v-if="getTabWeekday(date)"
+              class="tab-weekday"
+              :style="{ fontFamily: secondaryFont || currentFont }"
+            >
+              {{ getTabWeekday(date) }}
+            </span>
             <span
               :class="['tab-date font-semibold', currentLanguage === 'kh' && 'khmer-text-fix']"
               :style="{ fontFamily: primaryFont || currentFont }"
@@ -100,6 +108,8 @@
                 :primary-font="primaryFont"
                 :secondary-font="secondaryFont"
                 :entrance-delay="index * (isInitialReveal ? 0.15 : 0.07)"
+                :is-first="index === 0"
+                :is-last="index === (agendaByDate[activeTab] || []).length - 1"
               />
             </div>
           </div>
@@ -117,11 +127,7 @@ import {
   formatDateLocalized,
   type SupportedLanguage,
 } from '../../../utils/translations'
-import {
-  splitToWords,
-  ANIMATION_CONSTANTS,
-  getTextAnimationDuration,
-} from '@/composables/showcase/useHostInfoUtils'
+import { splitToWords, ANIMATION_CONSTANTS } from '@/composables/showcase/useHostInfoUtils'
 
 interface AgendaItemIcon {
   id: number
@@ -300,15 +306,31 @@ const selectTab = (date: string) => {
   activeTab.value = date
 }
 
-// Style helper for tabs - matching AgendaWedding pill style
+// Localized weekday eyebrow shown above the date inside each tab
+const getTabWeekday = (dateString: string): string => {
+  if (dateString === 'No Date') return ''
+  try {
+    const localeMap: Record<string, string> = { kh: 'km-KH', zh: 'zh-CN', fr: 'fr-FR' }
+    const locale = localeMap[props.currentLanguage || ''] || 'en-US'
+    const date = new Date(dateString)
+    if (Number.isNaN(date.getTime())) return ''
+    return new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date)
+  } catch {
+    return ''
+  }
+}
+
+// Inline styles only carry the active state + fonts; resting/hover looks
+// live in CSS so the tray pills can color-mix against --primary-color.
 const getTabStyle = (date: string) => {
   const isActive = activeTab.value === date
+  const base = { fontFamily: props.primaryFont || props.currentFont }
+  if (!isActive) return base
   return {
-    backgroundColor: isActive ? props.primaryColor : `${props.primaryColor}10`,
-    color: isActive ? '#ffffff' : props.primaryColor,
-    fontFamily: props.primaryFont || props.currentFont,
-    transform: isActive ? 'scale(1.05)' : 'scale(1)',
-    boxShadow: isActive ? `0 4px 12px ${props.primaryColor}30` : 'none',
+    ...base,
+    backgroundColor: props.primaryColor,
+    color: '#ffffff',
+    boxShadow: `0 10px 22px -10px ${props.primaryColor}b3, inset 0 1px 0 rgba(255, 255, 255, 0.25)`,
   }
 }
 
@@ -419,55 +441,80 @@ watch(
   -ms-overflow-style: none;
   margin-bottom: 1.5rem;
   display: flex;
-  justify-content: center;
+  /* Breathing room so the active pill's shadow isn't clipped */
+  padding: 0.25rem 0.125rem;
 }
 
 .tab-bar-scroll-wrapper::-webkit-scrollbar {
   display: none;
 }
 
+/* Glass tray holding the date pills; auto margins keep it centered while
+   still allowing full scroll reach when it overflows on small screens */
 .tab-bar {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.25rem;
+  margin-inline: auto;
   min-width: min-content;
-  justify-content: center;
-  flex-wrap: wrap;
+  padding: 0.3125rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--primary-color) 6%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 14%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-@media (min-width: 640px) {
-  .tab-bar {
-    gap: 0.75rem;
-  }
+/* Collapse the tray chrome when there is only a single date */
+.tab-bar:has(.tab-button:only-child) {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
-/* Tab Buttons - Pill style matching AgendaWedding */
+/* Tab pills: weekday eyebrow over the date - matching AgendaWedding */
 .tab-button {
   flex-shrink: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0.625rem 1.25rem;
+  gap: 0.125rem;
+  padding: 0.5rem 1.5rem;
   border-radius: 9999px;
   border: none;
   outline: none;
-  transition: all 0.3s ease;
+  background-color: transparent;
+  color: var(--primary-color);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    box-shadow 0.3s ease;
   cursor: pointer;
   white-space: nowrap;
 }
 
 @media (min-width: 640px) {
   .tab-button {
-    padding: 0.75rem 1.75rem;
+    padding: 0.625rem 1.875rem;
   }
 }
 
-.tab-button:hover {
-  transform: scale(1.05) !important;
+.tab-button:not(.active):hover {
+  background-color: color-mix(in srgb, var(--primary-color) 9%, transparent);
 }
 
 .tab-button:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
+}
+
+.tab-weekday {
+  display: block;
+  font-size: 0.5625rem;
+  line-height: 1.1;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.75;
 }
 
 .tab-date {
@@ -477,6 +524,10 @@ watch(
 }
 
 @media (min-width: 640px) {
+  .tab-weekday {
+    font-size: 0.625rem;
+  }
+
   .tab-date {
     font-size: 1rem;
   }
@@ -596,11 +647,16 @@ watch(
 
   /* Tab bar compact sizing - match AgendaWedding */
   .tab-bar {
-    gap: 0.375rem !important;
+    gap: 0.1875rem !important;
+    padding: 0.25rem !important;
   }
 
   .tab-button {
-    padding: 0.4rem 0.875rem !important;
+    padding: 0.3125rem 0.875rem !important;
+  }
+
+  .tab-weekday {
+    font-size: 0.4375rem !important; /* 7px eyebrow */
   }
 
   .tab-date {
@@ -625,11 +681,16 @@ watch(
 
   /* Tab bar compact sizing - match AgendaWedding */
   .tab-bar {
-    gap: 0.5rem !important;
+    gap: 0.25rem !important;
+    padding: 0.25rem !important;
   }
 
   .tab-button {
-    padding: 0.5rem 1rem !important;
+    padding: 0.375rem 1rem !important;
+  }
+
+  .tab-weekday {
+    font-size: 0.5rem !important; /* 8px eyebrow */
   }
 
   .tab-date {
