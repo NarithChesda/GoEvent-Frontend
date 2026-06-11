@@ -1,42 +1,65 @@
 <template>
   <div class="transition-stage" :class="{ 'stage-fade-out': isStageFadingOut }">
-    <!-- Feature Image: fills the viewport -->
+    <!-- Feature Image: fills the viewport with a slow Ken Burns drift -->
     <div
       v-if="featureImageUrl"
       class="couple-photo-container"
       :class="[{ 'show': isCouplePhotoVisible }, { 'door-mode': animationType === 'door' }]"
     >
-      <img
-        :src="featureImageUrl"
-        :alt="eventTitle"
-        class="couple-photo"
+      <div class="kenburns-frame">
+        <img
+          :src="featureImageUrl"
+          :alt="eventTitle"
+          class="couple-photo"
+        />
+        <!-- Veil copy: identical image, pre-blurred and bright; fades away to "lift the veil" -->
+        <img
+          :src="featureImageUrl"
+          alt=""
+          aria-hidden="true"
+          class="couple-photo couple-photo-veil"
+        />
+      </div>
+
+      <!-- One-time soft light sweep across the photo after it sharpens -->
+      <div class="light-sweep" />
+
+      <!-- Cinematic vignette hugging the edges -->
+      <div class="photo-vignette" />
+    </div>
+
+    <!-- Floating bokeh particles in template accent color -->
+    <div class="bokeh-field" :class="{ 'show': isCouplePhotoVisible }" aria-hidden="true">
+      <span
+        v-for="particle in bokehParticles"
+        :key="particle.id"
+        class="bokeh"
+        :style="particle.style"
       />
     </div>
 
-    <!-- Cloud blur footer overlay -->
+    <!-- Footer scrim + save the date -->
     <div class="cloud-footer" :class="{ 'show': isContentVisible }">
-      <!-- Blur layer: blurs the couple photo behind it -->
+      <!-- Soft blur band, lighter than before so the photo stays present -->
       <div class="cloud-blur-layer" />
-      <!-- Gradient mist overlay for the cloudy feel -->
-      <div
-        class="cloud-mist-layer"
-        :style="cloudMistStyle"
-      />
+      <!-- Gradient mist for text legibility -->
+      <div class="cloud-mist-layer" :style="cloudMistStyle" />
 
-      <!-- Save the Date text on top of the cloud -->
       <div class="save-the-date-container">
-        <!-- Decorative flourish above -->
-        <div class="flourish" :style="{ color: flourishTextColor }">
-          &#8212;&thinsp;&#10045;&thinsp;&#8212;
-        </div>
-        <p
-          class="save-the-date-label"
-          :style="{
-            color: saveDateTextColor,
-          }"
-        >
-          Save the Date
+        <!-- Fine line drawing outward from center -->
+        <div class="reveal-line" :style="{ background: revealLineGradient }" />
+
+        <!-- "Save the Date" blooms in letter by letter -->
+        <p class="save-the-date-label" :style="{ color: saveDateTextColor }">
+          <span
+            v-for="(char, i) in saveTheDateChars"
+            :key="i"
+            class="std-char"
+            :style="{ animationDelay: `${i * 65}ms` }"
+            >{{ char === ' ' ? ' ' : char }}</span
+          >
         </p>
+
         <p
           v-if="formattedDate"
           class="event-date"
@@ -100,15 +123,54 @@ const featureImageUrl = computed(() => {
 const cloudMistStyle = computed(() => {
   const c = props.blurEffectColor || '#ffffff'
   return {
-    background: `linear-gradient(to bottom, transparent 0%, ${c}66 30%, ${c}aa 55%, ${c}cc 75%, ${c}ee 100%)`,
+    background: `linear-gradient(to bottom, transparent 0%, ${c}4d 35%, ${c}99 60%, ${c}cc 80%, ${c}e6 100%)`,
   }
 })
 
-const flourishTextColor = computed(() => props.primaryColor || '#333')
+const flourishColor = computed(() => props.accentColor || props.primaryColor || '#b08d57')
+
+const revealLineGradient = computed(
+  () =>
+    `linear-gradient(to right, transparent 0%, ${flourishColor.value} 25%, ${flourishColor.value} 75%, transparent 100%)`,
+)
 
 const saveDateTextColor = computed(() => props.primaryColor || '#333')
 
 const dateTextColor = computed(() => props.primaryColor || '#333')
+
+const saveTheDateChars = computed(() => 'Save the Date'.split(''))
+
+// Drifting bokeh sparkles: randomized once per mount so each viewing feels organic
+interface BokehParticle {
+  id: number
+  style: Record<string, string>
+}
+
+const bokehParticles = ref<BokehParticle[]>([])
+
+const generateBokeh = () => {
+  const color = props.accentColor || props.primaryColor || '#ffffff'
+  const particles: BokehParticle[] = []
+  const count = 14
+  for (let i = 0; i < count; i++) {
+    const size = 4 + Math.random() * 10
+    particles.push({
+      id: i,
+      style: {
+        '--bokeh-color': i % 3 === 0 ? '#ffffff' : color,
+        left: `${Math.random() * 100}%`,
+        bottom: `${-5 + Math.random() * 55}%`,
+        width: `${size}px`,
+        height: `${size}px`,
+        '--drift-x': `${-30 + Math.random() * 60}px`,
+        '--float-duration': `${7 + Math.random() * 7}s`,
+        animationDelay: `${Math.random() * 4}s`,
+        opacity: `${0.25 + Math.random() * 0.4}`,
+      },
+    })
+  }
+  bokehParticles.value = particles
+}
 
 const formattedDate = computed(() => {
   if (!props.eventStartDate) return null
@@ -129,19 +191,22 @@ const formattedDate = computed(() => {
 //
 // Decoration mode (default):
 //   0ms    - TransitionStage mounts (cover decorations animating out)
-//   1000ms - Couple photo starts fading/scaling in
-//   1500ms - Cloud footer + save the date text fades in
-//   5000ms - Everything starts fading out
-//   6200ms - Fully faded out → emit transitionComplete
+//   1000ms - Photo starts: veil-blurred + bright, sharpening over ~2.4s while Ken Burns drifts
+//   1800ms - Footer scrim rises; line draws; "Save the Date" blooms letter by letter; date tracks in
+//   ~3400ms- Light sweep passes across the sharpened photo
+//   5800ms - Everything starts fading out
+//   7000ms - Fully faded out → emit transitionComplete
 //
 // Door mode:
 //   0ms    - TransitionStage mounts simultaneously as door starts opening (1.2s)
-//   0ms    - Couple photo starts fading in immediately (visible as door swings open)
-//   900ms  - Cloud footer fades in (door is ~75% open at this point)
-//   4500ms - Everything starts fading out
-//   5700ms - Fully faded out → emit transitionComplete
+//   0ms    - Photo reveal starts immediately (visible as door swings open)
+//   1200ms - Footer scrim + text sequence begins (door fully open)
+//   5300ms - Everything starts fading out
+//   6500ms - Fully faded out → emit transitionComplete
 onMounted(() => {
   const isDoor = props.animationType === 'door'
+
+  generateBokeh()
 
   // Photo appears first — immediately for door so it's revealed as the door opens,
   // delayed for decoration so it appears after decorations have slid out
@@ -149,20 +214,20 @@ onMounted(() => {
     isCouplePhotoVisible.value = true
   }, isDoor ? 0 : 1000)
 
-  // Cloud footer with text
+  // Footer scrim with text
   fadeInTimer = setTimeout(() => {
     isContentVisible.value = true
-  }, isDoor ? 900 : 1500)
+  }, isDoor ? 1200 : 1800)
 
   // Start fading out
   fadeOutTimer = setTimeout(() => {
     isStageFadingOut.value = true
-  }, isDoor ? 4500 : 5000)
+  }, isDoor ? 5300 : 5800)
 
   // Emit completion after fade-out finishes
   completeTimer = setTimeout(() => {
     emit('transitionComplete')
-  }, isDoor ? 5700 : 6200)
+  }, isDoor ? 6500 : 7000)
 })
 
 onUnmounted(() => {
@@ -186,34 +251,55 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-/* Couple photo: fills entire stage, centered with cover */
+/* ---------- Photo: veil reveal + Ken Burns ---------- */
+
 .couple-photo-container {
   position: absolute;
   inset: 0;
   opacity: 0;
-  transform: scale(1.05);
-  transition: opacity 1.5s ease-out, transform 1.5s ease-out;
+  transition: opacity 1.4s ease-out;
   z-index: 1;
 }
 
 .couple-photo-container.show {
   opacity: 1;
-  transform: scale(1);
 }
 
 /* Door mode: photo fades in over the door animation duration (1.2s),
    so it's fully visible by the time the door completes */
 .couple-photo-container.door-mode {
-  transition: opacity 1.2s ease-in-out, transform 1.2s ease-out;
+  transition: opacity 1.2s ease-in-out;
 }
 
 .stage-fade-out .couple-photo-container {
   opacity: 0;
-  transform: scale(1.03);
-  transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+  transition: opacity 1.2s ease-out;
+}
+
+/* Ken Burns drift runs on a wrapper so it composes with the container's opacity fade */
+.kenburns-frame {
+  position: absolute;
+  inset: 0;
+  transform: scale(1.14);
+  will-change: transform;
+}
+
+.show .kenburns-frame {
+  animation: kenburns 9s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+@keyframes kenburns {
+  from {
+    transform: scale(1.14) translateY(0.6%);
+  }
+  to {
+    transform: scale(1.02) translateY(-0.6%);
+  }
 }
 
 .couple-photo {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   display: block;
@@ -221,23 +307,131 @@ onUnmounted(() => {
   object-position: center;
 }
 
-/* Cloud blur footer: overlays the bottom of the couple photo */
+/* Veil copy: pre-blurred and luminous, stacked on the sharp photo.
+   Fading its opacity (cheap) reads as the photo sharpening (a blur()
+   transition on a fullscreen image would be far more expensive). */
+.couple-photo-veil {
+  filter: blur(16px) brightness(1.18) saturate(0.92);
+  transform: scale(1.04); /* hide blur edge bleed */
+  opacity: 1;
+  transition: opacity 2.4s ease-in-out;
+}
+
+.show .couple-photo-veil {
+  opacity: 0;
+}
+
+.door-mode .couple-photo-veil {
+  transition: opacity 2s ease-in-out;
+}
+
+/* One-time soft sheen sweeping diagonally across after the veil lifts */
+.light-sweep {
+  position: absolute;
+  inset: -20%;
+  z-index: 2;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.18) 48%,
+    rgba(255, 255, 255, 0.32) 50%,
+    rgba(255, 255, 255, 0.18) 52%,
+    transparent 60%
+  );
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.show .light-sweep {
+  animation: lightSweep 2.6s ease-in-out 2.4s 1 forwards;
+}
+
+@keyframes lightSweep {
+  0% {
+    transform: translateX(-100%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Cinematic vignette: draws the eye to the couple */
+.photo-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: radial-gradient(
+    ellipse 130% 110% at center 42%,
+    transparent 55%,
+    rgba(0, 0, 0, 0.12) 78%,
+    rgba(0, 0, 0, 0.32) 100%
+  );
+  opacity: 0;
+  transition: opacity 2.2s ease-in-out 0.8s;
+}
+
+.show .photo-vignette {
+  opacity: 1;
+}
+
+/* ---------- Bokeh particles ---------- */
+
+.bokeh-field {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  opacity: 0;
+  transition: opacity 2s ease-in-out 1s;
+}
+
+.bokeh-field.show {
+  opacity: 1;
+}
+
+.stage-fade-out .bokeh-field {
+  opacity: 0;
+  transition: opacity 1s ease-out;
+}
+
+.bokeh {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--bokeh-color);
+  filter: blur(2px);
+  box-shadow: 0 0 8px var(--bokeh-color);
+  animation: bokehFloat var(--float-duration) ease-in-out infinite;
+}
+
+@keyframes bokehFloat {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(calc(var(--drift-x) * 0.6), -45vh);
+  }
+  100% {
+    transform: translate(var(--drift-x), -90vh);
+  }
+}
+
+/* ---------- Footer scrim + text ---------- */
+
 .cloud-footer {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   height: 38vh;
-  z-index: 2;
+  z-index: 5;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
   padding-bottom: 8vh;
   opacity: 0;
-  /* Small translateY avoids the snap-to-place visible with larger distances */
   transform: translateY(6px);
-  /* ease-in-out decelerates gently into final position; avoids the hard stop of ease-out */
   transition: opacity 1.6s ease-in-out, transform 1.6s ease-in-out;
   will-change: opacity, transform;
 }
@@ -249,33 +443,28 @@ onUnmounted(() => {
 
 .stage-fade-out .cloud-footer {
   opacity: 0;
-  /* Match the incoming translateY so fade-out is the mirror of fade-in */
   transform: translateY(6px);
   transition: opacity 1.2s ease-in-out, transform 1.2s ease-in-out;
 }
 
-/* Backdrop blur layer: creates the frosted glass effect over the photo */
+/* Lighter frosted band than before so the photo remains present behind the text */
 .cloud-blur-layer {
   position: absolute;
   inset: 0;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  /* Gradient mask: transparent at top → opaque at bottom, so blur fades in smoothly */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
-  /* Promote to its own layer so GPU handles blur independently from opacity animation */
   will-change: transform;
   transform: translateZ(0);
 }
 
-/* Mist overlay: adds colored fog/cloud feeling */
 .cloud-mist-layer {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-/* Save the date text */
 .save-the-date-container {
   position: relative;
   z-index: 3;
@@ -283,34 +472,125 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.5rem;
 }
 
-/* Decorative flourish */
-.flourish {
-  font-size: 0.85rem;
-  letter-spacing: 0.3em;
-  opacity: 0.7;
-  margin-bottom: 0.1rem;
+/* Fine line that draws outward from the center */
+.reveal-line {
+  width: 140px;
+  height: 1px;
+  transform: scaleX(0);
+  opacity: 0;
 }
 
-/* Elegant script for "Save the Date" */
+.show .reveal-line {
+  animation: lineDraw 1.1s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
+}
+
+@keyframes lineDraw {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 0.9;
+  }
+}
+
+/* Elegant script, revealed letter by letter */
 .save-the-date-label {
   font-family: 'Great Vibes', cursive;
-  font-size: 2.4rem;
-  line-height: 1.2;
+  font-size: 2.6rem;
+  line-height: 1.25;
   margin: 0;
   font-weight: 400;
+  white-space: nowrap;
 }
 
-/* Clean, readable date */
+.std-char {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(6px);
+  transform: translateY(8px);
+}
+
+.show .std-char {
+  animation: charBloom 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  /* per-character stagger applied inline via animation-delay */
+}
+
+@keyframes charBloom {
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+/* Date tracks in: letter-spacing settles as it fades up */
 .event-date {
   font-size: 0.85rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   margin: 0;
   font-weight: 500;
-  opacity: 0.75;
-  margin-top: 0.15rem;
+  opacity: 0;
+}
+
+.show .event-date {
+  animation: dateTrackIn 1.4s ease-out 1.2s forwards;
+}
+
+@keyframes dateTrackIn {
+  from {
+    opacity: 0;
+    letter-spacing: 0.42em;
+  }
+  to {
+    opacity: 0.8;
+    letter-spacing: 0.18em;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .show .kenburns-frame {
+    animation: none;
+    transform: scale(1.02);
+  }
+
+  .couple-photo-veil {
+    transition-duration: 0.8s;
+  }
+
+  .show .light-sweep,
+  .bokeh {
+    animation: none;
+  }
+
+  .bokeh-field {
+    display: none;
+  }
+
+  .std-char {
+    filter: none;
+    transform: none;
+  }
+
+  .show .std-char {
+    animation: charBloom 0.6s ease forwards;
+    animation-delay: 0s !important;
+  }
+
+  .show .reveal-line {
+    animation-duration: 0.5s;
+  }
+
+  .show .event-date {
+    animation-duration: 0.6s;
+    animation-delay: 0.3s;
+  }
 }
 </style>
