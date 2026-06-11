@@ -13,6 +13,21 @@
       >
         {{ commentHeaderText }}
       </h2>
+      <!-- Ornamental divider under heading -->
+      <div class="flex items-center justify-center gap-2 -mt-1 mb-1">
+        <span
+          class="h-px w-10 sm:w-14"
+          :style="{ background: `linear-gradient(90deg, transparent, ${primaryColor}66)` }"
+        ></span>
+        <span
+          class="w-1.5 h-1.5 rotate-45 flex-shrink-0"
+          :style="{ backgroundColor: `${primaryColor}59` }"
+        ></span>
+        <span
+          class="h-px w-10 sm:w-14"
+          :style="{ background: `linear-gradient(90deg, ${primaryColor}66, transparent)` }"
+        ></span>
+      </div>
     </div>
 
     <!-- Comment Form -->
@@ -180,7 +195,10 @@
         >
           <div
             class="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center"
-            :style="{ backgroundColor: `${backgroundColor}15` }"
+            :style="{
+              backgroundColor: `${backgroundColor}15`,
+              boxShadow: `0 0 0 1px ${backgroundColor}30, 0 0 0 6px ${backgroundColor}0D`,
+            }"
           >
             <MessageCircle class="w-6 h-6" :style="{ color: primaryColor, opacity: '0.6' }" />
           </div>
@@ -219,7 +237,7 @@
           >
             <!-- Quote Mark -->
             <div
-              class="absolute top-2 left-3 text-5xl leading-none select-none pointer-events-none opacity-50"
+              class="absolute top-2 left-3 text-4xl leading-none select-none pointer-events-none opacity-40"
               :style="{ color: backgroundColor, fontFamily: 'Georgia, serif' }"
             >
               "
@@ -246,8 +264,8 @@
             <!-- Comment Message (Read Mode) -->
             <p
               v-if="editingCommentId !== comment.id"
-              class="text-sm leading-relaxed pl-7 mb-4 italic pt-1"
-              :class="isUserCommentOwner(comment) ? 'pr-8' : 'pr-3'"
+              class="text-sm leading-relaxed pl-7 mb-3 pt-1"
+              :class="isUserCommentOwner(comment) ? 'pr-8' : 'pr-2'"
               :style="{
                 color: primaryColor,
                 fontFamily: secondaryFont || currentFont,
@@ -326,42 +344,52 @@
               </div>
             </div>
 
-            <!-- Author Info (Bottom) -->
-            <div
-              class="flex items-center justify-between pl-3 pr-2 pt-3"
-              :style="{ borderTop: `1px solid ${backgroundColor}30` }"
-            >
-              <!-- Avatar + Name -->
-              <div class="flex items-center gap-2">
-                <!-- User Avatar -->
+            <!-- Author Signature (Bottom) -->
+            <div class="comment-author-row relative flex items-center gap-2.5 pl-2 pr-2 pt-3">
+              <!-- Gradient hairline divider -->
+              <div
+                class="absolute top-0 left-0 right-0 h-px pointer-events-none"
+                :style="{
+                  background: `linear-gradient(90deg, ${backgroundColor}50, ${backgroundColor}15, transparent)`,
+                }"
+              ></div>
+
+              <!-- User Avatar -->
+              <div
+                class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center"
+                :style="{
+                  backgroundColor: `${backgroundColor}25`,
+                  boxShadow: `0 0 0 2px ${backgroundColor}35`,
+                }"
+              >
+                <img
+                  v-if="getCommentAvatarUrl(comment) && !isAvatarError(comment.id)"
+                  :src="getCommentAvatarUrl(comment)!"
+                  :alt="getCommentDisplayName(comment)"
+                  class="w-full h-full object-cover"
+                  @error="() => setAvatarError(comment.id)"
+                />
                 <div
-                  class="w-8 h-8 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center"
+                  v-else
+                  class="w-full h-full flex items-center justify-center text-white text-xs font-semibold"
+                  :style="{ backgroundColor: backgroundColor }"
                 >
-                  <img
-                    v-if="getCommentAvatarUrl(comment) && !isAvatarError(comment.id)"
-                    :src="getCommentAvatarUrl(comment)!"
-                    :alt="getCommentDisplayName(comment)"
-                    class="w-full h-full object-cover"
-                    @error="() => setAvatarError(comment.id)"
-                  />
-                  <div
-                    v-else
-                    class="w-full h-full flex items-center justify-center text-white text-xs font-semibold"
-                    :style="{ backgroundColor: backgroundColor }"
-                  >
-                    {{ getCommentInitial(comment) }}
-                  </div>
+                  {{ getCommentInitial(comment) }}
                 </div>
-                <div class="flex items-center gap-2">
+              </div>
+
+              <!-- Name + Date (stacked so long names never wrap) -->
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5 min-w-0">
                   <p
-                    class="text-sm font-medium"
+                    class="text-sm font-medium truncate"
                     :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }"
                   >
                     {{ getCommentDisplayName(comment) }}
                   </p>
                   <span
                     v-if="isUserCommentOwner(comment)"
-                    class="text-[0.625rem] px-1.5 py-0.5 rounded-full text-white font-medium"
+                    class="text-[0.625rem] px-1.5 py-0.5 rounded-full text-white font-medium flex-shrink-0"
                     :style="{
                       backgroundColor: backgroundColor + '80',
                       fontFamily: secondaryFont || currentFont,
@@ -370,19 +398,17 @@
                     {{ commentYouBadgeText }}
                   </span>
                 </div>
+                <p
+                  class="text-xs leading-tight mt-0.5"
+                  :style="{
+                    color: primaryColor,
+                    opacity: 0.55,
+                    fontFamily: secondaryFont || currentFont,
+                  }"
+                >
+                  {{ formatCommentDate(comment.created_at) }}
+                </p>
               </div>
-
-              <!-- Date -->
-              <p
-                class="text-xs"
-                :style="{
-                  color: primaryColor,
-                  opacity: 0.6,
-                  fontFamily: secondaryFont || currentFont,
-                }"
-              >
-                {{ formatCommentDate(comment.created_at) }}
-              </p>
             </div>
           </div>
 
@@ -1811,21 +1837,17 @@ textarea::-webkit-scrollbar-thumb:hover {
     height: 1.35rem !important;
   }
 
-  /* Author info section alignment */
-  .comment-card-liquid .flex.items-center.justify-between {
-    padding-left: 0.4rem !important;
+  /* Author signature row - 67.5% scale */
+  .comment-author-row {
+    gap: 0.3rem !important;
+    padding-left: 0.3rem !important;
     padding-right: 0.3rem !important;
     padding-top: 0.4rem !important;
   }
 
-  /* Avatar + Name container gap */
-  .comment-card-liquid .flex.items-center.gap-2 {
-    gap: 0.3rem !important;
-  }
-
   /* Quote mark sizing - 67.5% scale */
-  .comment-card-liquid .text-5xl {
-    font-size: 2rem !important; /* Reduced from 3rem */
+  .comment-card-liquid .text-4xl {
+    font-size: 1.5rem !important; /* 2.25rem * 0.675 */
   }
 
   /* User name sizing */
@@ -2018,21 +2040,17 @@ textarea::-webkit-scrollbar-thumb:hover {
     height: 1.5rem !important;
   }
 
-  /* Author info section alignment */
-  .comment-card-liquid .flex.items-center.justify-between {
-    padding-left: 0.45rem !important;
+  /* Author signature row - 75% scale */
+  .comment-author-row {
+    gap: 0.34rem !important;
+    padding-left: 0.34rem !important;
     padding-right: 0.34rem !important;
     padding-top: 0.45rem !important;
   }
 
-  /* Avatar + Name container gap */
-  .comment-card-liquid .flex.items-center.gap-2 {
-    gap: 0.34rem !important;
-  }
-
   /* Quote mark sizing - 75% scale */
-  .comment-card-liquid .text-5xl {
-    font-size: 2.25rem !important; /* 3rem * 0.75 */
+  .comment-card-liquid .text-4xl {
+    font-size: 1.7rem !important; /* 2.25rem * 0.75 */
   }
 
   /* User name sizing */
