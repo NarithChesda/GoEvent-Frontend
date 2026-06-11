@@ -417,7 +417,7 @@
                 <!-- Footer Section -->
                 <div
                   ref="footerSectionRef"
-                  class="mt-8 -mx-6 sm:-mx-6 md:-mx-4 laptop-sm:-mx-5 laptop-md:-mx-5 laptop-lg:-mx-6 desktop:-mx-5 -mb-6 sm:-mb-6 md:-mb-4 laptop-sm:-mb-5 laptop-md:-mb-5 laptop-lg:-mb-6 desktop:-mb-5 animate-reveal"
+                  class="mt-8 -mx-6 sm:-mx-6 md:-mx-4 laptop-sm:-mx-5 laptop-md:-mx-5 laptop-lg:-mx-6 desktop:-mx-5 animate-reveal"
                 >
                   <!-- Footer Card with Conditional Styling -->
                   <div
@@ -885,6 +885,10 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- Spacer so the footer can scroll to the center of the viewport,
+                     clearing the bottom decoration overlay -->
+                <div class="h-[42vh]" aria-hidden="true"></div>
               </div>
             </div>
           </div>
