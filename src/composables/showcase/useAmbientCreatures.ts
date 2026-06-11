@@ -31,6 +31,7 @@ const CREATURE_DEFAULTS: Record<
 
 interface CreatureState {
   element: HTMLDivElement
+  type: AmbientCreatureEffectType
   x: number
   y: number
   targetX: number
@@ -41,6 +42,15 @@ interface CreatureState {
   angle: number
   /** Index into decoration zones — creature orbits this decoration most often */
   homeZone: number
+  /** Simulated distance from viewer: scales size, opacity, and speed (parallax) */
+  depth: number
+  /** Phase offset for speed surging (butterflies) and drift (fireflies) */
+  speedPhase: number
+  /** Current heading in radians — doves steer with a limited turn rate to fly arcs */
+  heading: number
+  /** Dragonfly state machine: dart fast toward target, then hover in place */
+  mode: 'seek' | 'hover'
+  modeUntil: number
 }
 
 // ─── Decoration tracking ──────────────────────────────────────────
@@ -122,14 +132,53 @@ function pickDecorationPoint(zone: DecorationZone, cw: number, ch: number): { x:
 const SVG_NS = 'http://www.w3.org/2000/svg'
 
 // ─── SVG creature creators ──────────────────────────────────────────
-// Each returns a positioned wrapper div containing an animated SVG.
-// Wing flapping is driven by CSS @keyframes referenced via inline
-// animation styles, so each creature is self-contained.
+// Each creature is a layered structure:
+//   wrapper (JS positions this)
+//     └─ flyer (CSS perspective + body-bob animation)
+//          ├─ wing divs (3D rotateY flap — reads as a real fold, unlike scaleX)
+//          └─ body SVG
+// Flap cycles include glide phases (flap-flap-flap…soar) and per-creature
+// randomized durations so no two creatures beat in sync.
 
 function makeWrapper(size: number): HTMLDivElement {
   const el = document.createElement('div')
-  el.style.cssText = `width:${size}px;height:${size}px;position:absolute;left:0;top:0;pointer-events:none;`
+  el.style.cssText = `width:${size}px;height:${size}px;position:absolute;left:0;top:0;pointer-events:none;will-change:transform;`
   return el
+}
+
+/** Inner layer carrying perspective (for 3D wing folds) and the vertical bob */
+function makeFlyer(size: number, bobAnim: string | null, dur: number, delay: number): HTMLDivElement {
+  const el = document.createElement('div')
+  el.style.cssText = `position:absolute;inset:0;perspective:${Math.max(120, size * 4)}px;`
+  if (bobAnim) {
+    el.style.animation = `${bobAnim} ${dur}s ease-in-out ${delay}s infinite`
+  }
+  return el
+}
+
+/** Half-width layer holding one side's wing SVG, flapping via 3D rotateY */
+function makeWing(
+  side: 'L' | 'R',
+  viewBox: string,
+  originY: number,
+  anim: string,
+  dur: number,
+  delay: number,
+): { div: HTMLDivElement; svg: SVGSVGElement } {
+  const div = document.createElement('div')
+  div.style.cssText = `position:absolute;top:0;${side === 'L' ? 'left' : 'right'}:0;width:50%;height:100%;transform-origin:${side === 'L' ? 'right' : 'left'} ${originY}%;animation:${anim} ${dur}s ease-in-out ${delay}s infinite;will-change:transform;`
+  const svg = makeSVG(viewBox)
+  div.appendChild(svg)
+  return { div, svg }
+}
+
+/** Full-size layer for the body parts (drawn in the creature's full viewBox) */
+function makeBodyLayer(viewBox: string): { div: HTMLDivElement; svg: SVGSVGElement } {
+  const div = document.createElement('div')
+  div.style.cssText = 'position:absolute;inset:0;'
+  const svg = makeSVG(viewBox)
+  div.appendChild(svg)
+  return { div, svg }
 }
 
 function makeSVG(viewBox: string): SVGSVGElement {
@@ -137,7 +186,9 @@ function makeSVG(viewBox: string): SVGSVGElement {
   svg.setAttribute('viewBox', viewBox)
   svg.setAttribute('width', '100%')
   svg.setAttribute('height', '100%')
+  svg.setAttribute('preserveAspectRatio', 'none')
   svg.style.overflow = 'visible'
+  svg.style.display = 'block'
   return svg
 }
 
@@ -176,154 +227,333 @@ function makeCircle(
   return c
 }
 
-/** Apply wing-flap animation inline on an SVG element */
-function setWingAnim(
-  el: SVGElement,
-  side: 'L' | 'R',
-  origin: string,
-  duration: string,
-  delay = '0s',
-) {
-  el.style.transformOrigin = origin
-  el.style.animation = `acFlap${side} ${duration} ease-in-out ${delay} infinite`
+// ─── Color & gradient helpers ───────────────────────────────────────
+
+let gradientUid = 0
+
+/** Blend a 6-digit hex color toward white (amt > 0) or black (amt < 0) */
+function shadeColor(color: string, amt: number): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(color.trim())
+  if (!m) return color
+  const n = parseInt(m[1], 16)
+  const t = amt < 0 ? 0 : 255
+  const p = Math.abs(amt)
+  const ch = (shift: number) => {
+    const v = (n >> shift) & 255
+    return Math.round((t - v) * p + v)
+  }
+  return `#${((ch(16) << 16) | (ch(8) << 8) | ch(0)).toString(16).padStart(6, '0')}`
 }
 
+/** Add a <linearGradient> to an svg and return its fill url */
+function addLinearGradient(svg: SVGSVGElement, c1: string, c2: string): string {
+  const id = `ac-grad-${++gradientUid}`
+  const grad = document.createElementNS(SVG_NS, 'linearGradient')
+  grad.setAttribute('id', id)
+  grad.setAttribute('x1', '0')
+  grad.setAttribute('y1', '0')
+  grad.setAttribute('x2', '1')
+  grad.setAttribute('y2', '1')
+  for (const [offset, c] of [['0%', c1], ['100%', c2]] as const) {
+    const stop = document.createElementNS(SVG_NS, 'stop')
+    stop.setAttribute('offset', offset)
+    stop.setAttribute('stop-color', c)
+    grad.appendChild(stop)
+  }
+  const defs = document.createElementNS(SVG_NS, 'defs')
+  defs.appendChild(grad)
+  svg.appendChild(defs)
+  return `url(#${id})`
+}
+
+/** Add a <radialGradient> (soft glow) and return its fill url.
+ *  Stops: [offset, color, stopOpacity][] */
+function addRadialGradient(
+  svg: SVGSVGElement,
+  stops: Array<[string, string, string]>,
+): string {
+  const id = `ac-grad-${++gradientUid}`
+  const grad = document.createElementNS(SVG_NS, 'radialGradient')
+  grad.setAttribute('id', id)
+  for (const [offset, c, op] of stops) {
+    const stop = document.createElementNS(SVG_NS, 'stop')
+    stop.setAttribute('offset', offset)
+    stop.setAttribute('stop-color', c)
+    stop.setAttribute('stop-opacity', op)
+    grad.appendChild(stop)
+  }
+  const defs = document.createElementNS(SVG_NS, 'defs')
+  defs.appendChild(grad)
+  svg.appendChild(defs)
+  return `url(#${id})`
+}
+
+/** Stroked path — wing veins, feather lines, antennae, segment marks */
+function makeLine(d: string, stroke: string, width: number, opacity: string): SVGPathElement {
+  const p = document.createElementNS(SVG_NS, 'path')
+  p.setAttribute('d', d)
+  p.setAttribute('fill', 'none')
+  p.setAttribute('stroke', stroke)
+  p.setAttribute('stroke-width', String(width))
+  p.setAttribute('opacity', opacity)
+  p.setAttribute('stroke-linecap', 'round')
+  return p
+}
+
+function makeGroup(): SVGGElement {
+  return document.createElementNS(SVG_NS, 'g')
+}
+
+// All creatures are drawn facing up in a 100×100 viewBox; left-wing
+// geometry lives in x ∈ [0,50] and the right wing reuses the exact same
+// shapes mirrored via translate(100)scale(-1,1), so the two sides always
+// match. Gradients + vein/feather detail layers replace the old flat blobs.
+
 // ── Butterfly ───────────────────────────────────────────────────────
+// Elongated swept forewing + rounded hindwing, gradient fill, dark outer
+// edge band, vein lines radiating from the body, and pale spots.
+// Burst-flutter cycle: several quick flaps, then a glide with gentle sway.
 
 function createButterflySVG(color: string, size: number): HTMLDivElement {
   const wrapper = makeWrapper(size)
-  const svg = makeSVG('0 0 60 48')
-  const origin = '30px 24px'
+  const dur = 1.7 + Math.random() * 0.8
+  const delay = -Math.random() * dur
+  const flyer = makeFlyer(size, 'acFlutterBob', dur, delay)
 
-  // Left wing group
-  const lw = document.createElementNS(SVG_NS, 'g')
-  setWingAnim(lw, 'L', origin, '0.35s')
-  lw.append(
-    makePath('M30 24 C24 14 12 6 8 16 C5 22 18 30 30 24Z', color, '0.8'),
-    makePath('M30 24 C24 28 14 38 12 30 C10 24 22 22 30 24Z', color, '0.6'),
+  const light = shadeColor(color, 0.45)
+  const dark = shadeColor(color, -0.3)
+
+  const buildWing = (svg: SVGSVGElement): SVGGElement => {
+    const fill = addLinearGradient(svg, light, color)
+    const g = makeGroup()
+    // Forewing: long, swept toward the upper outer corner
+    g.appendChild(
+      makePath(
+        'M50 45 C44 36 34 22 22 16 C11 11 3 17 5 27 C7 38 19 47 33 50 C39 51 46 49 50 45 Z',
+        fill,
+        '0.92',
+      ),
+    )
+    // Hindwing: rounded, hanging below
+    g.appendChild(
+      makePath(
+        'M50 52 C43 51 32 53 24 59 C15 66 14 77 23 81 C31 84 41 77 46 67 C49 61 50 56 50 52 Z',
+        fill,
+        '0.85',
+      ),
+    )
+    // Dark band along the forewing's outer edge
+    g.appendChild(
+      makePath(
+        'M22 16 C11 11 3 17 5 27 C5.5 30 7 33 9 35 C6 28 8 21 16 19 C18 18.4 20 17.2 22 16 Z',
+        dark,
+        '0.55',
+      ),
+    )
+    // Veins radiating from the wing root
+    g.appendChild(
+      makeLine('M50 46 L20 22 M50 47 L10 30 M49 49 L18 41 M50 53 L24 62 M49 55 L26 74', dark, 0.7, '0.3'),
+    )
+    // Pale spots
+    g.appendChild(makeCircle('19', '25', '2.4', light, '0.85'))
+    g.appendChild(makeCircle('27', '33', '1.7', light, '0.7'))
+    g.appendChild(makeCircle('29', '68', '2.2', light, '0.7'))
+    return g
+  }
+
+  const lw = makeWing('L', '0 0 50 100', 50, 'acWingL', dur, delay)
+  lw.svg.appendChild(buildWing(lw.svg))
+
+  const rw = makeWing('R', '50 0 50 100', 50, 'acWingR', dur, delay)
+  const rg = buildWing(rw.svg)
+  rg.setAttribute('transform', 'translate(100 0) scale(-1 1)')
+  rw.svg.appendChild(rg)
+
+  const body = makeBodyLayer('0 0 100 100')
+  body.svg.append(
+    makeEllipse('50', '52', '1.8', '10', dark, '0.95'),
+    makeCircle('50', '39', '2.8', dark, '0.95'),
+    // Antennae with clubbed tips
+    makeLine('M48.5 37 C45 31 41 27 37 25 M51.5 37 C55 31 59 27 63 25', dark, 0.9, '0.8'),
+    makeCircle('37', '25', '1', dark, '0.8'),
+    makeCircle('63', '25', '1', dark, '0.8'),
   )
 
-  // Right wing group
-  const rw = document.createElementNS(SVG_NS, 'g')
-  setWingAnim(rw, 'R', origin, '0.35s')
-  rw.append(
-    makePath('M30 24 C36 14 48 6 52 16 C55 22 42 30 30 24Z', color, '0.8'),
-    makePath('M30 24 C36 28 46 38 48 30 C50 24 38 22 30 24Z', color, '0.6'),
-  )
-
-  // Body
-  const body = makeEllipse('30', '24', '1.5', '7', color, '0.9')
-
-  // Antennae
-  const aL = makePath('M29 17 C27 11 24 7 22 5', color, '0.7')
-  aL.setAttribute('stroke', color)
-  aL.setAttribute('stroke-width', '0.8')
-  aL.setAttribute('fill', 'none')
-
-  const aR = makePath('M31 17 C33 11 36 7 38 5', color, '0.7')
-  aR.setAttribute('stroke', color)
-  aR.setAttribute('stroke-width', '0.8')
-  aR.setAttribute('fill', 'none')
-
-  svg.append(lw, rw, body, aL, aR)
-  wrapper.appendChild(svg)
+  flyer.append(lw.div, rw.div, body.div)
+  wrapper.appendChild(flyer)
   return wrapper
 }
 
 // ── Dove ────────────────────────────────────────────────────────────
+// Top view: teardrop body, swept wings with a scalloped feathered
+// trailing edge, fanned notched tail. Deep slow strokes, then a soar.
 
 function createDoveSVG(color: string, size: number): HTMLDivElement {
   const wrapper = makeWrapper(size)
-  const svg = makeSVG('0 0 48 44')
-  const origin = '24px 20px'
+  const dur = 2.2 + Math.random() * 0.8
+  const delay = -Math.random() * dur
+  const flyer = makeFlyer(size, 'acSoarBob', dur, delay)
 
-  // Left wing
-  const lw = makePath('M24 18 C16 8 4 2 2 14 C0 20 14 26 24 20Z', color, '0.7')
-  setWingAnim(lw, 'L', origin, '0.5s')
+  const light = shadeColor(color, 0.45)
+  const dark = shadeColor(color, -0.25)
 
-  // Right wing
-  const rw = makePath('M24 18 C32 8 44 2 46 14 C48 20 34 26 24 20Z', color, '0.7')
-  setWingAnim(rw, 'R', origin, '0.5s')
+  const buildWing = (svg: SVGSVGElement): SVGGElement => {
+    const fill = addLinearGradient(svg, light, color)
+    const g = makeGroup()
+    // Wing sweeping to the upper-left tip, scalloped feather notches on
+    // the trailing edge on the way back to the body
+    g.appendChild(
+      makePath(
+        'M50 42 C40 30 26 22 14 24 C5 26 2 33 7 38 C9 40 12 41 15 41 L13 45 C15 48 19 49 23 48 L22 52 C25 55 30 55 34 53 L34 56 C38 58 44 57 50 52 Z',
+        fill,
+        '0.92',
+      ),
+    )
+    // Feather shafts
+    g.appendChild(makeLine('M47 44 L13 31 M46 47 L18 39 M45 50 L26 47', dark, 0.6, '0.3'))
+    return g
+  }
 
-  // Body
-  const body = makeEllipse('24', '20', '3', '7', color, '0.9')
+  const lw = makeWing('L', '0 0 50 100', 45, 'acDoveWingL', dur, delay)
+  lw.svg.appendChild(buildWing(lw.svg))
 
-  // Head
-  const head = makeCircle('24', '11', '3', color, '0.9')
+  const rw = makeWing('R', '50 0 50 100', 45, 'acDoveWingR', dur, delay)
+  const rg = buildWing(rw.svg)
+  rg.setAttribute('transform', 'translate(100 0) scale(-1 1)')
+  rw.svg.appendChild(rg)
 
-  // Beak
-  const beak = makePath('M24 14 L22.5 15.5 L25.5 15.5Z', color, '0.7')
+  const body = makeBodyLayer('0 0 100 100')
+  const bodyFill = addLinearGradient(body.svg, light, color)
+  body.svg.append(
+    // Teardrop body, head to tail
+    makePath(
+      'M50 18 C55 22 57 32 57 44 C57 58 53 68 50 76 C47 68 43 58 43 44 C43 32 45 22 50 18 Z',
+      bodyFill,
+      '0.95',
+    ),
+    makeCircle('50', '16', '4.5', color, '0.95'),
+    // Beak
+    makePath('M50 9 L48 13.5 L52 13.5 Z', dark, '0.85'),
+    // Fanned tail with feather notches
+    makePath(
+      'M50 72 C46 78 41 85 36 89 L43 86 C44 89 47 92 50 94 C53 92 56 89 57 86 L64 89 C59 85 54 78 50 72 Z',
+      color,
+      '0.85',
+    ),
+    makeLine('M50 76 L43 87 M50 76 L57 87', dark, 0.6, '0.35'),
+  )
 
-  // Tail fan
-  const tail = makePath('M24 27 L18 38 L21 33 L24 40 L27 33 L30 38Z', color, '0.6')
-
-  svg.append(lw, rw, body, head, beak, tail)
-  wrapper.appendChild(svg)
+  flyer.append(lw.div, rw.div, body.div)
+  wrapper.appendChild(flyer)
   return wrapper
 }
 
 // ── Firefly ─────────────────────────────────────────────────────────
+// A tiny beetle silhouette with a glowing abdomen lantern, wrapped in a
+// soft radial-gradient halo. Irregular blink: long dark spells broken by
+// a quick double-flash, randomized per firefly.
 
 function createFireflySVG(color: string, size: number): HTMLDivElement {
   const wrapper = makeWrapper(size)
-  const svg = makeSVG('0 0 24 24')
+  const svg = makeSVG('0 0 40 40')
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet')
 
-  // Outer glow (pulsing via CSS)
-  const glow = makeCircle('12', '12', '10', color, '0.25')
-  glow.style.animation = 'acGlow 2s ease-in-out infinite'
-  glow.style.transformOrigin = '12px 12px'
+  const light = shadeColor(color, 0.6)
+  const dark = shadeColor(color, -0.55)
 
-  // Mid glow
-  const midGlow = makeCircle('12', '12', '6', color, '0.4')
-  midGlow.style.animation = 'acGlow 2s ease-in-out infinite 0.3s'
-  midGlow.style.transformOrigin = '12px 12px'
+  const blinkDur = 2.5 + Math.random() * 2.5
+  const blinkDelay = -Math.random() * blinkDur
 
-  // Core body
-  const body = makeCircle('12', '12', '3', color, '0.95')
+  // Soft halo (radial gradient, not flat circles)
+  const haloFill = addRadialGradient(svg, [
+    ['0%', light, '0.9'],
+    ['35%', color, '0.45'],
+    ['100%', color, '0'],
+  ])
+  const halo = makeCircle('20', '26', '14', haloFill, '1')
+  halo.style.animation = `acBlink ${blinkDur}s ease-in-out ${blinkDelay}s infinite`
+  halo.style.transformOrigin = '20px 26px'
 
-  svg.append(glow, midGlow, body)
+  // Beetle body: wing covers with a center split, small head
+  const elytra = makePath(
+    'M20 10 C24 11 25.5 15 25 20 C24.6 24 22.6 27 20 28 C17.4 27 15.4 24 15 20 C14.5 15 16 11 20 10 Z',
+    dark,
+    '0.9',
+  )
+  const split = makeLine('M20 11 L20 27', shadeColor(color, -0.75), 0.5, '0.6')
+  const head = makeCircle('20', '8.5', '2.6', dark, '0.9')
+
+  // Glowing abdomen lantern: stays softly lit between flashes
+  const lantern = makeEllipse('20', '26', '3.2', '4.4', light, '0.9')
+
+  svg.append(halo, elytra, split, head, lantern)
   wrapper.appendChild(svg)
   return wrapper
 }
 
 // ── Dragonfly ───────────────────────────────────────────────────────
+// Long slender membrane wings (translucent with a stroked outline),
+// segmented tapering abdomen, big compound eyes. Tiny-amplitude
+// ultra-fast flap reads as the shimmer-blur of real dragonfly wings.
 
 function createDragonflySVG(color: string, size: number): HTMLDivElement {
   const wrapper = makeWrapper(size)
-  const svg = makeSVG('0 0 56 52')
-  const origin = '28px 22px'
+  const flyer = makeFlyer(size, null, 0, 0)
 
-  // Upper left wing
-  const ulw = makePath('M28 18 C22 10 10 8 8 16 C6 20 18 22 28 20Z', color, '0.45')
-  setWingAnim(ulw, 'L', origin, '0.28s')
+  const light = shadeColor(color, 0.4)
+  const dark = shadeColor(color, -0.35)
 
-  // Lower left wing
-  const llw = makePath('M28 24 C22 26 12 30 10 26 C8 22 20 22 28 24Z', color, '0.35')
-  setWingAnim(llw, 'L', origin, '0.28s', '0.07s')
+  const buildWings = (): SVGGElement => {
+    const g = makeGroup()
+    // Forewing: narrow elongated membrane angled slightly up
+    const fore = makeEllipse('26', '40', '22', '4.5', color, '0.22')
+    fore.setAttribute('transform', 'rotate(-14 26 40)')
+    fore.setAttribute('stroke', color)
+    fore.setAttribute('stroke-width', '0.7')
+    fore.setAttribute('stroke-opacity', '0.55')
+    // Hindwing: slightly broader, angled down
+    const hind = makeEllipse('27', '51', '20', '5.5', color, '0.18')
+    hind.setAttribute('transform', 'rotate(9 27 51)')
+    hind.setAttribute('stroke', color)
+    hind.setAttribute('stroke-width', '0.7')
+    hind.setAttribute('stroke-opacity', '0.5')
+    // Membrane highlight
+    const sheen = makeEllipse('16', '36.5', '8', '1.6', light, '0.4')
+    sheen.setAttribute('transform', 'rotate(-14 26 40)')
+    g.append(fore, hind, sheen)
+    return g
+  }
 
-  // Upper right wing
-  const urw = makePath('M28 18 C34 10 46 8 48 16 C50 20 38 22 28 20Z', color, '0.45')
-  setWingAnim(urw, 'R', origin, '0.28s')
+  const lw = makeWing('L', '0 0 50 100', 45, 'acDartWingL', 0.1, -Math.random() * 0.1)
+  lw.svg.appendChild(buildWings())
 
-  // Lower right wing
-  const lrw = makePath('M28 24 C34 26 44 30 46 26 C48 22 36 22 28 24Z', color, '0.35')
-  setWingAnim(lrw, 'R', origin, '0.28s', '0.07s')
+  const rw = makeWing('R', '50 0 50 100', 45, 'acDartWingR', 0.1, -0.05 - Math.random() * 0.1)
+  const rg = buildWings()
+  rg.setAttribute('transform', 'translate(100 0) scale(-1 1)')
+  rw.svg.appendChild(rg)
 
-  // Long body (abdomen)
-  const body = makeEllipse('28', '28', '1.2', '16', color, '0.85')
+  const body = makeBodyLayer('0 0 100 100')
+  body.svg.append(
+    // Tapering abdomen
+    makePath(
+      'M50 54 C51.6 54 52.2 56 52.1 60 L51.3 84 C51.2 87 50.7 89 50 89 C49.3 89 48.8 87 48.7 84 L47.9 60 C47.8 56 48.4 54 50 54 Z',
+      color,
+      '0.9',
+    ),
+    // Segment marks
+    makeLine('M48.4 62 L51.6 62 M48.5 68 L51.5 68 M48.6 74 L51.4 74 M48.7 80 L51.3 80', dark, 0.5, '0.5'),
+    // Thorax + head
+    makeEllipse('50', '47', '4', '6.5', color, '0.95'),
+    makeCircle('50', '37', '3.6', color, '0.95'),
+    // Compound eyes with glints
+    makeCircle('47', '35', '2.6', dark, '0.9'),
+    makeCircle('53', '35', '2.6', dark, '0.9'),
+    makeCircle('46.3', '34.2', '0.8', light, '0.8'),
+    makeCircle('52.3', '34.2', '0.8', light, '0.8'),
+  )
 
-  // Thorax
-  const thorax = makeEllipse('28', '18', '2', '4', color, '0.9')
-
-  // Head
-  const head = makeCircle('28', '12', '2.5', color, '0.9')
-
-  // Large compound eyes
-  const eyeL = makeCircle('25.5', '11', '1.8', color, '0.6')
-  const eyeR = makeCircle('30.5', '11', '1.8', color, '0.6')
-
-  svg.append(ulw, llw, urw, lrw, body, thorax, head, eyeL, eyeR)
-  wrapper.appendChild(svg)
+  flyer.append(lw.div, rw.div, body.div)
+  wrapper.appendChild(flyer)
   return wrapper
 }
 
@@ -341,10 +571,17 @@ const CREATORS: Record<AmbientCreatureEffectType, (color: string, size: number) 
 /**
  * Composable for ambient hovering creature animations on the cover stage.
  *
- * Creates butterflies, doves, fireflies, or dragonflies that hover around
- * the container with organic flight paths biased toward edges (near
- * decorations). Wing flapping uses CSS keyframes (GPU-accelerated),
- * flight paths use requestAnimationFrame.
+ * Creates butterflies, doves, fireflies, or dragonflies with lifelike,
+ * species-specific motion:
+ *  - butterflies flutter in bursts, surge and stall, and wander erratically
+ *  - doves fly smooth arcs with deep wing strokes and soaring glides
+ *  - dragonflies dart in straight lines, then hover with micro-jitter
+ *  - fireflies drift slowly and blink irregularly
+ *
+ * Wings flap via 3D rotateY CSS keyframes (GPU-accelerated) with glide
+ * phases; flight paths use requestAnimationFrame and are biased toward
+ * cover decorations. Each creature gets a random depth that scales its
+ * size, opacity, and speed for a parallax feel.
  *
  * All creatures are pure SVG — no image assets required.
  * Configuration is driven by the backend `ambient_creatures` template field.
@@ -380,7 +617,7 @@ export function useAmbientCreatures(
   let styleEl: HTMLStyleElement | null = null
   const preset = SPEED_PRESETS[speed]
 
-  /** Inject CSS @keyframes for wing flapping and firefly glow */
+  /** Inject CSS @keyframes for wing flapping, body bob, and firefly blink */
   function injectStyles() {
     if (styleEl) return
     const container = containerRef.value
@@ -388,17 +625,84 @@ export function useAmbientCreatures(
 
     styleEl = document.createElement('style')
     styleEl.textContent = `
-      @keyframes acFlapL {
-        0%, 100% { transform: scaleX(1); }
-        50% { transform: scaleX(0.25) skewY(8deg); }
+      /* Butterfly: burst of quick flaps, then a glide with gentle sway */
+      @keyframes acWingL {
+        0%   { transform: rotateY(70deg); }
+        6%   { transform: rotateY(-20deg); }
+        13%  { transform: rotateY(70deg); }
+        20%  { transform: rotateY(-20deg); }
+        27%  { transform: rotateY(70deg); }
+        36%  { transform: rotateY(-12deg); }
+        50%  { transform: rotateY(22deg); }
+        62%  { transform: rotateY(-4deg); }
+        76%  { transform: rotateY(28deg); }
+        88%  { transform: rotateY(8deg); }
+        100% { transform: rotateY(70deg); }
       }
-      @keyframes acFlapR {
-        0%, 100% { transform: scaleX(1); }
-        50% { transform: scaleX(0.25) skewY(-8deg); }
+      @keyframes acWingR {
+        0%   { transform: rotateY(-70deg); }
+        6%   { transform: rotateY(20deg); }
+        13%  { transform: rotateY(-70deg); }
+        20%  { transform: rotateY(20deg); }
+        27%  { transform: rotateY(-70deg); }
+        36%  { transform: rotateY(12deg); }
+        50%  { transform: rotateY(-22deg); }
+        62%  { transform: rotateY(4deg); }
+        76%  { transform: rotateY(-28deg); }
+        88%  { transform: rotateY(-8deg); }
+        100% { transform: rotateY(-70deg); }
       }
-      @keyframes acGlow {
-        0%, 100% { opacity: 0.25; transform: scale(1); }
-        50% { opacity: 0.8; transform: scale(1.5); }
+      /* Body lifts during the flap burst, settles during the glide */
+      @keyframes acFlutterBob {
+        0%   { transform: translateY(3%); }
+        30%  { transform: translateY(-7%); }
+        55%  { transform: translateY(-2%); }
+        80%  { transform: translateY(4%); }
+        100% { transform: translateY(3%); }
+      }
+      /* Dove: two deep strokes, then a soaring hold */
+      @keyframes acDoveWingL {
+        0%   { transform: rotateY(35deg); }
+        12%  { transform: rotateY(-70deg); }
+        26%  { transform: rotateY(35deg); }
+        38%  { transform: rotateY(-70deg); }
+        52%  { transform: rotateY(25deg); }
+        70%  { transform: rotateY(5deg); }
+        85%  { transform: rotateY(18deg); }
+        100% { transform: rotateY(35deg); }
+      }
+      @keyframes acDoveWingR {
+        0%   { transform: rotateY(-35deg); }
+        12%  { transform: rotateY(70deg); }
+        26%  { transform: rotateY(-35deg); }
+        38%  { transform: rotateY(70deg); }
+        52%  { transform: rotateY(-25deg); }
+        70%  { transform: rotateY(-5deg); }
+        85%  { transform: rotateY(-18deg); }
+        100% { transform: rotateY(-35deg); }
+      }
+      @keyframes acSoarBob {
+        0%   { transform: translateY(2%); }
+        26%  { transform: translateY(-5%); }
+        52%  { transform: translateY(-1%); }
+        100% { transform: translateY(2%); }
+      }
+      /* Dragonfly: tiny ultra-fast shimmer */
+      @keyframes acDartWingL {
+        0%, 100% { transform: rotateY(10deg); }
+        50%      { transform: rotateY(-30deg); }
+      }
+      @keyframes acDartWingR {
+        0%, 100% { transform: rotateY(-10deg); }
+        50%      { transform: rotateY(30deg); }
+      }
+      /* Firefly: long dark spell, then a quick double-flash */
+      @keyframes acBlink {
+        0%, 50%   { opacity: 0.04; transform: scale(0.7); }
+        58%       { opacity: 0.85; transform: scale(1.35); }
+        66%       { opacity: 0.5;  transform: scale(1.1); }
+        72%       { opacity: 0.95; transform: scale(1.5); }
+        82%, 100% { opacity: 0.04; transform: scale(0.7); }
       }
     `
     container.appendChild(styleEl)
@@ -486,23 +790,20 @@ export function useAmbientCreatures(
 
     const element = CREATORS[entry.type](color(), size)
 
-    // Randomize wing flap / glow phase so creatures aren't in sync
-    const animated = element.querySelectorAll('[style*="animation"]')
-    const phaseOffset = Math.random() * 800
-    animated.forEach((el: Element) => {
-      ;(el as HTMLElement).style.animationDelay = `-${phaseOffset}ms`
-    })
+    // Parallax depth: far creatures are smaller, fainter, and slower
+    const depth = 0.65 + Math.random() * 0.5
 
-    // Fade in gently
+    // Fade in gently to a depth-scaled opacity
     element.style.opacity = '0'
     element.style.transition = 'opacity 1.2s ease-in'
     container.appendChild(element)
     requestAnimationFrame(() => {
-      element.style.opacity = '0.85'
+      element.style.opacity = String(0.55 + depth * 0.35)
     })
 
     creatures.push({
       element,
+      type: entry.type,
       x: startX,
       y: startY,
       targetX: target.x,
@@ -512,10 +813,29 @@ export function useAmbientCreatures(
       wobbleAmp: 0.4 + Math.random() * 0.4,
       angle: Math.random() * 360,
       homeZone,
+      depth,
+      speedPhase: Math.random() * Math.PI * 2,
+      heading: Math.random() * Math.PI * 2,
+      mode: 'seek',
+      modeUntil: 0,
     })
   }
 
-  /** Main animation loop — moves creatures toward waypoints with wobble */
+  /** Smoothly rotate heading angle (degrees) toward flight direction */
+  function easeAngle(c: CreatureState, targetAngle: number, rate: number) {
+    let diff = targetAngle - c.angle
+    while (diff > 180) diff -= 360
+    while (diff < -180) diff += 360
+    c.angle += diff * rate
+  }
+
+  function retarget(c: CreatureState, cw: number, ch: number) {
+    const t = pickTarget(cw, ch, c.homeZone)
+    c.targetX = t.x
+    c.targetY = t.y
+  }
+
+  /** Main animation loop — species-specific flight behaviors */
   function tick(timestamp: number) {
     const container = containerRef.value
     if (!container) {
@@ -531,37 +851,90 @@ export function useAmbientCreatures(
       const dy = c.targetY - c.y
       const dist = Math.sqrt(dx * dx + dy * dy)
 
-      if (dist < 15) {
-        const t = pickTarget(cw, ch, c.homeZone)
-        c.targetX = t.x
-        c.targetY = t.y
-      } else {
-        const nx = dx / dist
-        const ny = dy / dist
+      switch (c.type) {
+        case 'butterfly': {
+          // Flutter: speed surges and near-stalls; heavy wobble; occasional
+          // erratic mid-flight retarget (real butterflies rarely commit)
+          if (dist < 15 || Math.random() < 0.0015) {
+            retarget(c, cw, ch)
+            break
+          }
+          const surge = 0.55 + 0.55 * Math.sin(timestamp * 0.0035 + c.speedPhase)
+          const sp = c.speed * surge * c.depth
+          const nx = dx / dist
+          const ny = dy / dist
+          const wobble =
+            Math.sin(timestamp * preset.wobbleFreq * 2.2 + c.wobbleOffset) * c.wobbleAmp * 1.6
+          const px = -ny * wobble
+          const py = nx * wobble
+          c.x += nx * sp + px
+          c.y += ny * sp + py
+          easeAngle(c, Math.atan2(ny * sp + py, nx * sp + px) * (180 / Math.PI) + 90, 0.07)
+          break
+        }
 
-        // Sinusoidal wobble perpendicular to flight direction
-        const wobble =
-          Math.sin(timestamp * preset.wobbleFreq + c.wobbleOffset) * c.wobbleAmp
-        const px = -ny * wobble
-        const py = nx * wobble
+        case 'dove': {
+          // Glide: limited turn rate makes the dove carve smooth arcs
+          // instead of beelining at the target
+          if (dist < 30) {
+            retarget(c, cw, ch)
+            break
+          }
+          const desired = Math.atan2(dy, dx)
+          let turn = desired - c.heading
+          while (turn > Math.PI) turn -= Math.PI * 2
+          while (turn < -Math.PI) turn += Math.PI * 2
+          c.heading += clamp(turn, -0.025, 0.025)
+          const sp = c.speed * c.depth
+          c.x += Math.cos(c.heading) * sp
+          c.y += Math.sin(c.heading) * sp
+          c.angle = c.heading * (180 / Math.PI) + 90
+          break
+        }
 
-        c.x += nx * c.speed + px
-        c.y += ny * c.speed + py
+        case 'dragonfly': {
+          // Dart-and-hover: fast straight dashes, abrupt heading snaps,
+          // then a motionless hover with micro-jitter
+          if (c.mode === 'hover') {
+            c.x += (Math.random() - 0.5) * 1.2
+            c.y += (Math.random() - 0.5) * 1.2
+            if (timestamp > c.modeUntil) {
+              c.mode = 'seek'
+              retarget(c, cw, ch)
+              c.angle =
+                Math.atan2(c.targetY - c.y, c.targetX - c.x) * (180 / Math.PI) + 90
+            }
+          } else if (dist < 12) {
+            c.mode = 'hover'
+            c.modeUntil = timestamp + 600 + Math.random() * 1800
+          } else {
+            const sp = c.speed * 2.8 * c.depth
+            c.x += (dx / dist) * sp
+            c.y += (dy / dist) * sp
+          }
+          break
+        }
 
-        // Smoothly rotate to face flight direction
-        const targetAngle =
-          Math.atan2(ny * c.speed + py, nx * c.speed + px) * (180 / Math.PI) + 90
-        let angleDiff = targetAngle - c.angle
-        while (angleDiff > 180) angleDiff -= 360
-        while (angleDiff < -180) angleDiff += 360
-        c.angle += angleDiff * 0.05
+        case 'firefly': {
+          // Drift: slow waypoint seek layered with smooth sinusoidal
+          // wander; no heading rotation (it's a glowing point)
+          if (dist < 20) {
+            retarget(c, cw, ch)
+            break
+          }
+          const sp = c.speed * 0.5 * c.depth
+          c.x += (dx / dist) * sp + Math.sin(timestamp * 0.0007 + c.wobbleOffset) * 0.3
+          c.y += (dy / dist) * sp + Math.sin(timestamp * 0.0009 + c.wobbleOffset * 2) * 0.25
+          c.angle = 0
+          break
+        }
       }
 
       // Keep within container bounds
       c.x = Math.max(-10, Math.min(cw + 10, c.x))
       c.y = Math.max(-10, Math.min(ch + 10, c.y))
 
-      c.element.style.transform = `translate(${c.x}px, ${c.y}px) rotate(${c.angle}deg)`
+      c.element.style.transform = `translate3d(${c.x}px, ${c.y}px, 0) rotate(${c.angle}deg) scale(${c.depth})`
     }
 
     rafId = requestAnimationFrame(tick)
