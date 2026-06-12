@@ -649,29 +649,14 @@ const handleInvite = async (data: { email: string; role: 'admin' | 'editor' | 'v
 
       // Send Telegram notification if this is an admin help request
       if (emailValidation.sanitizedValue === 'admin@goevent.com' && sanitizedMessage.includes('asks admin for help')) {
-        const telegramBotToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN
-        const telegramChatId = import.meta.env.VITE_TELEGRAM_ADMIN_CHAT_ID
-
-        if (telegramBotToken && telegramChatId) {
-          try {
-            const telegramMessage = `🆘 Admin Help Request\n\nEvent: ${props.eventTitle}\nEvent ID: ${props.eventId}\nRequested by: ${authStore.user?.email || 'Unknown'}\n\nMessage: ${sanitizedMessage}`
-
-            const url = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`
-            await fetch(url, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                chat_id: telegramChatId,
-                text: telegramMessage,
-                parse_mode: 'HTML',
-              }),
-            })
-          } catch (telegramError) {
-            console.error('Failed to send Telegram notification:', telegramError)
-            // Don't show error to user - invitation was successful
-          }
+        try {
+          await apiClient.post('/api/notifications/telegram/', {
+            type: 'admin_help',
+            event_id: props.eventId,
+            message: sanitizedMessage,
+          })
+        } catch (telegramError) {
+          console.error('Failed to send Telegram notification:', telegramError)
         }
       }
 

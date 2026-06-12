@@ -173,8 +173,8 @@ Required env vars (see [.env.example](.env.example)):
 
 Optional env vars:
 - `VITE_GENERATE_SOURCEMAP`: Emit JS source maps in production builds (default: off). Enable for easier debugging of minified bundles; disable for public deploys to avoid shipping original source.
-- `VITE_TELEGRAM_BOT_TOKEN`: Bot token for admin notifications
-- `VITE_TELEGRAM_ADMIN_CHAT_ID`: Admin chat ID for notifications
+- ~~`VITE_TELEGRAM_BOT_TOKEN`~~: **Removed** — Telegram notifications now go through the backend (`POST /notifications/telegram/`). Token must be set as a server-side env var in Django only, never in the frontend.
+- ~~`VITE_TELEGRAM_ADMIN_CHAT_ID`~~: **Removed** — same as above.
 - `VITE_IMAGEKIT_ENABLED`: Enable ImageKit CDN image optimization (default: true, can toggle via `localStorage.setItem('imagekit_enabled', 'false')`)
 - `VITE_ASSET_PROTECTION_ENABLED`: Enable asset protection in dev mode (default: false, auto-enabled in production)
 - `VITE_SHOWCASE_ANIMATION_TYPE`: Showcase transition animation type. Options: `decoration` (default - decorations slide out individually), `door` (cover splits in half like opening doors)

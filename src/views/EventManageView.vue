@@ -444,7 +444,7 @@ import EventManageTopBar from '../components/EventManageTopBar.vue'
 import EventNavigationTabs from '../components/EventNavigationTabs.vue'
 import EventManageMobileTabBar from '../components/EventManageMobileTabBar.vue'
 import { useAuthStore } from '../stores/auth'
-import { eventsService, type Event, type EventPhoto } from '../services/api'
+import { eventsService, apiClient, type Event, type EventPhoto } from '../services/api'
 import ContactUsFAB from '../components/ContactUsFAB.vue'
 import EventEditDrawer from '../components/EventEditDrawer.vue'
 import type { TabConfig } from '../components/EventNavigationTabs.vue'
@@ -730,9 +730,6 @@ const handlePublishEvent = async () => {
   try {
     const eventTitle = event.value.title
     const eventId = event.value.id
-    const userEmail = authStore.user?.email || 'Unknown'
-    const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-    const adminUrl = `${backendUrl}/admin/events/event/${eventId}/change/`
 
     // Invite admin as collaborator with publish review request message
     const publishMessage = `${eventTitle} requests review for publish`
@@ -743,30 +740,13 @@ const handlePublishEvent = async () => {
     })
 
     if (response.success) {
-      // Send Telegram notification to admin
-      const telegramBotToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN
-      const telegramChatId = import.meta.env.VITE_TELEGRAM_ADMIN_CHAT_ID
-
-      if (telegramBotToken && telegramChatId) {
-        try {
-          const telegramMessage = `📢 Event Publish Request\n\n📌 Event: ${eventTitle}\n🆔 Event ID: ${eventId}\n👤 Requested by: ${userEmail}\n🔗 Admin: ${adminUrl}\n\n📝 Message: ${publishMessage}`
-
-          const url = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`
-          await fetch(url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              chat_id: telegramChatId,
-              text: telegramMessage,
-              parse_mode: 'HTML',
-            }),
-          })
-        } catch (telegramError) {
-          console.error('Failed to send Telegram notification:', telegramError)
-          // Don't show error to user - the invite was successful
-        }
+      try {
+        await apiClient.post('/api/notifications/telegram/', {
+          type: 'publish_request',
+          event_id: eventId,
+        })
+      } catch (telegramError) {
+        console.error('Failed to send Telegram notification:', telegramError)
       }
 
       showMessage('success', 'Event submitted for review! Admin will be notified.')
@@ -775,29 +755,13 @@ const handlePublishEvent = async () => {
       if (response.message?.toLowerCase().includes('already') || response.message?.toLowerCase().includes('exists')) {
         showMessage('success', 'Event review request sent to admin!')
 
-        // Still send Telegram notification even if already a collaborator
-        const telegramBotToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN
-        const telegramChatId = import.meta.env.VITE_TELEGRAM_ADMIN_CHAT_ID
-
-        if (telegramBotToken && telegramChatId) {
-          try {
-            const telegramMessage = `📢 Event Publish Request (Follow-up)\n\n📌 Event: ${eventTitle}\n🆔 Event ID: ${eventId}\n👤 Requested by: ${userEmail}\n🔗 Admin: ${adminUrl}\n\n📝 Please review this event for publishing.`
-
-            const url = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`
-            await fetch(url, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                chat_id: telegramChatId,
-                text: telegramMessage,
-                parse_mode: 'HTML',
-              }),
-            })
-          } catch (telegramError) {
-            console.error('Failed to send Telegram notification:', telegramError)
-          }
+        try {
+          await apiClient.post('/api/notifications/telegram/', {
+            type: 'publish_request',
+            event_id: eventId,
+          })
+        } catch (telegramError) {
+          console.error('Failed to send Telegram notification:', telegramError)
         }
       } else {
         showMessage('error', response.message || 'Failed to submit event for review')
