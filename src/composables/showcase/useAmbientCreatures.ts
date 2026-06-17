@@ -27,6 +27,8 @@ const CREATURE_DEFAULTS: Record<
   dove: { minSize: 25, maxSize: 40, speedMul: 0.8 },
   firefly: { minSize: 8, maxSize: 16, speedMul: 0.6 },
   dragonfly: { minSize: 22, maxSize: 38, speedMul: 1.2 },
+  balloon: { minSize: 24, maxSize: 52, speedMul: 0.4 },
+  hummingbird: { minSize: 18, maxSize: 36, speedMul: 1.4 },
 }
 
 interface CreatureState {
@@ -557,6 +559,96 @@ function createDragonflySVG(color: string, size: number): HTMLDivElement {
   return wrapper
 }
 
+// ── Balloon ────────────────────────────────────────────────────────
+// Teardrop balloon with a string, gently bobbing upward with side sway
+
+function createBalloonSVG(color: string, size: number): HTMLDivElement {
+  const wrapper = makeWrapper(size)
+  const svg = makeSVG('0 0 100 140')
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet')
+
+  const light = shadeColor(color, 0.5)
+  const dark = shadeColor(color, -0.35)
+
+  // Balloon body: rounded teardrop with highlight
+  const balloonFill = addLinearGradient(svg, light, color)
+  svg.append(
+    // Main balloon shape
+    makePath(
+      'M50 15 C32 15 18 28 18 48 C18 72 32 95 50 105 C68 95 82 72 82 48 C82 28 68 15 50 15 Z',
+      balloonFill,
+      '0.95',
+    ),
+    // Highlight on balloon
+    makeEllipse('38', '35', '12', '16', light, '0.6'),
+    // String
+    makePath('M50 105 L48 125 Q50 132 52 125 L50 105 Z', dark, '0.5'),
+  )
+
+  // Gentle floating animation
+  const dur = 3.2 + Math.random() * 1.2
+  const delay = -Math.random() * dur
+  wrapper.style.animation = `acBalloonFloat ${dur}s ease-in-out ${delay}s infinite`
+
+  wrapper.appendChild(svg)
+  return wrapper
+}
+
+// ── Hummingbird ────────────────────────────────────────────────────
+// Tiny bird with a long curved beak, iridescent body, rapid wing flutter
+
+function createHummingbirdSVG(color: string, size: number): HTMLDivElement {
+  const wrapper = makeWrapper(size)
+  const flyer = makeFlyer(size, null, 0, 0)
+
+  const light = shadeColor(color, 0.6)
+  const dark = shadeColor(color, -0.4)
+
+  // Wings: thin curved ovals with a shimmer
+  const lw = makeWing('L', '0 0 50 100', 45, 'acHummingbirdWingL', 0.08, -Math.random() * 0.08)
+  const rwing = makeEllipse('15', '45', '14', '3.5', color, '0.4')
+  rwing.setAttribute('transform', 'rotate(-22 15 45)')
+  rwing.setAttribute('stroke', light)
+  rwing.setAttribute('stroke-width', '0.5')
+  rwing.setAttribute('stroke-opacity', '0.6')
+  lw.svg.appendChild(rwing)
+
+  const rw = makeWing('R', '50 0 50 100', 45, 'acHummingbirdWingR', 0.08, -0.04 - Math.random() * 0.08)
+  const rwing2 = makeEllipse('85', '45', '14', '3.5', color, '0.4')
+  rwing2.setAttribute('transform', 'rotate(22 85 45) scaleX(-1)')
+  rwing2.setAttribute('stroke', light)
+  rwing2.setAttribute('stroke-width', '0.5')
+  rwing2.setAttribute('stroke-opacity', '0.6')
+  rw.svg.appendChild(rwing2)
+
+  const body = makeBodyLayer('0 0 100 100')
+  body.svg.append(
+    // Body: compact teardrop
+    makePath(
+      'M50 30 C58 32 63 40 63 50 C63 60 58 68 50 70 C42 68 37 60 37 50 C37 40 42 32 50 30 Z',
+      addLinearGradient(body.svg, light, color),
+      '0.95',
+    ),
+    // Head
+    makeCircle('50', '24', '6', color, '0.95'),
+    // Eye
+    makeCircle('53', '22', '2', dark, '0.9'),
+    makeCircle('54', '21.5', '0.6', light, '0.8'),
+    // Long curved beak
+    makePath('M56 24 Q68 23 75 28', dark, 0.8, '0.85'),
+    // Tail feathers
+    makePath(
+      'M37 55 L28 60 L32 65 L40 62 Z M50 70 L45 82 L50 85 L55 82 Z',
+      color,
+      '0.8',
+    ),
+  )
+
+  flyer.append(lw.div, rw.div, body.div)
+  wrapper.appendChild(flyer)
+  return wrapper
+}
+
 // ── Creator registry ────────────────────────────────────────────────
 
 const CREATORS: Record<AmbientCreatureEffectType, (color: string, size: number) => HTMLDivElement> = {
@@ -564,6 +656,8 @@ const CREATORS: Record<AmbientCreatureEffectType, (color: string, size: number) 
   dove: createDoveSVG,
   firefly: createFireflySVG,
   dragonfly: createDragonflySVG,
+  balloon: createBalloonSVG,
+  hummingbird: createHummingbirdSVG,
 }
 
 // ─── Composable ─────────────────────────────────────────────────────
@@ -703,6 +797,27 @@ export function useAmbientCreatures(
         66%       { opacity: 0.5;  transform: scale(1.1); }
         72%       { opacity: 0.95; transform: scale(1.5); }
         82%, 100% { opacity: 0.04; transform: scale(0.7); }
+      }
+      /* Balloon: gentle upward float with sinusoidal sway */
+      @keyframes acBalloonFloat {
+        0%   { transform: translateY(0px) translateX(0px); }
+        25%  { transform: translateY(-60px) translateX(25px); }
+        50%  { transform: translateY(-120px) translateX(0px); }
+        75%  { transform: translateY(-180px) translateX(-25px); }
+        100% { transform: translateY(-240px) translateX(0px); }
+      }
+      /* Hummingbird: rapid wing flutter (ultra-fast shimmer) */
+      @keyframes acHummingbirdWingL {
+        0%, 100% { transform: rotateY(8deg); }
+        25%      { transform: rotateY(-35deg); }
+        50%      { transform: rotateY(8deg); }
+        75%      { transform: rotateY(-35deg); }
+      }
+      @keyframes acHummingbirdWingR {
+        0%, 100% { transform: rotateY(-8deg); }
+        25%      { transform: rotateY(35deg); }
+        50%      { transform: rotateY(-8deg); }
+        75%      { transform: rotateY(35deg); }
       }
     `
     container.appendChild(styleEl)
@@ -926,6 +1041,44 @@ export function useAmbientCreatures(
           c.x += (dx / dist) * sp + Math.sin(timestamp * 0.0007 + c.wobbleOffset) * 0.3
           c.y += (dy / dist) * sp + Math.sin(timestamp * 0.0009 + c.wobbleOffset * 2) * 0.25
           c.angle = 0
+          break
+        }
+
+        case 'balloon': {
+          // Float: gentle upward drift with occasional side-to-side sway
+          // Balloons rarely descend and have no target seeking
+          const sway = Math.sin(timestamp * 0.0008 + c.wobbleOffset) * 20
+          const upDrift = c.speed * 0.5 * c.depth
+          c.x += sway * 0.02
+          c.y -= upDrift
+          c.angle = 0
+
+          // Reset to top when balloon floats off screen
+          if (c.y < -60) {
+            c.y = ch + 30
+            c.x = Math.random() * cw
+          }
+          break
+        }
+
+        case 'hummingbird': {
+          // Dart: erratic, high-energy movement with rapid direction changes
+          // Similar to butterfly but faster and more direct target seeking
+          if (dist < 10 || Math.random() < 0.004) {
+            retarget(c, cw, ch)
+            break
+          }
+          const surge = 0.7 + 0.3 * Math.sin(timestamp * 0.005 + c.speedPhase)
+          const sp = c.speed * surge * c.depth
+          const nx = dx / dist
+          const ny = dy / dist
+          const wobble =
+            Math.sin(timestamp * preset.wobbleFreq * 3 + c.wobbleOffset) * c.wobbleAmp * 0.8
+          const px = -ny * wobble
+          const py = nx * wobble
+          c.x += nx * sp + px
+          c.y += ny * sp + py
+          easeAngle(c, Math.atan2(ny * sp + py, nx * sp + px) * (180 / Math.PI) + 90, 0.1)
           break
         }
       }

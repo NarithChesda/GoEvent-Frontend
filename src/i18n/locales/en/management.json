@@ -2215,7 +2215,7 @@
       "enabled": "enabled",
       "disabled": "disabled",
       "enableLabel": "Enable Ambient Creatures",
-      "enableHint": "Butterflies, doves, fireflies, dragonflies drifting across the page.",
+      "enableHint": "Butterflies, doves, fireflies, dragonflies, balloons, hummingbirds drifting across the page.",
       "count": "Count (1–15)",
       "speed": "Speed",
       "speedSlow": "Slow",
@@ -2239,7 +2239,9 @@
         "butterfly": "Butterfly",
         "dove": "Dove",
         "firefly": "Firefly",
-        "dragonfly": "Dragonfly"
+        "dragonfly": "Dragonfly",
+        "balloon": "Balloon",
+        "hummingbird": "Hummingbird"
       }
     },
     "eventDetailsDesign": {

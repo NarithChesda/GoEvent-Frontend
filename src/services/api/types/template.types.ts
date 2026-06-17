@@ -221,7 +221,7 @@ export interface FallingEffectConfig {
  * Ambient creature types available for the cover stage effect.
  * Each maps to a pure SVG creature with animated wings/glow.
  */
-export type AmbientCreatureEffectType = 'butterfly' | 'dove' | 'firefly' | 'dragonfly'
+export type AmbientCreatureEffectType = 'butterfly' | 'dove' | 'firefly' | 'dragonfly' | 'balloon' | 'hummingbird'
 
 /**
  * A single creature entry in the ambient creatures configuration.

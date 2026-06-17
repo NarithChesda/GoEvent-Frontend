@@ -1087,12 +1087,14 @@ const defaultForm = (): FormState => ({
   host_info_design_type: 'standard',
 })
 
-const CREATURE_TYPES: AmbientCreatureEffectType[] = ['butterfly', 'dove', 'firefly', 'dragonfly']
+const CREATURE_TYPES: AmbientCreatureEffectType[] = ['butterfly', 'dove', 'firefly', 'dragonfly', 'balloon', 'hummingbird']
 const creatureTypeLabels = computed<Record<AmbientCreatureEffectType, string>>(() => ({
   butterfly: t('management.partnerTemplateForm.ambientCreatures.types.butterfly'),
   dove: t('management.partnerTemplateForm.ambientCreatures.types.dove'),
   firefly: t('management.partnerTemplateForm.ambientCreatures.types.firefly'),
   dragonfly: t('management.partnerTemplateForm.ambientCreatures.types.dragonfly'),
+  balloon: t('management.partnerTemplateForm.ambientCreatures.types.balloon'),
+  hummingbird: t('management.partnerTemplateForm.ambientCreatures.types.hummingbird'),
 }))
 const fallingTypeLabels = computed<Record<FallingEffectType, string>>(() => ({
   petals: t('management.partnerTemplateForm.fallingEffect.types.petals'),
