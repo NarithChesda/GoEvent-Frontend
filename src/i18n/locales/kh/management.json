@@ -1564,6 +1564,91 @@
       }
     }
   },
+  "seatingView": {
+    "tabs": {
+      "guestList": "បញ្ជីភ្ញៀវ",
+      "tableSeating": "ការរៀបចំតុ"
+    },
+    "header": {
+      "title": "ការរៀបចំតុ",
+      "subtitle": "អូសភ្ញៀវទៅដាក់លើតុ ឬចុចជ្រើសរើសភ្ញៀវ រួចចុច «ដាក់អង្គុយទីនេះ» នៅលើតុ",
+      "addTable": "បន្ថែមតុ"
+    },
+    "summary": {
+      "tableLabel": "តុ",
+      "seatsFilled": "កៅអីមានភ្ញៀវ",
+      "unassigned": "មិនទាន់កំណត់តុ"
+    },
+    "pool": {
+      "title": "ភ្ញៀវមិនទាន់មានតុ",
+      "selectAll": "ជ្រើសរើសទាំងអស់",
+      "selectAllCount": "ជ្រើសរើសទាំង {count} នាក់",
+      "selecting": "កំពុងជ្រើសរើស…",
+      "searchPlaceholder": "ស្វែងរកភ្ញៀវ...",
+      "selectedCount": "បានជ្រើសរើស {count}",
+      "assignTo": "ដាក់ទៅតុ...",
+      "clear": "សម្អាត",
+      "allSeated": "ភ្ញៀវទាំងអស់មានកន្លែងអង្គុយហើយ!",
+      "loadMore": "បង្ហាញបន្ថែម",
+      "loading": "កំពុងផ្ទុក...",
+      "plusOnes": "+{count} នាក់"
+    },
+    "board": {
+      "emptyTitle": "មិនទាន់មានតុនៅឡើយ",
+      "emptyCreateHint": "ចុចដើម្បីបង្កើតតុដំបូងរបស់អ្នក",
+      "emptyReadOnly": "មិនទាន់មានតុត្រូវបានបង្កើតទេ",
+      "dropHere": "ទម្លាក់ភ្ញៀវនៅទីនេះ",
+      "seatHere": "ដាក់ {count} នាក់អង្គុយទីនេះ",
+      "viewManage": "មើល និងគ្រប់គ្រងភ្ញៀវ",
+      "editTable": "កែសម្រួលតុ",
+      "deleteTable": "លុបតុ",
+      "seatPlaceholder": "កៅអី",
+      "unassign": "ដកចេញ"
+    },
+    "messages": {
+      "movedToUnassigned": "បានផ្លាស់ភ្ញៀវ {count} នាក់ត្រឡប់ទៅបញ្ជីមិនទាន់កំណត់តុវិញ",
+      "seatedAt": "បានដាក់ភ្ញៀវ {count} នាក់អង្គុយនៅ «{table}»",
+      "overCapacitySuffix": " — លើសចំណុះ ({occupied}/{capacity})",
+      "assignFailed": "បរាជ័យក្នុងការកំណត់កន្លែងអង្គុយ",
+      "seatNumberFailed": "បរាជ័យក្នុងការកែលេខកៅអី",
+      "tableCreated": "តុ «{name}» ត្រូវបានបង្កើត",
+      "tableUpdated": "តុ «{name}» ត្រូវបានកែសម្រួល",
+      "tableSaveFailed": "បរាជ័យក្នុងការរក្សាទុកតុ",
+      "tableDeleted": "តុ «{name}» ត្រូវបានលុប",
+      "tableDeleteFailed": "បរាជ័យក្នុងការលុបតុ"
+    },
+    "deleteModal": {
+      "title": "លុបតុ",
+      "warning": "ភ្ញៀវដែលអង្គុយនៅតុនេះ នឹងត្រូវផ្លាស់ត្រឡប់ទៅបញ្ជីមិនទាន់កំណត់តុវិញ"
+    },
+    "formModal": {
+      "editTitle": "កែសម្រួលតុ",
+      "addTitle": "បន្ថែមតុ",
+      "nameLabel": "ឈ្មោះតុ",
+      "namePlaceholder": "ឧ. តុទី 1, តុកិត្តិយស",
+      "capacityLabel": "ចំណុះ (ចំនួនកៅអី)",
+      "colorLabel": "ពណ៌តុ",
+      "notesLabel": "កំណត់ចំណាំ (មិនចាំបាច់)",
+      "notesPlaceholder": "ឧ. ក្បែរឆាក",
+      "cancel": "បោះបង់",
+      "saving": "កំពុងរក្សាទុក...",
+      "updateBtn": "កែសម្រួលតុ",
+      "addBtn": "បន្ថែមតុ"
+    },
+    "detailModal": {
+      "seatsOccupied": "{occupied}/{capacity} កៅអី",
+      "overCapacity": "លើសចំណុះ",
+      "seatedGuests": "ភ្ញៀវនៅតុនេះ",
+      "noneSeated": "មិនទាន់មានភ្ញៀវអង្គុយនៅតុនេះទេ",
+      "addGuestTitle": "បន្ថែមភ្ញៀវទៅតុនេះ",
+      "searchPlaceholder": "ស្វែងរកភ្ញៀវមិនទាន់មានតុ...",
+      "noneFound": "រកមិនឃើញភ្ញៀវមិនទាន់កំណត់តុទេ",
+      "add": "បន្ថែម",
+      "seatPlaceholder": "កៅអី",
+      "seatLabel": "កៅអី {number}",
+      "removeFromTable": "ដកចេញពីតុ"
+    }
+  },
   "expenseTab": {
     "title": "តាមដានការចំណាយ",
     "subtitle": "គ្រប់គ្រងថវិកា និងតាមដានការចំណាយ"

@@ -1564,6 +1564,91 @@
       }
     }
   },
+  "seatingView": {
+    "tabs": {
+      "guestList": "Guest List",
+      "tableSeating": "Table Seating"
+    },
+    "header": {
+      "title": "Table Seating",
+      "subtitle": "Drag guests onto a table, or tap guests to select them and tap \"Seat here\" on a table.",
+      "addTable": "Add Table"
+    },
+    "summary": {
+      "tableLabel": "table | tables",
+      "seatsFilled": "seats filled",
+      "unassigned": "unassigned"
+    },
+    "pool": {
+      "title": "Unassigned Guests",
+      "selectAll": "Select all",
+      "selectAllCount": "Select all {count} unassigned",
+      "selecting": "Selecting…",
+      "searchPlaceholder": "Search guests...",
+      "selectedCount": "{count} selected",
+      "assignTo": "Assign to...",
+      "clear": "Clear",
+      "allSeated": "Everyone is seated!",
+      "loadMore": "Load more",
+      "loading": "Loading...",
+      "plusOnes": "+{count} guest | +{count} guests"
+    },
+    "board": {
+      "emptyTitle": "No tables yet",
+      "emptyCreateHint": "Click to create your first table",
+      "emptyReadOnly": "No seating tables have been created",
+      "dropHere": "Drop guests here",
+      "seatHere": "Seat {count} here",
+      "viewManage": "View & manage guests",
+      "editTable": "Edit table",
+      "deleteTable": "Delete table",
+      "seatPlaceholder": "Seat",
+      "unassign": "Unassign"
+    },
+    "messages": {
+      "movedToUnassigned": "Moved {count} guest back to unassigned | Moved {count} guests back to unassigned",
+      "seatedAt": "Seated {count} guest at \"{table}\" | Seated {count} guests at \"{table}\"",
+      "overCapacitySuffix": " — over capacity ({occupied}/{capacity})",
+      "assignFailed": "Failed to update seating assignment",
+      "seatNumberFailed": "Failed to update seat number",
+      "tableCreated": "Table \"{name}\" created",
+      "tableUpdated": "Table \"{name}\" updated",
+      "tableSaveFailed": "Failed to save table",
+      "tableDeleted": "Table \"{name}\" deleted",
+      "tableDeleteFailed": "Failed to delete table"
+    },
+    "deleteModal": {
+      "title": "Delete Table",
+      "warning": "Guests seated here will be moved back to the unassigned pool."
+    },
+    "formModal": {
+      "editTitle": "Edit Table",
+      "addTitle": "Add Table",
+      "nameLabel": "Table Name",
+      "namePlaceholder": "e.g., Table 1, Head Table",
+      "capacityLabel": "Capacity",
+      "colorLabel": "Table Color",
+      "notesLabel": "Notes (Optional)",
+      "notesPlaceholder": "e.g., Near the stage",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "updateBtn": "Update Table",
+      "addBtn": "Add Table"
+    },
+    "detailModal": {
+      "seatsOccupied": "{occupied}/{capacity} seats",
+      "overCapacity": "Over capacity",
+      "seatedGuests": "Seated guests",
+      "noneSeated": "No guests seated at this table yet",
+      "addGuestTitle": "Add guests to this table",
+      "searchPlaceholder": "Search unassigned guests...",
+      "noneFound": "No unassigned guests found.",
+      "add": "Add",
+      "seatPlaceholder": "Seat #",
+      "seatLabel": "Seat {number}",
+      "removeFromTable": "Remove from table"
+    }
+  },
   "expenseTab": {
     "title": "Expense Tracking",
     "subtitle": "Manage budgets and track spending"

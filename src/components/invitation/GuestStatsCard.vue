@@ -6,7 +6,7 @@
         <p
           :class="[
             'uppercase',
-            compact ? 'text-xs font-medium tracking-wide text-slate-400' : 'text-xs font-semibold tracking-[0.2em] text-slate-400'
+            compact ? 'text-xs font-medium tracking-wide text-slate-400' : 'text-[11px] font-semibold tracking-wider text-slate-400'
           ]"
         >
           {{ t('management.guestGroupsView.statsCard.invitedGuests') }}
@@ -75,7 +75,7 @@
       <div
         :class="[
           'bg-emerald-50',
-          compact ? 'rounded-xl p-3' : 'rounded-lg sm:rounded-2xl border border-transparent bg-emerald-50/80 p-2.5 sm:p-4 shadow-sm shadow-emerald-100/70'
+          compact ? 'rounded-xl p-3' : 'rounded-xl sm:rounded-2xl border border-transparent bg-emerald-50/80 p-2.5 sm:p-4 shadow-sm shadow-emerald-100/70'
         ]"
       >
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -106,7 +106,7 @@
       <div
         :class="[
           'bg-sky-50',
-          compact ? 'rounded-xl p-3' : 'rounded-lg sm:rounded-2xl border border-transparent bg-sky-50/80 p-2.5 sm:p-4 shadow-sm shadow-sky-100/70'
+          compact ? 'rounded-xl p-3' : 'rounded-xl sm:rounded-2xl border border-transparent bg-sky-50/80 p-2.5 sm:p-4 shadow-sm shadow-sky-100/70'
         ]"
       >
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -136,7 +136,7 @@
       <!-- Pending Card -->
       <div
         :class="[
-          compact ? 'rounded-xl bg-slate-100 p-3' : 'rounded-lg sm:rounded-2xl border border-transparent bg-slate-50 p-2.5 sm:p-4 shadow-sm shadow-slate-100/70'
+          compact ? 'rounded-xl bg-slate-100 p-3' : 'rounded-xl sm:rounded-2xl border border-transparent bg-slate-50 p-2.5 sm:p-4 shadow-sm shadow-slate-100/70'
         ]"
       >
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">

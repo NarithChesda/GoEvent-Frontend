@@ -7,7 +7,7 @@
     </div>
 
     <!-- Guest Statistics Card -->
-    <div class="rounded-3xl border border-white/70 bg-white p-6 sm:p-8 shadow-lg shadow-slate-200/60 space-y-6">
+    <div class="rounded-3xl bg-white p-6 sm:p-8 shadow-sm ring-1 ring-slate-900/5 space-y-6">
       <GuestStatsCard :stats="guestStats" :loading="loadingStats" />
       <div class="border-t border-slate-100 pt-6">
         <GuestRsvpStatsCard
@@ -37,7 +37,7 @@
     <div
       v-else-if="groups.length === 0"
       @click="$emit('add-guest')"
-      class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-2xl p-12 hover:bg-slate-100/50 hover:border-emerald-400 transition-all duration-300 cursor-pointer group"
+      class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-3xl p-12 hover:bg-slate-100/50 hover:border-emerald-400 transition-all duration-300 cursor-pointer group"
     >
       <div class="flex flex-col items-center justify-center">
         <div class="w-16 h-16 bg-slate-200 group-hover:bg-emerald-100 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300">
@@ -54,11 +54,10 @@
       id="guests-panel"
       role="tabpanel"
       :aria-label="`${activeFilter === 'all' ? t('management.guestGroupsView.filterBar.allGroups') : groups.find(g => g.id.toString() === activeFilter)?.name || ''} ${t('management.guestGroupsView.filterBar.guestsPanelSuffix')}`"
-      class="space-y-4"
+      class="rounded-3xl bg-white ring-1 ring-slate-900/5 shadow-sm"
     >
-      <!-- Filter and Actions Bar - Clean Minimalist Design -->
-      <div class="sticky top-0 z-20 mb-4">
-        <div class="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-sm">
+      <!-- Filter and Actions Header -->
+      <div>
           <!-- Search Row (Mobile Only - appears first on mobile) -->
           <div class="p-3 pb-0 sm:hidden">
             <div class="relative">
@@ -71,7 +70,7 @@
                 @input="handleGroupSearch"
                 :placeholder="t('management.guestGroupsView.filterBar.searchPlaceholder')"
                 :aria-label="t('management.guestGroupsView.filterBar.searchAriaLabel')"
-                class="w-full pl-9 pr-8 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
+                class="w-full pl-9 pr-8 py-2 bg-slate-50 border border-transparent rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
               />
               <button
                 v-if="groupSearchQuery"
@@ -100,19 +99,18 @@
             <div class="relative" ref="tabsContainer">
               <button
                 @click="isDropdownOpen = !isDropdownOpen"
-                class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 border"
-                :class="activeFilter === 'all'
-                  ? 'text-slate-700 bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                  : 'text-white border-transparent'"
-                :style="activeFilter !== 'all' ? {
-                  backgroundColor: groups.find(g => g.id.toString() === activeFilter)?.color || '#3498db'
-                } : {}"
+                class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors"
               >
-                <Filter class="w-4 h-4 flex-shrink-0" :class="activeFilter === 'all' ? 'text-slate-500' : 'text-white/80'" />
+                <Filter v-if="activeFilter === 'all'" class="w-4 h-4 text-slate-400 flex-shrink-0" />
+                <span
+                  v-else
+                  class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  :style="{ backgroundColor: groups.find(g => g.id.toString() === activeFilter)?.color || '#3498db' }"
+                ></span>
                 <span class="truncate max-w-[100px] sm:max-w-[160px]">
                   {{ activeFilter === 'all' ? t('management.guestGroupsView.filterBar.allGroups') : groups.find(g => g.id.toString() === activeFilter)?.name || t('management.guestGroupsView.filterBar.select') }}
                 </span>
-                <ChevronDown class="w-4 h-4 transition-transform flex-shrink-0" :class="[{ 'rotate-180': isDropdownOpen }, activeFilter === 'all' ? 'text-slate-400' : 'text-white/80']" />
+                <ChevronDown class="w-4 h-4 text-slate-400 transition-transform flex-shrink-0" :class="{ 'rotate-180': isDropdownOpen }" />
               </button>
 
               <!-- Dropdown Menu -->
@@ -146,18 +144,14 @@
                       :key="group.id"
                       @click="selectFilter(group.id.toString())"
                       class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150"
-                      :class="activeFilter === group.id.toString() ? 'text-white' : 'text-slate-700 hover:bg-slate-50'"
-                      :style="activeFilter === group.id.toString() ? {
-                        backgroundColor: group.color || '#3498db'
-                      } : {}"
+                      :class="activeFilter === group.id.toString() ? 'bg-slate-100 text-slate-900' : 'text-slate-700 hover:bg-slate-50'"
                     >
                       <div
-                        v-if="activeFilter !== group.id.toString()"
                         class="w-2.5 h-2.5 rounded-full flex-shrink-0"
                         :style="{ backgroundColor: group.color || '#3498db' }"
                       />
                       <span class="flex-1 text-left truncate">{{ group.name }}</span>
-                      <span class="text-xs tabular-nums" :class="activeFilter === group.id.toString() ? 'text-white/70' : 'text-slate-400'">{{ group.guest_count }}</span>
+                      <span class="text-xs tabular-nums text-slate-400">{{ group.guest_count }}</span>
                     </button>
                   </div>
                 </div>
@@ -171,9 +165,6 @@
               ></div>
             </div>
 
-            <!-- Divider -->
-            <div class="w-px h-5 bg-slate-200 hidden sm:block"></div>
-
             <!-- Search Input (Desktop Only) -->
             <div class="hidden sm:block flex-1 min-w-0">
               <div class="relative">
@@ -185,7 +176,7 @@
                   @input="handleGroupSearch"
                   :placeholder="t('management.guestGroupsView.filterBar.searchPlaceholder')"
                   :aria-label="t('management.guestGroupsView.filterBar.searchAriaLabel')"
-                  class="w-full pl-9 pr-8 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
+                  class="w-full pl-9 pr-8 py-2 bg-slate-50 border border-transparent rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
                 />
                 <button
                   v-if="groupSearchQuery"
@@ -198,8 +189,8 @@
             </div>
 
             <!-- Guest Count -->
-            <div class="flex items-center gap-1 text-sm text-slate-500 tabular-nums flex-shrink-0">
-              <span class="font-medium text-slate-700">{{ loadedGuestCount }}</span>
+            <div class="flex items-center gap-1 text-xs text-slate-400 tabular-nums flex-shrink-0">
+              <span class="font-semibold text-slate-600">{{ loadedGuestCount }}</span>
               <span>/</span>
               <span>{{ paginationTotal }}</span>
             </div>
@@ -219,7 +210,7 @@
             <!-- Add Guest Button -->
             <button
               @click="$emit('add-guest')"
-              class="flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-all duration-200 flex-shrink-0"
+              class="flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white text-sm font-semibold rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-200 flex-shrink-0"
               :aria-label="t('management.guestGroupsView.filterBar.addGuestAriaLabel')"
             >
               <UserPlus class="w-4 h-4" />
@@ -229,48 +220,44 @@
 
           <!-- Selection Actions Bar - Appears when items selected -->
           <Transition name="selection-bar">
-            <div
-              v-if="totalSelectedCount > 0"
-              class="flex items-center justify-between gap-3 px-3 pb-3"
-            >
-              <div class="flex items-center gap-2">
-                <span class="text-sm text-slate-600">
-                  <span class="font-semibold text-slate-900">{{ totalSelectedCount }}</span> {{ t('management.guestGroupsView.selectionBar.selected') }}
+            <div v-if="totalSelectedCount > 0" class="px-3 pb-3">
+              <div class="flex items-center justify-between gap-3 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
+                <span class="text-xs font-medium text-emerald-800">
+                  <span class="font-bold">{{ totalSelectedCount }}</span> {{ t('management.guestGroupsView.selectionBar.selected') }}
                 </span>
-              </div>
-              <div class="flex items-center gap-1">
-                <button
-                  @click="handleBulkMarkSent"
-                  class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                >
-                  <Send class="w-3.5 h-3.5" />
-                  <span class="hidden xs:inline">{{ t('management.guestGroupsView.selectionBar.markSent') }}</span>
-                </button>
-                <button
-                  @click="handleBulkDelete"
-                  class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                >
-                  <Trash2 class="w-3.5 h-3.5" />
-                  <span class="hidden xs:inline">{{ t('management.guestGroupsView.selectionBar.delete') }}</span>
-                </button>
+                <div class="flex items-center gap-1.5">
+                  <button
+                    @click="handleBulkMarkSent"
+                    class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-[#1e90ff] bg-white hover:bg-sky-50 rounded-lg shadow-sm ring-1 ring-slate-900/5 transition-colors"
+                  >
+                    <Send class="w-3.5 h-3.5" />
+                    <span class="hidden xs:inline">{{ t('management.guestGroupsView.selectionBar.markSent') }}</span>
+                  </button>
+                  <button
+                    @click="handleBulkDelete"
+                    class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-red-600 bg-white hover:bg-red-50 rounded-lg shadow-sm ring-1 ring-slate-900/5 transition-colors"
+                  >
+                    <Trash2 class="w-3.5 h-3.5" />
+                    <span class="hidden xs:inline">{{ t('management.guestGroupsView.selectionBar.delete') }}</span>
+                  </button>
+                </div>
               </div>
             </div>
           </Transition>
-        </div>
       </div>
 
       <!-- Content Area -->
-      <!-- Loading State -->
-      <div v-if="isAnyGroupLoading && !hasAnyGuests" class="flex justify-center items-center py-12">
-        <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
+      <div class="border-t border-slate-100 bg-slate-50/50 rounded-b-3xl">
+        <!-- Loading State -->
+        <div v-if="isAnyGroupLoading && !hasAnyGuests" class="flex justify-center items-center py-12">
+          <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
 
-      <!-- Guest List Items (Scrollable) -->
-      <div v-else-if="hasAnyGuests">
-        <!-- Scrollable container with max height -->
+        <!-- Guest List Items (Scrollable) -->
         <div
+          v-else-if="hasAnyGuests"
           ref="scrollContainerRef"
-          class="max-h-[600px] overflow-y-auto space-y-2 pr-2 custom-scrollbar relative z-0"
+          class="max-h-[600px] overflow-y-auto space-y-2 p-3 sm:p-4 custom-scrollbar"
         >
           <GuestListItem
             v-for="guest in allFilteredGuests"
@@ -300,13 +287,13 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Empty State -->
-      <div v-else class="bg-slate-50/50 border-2 border-slate-200 border-dashed rounded-2xl p-12 text-center">
-        <Users class="w-16 h-16 text-slate-300 mx-auto mb-4" />
-        <h4 class="font-semibold text-slate-600 mb-1">{{ t('management.guestGroupsView.guestList.empty.title') }}</h4>
-        <p class="text-sm text-slate-400">{{ groupSearchQuery ? t('management.guestGroupsView.guestList.empty.searchHint') : t('management.guestGroupsView.guestList.empty.emptyHint') }}</p>
+        <!-- Empty State -->
+        <div v-else class="p-12 text-center">
+          <Users class="w-16 h-16 text-slate-300 mx-auto mb-4" />
+          <h4 class="font-semibold text-slate-600 mb-1">{{ t('management.guestGroupsView.guestList.empty.title') }}</h4>
+          <p class="text-sm text-slate-400">{{ groupSearchQuery ? t('management.guestGroupsView.guestList.empty.searchHint') : t('management.guestGroupsView.guestList.empty.emptyHint') }}</p>
+        </div>
       </div>
     </div>
 
@@ -320,7 +307,7 @@
         >
           <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
           <div class="flex min-h-full items-center justify-center p-4">
-            <div class="relative bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full" @click.stop>
+            <div class="relative bg-white rounded-3xl shadow-2xl ring-1 ring-slate-900/5 p-6 max-w-lg w-full" @click.stop>
               <!-- Header -->
               <div class="flex items-start justify-between mb-4">
                 <div class="flex items-center gap-3">
@@ -427,7 +414,7 @@
                 <div class="flex justify-end pt-2">
                   <button
                     @click="showInstructionModal = false"
-                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors duration-200"
+                    class="px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-xl font-semibold shadow-lg shadow-emerald-500/25 transition-all duration-200"
                   >
                     {{ t('management.guestGroupsView.guideModal.closeBtn') }}
                   </button>

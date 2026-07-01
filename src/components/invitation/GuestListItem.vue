@@ -1,7 +1,7 @@
 <template>
   <!-- Guest Card - Clean minimalist design -->
   <div
-    class="bg-white/80 border border-slate-200/60 rounded-2xl hover:border-slate-300 hover:bg-white transition-all duration-200 group md:cursor-default cursor-pointer"
+    class="bg-white rounded-2xl ring-1 ring-slate-900/5 hover:ring-slate-900/10 hover:shadow-sm transition-all duration-200 group md:cursor-default cursor-pointer"
     @click="handleCardClick"
   >
     <div class="flex items-center gap-3 px-4 py-3">
@@ -14,6 +14,14 @@
         class="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-2 focus:ring-emerald-500/20 focus:ring-offset-0 cursor-pointer flex-shrink-0 transition-colors"
       />
 
+      <!-- Initials avatar tinted with the guest's group color -->
+      <div
+        class="flex w-8 h-8 sm:w-9 sm:h-9 rounded-full items-center justify-center text-[11px] sm:text-xs font-bold flex-shrink-0 select-none"
+        :style="{ backgroundColor: `${avatarColor}1a`, color: avatarColor }"
+      >
+        {{ guestInitials }}
+      </div>
+
       <!-- Guest Info (grows to fill space) -->
       <div class="flex-1 min-w-0">
         <!-- Guest Name (full width) -->
@@ -24,20 +32,19 @@
           <!-- Group badge -->
           <div
             v-if="guest.group_details"
-            class="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-xs font-medium border"
-            :style="{
-              color: guest.group_details.color || '#64748b',
-              borderColor: guest.group_details.color || '#64748b',
-              backgroundColor: `${guest.group_details.color || '#64748b'}10`
-            }"
+            class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600"
           >
+            <span
+              class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+              :style="{ backgroundColor: guest.group_details.color || '#64748b' }"
+            ></span>
             <span class="truncate max-w-[80px]">{{ guest.group_details.name }}</span>
           </div>
 
           <!-- Sent status badge -->
           <div
             v-if="guest.invitation_status === 'sent' || guest.invitation_status === 'viewed'"
-            class="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-medium"
+            class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-medium"
             title="Invitation sent"
           >
             <CheckCheck class="w-3 h-3" />
@@ -47,7 +54,7 @@
           <!-- RSVP status badge (private-event response) -->
           <div
             v-if="rsvpBadge"
-            class="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-xs font-medium"
+            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium"
             :class="rsvpBadge.classes"
             :title="rsvpBadge.title"
           >
@@ -55,14 +62,28 @@
             <span>{{ rsvpBadge.label }}</span>
             <span
               v-if="rsvpBadge.plusOnes"
-              class="ml-0.5 px-1 rounded-md bg-white/60 text-[10px] tabular-nums"
+              class="ml-0.5 px-1 rounded-full bg-white/60 text-[10px] tabular-nums"
             >+{{ rsvpBadge.plusOnes }}</span>
           </div>
 
           <!-- Cash Gift badge -->
-          <div v-if="guest.cash_gift_amount" class="flex items-center gap-1 px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-medium">
+          <div v-if="guest.cash_gift_amount" class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[11px] font-medium">
             <Coins class="w-3 h-3" />
             <span>{{ formatCurrency(guest.cash_gift_amount, guest.cash_gift_currency) }}</span>
+          </div>
+
+          <!-- Table seating badge -->
+          <div
+            v-if="guest.table_details"
+            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium"
+            :style="{
+              color: guest.table_details.color || '#0ea5e9',
+              backgroundColor: `${guest.table_details.color || '#0ea5e9'}14`
+            }"
+            :title="`Seated at ${guest.table_details.name}${guest.seat_number ? `, seat ${guest.seat_number}` : ''}`"
+          >
+            <Armchair class="w-3 h-3" />
+            <span class="truncate max-w-[100px]">{{ guest.table_details.name }}<template v-if="guest.seat_number"> · {{ guest.seat_number }}</template></span>
           </div>
         </div>
       </div>
@@ -70,7 +91,7 @@
       <!-- Mobile Copy Link Button (right side) -->
       <button
         @click.stop="handleMobileCopyLink"
-        class="md:hidden px-2.5 py-1.5 text-xs font-medium flex-shrink-0 rounded-lg transition-all duration-200"
+        class="md:hidden px-3 py-1.5 text-xs font-semibold flex-shrink-0 rounded-full transition-all duration-200"
         :class="showCopiedFeedback
           ? 'text-emerald-700 bg-emerald-100'
           : 'text-slate-600 bg-slate-100 hover:bg-slate-200 active:bg-slate-300'"
@@ -78,8 +99,11 @@
         {{ showCopiedFeedback ? 'Copied!' : 'Copy' }}
       </button>
 
-      <!-- Actions (Hidden on mobile, visible on desktop) -->
-      <div class="hidden md:flex items-center gap-0.5 flex-shrink-0">
+      <!-- Actions (hidden on mobile; revealed on row hover / keyboard focus on desktop) -->
+      <div
+        class="hidden md:flex items-center gap-0.5 flex-shrink-0 transition-opacity duration-150"
+        :class="showLinkMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'"
+      >
         <!-- Mark Sent (only if not sent) -->
         <button
           v-if="guest.invitation_status === 'not_sent'"
@@ -168,6 +192,7 @@ import {
   Check,
   HelpCircle,
   X as XIcon,
+  Armchair,
 } from 'lucide-vue-next'
 import type { EventGuest } from '../../services/api'
 
@@ -230,6 +255,19 @@ const dropdownStyle = ref<Record<string, string>>({})
 const showCopiedFeedback = ref(false)
 
 const dropdownManager = DropdownManager.getInstance()
+
+const avatarColor = computed(() => props.guest.group_details?.color || '#64748b')
+
+/** First letters of up to two name words, e.g. "Sok Dara" → "SD". */
+const guestInitials = computed(() =>
+  props.guest.name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join('')
+    .toUpperCase(),
+)
 
 // Mobile copy link handler with feedback
 const handleMobileCopyLink = () => {

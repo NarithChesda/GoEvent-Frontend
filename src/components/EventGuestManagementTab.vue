@@ -6,7 +6,7 @@
     <!-- Loading State -->
     <div
       v-if="loadingPayments"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8"
+      class="bg-white rounded-3xl shadow-sm ring-1 ring-slate-900/5 p-6 sm:p-8"
     >
       <div class="flex items-center justify-center">
         <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
@@ -17,7 +17,7 @@
     <!-- No Template Selected -->
     <div
       v-else-if="!props.event?.event_template"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
+      class="bg-white rounded-3xl shadow-sm ring-1 ring-slate-900/5 p-8 sm:p-12 text-center"
     >
       <Mail class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
       <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">No Template Selected</h3>
@@ -36,7 +36,7 @@
     <!-- Template Payment Check -->
     <div
       v-else-if="!hasTemplatePayment"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
+      class="bg-white rounded-3xl shadow-sm ring-1 ring-slate-900/5 p-8 sm:p-12 text-center"
     >
       <Lock class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
       <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">Template Payment Required</h3>
@@ -218,8 +218,8 @@
     <Transition name="slide-up">
       <div v-if="message" class="fixed bottom-20 lg:bottom-8 right-4 sm:right-8 left-4 sm:left-auto z-[100]">
         <div
-          :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-          class="text-white px-4 sm:px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-lg flex items-center text-sm sm:text-base"
+          :class="message.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'"
+          class="text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-lg flex items-center text-sm sm:text-base"
         >
           <CheckCircle v-if="message.type === 'success'" class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
           <AlertCircle v-else class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
@@ -232,6 +232,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   CheckCircle,
   Users,
@@ -273,6 +274,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   'tab-change': [tab: string, action?: string]
 }>()
+
+const { t } = useI18n()
 
 // Use composables
 const { isTemplateActivated, loadPayments, loadingPayments } = usePaymentTemplateIntegration(props.event)
@@ -414,10 +417,10 @@ const pendingGuestGroupSelection = ref<number | null>(null)
 const groupCardRefs = new Map<number, any>()
 
 // Sub-tabs configuration
-const subTabs = [
-  { id: 'guests', label: 'Guest List', icon: UserPlus },
-  { id: 'tables', label: 'Table Seating', icon: Armchair },
-]
+const subTabs = computed(() => [
+  { id: 'guests', label: t('management.seatingView.tabs.guestList'), icon: UserPlus },
+  { id: 'tables', label: t('management.seatingView.tabs.tableSeating'), icon: Armchair },
+])
 
 // Guest groups view ref for controlling selection state
 const guestGroupsViewRef = ref<InstanceType<typeof GuestGroupsView> | null>(null)

@@ -247,6 +247,10 @@ Field-specific errors come as: `{ "field_name": ["Error message"] }`
 - Bulk operations supported (import, export, invitation sending)
 - Validation utilities in [src/utils/guestValidation.ts](src/utils/guestValidation.ts)
 - Services: `guestService`, `guestGroupService`
+- **Table seating** ([src/components/invitation/SeatingTablesView.vue](src/components/invitation/SeatingTablesView.vue)): drag-and-drop or tap-to-select board for assigning guests to tables, with bulk assign, seat number entry, and a guest-facing seat display on the showcase RSVP flow
+  - `TableFormModal.vue` / `TableDetailModal.vue`: create/edit tables and manage seated guests per table
+  - Service: `tablesService` ([src/services/api/modules/tables.service.ts](src/services/api/modules/tables.service.ts))
+  - Fully localized via `management.seatingView.*` i18n keys (en/kh)
 
 ### Testing
 - Unit tests use Vitest with Vue Test Utils

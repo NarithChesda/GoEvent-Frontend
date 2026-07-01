@@ -6,7 +6,7 @@
 
         <div class="flex min-h-full items-center justify-center p-4">
           <div
-            class="relative w-full max-w-md bg-white/95 backdrop-blur-sm border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
+            class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl ring-1 ring-slate-900/5 overflow-hidden"
             @click.stop
           >
             <!-- Header -->
@@ -17,7 +17,7 @@
                     <Armchair class="w-5 h-5" />
                   </div>
                   <h2 class="text-lg sm:text-xl font-semibold text-slate-900">
-                    {{ isEditMode ? 'Edit Table' : 'Add Table' }}
+                    {{ isEditMode ? t('management.seatingView.formModal.editTitle') : t('management.seatingView.formModal.addTitle') }}
                   </h2>
                 </div>
                 <button
@@ -35,15 +35,15 @@
               <!-- Table Name -->
               <div>
                 <label for="tableName" class="block text-sm font-medium text-slate-700 mb-2">
-                  Table Name <span class="text-red-500">*</span>
+                  {{ t('management.seatingView.formModal.nameLabel') }} <span class="text-red-500">*</span>
                 </label>
                 <input
                   id="tableName"
                   v-model="formData.name"
                   type="text"
                   required
-                  placeholder="e.g., Table 1, Head Table"
-                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                  :placeholder="t('management.seatingView.formModal.namePlaceholder')"
+                  class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
                   :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.name }"
                 />
                 <p v-if="fieldErrors.name" class="mt-1 text-xs text-red-600">{{ fieldErrors.name }}</p>
@@ -52,7 +52,7 @@
               <!-- Capacity -->
               <div>
                 <label for="tableCapacity" class="block text-sm font-medium text-slate-700 mb-2">
-                  Capacity
+                  {{ t('management.seatingView.formModal.capacityLabel') }}
                 </label>
                 <input
                   id="tableCapacity"
@@ -60,7 +60,7 @@
                   type="number"
                   min="1"
                   placeholder="10"
-                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                  class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
                   :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.capacity }"
                 />
                 <p v-if="fieldErrors.capacity" class="mt-1 text-xs text-red-600">{{ fieldErrors.capacity }}</p>
@@ -69,7 +69,7 @@
               <!-- Table Color -->
               <div>
                 <label for="tableColor" class="block text-sm font-medium text-slate-700 mb-2">
-                  Table Color
+                  {{ t('management.seatingView.formModal.colorLabel') }}
                 </label>
                 <div class="flex items-center gap-3">
                   <input
@@ -82,7 +82,7 @@
                     v-model="formData.color"
                     type="text"
                     placeholder="#3498db"
-                    class="flex-1 px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                    class="flex-1 px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
                   />
                 </div>
               </div>
@@ -90,42 +90,42 @@
               <!-- Notes (Optional) -->
               <div>
                 <label for="tableNotes" class="block text-sm font-medium text-slate-700 mb-2">
-                  Notes (Optional)
+                  {{ t('management.seatingView.formModal.notesLabel') }}
                 </label>
                 <textarea
                   id="tableNotes"
                   v-model="formData.notes"
                   rows="2"
-                  placeholder="e.g., Near the stage"
-                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
+                  :placeholder="t('management.seatingView.formModal.notesPlaceholder')"
+                  class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all resize-none"
                 ></textarea>
               </div>
 
               <!-- Error Message -->
-              <div v-if="errorMessage" class="rounded-lg bg-red-50 border border-red-200 p-3">
+              <div v-if="errorMessage" class="rounded-xl bg-red-50 border border-red-200 p-3">
                 <p class="text-sm text-red-800">{{ errorMessage }}</p>
               </div>
 
               <!-- Action Buttons -->
-              <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-200">
+              <div class="flex flex-row justify-end gap-3 pt-5 border-t border-slate-100">
                 <button
                   type="button"
                   @click="$emit('close')"
-                  class="flex-1 sm:flex-none px-5 py-2.5 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors"
+                  class="flex-1 sm:flex-none px-5 py-2.5 text-sm text-slate-600 hover:bg-slate-100 rounded-xl font-medium transition-colors"
                   :disabled="isSaving"
                 >
-                  Cancel
+                  {{ t('management.seatingView.formModal.cancel') }}
                 </button>
                 <button
                   type="submit"
                   :disabled="!isFormValid || isSaving"
-                  class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-lg font-semibold transition-colors shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  class="flex-1 sm:flex-none px-6 py-2.5 text-sm bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-xl font-semibold transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                   <span
                     v-if="isSaving"
                     class="w-4 h-4 mr-2 animate-spin border-2 border-white border-t-transparent rounded-full"
                   ></span>
-                  {{ isSaving ? 'Saving...' : isEditMode ? 'Update Table' : 'Add Table' }}
+                  {{ isSaving ? t('management.seatingView.formModal.saving') : isEditMode ? t('management.seatingView.formModal.updateBtn') : t('management.seatingView.formModal.addBtn') }}
                 </button>
               </div>
             </form>
@@ -138,8 +138,11 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Armchair, X } from 'lucide-vue-next'
 import type { EventTable, CreateTableRequest, UpdateTableRequest } from '../../services/api'
+
+const { t } = useI18n()
 
 // Props
 const props = defineProps<{

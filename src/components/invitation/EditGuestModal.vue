@@ -17,25 +17,44 @@
         @click.self="$emit('close')"
       >
         <div
-          class="relative w-full md:max-w-md bg-white md:rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] md:max-h-[calc(100vh-100px)] flex flex-col rounded-t-3xl md:rounded-b-3xl"
+          class="relative w-full md:max-w-md bg-white md:rounded-3xl shadow-2xl ring-1 ring-slate-900/5 overflow-hidden max-h-[85vh] md:max-h-[calc(100vh-100px)] flex flex-col rounded-t-3xl md:rounded-b-3xl"
           @click.stop
         >
           <!-- Header -->
-          <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
-            <div class="flex items-center justify-between px-4 py-3">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm text-white flex items-center justify-center">
-                  <UserCog class="w-5 h-5" />
-                </div>
-                <h2 class="text-lg font-semibold text-white">{{ t('management.guestGroupsView.editGuestModal.title') }}</h2>
-              </div>
+          <div class="relative flex-shrink-0 overflow-hidden border-b border-slate-100 bg-white z-10">
+            <!-- Tinted backdrop derived from the guest's group color -->
+            <div class="absolute inset-0" :style="headerBackdropStyle"></div>
+            <div
+              class="absolute -top-12 -right-12 w-44 h-44 rounded-full opacity-25 blur-3xl pointer-events-none"
+              :style="{ backgroundColor: accentColor }"
+            ></div>
+
+            <div class="relative px-5 pt-4 pb-4">
               <button
                 @click="$emit('close')"
-                class="w-8 h-8 rounded-full hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 backdrop-blur hover:bg-white text-slate-500 hover:text-slate-800 flex items-center justify-center shadow-sm ring-1 ring-slate-900/5 transition-colors"
                 :aria-label="t('management.guestGroupsView.editGuestModal.close')"
               >
-                <X class="w-5 h-5" />
+                <X class="w-4 h-4" />
               </button>
+
+              <div class="flex items-start gap-3.5 pr-12">
+                <div
+                  class="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 text-white text-sm font-bold select-none"
+                  :style="{ backgroundColor: accentColor, boxShadow: `0 8px 20px -6px ${accentColor}99` }"
+                >
+                  {{ guestInitials || '?' }}
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                    {{ t('management.guestGroupsView.editGuestModal.title') }}
+                  </p>
+                  <h2 class="text-lg font-bold text-slate-900 truncate leading-tight">{{ guest?.name }}</h2>
+                  <p v-if="guest?.group_details" class="text-xs text-slate-500 mt-0.5 truncate">
+                    {{ guest.group_details.name }}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -52,7 +71,7 @@
                     id="editGuestGroup"
                     v-model="formData.group"
                     required
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                    class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all appearance-none pr-10"
                   >
                     <option :value="null" disabled>{{ t('management.guestGroupsView.editGuestModal.group.choosePlaceholder') }}</option>
                     <option v-for="group in groups" :key="group.id" :value="group.id">
@@ -76,7 +95,7 @@
                   type="text"
                   required
                   :placeholder="t('management.guestGroupsView.editGuestModal.guestName.placeholder')"
-                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                  class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
                   :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.name }"
                 />
                 <p v-if="fieldErrors.name" class="mt-1 text-xs text-red-600">{{ fieldErrors.name }}</p>
@@ -87,15 +106,15 @@
                 <button
                   type="button"
                   @click="isContactInfoExpanded = !isContactInfoExpanded"
-                  class="w-full flex items-center justify-between text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors p-2 rounded-lg hover:bg-slate-50"
+                  class="w-full flex items-center justify-between p-2 -mx-2 rounded-xl hover:bg-slate-50 transition-colors"
                 >
-                  <div class="flex items-center gap-2">
-                    <Mail class="w-4 h-4" />
+                  <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                    <Mail class="w-3.5 h-3.5" />
                     <span>{{ t('management.guestGroupsView.editGuestModal.contactInfo.title') }}</span>
-                    <span class="text-xs text-slate-500">({{ t('management.guestGroupsView.editGuestModal.contactInfo.optional') }})</span>
+                    <span class="normal-case tracking-normal font-normal">({{ t('management.guestGroupsView.editGuestModal.contactInfo.optional') }})</span>
                   </div>
                   <ChevronDown
-                    class="w-4 h-4 transition-transform duration-200"
+                    class="w-4 h-4 text-slate-400 transition-transform duration-200"
                     :class="{ 'rotate-180': isContactInfoExpanded }"
                   />
                 </button>
@@ -112,7 +131,7 @@
                         v-model="formData.email"
                         type="email"
                         :placeholder="t('management.guestGroupsView.editGuestModal.contactInfo.emailPlaceholder')"
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                        class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
                         :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.email }"
                       />
                       <p v-if="fieldErrors.email" class="mt-1 text-xs text-red-600">{{ fieldErrors.email }}</p>
@@ -128,7 +147,7 @@
                         v-model="formData.phone_number"
                         type="tel"
                         placeholder="+1234567890"
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                        class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
                         :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.phone_number }"
                       />
                       <p v-if="fieldErrors.phone_number" class="mt-1 text-xs text-red-600">{{ fieldErrors.phone_number }}</p>
@@ -139,12 +158,12 @@
 
               <!-- RSVP Section (private-event response state) -->
               <div class="space-y-3 pt-2">
-                <h3 class="text-sm font-medium text-slate-700 flex items-center gap-2">
-                  <CalendarCheck class="w-4 h-4" />
+                <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <CalendarCheck class="w-3.5 h-3.5" />
                   {{ t('management.guestGroupsView.editGuestModal.rsvp.title') }}
                   <span
                     v-if="guest?.rsvp_responded_at"
-                    class="text-[11px] font-normal text-slate-500"
+                    class="text-[11px] font-normal normal-case tracking-normal text-slate-400"
                   >
                     {{ t('management.guestGroupsView.editGuestModal.rsvp.updatedAt', { date: formatRespondedAt(guest.rsvp_responded_at) }) }}
                   </span>
@@ -163,7 +182,7 @@
                       <select
                         id="editRsvpStatus"
                         v-model="formData.rsvp_status"
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                        class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all appearance-none pr-10"
                       >
                         <option value="pending">
                           {{ t('management.guestGroupsView.editGuestModal.rsvp.statusOptions.pending') }}
@@ -200,7 +219,7 @@
                       type="number"
                       min="0"
                       step="1"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                      class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
                     />
                   </div>
                 </div>
@@ -208,7 +227,7 @@
                 <!-- Read-only guest-supplied details -->
                 <div
                   v-if="hasGuestRsvpDetails"
-                  class="rounded-lg border border-slate-200 bg-slate-50/70 p-3 space-y-2"
+                  class="rounded-2xl border border-slate-100 bg-slate-50/70 p-3 space-y-2"
                 >
                   <div
                     v-if="(guest?.plus_ones_count ?? 0) > 0"
@@ -238,14 +257,14 @@
                   v-if="showAnswersSection"
                   class="mt-2"
                 >
-                  <h4 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
+                  <h4 class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
                     {{ t('management.guestGroupsView.editGuestModal.rsvp.answersTitle') }}
                   </h4>
 
                   <!-- Loading placeholder while the detail fetch is in flight -->
                   <div
                     v-if="isLoadingAnswers && !guest?.rsvp_answers"
-                    class="rounded-lg border border-slate-200 bg-slate-50/70 p-4 flex items-center gap-2"
+                    class="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 flex items-center gap-2"
                   >
                     <div class="w-4 h-4 animate-spin border-2 border-slate-400 border-t-transparent rounded-full" />
                     <span class="text-xs text-slate-500">
@@ -256,7 +275,7 @@
                   <!-- Empty safeguard (count > 0 but detail came back empty) -->
                   <div
                     v-else-if="(guest?.rsvp_answers?.length ?? 0) === 0"
-                    class="rounded-lg border border-slate-200 bg-slate-50/70 p-3"
+                    class="rounded-2xl border border-slate-100 bg-slate-50/70 p-3"
                   >
                     <p class="text-xs text-slate-500">
                       {{ t('management.guestGroupsView.editGuestModal.rsvp.answersEmpty') }}
@@ -266,7 +285,7 @@
                   <!-- Answer rows -->
                   <div
                     v-else
-                    class="rounded-lg border border-slate-200 bg-slate-50/70 divide-y divide-slate-200"
+                    class="rounded-2xl border border-slate-100 bg-slate-50/70 divide-y divide-slate-100"
                   >
                     <div
                       v-for="answer in sortedAnswers"
@@ -296,7 +315,7 @@
                         class="flex flex-wrap gap-1.5"
                       >
                         <span
-                          class="px-2 py-0.5 rounded-md text-xs font-medium"
+                          class="px-2.5 py-0.5 rounded-full text-xs font-medium"
                           :class="
                             answer.answer_text.toLowerCase() === 'yes'
                               ? 'bg-emerald-100 text-emerald-700'
@@ -316,7 +335,7 @@
                         v-else-if="answer.question_type === 'single_choice' && answer.answer_text"
                         class="flex flex-wrap gap-1.5"
                       >
-                        <span class="px-2 py-0.5 rounded-md text-xs font-medium bg-sky-100 text-sky-700">
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-700">
                           {{ answer.answer_text }}
                         </span>
                       </div>
@@ -332,7 +351,7 @@
                         <span
                           v-for="choice in answer.answer_choices"
                           :key="choice"
-                          class="px-2 py-0.5 rounded-md text-xs font-medium bg-violet-100 text-violet-700"
+                          class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-100 text-violet-700"
                         >
                           {{ choice }}
                         </span>
@@ -349,8 +368,8 @@
 
               <!-- Cash Gift Section -->
               <div class="space-y-3 pt-2">
-                <h3 class="text-sm font-medium text-slate-700 flex items-center gap-2">
-                  <Coins class="w-4 h-4" />
+                <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Coins class="w-3.5 h-3.5" />
                   {{ t('management.guestGroupsView.editGuestModal.cashGift.title') }}
                 </h3>
 
@@ -367,7 +386,7 @@
                       step="0.01"
                       min="0"
                       placeholder="0.00"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
+                      class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
                       :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.cash_gift_amount }"
                     />
                     <p v-if="fieldErrors.cash_gift_amount" class="mt-1 text-xs text-red-600">{{ fieldErrors.cash_gift_amount }}</p>
@@ -382,7 +401,7 @@
                       <select
                         id="editCashGiftCurrency"
                         v-model="formData.cash_gift_currency"
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none pr-10"
+                        class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all appearance-none pr-10"
                         :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.cash_gift_currency }"
                       >
                         <option value="">{{ t('management.guestGroupsView.editGuestModal.cashGift.currencyPlaceholder') }}</option>
@@ -408,14 +427,14 @@
               </div>
 
               <!-- Error Message -->
-              <div v-if="errorMessage" class="rounded-lg bg-red-50 border border-red-200 p-3">
+              <div v-if="errorMessage" class="rounded-xl bg-red-50 border border-red-200 p-3">
                 <p class="text-sm text-red-800">{{ errorMessage }}</p>
               </div>
 
               <!-- Quick Actions Section (Mobile Only) -->
               <div class="md:hidden space-y-3 pt-2">
-                <h3 class="text-sm font-medium text-slate-700 flex items-center gap-2">
-                  <Link class="w-4 h-4" />
+                <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Link class="w-3.5 h-3.5" />
                   {{ t('management.guestGroupsView.editGuestModal.quickActions.title') }}
                 </h3>
 
@@ -426,7 +445,7 @@
                       type="button"
                       @click="handleCopyLink('kh')"
                       :disabled="isUpdating"
-                      class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-lg transition-colors disabled:opacity-50"
+                      class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-xl transition-colors disabled:opacity-50"
                     >
                       <Globe class="w-4 h-4" />
                       <span>{{ t('management.guestGroupsView.editGuestModal.quickActions.copyLinkKh') }}</span>
@@ -435,7 +454,7 @@
                       type="button"
                       @click="handleCopyLink('en')"
                       :disabled="isUpdating"
-                      class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-lg transition-colors disabled:opacity-50"
+                      class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-xl transition-colors disabled:opacity-50"
                     >
                       <Globe class="w-4 h-4" />
                       <span>{{ t('management.guestGroupsView.editGuestModal.quickActions.copyLinkEn') }}</span>
@@ -448,7 +467,7 @@
                     type="button"
                     @click="handleMarkSent"
                     :disabled="isUpdating"
-                    class="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 border border-emerald-200 rounded-lg transition-colors disabled:opacity-50"
+                    class="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 border border-emerald-200 rounded-xl transition-colors disabled:opacity-50"
                   >
                     <Send class="w-4 h-4" />
                     <span>{{ t('management.guestGroupsView.editGuestModal.quickActions.markAsSent') }}</span>
@@ -460,7 +479,7 @@
                     type="button"
                     @click="handleDelete"
                     :disabled="isUpdating"
-                    class="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 active:bg-red-200 border border-red-200 rounded-lg transition-colors disabled:opacity-50"
+                    class="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 active:bg-red-200 border border-red-200 rounded-xl transition-colors disabled:opacity-50"
                   >
                     <Trash2 class="w-4 h-4" />
                     <span>{{ t('management.guestGroupsView.editGuestModal.quickActions.deleteGuest') }}</span>
@@ -471,28 +490,27 @@
           </div>
 
           <!-- Footer with Action Buttons -->
-          <div class="flex-shrink-0 border-t border-slate-200 bg-white">
-            <!-- Primary Actions -->
-            <div class="flex items-center justify-between gap-3 px-4 py-3">
+          <div class="flex-shrink-0 border-t border-slate-100 bg-white">
+            <div class="flex items-center justify-end gap-3 px-5 py-3.5">
+              <button
+                type="button"
+                @click="$emit('close')"
+                class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-xl transition-colors"
+                :disabled="isUpdating"
+              >
+                {{ t('management.guestGroupsView.editGuestModal.actions.cancel') }}
+              </button>
+
               <button
                 @click="handleSubmit"
                 :disabled="!isFormValid || isUpdating"
-                class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span
                   v-if="isUpdating"
                   class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
                 ></span>
                 <span>{{ isUpdating ? t('management.guestGroupsView.editGuestModal.actions.updating') : t('management.guestGroupsView.editGuestModal.actions.updateGuest') }}</span>
-              </button>
-
-              <button
-                type="button"
-                @click="$emit('close')"
-                class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
-                :disabled="isUpdating"
-              >
-                {{ t('management.guestGroupsView.editGuestModal.actions.cancel') }}
               </button>
             </div>
           </div>
@@ -507,7 +525,6 @@
 import { ref, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
-  UserCog,
   X,
   Coins,
   ChevronDown,
@@ -570,6 +587,24 @@ const formData = ref<FormData>({
 const errorMessage = ref('')
 const fieldErrors = ref<Record<string, string>>({})
 const isContactInfoExpanded = ref(false)
+
+// ---- Header presentation (mirrors TableDetailModal) ------------------------
+const accentColor = computed(() => props.guest?.group_details?.color || '#1e90ff')
+
+const headerBackdropStyle = computed(() => ({
+  background: `linear-gradient(135deg, ${accentColor.value}24 0%, ${accentColor.value}0a 55%, transparent 100%)`,
+}))
+
+/** First letters of up to two name words, e.g. "Sok Dara" → "SD". */
+const guestInitials = computed(() =>
+  (props.guest?.name ?? '')
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join('')
+    .toUpperCase(),
+)
 
 // Quick action handlers for mobile
 const handleCopyLink = (language: 'en' | 'kh') => {

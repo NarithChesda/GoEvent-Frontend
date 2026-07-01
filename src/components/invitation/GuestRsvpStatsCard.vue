@@ -3,7 +3,7 @@
     <!-- Header row -->
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
           {{ t('management.guestGroupsView.rsvpStatsCard.header') }}
         </p>
         <p class="text-3xl font-semibold text-slate-900 tracking-tight" aria-live="polite">
