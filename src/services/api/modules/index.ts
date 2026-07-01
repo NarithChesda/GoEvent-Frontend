@@ -7,6 +7,7 @@ export { agendaService } from './agenda.service'
 export { hostsService } from './hosts.service'
 export { mediaService } from './media.service'
 export { guestService, guestGroupService } from './guests.service'
+export { tablesService } from './tables.service'
 export { paymentMethodsService } from './payments.service'
 export { eventTemplateService } from './templates.service'
 export {

@@ -55,6 +55,14 @@ export interface GuestRsvpAnswerDetail {
   updated_at: string
 }
 
+/** Lightweight table reference embedded on a guest row (no nested guest list). */
+export interface EventGuestTableDetails {
+  id: number
+  name: string
+  capacity: number
+  color?: string
+}
+
 export interface EventGuest {
   id: number
   name: string
@@ -113,6 +121,12 @@ export interface EventGuest {
    * deliberately omits this to stay lightweight.
    */
   rsvp_answers?: GuestRsvpAnswerDetail[]
+  // ---- Table seating fields ---------------------------------------------
+  /** ID of the `EventTable` this guest is assigned to, or null if unassigned. */
+  table?: number | null
+  table_details?: EventGuestTableDetails | null
+  /** Optional free-form seat label within the table (e.g. "1", "A3"). */
+  seat_number?: string
   created_at: string
   updated_at: string
 }
@@ -141,6 +155,9 @@ export interface UpdateGuestRequest extends Partial<CreateGuestRequest> {
   plus_ones_count?: number
   plus_ones_names?: string
   private_note_to_host?: string
+  /** Assign/unassign the guest to a seating table. */
+  table?: number | null
+  seat_number?: string
 }
 
 export interface GuestListFilters extends QueryParams {
@@ -157,6 +174,10 @@ export interface GuestListFilters extends QueryParams {
   page?: number
   page_size?: number
   limit?: number
+  /** Only guests with no table assigned (the seating-board source pool). */
+  unassigned?: boolean
+  /** Only guests seated at a specific table. */
+  table?: number
 }
 
 export interface GuestStats {
@@ -208,4 +229,59 @@ export interface GuestRsvpSummary {
   total_expected_attendees: number
   pending_guests: GuestRsvpPendingGuest[]
   question_breakdowns: GuestRsvpQuestionBreakdown[]
+}
+
+// ---- Table seating -------------------------------------------------------
+
+/** Guest summary embedded in `EventTable.guests` (list/detail table endpoints). */
+export interface EventTableGuestSummary {
+  id: number
+  name: string
+  seat_number: string
+  plus_ones_count: number
+}
+
+export interface EventTable {
+  id: number
+  name: string
+  capacity: number
+  notes?: string
+  color: string
+  order: number
+  occupied_seats: number
+  available_seats: number
+  guest_count: number
+  guests: EventTableGuestSummary[]
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateTableRequest {
+  name: string
+  capacity?: number
+  color?: string
+  notes?: string
+  order?: number
+}
+
+export type UpdateTableRequest = Partial<CreateTableRequest>
+
+export interface TableListFilters extends QueryParams {
+  search?: string
+  ordering?: string
+}
+
+export interface BulkReorderTablesRequest {
+  updates: Array<{ id: number; order: number }>
+}
+
+export interface BulkAssignTableRequest {
+  guest_ids: number[]
+  table_id: number | null
+}
+
+export interface BulkAssignTableResponse {
+  status: string
+  count: number
+  table_id: number | null
 }

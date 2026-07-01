@@ -38,6 +38,20 @@ export interface GuestRsvpAnswer {
   answer_choices?: string[]
 }
 
+/**
+ * Seating table assignment, embedded on the guest RSVP form state.
+ * `null` until the host assigns the guest to a table (see
+ * `TABLE_SEATING_API_DOCS.md`). `seat_number` is only meaningful if the host
+ * labelled individual seats — otherwise it's an empty string and only the
+ * table name/color should be shown.
+ */
+export interface GuestRsvpTableInfo {
+  id: number
+  name: string
+  color: string
+  seat_number: string
+}
+
 export interface GuestRsvpFormState {
   guest_id: number
   guest_name: string
@@ -49,6 +63,7 @@ export interface GuestRsvpFormState {
   plus_ones_names: string
   max_plus_ones: number
   private_note_to_host: string
+  table: GuestRsvpTableInfo | null
   questions: EventRsvpQuestion[]
   answers: GuestRsvpAnswer[]
 }

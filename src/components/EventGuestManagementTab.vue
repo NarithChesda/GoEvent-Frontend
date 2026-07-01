@@ -55,8 +55,25 @@
 
     <!-- Content Area -->
     <div v-else class="min-h-[400px]">
+      <!-- Sub-navigation -->
+      <div class="flex items-center gap-2 mb-6 border-b border-slate-200/70">
+        <button
+          v-for="tab in subTabs"
+          :key="tab.id"
+          @click="activeSubTab = tab.id"
+          class="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px"
+          :class="activeSubTab === tab.id
+            ? 'border-[#1e90ff] text-[#1e90ff]'
+            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
+        >
+          <component :is="tab.icon" class="w-4 h-4" />
+          {{ tab.label }}
+        </button>
+      </div>
+
       <!-- Guests View (renamed from Guest Groups View) -->
       <GuestGroupsView
+        v-if="activeSubTab === 'guests'"
         ref="guestGroupsViewRef"
         :groups="groups"
         :loading-groups="loadingGroups"
@@ -92,6 +109,14 @@
         @bulk-mark-sent="handleBulkMarkSent"
         @bulk-delete="handleBulkDelete"
         @register-group-card="(groupId, el) => groupCardRefs.set(groupId, el)"
+      />
+
+      <!-- Table Seating View -->
+      <SeatingTablesView
+        v-else-if="activeSubTab === 'tables'"
+        :event-id="props.eventId"
+        :can-edit="props.canEdit"
+        @message="showMessage"
       />
     </div>
 
@@ -215,6 +240,7 @@ import {
   Mail,
   UserPlus,
   AlertCircle,
+  Armchair,
 } from 'lucide-vue-next'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { useGuestManagementStore } from '../stores/guestManagement'
@@ -234,6 +260,7 @@ import AddGuestModal from './invitation/AddGuestModal.vue'
 import EditGuestModal from './invitation/EditGuestModal.vue'
 import EditGroupModal from './invitation/EditGroupModal.vue'
 import GuestGroupsView from './invitation/GuestGroupsView.vue'
+import SeatingTablesView from './invitation/SeatingTablesView.vue'
 
 // Props
 const props = defineProps<{
@@ -389,6 +416,7 @@ const groupCardRefs = new Map<number, any>()
 // Sub-tabs configuration
 const subTabs = [
   { id: 'guests', label: 'Guest List', icon: UserPlus },
+  { id: 'tables', label: 'Table Seating', icon: Armchair },
 ]
 
 // Guest groups view ref for controlling selection state

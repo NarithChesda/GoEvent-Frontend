@@ -17,6 +17,8 @@ import type {
   GuestGroupStats,
   GuestRsvpSummary,
   BulkOperationResponse,
+  BulkAssignTableRequest,
+  BulkAssignTableResponse,
 } from '../types'
 
 // Guest Service
@@ -94,6 +96,18 @@ export const guestService = {
     return apiClient.post<BulkOperationResponse>(
       `/api/events/${eventId}/guests/bulk-delete/`,
       { guest_ids: guestIds },
+    )
+  },
+
+  // Bulk assign/unassign a set of guests to a seating table (multi-select drag)
+  async bulkAssignTable(
+    eventId: string,
+    guestIds: number[],
+    tableId: number | null,
+  ): Promise<ApiResponse<BulkAssignTableResponse>> {
+    return apiClient.post<BulkAssignTableResponse>(
+      `/api/events/${eventId}/guests/bulk-assign-table/`,
+      { guest_ids: guestIds, table_id: tableId } satisfies BulkAssignTableRequest,
     )
   },
 

@@ -107,6 +107,7 @@ export type {
   CreateGuestGroupRequest,
   GuestGroupStats,
   EventGuest,
+  EventGuestTableDetails,
   CreateGuestRequest,
   UpdateGuestRequest,
   GuestListFilters,
@@ -117,6 +118,14 @@ export type {
   GuestRsvpQuestionBreakdown,
   GuestRsvpSummary,
   GuestRsvpAnswerDetail,
+  EventTable,
+  EventTableGuestSummary,
+  CreateTableRequest,
+  UpdateTableRequest,
+  TableListFilters,
+  BulkReorderTablesRequest,
+  BulkAssignTableRequest,
+  BulkAssignTableResponse,
 } from './api/types/guest.types'
 
 // Payment types
@@ -259,6 +268,9 @@ export { eventTemplateService, packagePlanService, partnerTemplateService, custo
 
 // Guest services
 export { guestService, guestGroupService } from './api/modules/guests.service'
+
+// Table seating service
+export { tablesService } from './api/modules/tables.service'
 
 // Comments service
 export { commentsService } from './api/modules/comments.service'

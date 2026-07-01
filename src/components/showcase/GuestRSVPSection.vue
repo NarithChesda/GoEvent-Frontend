@@ -32,6 +32,19 @@
       </span>
     </div>
 
+    <!-- Table seating assignment (shown whenever the host has assigned one,
+         independent of RSVP/edit state) -->
+    <div v-if="formState?.table" class="table-badge">
+      <span class="table-dot" :style="{ backgroundColor: formState.table.color }"></span>
+      <span
+        class="table-badge-text"
+        :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+        :style="{ fontFamily: secondaryFont || currentFont }"
+      >
+        {{ tableAssignedText }}<template v-if="tableSeatText"> &middot; {{ tableSeatText }}</template>
+      </span>
+    </div>
+
     <!-- Missing invitation shortcode -->
     <div
       v-if="!guestShortcode"
@@ -617,6 +630,20 @@ const editResponseText = computed(() =>
   translateRSVP('rsvp_edit_response', currentLang.value),
 )
 
+const tableAssignedText = computed(() => {
+  if (!formState.value?.table) return ''
+  return translateRSVP('rsvp_table_assigned', currentLang.value).replace(
+    '{table}',
+    formState.value.table.name,
+  )
+})
+
+const tableSeatText = computed(() => {
+  const seat = formState.value?.table?.seat_number
+  if (!seat) return ''
+  return translateRSVP('rsvp_table_seat', currentLang.value).replace('{seat}', seat)
+})
+
 const enterEditMode = () => {
   isEditing.value = true
   currentStepIndex.value = 0
@@ -1034,6 +1061,34 @@ onBeforeUnmount(() => {
   text-align: center;
   padding: 0.4rem 0.25rem;
   line-height: 1.45;
+}
+
+/* Table seating badge */
+.table-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  align-self: center;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.table-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+.table-badge-text {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: white;
+  white-space: nowrap;
 }
 
 /* Loader + error */
