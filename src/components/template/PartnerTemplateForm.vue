@@ -3,24 +3,24 @@
   <Transition name="slide">
     <div v-if="isOpen" class="absolute inset-0 z-10 flex flex-col bg-white overflow-hidden">
       <!-- Header -->
-      <div class="flex items-center gap-3 px-4 py-4 border-b border-slate-200 flex-shrink-0">
+      <div class="flex items-center gap-3 px-4 py-4 border-b border-slate-100 flex-shrink-0">
         <button
           type="button"
           @click="emit('close')"
-          class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-600 transition-colors"
+          class="w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 active:scale-95 transition-all"
           :aria-label="t('management.partnerTemplateForm.header.goBack')"
         >
-          <ArrowLeft class="w-5 h-5" />
+          <ArrowLeft class="w-[18px] h-[18px]" />
         </button>
-        <h3 class="text-lg font-semibold text-slate-900">
+        <h3 class="text-lg font-semibold tracking-tight text-slate-900">
           {{ isEditing ? t('management.partnerTemplateForm.header.edit') : t('management.partnerTemplateForm.header.create') }}
         </h3>
       </div>
 
       <!-- Form Content (scrollable) -->
-      <div class="flex-1 overflow-y-auto p-4 space-y-5">
+      <div class="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
         <!-- Error Banner -->
-        <div v-if="error" class="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+        <div v-if="error" class="flex items-start gap-2 p-3 bg-red-50 ring-1 ring-red-200 rounded-xl text-sm text-red-700">
           <AlertCircle class="w-4 h-4 flex-shrink-0 mt-0.5" />
           <span>{{ error }}</span>
         </div>
@@ -39,7 +39,7 @@
                 type="text"
                 :placeholder="t('management.partnerTemplateForm.fields.namePlaceholder')"
                 maxlength="100"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
+                class="w-full px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
               />
             </div>
 
@@ -50,7 +50,7 @@
               </label>
               <select
                 v-model="form.package_plan_id"
-                class="w-full px-3 py-2 pr-8 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400 bg-white appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m4%206%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat"
+                class="w-full px-3 py-2 pr-8 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m4%206%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat"
                 :disabled="plansLoading"
               >
                 <option :value="null" disabled>
@@ -73,15 +73,15 @@
                 v-model="form.youtube_preview_url"
                 type="url"
                 placeholder="https://goevent.online/g/dPmdHn?lang=kh"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
+                class="w-full px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
               />
             </div>
 
             <!-- Template Colors -->
-            <details :open="detailsOpenState.colors" @toggle="(e) => detailsOpenState.colors = (e.target as HTMLDetailsElement).open" class="border border-slate-200 rounded-lg overflow-hidden">
-              <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
+            <details :open="detailsOpenState.colors" @toggle="(e) => detailsOpenState.colors = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
+              <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
                 <span>{{ t('management.partnerTemplateForm.colors.sectionTitle') }} ({{ pendingColors.length }})</span>
-                <ChevronDown class="w-4 h-4 text-slate-400" />
+                <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
               </summary>
               <div class="p-4 space-y-3 border-t border-slate-100">
                 <!-- Existing/Pending colors list -->
@@ -97,14 +97,14 @@
                     v-if="isEditing"
                     type="button"
                     @click="startEditColor(color as EventTemplateColor)"
-                    class="text-xs text-sky-600 hover:text-sky-700 font-medium"
+                    class="text-xs font-medium text-sky-600 px-2 py-1 rounded-md hover:bg-sky-50 transition-colors"
                   >
                     {{ t('management.partnerTemplateForm.colors.editBtn') }}
                   </button>
                   <button
                     type="button"
                     @click="isEditing ? handleDeleteColor((color as EventTemplateColor).id) : removePendingColor(index)"
-                    class="text-xs text-red-500 hover:text-red-600 font-medium"
+                    class="text-xs font-medium text-red-500 px-2 py-1 rounded-md hover:bg-red-50 transition-colors"
                   >
                     {{ t('management.partnerTemplateForm.colors.deleteBtn') }}
                   </button>
@@ -116,7 +116,7 @@
                     <input
                       v-model="colorForm.hex_color_code"
                       type="color"
-                      class="w-10 h-[34px] p-0.5 border border-slate-300 rounded-lg cursor-pointer"
+                      class="w-10 h-[34px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors"
                     />
                   </div>
                   <div class="space-y-1 flex-1">
@@ -126,7 +126,7 @@
                       type="text"
                       maxlength="7"
                       :placeholder="t('management.partnerTemplateForm.colors.hexPlaceholder')"
-                      class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
+                      class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
                     />
                   </div>
                   <div class="space-y-1 flex-1">
@@ -136,14 +136,14 @@
                       type="text"
                       maxlength="50"
                       :placeholder="t('management.partnerTemplateForm.colors.namePlaceholder')"
-                      class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
+                      class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
                     />
                   </div>
                   <button
                     type="button"
                     @click="handleAddOrUpdateColor"
                     :disabled="colorSaving || !colorForm.hex_color_code || !colorForm.name"
-                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white hover:bg-sky-600 disabled:opacity-50 transition-colors whitespace-nowrap"
+                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white shadow-sm shadow-sky-500/25 hover:bg-sky-600 disabled:opacity-50 disabled:shadow-none transition-all whitespace-nowrap"
                   >
                     <Loader2 v-if="colorSaving" class="w-3 h-3 animate-spin inline" />
                     <template v-else>{{ editingColorId ? t('management.partnerTemplateForm.colors.updateBtn') : t('management.partnerTemplateForm.colors.addBtn') }}</template>
@@ -161,10 +161,10 @@
             </details>
 
             <!-- Template Fonts -->
-            <details :open="detailsOpenState.fonts" @toggle="(e) => detailsOpenState.fonts = (e.target as HTMLDetailsElement).open" class="border border-slate-200 rounded-lg overflow-hidden">
-              <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
+            <details :open="detailsOpenState.fonts" @toggle="(e) => detailsOpenState.fonts = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
+              <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
                 <span>{{ t('management.partnerTemplateForm.fonts.sectionTitle') }} ({{ pendingFonts.length }})</span>
-                <ChevronDown class="w-4 h-4 text-slate-400" />
+                <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
               </summary>
               <div class="p-4 space-y-3 border-t border-slate-100">
                 <!-- Existing/Pending fonts list -->
@@ -177,14 +177,14 @@
                     v-if="isEditing"
                     type="button"
                     @click="startEditFont(f as EventTemplateLanguageFont)"
-                    class="text-xs text-sky-600 hover:text-sky-700 font-medium"
+                    class="text-xs font-medium text-sky-600 px-2 py-1 rounded-md hover:bg-sky-50 transition-colors"
                   >
                     {{ t('management.partnerTemplateForm.fonts.editBtn') }}
                   </button>
                   <button
                     type="button"
                     @click="isEditing ? handleDeleteFont((f as EventTemplateLanguageFont).id) : removePendingFont(index)"
-                    class="text-xs text-red-500 hover:text-red-600 font-medium"
+                    class="text-xs font-medium text-red-500 px-2 py-1 rounded-md hover:bg-red-50 transition-colors"
                   >
                     {{ t('management.partnerTemplateForm.fonts.deleteBtn') }}
                   </button>
@@ -229,7 +229,7 @@
                     type="button"
                     @click="handleAddOrUpdateFont"
                     :disabled="fontSaving || !fontForm.font || !fontForm.language || !fontForm.font_type"
-                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white hover:bg-sky-600 disabled:opacity-50 transition-colors whitespace-nowrap"
+                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white shadow-sm shadow-sky-500/25 hover:bg-sky-600 disabled:opacity-50 disabled:shadow-none transition-all whitespace-nowrap"
                   >
                     <Loader2 v-if="fontSaving" class="w-3 h-3 animate-spin inline" />
                     <template v-else>{{ editingFontId ? t('management.partnerTemplateForm.fonts.updateBtn') : t('management.partnerTemplateForm.fonts.addBtn') }}</template>
@@ -281,8 +281,8 @@
               {{ t('management.partnerTemplateForm.fields.previewImageLabel') }}
             </label>
             <div
-              class="relative border-2 border-dashed rounded-lg overflow-hidden transition-colors"
-              :class="previewImagePreview || existingTemplate?.preview_image ? 'border-slate-200' : 'border-slate-300 hover:border-sky-400'"
+              class="relative border-2 border-dashed rounded-xl overflow-hidden transition-colors"
+              :class="previewImagePreview || existingTemplate?.preview_image ? 'border-slate-200' : 'border-slate-200 bg-slate-50/60 hover:border-sky-400 hover:bg-sky-50/40'"
             >
               <!-- Image preview -->
               <div v-if="previewImagePreview || existingTemplate?.preview_image" class="relative aspect-[9/16] overflow-hidden">
@@ -310,10 +310,10 @@
         </div>
 
         <!-- Background Stage (collapsible) -->
-        <details v-if="form.package_plan_id" :open="detailsOpenState.backgroundStage" @toggle="(e) => detailsOpenState.backgroundStage = (e.target as HTMLDetailsElement).open" class="border border-slate-200 rounded-lg overflow-hidden">
-          <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
+        <details v-if="form.package_plan_id" :open="detailsOpenState.backgroundStage" @toggle="(e) => detailsOpenState.backgroundStage = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
+          <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
             <span>{{ t('management.partnerTemplateForm.backgroundStage.sectionTitle') }}</span>
-            <ChevronDown class="w-4 h-4 text-slate-400" />
+            <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
           </summary>
           <div class="p-4 space-y-3 border-t border-slate-100">
             <!-- Basic: Background Photo -->
@@ -345,10 +345,10 @@
         </details>
 
         <!-- Cover Stage Decorations (collapsible) -->
-        <details v-if="form.package_plan_id" :open="detailsOpenState.coverDecorations" @toggle="(e) => detailsOpenState.coverDecorations = (e.target as HTMLDetailsElement).open" class="border border-slate-200 rounded-lg overflow-hidden">
-          <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
+        <details v-if="form.package_plan_id" :open="detailsOpenState.coverDecorations" @toggle="(e) => detailsOpenState.coverDecorations = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
+          <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
             <span>{{ t('management.partnerTemplateForm.coverDecorations.sectionTitle') }}</span>
-            <ChevronDown class="w-4 h-4 text-slate-400" />
+            <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
           </summary>
           <div class="p-4 space-y-3 border-t border-slate-100">
             <!-- Basic: Cover Background Photo -->
@@ -389,10 +389,10 @@
         </details>
 
         <!-- Cover Stage Layout (collapsible) -->
-        <details :open="detailsOpenState.coverLayout" @toggle="(e) => detailsOpenState.coverLayout = (e.target as HTMLDetailsElement).open" class="border border-slate-200 rounded-lg overflow-hidden">
-          <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
+        <details :open="detailsOpenState.coverLayout" @toggle="(e) => detailsOpenState.coverLayout = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
+          <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
             <span>{{ t('management.partnerTemplateForm.coverLayout.sectionTitle') }}</span>
-            <ChevronDown class="w-4 h-4 text-slate-400" />
+            <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
           </summary>
           <div class="p-4 space-y-4 border-t border-slate-100">
             <!-- Animation Type -->
@@ -400,7 +400,7 @@
               <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.coverLayout.animationType') }}</label>
               <select
                 v-model="form.cover_stage_layout.showcaseAnimationType"
-                class="w-full px-3 py-2 pr-8 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400 bg-white appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m4%206%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat"
+                class="w-full px-3 py-2 pr-8 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m4%206%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat"
               >
                 <option value="decoration">{{ t('management.partnerTemplateForm.coverLayout.animationDecoration') }}</option>
                 <option value="door">{{ t('management.partnerTemplateForm.coverLayout.animationDoor') }}</option>
@@ -411,11 +411,11 @@
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1">
                 <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.contentTop') }}</label>
-                <input v-model.number="form.cover_stage_layout.contentTopPosition" type="number" step="0.5" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                <input v-model.number="form.cover_stage_layout.contentTopPosition" type="number" step="0.5" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
               </div>
               <div class="space-y-1">
                 <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.innerHeight') }}</label>
-                <input v-model.number="form.cover_stage_layout.innerContainerHeight" type="number" step="0.5" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                <input v-model.number="form.cover_stage_layout.innerContainerHeight" type="number" step="0.5" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
               </div>
             </div>
             <!-- Row Heights -->
@@ -423,33 +423,33 @@
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1">
                 <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.eventTitle') }}</label>
-                <input v-model.number="form.cover_stage_layout.eventTitleHeight" type="number" step="0.25" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                <input v-model.number="form.cover_stage_layout.eventTitleHeight" type="number" step="0.25" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
               </div>
               <div class="space-y-1">
                 <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.logo') }}</label>
-                <input v-model.number="form.cover_stage_layout.logoHeight" type="number" step="0.25" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                <input v-model.number="form.cover_stage_layout.logoHeight" type="number" step="0.25" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
               </div>
               <div class="space-y-1">
                 <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.inviteText') }}</label>
-                <input v-model.number="form.cover_stage_layout.inviteTextHeight" type="number" step="0.25" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                <input v-model.number="form.cover_stage_layout.inviteTextHeight" type="number" step="0.25" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
               </div>
               <div class="space-y-1">
                 <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.guestName') }}</label>
-                <input v-model.number="form.cover_stage_layout.guestNameHeight" type="number" step="0.25" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                <input v-model.number="form.cover_stage_layout.guestNameHeight" type="number" step="0.25" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
               </div>
             </div>
             <!-- Guest Name Max Width -->
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1">
                 <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.guestNameMaxWidthPercent') }}</label>
-                <input v-model.number="form.cover_stage_layout.guestNameMaxWidthPercent" type="number" min="10" max="100" step="1" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                <input v-model.number="form.cover_stage_layout.guestNameMaxWidthPercent" type="number" min="10" max="100" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
               </div>
             </div>
             <!-- Swipe Arrow -->
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1">
                 <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.swipeArrowBottom') }}</label>
-                <input v-model.number="form.cover_stage_layout.swipeArrowBottom" type="number" step="0.5" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                <input v-model.number="form.cover_stage_layout.swipeArrowBottom" type="number" step="0.5" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
               </div>
             </div>
             <!-- Visibility Toggles -->
@@ -525,15 +525,15 @@
             <div class="grid grid-cols-3 gap-3">
               <div class="space-y-1">
                 <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.hostClipScale') }}</label>
-                <input v-model.number="form.cover_stage_layout.hostClipScale" type="number" min="0" max="100" step="1" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                <input v-model.number="form.cover_stage_layout.hostClipScale" type="number" min="0" max="100" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
               </div>
               <div class="space-y-1">
                 <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.hostClipOffsetX') }}</label>
-                <input v-model.number="form.cover_stage_layout.hostClipOffsetX" type="number" min="0" max="100" step="1" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                <input v-model.number="form.cover_stage_layout.hostClipOffsetX" type="number" min="0" max="100" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
               </div>
               <div class="space-y-1">
                 <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.hostClipOffsetY') }}</label>
-                <input v-model.number="form.cover_stage_layout.hostClipOffsetY" type="number" min="0" max="100" step="1" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                <input v-model.number="form.cover_stage_layout.hostClipOffsetY" type="number" min="0" max="100" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
               </div>
             </div>
             <!-- Z-Indexes -->
@@ -541,29 +541,29 @@
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1">
                 <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.left') }}</label>
-                <input v-model.number="form.cover_stage_layout.leftDecorationZIndex" type="number" step="1" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                <input v-model.number="form.cover_stage_layout.leftDecorationZIndex" type="number" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
               </div>
               <div class="space-y-1">
                 <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.right') }}</label>
-                <input v-model.number="form.cover_stage_layout.rightDecorationZIndex" type="number" step="1" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                <input v-model.number="form.cover_stage_layout.rightDecorationZIndex" type="number" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
               </div>
               <div class="space-y-1">
                 <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.top') }}</label>
-                <input v-model.number="form.cover_stage_layout.topDecorationZIndex" type="number" step="1" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                <input v-model.number="form.cover_stage_layout.topDecorationZIndex" type="number" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
               </div>
               <div class="space-y-1">
                 <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.bottom') }}</label>
-                <input v-model.number="form.cover_stage_layout.bottomDecorationZIndex" type="number" step="1" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                <input v-model.number="form.cover_stage_layout.bottomDecorationZIndex" type="number" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
               </div>
             </div>
           </div>
         </details>
 
         <!-- Falling Effect (collapsible) -->
-        <details :open="detailsOpenState.fallingEffect" @toggle="(e) => detailsOpenState.fallingEffect = (e.target as HTMLDetailsElement).open" class="border border-slate-200 rounded-lg overflow-hidden">
-          <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
+        <details :open="detailsOpenState.fallingEffect" @toggle="(e) => detailsOpenState.fallingEffect = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
+          <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
             <span>{{ t('management.partnerTemplateForm.fallingEffect.sectionTitle') }} <span class="text-xs text-slate-400 font-normal">({{ form.falling_effect_enabled ? t('management.partnerTemplateForm.fallingEffect.enabled') : t('management.partnerTemplateForm.fallingEffect.disabled') }})</span></span>
-            <ChevronDown class="w-4 h-4 text-slate-400" />
+            <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
           </summary>
           <div class="p-4 space-y-4 border-t border-slate-100">
             <!-- Enable toggle -->
@@ -630,7 +630,7 @@
                   <input
                     v-model="form.falling_effect.custom_color"
                     type="color"
-                    class="w-10 h-[34px] p-0.5 border border-slate-300 rounded-lg cursor-pointer"
+                    class="w-10 h-[34px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors"
                   />
                 </div>
                 <div class="space-y-1 flex-1">
@@ -640,7 +640,7 @@
                     type="text"
                     maxlength="7"
                     placeholder="#FFD700"
-                    class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
+                    class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
                   />
                 </div>
               </div>
@@ -662,11 +662,11 @@
                     {{ t('management.partnerTemplateForm.fallingEffect.replace') }}
                     <input type="file" accept="image/png,image/svg+xml" class="sr-only" @change="handleFileChange('falling_effect_custom_image', $event)" />
                   </label>
-                  <button type="button" @click="clearFallingEffectCustomImage" class="text-xs font-medium text-red-500 hover:text-red-600">
+                  <button type="button" @click="clearFallingEffectCustomImage" class="text-xs font-medium text-red-500 px-2 py-1 -ml-2 rounded-md hover:bg-red-50 transition-colors">
                     {{ t('management.partnerTemplateForm.fallingEffect.remove') }}
                   </button>
                 </div>
-                <label v-else class="flex items-center justify-center gap-2 py-3 cursor-pointer border-2 border-dashed border-slate-300 hover:border-sky-400 rounded-lg">
+                <label v-else class="flex items-center justify-center gap-2 py-3 cursor-pointer border-2 border-dashed border-slate-200 bg-slate-50/60 hover:border-sky-400 hover:bg-sky-50/40 rounded-xl transition-colors">
                   <Upload class="w-4 h-4 text-slate-400" />
                   <span class="text-xs font-medium text-slate-500">{{ t('management.partnerTemplateForm.fallingEffect.uploadCustom') }}</span>
                   <input type="file" accept="image/png,image/svg+xml" class="sr-only" @change="handleFileChange('falling_effect_custom_image', $event)" />
@@ -677,10 +677,10 @@
         </details>
 
         <!-- Date & Location Design (collapsible) -->
-        <details :open="detailsOpenState.eventDetailsDesign" @toggle="(e) => detailsOpenState.eventDetailsDesign = (e.target as HTMLDetailsElement).open" class="border border-slate-200 rounded-lg overflow-hidden">
-          <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
+        <details :open="detailsOpenState.eventDetailsDesign" @toggle="(e) => detailsOpenState.eventDetailsDesign = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
+          <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
             <span>{{ t('management.partnerTemplateForm.eventDetailsDesign.sectionTitle') }} <span class="text-xs text-slate-400 font-normal">({{ t(`management.partnerTemplateForm.eventDetailsDesign.types.${form.event_details_design_type}`) }})</span></span>
-            <ChevronDown class="w-4 h-4 text-slate-400" />
+            <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
           </summary>
           <div class="p-4 space-y-3 border-t border-slate-100">
             <div class="space-y-1.5">
@@ -695,10 +695,10 @@
         </details>
 
         <!-- Host Info Design (collapsible) -->
-        <details :open="detailsOpenState.hostInfoDesign" @toggle="(e) => detailsOpenState.hostInfoDesign = (e.target as HTMLDetailsElement).open" class="border border-slate-200 rounded-lg overflow-hidden">
-          <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
+        <details :open="detailsOpenState.hostInfoDesign" @toggle="(e) => detailsOpenState.hostInfoDesign = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
+          <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
             <span>{{ t('management.partnerTemplateForm.hostInfoDesign.sectionTitle') }} <span class="text-xs text-slate-400 font-normal">({{ t(`management.partnerTemplateForm.hostInfoDesign.types.${form.host_info_design_type}`) }})</span></span>
-            <ChevronDown class="w-4 h-4 text-slate-400" />
+            <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
           </summary>
           <div class="p-4 space-y-3 border-t border-slate-100">
             <div class="space-y-1.5">
@@ -713,10 +713,10 @@
         </details>
 
         <!-- Ambient Creatures (collapsible) -->
-        <details :open="detailsOpenState.ambientCreatures" @toggle="(e) => detailsOpenState.ambientCreatures = (e.target as HTMLDetailsElement).open" class="border border-slate-200 rounded-lg overflow-hidden">
-          <summary class="px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between">
+        <details :open="detailsOpenState.ambientCreatures" @toggle="(e) => detailsOpenState.ambientCreatures = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
+          <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
             <span>{{ t('management.partnerTemplateForm.ambientCreatures.sectionTitle') }} <span class="text-xs text-slate-400 font-normal">({{ form.ambient_creatures_enabled ? t('management.partnerTemplateForm.ambientCreatures.enabled') : t('management.partnerTemplateForm.ambientCreatures.disabled') }})</span></span>
-            <ChevronDown class="w-4 h-4 text-slate-400" />
+            <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
           </summary>
           <div class="p-4 space-y-4 border-t border-slate-100">
             <!-- Enable toggle -->
@@ -752,7 +752,7 @@
               <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-1">
                   <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.count') }}</label>
-                  <input v-model.number="form.ambient_creatures.count" type="number" min="1" max="15" step="1" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                  <input v-model.number="form.ambient_creatures.count" type="number" min="1" max="15" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
                 </div>
                 <div class="space-y-1">
                   <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.speed') }}</label>
@@ -780,7 +780,7 @@
                   <input
                     v-model="form.ambient_creatures.custom_color"
                     type="color"
-                    class="w-10 h-[34px] p-0.5 border border-slate-300 rounded-lg cursor-pointer"
+                    class="w-10 h-[34px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors"
                   />
                 </div>
                 <div class="space-y-1 flex-1">
@@ -790,7 +790,7 @@
                     type="text"
                     maxlength="7"
                     placeholder="#FFD700"
-                    class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400"
+                    class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
                   />
                 </div>
               </div>
@@ -803,7 +803,7 @@
                     type="button"
                     @click="addCreatureEntry"
                     :disabled="form.ambient_creatures.creatures.length >= 4 || availableCreatureTypes.length === 0"
-                    class="text-xs font-semibold text-sky-600 hover:text-sky-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                    class="text-xs font-semibold text-sky-600 px-2 py-1 rounded-md hover:bg-sky-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                   >
                     {{ t('management.partnerTemplateForm.ambientCreatures.addCreature') }}
                   </button>
@@ -812,7 +812,7 @@
                 <div
                   v-for="(entry, index) in form.ambient_creatures.creatures"
                   :key="index"
-                  class="p-3 border border-slate-200 rounded-lg space-y-2 bg-slate-50/50"
+                  class="p-3 border border-slate-200/80 rounded-xl space-y-2 bg-slate-50/60"
                 >
                   <div class="grid grid-cols-2 gap-2">
                     <div class="space-y-1">
@@ -823,22 +823,22 @@
                     </div>
                     <div class="space-y-1">
                       <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.weightLabel') }}</label>
-                      <input v-model.number="entry.weight" type="number" min="1" max="10" step="1" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                      <input v-model.number="entry.weight" type="number" min="1" max="10" step="1" class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
                     </div>
                     <div class="space-y-1">
                       <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.minSize') }}</label>
-                      <input v-model.number="entry.min_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                      <input v-model.number="entry.min_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
                     </div>
                     <div class="space-y-1">
                       <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.maxSize') }}</label>
-                      <input v-model.number="entry.max_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400" />
+                      <input v-model.number="entry.max_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
                     </div>
                   </div>
                   <button
                     v-if="form.ambient_creatures.creatures.length > 1"
                     type="button"
                     @click="removeCreatureEntry(index)"
-                    class="text-xs font-medium text-red-500 hover:text-red-600"
+                    class="text-xs font-medium text-red-500 px-2 py-1 -ml-2 rounded-md hover:bg-red-50 transition-colors"
                   >
                     {{ t('management.partnerTemplateForm.ambientCreatures.removeBtn') }}
                   </button>
@@ -850,11 +850,11 @@
       </div>
 
       <!-- Footer Actions -->
-      <div class="flex-shrink-0 px-4 py-3 border-t border-slate-200 bg-white flex items-center gap-3">
+      <div class="flex-shrink-0 px-4 py-3 border-t border-slate-200/70 bg-white/90 backdrop-blur-md flex items-center gap-3">
         <button
           type="button"
           @click="emit('close')"
-          class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors"
+          class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-white text-slate-700 ring-1 ring-slate-200 shadow-sm hover:ring-slate-300 hover:bg-slate-50 transition-all"
         >
           {{ t('management.partnerTemplateForm.footer.cancel') }}
         </button>
@@ -862,7 +862,7 @@
           type="button"
           @click="handleSave"
           :disabled="saving || !form.name.trim() || !form.package_plan_id"
-          class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white hover:from-[#27ae60] hover:to-[#1873cc] disabled:opacity-60 transition-all"
+          class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white hover:from-[#27ae60] hover:to-[#1873cc] shadow-lg shadow-sky-500/25 hover:shadow-sky-500/35 hover:-translate-y-px active:translate-y-0 disabled:opacity-60 disabled:shadow-none disabled:hover:translate-y-0 transition-all"
         >
           <Loader2 v-if="saving" class="w-4 h-4 animate-spin" />
           {{ saving ? t('management.partnerTemplateForm.footer.saving') : (isEditing ? t('management.partnerTemplateForm.footer.saveChanges') : t('management.partnerTemplateForm.footer.createTemplate')) }}
@@ -903,7 +903,7 @@ const { t } = useI18n()
 const FileUploadField = PartnerTemplateFileField
 
 // Shared select styling matching the header selects (custom arrow, proper spacing)
-const selectClass = "w-full px-2 py-1.5 pr-8 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-400 bg-white appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m4%206%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat"
+const selectClass = "w-full px-2 py-1.5 pr-8 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m4%206%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat"
 
 interface Props {
   isOpen: boolean
@@ -1676,9 +1676,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.slide-enter-active,
+.slide-enter-active {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
 .slide-leave-active {
-  transition: transform 0.25s ease;
+  transition: transform 0.2s ease;
 }
 .slide-enter-from,
 .slide-leave-to {
@@ -1687,5 +1689,33 @@ onMounted(() => {
 
 details > summary::-webkit-details-marker {
   display: none;
+}
+
+/* Rotate section chevrons when open */
+.chevron-icon {
+  transition: transform 0.2s ease;
+}
+details[open] > summary .chevron-icon {
+  transform: rotate(180deg);
+}
+
+/* Thin scrollbar so the modal's rounded corners stay clean */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(203 213 225) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgb(203 213 225 / 0.9);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgb(148 163 184);
 }
 </style>

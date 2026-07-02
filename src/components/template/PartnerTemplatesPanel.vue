@@ -1,16 +1,16 @@
 <template>
   <div class="relative flex flex-col h-full overflow-hidden">
     <!-- Panel Header -->
-    <div class="flex-shrink-0 px-4 sm:px-6 py-4 border-b border-slate-200 bg-white">
+    <div class="flex-shrink-0 px-4 sm:px-6 py-4 bg-white">
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-base font-semibold text-slate-900">{{ t('management.partnerTemplatesPanel.title') }}</h3>
+          <h3 class="text-base font-semibold tracking-tight text-slate-900">{{ t('management.partnerTemplatesPanel.title') }}</h3>
           <p class="text-xs text-slate-500 mt-0.5">{{ t('management.partnerTemplatesPanel.subtitle') }}</p>
         </div>
         <button
           type="button"
           @click="openForm(null)"
-          class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white hover:from-[#27ae60] hover:to-[#1873cc] transition-all shadow-sm"
+          class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white hover:from-[#27ae60] hover:to-[#1873cc] transition-all shadow-lg shadow-sky-500/25 hover:shadow-sky-500/35 hover:-translate-y-px active:translate-y-0"
         >
           <Plus class="w-4 h-4" />
           <span class="hidden sm:inline">{{ t('management.partnerTemplatesPanel.newTemplate') }}</span>
@@ -20,7 +20,7 @@
     </div>
 
     <!-- Content -->
-    <div class="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50">
+    <div class="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50 custom-scrollbar">
       <!-- Loading -->
       <div v-if="loading" class="flex items-center justify-center py-16">
         <div class="w-8 h-8 border-2 border-slate-300 border-t-sky-500 rounded-full animate-spin" />
@@ -99,10 +99,10 @@
     <Transition name="fade">
       <div
         v-if="templateToDelete"
-        class="absolute inset-0 z-20 flex items-center justify-center bg-black/40 p-6"
+        class="absolute inset-0 z-20 flex items-center justify-center bg-slate-950/40 backdrop-blur-[2px] p-6"
         @click.self="templateToDelete = null"
       >
-        <div class="bg-white rounded-xl shadow-2xl p-5 max-w-xs w-full">
+        <div class="bg-white rounded-2xl shadow-2xl shadow-slate-950/25 ring-1 ring-slate-200/60 p-5 max-w-xs w-full">
           <div class="flex items-center gap-3 mb-3">
             <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
               <Trash2 class="w-5 h-5 text-red-500" />
@@ -119,7 +119,7 @@
             <button
               type="button"
               @click="templateToDelete = null"
-              class="flex-1 px-3 py-2 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
+              class="flex-1 px-3 py-2 rounded-xl text-sm font-medium bg-white text-slate-700 ring-1 ring-slate-200 shadow-sm hover:ring-slate-300 hover:bg-slate-50 transition-all"
             >
               {{ t('management.partnerTemplatesPanel.deleteModal.cancel') }}
             </button>
@@ -127,7 +127,7 @@
               type="button"
               @click="confirmDelete"
               :disabled="deleting"
-              class="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold bg-red-500 text-white hover:bg-red-600 disabled:opacity-60"
+              class="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-xl text-sm font-semibold bg-red-500 text-white shadow-lg shadow-red-500/25 hover:bg-red-600 disabled:opacity-60 transition-all"
             >
               <Loader2 v-if="deleting" class="w-4 h-4 animate-spin" />
               {{ deleting ? t('management.partnerTemplatesPanel.deleteModal.deleting') : t('management.partnerTemplatesPanel.deleteModal.delete') }}
@@ -330,5 +330,25 @@ onMounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Thin scrollbar so the modal's rounded corners stay clean */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(203 213 225) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgb(203 213 225 / 0.9);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgb(148 163 184);
 }
 </style>

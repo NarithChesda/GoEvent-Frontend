@@ -1,29 +1,35 @@
 <template>
-  <div class="text-center py-8 sm:py-12">
-    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-      <Palette class="w-6 h-6 sm:w-8 sm:h-8 text-slate-400" />
+  <div class="flex flex-col items-center text-center py-12 sm:py-16">
+    <div class="relative mb-4 sm:mb-5">
+      <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-slate-100 to-slate-200/70 rounded-2xl rotate-3 flex items-center justify-center ring-1 ring-slate-200/80 shadow-sm">
+        <Palette class="w-7 h-7 sm:w-9 sm:h-9 text-slate-400 -rotate-3" />
+      </div>
     </div>
-    <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">No Templates Found</h3>
-    <p class="text-xs sm:text-sm text-slate-600 px-4">
+    <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1">
+      {{ t('management.browseTemplateModal.empty.title') }}
+    </h3>
+    <p class="text-xs sm:text-sm text-slate-500 px-4 max-w-sm">
       {{
         hasFilters
-          ? 'Try adjusting your filters to see more templates.'
-          : 'No templates are available at the moment.'
+          ? t('management.browseTemplateModal.empty.filtered')
+          : t('management.browseTemplateModal.empty.noTemplates')
       }}
     </p>
     <button
       v-if="hasFilters"
       @click="$emit('clearFilters')"
-      class="mt-4 sm:mt-6 px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 text-sm sm:text-base"
+      class="mt-5 sm:mt-6 inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white text-slate-700 font-semibold rounded-xl ring-1 ring-slate-200 shadow-sm transition-all duration-200 hover:ring-slate-300 hover:shadow hover:-translate-y-px text-sm"
       type="button"
     >
-      Clear Filters
+      <RotateCcw class="w-4 h-4 text-slate-400" />
+      {{ t('management.browseTemplateModal.empty.clearFilters') }}
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Palette } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { Palette, RotateCcw } from 'lucide-vue-next'
 
 interface Props {
   hasFilters: boolean
@@ -34,4 +40,6 @@ defineProps<Props>()
 defineEmits<{
   clearFilters: []
 }>()
+
+const { t } = useI18n()
 </script>

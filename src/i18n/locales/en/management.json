@@ -1160,6 +1160,18 @@
       "use": "Use",
       "applying": "Applying...",
       "applyingShort": "..."
+    },
+    "empty": {
+      "title": "No Templates Found",
+      "filtered": "Try adjusting your filters to see more templates.",
+      "noTemplates": "No templates are available at the moment.",
+      "clearFilters": "Clear Filters"
+    },
+    "card": {
+      "owned": "Owned",
+      "preview": "Preview",
+      "select": "Select template",
+      "free": "Free"
     }
   },
   "templateDisplayCard": {
@@ -2167,6 +2179,15 @@
       "deleteFailed": "Failed to delete template.",
       "updated": "Template updated!",
       "created": "Template created!"
+    },
+    "card": {
+      "noPreview": "No preview yet",
+      "edit": "Edit",
+      "editTitle": "Edit template",
+      "submit": "Submit",
+      "submitTitle": "Submit for review",
+      "deleteTitle": "Delete template",
+      "adminNote": "Admin note:"
     }
   },
   "partnerTemplateForm": {
@@ -2174,6 +2195,11 @@
       "goBack": "Go back",
       "edit": "Edit Template",
       "create": "Create Template"
+    },
+    "fileField": {
+      "choose": "Choose file",
+      "uploaded": "File uploaded",
+      "replace": "Replace"
     },
     "fields": {
       "nameLabel": "Template Name",

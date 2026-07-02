@@ -1,9 +1,9 @@
 <template>
-  <div class="mt-4 p-4 rounded-lg" :class="messageClasses">
+  <div class="mt-4 p-4 rounded-xl shadow-sm" :class="messageClasses">
     <div class="flex items-center">
-      <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2 flex-shrink-0" />
-      <X v-else class="w-5 h-5 mr-2 flex-shrink-0" />
-      <span>{{ message.text }}</span>
+      <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2.5 flex-shrink-0" />
+      <X v-else class="w-5 h-5 mr-2.5 flex-shrink-0" />
+      <span class="text-sm font-medium">{{ message.text }}</span>
     </div>
   </div>
 </template>
@@ -21,7 +21,7 @@ const props = defineProps<Props>()
 
 const messageClasses = computed(() => {
   return props.message.type === 'error'
-    ? 'bg-red-50 text-red-800 border border-red-200'
-    : 'bg-green-50 text-green-800 border border-green-200'
+    ? 'bg-red-50 text-red-800 ring-1 ring-red-200'
+    : 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200'
 })
 </script>

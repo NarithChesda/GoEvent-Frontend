@@ -2,16 +2,16 @@
   <div
     @click="handleSelect"
     :class="[
-      'group relative cursor-pointer bg-white/80 backdrop-blur-sm border rounded-2xl overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300',
+      'group relative cursor-pointer bg-white rounded-2xl overflow-hidden transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50',
       isSelected
-        ? 'border-[#1e90ff] ring-2 ring-[#87CEEB] shadow-lg'
-        : 'border-white/40 hover:border-[#5eb3f6]',
+        ? 'ring-2 ring-[#1e90ff] ring-offset-2 ring-offset-slate-50 shadow-xl shadow-sky-500/10'
+        : 'ring-1 ring-slate-200/80 hover:ring-slate-300 hover:shadow-xl hover:shadow-slate-900/10 hover:-translate-y-0.5',
     ]"
     role="button"
     tabindex="0"
     @keydown.enter.prevent="handleSelect"
     @keydown.space.prevent="handleSelect"
-    aria-label="Select template"
+    :aria-label="t('management.browseTemplateModal.card.select')"
   >
     <!-- Template Preview - Portrait Ratio (9:16 for 1080x1920) -->
     <div class="relative w-full aspect-[9/16] overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">
@@ -20,7 +20,7 @@
         v-if="template.preview_image && !imageError"
         :src="template.preview_image"
         :alt="`${template.name} template preview`"
-        class="w-full h-full object-cover transition-opacity duration-300"
+        class="w-full h-full object-cover transition-all duration-500 ease-out group-hover:scale-[1.04]"
         :class="{ 'opacity-0': imageLoading, 'opacity-100': !imageLoading }"
         loading="lazy"
         @load="handleImageLoad"
@@ -35,69 +35,82 @@
       </div>
       <!-- Fallback Placeholder -->
       <div
-        v-if="!template.preview_image || imageError"
-        class="absolute inset-0 flex flex-col items-center justify-center text-slate-400"
+        v-if="!hasImage"
+        class="absolute inset-0 flex items-center justify-center text-slate-300"
       >
-        <ImageOff class="w-10 h-10 mb-2 opacity-50" />
-        <span class="text-xs font-medium opacity-70 text-center px-2">{{ template.name }}</span>
+        <ImageOff class="w-10 h-10" />
       </div>
 
       <!-- Price pill (top-right, minimal) -->
       <div class="absolute top-2 right-2 z-10">
-        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-black/50 text-white backdrop-blur-sm">
-          ${{ template.package_plan.price }}
+        <span
+          :class="[
+            'inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold backdrop-blur-md',
+            isFree
+              ? 'bg-white/90 text-slate-600 ring-1 ring-black/10'
+              : 'bg-black/55 text-white ring-1 ring-white/20',
+          ]"
+        >
+          {{ priceLabel }}
         </span>
       </div>
 
       <!-- Selection Indicator with Owned Badge -->
       <div v-if="isSelected" class="absolute top-2 left-2 z-10 flex items-center gap-1.5">
-        <div class="w-6 h-6 bg-[#1e90ff] rounded-full flex items-center justify-center shadow-lg">
+        <div class="w-6 h-6 bg-[#1e90ff] rounded-full flex items-center justify-center shadow-lg ring-2 ring-white/90">
           <Check class="w-4 h-4 text-white" />
         </div>
-        <span v-if="isOwned" class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-emerald-500 text-white shadow-lg">
-          Owned
+        <span v-if="isOwned" class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500 text-white shadow-lg">
+          {{ t('management.browseTemplateModal.card.owned') }}
         </span>
       </div>
 
       <!-- Owned Badge (when not selected) -->
       <div v-else-if="isOwned" class="absolute top-2 left-2 z-10">
-        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500 text-white shadow-lg">
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-white shadow-lg">
           <Check class="w-3 h-3" />
-          Owned
+          {{ t('management.browseTemplateModal.card.owned') }}
         </span>
       </div>
 
-      <!-- Minimal Info Overlay -->
-      <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent p-1 sm:p-1.5">
+      <!-- Info Footer: dark scrim over imagery, light strip on placeholders -->
+      <div
+        :class="[
+          'absolute inset-x-0 bottom-0 px-2 pb-2 sm:px-2.5 sm:pb-2.5',
+          hasImage
+            ? 'bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-10'
+            : 'bg-white/85 backdrop-blur-sm border-t border-slate-200/70 pt-2 sm:pt-2.5',
+        ]"
+      >
         <!-- Title -->
-        <h4 class="font-semibold text-white text-[11px] sm:text-xs mb-0.5 truncate">
+        <h4
+          :class="[
+            'font-semibold text-[11px] sm:text-xs mb-1 truncate',
+            hasImage ? 'text-white drop-shadow-sm' : 'text-slate-900',
+          ]"
+        >
           {{ template.name }}
         </h4>
-        <!-- Plan + Category -->
-        <div class="flex items-center justify-between">
-          <span
-            :class="[
-              'text-[10px] sm:text-[11px] lg:text-xs font-medium px-2 py-0.5 rounded-md inline-block',
-              packageColorClass,
-            ]"
-          >
-            {{ template.package_plan.name }}
-          </span>
-          <TemplateCategoryBadge
-            v-if="template.package_plan.category"
-            :category="template.package_plan.category"
-          />
-        </div>
+        <!-- Plan -->
+        <span
+          :class="[
+            'text-[10px] sm:text-[11px] font-medium px-2 py-0.5 rounded-full inline-block',
+            packageColorClass,
+          ]"
+        >
+          {{ template.package_plan.name }}
+        </span>
       </div>
 
       <!-- Centered Preview Button when selected -->
       <div v-if="isSelected && template.youtube_preview_url" class="absolute inset-0 flex items-center justify-center">
         <button
           type="button"
-          class="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-xs sm:text-sm font-semibold shadow-lg opacity-90 hover:opacity-100 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e90ff]"
+          class="inline-flex items-center gap-1.5 px-3.5 py-2 sm:px-4 sm:py-2 rounded-full bg-white/95 text-slate-900 text-xs sm:text-sm font-semibold shadow-xl backdrop-blur-md transition-all hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e90ff]"
           @click.stop="openPreview"
         >
-          Preview
+          <Play class="w-3.5 h-3.5 fill-current" />
+          {{ t('management.browseTemplateModal.card.preview') }}
         </button>
       </div>
     </div>
@@ -106,9 +119,9 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Check, ImageOff } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { Check, ImageOff, Play } from 'lucide-vue-next'
 import type { EventTemplate } from '../../services/api'
-import TemplateCategoryBadge from './TemplateCategoryBadge.vue'
 
 interface Props {
   template: EventTemplate
@@ -124,9 +137,24 @@ const emit = defineEmits<{
   select: [template: EventTemplate]
 }>()
 
+const { t } = useI18n()
+
 // Track image loading and error states
 const imageLoading = ref(true)
 const imageError = ref(false)
+
+const hasImage = computed(() => !!props.template.preview_image && !imageError.value)
+
+const isFree = computed(() => {
+  const price = Number(props.template.package_plan.price)
+  return !Number.isFinite(price) || price <= 0
+})
+
+const priceLabel = computed(() =>
+  isFree.value
+    ? t('management.browseTemplateModal.card.free')
+    : `$${props.template.package_plan.price}`,
+)
 
 const handleImageLoad = (): void => {
   imageLoading.value = false
@@ -151,11 +179,13 @@ const packageColorClass = computed(() => {
   const planName = props.template.package_plan.name.toLowerCase()
 
   if (planName.includes('basic')) {
-    return 'bg-blue-500/90 text-white shadow-md'
+    return 'bg-sky-500/90 text-white'
   } else if (planName.includes('standard')) {
-    return 'bg-purple-500/90 text-white shadow-md'
+    return 'bg-violet-500/90 text-white'
   }
 
-  return 'text-white/90'
+  return hasImage.value
+    ? 'bg-white/20 text-white backdrop-blur-sm'
+    : 'bg-slate-200/80 text-slate-600'
 })
 </script>
