@@ -1077,6 +1077,8 @@
     "receiptUploaded": "Receipt uploaded",
     "updateDetails": "Update Payment Details",
     "updateWithReceipt": "Update Payment / Upload Receipt",
+    "showAll": "Show all ({count})",
+    "showLess": "Show less",
     "status": {
       "pending": "Pending Review",
       "confirmed": "Confirmed",

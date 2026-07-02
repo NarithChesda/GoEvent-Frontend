@@ -4,43 +4,32 @@
   >
     <div class="flex flex-col lg:flex-row gap-6 p-4 sm:p-6">
       <!-- Left: Portrait Preview Image Card -->
-      <div class="flex-shrink-0 w-full lg:w-64 xl:w-72 2xl:w-80">
+      <div class="flex-shrink-0 w-full max-w-[260px] mx-auto lg:max-w-none lg:mx-0 lg:w-64 xl:w-72 2xl:w-80">
         <div
           v-if="template.preview_image"
-          class="relative bg-slate-100 rounded-2xl overflow-hidden shadow-lg"
-          style="aspect-ratio: 9/16"
+          class="relative bg-slate-100 rounded-2xl overflow-hidden shadow-lg aspect-[9/16]"
         >
           <img
             :src="template.preview_image"
             :alt="template.name"
+            loading="lazy"
             class="w-full h-full object-cover"
           />
-          <div
-            class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
-          ></div>
-          <div class="absolute bottom-3 left-3 right-3 flex flex-wrap gap-2">
-            <span
-              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white"
-            >
-              <Package class="w-3.5 h-3.5 mr-1.5" />
-              {{ template.package_plan?.name || t('management.templateDisplayCard.templatePlan') }}
-            </span>
-          </div>
           <!-- Play button overlay for video preview -->
           <button
             v-if="template.youtube_preview_url"
             @click="$emit('preview-video', template.youtube_preview_url)"
-            class="absolute inset-0 flex items-center justify-center group"
+            :aria-label="t('management.templateDisplayCard.watchPreviewBtn')"
+            class="absolute inset-0 flex items-center justify-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1e90ff] focus-visible:ring-offset-2 rounded-2xl"
           >
-            <div class="w-14 h-14 bg-white/90 rounded-full flex items-center justify-center shadow-lg opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-200">
+            <div class="w-14 h-14 bg-white/90 rounded-full flex items-center justify-center shadow-lg opacity-80 group-hover:opacity-100 group-focus-visible:opacity-100 group-hover:scale-110 transition-all duration-200">
               <PlayCircle class="w-8 h-8 text-slate-800" />
             </div>
           </button>
         </div>
         <div
           v-else
-          class="bg-slate-100 rounded-2xl flex items-center justify-center"
-          style="aspect-ratio: 9/16"
+          class="bg-slate-100 rounded-2xl flex items-center justify-center aspect-[9/16]"
         >
           <Palette class="w-12 h-12 text-slate-400" />
         </div>
@@ -76,7 +65,7 @@
           </div>
           <!-- Price display for preview mode -->
           <div v-if="status === 'preview' && template.package_plan?.price" class="mt-2">
-            <span class="text-2xl sm:text-3xl font-bold text-slate-900">${{ template.package_plan.price }}</span>
+            <span class="text-2xl sm:text-3xl font-bold text-slate-900">{{ formatCurrency(template.package_plan.price, 'USD') }}</span>
             <span class="text-sm text-slate-500 ml-2">{{ t('management.templateDisplayCard.oneTime') }}</span>
           </div>
         </div>
@@ -97,7 +86,10 @@
         </div>
 
         <!-- Action Buttons - Always at bottom -->
-        <div class="mt-6 pt-4 border-t border-slate-200">
+        <div
+          v-if="status === 'active' || (status === 'preview' && showPaymentButton)"
+          class="mt-6 pt-4 border-t border-slate-200"
+        >
           <!-- Preview Mode: Make Payment CTA -->
           <div v-if="status === 'preview' && showPaymentButton">
             <button
@@ -134,8 +126,9 @@
 </template>
 
 <script setup lang="ts">
-import { Package, Eye, Palette, CheckCircle, PlayCircle, CreditCard } from 'lucide-vue-next'
+import { Eye, Palette, CheckCircle, PlayCircle, CreditCard } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
+import { formatCurrency } from '../../utils/currency'
 import type { EventTemplate } from '../../services/api'
 
 const { t } = useI18n()

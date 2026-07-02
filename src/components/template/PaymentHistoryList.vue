@@ -17,7 +17,7 @@
 
     <div v-else class="space-y-3 sm:space-y-4">
       <div
-        v-for="payment in payments"
+        v-for="payment in visiblePayments"
         :key="payment.id"
         class="p-3 sm:p-4 bg-slate-50/50 rounded-xl sm:rounded-2xl border border-slate-100 hover:border-slate-200 transition-colors duration-200"
       >
@@ -32,7 +32,7 @@
             </p>
           </div>
           <div class="text-right flex-shrink-0">
-            <p class="text-base sm:text-lg font-bold text-slate-900">${{ payment.amount }}</p>
+            <p class="text-base sm:text-lg font-bold text-slate-900">{{ formatCurrency(payment.amount, 'USD') }}</p>
             <span
               class="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium mt-1"
               :class="getStatusBadgeClass(payment.status)"
@@ -60,13 +60,13 @@
           <!-- Transaction Reference -->
           <div v-if="payment.transaction_reference" class="flex items-center gap-2 text-slate-600">
             <Hash class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-            <span class="truncate font-mono text-xs">{{ payment.transaction_reference }}</span>
+            <span class="truncate font-mono text-xs" :title="payment.transaction_reference">{{ payment.transaction_reference }}</span>
           </div>
 
           <!-- Payment Reference -->
           <div v-if="payment.payment_reference" class="flex items-center gap-2 text-slate-600">
             <FileText class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-            <span class="truncate font-mono text-xs">{{ payment.payment_reference }}</span>
+            <span class="truncate font-mono text-xs" :title="payment.payment_reference">{{ payment.payment_reference }}</span>
           </div>
 
           <!-- Original Price vs Amount (if discount applied) -->
@@ -95,13 +95,23 @@
         <div v-if="payment.status === 'pending'" class="mt-3 pt-3 border-t border-slate-100">
           <button
             @click="$emit('update-payment', payment)"
-            class="inline-flex items-center gap-1.5 text-[#1e90ff] hover:text-[#1873cc] text-xs sm:text-sm font-medium transition-colors"
+            class="inline-flex items-center justify-center gap-1.5 w-full sm:w-auto rounded-lg border border-[#1e90ff]/30 px-3 py-2 text-[#1e90ff] hover:text-[#1873cc] hover:bg-blue-50 text-xs sm:text-sm font-medium transition-colors"
           >
             <Pencil class="w-3.5 h-3.5" />
             {{ payment.payment_proof ? t('management.paymentHistoryList.updateDetails') : t('management.paymentHistoryList.updateWithReceipt') }}
           </button>
         </div>
       </div>
+
+      <!-- Show all / Show less toggle -->
+      <button
+        v-if="payments.length > COLLAPSED_COUNT"
+        @click="showAll = !showAll"
+        class="w-full flex items-center justify-center gap-1.5 py-2 text-xs sm:text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
+      >
+        <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': showAll }" />
+        {{ showAll ? t('management.paymentHistoryList.showLess') : t('management.paymentHistoryList.showAll', { count: payments.length }) }}
+      </button>
     </div>
   </div>
 </template>
@@ -122,26 +132,37 @@ import {
   Tag,
   MessageSquare,
   ImageIcon,
+  ChevronDown,
 } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { formatCurrency } from '../../utils/currency'
 import type { Payment } from '../../types/payment'
 import type { Component } from 'vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 interface Props {
   payments: readonly Payment[]
   loading?: boolean
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 defineEmits<{
   'update-payment': [payment: Payment]
 }>()
 
+const COLLAPSED_COUNT = 3
+const showAll = ref(false)
+
+const visiblePayments = computed(() =>
+  showAll.value ? props.payments : props.payments.slice(0, COLLAPSED_COUNT),
+)
+
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString([], {
+  const intlLocale = locale.value === 'kh' ? 'km-KH' : 'en-US'
+  return new Date(dateString).toLocaleString(intlLocale, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
