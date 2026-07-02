@@ -5,7 +5,7 @@
       <div
         v-if="show"
         class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70]"
-        @click="$emit('close')"
+        @click="handleClose"
       />
     </Transition>
 
@@ -14,9 +14,12 @@
       <div
         v-if="show"
         class="fixed inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center w-full md:w-auto z-[71]"
-        @click.self="$emit('close')"
+        @click.self="handleClose"
       >
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-guest-modal-title"
           class="relative w-full md:max-w-md bg-white md:rounded-3xl shadow-2xl ring-1 ring-slate-900/5 overflow-hidden max-h-[85vh] md:max-h-[calc(100vh-100px)] flex flex-col rounded-t-3xl md:rounded-b-3xl"
           @click.stop
         >
@@ -31,8 +34,8 @@
 
             <div class="relative px-5 pt-4 pb-4">
               <button
-                @click="$emit('close')"
-                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 backdrop-blur hover:bg-white text-slate-500 hover:text-slate-800 flex items-center justify-center shadow-sm ring-1 ring-slate-900/5 transition-colors"
+                @click="handleClose"
+                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 backdrop-blur hover:bg-white text-slate-500 hover:text-slate-800 flex items-center justify-center shadow-sm ring-1 ring-slate-900/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40"
                 :aria-label="t('management.guestGroupsView.editGuestModal.close')"
               >
                 <X class="w-4 h-4" />
@@ -49,7 +52,7 @@
                   <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                     {{ t('management.guestGroupsView.editGuestModal.title') }}
                   </p>
-                  <h2 class="text-lg font-bold text-slate-900 truncate leading-tight">{{ guest?.name }}</h2>
+                  <h2 id="edit-guest-modal-title" class="text-lg font-bold text-slate-900 truncate leading-tight">{{ guest?.name }}</h2>
                   <p v-if="guest?.group_details" class="text-xs text-slate-500 mt-0.5 truncate">
                     {{ guest.group_details.name }}
                   </p>
@@ -91,14 +94,17 @@
                 </label>
                 <input
                   id="editGuestName"
+                  ref="nameInputRef"
                   v-model="formData.name"
                   type="text"
                   required
                   :placeholder="t('management.guestGroupsView.editGuestModal.guestName.placeholder')"
                   class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
                   :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.name }"
+                  :aria-invalid="fieldErrors.name ? 'true' : undefined"
+                  :aria-describedby="fieldErrors.name ? 'edit-guest-name-error' : undefined"
                 />
-                <p v-if="fieldErrors.name" class="mt-1 text-xs text-red-600">{{ fieldErrors.name }}</p>
+                <p v-if="fieldErrors.name" id="edit-guest-name-error" class="mt-1 text-xs text-red-600">{{ fieldErrors.name }}</p>
               </div>
 
               <!-- Contact Information Section (Collapsible) -->
@@ -133,8 +139,10 @@
                         :placeholder="t('management.guestGroupsView.editGuestModal.contactInfo.emailPlaceholder')"
                         class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
                         :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.email }"
+                        :aria-invalid="fieldErrors.email ? 'true' : undefined"
+                        :aria-describedby="fieldErrors.email ? 'edit-guest-email-error' : undefined"
                       />
-                      <p v-if="fieldErrors.email" class="mt-1 text-xs text-red-600">{{ fieldErrors.email }}</p>
+                      <p v-if="fieldErrors.email" id="edit-guest-email-error" class="mt-1 text-xs text-red-600">{{ fieldErrors.email }}</p>
                     </div>
 
                     <!-- Phone Number -->
@@ -149,8 +157,10 @@
                         placeholder="+1234567890"
                         class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
                         :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.phone_number }"
+                        :aria-invalid="fieldErrors.phone_number ? 'true' : undefined"
+                        :aria-describedby="fieldErrors.phone_number ? 'edit-guest-phone-error' : undefined"
                       />
-                      <p v-if="fieldErrors.phone_number" class="mt-1 text-xs text-red-600">{{ fieldErrors.phone_number }}</p>
+                      <p v-if="fieldErrors.phone_number" id="edit-guest-phone-error" class="mt-1 text-xs text-red-600">{{ fieldErrors.phone_number }}</p>
                     </div>
                   </div>
                 </Transition>
@@ -388,8 +398,10 @@
                       placeholder="0.00"
                       class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
                       :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.cash_gift_amount }"
+                      :aria-invalid="fieldErrors.cash_gift_amount ? 'true' : undefined"
+                      :aria-describedby="fieldErrors.cash_gift_amount ? 'edit-guest-cash-amount-error' : undefined"
                     />
-                    <p v-if="fieldErrors.cash_gift_amount" class="mt-1 text-xs text-red-600">{{ fieldErrors.cash_gift_amount }}</p>
+                    <p v-if="fieldErrors.cash_gift_amount" id="edit-guest-cash-amount-error" class="mt-1 text-xs text-red-600">{{ fieldErrors.cash_gift_amount }}</p>
                   </div>
 
                   <!-- Cash Gift Currency -->
@@ -403,6 +415,8 @@
                         v-model="formData.cash_gift_currency"
                         class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all appearance-none pr-10"
                         :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.cash_gift_currency }"
+                        :aria-invalid="fieldErrors.cash_gift_currency ? 'true' : undefined"
+                        :aria-describedby="fieldErrors.cash_gift_currency ? 'edit-guest-cash-currency-error' : undefined"
                       >
                         <option value="">{{ t('management.guestGroupsView.editGuestModal.cashGift.currencyPlaceholder') }}</option>
                         <option value="USD">USD - US Dollar</option>
@@ -421,7 +435,7 @@
                         <ChevronDown class="w-4 h-4 text-slate-500" />
                       </div>
                     </div>
-                    <p v-if="fieldErrors.cash_gift_currency" class="mt-1 text-xs text-red-600">{{ fieldErrors.cash_gift_currency }}</p>
+                    <p v-if="fieldErrors.cash_gift_currency" id="edit-guest-cash-currency-error" class="mt-1 text-xs text-red-600">{{ fieldErrors.cash_gift_currency }}</p>
                   </div>
                 </div>
               </div>
@@ -490,12 +504,12 @@
           </div>
 
           <!-- Footer with Action Buttons -->
-          <div class="flex-shrink-0 border-t border-slate-100 bg-white">
+          <div class="flex-shrink-0 border-t border-slate-100 bg-white pb-[env(safe-area-inset-bottom)]">
             <div class="flex items-center justify-end gap-3 px-5 py-3.5">
               <button
                 type="button"
-                @click="$emit('close')"
-                class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-xl transition-colors"
+                @click="handleClose"
+                class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 :disabled="isUpdating"
               >
                 {{ t('management.guestGroupsView.editGuestModal.actions.cancel') }}
@@ -522,7 +536,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   X,
@@ -587,6 +601,28 @@ const formData = ref<FormData>({
 const errorMessage = ref('')
 const fieldErrors = ref<Record<string, string>>({})
 const isContactInfoExpanded = ref(false)
+const nameInputRef = ref<HTMLInputElement | null>(null)
+
+// Guarded close — ignore backdrop clicks / Escape while an update is in flight
+const handleClose = () => {
+  if (props.isUpdating) return
+  emit('close')
+}
+
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && props.show) {
+    handleClose()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
+  document.body.style.overflow = ''
+})
 
 // ---- Header presentation (mirrors TableDetailModal) ------------------------
 const accentColor = computed(() => props.guest?.group_details?.color || '#1e90ff')
@@ -678,12 +714,22 @@ const formatRespondedAt = (iso: string) => {
   })
 }
 
-// Reset form when modal is closed
+// Reset form when modal is closed; lock background scroll while open
 watch(() => props.show, (newShow) => {
+  document.body.style.overflow = newShow ? 'hidden' : ''
   if (!newShow) {
     errorMessage.value = ''
     fieldErrors.value = {}
+    return
   }
+
+  // Autofocus the name field on desktop only — on mobile the drawer
+  // would immediately pop the keyboard over half the sheet.
+  nextTick(() => {
+    if (window.matchMedia('(min-width: 768px)').matches) {
+      nameInputRef.value?.focus()
+    }
+  })
 })
 
 // Form validation
@@ -798,6 +844,18 @@ defineExpose({
   .slide-up-leave-to {
     opacity: 0;
     transform: scale(0.9) translateY(0);
+  }
+}
+
+/* Respect users who opt out of motion */
+@media (prefers-reduced-motion: reduce) {
+  .fade-enter-active,
+  .fade-leave-active,
+  .slide-up-enter-active,
+  .slide-up-leave-active,
+  .collapse-enter-active,
+  .collapse-leave-active {
+    transition: none;
   }
 }
 

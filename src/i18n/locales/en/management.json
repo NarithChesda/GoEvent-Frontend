@@ -1366,6 +1366,8 @@
       "respondedDesc": "{percent}% of invited guests responded",
       "expectedSuffix": "expected",
       "expectedTooltip": "Counts each attending guest plus their plus-ones",
+      "filterHint": "Tap a status to filter the guest list",
+      "clearFilter": "Clear filter",
       "cards": {
         "going": "Going",
         "maybe": "Maybe",
@@ -1403,6 +1405,13 @@
         "addTitle": "Add question",
         "editTitle": "Edit question",
         "typeLabel": "Question type",
+        "typeDescriptions": {
+          "text": "Guests type a brief reply.",
+          "long_text": "Guests write a longer message.",
+          "yes_no": "A simple yes or no answer.",
+          "single_choice": "Guests pick one option from your list.",
+          "multi_choice": "Guests can pick several options from your list."
+        },
         "requiredLabel": "Required answer",
         "requiredHint": "Only enforced when the guest replies with Attending or Maybe.",
         "questionTextLabel": "Question text",
