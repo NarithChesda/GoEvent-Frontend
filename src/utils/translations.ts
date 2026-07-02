@@ -97,6 +97,8 @@ export const rsvpTranslations: Record<
     rsvp_wizard_next: string
     rsvp_table_assigned: string
     rsvp_table_seat: string
+    rsvp_table_label: string
+    rsvp_seat_label: string
 
     // Host section
     hosts_header_funeral: string
@@ -287,6 +289,8 @@ export const rsvpTranslations: Record<
     rsvp_wizard_next: 'Next',
     rsvp_table_assigned: "Table No. {table}",
     rsvp_table_seat: 'Seat No. {seat}',
+    rsvp_table_label: 'Table No.',
+    rsvp_seat_label: 'Seat No.',
     rsvp_submit_button: 'Send RSVP',
     rsvp_update_button: 'Update RSVP',
     rsvp_need_invitation_link: 'Please open this page from your personal invitation link to RSVP.',
@@ -489,6 +493,8 @@ export const rsvpTranslations: Record<
     rsvp_wizard_next: 'បន្ទាប់',
     rsvp_table_assigned: 'តុលេខ {table}',
     rsvp_table_seat: 'កៅអីលេខ {seat}',
+    rsvp_table_label: 'តុលេខ',
+    rsvp_seat_label: 'កៅអីលេខ',
     rsvp_submit_button: 'បញ្ជូន RSVP',
     rsvp_update_button: 'កែប្រែ RSVP',
     rsvp_need_invitation_link: 'សូមបើកទំព័រនេះតាមរយៈតំណអញ្ជើញផ្ទាល់ខ្លួនរបស់អ្នក ដើម្បីឆ្លើយតប។',
@@ -691,6 +697,8 @@ export const rsvpTranslations: Record<
     rsvp_wizard_next: '下一步',
     rsvp_table_assigned: '您被安排在{table}',
     rsvp_table_seat: '座位 {seat}',
+    rsvp_table_label: '桌号',
+    rsvp_seat_label: '座位号',
     rsvp_submit_button: '提交回覆',
     rsvp_update_button: '更新回覆',
     rsvp_need_invitation_link: '请通过您的专属邀请链接打开此页以进行回覆。',

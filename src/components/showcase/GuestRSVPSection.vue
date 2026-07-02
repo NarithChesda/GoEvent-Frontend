@@ -32,19 +32,6 @@
       </span>
     </div>
 
-    <!-- Table seating assignment (shown whenever the host has assigned one,
-         independent of RSVP/edit state) -->
-    <div v-if="formState?.table" class="table-badge">
-      <span class="table-dot" :style="{ backgroundColor: formState.table.color }"></span>
-      <span
-        class="table-badge-text"
-        :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
-        :style="{ fontFamily: secondaryFont || currentFont }"
-      >
-        {{ tableAssignedText }}<template v-if="tableSeatText"> &middot; {{ tableSeatText }}</template>
-      </span>
-    </div>
-
     <!-- Missing invitation shortcode -->
     <div
       v-if="!guestShortcode"
@@ -84,6 +71,42 @@
       v-else-if="formState && showCollapsedSummary"
       class="rsvp-summary"
     >
+      <!-- Seat info — the hero of the completed state. Shown for attending
+           and maybe responses; declined guests don't need their seat. Open
+           typography (no box) so it doesn't double-frame inside the glass
+           card. -->
+      <div v-if="showTableTicket && formState.table" class="seat-ticket">
+        <!-- With no seat number the lone stat collapses to a single inline
+             "label value" line instead of a stranded stacked column. -->
+        <div class="seat-stat" :class="{ 'seat-stat-inline': !seatNumberDisplay }">
+          <span
+            class="seat-stat-label"
+            :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+            :style="{ fontFamily: secondaryFont || currentFont }"
+          >{{ tableLabelText }}</span>
+          <span
+            class="seat-stat-value"
+            :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+            :style="{ fontFamily: secondaryFont || currentFont }"
+          >{{ tableNameDisplay }}</span>
+        </div>
+        <template v-if="seatNumberDisplay">
+          <span class="seat-ticket-divider" aria-hidden="true"></span>
+          <div class="seat-stat">
+            <span
+              class="seat-stat-label"
+              :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+              :style="{ fontFamily: secondaryFont || currentFont }"
+            >{{ seatLabelText }}</span>
+            <span
+              class="seat-stat-value"
+              :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+              :style="{ fontFamily: secondaryFont || currentFont }"
+            >{{ seatNumberDisplay }}</span>
+          </div>
+        </template>
+      </div>
+
       <button
         type="button"
         class="edit-btn"
@@ -144,7 +167,7 @@
                 :style="{
                   fontFamily: secondaryFont || currentFont,
                   color: rsvpStatus === opt.value ? (backgroundColor || primaryColor) : 'white',
-                  background: rsvpStatus === opt.value ? 'white' : 'transparent',
+                  background: rsvpStatus === opt.value ? 'white' : 'rgba(255, 255, 255, 0.08)',
                 }"
                 @click="selectStatus(opt.value)"
               >
@@ -274,7 +297,7 @@
                 :style="{
                   fontFamily: secondaryFont || currentFont,
                   color: answers[currentQuestion.id].answer_text === 'yes' ? (backgroundColor || primaryColor) : 'white',
-                  background: answers[currentQuestion.id].answer_text === 'yes' ? 'white' : 'transparent',
+                  background: answers[currentQuestion.id].answer_text === 'yes' ? 'white' : 'rgba(255, 255, 255, 0.08)',
                 }"
                 @click="setYesNo(currentQuestion.id, 'yes')"
               >{{ yesOptionText }}</button>
@@ -285,7 +308,7 @@
                 :style="{
                   fontFamily: secondaryFont || currentFont,
                   color: answers[currentQuestion.id].answer_text === 'no' ? (backgroundColor || primaryColor) : 'white',
-                  background: answers[currentQuestion.id].answer_text === 'no' ? 'white' : 'transparent',
+                  background: answers[currentQuestion.id].answer_text === 'no' ? 'white' : 'rgba(255, 255, 255, 0.08)',
                 }"
                 @click="setYesNo(currentQuestion.id, 'no')"
               >{{ noOptionText }}</button>
@@ -305,7 +328,7 @@
                 :style="{
                   fontFamily: secondaryFont || currentFont,
                   color: answers[currentQuestion.id].answer_text === currentQuestion.originalChoices[idx] ? (backgroundColor || primaryColor) : 'white',
-                  background: answers[currentQuestion.id].answer_text === currentQuestion.originalChoices[idx] ? 'white' : 'transparent',
+                  background: answers[currentQuestion.id].answer_text === currentQuestion.originalChoices[idx] ? 'white' : 'rgba(255, 255, 255, 0.08)',
                 }"
                 @click="selectSingleChoice(currentQuestion.id, currentQuestion.originalChoices[idx])"
               >{{ display }}</button>
@@ -325,7 +348,7 @@
                 :style="{
                   fontFamily: secondaryFont || currentFont,
                   color: isChoiceSelected(currentQuestion.id, currentQuestion.originalChoices[idx]) ? (backgroundColor || primaryColor) : 'white',
-                  background: isChoiceSelected(currentQuestion.id, currentQuestion.originalChoices[idx]) ? 'white' : 'transparent',
+                  background: isChoiceSelected(currentQuestion.id, currentQuestion.originalChoices[idx]) ? 'white' : 'rgba(255, 255, 255, 0.08)',
                 }"
                 @click="toggleMultiChoice(currentQuestion.id, currentQuestion.originalChoices[idx])"
               >{{ display }}</button>
@@ -439,6 +462,7 @@ import type {
 import type { EventText } from '../../composables/useEventShowcase'
 import {
   translateRSVP,
+  toKhmerNumerals,
   type SupportedLanguage,
 } from '../../utils/translations'
 
@@ -492,6 +516,7 @@ const isEditing = ref(false)
 // ones when declining, questions when declining) are skipped.
 const currentStepIndex = ref(0)
 let successTimeout: ReturnType<typeof setTimeout> | null = null
+let autoAdvanceTimeout: ReturnType<typeof setTimeout> | null = null
 
 type WizardStepKind = 'status' | 'plus_ones' | 'question' | 'private_note'
 interface WizardStep {
@@ -630,18 +655,28 @@ const editResponseText = computed(() =>
   translateRSVP('rsvp_edit_response', currentLang.value),
 )
 
-const tableAssignedText = computed(() => {
-  if (!formState.value?.table) return ''
-  return translateRSVP('rsvp_table_assigned', currentLang.value).replace(
-    '{table}',
-    formState.value.table.name,
-  )
-})
+// Seat ticket (collapsed summary) — visible for attending/maybe responses
+// only; declined guests don't need their seat assignment.
+const showTableTicket = computed(
+  () =>
+    !!formState.value?.table &&
+    (rsvpStatus.value === 'attending' || rsvpStatus.value === 'maybe'),
+)
 
-const tableSeatText = computed(() => {
+const tableLabelText = computed(() =>
+  translateRSVP('rsvp_table_label', currentLang.value),
+)
+
+const seatLabelText = computed(() =>
+  translateRSVP('rsvp_seat_label', currentLang.value),
+)
+
+const tableNameDisplay = computed(() => formState.value?.table?.name ?? '')
+
+const seatNumberDisplay = computed(() => {
   const seat = formState.value?.table?.seat_number
   if (!seat) return ''
-  return translateRSVP('rsvp_table_seat', currentLang.value).replace('{seat}', seat)
+  return currentLang.value === 'kh' ? toKhmerNumerals(seat) : seat
 })
 
 const enterEditMode = () => {
@@ -709,17 +744,20 @@ const toggleMultiChoice = (questionId: number, choice: string) => {
 const selectSingleChoice = (questionId: number, choice: string) => {
   ensureAnswerSlot(questionId).answer_text = choice
   requiredMissingIds.value.delete(questionId)
+  queueAutoAdvance()
 }
 
 const setYesNo = (questionId: number, value: 'yes' | 'no') => {
   ensureAnswerSlot(questionId).answer_text = value
   requiredMissingIds.value.delete(questionId)
+  queueAutoAdvance()
 }
 
 const selectStatus = (status: GuestRsvpStatus) => {
   rsvpStatus.value = status
   requiredMissingIds.value.clear()
   errorMessage.value = ''
+  queueAutoAdvance()
 }
 
 // ---- Wizard navigation ---------------------------------------------------
@@ -800,7 +838,30 @@ const canProceed = computed(() => {
   }
 })
 
+// Auto-advance after single-tap selections (status, yes/no, single choice)
+// so the guest doesn't need an extra "Next" tap. Short delay keeps the
+// active state visible before the step transition; manual navigation
+// cancels any pending advance so taps never double-skip.
+const queueAutoAdvance = () => {
+  if (autoAdvanceTimeout) clearTimeout(autoAdvanceTimeout)
+  autoAdvanceTimeout = setTimeout(() => {
+    autoAdvanceTimeout = null
+    if (!isLastStep.value && canProceed.value) {
+      currentStepIndex.value++
+      errorMessage.value = ''
+    }
+  }, 350)
+}
+
+const cancelAutoAdvance = () => {
+  if (autoAdvanceTimeout) {
+    clearTimeout(autoAdvanceTimeout)
+    autoAdvanceTimeout = null
+  }
+}
+
 const goNext = () => {
+  cancelAutoAdvance()
   if (!canProceed.value) {
     // Flag the required question visually if the user tried to skip it.
     if (
@@ -817,6 +878,7 @@ const goNext = () => {
 }
 
 const goBack = () => {
+  cancelAutoAdvance()
   if (isFirstStep.value) return
   currentStepIndex.value--
   errorMessage.value = ''
@@ -1007,6 +1069,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (successTimeout) clearTimeout(successTimeout)
+  cancelAutoAdvance()
 })
 </script>
 
@@ -1063,32 +1126,66 @@ onBeforeUnmount(() => {
   line-height: 1.45;
 }
 
-/* Table seating badge */
-.table-badge {
+/* Seat info — hero of the completed state. No box: open typography with a
+   single hairline divider between the two stats, matching the line-based
+   framing of the date/location panel so it doesn't double-frame inside the
+   glass card. */
+.seat-ticket {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
+  align-items: stretch;
   align-self: center;
-  padding: 0.3rem 0.85rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  gap: 1.4rem;
+  padding: 0.1rem 0 0.15rem;
 }
 
-.table-dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
+.seat-ticket-divider {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(255, 255, 255, 0.3);
   flex-shrink: 0;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
 }
 
-.table-badge-text {
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: white;
+.seat-stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+  text-align: center;
+  min-width: 4rem;
+}
+
+/* Table-only layout: label and value sit on one baseline-aligned line. */
+.seat-stat-inline {
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.seat-stat-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.2;
   white-space: nowrap;
+}
+
+.seat-stat-value {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: white;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+/* Khmer glyphs render optically smaller and sit lower in their em-box —
+   give the numerals more size and breathing room. */
+.seat-stat-value.khmer-text-fix {
+  font-size: 1.3rem;
+  line-height: 1.35;
 }
 
 /* Loader + error */
@@ -1160,16 +1257,18 @@ onBeforeUnmount(() => {
 .wizard-progress {
   width: 100%;
   max-width: 14rem;
-  height: 2px;
+  height: 3px;
   margin: 0 auto 0.15rem;
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 999px;
   overflow: hidden;
 }
 
 .wizard-progress-fill {
   height: 100%;
-  background: white;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.75), white);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.45);
   transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1231,22 +1330,23 @@ onBeforeUnmount(() => {
 .status-option {
   padding: 0.42rem 1rem;
   border-radius: 999px;
-  border: 1.2px solid rgba(255, 255, 255, 0.5);
+  border: 1.2px solid rgba(255, 255, 255, 0.4);
   font-size: 0.76rem;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.2s ease, color 0.15s ease,
-    transform 0.12s ease;
+    transform 0.12s ease, box-shadow 0.2s ease;
   white-space: nowrap;
 }
 
 .status-option:hover:not(.active) {
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.16) !important;
   border-color: rgba(255, 255, 255, 0.85);
 }
 
 .status-option.active {
   border-color: white;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
 }
 
 .status-option:active {
@@ -1284,8 +1384,8 @@ onBeforeUnmount(() => {
   width: 1.55rem;
   height: 1.55rem;
   border-radius: 50%;
-  border: 1.2px solid rgba(255, 255, 255, 0.55);
-  background: transparent;
+  border: 1.2px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.08);
   color: white;
   cursor: pointer;
   display: flex;
@@ -1381,22 +1481,23 @@ onBeforeUnmount(() => {
 .chip {
   padding: 0.32rem 0.78rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   font-size: 0.73rem;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.2s ease,
-    transform 0.12s ease;
+    transform 0.12s ease, box-shadow 0.2s ease;
   white-space: nowrap;
 }
 
 .chip:hover:not(.active) {
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.16) !important;
   border-color: rgba(255, 255, 255, 0.85);
 }
 
 .chip.active {
   border-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
 }
 
 .chip:active {
@@ -1502,7 +1603,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.6rem;
   animation: summary-fade-in 0.3s ease-out;
 }
 
@@ -1545,6 +1646,22 @@ onBeforeUnmount(() => {
 
 .edit-btn svg {
   opacity: 0.85;
+}
+
+/* Keyboard focus — visible ring on all interactive controls */
+.status-option:focus-visible,
+.chip:focus-visible,
+.stepper-btn:focus-visible,
+.nav-btn:focus-visible,
+.edit-btn:focus-visible,
+.link-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 2px;
+}
+
+.line-input:focus-visible,
+.line-textarea:focus-visible {
+  outline: none;
 }
 
 /* Mobile */
@@ -1682,7 +1799,7 @@ onBeforeUnmount(() => {
   }
 
   .rsvp-summary {
-    gap: 0.2rem;
+    gap: 0.45rem;
   }
 
   .edit-btn {
@@ -1695,6 +1812,33 @@ onBeforeUnmount(() => {
   .edit-btn svg {
     width: 8px;
     height: 8px;
+  }
+
+  .seat-ticket {
+    gap: 1rem;
+    padding: 0.05rem 0 0.1rem;
+  }
+
+  .seat-stat {
+    min-width: 3rem;
+    gap: 0.18rem;
+  }
+
+  .seat-stat-inline {
+    min-width: 0;
+    gap: 0.35rem;
+  }
+
+  .seat-stat-label {
+    font-size: 0.48rem;
+  }
+
+  .seat-stat-value {
+    font-size: 0.8rem;
+  }
+
+  .seat-stat-value.khmer-text-fix {
+    font-size: 0.95rem;
   }
 }
 </style>

@@ -129,7 +129,10 @@
           v-for="(label, i) in calendarWeekdayLabels"
           :key="`cal-wd-${i}`"
           class="calendar-weekday"
-          :style="{ fontFamily: secondaryFont || currentFont }"
+          :style="{
+            fontFamily: secondaryFont || currentFont,
+            animationDelay: `${calendarTiming.weekdayBase + i * 0.04}s`,
+          }"
         >{{ label }}</div>
 
         <div
@@ -137,7 +140,7 @@
           :key="`cal-day-${i}`"
           class="calendar-day"
           :class="{ 'is-event': cell.isEvent, 'is-blank': cell.day === null }"
-          :style="{ fontFamily: secondaryFont || currentFont }"
+          :style="calendarCellStyle(cell, i)"
         >
           <span class="calendar-day-num">{{ cell.label }}</span>
           <svg
@@ -151,6 +154,7 @@
               stroke="currentColor"
               stroke-width="2"
               stroke-linecap="round"
+              pathLength="100"
               d="M32 50C18 44 6 36 6 24 6 14 14 8 22 10c5 1.3 8 5 10 9 2-4 5-7.7 10-9 8-2 16 4 16 14 0 12-12 20-26 26z"
             />
           </svg>
@@ -320,7 +324,6 @@ import {
 } from '../../utils/translations'
 import {
   splitToWords,
-  splitToLines,
   ANIMATION_CONSTANTS,
   getTextAnimationDuration,
 } from '@/composables/showcase/useHostInfoUtils'
@@ -572,6 +575,36 @@ const animationDelays = computed(() => {
   return { title, description, date, card, map, countdown, divider, rsvp }
 })
 
+// Calendar design animation timeline, all offset from the card's own bounce-in:
+// weekday labels fade in first, then day cells cascade in with a small per-cell
+// stagger, then the heart draws itself around the event day, then starts a slow
+// heartbeat pulse once fully drawn (draw animation runs 1.1s).
+const calendarTiming = computed(() => {
+  const cardIn = animationDelays.value.date
+  const weekdayBase = cardIn + 0.2
+  const cellBase = cardIn + 0.4
+  const cellStep = 0.012
+  const drawDelay = cellBase + calendarModel.value.cells.length * cellStep + 0.15
+  const pulseDelay = drawDelay + 1.2
+  return { weekdayBase, cellBase, cellStep, drawDelay, pulseDelay }
+})
+
+// Per-cell inline style: staggered reveal delay for every day, plus the heart
+// draw/pulse delays as CSS vars on the event cell (inherited by the ring SVG
+// and the day number so their delayed animations stay in sync).
+const calendarCellStyle = (cell: CalendarCell, index: number): Record<string, string> => {
+  const t = calendarTiming.value
+  const style: Record<string, string> = {
+    fontFamily: props.secondaryFont || props.currentFont,
+    animationDelay: `${t.cellBase + index * t.cellStep}s`,
+  }
+  if (cell.isEvent) {
+    style['--heart-draw-delay'] = `${t.drawDelay}s`
+    style['--heart-pulse-delay'] = `${t.pulseDelay}s`
+  }
+  return style
+}
+
 // Countdown logic
 const countdown = props.eventStartDate ? useCountdown(props.eventStartDate) : null
 
@@ -593,15 +626,6 @@ const capitalizedDescription = computed(() => {
   if (text.length === 0) return ''
   return text.charAt(0).toUpperCase() + text.slice(1)
 })
-
-// Helper to get global word index across lines for animation delay
-const getGlobalWordIndex = (lines: string[][], lineIndex: number, wordIndex: number): number => {
-  let count = 0
-  for (let i = 0; i < lineIndex; i++) {
-    count += lines[i].length
-  }
-  return count + wordIndex
-}
 
 // Countdown header and labels
 const countdownHeader = computed(() => {
@@ -753,6 +777,21 @@ const countdownNumberFont = computed(() =>
   line-height: 1.1;
   text-align: center;
   margin-bottom: 0.85rem;
+  /* Flanking hairlines beside the month name — invitation-header treatment
+     matching the card's 1px line-based frame. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.calendar-heading::before,
+.calendar-heading::after {
+  content: '';
+  flex: 1;
+  max-width: 3.5rem;
+  height: 1px;
+  background: color-mix(in srgb, currentColor 45%, transparent);
 }
 
 .calendar-grid {
@@ -768,8 +807,23 @@ const countdownNumberFont = computed(() =>
   letter-spacing: 0.04em;
   text-transform: uppercase;
   text-align: center;
-  opacity: 0.85;
   padding-bottom: 0.35rem;
+  opacity: 0;
+}
+
+.animate-active .calendar-weekday {
+  animation: calendarFadeIn 0.4s ease-out forwards;
+}
+
+@keyframes calendarFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 0.85;
+    transform: translateY(0);
+  }
 }
 
 .calendar-day {
@@ -780,6 +834,22 @@ const countdownNumberFont = computed(() =>
   aspect-ratio: 7 / 6;
   font-size: 0.9rem;
   line-height: 1;
+  opacity: 0;
+}
+
+.animate-active .calendar-day {
+  animation: calendarDayIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes calendarDayIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .calendar-day.is-blank {
@@ -792,21 +862,80 @@ const countdownNumberFont = computed(() =>
 }
 
 /* Hand-drawn-style heart ring drawn around the event day. Slightly larger than
-   the cell so it reads as circling the number, matched to the accent color. */
+   the cell so it reads as circling the number, with a slight tilt for a
+   sketched-by-hand feel. Once revealed it settles into a slow heartbeat pulse
+   (delay set via --heart-pulse-delay on the event cell). */
 .calendar-day-ring {
   position: absolute;
   left: 50%;
   top: 50%;
   width: 150%;
   height: 150%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) rotate(-5deg);
   pointer-events: none;
   color: #b3261e; /* warm red, reminiscent of the reference image's hand-drawn heart */
   opacity: 0.9;
 }
 
+.animate-active .calendar-day-ring {
+  animation: heartBeat 2.6s ease-in-out infinite;
+  animation-delay: var(--heart-pulse-delay, 0s);
+}
+
+/* Double-thump then rest, like a heartbeat. Keyframes restate the base
+   translate/rotate since transform can't be partially animated. */
+@keyframes heartBeat {
+  0%,
+  40%,
+  100% {
+    transform: translate(-50%, -50%) rotate(-5deg) scale(1);
+  }
+  10% {
+    transform: translate(-50%, -50%) rotate(-5deg) scale(1.12);
+  }
+  20% {
+    transform: translate(-50%, -50%) rotate(-5deg) scale(1);
+  }
+  30% {
+    transform: translate(-50%, -50%) rotate(-5deg) scale(1.07);
+  }
+}
+
+/* Draw-on effect: the path declares pathLength="100" so dash values are
+   unit-independent; animating dashoffset 100 → 0 traces the heart like a pen
+   circling the date, starting after the day cells finish cascading in. */
+.calendar-day-ring path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+
+.animate-active .calendar-day-ring path {
+  animation: heartDraw 1.1s ease-in-out forwards;
+  animation-delay: var(--heart-draw-delay, 0s);
+}
+
+@keyframes heartDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 .calendar-day.is-event .calendar-day-num {
   font-weight: 700;
+}
+
+/* Once the heart is drawn, tint the event day number to match it so the
+   date reads as a single marked unit. Fires as the draw completes (pulse
+   delay = draw delay + draw duration). */
+.animate-active .calendar-day.is-event .calendar-day-num {
+  animation: eventDayTint 0.6s ease-out forwards;
+  animation-delay: var(--heart-pulse-delay, 0s);
+}
+
+@keyframes eventDayTint {
+  to {
+    color: #b3261e;
+  }
 }
 
 /* Location header for the calendar design — sits inside the glass map card,
@@ -1062,11 +1191,15 @@ const countdownNumberFont = computed(() =>
 }
 
 .divider-line {
-  width: 60%;
-  max-width: 200px;
+  width: 70%;
+  max-width: 220px;
   height: 1px;
-  background: white;
-  opacity: 0.3;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.55),
+    transparent
+  );
 }
 
 /* Khmer text fix now defined globally in src/assets/main.css */
@@ -1623,6 +1756,31 @@ const countdownNumberFont = computed(() =>
     animation: none;
     opacity: 1;
     transform: none;
+  }
+
+  .calendar-day,
+  .animate-active .calendar-day,
+  .animate-active .calendar-day-ring {
+    animation: none;
+    opacity: 1;
+  }
+
+  .calendar-weekday,
+  .animate-active .calendar-weekday {
+    animation: none;
+    opacity: 0.85;
+  }
+
+  /* Show the heart fully drawn and the day number already tinted. */
+  .calendar-day-ring path,
+  .animate-active .calendar-day-ring path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .animate-active .calendar-day.is-event .calendar-day-num {
+    animation: none;
+    color: #b3261e;
   }
 }
 </style>
