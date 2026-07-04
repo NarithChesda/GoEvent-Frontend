@@ -1966,6 +1966,9 @@
     "title": "ការវិភាគ RSVP",
     "subtitle": "តាមដានការឆ្លើយតប និងមើលរបៀបដែលភ្ញៀវឆ្លើយសំណួរផ្ទាល់ខ្លួន",
     "loading": "កំពុងផ្ទុកការវិភាគ RSVP...",
+    "refresh": "ផ្ទុកការវិភាគឡើងវិញ",
+    "showLess": "បង្ហាញតិច",
+    "showAll": "បង្ហាញទាំងអស់ {count}",
     "empty": {
       "title": "មិនទាន់មានទិន្នន័យ RSVP ទេ",
       "description": "នៅពេលអ្នកអញ្ជើញភ្ញៀវ ការឆ្លើយតបរបស់ពួកគេនឹងបង្ហាញនៅទីនេះ។"
@@ -1980,6 +1983,10 @@
       "invitedDesc": "ភ្ញៀវសរុបដែលបានអញ្ជើញ",
       "responded": "បានឆ្លើយតប",
       "respondedDesc": "{percent}% នៃអ្នកដែលបានអញ្ជើញ",
+      "responseRate": "អត្រាឆ្លើយតប",
+      "responseRateDesc": "{responded} នៃភ្ញៀវ {invited} នាក់ដែលបានអញ្ជើញ បានឆ្លើយតប",
+      "going": "ចូលរួម",
+      "goingDesc": "{percent}% នៃអ្នកដែលបានអញ្ជើញ",
       "expected": "រំពឹងទុក",
       "expectedDesc": "ចូលរួម {attending} នាក់ + ភ្ញៀវបន្ថែម {plusOnes} នាក់",
       "pending": "មិនទាន់ឆ្លើយ",
@@ -2010,7 +2017,7 @@
       "title": "ការបែងចែកតាមសំណួរ",
       "description": "ចុចលើសំណួរ ដើម្បីមើលថាអ្នកណាបានឆ្លើយអ្វី។",
       "answersCount": "ចម្លើយ {count}",
-      "freeTextCollected": "បានប្រមូលចម្លើយជាអក្សរ {count}",
+      "moreOptions": "ជម្រើស {count} ផ្សេងទៀត",
       "noAnswers": "មិនទាន់មានចម្លើយទេ",
       "choicePercent": "{percent}% នៃអ្នកឆ្លើយ",
       "emptyState": {
@@ -2021,6 +2028,8 @@
     "drill": {
       "loading": "កំពុងផ្ទុកការឆ្លើយតប…",
       "loadError": "មិនអាចផ្ទុកការឆ្លើយតបសម្រាប់សំណួរនេះបានទេ។",
+      "filterAll": "ទាំងអស់",
+      "filterHint": "ត្រងព័ត៌មានលម្អិតតាមស្ថានភាព RSVP",
       "guestsCount": "ភ្ញៀវ {count} នាក់",
       "noFreeText": "មិនទាន់មានចម្លើយជាអក្សរទេ។",
       "missingTitle": "នៅរង់ចាំចម្លើយ",

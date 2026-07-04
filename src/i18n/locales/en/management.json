@@ -1966,6 +1966,9 @@
     "title": "RSVP Analytics",
     "subtitle": "Track responses and see how guests answered your custom questions",
     "loading": "Loading RSVP analytics...",
+    "refresh": "Refresh analytics",
+    "showLess": "Show less",
+    "showAll": "Show all {count}",
     "empty": {
       "title": "No RSVP data yet",
       "description": "Once you invite guests, their responses will show up here."
@@ -1980,6 +1983,10 @@
       "invitedDesc": "Total guests invited",
       "responded": "Responded",
       "respondedDesc": "{percent}% of invited",
+      "responseRate": "Response rate",
+      "responseRateDesc": "{responded} of {invited} invited guests replied",
+      "going": "Going",
+      "goingDesc": "{percent}% of invited",
       "expected": "Expected",
       "expectedDesc": "{attending} attending + {plusOnes} plus-ones",
       "pending": "Pending",
@@ -2010,7 +2017,7 @@
       "title": "Custom question breakdowns",
       "description": "Click a question to see who answered what.",
       "answersCount": "{count} answer | {count} answers",
-      "freeTextCollected": "Collected {count} free-text response | Collected {count} free-text responses",
+      "moreOptions": "+{count} more option | +{count} more options",
       "noAnswers": "No answers yet",
       "choicePercent": "{percent}% of respondents",
       "emptyState": {
@@ -2021,6 +2028,8 @@
     "drill": {
       "loading": "Loading responses…",
       "loadError": "Couldn't load responses for this question.",
+      "filterAll": "All",
+      "filterHint": "Filter response details by RSVP status",
       "guestsCount": "{count} guest | {count} guests",
       "noFreeText": "No free-text answers submitted yet.",
       "missingTitle": "Still expected to answer",
