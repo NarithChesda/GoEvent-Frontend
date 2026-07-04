@@ -63,6 +63,12 @@ const PARTICLE_SHAPES: Record<Exclude<FallingEffectType, 'none'>, ParticleShape>
     viewBox: '0 0 32 32',
     opacity: 0.7,
   },
+  // Japanese maple (momiji): 7 slender pointed lobes with concave sides + stem
+  maple: {
+    path: 'M16 1Q17.2 7.8 17.7 10.7Q19.6 9.2 24.2 4.7Q21.4 10.5 20.5 12.7Q22.4 12.9 28.4 12Q23.1 14.8 21.6 16.1Q24.6 17.7 26.3 19.8Q20.3 19.4 17 18.8L16.4 25.5 15.6 25.5 15 18.8Q11.7 19.4 5.7 19.8Q7.4 17.7 10.4 16.1Q8.9 14.8 3.6 12Q9.6 12.9 11.5 12.7Q10.6 10.5 7.8 4.7Q12.4 9.2 14.3 10.7Q14.8 7.8 16 1z',
+    viewBox: '0 0 32 32',
+    opacity: 0.75,
+  },
   hearts: {
     path: 'M16 29C16 29 2 20.5 2 11.2 2 6.6 5.7 3 10.1 3c2.7 0 5.1 1.4 5.9 3.4C16.8 4.4 19.2 3 21.9 3 26.3 3 30 6.6 30 11.2 30 20.5 16 29 16 29z',
     viewBox: '0 0 32 32',
@@ -129,6 +135,16 @@ const MOTION_PROFILES: Record<Exclude<FallingEffectType, 'none'>, MotionProfile>
     fallSpeed: 1.1,
     sizeScale: 1.1,
     hueJitter: 14,
+  },
+  maple: {
+    sway: [45, 100],
+    swayCycles: [1.5, 3],
+    rotateMode: 'spin',
+    rotate: [200, 560],
+    tumble: 60,
+    fallSpeed: 1.05,
+    sizeScale: 1.05,
+    hueJitter: 12,
   },
   hearts: {
     sway: [25, 60],

@@ -187,6 +187,7 @@ export type FallingEffectType =
   | 'snowflakes'
   | 'stars'
   | 'leaves'
+  | 'maple'
   | 'hearts'
   | 'none'
 
