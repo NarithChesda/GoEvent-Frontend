@@ -61,7 +61,7 @@
     <!-- Content -->
     <div v-else class="space-y-3 sm:space-y-4">
       <!-- Language Tabs -->
-      <div class="bg-white rounded-xl sm:rounded-2xl border border-gray-200 overflow-hidden">
+      <div class="bg-white rounded-xl sm:rounded-2xl border border-slate-200 overflow-hidden">
         <div class="border-b border-slate-200 bg-slate-50/50" role="tablist" :aria-label="t('management.eventTextTab.content.languageTabsLabel')">
           <div class="flex overflow-x-auto scrollbar-hide">
             <button

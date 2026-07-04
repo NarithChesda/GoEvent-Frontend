@@ -3,7 +3,7 @@
     <div class="max-w-md text-center px-8">
       <AlertTriangle class="w-16 h-16 text-red-500 mx-auto mb-4" />
       <h1 class="text-2xl font-bold text-white mb-2">{{ title }}</h1>
-      <p class="text-gray-300">{{ message }}</p>
+      <p class="text-slate-300">{{ message }}</p>
       <button
         v-if="showRetry"
         @click="$emit('retry')"

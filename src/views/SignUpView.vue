@@ -133,7 +133,7 @@
                     v-for="i in 4"
                     :key="i"
                     class="w-2 h-2 rounded-full"
-                    :class="passwordStrength >= i ? 'bg-green-500' : 'bg-gray-200'"
+                    :class="passwordStrength >= i ? 'bg-green-500' : 'bg-slate-200'"
                   ></div>
                 </div>
                 <span class="text-slate-500">{{ passwordStrengthText }}</span>

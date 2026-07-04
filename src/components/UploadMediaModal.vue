@@ -51,7 +51,7 @@
                     'relative border-2 border-dashed rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 text-center transition-colors duration-200',
                     isDragging
                       ? 'border-[#4fa3d9] bg-[#E6F4FF]'
-                      : 'border-gray-300 hover:border-gray-400',
+                      : 'border-slate-300 hover:border-slate-400',
                   ]"
                 >
                   <input
@@ -99,10 +99,10 @@
                     <div
                       v-for="(file, index) in selectedFiles"
                       :key="index"
-                      class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl"
+                      class="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl"
                     >
                       <!-- Preview Thumbnail -->
-                      <div class="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden shrink-0">
+                      <div class="w-12 h-12 bg-slate-200 rounded-lg overflow-hidden shrink-0">
                         <img
                           v-if="file.preview"
                           :src="file.preview"
@@ -110,7 +110,7 @@
                           class="w-full h-full object-cover"
                         />
                         <div v-else class="w-full h-full flex items-center justify-center">
-                          <ImageIcon class="w-5 h-5 text-gray-400" />
+                          <ImageIcon class="w-5 h-5 text-slate-400" />
                         </div>
                       </div>
 
@@ -192,7 +192,7 @@
                     </p>
                     <p class="text-sm text-slate-500">{{ Math.round(uploadProgress) }}%</p>
                   </div>
-                  <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                  <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
                     <div
                       class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] h-2 rounded-full transition-all duration-300"
                       :style="{ width: `${uploadProgress}%` }"

@@ -3,7 +3,7 @@
     <div class="flex items-start justify-between gap-4">
       <div class="flex-1">
         <div class="flex items-center gap-3 flex-wrap">
-          <h2 class="text-xl font-semibold text-gray-900">
+          <h2 class="text-xl font-semibold text-slate-900">
             {{ mode === 'create' ? t('settings.vendor.form.createTitle') : t('settings.vendor.form.editTitle') }}
           </h2>
           <!-- Verification Status Badge -->
@@ -44,18 +44,18 @@
             {{ t('settings.vendor.form.featured') }}
           </span>
         </div>
-        <p class="text-sm text-gray-500 mt-1">
+        <p class="text-sm text-slate-500 mt-1">
           {{ mode === 'create' ? t('settings.vendor.form.createSubtitle') : t('settings.vendor.form.editSubtitle') }}
         </p>
         <!-- Listings Count (minimalist stat) -->
-        <p v-if="mode === 'edit' && vendorProfile?.listings_count" class="text-xs text-gray-400 mt-1">
+        <p v-if="mode === 'edit' && vendorProfile?.listings_count" class="text-xs text-slate-400 mt-1">
           {{ t('settings.vendor.form.listingCount', { n: vendorProfile.listings_count }, vendorProfile.listings_count) }}
         </p>
       </div>
       <button
         v-if="mode === 'create'"
         @click="$emit('cancel')"
-        class="text-gray-500 hover:text-gray-700 transition-colors flex-shrink-0"
+        class="text-slate-500 hover:text-slate-700 transition-colors flex-shrink-0"
       >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -87,78 +87,78 @@
         <div class="lg:col-span-2 space-y-6">
           <!-- Business Name -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label class="block text-sm font-medium text-slate-700 mb-2">
               {{ t('settings.vendor.form.businessName') }} <span class="text-red-500">*</span>
             </label>
             <input
               v-model="localForm.business_name"
               type="text"
               required
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
               :placeholder="t('settings.vendor.form.businessNamePlaceholder')"
             />
           </div>
 
           <!-- Short Tagline -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.tagline') }}</label>
+            <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.tagline') }}</label>
             <input
               v-model="localForm.short_tagline"
               type="text"
               maxlength="100"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
               :placeholder="t('settings.vendor.form.taglinePlaceholder')"
             />
-            <p class="mt-1 text-xs text-gray-500">{{ t('settings.vendor.form.taglineCount', { count: localForm.short_tagline?.length || 0 }) }}</p>
+            <p class="mt-1 text-xs text-slate-500">{{ t('settings.vendor.form.taglineCount', { count: localForm.short_tagline?.length || 0 }) }}</p>
           </div>
 
           <!-- Description -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.description') }}</label>
+            <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.description') }}</label>
             <textarea
               v-model="localForm.description"
               rows="4"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none bg-white"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none bg-white"
               :placeholder="t('settings.vendor.form.descriptionPlaceholder')"
             ></textarea>
           </div>
 
           <!-- Contact Information Section -->
-          <div class="border-t border-gray-200 pt-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">{{ t('settings.vendor.form.contactSection') }}</h3>
+          <div class="border-t border-slate-200 pt-6">
+            <h3 class="text-lg font-medium text-slate-900 mb-4">{{ t('settings.vendor.form.contactSection') }}</h3>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <!-- Email -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.businessEmail') }}</label>
+                <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.businessEmail') }}</label>
                 <input
                   v-model="localForm.email"
                   type="email"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
                   :placeholder="t('settings.vendor.form.emailPlaceholder')"
                 />
               </div>
 
               <!-- Phone -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.phone') }}</label>
+                <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.phone') }}</label>
                 <input
                   v-model="localForm.phone"
                   type="tel"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
                   :placeholder="t('settings.vendor.form.phonePlaceholder')"
                 />
               </div>
 
               <!-- Telegram Username -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.telegramUsername') }}</label>
+                <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.telegramUsername') }}</label>
                 <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">@</span>
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">@</span>
                   <input
                     v-model="localForm.telegram_username"
                     type="text"
-                    class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
+                    class="w-full pl-8 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
                     :placeholder="t('settings.vendor.form.telegramPlaceholder')"
                   />
                 </div>
@@ -166,11 +166,11 @@
 
               <!-- Website -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.website') }}</label>
+                <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.website') }}</label>
                 <input
                   v-model="localForm.website"
                   type="url"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
                   :placeholder="t('settings.vendor.form.websitePlaceholder')"
                 />
               </div>
@@ -178,17 +178,17 @@
           </div>
 
           <!-- Location Section -->
-          <div class="border-t border-gray-200 pt-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">{{ t('settings.vendor.form.locationSection') }}</h3>
+          <div class="border-t border-slate-200 pt-6">
+            <h3 class="text-lg font-medium text-slate-900 mb-4">{{ t('settings.vendor.form.locationSection') }}</h3>
 
             <div class="space-y-4">
               <!-- Address -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.address') }}</label>
+                <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.address') }}</label>
                 <input
                   v-model="localForm.address"
                   type="text"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
                   :placeholder="t('settings.vendor.form.addressPlaceholder')"
                 />
               </div>
@@ -196,22 +196,22 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <!-- City -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.city') }}</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.city') }}</label>
                   <input
                     v-model="localForm.city"
                     type="text"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
                     :placeholder="t('settings.vendor.form.cityPlaceholder')"
                   />
                 </div>
 
                 <!-- Country -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.vendor.form.country') }}</label>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.country') }}</label>
                   <input
                     v-model="localForm.country"
                     type="text"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
                     :placeholder="t('settings.vendor.form.countryPlaceholder')"
                   />
                 </div>
@@ -225,11 +225,11 @@
           <div class="sticky top-8 space-y-8">
             <!-- Logo Upload -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-3 text-center">{{ t('settings.vendor.form.businessLogo') }}</label>
+              <label class="block text-sm font-medium text-slate-700 mb-3 text-center">{{ t('settings.vendor.form.businessLogo') }}</label>
               <div class="relative w-32 h-32 mx-auto mb-4">
                 <div
                   v-if="logoUrl"
-                  class="w-32 h-32 rounded-xl overflow-hidden bg-gray-100 border-2 border-gray-300 shadow-lg"
+                  class="w-32 h-32 rounded-xl overflow-hidden bg-slate-100 border-2 border-slate-300 shadow-lg"
                 >
                   <img
                     :src="logoUrl"
@@ -240,7 +240,7 @@
                 </div>
                 <div
                   v-else
-                  class="w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-gray-400 border-2 border-dashed border-gray-300"
+                  class="w-32 h-32 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center text-slate-400 border-2 border-dashed border-slate-300"
                 >
                   <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -252,14 +252,14 @@
                   type="button"
                   @click="triggerLogoUpload"
                   :disabled="isSaving"
-                  class="absolute bottom-0 right-0 w-10 h-10 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 rounded-full flex items-center justify-center text-white shadow-lg transition-colors"
+                  class="absolute bottom-0 right-0 w-10 h-10 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 rounded-full flex items-center justify-center text-white shadow-lg transition-colors"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
                   </svg>
                 </button>
               </div>
-              <p class="text-xs text-gray-500 text-center">{{ t('settings.vendor.form.logoHint') }}</p>
+              <p class="text-xs text-slate-500 text-center">{{ t('settings.vendor.form.logoHint') }}</p>
 
               <input
                 ref="logoInputRef"
@@ -272,11 +272,11 @@
 
             <!-- Cover Image Upload -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-3 text-center">{{ t('settings.vendor.form.coverImage') }}</label>
+              <label class="block text-sm font-medium text-slate-700 mb-3 text-center">{{ t('settings.vendor.form.coverImage') }}</label>
               <div class="relative w-full aspect-video mx-auto mb-4">
                 <div
                   v-if="coverImageUrl"
-                  class="w-full h-full rounded-xl overflow-hidden bg-gray-100 border-2 border-gray-300 shadow-lg"
+                  class="w-full h-full rounded-xl overflow-hidden bg-slate-100 border-2 border-slate-300 shadow-lg"
                 >
                   <img
                     :src="coverImageUrl"
@@ -287,7 +287,7 @@
                 </div>
                 <div
                   v-else
-                  class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-gray-400 border-2 border-dashed border-gray-300"
+                  class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center text-slate-400 border-2 border-dashed border-slate-300"
                 >
                   <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -299,14 +299,14 @@
                   type="button"
                   @click="triggerCoverUpload"
                   :disabled="isSaving"
-                  class="absolute bottom-2 right-2 w-10 h-10 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 rounded-full flex items-center justify-center text-white shadow-lg transition-colors"
+                  class="absolute bottom-2 right-2 w-10 h-10 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 rounded-full flex items-center justify-center text-white shadow-lg transition-colors"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
                   </svg>
                 </button>
               </div>
-              <p class="text-xs text-gray-500 text-center">{{ t('settings.vendor.form.coverHint') }}</p>
+              <p class="text-xs text-slate-500 text-center">{{ t('settings.vendor.form.coverHint') }}</p>
 
               <input
                 ref="coverInputRef"
@@ -322,13 +322,13 @@
 
       <!-- Submit Buttons -->
       <div :class="[
-        'flex items-center pt-6 border-t border-gray-200',
+        'flex items-center pt-6 border-t border-slate-200',
         mode === 'create' ? 'justify-between' : 'justify-start'
       ]">
         <button
           type="submit"
           :disabled="isSaving || !isFormValid"
-          class="px-6 py-2.5 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow flex items-center gap-2"
+          class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow flex items-center gap-2"
         >
           <svg v-if="isSaving" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -344,7 +344,7 @@
           v-if="mode === 'create'"
           type="button"
           @click="$emit('cancel')"
-          class="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium transition-colors"
+          class="px-4 py-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
         >
           {{ t('settings.vendor.form.cancel') }}
         </button>

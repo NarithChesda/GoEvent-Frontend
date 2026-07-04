@@ -90,17 +90,17 @@
         </div>
       </div>
 
-      <div class="mt-6 sm:mt-7 md:mt-8 pt-6 sm:pt-7 md:pt-8 border-t border-gray-200">
+      <div class="mt-6 sm:mt-7 md:mt-8 pt-6 sm:pt-7 md:pt-8 border-t border-slate-200">
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
-          <p class="text-xs sm:text-sm text-gray-500 text-center sm:text-left">© {{ currentYear }} GoEvent. All rights reserved.</p>
+          <p class="text-xs sm:text-sm text-slate-500 text-center sm:text-left">© {{ currentYear }} GoEvent. All rights reserved.</p>
           <div class="flex flex-wrap justify-center sm:justify-end gap-4 sm:gap-5 md:gap-6">
-            <a href="#" class="text-xs sm:text-sm text-gray-500 hover:text-[#1e90ff] transition-colors duration-200 whitespace-nowrap"
+            <a href="#" class="text-xs sm:text-sm text-slate-500 hover:text-[#1e90ff] transition-colors duration-200 whitespace-nowrap"
               >Terms of Service</a
             >
-            <a href="#" class="text-xs sm:text-sm text-gray-500 hover:text-[#1e90ff] transition-colors duration-200 whitespace-nowrap"
+            <a href="#" class="text-xs sm:text-sm text-slate-500 hover:text-[#1e90ff] transition-colors duration-200 whitespace-nowrap"
               >Privacy Policy</a
             >
-            <a href="#" class="text-xs sm:text-sm text-gray-500 hover:text-[#1e90ff] transition-colors duration-200 whitespace-nowrap"
+            <a href="#" class="text-xs sm:text-sm text-slate-500 hover:text-[#1e90ff] transition-colors duration-200 whitespace-nowrap"
               >Cookie Policy</a
             >
           </div>

@@ -152,7 +152,7 @@
           @dragstart="handleDragStart($event, paymentMethod, index)"
           @dragend="handleDragEnd"
           @dragover="handleDragOver($event, index)"
-          class="payment-method-card bg-white rounded-xl sm:rounded-2xl border border-gray-200 p-3 sm:p-4 hover:shadow-md transition-all duration-200"
+          class="payment-method-card bg-white rounded-xl sm:rounded-2xl border border-slate-200 p-3 sm:p-4 hover:shadow-md transition-all duration-200"
           :class="{
             'cursor-grab': canEditPayments,
             'cursor-grabbing': isDragging,
@@ -166,7 +166,7 @@
             <div class="flex-1">
               <div class="flex items-center space-x-3">
                 <!-- Drag Handle -->
-                <div v-if="canEditPayments" class="flex items-center text-gray-400 hover:text-gray-600">
+                <div v-if="canEditPayments" class="flex items-center text-slate-400 hover:text-slate-600">
                   <GripVertical class="w-4 h-4" />
                 </div>
 
@@ -194,7 +194,7 @@
                     </span>
                     <span
                       v-if="!paymentMethod.is_active"
-                      class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium whitespace-nowrap"
+                      class="px-2 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium whitespace-nowrap"
                     >
                       {{ t('management.paymentMethods.card.inactive') }}
                     </span>
@@ -240,7 +240,7 @@
                       </span>
                       <span
                         v-if="!paymentMethod.qr_code_image && !paymentMethod.payment_url"
-                        class="inline-flex items-center px-2 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs"
+                        class="inline-flex items-center px-2 py-1 bg-slate-50 text-slate-600 rounded-lg text-xs"
                       >
                         <Building2 class="w-3 h-3 mr-1" />
                         {{ t('management.paymentMethods.card.manualTransferOnly') }}
@@ -341,7 +341,7 @@
                 </span>
                 <span
                   v-if="!paymentMethod.is_active"
-                  class="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-full text-[10px] font-medium whitespace-nowrap"
+                  class="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-medium whitespace-nowrap"
                 >
                   Inactive
                 </span>
@@ -385,7 +385,7 @@
                     </span>
                     <span
                       v-if="!paymentMethod.qr_code_image && !paymentMethod.payment_url"
-                      class="inline-flex items-center px-1.5 py-0.5 bg-gray-50 text-gray-600 rounded text-[10px]"
+                      class="inline-flex items-center px-1.5 py-0.5 bg-slate-50 text-slate-600 rounded text-[10px]"
                     >
                       <Building2 class="w-2.5 h-2.5 mr-0.5" />
                       Manual Transfer Only
@@ -412,7 +412,7 @@
             </div>
 
             <!-- Mobile Actions Bar -->
-            <div v-if="props.canEdit" class="mt-3 pt-3 border-t border-gray-100">
+            <div v-if="props.canEdit" class="mt-3 pt-3 border-t border-slate-100">
               <div class="flex items-center justify-center gap-1">
                 <!-- QR Code Preview -->
                 <button
@@ -516,7 +516,7 @@
                 </h3>
                 <button
                   @click="showQRModal = false"
-                  class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                  class="text-slate-400 hover:text-slate-600 transition-colors duration-200"
                 >
                   <X class="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
@@ -526,7 +526,7 @@
                   v-if="previewingPaymentMethod?.qr_code_image"
                   :src="getMediaUrl(previewingPaymentMethod.qr_code_image)"
                   :alt="previewingPaymentMethod.name + ' QR Code'"
-                  class="w-full max-w-sm mx-auto rounded-lg sm:rounded-xl border border-gray-200"
+                  class="w-full max-w-sm mx-auto rounded-lg sm:rounded-xl border border-slate-200"
                 />
               </div>
             </div>
@@ -566,7 +566,7 @@
                 </div>
                 <button
                   @click="showLockHelpModal = false"
-                  class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                  class="text-slate-400 hover:text-slate-600 transition-colors duration-200"
                 >
                   <X class="w-5 h-5" />
                 </button>
@@ -675,7 +675,7 @@
                 </div>
                 <button
                   @click="showLockConfirmModal = false"
-                  class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                  class="text-slate-400 hover:text-slate-600 transition-colors duration-200"
                 >
                   <X class="w-5 h-5" />
                 </button>
@@ -845,7 +845,7 @@ const getPaymentMethodIconBg = (method: string) => {
     case 'payment_url':
       return 'bg-green-100'
     default:
-      return 'bg-gray-100'
+      return 'bg-slate-100'
   }
 }
 
@@ -858,7 +858,7 @@ const getPaymentMethodIconColor = (method: string) => {
     case 'payment_url':
       return 'text-green-600'
     default:
-      return 'text-gray-600'
+      return 'text-slate-600'
   }
 }
 
@@ -873,7 +873,7 @@ const getPaymentTypeStyle = (type: string) => {
     case 'sponsorship':
       return 'bg-[#B0E0E6] text-[#1873cc]'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-slate-100 text-slate-800'
   }
 }
 

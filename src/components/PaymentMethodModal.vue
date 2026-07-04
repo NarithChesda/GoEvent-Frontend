@@ -163,7 +163,7 @@
                           <input
                             v-model="formData.is_active"
                             type="checkbox"
-                            class="w-4 h-4 text-[#1e90ff] border-gray-300 rounded focus:ring-[#1e90ff]"
+                            class="w-4 h-4 text-[#1e90ff] border-slate-300 rounded focus:ring-[#1e90ff]"
                           />
                           <span class="ml-2 text-sm font-medium text-slate-700">{{ t('management.paymentMethods.modal.fields.active') }}</span>
                         </label>

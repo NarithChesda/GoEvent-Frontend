@@ -12,8 +12,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
       </div>
-      <h3 class="text-lg font-medium text-gray-900 mb-2">{{ t('settings.listings.errorTitle') }}</h3>
-      <p class="text-gray-500 mb-4">{{ error }}</p>
+      <h3 class="text-lg font-medium text-slate-900 mb-2">{{ t('settings.listings.errorTitle') }}</h3>
+      <p class="text-slate-500 mb-4">{{ error }}</p>
       <button
         @click="loadListings"
         class="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors"
@@ -30,12 +30,12 @@
             <ShieldAlert class="w-7 h-7 text-amber-600" />
           </div>
           <div class="flex-1">
-            <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ t('settings.listings.verification.title') }}</h2>
-            <p class="text-gray-600">
+            <h2 class="text-xl font-semibold text-slate-900 mb-2">{{ t('settings.listings.verification.title') }}</h2>
+            <p class="text-slate-600">
               {{ t('settings.listings.verification.subtitle') }}
             </p>
             <div class="flex items-center gap-2 text-sm mt-3">
-              <span class="text-gray-500">{{ t('settings.listings.verification.currentStatus') }}</span>
+              <span class="text-slate-500">{{ t('settings.listings.verification.currentStatus') }}</span>
               <span
                 :class="[
                   'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
@@ -57,14 +57,14 @@
       <!-- Header -->
       <div class="flex items-start justify-between gap-4">
         <div class="flex-1">
-          <h2 class="text-xl font-semibold text-gray-900">{{ t('settings.listings.title') }}</h2>
-          <p class="text-sm text-gray-500 mt-1">
+          <h2 class="text-xl font-semibold text-slate-900">{{ t('settings.listings.title') }}</h2>
+          <p class="text-sm text-slate-500 mt-1">
             {{ t('settings.listings.subtitle') }}
           </p>
         </div>
         <button
           @click="openCreateDrawer"
-          class="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow"
         >
           <Plus class="w-5 h-5" />
           <span>{{ t('settings.listings.newListing') }}</span>
@@ -73,14 +73,14 @@
 
       <!-- Quick Stats (inline) -->
       <div v-if="listings.length > 0" class="flex items-center gap-6 text-sm">
-        <span class="text-gray-500">
+        <span class="text-slate-500">
           <span class="font-medium text-emerald-600">{{ activeCount }}</span> {{ t('settings.listings.stats.active') }}
         </span>
-        <span class="text-gray-500">
+        <span class="text-slate-500">
           <span class="font-medium text-amber-600">{{ pendingCount }}</span> {{ t('settings.listings.stats.pending') }}
         </span>
-        <span class="text-gray-500">
-          <span class="font-medium text-gray-600">{{ draftCount }}</span> {{ t('settings.listings.stats.draft') }}
+        <span class="text-slate-500">
+          <span class="font-medium text-slate-600">{{ draftCount }}</span> {{ t('settings.listings.stats.draft') }}
         </span>
       </div>
 
@@ -91,8 +91,8 @@
             <Package class="w-7 h-7 text-sky-600" />
           </div>
           <div class="flex-1">
-            <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ t('settings.listings.empty.title') }}</h3>
-            <p class="text-gray-600">
+            <h3 class="text-xl font-semibold text-slate-900 mb-2">{{ t('settings.listings.empty.title') }}</h3>
+            <p class="text-slate-600">
               {{ t('settings.listings.empty.subtitle') }}
             </p>
           </div>
@@ -100,7 +100,7 @@
         <div class="mt-8">
           <button
             @click="openCreateDrawer"
-            class="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow"
+            class="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow"
           >
             <Plus class="w-5 h-5" />
             <span>{{ t('settings.listings.empty.createFirst') }}</span>
@@ -113,7 +113,7 @@
         <div
           v-for="listing in listings"
           :key="listing.id"
-          class="bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-gray-300 transition-colors"
+          class="bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-slate-300 transition-colors"
         >
           <!-- Mobile Layout -->
           <div class="sm:hidden p-4">
@@ -139,7 +139,7 @@
                 </div>
 
                 <!-- Title -->
-                <h3 class="text-base font-medium text-gray-900 mb-1 line-clamp-2">
+                <h3 class="text-base font-medium text-slate-900 mb-1 line-clamp-2">
                   {{ listing.title }}
                 </h3>
 
@@ -149,13 +149,13 @@
                 </p>
 
                 <!-- Category -->
-                <div class="flex items-center gap-1.5 text-sm text-gray-500 mb-2">
-                  <Tag class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                <div class="flex items-center gap-1.5 text-sm text-slate-500 mb-2">
+                  <Tag class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                   <span class="truncate">{{ getCategoryName(listing) }}</span>
                 </div>
 
                 <!-- Stats -->
-                <div class="flex items-center gap-3 text-xs text-gray-400">
+                <div class="flex items-center gap-3 text-xs text-slate-400">
                   <span class="flex items-center gap-1">
                     <Eye class="w-3.5 h-3.5" />
                     {{ listing.views_count || 0 }}
@@ -168,7 +168,7 @@
               </div>
 
               <!-- Cover Image -->
-              <div class="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+              <div class="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100">
                 <img
                   v-if="listing.cover_image_url"
                   :src="getImageUrl(listing.cover_image_url)"
@@ -177,18 +177,18 @@
                 />
                 <div
                   v-else
-                  class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+                  class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center"
                 >
-                  <ImageIcon class="w-6 h-6 text-gray-400" />
+                  <ImageIcon class="w-6 h-6 text-slate-400" />
                 </div>
               </div>
             </div>
 
             <!-- Mobile Actions -->
-            <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+            <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
               <button
                 @click="editListing(listing)"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors"
               >
                 <Pencil class="w-3.5 h-3.5" />
                 {{ t('settings.listings.edit') }}
@@ -226,18 +226,18 @@
                   >
                     {{ t('settings.listings.featured') }}
                   </span>
-                  <span class="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                  <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
                     {{ getCategoryName(listing) }}
                   </span>
                 </div>
 
                 <!-- Title -->
-                <h3 class="text-lg font-medium text-gray-900 mb-1">
+                <h3 class="text-lg font-medium text-slate-900 mb-1">
                   {{ listing.title }}
                 </h3>
 
                 <!-- Description -->
-                <p class="text-sm text-gray-500 mb-2 line-clamp-1">
+                <p class="text-sm text-slate-500 mb-2 line-clamp-1">
                   {{ listing.short_tagline || listing.description }}
                 </p>
 
@@ -247,7 +247,7 @@
                 </p>
 
                 <!-- Stats -->
-                <div class="flex items-center gap-4 text-sm text-gray-500">
+                <div class="flex items-center gap-4 text-sm text-slate-500">
                   <span class="flex items-center gap-1.5">
                     <Eye class="w-4 h-4" />
                     {{ listing.views_count || 0 }} {{ t('settings.listings.views') }}
@@ -259,10 +259,10 @@
                 </div>
 
                 <!-- Actions -->
-                <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
+                <div class="flex items-center gap-2 mt-4 pt-4 border-t border-slate-100">
                   <button
                     @click="editListing(listing)"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors"
                   >
                     <Pencil class="w-4 h-4" />
                     {{ t('settings.listings.edit') }}
@@ -278,7 +278,7 @@
                   </button>
                   <button
                     @click="viewAnalytics(listing)"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors"
                   >
                     <BarChart3 class="w-4 h-4" />
                     {{ t('settings.listings.analyticsBtn') }}
@@ -287,7 +287,7 @@
               </div>
 
               <!-- Cover Image -->
-              <div class="w-40 h-28 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+              <div class="w-40 h-28 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100">
                 <img
                   v-if="listing.cover_image_url"
                   :src="getImageUrl(listing.cover_image_url)"
@@ -296,9 +296,9 @@
                 />
                 <div
                   v-else
-                  class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+                  class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center"
                 >
-                  <ImageIcon class="w-8 h-8 text-gray-400" />
+                  <ImageIcon class="w-8 h-8 text-slate-400" />
                 </div>
               </div>
             </div>
@@ -310,7 +310,7 @@
           <button
             @click="loadMore"
             :disabled="isLoading"
-            class="px-6 py-2.5 text-gray-700 hover:text-gray-900 font-medium transition-colors disabled:opacity-50"
+            class="px-6 py-2.5 text-slate-700 hover:text-slate-900 font-medium transition-colors disabled:opacity-50"
           >
             {{ isLoading ? t('settings.listings.loading') : t('settings.listings.loadMore') }}
           </button>
@@ -337,7 +337,7 @@
         >
           <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-              <h3 class="text-lg font-semibold text-gray-900">{{ t('settings.listings.analyticsModal.title') }}</h3>
+              <h3 class="text-lg font-semibold text-slate-900">{{ t('settings.listings.analyticsModal.title') }}</h3>
               <button
                 @click="showAnalyticsModal = false"
                 class="p-2 hover:bg-slate-100 rounded-lg transition-colors"
@@ -346,11 +346,11 @@
               </button>
             </div>
             <div class="p-6">
-              <h4 class="font-medium text-gray-900 mb-4">{{ selectedListingForAnalytics.title }}</h4>
+              <h4 class="font-medium text-slate-900 mb-4">{{ selectedListingForAnalytics.title }}</h4>
 
               <div v-if="isLoadingAnalytics" class="py-8 text-center">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600 mx-auto"></div>
-                <p class="text-sm text-gray-500 mt-2">{{ t('settings.listings.analyticsModal.loadingAnalytics') }}</p>
+                <p class="text-sm text-slate-500 mt-2">{{ t('settings.listings.analyticsModal.loadingAnalytics') }}</p>
               </div>
 
               <div v-else-if="analytics" class="space-y-6">
@@ -421,7 +421,7 @@
                 </div>
               </div>
 
-              <div v-else class="py-8 text-center text-gray-500">
+              <div v-else class="py-8 text-center text-slate-500">
                 {{ t('settings.listings.analyticsModal.noData') }}
               </div>
             </div>

@@ -10,8 +10,8 @@
       <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
         <AlertCircle class="w-8 h-8 text-red-600" />
       </div>
-      <h3 class="text-lg font-medium text-gray-900 mb-2">{{ t('settings.donations.errorTitle') }}</h3>
-      <p class="text-gray-500 mb-4">{{ error }}</p>
+      <h3 class="text-lg font-medium text-slate-900 mb-2">{{ t('settings.donations.errorTitle') }}</h3>
+      <p class="text-slate-500 mb-4">{{ error }}</p>
       <button
         @click="loadDonations"
         class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
@@ -25,8 +25,8 @@
       <!-- Header -->
       <div class="flex items-start justify-between gap-4">
         <div class="flex-1">
-          <h2 class="text-xl font-semibold text-gray-900">{{ t('settings.donations.title') }}</h2>
-          <p class="text-sm text-gray-500 mt-1">
+          <h2 class="text-xl font-semibold text-slate-900">{{ t('settings.donations.title') }}</h2>
+          <p class="text-sm text-slate-500 mt-1">
             {{ t('settings.donations.subtitle') }}
           </p>
         </div>
@@ -34,14 +34,14 @@
 
       <!-- Quick Stats (inline) -->
       <div v-if="donations.length > 0" class="flex items-center gap-6 text-sm">
-        <span class="text-gray-500">
+        <span class="text-slate-500">
           <span class="font-medium text-emerald-600">{{ verifiedCount }}</span> {{ t('settings.donations.stats.verified') }}
         </span>
-        <span class="text-gray-500">
+        <span class="text-slate-500">
           <span class="font-medium text-amber-600">{{ pendingCount }}</span> {{ t('settings.donations.stats.pending') }}
         </span>
-        <span class="text-gray-500">
-          <span class="font-medium text-gray-600">{{ totalCount }}</span> {{ t('settings.donations.stats.total') }}
+        <span class="text-slate-500">
+          <span class="font-medium text-slate-600">{{ totalCount }}</span> {{ t('settings.donations.stats.total') }}
         </span>
       </div>
 
@@ -139,8 +139,8 @@
             <Heart class="w-7 h-7 text-emerald-600" />
           </div>
           <div class="flex-1">
-            <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ t('settings.donations.empty.title') }}</h3>
-            <p class="text-gray-600">
+            <h3 class="text-xl font-semibold text-slate-900 mb-2">{{ t('settings.donations.empty.title') }}</h3>
+            <p class="text-slate-600">
               {{ t('settings.donations.empty.subtitle') }}
             </p>
           </div>
@@ -152,7 +152,7 @@
         <div
           v-for="donation in filteredDonations"
           :key="donation.id"
-          class="bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-gray-300 transition-colors"
+          class="bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-slate-300 transition-colors"
         >
           <div class="p-4 sm:p-5">
             <div class="flex items-start gap-3 sm:gap-4">
@@ -250,7 +250,7 @@
           <button
             @click="loadMore"
             :disabled="isLoading"
-            class="px-6 py-2.5 text-gray-700 hover:text-gray-900 font-medium transition-colors disabled:opacity-50"
+            class="px-6 py-2.5 text-slate-700 hover:text-slate-900 font-medium transition-colors disabled:opacity-50"
           >
             {{ isLoading ? t('settings.donations.list.loading') : t('settings.donations.list.loadMore') }}
           </button>
@@ -268,7 +268,7 @@
         >
           <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-              <h3 class="text-lg font-semibold text-gray-900">{{ t('settings.donations.receiptModal.title') }}</h3>
+              <h3 class="text-lg font-semibold text-slate-900">{{ t('settings.donations.receiptModal.title') }}</h3>
               <button
                 @click="showReceiptModal = false"
                 class="p-2 hover:bg-slate-100 rounded-lg transition-colors"

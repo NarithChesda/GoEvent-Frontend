@@ -1,12 +1,12 @@
 <template>
   <div>
-    <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ t('settings.security.title') }}</h2>
-    <p class="text-sm text-gray-500 mb-8">{{ t('settings.security.subtitle') }}</p>
+    <h2 class="text-xl font-semibold text-slate-900 mb-2">{{ t('settings.security.title') }}</h2>
+    <p class="text-sm text-slate-500 mb-8">{{ t('settings.security.subtitle') }}</p>
 
     <form @submit.prevent="handlePasswordChange" class="space-y-6 max-w-2xl">
       <!-- Current Password -->
       <div>
-        <label for="currentPassword" class="block text-sm font-medium text-gray-700 mb-2">
+        <label for="currentPassword" class="block text-sm font-medium text-slate-700 mb-2">
           {{ t('settings.security.currentPassword') }}
         </label>
         <div class="relative">
@@ -18,14 +18,14 @@
               'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent pr-12',
               fieldErrors.old_password
                 ? 'border-red-300 focus:ring-red-500'
-                : 'border-gray-300 focus:ring-blue-500',
+                : 'border-slate-300 focus:ring-blue-500',
             ]"
             :placeholder="t('settings.security.currentPasswordPlaceholder')"
           />
           <button
             type="button"
             @click="togglePasswordVisibility('current')"
-            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
           >
             <svg v-if="!showPasswords.current" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -45,7 +45,7 @@
 
       <!-- New Password -->
       <div>
-        <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-2">
+        <label for="newPassword" class="block text-sm font-medium text-slate-700 mb-2">
           {{ t('settings.security.newPassword') }}
         </label>
         <div class="relative">
@@ -57,14 +57,14 @@
               'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent pr-12',
               fieldErrors.new_password
                 ? 'border-red-300 focus:ring-red-500'
-                : 'border-gray-300 focus:ring-blue-500',
+                : 'border-slate-300 focus:ring-blue-500',
             ]"
             :placeholder="t('settings.security.newPasswordPlaceholder')"
           />
           <button
             type="button"
             @click="togglePasswordVisibility('new')"
-            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
           >
             <svg v-if="!showPasswords.new" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -84,7 +84,7 @@
 
       <!-- Confirm New Password -->
       <div>
-        <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">
+        <label for="confirmPassword" class="block text-sm font-medium text-slate-700 mb-2">
           {{ t('settings.security.confirmNewPassword') }}
         </label>
         <div class="relative">
@@ -96,14 +96,14 @@
               'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent pr-12',
               fieldErrors.new_password_confirm
                 ? 'border-red-300 focus:ring-red-500'
-                : 'border-gray-300 focus:ring-blue-500',
+                : 'border-slate-300 focus:ring-blue-500',
             ]"
             :placeholder="t('settings.security.confirmNewPasswordPlaceholder')"
           />
           <button
             type="button"
             @click="togglePasswordVisibility('confirm')"
-            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
           >
             <svg v-if="!showPasswords.confirm" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -129,7 +129,7 @@
               v-for="i in 5"
               :key="i"
               class="w-3 h-3 rounded-full transition-colors duration-300"
-              :class="passwordStrength >= i ? passwordStrengthColor : 'bg-gray-200'"
+              :class="passwordStrength >= i ? passwordStrengthColor : 'bg-slate-200'"
             ></div>
           </div>
           <span class="font-medium" :class="passwordStrength >= 3 ? 'text-green-600' : 'text-orange-600'">
@@ -141,8 +141,8 @@
 
         <!-- Password Requirements Feedback -->
         <div v-if="passwordStrengthData.feedback.length > 0" class="text-xs space-y-1">
-          <p class="font-medium text-gray-600">{{ t('settings.security.requirementsLabel') }}</p>
-          <ul class="list-disc list-inside space-y-1 text-gray-500">
+          <p class="font-medium text-slate-600">{{ t('settings.security.requirementsLabel') }}</p>
+          <ul class="list-disc list-inside space-y-1 text-slate-500">
             <li v-for="tip in passwordStrengthData.feedback" :key="tip">{{ tip }}</li>
           </ul>
         </div>
@@ -179,7 +179,7 @@
         <button
           type="submit"
           :disabled="!canSubmit"
-          class="px-6 py-2.5 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow flex items-center gap-2"
+          class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow flex items-center gap-2"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />

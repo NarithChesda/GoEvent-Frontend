@@ -6,14 +6,14 @@
     @dragover.prevent
     @dragenter.prevent
     @drop="handleDrop"
-    class="media-card bg-white border border-gray-200 rounded-xl sm:rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-200 group"
+    class="media-card bg-white border border-slate-200 rounded-xl sm:rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-200 group"
     :class="[
       isDragging ? 'opacity-50 transform rotate-1 scale-105' : '',
       canEdit && draggable ? 'hover:scale-[1.02]' : '',
     ]"
   >
     <!-- Image Container -->
-    <div class="relative aspect-square bg-gray-100 overflow-hidden">
+    <div class="relative aspect-square bg-slate-100 overflow-hidden">
       <img
         :src="media.image"
         :alt="media.caption || 'Event media'"
@@ -40,10 +40,10 @@
       </div>
 
       <!-- Loading State for Broken Images -->
-      <div v-if="imageError" class="absolute inset-0 bg-gray-100 flex items-center justify-center">
+      <div v-if="imageError" class="absolute inset-0 bg-slate-100 flex items-center justify-center">
         <div class="text-center">
-          <ImageIcon class="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 mx-auto mb-1 sm:mb-2" />
-          <p class="text-[10px] sm:text-xs text-gray-500">Failed to load image</p>
+          <ImageIcon class="w-6 h-6 sm:w-8 sm:h-8 text-slate-400 mx-auto mb-1 sm:mb-2" />
+          <p class="text-[10px] sm:text-xs text-slate-500">Failed to load image</p>
         </div>
       </div>
 

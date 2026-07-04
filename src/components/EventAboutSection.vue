@@ -273,7 +273,7 @@
           </p>
 
           <!-- Facebook Preview Card -->
-          <div class="border border-gray-300 rounded-xl overflow-hidden bg-white">
+          <div class="border border-slate-300 rounded-xl overflow-hidden bg-white">
             <div class="aspect-[1.91/1] relative overflow-hidden bg-slate-200">
               <img
                 v-if="previewImage"
@@ -286,9 +286,9 @@
               </div>
             </div>
             <div class="p-4">
-              <div class="text-sm text-gray-600 uppercase tracking-wide mb-1">{{ hostname }}</div>
-              <div class="text-lg font-semibold text-gray-900 mb-1 line-clamp-2">{{ metaTitle }}</div>
-              <div class="text-sm text-gray-600 line-clamp-3">{{ metaDescription }}</div>
+              <div class="text-sm text-slate-600 uppercase tracking-wide mb-1">{{ hostname }}</div>
+              <div class="text-lg font-semibold text-slate-900 mb-1 line-clamp-2">{{ metaTitle }}</div>
+              <div class="text-sm text-slate-600 line-clamp-3">{{ metaDescription }}</div>
             </div>
           </div>
         </div>

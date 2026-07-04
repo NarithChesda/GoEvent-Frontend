@@ -5,15 +5,15 @@
       <div
         v-if="showChatPopup"
         :class="chatPopupPositionClass"
-        class="fixed right-4 lg:right-6 z-[59] bg-white rounded-2xl shadow-2xl p-4 w-72 border border-gray-100"
+        class="fixed right-4 lg:right-6 z-[59] bg-white rounded-2xl shadow-2xl p-4 w-72 border border-slate-100"
       >
         <!-- Arrow pointing to FAB -->
-        <div class="absolute -bottom-2 right-4 lg:right-6 w-4 h-4 bg-white border-r border-b border-gray-100 transform rotate-45"></div>
+        <div class="absolute -bottom-2 right-4 lg:right-6 w-4 h-4 bg-white border-r border-b border-slate-100 transform rotate-45"></div>
 
         <!-- Close button -->
         <button
           @click="dismissPopup"
-          class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+          class="absolute top-2 right-2 text-slate-400 hover:text-slate-600 transition-colors"
           aria-label="Close"
         >
           <X class="w-4 h-4" />
@@ -25,7 +25,7 @@
             <MessageCircle class="w-5 h-5 text-white" />
           </div>
           <div class="flex-1 pt-1">
-            <p class="text-sm text-gray-700 leading-relaxed">
+            <p class="text-sm text-slate-700 leading-relaxed">
               Need help? Contact us!<br />
               <span class="font-kantumruy">ត្រូវការជំនួយ? ទាក់ទងមកយើង!</span>
             </p>
@@ -33,12 +33,12 @@
         </div>
 
         <!-- Don't show again checkbox -->
-        <label class="flex items-center gap-2 cursor-pointer text-xs text-gray-500 hover:text-gray-700 transition-colors">
+        <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-500 hover:text-slate-700 transition-colors">
           <input
             type="checkbox"
             v-model="dontShowAgain"
             @change="handleDontShowAgainChange"
-            class="w-3.5 h-3.5 rounded border-gray-300 text-[#0088cc] focus:ring-[#0088cc] focus:ring-offset-0"
+            class="w-3.5 h-3.5 rounded border-slate-300 text-[#0088cc] focus:ring-[#0088cc] focus:ring-offset-0"
           />
           <span>Don't show again / <span class="font-kantumruy">កុំបង្ហាញម្តងទៀត</span></span>
         </label>

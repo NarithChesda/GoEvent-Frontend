@@ -138,7 +138,7 @@
                     v-for="i in 5"
                     :key="i"
                     class="w-3 h-3 rounded-full transition-colors duration-300"
-                    :class="passwordStrength >= i ? passwordStrengthColor : 'bg-gray-200'"
+                    :class="passwordStrength >= i ? passwordStrengthColor : 'bg-slate-200'"
                   ></div>
                 </div>
                 <span
@@ -273,7 +273,7 @@ const passwordStrengthText = computed(() => {
 
 const passwordStrengthColor = computed(() => {
   const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-[#E6F4FF]0', 'bg-green-500']
-  return colors[passwordStrength.value] || 'bg-gray-200'
+  return colors[passwordStrength.value] || 'bg-slate-200'
 })
 
 const passwordValidation = computed(() => {

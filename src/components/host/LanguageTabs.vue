@@ -92,7 +92,7 @@
         <button
           type="button"
           @click="$emit('update:show-add-translation', false)"
-          class="text-gray-400 hover:text-gray-600"
+          class="text-slate-400 hover:text-slate-600"
         >
           <X class="w-4 h-4" />
         </button>
@@ -107,7 +107,7 @@
             <select
               :value="newTranslation.language"
               @input="$emit('update:new-translation', { ...newTranslation, language: ($event.target as HTMLSelectElement).value })"
-              class="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent appearance-none bg-white"
+              class="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent appearance-none bg-white"
             >
               <option value="">{{ t('management.languageTabs.modal.selectPlaceholder') }}</option>
               <option
@@ -134,7 +134,7 @@
           <button
             type="button"
             @click="$emit('update:show-add-translation', false)"
-            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+            class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors duration-200"
           >
             {{ t('management.languageTabs.modal.cancelBtn') }}
           </button>

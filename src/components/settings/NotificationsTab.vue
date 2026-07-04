@@ -1,9 +1,9 @@
 <template>
   <div>
-    <h2 class="text-xl font-semibold text-gray-900 mb-2">
+    <h2 class="text-xl font-semibold text-slate-900 mb-2">
       {{ t('settings.notifications.title') }}
     </h2>
-    <p class="text-sm text-gray-500 mb-6">
+    <p class="text-sm text-slate-500 mb-6">
       {{ t('settings.notifications.subtitle') }}
     </p>
 
@@ -54,7 +54,7 @@
 
       <!-- Channels (master switches) -->
       <section>
-        <h3 class="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
+        <h3 class="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wide">
           {{ t('settings.notifications.channels.title') }}
         </h3>
         <div class="border border-slate-200 rounded-xl divide-y divide-slate-100 bg-white">
@@ -84,7 +84,7 @@
 
       <!-- Per-type toggles -->
       <section>
-        <h3 class="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
+        <h3 class="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wide">
           {{ t('settings.notifications.types.title') }}
         </h3>
         <div class="border border-slate-200 rounded-xl divide-y divide-slate-100 bg-white">

@@ -12,8 +12,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
       </div>
-      <h3 class="text-lg font-medium text-gray-900 mb-2">{{ t('settings.vendor.errorTitle') }}</h3>
-      <p class="text-gray-500 mb-4">{{ error }}</p>
+      <h3 class="text-lg font-medium text-slate-900 mb-2">{{ t('settings.vendor.errorTitle') }}</h3>
+      <p class="text-slate-500 mb-4">{{ error }}</p>
       <button
         @click="loadProfile"
         class="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors"
@@ -34,8 +34,8 @@
               </svg>
             </div>
             <div class="flex-1">
-              <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ t('settings.vendor.becomeTitle') }}</h2>
-              <p class="text-gray-600">
+              <h2 class="text-xl font-semibold text-slate-900 mb-2">{{ t('settings.vendor.becomeTitle') }}</h2>
+              <p class="text-slate-600">
                 {{ t('settings.vendor.becomeSubtitle') }}
               </p>
             </div>
@@ -50,8 +50,8 @@
                 </svg>
               </div>
               <div>
-                <p class="font-medium text-gray-900">{{ t('settings.vendor.benefits.createProfile') }}</p>
-                <p class="text-sm text-gray-500">{{ t('settings.vendor.benefits.createProfileSub') }}</p>
+                <p class="font-medium text-slate-900">{{ t('settings.vendor.benefits.createProfile') }}</p>
+                <p class="text-sm text-slate-500">{{ t('settings.vendor.benefits.createProfileSub') }}</p>
               </div>
             </div>
             <div class="flex items-start gap-3">
@@ -61,8 +61,8 @@
                 </svg>
               </div>
               <div>
-                <p class="font-medium text-gray-900">{{ t('settings.vendor.benefits.listServices') }}</p>
-                <p class="text-sm text-gray-500">{{ t('settings.vendor.benefits.listServicesSub') }}</p>
+                <p class="font-medium text-slate-900">{{ t('settings.vendor.benefits.listServices') }}</p>
+                <p class="text-sm text-slate-500">{{ t('settings.vendor.benefits.listServicesSub') }}</p>
               </div>
             </div>
             <div class="flex items-start gap-3">
@@ -72,8 +72,8 @@
                 </svg>
               </div>
               <div>
-                <p class="font-medium text-gray-900">{{ t('settings.vendor.benefits.trackViews') }}</p>
-                <p class="text-sm text-gray-500">{{ t('settings.vendor.benefits.trackViewsSub') }}</p>
+                <p class="font-medium text-slate-900">{{ t('settings.vendor.benefits.trackViews') }}</p>
+                <p class="text-sm text-slate-500">{{ t('settings.vendor.benefits.trackViewsSub') }}</p>
               </div>
             </div>
             <div class="flex items-start gap-3">
@@ -83,8 +83,8 @@
                 </svg>
               </div>
               <div>
-                <p class="font-medium text-gray-900">{{ t('settings.vendor.benefits.getVerified') }}</p>
-                <p class="text-sm text-gray-500">{{ t('settings.vendor.benefits.getVerifiedSub') }}</p>
+                <p class="font-medium text-slate-900">{{ t('settings.vendor.benefits.getVerified') }}</p>
+                <p class="text-sm text-slate-500">{{ t('settings.vendor.benefits.getVerifiedSub') }}</p>
               </div>
             </div>
           </div>

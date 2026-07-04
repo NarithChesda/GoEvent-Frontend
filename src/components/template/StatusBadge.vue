@@ -24,7 +24,7 @@ const badgeClasses = computed(() => {
     case 'preview':
       return `${baseClasses} bg-yellow-100 text-yellow-800`
     default:
-      return `${baseClasses} bg-gray-100 text-gray-800`
+      return `${baseClasses} bg-slate-100 text-slate-800`
   }
 })
 

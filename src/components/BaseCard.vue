@@ -84,7 +84,7 @@ const cardClasses = computed(() => {
     'bg-white/95',
     'backdrop-blur-sm',
     'border',
-    'border-gray-200',
+    'border-slate-200',
     'shadow-lg',
     'transition-all',
     'duration-300',

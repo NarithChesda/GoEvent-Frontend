@@ -77,7 +77,7 @@
               type="email"
               required
               :disabled="isSaving"
-              class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm disabled:opacity-50"
+              class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm disabled:opacity-50"
               :placeholder="t('management.eventReferrerSection.form.emailPlaceholder')"
             />
             <Mail

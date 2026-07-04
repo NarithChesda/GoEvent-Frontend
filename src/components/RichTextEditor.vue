@@ -68,13 +68,13 @@ const handleContentUpdate = (newContent: string) => {
 }
 
 .rich-text-editor-wrapper :deep(.ql-container) {
-  @apply border border-gray-200 rounded-b-lg bg-white/70 backdrop-blur-sm;
+  @apply border border-slate-200 rounded-b-lg bg-white/70 backdrop-blur-sm;
   min-height: v-bind(minHeight);
   font-size: 0.875rem;
 }
 
 .rich-text-editor-wrapper :deep(.ql-toolbar) {
-  @apply border border-gray-200 rounded-t-lg bg-white/70 backdrop-blur-sm;
+  @apply border border-slate-200 rounded-t-lg bg-white/70 backdrop-blur-sm;
   position: relative;
   z-index: 10;
 }

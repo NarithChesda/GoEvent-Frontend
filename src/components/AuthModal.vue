@@ -13,9 +13,9 @@
       <!-- Close Button -->
       <button
         @click="closeModal"
-        class="absolute top-6 right-6 p-2 rounded-xl bg-gray-100/50 hover:bg-gray-200/50 transition-colors"
+        class="absolute top-6 right-6 p-2 rounded-xl bg-slate-100/50 hover:bg-slate-200/50 transition-colors"
       >
-        <X class="w-5 h-5 text-gray-500" />
+        <X class="w-5 h-5 text-slate-500" />
       </button>
 
       <!-- Header -->
@@ -25,8 +25,8 @@
           alt="GoEvent Logo"
           class="h-24 w-auto mx-auto mb-4"
         />
-        <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome</h2>
-        <p class="text-gray-600">Sign in to continue</p>
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">Welcome</h2>
+        <p class="text-slate-600">Sign in to continue</p>
       </div>
 
       <!-- Error Message -->
@@ -45,7 +45,7 @@
           type="button"
           @click="handleGoogleLogin"
           :disabled="isGoogleLoading"
-          class="w-full flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl bg-white/50 hover:bg-white/80 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed"
+          class="w-full flex items-center justify-center px-4 py-3 border border-slate-200 rounded-xl bg-white/50 hover:bg-white/80 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1e90ff] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Loader2 v-if="isGoogleLoading" class="animate-spin h-5 w-5 mr-2" />
           <svg v-else class="h-5 w-5 mr-2" viewBox="0 0 24 24">
@@ -66,7 +66,7 @@
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          <span class="text-sm font-medium text-gray-700">
+          <span class="text-sm font-medium text-slate-700">
             {{ isGoogleLoading ? 'Signing in...' : 'Continue with Google' }}
           </span>
         </button>
@@ -129,11 +129,11 @@
           type="button"
           @click="handleTelegramBotLogin"
           :disabled="isTelegramBotLoading"
-          class="w-full flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl bg-white/50 hover:bg-sky-50 transition-all duration-200 hover:border-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 disabled:opacity-50 disabled:cursor-not-allowed group"
+          class="w-full flex items-center justify-center px-4 py-3 border border-slate-200 rounded-xl bg-white/50 hover:bg-sky-50 transition-all duration-200 hover:border-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 disabled:opacity-50 disabled:cursor-not-allowed group"
         >
           <Loader2 v-if="isTelegramBotLoading" class="animate-spin h-5 w-5 mr-3 text-sky-500" />
           <Send v-else class="h-5 w-5 mr-3 text-sky-500 group-hover:text-sky-600" />
-          <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+          <span class="text-sm font-medium text-slate-700 group-hover:text-slate-900">
             {{ isTelegramBotLoading ? 'Opening Telegram...' : 'Continue with Telegram' }}
           </span>
         </button>

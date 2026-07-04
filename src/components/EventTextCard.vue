@@ -1,6 +1,6 @@
 <template>
   <div
-    class="event-text-card bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all duration-200"
+    class="event-text-card bg-white border border-slate-200 rounded-xl p-4 hover:shadow-md transition-all duration-200"
   >
     <div class="flex items-start justify-between">
       <!-- Text Content -->
@@ -19,7 +19,7 @@
             <span
               :class="[
                 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                text.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600',
+                text.is_active ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-600',
               ]"
             >
               {{ text.is_active ? 'Active' : 'Inactive' }}
@@ -57,7 +57,7 @@
 
         <!-- Full Content (when expanded) -->
         <div v-if="showFullContent && text.content.length > 150" class="mb-3">
-          <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+          <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
             <p class="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">
               {{ text.content }}
             </p>

@@ -68,7 +68,7 @@ export function usePasswordChange() {
   // Computed: Password strength color class
   const passwordStrengthColor = computed(() => {
     const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500']
-    return colors[passwordStrength.value] || 'bg-gray-200'
+    return colors[passwordStrength.value] || 'bg-slate-200'
   })
 
   // Computed: Check if passwords match

@@ -133,14 +133,14 @@
                 class="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-[#1e90ff]/20 p-4 sm:p-6 lg:p-6 xl:p-8 border border-white/50"
               >
                 <div class="flex items-center justify-between mb-4 sm:mb-6 lg:mb-6 xl:mb-8">
-                  <h3 class="text-lg sm:text-xl lg:text-xl xl:text-2xl font-bold text-gray-900">
+                  <h3 class="text-lg sm:text-xl lg:text-xl xl:text-2xl font-bold text-slate-900">
                     Our Journey
                   </h3>
                   <div class="flex items-center space-x-2">
                     <div
                       class="w-2 h-2 sm:w-3 sm:h-3 bg-green-400 rounded-full animate-pulse"
                     ></div>
-                    <span class="text-xs sm:text-sm text-gray-600 font-medium">Since 2023</span>
+                    <span class="text-xs sm:text-sm text-slate-600 font-medium">Since 2023</span>
                   </div>
                 </div>
 
@@ -173,10 +173,10 @@
 
                 <div class="space-y-4">
                   <div class="flex justify-between items-center">
-                    <span class="text-sm font-medium text-gray-700">Mission Progress</span>
-                    <span class="text-sm font-bold text-gray-900">92%</span>
+                    <span class="text-sm font-medium text-slate-700">Mission Progress</span>
+                    <span class="text-sm font-bold text-slate-900">92%</span>
                   </div>
-                  <div class="w-full bg-gray-200 rounded-full h-3">
+                  <div class="w-full bg-slate-200 rounded-full h-3">
                     <div
                       class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] h-3 rounded-full transition-all duration-1000"
                       style="width: 92%"
@@ -184,7 +184,7 @@
                   </div>
 
                   <div class="flex justify-between items-center pt-4">
-                    <span class="text-xs text-gray-500">Transforming event management</span>
+                    <span class="text-xs text-slate-500">Transforming event management</span>
                     <div class="flex space-x-1">
                       <div class="w-2 h-2 bg-[#4fa3d9] rounded-full"></div>
                       <div class="w-2 h-2 bg-[#5eb3f6] rounded-full"></div>
@@ -205,8 +205,8 @@
                     <Award class="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" />
                   </div>
                   <div>
-                    <div class="text-xs font-medium text-gray-900">Award Winner</div>
-                    <div class="text-xs text-gray-500">Best Event Platform</div>
+                    <div class="text-xs font-medium text-slate-900">Award Winner</div>
+                    <div class="text-xs text-slate-500">Best Event Platform</div>
                   </div>
                 </div>
               </div>
@@ -221,8 +221,8 @@
                     <Users class="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
                   </div>
                   <div>
-                    <div class="text-xs font-medium text-gray-900">Growing Team</div>
-                    <div class="text-xs text-gray-500">20+ members</div>
+                    <div class="text-xs font-medium text-slate-900">Growing Team</div>
+                    <div class="text-xs text-slate-500">20+ members</div>
                   </div>
                 </div>
               </div>
@@ -233,8 +233,8 @@
 
       <!-- Scroll Indicator -->
       <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div class="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
-          <div class="w-1 h-3 bg-gray-400 rounded-full mt-2 animate-pulse"></div>
+        <div class="w-6 h-10 border-2 border-slate-400 rounded-full flex justify-center">
+          <div class="w-1 h-3 bg-slate-400 rounded-full mt-2 animate-pulse"></div>
         </div>
       </div>
     </section>

@@ -1,7 +1,7 @@
 <template>
   <div>
-    <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ t('settings.account.title') }}</h2>
-    <p class="text-sm text-gray-500 mb-8">{{ t('settings.account.subtitle') }}</p>
+    <h2 class="text-xl font-semibold text-slate-900 mb-2">{{ t('settings.account.title') }}</h2>
+    <p class="text-sm text-slate-500 mb-8">{{ t('settings.account.subtitle') }}</p>
 
     <form @submit.prevent="handleProfileUpdate" class="space-y-6">
       <!-- Success/Error Messages -->
@@ -28,7 +28,7 @@
           <div :class="isPartner ? 'grid grid-cols-2 gap-4' : 'flex justify-center'">
             <!-- Profile Picture for Mobile -->
             <div class="flex flex-col items-center">
-              <label class="block text-sm font-medium text-gray-700 mb-3">{{ t('settings.account.profilePictureLabel') }}</label>
+              <label class="block text-sm font-medium text-slate-700 mb-3">{{ t('settings.account.profilePictureLabel') }}</label>
               <div class="relative w-28 h-28 mx-auto mb-2">
                 <!-- Partner Badge Ring -->
                 <div
@@ -51,7 +51,7 @@
                 </div>
                 <div
                   v-else
-                  class="relative w-28 h-28 bg-orange-400 rounded-full flex items-center justify-center text-gray-800 font-medium text-3xl border-4 border-white shadow-lg"
+                  class="relative w-28 h-28 bg-orange-400 rounded-full flex items-center justify-center text-slate-800 font-medium text-3xl border-4 border-white shadow-lg"
                 >
                   {{ userInitials }}
                 </div>
@@ -60,7 +60,7 @@
                 <button
                   type="button"
                   @click="triggerFileUpload"
-                  class="absolute bottom-0 right-0 w-9 h-9 bg-gray-900 hover:bg-gray-800 rounded-full flex items-center justify-center text-white shadow-lg transition-colors"
+                  class="absolute bottom-0 right-0 w-9 h-9 bg-slate-900 hover:bg-slate-800 rounded-full flex items-center justify-center text-white shadow-lg transition-colors"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
@@ -71,11 +71,11 @@
 
             <!-- Partner Logo for Mobile (only for partners) -->
             <div v-if="isPartner" class="flex flex-col items-center">
-              <label class="block text-sm font-medium text-gray-700 mb-3">{{ t('settings.account.partnerLogoLabel') }}</label>
+              <label class="block text-sm font-medium text-slate-700 mb-3">{{ t('settings.account.partnerLogoLabel') }}</label>
               <div class="relative w-28 h-28 mx-auto mb-2">
                 <div
                   v-if="logoUrl"
-                  class="relative w-28 h-28 rounded-xl overflow-hidden bg-gray-100 border-2 border-gray-300 shadow-lg"
+                  class="relative w-28 h-28 rounded-xl overflow-hidden bg-slate-100 border-2 border-slate-300 shadow-lg"
                 >
                   <img
                     :src="logoUrl"
@@ -88,7 +88,7 @@
                 </div>
                 <div
                   v-else
-                  class="relative w-28 h-28 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-gray-400 font-medium text-xs border-2 border-gray-300 shadow-lg"
+                  class="relative w-28 h-28 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium text-xs border-2 border-slate-300 shadow-lg"
                 >
                   {{ t('settings.account.noLogo') }}
                 </div>
@@ -98,7 +98,7 @@
                   type="button"
                   @click="triggerLogoUpload"
                   :disabled="logoUploadLoading"
-                  class="absolute bottom-0 right-0 w-9 h-9 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 rounded-full flex items-center justify-center text-white shadow-lg transition-colors"
+                  class="absolute bottom-0 right-0 w-9 h-9 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 rounded-full flex items-center justify-center text-white shadow-lg transition-colors"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
@@ -114,20 +114,20 @@
           <!-- Name Fields -->
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.account.firstName') }}</label>
+              <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.account.firstName') }}</label>
               <input
                 v-model="profileForm.first_name"
                 type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                 :placeholder="t('settings.account.firstNamePlaceholder')"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.account.lastName') }}</label>
+              <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.account.lastName') }}</label>
               <input
                 v-model="profileForm.last_name"
                 type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                 :placeholder="t('settings.account.lastNamePlaceholder')"
               />
             </div>
@@ -135,24 +135,24 @@
 
           <!-- Email Field -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.account.emailAddress') }}</label>
+            <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.account.emailAddress') }}</label>
             <input
               v-model="profileForm.email"
               type="email"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
               :placeholder="t('settings.account.emailPlaceholder')"
             />
           </div>
 
           <!-- Username Field -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.account.username') }}</label>
+            <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.account.username') }}</label>
             <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">@</span>
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">@</span>
               <input
                 v-model="profileForm.username"
                 type="text"
-                class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                class="w-full pl-8 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                 :placeholder="t('settings.account.usernamePlaceholder')"
               />
             </div>
@@ -160,44 +160,44 @@
 
           <!-- Bio Field -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.account.bio') }}</label>
+            <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.account.bio') }}</label>
             <textarea
               v-model="profileForm.bio"
               rows="3"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white"
               :placeholder="t('settings.account.bioPlaceholder')"
             ></textarea>
           </div>
 
           <!-- Phone Number Field -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.account.phoneNumber') }}</label>
+            <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.account.phoneNumber') }}</label>
             <input
               v-model="profileForm.phone_number"
               type="tel"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
               :placeholder="t('settings.account.phonePlaceholder')"
             />
           </div>
 
           <!-- Telegram URL Field -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.account.telegramUrl') }}</label>
+            <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.account.telegramUrl') }}</label>
             <input
               v-model="profileForm.telegram_link"
               type="text"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
               :placeholder="t('settings.account.telegramPlaceholder')"
             />
           </div>
 
           <!-- Payment URL Field (only for partners) -->
           <div v-if="isPartner">
-            <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('settings.account.paymentUrl') }}</label>
+            <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.account.paymentUrl') }}</label>
             <input
               v-model="profileForm.payment_link"
               type="text"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
               :placeholder="t('settings.account.paymentPlaceholder')"
             />
           </div>
@@ -208,7 +208,7 @@
           <div class="sticky top-8 space-y-8">
             <!-- Profile Picture Section -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-3 text-center">{{ t('settings.account.profilePictureLabel') }}</label>
+              <label class="block text-sm font-medium text-slate-700 mb-3 text-center">{{ t('settings.account.profilePictureLabel') }}</label>
 
               <!-- Current Profile Picture -->
               <div class="relative w-32 h-32 mx-auto mb-4">
@@ -233,7 +233,7 @@
                 </div>
                 <div
                   v-else
-                  class="relative w-32 h-32 bg-orange-400 rounded-full flex items-center justify-center text-gray-800 font-medium text-4xl border-4 border-white shadow-lg"
+                  class="relative w-32 h-32 bg-orange-400 rounded-full flex items-center justify-center text-slate-800 font-medium text-4xl border-4 border-white shadow-lg"
                 >
                   {{ userInitials }}
                 </div>
@@ -242,7 +242,7 @@
                 <button
                   type="button"
                   @click="triggerFileUpload"
-                  class="absolute bottom-0 right-0 w-10 h-10 bg-gray-900 hover:bg-gray-800 rounded-full flex items-center justify-center text-white shadow-lg transition-colors"
+                  class="absolute bottom-0 right-0 w-10 h-10 bg-slate-900 hover:bg-slate-800 rounded-full flex items-center justify-center text-white shadow-lg transition-colors"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
@@ -261,13 +261,13 @@
 
             <!-- Partner Logo Section (only for partners) -->
             <div v-if="isPartner">
-              <label class="block text-sm font-medium text-gray-700 mb-3 text-center">{{ t('settings.account.partnerLogoLabel') }}</label>
+              <label class="block text-sm font-medium text-slate-700 mb-3 text-center">{{ t('settings.account.partnerLogoLabel') }}</label>
 
               <!-- Current Logo -->
               <div class="relative w-32 h-32 mx-auto mb-4">
                 <div
                   v-if="logoUrl"
-                  class="relative w-32 h-32 rounded-xl overflow-hidden bg-gray-100 border-2 border-gray-300 shadow-lg"
+                  class="relative w-32 h-32 rounded-xl overflow-hidden bg-slate-100 border-2 border-slate-300 shadow-lg"
                 >
                   <img
                     :src="logoUrl"
@@ -280,7 +280,7 @@
                 </div>
                 <div
                   v-else
-                  class="relative w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center text-gray-400 font-medium text-xs border-2 border-gray-300 shadow-lg"
+                  class="relative w-32 h-32 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center text-slate-400 font-medium text-xs border-2 border-slate-300 shadow-lg"
                 >
                   {{ t('settings.account.noLogo') }}
                 </div>
@@ -290,7 +290,7 @@
                   type="button"
                   @click="triggerLogoUpload"
                   :disabled="logoUploadLoading"
-                  class="absolute bottom-0 right-0 w-10 h-10 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 rounded-full flex items-center justify-center text-white shadow-lg transition-colors"
+                  class="absolute bottom-0 right-0 w-10 h-10 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 rounded-full flex items-center justify-center text-white shadow-lg transition-colors"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
@@ -315,7 +315,7 @@
         <button
           type="submit"
           :disabled="uploadLoading || isSubmitting"
-          class="px-6 py-2.5 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow flex items-center gap-2"
+          class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow flex items-center gap-2"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>

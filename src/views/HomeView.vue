@@ -76,7 +76,7 @@
             <div
               class="hidden lg:flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 lg:gap-8 text-xs sm:text-sm animate-fade-in animation-delay-1400"
             >
-              <div class="flex items-center space-x-2 text-gray-600">
+              <div class="flex items-center space-x-2 text-slate-600">
                 <div
                   class="w-4 h-4 sm:w-5 sm:h-5 bg-green-500 rounded-full flex items-center justify-center"
                 >
@@ -84,7 +84,7 @@
                 </div>
                 <span class="font-medium">Free to use platform</span>
               </div>
-              <div class="flex items-center space-x-2 text-gray-600">
+              <div class="flex items-center space-x-2 text-slate-600">
                 <div
                   class="w-4 h-4 sm:w-5 sm:h-5 bg-green-500 rounded-full flex items-center justify-center"
                 >
@@ -112,8 +112,8 @@
 
       <!-- Scroll Indicator -->
       <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div class="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
-          <div class="w-1 h-3 bg-gray-400 rounded-full mt-2 animate-pulse"></div>
+        <div class="w-6 h-10 border-2 border-slate-400 rounded-full flex justify-center">
+          <div class="w-1 h-3 bg-slate-400 rounded-full mt-2 animate-pulse"></div>
         </div>
       </div>
     </section>

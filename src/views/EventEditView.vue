@@ -6,14 +6,14 @@
     <div v-if="loading" class="pt-24 pb-16">
       <div class="max-w-4xl mx-auto px-6 lg:px-8">
         <div class="animate-pulse">
-          <div class="h-8 bg-gray-200 rounded mb-8"></div>
+          <div class="h-8 bg-slate-200 rounded mb-8"></div>
           <div
             class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8"
           >
             <div class="space-y-6">
-              <div class="h-4 bg-gray-200 rounded"></div>
-              <div class="h-12 bg-gray-200 rounded"></div>
-              <div class="h-32 bg-gray-200 rounded"></div>
+              <div class="h-4 bg-slate-200 rounded"></div>
+              <div class="h-12 bg-slate-200 rounded"></div>
+              <div class="h-32 bg-slate-200 rounded"></div>
             </div>
           </div>
         </div>
@@ -44,7 +44,7 @@
         >
           <!-- Basic Information -->
           <div class="space-y-4 sm:space-y-5 md:space-y-6">
-            <h2 class="text-lg sm:text-xl font-semibold text-slate-900 border-b border-gray-200 pb-2 sm:pb-3">
+            <h2 class="text-lg sm:text-xl font-semibold text-slate-900 border-b border-slate-200 pb-2 sm:pb-3">
               Basic Information
             </h2>
 
@@ -56,7 +56,7 @@
                 type="text"
                 required
                 placeholder="Enter event title"
-                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-slate-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
               />
             </div>
 
@@ -70,7 +70,7 @@
                 type="text"
                 maxlength="300"
                 placeholder="Brief description for event cards"
-                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-slate-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
               />
               <p class="text-xs text-slate-500 mt-1">
                 {{ form.short_description?.length || 0 }}/300 characters
@@ -94,7 +94,7 @@
               <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2"> Category </label>
               <select
                 v-model="form.category"
-                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_0.5rem_center] bg-no-repeat pr-10"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-slate-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_0.5rem_center] bg-no-repeat pr-10"
               >
                 <option value="">Select a category</option>
                 <option v-for="category in categories" :key="category.id" :value="category.id">
@@ -106,7 +106,7 @@
 
           <!-- Date and Time -->
           <div class="space-y-4 sm:space-y-5 md:space-y-6">
-            <h2 class="text-lg sm:text-xl font-semibold text-slate-900 border-b border-gray-200 pb-2 sm:pb-3">
+            <h2 class="text-lg sm:text-xl font-semibold text-slate-900 border-b border-slate-200 pb-2 sm:pb-3">
               Date & Time
             </h2>
 
@@ -119,7 +119,7 @@
                   v-model="form.start_date"
                   type="datetime-local"
                   required
-                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-slate-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                 />
               </div>
               <div>
@@ -130,7 +130,7 @@
                   v-model="form.end_date"
                   type="datetime-local"
                   required
-                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                  class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-slate-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
                 />
               </div>
             </div>
@@ -140,7 +140,7 @@
               <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2"> Timezone </label>
               <select
                 v-model="form.timezone"
-                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_0.5rem_center] bg-no-repeat pr-10"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-slate-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_0.5rem_center] bg-no-repeat pr-10"
               >
                 <optgroup
                   v-for="(timezones, region) in timezonesByRegion"
@@ -164,7 +164,7 @@
 
           <!-- Location -->
           <div class="space-y-4 sm:space-y-5 md:space-y-6">
-            <h2 class="text-lg sm:text-xl font-semibold text-slate-900 border-b border-gray-200 pb-2 sm:pb-3">
+            <h2 class="text-lg sm:text-xl font-semibold text-slate-900 border-b border-slate-200 pb-2 sm:pb-3">
               Location
             </h2>
 
@@ -174,7 +174,7 @@
                 v-model="form.is_virtual"
                 type="checkbox"
                 id="is_virtual"
-                class="w-4 sm:w-5 h-4 sm:h-5 text-[#1e90ff] border-gray-300 rounded focus:ring-[#1e90ff]"
+                class="w-4 sm:w-5 h-4 sm:h-5 text-[#1e90ff] border-slate-300 rounded focus:ring-[#1e90ff]"
               />
               <label for="is_virtual" class="text-xs sm:text-sm font-medium text-slate-700">
                 This is a virtual event
@@ -190,7 +190,7 @@
                 v-model="form.location"
                 rows="3"
                 placeholder="Event location address"
-                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-slate-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm resize-none"
               ></textarea>
             </div>
 
@@ -202,19 +202,19 @@
                 v-model="form.virtual_link"
                 type="url"
                 placeholder="https://zoom.us/meeting/..."
-                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                class="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-slate-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] transition-all duration-200 bg-white/70 backdrop-blur-sm"
               />
             </div>
           </div>
 
           <!-- Action Buttons -->
           <div
-            class="flex flex-row justify-end gap-2 sm:gap-3 md:gap-4 pt-4 sm:pt-6 md:pt-8 border-t border-gray-200"
+            class="flex flex-row justify-end gap-2 sm:gap-3 md:gap-4 pt-4 sm:pt-6 md:pt-8 border-t border-slate-200"
           >
             <button
               type="button"
               @click="$router.back()"
-              class="flex-1 sm:flex-none px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm border border-gray-300 text-gray-700 rounded-lg sm:rounded-xl hover:bg-gray-50 font-medium transition-all duration-200"
+              class="flex-1 sm:flex-none px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm border border-slate-300 text-slate-700 rounded-lg sm:rounded-xl hover:bg-slate-50 font-medium transition-all duration-200"
             >
               Cancel
             </button>

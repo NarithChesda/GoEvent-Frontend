@@ -119,7 +119,7 @@
                 </div>
                 <button
                   @click="showYouTubeHelpModal = false"
-                  class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                  class="text-slate-400 hover:text-slate-600 transition-colors duration-200"
                 >
                   <X class="w-5 h-5" />
                 </button>
