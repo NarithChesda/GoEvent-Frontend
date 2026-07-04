@@ -827,33 +827,44 @@
   "eventTextTab": {
     "header": {
       "title": "Showcase Texts",
-      "subtitle": "Add multi-language text content for your event showcase",
-      "edit": "Edit"
+      "subtitle": "Fill in the texts that appear on your event showcase, in every language"
     },
     "error": {
       "tryAgain": "Try again",
       "loadFailed": "Failed to load text content",
-      "loadNetworkError": "Network error while loading text content",
-      "deleteFailed": "Failed to delete text content",
-      "deleteNetworkError": "Network error while deleting text content"
+      "loadNetworkError": "Network error while loading text content"
     },
-    "empty": {
-      "title": "No text content added",
-      "description": "Add multi-language text for your event showcase",
-      "clickToAdd": "Click to add"
+    "languagesBar": {
+      "label": "Languages",
+      "add": "Add",
+      "menuAriaLabel": "Add a language",
+      "removeAriaLabel": "Remove {language}"
     },
-    "content": {
-      "languageTabsLabel": "Language tabs",
-      "inactive": "Inactive",
-      "deleteAriaLabel": "Delete {type}",
-      "emptyForLanguage": "No text content for {language}"
+    "groups": {
+      "cover": "Cover Stage",
+      "main": "Main Content",
+      "messages": "Messages & RSVP",
+      "other": "Other"
     },
-    "addAnother": {
-      "title": "Add or Edit Text Content",
-      "clickToManage": "Click to manage"
+    "slot": {
+      "emptyPreview": "Not added yet",
+      "openEditorAriaLabel": "Edit {type}",
+      "chipFilledTitle": "{language}: added",
+      "chipInactiveTitle": "{language}: hidden on showcase",
+      "chipMissingTitle": "{language}: missing"
     },
-    "deleteModal": {
-      "title": "Delete Text Content"
+    "typeHints": {
+      "cover_header": "Headline shown on the invitation cover",
+      "welcome_message": "Opening message at the top of the main content",
+      "description": "Main description section of the showcase",
+      "short_description": "Short summary text used by some templates",
+      "date_text": "Custom date wording in the event details",
+      "time_text": "Custom time wording in the event details",
+      "location_text": "Custom venue wording in the event details",
+      "instructions": "Guest instructions shown in the main content",
+      "thank_you_message": "Host message shown to guests who accept the invitation",
+      "sorry_message": "Host message shown to guests who can't attend",
+      "custom": "Free-form text for special template sections"
     },
     "textTypes": {
       "cover_header": "Cover Header",
@@ -986,34 +997,20 @@
   },
   "editEventTextDrawer": {
     "header": {
-      "title": "Event Text Content",
       "closeTitle": "Close"
     },
-    "error": {
-      "dismiss": "Dismiss"
+    "fields": {
+      "titlePlaceholder": "Add a title (optional)",
+      "contentPlaceholder": "Write the {language} text...",
+      "characters": "{count} characters"
     },
-    "language": {
-      "heading": "Language",
-      "addBtn": "Add Language",
-      "tabsAriaLabel": "Event text languages",
-      "defaultBadge": "Default",
-      "removeAriaLabel": "Remove {language}"
-    },
-    "addLanguagePopup": {
-      "title": "Add Language",
-      "selectLabel": "Select Language",
-      "selectPlaceholder": "Choose a language...",
-      "addBtn": "Add Language",
-      "cancelBtn": "Cancel"
-    },
-    "textFields": {
-      "titleLabel": "Title",
-      "titleOptional": "optional",
-      "titlePlaceholder": "Enter title for {type}",
-      "contentLabel": "Content",
-      "contentPlaceholder": "Enter {type} content...",
-      "characters": "{count} characters",
-      "deleteBtn": "Delete this text"
+    "perLanguage": {
+      "copyFromEnglish": "Copy from English",
+      "clearAriaLabel": "Remove {language} text",
+      "willBeRemoved": "This text will be removed when you save.",
+      "undo": "Undo",
+      "visibleLabel": "Visible on showcase",
+      "hiddenBadge": "Hidden"
     },
     "footer": {
       "saving": "Saving...",
@@ -1021,7 +1018,6 @@
       "cancel": "Cancel"
     },
     "messages": {
-      "deleteOnSave": "Text will be deleted when you save changes",
       "noChanges": "No changes to save",
       "operationsFailed": "{count} operation(s) failed",
       "savedSuccess": "All changes saved successfully!",

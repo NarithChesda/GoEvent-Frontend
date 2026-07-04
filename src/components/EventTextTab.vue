@@ -1,25 +1,24 @@
 <template>
   <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
     <!-- Header -->
-    <div class="flex items-start justify-between mb-6">
-      <div>
-        <h5 class="font-semibold text-slate-900">{{ t('management.eventTextTab.header.title') }}</h5>
-        <p class="text-sm text-slate-600">{{ t('management.eventTextTab.header.subtitle') }}</p>
-      </div>
-      <button
-        v-if="allTexts.length > 0"
-        @click="showTextDrawer = true"
-        class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 border-2 focus:outline-none focus:ring-2 focus:ring-offset-2 border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 focus:ring-slate-500"
-      >
-        <Pencil class="w-4 h-4" />
-        <span>{{ t('management.eventTextTab.header.edit') }}</span>
-      </button>
+    <div class="mb-6">
+      <h5 class="font-semibold text-slate-900">{{ t('management.eventTextTab.header.title') }}</h5>
+      <p class="text-sm text-slate-600">{{ t('management.eventTextTab.header.subtitle') }}</p>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading">
-      <div class="flex justify-center py-6 sm:py-8">
-        <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
+    <div v-if="loading" class="space-y-5" aria-hidden="true">
+      <div v-for="g in 2" :key="g" class="space-y-2">
+        <div class="h-3 w-24 bg-slate-200 rounded animate-pulse"></div>
+        <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+          <div v-for="r in 3" :key="r" class="p-3 sm:p-4 flex items-center gap-3">
+            <div class="w-9 h-9 bg-slate-200 rounded-lg animate-pulse flex-shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-3 w-32 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-3 w-48 bg-slate-100 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -41,177 +40,151 @@
       </div>
     </div>
 
-    <!-- Empty State -->
-    <div v-else-if="allTexts.length === 0">
-      <div
-        @click="showTextDrawer = true"
-        class="border-2 border-dashed rounded-2xl p-8 transition-all duration-300 text-center border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group"
-      >
-        <div class="flex flex-col items-center justify-center min-h-[120px]">
-          <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
-            <Plus class="w-8 h-8 transition-colors text-slate-400 group-hover:text-emerald-600" />
-          </div>
-          <p class="font-semibold transition-colors text-slate-600 group-hover:text-slate-900">{{ t('management.eventTextTab.empty.title') }}</p>
-          <p class="text-sm text-slate-500 mt-1">{{ t('management.eventTextTab.empty.description') }}</p>
-          <p class="text-xs text-slate-400 mt-1">{{ t('management.eventTextTab.empty.clickToAdd') }}</p>
-        </div>
-      </div>
-    </div>
-
     <!-- Content -->
-    <div v-else class="space-y-3 sm:space-y-4">
-      <!-- Language Tabs -->
-      <div class="bg-white rounded-xl sm:rounded-2xl border border-slate-200 overflow-hidden">
-        <div class="border-b border-slate-200 bg-slate-50/50" role="tablist" :aria-label="t('management.eventTextTab.content.languageTabsLabel')">
-          <div class="flex overflow-x-auto scrollbar-hide">
-            <button
-              v-for="lang in availableLanguages"
-              :key="lang"
-              @click="selectedLanguage = lang"
-              role="tab"
-              :aria-selected="selectedLanguage === lang"
-              :aria-controls="`tabpanel-${lang}`"
-              :id="`tab-${lang}`"
-              :class="[
-                'flex-shrink-0 px-4 py-2.5 text-sm font-medium transition-colors relative',
-                selectedLanguage === lang
-                  ? 'text-[#1e90ff] bg-white'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
-              ]"
-            >
-              {{ getLanguageName(lang) }}
-              <span
-                v-if="selectedLanguage === lang"
-                class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1e90ff]"
-              ></span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Text List for Selected Language -->
-        <div
-          role="tabpanel"
-          :id="`tabpanel-${selectedLanguage}`"
-          :aria-labelledby="`tab-${selectedLanguage}`"
-          class="divide-y divide-slate-100"
+    <div v-else class="space-y-5">
+      <!-- Languages Bar -->
+      <div class="flex items-center flex-wrap gap-2">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider mr-1">
+          {{ t('management.eventTextTab.languagesBar.label') }}
+        </span>
+        <span
+          v-for="lang in activeLanguages"
+          :key="lang"
+          class="inline-flex items-center gap-1.5 pl-3 pr-2 py-1 bg-slate-100 text-slate-700 text-sm font-medium rounded-full"
         >
-          <div
-            v-for="text in textsForSelectedLanguage"
-            :key="text.id"
-            class="p-3 sm:p-4 hover:bg-slate-50/50 transition-colors cursor-pointer sm:cursor-default"
-            @click="handleTextCardClick"
+          {{ getLanguageName(lang) }}
+          <button
+            v-if="canRemoveLanguage(lang)"
+            @click="removeLanguage(lang)"
+            :aria-label="t('management.eventTextTab.languagesBar.removeAriaLabel', { language: getLanguageName(lang) })"
+            class="p-0.5 text-slate-400 hover:text-red-600 rounded-full transition-colors"
           >
-            <div class="flex items-start justify-between gap-3">
-              <!-- Text Info -->
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                  <component
-                    :is="getTextTypeIcon(text.text_type)"
-                    class="w-3.5 h-3.5 text-[#1e90ff] flex-shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span class="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-                    {{ getTextTypeLabel(text.text_type) }}
-                  </span>
-                  <span
-                    v-if="!text.is_active"
-                    class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500"
-                  >
-                    {{ t('management.eventTextTab.content.inactive') }}
-                  </span>
-                </div>
+            <X class="w-3.5 h-3.5" aria-hidden="true" />
+          </button>
+          <span v-else class="w-1"></span>
+        </span>
 
-                <!-- Title if exists -->
-                <div v-if="text.title" class="text-sm font-medium text-slate-900 mb-0.5">
-                  {{ text.title }}
-                </div>
+        <!-- Add Language Dropdown -->
+        <div v-if="languagesForAdd.length > 0" class="relative">
+          <button
+            @click="showLanguageMenu = !showLanguageMenu"
+            class="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 transition-all"
+          >
+            <Plus class="w-3.5 h-3.5" aria-hidden="true" />
+            {{ t('management.eventTextTab.languagesBar.add') }}
+          </button>
 
-                <!-- Content Preview -->
-                <p class="text-sm text-slate-600 line-clamp-2">
-                  {{ text.content }}
-                </p>
-              </div>
-
-              <!-- Actions - Hidden on mobile -->
-              <div class="hidden sm:flex items-center gap-1 flex-shrink-0">
-                <button
-                  @click.stop="deleteText(text.id)"
-                  class="p-1.5 sm:p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                  :aria-label="t('management.eventTextTab.content.deleteAriaLabel', { type: getTextTypeLabel(text.text_type) })"
-                >
-                  <Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
-                </button>
-              </div>
+          <div v-if="showLanguageMenu" class="fixed inset-0 z-[90]" @click="showLanguageMenu = false"></div>
+          <Transition name="dropdown">
+            <div
+              v-if="showLanguageMenu"
+              class="absolute top-full left-0 mt-2 min-w-[200px] bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-[320px] overflow-y-auto py-1"
+              role="menu"
+              :aria-label="t('management.eventTextTab.languagesBar.menuAriaLabel')"
+            >
+              <button
+                v-for="lang in languagesForAdd"
+                :key="lang"
+                role="menuitem"
+                @click="addLanguage(lang)"
+                class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200 text-left"
+              >
+                {{ getLanguageName(lang) }}
+              </button>
             </div>
-          </div>
-
-          <!-- Empty state for selected language -->
-          <div v-if="textsForSelectedLanguage.length === 0" class="p-6 text-center">
-            <p class="text-sm text-slate-500">{{ t('management.eventTextTab.content.emptyForLanguage', { language: getLanguageName(selectedLanguage) }) }}</p>
-          </div>
+          </Transition>
         </div>
       </div>
 
-      <!-- Add Another Text Button - Hidden on mobile when content exists -->
-      <div
-        @click="showTextDrawer = true"
-        class="hidden sm:block border-2 border-dashed rounded-2xl p-6 transition-all duration-300 text-center border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group"
-      >
-        <div class="flex flex-col items-center justify-center">
-          <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
-            <Plus class="w-6 h-6 transition-colors text-slate-400 group-hover:text-emerald-600" />
-          </div>
-          <p class="text-sm font-semibold transition-colors text-slate-600 group-hover:text-slate-900">{{ t('management.eventTextTab.addAnother.title') }}</p>
-          <p class="text-xs text-slate-400 mt-1">{{ t('management.eventTextTab.addAnother.clickToManage') }}</p>
+      <!-- Slot Groups -->
+      <div v-for="group in slotGroups" :key="group.key" class="space-y-2">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+          {{ t(`management.eventTextTab.groups.${group.key}`) }}
+        </p>
+        <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+          <button
+            v-for="slot in group.slots"
+            :key="slot.value"
+            @click="openSlotEditor(slot.value)"
+            :aria-label="t('management.eventTextTab.slot.openEditorAriaLabel', { type: getTextTypeLabel(slot.value) })"
+            class="w-full flex items-center gap-3 p-3 sm:p-4 text-left hover:bg-slate-50 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset"
+          >
+            <!-- Icon -->
+            <div
+              class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 border"
+              :class="slotHasAnyContent(slot.value)
+                ? 'bg-sky-50 border-sky-100'
+                : 'bg-slate-50 border-slate-100'"
+            >
+              <component
+                :is="slot.icon"
+                class="w-4 h-4"
+                :class="slotHasAnyContent(slot.value) ? 'text-[#1e90ff]' : 'text-slate-400'"
+                aria-hidden="true"
+              />
+            </div>
+
+            <!-- Name + preview -->
+            <div class="flex-1 min-w-0">
+              <p
+                class="text-sm font-medium"
+                :class="slotHasAnyContent(slot.value) ? 'text-slate-900' : 'text-slate-500'"
+              >
+                {{ getTextTypeLabel(slot.value) }}
+              </p>
+              <p
+                v-if="slotHasAnyContent(slot.value)"
+                class="text-xs sm:text-sm text-slate-500 line-clamp-1"
+              >
+                {{ getSlotPreview(slot.value) }}
+              </p>
+              <p v-else class="text-xs sm:text-sm text-slate-400 italic">
+                {{ t('management.eventTextTab.slot.emptyPreview') }}
+              </p>
+            </div>
+
+            <!-- Language completion chips -->
+            <div class="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end max-w-[40%]">
+              <span
+                v-for="lang in activeLanguages"
+                :key="lang"
+                class="text-[10px] font-semibold px-1.5 py-0.5 rounded border uppercase"
+                :class="chipClasses(slot.value, lang)"
+                :title="chipTitle(slot.value, lang)"
+              >
+                {{ lang }}
+              </span>
+              <ChevronRight class="w-4 h-4 text-slate-400 ml-0.5" aria-hidden="true" />
+            </div>
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Edit Event Text Drawer -->
+    <!-- Per-slot Edit Drawer -->
     <EditEventTextDrawer
       v-model="showTextDrawer"
       :event-id="eventId"
+      :text-type="activeSlot"
+      :languages="activeLanguages"
       :existing-texts="allTexts"
-      @saved="handleTextsSaved"
-    />
-
-    <!-- Delete Confirmation Modal -->
-    <DeleteConfirmModal
-      :show="showDeleteModal"
-      :loading="deleteLoading"
-      :title="t('management.eventTextTab.deleteModal.title')"
-      :item-name="
-        textToDelete?.title ||
-        (textToDelete?.content
-          ? textToDelete.content.substring(0, 50) + (textToDelete.content.length > 50 ? '...' : '')
-          : '')
-      "
-      :warning-message="deleteError || undefined"
-      @confirm="confirmDelete"
-      @cancel="cancelDelete"
+      @saved="fetchTexts"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, type Component } from 'vue'
-import {
-  FileText,
-  MessageSquare,
-  Info,
-  Calendar,
-  Clock,
-  MapPin,
-  Heart,
-  Trash2,
-  Plus,
-  AlertCircle,
-  Pencil,
-} from 'lucide-vue-next'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { Plus, X, AlertCircle, ChevronRight } from 'lucide-vue-next'
 import { eventTextsService, type EventText } from '../services/api'
 import EditEventTextDrawer from './EditEventTextDrawer.vue'
-import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import {
+  EVENT_TEXT_SLOTS,
+  EVENT_TEXT_SLOT_GROUPS,
+  EVENT_TEXT_LANGUAGES,
+  sortEventTextLanguages,
+} from '@/utils/eventTextSlots'
 
 interface Props {
   eventId: string
@@ -219,7 +192,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { t } = useAppLanguage()
+const { t, locale } = useAppLanguage()
 
 // Track component mount state to prevent state updates after unmount
 let isMounted = true
@@ -230,93 +203,76 @@ onUnmounted(() => {
 // State
 const loading = ref(true)
 const error = ref<string | null>(null)
-const deleteError = ref<string | null>(null)
 const allTexts = ref<EventText[]>([])
-const selectedLanguage = ref<string>('')
 const showTextDrawer = ref(false)
-const showDeleteModal = ref(false)
-const deleteLoading = ref(false)
-const textToDelete = ref<EventText | null>(null)
+const showLanguageMenu = ref(false)
+const activeSlot = ref<string | null>(null)
+// Languages added by the user this session that have no saved texts yet
+const addedLanguages = ref<string[]>([])
 
-// Constants
-const LANGUAGE_PRIORITY = ['en', 'kh', 'fr', 'ja', 'ko', 'zh-cn', 'th', 'vn'] as const
-
-
-
-const TEXT_TYPE_PRIORITY = [
-  'cover_header',
-  'welcome_message',
-  'description',
-  'short_description',
-  'date_text',
-  'time_text',
-  'location_text',
-  'instructions',
-  'thank_you_message',
-  'sorry_message',
-  'custom',
-] as const
-
-const TEXT_TYPE_ICONS: Record<string, Component> = {
-  cover_header: FileText,
-  welcome_message: MessageSquare,
-  instructions: Info,
-  description: FileText,
-  short_description: FileText,
-  date_text: Calendar,
-  time_text: Clock,
-  location_text: MapPin,
-  thank_you_message: Heart,
-  sorry_message: MessageSquare,
-  custom: FileText,
-}
-
-// Computed: Get unique languages from texts, sorted by priority
-const availableLanguages = computed(() => {
-  const langs = [...new Set(allTexts.value.map((t) => t.language))]
-  return langs.sort((a, b) => {
-    const aIdx = LANGUAGE_PRIORITY.indexOf(a as typeof LANGUAGE_PRIORITY[number])
-    const bIdx = LANGUAGE_PRIORITY.indexOf(b as typeof LANGUAGE_PRIORITY[number])
-    if (aIdx === -1 && bIdx === -1) return a.localeCompare(b)
-    if (aIdx === -1) return 1
-    if (bIdx === -1) return -1
-    return aIdx - bIdx
-  })
+// Computed: languages shown as columns — English always, plus any language
+// with saved texts, plus manually added ones
+const activeLanguages = computed(() => {
+  const langs = new Set<string>(['en'])
+  allTexts.value.forEach((text) => langs.add(text.language))
+  addedLanguages.value.forEach((lang) => langs.add(lang))
+  return sortEventTextLanguages([...langs])
 })
 
-// Watch for available languages changes to set default selection
-watch(availableLanguages, (langs) => {
-  if (langs.length > 0 && !langs.includes(selectedLanguage.value)) {
-    selectedLanguage.value = langs[0]
-  }
-}, { immediate: true })
+const languagesForAdd = computed(() =>
+  EVENT_TEXT_LANGUAGES.filter((code) => !activeLanguages.value.includes(code)),
+)
 
-// Computed: Get texts for selected language, sorted by type priority
-const textsForSelectedLanguage = computed(() => {
-  return allTexts.value
-    .filter((t) => t.language === selectedLanguage.value)
-    .sort((a, b) => {
-      const aIdx = TEXT_TYPE_PRIORITY.indexOf(a.text_type as typeof TEXT_TYPE_PRIORITY[number])
-      const bIdx = TEXT_TYPE_PRIORITY.indexOf(b.text_type as typeof TEXT_TYPE_PRIORITY[number])
-      if (aIdx === -1 && bIdx === -1) return a.order - b.order
-      if (aIdx === -1) return 1
-      if (bIdx === -1) return -1
-      return aIdx - bIdx
-    })
-})
+// Slots organized by showcase location, keeping only non-empty groups
+const slotGroups = computed(() =>
+  EVENT_TEXT_SLOT_GROUPS.map((key) => ({
+    key,
+    slots: EVENT_TEXT_SLOTS.filter((s) => s.group === key),
+  })).filter((g) => g.slots.length > 0),
+)
 
 // Helper functions
 const getTextTypeLabel = (textType: string): string =>
   t(`management.eventTextTab.textTypes.${textType}`, textType)
 
-const getTextTypeIcon = (textType: string): Component => TEXT_TYPE_ICONS[textType] || FileText
-
 const getLanguageName = (code: string): string =>
   t(`management.eventTextTab.languages.${code}`, code.toUpperCase())
 
+const findText = (textType: string, lang: string): EventText | undefined =>
+  allTexts.value.find((text) => text.text_type === textType && text.language === lang)
+
+const slotHasAnyContent = (textType: string): boolean =>
+  allTexts.value.some((text) => text.text_type === textType)
+
+// Preview in the app language when available, falling back to English, then anything
+const getSlotPreview = (textType: string): string => {
+  const text =
+    findText(textType, locale.value) ||
+    findText(textType, 'en') ||
+    allTexts.value.find((entry) => entry.text_type === textType)
+  return text?.content || text?.title || ''
+}
+
+const chipClasses = (textType: string, lang: string): string => {
+  const text = findText(textType, lang)
+  if (!text) return 'bg-white text-slate-400 border-dashed border-slate-200'
+  if (!text.is_active) return 'bg-amber-50 text-amber-600 border-amber-200'
+  return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+}
+
+const chipTitle = (textType: string, lang: string): string => {
+  const text = findText(textType, lang)
+  const language = getLanguageName(lang)
+  if (!text) return t('management.eventTextTab.slot.chipMissingTitle', { language })
+  if (!text.is_active) return t('management.eventTextTab.slot.chipInactiveTitle', { language })
+  return t('management.eventTextTab.slot.chipFilledTitle', { language })
+}
+
+const canRemoveLanguage = (lang: string): boolean =>
+  lang !== 'en' && !allTexts.value.some((text) => text.language === lang)
+
 // Methods
 const fetchTexts = async () => {
-  loading.value = true
   error.value = null
 
   try {
@@ -343,81 +299,53 @@ const fetchTexts = async () => {
   }
 }
 
-const deleteText = (textId: number) => {
-  const text = allTexts.value.find((t) => t.id === textId)
-  if (!text) return
-
-  textToDelete.value = text
-  deleteError.value = null
-  showDeleteModal.value = true
-}
-
-const confirmDelete = async () => {
-  if (!textToDelete.value) return
-
-  deleteLoading.value = true
-  deleteError.value = null
-
-  try {
-    const response = await eventTextsService.deleteEventText(props.eventId, textToDelete.value.id)
-
-    if (!isMounted) return
-
-    if (response.success) {
-      allTexts.value = allTexts.value.filter((t) => t.id !== textToDelete.value!.id)
-      showDeleteModal.value = false
-      textToDelete.value = null
-    } else {
-      deleteError.value = response.message || t('management.eventTextTab.error.deleteFailed')
-    }
-  } catch {
-    if (!isMounted) return
-    deleteError.value = t('management.eventTextTab.error.deleteNetworkError')
-  } finally {
-    if (isMounted) {
-      deleteLoading.value = false
-    }
+const addLanguage = (lang: string) => {
+  if (!addedLanguages.value.includes(lang)) {
+    addedLanguages.value.push(lang)
   }
+  showLanguageMenu.value = false
 }
 
-const cancelDelete = () => {
-  showDeleteModal.value = false
-  textToDelete.value = null
-  deleteError.value = null
+const removeLanguage = (lang: string) => {
+  addedLanguages.value = addedLanguages.value.filter((code) => code !== lang)
 }
 
-// Handle text card click - opens drawer on mobile only
-const handleTextCardClick = () => {
-  // Only open drawer on mobile (< 640px)
-  if (window.innerWidth < 640) {
-    showTextDrawer.value = true
-  }
+const openSlotEditor = (textType: string) => {
+  activeSlot.value = textType
+  showTextDrawer.value = true
 }
 
-const handleTextsSaved = () => {
-  // Refresh texts from server after drawer saves
-  fetchTexts()
-}
+// Drop session-added languages that got saved texts (they're now implicit)
+watch(allTexts, (texts) => {
+  addedLanguages.value = addedLanguages.value.filter(
+    (lang) => !texts.some((text) => text.language === lang),
+  )
+})
 
 // Lifecycle
 onMounted(() => {
   fetchTexts()
 })
 
-// Expose method for parent component (Smart FAB)
+// Expose method for parent component (Smart FAB): open the first unfilled
+// slot so the FAB always lands somewhere actionable, else the first slot
 defineExpose({
   openAddModal: () => {
-    showTextDrawer.value = true
-  }
+    const firstEmpty = EVENT_TEXT_SLOTS.find((slot) => !slotHasAnyContent(slot.value))
+    openSlotEditor((firstEmpty || EVENT_TEXT_SLOTS[0]).value)
+  },
 })
 </script>
 
 <style scoped>
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
 }
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>

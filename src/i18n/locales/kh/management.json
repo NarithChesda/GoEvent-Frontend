@@ -827,33 +827,44 @@
   "eventTextTab": {
     "header": {
       "title": "អត្ថបទផ្តល់ជូន",
-      "subtitle": "បន្ថែមមាតិកាអត្ថបទពហុភាសាសម្រាប់ការបង្ហាញព្រឹត្តិការណ៍",
-      "edit": "កែប្រែ"
+      "subtitle": "បំពេញអត្ថបទដែលបង្ហាញលើការផ្តល់ជូនព្រឹត្តិការណ៍របស់អ្នក គ្រប់ភាសា"
     },
     "error": {
       "tryAgain": "ព្យាយាមម្តងទៀត",
       "loadFailed": "បរាជ័យក្នុងការផ្ទុកមាតិកាអត្ថបទ",
-      "loadNetworkError": "បញ្ហាបណ្តាញពេលផ្ទុកមាតិកាអត្ថបទ",
-      "deleteFailed": "បរាជ័យក្នុងការលុបមាតិកាអត្ថបទ",
-      "deleteNetworkError": "បញ្ហាបណ្តាញពេលលុបមាតិកាអត្ថបទ"
+      "loadNetworkError": "បញ្ហាបណ្តាញពេលផ្ទុកមាតិកាអត្ថបទ"
     },
-    "empty": {
-      "title": "មិនមានមាតិកាអត្ថបទ",
-      "description": "បន្ថែមមាតិកាអត្ថបទពហុភាសាសម្រាប់ការបង្ហាញព្រឹត្តិការណ៍",
-      "clickToAdd": "ចុចដើម្បីបន្ថែម"
+    "languagesBar": {
+      "label": "ភាសា",
+      "add": "បន្ថែម",
+      "menuAriaLabel": "បន្ថែមភាសា",
+      "removeAriaLabel": "លុប {language}"
     },
-    "content": {
-      "languageTabsLabel": "ផ្ទាំងភាសា",
-      "inactive": "មិនសកម្ម",
-      "deleteAriaLabel": "លុប {type}",
-      "emptyForLanguage": "មិនមានមាតិកាអត្ថបទសម្រាប់ {language}"
+    "groups": {
+      "cover": "ផ្នែកខាងមុខ",
+      "main": "មាតិកាសំខាន់",
+      "messages": "សារ និង RSVP",
+      "other": "ផ្សេងៗ"
     },
-    "addAnother": {
-      "title": "បន្ថែម ឬ កែប្រែមាតិកាអត្ថបទ",
-      "clickToManage": "ចុចដើម្បីគ្រប់គ្រង"
+    "slot": {
+      "emptyPreview": "មិនទាន់បានបន្ថែម",
+      "openEditorAriaLabel": "កែប្រែ {type}",
+      "chipFilledTitle": "{language}៖ បានបន្ថែម",
+      "chipInactiveTitle": "{language}៖ លាក់ពីការផ្តល់ជូន",
+      "chipMissingTitle": "{language}៖ មិនទាន់មាន"
     },
-    "deleteModal": {
-      "title": "លុបមាតិកាអត្ថបទ"
+    "typeHints": {
+      "cover_header": "ចំណងជើងបង្ហាញលើផ្នែកខាងមុខនៃលិខិតអញ្ជើញ",
+      "welcome_message": "សារស្វាគមន៍នៅផ្នែកខាងលើនៃមាតិកាសំខាន់",
+      "description": "ផ្នែកពិពណ៌នាសំខាន់នៃការផ្តល់ជូន",
+      "short_description": "អត្ថបទសង្ខេបខ្លីប្រើដោយគំរូមួយចំនួន",
+      "date_text": "ពាក្យពេចន៍កាលបរិច្ឆេទផ្ទាល់ខ្លួនក្នុងព័ត៌មានលម្អិត",
+      "time_text": "ពាក្យពេចន៍ពេលវេលាផ្ទាល់ខ្លួនក្នុងព័ត៌មានលម្អិត",
+      "location_text": "ពាក្យពេចន៍ទីតាំងផ្ទាល់ខ្លួនក្នុងព័ត៌មានលម្អិត",
+      "instructions": "ការណែនាំភ្ញៀវបង្ហាញក្នុងមាតិកាសំខាន់",
+      "thank_you_message": "សារម្ចាស់ផ្ទះបង្ហាញដល់ភ្ញៀវដែលទទួលយកការអញ្ជើញ",
+      "sorry_message": "សារម្ចាស់ផ្ទះបង្ហាញដល់ភ្ញៀវដែលមិនអាចចូលរួម",
+      "custom": "អត្ថបទសេរីសម្រាប់ផ្នែកពិសេសនៃគំរូ"
     },
     "textTypes": {
       "cover_header": "ចំណងជើងផ្នែកខាងមុខ",
@@ -986,34 +997,20 @@
   },
   "editEventTextDrawer": {
     "header": {
-      "title": "មាតិកាអត្ថបទព្រឹត្តិការណ៍",
       "closeTitle": "បិទ"
     },
-    "error": {
-      "dismiss": "បោះបង់"
+    "fields": {
+      "titlePlaceholder": "បន្ថែមចំណងជើង (ស្រេចចិត្ត)",
+      "contentPlaceholder": "សរសេរអត្ថបទជាភាសា{language}...",
+      "characters": "តួអក្សរ {count}"
     },
-    "language": {
-      "heading": "ភាសា",
-      "addBtn": "បន្ថែមភាសា",
-      "tabsAriaLabel": "ភាសាអត្ថបទព្រឹត្តិការណ៍",
-      "defaultBadge": "លំនាំដើម",
-      "removeAriaLabel": "លុប {language}"
-    },
-    "addLanguagePopup": {
-      "title": "បន្ថែមភាសា",
-      "selectLabel": "ជ្រើសរើសភាសា",
-      "selectPlaceholder": "ជ្រើសរើសភាសា...",
-      "addBtn": "បន្ថែមភាសា",
-      "cancelBtn": "បោះបង់"
-    },
-    "textFields": {
-      "titleLabel": "ចំណងជើង",
-      "titleOptional": "ស្រេចចិត្ត",
-      "titlePlaceholder": "បញ្ចូលចំណងជើងសម្រាប់ {type}",
-      "contentLabel": "មាតិកា",
-      "contentPlaceholder": "បញ្ចូលមាតិកា {type}...",
-      "characters": "តួអក្សរ {count}",
-      "deleteBtn": "លុបអត្ថបទនេះ"
+    "perLanguage": {
+      "copyFromEnglish": "ចម្លងពីអង់គ្លេស",
+      "clearAriaLabel": "លុបអត្ថបទ {language}",
+      "willBeRemoved": "អត្ថបទនេះនឹងត្រូវបានលុបនៅពេលអ្នករក្សាទុក។",
+      "undo": "ត្រឡប់វិញ",
+      "visibleLabel": "បង្ហាញលើការផ្តល់ជូន",
+      "hiddenBadge": "បានលាក់"
     },
     "footer": {
       "saving": "កំពុងរក្សាទុក...",
@@ -1021,7 +1018,6 @@
       "cancel": "បោះបង់"
     },
     "messages": {
-      "deleteOnSave": "អត្ថបទនឹងត្រូវបានលុបពេលអ្នករក្សាទុក",
       "noChanges": "មិនមានការផ្លាស់ប្តូរដើម្បីរក្សាទុក",
       "operationsFailed": "ប្រតិបត្តិការណ៍ {count} បានបរាជ័យ",
       "savedSuccess": "បានរក្សាទុករាល់ការផ្លាស់ប្តូរដោយជោគជ័យ!",
