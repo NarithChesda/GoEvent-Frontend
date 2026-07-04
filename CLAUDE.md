@@ -286,6 +286,10 @@ Field-specific errors come as: `{ "field_name": ["Error message"] }`
 - Custom breakpoints: 2xl (1536px), 3xl (1920px), 4xl (2560px)
 - Custom font: Figtree, Kantumruy Pro
 - Tailwind forms plugin included
+- **Design system guide**: [.claude/skills/goevent-design/SKILL.md](.claude/skills/goevent-design/SKILL.md) — the authoritative reference for colors, typography, radius/shadow scales, navigation, buttons, cards, forms, drawers, modals, toasts, loading/empty states, z-index layers, and animation patterns (including the showcase transition stages). Follow it for all UI work.
+- **Neutral palette is `slate` only** — the codebase was fully migrated from `gray-*` to `slate-*` (July 2026); never reintroduce `gray`/`zinc`/`neutral`/`stone` utilities
+- Brand gradient: `bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]` (raw hex form is the convention)
+- Light mode only — no dark-mode variants
 
 ## Important Implementation Patterns
 

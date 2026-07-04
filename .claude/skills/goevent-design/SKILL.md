@@ -1,0 +1,209 @@
+---
+name: goevent-design
+description: GoEvent design system and animation guide. Use whenever creating or restyling UI in this repo — pages, navigation, cards, forms, buttons, dropdowns, drawers, modals, badges, toasts, empty/loading/error states, FABs — or writing/adjusting animations and transitions (especially the event showcase cover→transition→main-content stages). Ensures new UI matches the established brand gradient, slate palette, typography/radius/shadow scales, navigation and overlay patterns, and motion language, consistently across all devices and pages.
+---
+
+# GoEvent Design System
+
+Follow these conventions whenever you build or modify UI in this repo. When in doubt, copy the closest existing component and match it exactly ([EventCard.vue](src/components/EventCard.vue), [EventCreateDrawer.vue](src/components/EventCreateDrawer.vue), [DeleteConfirmModal.vue](src/components/DeleteConfirmModal.vue) are the canonical references). The app is **light-mode only** — do not introduce dark-mode variants.
+
+## 1. Brand & Color
+
+- **Brand gradient** (primary CTA, drawer headers, FABs, active nav/filter states, hero accents):
+  `bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]` with hover `hover:from-[#27ae60] hover:to-[#1873cc]` (or `hover:opacity-90` on small buttons).
+  Use the raw hex arbitrary values — that is the established convention (43+ usages), not the `brand-*` Tailwind aliases. A few older spots use `from-emerald-500 to-blue-500`; prefer the hex form for new code.
+- **Tinted brand surfaces**: soften the gradient with alpha for backgrounds — `from-[#2ecc71]/20 to-[#1e90ff]/20` (empty-state icon discs), `/10` for placeholders.
+- **Neutrals**: `slate` is the ONLY neutral scale — never use `gray-*`, `zinc-*`, `neutral-*`, or `stone-*` utilities (the codebase was fully migrated from `gray` to `slate`; do not reintroduce it). Scale: `text-slate-900` headings, `text-slate-700` labels, `text-slate-600` body, `text-slate-500` muted, `text-slate-400` placeholder/disabled, `border-slate-300` inputs, `border-slate-200` cards/dividers, `bg-slate-50/100` subtle fills, `bg-slate-900` dark tooltips.
+- **Focus / interactive accent** in forms: `sky` (`focus:ring-sky-200 focus:border-sky-400`, toggles `bg-sky-500`, icons `text-sky-500`).
+- **Status colors**: green-500/600 = live/registered/success, `#1e90ff` = upcoming/info, slate-600 = past/neutral, red-500/600 = destructive/error, yellow-500 = warning, purple = private-event accents.
+- **Dynamic entity colors** (categories, guest groups): inline style with hex + alpha suffix, e.g. `backgroundColor: ${event.category_color || '#3B82F6'}E6`; indicator dots are `w-3 h-3 rounded-full flex-shrink-0`.
+- Fonts: `Figtree` (Latin) + `Kantumruy Pro` (Khmer) via the default `font-sans`. Showcase templates load their own fonts dynamically — never hardcode fonts there; use the template's `primaryFont`/`secondaryFont` props.
+
+## 2. Typography scale
+
+Mobile-first with `sm:`/`lg:` bumps — never a fixed large size on mobile:
+
+| Role | Classes |
+|---|---|
+| Page title | `text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900` |
+| Section/empty-state title | `text-xl lg:text-2xl font-bold text-slate-900` |
+| Card title | `text-lg sm:text-xl font-semibold text-slate-900 line-clamp-2` |
+| Panel/drawer header | `text-base font-semibold` |
+| Body / description | `text-sm sm:text-base text-slate-600 leading-relaxed` |
+| Meta / captions | `text-xs sm:text-sm text-slate-500` |
+| Form section heading | `text-xs font-semibold text-slate-500 uppercase tracking-wider` |
+| Micro labels (nav) | `text-[10.5px] font-medium` |
+
+Weights: `font-bold` page/section titles, `font-semibold` card titles + primary buttons, `font-medium` labels/badges/secondary buttons. Long user text always gets `truncate` or `line-clamp-2`.
+
+## 3. Radius, shadow & blur scales
+
+- **Radius** (pick by component size, don't invent): `rounded-lg` (8px) inputs, small buttons, badges, icon buttons · `rounded-xl` (12px) toasts, dropdown menus, list rows, large buttons · `rounded-2xl` (16px) cards, drawer panels · `rounded-3xl` (24px) modals, glass section panels · `rounded-full` pills, avatars, FABs, toggles, icon discs.
+- **Shadow**: `shadow-sm` chips/subtle cards · `shadow-md` badges, active pills, small CTAs · `shadow-lg` toasts, FABs (with colored tint like `shadow-emerald-500/25`) · `shadow-xl` glass panels, dropdown menus · `shadow-2xl` drawers, modals.
+- **Glassmorphism** (signature surface): `bg-white/80 backdrop-blur-sm border border-white/20` for panels; `bg-white/90 backdrop-blur-sm` for badges/buttons over images; `rgba(255,255,255,0.6)` + `blur(12px)` for toggle groups. Backdrops: `bg-black/40` (drawers) or `bg-black/50` (modals) + `backdrop-blur-sm`.
+
+## 4. Layout & Pages
+
+- Page shell: wrap in `<MainLayout>`; content section `py-4 sm:py-6 lg:py-8` inside `max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8`.
+- Page title row: `flex items-center justify-between` header with filters/toggles on the right; `mb-6 sm:mb-8 lg:mb-10`.
+- Vertical rhythm: sibling sections `space-y-5` or `space-y-6 sm:space-y-8`; within a group `space-y-3`; grids `gap-3` (forms) to `gap-6` (card grids).
+- **Every page needs four states**: loading skeleton, populated content, empty state, and (where auth-gated) unauthenticated state. Reuse `EventsLoadingSkeleton` / `EventsEmptyState` patterns.
+- FAB: `fixed bottom-20 lg:bottom-4 right-4 lg:right-6 w-14 h-14`, brand gradient, `rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 z-[60] group`; icon animates (`group-hover:rotate-90` for Plus) and a tooltip pill (`bg-slate-900 text-white px-3 py-2 rounded-lg text-sm`) fades in on the left. **Any fixed bottom element uses `bottom-20 lg:bottom-4`** to clear the mobile tab bar.
+
+## 5. Navigation
+
+- **Breakpoint rule: `lg` (1024px) is the desktop/mobile navigation switch.** Desktop chrome is `hidden lg:flex`; mobile chrome is `lg:hidden`.
+- Top bar height is `4rem` — fixed sub-navigation sits at `top-16`.
+- **Mobile bottom tab bar** ([MobileTabBar.vue](src/components/MobileTabBar.vue)): `lg:hidden fixed bottom-0 left-0 right-0 z-[70]`, glass background; expanding menus open with `absolute bottom-full`; menu rows are `flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200`.
+- **Manage-page desktop sidebar** ([EventNavigationTabs.vue](src/components/EventNavigationTabs.vue)): fixed icon rail `w-[88px]` glass with `border-r border-slate-200/30 z-40`, items are icon-over-label (`w-5 h-5` icon, `text-[10.5px]` label); active state = gradient edge bar (`absolute left-0 w-0.5 h-10 bg-gradient-to-b from-[#2ecc71] to-[#1e90ff] rounded-r-sm`) + `text-[#2ecc71]` icon; inactive `text-slate-400 group-hover:text-slate-600`.
+- **Manage-page mobile tab bar** ([EventManageMobileTabBar.vue](src/components/EventManageMobileTabBar.vue)): `lg:hidden fixed top-16 z-40`, horizontally scrollable (`overflow-x-auto scrollbar-hide`) with gradient edge-fade hints on both sides; active tab = `text-[#2ecc71] font-semibold` + gradient underline (`w-8 h-0.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-t-sm`); inactive `text-slate-500`, `active:scale-95` press feedback; `min-h-[40px]` touch targets.
+- **Segmented control / pill toggle** ([TimeFilterToggle.vue](src/components/events/TimeFilterToggle.vue)): glass container `rounded-full p-1` (white/60 + blur 12px + white/50 border); options `px-3 sm:px-4 py-1.5 sm:py-2 text-sm font-medium rounded-full transition-all duration-300`; selected = brand gradient + white text + `shadow-md shadow-[#2ecc71]/20`; unselected = `text-slate-600 hover:text-slate-800`.
+
+## 6. Buttons
+
+All buttons: `text-sm font-medium` (primary uses `font-semibold`), `rounded-lg` (or `rounded-xl` when large/prominent), `disabled:opacity-50 disabled:cursor-not-allowed`, `transition-colors duration-200` (or `transition-all` if shadow/transform changes). Icon+label buttons use `flex items-center gap-2` with `w-4 h-4` icons.
+
+| Variant | Recipe | Use |
+|---|---|---|
+| Primary | `px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white font-semibold rounded-lg hover:opacity-90 shadow-md` | Submit/save/create |
+| Secondary | `px-4 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg` | Cancel, neutral actions |
+| Ghost | `px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg` | Tertiary/dismiss |
+| Dark solid | `px-5 py-2.5 lg:px-6 lg:py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl` | Empty-state CTAs |
+| Destructive | `bg-red-600 hover:bg-red-700 text-white rounded-lg sm:rounded-xl` | Delete/confirm-danger |
+| Icon-only | `p-1.5` or `p-2`, `hover:bg-slate-100` (or `hover:bg-white/20` on gradient headers), `rounded-lg`, with `title`/`aria-label` | Toolbars, close buttons |
+
+**Loading state**: swap the leading icon for `Loader` with `animate-spin` (or a `border-2 border-white border-t-transparent rounded-full animate-spin` div), swap the label ("Create" → "Creating…"), disable the button, and guard the handler on the loading flag.
+
+## 7. Cards
+
+**List/grid cards (EventCard pattern):**
+- Container: `group relative bg-white rounded-2xl border border-slate-200/60 hover:border-slate-300/80 transition-all duration-300 hover:shadow-lg hover:shadow-slate-200/40 cursor-pointer overflow-hidden flex flex-col`, plus `role="article"` and an `aria-label`.
+- Banner: `aspect-[1.9/1]` (1200×630), image `object-cover transition-transform duration-500 group-hover:scale-105`. Two-stage image fallback (primary → category fallback → gradient placeholder with icon).
+- Badges over images: pill `inline-flex items-center text-xs sm:text-sm font-medium px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow-md`; solid color for status (with a `w-1.5 h-1.5 bg-white rounded-full` dot, `animate-pulse` for Live), `bg-white/90 backdrop-blur-sm` + colored text/border for type badges (Private/Virtual).
+- Hover-revealed actions (delete etc.): absolutely positioned, `opacity-0 group-hover:opacity-100`, button is `bg-white/90 backdrop-blur-sm rounded-lg border` with red hover states; call `event.stopPropagation()` in the handler.
+- Body: `p-4 sm:p-5 md:p-6 flex flex-col flex-1`; title per §2; meta rows use lucide icons `w-4 h-4 mr-2 text-slate-500 flex-shrink-0` + `truncate` text; footer sits at `mt-auto` behind `pt-3 border-t border-slate-100`. Avatars: `w-6 sm:w-7` rounded-full circles, stacked with `-space-x-2` + `border-2 border-white` and a `+N` overflow circle.
+- Images go through ImageKit: rewrite `api.goevent.online/media/` → `ik.imagekit.io/goevent/media/` and inject `tr:w-…,h-…` sized ~2–3× the display size.
+
+**Manage-page section cards (glassmorphism):**
+`bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl` with `p-6 sm:p-8` (or `p-8 sm:p-12 text-center` for empty states). Use this for the big content panels inside EventManageView tabs.
+
+## 8. Forms
+
+- Label: `block text-sm font-medium text-slate-700 mb-2`; required fields append ` *`.
+- Text/date/select input: `w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white`. Selects add `appearance-none pr-10` with an absolutely-positioned `ChevronDown` (`w-4 h-4 text-slate-400 right-3 top-1/2 -translate-y-1/2 pointer-events-none`).
+- Section heading inside forms/drawers: uppercase micro-heading per §2; sections spaced `space-y-5`, fields within a section `space-y-3`; two-column rows via `grid grid-cols-1 sm:grid-cols-2 gap-3` (single column on mobile, always).
+- Toggle row pattern (settings-style boolean): whole row clickable — `flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors`; left side = icon chip (`p-2 bg-white rounded-lg shadow-sm` + `w-4 h-4 text-sky-500` lucide icon) + label (`text-sm font-medium text-slate-700`) with description (`text-xs text-slate-500`); right side = switch `role="switch"` `aria-checked`, track `h-6 w-11 rounded-full` (`bg-sky-500` on / `bg-slate-200` off), knob `h-5 w-5 rounded-full bg-white shadow` translated `20px` when on.
+- Conditionally revealed fields wrap in `<Transition name="slide-fade">` (enter `0.3s ease-out`, leave `0.2s ease-in`, from `opacity-0 translateY(-10px)`).
+- **Validation errors**: field-level API errors arrive as `{ field: ["msg"] }`; show under the input as `text-xs sm:text-sm text-red-600 mt-1` and add `border-red-300 focus:ring-red-200 focus:border-red-400` to the invalid input. Global form errors go in a toast or an inline `bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-sm` banner.
+- All user-facing strings via i18n `t(...)` from `useAppLanguage` — never hardcode; add keys to **both** `en` and `kh` locale files.
+
+## 9. Dropdowns & menus
+
+Pattern from `GuestGroupsView.vue` (full reference: [DROPDOWN_STYLING_GUIDE.md](src/components/invitation/DROPDOWN_STYLING_GUIDE.md)):
+
+- Trigger: `flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium hover:border-emerald-300 hover:bg-emerald-50 transition-all`; label `flex-1 text-left truncate`; trailing `ChevronDown w-4 h-4 text-slate-400 transition-transform` with `rotate-180` bound to open state.
+- Menu: `absolute top-full left-0 mt-2 min-w-[250px] bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-[400px] overflow-y-auto`, rendered with `v-if` inside `<Transition name="dropdown">` (`0.2s ease`, from `opacity-0 translateY(-10px)`).
+- Items: `w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200`; default `text-slate-700 hover:bg-slate-50`; selected = brand gradient + white text. Dividers: `border-t border-slate-100`. Counts as trailing `text-xs opacity-75`.
+- Close behavior: transparent click-outside overlay `fixed inset-0 z-[90]` (menu itself at `z-[100]`), plus close on item select; support Escape where practical.
+
+## 10. Drawers (create/edit flows)
+
+Drawers are the standard for create/edit forms (not modals). Pattern from [EventCreateDrawer.vue](src/components/EventCreateDrawer.vue):
+
+- `<Teleport to="body">` with two `<Transition>`s: backdrop `name="fade"` (`fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]`, click closes) and panel `name="slide-right"`.
+- Panel: `fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[580px] lg:w-[640px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden` — full-screen sheet on mobile, floating right panel on desktop.
+- Header: sticky, brand gradient background, close button (`p-1.5 hover:bg-white/20 rounded-lg`, white `ArrowRight` icon) + white `text-base font-semibold` title.
+- Body: `flex-1 overflow-y-auto overscroll-contain`, form `p-4 space-y-5 pb-24`.
+- Footer: `flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3` with `flex items-center justify-between` — primary gradient submit button (left, with loading spinner per §6) and ghost cancel (right).
+- Panel motion: enters bottom-up on mobile (`translateY(100%)`), from the right on `md+` (`translateX(100%)`); enter `transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)` (spring-like), leave `0.3s cubic-bezier(0.4, 0, 0.6, 1)`.
+- Thin custom scrollbar: 6px, thumb `#cbd5e1` → hover `#94a3b8`, `border-radius: 3px`.
+
+## 11. Modals (confirmations, pickers)
+
+Pattern from [DeleteConfirmModal.vue](src/components/DeleteConfirmModal.vue):
+
+- `<Teleport to="body">` + `<Transition name="modal">`; wrapper `fixed inset-0 z-[1000] overflow-y-auto`; backdrop `fixed inset-0 bg-black/50 backdrop-blur-sm`; centering via `flex min-h-full items-center justify-center p-4`.
+- Panel: `relative bg-white rounded-3xl shadow-2xl p-4 sm:p-6 w-full max-w-md` with `@click.stop`.
+- Modal transition: fade `0.3s ease` on wrapper + panel scales from `0.95`.
+- Destructive confirm layout: centered icon disc `w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full` with `text-red-600` icon, bold title, `text-slate-600` message with "cannot be undone" line, then `flex gap-2 sm:gap-3` full-width buttons (secondary cancel + destructive confirm per §6).
+
+## 12. Toasts & notifications
+
+- Global system: `useNotifications()` composable + [NotificationContainer.vue](src/components/NotificationContainer.vue) — `fixed bottom-8 right-8 z-50 space-y-4 max-w-sm`; each toast `rounded-xl shadow-lg p-4 backdrop-blur-sm border border-white/20` with type color at 90% alpha (`bg-green-500/90`, `bg-red-500/90`, `bg-yellow-500/90`, `bg-[#1e90ff]/90`), white text/icons (`CheckCircle`/`AlertCircle`/`AlertTriangle`/`Info` at `w-5 h-5`), dismiss `X` at `text-white/70 hover:text-white` with an `aria-label`. `TransitionGroup name="notification"` slides in/out from the right (`translateX(100%)`, 0.3s ease).
+- Simple page-local messages may use the inline pattern: fixed `bottom-20 lg:bottom-4 right-6 z-50`, `bg-green-500`/`bg-red-500 text-white px-6 py-4 rounded-xl shadow-lg` with icon, entering via `slide-up`. Prefer `useNotifications` for new code.
+
+## 13. Loading, empty & error states
+
+- **Skeletons** ([EventsLoadingSkeleton.vue](src/components/events/EventsLoadingSkeleton.vue)): mirror the real layout with `bg-slate-200 rounded` blocks + `animate-pulse`, inside the same card chrome (`bg-white rounded-2xl shadow-sm border border-slate-100`); provide separate mobile (`sm:hidden`) and desktop (`hidden sm:flex`) skeleton layouts when the real layout differs; default 3 repetitions.
+- **Empty states** ([EventsEmptyState.vue](src/components/events/EventsEmptyState.vue)): centered `py-12 lg:py-16 px-4`; icon disc `w-24 h-24 lg:w-32 lg:h-32 rounded-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20` with a `text-[#2ecc71]` lucide icon; title + `max-w-md mx-auto` description per §2; optional dark-solid CTA per §6. Build them as reusable components with `title`/`description`/`actionLabel` props.
+- **Inline spinners**: `border-2 border-current border-t-transparent rounded-full animate-spin` sized `w-4 h-4` (buttons) to `w-8 h-8` (sections).
+- **Errors**: wrap risky component trees in `ErrorBoundary`; page-level failures show an empty-state-style block with a red icon disc (`bg-red-100` + `text-red-600`) and a retry button; API errors surface the service layer's user-friendly message — never raw exception text.
+
+## 14. Z-index ladder
+
+Fixed page chrome: page toast `z-50`, FAB `z-[60]`, mobile tab bar `z-[70]`; sub-nav/sidebars `z-40`. In-page dropdowns: click-outside overlay `z-[90]`, menu `z-[100]`. Overlays: drawer backdrop `z-[998]`, drawer panel `z-[999]`, modal `z-[1000]`. Match neighboring components.
+
+## 15. Motion language (general UI)
+
+- Micro-interactions: `transition-colors duration-200`; composite hovers `transition-all duration-300`; image zooms `duration-500`.
+- Scale on hover only for FABs/primary CTAs (`hover:scale-110`); cards lift via border + shadow instead. Mobile press feedback: `active:scale-95`.
+- Vue `<Transition>` names in use: `fade` (backdrops), `slide-right` (drawers), `slide-fade` (conditional form fields), `modal` (dialogs), `slide-up` (toasts), `dropdown` (menus), `notification` (toast group).
+- Prefer transform+opacity transitions (compositor-friendly); add `will-change` only on elements that actually animate.
+
+## 16. Showcase transition-stage animation (the reference for "cinematic" motion)
+
+The cover → main-content transition is the app's signature animation. Files: [useShowcaseAnimation.ts](src/composables/showcase/useShowcaseAnimation.ts), [TransitionStage.vue](src/components/showcase/TransitionStage.vue), [CoverDecorations.vue](src/components/showcase/cover/CoverDecorations.vue), [DoorPanel.vue](src/components/showcase/cover/DoorPanel.vue).
+
+**Two animation types**, selected by `VITE_SHOWCASE_ANIMATION_TYPE` env (default `decoration`) or prop override, exposed by `useShowcaseAnimation({ isContentHidden, animationType })` as computed class maps (`coverContainerClasses`, `leftDoorClasses`, `decorationClasses`, `mainContentClasses`). State is class-driven: a single `isContentHidden` boolean flips CSS classes; there is no JS-driven tweening.
+
+- **decoration**: the four cover decorations slide out directionally (`translateX/Y(±100%)` + fade), `0.8s ease-out` each, staggered by `transition-delay` 0.1/0.2/0.3/0.4s (left→right→top→bottom).
+- **door**: cover splits into two panels that swing open in 3D — `perspective(1500px) rotateY(∓105deg)`, `transform-origin: left/right center`, `1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)`, `backface-visibility: hidden`, `transform-style: preserve-3d`. The left panel starts full-width covering the viewport; the right panel is a mirrored copy (`width: 200%`, offset content) revealed at open time.
+
+**TransitionStage choreography** (timer-driven with `setTimeout`s, all cleared in `onUnmounted`; emits `transitionComplete` at the end):
+
+| Beat | decoration | door |
+|---|---|---|
+| Photo reveal starts | 1000ms | 0ms (visible as door swings) |
+| Footer scrim + text | 1800ms | 1200ms (door fully open) |
+| Fade-out begins | 5800ms | 5300ms |
+| `transitionComplete` | 7000ms | 6500ms |
+
+Signature techniques to reuse for similar effects:
+- **Veil reveal**: instead of animating `filter: blur()` on a fullscreen image (expensive), stack a pre-blurred bright copy (`blur(16px) brightness(1.18)`, `scale(1.04)` to hide edge bleed) and fade its opacity out over ~2.4s — reads as the photo "sharpening".
+- **Ken Burns**: run the drift (`scale 1.14→1.02` + slight translateY, 9s `cubic-bezier(0.25,0.1,0.25,1)`) on a wrapper frame so it composes with the container's opacity fade.
+- **One-shot light sweep**: diagonal white gradient band translated `-100%→100%`, `2.6s ease-in-out` with a delay so it fires after the veil lifts.
+- **Letter-by-letter bloom**: split text into `<span>`s, each starting `opacity-0 blur(6px) translateY(8px)`, animating in with `cubic-bezier(0.22, 1, 0.36, 1)` and inline `animation-delay: i * 65ms`.
+- **Letter-spacing track-in**: date fades in while `letter-spacing` settles 0.42em → 0.18em.
+- **Bokeh particles**: randomized once per mount (position/size/drift/duration as CSS custom properties), float upward via `@keyframes` on `--drift-x`/`--float-duration`.
+- **Template-driven color**: every color comes from template props (`primaryColor`, `accentColor`, `blurEffectColor`) with hex+alpha string concatenation (e.g. `${c}4d`) for gradients — never hardcode showcase colors.
+- Overlay stages use `position: absolute; inset: 0; pointer-events: none` with explicit z-index layering inside the stage.
+
+**Always include `@media (prefers-reduced-motion: reduce)`** for showcase-grade animations: kill Ken Burns/sweeps/particles, shorten fades, zero out stagger delays.
+
+## 17. Responsive & cross-device rules
+
+- **Mobile-first always**: base classes target phones; scale up with `sm:` (640) → `md:` (768) → `lg:` (1024, the nav switch) → `xl:`/`2xl:`. Custom wide breakpoints exist (`3xl` 1920, `4xl` 2560) — use only for showcase/full-bleed layouts.
+- Standard responsive bumps: text `text-xs sm:text-sm` / `text-sm sm:text-base`, padding `p-4 sm:p-5 md:p-6`, gaps `gap-2 sm:gap-3`.
+- Touch targets ≥ 40px on mobile (`min-h-[40px]`, `w-10 h-10`); they may shrink on desktop (`md:w-8 md:h-8`). Hover-only affordances must have a mobile path (always-visible on touch, or an explicit menu).
+- Horizontal overflow is handled per-container (`overflow-x-auto scrollbar-hide` + gradient edge fades), never by letting the page scroll sideways.
+- Scrollable panels inside overlays use `overscroll-contain`; decorative scrollbars use the thin 6px style (§10).
+- Grids collapse to one column on mobile: `grid-cols-1 sm:grid-cols-2` (forms), `grid-cols-1 md:grid-cols-2 lg:grid-cols-3` (card grids).
+- No dark mode, no RTL; but every string must work in both English and Khmer (Khmer runs longer — avoid fixed widths on text containers).
+
+## 18. Component conventions & accessibility
+
+- Vue 3 `<script setup lang="ts">`, typed `Props`/`Emits` interfaces with `defineProps`/`defineEmits`; reusable states (empty/skeleton/filter) become small prop-driven components under the feature folder.
+- Icons: `lucide-vue-next` only; sizes `w-4 h-4` (inline/meta/buttons), `w-5 h-5` (nav/toasts), `w-6 h-6` (FAB), larger only in icon discs.
+- Accessibility: `role`/`aria-label` on interactive cards, `role="switch"` + `aria-checked` on toggles, `aria-hidden="true"` on decorative layers, `title` or `aria-label` on every icon-only button, `alt` on meaningful images (empty `alt` + `aria-hidden` on duplicates/decorative). Keyboard: everything clickable is a real `<button>`/`<a>`; Escape closes overlays; visible focus via the sky ring pattern.
+- Sanitize any user-generated HTML with the DOMPurify utils before `v-html`.
+
+## 19. New-UI checklist
+
+Before finishing any new page/component, verify:
+1. Four states exist (loading skeleton, content, empty, error) and match §13.
+2. All strings i18n'd in `en` **and** `kh`.
+3. Neutral colors are `slate-*` only; CTAs use the brand hex gradient.
+4. Radius/shadow chosen from §3's scale; overlays use the §14 z-index ladder.
+5. Works at 375px, 768px, 1024px, and 1536px — no horizontal page scroll, touch targets ≥ 40px, fixed bottom elements clear the mobile tab bar.
+6. Transitions come from §15's named set; any large animation respects `prefers-reduced-motion`.
+7. Icon-only buttons have labels; toggles/switches have ARIA roles; focus is visible.

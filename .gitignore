@@ -38,7 +38,10 @@ playwright-report/
 !CLAUDE.md
 DESIGN_GUIDE/
 docs/
-.claude/
+# Claude Code: keep local settings private, but version project skills
+.claude/*
+!.claude/skills/
+!.claude/skills/**
 
 # Environment Variables - Security Critical (exclude ALL .env files)
 .env
