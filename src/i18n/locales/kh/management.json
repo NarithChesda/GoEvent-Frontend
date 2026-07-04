@@ -1683,47 +1683,22 @@
       "loadFailed": "បរាជ័យក្នុងការផ្ទុកទិន្នន័យការចំណាយ",
       "unexpected": "កំហុសដែលមិនបានរំពឹងទុកបានកើតឡើងពេលផ្ទុកសង្ខេប"
     },
+    "title": "ទិដ្ឋភាពថវិកា",
+    "subtitle": "របៀបដែលការចំណាយរបស់អ្នកធៀបនឹងថវិកានីមួយៗ",
+    "refresh": "ផ្ទុកសង្ខេបឡើងវិញ",
     "currencyBudget": "ថវិកា {currency}",
     "categoriesBudgeted": "{count} ប្រភេទមានថវិកា",
-    "spent": "បានចំណាយ",
-    "cards": {
-      "spent": {
-        "label": "បានចំណាយ",
-        "expensesRecorded": "{count} ការចំណាយបានកត់ត្រា",
-        "recorded": "{count} កត់ត្រា"
-      },
-      "remaining": {
-        "over": "លើស",
-        "left": "នៅសល់",
-        "exceededBudgetLimit": "លើសពីកម្រិតថវិកា",
-        "availableToSpend": "មានសម្រាប់ចំណាយ",
-        "exceeded": "លើស",
-        "available": "មាន"
-      },
-      "status": {
-        "label": "ស្ថានភាព",
-        "over": "លើស",
-        "onTrack": "កំពុងដំណើរការល្អ",
-        "reviewSpending": "ពិនិត្យការចំណាយដើម្បីត្រឡប់មកវិញ",
-        "budgetUnderControl": "ថវិកាស្ថិតក្រោមការគ្រប់គ្រង",
-        "review": "ពិនិត្យ",
-        "good": "ល្អ"
-      }
+    "expensesRecorded": "{count} ការចំណាយបានកត់ត្រា",
+    "spentLabel": "បានចំណាយ",
+    "remainingLabel": "នៅសល់",
+    "overByLabel": "លើសចំនួន",
+    "status": {
+      "onTrack": "កំពុងដំណើរការល្អ",
+      "overBudget": "លើសថវិកា"
     },
     "empty": {
-      "totalBudget": "ថវិកាសរុប",
-      "zeroCategoriesBudgeted": "0 ប្រភេទមានថវិកា",
-      "zeroSpent": "$0.00 បានចំណាយ",
-      "spent": "បានចំណាយ",
-      "left": "នៅសល់",
-      "noBudgetSetYet": "មិនទាន់មានថវិកា",
-      "noBudget": "គ្មានថវិកា",
-      "status": "ស្ថានភាព",
-      "noBudgetStatus": "គ្មានថវិកា",
-      "createBudgetToStart": "បង្កើតថវិកាដើម្បីចាប់ផ្តើមតាមដាន",
-      "createBudget": "បង្កើតថវិកា",
-      "zeroExpensesRecorded": "0 ការចំណាយបានកត់ត្រា",
-      "zeroRecorded": "0 កត់ត្រា"
+      "title": "មិនទាន់មានថវិកាទេ",
+      "description": "បង្កើតថវិកា និងកត់ត្រាការចំណាយ ដើម្បីឃើញសង្ខេបការចំណាយរបស់អ្នកនៅទីនេះ។"
     }
   },
   "expenseBudgets": {
@@ -1732,6 +1707,7 @@
       "select": "ជ្រើសរើស"
     },
     "budgetCount": "{count} ថវិកា",
+    "actions": "សកម្មភាព",
     "quickAdd": "បន្ថែមរហ័ស",
     "error": {
       "title": "កំហុសក្នុងការផ្ទុកថវិកា",
@@ -1943,23 +1919,22 @@
     "title": "ការវិភាគអំណោយសាច់ប្រាក់",
     "subtitle": "ការចែកចាយ និងការយល់ដឹងតាមក្រុមភ្ញៀវ",
     "loading": "កំពុងផ្ទុកការវិភាគ...",
+    "refresh": "ផ្ទុកការវិភាគឡើងវិញ",
     "empty": {
       "title": "មិនទាន់មានអំណោយសាច់ប្រាក់កត់ត្រា",
       "description": "ទិន្នន័យនឹងបង្ហាញនៅពេលភ្ញៀវបន្ថែមអំណោយរបស់ពួកគេ"
     },
     "metrics": {
-      "totalGifts": "អំណោយសរុប",
-      "giftsCount": "{count} អំណោយ",
       "acrossCurrencies": "ឆ្លងកាត់ {count} រូបិយប័ណ្ណ",
-      "participation": "ការចូលរួម",
-      "guestsCount": "{count} ភ្ញៀវ",
-      "outOfTotal": "ក្នុងចំណោម {count} ភ្ញៀវសរុប",
-      "currencies": "រូបិយប័ណ្ណ",
-      "activeCurrencies": "ប្រភេទរូបិយប័ណ្ណសកម្ម"
+      "participation": "ការចូលរួមផ្តល់ចំណងដៃ",
+      "participationDesc": "{count} នៃភ្ញៀវ {total} នាក់ បានផ្តល់ចំណងដៃ",
+      "giftsReceived": "ចំណងដៃដែលទទួលបាន",
+      "currencies": "រូបិយប័ណ្ណ"
     },
     "chart": {
       "fromGuests": "ពី {count} ភ្ញៀវ · មធ្យម {avg}",
-      "guestsContributed": "{count} ភ្ញៀវបានរួមចំណែក"
+      "guestsContributed": "{count} ភ្ញៀវបានរួមចំណែក",
+      "otherGroup": "ផ្សេងទៀត"
     }
   },
   "rsvpAnalytics": {

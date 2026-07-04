@@ -1683,47 +1683,22 @@
       "loadFailed": "Failed to load expense data",
       "unexpected": "An unexpected error occurred while loading the summary"
     },
+    "title": "Budget Overview",
+    "subtitle": "How your spending tracks against each budget",
+    "refresh": "Refresh summary",
     "currencyBudget": "{currency} Budget",
     "categoriesBudgeted": "{count} categories budgeted",
-    "spent": "spent",
-    "cards": {
-      "spent": {
-        "label": "Spent",
-        "expensesRecorded": "{count} expense recorded | {count} expenses recorded",
-        "recorded": "{count} recorded"
-      },
-      "remaining": {
-        "over": "Over",
-        "left": "Left",
-        "exceededBudgetLimit": "Exceeded budget limit",
-        "availableToSpend": "Available to spend",
-        "exceeded": "Exceeded",
-        "available": "Available"
-      },
-      "status": {
-        "label": "Status",
-        "over": "Over",
-        "onTrack": "On Track",
-        "reviewSpending": "Review spending to get back on track",
-        "budgetUnderControl": "Budget is under control",
-        "review": "Review",
-        "good": "Good"
-      }
+    "expensesRecorded": "{count} expense recorded | {count} expenses recorded",
+    "spentLabel": "Spent",
+    "remainingLabel": "Remaining",
+    "overByLabel": "Over by",
+    "status": {
+      "onTrack": "On track",
+      "overBudget": "Over budget"
     },
     "empty": {
-      "totalBudget": "Total Budget",
-      "zeroCategoriesBudgeted": "0 categories budgeted",
-      "zeroSpent": "$0.00 spent",
-      "spent": "Spent",
-      "left": "Left",
-      "noBudgetSetYet": "No budget set yet",
-      "noBudget": "No budget",
-      "status": "Status",
-      "noBudgetStatus": "No Budget",
-      "createBudgetToStart": "Create a budget to start tracking",
-      "createBudget": "Create budget",
-      "zeroExpensesRecorded": "0 expenses recorded",
-      "zeroRecorded": "0 recorded"
+      "title": "No budgets yet",
+      "description": "Create a budget and record expenses to see your spending summary here."
     }
   },
   "expenseBudgets": {
@@ -1732,6 +1707,7 @@
       "select": "Select"
     },
     "budgetCount": "budget | budgets",
+    "actions": "Actions",
     "quickAdd": "Quick Add",
     "error": {
       "title": "Error Loading Budgets",
@@ -1943,23 +1919,22 @@
     "title": "Cash Gift Analytics",
     "subtitle": "Distribution and insights across guest groups",
     "loading": "Loading analytics...",
+    "refresh": "Refresh analytics",
     "empty": {
       "title": "No cash gifts recorded yet",
       "description": "Data will appear once guests add their gifts"
     },
     "metrics": {
-      "totalGifts": "Total Gifts",
-      "giftsCount": "{count} gifts",
       "acrossCurrencies": "Across {count} currency | Across {count} currencies",
-      "participation": "Participation",
-      "guestsCount": "{count} guests",
-      "outOfTotal": "Out of {count} total guests",
-      "currencies": "Currencies",
-      "activeCurrencies": "Active currency types"
+      "participation": "Gift participation",
+      "participationDesc": "{count} of {total} guests gave a gift",
+      "giftsReceived": "Gifts received",
+      "currencies": "Currencies"
     },
     "chart": {
       "fromGuests": "From {count} guest · Avg {avg} | From {count} guests · Avg {avg}",
-      "guestsContributed": "{count} guest contributed | {count} guests contributed"
+      "guestsContributed": "{count} guest contributed | {count} guests contributed",
+      "otherGroup": "Other"
     }
   },
   "rsvpAnalytics": {

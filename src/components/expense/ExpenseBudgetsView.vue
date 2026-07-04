@@ -114,7 +114,7 @@
           <button
             v-if="canEdit"
             @click="$emit('quick-add')"
-            class="flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-all duration-200 flex-shrink-0"
+            class="flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:opacity-90 text-white text-sm font-semibold rounded-xl shadow-md transition-all duration-200 flex-shrink-0"
           >
             <Plus class="w-4 h-4" />
             <span class="hidden sm:inline">{{ t('management.expenseBudgets.quickAdd') }}</span>
@@ -123,9 +123,27 @@
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="flex justify-center items-center py-12">
-      <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+    <!-- Click outside to close row action menus -->
+    <div
+      v-if="openActionMenu"
+      @click="closeActionMenu"
+      class="fixed inset-0 z-[90]"
+    ></div>
+
+    <!-- Loading skeleton -->
+    <div v-if="loading" class="animate-pulse space-y-3" aria-hidden="true">
+      <div
+        v-for="i in 3"
+        :key="i"
+        class="flex items-center gap-3 rounded-2xl border border-slate-200/60 bg-white/80 px-4 py-3"
+      >
+        <div class="h-9 w-9 flex-shrink-0 rounded-lg bg-slate-100" />
+        <div class="min-w-0 flex-1 space-y-2">
+          <div class="h-3 w-40 max-w-full rounded bg-slate-100" />
+          <div class="h-1.5 w-full rounded-full bg-slate-100" />
+        </div>
+        <div class="h-3 w-20 flex-shrink-0 rounded bg-slate-100" />
+      </div>
     </div>
 
     <!-- Error State -->
@@ -150,7 +168,7 @@
       <div
         v-for="budget in filteredBudgets"
         :key="budget.id"
-        class="bg-white/80 border border-slate-200/60 rounded-2xl hover:border-slate-300 hover:bg-white overflow-hidden transition-all duration-200"
+        class="bg-white/80 border border-slate-200/60 rounded-2xl hover:border-slate-300 hover:bg-white transition-all duration-200"
       >
         <!-- Budget Header (Clickable) - Compact -->
         <div
@@ -223,37 +241,50 @@
               </div>
             </div>
 
-            <!-- Actions + Expand -->
-            <div class="flex items-center gap-0.5 flex-shrink-0">
-              <!-- Edit -->
+            <!-- Actions: single kebab button opening a menu (works the same
+              on desktop and touch — no hover dependency, no reserved space) -->
+            <div v-if="canEdit" class="relative flex-shrink-0">
               <button
-                v-if="canEdit"
-                @click.stop="editBudget(budget)"
-                :aria-label="`${t('management.expenseBudgets.editBudget')} - ${budget.category_info.name}`"
-                :title="t('management.expenseBudgets.editBudget')"
-                class="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                @click.stop="toggleActionMenu(`budget-${budget.id}`)"
+                :aria-label="`${t('management.expenseBudgets.actions')} - ${budget.category_info.name}`"
+                :title="t('management.expenseBudgets.actions')"
+                :aria-expanded="openActionMenu === `budget-${budget.id}`"
+                class="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                :class="{ 'bg-slate-100 text-slate-600': openActionMenu === `budget-${budget.id}` }"
               >
-                <Edit2 class="w-4 h-4" />
+                <MoreVertical class="w-4 h-4" />
               </button>
 
-              <!-- Delete -->
-              <button
-                v-if="canEdit"
-                @click.stop="confirmDeleteBudget(budget)"
-                :aria-label="`${t('management.expenseBudgets.deleteBudget')} - ${budget.category_info.name}`"
-                :title="t('management.expenseBudgets.deleteBudget')"
-                class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
-              >
-                <Trash2 class="w-4 h-4" />
-              </button>
+              <Transition name="dropdown">
+                <div
+                  v-if="openActionMenu === `budget-${budget.id}`"
+                  class="absolute right-0 top-full z-[100] mt-1 w-44 rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
+                  @click.stop
+                >
+                  <button
+                    @click.stop="closeActionMenu(); editBudget(budget)"
+                    class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                  >
+                    <Edit2 class="w-4 h-4 text-slate-400" />
+                    {{ t('management.expenseBudgets.editBudget') }}
+                  </button>
+                  <button
+                    @click.stop="closeActionMenu(); confirmDeleteBudget(budget)"
+                    class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+                  >
+                    <Trash2 class="w-4 h-4" />
+                    {{ t('management.expenseBudgets.deleteBudget') }}
+                  </button>
+                </div>
+              </Transition>
+            </div>
 
-              <!-- Expand indicator -->
-              <div class="w-6 flex justify-center">
-                <ChevronDown
-                  class="w-4 h-4 text-slate-400 transition-transform duration-200"
-                  :class="{ 'rotate-180': isBudgetExpanded(budget.id) }"
-                />
-              </div>
+            <!-- Expand indicator (always visible) -->
+            <div class="w-6 flex justify-center flex-shrink-0">
+              <ChevronDown
+                class="w-4 h-4 text-slate-400 transition-transform duration-200"
+                :class="{ 'rotate-180': isBudgetExpanded(budget.id) }"
+              />
             </div>
           </div>
         </div>
@@ -261,7 +292,7 @@
         <!-- Expense Items (Collapsible) -->
         <Transition name="slide-down">
           <div v-if="isBudgetExpanded(budget.id)" class="border-t border-slate-100">
-            <div class="px-3 sm:px-4 py-2.5 bg-slate-50/40">
+            <div class="px-3 sm:px-4 py-2.5 bg-slate-50/40 rounded-b-2xl">
               <!-- Loading expenses -->
               <div v-if="loadingExpenses" class="flex justify-center py-3">
                 <div class="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
@@ -275,7 +306,7 @@
                 <div
                   v-for="expense in getBudgetExpenses(budget.category)"
                   :key="expense.id"
-                  class="bg-white/80 border border-slate-200/60 rounded-2xl hover:border-slate-300 hover:bg-white transition-all duration-200 group"
+                  class="relative bg-white/80 border border-slate-200/60 rounded-2xl hover:border-slate-300 hover:bg-white transition-all duration-200 group"
                 >
                   <div class="flex items-center gap-3 px-4 py-3">
                     <div class="flex-1 min-w-0">
@@ -307,27 +338,41 @@
                       </div>
                     </div>
 
-                    <!-- Actions -->
-                    <div v-if="canEdit" class="flex items-center gap-0.5 flex-shrink-0">
-                      <!-- Edit -->
+                    <!-- Actions: kebab menu, consistent with the budget rows -->
+                    <div v-if="canEdit" class="relative flex-shrink-0">
                       <button
-                        @click.stop="editExpense(expense)"
-                        :aria-label="`${t('management.expenseBudgets.editExpense')} - ${expense.description}`"
-                        :title="t('management.expenseBudgets.editExpense')"
-                        class="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                        @click.stop="toggleActionMenu(`expense-${expense.id}`)"
+                        :aria-label="`${t('management.expenseBudgets.actions')} - ${expense.description}`"
+                        :title="t('management.expenseBudgets.actions')"
+                        :aria-expanded="openActionMenu === `expense-${expense.id}`"
+                        class="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                        :class="{ 'bg-slate-100 text-slate-600': openActionMenu === `expense-${expense.id}` }"
                       >
-                        <Edit2 class="w-4 h-4" />
+                        <MoreVertical class="w-4 h-4" />
                       </button>
 
-                      <!-- Delete -->
-                      <button
-                        @click.stop="confirmDeleteExpense(expense)"
-                        :aria-label="`${t('management.expenseBudgets.deleteExpense')} - ${expense.description}`"
-                        :title="t('management.expenseBudgets.deleteExpense')"
-                        class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
-                      >
-                        <Trash2 class="w-4 h-4" />
-                      </button>
+                      <Transition name="dropdown">
+                        <div
+                          v-if="openActionMenu === `expense-${expense.id}`"
+                          class="absolute right-0 top-full z-[100] mt-1 w-44 rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
+                          @click.stop
+                        >
+                          <button
+                            @click.stop="closeActionMenu(); editExpense(expense)"
+                            class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                          >
+                            <Edit2 class="w-4 h-4 text-slate-400" />
+                            {{ t('management.expenseBudgets.editExpense') }}
+                          </button>
+                          <button
+                            @click.stop="closeActionMenu(); confirmDeleteExpense(expense)"
+                            class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+                          >
+                            <Trash2 class="w-4 h-4" />
+                            {{ t('management.expenseBudgets.deleteExpense') }}
+                          </button>
+                        </div>
+                      </Transition>
                     </div>
                   </div>
                 </div>
@@ -441,7 +486,8 @@ import {
   Plus,
   Paperclip,
   Filter,
-  Eye
+  Eye,
+  MoreVertical
 } from 'lucide-vue-next'
 import {
   expenseBudgetsService,
@@ -496,6 +542,17 @@ const showDeleteExpenseModal = ref(false)
 const activeFilter = ref<string>('all')
 const isFilterDropdownOpen = ref(false)
 const filterContainer = ref<HTMLElement | null>(null)
+
+// Row action menus (kebab) — one open at a time, keyed `budget-{id}` / `expense-{id}`
+const openActionMenu = ref<string | null>(null)
+
+const toggleActionMenu = (id: string) => {
+  openActionMenu.value = openActionMenu.value === id ? null : id
+}
+
+const closeActionMenu = () => {
+  openActionMenu.value = null
+}
 
 // Computed properties for filtering
 const filteredBudgets = computed(() => {
