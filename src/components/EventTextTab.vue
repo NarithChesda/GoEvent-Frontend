@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
+  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
     <!-- Header -->
     <div class="mb-6">
       <h5 class="font-semibold text-slate-900">{{ t('management.eventTextTab.header.title') }}</h5>
@@ -50,14 +50,14 @@
         <span
           v-for="lang in activeLanguages"
           :key="lang"
-          class="inline-flex items-center gap-1.5 pl-3 pr-2 py-1 bg-slate-100 text-slate-700 text-sm font-medium rounded-full"
+          class="inline-flex items-center gap-1 pl-3 pr-1.5 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-full"
         >
           {{ getLanguageName(lang) }}
           <button
             v-if="canRemoveLanguage(lang)"
             @click="removeLanguage(lang)"
             :aria-label="t('management.eventTextTab.languagesBar.removeAriaLabel', { language: getLanguageName(lang) })"
-            class="p-0.5 text-slate-400 hover:text-red-600 rounded-full transition-colors"
+            class="p-1 -my-1 text-slate-400 hover:text-red-600 active:text-red-600 rounded-full transition-colors"
           >
             <X class="w-3.5 h-3.5" aria-hidden="true" />
           </button>
@@ -68,7 +68,7 @@
         <div v-if="languagesForAdd.length > 0" class="relative">
           <button
             @click="showLanguageMenu = !showLanguageMenu"
-            class="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 transition-all"
+            class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
           >
             <Plus class="w-3.5 h-3.5" aria-hidden="true" />
             {{ t('management.eventTextTab.languagesBar.add') }}
@@ -107,7 +107,7 @@
             :key="slot.value"
             @click="openSlotEditor(slot.value)"
             :aria-label="t('management.eventTextTab.slot.openEditorAriaLabel', { type: getTextTypeLabel(slot.value) })"
-            class="w-full flex items-center gap-3 p-3 sm:p-4 text-left hover:bg-slate-50 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset"
+            class="w-full flex items-center gap-3 p-3 sm:p-4 min-h-[56px] text-left hover:bg-slate-50 active:bg-slate-100 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset"
           >
             <!-- Icon -->
             <div
@@ -124,38 +124,41 @@
               />
             </div>
 
-            <!-- Name + preview -->
+            <!-- Name + chips + preview -->
             <div class="flex-1 min-w-0">
-              <p
-                class="text-sm font-medium"
-                :class="slotHasAnyContent(slot.value) ? 'text-slate-900' : 'text-slate-500'"
-              >
-                {{ getTextTypeLabel(slot.value) }}
-              </p>
+              <div class="flex items-center justify-between gap-2">
+                <p
+                  class="text-sm font-medium truncate"
+                  :class="slotHasAnyContent(slot.value) ? 'text-slate-900' : 'text-slate-500'"
+                >
+                  {{ getTextTypeLabel(slot.value) }}
+                </p>
+
+                <!-- Language completion chips -->
+                <div class="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end">
+                  <span
+                    v-for="lang in activeLanguages"
+                    :key="lang"
+                    class="text-[10px] font-semibold px-1.5 py-0.5 rounded border uppercase"
+                    :class="chipClasses(slot.value, lang)"
+                    :title="chipTitle(slot.value, lang)"
+                  >
+                    {{ lang }}
+                  </span>
+                </div>
+              </div>
               <p
                 v-if="slotHasAnyContent(slot.value)"
-                class="text-xs sm:text-sm text-slate-500 line-clamp-1"
+                class="text-xs sm:text-sm text-slate-500 line-clamp-1 mt-0.5"
               >
                 {{ getSlotPreview(slot.value) }}
               </p>
-              <p v-else class="text-xs sm:text-sm text-slate-400 italic">
+              <p v-else class="text-xs sm:text-sm text-slate-400 italic mt-0.5">
                 {{ t('management.eventTextTab.slot.emptyPreview') }}
               </p>
             </div>
 
-            <!-- Language completion chips -->
-            <div class="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end max-w-[40%]">
-              <span
-                v-for="lang in activeLanguages"
-                :key="lang"
-                class="text-[10px] font-semibold px-1.5 py-0.5 rounded border uppercase"
-                :class="chipClasses(slot.value, lang)"
-                :title="chipTitle(slot.value, lang)"
-              >
-                {{ lang }}
-              </span>
-              <ChevronRight class="w-4 h-4 text-slate-400 ml-0.5" aria-hidden="true" />
-            </div>
+            <ChevronRight class="w-4 h-4 text-slate-400 flex-shrink-0" aria-hidden="true" />
           </button>
         </div>
       </div>
