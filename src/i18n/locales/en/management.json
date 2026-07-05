@@ -57,6 +57,12 @@
       "createSuccess": "Agenda item created successfully!",
       "error": "An error occurred"
     },
+    "languages": {
+      "add": "Add language",
+      "copyFromEnglish": "Copy from English",
+      "removeAria": "Remove {language} translation",
+      "menuAria": "Add a language"
+    },
     "fields": {
       "title": "Title",
       "titlePlaceholder": "Enter agenda item title",
@@ -124,6 +130,10 @@
     "loadingText": "Loading agenda...",
     "unscheduled": "Unscheduled Items",
     "agendaItems": "agenda items",
+    "dayActions": {
+      "changeDate": "Change date for all items",
+      "deleteAll": "Delete all items in this date"
+    },
     "count": {
       "item": "item",
       "items": "items"

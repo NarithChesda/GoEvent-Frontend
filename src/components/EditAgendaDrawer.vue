@@ -59,69 +59,138 @@
 
           <!-- Form -->
           <form @submit.prevent="handleSubmit" class="p-3 laptop-sm:p-4 space-y-4 laptop-sm:space-y-5 pb-24">
-            <!-- Language Tabs Section -->
-            <div>
-              <LanguageTabs
-                :active-tab="activeTab"
-                :translations="formData.translations"
-                :show-add-translation="showAddTranslation"
-                :new-translation="newTranslation"
-                :available-languages-for-add="availableLanguagesForAdd"
-                :get-language-name="getLanguageName"
-                @update:active-tab="activeTab = $event"
-                @update:show-add-translation="showAddTranslation = $event"
-                @update:new-translation="Object.assign(newTranslation, $event)"
-                @add-translation="addTranslation"
-                @remove-translation="removeTranslation"
-                @focus-next-tab="focusNextTab"
-                @focus-previous-tab="focusPreviousTab"
-              />
-            </div>
-
-            <!-- Form Content -->
-            <div class="space-y-4 laptop-sm:space-y-5">
-              <!-- English Content (Default Language) -->
+            <!-- One seamless editor card per language (EditEventTextDrawer pattern) -->
+            <div class="space-y-4">
               <div
-                v-if="activeTab === 'en'"
-                role="tabpanel"
-                id="tabpanel-en"
-                aria-labelledby="tab-en"
-                tabindex="0"
-                class="space-y-4 laptop-sm:space-y-5"
+                v-for="entry in languageEntries"
+                :key="entry.lang"
+                class="rounded-xl border border-slate-200 bg-white transition-all focus-within:border-sky-300 focus-within:ring-2 focus-within:ring-sky-100"
               >
-                <AgendaFormFields
-                  v-model:title="formData.title"
-                  v-model:start-time-text="formData.start_time_text"
-                  v-model:end-time-text="formData.end_time_text"
-                  v-model:description="formData.description"
-                  v-model:speaker="formData.speaker"
-                  v-model:description-open="descriptionOpen"
-                  v-model:speaker-open="speakerOpen"
-                  :field-errors="fieldErrors"
-                />
+                <!-- Card header: language + compact actions -->
+                <div class="flex items-center justify-between gap-2 pl-4 pr-2 pt-2.5">
+                  <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    {{ languageLabel(entry.lang) }}
+                  </span>
+                  <div class="flex items-center gap-0.5">
+                    <button
+                      v-if="!entry.isBase && canCopyFromEnglish"
+                      type="button"
+                      @click="copyFromEnglish(entry.model)"
+                      class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors"
+                    >
+                      <Copy class="w-3.5 h-3.5" aria-hidden="true" />
+                      <span>{{ t('management.agendaDrawer.languages.copyFromEnglish') }}</span>
+                    </button>
+                    <button
+                      v-if="!entry.isBase"
+                      type="button"
+                      @click="removeTranslation(entry.index)"
+                      :aria-label="t('management.agendaDrawer.languages.removeAria', { language: languageLabel(entry.lang) })"
+                      class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 class="w-4 h-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Seamless fields: the card is the input -->
+                <div class="px-4 pb-2 pt-1 divide-y divide-slate-100">
+                  <div class="py-1">
+                    <input
+                      v-model="entry.model.title"
+                      type="text"
+                      class="w-full p-0 py-1 text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal bg-transparent border-0 focus:outline-none focus:ring-0"
+                      :placeholder="entry.isBase
+                        ? t('management.agendaDrawer.fields.titlePlaceholder')
+                        : t('management.agendaDrawer.fields.titlePlaceholderLang', { lang: languageLabel(entry.lang) })"
+                      :aria-label="t('management.agendaDrawer.fields.title')"
+                    />
+                    <p v-if="entry.isBase && fieldErrors?.title" class="text-xs text-red-600 pb-1">
+                      {{ fieldErrors.title }}
+                    </p>
+                  </div>
+
+                  <div class="py-1.5 flex items-center gap-2">
+                    <Clock class="w-4 h-4 text-slate-400 flex-shrink-0" aria-hidden="true" />
+                    <input
+                      v-model="entry.model.start_time_text"
+                      type="text"
+                      class="w-28 p-0 py-1 text-sm text-slate-700 placeholder:text-slate-400 bg-transparent border-0 focus:outline-none focus:ring-0"
+                      :placeholder="entry.isBase
+                        ? t('management.agendaDrawer.fields.startTimePlaceholder')
+                        : t('management.agendaDrawer.fields.startTimePlaceholderLang', { lang: languageLabel(entry.lang) })"
+                      :aria-label="t('management.agendaDrawer.fields.startTime')"
+                    />
+                    <span class="text-slate-300 flex-shrink-0" aria-hidden="true">–</span>
+                    <input
+                      v-model="entry.model.end_time_text"
+                      type="text"
+                      class="flex-1 min-w-0 p-0 py-1 text-sm text-slate-700 placeholder:text-slate-400 bg-transparent border-0 focus:outline-none focus:ring-0"
+                      :placeholder="entry.isBase
+                        ? t('management.agendaDrawer.fields.endTimePlaceholder')
+                        : t('management.agendaDrawer.fields.endTimePlaceholderLang', { lang: languageLabel(entry.lang) })"
+                      :aria-label="t('management.agendaDrawer.fields.endTime')"
+                    />
+                  </div>
+
+                  <div class="py-1">
+                    <textarea
+                      v-model="entry.model.description"
+                      rows="2"
+                      class="w-full p-0 py-1 text-sm text-slate-700 leading-relaxed placeholder:text-slate-400 bg-transparent border-0 focus:outline-none focus:ring-0 resize-none min-h-[48px] [field-sizing:content]"
+                      :placeholder="entry.isBase
+                        ? t('management.agendaDrawer.fields.descriptionPlaceholder')
+                        : t('management.agendaDrawer.fields.descriptionPlaceholderLang', { lang: languageLabel(entry.lang) })"
+                      :aria-label="t('management.agendaDrawer.fields.description')"
+                    ></textarea>
+                  </div>
+
+                  <div class="py-1.5 flex items-center gap-2">
+                    <User class="w-4 h-4 text-slate-400 flex-shrink-0" aria-hidden="true" />
+                    <input
+                      v-model="entry.model.speaker"
+                      type="text"
+                      class="flex-1 min-w-0 p-0 py-1 text-sm text-slate-700 placeholder:text-slate-400 bg-transparent border-0 focus:outline-none focus:ring-0"
+                      :placeholder="entry.isBase
+                        ? t('management.agendaDrawer.fields.speakerPlaceholder')
+                        : t('management.agendaDrawer.fields.speakerPlaceholderLang', { lang: languageLabel(entry.lang) })"
+                      :aria-label="t('management.agendaDrawer.fields.speakers')"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <!-- Other Language Tabs Content -->
-              <div
-                v-for="(translation, index) in formData.translations"
-                :key="translation.id || index"
-                v-show="activeTab === translation.language"
-                role="tabpanel"
-                :id="'tabpanel-' + translation.language"
-                :aria-labelledby="'tab-' + translation.language"
-                tabindex="0"
-                class="space-y-4 laptop-sm:space-y-5"
-              >
-                <AgendaFormFields
-                  v-model:title="translation.title"
-                  v-model:start-time-text="translation.start_time_text"
-                  v-model:end-time-text="translation.end_time_text"
-                  v-model:description="translation.description"
-                  v-model:speaker="translation.speaker"
-                  v-model:description-open="descriptionOpen"
-                  v-model:speaker-open="speakerOpen"
-                  :language-name="getLanguageName(translation.language)"
-                />
+              <!-- Add Language -->
+              <div v-if="availableLanguagesForAdd.length > 0" class="relative">
+                <button
+                  type="button"
+                  @click="showLanguageMenu = !showLanguageMenu"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
+                >
+                  <Plus class="w-3.5 h-3.5" aria-hidden="true" />
+                  {{ t('management.agendaDrawer.languages.add') }}
+                </button>
+
+                <div v-if="showLanguageMenu" class="fixed inset-0 z-[90]" @click="showLanguageMenu = false"></div>
+                <Transition name="dropdown">
+                  <div
+                    v-if="showLanguageMenu"
+                    class="absolute top-full left-0 mt-2 min-w-[200px] bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-[280px] overflow-y-auto py-1"
+                    role="menu"
+                    :aria-label="t('management.agendaDrawer.languages.menuAria')"
+                  >
+                    <button
+                      v-for="lang in availableLanguagesForAdd"
+                      :key="lang.code"
+                      type="button"
+                      role="menuitem"
+                      @click="addLanguage(lang.code)"
+                      class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200 text-left"
+                    >
+                      {{ languageLabel(lang.code) }}
+                    </button>
+                  </div>
+                </Transition>
               </div>
             </div>
 
@@ -220,7 +289,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, toRef } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, toRef } from 'vue'
 import {
   ArrowRight,
   AlertCircle,
@@ -228,6 +297,10 @@ import {
   Loader,
   Save,
   Trash2,
+  Copy,
+  Plus,
+  Clock,
+  User,
 } from 'lucide-vue-next'
 import type { EventAgendaItem, AgendaTranslation } from '@/services/api'
 
@@ -237,8 +310,6 @@ import { useTranslations } from '@/composables/useTranslations'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 
 // Child components
-import LanguageTabs from './host/LanguageTabs.vue'
-import AgendaFormFields from './agenda/AgendaFormFields.vue'
 import ScheduleSection from './agenda/ScheduleSection.vue'
 import LocationSection from './agenda/LocationSection.vue'
 import DisplayOptionsSection from './agenda/DisplayOptionsSection.vue'
@@ -295,22 +366,68 @@ const defaultTranslation: Omit<AgendaTranslation, 'id' | 'agenda' | 'created_at'
 }
 
 const {
-  activeTab,
-  showAddTranslation,
-  newTranslation,
   availableLanguagesForAdd,
   getLanguageName,
-  addTranslation,
   removeTranslation,
-  focusNextTab,
-  focusPreviousTab,
 } = useTranslations(toRef(formData, 'translations'), defaultTranslation)
 
 // Local UI state
-const descriptionOpen = ref(false)
-const speakerOpen = ref(false)
 const locationOpen = ref(false)
 const displayOpen = ref(false)
+const showLanguageMenu = ref(false)
+
+// --- Per-language editor cards (EditEventTextDrawer pattern) ---
+
+// The translatable text fields shared by the base item and its translations
+interface AgendaTextFields {
+  title: string
+  description: string
+  speaker: string
+  start_time_text: string
+  end_time_text: string
+}
+
+// English (base fields) first, then one card per translation
+const languageEntries = computed(() => [
+  { lang: 'en', model: formData as AgendaTextFields, isBase: true, index: -1 },
+  ...formData.translations.map((translation, index) => ({
+    lang: translation.language,
+    model: translation as AgendaTextFields,
+    isBase: false,
+    index,
+  })),
+])
+
+// Prefer the showcase-texts localized language names, falling back to the
+// composable's English names for languages without a locale entry
+const languageLabel = (code: string): string =>
+  t(`management.eventTextTab.languages.${code}`, getLanguageName(code))
+
+const addLanguage = (code: string) => {
+  if (!formData.translations.some((translation) => translation.language === code)) {
+    formData.translations.push({ ...defaultTranslation, language: code })
+  }
+  showLanguageMenu.value = false
+}
+
+const canCopyFromEnglish = computed(
+  () =>
+    !!(
+      formData.title ||
+      formData.description ||
+      formData.speaker ||
+      formData.start_time_text ||
+      formData.end_time_text
+    ),
+)
+
+const copyFromEnglish = (model: AgendaTextFields) => {
+  model.title = formData.title
+  model.description = formData.description
+  model.speaker = formData.speaker
+  model.start_time_text = formData.start_time_text
+  model.end_time_text = formData.end_time_text
+}
 
 // Select icon handler
 const selectIcon = (iconId: number | null) => {
@@ -363,6 +480,15 @@ const getScrollbarWidth = (): number => {
   return window.innerWidth - document.documentElement.clientWidth
 }
 
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key !== 'Escape') return
+  if (showLanguageMenu.value) {
+    showLanguageMenu.value = false
+    return
+  }
+  closeDrawer()
+}
+
 // Watch for drawer open/close
 watch(
   () => props.modelValue,
@@ -371,11 +497,9 @@ watch(
       // Reset form with current item data when drawer opens
       resetForm(props.item, props.existingAgendaItems)
       // Reset UI state
-      activeTab.value = 'en'
-      descriptionOpen.value = false
-      speakerOpen.value = false
       locationOpen.value = false
       displayOpen.value = false
+      showLanguageMenu.value = false
 
       // Initialize translations for create mode
       if (!props.item) {
@@ -387,9 +511,11 @@ watch(
       if (scrollbarWidth > 0) {
         document.body.style.paddingRight = `${scrollbarWidth}px`
       }
+      document.addEventListener('keydown', handleKeydown)
     } else {
       document.body.style.overflow = ''
       document.body.style.paddingRight = ''
+      document.removeEventListener('keydown', handleKeydown)
     }
   },
 )
@@ -404,6 +530,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.body.style.overflow = ''
   document.body.style.paddingRight = ''
+  document.removeEventListener('keydown', handleKeydown)
 })
 </script>
 
@@ -438,6 +565,18 @@ onBeforeUnmount(() => {
   .slide-right-leave-to {
     transform: translateX(100%);
   }
+}
+
+/* Dropdown transition for the add-language menu */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 /* Slide up transition for toast */

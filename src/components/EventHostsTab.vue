@@ -2,8 +2,8 @@
   <div class="space-y-6">
     <!-- Header + Toolbar -->
     <div class="flex flex-col gap-4">
-      <div class="flex items-start sm:items-center justify-between gap-3">
-        <div>
+      <div v-if="!embedded || canEdit" class="flex items-start sm:items-center justify-between gap-3">
+        <div v-if="!embedded">
           <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
             {{ t('management.hosts.title') }}
           </h2>
@@ -11,15 +11,16 @@
             {{ canEdit ? t('management.hosts.subtitleEdit') : t('management.hosts.subtitleView') }}
           </p>
         </div>
+        <div v-else></div>
         <button
           v-if="canEdit"
           @click="showCreateModal = true"
-          class="hidden sm:flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center text-sm sm:text-base"
+          :class="embedded ? 'flex p-2 sm:py-2 sm:px-4' : 'hidden sm:flex py-2 px-3 sm:px-4'"
+          class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 items-center justify-center text-sm sm:text-base"
           :aria-label="t('management.hosts.addBtn')"
         >
-          <UserPlus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+          <UserPlus class="w-5 h-5 sm:w-4 sm:h-4 sm:mr-2" />
           <span class="hidden sm:inline">{{ t('management.hosts.addBtn') }}</span>
-
         </button>
       </div>
 
@@ -208,7 +209,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { Users, UserPlus, Info, CheckCircle, AlertCircle } from 'lucide-vue-next'
 import { hostsService, type EventHost, apiService } from '../services/api'
 import HostCard from './HostCard.vue'
@@ -232,12 +233,24 @@ interface Props {
   eventId: string
   canEdit: boolean
   eventCategory?: string
+  /** Rendered as a section inside the Showcase tab: the section shell owns the title, so hide the page header */
+  embedded?: boolean
 }
 
 const props = defineProps<Props>()
 
+const emit = defineEmits<{
+  (e: 'count-change', count: number): void
+}>()
+
 // State
 const hosts = ref<EventHost[]>([])
+
+// Keep embedding parents (Showcase tab section badge) in sync with the host count
+watch(
+  () => hosts.value.length,
+  (count) => emit('count-change', count),
+)
 const loading = ref(false)
 const showCreateModal = ref(false)
 const showEditModal = ref(false)

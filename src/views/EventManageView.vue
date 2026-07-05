@@ -538,8 +538,8 @@ const expenseTabRef = ref<InstanceType<typeof EventExpenseTab> | null>(null)
 // Navigation tabs configuration - optimized for user flow
 const navigationTabs = computed<TabConfig[]>(() => [
   { id: 'overview', label: t('management.tabs.overview'), icon: 'file-text' },
-  { id: 'agenda', label: t('management.tabs.agenda'), icon: 'calendar' },
-  { id: 'hosts', label: t('management.tabs.hostsLabel'), icon: 'users', mobileLabel: t('management.tabs.hosts') },
+  { id: 'agenda', label: t('management.tabs.agenda'), icon: 'calendar', visible: !agendaHostsMerged.value },
+  { id: 'hosts', label: t('management.tabs.hostsLabel'), icon: 'users', mobileLabel: t('management.tabs.hosts'), visible: !agendaHostsMerged.value },
   { id: 'media', label: t('management.tabs.showcase'), icon: 'image' },
   { id: 'template-payment', label: t('management.tabs.templatePayment'), icon: 'credit-card', mobileLabel: t('management.tabs.templateMobile') },
   { id: 'guest-management', label: t('management.tabs.guestManagement'), icon: 'users', mobileLabel: t('management.tabs.guests') },
@@ -590,6 +590,25 @@ const showCategorySpecificSections = computed(() => {
     event.value?.category_details?.name || event.value?.category_name,
   )
 })
+
+// For showcase categories, Agenda & Hosts live as sections inside the
+// Showcase tab instead of standalone tabs — but only when the user can
+// actually see the Showcase tab (editors). Read-only visitors keep the
+// standalone tabs since the Showcase tab is hidden from them.
+const agendaHostsMerged = computed(
+  () => showCategorySpecificSections.value && canViewMedia.value,
+)
+
+// Redirect deep links / active selections for merged tabs to the Showcase tab
+watch(
+  [agendaHostsMerged, activeTab],
+  ([merged, tab]) => {
+    if (merged && (tab === 'agenda' || tab === 'hosts')) {
+      activeTab.value = 'media'
+    }
+  },
+  { immediate: true },
+)
 
 const canViewCollaborators = computed(() => {
   return canViewRestrictedTabs.value

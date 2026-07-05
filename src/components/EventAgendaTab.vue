@@ -1,5 +1,196 @@
 <template>
-  <div class="space-y-6">
+  <div>
+    <!-- Embedded mode: EventTextTab-style section panel for the Showcase tab -->
+    <div
+      v-if="embedded"
+      class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20"
+    >
+      <!-- Header -->
+      <div class="mb-6 flex items-start justify-between gap-3">
+        <div>
+          <h5 class="font-semibold text-slate-900">{{ t('management.agenda.title') }}</h5>
+          <p class="text-sm text-slate-600">{{ t('management.agenda.subtitle') }}</p>
+          <!-- Drag and Drop Hint (Desktop Only) -->
+          <div
+            v-if="canEdit && agendaItems.length > 0"
+            class="hidden sm:flex items-center gap-1.5 mt-1.5 text-xs text-slate-400"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+            </svg>
+            <span>{{ t('management.agenda.dragHint') }}</span>
+          </div>
+        </div>
+        <button
+          v-if="canEdit"
+          @click="openCreateDrawer"
+          class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all flex-shrink-0"
+        >
+          <Plus class="w-3.5 h-3.5" aria-hidden="true" />
+          {{ t('management.agenda.addBtn') }}
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="loading" class="space-y-5" aria-hidden="true">
+        <div v-for="g in 2" :key="g" class="space-y-2">
+          <div class="h-3 w-40 bg-slate-200 rounded animate-pulse"></div>
+          <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+            <div v-for="r in 2" :key="r" class="p-3 sm:p-4 flex items-center gap-3">
+              <div class="w-16 flex-shrink-0 space-y-1.5">
+                <div class="h-3 w-12 bg-slate-200 rounded animate-pulse"></div>
+                <div class="h-2.5 w-10 bg-slate-100 rounded animate-pulse"></div>
+              </div>
+              <div class="flex-1 space-y-2">
+                <div class="h-3 w-32 bg-slate-200 rounded animate-pulse"></div>
+                <div class="h-3 w-48 bg-slate-100 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div
+        v-else-if="agendaItems.length === 0"
+        @click="canEdit ? openCreateDrawer() : undefined"
+        class="border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-300"
+        :class="canEdit
+          ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group'
+          : 'border-slate-300 bg-slate-50'"
+      >
+        <Calendar
+          class="w-8 h-8 text-slate-400 mx-auto mb-3"
+          :class="{ 'group-hover:text-emerald-600 transition-colors': canEdit }"
+        />
+        <p class="font-semibold text-slate-600" :class="{ 'group-hover:text-slate-900 transition-colors': canEdit }">
+          {{ t('management.agenda.empty.title') }}
+        </p>
+        <p class="text-sm text-slate-500 mt-1">{{ t('management.agenda.empty.description') }}</p>
+      </div>
+
+      <!-- Day Groups -->
+      <div v-else class="space-y-5">
+        <div v-for="day in groupedAgendaDays" :key="day.date" class="space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider min-w-0 truncate">
+              {{ formatDayHeader(day.date) }}
+              <span class="text-slate-400">· {{ day.items.length }}</span>
+            </p>
+            <div v-if="canEdit" class="flex items-center flex-shrink-0">
+              <button
+                @click="openEditDateGroupModal(day.date, day.items.length)"
+                class="p-1.5 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors"
+                :title="t('management.agenda.dayActions.changeDate')"
+                :aria-label="t('management.agenda.dayActions.changeDate')"
+              >
+                <Edit2 class="w-3.5 h-3.5" aria-hidden="true" />
+              </button>
+              <button
+                @click="openDeleteDateGroupModal(day.date, day.items.length)"
+                class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                :title="t('management.agenda.dayActions.deleteAll')"
+                :aria-label="t('management.agenda.dayActions.deleteAll')"
+              >
+                <Trash2 class="w-3.5 h-3.5" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+            <button
+              v-for="item in day.items"
+              :key="item.id"
+              type="button"
+              :disabled="!canEdit"
+              :draggable="canEdit"
+              @click="editAgendaItem(item)"
+              @dragstart="onRowDragStart($event, item)"
+              @dragover.prevent="onRowDragOver($event)"
+              @dragenter.prevent="onRowDragEnter(item)"
+              @dragleave="onRowDragLeave($event, item)"
+              @drop.prevent="onRowDrop(item)"
+              @dragend="onRowDragEnd"
+              class="w-full flex items-center gap-3 p-3 sm:p-4 min-h-[56px] text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset"
+              :class="[
+                canEdit ? 'hover:bg-slate-50 active:bg-slate-100' : 'cursor-default',
+                draggedItem?.id === item.id ? 'opacity-50' : '',
+                dragOverItemId === item.id ? 'bg-sky-50' : '',
+              ]"
+              :style="{ boxShadow: `inset 3px 0 0 0 ${withAlpha(itemAccentColor(item), '66')}` }"
+            >
+              <!-- Time -->
+              <div class="flex-shrink-0 min-w-[64px]">
+                <template v-if="localizedItemText(item).start_time_text">
+                  <p class="text-xs sm:text-sm font-semibold text-slate-900 leading-tight whitespace-nowrap">
+                    {{ localizedItemText(item).start_time_text }}
+                  </p>
+                  <p
+                    v-if="localizedItemText(item).end_time_text"
+                    class="text-[10px] sm:text-xs text-slate-500 leading-tight mt-0.5 whitespace-nowrap"
+                  >
+                    {{ localizedItemText(item).end_time_text }}
+                  </p>
+                </template>
+                <Clock v-else class="w-4 h-4 text-slate-400" aria-hidden="true" />
+              </div>
+
+              <!-- Title + chips + preview -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="flex items-center gap-1.5 min-w-0">
+                    <span class="text-sm font-medium text-slate-900 truncate">
+                      {{ localizedItemText(item).title }}
+                    </span>
+                    <Star
+                      v-if="item.is_featured"
+                      class="w-3.5 h-3.5 text-yellow-500 fill-yellow-500 flex-shrink-0"
+                      aria-hidden="true"
+                    />
+                  </span>
+                  <span
+                    v-if="agendaLanguages.length > 1"
+                    class="flex items-center gap-1 flex-shrink-0"
+                  >
+                    <span
+                      v-for="lang in agendaLanguages"
+                      :key="lang"
+                      class="text-[10px] font-semibold px-1.5 py-0.5 rounded border uppercase"
+                      :class="itemLanguageChipClasses(item, lang)"
+                    >
+                      {{ lang }}
+                    </span>
+                  </span>
+                </div>
+                <div class="flex items-center gap-2 mt-1 min-w-0">
+                  <span
+                    class="px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0 leading-tight"
+                    :style="typeBadgeStyle(item)"
+                  >
+                    {{ getAgendaTypeLabel(item.agenda_type) }}
+                  </span>
+                  <span
+                    v-if="getItemPreview(item)"
+                    class="text-xs sm:text-sm text-slate-500 line-clamp-1"
+                  >
+                    {{ getItemPreview(item) }}
+                  </span>
+                </div>
+              </div>
+
+              <ChevronRight
+                v-if="canEdit"
+                class="w-4 h-4 text-slate-400 flex-shrink-0"
+                aria-hidden="true"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Standalone tab mode -->
+    <div v-else class="space-y-6">
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
@@ -23,26 +214,6 @@
         <span class="hidden sm:inline">{{ t('management.agenda.addBtn') }}</span>
       </button>
     </div>
-
-    <!-- Reordering Overlay -->
-    <Transition name="fade">
-      <div
-        v-if="isReordering"
-        class="fixed inset-0 bg-black/10 z-40 flex items-center justify-center pointer-events-none"
-      >
-        <div
-          class="bg-white rounded-xl shadow-2xl p-5 flex items-center space-x-3 border-2 border-blue-400"
-        >
-          <div
-            class="animate-spin w-6 h-6 border-3 border-blue-500 border-t-transparent rounded-full"
-          ></div>
-          <div class="flex flex-col">
-            <span class="text-base font-semibold text-slate-900">{{ t('management.agenda.reordering') }}</span>
-            <span class="text-xs text-slate-600">{{ t('management.agenda.pleaseWait') }}</span>
-          </div>
-        </div>
-      </div>
-    </Transition>
 
     <!-- Loading State -->
     <div
@@ -212,6 +383,28 @@
         </li>
       </ul>
     </div>
+    </div>
+
+    <!-- Overlays shared by both modes -->
+    <!-- Reordering Overlay -->
+    <Transition name="fade">
+      <div
+        v-if="isReordering"
+        class="fixed inset-0 bg-black/10 z-40 flex items-center justify-center pointer-events-none"
+      >
+        <div
+          class="bg-white rounded-xl shadow-2xl p-5 flex items-center space-x-3 border-2 border-blue-400"
+        >
+          <div
+            class="animate-spin w-6 h-6 border-3 border-blue-500 border-t-transparent rounded-full"
+          ></div>
+          <div class="flex flex-col">
+            <span class="text-base font-semibold text-slate-900">{{ t('management.agenda.reordering') }}</span>
+            <span class="text-xs text-slate-600">{{ t('management.agenda.pleaseWait') }}</span>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
     <!-- Unified Agenda Drawer (for both create and edit) -->
     <EditAgendaDrawer
@@ -276,7 +469,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, toRef } from 'vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { Calendar, Plus, ChevronDown, Info, CheckCircle, AlertCircle, Edit2, Trash2 } from 'lucide-vue-next'
+import { Calendar, Plus, ChevronDown, ChevronRight, Clock, Star, Info, CheckCircle, AlertCircle, Edit2, Trash2 } from 'lucide-vue-next'
 import { agendaService, type EventAgendaItem } from '../services/api'
 import AgendaItemCard from './AgendaItemCard.vue'
 import EditAgendaDrawer from './EditAgendaDrawer.vue'
@@ -285,14 +478,18 @@ import EditDateGroupModal from './EditDateGroupModal.vue'
 import { useDateGroupOperations } from '@/composables/useDateGroupOperations'
 import { useToast } from '@/composables/useToast'
 import { isUnscheduled, fromApiDate } from '@/constants/agenda'
+import { sortEventTextLanguages } from '@/utils/eventTextSlots'
 
 interface Props {
   eventId: string
   canEdit: boolean
+  /** Render as an EventTextTab-style section panel inside the Showcase tab instead of a standalone page */
+  embedded?: boolean
 }
 
 const props = defineProps<Props>()
-const { t } = useAppLanguage()
+
+const { t, locale } = useAppLanguage()
 
 // State
 const agendaItems = ref<EventAgendaItem[]>([])
@@ -525,6 +722,115 @@ const formatDayHeader = (date: string): string => {
     month: 'long',
     day: 'numeric',
   })
+}
+
+// --- Embedded (Showcase section) presentation helpers ---
+
+// Resolve item text in the current app language, falling back to base fields
+const localizedItemText = (item: EventAgendaItem) => {
+  const tr = item.translations?.find((entry) => entry.language === locale.value)
+  return {
+    title: tr?.title || item.title,
+    description: tr?.description || item.description,
+    speaker: tr?.speaker || item.speaker,
+    start_time_text: tr?.start_time_text || item.start_time_text,
+    end_time_text: tr?.end_time_text || item.end_time_text,
+  }
+}
+
+const itemAccentColor = (item: EventAgendaItem): string => {
+  const own = item.color?.trim()
+  if (own) return normalizeHex(own) || own
+  const legend = DEFAULT_LEGEND.value.find(
+    (entry) => entry.type === (item.agenda_type || '').toLowerCase(),
+  )
+  return legend?.color || '#64748b'
+}
+
+// Row-level drag & drop (mirrors AgendaItemCard's semantics: drop on a
+// target row reorders the dragged item relative to it, including cross-date)
+const dragOverItemId = ref<number | null>(null)
+
+const onRowDragStart = (event: DragEvent, item: EventAgendaItem) => {
+  if (!props.canEdit) return
+  handleDragStart(item)
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/plain', item.id.toString())
+  }
+}
+
+const onRowDragOver = (event: DragEvent) => {
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'move'
+  }
+}
+
+const onRowDragEnter = (item: EventAgendaItem) => {
+  if (draggedItem.value && draggedItem.value.id !== item.id) {
+    dragOverItemId.value = item.id
+  }
+}
+
+const onRowDragLeave = (event: DragEvent, item: EventAgendaItem) => {
+  // Only reset when actually leaving the row (not entering a child element)
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+  const { clientX: x, clientY: y } = event
+  if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
+    if (dragOverItemId.value === item.id) {
+      dragOverItemId.value = null
+    }
+  }
+}
+
+const onRowDrop = (item: EventAgendaItem) => {
+  dragOverItemId.value = null
+  handleDragEnd(item, item.date)
+}
+
+const onRowDragEnd = () => {
+  dragOverItemId.value = null
+  if (!isReordering.value) {
+    draggedItem.value = null
+  }
+}
+
+// Languages in play across all items: English (base fields) plus any translation languages
+const agendaLanguages = computed(() => {
+  const langs = new Set<string>(['en'])
+  agendaItems.value.forEach((item) =>
+    item.translations?.forEach((entry) => langs.add(entry.language)),
+  )
+  return sortEventTextLanguages([...langs])
+})
+
+const itemLanguageChipClasses = (item: EventAgendaItem, lang: string): string => {
+  const filled =
+    lang === 'en'
+      ? !!item.title
+      : item.translations?.some((entry) => entry.language === lang && entry.title)
+  return filled
+    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+    : 'bg-white text-slate-400 border-dashed border-slate-200'
+}
+
+const getAgendaTypeLabel = (type: string): string =>
+  t(`management.agenda.sessionTypes.${(type || 'other').toLowerCase()}.label`, type || '')
+
+const typeBadgeStyle = (item: EventAgendaItem) => {
+  const accent = itemAccentColor(item)
+  return {
+    backgroundColor: withAlpha(accent, '14'),
+    color: accent,
+  }
+}
+
+// Preview line: speaker · location, else description (session type is shown as a badge)
+const getItemPreview = (item: EventAgendaItem): string => {
+  const localized = localizedItemText(item)
+  const parts = [localized.speaker, item.location].filter(Boolean)
+  if (parts.length > 0) return parts.join(' · ')
+  return localized.description || ''
 }
 
 const editAgendaItem = (item: EventAgendaItem) => {
