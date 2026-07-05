@@ -25,7 +25,7 @@
             aria-modal="true"
             aria-labelledby="browse-templates-title"
             class="relative bg-white lg:rounded-2xl shadow-2xl shadow-slate-950/40 lg:ring-1 lg:ring-white/10 overflow-hidden flex flex-col lg:flex-row w-full h-full lg:w-[95vw] lg:max-w-[1400px] lg:h-[90vh] lg:max-h-[900px]"
-            @keydown.esc="handleModalClose"
+            @keydown.esc="handleEscapeKey"
           >
             <!-- Desktop Left Sidebar (hidden on mobile) -->
             <div class="hidden lg:flex w-56 bg-slate-50/60 border-r border-slate-200/70 flex-shrink-0 flex-col">
@@ -39,7 +39,7 @@
                 <div class="flex gap-1 p-1 bg-slate-200/60 rounded-xl">
                   <button
                     type="button"
-                    @click="activeTab = 'browse'"
+                    @click="setActiveTab('browse')"
                     :class="[
                       'flex-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all',
                       activeTab === 'browse' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700',
@@ -47,7 +47,7 @@
                   >{{ t('management.browseTemplateModal.tabs.browse') }}</button>
                   <button
                     type="button"
-                    @click="activeTab = 'my-templates'"
+                    @click="setActiveTab('my-templates')"
                     :class="[
                       'flex-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1',
                       activeTab === 'my-templates' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700',
@@ -132,22 +132,36 @@
 
             <!-- Main Content Area -->
             <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-white">
-              <!-- Mobile Search Header with Close Button (browse tab only) -->
-              <div v-if="activeTab === 'browse'" class="lg:hidden px-4 pt-4 pb-2">
-                <div class="flex items-center gap-3">
-                  <!-- Search Input -->
-                  <div class="relative flex-1">
-                    <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden="true" />
-                    <input
-                      ref="searchInputRef"
-                      v-model="searchQuery"
-                      type="text"
-                      :placeholder="t('management.browseTemplateModal.search.placeholder')"
-                      :aria-label="t('management.browseTemplateModal.search.ariaLabel')"
-                      class="w-full pl-10 pr-4 py-2.5 text-base bg-slate-100 border border-transparent rounded-xl transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100 placeholder:text-slate-400"
+              <!-- Mobile Header -->
+              <div class="lg:hidden">
+                <!-- Tab Switcher Row (partner users only): sliding gradient thumb, close button never moves -->
+                <div v-if="isPartner" class="flex items-center gap-3 px-4 pt-4 pb-2">
+                  <div class="relative flex flex-1 p-1 bg-slate-100 rounded-full">
+                    <span
+                      aria-hidden="true"
+                      class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] shadow-md shadow-[#2ecc71]/20 transition-transform duration-300 ease-out"
+                      :class="activeTab === 'my-templates' ? 'translate-x-full' : ''"
                     />
+                    <button
+                      type="button"
+                      @click="setActiveTab('browse')"
+                      :class="[
+                        'relative flex-1 py-2 rounded-full text-[13px] font-semibold transition-colors duration-300',
+                        activeTab === 'browse' ? 'text-white' : 'text-slate-600 active:text-slate-800',
+                      ]"
+                    >{{ t('management.browseTemplateModal.tabs.browseAll') }}</button>
+                    <button
+                      type="button"
+                      @click="setActiveTab('my-templates')"
+                      :class="[
+                        'relative flex-1 py-2 rounded-full text-[13px] font-semibold transition-colors duration-300 flex items-center justify-center gap-1.5',
+                        activeTab === 'my-templates' ? 'text-white' : 'text-slate-600 active:text-slate-800',
+                      ]"
+                    >
+                      <LayoutTemplate class="w-3.5 h-3.5" />
+                      {{ t('management.browseTemplateModal.tabs.myTemplates') }}
+                    </button>
                   </div>
-                  <!-- Mobile Close Button -->
                   <button
                     @click="handleModalClose"
                     class="flex-shrink-0 w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center transition-all hover:bg-slate-200 hover:text-slate-700 active:scale-95"
@@ -156,6 +170,87 @@
                   >
                     <X class="w-5 h-5" />
                   </button>
+                </div>
+
+                <!-- Search + Filters (collapse smoothly when leaving the browse tab) -->
+                <div
+                  class="overflow-hidden transition-all duration-300 ease-in-out"
+                  :class="activeTab === 'browse' ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'"
+                >
+                  <!-- Search Row -->
+                  <div class="flex items-center gap-3 px-4 pb-2" :class="isPartner ? 'pt-1' : 'pt-4'">
+                    <div class="relative flex-1">
+                      <Search class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden="true" />
+                      <input
+                        ref="searchInputRef"
+                        v-model="searchQuery"
+                        type="text"
+                        :placeholder="t('management.browseTemplateModal.search.placeholder')"
+                        :aria-label="t('management.browseTemplateModal.search.ariaLabel')"
+                        class="w-full h-10 pl-11 pr-4 text-base bg-slate-100 border border-transparent rounded-full transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100 placeholder:text-slate-400"
+                      />
+                    </div>
+                    <!-- Close button lives here only when there is no tab row above -->
+                    <button
+                      v-if="!isPartner"
+                      @click="handleModalClose"
+                      class="flex-shrink-0 w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center transition-all hover:bg-slate-200 hover:text-slate-700 active:scale-95"
+                      :aria-label="t('management.browseTemplateModal.closeModal')"
+                      type="button"
+                    >
+                      <X class="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <!-- Filter Bar: pinned package chip + scrollable category chips -->
+                  <div class="flex items-center gap-2 px-4 pb-3">
+                    <!-- Package Chip (opens bottom sheet) -->
+                    <button
+                      type="button"
+                      @click="isPlanSheetOpen = true"
+                      aria-haspopup="dialog"
+                      :aria-expanded="isPlanSheetOpen"
+                      :class="[
+                        'flex-shrink-0 flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full text-[13px] font-medium transition-all whitespace-nowrap border',
+                        selectedPlan !== null
+                          ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                          : 'bg-white text-slate-600 border-slate-200 active:bg-slate-100',
+                      ]"
+                    >
+                      <component :is="currentPlanOption.icon" class="w-4 h-4" />
+                      <span>{{ planChipLabel }}</span>
+                      <ChevronDown
+                        class="w-3.5 h-3.5 transition-transform duration-200"
+                        :class="[isPlanSheetOpen ? 'rotate-180' : '', selectedPlan !== null ? 'text-white/70' : 'text-slate-400']"
+                      />
+                    </button>
+
+                    <!-- Divider -->
+                    <div class="w-px h-5 bg-slate-200 flex-shrink-0" aria-hidden="true" />
+
+                    <!-- Category Chips (scrollable with edge fade) -->
+                    <div class="relative flex-1 min-w-0">
+                      <div class="flex gap-2 overflow-x-auto no-scrollbar pr-6">
+                        <button type="button" @click="selectCategory(null)" :class="chipClass(selectedCategoryId === null)">
+                          <span>{{ t('management.browseTemplateModal.filters.all') }}</span>
+                        </button>
+                        <button
+                          v-for="category in categories"
+                          :key="'mobile-' + category.id"
+                          type="button"
+                          @click="selectCategory(category.id)"
+                          :class="chipClass(selectedCategoryId === category.id)"
+                        >
+                          <component :is="getCategoryIcon(category.name)" class="w-4 h-4" />
+                          <span>{{ category.name }}</span>
+                        </button>
+                      </div>
+                      <div
+                        class="pointer-events-none absolute right-0 inset-y-0 w-6 bg-gradient-to-l from-white to-transparent"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -175,114 +270,97 @@
                 </div>
               </div>
 
-              <!-- Mobile Tab Switcher (partner users only) -->
-              <div v-if="isPartner" class="lg:hidden px-4 pb-2" :class="activeTab === 'my-templates' ? 'pt-4' : ''">
-                <div class="flex items-center gap-2">
-                  <div class="flex flex-1 gap-1 p-1 bg-slate-100 rounded-xl">
+              <!-- Package Bottom Sheet (mobile only) -->
+              <Transition name="fade">
+                <div
+                  v-if="isPlanSheetOpen"
+                  class="lg:hidden fixed inset-0 z-30 bg-black/40 backdrop-blur-sm"
+                  @click="isPlanSheetOpen = false"
+                />
+              </Transition>
+              <Transition name="sheet">
+                <div
+                  v-if="isPlanSheetOpen"
+                  role="dialog"
+                  aria-modal="true"
+                  :aria-label="t('management.browseTemplateModal.sidebar.packageLabel')"
+                  class="lg:hidden fixed inset-x-0 bottom-0 z-40 bg-white rounded-t-3xl shadow-2xl pb-[max(env(safe-area-inset-bottom),0.75rem)]"
+                >
+                  <div class="w-10 h-1 rounded-full bg-slate-300 mx-auto mt-3" aria-hidden="true" />
+                  <h3 class="px-5 pt-4 pb-1 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    {{ t('management.browseTemplateModal.sidebar.packageLabel') }}
+                  </h3>
+                  <div class="py-1">
                     <button
+                      v-for="option in planOptions"
+                      :key="option.value ?? 'all'"
                       type="button"
-                      @click="activeTab = 'browse'"
-                      :class="[
-                        'flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all',
-                        activeTab === 'browse' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500',
-                      ]"
-                    >{{ t('management.browseTemplateModal.tabs.browseAll') }}</button>
-                    <button
-                      type="button"
-                      @click="activeTab = 'my-templates'"
-                      :class="[
-                        'flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1',
-                        activeTab === 'my-templates' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500',
-                      ]"
+                      :aria-pressed="selectedPlan === option.value"
+                      @click="selectPlan(option.value)"
+                      class="w-full flex items-center gap-3 px-5 py-2.5 transition-colors active:bg-slate-50"
                     >
-                      <LayoutTemplate class="w-3 h-3" />
-                      {{ t('management.browseTemplateModal.tabs.myTemplates') }}
+                      <span
+                        :class="[
+                          'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors',
+                          selectedPlan === option.value
+                            ? 'bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20'
+                            : 'bg-slate-100',
+                        ]"
+                      >
+                        <component
+                          :is="option.icon"
+                          :class="['w-[18px] h-[18px]', selectedPlan === option.value ? 'text-[#2ecc71]' : 'text-slate-500']"
+                        />
+                      </span>
+                      <span
+                        :class="[
+                          'flex-1 text-left text-sm',
+                          selectedPlan === option.value ? 'font-semibold text-slate-900' : 'font-medium text-slate-700',
+                        ]"
+                      >{{ option.label }}</span>
+                      <Check v-if="selectedPlan === option.value" class="w-5 h-5 text-[#2ecc71] flex-shrink-0" />
                     </button>
                   </div>
-                  <!-- Close button visible only when search bar is hidden -->
-                  <button
-                    v-if="activeTab === 'my-templates'"
-                    @click="handleModalClose"
-                    class="flex-shrink-0 w-9 h-9 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center transition-all hover:bg-slate-200 hover:text-slate-700 active:scale-95"
-                    :aria-label="t('management.browseTemplateModal.closeModal')"
-                    type="button"
-                  >
-                    <X class="w-4 h-4" />
-                  </button>
                 </div>
-              </div>
+              </Transition>
 
-              <!-- Mobile Filter Chips (shown only on mobile browse tab) -->
-              <div v-if="activeTab === 'browse'" class="lg:hidden px-4 pb-3 space-y-2">
-                <!-- Package Filter Row -->
-                <div class="flex gap-2 overflow-x-auto no-scrollbar">
-                  <button type="button" @click="setPlanFilter(null)" :class="chipClass(selectedPlan === null)">
-                    <Layers class="w-4 h-4" />
-                    <span>{{ t('management.browseTemplateModal.filters.all') }}</span>
-                  </button>
-                  <button type="button" @click="setPlanFilter('basic')" :class="chipClass(selectedPlan === 'basic')">
-                    <Sparkles class="w-4 h-4" />
-                    <span>{{ t('management.browseTemplateModal.filters.basic') }}</span>
-                  </button>
-                  <button type="button" @click="setPlanFilter('standard')" :class="chipClass(selectedPlan === 'standard')">
-                    <Crown class="w-4 h-4" />
-                    <span>{{ t('management.browseTemplateModal.filters.standard') }}</span>
-                  </button>
+              <!-- Tab content: direction-aware slide between browse and my-templates -->
+              <Transition :name="tabTransitionName" mode="out-in">
+                <!-- My Templates Panel (partner users, my-templates tab) -->
+                <PartnerTemplatesPanel
+                  v-if="isPartner && activeTab === 'my-templates'"
+                  class="flex-1 overflow-hidden"
+                  @template-selected="handlePartnerTemplateSelected"
+                  @form-opened="isPartnerFormOpen = true"
+                  @form-closed="isPartnerFormOpen = false"
+                />
+
+                <!-- Browse Templates Content -->
+                <div v-else class="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50 custom-scrollbar">
+                  <!-- Loading State -->
+                  <TemplateLoadingState v-if="loading" />
+
+                  <!-- Templates Grid -->
+                  <div v-else>
+                    <TemplateGrid
+                      v-if="filteredTemplates.length > 0"
+                      :templates="filteredTemplates"
+                      :selected-template-id="selectedTemplateId"
+                      :owned-template-ids="ownedTemplateIds"
+                      @select-template="handleTemplateSelection"
+                    />
+
+                    <TemplateEmptyState
+                      v-else
+                      :has-filters="Boolean(searchQuery || selectedCategoryId || selectedPlan)"
+                      @clear-filters="clearFilters"
+                    />
+                  </div>
+
+                  <!-- Messages -->
+                  <TemplateMessage v-if="message" :message="message" />
                 </div>
-
-                <!-- Category Filter Row -->
-                <div class="flex gap-2 overflow-x-auto no-scrollbar">
-                  <button type="button" @click="selectCategory(null)" :class="chipClass(selectedCategoryId === null)">
-                    <Sparkles class="w-4 h-4" />
-                    <span>{{ t('management.browseTemplateModal.filters.all') }}</span>
-                  </button>
-                  <button
-                    v-for="category in categories"
-                    :key="'mobile-' + category.id"
-                    type="button"
-                    @click="selectCategory(category.id)"
-                    :class="chipClass(selectedCategoryId === category.id)"
-                  >
-                    <component :is="getCategoryIcon(category.name)" class="w-4 h-4" />
-                    <span>{{ category.name }}</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- My Templates Panel (partner users, my-templates tab) -->
-              <PartnerTemplatesPanel
-                v-if="isPartner && activeTab === 'my-templates'"
-                class="flex-1 overflow-hidden"
-                @template-selected="handlePartnerTemplateSelected"
-                @form-opened="isPartnerFormOpen = true"
-                @form-closed="isPartnerFormOpen = false"
-              />
-
-              <!-- Browse Templates Content -->
-              <div v-else class="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50 custom-scrollbar">
-                <!-- Loading State -->
-                <TemplateLoadingState v-if="loading" />
-
-                <!-- Templates Grid -->
-                <div v-else>
-                  <TemplateGrid
-                    v-if="filteredTemplates.length > 0"
-                    :templates="filteredTemplates"
-                    :selected-template-id="selectedTemplateId"
-                    :owned-template-ids="ownedTemplateIds"
-                    @select-template="handleTemplateSelection"
-                  />
-
-                  <TemplateEmptyState
-                    v-else
-                    :has-filters="Boolean(searchQuery || selectedCategoryId || selectedPlan)"
-                    @clear-filters="clearFilters"
-                  />
-                </div>
-
-                <!-- Messages -->
-                <TemplateMessage v-if="message" :message="message" />
-              </div>
+              </Transition>
 
               <!-- Footer (only when template selected) -->
               <Transition name="footer">
@@ -302,7 +380,7 @@
                     ref="confirmButtonRef"
                     @click="handleConfirmSelection"
                     :disabled="selecting"
-                    class="px-4 lg:px-6 py-2 lg:py-2.5 text-sm rounded-xl font-semibold transition-all flex items-center gap-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white shadow-lg shadow-sky-500/25 hover:shadow-sky-500/35 hover:-translate-y-px active:translate-y-0 disabled:opacity-70 disabled:hover:translate-y-0 flex-shrink-0"
+                    class="px-5 lg:px-6 py-2.5 text-sm rounded-full lg:rounded-xl font-semibold transition-all flex items-center gap-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white shadow-md shadow-[#2ecc71]/20 hover:shadow-sky-500/35 hover:-translate-y-px active:translate-y-0 active:scale-95 lg:active:scale-100 disabled:opacity-70 disabled:hover:translate-y-0 flex-shrink-0"
                     type="button"
                   >
                     <Loader2 v-if="selecting" class="w-4 h-4 animate-spin" />
@@ -355,6 +433,7 @@ import {
   Layers,
   Crown,
   LayoutTemplate,
+  ChevronDown,
   type LucideIcon,
 } from 'lucide-vue-next'
 
@@ -380,6 +459,19 @@ const isPartner = computed(() => !!authStore.user?.is_partner)
 
 // Active tab: 'browse' | 'my-templates'
 const activeTab = ref<'browse' | 'my-templates'>('browse')
+
+// Direction-aware tab content transition: forward slides left, back slides right
+const tabDirection = ref<'forward' | 'back'>('forward')
+
+const tabTransitionName = computed(() =>
+  tabDirection.value === 'forward' ? 'tab-forward' : 'tab-back',
+)
+
+const setActiveTab = (tab: 'browse' | 'my-templates'): void => {
+  if (tab === activeTab.value) return
+  tabDirection.value = tab === 'my-templates' ? 'forward' : 'back'
+  activeTab.value = tab
+}
 
 // Template refs for focus management
 const modalRef = ref<HTMLElement>()
@@ -512,6 +604,35 @@ const selectCategory = (categoryId: number | null): void => {
   setCategoryFilter(categoryId)
 }
 
+// Mobile package bottom sheet
+type PlanValue = null | 'basic' | 'standard'
+
+const isPlanSheetOpen = ref(false)
+
+const planOptions = computed(
+  (): Array<{ value: PlanValue; label: string; icon: LucideIcon }> => [
+    { value: null, label: t('management.browseTemplateModal.filters.all'), icon: Layers },
+    { value: 'basic', label: t('management.browseTemplateModal.filters.basic'), icon: Sparkles },
+    { value: 'standard', label: t('management.browseTemplateModal.filters.standard'), icon: Crown },
+  ],
+)
+
+const currentPlanOption = computed(
+  () => planOptions.value.find((option) => option.value === selectedPlan.value) ?? planOptions.value[0],
+)
+
+// Chip reads "Package" when unfiltered so it doesn't duplicate the categories' "All" chip
+const planChipLabel = computed(() =>
+  selectedPlan.value === null
+    ? t('management.browseTemplateModal.sidebar.packageLabel')
+    : currentPlanOption.value.label,
+)
+
+const selectPlan = (plan: PlanValue): void => {
+  setPlanFilter(plan)
+  isPlanSheetOpen.value = false
+}
+
 // Shared class helpers for sidebar nav items and mobile filter chips
 const navItemClass = (active: boolean): string =>
   [
@@ -564,6 +685,15 @@ const handleKeyDown = (event: KeyboardEvent): void => {
       }
     }
   }
+}
+
+// Escape dismisses the package sheet first; only closes the modal when no sheet is open
+const handleEscapeKey = (): void => {
+  if (isPlanSheetOpen.value) {
+    isPlanSheetOpen.value = false
+    return
+  }
+  handleModalClose()
 }
 
 // Event handlers
@@ -631,6 +761,7 @@ const resetModalState = (): void => {
   clearSelection()
   selectedPartnerTemplate.value = null
   isPartnerFormOpen.value = false
+  isPlanSheetOpen.value = false
   clearFilters()
   resetState()
   activeTab.value = 'browse'
@@ -743,6 +874,78 @@ onUnmounted(() => {
 .footer-leave-to {
   opacity: 0;
   transform: translateY(10px);
+}
+
+/* Package bottom sheet: backdrop fade + panel slide-up */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.sheet-enter-active {
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.sheet-leave-active {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.sheet-enter-from,
+.sheet-leave-to {
+  transform: translateY(100%);
+}
+
+/* Tab content switch: outgoing panel slips away, incoming slides in from the tab's direction */
+.tab-forward-enter-active,
+.tab-back-enter-active {
+  transition:
+    opacity 0.25s ease-out,
+    transform 0.25s ease-out;
+}
+
+.tab-forward-leave-active,
+.tab-back-leave-active {
+  transition:
+    opacity 0.15s ease-in,
+    transform 0.15s ease-in;
+}
+
+.tab-forward-enter-from {
+  opacity: 0;
+  transform: translateX(24px);
+}
+
+.tab-forward-leave-to {
+  opacity: 0;
+  transform: translateX(-24px);
+}
+
+.tab-back-enter-from {
+  opacity: 0;
+  transform: translateX(-24px);
+}
+
+.tab-back-leave-to {
+  opacity: 0;
+  transform: translateX(24px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-enter-active,
+  .sheet-leave-active,
+  .fade-enter-active,
+  .fade-leave-active,
+  .tab-forward-enter-active,
+  .tab-forward-leave-active,
+  .tab-back-enter-active,
+  .tab-back-leave-active {
+    transition: none;
+  }
 }
 
 /* Hide scrollbar for category navigation */
