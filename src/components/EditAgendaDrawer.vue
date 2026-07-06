@@ -18,22 +18,31 @@
       >
         <!-- Header -->
         <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
-          <div class="flex items-center px-3 py-2.5">
+          <div class="flex items-center justify-between px-3 py-2.5">
             <!-- Left: Close button & Title -->
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 min-w-0">
               <button
                 @click="closeDrawer"
-                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
                 :title="t('management.agendaDrawer.close')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
-              <div class="flex items-center gap-2">
-                <h2 class="text-base font-semibold text-white">
-                  {{ isEditMode ? t('management.agendaDrawer.titleEdit') : t('management.agendaDrawer.titleAdd') }}
-                </h2>
-              </div>
+              <h2 class="text-base font-semibold text-white truncate">
+                {{ isEditMode ? t('management.agendaDrawer.titleEdit') : t('management.agendaDrawer.titleAdd') }}
+              </h2>
             </div>
+            <!-- Right: Delete (edit mode only) -->
+            <button
+              v-if="isEditMode && item"
+              type="button"
+              @click="handleDelete"
+              :title="t('management.agendaDrawer.deleteBtn')"
+              :aria-label="t('management.agendaDrawer.deleteBtn')"
+              class="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
+            >
+              <Trash2 class="w-5 h-5 text-white" aria-hidden="true" />
+            </button>
           </div>
         </div>
 
@@ -225,17 +234,6 @@
               v-model:display-open="displayOpen"
             />
 
-            <!-- Delete Section (Mobile only, Edit mode only) -->
-            <div v-if="isEditMode && item" class="sm:hidden border-t border-slate-100 pt-4">
-              <button
-                type="button"
-                @click="handleDelete"
-                class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 text-sm font-semibold rounded-lg transition-colors border border-red-200"
-              >
-                <Trash2 class="w-4 h-4" />
-                <span>{{ t('management.agendaDrawer.deleteBtn') }}</span>
-              </button>
-            </div>
           </form>
         </div>
 

@@ -1,9 +1,155 @@
 <template>
-  <div class="space-y-6">
+  <div>
+    <!-- Embedded mode: EventTextTab-style section panel for the Showcase tab -->
+    <div
+      v-if="embedded"
+      class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20"
+    >
+      <!-- Header -->
+      <div class="mb-6 flex items-start justify-between gap-3">
+        <div>
+          <h5 class="font-semibold text-slate-900">{{ t('management.hosts.title') }}</h5>
+          <p class="text-sm text-slate-600">
+            {{ canEdit ? t('management.hosts.subtitleEdit') : t('management.hosts.subtitleView') }}
+          </p>
+          <!-- Drag and Drop Hint (Desktop Only) -->
+          <div
+            v-if="canEdit && hosts.length > 1"
+            class="hidden sm:flex items-center gap-1.5 mt-1.5 text-xs text-slate-400"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+            </svg>
+            <span>{{ t('management.hosts.reorderHint') }}</span>
+          </div>
+        </div>
+        <button
+          v-if="canEdit"
+          @click="showCreateModal = true"
+          class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all flex-shrink-0"
+        >
+          <UserPlus class="w-3.5 h-3.5" aria-hidden="true" />
+          {{ t('management.hosts.addBtn') }}
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="loading" class="space-y-2" aria-hidden="true">
+        <div class="h-3 w-24 bg-slate-200 rounded animate-pulse"></div>
+        <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+          <div v-for="r in 3" :key="r" class="p-3 sm:p-4 flex items-center gap-3">
+            <div class="w-10 h-10 bg-slate-200 rounded-full animate-pulse flex-shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-3 w-32 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-3 w-48 bg-slate-100 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div
+        v-else-if="hosts.length === 0"
+        @click="canEdit ? (showCreateModal = true) : undefined"
+        class="border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-300"
+        :class="canEdit
+          ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group'
+          : 'border-slate-300 bg-slate-50'"
+      >
+        <Users
+          class="w-8 h-8 text-slate-400 mx-auto mb-3"
+          :class="{ 'group-hover:text-emerald-600 transition-colors': canEdit }"
+        />
+        <p class="font-semibold text-slate-600" :class="{ 'group-hover:text-slate-900 transition-colors': canEdit }">
+          {{ canEdit ? t('management.hosts.empty.titleEdit') : t('management.hosts.empty.titleView') }}
+        </p>
+        <p class="text-sm text-slate-500 mt-1">
+          {{ canEdit ? t('management.hosts.empty.descriptionEdit') : t('management.hosts.empty.descriptionView') }}
+        </p>
+      </div>
+
+      <!-- Host Rows -->
+      <div v-else class="space-y-2">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+          {{ canEdit ? t('management.hosts.allHosts') : t('management.hosts.hostsLabel') }}
+          <span class="text-slate-400">· {{ sortedHosts.length }}</span>
+        </p>
+        <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+          <button
+            v-for="host in sortedHosts"
+            :key="host.id"
+            type="button"
+            :disabled="!canEdit"
+            :draggable="canEdit"
+            @click="editHost(host)"
+            @dragstart="onRowDragStart($event, host)"
+            @dragover.prevent="onRowDragOver($event)"
+            @dragenter.prevent="onRowDragEnter(host)"
+            @dragleave="onRowDragLeave($event, host)"
+            @drop.prevent="onRowDrop(host)"
+            @dragend="onRowDragEnd"
+            class="w-full flex items-center gap-3 p-3 sm:p-4 min-h-[56px] text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset"
+            :class="[
+              canEdit ? 'hover:bg-slate-50 active:bg-slate-100' : 'cursor-default',
+              draggedHost?.id === host.id ? 'opacity-50' : '',
+              dragOverHostId === host.id ? 'bg-sky-50' : '',
+            ]"
+          >
+            <!-- Avatar -->
+            <div class="w-10 h-10 rounded-full overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center flex-shrink-0">
+              <img
+                v-if="host.profile_image"
+                :src="apiService.getProfilePictureUrl(host.profile_image) || undefined"
+                :alt="getLocalizedHost(host).name"
+                class="w-full h-full object-cover"
+              />
+              <Users v-else class="w-4 h-4 text-slate-400" aria-hidden="true" />
+            </div>
+
+            <!-- Name + chips + role -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <p class="text-sm font-medium text-slate-900 truncate">
+                  {{ getLocalizedHost(host).name }}
+                </p>
+                <span
+                  v-if="hostLanguages.length > 1"
+                  class="flex items-center gap-1 flex-shrink-0"
+                >
+                  <span
+                    v-for="lang in hostLanguages"
+                    :key="lang"
+                    class="text-[10px] font-semibold px-1.5 py-0.5 rounded border uppercase"
+                    :class="hostLanguageChipClasses(host, lang)"
+                  >
+                    {{ lang }}
+                  </span>
+                </span>
+              </div>
+              <p
+                v-if="getHostPreview(host)"
+                class="text-xs sm:text-sm text-slate-500 line-clamp-1 mt-0.5"
+              >
+                {{ getHostPreview(host) }}
+              </p>
+            </div>
+
+            <ChevronRight
+              v-if="canEdit"
+              class="w-4 h-4 text-slate-400 flex-shrink-0"
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Standalone tab mode -->
+    <div v-else class="space-y-6">
     <!-- Header + Toolbar -->
     <div class="flex flex-col gap-4">
-      <div v-if="!embedded || canEdit" class="flex items-start sm:items-center justify-between gap-3">
-        <div v-if="!embedded">
+      <div class="flex items-start sm:items-center justify-between gap-3">
+        <div>
           <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
             {{ t('management.hosts.title') }}
           </h2>
@@ -11,15 +157,13 @@
             {{ canEdit ? t('management.hosts.subtitleEdit') : t('management.hosts.subtitleView') }}
           </p>
         </div>
-        <div v-else></div>
         <button
           v-if="canEdit"
           @click="showCreateModal = true"
-          :class="embedded ? 'flex p-2 sm:py-2 sm:px-4' : 'hidden sm:flex py-2 px-3 sm:px-4'"
-          class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 items-center justify-center text-sm sm:text-base"
+          class="hidden sm:flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 items-center text-sm sm:text-base"
           :aria-label="t('management.hosts.addBtn')"
         >
-          <UserPlus class="w-5 h-5 sm:w-4 sm:h-4 sm:mr-2" />
+          <UserPlus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
           <span class="hidden sm:inline">{{ t('management.hosts.addBtn') }}</span>
         </button>
       </div>
@@ -165,6 +309,9 @@
       </button>
     </div>
 
+    </div>
+
+    <!-- Overlays shared by both modes -->
     <!-- Unified Create/Edit Drawer -->
     <EditHostDrawer
       v-model="showCreateModal"
@@ -179,6 +326,7 @@
       :event-category="eventCategory"
       :host="selectedHost || undefined"
       @updated="handleHostUpdated"
+      @delete="confirmDeleteHost"
     />
 
     <!-- Delete Confirmation Modal -->
@@ -209,13 +357,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
-import { Users, UserPlus, Info, CheckCircle, AlertCircle } from 'lucide-vue-next'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { Users, UserPlus, Info, CheckCircle, AlertCircle, ChevronRight } from 'lucide-vue-next'
 import { hostsService, type EventHost, apiService } from '../services/api'
 import HostCard from './HostCard.vue'
 import EditHostDrawer from './EditHostDrawer.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { sortEventTextLanguages } from '@/utils/eventTextSlots'
 
 const { locale, t } = useAppLanguage()
 
@@ -233,24 +382,14 @@ interface Props {
   eventId: string
   canEdit: boolean
   eventCategory?: string
-  /** Rendered as a section inside the Showcase tab: the section shell owns the title, so hide the page header */
+  /** Render as an EventTextTab-style section panel inside the Showcase tab instead of a standalone page */
   embedded?: boolean
 }
 
 const props = defineProps<Props>()
 
-const emit = defineEmits<{
-  (e: 'count-change', count: number): void
-}>()
-
 // State
 const hosts = ref<EventHost[]>([])
-
-// Keep embedding parents (Showcase tab section badge) in sync with the host count
-watch(
-  () => hosts.value.length,
-  (count) => emit('count-change', count),
-)
 const loading = ref(false)
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
@@ -392,6 +531,79 @@ const showMessage = (type: 'success' | 'error', text: string) => {
   setTimeout(() => {
     message.value = null
   }, 5000)
+}
+
+// --- Embedded (Showcase section) presentation helpers ---
+
+// Languages in play across all hosts: English (base fields) plus any translation languages
+const hostLanguages = computed(() => {
+  const langs = new Set<string>(['en'])
+  hosts.value.forEach((host) =>
+    host.translations?.forEach((entry) => langs.add(entry.language)),
+  )
+  return sortEventTextLanguages([...langs])
+})
+
+const hostLanguageChipClasses = (host: EventHost, lang: string): string => {
+  const filled =
+    lang === 'en'
+      ? !!host.name
+      : host.translations?.some((entry) => entry.language === lang && entry.name)
+  return filled
+    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+    : 'bg-white text-slate-400 border-dashed border-slate-200'
+}
+
+// Preview line: role/title, else parent names
+const getHostPreview = (host: EventHost): string => {
+  const localized = getLocalizedHost(host)
+  if (localized.title) return localized.title
+  return [host.parent_a_name, host.parent_b_name].filter(Boolean).join(' · ')
+}
+
+// Row-level drag & drop (drop on a target row reorders the dragged host relative to it)
+const dragOverHostId = ref<number | null>(null)
+
+const onRowDragStart = (event: DragEvent, host: EventHost) => {
+  if (!props.canEdit) return
+  handleDragStart(host)
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/plain', host.id.toString())
+  }
+}
+
+const onRowDragOver = (event: DragEvent) => {
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'move'
+  }
+}
+
+const onRowDragEnter = (host: EventHost) => {
+  if (draggedHost.value && draggedHost.value.id !== host.id) {
+    dragOverHostId.value = host.id
+  }
+}
+
+const onRowDragLeave = (event: DragEvent, host: EventHost) => {
+  // Only reset when actually leaving the row (not entering a child element)
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+  const { clientX: x, clientY: y } = event
+  if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
+    if (dragOverHostId.value === host.id) {
+      dragOverHostId.value = null
+    }
+  }
+}
+
+const onRowDrop = (host: EventHost) => {
+  dragOverHostId.value = null
+  handleDragEnd(host)
+}
+
+const onRowDragEnd = () => {
+  dragOverHostId.value = null
+  draggedHost.value = null
 }
 
 // Drag and drop handlers

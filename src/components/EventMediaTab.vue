@@ -37,21 +37,14 @@
       </div>
 
       <!-- Hosts Section (merged from the standalone tab for showcase categories) -->
-      <ShowcaseCollapsibleSection
-        v-if="props.showCategorySpecificSections && localEventData?.id"
-        :title="t('management.hosts.title')"
-        :subtitle="canEdit ? t('management.hosts.subtitleEdit') : t('management.hosts.subtitleView')"
-        :icon="Users"
-        :count="hostsCount"
-      >
+      <div v-if="props.showCategorySpecificSections && localEventData?.id">
         <EventHostsTab
           :event-id="localEventData.id"
           :can-edit="canEdit"
           :event-category="localEventData.category_details?.name || localEventData.category_name || ''"
           embedded
-          @count-change="hostsCountOverride = $event"
         />
-      </ShowcaseCollapsibleSection>
+      </div>
 
       <!-- Photo Gallery Section -->
       <div>
@@ -226,8 +219,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { Upload, ImageIcon, AlertCircle, CheckCircle, Users } from 'lucide-vue-next'
+import { ref, onMounted, watch } from 'vue'
+import { Upload, ImageIcon, AlertCircle, CheckCircle } from 'lucide-vue-next'
 import { mediaService, type EventPhoto, type Event } from '../services/api'
 import { useToast } from '../composables/useToast'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -235,7 +228,6 @@ import MediaCard from './MediaCard.vue'
 import UploadMediaModal from './UploadMediaModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import BasicMediaSection from './BasicMediaSection.vue'
-import ShowcaseCollapsibleSection from './ShowcaseCollapsibleSection.vue'
 import EventAgendaTab from './EventAgendaTab.vue'
 import EventHostsTab from './EventHostsTab.vue'
 import EmbedsSection from './EmbedsSection.vue'
@@ -272,13 +264,6 @@ const deleting = ref(false)
 
 // Local event data - synced with props
 const localEventData = ref<Event | undefined>(props.eventData ? { ...props.eventData } : undefined)
-
-// Hosts section badge count: seeded from the event payload, overridden once
-// the embedded Hosts section fetches and reports its own live count
-const hostsCountOverride = ref<number | null>(null)
-const hostsCount = computed(
-  () => hostsCountOverride.value ?? localEventData.value?.hosts?.length,
-)
 
 // Drag and drop state
 const draggedMedia = ref<EventPhoto | null>(null)

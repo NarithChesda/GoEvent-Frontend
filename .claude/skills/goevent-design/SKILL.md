@@ -87,6 +87,18 @@ All buttons: `text-sm font-medium` (primary uses `font-semibold`), `rounded-lg` 
 **Manage-page section cards (glassmorphism):**
 `bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl` with `p-6 sm:p-8` (or `p-8 sm:p-12 text-center` for empty states). Use this for the big content panels inside EventManageView tabs.
 
+**Showcase-tab section panels + row lists (the standard for manage sections):**
+Pattern from [EventTextTab.vue](src/components/EventTextTab.vue), also used by the embedded Agenda/Hosts sections ([EventAgendaTab.vue](src/components/EventAgendaTab.vue) / [EventHostsTab.vue](src/components/EventHostsTab.vue) in `embedded` mode). The Showcase tab stacks these panels; content entities render as tappable rows, and all editing happens in a drawer (§10).
+
+- Panel: glass card per above but `p-4 sm:p-6`; header = `h5 font-semibold text-slate-900` title + `text-sm text-slate-600` subtitle, with an optional **dashed add pill** right-aligned: `inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all` with a `w-3.5 h-3.5` Plus/UserPlus icon. Desktop-only drag hint (`hidden sm:flex text-xs text-slate-400` + arrows svg) goes under the subtitle when rows are reorderable.
+- Group micro-heading above each row card: `text-xs font-semibold text-slate-500 uppercase tracking-wider` with a muted count (`<span class="text-slate-400">· {{ n }}</span>`); per-group icon actions (edit/delete day, etc.) right-aligned as `p-1.5 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50` / `hover:text-red-600 hover:bg-red-50` `rounded-lg`.
+- Row card: `bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden`; each row is a `<button>` — `w-full flex items-center gap-3 p-3 sm:p-4 min-h-[56px] text-left hover:bg-slate-50 active:bg-slate-100 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset`.
+- Row anatomy: **leading element** (entity-specific: `w-9 h-9 rounded-lg` icon disc for texts, plain `whitespace-nowrap` time stack for agenda, `w-10 h-10 rounded-full` avatar for hosts) → **body** (`flex-1 min-w-0`): title line = `text-sm font-medium truncate` + right-aligned **language completion chips**, then a `text-xs sm:text-sm text-slate-500 line-clamp-1` preview line (agenda adds a color-tinted type badge here: `px-1.5 py-0.5 rounded text-[10px] font-medium` with inline `backgroundColor: withAlpha(accent,'14'); color: accent`) → trailing `ChevronRight w-4 h-4 text-slate-400`.
+- Language completion chips: `text-[10px] font-semibold px-1.5 py-0.5 rounded border uppercase`; filled = `bg-emerald-50 text-emerald-700 border-emerald-200`, missing = `bg-white text-slate-400 border-dashed border-slate-200`, inactive/hidden = `bg-amber-50 text-amber-600 border-amber-200`. Show chips only when >1 language is in play; order via `sortEventTextLanguages`.
+- Per-item entity color (agenda): slim left accent bar via `boxShadow: inset 3px 0 0 0 ${withAlpha(accent,'66')}` on the row (inset shadow, not border-left, so it doesn't fight the card radius).
+- Row drag-and-drop reorder (desktop): rows are `:draggable="canEdit"`; source dims (`opacity-50`), the hovered target highlights `bg-sky-50`; drop on a target row reorders relative to it (optimistic update + rollback). HTML5 DnD doesn't fire on touch — mobile edits via the drawer.
+- States: loading skeleton mirrors the rows (micro-heading bar + 2–3 skeleton rows in the same card chrome); empty state is a clickable dashed box `border-2 border-dashed rounded-2xl p-8 text-center` (`border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group` when editable) with a `w-8 h-8` icon and title/description.
+
 ## 8. Forms
 
 - Label: `block text-sm font-medium text-slate-700 mb-2`; required fields append ` *`.
@@ -117,6 +129,18 @@ Drawers are the standard for create/edit forms (not modals). Pattern from [Event
 - Footer: `flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3` with `flex items-center justify-between` — primary gradient submit button (left, with loading spinner per §6) and ghost cancel (right).
 - Panel motion: enters bottom-up on mobile (`translateY(100%)`), from the right on `md+` (`translateX(100%)`); enter `transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)` (spring-like), leave `0.3s cubic-bezier(0.4, 0, 0.6, 1)`.
 - Thin custom scrollbar: 6px, thumb `#cbd5e1` → hover `#94a3b8`, `border-radius: 3px`.
+- Escape closes the drawer (document `keydown` listener added on open, removed on close/unmount); close any in-drawer dropdown first, and let modals stacked above (e.g. image cropper) own Escape while open.
+- **Item delete lives in the header, top-right** (edit mode only): same style as the close button — `p-1.5 hover:bg-white/20 rounded-lg` with a white `w-5 h-5` Trash2 icon — and emits to the parent, which owns the DeleteConfirmModal. Never delete without the confirm modal.
+
+**Multilingual editor drawers (per-language seamless cards):**
+Pattern from [EditEventTextDrawer.vue](src/components/EditEventTextDrawer.vue), also used by [EditAgendaDrawer.vue](src/components/EditAgendaDrawer.vue) and [EditHostDrawer.vue](src/components/EditHostDrawer.vue). Never use language *tabs* — stack one editor card per language (English/base first, then each translation) so completeness is visible at a glance:
+
+- Card: `rounded-xl border border-slate-200 bg-white transition-all focus-within:border-sky-300 focus-within:ring-2 focus-within:ring-sky-100` — the card is the input; no inner field borders.
+- Card header (`pl-4 pr-2 pt-2.5`): language name as uppercase micro-heading (§2) + compact actions right: **Copy from English** (`flex items-center gap-1 px-2 py-1 text-xs font-medium text-[#1e90ff] hover:bg-sky-50 rounded-lg` with `w-3.5 h-3.5` Copy icon, non-base cards only, shown when base has content) and a `p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50` trash to remove the translation.
+- Seamless fields inside `px-4 pb-2 pt-1 divide-y divide-slate-100`: primary/title field `w-full p-0 py-1 text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal bg-transparent border-0 focus:outline-none focus:ring-0`; secondary rows pair a `w-4 h-4 text-slate-400` lucide icon with a borderless `text-sm text-slate-700` input (join twin inputs on one row with a muted `–` or `&` separator); long text uses an auto-growing textarea (`resize-none min-h-[48px] [field-sizing:content]`). Order fields to match how they display on the showcase. Field-level API errors render under the base-card field per §8.
+- **Add language**: the dashed add pill (§7 showcase panels) + §9 dropdown listing remaining languages; adding pushes an empty translation — nothing is saved until the footer save.
+- Localized language names via `t('management.eventTextTab.languages.<code>', fallback)`.
+- Non-translatable fields (schedule, icon, location, contact, uploads) stay below/above the language cards as regular §8 sections.
 
 ## 11. Modals (confirmations, pickers)
 

@@ -206,6 +206,7 @@
     "allHosts": "All Hosts",
     "hostsLabel": "Hosts",
     "reorderTip": "Drag-to-reorder is available only in Grid view with Sort set to Display Order.",
+    "reorderHint": "Drag hosts to reorder",
     "listEdit": "Edit",
     "listDelete": "Delete",
     "empty": {
@@ -277,7 +278,14 @@
     "creating": "Creating...",
     "updateBtn": "Update Host",
     "createBtn": "Create Host",
+    "deleteBtn": "Delete Host",
     "dismiss": "Dismiss",
+    "languages": {
+      "add": "Add language",
+      "copyFromEnglish": "Copy from English",
+      "removeAria": "Remove {language} translation",
+      "menuAria": "Add a language"
+    },
     "toast": {
       "updateSuccess": "Host updated successfully!",
       "createSuccess": "Host created successfully!",
