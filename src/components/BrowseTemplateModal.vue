@@ -177,8 +177,8 @@
                   class="overflow-hidden transition-all duration-300 ease-in-out"
                   :class="activeTab === 'browse' ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'"
                 >
-                  <!-- Search Row -->
-                  <div class="flex items-center gap-3 px-4 pb-2" :class="isPartner ? 'pt-1' : 'pt-4'">
+                  <!-- Search Row: search input + package/category filter icon buttons -->
+                  <div class="flex items-center gap-2 px-4 pb-3" :class="isPartner ? 'pt-1' : 'pt-4'">
                     <div class="relative flex-1">
                       <Search class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden="true" />
                       <input
@@ -190,6 +190,41 @@
                         class="w-full h-10 pl-11 pr-4 text-base bg-slate-100 border border-transparent rounded-full transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100 placeholder:text-slate-400"
                       />
                     </div>
+
+                    <!-- Package Filter Icon Button (opens bottom sheet) -->
+                    <button
+                      type="button"
+                      @click="isPlanSheetOpen = true"
+                      aria-haspopup="dialog"
+                      :aria-expanded="isPlanSheetOpen"
+                      :aria-label="planChipLabel"
+                      class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-300"
+                      :class="
+                        selectedPlan !== null
+                          ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
+                          : 'bg-slate-100 text-slate-600 active:bg-slate-200'
+                      "
+                    >
+                      <component :is="currentPlanOption.icon" class="w-[18px] h-[18px]" />
+                    </button>
+
+                    <!-- Category Filter Icon Button (opens bottom sheet) -->
+                    <button
+                      type="button"
+                      @click="isCategorySheetOpen = true"
+                      aria-haspopup="dialog"
+                      :aria-expanded="isCategorySheetOpen"
+                      :aria-label="categoryChipLabel"
+                      class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-300"
+                      :class="
+                        selectedCategoryId !== null
+                          ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
+                          : 'bg-slate-100 text-slate-600 active:bg-slate-200'
+                      "
+                    >
+                      <component :is="currentCategoryIcon" class="w-[18px] h-[18px]" />
+                    </button>
+
                     <!-- Close button lives here only when there is no tab row above -->
                     <button
                       v-if="!isPartner"
@@ -200,56 +235,6 @@
                     >
                       <X class="w-5 h-5" />
                     </button>
-                  </div>
-
-                  <!-- Filter Bar: pinned package chip + scrollable category chips -->
-                  <div class="flex items-center gap-2 px-4 pb-3">
-                    <!-- Package Chip (opens bottom sheet) -->
-                    <button
-                      type="button"
-                      @click="isPlanSheetOpen = true"
-                      aria-haspopup="dialog"
-                      :aria-expanded="isPlanSheetOpen"
-                      :class="[
-                        'flex-shrink-0 flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full text-[13px] font-medium transition-all whitespace-nowrap border',
-                        selectedPlan !== null
-                          ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                          : 'bg-white text-slate-600 border-slate-200 active:bg-slate-100',
-                      ]"
-                    >
-                      <component :is="currentPlanOption.icon" class="w-4 h-4" />
-                      <span>{{ planChipLabel }}</span>
-                      <ChevronDown
-                        class="w-3.5 h-3.5 transition-transform duration-200"
-                        :class="[isPlanSheetOpen ? 'rotate-180' : '', selectedPlan !== null ? 'text-white/70' : 'text-slate-400']"
-                      />
-                    </button>
-
-                    <!-- Divider -->
-                    <div class="w-px h-5 bg-slate-200 flex-shrink-0" aria-hidden="true" />
-
-                    <!-- Category Chips (scrollable with edge fade) -->
-                    <div class="relative flex-1 min-w-0">
-                      <div class="flex gap-2 overflow-x-auto no-scrollbar pr-6">
-                        <button type="button" @click="selectCategory(null)" :class="chipClass(selectedCategoryId === null)">
-                          <span>{{ t('management.browseTemplateModal.filters.all') }}</span>
-                        </button>
-                        <button
-                          v-for="category in categories"
-                          :key="'mobile-' + category.id"
-                          type="button"
-                          @click="selectCategory(category.id)"
-                          :class="chipClass(selectedCategoryId === category.id)"
-                        >
-                          <component :is="getCategoryIcon(category.name)" class="w-4 h-4" />
-                          <span>{{ category.name }}</span>
-                        </button>
-                      </div>
-                      <div
-                        class="pointer-events-none absolute right-0 inset-y-0 w-6 bg-gradient-to-l from-white to-transparent"
-                        aria-hidden="true"
-                      />
-                    </div>
                   </div>
                 </div>
               </div>
@@ -319,6 +304,73 @@
                         ]"
                       >{{ option.label }}</span>
                       <Check v-if="selectedPlan === option.value" class="w-5 h-5 text-[#2ecc71] flex-shrink-0" />
+                    </button>
+                  </div>
+                </div>
+              </Transition>
+
+              <!-- Category Bottom Sheet (mobile only) -->
+              <Transition name="fade">
+                <div
+                  v-if="isCategorySheetOpen"
+                  class="lg:hidden fixed inset-0 z-30 bg-black/40 backdrop-blur-sm"
+                  @click="isCategorySheetOpen = false"
+                />
+              </Transition>
+              <Transition name="sheet">
+                <div
+                  v-if="isCategorySheetOpen"
+                  role="dialog"
+                  aria-modal="true"
+                  :aria-label="t('management.browseTemplateModal.sidebar.categoryLabel')"
+                  class="lg:hidden fixed inset-x-0 bottom-0 z-40 bg-white rounded-t-3xl shadow-2xl pb-[max(env(safe-area-inset-bottom),0.75rem)]"
+                >
+                  <div class="w-10 h-1 rounded-full bg-slate-300 mx-auto mt-3" aria-hidden="true" />
+                  <h3 class="px-5 pt-4 pb-1 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    {{ t('management.browseTemplateModal.sidebar.categoryLabel') }}
+                  </h3>
+                  <div class="py-1 max-h-[60vh] overflow-y-auto overscroll-contain">
+                    <button
+                      type="button"
+                      :aria-pressed="selectedCategoryId === null"
+                      @click="selectCategoryMobile(null)"
+                      class="w-full flex items-center gap-3 px-5 py-3 transition-colors active:bg-slate-50"
+                    >
+                      <span
+                        class="w-3 h-3 rounded-full flex-shrink-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
+                        aria-hidden="true"
+                      />
+                      <span
+                        :class="[
+                          'flex-1 text-left text-sm',
+                          selectedCategoryId === null ? 'font-semibold text-slate-900' : 'font-medium text-slate-700',
+                        ]"
+                      >{{ t('management.browseTemplateModal.filters.all') }}</span>
+                      <Check v-if="selectedCategoryId === null" class="w-5 h-5 text-[#2ecc71] flex-shrink-0" />
+                    </button>
+                    <button
+                      v-for="category in categories"
+                      :key="'sheet-' + category.id"
+                      type="button"
+                      :aria-pressed="selectedCategoryId === category.id"
+                      @click="selectCategoryMobile(category.id)"
+                      class="w-full flex items-center gap-3 px-5 py-3 transition-colors active:bg-slate-50"
+                    >
+                      <span
+                        class="w-3 h-3 rounded-full flex-shrink-0"
+                        :style="{ backgroundColor: category.color || '#3B82F6' }"
+                        aria-hidden="true"
+                      />
+                      <span
+                        :class="[
+                          'flex-1 text-left text-sm truncate',
+                          selectedCategoryId === category.id ? 'font-semibold text-slate-900' : 'font-medium text-slate-700',
+                        ]"
+                      >{{ category.name }}</span>
+                      <Check
+                        v-if="selectedCategoryId === category.id"
+                        class="w-5 h-5 text-[#2ecc71] flex-shrink-0"
+                      />
                     </button>
                   </div>
                 </div>
@@ -433,7 +485,6 @@ import {
   Layers,
   Crown,
   LayoutTemplate,
-  ChevronDown,
   type LucideIcon,
 } from 'lucide-vue-next'
 
@@ -604,6 +655,29 @@ const selectCategory = (categoryId: number | null): void => {
   setCategoryFilter(categoryId)
 }
 
+// Mobile category bottom sheet
+const isCategorySheetOpen = ref(false)
+
+const selectCategoryMobile = (categoryId: number | null): void => {
+  selectCategory(categoryId)
+  isCategorySheetOpen.value = false
+}
+
+const currentCategoryIcon = computed((): LucideIcon => {
+  if (selectedCategoryId.value === null) return Sparkles
+  const category = categories.value.find((c) => c.id === selectedCategoryId.value)
+  return category ? getCategoryIcon(category.name) : Sparkles
+})
+
+// Chip reads "Category" when unfiltered so it doesn't duplicate the "All" option
+const categoryChipLabel = computed(() => {
+  if (selectedCategoryId.value === null) {
+    return t('management.browseTemplateModal.sidebar.categoryLabel')
+  }
+  const category = categories.value.find((c) => c.id === selectedCategoryId.value)
+  return category ? category.name : t('management.browseTemplateModal.filters.all')
+})
+
 // Mobile package bottom sheet
 type PlanValue = null | 'basic' | 'standard'
 
@@ -645,14 +719,6 @@ const navItemClass = (active: boolean): string =>
 const navIconClass = (active: boolean): string =>
   `w-4 h-4 flex-shrink-0 transition-colors ${active ? 'text-sky-600' : 'text-slate-400'}`
 
-const chipClass = (active: boolean): string =>
-  [
-    'flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-all whitespace-nowrap border',
-    active
-      ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-      : 'bg-white text-slate-600 border-slate-200 active:bg-slate-100',
-  ].join(' ')
-
 // Focus trap implementation
 const handleKeyDown = (event: KeyboardEvent): void => {
   if (!props.isOpen || !modalRef.value) return
@@ -691,6 +757,10 @@ const handleKeyDown = (event: KeyboardEvent): void => {
 const handleEscapeKey = (): void => {
   if (isPlanSheetOpen.value) {
     isPlanSheetOpen.value = false
+    return
+  }
+  if (isCategorySheetOpen.value) {
+    isCategorySheetOpen.value = false
     return
   }
   handleModalClose()
@@ -762,6 +832,7 @@ const resetModalState = (): void => {
   selectedPartnerTemplate.value = null
   isPartnerFormOpen.value = false
   isPlanSheetOpen.value = false
+  isCategorySheetOpen.value = false
   clearFilters()
   resetState()
   activeTab.value = 'browse'
@@ -946,15 +1017,6 @@ onUnmounted(() => {
   .tab-back-leave-active {
     transition: none;
   }
-}
-
-/* Hide scrollbar for category navigation */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 }
 
 /* Thin scrollbar so the modal's rounded corners stay clean */
