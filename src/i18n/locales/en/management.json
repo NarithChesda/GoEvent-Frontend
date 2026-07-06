@@ -405,6 +405,23 @@
       "title": "Delete Media"
     },
     "mediaUploads": {
+      "brandAssets": {
+        "title": "Brand Assets",
+        "subtitle": "Logos and video shown on your event showcase"
+      },
+      "row": {
+        "ariaLabel": "Edit {name}",
+        "emptyPreview": "Not uploaded yet",
+        "uploaded": "Uploaded"
+      },
+      "drawer": {
+        "closeTitle": "Close",
+        "close": "Close",
+        "deleteBtn": "Delete",
+        "uploadBtn": "Upload",
+        "uploading": "Uploading...",
+        "videoUnsupported": "Your browser does not support the video tag."
+      },
       "card": {
         "replace": "Replace",
         "crop": "Crop",
@@ -437,6 +454,9 @@
         "title": "Event Music",
         "description": "Background music for your event showcase",
         "deleteTitle": "Delete Event Music",
+        "optionsAriaLabel": "Music options",
+        "playAriaLabel": "Play music",
+        "pauseAriaLabel": "Pause music",
         "library": {
           "badge": "From Library",
           "unknown": "Unknown Track",
@@ -447,6 +467,7 @@
         "custom": {
           "badge": "Custom Upload",
           "filename": "Custom Music",
+          "duration": "Duration",
           "delete": "Delete Music",
           "upload": "Upload Your Own",
           "uploadSub": "MP3, OGG, M4A, WebM (Max 20MB)",
@@ -736,6 +757,8 @@
     "section": {
       "title": "Dress Code Guidelines",
       "subtitle": "Manage dress code suggestions for your event",
+      "dragHint": "Drag rows to reorder",
+      "rowAriaLabel": "Edit {name}",
       "tryAgain": "Try Again",
       "empty": {
         "title": "No dress codes added",
@@ -847,6 +870,21 @@
         "saveError": "An error occurred while saving the dress code",
         "imageTooLarge": "Image size must be under 5MB",
         "invalidFormat": "Invalid image format. Allowed: JPG, PNG, GIF, WebP"
+      }
+    },
+    "drawer": {
+      "closeTitle": "Close",
+      "deleteBtn": "Delete dress code",
+      "dismissError": "Dismiss",
+      "detailsHeading": "Details",
+      "removeImage": "Remove image",
+      "position": {
+        "label": "Display Position",
+        "of": "of",
+        "moveToFirst": "Move to first",
+        "moveUp": "Move up",
+        "moveDown": "Move down",
+        "moveToLast": "Move to last"
       }
     }
   },
