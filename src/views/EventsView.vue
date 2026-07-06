@@ -22,22 +22,13 @@
               :options="timeFilterOptions"
             />
 
-            <!-- Category Filter Dropdown - Desktop only (authenticated only) -->
+            <!-- Category Filter: desktop dropdown / mobile chip + bottom sheet (authenticated only) -->
             <CategoryFilter
               v-if="authStore.isAuthenticated"
               v-model="categoryFilter"
               :categories="categories"
-              variant="dropdown"
             />
           </div>
-
-          <!-- Mobile Category Filter Pills (authenticated only) -->
-          <CategoryFilter
-            v-if="authStore.isAuthenticated && categories.length > 0"
-            v-model="categoryFilter"
-            :categories="categories"
-            variant="pills"
-          />
 
           <!-- Loading State -->
           <EventsLoadingSkeleton v-if="loading" />

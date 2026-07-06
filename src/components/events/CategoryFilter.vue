@@ -1,9 +1,6 @@
 <template>
   <!-- Desktop Dropdown -->
-  <div
-    v-if="variant === 'dropdown'"
-    class="relative category-filter-container hidden sm:block"
-  >
+  <div class="relative category-filter-container hidden sm:block">
     <button
       @click.stop="toggleMenu"
       class="glass-button flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
@@ -54,43 +51,98 @@
     </Transition>
   </div>
 
-  <!-- Mobile Horizontal Pills -->
-  <div
-    v-else
-    class="sm:hidden -mx-4 px-4 mb-4 overflow-x-auto scrollbar-hide"
+  <!-- Mobile Filter Chip (opens bottom sheet) -->
+  <button
+    type="button"
+    @click="showSheet = true"
+    aria-haspopup="dialog"
+    :aria-expanded="showSheet"
+    :aria-label="t('categories.filterByCategory')"
+    class="sm:hidden flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
+    :class="
+      modelValue
+        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
+        : 'glass-button text-slate-600'
+    "
   >
-    <div class="flex items-center gap-2 pb-1">
-      <button
-        @click="selectCategory('')"
-        :class="[
-          'flex-shrink-0 px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-300 whitespace-nowrap',
-          !modelValue
-            ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
-            : 'glass-pill text-slate-600',
-        ]"
+    <ListFilter class="w-5 h-5" />
+  </button>
+
+  <!-- Mobile Category Bottom Sheet -->
+  <Teleport to="body">
+    <Transition name="fade">
+      <div
+        v-if="showSheet"
+        class="sm:hidden fixed inset-0 z-[998] bg-black/40 backdrop-blur-sm"
+        @click="showSheet = false"
+      />
+    </Transition>
+    <Transition name="sheet">
+      <div
+        v-if="showSheet"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="t('categories.filterByCategory')"
+        class="sm:hidden fixed inset-x-0 bottom-0 z-[999] bg-white rounded-t-3xl shadow-2xl pb-[max(env(safe-area-inset-bottom),0.75rem)]"
       >
-        {{ t('discover.filters.all') }}
-      </button>
-      <button
-        v-for="category in categories"
-        :key="category.id"
-        @click="selectCategory(category.name)"
-        :class="[
-          'flex-shrink-0 px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-300 whitespace-nowrap',
-          modelValue === category.name
-            ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
-            : 'glass-pill text-slate-600',
-        ]"
-      >
-        {{ translateEventCategory(category.name) }}
-      </button>
-    </div>
-  </div>
+        <div class="w-10 h-1 rounded-full bg-slate-300 mx-auto mt-3" aria-hidden="true" />
+        <h3 class="px-5 pt-4 pb-1 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+          {{ t('categories.filterByCategory') }}
+        </h3>
+        <div class="py-1 max-h-[60vh] overflow-y-auto overscroll-contain">
+          <button
+            type="button"
+            :aria-pressed="!modelValue"
+            @click="selectCategory('')"
+            class="w-full flex items-center gap-3 px-5 py-3 transition-colors active:bg-slate-50"
+          >
+            <span
+              class="w-3 h-3 rounded-full flex-shrink-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
+              aria-hidden="true"
+            />
+            <span
+              :class="[
+                'flex-1 text-left text-sm',
+                !modelValue ? 'font-semibold text-slate-900' : 'font-medium text-slate-700',
+              ]"
+            >{{ t('categories.allCategories') }}</span>
+            <Check v-if="!modelValue" class="w-5 h-5 text-[#2ecc71] flex-shrink-0" />
+          </button>
+          <button
+            v-for="category in categories"
+            :key="category.id"
+            type="button"
+            :aria-pressed="modelValue === category.name"
+            @click="selectCategory(category.name)"
+            class="w-full flex items-center gap-3 px-5 py-3 transition-colors active:bg-slate-50"
+          >
+            <span
+              class="w-3 h-3 rounded-full flex-shrink-0"
+              :style="{ backgroundColor: category.color || '#3B82F6' }"
+              aria-hidden="true"
+            />
+            <span
+              :class="[
+                'flex-1 text-left text-sm truncate',
+                modelValue === category.name
+                  ? 'font-semibold text-slate-900'
+                  : 'font-medium text-slate-700',
+              ]"
+            >{{ translateEventCategory(category.name) }}</span>
+            <Check
+              v-if="modelValue === category.name"
+              class="w-5 h-5 text-[#2ecc71] flex-shrink-0"
+            />
+          </button>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { ChevronDown } from 'lucide-vue-next'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ChevronDown, ListFilter, Check } from 'lucide-vue-next'
 import type { EventCategory } from '@/services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
@@ -98,22 +150,17 @@ import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
 const { t } = useAppLanguage()
 const { translateEventCategory } = useCategoryTranslation()
 
-const props = withDefaults(
-  defineProps<{
-    modelValue: string
-    categories: EventCategory[]
-    variant?: 'dropdown' | 'pills'
-  }>(),
-  {
-    variant: 'dropdown',
-  }
-)
+defineProps<{
+  modelValue: string
+  categories: EventCategory[]
+}>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
 const showMenu = ref(false)
+const showSheet = ref(false)
 
 const toggleMenu = () => {
   showMenu.value = !showMenu.value
@@ -122,6 +169,7 @@ const toggleMenu = () => {
 const selectCategory = (name: string) => {
   emit('update:modelValue', name)
   showMenu.value = false
+  showSheet.value = false
 }
 
 // Handle click outside to close menu
@@ -132,12 +180,28 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 }
 
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && showSheet.value) {
+    showSheet.value = false
+  }
+}
+
+// Lock body scroll while the bottom sheet is open
+watch(showSheet, (open) => {
+  document.body.style.overflow = open ? 'hidden' : ''
+})
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  document.addEventListener('keydown', handleKeydown)
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('keydown', handleKeydown)
+  if (showSheet.value) {
+    document.body.style.overflow = ''
+  }
 })
 </script>
 
@@ -153,14 +217,37 @@ onUnmounted(() => {
   transform: translateY(-10px);
 }
 
-/* Hide scrollbar for horizontal scroll on mobile */
-.scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+/* Bottom sheet: backdrop fade + panel slide-up */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.sheet-enter-active {
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.sheet-leave-active {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.sheet-enter-from,
+.sheet-leave-to {
+  transform: translateY(100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-enter-active,
+  .sheet-leave-active,
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: none;
+  }
 }
 
 /* Glass effect styles */
@@ -183,16 +270,5 @@ onUnmounted(() => {
   box-shadow:
     0 8px 32px rgba(46, 204, 113, 0.1),
     0 4px 12px rgba(30, 144, 255, 0.08);
-}
-
-.glass-pill {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-}
-
-.glass-pill:hover {
-  background: rgba(255, 255, 255, 0.8);
 }
 </style>

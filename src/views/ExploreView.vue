@@ -23,23 +23,13 @@
               :options="dateFilterOptions"
             />
 
-            <!-- Category Filter Dropdown - Desktop only -->
+            <!-- Category Filter: desktop dropdown / mobile chip + bottom sheet -->
             <CategoryFilter
               v-model="categoryFilter"
               :categories="categories"
-              variant="dropdown"
               @update:model-value="handleCategoryChange"
             />
           </div>
-
-          <!-- Mobile Category Filter Pills -->
-          <CategoryFilter
-            v-if="categories.length > 0"
-            v-model="categoryFilter"
-            :categories="categories"
-            variant="pills"
-            @update:model-value="handleCategoryChange"
-          />
 
           <!-- Loading State -->
           <EventsLoadingSkeleton v-if="isLoading" />
