@@ -8,14 +8,14 @@
       <section class="py-4 sm:py-6 lg:py-8">
         <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <!-- Header with Toggle -->
-          <div class="flex items-center justify-between gap-3 flex-wrap mb-6 sm:mb-8 lg:mb-10">
+          <div class="flex items-center justify-between gap-2 mb-6 sm:mb-8 lg:mb-10">
             <h1
-              class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900"
+              class="flex-1 min-w-0 truncate text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900"
             >
               {{ t('events.title') }}
             </h1>
 
-            <div class="flex items-center gap-2 flex-wrap justify-end">
+            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
               <!-- Upcoming/Past/Recent Toggle (authenticated only) -->
               <TimeFilterToggle
                 v-if="authStore.isAuthenticated"
