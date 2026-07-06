@@ -10,25 +10,27 @@
       <section class="py-4 sm:py-6 lg:py-8">
         <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <!-- Header with Toggle -->
-          <div class="flex items-center justify-between mb-6 sm:mb-8 lg:mb-10">
+          <div class="flex items-center justify-between gap-3 flex-wrap mb-6 sm:mb-8 lg:mb-10">
             <h1
               class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900"
             >
               {{ t('discover.title') }}
             </h1>
 
-            <!-- Date Range Toggle -->
-            <TimeFilterToggle
-              v-model="dateFilter"
-              :options="dateFilterOptions"
-            />
+            <div class="flex items-center gap-2 flex-wrap justify-end">
+              <!-- Date Range Toggle -->
+              <TimeFilterToggle
+                v-model="dateFilter"
+                :options="dateFilterOptions"
+              />
 
-            <!-- Category Filter: desktop dropdown / mobile chip + bottom sheet -->
-            <CategoryFilter
-              v-model="categoryFilter"
-              :categories="categories"
-              @update:model-value="handleCategoryChange"
-            />
+              <!-- Category Filter: desktop dropdown / mobile chip + bottom sheet -->
+              <CategoryFilter
+                v-model="categoryFilter"
+                :categories="categories"
+                @update:model-value="handleCategoryChange"
+              />
+            </div>
           </div>
 
           <!-- Loading State -->

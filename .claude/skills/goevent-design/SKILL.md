@@ -45,7 +45,7 @@ Weights: `font-bold` page/section titles, `font-semibold` card titles + primary 
 ## 4. Layout & Pages
 
 - Page shell: wrap in `<MainLayout>`; content section `py-4 sm:py-6 lg:py-8` inside `max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8`.
-- Page title row: `flex items-center justify-between` header with filters/toggles on the right; `mb-6 sm:mb-8 lg:mb-10`.
+- Page title row: `flex items-center justify-between gap-3 flex-wrap` header with filters/toggles on the right; `mb-6 sm:mb-8 lg:mb-10`. When there's more than one right-side control (e.g. a time toggle + category filter), wrap them together in their own `flex items-center gap-2 flex-wrap justify-end` group so they wrap as a unit under the title on narrow screens instead of each fighting `justify-between` independently.
 - Vertical rhythm: sibling sections `space-y-5` or `space-y-6 sm:space-y-8`; within a group `space-y-3`; grids `gap-3` (forms) to `gap-6` (card grids).
 - **Every page needs four states**: loading skeleton, populated content, empty state, and (where auth-gated) unauthenticated state. Reuse `EventsLoadingSkeleton` / `EventsEmptyState` patterns.
 - FAB: `fixed bottom-20 lg:bottom-4 right-4 lg:right-6 w-14 h-14`, brand gradient, `rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 z-[60] group`; icon animates (`group-hover:rotate-90` for Plus) and a tooltip pill (`bg-slate-900 text-white px-3 py-2 rounded-lg text-sm`) fades in on the left. **Any fixed bottom element uses `bottom-20 lg:bottom-4`** to clear the mobile tab bar.
