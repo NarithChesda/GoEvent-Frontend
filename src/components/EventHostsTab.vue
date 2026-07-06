@@ -317,6 +317,7 @@
       v-model="showCreateModal"
       :event-id="eventId"
       :event-category="eventCategory"
+      :existing-hosts="hosts"
       @created="handleHostCreated"
     />
 
@@ -325,6 +326,7 @@
       :event-id="eventId"
       :event-category="eventCategory"
       :host="selectedHost || undefined"
+      :existing-hosts="hosts"
       @updated="handleHostUpdated"
       @delete="confirmDeleteHost"
     />
@@ -509,16 +511,15 @@ const deleteHost = async () => {
   }
 }
 
-const handleHostCreated = (newHost: EventHost) => {
-  hosts.value.push(newHost)
+const handleHostCreated = async () => {
+  // Reload hosts to pick up any reordering triggered by a manual position pick
+  await loadHosts()
   // Drawer shows its own success message and closes itself
 }
 
-const handleHostUpdated = (updatedHost: EventHost) => {
-  const index = hosts.value.findIndex((host) => host.id === updatedHost.id)
-  if (index !== -1) {
-    hosts.value[index] = updatedHost
-  }
+const handleHostUpdated = async () => {
+  // Reload hosts to pick up any reordering triggered by a manual position pick
+  await loadHosts()
   // Drawer shows its own success message and closes itself
   // Clear selectedHost after animation
   setTimeout(() => {

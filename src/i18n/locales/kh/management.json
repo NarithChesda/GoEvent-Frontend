@@ -327,6 +327,14 @@
       "linkedin": "LinkedIn URL",
       "twitter": "Twitter URL",
       "website": "Website URL"
+    },
+    "position": {
+      "label": "ទីតាំងបង្ហាញ",
+      "of": "នៃ",
+      "moveToFirst": "ផ្លាស់ទៅដំបូង",
+      "moveUp": "ផ្លាស់ទៅឡើង",
+      "moveDown": "ផ្លាស់ទៅចុះ",
+      "moveToLast": "ផ្លាស់ទៅចុងក្រោយ"
     }
   },
   "tabs": {

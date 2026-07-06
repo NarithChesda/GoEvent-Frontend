@@ -29,18 +29,36 @@ interface HostFormData {
   translations: any[]
 }
 
-export function useHostForm(eventId: string, host?: EventHost) {
+export function useHostForm(eventId: string, host?: EventHost, existingHosts?: EventHost[]) {
   // Track the current host for edit mode detection
   const currentHost = ref<EventHost | undefined>(host)
 
+  // Track existing hosts for order calculation
+  const currentExistingHosts = ref<EventHost[] | undefined>(existingHosts)
+
   // Determine mode
   const isEditMode = computed(() => !!currentHost.value)
+
+  // Calculate max order from existing hosts
+  const maxOrder = computed(() => {
+    if (!currentExistingHosts.value || currentExistingHosts.value.length === 0) {
+      return 0
+    }
+    return Math.max(...currentExistingHosts.value.map((h) => h.order), 0)
+  })
 
   // State
   const loading = ref(false)
   const fieldErrors = ref<Record<string, string[]>>({})
   const generalError = ref<string>('')
   const emailError = ref<string>('')
+
+  // Calculate initial order for new hosts (append to end)
+  const getInitialOrder = (): number => {
+    if (host) return host.order
+    if (!existingHosts || existingHosts.length === 0) return 0
+    return Math.max(...existingHosts.map((h) => h.order), 0) + 1
+  }
 
   // Form data - initialize with host data (edit mode) or empty values (create mode)
   const formData = reactive<HostFormData>({
@@ -54,7 +72,7 @@ export function useHostForm(eventId: string, host?: EventHost) {
     linkedin_url: host?.linkedin_url || '',
     twitter_url: host?.twitter_url || '',
     website_url: host?.website_url || '',
-    order: host?.order || 0,
+    order: getInitialOrder(),
     translations: host ? host.translations.map(t => ({ ...t })) : [],
   })
 
@@ -245,6 +263,62 @@ export function useHostForm(eventId: string, host?: EventHost) {
     }
   }
 
+  // Helper to calculate reorder updates when inserting at a specific position
+  const calculateReorderUpdates = (
+    targetOrder: number,
+    excludeId?: number,
+  ): { id: number; order: number }[] => {
+    if (!currentExistingHosts.value) return []
+
+    // Filter hosts that need to be shifted (order >= target, not the current host)
+    const hostsToShift = currentExistingHosts.value.filter((h) => {
+      if (excludeId && h.id === excludeId) return false
+      return h.order >= targetOrder
+    })
+
+    // Sort by current order and assign new orders (shift down by 1)
+    return hostsToShift
+      .sort((a, b) => a.order - b.order)
+      .map((h, index) => ({
+        id: h.id,
+        order: targetOrder + index + 1,
+      }))
+  }
+
+  // Helper to calculate full reorder when moving a host to a new position
+  const calculateMoveReorderUpdates = (
+    hostId: number,
+    oldOrder: number,
+    newOrder: number,
+  ): { id: number; order: number }[] => {
+    if (!currentExistingHosts.value || oldOrder === newOrder) return []
+
+    const others = currentExistingHosts.value
+      .filter((h) => h.id !== hostId)
+      .sort((a, b) => a.order - b.order)
+
+    // Build new order array by inserting at the target position
+    const result: { id: number; order: number }[] = []
+    let orderIndex = 0
+
+    for (const h of others) {
+      if (orderIndex === newOrder) {
+        orderIndex++
+      }
+      result.push({ id: h.id, order: orderIndex })
+      orderIndex++
+    }
+
+    // Add the moving host at its new position
+    result.push({ id: hostId, order: newOrder })
+
+    // Only return hosts whose order actually changed
+    return result.filter((update) => {
+      const original = currentExistingHosts.value?.find((h) => h.id === update.id)
+      return original && original.order !== update.order
+    })
+  }
+
   // Create host
   const createHost = async (
     profileImageFile: File | null,
@@ -270,7 +344,26 @@ export function useHostForm(eventId: string, host?: EventHost) {
       }
 
       if (response.success && response.data) {
-        return { success: true, data: response.data }
+        const createdHost = response.data
+
+        // If inserting at a specific position (not at the end), reorder other hosts
+        const reorderUpdates = calculateReorderUpdates(createdHost.order, createdHost.id)
+
+        if (reorderUpdates.length > 0) {
+          const allUpdates = [{ id: createdHost.id, order: createdHost.order }, ...reorderUpdates]
+          try {
+            const reorderResponse = await hostsService.bulkReorderHosts(eventId, {
+              updates: allUpdates,
+            })
+            if (!reorderResponse.success) {
+              console.error('Reorder failed after create:', reorderResponse.message)
+            }
+          } catch (reorderError) {
+            console.error('Error during post-create reorder:', reorderError)
+          }
+        }
+
+        return { success: true, data: createdHost }
       } else {
         if (response.errors && typeof response.errors === 'object') {
           fieldErrors.value = response.errors as Record<string, string[]>
@@ -300,6 +393,10 @@ export function useHostForm(eventId: string, host?: EventHost) {
     loading.value = true
     fieldErrors.value = {}
     generalError.value = ''
+
+    const originalOrder = currentHost.value.order
+    const newOrder = formData.order
+    const orderChanged = originalOrder !== newOrder
 
     try {
       // Validate
@@ -347,22 +444,41 @@ export function useHostForm(eventId: string, host?: EventHost) {
       }
 
       if (response.success && response.data) {
+        const updatedHost = response.data
+
+        // If position changed, reorder sibling hosts to match
+        if (orderChanged) {
+          const reorderUpdates = calculateMoveReorderUpdates(updatedHost.id, originalOrder, newOrder)
+          if (reorderUpdates.length > 0) {
+            try {
+              const reorderResponse = await hostsService.bulkReorderHosts(eventId, {
+                updates: reorderUpdates,
+              })
+              if (!reorderResponse.success) {
+                console.error('Reorder failed after update:', reorderResponse.message)
+              }
+            } catch (reorderError) {
+              console.error('Error during post-update reorder:', reorderError)
+            }
+          }
+        }
+
         // Update original form data to reflect saved state
         originalFormData.value = {
-          name: response.data.name || '',
-          parent_a_name: response.data.parent_a_name || '',
-          parent_b_name: response.data.parent_b_name || '',
-          title: response.data.title || '',
-          bio: response.data.bio || '',
-          profile_image: response.data.profile_image || '',
-          email: response.data.email || '',
-          linkedin_url: response.data.linkedin_url || '',
-          twitter_url: response.data.twitter_url || '',
-          website_url: response.data.website_url || '',
-          order: response.data.order || 0,
-          translations: response.data.translations ? response.data.translations.map(t => ({ ...t })) : [],
+          name: updatedHost.name || '',
+          parent_a_name: updatedHost.parent_a_name || '',
+          parent_b_name: updatedHost.parent_b_name || '',
+          title: updatedHost.title || '',
+          bio: updatedHost.bio || '',
+          profile_image: updatedHost.profile_image || '',
+          email: updatedHost.email || '',
+          linkedin_url: updatedHost.linkedin_url || '',
+          twitter_url: updatedHost.twitter_url || '',
+          website_url: updatedHost.website_url || '',
+          order: updatedHost.order || 0,
+          translations: updatedHost.translations ? updatedHost.translations.map(t => ({ ...t })) : [],
         }
-        return { success: true, data: response.data }
+        return { success: true, data: updatedHost }
       } else {
         if (response.errors && typeof response.errors === 'object') {
           fieldErrors.value = response.errors as Record<string, string[]>
@@ -387,8 +503,9 @@ export function useHostForm(eventId: string, host?: EventHost) {
   }
 
   // Reset form with new host data (for when host prop changes)
-  const resetForm = (newHost?: EventHost) => {
+  const resetForm = (newHost?: EventHost, newExistingHosts?: EventHost[]) => {
     currentHost.value = newHost
+    currentExistingHosts.value = newExistingHosts
     formData.name = newHost?.name || ''
     formData.parent_a_name = newHost?.parent_a_name || ''
     formData.parent_b_name = newHost?.parent_b_name || ''
@@ -399,7 +516,11 @@ export function useHostForm(eventId: string, host?: EventHost) {
     formData.linkedin_url = newHost?.linkedin_url || ''
     formData.twitter_url = newHost?.twitter_url || ''
     formData.website_url = newHost?.website_url || ''
-    formData.order = newHost?.order || 0
+    // For new hosts, default to maxOrder + 1 so they appear at the end
+    const currentMaxOrder = newExistingHosts?.length
+      ? Math.max(...newExistingHosts.map((h) => h.order), 0)
+      : 0
+    formData.order = newHost?.order ?? (currentMaxOrder + 1)
     // Deep copy translations to avoid shared references
     formData.translations = newHost ? newHost.translations.map(t => ({ ...t })) : []
 
@@ -432,6 +553,7 @@ export function useHostForm(eventId: string, host?: EventHost) {
     formData,
     loading,
     isEditMode,
+    maxOrder,
 
     // Errors
     fieldErrors,

@@ -142,6 +142,8 @@ Pattern from [EditEventTextDrawer.vue](src/components/EditEventTextDrawer.vue), 
 - Localized language names via `t('management.eventTextTab.languages.<code>', fallback)`.
 - Non-translatable fields (schedule, icon, location, contact, uploads) stay below/above the language cards as regular §8 sections.
 
+**Mobile position control (move up/down/first/last):** Pattern from [ScheduleSection.vue](src/components/agenda/ScheduleSection.vue), also used by [EditHostDrawer.vue](src/components/EditHostDrawer.vue) — the touch-friendly substitute for desktop row drag-and-drop (§7) inside a drawer, since HTML5 DnD doesn't fire on touch. `sm:hidden`, only rendered when `maxOrder > 0`. Label: `flex items-center gap-1.5` with `ArrowUpDown w-3.5 h-3.5` + text per §8. Row: `flex items-center gap-2` of four `p-2 rounded-lg border` icon buttons (`ChevronsUp`/`ChevronUp`/`ChevronDown`/`ChevronsDown`, `w-4 h-4`) flanking a `flex-1 text-center` position pill (`inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 rounded-lg`, showing `{{ order + 1 }}` `of` `{{ maxOrder + 1 }}`); enabled state `border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400 active:bg-slate-200`, disabled (at either end) `border-slate-200 text-slate-300 cursor-not-allowed`. The move only updates local `order` in the form; the parent reconciles sibling order server-side on save.
+
 ## 11. Modals (confirmations, pickers)
 
 Pattern from [DeleteConfirmModal.vue](src/components/DeleteConfirmModal.vue):

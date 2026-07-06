@@ -220,6 +220,81 @@
               </div>
             </div>
 
+            <!-- Position Control (Mobile Only) -->
+            <div v-if="maxOrder > 0" class="border-t border-slate-100 pt-4 laptop-sm:pt-5 sm:hidden">
+              <label class="block text-sm font-medium text-slate-700 mb-2">
+                <span class="flex items-center gap-1.5">
+                  <ArrowUpDown class="w-3.5 h-3.5" aria-hidden="true" />
+                  {{ t('management.hostsDrawer.position.label') }}
+                </span>
+              </label>
+              <div class="flex items-center gap-2">
+                <!-- Move to First -->
+                <button
+                  type="button"
+                  @click="moveToFirst"
+                  :disabled="formData.order <= 0"
+                  class="p-2 rounded-lg border transition-all duration-150"
+                  :class="formData.order <= 0
+                    ? 'border-slate-200 text-slate-300 cursor-not-allowed'
+                    : 'border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400 active:bg-slate-200'"
+                  :title="t('management.hostsDrawer.position.moveToFirst')"
+                >
+                  <ChevronsUp class="w-4 h-4" />
+                </button>
+
+                <!-- Move Up -->
+                <button
+                  type="button"
+                  @click="moveUp"
+                  :disabled="formData.order <= 0"
+                  class="p-2 rounded-lg border transition-all duration-150"
+                  :class="formData.order <= 0
+                    ? 'border-slate-200 text-slate-300 cursor-not-allowed'
+                    : 'border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400 active:bg-slate-200'"
+                  :title="t('management.hostsDrawer.position.moveUp')"
+                >
+                  <ChevronUp class="w-4 h-4" />
+                </button>
+
+                <!-- Position Display -->
+                <div class="flex-1 text-center">
+                  <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 rounded-lg">
+                    <span class="text-sm font-semibold text-slate-900">{{ formData.order + 1 }}</span>
+                    <span class="text-xs text-slate-500">{{ t('management.hostsDrawer.position.of') }} {{ maxOrder + 1 }}</span>
+                  </span>
+                </div>
+
+                <!-- Move Down -->
+                <button
+                  type="button"
+                  @click="moveDown"
+                  :disabled="formData.order >= maxOrder"
+                  class="p-2 rounded-lg border transition-all duration-150"
+                  :class="formData.order >= maxOrder
+                    ? 'border-slate-200 text-slate-300 cursor-not-allowed'
+                    : 'border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400 active:bg-slate-200'"
+                  :title="t('management.hostsDrawer.position.moveDown')"
+                >
+                  <ChevronDown class="w-4 h-4" />
+                </button>
+
+                <!-- Move to Last -->
+                <button
+                  type="button"
+                  @click="moveToLast"
+                  :disabled="formData.order >= maxOrder"
+                  class="p-2 rounded-lg border transition-all duration-150"
+                  :class="formData.order >= maxOrder
+                    ? 'border-slate-200 text-slate-300 cursor-not-allowed'
+                    : 'border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400 active:bg-slate-200'"
+                  :title="t('management.hostsDrawer.position.moveToLast')"
+                >
+                  <ChevronsDown class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
             <!-- Contact Information Section -->
             <div class="border-t border-slate-100 pt-4 laptop-sm:pt-5">
               <ContactSection
@@ -292,7 +367,23 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, toRef, watch } from 'vue'
-import { ArrowRight, AlertCircle, CheckCircle, Loader, Save, Copy, Plus, Trash2, Briefcase, Users } from 'lucide-vue-next'
+import {
+  ArrowRight,
+  AlertCircle,
+  CheckCircle,
+  Loader,
+  Save,
+  Copy,
+  Plus,
+  Trash2,
+  Briefcase,
+  Users,
+  ArrowUpDown,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUp,
+  ChevronsDown,
+} from 'lucide-vue-next'
 import type { EventHost, HostTranslation } from '@/services/api'
 import { apiService } from '@/services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -314,6 +405,7 @@ interface Props {
   eventId: string
   host?: EventHost
   eventCategory?: string
+  existingHosts?: EventHost[]
 }
 
 interface Emits {
@@ -334,6 +426,7 @@ const {
   formData,
   loading,
   isEditMode,
+  maxOrder,
   fieldErrors,
   generalError,
   emailError,
@@ -342,7 +435,7 @@ const {
   updateHost,
   resetErrors,
   resetForm,
-} = useHostForm(props.eventId, props.host)
+} = useHostForm(props.eventId, props.host, props.existingHosts)
 
 const defaultTranslation: Omit<HostTranslation, 'id' | 'host' | 'created_at' | 'updated_at'> = {
   language: '',
@@ -387,6 +480,23 @@ const showParentFields = computed(() => {
 // Local UI state
 const contactOpen = ref(false)
 const showLanguageMenu = ref(false)
+
+// Mobile position control (mirrors the agenda drawer's move-up/down control)
+const moveUp = () => {
+  if (formData.order > 0) formData.order -= 1
+}
+
+const moveDown = () => {
+  if (formData.order < maxOrder.value) formData.order += 1
+}
+
+const moveToFirst = () => {
+  formData.order = 0
+}
+
+const moveToLast = () => {
+  formData.order = maxOrder.value
+}
 
 // --- Per-language editor cards (EditEventTextDrawer pattern) ---
 
@@ -548,7 +658,7 @@ watch(
   (isOpen) => {
     if (isOpen) {
       // Reset form with current host data when drawer opens
-      resetForm(props.host)
+      resetForm(props.host, props.existingHosts)
       // Reset profile picture state
       resetProfilePicture(props.host?.profile_image || undefined)
       // Reset UI state
