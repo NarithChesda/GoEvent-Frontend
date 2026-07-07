@@ -111,6 +111,8 @@
               v-if="activeTab === 'overview'"
               :event="event"
               @join-virtual="joinVirtualEvent"
+              @navigate="activeTab = $event"
+              @edit-event="showEditDrawer = true"
             />
 
             <!-- Agenda Tab -->

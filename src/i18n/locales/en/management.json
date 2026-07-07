@@ -4,7 +4,35 @@
     "populate": {
       "label": "Auto-fill from category template",
       "btn": "Populate",
-      "loading": "Loading…"
+      "loading": "Loading…",
+      "success": "Done! Created {total} items ({texts} texts, {hosts} hosts, {agenda} agenda).",
+      "errorCheck": "Failed to check template availability.",
+      "errorNoTemplate": "No template available for \"{category}\" events.",
+      "errorGeneric": "Something went wrong. Please try again."
+    },
+    "glance": {
+      "title": "At a glance",
+      "guests": "Guests",
+      "agendaItems": "Agenda",
+      "hosts": "Hosts",
+      "daysToGo": "{n} days to go",
+      "dayToGo": "1 day to go",
+      "today": "Happening today",
+      "ended": "Event ended",
+      "invitations": "Invitations",
+      "invitationProgress": "{sent} of {total} sent · {viewed} viewed",
+      "manageGuests": "Manage guests"
+    },
+    "summary": {
+      "manageAgenda": "View full agenda",
+      "manageHosts": "Manage hosts",
+      "addAgendaTitle": "No agenda items yet",
+      "addAgendaDesc": "Add sessions and activities to your event schedule",
+      "addHostsTitle": "No hosts yet",
+      "addHostsDesc": "Add the people hosting or speaking at your event",
+      "addDescriptionTitle": "No description yet",
+      "addDescriptionDesc": "Tell your guests what this event is about",
+      "editAria": "Edit event details"
     },
     "calendar": {
       "addToCalendar": "Add to Calendar",
