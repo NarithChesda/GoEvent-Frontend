@@ -20,15 +20,15 @@
         <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
           <div class="flex items-center px-3 py-2.5">
             <!-- Left: Close button & Title -->
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 min-w-0">
               <button
                 @click="$emit('close')"
-                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
-                title="Close"
+                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
+                :title="t('common.actions.close')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
-              <h2 class="text-base font-semibold text-white">{{ t('events.createDrawer.title') }}</h2>
+              <h2 class="text-base font-semibold text-white truncate">{{ t('events.createDrawer.title') }}</h2>
             </div>
           </div>
         </div>
@@ -58,18 +58,14 @@
                   <!-- Category -->
                   <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.category') }}</label>
-                    <div class="relative">
-                      <select
-                        v-model="form.category"
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
-                      >
-                        <option value="">{{ t('events.createDrawer.fields.categoryPlaceholder') }}</option>
-                        <option v-for="category in categories" :key="category.id" :value="category.id">
-                          {{ translateEventCategory(category.name) }}
-                        </option>
-                      </select>
-                      <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    </div>
+                    <SelectField
+                      :model-value="form.category ?? ''"
+                      @update:model-value="form.category = $event"
+                      :options="categoryOptions"
+                      allow-empty
+                      :placeholder="t('events.createDrawer.fields.categoryPlaceholder')"
+                      :title="t('events.createDrawer.fields.category')"
+                    />
                   </div>
                 </div>
 
@@ -109,24 +105,26 @@
 
               <!-- Date and Time -->
               <div class="space-y-3">
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('events.createDrawer.sections.dateTime') }}</h3>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.startDateTime') }} *</label>
-                    <input
-                      v-model="form.start_date"
-                      type="datetime-local"
-                      required
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                    <DateTimePickerField
+                      :model-value="form.start_date"
+                      @update:model-value="onStartDateChange"
+                      :title="t('events.createDrawer.fields.startDateTime')"
                     />
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.endDateTime') }} *</label>
-                    <input
+                    <DateTimePickerField
                       v-model="form.end_date"
-                      type="datetime-local"
-                      required
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                      :min="form.start_date"
+                      :error="!!dateError"
+                      :title="t('events.createDrawer.fields.endDateTime')"
                     />
+                    <p v-if="dateError" class="text-xs sm:text-sm text-red-600 mt-1">{{ dateError }}</p>
                   </div>
                 </div>
               </div>
@@ -218,11 +216,11 @@
                     <!-- Registration Deadline -->
                     <div>
                       <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.registrationDeadline') }}</label>
-                      <input
+                      <DateTimePickerField
                         v-model="form.registration_deadline"
-                        type="datetime-local"
                         :max="form.start_date"
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                        clearable
+                        :title="t('events.createDrawer.fields.registrationDeadline')"
                         :placeholder="t('events.createDrawer.fields.deadlinePlaceholder')"
                       />
                       <p class="text-xs text-slate-500 mt-1">{{ t('events.createDrawer.fields.deadlineHint') }}</p>
@@ -269,20 +267,32 @@
             </button>
           </div>
         </div>
+
+        <!-- Error Toast -->
+        <Transition name="slide-up">
+          <div v-if="message" class="absolute bottom-16 left-4 right-4 z-10">
+            <div class="bg-red-500 text-white px-3 py-2.5 rounded-lg shadow-lg flex items-center">
+              <AlertCircle class="w-4 h-4 mr-2 flex-shrink-0" />
+              <span class="text-xs">{{ message }}</span>
+            </div>
+          </div>
+        </Transition>
       </div>
     </Transition>
   </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from 'vue'
-import { ArrowRight, Loader, ChevronDown, Save, ClipboardList, Globe, Lock, Sparkles } from 'lucide-vue-next'
+import { ref, computed, reactive, watch, onMounted, onUnmounted } from 'vue'
+import { ArrowRight, Loader, Save, ClipboardList, Globe, Lock, Sparkles, AlertCircle } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
+import DateTimePickerField from '@/components/common/DateTimePickerField.vue'
+import SelectField, { type SelectFieldOption } from '@/components/common/SelectField.vue'
 
 const { t } = useAppLanguage()
 const { translateEventCategory } = useCategoryTranslation()
-import { getTimezonesByRegion, findTimezoneOption, getUserTimezone } from '../utils/timezones'
+import { getUserTimezone } from '../utils/timezones'
 import { eventCategoriesService, type EventCategory } from '../services/api'
 import eventDescriptionTemplates from '../assets/event-description-templates.json'
 import { sanitizeRichContent } from '@/utils/sanitize'
@@ -332,6 +342,7 @@ const emit = defineEmits<Emits>()
 const descriptionEditor = ref<HTMLElement>()
 const isSubmitting = ref(false)
 const categories = ref<EventCategory[]>([])
+const message = ref<string | null>(null)
 
 // Form data
 const form = reactive<EventFormData>({
@@ -349,8 +360,31 @@ const form = reactive<EventFormData>({
   auto_populate: false,
 })
 
-// Timezone data
-const timezonesByRegion = getTimezonesByRegion()
+// Category options for the select field
+const categoryOptions = computed<SelectFieldOption[]>(() =>
+  categories.value.map((category) => ({
+    value: category.id,
+    label: translateEventCategory(category.name),
+    color: category.color || '#3B82F6',
+  })),
+)
+
+// Live validation: end date must be after start date
+const dateError = computed(() =>
+  form.start_date && form.end_date && new Date(form.end_date) <= new Date(form.start_date)
+    ? t('events.messages.endDateAfterStart')
+    : '',
+)
+
+// In-drawer error toast
+let messageTimer: ReturnType<typeof setTimeout> | undefined
+const showMessage = (text: string) => {
+  message.value = text
+  clearTimeout(messageTimer)
+  messageTimer = setTimeout(() => {
+    message.value = null
+  }, 4000)
+}
 
 // Methods
 const loadCategories = async () => {
@@ -411,15 +445,20 @@ const resetForm = () => {
 }
 
 const handleSubmit = async () => {
+  // Validate before submitting; button sits outside the <form>, so native
+  // required validation never runs
+  if (!form.title.trim()) {
+    showMessage(t('common.errors.validation'))
+    return
+  }
+  if (!form.start_date || !form.end_date || dateError.value) {
+    showMessage(t('events.messages.endDateAfterStart'))
+    return
+  }
+
   isSubmitting.value = true
 
   try {
-    // Validate end date is after start date
-    if (new Date(form.end_date) <= new Date(form.start_date)) {
-      alert(t('events.messages.endDateAfterStart'))
-      return
-    }
-
     // Create form data copy for submission
     const formData = { ...form }
 
@@ -469,7 +508,7 @@ const handleSubmit = async () => {
     emit('close')
   } catch (error) {
     console.error('Error creating event:', error)
-    alert(t('events.messages.createFailed'))
+    showMessage(t('events.messages.createFailed'))
   } finally {
     isSubmitting.value = false
   }
@@ -480,6 +519,10 @@ const getScrollbarWidth = (): number => {
   return window.innerWidth - document.documentElement.clientWidth
 }
 
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') emit('close')
+}
+
 // Watch for drawer visibility
 watch(
   () => props.isVisible,
@@ -487,17 +530,19 @@ watch(
     if (isVisible) {
       // Reset form when drawer opens
       resetForm()
-    }
-    // Prevent body scroll when drawer is open
-    if (isVisible) {
+      message.value = null
+
+      // Prevent body scroll when drawer is open
       const scrollbarWidth = getScrollbarWidth()
       document.body.style.overflow = 'hidden'
       if (scrollbarWidth > 0) {
         document.body.style.paddingRight = `${scrollbarWidth}px`
       }
+      document.addEventListener('keydown', handleKeydown)
     } else {
       document.body.style.overflow = ''
       document.body.style.paddingRight = ''
+      document.removeEventListener('keydown', handleKeydown)
     }
   },
 )
@@ -535,26 +580,53 @@ watch(
   }
 )
 
+// Format a Date as a local datetime-local string (toISOString would shift to UTC)
+const toLocalInputString = (date: Date): string => {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
 // Set default start date to now + 1 hour
 const setDefaultDates = () => {
   const now = new Date()
   const startDate = new Date(now.getTime() + 60 * 60 * 1000) // +1 hour
   const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000) // +2 hours from start
 
-  form.start_date = startDate.toISOString().slice(0, 16)
-  form.end_date = endDate.toISOString().slice(0, 16)
+  form.start_date = toLocalInputString(startDate)
+  form.end_date = toLocalInputString(endDate)
 }
 
-// Computed properties
-const getSelectedTimezoneLabel = () => {
-  const option = findTimezoneOption(form.timezone)
-  return option ? option.label : form.timezone
+// When the user picks a new start, shift the end to preserve the chosen duration
+const onStartDateChange = (value: string) => {
+  const oldStart = form.start_date
+  const oldEnd = form.end_date
+  form.start_date = value
+  if (!value || !oldEnd) return
+
+  const start = new Date(value)
+  if (oldStart) {
+    const duration = new Date(oldEnd).getTime() - new Date(oldStart).getTime()
+    if (duration > 0) {
+      form.end_date = toLocalInputString(new Date(start.getTime() + duration))
+      return
+    }
+  }
+  if (new Date(oldEnd) <= start) {
+    form.end_date = toLocalInputString(new Date(start.getTime() + 2 * 60 * 60 * 1000))
+  }
 }
 
 // Load categories when component mounts
 onMounted(() => {
   loadCategories()
   setDefaultDates()
+})
+
+onUnmounted(() => {
+  document.body.style.overflow = ''
+  document.body.style.paddingRight = ''
+  document.removeEventListener('keydown', handleKeydown)
+  clearTimeout(messageTimer)
 })
 </script>
 
@@ -604,6 +676,22 @@ onMounted(() => {
 .slide-fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* Slide up transition for toast */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 
 /* Custom scrollbar for modal content */

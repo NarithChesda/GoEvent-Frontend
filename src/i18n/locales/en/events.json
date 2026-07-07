@@ -47,6 +47,7 @@
     "title": "Create New Event",
     "sections": {
       "basicInfo": "Basic Information",
+      "dateTime": "Date & Time",
       "privacy": "Privacy",
       "registration": "Registration"
     },

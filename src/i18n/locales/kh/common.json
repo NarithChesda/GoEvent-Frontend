@@ -116,6 +116,16 @@
     "discover": "ស្វែងរក",
     "hostCta": "រៀបចំព្រឹត្តិការណ៍របស់អ្នកជាមួយ GoEvent"
   },
+  "dateTimePicker": {
+    "placeholder": "ជ្រើសរើសកាលបរិច្ឆេទ និងម៉ោង",
+    "time": "ម៉ោង",
+    "hour": "ម៉ោង",
+    "minute": "នាទី",
+    "done": "រួចរាល់",
+    "clear": "សម្អាត",
+    "previousMonth": "ខែមុន",
+    "nextMonth": "ខែបន្ទាប់"
+  },
   "deleteConfirmModal": {
     "title": "លុបធាតុ",
     "message": "តើអ្នកពិតជាចង់លុបធាតុនេះមែនទេ?",
