@@ -20,15 +20,15 @@
         <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
           <div class="flex items-center justify-between px-3 py-2.5">
             <!-- Left: Close button & Title -->
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 min-w-0">
               <button
                 @click="closeDrawer"
-                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
                 :title="t('management.editEventDrawer.header.closeTitle')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
-              <h2 class="text-base font-semibold text-white">{{ t('management.editEventDrawer.header.title') }}</h2>
+              <h2 class="text-base font-semibold text-white truncate">{{ t('management.editEventDrawer.header.title') }}</h2>
             </div>
 
             <!-- Right: Delete button -->
@@ -36,7 +36,7 @@
               v-if="event"
               @click="showDeleteConfirm = true"
               :disabled="isSubmitting || isDeleting"
-              class="p-1.5 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              class="p-1.5 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
               :title="t('management.editEventDrawer.header.deleteTitle')"
             >
               <Trash2 class="w-5 h-5 text-white" />
@@ -216,18 +216,14 @@
               <!-- Category -->
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.basicInfo.categoryLabel') }}</label>
-                <div class="relative">
-                  <select
-                    v-model="form.category"
-                    class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
-                  >
-                    <option value="">{{ t('management.editEventDrawer.basicInfo.categoryPlaceholder') }}</option>
-                    <option v-for="category in categories" :key="category.id" :value="category.id">
-                      {{ category.name }}
-                    </option>
-                  </select>
-                  <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
+                <SelectField
+                  :model-value="form.category ?? ''"
+                  @update:model-value="form.category = $event"
+                  :options="categoryOptions"
+                  allow-empty
+                  :placeholder="t('management.editEventDrawer.basicInfo.categoryPlaceholder')"
+                  :title="t('management.editEventDrawer.basicInfo.categoryLabel')"
+                />
               </div>
             </div>
 
@@ -235,74 +231,39 @@
             <div class="space-y-3 laptop-sm:space-y-4 border-t border-slate-100 pt-4 laptop-sm:pt-5">
               <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.dateTime.heading') }}</h3>
 
-              <!-- Start Date/Time -->
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <!-- Start Date & Time -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.dateTime.startDateLabel') }}</label>
-                  <input
-                    v-model="startDate"
-                    type="date"
-                    required
-                    class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.dateTime.startDateTimeLabel') }}</label>
+                  <DateTimePickerField
+                    :model-value="form.start_date"
+                    @update:model-value="onStartDateChange"
+                    :title="t('management.editEventDrawer.dateTime.startDateTimeLabel')"
                   />
                 </div>
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.dateTime.startTimeLabel') }}</label>
-                  <input
-                    v-model="startTime"
-                    type="time"
-                    required
-                    class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                  />
-                </div>
-              </div>
 
-              <!-- End Date/Time -->
-              <div class="grid grid-cols-2 gap-3">
+                <!-- End Date & Time -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.dateTime.endDateLabel') }}</label>
-                  <input
-                    v-model="endDate"
-                    type="date"
-                    required
-                    class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.dateTime.endDateTimeLabel') }}</label>
+                  <DateTimePickerField
+                    v-model="form.end_date"
+                    :min="form.start_date"
+                    :error="!!dateError"
+                    :title="t('management.editEventDrawer.dateTime.endDateTimeLabel')"
                   />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.dateTime.endTimeLabel') }}</label>
-                  <input
-                    v-model="endTime"
-                    type="time"
-                    required
-                    class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                  />
+                  <p v-if="dateError" class="text-xs text-red-600 mt-1">{{ dateError }}</p>
                 </div>
               </div>
 
               <!-- Timezone -->
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.dateTime.timezoneLabel') }}</label>
-                <div class="relative">
-                  <select
-                    v-model="form.timezone"
-                    class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white appearance-none pr-10"
-                  >
-                    <optgroup
-                      v-for="(timezones, region) in timezonesByRegion"
-                      :key="region"
-                      :label="region"
-                    >
-                      <option
-                        v-for="timezone in timezones"
-                        :key="timezone.value"
-                        :value="timezone.value"
-                      >
-                        {{ timezone.label }}
-                      </option>
-                    </optgroup>
-                  </select>
-                  <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
+                <SelectField
+                  v-model="form.timezone"
+                  :options="timezoneOptions"
+                  :placeholder="t('management.editEventDrawer.dateTime.timezoneLabel')"
+                  :title="t('management.editEventDrawer.dateTime.timezoneLabel')"
+                />
               </div>
             </div>
 
@@ -491,11 +452,11 @@
                   <!-- Registration Deadline -->
                   <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.registration.deadlineLabel') }}</label>
-                    <input
+                    <DateTimePickerField
                       v-model="form.registration_deadline"
-                      type="datetime-local"
                       :max="form.start_date"
-                      class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                      clearable
+                      :title="t('management.editEventDrawer.registration.deadlineLabel')"
                       :placeholder="t('management.editEventDrawer.registration.deadlinePlaceholder')"
                     />
                     <p class="text-xs text-slate-500 mt-1">{{ t('management.editEventDrawer.registration.deadlineHint') }}</p>
@@ -669,16 +630,12 @@
                     <!-- Currency -->
                     <div>
                       <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.fundraising.currencyLabel') }}</label>
-                      <div class="relative">
-                        <select
-                          v-model="form.fundraising_currency"
-                          class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400 bg-white appearance-none pr-10"
-                        >
-                          <option value="USD">USD - US Dollar</option>
-                          <option value="KHR">KHR - Cambodian Riel</option>
-                        </select>
-                        <ChevronDown class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      </div>
+                      <SelectField
+                        v-model="form.fundraising_currency"
+                        :options="currencyOptions"
+                        :placeholder="t('management.editEventDrawer.fundraising.currencyLabel')"
+                        :title="t('management.editEventDrawer.fundraising.currencyLabel')"
+                      />
                     </div>
                   </div>
 
@@ -809,8 +766,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { ref, reactive, watch, computed, onUnmounted } from 'vue'
 import {
   X,
   Loader,
@@ -827,7 +783,6 @@ import {
   MoreHorizontal,
   ArrowRight,
   Trash2,
-  ChevronDown,
   Globe,
   Lock,
   ClipboardList,
@@ -842,15 +797,19 @@ import {
 import RichTextEditor from './RichTextEditor.vue'
 import ImageCropperModal from './common/ImageCropperModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
+import DateTimePickerField from '@/components/common/DateTimePickerField.vue'
+import SelectField, { type SelectFieldOption } from '@/components/common/SelectField.vue'
 import {
   eventsService,
   eventCategoriesService,
   type Event,
   type EventCategory,
 } from '../services/api'
-import { getTimezonesByRegion, getUserTimezone } from '../utils/timezones'
+import { TIMEZONE_OPTIONS, getUserTimezone } from '../utils/timezones'
 import { extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
 import { useMediaUrl } from '../composables/useMediaUrl'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
 
 interface Props {
   modelValue: boolean
@@ -866,7 +825,8 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const { t } = useI18n()
+const { t } = useAppLanguage()
+const { translateEventCategory } = useCategoryTranslation()
 
 // State
 const event = ref<Event | null>(null)
@@ -890,9 +850,6 @@ const BANNER_ASPECT_RATIO = 1200 / 630
 
 // Composables
 const { getMediaUrl } = useMediaUrl()
-
-// Timezone data
-const timezonesByRegion = getTimezonesByRegion()
 
 // Form data
 const form = reactive({
@@ -928,38 +885,49 @@ const form = reactive({
 // Original form values for dirty tracking
 const originalForm = ref<typeof form | null>(null)
 
-// Computed properties for separate date and time inputs
-const startDate = computed({
-  get: () => form.start_date ? form.start_date.split('T')[0] : '',
-  set: (val: string) => {
-    const time = startTime.value || '00:00'
-    form.start_date = val ? `${val}T${time}` : ''
-  }
-})
+// Category options for the select field
+const categoryOptions = computed<SelectFieldOption[]>(() =>
+  categories.value.map((category) => ({
+    value: category.id,
+    label: translateEventCategory(category.name),
+    color: category.color || '#3B82F6',
+  })),
+)
 
-const startTime = computed({
-  get: () => form.start_date ? form.start_date.split('T')[1] || '' : '',
-  set: (val: string) => {
-    const date = startDate.value || new Date().toISOString().split('T')[0]
-    form.start_date = date ? `${date}T${val}` : ''
-  }
-})
+// Timezone options for the select field (all currently supported timezones are in Asia)
+const timezoneOptions = computed<SelectFieldOption[]>(() =>
+  TIMEZONE_OPTIONS.map((tz) => ({ value: tz.value, label: tz.label })),
+)
 
-const endDate = computed({
-  get: () => form.end_date ? form.end_date.split('T')[0] : '',
-  set: (val: string) => {
-    const time = endTime.value || '00:00'
-    form.end_date = val ? `${val}T${time}` : ''
-  }
-})
+const currencyOptions: SelectFieldOption[] = [
+  { value: 'USD', label: 'USD - US Dollar' },
+  { value: 'KHR', label: 'KHR - Cambodian Riel' },
+]
 
-const endTime = computed({
-  get: () => form.end_date ? form.end_date.split('T')[1] || '' : '',
-  set: (val: string) => {
-    const date = endDate.value || new Date().toISOString().split('T')[0]
-    form.end_date = date ? `${date}T${val}` : ''
+// Live validation: end date must be after start date
+const dateError = computed(() =>
+  form.start_date && form.end_date && new Date(form.end_date) <= new Date(form.start_date)
+    ? t('events.messages.endDateAfterStart')
+    : '',
+)
+
+// When the user picks a new start, shift the end to preserve the chosen duration
+const onStartDateChange = (value: string) => {
+  const oldStart = form.start_date
+  const oldEnd = form.end_date
+  form.start_date = value
+  if (!value || !oldEnd) return
+
+  const start = new Date(value)
+  if (oldStart) {
+    const duration = new Date(oldEnd).getTime() - new Date(oldStart).getTime()
+    if (duration > 0) {
+      const shiftedEnd = new Date(start.getTime() + duration)
+      const pad = (n: number) => String(n).padStart(2, '0')
+      form.end_date = `${shiftedEnd.getFullYear()}-${pad(shiftedEnd.getMonth() + 1)}-${pad(shiftedEnd.getDate())}T${pad(shiftedEnd.getHours())}:${pad(shiftedEnd.getMinutes())}`
+    }
   }
-})
+}
 
 // Methods
 const loadEvent = async () => {
@@ -1034,13 +1002,8 @@ const handleSubmit = async () => {
     return
   }
 
-  if (!form.start_date || !form.end_date) {
-    showMessage('error', 'Start date and end date are required')
-    return
-  }
-
-  if (new Date(form.end_date) <= new Date(form.start_date)) {
-    showMessage('error', 'End date must be after start date')
+  if (!form.start_date || !form.end_date || dateError.value) {
+    showMessage('error', t('events.messages.endDateAfterStart'))
     return
   }
 
@@ -1389,6 +1352,10 @@ const getScrollbarWidth = (): number => {
   return window.innerWidth - document.documentElement.clientWidth
 }
 
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape' && !showBannerCropper.value) closeDrawer()
+}
+
 // Watch for drawer open/close
 watch(
   () => props.modelValue,
@@ -1403,6 +1370,7 @@ watch(
       if (scrollbarWidth > 0) {
         document.body.style.paddingRight = `${scrollbarWidth}px`
       }
+      document.addEventListener('keydown', handleKeydown)
     } else {
       // Defer body style resets until after transition completes (350ms)
       // to prevent layout recalculation during animation
@@ -1410,6 +1378,7 @@ watch(
         document.body.style.overflow = ''
         document.body.style.paddingRight = ''
       }, 350)
+      document.removeEventListener('keydown', handleKeydown)
     }
   }
 )
@@ -1423,6 +1392,12 @@ watch(
     }
   }
 )
+
+onUnmounted(() => {
+  document.body.style.overflow = ''
+  document.body.style.paddingRight = ''
+  document.removeEventListener('keydown', handleKeydown)
+})
 </script>
 
 <style scoped>

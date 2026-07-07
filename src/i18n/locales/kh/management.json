@@ -1017,10 +1017,8 @@
     },
     "dateTime": {
       "heading": "កាលបរិច្ឆេទ និងម៉ោង",
-      "startDateLabel": "កាលបរិច្ឆេទចាប់ផ្ដើម *",
-      "startTimeLabel": "ម៉ោងចាប់ផ្ដើម *",
-      "endDateLabel": "កាលបរិច្ឆេទបញ្ចប់ *",
-      "endTimeLabel": "ម៉ោងបញ្ចប់ *",
+      "startDateTimeLabel": "កាលបរិច្ឆេទ និងម៉ោងចាប់ផ្ដើម *",
+      "endDateTimeLabel": "កាលបរិច្ឆេទ និងម៉ោងបញ្ចប់ *",
       "timezoneLabel": "តំបន់ម៉ោង"
     },
     "location": {

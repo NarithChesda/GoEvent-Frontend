@@ -1017,10 +1017,8 @@
     },
     "dateTime": {
       "heading": "Date & Time",
-      "startDateLabel": "Start Date *",
-      "startTimeLabel": "Start Time *",
-      "endDateLabel": "End Date *",
-      "endTimeLabel": "End Time *",
+      "startDateTimeLabel": "Start Date & Time *",
+      "endDateTimeLabel": "End Date & Time *",
       "timezoneLabel": "Timezone"
     },
     "location": {
