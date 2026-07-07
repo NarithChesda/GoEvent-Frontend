@@ -10,7 +10,7 @@
 
     <!-- All Sections Stacked -->
     <div class="space-y-6">
-      <!-- Basic Media Section (Category-specific: wedding, birthday, housewarming) -->
+      <!-- Brand Assets Section: Logo & Music (Category-specific: wedding, birthday, housewarming) -->
       <div v-if="props.showCategorySpecificSections">
         <div v-if="!localEventData && props.eventId" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8">
           <div class="flex items-center justify-center">
@@ -18,21 +18,19 @@
             <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">{{ t('management.media.loading') }}</span>
           </div>
         </div>
-        <BasicMediaSection
+        <MediaUploadsSection
           v-else
-          ref="basicMediaSectionRef"
           :event-data="localEventData"
           :can-edit="canEdit"
           @updated="handleEventUpdated"
         />
       </div>
 
-      <!-- Agenda Section (merged from the standalone tab for showcase categories) -->
+      <!-- Event Texts Section (Category-specific: wedding, birthday, housewarming) -->
       <div v-if="props.showCategorySpecificSections && localEventData?.id">
-        <EventAgendaTab
+        <EventTextTab
+          ref="eventTextTabRef"
           :event-id="localEventData.id"
-          :can-edit="canEdit"
-          embedded
         />
       </div>
 
@@ -46,9 +44,27 @@
         />
       </div>
 
+      <!-- Agenda Section (merged from the standalone tab for showcase categories) -->
+      <div v-if="props.showCategorySpecificSections && localEventData?.id">
+        <EventAgendaTab
+          :event-id="localEventData.id"
+          :can-edit="canEdit"
+          embedded
+        />
+      </div>
+
+      <!-- Dress Code Section (Category-specific: wedding, birthday, housewarming) -->
+      <div v-if="props.showCategorySpecificSections && localEventData?.id">
+        <DressCodeSection
+          ref="dressCodeSectionRef"
+          :event-id="localEventData.id"
+          :can-edit="canEdit"
+        />
+      </div>
+
       <!-- Photo Gallery Section -->
       <div>
-        <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
+        <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
           <!-- Header -->
           <div class="mb-6">
             <h5 class="font-semibold text-slate-900">{{ t('management.media.photos.title') }}</h5>
@@ -154,7 +170,7 @@
         </div>
       </div>
 
-      <!-- Videos & Maps Section -->
+      <!-- Videos & Maps Section (YouTube) -->
       <div>
         <EmbedsSection
           :event-data="localEventData"
@@ -174,18 +190,10 @@
         />
       </div>
 
-      <!-- Event Texts Section (Category-specific: wedding, birthday, housewarming) -->
-      <div v-if="props.showCategorySpecificSections && localEventData?.id">
-        <EventTextTab
-          ref="eventTextTabRef"
-          :event-id="localEventData.id"
-        />
-      </div>
-
     </div>
 
-    <!-- Upload Modal -->
-    <UploadMediaModal
+    <!-- Upload Drawer -->
+    <UploadMediaDrawer
       v-if="showUploadModal && props.eventId"
       :event-id="props.eventId"
       @close="showUploadModal = false"
@@ -225,9 +233,10 @@ import { mediaService, type EventPhoto, type Event } from '../services/api'
 import { useToast } from '../composables/useToast'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import MediaCard from './MediaCard.vue'
-import UploadMediaModal from './UploadMediaModal.vue'
+import UploadMediaDrawer from './UploadMediaDrawer.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
-import BasicMediaSection from './BasicMediaSection.vue'
+import MediaUploadsSection from './MediaUploadsSection.vue'
+import DressCodeSection from './DressCodeSection.vue'
 import EventAgendaTab from './EventAgendaTab.vue'
 import EventHostsTab from './EventHostsTab.vue'
 import EmbedsSection from './EmbedsSection.vue'
@@ -271,7 +280,7 @@ const isReordering = ref(false)
 
 // Template refs for sections
 const paymentMethodsSectionRef = ref<InstanceType<typeof PaymentMethodsSection> | null>(null)
-const basicMediaSectionRef = ref<InstanceType<typeof BasicMediaSection> | null>(null)
+const dressCodeSectionRef = ref<InstanceType<typeof DressCodeSection> | null>(null)
 const eventTextTabRef = ref<InstanceType<typeof EventTextTab> | null>(null)
 
 // Watch for prop changes to sync localEventData
@@ -588,7 +597,7 @@ defineExpose({
   },
   // Method to trigger dress code addition
   openDressCodeModal: () => {
-    basicMediaSectionRef.value?.openDressCodeModal()
+    dressCodeSectionRef.value?.openAddModal()
   },
   // Method to trigger event text editing
   openEventTextModal: () => {

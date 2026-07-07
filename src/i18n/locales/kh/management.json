@@ -538,6 +538,9 @@
     },
     "uploadModal": {
       "title": "បញ្ចូលមេឌៀ",
+      "drawer": {
+        "closeTitle": "បិទ"
+      },
       "selectImages": "ជ្រើសរើសរូបភាព",
       "dropActive": "ទម្លាក់រូបភាពរបស់អ្នកនៅទីនេះ",
       "dropIdle": "បញ្ចូលរូបភាពរបស់អ្នក",
