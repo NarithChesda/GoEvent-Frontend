@@ -1481,6 +1481,7 @@
     },
     "statsCard": {
       "invitedGuests": "Invited Guests",
+      "summaryLine": "{total} invited · {sent} sent",
       "totalAudienceDesc": "Total audience you're keeping in the loop.",
       "sent": "sent",
       "viewed": "Viewed",

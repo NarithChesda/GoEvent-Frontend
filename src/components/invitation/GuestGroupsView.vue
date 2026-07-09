@@ -6,26 +6,53 @@
       <p class="text-xs sm:text-sm text-slate-600 mt-1">{{ t('management.guestGroupsView.header.subtitle') }}</p>
     </div>
 
-    <!-- Guest Statistics Card -->
-    <div class="rounded-3xl bg-white p-6 sm:p-8 shadow-sm ring-1 ring-slate-900/5 space-y-6">
-      <GuestStatsCard :stats="guestStats" :loading="loadingStats" />
-      <div class="border-t border-slate-100 pt-6">
-        <GuestRsvpStatsCard
-          :summary="rsvpSummary"
-          :loading="loadingRsvpSummary"
-          :active-status="activeRsvpStatus"
-          @select-status="handleSelectRsvpStatus"
+    <!-- Guest Statistics Card (collapsed by default — expand on demand) -->
+    <div class="rounded-3xl bg-white shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
+      <button
+        type="button"
+        @click="isStatsExpanded = !isStatsExpanded"
+        class="w-full flex items-center justify-between gap-3 p-4 sm:p-6 text-left hover:bg-slate-50/70 transition-colors"
+        :aria-expanded="isStatsExpanded"
+      >
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#2ecc71]/15 to-[#1e90ff]/15 flex-shrink-0">
+            <Users class="w-5 h-5 text-[#1e90ff]" />
+          </div>
+          <div class="min-w-0">
+            <h3 class="text-sm font-semibold text-slate-900">{{ t('management.guestGroupsView.statsCard.invitedGuests') }}</h3>
+            <p class="text-xs text-slate-500 truncate">{{ statsSummaryLine }}</p>
+          </div>
+        </div>
+        <ChevronDown
+          class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-shrink-0"
+          :class="{ 'rotate-180': isStatsExpanded }"
         />
-      </div>
-      <div class="border-t border-slate-100 pt-6">
-        <RsvpQuestionsManager
-          :event-id="eventId"
-          :questions="rsvpQuestions"
-          :loading="loadingRsvpQuestions"
-          @refresh="$emit('refresh-rsvp-questions')"
-          @message="(type, text) => $emit('rsvp-questions-message', type, text)"
-        />
-      </div>
+      </button>
+
+      <Transition name="collapse">
+        <div v-show="isStatsExpanded" class="px-4 sm:px-8 pb-6 sm:pb-8 space-y-6">
+          <div class="border-t border-slate-100 pt-6">
+            <GuestStatsCard :stats="guestStats" :loading="loadingStats" />
+          </div>
+          <div class="border-t border-slate-100 pt-6">
+            <GuestRsvpStatsCard
+              :summary="rsvpSummary"
+              :loading="loadingRsvpSummary"
+              :active-status="activeRsvpStatus"
+              @select-status="handleSelectRsvpStatus"
+            />
+          </div>
+          <div class="border-t border-slate-100 pt-6">
+            <RsvpQuestionsManager
+              :event-id="eventId"
+              :questions="rsvpQuestions"
+              :loading="loadingRsvpQuestions"
+              @refresh="$emit('refresh-rsvp-questions')"
+              @message="(type, text) => $emit('rsvp-questions-message', type, text)"
+            />
+          </div>
+        </div>
+      </Transition>
     </div>
 
     <!-- Loading State -->
@@ -594,6 +621,7 @@ const deletingGroupId = ref<number | null>(null)
 const showCreateGroupForm = ref(false)
 
 // Local state
+const isStatsExpanded = ref(false)
 const activeFilter = ref('all')
 const activeRsvpStatus = ref<GuestRsvpStatusValue | null>(null)
 const groupSearchQuery = ref('')
@@ -716,6 +744,13 @@ onMounted(() => {
 // Computed properties
 const totalGuestCount = computed(() => {
   return props.groups.reduce((sum, group) => sum + group.guest_count, 0)
+})
+
+// One-line glance summary shown on the collapsed stats header.
+const statsSummaryLine = computed(() => {
+  const total = props.guestStats?.total_guests ?? 0
+  const sent = props.guestStats?.sent ?? 0
+  return t('management.guestGroupsView.statsCard.summaryLine', { total, sent })
 })
 
 // Pre-fills the quick-add row's group picker when a specific group is
@@ -1047,6 +1082,25 @@ defineExpose({
 </script>
 
 <style scoped>
+/* Collapse transition for the stats section */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  opacity: 0;
+  max-height: 0;
+}
+
+.collapse-enter-to,
+.collapse-leave-from {
+  opacity: 1;
+  max-height: 1000px;
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;

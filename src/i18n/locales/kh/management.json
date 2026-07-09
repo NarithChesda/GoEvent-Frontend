@@ -1481,6 +1481,7 @@
     },
     "statsCard": {
       "invitedGuests": "ភ្ញៀវដែលបានអញ្ជើញ",
+      "summaryLine": "អញ្ជើញ {total} នាក់ · បានផ្ញើ {sent}",
       "totalAudienceDesc": "អ្នកចូលរួមសរុបដែលអ្នកកំពុងជូនដំណឹង។",
       "sent": "បានផ្ញើ",
       "viewed": "បានមើល",
