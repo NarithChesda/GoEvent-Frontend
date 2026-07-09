@@ -447,6 +447,9 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
       const response = await guestService.createGuest(eventId, {
         name: trimmedName,
         group: groupId,
+        // Backend currently requires this on create even though the guest
+        // isn't seated yet — see seat_number required validation error.
+        seat_number: '',
       })
 
       if (response.success && response.data) {

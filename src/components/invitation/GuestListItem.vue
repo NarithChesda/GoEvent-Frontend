@@ -1,8 +1,7 @@
 <template>
   <!-- Guest Card - Clean minimalist design -->
   <div
-    class="bg-white rounded-2xl ring-1 ring-slate-900/5 hover:ring-slate-900/10 hover:shadow-sm transition-all duration-200 group md:cursor-default cursor-pointer"
-    @click="handleCardClick"
+    class="bg-white rounded-2xl ring-1 ring-slate-900/5 hover:ring-slate-900/10 hover:shadow-sm transition-all duration-200 group"
   >
     <div class="flex items-center gap-3 px-4 py-3">
       <!-- Checkbox -->
@@ -24,22 +23,46 @@
 
       <!-- Guest Info (grows to fill space) -->
       <div class="flex-1 min-w-0">
-        <!-- Guest Name (full width) -->
-        <div class="font-semibold text-slate-900 truncate">{{ guest.name }}</div>
+        <!-- Guest Name (click/tap to rename inline) -->
+        <input
+          v-if="isEditingName"
+          ref="nameInputRef"
+          v-model="draftName"
+          type="text"
+          @click.stop
+          @keydown.enter.prevent="commitNameEdit"
+          @keydown.esc.prevent="cancelNameEdit"
+          @blur="commitNameEdit"
+          class="w-full -mx-1 px-1 py-0 font-semibold text-slate-900 bg-white border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-sky-200"
+        />
+        <button
+          v-else
+          type="button"
+          @click.stop="startNameEdit"
+          class="block w-full text-left font-semibold text-slate-900 truncate rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+          :title="t('management.guestGroupsView.guestListItem.renameHint')"
+        >
+          {{ guest.name }}
+        </button>
 
         <!-- Badges under name -->
         <div class="flex items-center gap-1.5 mt-1 flex-wrap">
-          <!-- Group badge -->
-          <div
+          <!-- Group badge (click/tap to reassign) -->
+          <button
             v-if="guest.group_details"
-            class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600"
+            ref="groupBadgeRef"
+            type="button"
+            @click.stop="toggleGroupPopover"
+            class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+            :title="t('management.guestGroupsView.guestListItem.changeGroupHint')"
           >
             <span
               class="w-1.5 h-1.5 rounded-full flex-shrink-0"
               :style="{ backgroundColor: guest.group_details.color || '#64748b' }"
             ></span>
             <span class="truncate max-w-[80px]">{{ guest.group_details.name }}</span>
-          </div>
+            <ChevronDown class="w-2.5 h-2.5 text-slate-400 flex-shrink-0" />
+          </button>
 
           <!-- Sent status badge -->
           <div
@@ -97,6 +120,17 @@
           : 'text-slate-600 bg-slate-100 hover:bg-slate-200 active:bg-slate-300'"
       >
         {{ showCopiedFeedback ? 'Copied!' : 'Copy' }}
+      </button>
+
+      <!-- Mobile "more details" button — opens the full edit modal (RSVP, cash gift, contact info) -->
+      <button
+        type="button"
+        @click.stop="$emit('edit', guest)"
+        class="md:hidden flex items-center justify-center w-10 h-10 flex-shrink-0 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+        :title="t('management.guestGroupsView.guestListItem.moreDetails')"
+        :aria-label="t('management.guestGroupsView.guestListItem.moreDetails')"
+      >
+        <ChevronRight class="w-5 h-5" />
       </button>
 
       <!-- Actions (hidden on mobile; revealed on row hover / keyboard focus on desktop) -->
@@ -177,10 +211,46 @@
       </div>
     </Transition>
   </Teleport>
+
+  <!-- Teleport group-reassignment popover to body to escape overflow constraints -->
+  <Teleport to="body">
+    <Transition name="dropdown">
+      <div
+        v-if="showGroupPopover"
+        ref="groupPopoverMenu"
+        :style="groupPopoverStyle"
+        class="fixed bg-white border border-slate-200/60 rounded-xl shadow-lg shadow-slate-200/50 z-[9999] overflow-hidden"
+        @click.stop
+      >
+        <div class="p-1.5 max-h-64 overflow-y-auto custom-scrollbar">
+          <button
+            v-for="group in groups"
+            :key="group.id"
+            type="button"
+            @click="selectGroup(group.id)"
+            :class="[
+              'w-full flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-150 text-left',
+              group.id === guest.group
+                ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white'
+                : 'text-slate-700 hover:bg-slate-50',
+            ]"
+          >
+            <span
+              class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+              :style="{ backgroundColor: group.id === guest.group ? 'white' : (group.color || '#64748b') }"
+            ></span>
+            <span class="flex-1 truncate">{{ group.name }}</span>
+            <span :class="['text-xs tabular-nums flex-shrink-0', group.id === guest.group ? 'text-white/80' : 'text-slate-400']">{{ group.guest_count }}</span>
+          </button>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   Trash2,
   Send,
@@ -193,8 +263,12 @@ import {
   HelpCircle,
   X as XIcon,
   Armchair,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-vue-next'
-import type { EventGuest } from '../../services/api'
+import type { EventGuest, GuestGroup } from '../../services/api'
+
+const { t } = useI18n()
 
 // Global state manager for dropdowns (singleton pattern)
 class DropdownManager {
@@ -234,6 +308,7 @@ class DropdownManager {
 const props = defineProps<{
   guest: EventGuest
   selected?: boolean
+  groups: GuestGroup[]
 }>()
 
 // Emits
@@ -243,6 +318,8 @@ const emit = defineEmits<{
   edit: [guest: EventGuest]
   delete: [guest: EventGuest]
   'toggle-select': [guest: EventGuest]
+  'update-name': [guest: EventGuest, name: string]
+  'update-group': [guest: EventGuest, groupId: number]
 }>()
 
 // Local state
@@ -253,6 +330,17 @@ const dropdownMenu = ref<HTMLElement | null>(null)
 const dropdownPosition = ref<'top' | 'bottom'>('bottom')
 const dropdownStyle = ref<Record<string, string>>({})
 const showCopiedFeedback = ref(false)
+
+// Inline name-edit state
+const isEditingName = ref(false)
+const draftName = ref('')
+const nameInputRef = ref<HTMLInputElement | null>(null)
+
+// Inline group-reassignment popover state
+const showGroupPopover = ref(false)
+const groupBadgeRef = ref<HTMLElement | null>(null)
+const groupPopoverMenu = ref<HTMLElement | null>(null)
+const groupPopoverStyle = ref<Record<string, string>>({})
 
 const dropdownManager = DropdownManager.getInstance()
 
@@ -327,28 +415,76 @@ const rsvpBadge = computed<RsvpBadgeConfig | null>(() => {
 })
 
 // Methods
-const handleCardClick = (event: MouseEvent) => {
-  // Only trigger edit on mobile (< 768px)
-  if (window.innerWidth >= 768) {
-    return
+
+// Inline name-edit handlers
+const startNameEdit = () => {
+  draftName.value = props.guest.name
+  isEditingName.value = true
+  nextTick(() => {
+    nameInputRef.value?.focus()
+    nameInputRef.value?.select()
+  })
+}
+
+const cancelNameEdit = () => {
+  isEditingName.value = false
+}
+
+const commitNameEdit = () => {
+  if (!isEditingName.value) return
+  const trimmed = draftName.value.trim()
+  isEditingName.value = false
+  if (!trimmed || trimmed === props.guest.name) return
+  emit('update-name', props.guest, trimmed)
+}
+
+// Inline group-reassignment popover handlers
+const calculateGroupPopoverPosition = () => {
+  if (!groupBadgeRef.value) return
+
+  const buttonRect = groupBadgeRef.value.getBoundingClientRect()
+  const menuWidth = 220
+  const menuHeight = Math.min(props.groups.length * 40 + 16, 280)
+
+  const spaceBelow = window.innerHeight - buttonRect.bottom
+  const spaceAbove = buttonRect.top
+  const showAbove = spaceBelow < menuHeight && spaceAbove > menuHeight
+
+  const top = showAbove ? buttonRect.top - menuHeight - 4 : buttonRect.bottom + 4
+  let left = buttonRect.left
+
+  if (left < 8) {
+    left = 8
+  }
+  if (left + menuWidth > window.innerWidth - 8) {
+    left = window.innerWidth - menuWidth - 8
   }
 
-  // Don't trigger if clicking on interactive elements
-  const target = event.target as HTMLElement
-
-  // Check if click is on checkbox, button, or any interactive element
-  // Use a specific selector for the link menu instead of the generic '.relative'
-  if (
-    target.tagName === 'INPUT' ||
-    target.tagName === 'BUTTON' ||
-    target.closest('button') ||
-    target.closest('input')
-  ) {
-    return
+  groupPopoverStyle.value = {
+    top: `${top}px`,
+    left: `${left}px`,
+    width: `${menuWidth}px`,
   }
+}
 
-  // Trigger edit modal
-  emit('edit', props.guest)
+const closeGroupPopover = () => {
+  showGroupPopover.value = false
+}
+
+const toggleGroupPopover = () => {
+  if (showGroupPopover.value) {
+    closeGroupPopover()
+  } else {
+    dropdownManager.register(closeGroupPopover)
+    showGroupPopover.value = true
+    setTimeout(() => calculateGroupPopoverPosition(), 0)
+  }
+}
+
+const selectGroup = (groupId: number) => {
+  closeGroupPopover()
+  if (groupId === props.guest.group) return
+  emit('update-group', props.guest, groupId)
 }
 
 const formatCurrency = (amount: string | number, currency: string = 'USD') => {
@@ -432,11 +568,11 @@ const handleCopyLink = (language: 'en' | 'kh') => {
   closeDropdown()
 }
 
-// Global click handler to close dropdown when clicking outside
+// Global click handler to close dropdowns/popovers when clicking outside
 const handleGlobalClick = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+
   if (showLinkMenu.value) {
-    // Check if click is outside the button and dropdown
-    const target = event.target as HTMLElement
     if (
       linkButton.value &&
       !linkButton.value.contains(target) &&
@@ -444,6 +580,17 @@ const handleGlobalClick = (event: MouseEvent) => {
       !dropdownMenu.value.contains(target)
     ) {
       closeDropdown()
+    }
+  }
+
+  if (showGroupPopover.value) {
+    if (
+      groupBadgeRef.value &&
+      !groupBadgeRef.value.contains(target) &&
+      groupPopoverMenu.value &&
+      !groupPopoverMenu.value.contains(target)
+    ) {
+      closeGroupPopover()
     }
   }
 }
@@ -461,6 +608,7 @@ onBeforeUnmount(() => {
     document.removeEventListener('click', handleGlobalClick)
   }
   dropdownManager.unregister(closeDropdown)
+  dropdownManager.unregister(closeGroupPopover)
 })
 </script>
 
@@ -475,5 +623,20 @@ onBeforeUnmount(() => {
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-4px);
+}
+
+/* Thin scrollbar for the group-reassignment popover */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(203 213 225) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgb(203 213 225);
+  border-radius: 3px;
 }
 </style>

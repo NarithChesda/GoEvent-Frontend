@@ -138,6 +138,8 @@ export interface CreateGuestRequest {
   phone_number?: string
   cash_gift_amount?: string
   cash_gift_currency?: string
+  /** Backend requires this field present on create even though guests aren't seated yet; send ''. */
+  seat_number?: string
 }
 
 /**

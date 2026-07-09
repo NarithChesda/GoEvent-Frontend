@@ -1394,9 +1394,12 @@
       "allGroups": "All Groups",
       "select": "Select",
       "helpTitle": "How to manage guests",
-      "addGuestAriaLabel": "Add Guest",
-      "addGuest": "Add Guest",
-      "guestsPanelSuffix": "guests"
+      "addGuestAriaLabel": "Import Guests",
+      "addGuest": "Import Guests",
+      "guestsPanelSuffix": "guests",
+      "editGroup": "Edit group",
+      "deleteGroup": "Delete group",
+      "newGroup": "New group"
     },
     "selectionBar": {
       "selected": "selected",
@@ -1411,6 +1414,19 @@
         "searchHint": "Try adjusting your search",
         "emptyHint": "No guests in this group yet"
       }
+    },
+    "guestListItem": {
+      "renameHint": "Click to rename",
+      "changeGroupHint": "Click to change group",
+      "moreDetails": "More details"
+    },
+    "quickAdd": {
+      "addGuestPill": "+ Add guest",
+      "noGroupsHint": "Create a group first",
+      "namePlaceholder": "Guest name",
+      "pickGroup": "Group",
+      "save": "Add guest",
+      "cancel": "Cancel"
     },
     "guideModal": {
       "title": "Guest Management Guide",
@@ -1557,18 +1573,14 @@
       }
     },
     "addGuestModal": {
-      "title": "Add Guest",
+      "title": "Import Guests",
       "close": "Close",
-      "modes": {
-        "singleGuest": "Single Guest",
-        "bulkImport": "Bulk Import"
-      },
       "group": {
         "selectLabel": "Select Group",
         "createBtn": "+ Create Group",
         "cancelBtn": "Cancel",
         "choosePlaceholder": "Choose a group...",
-        "createFirstSingle": "Please create a group first before adding guests.",
+        "colorLabel": "Group color",
         "createFirstBulk": "Please create a group first before importing guests.",
         "newGroupForm": {
           "title": "New Group",
@@ -1593,13 +1605,6 @@
           "deleting": "Deleting...",
           "deleteBtn": "Delete Group"
         }
-      },
-      "guestName": {
-        "label": "Guest Name",
-        "placeholder": "Enter guest's full name",
-        "errorRequired": "Guest name is required",
-        "errorMin": "Name must be at least 2 characters",
-        "errorMax": "Name must be less than 100 characters"
       },
       "bulkImport": {
         "downloadTemplate": "Download Template (CSV)",
@@ -1626,8 +1631,6 @@
         }
       },
       "actions": {
-        "adding": "Adding...",
-        "addGuest": "Add Guest",
         "importing": "Importing...",
         "importGuests": "Import {count} Guest(s)",
         "cancel": "Cancel"

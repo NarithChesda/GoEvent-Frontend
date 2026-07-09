@@ -96,12 +96,16 @@
         @rsvp-questions-message="handleRsvpQuestionsMessage"
         @add-guest="showAddGuestModal = true"
         @toggle-group="handleGroupToggle"
-        @edit-group="openEditGroupModal"
-        @delete-group="openDeleteGroupModal"
         @copy-link="copyShowcaseLink"
         @mark-sent="handleMarkAsSent"
         @edit-guest="openEditGuestModal"
         @delete-guest="openDeleteGuestModal"
+        @update-guest-name="handleInlineUpdateGuestName"
+        @update-guest-group="handleInlineUpdateGuestGroup"
+        @quick-add-guest="handleQuickAddGuest"
+        @inline-create-group="handleInlineCreateGroup"
+        @inline-update-group="handleInlineUpdateGroup"
+        @inline-delete-group="handleInlineDeleteGroup"
         @search="handleGroupSearch"
         @search-all="setAllGuestsSearchTerm"
         @load-more-all="loadMoreAllGuests"
@@ -130,17 +134,6 @@
       @cancel="cancelDeleteGuest"
     />
 
-    <!-- Delete Group Modal -->
-    <DeleteConfirmModal
-      :show="showDeleteGroupModal"
-      title="Delete Group"
-      :item-name="(deleteTargetGroup && deleteTargetGroup.name) || ''"
-      :loading="deletingGroup"
-      :warning-message="`This will delete all ${deleteTargetGroup?.guest_count || 0} guests in this group!`"
-      @confirm="confirmDeleteGroup"
-      @cancel="cancelDeleteGroup"
-    />
-
     <!-- Bulk Delete Guests Modal -->
     <DeleteConfirmModal
       :show="showBulkDeleteModal"
@@ -151,19 +144,10 @@
       @cancel="cancelBulkDelete"
     />
 
-    <!-- Create Group Modal -->
-    <CreateGroupModal
-      :show="showCreateGroupModal"
-      :is-creating="isCreatingGroup"
-      @close="handleCloseCreateGroupModal"
-      @create="handleCreateGroup"
-    />
-
-    <!-- Add Guest Modal -->
+    <!-- Add Guest Modal (bulk import only — single adds happen inline via the quick-add row) -->
     <AddGuestModal
       :show="showAddGuestModal"
       :groups="groups"
-      :is-adding="isAddingGuest"
       :is-importing="isImporting"
       :is-parsing="isParsing"
       :selected-file="selectedFile"
@@ -173,7 +157,6 @@
       :pending-group-id="pendingGuestGroupSelection"
       :is-creating-group="isCreatingGroup"
       @close="handleCloseAddGuestModal"
-      @add-guest="handleAddGuest"
       @import="handleBulkImport"
       @download-template="downloadTemplate"
       @file-select="handleFileSelect"
@@ -202,16 +185,6 @@
       @mark-sent="handleMarkAsSent"
       @delete="handleDeleteFromEditModal"
       @copy-link="copyShowcaseLink"
-    />
-
-    <!-- Edit Group Modal -->
-    <EditGroupModal
-      ref="editGroupModalRef"
-      :show="showEditGroupModal"
-      :group="editTargetGroup"
-      :is-updating="isUpdatingGroup"
-      @close="handleCloseEditGroupModal"
-      @update-group="handleUpdateGroup"
     />
 
     <!-- Success/Error Messages -->
@@ -256,10 +229,8 @@ import type {
 import { guestService, rsvpQuestionsService } from '../services/api'
 import { getGuestSSRMetaUrl } from '../utils/metaUtils'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
-import CreateGroupModal from './invitation/CreateGroupModal.vue'
 import AddGuestModal from './invitation/AddGuestModal.vue'
 import EditGuestModal from './invitation/EditGuestModal.vue'
-import EditGroupModal from './invitation/EditGroupModal.vue'
 import GuestGroupsView from './invitation/GuestGroupsView.vue'
 import SeatingTablesView from './invitation/SeatingTablesView.vue'
 
@@ -410,8 +381,6 @@ onUnmounted(() => {
 const activeSubTab = ref('guests')
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const showAddGuestModal = ref(false)
-const showCreateGroupModal = ref(false)
-const isAddingGuest = ref(false)
 const isCreatingGroup = ref(false)
 const pendingGuestGroupSelection = ref<number | null>(null)
 const groupCardRefs = new Map<number, any>()
@@ -432,19 +401,10 @@ const isUpdatingGuest = ref(false)
 const isLoadingEditTargetDetail = ref(false)
 const editGuestModalRef = ref<InstanceType<typeof EditGuestModal> | null>(null)
 
-// Edit group modal state
-const showEditGroupModal = ref(false)
-const editTargetGroup = ref<GuestGroup | null>(null)
-const isUpdatingGroup = ref(false)
-const editGroupModalRef = ref<InstanceType<typeof EditGroupModal> | null>(null)
-
 // Delete modal state
 const showDeleteModal = ref(false)
 const deletingGuest = ref(false)
 const deleteTargetGuest = ref<EventGuest | null>(null)
-const showDeleteGroupModal = ref(false)
-const deleteTargetGroup = ref<GuestGroup | null>(null)
-const deletingGroup = ref(false)
 
 // Bulk delete modal state
 const showBulkDeleteModal = ref(false)
@@ -481,9 +441,8 @@ const handleGroupSearch = (groupId: number, searchTerm: string) => {
   setGroupSearchTerm(groupId, searchTerm)
 }
 
-const handleCreateGroup = async (data: { name: string; description?: string; color: string }) => {
-  isCreatingGroup.value = true
-
+// Inline group management (filter-dropdown create/edit/delete in GuestGroupsView)
+const handleInlineCreateGroup = async (data: { name: string; description?: string; color: string }) => {
   const response = await createGroup({
     name: data.name,
     description: data.description,
@@ -493,28 +452,64 @@ const handleCreateGroup = async (data: { name: string; description?: string; col
 
   if (response.success && response.data) {
     showMessage('success', `Group "${response.data.name}" created`)
-    showCreateGroupModal.value = false
   } else {
     showMessage('error', response.message || 'Failed to create group')
   }
-
-  isCreatingGroup.value = false
 }
 
-const handleAddGuest = async (name: string, groupId: number) => {
-  isAddingGuest.value = true
+const handleInlineUpdateGroup = async (groupId: number, data: { name: string; description?: string; color: string }) => {
+  const response = await updateGroup(groupId, data)
 
+  if (response.success && response.data) {
+    showMessage('success', `Group "${response.data.name}" updated`)
+  } else {
+    showMessage('error', response.message || 'Failed to update group')
+  }
+}
+
+const handleInlineDeleteGroup = async (groupId: number) => {
+  const groupName = groups.value.find((g) => g.id === groupId)?.name ?? ''
+  const response = await deleteGroup(groupId)
+
+  if (response.success) {
+    showMessage('success', groupName ? `Group "${groupName}" deleted` : 'Group deleted')
+  } else {
+    showMessage('error', response.message || 'Failed to delete group')
+  }
+}
+
+// Inline guest edits (name / group reassignment directly in the row)
+const handleInlineUpdateGuestName = async (guest: EventGuest, name: string) => {
+  const response = await updateGuest(guest.id, guest.group, { name })
+
+  if (response.success && response.data) {
+    showMessage('success', `Renamed to "${response.data.name}"`)
+  } else {
+    showMessage('error', response.message || 'Failed to rename guest')
+  }
+}
+
+const handleInlineUpdateGuestGroup = async (guest: EventGuest, groupId: number) => {
+  if (groupId === guest.group) return
+
+  const response = await updateGuest(guest.id, guest.group, { group: groupId })
+
+  if (response.success && response.data) {
+    showMessage('success', `Moved to "${response.data.group_details?.name ?? ''}"`)
+  } else {
+    showMessage('error', response.message || 'Failed to move guest')
+  }
+}
+
+// Quick-add row (fast single-guest capture without opening the Add Guest drawer)
+const handleQuickAddGuest = async (name: string, groupId: number) => {
   const response = await createGuest(name, groupId)
 
   if (response.success && response.data) {
     showMessage('success', `${response.data.name} added to guest list`)
-    showAddGuestModal.value = false
-    // Note: createGuest() already handles refreshing both group and all guests lists
   } else {
     showMessage('error', response.message || 'Failed to add guest')
   }
-
-  isAddingGuest.value = false
 }
 
 const handleBulkImport = async (groupId: number) => {
@@ -628,85 +623,6 @@ const handleDeleteGroupFromAddGuest = async (group: GuestGroup) => {
   } else {
     showMessage('error', response.message || 'Failed to delete group')
   }
-}
-
-const handleCloseCreateGroupModal = () => {
-  showCreateGroupModal.value = false
-}
-
-const openEditGroupModal = (group: GuestGroup) => {
-  editTargetGroup.value = group
-  showEditGroupModal.value = true
-}
-
-const handleCloseEditGroupModal = () => {
-  showEditGroupModal.value = false
-  editTargetGroup.value = null
-}
-
-const handleUpdateGroup = async (groupId: number, data: any) => {
-  if (!editTargetGroup.value) return
-
-  isUpdatingGroup.value = true
-
-  const response = await updateGroup(groupId, data)
-
-  if (response.success && response.data) {
-    showMessage('success', `Group "${response.data.name}" updated successfully`)
-    showEditGroupModal.value = false
-    editTargetGroup.value = null
-    await loadGroups()
-  } else {
-    // Handle validation errors
-    if (response.errors && typeof response.errors === 'object') {
-      const hasFieldErrors = Object.keys(response.errors).some(key =>
-        Array.isArray(response.errors![key])
-      )
-
-      if (hasFieldErrors && editGroupModalRef.value) {
-        editGroupModalRef.value.setFieldErrors(response.errors as Record<string, string[]>)
-      } else if (editGroupModalRef.value) {
-        editGroupModalRef.value.setErrorMessage(response.message || 'Failed to update group')
-      }
-    } else if (editGroupModalRef.value) {
-      editGroupModalRef.value.setErrorMessage(response.message || 'Failed to update group')
-    }
-    showMessage('error', response.message || 'Failed to update group')
-  }
-
-  isUpdatingGroup.value = false
-}
-
-const openDeleteGroupModal = (group: GuestGroup) => {
-  deleteTargetGroup.value = group
-  showDeleteGroupModal.value = true
-}
-
-const confirmDeleteGroup = async () => {
-  if (!deleteTargetGroup.value) return
-
-  deletingGroup.value = true
-  const groupName = deleteTargetGroup.value.name
-  const guestCount = deleteTargetGroup.value.guest_count
-
-  const response = await deleteGroup(deleteTargetGroup.value.id)
-
-  if (response.success) {
-    showMessage('success', `Group "${groupName}" and ${guestCount} guest(s) deleted`)
-    // Store handles stats updates internally
-  } else {
-    showMessage('error', response.message || 'Failed to delete group')
-  }
-
-  deletingGroup.value = false
-  showDeleteGroupModal.value = false
-  deleteTargetGroup.value = null
-}
-
-const cancelDeleteGroup = () => {
-  if (deletingGroup.value) return
-  showDeleteGroupModal.value = false
-  deleteTargetGroup.value = null
 }
 
 const openDeleteGuestModal = (guest: EventGuest) => {

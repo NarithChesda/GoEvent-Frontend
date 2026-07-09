@@ -117,7 +117,7 @@
               <Transition name="dropdown">
                 <div
                   v-if="isDropdownOpen"
-                  class="absolute top-full left-0 mt-2 min-w-[220px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100] max-h-[320px] overflow-y-auto"
+                  class="absolute top-full left-0 mt-2 w-[280px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100] max-h-[420px] overflow-y-auto"
                   @click.stop
                 >
                   <div class="p-1.5">
@@ -139,19 +139,78 @@
                     <div v-if="groups.length > 0" class="my-1.5 border-t border-slate-100"></div>
 
                     <!-- Individual Groups -->
-                    <button
-                      v-for="group in groups"
-                      :key="group.id"
-                      @click="selectFilter(group.id.toString())"
-                      class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150"
-                      :class="activeFilter === group.id.toString() ? 'bg-slate-100 text-slate-900' : 'text-slate-700 hover:bg-slate-50'"
-                    >
-                      <div
-                        class="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                        :style="{ backgroundColor: group.color || '#3498db' }"
+                    <template v-for="group in groups" :key="group.id">
+                      <!-- Inline edit form (replaces the row while editing) -->
+                      <InlineGroupForm
+                        v-if="editingGroupId === group.id"
+                        mode="edit"
+                        :group="group"
+                        class="my-1"
+                        @submit="(data) => submitEditGroup(group, data)"
+                        @cancel="cancelEditGroup"
                       />
-                      <span class="flex-1 text-left truncate">{{ group.name }}</span>
-                      <span class="text-xs tabular-nums text-slate-400">{{ group.guest_count }}</span>
+
+                      <!-- Inline delete confirm (replaces the row while confirming) -->
+                      <InlineGroupForm
+                        v-else-if="deletingGroupId === group.id"
+                        mode="delete"
+                        :group="group"
+                        class="my-1"
+                        @submit="submitDeleteGroup(group)"
+                        @cancel="cancelDeleteGroup"
+                      />
+
+                      <!-- Normal selectable row + edit/delete actions -->
+                      <div v-else class="flex items-center gap-0.5">
+                        <button
+                          @click="selectFilter(group.id.toString())"
+                          class="flex-1 min-w-0 flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150"
+                          :class="activeFilter === group.id.toString() ? 'bg-slate-100 text-slate-900' : 'text-slate-700 hover:bg-slate-50'"
+                        >
+                          <div
+                            class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            :style="{ backgroundColor: group.color || '#3498db' }"
+                          />
+                          <span class="flex-1 text-left truncate">{{ group.name }}</span>
+                          <span class="text-xs tabular-nums text-slate-400">{{ group.guest_count }}</span>
+                        </button>
+                        <button
+                          type="button"
+                          @click.stop="startEditGroup(group)"
+                          :title="t('management.guestGroupsView.filterBar.editGroup')"
+                          class="p-1.5 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-100 transition-all flex-shrink-0"
+                        >
+                          <Edit2 class="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          @click.stop="startDeleteGroup(group)"
+                          :title="t('management.guestGroupsView.filterBar.deleteGroup')"
+                          class="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-100 transition-all flex-shrink-0"
+                        >
+                          <Trash2 class="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </template>
+
+                    <!-- Divider before create-group -->
+                    <div class="my-1.5 border-t border-slate-100"></div>
+
+                    <!-- Inline create-group form -->
+                    <InlineGroupForm
+                      v-if="showCreateGroupForm"
+                      mode="create"
+                      @submit="submitCreateGroup"
+                      @cancel="showCreateGroupForm = false"
+                    />
+                    <button
+                      v-else
+                      type="button"
+                      @click.stop="showCreateGroupForm = true"
+                      class="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-lg hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 transition-all"
+                    >
+                      <Users class="w-3.5 h-3.5" />
+                      <span>{{ t('management.guestGroupsView.filterBar.newGroup') }}</span>
                     </button>
                   </div>
                 </div>
@@ -207,13 +266,13 @@
               <Info class="w-4 h-4" />
             </button>
 
-            <!-- Add Guest Button -->
+            <!-- Import Guests Button (bulk CSV/Excel import — single adds happen inline via the quick-add row) -->
             <button
               @click="$emit('add-guest')"
               class="flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white text-sm font-semibold rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-200 flex-shrink-0"
               :aria-label="t('management.guestGroupsView.filterBar.addGuestAriaLabel')"
             >
-              <UserPlus class="w-4 h-4" />
+              <Upload class="w-4 h-4" />
               <span class="hidden sm:inline">{{ t('management.guestGroupsView.filterBar.addGuest') }}</span>
             </button>
           </div>
@@ -259,16 +318,26 @@
           ref="scrollContainerRef"
           class="max-h-[600px] overflow-y-auto space-y-2 p-3 sm:p-4 custom-scrollbar"
         >
+          <QuickAddGuestRow
+            v-if="groups.length > 0"
+            :groups="groups"
+            :default-group-id="quickAddDefaultGroupId"
+            @quick-add="(name, groupId) => $emit('quick-add-guest', name, groupId)"
+          />
+
           <GuestListItem
             v-for="guest in allFilteredGuests"
             :key="guest.id"
             :guest="guest"
             :selected="isGuestSelected(guest.id)"
+            :groups="groups"
             @copy-link="(guest, lang) => $emit('copy-link', guest, lang)"
             @mark-sent="$emit('mark-sent', $event)"
             @edit="$emit('edit-guest', $event)"
             @delete="$emit('delete-guest', $event)"
             @toggle-select="handleToggleSelect"
+            @update-name="(guest, name) => $emit('update-guest-name', guest, name)"
+            @update-group="(guest, groupId) => $emit('update-guest-group', guest, groupId)"
           />
 
           <!-- Infinite Scroll Trigger -->
@@ -289,10 +358,19 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else class="p-12 text-center">
-          <Users class="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h4 class="font-semibold text-slate-600 mb-1">{{ t('management.guestGroupsView.guestList.empty.title') }}</h4>
-          <p class="text-sm text-slate-400">{{ groupSearchQuery ? t('management.guestGroupsView.guestList.empty.searchHint') : t('management.guestGroupsView.guestList.empty.emptyHint') }}</p>
+        <div v-else class="p-4 sm:p-6">
+          <QuickAddGuestRow
+            v-if="groups.length > 0"
+            :groups="groups"
+            :default-group-id="quickAddDefaultGroupId"
+            class="mb-4"
+            @quick-add="(name, groupId) => $emit('quick-add-guest', name, groupId)"
+          />
+          <div class="text-center py-8">
+            <Users class="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <h4 class="font-semibold text-slate-600 mb-1">{{ t('management.guestGroupsView.guestList.empty.title') }}</h4>
+            <p class="text-sm text-slate-400">{{ groupSearchQuery ? t('management.guestGroupsView.guestList.empty.searchHint') : t('management.guestGroupsView.guestList.empty.emptyHint') }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -431,11 +509,13 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { UserPlus, Search, Filter, Users, X, Send, Trash2, ChevronDown, Info, FileSpreadsheet, Link, Mail, DollarSign } from 'lucide-vue-next'
+import { UserPlus, Search, Filter, Users, X, Send, Trash2, Edit2, ChevronDown, Info, FileSpreadsheet, Link, Mail, DollarSign, Upload } from 'lucide-vue-next'
 import GuestListItem from './GuestListItem.vue'
 import GuestStatsCard from './GuestStatsCard.vue'
 import GuestRsvpStatsCard from './GuestRsvpStatsCard.vue'
 import RsvpQuestionsManager from './RsvpQuestionsManager.vue'
+import InlineGroupForm from './InlineGroupForm.vue'
+import QuickAddGuestRow from './QuickAddGuestRow.vue'
 import type {
   GuestGroup,
   EventGuest,
@@ -487,12 +567,16 @@ const { t } = useI18n()
 const emit = defineEmits<{
   'add-guest': []
   'toggle-group': [groupId: number]
-  'edit-group': [group: GuestGroup]
-  'delete-group': [group: GuestGroup]
   'copy-link': [guest: EventGuest, language: 'en' | 'kh']
   'mark-sent': [guest: EventGuest]
   'edit-guest': [guest: EventGuest]
   'delete-guest': [guest: EventGuest]
+  'update-guest-name': [guest: EventGuest, name: string]
+  'update-guest-group': [guest: EventGuest, groupId: number]
+  'quick-add-guest': [name: string, groupId: number]
+  'inline-create-group': [data: { name: string; description?: string; color: string }]
+  'inline-update-group': [groupId: number, data: { name: string; description?: string; color: string }]
+  'inline-delete-group': [groupId: number]
   'search': [groupId: number, searchTerm: string]
   'search-all': [searchTerm: string]
   'load-more-all': []
@@ -504,6 +588,11 @@ const emit = defineEmits<{
   'rsvp-questions-message': [type: 'success' | 'error', text: string]
 }>()
 
+// Inline group-management state (filter dropdown)
+const editingGroupId = ref<number | null>(null)
+const deletingGroupId = ref<number | null>(null)
+const showCreateGroupForm = ref(false)
+
 // Local state
 const activeFilter = ref('all')
 const activeRsvpStatus = ref<GuestRsvpStatusValue | null>(null)
@@ -513,6 +602,55 @@ const isDropdownOpen = ref(false)
 const isSearchExpanded = ref(false)
 const showInstructionModal = ref(false)
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
+
+// Reset any in-progress inline group forms whenever the filter dropdown closes
+watch(isDropdownOpen, (open) => {
+  if (!open) {
+    editingGroupId.value = null
+    deletingGroupId.value = null
+    showCreateGroupForm.value = false
+  }
+})
+
+const startEditGroup = (group: GuestGroup) => {
+  deletingGroupId.value = null
+  showCreateGroupForm.value = false
+  editingGroupId.value = group.id
+}
+
+const cancelEditGroup = () => {
+  editingGroupId.value = null
+}
+
+const submitEditGroup = (group: GuestGroup, data?: { name: string; description?: string; color: string }) => {
+  if (!data) return
+  emit('inline-update-group', group.id, data)
+  editingGroupId.value = null
+}
+
+const startDeleteGroup = (group: GuestGroup) => {
+  editingGroupId.value = null
+  showCreateGroupForm.value = false
+  deletingGroupId.value = group.id
+}
+
+const cancelDeleteGroup = () => {
+  deletingGroupId.value = null
+}
+
+const submitDeleteGroup = (group: GuestGroup) => {
+  emit('inline-delete-group', group.id)
+  deletingGroupId.value = null
+  if (activeFilter.value === group.id.toString()) {
+    activeFilter.value = 'all'
+  }
+}
+
+const submitCreateGroup = (data?: { name: string; description?: string; color: string }) => {
+  if (!data) return
+  emit('inline-create-group', data)
+  showCreateGroupForm.value = false
+}
 
 // Toggle the RSVP-status filter (driven by GuestRsvpStatsCard clicks)
 const handleSelectRsvpStatus = (status: GuestRsvpStatusValue | null) => {
@@ -578,6 +716,14 @@ onMounted(() => {
 // Computed properties
 const totalGuestCount = computed(() => {
   return props.groups.reduce((sum, group) => sum + group.guest_count, 0)
+})
+
+// Pre-fills the quick-add row's group picker when a specific group is
+// filtered; forces an explicit pick when viewing "All Groups".
+const quickAddDefaultGroupId = computed(() => {
+  if (activeFilter.value === 'all') return null
+  const groupId = parseInt(activeFilter.value)
+  return Number.isNaN(groupId) ? null : groupId
 })
 
 const filteredGroups = computed(() => {

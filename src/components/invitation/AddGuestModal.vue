@@ -38,249 +38,8 @@
         <!-- Content -->
         <div class="flex-1 overflow-y-auto overscroll-contain">
           <div class="p-4 space-y-5 pb-24">
-            <!-- Mode Toggle -->
-            <div class="space-y-3 sm:space-y-4">
-              <div class="flex gap-2">
-                <button
-                  type="button"
-                  @click="localMode = 'single'"
-                  :class="[
-                    'flex-1 py-2.5 px-3 rounded-lg font-medium text-sm transition-all duration-200',
-                    localMode === 'single'
-                      ? 'bg-gradient-to-r from-emerald-500 to-sky-500 text-white shadow-md'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
-                  ]"
-                >
-                  <UserPlus class="w-4 h-4 inline-block mr-1.5" />
-                  {{ t('management.guestGroupsView.addGuestModal.modes.singleGuest') }}
-                </button>
-                <button
-                  type="button"
-                  @click="localMode = 'bulk'"
-                  :class="[
-                    'flex-1 py-2.5 px-3 rounded-lg font-medium text-sm transition-all duration-200',
-                    localMode === 'bulk'
-                      ? 'bg-gradient-to-r from-emerald-500 to-sky-500 text-white shadow-md'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
-                  ]"
-                >
-                  <Upload class="w-4 h-4 inline-block mr-1.5" />
-                  {{ t('management.guestGroupsView.addGuestModal.modes.bulkImport') }}
-                </button>
-              </div>
-            </div>
-
-            <!-- Single Guest Mode -->
-            <div v-if="localMode === 'single'" class="space-y-5">
-              <!-- Group Selection -->
-              <div>
-                <div class="flex items-center justify-between mb-2">
-                  <label for="guestGroup" class="block text-sm font-medium text-slate-700">
-                    {{ t('management.guestGroupsView.addGuestModal.group.selectLabel') }} <span class="text-red-500">*</span>
-                  </label>
-                  <button
-                    type="button"
-                    @click="showCreateGroupForm = !showCreateGroupForm"
-                    class="text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors"
-                  >
-                    {{ showCreateGroupForm ? t('management.guestGroupsView.addGuestModal.group.cancelBtn') : t('management.guestGroupsView.addGuestModal.group.createBtn') }}
-                  </button>
-                </div>
-
-                <!-- Inline Create Group Form -->
-                <Transition name="slide-down">
-                  <div v-if="showCreateGroupForm" class="mb-3 p-3 bg-purple-50 border border-purple-200 rounded-xl space-y-3">
-                    <div class="flex items-center gap-2 text-purple-700 mb-2">
-                      <Users class="w-4 h-4" />
-                      <span class="text-sm font-medium">{{ t('management.guestGroupsView.addGuestModal.group.newGroupForm.title') }}</span>
-                    </div>
-                    <input
-                      v-model="newGroupName"
-                      type="text"
-                      :placeholder="t('management.guestGroupsView.addGuestModal.group.newGroupForm.namePlaceholder')"
-                      class="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 bg-white"
-                    />
-                    <input
-                      v-model="newGroupDescription"
-                      type="text"
-                      :placeholder="t('management.guestGroupsView.addGuestModal.group.newGroupForm.descPlaceholder')"
-                      class="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 bg-white"
-                    />
-                    <div class="flex items-center gap-2">
-                      <input
-                        v-model="newGroupColor"
-                        type="color"
-                        class="w-10 h-8 rounded border border-purple-200 cursor-pointer"
-                      />
-                      <div class="flex-1 flex flex-wrap gap-1.5">
-                        <button
-                          v-for="color in colorPresets"
-                          :key="color"
-                          type="button"
-                          @click="newGroupColor = color"
-                          :class="[
-                            'w-6 h-6 rounded-md border transition-all',
-                            newGroupColor === color ? 'border-slate-900 ring-1 ring-offset-1 ring-slate-400' : 'border-transparent'
-                          ]"
-                          :style="{ backgroundColor: color }"
-                        />
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      @click="handleCreateGroup"
-                      :disabled="!newGroupName.trim() || isCreatingGroup"
-                      class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <span v-if="isCreatingGroup" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-                      <span>{{ isCreatingGroup ? t('management.guestGroupsView.addGuestModal.group.newGroupForm.creating') : t('management.guestGroupsView.addGuestModal.group.newGroupForm.createBtn') }}</span>
-                    </button>
-                  </div>
-                </Transition>
-
-                <GroupDropdown
-                  v-model="localSelectedGroup"
-                  :groups="groups"
-                  :placeholder="t('management.guestGroupsView.addGuestModal.group.choosePlaceholder')"
-                  :show-actions="true"
-                  @edit-group="openInlineEditGroup"
-                  @delete-group="openInlineDeleteGroup"
-                />
-                <p v-if="groups.length === 0 && !showCreateGroupForm" class="mt-2 text-xs text-red-600">
-                  {{ t('management.guestGroupsView.addGuestModal.group.createFirstSingle') }}
-                </p>
-
-                <!-- Inline Edit Group Form -->
-                <Transition name="slide-down">
-                  <div v-if="showEditGroupForm && editingGroup" class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-3">
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-2 text-blue-700">
-                        <Edit2 class="w-4 h-4" />
-                        <span class="text-sm font-medium">{{ t('management.guestGroupsView.addGuestModal.group.editGroupForm.title') }}</span>
-                      </div>
-                      <button
-                        type="button"
-                        @click="closeInlineEditGroup"
-                        class="p-1 rounded-md text-blue-400 hover:text-blue-600 hover:bg-blue-100 transition-colors"
-                      >
-                        <X class="w-4 h-4" />
-                      </button>
-                    </div>
-                    <input
-                      v-model="editGroupName"
-                      type="text"
-                      :placeholder="t('management.guestGroupsView.addGuestModal.group.editGroupForm.namePlaceholder')"
-                      class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white"
-                    />
-                    <input
-                      v-model="editGroupDescription"
-                      type="text"
-                      :placeholder="t('management.guestGroupsView.addGuestModal.group.editGroupForm.descPlaceholder')"
-                      class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white"
-                    />
-                    <div class="flex items-center gap-2">
-                      <input
-                        v-model="editGroupColor"
-                        type="color"
-                        class="w-10 h-8 rounded border border-blue-200 cursor-pointer"
-                      />
-                      <div class="flex-1 flex flex-wrap gap-1.5">
-                        <button
-                          v-for="color in colorPresets"
-                          :key="color"
-                          type="button"
-                          @click="editGroupColor = color"
-                          :class="[
-                            'w-6 h-6 rounded-md border transition-all',
-                            editGroupColor === color ? 'border-slate-900 ring-1 ring-offset-1 ring-slate-400' : 'border-transparent'
-                          ]"
-                          :style="{ backgroundColor: color }"
-                        />
-                      </div>
-                    </div>
-                    <div class="flex gap-2">
-                      <button
-                        type="button"
-                        @click="closeInlineEditGroup"
-                        class="flex-1 px-3 py-2 text-sm border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-100 font-medium transition-colors"
-                      >
-                        {{ t('management.guestGroupsView.addGuestModal.group.editGroupForm.cancelBtn') }}
-                      </button>
-                      <button
-                        type="button"
-                        @click="submitInlineEditGroup"
-                        :disabled="!editGroupName.trim() || isUpdatingGroup"
-                        class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span v-if="isUpdatingGroup" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-                        <span>{{ isUpdatingGroup ? t('management.guestGroupsView.addGuestModal.group.editGroupForm.saving') : t('management.guestGroupsView.addGuestModal.group.editGroupForm.saveBtn') }}</span>
-                      </button>
-                    </div>
-                  </div>
-                </Transition>
-
-                <!-- Inline Delete Group Confirmation -->
-                <Transition name="slide-down">
-                  <div v-if="showDeleteGroupConfirm && deletingGroup" class="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl space-y-3">
-                    <div class="flex items-center gap-2 text-red-700">
-                      <Trash2 class="w-4 h-4" />
-                      <span class="text-sm font-medium">{{ t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.title') }}</span>
-                    </div>
-                    <p class="text-sm text-red-800">
-                      {{ t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.deleteConfirm') }} "<span class="font-semibold">{{ deletingGroup.name }}</span>"?
-                    </p>
-                    <p v-if="deletingGroup.guest_count > 0" class="text-xs text-red-600 bg-red-100 px-2 py-1.5 rounded-md">
-                      {{ t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.guestWarning', { count: deletingGroup.guest_count }) }}
-                    </p>
-                    <div class="flex gap-2">
-                      <button
-                        type="button"
-                        @click="closeInlineDeleteGroup"
-                        class="flex-1 px-3 py-2 text-sm border border-red-200 text-red-700 rounded-lg hover:bg-red-100 font-medium transition-colors"
-                      >
-                        {{ t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.cancelBtn') }}
-                      </button>
-                      <button
-                        type="button"
-                        @click="submitInlineDeleteGroup"
-                        :disabled="isDeletingGroup"
-                        class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span v-if="isDeletingGroup" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-                        <span>{{ isDeletingGroup ? t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.deleting') : t('management.guestGroupsView.addGuestModal.group.deleteGroupConfirm.deleteBtn') }}</span>
-                      </button>
-                    </div>
-                  </div>
-                </Transition>
-              </div>
-
-              <!-- Guest Name -->
-              <div>
-                <label for="guestName" class="block text-sm font-medium text-slate-700 mb-2">
-                  {{ t('management.guestGroupsView.addGuestModal.guestName.label') }} <span class="text-red-500">*</span>
-                </label>
-                <input
-                  id="guestName"
-                  v-model="localGuestName"
-                  type="text"
-                  required
-                  :placeholder="t('management.guestGroupsView.addGuestModal.guestName.placeholder')"
-                  @blur="guestNameTouched = true"
-                  :class="[
-                    'w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200',
-                    showGuestNameError
-                      ? 'border-red-300 focus:ring-red-500/20 focus:border-red-400'
-                      : 'border-slate-300 focus:ring-emerald-500/20 focus:border-emerald-400 hover:border-emerald-300'
-                  ]"
-                />
-                <p v-if="showGuestNameError" class="mt-1.5 text-xs text-red-600">
-                  {{ guestNameErrorMessage }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Bulk Import Mode -->
-            <div v-else class="space-y-5">
+            <!-- Bulk Import -->
+            <div class="space-y-5">
               <!-- Group Selection -->
               <div>
                 <div class="flex items-center justify-between mb-2">
@@ -298,53 +57,14 @@
 
                 <!-- Inline Create Group Form -->
                 <Transition name="slide-down">
-                  <div v-if="showCreateGroupForm" class="mb-3 p-3 bg-purple-50 border border-purple-200 rounded-xl space-y-3">
-                    <div class="flex items-center gap-2 text-purple-700 mb-2">
-                      <Users class="w-4 h-4" />
-                      <span class="text-sm font-medium">{{ t('management.guestGroupsView.addGuestModal.group.newGroupForm.title') }}</span>
-                    </div>
-                    <input
-                      v-model="newGroupName"
-                      type="text"
-                      :placeholder="t('management.guestGroupsView.addGuestModal.group.newGroupForm.namePlaceholder')"
-                      class="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 bg-white"
-                    />
-                    <input
-                      v-model="newGroupDescription"
-                      type="text"
-                      :placeholder="t('management.guestGroupsView.addGuestModal.group.newGroupForm.descPlaceholder')"
-                      class="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 bg-white"
-                    />
-                    <div class="flex items-center gap-2">
-                      <input
-                        v-model="newGroupColor"
-                        type="color"
-                        class="w-10 h-8 rounded border border-purple-200 cursor-pointer"
-                      />
-                      <div class="flex-1 flex flex-wrap gap-1.5">
-                        <button
-                          v-for="color in colorPresets"
-                          :key="color"
-                          type="button"
-                          @click="newGroupColor = color"
-                          :class="[
-                            'w-6 h-6 rounded-md border transition-all',
-                            newGroupColor === color ? 'border-slate-900 ring-1 ring-offset-1 ring-slate-400' : 'border-transparent'
-                          ]"
-                          :style="{ backgroundColor: color }"
-                        />
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      @click="handleCreateGroup"
-                      :disabled="!newGroupName.trim() || isCreatingGroup"
-                      class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <span v-if="isCreatingGroup" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-                      <span>{{ isCreatingGroup ? t('management.guestGroupsView.addGuestModal.group.newGroupForm.creating') : t('management.guestGroupsView.addGuestModal.group.newGroupForm.createBtn') }}</span>
-                    </button>
-                  </div>
+                  <InlineGroupForm
+                    v-if="showCreateGroupForm"
+                    mode="create"
+                    :is-submitting="isCreatingGroup"
+                    class="mb-3"
+                    @submit="handleCreateGroup"
+                    @cancel="showCreateGroupForm = false"
+                  />
                 </Transition>
 
                 <GroupDropdown
@@ -362,71 +82,16 @@
 
                 <!-- Inline Edit Group Form (Bulk Import Mode) -->
                 <Transition name="slide-down">
-                  <div v-if="showEditGroupForm && editingGroup" class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-3">
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-2 text-blue-700">
-                        <Edit2 class="w-4 h-4" />
-                        <span class="text-sm font-medium">{{ t('management.guestGroupsView.addGuestModal.group.editGroupForm.title') }}</span>
-                      </div>
-                      <button
-                        type="button"
-                        @click="closeInlineEditGroup"
-                        class="p-1 rounded-md text-blue-400 hover:text-blue-600 hover:bg-blue-100 transition-colors"
-                      >
-                        <X class="w-4 h-4" />
-                      </button>
-                    </div>
-                    <input
-                      v-model="editGroupName"
-                      type="text"
-                      :placeholder="t('management.guestGroupsView.addGuestModal.group.editGroupForm.namePlaceholder')"
-                      class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white"
-                    />
-                    <input
-                      v-model="editGroupDescription"
-                      type="text"
-                      :placeholder="t('management.guestGroupsView.addGuestModal.group.editGroupForm.descPlaceholder')"
-                      class="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white"
-                    />
-                    <div class="flex items-center gap-2">
-                      <input
-                        v-model="editGroupColor"
-                        type="color"
-                        class="w-10 h-8 rounded border border-blue-200 cursor-pointer"
-                      />
-                      <div class="flex-1 flex flex-wrap gap-1.5">
-                        <button
-                          v-for="color in colorPresets"
-                          :key="color"
-                          type="button"
-                          @click="editGroupColor = color"
-                          :class="[
-                            'w-6 h-6 rounded-md border transition-all',
-                            editGroupColor === color ? 'border-slate-900 ring-1 ring-offset-1 ring-slate-400' : 'border-transparent'
-                          ]"
-                          :style="{ backgroundColor: color }"
-                        />
-                      </div>
-                    </div>
-                    <div class="flex gap-2">
-                      <button
-                        type="button"
-                        @click="closeInlineEditGroup"
-                        class="flex-1 px-3 py-2 text-sm border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-100 font-medium transition-colors"
-                      >
-                        {{ t('management.guestGroupsView.addGuestModal.group.editGroupForm.cancelBtn') }}
-                      </button>
-                      <button
-                        type="button"
-                        @click="submitInlineEditGroup"
-                        :disabled="!editGroupName.trim() || isUpdatingGroup"
-                        class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span v-if="isUpdatingGroup" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
-                        <span>{{ isUpdatingGroup ? t('management.guestGroupsView.addGuestModal.group.editGroupForm.saving') : t('management.guestGroupsView.addGuestModal.group.editGroupForm.saveBtn') }}</span>
-                      </button>
-                    </div>
-                  </div>
+                  <InlineGroupForm
+                    v-if="showEditGroupForm && editingGroup"
+                    :key="editingGroup.id"
+                    mode="edit"
+                    :group="editingGroup"
+                    :is-submitting="isUpdatingGroup"
+                    class="mt-3"
+                    @submit="submitInlineEditGroup"
+                    @cancel="closeInlineEditGroup"
+                  />
                 </Transition>
 
                 <!-- Inline Delete Group Confirmation (Bulk Import Mode) -->
@@ -646,39 +311,19 @@
         <!-- Footer with Action Buttons -->
         <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
           <div class="flex items-center justify-between">
-            <!-- Single Guest Mode Actions -->
-            <template v-if="localMode === 'single'">
-              <button
-                type="button"
-                @click="handleAddGuest"
-                :disabled="!canAddGuest"
-                class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span
-                  v-if="isAdding"
-                  class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
-                ></span>
-                <UserPlus v-else class="w-4 h-4" />
-                <span>{{ isAdding ? t('management.guestGroupsView.addGuestModal.actions.adding') : t('management.guestGroupsView.addGuestModal.actions.addGuest') }}</span>
-              </button>
-            </template>
-
-            <!-- Bulk Import Mode Actions -->
-            <template v-else>
-              <button
-                type="button"
-                @click="handleImport"
-                :disabled="!filePreview || filePreview.validCount === 0 || !localSelectedGroupForImport || isImporting"
-                class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span
-                  v-if="isImporting"
-                  class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
-                ></span>
-                <Upload v-else class="w-4 h-4" />
-                <span>{{ isImporting ? t('management.guestGroupsView.addGuestModal.actions.importing') : t('management.guestGroupsView.addGuestModal.actions.importGuests', { count: filePreview?.validCount || 0 }) }}</span>
-              </button>
-            </template>
+            <button
+              type="button"
+              @click="handleImport"
+              :disabled="!filePreview || filePreview.validCount === 0 || !localSelectedGroupForImport || isImporting"
+              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span
+                v-if="isImporting"
+                class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
+              ></span>
+              <Upload v-else class="w-4 h-4" />
+              <span>{{ isImporting ? t('management.guestGroupsView.addGuestModal.actions.importing') : t('management.guestGroupsView.addGuestModal.actions.importGuests', { count: filePreview?.validCount || 0 }) }}</span>
+            </button>
 
             <button
               type="button"
@@ -695,10 +340,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { UserPlus, X, Upload, Download, FileText, FileSpreadsheet, CheckCircle, AlertCircle, Trash2, ArrowRight, Users, Edit2 } from 'lucide-vue-next'
+import { X, Upload, Download, FileText, FileSpreadsheet, CheckCircle, AlertCircle, Trash2, ArrowRight } from 'lucide-vue-next'
 import GroupDropdown from './GroupDropdown.vue'
+import InlineGroupForm from './InlineGroupForm.vue'
 import type { GuestGroup } from '../../services/api'
 import type { FilePreview } from '../../composables/invitation/useBulkImport'
 
@@ -708,7 +354,6 @@ const { t } = useI18n()
 const props = defineProps<{
   show: boolean
   groups: GuestGroup[]
-  isAdding: boolean
   isImporting: boolean
   isParsing: boolean
   selectedFile: File | null
@@ -722,7 +367,6 @@ const props = defineProps<{
 // Emits
 const emit = defineEmits<{
   close: []
-  'add-guest': [name: string, groupId: number]
   import: [groupId: number]
   'download-template': []
   'file-select': [event: Event]
@@ -738,61 +382,22 @@ const emit = defineEmits<{
   'delete-group': [group: GuestGroup]
 }>()
 
-// Color presets for quick selection
-const colorPresets = [
-  '#3498db', '#2ecc71', '#e74c3c', '#9b59b6', '#f39c12',
-  '#1abc9c', '#e91e63', '#00bcd4', '#ff5722', '#607d8b'
-]
-
 // Local state
-const localMode = ref<'single' | 'bulk'>('single')
-const localGuestName = ref('')
-const localSelectedGroup = ref<number | null>(null)
 const localSelectedGroupForImport = ref<number | null>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null)
-const guestNameTouched = ref(false)
 
 // Create group form state
 const showCreateGroupForm = ref(false)
-const newGroupName = ref('')
-const newGroupDescription = ref('')
-const newGroupColor = ref('#3498db')
 
 // Edit group form state
 const showEditGroupForm = ref(false)
 const editingGroup = ref<GuestGroup | null>(null)
-const editGroupName = ref('')
-const editGroupDescription = ref('')
-const editGroupColor = ref('#3498db')
 const isUpdatingGroup = ref(false)
 
 // Delete group confirmation state
 const showDeleteGroupConfirm = ref(false)
 const deletingGroup = ref<GuestGroup | null>(null)
 const isDeletingGroup = ref(false)
-
-// Validation computed properties
-const guestNameErrorMessage = computed(() => {
-  const name = localGuestName.value.trim()
-  if (!name) return t('management.guestGroupsView.addGuestModal.guestName.errorRequired')
-  if (name.length < 2) return t('management.guestGroupsView.addGuestModal.guestName.errorMin')
-  if (name.length > 100) return t('management.guestGroupsView.addGuestModal.guestName.errorMax')
-  return ''
-})
-
-const showGuestNameError = computed(() => {
-  return guestNameTouched.value && guestNameErrorMessage.value !== ''
-})
-
-const canAddGuest = computed(() => {
-  const name = localGuestName.value.trim()
-  return (
-    name.length >= 2 &&
-    name.length <= 100 &&
-    localSelectedGroup.value !== null &&
-    !props.isAdding
-  )
-})
 
 // Calculate scrollbar width to prevent layout shift
 const getScrollbarWidth = (): number => {
@@ -802,22 +407,12 @@ const getScrollbarWidth = (): number => {
 // Reset form when drawer is closed
 watch(() => props.show, (newShow) => {
   if (!newShow) {
-    localMode.value = 'single'
-    localGuestName.value = ''
-    localSelectedGroup.value = null
     localSelectedGroupForImport.value = null
-    guestNameTouched.value = false
     // Reset create group form
     showCreateGroupForm.value = false
-    newGroupName.value = ''
-    newGroupDescription.value = ''
-    newGroupColor.value = '#3498db'
     // Reset edit group form
     showEditGroupForm.value = false
     editingGroup.value = null
-    editGroupName.value = ''
-    editGroupDescription.value = ''
-    editGroupColor.value = '#3498db'
     isUpdatingGroup.value = false
     // Reset delete group confirmation
     showDeleteGroupConfirm.value = false
@@ -839,7 +434,6 @@ watch(() => props.show, (newShow) => {
     }
     // Auto-select the pending group when drawer opens
     if (props.pendingGroupId) {
-      localSelectedGroup.value = props.pendingGroupId
       localSelectedGroupForImport.value = props.pendingGroupId
     }
   }
@@ -851,17 +445,10 @@ watch(() => props.groups.length, (newLength, oldLength) => {
     // A new group was added, select it
     const newGroup = props.groups[props.groups.length - 1]
     if (newGroup) {
-      if (localMode.value === 'single') {
-        localSelectedGroup.value = newGroup.id
-      } else {
-        localSelectedGroupForImport.value = newGroup.id
-      }
+      localSelectedGroupForImport.value = newGroup.id
     }
-    // Close the create group form and reset fields
+    // Close the create group form (unmounting InlineGroupForm resets its fields)
     showCreateGroupForm.value = false
-    newGroupName.value = ''
-    newGroupDescription.value = ''
-    newGroupColor.value = '#3498db'
   }
 })
 
@@ -870,24 +457,14 @@ const handleImportGroupChange = (groupId: number) => {
   emit('group-change', groupId)
 }
 
-const handleAddGuest = () => {
-  if (!canAddGuest.value) return
-  emit('add-guest', localGuestName.value.trim(), localSelectedGroup.value!)
-}
-
 const handleImport = () => {
   if (!props.filePreview || props.filePreview.validCount === 0 || !localSelectedGroupForImport.value) return
   emit('import', localSelectedGroupForImport.value)
 }
 
-const handleCreateGroup = () => {
-  if (!newGroupName.value.trim()) return
-
-  emit('create-group', {
-    name: newGroupName.value.trim(),
-    description: newGroupDescription.value.trim() || undefined,
-    color: newGroupColor.value,
-  })
+const handleCreateGroup = (data?: { name: string; description?: string; color: string }) => {
+  if (!data) return
+  emit('create-group', data)
 }
 
 const triggerFileSelect = () => {
@@ -927,30 +504,22 @@ const openInlineEditGroup = (group: GuestGroup) => {
 
   // Set up edit form
   editingGroup.value = group
-  editGroupName.value = group.name
-  editGroupDescription.value = group.description || ''
-  editGroupColor.value = group.color || '#3498db'
   showEditGroupForm.value = true
 }
 
 const closeInlineEditGroup = () => {
   showEditGroupForm.value = false
   editingGroup.value = null
-  editGroupName.value = ''
-  editGroupDescription.value = ''
-  editGroupColor.value = '#3498db'
 }
 
-const submitInlineEditGroup = () => {
-  if (!editingGroup.value || !editGroupName.value.trim()) return
+const submitInlineEditGroup = (data?: { name: string; description?: string; color: string }) => {
+  if (!editingGroup.value || !data) return
 
   isUpdatingGroup.value = true
 
   emit('edit-group', {
     ...editingGroup.value,
-    name: editGroupName.value.trim(),
-    description: editGroupDescription.value.trim() || undefined,
-    color: editGroupColor.value,
+    ...data,
   } as GuestGroup)
 
   // Note: Parent will handle the API call and close the form on success

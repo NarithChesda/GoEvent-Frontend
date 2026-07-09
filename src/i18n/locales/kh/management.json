@@ -1394,9 +1394,12 @@
       "allGroups": "ក្រុមទាំងអស់",
       "select": "ជ្រើសរើស",
       "helpTitle": "របៀបគ្រប់គ្រងភ្ញៀវ",
-      "addGuestAriaLabel": "បន្ថែមភ្ញៀវ",
-      "addGuest": "បន្ថែមភ្ញៀវ",
-      "guestsPanelSuffix": "ភ្ញៀវ"
+      "addGuestAriaLabel": "នាំចូលភ្ញៀវ",
+      "addGuest": "នាំចូលភ្ញៀវ",
+      "guestsPanelSuffix": "ភ្ញៀវ",
+      "editGroup": "កែសម្រួលក្រុម",
+      "deleteGroup": "លុបក្រុម",
+      "newGroup": "ក្រុមថ្មី"
     },
     "selectionBar": {
       "selected": "បានជ្រើសរើស",
@@ -1411,6 +1414,19 @@
         "searchHint": "សាកល្បងកែតម្រូវការស្វែងរករបស់អ្នក",
         "emptyHint": "មិនទាន់មានភ្ញៀវក្នុងក្រុមនេះ"
       }
+    },
+    "guestListItem": {
+      "renameHint": "ចុចដើម្បីប្តូរឈ្មោះ",
+      "changeGroupHint": "ចុចដើម្បីប្តូរក្រុម",
+      "moreDetails": "ព័ត៌មានលម្អិត"
+    },
+    "quickAdd": {
+      "addGuestPill": "+ បន្ថែមភ្ញៀវ",
+      "noGroupsHint": "សូមបង្កើតក្រុមមុនសិន",
+      "namePlaceholder": "ឈ្មោះភ្ញៀវ",
+      "pickGroup": "ក្រុម",
+      "save": "បន្ថែមភ្ញៀវ",
+      "cancel": "បោះបង់"
     },
     "guideModal": {
       "title": "មគ្គុទ្ទេសក៍ការគ្រប់គ្រងភ្ញៀវ",
@@ -1557,18 +1573,14 @@
       }
     },
     "addGuestModal": {
-      "title": "បន្ថែមភ្ញៀវ",
+      "title": "នាំចូលភ្ញៀវ",
       "close": "បិទ",
-      "modes": {
-        "singleGuest": "ភ្ញៀវម្នាក់",
-        "bulkImport": "នាំចូលជាច្រើន"
-      },
       "group": {
         "selectLabel": "ជ្រើសរើសក្រុម",
         "createBtn": "+ បង្កើតក្រុម",
         "cancelBtn": "បោះបង់",
         "choosePlaceholder": "ជ្រើសរើសក្រុម...",
-        "createFirstSingle": "សូមបង្កើតក្រុមមុនសិន មុននឹងបន្ថែមភ្ញៀវ។",
+        "colorLabel": "ពណ៌ក្រុម",
         "createFirstBulk": "សូមបង្កើតក្រុមមុនសិន មុននឹងនាំចូលភ្ញៀវ។",
         "newGroupForm": {
           "title": "ក្រុមថ្មី",
@@ -1593,13 +1605,6 @@
           "deleting": "កំពុងលុប...",
           "deleteBtn": "លុបក្រុម"
         }
-      },
-      "guestName": {
-        "label": "ឈ្មោះភ្ញៀវ",
-        "placeholder": "បញ្ចូលឈ្មោះពេញរបស់ភ្ញៀវ",
-        "errorRequired": "ត្រូវការឈ្មោះភ្ញៀវ",
-        "errorMin": "ឈ្មោះត្រូវមានយ៉ាងហោចណាស់ ២ តួអក្សរ",
-        "errorMax": "ឈ្មោះត្រូវតិចជាង ១០០ តួអក្សរ"
       },
       "bulkImport": {
         "downloadTemplate": "ទាញយកគំរូ (CSV)",
@@ -1626,8 +1631,6 @@
         }
       },
       "actions": {
-        "adding": "កំពុងបន្ថែម...",
-        "addGuest": "បន្ថែមភ្ញៀវ",
         "importing": "កំពុងនាំចូល...",
         "importGuests": "នាំចូល {count} ភ្ញៀវ",
         "cancel": "បោះបង់"
