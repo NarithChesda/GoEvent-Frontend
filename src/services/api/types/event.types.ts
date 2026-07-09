@@ -62,6 +62,8 @@ export interface Event {
   music?: string | null
   selected_music?: number | null
   selected_music_details?: BackgroundMusic | null
+  music_start_time?: number | null
+  music_end_time?: number | null
   google_map_embed_link?: string | null
   youtube_embed_link?: string | null
   event_template?: number | null

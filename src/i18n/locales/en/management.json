@@ -502,7 +502,21 @@
           "uploading": "Uploading..."
         },
         "empty": "No music added",
-        "emptySub": "Background music not configured"
+        "emptySub": "Background music not configured",
+        "trim": {
+          "open": "Set Loop Points",
+          "title": "Loop Points",
+          "hint": "Drag the handles to skip a long intro",
+          "startLabel": "Start",
+          "endLabel": "End",
+          "endOfTrack": "End of track",
+          "loading": "Loading track...",
+          "playHint": "Use the play button above to preview the loop",
+          "save": "Save",
+          "saving": "Saving...",
+          "reset": "Reset",
+          "cancel": "Cancel"
+        }
       }
     },
     "musicModal": {

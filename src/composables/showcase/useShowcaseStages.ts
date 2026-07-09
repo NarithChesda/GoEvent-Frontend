@@ -48,12 +48,42 @@ export function useShowcaseStages() {
 
   /**
    * Initialize audio with proper cleanup registration and mobile optimizations
+   *
+   * Loops manually within [loopStart, loopEnd] instead of using the native
+   * `loop` attribute, which always loops the whole file — this lets hosts
+   * trim a long silent/instrumental intro via music_start_time/music_end_time.
    */
-  const initializeAudio = (musicUrl?: string) => {
+  const initializeAudio = (musicUrl?: string, loopStart = 0, loopEnd?: number) => {
     if (musicUrl && !audioRef.value) {
       audioRef.value = new Audio(musicUrl)
-      audioRef.value.loop = true
       audioRef.value.volume = 0.35
+
+      const audio = audioRef.value
+
+      const handleLoadedMetadata = () => {
+        if (loopStart > 0) {
+          audio.currentTime = loopStart
+        }
+      }
+
+      const handleTimeUpdate = () => {
+        const end = loopEnd ?? audio.duration
+        if (end > loopStart && audio.currentTime >= end) {
+          audio.currentTime = loopStart
+        }
+      }
+
+      const handleEnded = () => {
+        // Fallback for browsers where 'timeupdate' fires after 'ended' near the tail
+        audio.currentTime = loopStart
+        audio.play().catch(() => {
+          isMusicPlaying.value = false
+        })
+      }
+
+      audio.addEventListener('loadedmetadata', handleLoadedMetadata)
+      audio.addEventListener('timeupdate', handleTimeUpdate)
+      audio.addEventListener('ended', handleEnded)
 
       // Register blob URL if it exists
       if (musicUrl.startsWith('blob:')) {
@@ -63,6 +93,9 @@ export function useShowcaseStages() {
       // Add cleanup callback for audio
       const cleanup = () => {
         if (audioRef.value) {
+          audioRef.value.removeEventListener('loadedmetadata', handleLoadedMetadata)
+          audioRef.value.removeEventListener('timeupdate', handleTimeUpdate)
+          audioRef.value.removeEventListener('ended', handleEnded)
           audioRef.value.pause()
           audioRef.value.src = ''
           // Clean up blob URL if it was one
@@ -127,7 +160,7 @@ export function useShowcaseStages() {
   const openEnvelope = async (
     eventVideoUrl?: string,
     eventMusicUrl?: string,
-    options?: { useTransitionStage?: boolean },
+    options?: { useTransitionStage?: boolean; musicLoopStart?: number; musicLoopEnd?: number },
   ): Promise<void> => {
     isEnvelopeOpened.value = true
 
@@ -144,7 +177,7 @@ export function useShowcaseStages() {
     if (eventVideoUrl) {
       isPlayingEventVideo.value = true
 
-      initializeAudio(eventMusicUrl)
+      initializeAudio(eventMusicUrl, options?.musicLoopStart, options?.musicLoopEnd)
       if (eventMusicUrl) {
         await playMusic()
       }
@@ -173,7 +206,7 @@ export function useShowcaseStages() {
         isPlayingEventVideo.value = false
         currentShowcaseStage.value = 'main_content'
 
-        initializeAudio(eventMusicUrl)
+        initializeAudio(eventMusicUrl, options?.musicLoopStart, options?.musicLoopEnd)
         if (eventMusicUrl) {
           playMusic()
         }
@@ -203,7 +236,7 @@ export function useShowcaseStages() {
    * Ensures the showcase continues to function even if video fails
    * Automatically falls back to music and main content
    */
-  const onEventVideoError = (eventMusicUrl?: string): void => {
+  const onEventVideoError = (eventMusicUrl?: string, musicLoopStart?: number, musicLoopEnd?: number): void => {
     isPlayingEventVideo.value = false
 
     // On video error, skip to main content gracefully
@@ -211,7 +244,7 @@ export function useShowcaseStages() {
 
     // Ensure audio is still available as fallback
     if (!audioRef.value && eventMusicUrl) {
-      initializeAudio(eventMusicUrl)
+      initializeAudio(eventMusicUrl, musicLoopStart, musicLoopEnd)
       playMusic()
     }
   }
@@ -220,12 +253,12 @@ export function useShowcaseStages() {
    * Handle transition stage animation completion
    * Moves from transition stage to main content
    */
-  const onTransitionComplete = (eventMusicUrl?: string): void => {
+  const onTransitionComplete = (eventMusicUrl?: string, musicLoopStart?: number, musicLoopEnd?: number): void => {
     currentShowcaseStage.value = 'main_content'
 
     // Start music if not already playing
     if (!audioRef.value && eventMusicUrl) {
-      initializeAudio(eventMusicUrl)
+      initializeAudio(eventMusicUrl, musicLoopStart, musicLoopEnd)
       playMusic()
     }
   }

@@ -100,6 +100,14 @@
                 <span>{{ t('management.media.mediaUploads.music.library.browse') }}</span>
               </button>
               <button
+                @click="openTrimEditor(); dropdownManager.closeAllDropdowns()"
+                :disabled="savingMusicSelection"
+                class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200 text-left border-t border-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Scissors class="w-4 h-4 text-slate-500" aria-hidden="true" />
+                <span>{{ t('management.media.mediaUploads.music.trim.open') }}</span>
+              </button>
+              <button
                 v-if="musicSource === 'library'"
                 @click="handleClearLibraryMusic(); dropdownManager.closeAllDropdowns()"
                 :disabled="savingMusicSelection"
@@ -165,16 +173,121 @@
             <div class="flex items-center gap-3">
               <span class="text-xs text-slate-500 tabular-nums w-10 text-right">{{ formatTime(currentTime) }}</span>
               <div
-                class="flex-1 h-1.5 bg-slate-100 rounded-full cursor-pointer overflow-hidden"
+                class="flex-1 relative py-1 cursor-pointer"
                 @click="seekMusic"
                 ref="progressBarRef"
               >
-                <div
-                  class="h-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full transition-all duration-100"
-                  :style="{ width: `${musicProgress}%` }"
-                ></div>
+                <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    class="h-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full transition-all duration-100"
+                    :style="{ width: `${musicProgress}%` }"
+                  ></div>
+                </div>
+                <!-- Loop trim markers (hidden while the dedicated editor below is open) -->
+                <template v-if="hasTrimWindow && !showTrimEditor">
+                  <div
+                    class="absolute top-0 w-0.5 h-3.5 bg-amber-500 rounded-full pointer-events-none"
+                    :style="{ left: `${committedTrimStartPercent}%` }"
+                    :title="t('management.media.mediaUploads.music.trim.startLabel')"
+                  ></div>
+                  <div
+                    v-if="eventData?.music_end_time != null"
+                    class="absolute top-0 w-0.5 h-3.5 bg-amber-500 rounded-full pointer-events-none"
+                    :style="{ left: `${committedTrimEndPercent}%` }"
+                    :title="t('management.media.mediaUploads.music.trim.endLabel')"
+                  ></div>
+                </template>
               </div>
               <span class="text-xs text-slate-500 tabular-nums w-10">{{ formatTime(musicDuration) }}</span>
+            </div>
+          </div>
+
+          <!-- Loop trim editor -->
+          <div v-if="showTrimEditor" class="mt-4 pt-4 border-t border-slate-100">
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <p class="text-xs font-semibold text-slate-700 uppercase tracking-wide">{{ t('management.media.mediaUploads.music.trim.title') }}</p>
+              <p class="text-xs text-slate-400">{{ t('management.media.mediaUploads.music.trim.hint') }}</p>
+            </div>
+
+            <div v-if="musicDuration > 0">
+              <div class="flex items-center justify-between text-xs font-semibold tabular-nums mb-1.5">
+                <span class="text-[#2ecc71]">{{ formatTime(pendingStart) }}</span>
+                <span class="text-[#1e90ff]">{{ pendingEnd != null ? formatTime(pendingEnd) : t('management.media.mediaUploads.music.trim.endOfTrack') }}</span>
+              </div>
+
+              <!-- Draggable dual-handle loop slider -->
+              <div
+                ref="trimTrackRef"
+                class="relative h-10 rounded-xl bg-slate-100 select-none"
+                style="background-image: repeating-linear-gradient(90deg, rgba(15,23,42,0.06) 0px, rgba(15,23,42,0.06) 2px, transparent 2px, transparent 6px)"
+              >
+                <!-- Dimmed regions outside the loop window -->
+                <div
+                  class="absolute inset-y-0 left-0 bg-slate-900/45 rounded-l-xl pointer-events-none"
+                  :style="{ width: `${pendingStartPercent}%` }"
+                ></div>
+                <div
+                  class="absolute inset-y-0 right-0 bg-slate-900/45 rounded-r-xl pointer-events-none"
+                  :style="{ width: `${100 - pendingEndPercent}%` }"
+                ></div>
+
+                <!-- Live playhead -->
+                <div
+                  class="absolute top-0 bottom-0 w-0.5 bg-slate-900 pointer-events-none z-10"
+                  :style="{ left: `${musicProgress}%` }"
+                ></div>
+
+                <!-- Start handle -->
+                <div
+                  class="absolute top-0 bottom-0 w-6 flex items-center justify-center cursor-ew-resize touch-none z-20"
+                  :style="{ left: `${pendingStartPercent}%`, transform: 'translateX(-50%)' }"
+                  @pointerdown="startDrag('start', $event)"
+                  @pointermove="onDragMove"
+                  @pointerup="stopDrag"
+                  @pointercancel="stopDrag"
+                >
+                  <div class="w-1.5 h-8 rounded-full bg-[#2ecc71] shadow-md ring-2 ring-white"></div>
+                </div>
+
+                <!-- End handle -->
+                <div
+                  class="absolute top-0 bottom-0 w-6 flex items-center justify-center cursor-ew-resize touch-none z-20"
+                  :style="{ left: `${pendingEndPercent}%`, transform: 'translateX(-50%)' }"
+                  @pointerdown="startDrag('end', $event)"
+                  @pointermove="onDragMove"
+                  @pointerup="stopDrag"
+                  @pointercancel="stopDrag"
+                >
+                  <div class="w-1.5 h-8 rounded-full bg-[#1e90ff] shadow-md ring-2 ring-white"></div>
+                </div>
+              </div>
+
+              <p class="text-xs text-slate-400 mt-2">{{ t('management.media.mediaUploads.music.trim.playHint') }}</p>
+            </div>
+            <p v-else class="text-xs text-slate-400 italic">{{ t('management.media.mediaUploads.music.trim.loading') }}</p>
+
+            <div class="flex items-center gap-2 mt-3">
+              <button
+                @click="saveTrimPoints"
+                :disabled="savingTrim || musicDuration === 0"
+                class="px-3 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:opacity-90 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ savingTrim ? t('management.media.mediaUploads.music.trim.saving') : t('management.media.mediaUploads.music.trim.save') }}
+              </button>
+              <button
+                @click="resetTrimPoints"
+                :disabled="savingTrim || !hasTrimWindow"
+                class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ t('management.media.mediaUploads.music.trim.reset') }}
+              </button>
+              <button
+                @click="showTrimEditor = false"
+                :disabled="savingTrim"
+                class="ml-auto px-3 py-1.5 text-sm font-medium text-slate-500 hover:bg-slate-100 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ t('management.media.mediaUploads.music.trim.cancel') }}
+              </button>
             </div>
           </div>
         </div>
@@ -310,7 +423,7 @@
 <script setup lang="ts">
 import { ref, toRef, watch, computed, reactive, onUnmounted } from 'vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { AlertCircle, ChevronRight, ImageIcon, Library, MoreHorizontal, Music, Pause, Play, Upload, Video, X } from 'lucide-vue-next'
+import { AlertCircle, ChevronRight, ImageIcon, Library, MoreHorizontal, Music, Pause, Play, Scissors, Upload, Video, X } from 'lucide-vue-next'
 import type { Event, BackgroundMusic } from '@/services/api'
 import { eventsService } from '@/services/api'
 import { useMediaUpload, type MediaFieldName, type MediaType } from '@/composables/useMediaUpload'
@@ -577,6 +690,127 @@ const musicProgress = computed(() => {
   return (currentTime.value / musicDuration.value) * 100
 })
 
+// ---- Loop trim points (music_start_time / music_end_time) ----
+
+const MIN_TRIM_GAP = 1 // seconds; smallest allowed gap between start and end handles
+
+const showTrimEditor = ref(false)
+const savingTrim = ref(false)
+const trimTrackRef = ref<HTMLDivElement | null>(null)
+const draggingHandle = ref<'start' | 'end' | null>(null)
+
+/** Uncommitted handle positions while the editor is open (seconds). `pendingEnd === null` means "end of track". */
+const pendingStart = ref(0)
+const pendingEnd = ref<number | null>(null)
+
+const hasTrimWindow = computed(() => {
+  return (props.eventData?.music_start_time || 0) > 0 || props.eventData?.music_end_time != null
+})
+
+/** Saved loop window position on the main progress bar (as opposed to the editor's uncommitted drag state). */
+const committedTrimStartPercent = computed(() => {
+  if (!musicDuration.value) return 0
+  return Math.min(100, ((props.eventData?.music_start_time || 0) / musicDuration.value) * 100)
+})
+
+const committedTrimEndPercent = computed(() => {
+  if (!musicDuration.value) return 100
+  const end = props.eventData?.music_end_time
+  return end != null ? Math.min(100, (end / musicDuration.value) * 100) : 100
+})
+
+const pendingStartPercent = computed(() => {
+  if (!musicDuration.value) return 0
+  return Math.min(100, (pendingStart.value / musicDuration.value) * 100)
+})
+
+const pendingEndPercent = computed(() => {
+  if (!musicDuration.value) return 100
+  const end = pendingEnd.value ?? musicDuration.value
+  return Math.min(100, (end / musicDuration.value) * 100)
+})
+
+/** The loop window actually driving playback: pending values while editing, otherwise the saved values. */
+const effectiveLoopStart = computed(() =>
+  showTrimEditor.value ? pendingStart.value : (props.eventData?.music_start_time || 0)
+)
+const effectiveLoopEndRaw = computed(() =>
+  showTrimEditor.value ? pendingEnd.value : props.eventData?.music_end_time
+)
+
+const openTrimEditor = () => {
+  pendingStart.value = props.eventData?.music_start_time || 0
+  pendingEnd.value = props.eventData?.music_end_time ?? null
+  showTrimEditor.value = true
+  seekPreview(pendingStart.value)
+}
+
+const percentFromClientX = (clientX: number): number => {
+  if (!trimTrackRef.value) return 0
+  const rect = trimTrackRef.value.getBoundingClientRect()
+  if (rect.width === 0) return 0
+  return Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100))
+}
+
+const seekPreview = (seconds: number) => {
+  if (!audioPlayerRef.value) return
+  audioPlayerRef.value.currentTime = seconds
+  currentTime.value = seconds
+}
+
+const startDrag = (handle: 'start' | 'end', event: PointerEvent) => {
+  event.preventDefault()
+  draggingHandle.value = handle
+  ;(event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId)
+}
+
+const onDragMove = (event: PointerEvent) => {
+  if (draggingHandle.value === null || musicDuration.value === 0) return
+
+  const seconds = (percentFromClientX(event.clientX) / 100) * musicDuration.value
+
+  if (draggingHandle.value === 'start') {
+    const maxStart = (pendingEnd.value ?? musicDuration.value) - MIN_TRIM_GAP
+    pendingStart.value = Math.min(Math.max(0, seconds), Math.max(0, maxStart))
+    seekPreview(pendingStart.value)
+  } else {
+    const minEnd = pendingStart.value + MIN_TRIM_GAP
+    const nextEnd = Math.max(minEnd, seconds)
+    // Snap to "end of track" once dragged close enough to the natural end
+    pendingEnd.value = nextEnd >= musicDuration.value - 0.15 ? null : nextEnd
+    seekPreview(nextEnd)
+  }
+}
+
+const stopDrag = () => {
+  draggingHandle.value = null
+}
+
+const saveTrimPoints = async () => {
+  if (!props.eventData?.id) return
+
+  savingTrim.value = true
+  try {
+    const response = await eventsService.patchEvent(props.eventData.id, {
+      music_start_time: pendingStart.value,
+      music_end_time: pendingEnd.value,
+    })
+
+    if (response.success && response.data) {
+      emit('updated', response.data)
+      showTrimEditor.value = false
+    }
+  } finally {
+    savingTrim.value = false
+  }
+}
+
+const resetTrimPoints = () => {
+  pendingStart.value = 0
+  pendingEnd.value = null
+  saveTrimPoints()
+}
+
 /**
  * Format time in MM:SS format
  */
@@ -610,22 +844,50 @@ const toggleMusicPlayback = () => {
 const handleAudioLoaded = () => {
   if (audioPlayerRef.value) {
     musicDuration.value = audioPlayerRef.value.duration
+
+    const start = effectiveLoopStart.value
+    if (start > 0) {
+      audioPlayerRef.value.currentTime = start
+      currentTime.value = start
+    }
   }
 }
 
 /**
- * Handle audio time update
+ * Handle audio time update. Loops within the music_start_time/music_end_time
+ * window (when set) instead of relying on the native `loop` attribute, which
+ * always loops the whole file. While the trim editor is open, loops within
+ * the uncommitted handle positions so hosts can preview changes before saving.
  */
 const handleTimeUpdate = () => {
-  if (audioPlayerRef.value) {
-    currentTime.value = audioPlayerRef.value.currentTime
+  if (!audioPlayerRef.value) return
+
+  currentTime.value = audioPlayerRef.value.currentTime
+
+  const loopStart = effectiveLoopStart.value
+  const loopEnd = effectiveLoopEndRaw.value ?? musicDuration.value
+
+  if (loopEnd > loopStart && audioPlayerRef.value.currentTime >= loopEnd) {
+    audioPlayerRef.value.currentTime = loopStart
+    currentTime.value = loopStart
   }
 }
 
 /**
- * Handle audio ended
+ * Handle audio ended. Fallback for browsers where `timeupdate` fires after
+ * `ended` near the tail of the track.
  */
 const handleAudioEnded = () => {
+  if (audioPlayerRef.value && isMusicPlaying.value) {
+    const start = effectiveLoopStart.value
+    audioPlayerRef.value.currentTime = start
+    currentTime.value = start
+    audioPlayerRef.value.play().catch(() => {
+      isMusicPlaying.value = false
+    })
+    return
+  }
+
   isMusicPlaying.value = false
   currentTime.value = 0
 }
@@ -777,6 +1039,7 @@ watch(currentMusicUrl, () => {
   isMusicPlaying.value = false
   currentTime.value = 0
   musicDuration.value = 0
+  showTrimEditor.value = false
 })
 
 // Cleanup audio player on unmount

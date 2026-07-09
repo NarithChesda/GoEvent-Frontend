@@ -228,6 +228,8 @@ const {
   eventVideoUrl,
   backgroundVideoUrl,
   eventMusicUrl,
+  musicStartTime,
+  musicEndTime,
   availableLanguages,
   // Methods
   loadShowcase,
@@ -334,7 +336,10 @@ const openEnvelopeWithVideoSync = async () => {
 
   // First call the original openEnvelope function which handles music
   // Pass the required parameters for music to work
-  await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined)
+  await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined, {
+    musicLoopStart: musicStartTime.value,
+    musicLoopEnd: musicEndTime.value,
+  })
 
   // Determine display mode: basic mode has basic_decoration_photo, standard mode doesn't
   const isBasicMode = Boolean(templateAssets.value?.basic_decoration_photo)
@@ -352,7 +357,7 @@ const handleTransitionComplete = () => {
     coverStageRef.value.revealMainContent()
   }
   // Set stage to main_content and start music
-  onTransitionComplete(eventMusicUrl.value || undefined)
+  onTransitionComplete(eventMusicUrl.value || undefined, musicStartTime.value, musicEndTime.value)
 }
 
 const handleMainContentViewed = () => {

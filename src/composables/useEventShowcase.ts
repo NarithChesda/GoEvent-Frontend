@@ -225,6 +225,8 @@ export interface EventData {
   logo_two?: string
   event_video?: string
   music?: string
+  music_start_time?: number | null
+  music_end_time?: number | null
   google_map_embed_link?: string
   youtube_embed_link?: string
   registration_required?: boolean
@@ -586,6 +588,9 @@ export function useEventShowcase() {
     }
     return null
   })
+
+  const musicStartTime = computed(() => event.value?.music_start_time || 0)
+  const musicEndTime = computed(() => event.value?.music_end_time ?? undefined)
 
   const isEnvelopeButtonReady = computed(() => true)
 
@@ -1140,6 +1145,8 @@ export function useEventShowcase() {
     eventVideoUrl,
     backgroundVideoUrl,
     eventMusicUrl,
+    musicStartTime,
+    musicEndTime,
     availableLanguages,
     isEnvelopeButtonReady,
 
