@@ -34,8 +34,8 @@
         />
       </div>
 
-      <!-- Hosts Section (merged from the standalone tab for showcase categories) -->
-      <div v-if="props.showCategorySpecificSections && localEventData?.id">
+      <!-- Hosts Section (merged from the standalone tab, all categories) -->
+      <div v-if="localEventData?.id">
         <EventHostsTab
           :event-id="localEventData.id"
           :can-edit="canEdit"
@@ -44,8 +44,8 @@
         />
       </div>
 
-      <!-- Agenda Section (merged from the standalone tab for showcase categories) -->
-      <div v-if="props.showCategorySpecificSections && localEventData?.id">
+      <!-- Agenda Section (merged from the standalone tab, all categories) -->
+      <div v-if="localEventData?.id">
         <EventAgendaTab
           :event-id="localEventData.id"
           :can-edit="canEdit"
@@ -53,8 +53,8 @@
         />
       </div>
 
-      <!-- Dress Code Section (Category-specific: wedding, birthday, housewarming) -->
-      <div v-if="props.showCategorySpecificSections && localEventData?.id">
+      <!-- Dress Code Section (all categories) -->
+      <div v-if="localEventData?.id">
         <DressCodeSection
           ref="dressCodeSectionRef"
           :event-id="localEventData.id"

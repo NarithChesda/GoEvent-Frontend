@@ -593,13 +593,11 @@ const showCategorySpecificSections = computed(() => {
   )
 })
 
-// For showcase categories, Agenda & Hosts live as sections inside the
-// Showcase tab instead of standalone tabs — but only when the user can
-// actually see the Showcase tab (editors). Read-only visitors keep the
-// standalone tabs since the Showcase tab is hidden from them.
-const agendaHostsMerged = computed(
-  () => showCategorySpecificSections.value && canViewMedia.value,
-)
+// Agenda & Hosts live as sections inside the Showcase tab instead of
+// standalone tabs — but only when the user can actually see the Showcase
+// tab (editors). Read-only visitors keep the standalone tabs since the
+// Showcase tab is hidden from them.
+const agendaHostsMerged = computed(() => canViewMedia.value)
 
 // Redirect deep links / active selections for merged tabs to the Showcase tab
 watch(
