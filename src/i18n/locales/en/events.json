@@ -16,7 +16,8 @@
     "recent": "Recent",
     "upcoming": "Upcoming",
     "past": "Past",
-    "allCategories": "All Categories"
+    "allCategories": "All Categories",
+    "filterLabel": "Filter events"
   },
   "emptyState": {
     "noUpcomingTitle": "No upcoming events",

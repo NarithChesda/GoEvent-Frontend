@@ -45,17 +45,17 @@
       </div>
     </Transition>
 
-    <!-- Contact Us FAB - Telegram Link -->
+    <!-- Contact Us FAB - Telegram Link (mini chip on mobile, full FAB on desktop) -->
     <a
       :href="telegramLink"
       target="_blank"
       rel="noopener noreferrer"
-      :class="fabPositionClass"
-      class="fixed right-4 lg:right-6 z-[55] bg-gradient-to-r from-[#0088cc] to-[#229ED9] hover:from-[#006ca8] hover:to-[#1c7fb5] text-white rounded-full shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 flex items-center justify-center h-14 w-14 hover:scale-110 group"
+      :class="[fabPositionClass, hasFabBelow ? 'right-6' : 'right-4 lg:right-6']"
+      class="fixed z-[55] bg-gradient-to-r from-[#0088cc] to-[#229ED9] hover:from-[#006ca8] hover:to-[#1c7fb5] text-white rounded-full shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 flex items-center justify-center w-10 h-10 lg:w-14 lg:h-14 hover:scale-110 active:scale-95 group"
       aria-label="Contact support"
       @click="dismissPopup"
     >
-      <Send class="w-6 h-6 transition-transform duration-300 group-hover:rotate-12" />
+      <Send class="w-5 h-5 lg:w-6 lg:h-6 transition-transform duration-300 group-hover:rotate-12" />
       <div
         class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
       >
@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
+import { computed, ref, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { Send, X, MessageCircle } from 'lucide-vue-next'
 import { secureStorage } from '@/utils/secureStorage'
@@ -111,28 +111,28 @@ const telegramLink = computed(() => {
 // FAB position - accounts for mobile tab bar
 // Mobile: Tab bar is ~64px tall, so FAB needs to be above it: 64px + 16px gap = 80px (bottom-20)
 // Desktop: No tab bar, standard 16px from bottom (lg:bottom-4)
-// When Create FAB is below:
-//   Mobile: bottom-20 (80px for tab bar) + h-14 (56px) + gap (16px) = 152px
+// When a primary FAB is below (mobile FAB is the 40px mini size):
+//   Mobile: bottom-20 (80px for tab bar) + primary FAB h-14 (56px) + gap (12px) = 148px
 //   Desktop: bottom-4 (16px) + h-14 (56px) + gap (16px) = 88px
 const fabPositionClass = computed(() => {
   if (props.hasFabBelow) {
-    return 'bottom-[152px] lg:bottom-[88px]'
+    return 'bottom-[148px] lg:bottom-[88px]'
   }
   return 'bottom-20 lg:bottom-4'
 })
 
-// Chat popup position (above the FAB)
-// Mobile: Contact FAB at 80px (or 152px with FAB below), add FAB height (56px) + gap (16px)
-//   Without FAB below: 80 + 56 + 16 = 152px
-//   With FAB below: 152 + 56 + 16 = 224px
-// Desktop: Contact FAB at 16px (or 88px with FAB below), add FAB height (56px) + gap (16px)
+// Chat popup position (above the FAB; mobile FAB is 40px, desktop 56px)
+// Mobile: FAB bottom (80px or 148px) + h-10 (40px) + gap (12px)
+//   Without FAB below: 80 + 40 + 12 = 132px
+//   With FAB below: 148 + 40 + 12 = 200px
+// Desktop: FAB bottom (16px or 88px) + h-14 (56px) + gap (16px)
 //   Without FAB below: 16 + 56 + 16 = 88px
 //   With FAB below: 88 + 56 + 16 = 160px
 const chatPopupPositionClass = computed(() => {
   if (props.hasFabBelow) {
-    return 'bottom-[224px] lg:bottom-[160px]'
+    return 'bottom-[200px] lg:bottom-[160px]'
   }
-  return 'bottom-[152px] lg:bottom-[88px]'
+  return 'bottom-[132px] lg:bottom-[88px]'
 })
 
 // Check if popup should be shown (with 1-day expiry)
@@ -178,7 +178,7 @@ const handleDontShowAgainChange = () => {
 // Watch for route/canEdit changes
 watch(
   () => [route.name, props.canEdit],
-  ([newRouteName, newCanEdit], [oldRouteName, oldCanEdit]) => {
+  ([newRouteName], [oldRouteName]) => {
     // Only dismiss if route changed (not just canEdit becoming true)
     if (newRouteName !== oldRouteName) {
       dismissPopup()
@@ -190,7 +190,7 @@ watch(
 // Watch for user changes (account switch) and initial load
 watch(
   () => authStore.user?.id,
-  (newUserId, oldUserId) => {
+  (newUserId) => {
     // Reset state for new user or on initial load
     dontShowAgain.value = false
     dismissPopup()

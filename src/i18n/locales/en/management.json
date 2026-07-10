@@ -654,7 +654,8 @@
       "lockHelpTitle": "Learn about the lock feature",
       "processing": "Processing...",
       "unlock": "Unlock",
-      "lock": "Lock"
+      "lock": "Lock",
+      "add": "Add"
     },
     "lockError": {
       "title": "Permission Denied",
@@ -666,7 +667,9 @@
       "tryAgain": "Try again",
       "loadFailed": "Failed to load payment methods",
       "loadNetworkError": "Network error while loading payment methods",
-      "lockNetworkError": "Network error while updating payment lock"
+      "lockNetworkError": "Network error while updating payment lock",
+      "deleteFailed": "Failed to delete payment method",
+      "deleteNetworkError": "Network error while deleting payment method"
     },
     "empty": {
       "title": "No payment methods added",
@@ -738,6 +741,7 @@
       "titleEdit": "Edit Payment Method",
       "titleAdd": "Add Payment Method",
       "close": "Close",
+      "delete": "Delete",
       "dismiss": "Dismiss",
       "saving": "Saving...",
       "update": "Update",

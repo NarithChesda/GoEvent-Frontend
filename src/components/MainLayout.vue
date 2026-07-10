@@ -9,8 +9,12 @@
     <!-- Mobile Tab Bar -->
     <MobileTabBar v-if="!hideMobileTabBar" />
 
-    <!-- Contact Us FAB -->
-    <ContactUsFAB />
+    <!-- Contact Us FAB (single global instance; views configure it via props) -->
+    <ContactUsFAB
+      v-if="!hideContactFab"
+      :has-fab-below="contactFabHasFabBelow"
+      :can-edit="contactFabCanEdit"
+    />
 
     <!-- Main Content -->
     <div
@@ -33,11 +37,17 @@ import ContactUsFAB from './ContactUsFAB.vue'
 interface Props {
   hideTopNav?: boolean
   hideMobileTabBar?: boolean
+  hideContactFab?: boolean
+  contactFabHasFabBelow?: boolean
+  contactFabCanEdit?: boolean
 }
 
 withDefaults(defineProps<Props>(), {
   hideTopNav: false,
-  hideMobileTabBar: false
+  hideMobileTabBar: false,
+  hideContactFab: false,
+  contactFabHasFabBelow: false,
+  contactFabCanEdit: false
 })
 </script>
 

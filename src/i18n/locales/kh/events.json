@@ -16,7 +16,8 @@
     "recent": "ថ្មីៗ",
     "upcoming": "នឹងមកដល់",
     "past": "កន្លងមក",
-    "allCategories": "ប្រភេទទាំងអស់"
+    "allCategories": "ប្រភេទទាំងអស់",
+    "filterLabel": "ត្រងព្រឹត្តិការណ៍"
   },
   "emptyState": {
     "noUpcomingTitle": "មិនមានព្រឹត្តិការណ៍នឹងមកដល់",

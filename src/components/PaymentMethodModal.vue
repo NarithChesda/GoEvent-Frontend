@@ -18,7 +18,7 @@
       >
         <!-- Header -->
         <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
-          <div class="flex items-center px-3 py-2.5">
+          <div class="flex items-center justify-between px-3 py-2.5">
             <!-- Left: Close button & Title -->
             <div class="flex items-center gap-2">
               <button
@@ -34,6 +34,16 @@
                 </h2>
               </div>
             </div>
+
+            <!-- Right: Delete (edit mode only) -->
+            <button
+              v-if="isEditing"
+              @click="$emit('delete')"
+              class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+              :title="t('management.paymentMethods.modal.delete')"
+            >
+              <Trash2 class="w-5 h-5 text-white" />
+            </button>
           </div>
         </div>
 
@@ -304,14 +314,14 @@
 
                 <!-- Reference Image Section -->
                 <div>
-                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-2">
-                    <p class="text-xs font-semibold text-blue-900 mb-1.5">{{ t('management.paymentMethods.modal.qrCode.referenceLabel') }}</p>
+                  <div class="bg-sky-50 border border-sky-200 rounded-lg p-2">
+                    <p class="text-xs font-semibold text-sky-900 mb-1.5">{{ t('management.paymentMethods.modal.qrCode.referenceLabel') }}</p>
                     <img
                       src="/images/qr-code-reference.png"
                       :alt="t('management.paymentMethods.modal.qrCode.referenceAlt')"
-                      class="w-full h-32 object-contain border border-blue-300 rounded-lg bg-white"
+                      class="w-full h-32 object-contain border border-sky-200 rounded-lg bg-white"
                     />
-                    <p class="text-[10px] text-blue-800 mt-1.5 leading-relaxed">
+                    <p class="text-[10px] text-slate-600 mt-1.5 leading-relaxed">
                       {{ t('management.paymentMethods.modal.qrCode.referenceHint') }}
                     </p>
                   </div>
@@ -375,7 +385,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { ArrowRight, Upload, AlertCircle, ChevronDown, Building2, QrCode, Save, Loader } from 'lucide-vue-next'
+import { ArrowRight, Upload, AlertCircle, ChevronDown, Building2, QrCode, Save, Loader, Trash2 } from 'lucide-vue-next'
 import {
   paymentMethodsService,
   type EventPaymentMethod,
@@ -394,6 +404,7 @@ interface Props {
 interface Emits {
   close: []
   saved: [paymentMethod: EventPaymentMethod]
+  delete: []
 }
 
 const { t } = useAppLanguage()
@@ -722,6 +733,13 @@ const getScrollbarWidth = (): number => {
   return window.innerWidth - document.documentElement.clientWidth
 }
 
+// Escape closes the drawer (the cropper owns Escape while open)
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && !showCropper.value) {
+    emit('close')
+  }
+}
+
 // Watch for drawer open - lock body scroll
 watch(
   () => props.show,
@@ -732,9 +750,11 @@ watch(
       if (scrollbarWidth > 0) {
         document.body.style.paddingRight = `${scrollbarWidth}px`
       }
+      document.addEventListener('keydown', handleKeydown)
     } else {
       document.body.style.overflow = ''
       document.body.style.paddingRight = ''
+      document.removeEventListener('keydown', handleKeydown)
     }
   },
   { immediate: true }
@@ -801,6 +821,7 @@ import { onUnmounted } from 'vue'
 onUnmounted(() => {
   document.body.style.overflow = ''
   document.body.style.paddingRight = ''
+  document.removeEventListener('keydown', handleKeydown)
 })
 </script>
 

@@ -1,5 +1,9 @@
 <template>
-  <MainLayout :hide-top-nav="true" :hide-mobile-tab-bar="false">
+  <MainLayout
+    :hide-top-nav="true"
+    :hide-mobile-tab-bar="false"
+    :contact-fab-can-edit="event?.can_edit ?? false"
+  >
     <div class="min-h-screen">
 
     <!-- Top Navigation Bar -->
@@ -363,9 +367,6 @@
         </div>
       </div>
 
-      <!-- Contact Us FAB (Telegram) -->
-      <ContactUsFAB v-if="event" :can-edit="event.can_edit" />
-
       <!-- Edit Event Drawer -->
       <EventEditDrawer
         v-model="showEditDrawer"
@@ -447,7 +448,6 @@ import EventNavigationTabs from '../components/EventNavigationTabs.vue'
 import EventManageMobileTabBar from '../components/EventManageMobileTabBar.vue'
 import { useAuthStore } from '../stores/auth'
 import { eventsService, apiClient, type Event, type EventPhoto } from '../services/api'
-import ContactUsFAB from '../components/ContactUsFAB.vue'
 import EventEditDrawer from '../components/EventEditDrawer.vue'
 import type { TabConfig } from '../components/EventNavigationTabs.vue'
 

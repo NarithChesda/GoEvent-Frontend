@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
+  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
     <!-- Header -->
     <div class="mb-6">
       <div class="flex items-start justify-between gap-4">
@@ -20,13 +20,23 @@
           </p>
         </div>
 
-        <!-- Lock/Unlock Button & Info Button -->
-        <div class="flex items-center gap-2">
+        <!-- Add, Lock & Info Buttons -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <!-- Add Pill -->
+          <button
+            v-if="canEditPayments && paymentMethods.length > 0"
+            @click="showAddModal = true"
+            class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
+          >
+            <Plus class="w-3.5 h-3.5" />
+            <span>{{ t('management.paymentMethods.header.add') }}</span>
+          </button>
+
           <!-- Info Button -->
           <button
             v-if="canEdit"
             @click="showLockHelpModal = true"
-            class="text-blue-500 hover:text-blue-700 transition-colors p-2 rounded-lg hover:bg-blue-50 border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            class="p-2 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
             :title="t('management.paymentMethods.header.lockHelpTitle')"
           >
             <Info class="w-4 h-4" />
@@ -85,39 +95,42 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading">
-      <div class="flex justify-center py-6 sm:py-8">
-        <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
+    <div v-if="loading" class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden animate-pulse">
+      <div v-for="i in 3" :key="i" class="flex items-center gap-3 p-3 sm:p-4 min-h-[56px]">
+        <div class="w-9 h-9 rounded-lg bg-slate-200 flex-shrink-0"></div>
+        <div class="flex-1 min-w-0 space-y-2">
+          <div class="h-3.5 bg-slate-200 rounded w-1/3"></div>
+          <div class="h-3 bg-slate-200 rounded w-1/2"></div>
+        </div>
+        <div class="w-4 h-4 bg-slate-200 rounded flex-shrink-0"></div>
       </div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error">
-      <div class="bg-red-50 border border-red-200 rounded-2xl p-4">
-        <div class="flex items-center space-x-2">
-          <AlertCircle class="w-5 h-5 text-red-500" />
-          <div class="flex-1">
-            <p class="text-sm text-red-600 font-medium">{{ error }}</p>
-            <button
-              @click="loadPaymentMethods"
-              class="text-red-600 text-sm hover:text-red-700 underline mt-1"
-            >
-              {{ t('management.paymentMethods.error.tryAgain') }}
-            </button>
-          </div>
-        </div>
+    <div v-else-if="error" class="text-center py-8 sm:py-12">
+      <div class="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+        <AlertCircle class="w-6 h-6 sm:w-8 sm:h-8 text-red-600" />
       </div>
+      <p class="text-sm sm:text-base text-slate-600 max-w-md mx-auto">{{ error }}</p>
+      <button
+        @click="loadPaymentMethods"
+        class="mt-4 px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors duration-200"
+      >
+        {{ t('management.paymentMethods.error.tryAgain') }}
+      </button>
     </div>
 
     <!-- Empty State -->
     <div v-else-if="paymentMethods.length === 0">
-      <div
-        @click="canEditPayments ? showAddModal = true : null"
+      <button
+        type="button"
+        :disabled="!canEditPayments"
+        @click="showAddModal = true"
         :class="[
-          'border-2 border-dashed rounded-2xl p-8 transition-all duration-300 text-center',
+          'w-full border-2 border-dashed rounded-2xl p-8 transition-all duration-300 text-center',
           canEditPayments
-            ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group'
-            : 'border-slate-300 bg-slate-50'
+            ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200'
+            : 'border-slate-300 bg-slate-50 cursor-default'
         ]"
       >
         <div class="flex flex-col items-center justify-center min-h-[120px]">
@@ -125,10 +138,7 @@
             'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300',
             canEditPayments ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
           ]">
-            <Plus v-if="canEditPayments" :class="[
-              'w-8 h-8 transition-colors',
-              'text-slate-400 group-hover:text-emerald-600'
-            ]" />
+            <Plus v-if="canEditPayments" class="w-8 h-8 transition-colors text-slate-400 group-hover:text-emerald-600" />
             <CreditCard v-else class="w-8 h-8 text-slate-400" />
           </div>
           <p :class="[
@@ -138,13 +148,16 @@
           <p class="text-sm text-slate-500 mt-1">{{ t('management.paymentMethods.empty.description') }}</p>
           <p v-if="canEditPayments" class="text-xs text-slate-400 mt-1">{{ t('management.paymentMethods.empty.clickToAdd') }}</p>
         </div>
-      </div>
+      </button>
     </div>
 
-    <!-- Payment Methods List -->
+    <!-- Payment Methods Row List -->
     <div v-else>
-      <!-- Sortable Payment Methods -->
-      <div class="space-y-3 sm:space-y-4" @dragover.prevent @drop="handleDrop">
+      <div
+        class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden"
+        @dragover.prevent
+        @drop="handleDrop"
+      >
         <div
           v-for="(paymentMethod, index) in paymentMethods"
           :key="paymentMethod.id"
@@ -152,339 +165,84 @@
           @dragstart="handleDragStart($event, paymentMethod, index)"
           @dragend="handleDragEnd"
           @dragover="handleDragOver($event, index)"
-          class="payment-method-card bg-white rounded-xl sm:rounded-2xl border border-slate-200 p-3 sm:p-4 hover:shadow-md transition-all duration-200"
-          :class="{
-            'cursor-grab': canEditPayments,
-            'cursor-grabbing': isDragging,
-            'opacity-50': !paymentMethod.is_active,
-            'drag-over': dragOverIndex === index,
-          }"
+          :class="[
+            'flex items-center transition-colors duration-200',
+            dragOverIndex === index ? 'bg-sky-50' : canEditPayments ? 'hover:bg-slate-50' : '',
+            isDragging && draggedPaymentMethod?.id === paymentMethod.id ? 'opacity-50' : '',
+          ]"
         >
-          <!-- Desktop Layout (sm and up) -->
-          <div class="hidden sm:flex items-center justify-between">
-            <!-- Payment Method Info -->
-            <div class="flex-1">
-              <div class="flex items-center space-x-3">
-                <!-- Drag Handle -->
-                <div v-if="canEditPayments" class="flex items-center text-slate-400 hover:text-slate-600">
-                  <GripVertical class="w-4 h-4" />
-                </div>
-
-                <!-- Payment Method Icon -->
-                <div
-                  class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                  :class="getPaymentMethodIconBg(paymentMethod.payment_method)"
-                >
-                  <component
-                    :is="getPaymentMethodIcon(paymentMethod.payment_method)"
-                    class="w-5 h-5"
-                    :class="getPaymentMethodIconColor(paymentMethod.payment_method)"
-                  />
-                </div>
-
-                <!-- Payment Method Details -->
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center space-x-2 flex-wrap">
-                    <h6 class="text-base font-medium text-slate-900 truncate">{{ paymentMethod.name }}</h6>
-                    <span
-                      class="px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-                      :class="getPaymentTypeStyle(paymentMethod.payment_type)"
-                    >
-                      {{ formatPaymentType(paymentMethod.payment_type) }}
-                    </span>
-                    <span
-                      v-if="!paymentMethod.is_active"
-                      class="px-2 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium whitespace-nowrap"
-                    >
-                      {{ t('management.paymentMethods.card.inactive') }}
-                    </span>
-                  </div>
-
-                  <div class="text-sm text-slate-600 mt-1">
-                    <span class="font-medium">{{
-                      formatPaymentMethod(paymentMethod.payment_method)
-                    }}</span>
-                    <span v-if="paymentMethod.currency" class="ml-2"
-                      >• {{ paymentMethod.currency }}</span
-                    >
-                  </div>
-
-                  <!-- Method-specific details -->
-                  <div
-                    v-if="paymentMethod.payment_method === 'bank_transfer'"
-                    class="space-y-1 mt-2"
-                  >
-                    <div class="text-xs text-slate-600">
-                      <span class="font-medium">{{ t('management.paymentMethods.card.bank') }}:</span> {{ paymentMethod.bank_name }}
-                    </div>
-                    <div class="text-xs text-slate-600">
-                      <span class="font-medium">{{ t('management.paymentMethods.card.account') }}:</span> {{ paymentMethod.account_name }} -
-                      {{ paymentMethod.account_number }}
-                    </div>
-
-                    <!-- Access Methods -->
-                    <div class="flex flex-wrap gap-2 mt-2">
-                      <span
-                        v-if="paymentMethod.qr_code_image"
-                        class="inline-flex items-center px-2 py-1 bg-[#E6F4FF] text-[#1873cc] rounded-lg text-xs"
-                      >
-                        <QrCode class="w-3 h-3 mr-1" />
-                        {{ t('management.paymentMethods.card.qrCodeAvailable') }}
-                      </span>
-                      <span
-                        v-if="paymentMethod.payment_url"
-                        class="inline-flex items-center px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs"
-                      >
-                        <Link class="w-3 h-3 mr-1" />
-                        {{ t('management.paymentMethods.card.onlinePayment') }}
-                      </span>
-                      <span
-                        v-if="!paymentMethod.qr_code_image && !paymentMethod.payment_url"
-                        class="inline-flex items-center px-2 py-1 bg-slate-50 text-slate-600 rounded-lg text-xs"
-                      >
-                        <Building2 class="w-3 h-3 mr-1" />
-                        {{ t('management.paymentMethods.card.manualTransferOnly') }}
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    v-else-if="paymentMethod.payment_method === 'payment_url'"
-                    class="text-xs text-slate-500 mt-1 truncate"
-                  >
-                    {{ paymentMethod.payment_url }}
-                  </div>
-                  <div
-                    v-else-if="paymentMethod.payment_method === 'qr_code'"
-                    class="text-xs text-slate-500 mt-1"
-                  >
-                    {{ t('management.paymentMethods.card.qrCodePayment') }}
-                  </div>
-
-                  <p v-if="paymentMethod.description" class="text-sm text-slate-600 mt-2">
-                    {{ paymentMethod.description }}
-                  </p>
-                </div>
-              </div>
+          <!-- Row Main (opens edit drawer) -->
+          <button
+            type="button"
+            :disabled="!canEditPayments"
+            @click="editPaymentMethod(paymentMethod)"
+            :class="[
+              'flex-1 min-w-0 flex items-center gap-3 p-3 sm:p-4 min-h-[56px] text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset',
+              canEditPayments ? 'active:bg-slate-100 cursor-pointer' : 'cursor-default',
+              !paymentMethod.is_active ? 'opacity-60' : '',
+            ]"
+          >
+            <!-- Method Icon -->
+            <div
+              class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+              :class="getPaymentMethodIconBg(paymentMethod.payment_method)"
+            >
+              <component
+                :is="getPaymentMethodIcon(paymentMethod.payment_method)"
+                class="w-4 h-4"
+                :class="getPaymentMethodIconColor(paymentMethod.payment_method)"
+              />
             </div>
 
-            <!-- Actions (Desktop) -->
-            <div v-if="props.canEdit" class="flex items-center space-x-2 ml-4">
-              <!-- QR Code Preview -->
-              <button
-                v-if="
-                  (paymentMethod.payment_method === 'bank_transfer' ||
-                    paymentMethod.payment_method === 'qr_code') &&
-                  paymentMethod.qr_code_image
-                "
-                @click="showQRPreview(paymentMethod)"
-                class="text-slate-400 hover:text-[#1e90ff] p-2 rounded-lg hover:bg-[#E6F4FF] transition-colors duration-200"
-                :title="t('management.paymentMethods.card.titleViewQr')"
-              >
-                <QrCode class="w-4 h-4" />
-              </button>
-
-              <!-- Payment URL -->
-              <a
-                v-if="paymentMethod.payment_method === 'bank_transfer' && paymentMethod.payment_url"
-                :href="paymentMethod.payment_url"
-                class="text-slate-400 hover:text-purple-600 p-2 rounded-lg hover:bg-purple-50 transition-colors duration-200"
-                :title="t('management.paymentMethods.card.titleOpenLink')"
-                @click.stop
-              >
-                <ExternalLink class="w-4 h-4" />
-              </a>
-
-              <!-- Edit Button -->
-              <button
-                @click="editPaymentMethod(paymentMethod)"
-                :disabled="isPaymentLocked"
-                :class="[
-                  'p-2 rounded-lg transition-colors duration-200',
-                  isPaymentLocked
-                    ? 'text-slate-300 cursor-not-allowed'
-                    : 'text-slate-400 hover:text-[#1e90ff] hover:bg-[#E6F4FF]'
-                ]"
-                :title="isPaymentLocked ? t('management.paymentMethods.card.titleLockedEdit') : t('management.paymentMethods.card.titleEdit')"
-              >
-                <Edit class="w-4 h-4" />
-              </button>
-
-              <!-- Delete Button -->
-              <button
-                @click="confirmDeletePaymentMethod(paymentMethod)"
-                :disabled="isPaymentLocked"
-                :class="[
-                  'p-2 rounded-lg transition-colors duration-200',
-                  isPaymentLocked
-                    ? 'text-slate-300 cursor-not-allowed'
-                    : 'text-slate-400 hover:text-red-600 hover:bg-red-50'
-                ]"
-                :title="isPaymentLocked ? t('management.paymentMethods.card.titleLockedDelete') : t('management.paymentMethods.card.titleDelete')"
-              >
-                <Trash2 class="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          <!-- Mobile Layout (below sm) - Centered Design -->
-          <div class="sm:hidden">
-            <!-- Centered Content -->
-            <div class="text-center">
-              <!-- Name + Badge on same row -->
-              <div class="flex items-center justify-center gap-1.5 flex-wrap">
-                <h6 class="text-sm font-semibold text-slate-900">{{ paymentMethod.name }}</h6>
+            <!-- Details -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <p class="text-sm font-medium text-slate-900 truncate">{{ paymentMethod.name }}</p>
                 <span
-                  class="px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap"
+                  class="px-1.5 py-0.5 rounded text-[10px] font-medium whitespace-nowrap flex-shrink-0"
                   :class="getPaymentTypeStyle(paymentMethod.payment_type)"
                 >
                   {{ formatPaymentType(paymentMethod.payment_type) }}
                 </span>
                 <span
                   v-if="!paymentMethod.is_active"
-                  class="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-medium whitespace-nowrap"
+                  class="px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-medium whitespace-nowrap flex-shrink-0"
                 >
-                  Inactive
+                  {{ t('management.paymentMethods.card.inactive') }}
                 </span>
               </div>
-
-              <!-- Payment method type + currency + bank on same row -->
-              <div class="text-xs text-slate-500 mt-1">
-                <span class="font-medium">{{ formatPaymentMethod(paymentMethod.payment_method) }}</span>
-                <span v-if="paymentMethod.currency" class="ml-1">• {{ paymentMethod.currency }}</span>
-                <span v-if="paymentMethod.payment_method === 'bank_transfer' && paymentMethod.bank_name" class="ml-1">• {{ paymentMethod.bank_name }}</span>
-              </div>
-
-              <!-- Method-specific details -->
-              <div class="mt-2">
-                <div
-                  v-if="paymentMethod.payment_method === 'bank_transfer'"
-                  class="space-y-0.5"
-                >
-                  <div class="text-[11px] text-slate-600">
-                    {{ paymentMethod.account_name }}
-                  </div>
-                  <div class="text-[11px] text-slate-500">
-                    {{ paymentMethod.account_number }}
-                  </div>
-
-                  <!-- Access Method Badges -->
-                  <div class="flex flex-wrap justify-center gap-1.5 mt-2">
-                    <span
-                      v-if="paymentMethod.qr_code_image"
-                      class="inline-flex items-center px-1.5 py-0.5 bg-[#E6F4FF] text-[#1873cc] rounded text-[10px]"
-                    >
-                      <QrCode class="w-2.5 h-2.5 mr-0.5" />
-                      QR Code Available
-                    </span>
-                    <span
-                      v-if="paymentMethod.payment_url"
-                      class="inline-flex items-center px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded text-[10px]"
-                    >
-                      <Link class="w-2.5 h-2.5 mr-0.5" />
-                      Online Payment
-                    </span>
-                    <span
-                      v-if="!paymentMethod.qr_code_image && !paymentMethod.payment_url"
-                      class="inline-flex items-center px-1.5 py-0.5 bg-slate-50 text-slate-600 rounded text-[10px]"
-                    >
-                      <Building2 class="w-2.5 h-2.5 mr-0.5" />
-                      Manual Transfer Only
-                    </span>
-                  </div>
-                </div>
-                <div
-                  v-else-if="paymentMethod.payment_method === 'payment_url'"
-                  class="text-[11px] text-slate-500 truncate"
-                >
-                  {{ paymentMethod.payment_url }}
-                </div>
-                <div
-                  v-else-if="paymentMethod.payment_method === 'qr_code'"
-                  class="text-[11px] text-slate-500"
-                >
-                  {{ t('management.paymentMethods.card.qrCodePayment') }}
-                </div>
-
-                <p v-if="paymentMethod.description" class="text-xs text-slate-600 mt-2">
-                  {{ paymentMethod.description }}
-                </p>
-              </div>
+              <p class="text-xs sm:text-sm text-slate-500 line-clamp-1 mt-0.5">
+                {{ getRowPreview(paymentMethod) }}
+              </p>
             </div>
+          </button>
 
-            <!-- Mobile Actions Bar -->
-            <div v-if="props.canEdit" class="mt-3 pt-3 border-t border-slate-100">
-              <div class="flex items-center justify-center gap-1">
-                <!-- QR Code Preview -->
-                <button
-                  v-if="
-                    (paymentMethod.payment_method === 'bank_transfer' ||
-                      paymentMethod.payment_method === 'qr_code') &&
-                    paymentMethod.qr_code_image
-                  "
-                  @click="showQRPreview(paymentMethod)"
-                  class="flex items-center gap-1.5 px-2.5 py-1.5 text-[#1e90ff] bg-[#E6F4FF] rounded-lg text-xs font-medium transition-colors duration-200"
-                >
-                  <QrCode class="w-3.5 h-3.5" />
-                  <span>{{ t('management.paymentMethods.mobile.qr') }}</span>
-                </button>
+          <!-- Trailing Actions -->
+          <div class="flex items-center gap-1 pr-3 sm:pr-4 flex-shrink-0">
+            <!-- QR Code Preview -->
+            <button
+              v-if="paymentMethod.qr_code_image"
+              @click.stop="showQRPreview(paymentMethod)"
+              class="p-1.5 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors duration-200"
+              :title="t('management.paymentMethods.card.titleViewQr')"
+            >
+              <QrCode class="w-4 h-4" />
+            </button>
 
-                <!-- Payment URL -->
-                <a
-                  v-if="paymentMethod.payment_method === 'bank_transfer' && paymentMethod.payment_url"
-                  :href="paymentMethod.payment_url"
-                  class="flex items-center gap-1.5 px-2.5 py-1.5 text-purple-700 bg-purple-50 rounded-lg text-xs font-medium transition-colors duration-200"
-                  @click.stop
-                >
-                  <ExternalLink class="w-3.5 h-3.5" />
-                  <span>{{ t('management.paymentMethods.mobile.link') }}</span>
-                </a>
+            <!-- Payment URL -->
+            <a
+              v-if="paymentMethod.payment_method === 'bank_transfer' && paymentMethod.payment_url"
+              :href="paymentMethod.payment_url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="p-1.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors duration-200"
+              :title="t('management.paymentMethods.card.titleOpenLink')"
+              @click.stop
+            >
+              <ExternalLink class="w-4 h-4" />
+            </a>
 
-                <!-- Edit Button -->
-                <button
-                  @click="editPaymentMethod(paymentMethod)"
-                  :disabled="isPaymentLocked"
-                  :class="[
-                    'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200',
-                    isPaymentLocked
-                      ? 'text-slate-300 bg-slate-50 cursor-not-allowed'
-                      : 'text-[#1e90ff] bg-[#E6F4FF]'
-                  ]"
-                >
-                  <Edit class="w-3.5 h-3.5" />
-                  <span>{{ t('management.paymentMethods.mobile.edit') }}</span>
-                </button>
-
-                <!-- Delete Button -->
-                <button
-                  @click="confirmDeletePaymentMethod(paymentMethod)"
-                  :disabled="isPaymentLocked"
-                  :class="[
-                    'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200',
-                    isPaymentLocked
-                      ? 'text-slate-300 bg-slate-50 cursor-not-allowed'
-                      : 'text-red-600 bg-red-50'
-                  ]"
-                >
-                  <Trash2 class="w-3.5 h-3.5" />
-                  <span>{{ t('management.paymentMethods.mobile.delete') }}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Add Another Payment Method Button -->
-        <div
-          v-if="canEditPayments"
-          @click="showAddModal = true"
-          class="border-2 border-dashed rounded-2xl p-6 transition-all duration-300 text-center border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group"
-        >
-          <div class="flex flex-col items-center justify-center">
-            <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
-              <Plus class="w-6 h-6 transition-colors text-slate-400 group-hover:text-emerald-600" />
-            </div>
-            <p class="text-sm font-semibold transition-colors text-slate-600 group-hover:text-slate-900">{{ t('management.paymentMethods.addAnother.title') }}</p>
-            <p class="text-xs text-slate-400 mt-1">{{ t('management.paymentMethods.addAnother.clickToAdd') }}</p>
+            <ChevronRight v-if="canEditPayments" class="w-4 h-4 text-slate-400" />
           </div>
         </div>
       </div>
@@ -497,6 +255,7 @@
       :existing-payment-method="editingPaymentMethod || undefined"
       @close="closeModals"
       @saved="handlePaymentMethodSaved"
+      @delete="handleDrawerDelete"
     />
 
     <!-- QR Code Preview Modal -->
@@ -504,12 +263,12 @@
       <Transition name="modal">
         <div
           v-if="showQRModal"
-          class="fixed inset-0 z-[70] overflow-y-auto"
+          class="fixed inset-0 z-[1000] overflow-y-auto"
           @click="showQRModal = false"
         >
           <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
           <div class="flex min-h-full items-center justify-center p-4">
-            <div class="relative bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 max-w-md w-full" @click.stop>
+            <div class="relative bg-white rounded-3xl shadow-2xl p-4 sm:p-6 max-w-md w-full" @click.stop>
               <div class="flex items-center justify-between mb-3 sm:mb-4">
                 <h3 class="text-base sm:text-lg font-semibold text-slate-900">
                   {{ previewingPaymentMethod?.name }}
@@ -550,17 +309,17 @@
       <Transition name="modal">
         <div
           v-if="showLockHelpModal"
-          class="fixed inset-0 z-[70] overflow-y-auto"
+          class="fixed inset-0 z-[1000] overflow-y-auto"
           @click="showLockHelpModal = false"
         >
           <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
           <div class="flex min-h-full items-center justify-center p-4">
-            <div class="relative bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full" @click.stop>
+            <div class="relative bg-white rounded-3xl shadow-2xl p-4 sm:p-6 max-w-lg w-full" @click.stop>
               <!-- Header -->
               <div class="flex items-start justify-between mb-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-                    <Lock class="w-5 h-5 text-blue-600" />
+                  <div class="w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center">
+                    <Lock class="w-5 h-5 text-sky-600" />
                   </div>
                   <h3 class="text-lg font-semibold text-slate-900">{{ t('management.paymentMethods.helpModal.title') }}</h3>
                 </div>
@@ -574,50 +333,50 @@
 
               <!-- Content -->
               <div class="space-y-4">
-                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                  <p class="text-sm text-blue-900 mb-3">
+                <div class="bg-sky-50 border border-sky-200 rounded-xl p-4">
+                  <p class="text-sm text-sky-900 mb-3">
                     {{ t('management.paymentMethods.helpModal.intro') }}
                   </p>
 
                   <div class="space-y-3">
                     <div>
-                      <h4 class="text-sm font-semibold text-blue-900 mb-2">{{ t('management.paymentMethods.helpModal.whenLockedTitle') }}</h4>
-                      <ul class="space-y-1.5 text-sm text-blue-800">
+                      <h4 class="text-sm font-semibold text-sky-900 mb-2">{{ t('management.paymentMethods.helpModal.whenLockedTitle') }}</h4>
+                      <ul class="space-y-1.5 text-sm text-slate-600">
                         <li class="flex items-start gap-2">
-                          <span class="text-blue-600 mt-0.5">•</span>
+                          <span class="text-sky-600 mt-0.5">•</span>
                           <span>{{ t('management.paymentMethods.helpModal.whenLocked.item1') }}</span>
                         </li>
                         <li class="flex items-start gap-2">
-                          <span class="text-blue-600 mt-0.5">•</span>
+                          <span class="text-sky-600 mt-0.5">•</span>
                           <span>{{ t('management.paymentMethods.helpModal.whenLocked.item2') }}</span>
                         </li>
                         <li class="flex items-start gap-2">
-                          <span class="text-blue-600 mt-0.5">•</span>
+                          <span class="text-sky-600 mt-0.5">•</span>
                           <span>{{ t('management.paymentMethods.helpModal.whenLocked.item3') }}</span>
                         </li>
                         <li class="flex items-start gap-2">
-                          <span class="text-blue-600 mt-0.5">•</span>
+                          <span class="text-sky-600 mt-0.5">•</span>
                           <span>{{ t('management.paymentMethods.helpModal.whenLocked.item4') }}</span>
                         </li>
                       </ul>
                     </div>
 
-                    <div class="pt-3 border-t border-blue-200">
-                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-1.5">
+                    <div class="pt-3 border-t border-sky-200">
+                      <h4 class="text-sm font-semibold text-sky-900 mb-2 flex items-center gap-1.5">
                         <span>💡</span>
                         <span>{{ t('management.paymentMethods.helpModal.bestPracticesTitle') }}</span>
                       </h4>
-                      <ul class="space-y-1.5 text-sm text-blue-800">
+                      <ul class="space-y-1.5 text-sm text-slate-600">
                         <li class="flex items-start gap-2">
-                          <span class="text-blue-600 mt-0.5">•</span>
+                          <span class="text-sky-600 mt-0.5">•</span>
                           <span>{{ t('management.paymentMethods.helpModal.bestPractices.item1') }}</span>
                         </li>
                         <li class="flex items-start gap-2">
-                          <span class="text-blue-600 mt-0.5">•</span>
+                          <span class="text-sky-600 mt-0.5">•</span>
                           <span>{{ t('management.paymentMethods.helpModal.bestPractices.item2') }}</span>
                         </li>
                         <li class="flex items-start gap-2">
-                          <span class="text-blue-600 mt-0.5">•</span>
+                          <span class="text-sky-600 mt-0.5">•</span>
                           <span>{{ t('management.paymentMethods.helpModal.bestPractices.item3') }}</span>
                         </li>
                       </ul>
@@ -629,7 +388,7 @@
                 <div class="flex justify-end pt-2">
                   <button
                     @click="showLockHelpModal = false"
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors duration-200"
+                    class="px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 shadow-md transition-all duration-200"
                   >
                     {{ t('management.paymentMethods.helpModal.gotIt') }}
                   </button>
@@ -646,12 +405,12 @@
       <Transition name="modal">
         <div
           v-if="showLockConfirmModal"
-          class="fixed inset-0 z-50 overflow-y-auto"
+          class="fixed inset-0 z-[1000] overflow-y-auto"
           @click="showLockConfirmModal = false"
         >
           <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
           <div class="flex min-h-full items-center justify-center p-4">
-            <div class="relative bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full" @click.stop>
+            <div class="relative bg-white rounded-3xl shadow-2xl p-4 sm:p-6 max-w-md w-full" @click.stop>
               <!-- Header -->
               <div class="flex items-start justify-between mb-4">
                 <div class="flex items-center gap-3">
@@ -710,7 +469,7 @@
               <div class="flex gap-3 justify-end">
                 <button
                   @click="showLockConfirmModal = false"
-                  class="px-4 py-2 border-2 border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-colors duration-200"
+                  class="px-4 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 text-sm font-medium rounded-lg transition-colors duration-200"
                 >
                   {{ t('management.paymentMethods.lockConfirmModal.cancel') }}
                 </button>
@@ -718,7 +477,7 @@
                   @click="handleLockConfirm"
                   :disabled="isToggling"
                   :class="[
-                    'px-4 py-2 rounded-xl font-medium transition-colors duration-200',
+                    'px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200',
                     isPaymentLocked
                       ? 'bg-amber-600 hover:bg-amber-700 text-white'
                       : 'bg-slate-600 hover:bg-slate-700 text-white',
@@ -742,9 +501,7 @@ import {
   CreditCard,
   Plus,
   AlertCircle,
-  GripVertical,
-  Edit,
-  Trash2,
+  ChevronRight,
   QrCode,
   Building2,
   Link,
@@ -839,7 +596,7 @@ const getPaymentMethodIcon = (method: string) => {
 const getPaymentMethodIconBg = (method: string) => {
   switch (method) {
     case 'bank_transfer':
-      return 'bg-[#B0E0E6]'
+      return 'bg-sky-100'
     case 'qr_code':
       return 'bg-purple-100'
     case 'payment_url':
@@ -871,7 +628,7 @@ const getPaymentTypeStyle = (type: string) => {
     case 'gift':
       return 'bg-purple-100 text-purple-800'
     case 'sponsorship':
-      return 'bg-[#B0E0E6] text-[#1873cc]'
+      return 'bg-sky-100 text-sky-700'
     default:
       return 'bg-slate-100 text-slate-800'
   }
@@ -893,6 +650,22 @@ const formatPaymentMethod = (method: string) => {
     default:
       return method
   }
+}
+
+const getRowPreview = (paymentMethod: EventPaymentMethod): string => {
+  const parts: string[] = [formatPaymentMethod(paymentMethod.payment_method)]
+  if (paymentMethod.currency) parts.push(paymentMethod.currency)
+
+  if (paymentMethod.payment_method === 'bank_transfer') {
+    if (paymentMethod.bank_name) parts.push(paymentMethod.bank_name)
+    if (paymentMethod.account_name || paymentMethod.account_number) {
+      parts.push([paymentMethod.account_name, paymentMethod.account_number].filter(Boolean).join(' – '))
+    }
+  } else if (paymentMethod.payment_method === 'payment_url' && paymentMethod.payment_url) {
+    parts.push(paymentMethod.payment_url)
+  }
+
+  return parts.join(' · ')
 }
 
 // API methods
@@ -933,10 +706,6 @@ const handleLockConfirm = async () => {
       localEvent.value = response.data
       emit('event-updated', response.data)
 
-      // Show success message
-      const message = newLockState ? 'Payment methods locked successfully' : 'Payment methods unlocked successfully'
-      console.log(message)
-
       // Clear any previous errors
       lockError.value = null
 
@@ -946,13 +715,6 @@ const handleLockConfirm = async () => {
       // Handle specific unlock permission error
       const errorMessage = response.message || `Failed to ${newLockState ? 'lock' : 'unlock'} payment methods`
       const lowerMessage = errorMessage.toLowerCase()
-
-      // Debug logging
-      console.log('Lock toggle failed:', {
-        newLockState,
-        errorMessage,
-        response
-      })
 
       // Check if this is an unlock permission error
       // Trying to unlock (newLockState = false) and getting permission-related error
@@ -1001,8 +763,10 @@ const showQRPreview = (paymentMethod: EventPaymentMethod) => {
   showQRModal.value = true
 }
 
-const confirmDeletePaymentMethod = (paymentMethod: EventPaymentMethod) => {
-  deletingPaymentMethod.value = paymentMethod
+// Delete initiated from the edit drawer header; parent owns the confirm modal
+const handleDrawerDelete = () => {
+  if (!editingPaymentMethod.value) return
+  deletingPaymentMethod.value = editingPaymentMethod.value
   showDeleteModal.value = true
 }
 
@@ -1041,12 +805,13 @@ const handleDeleteConfirm = async () => {
       )
       showDeleteModal.value = false
       deletingPaymentMethod.value = null
+      closeModals()
     } else {
-      error.value = response.message || 'Failed to delete payment method'
+      error.value = response.message || t('management.paymentMethods.error.deleteFailed')
     }
   } catch (err) {
     console.error('Error deleting payment method:', err)
-    error.value = 'Network error while deleting payment method'
+    error.value = t('management.paymentMethods.error.deleteNetworkError')
   } finally {
     deleting.value = false
   }
@@ -1161,22 +926,6 @@ defineExpose({
 </script>
 
 <style scoped>
-.payment-method-card {
-  transition: all 0.2s ease;
-}
-
-.payment-method-card.drag-over {
-  border-color: #3b82f6;
-  background-color: #eff6ff;
-}
-
-.payment-method-card:hover:not(.drag-over) {
-  border-color: #e2e8f0;
-  box-shadow:
-    0 4px 6px -1px rgb(0 0 0 / 0.1),
-    0 2px 4px -2px rgb(0 0 0 / 0.1);
-}
-
 .modal-enter-active,
 .modal-leave-active {
   transition: all 0.3s ease;
@@ -1185,6 +934,6 @@ defineExpose({
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(0.95);
 }
 </style>

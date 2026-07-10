@@ -66,75 +66,81 @@
       <div>
         <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
           <!-- Header -->
-          <div class="mb-6">
-            <h5 class="font-semibold text-slate-900">{{ t('management.media.photos.title') }}</h5>
-            <p class="text-sm text-slate-600">{{ t('management.media.photos.description') }}</p>
+          <div class="mb-6 flex items-start justify-between gap-4">
+            <div class="flex-1 min-w-0">
+              <h5 class="font-semibold text-slate-900">{{ t('management.media.photos.title') }}</h5>
+              <p class="text-sm text-slate-600">{{ t('management.media.photos.description') }}</p>
+            </div>
+            <button
+              v-if="canUpload"
+              type="button"
+              @click="openUploadModal"
+              class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all flex-shrink-0"
+            >
+              <Plus class="w-3.5 h-3.5" />
+              <span>{{ t('management.media.photos.addPhotos') }}</span>
+            </button>
           </div>
 
           <!-- Loading State -->
           <div
             v-if="loading"
-            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
+            class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
           >
             <div v-for="i in 8" :key="i" class="animate-pulse">
               <div class="bg-slate-200 aspect-square rounded-xl sm:rounded-2xl"></div>
-              <div class="mt-2 sm:mt-3 space-y-1.5 sm:space-y-2">
-                <div class="h-3 sm:h-4 bg-slate-200 rounded w-3/4"></div>
-                <div class="h-2.5 sm:h-3 bg-slate-200 rounded w-1/2"></div>
-              </div>
             </div>
           </div>
 
           <!-- Error State -->
-          <div v-else-if="error" class="text-center py-8">
-            <div class="bg-red-50 border border-red-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 max-w-md mx-auto">
-              <AlertCircle class="w-6 h-6 sm:w-8 sm:h-8 text-red-500 mx-auto mb-1.5 sm:mb-2" />
-              <p class="text-base sm:text-lg text-red-600 font-semibold leading-relaxed">{{ error }}</p>
-              <button
-                @click="fetchMedia"
-                class="mt-3 sm:mt-4 bg-red-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl hover:bg-red-700 transition-colors duration-200 text-sm sm:text-base"
-              >
-                {{ t('management.media.photos.tryAgain') }}
-              </button>
+          <div v-else-if="error" class="text-center py-8 sm:py-12">
+            <div class="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+              <AlertCircle class="w-6 h-6 sm:w-8 sm:h-8 text-red-600" />
             </div>
+            <p class="text-sm sm:text-base text-slate-600 max-w-md mx-auto">{{ error }}</p>
+            <button
+              @click="fetchMedia"
+              class="mt-4 px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors duration-200"
+            >
+              {{ t('management.media.photos.tryAgain') }}
+            </button>
           </div>
 
           <!-- Gallery Content -->
           <div v-else>
             <!-- Empty State -->
             <div v-if="media.length === 0">
-              <div
-                @click="canEdit && eventData && props.eventId ? openUploadModal() : null"
+              <button
+                type="button"
+                :disabled="!canUpload"
+                @click="openUploadModal"
                 :class="[
-                  'border-2 border-dashed rounded-2xl p-8 transition-all duration-300 text-center',
-                  canEdit && eventData && props.eventId
-                    ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group'
-                    : 'border-slate-300 bg-slate-50'
+                  'w-full border-2 border-dashed rounded-2xl p-8 transition-all duration-300 text-center',
+                  canUpload
+                    ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200'
+                    : 'border-slate-300 bg-slate-50 cursor-default'
                 ]"
               >
                 <div class="flex flex-col items-center justify-center min-h-[120px]">
                   <div :class="[
                     'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300',
-                    canEdit && eventData && props.eventId ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
+                    canUpload ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
                   ]">
-                    <Upload v-if="canEdit && eventData && props.eventId" :class="[
-                      'w-8 h-8 transition-colors',
-                      'text-slate-400 group-hover:text-emerald-600'
-                    ]" />
+                    <Upload v-if="canUpload" class="w-8 h-8 transition-colors text-slate-400 group-hover:text-emerald-600" />
                     <ImageIcon v-else class="w-8 h-8 text-slate-400" />
                   </div>
                   <p :class="[
                     'font-semibold transition-colors',
-                    canEdit && eventData && props.eventId ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
+                    canUpload ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
                   ]">{{ t('management.media.photos.empty.title') }}</p>
                   <p class="text-sm text-slate-500 mt-1">{{ t('management.media.photos.empty.description') }}</p>
-                  <p v-if="canEdit && eventData && props.eventId" class="text-xs text-slate-400 mt-1">{{ t('management.media.photos.empty.hint') }}</p>
+                  <p v-if="canUpload" class="text-xs text-slate-400 mt-1">{{ t('management.media.photos.empty.hint') }}</p>
                 </div>
-              </div>
+              </button>
             </div>
 
             <!-- Media Grid with Upload Card -->
-            <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               <MediaCard
                 v-for="(mediaItem, index) in media"
                 :key="mediaItem.id"
@@ -154,17 +160,18 @@
               />
 
               <!-- Upload Card at the end -->
-              <div
-                v-if="canEdit && eventData && props.eventId"
+              <button
+                v-if="canUpload"
+                type="button"
                 @click="openUploadModal"
-                class="border-2 border-dashed rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer group border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 aspect-square flex flex-col items-center justify-center p-4"
+                class="border-2 border-dashed rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer group border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 aspect-square flex flex-col items-center justify-center p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
               >
                 <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
                   <Upload class="w-6 h-6 sm:w-8 sm:h-8 text-slate-400 group-hover:text-emerald-600 transition-colors" />
                 </div>
                 <p class="font-semibold transition-colors text-slate-600 group-hover:text-slate-900 text-sm sm:text-base">{{ t('management.media.photos.addPhotos') }}</p>
                 <p class="text-xs text-slate-400 mt-1">{{ t('management.media.photos.count', { count: media.length }) }}</p>
-              </div>
+              </button>
             </div>
           </div>
         </div>
@@ -212,7 +219,7 @@
 
     <!-- Success/Error Messages -->
     <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-8 right-8 z-50">
+      <div v-if="message" class="fixed bottom-20 lg:bottom-4 right-6 z-50">
         <div
           :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
           class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
@@ -227,8 +234,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
-import { Upload, ImageIcon, AlertCircle, CheckCircle } from 'lucide-vue-next'
+import { ref, computed, onMounted, watch } from 'vue'
+import { Upload, ImageIcon, AlertCircle, CheckCircle, Plus } from 'lucide-vue-next'
 import { mediaService, type EventPhoto, type Event } from '../services/api'
 import { useToast } from '../composables/useToast'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -273,6 +280,8 @@ const deleting = ref(false)
 
 // Local event data - synced with props
 const localEventData = ref<Event | undefined>(props.eventData ? { ...props.eventData } : undefined)
+
+const canUpload = computed(() => props.canEdit && !!props.eventData && !!props.eventId)
 
 // Drag and drop state
 const draggedMedia = ref<EventPhoto | null>(null)

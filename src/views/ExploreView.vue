@@ -101,7 +101,6 @@
       </Transition>
 
       <!-- Contact Us FAB (Telegram) -->
-      <ContactUsFAB :has-fab-below="false" />
 
       <!-- Public Event Drawer -->
       <PublicEventDrawer
@@ -123,7 +122,6 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { CheckCircle, AlertCircle } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
-import ContactUsFAB from '@/components/ContactUsFAB.vue'
 import PublicEventDrawer from '@/components/PublicEventDrawer.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import {

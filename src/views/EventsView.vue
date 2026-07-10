@@ -1,5 +1,5 @@
 <template>
-  <MainLayout>
+  <MainLayout :contact-fab-has-fab-below="true">
     <div class="min-h-screen">
       <!-- Mobile Top Bar -->
       <MobileTopBar @search="openSearch" />
@@ -87,9 +87,6 @@
         </div>
       </Transition>
 
-      <!-- Contact Us FAB (Telegram) - moved up when Create FAB is visible -->
-      <ContactUsFAB :has-fab-below="true" />
-
       <!-- Create Event FAB -->
       <button
         @click="handleCreateEventClick"
@@ -146,7 +143,6 @@ import { Plus, CheckCircle, AlertCircle } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
 import EventCreateDrawer from '@/components/EventCreateDrawer.vue'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
-import ContactUsFAB from '@/components/ContactUsFAB.vue'
 import PublicEventDrawer from '@/components/PublicEventDrawer.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import {

@@ -1,10 +1,10 @@
 <template>
-  <div class="space-y-6 sm:space-y-8">
+  <div>
     <!-- YouTube Embed -->
-    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 border border-white/20">
+    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
       <div class="mb-6">
         <div class="flex items-start justify-between gap-4">
-          <div class="flex-1">
+          <div class="flex-1 min-w-0">
             <h5 class="font-semibold text-slate-900">{{ t('management.embeds.youtube.title') }}</h5>
             <p class="text-sm text-slate-600">{{ t('management.embeds.youtube.description') }}</p>
           </div>
@@ -12,7 +12,7 @@
           <!-- Help Button -->
           <button
             @click="showYouTubeHelpModal = true"
-            class="text-blue-500 hover:text-blue-700 transition-colors p-2 rounded-lg hover:bg-blue-50 border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            class="p-2 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
             :title="t('management.embeds.youtube.helpButtonTitle')"
           >
             <Info class="w-4 h-4" />
@@ -32,61 +32,78 @@
           <button
             v-if="canEdit && eventData"
             @click="confirmRemoveYouTube"
-            class="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 sm:p-2 rounded-full transition-colors duration-200"
+            class="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur-sm rounded-lg border border-slate-200 text-slate-600 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors duration-200"
+            :aria-label="t('management.embeds.deleteModal.title')"
           >
-            <X class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <X class="w-4 h-4" />
           </button>
         </div>
 
-        <div v-else class="border-2 border-dashed border-slate-300 rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center">
-          <Youtube class="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 mx-auto mb-1.5 sm:mb-2" />
+        <button
+          v-else
+          type="button"
+          :disabled="!canEdit"
+          @click="focusUrlInput"
+          :class="[
+            'w-full border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center transition-all duration-300',
+            canEdit
+              ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200'
+              : 'border-slate-300 bg-slate-50 cursor-default'
+          ]"
+        >
+          <Youtube class="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 mx-auto mb-1.5 sm:mb-2 transition-colors group-hover:text-emerald-600" />
           <p class="text-xs sm:text-sm text-slate-600">{{ t('management.embeds.youtube.empty') }}</p>
-        </div>
+        </button>
 
         <div>
           <input
+            ref="urlInputRef"
             v-model="formData.youtube_embed_link"
             type="url"
             :disabled="!canEdit"
             :placeholder="t('management.embeds.youtube.inputPlaceholder')"
             @paste="handleYouTubePaste"
-            class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
+            :class="[
+              'w-full px-3.5 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 bg-white transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed',
+              urlError
+                ? 'border-red-300 focus:ring-red-200 focus:border-red-400'
+                : 'border-slate-300 focus:ring-sky-200 focus:border-sky-400'
+            ]"
           />
+          <p v-if="urlError" class="text-xs sm:text-sm text-red-600 mt-1">{{ urlError }}</p>
+        </div>
+
+        <!-- Save Button -->
+        <div v-if="canEdit && eventData && hasChanges" class="flex justify-end">
+          <button
+            @click="saveChanges"
+            :disabled="saving || !!urlError"
+            class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <div
+              v-if="saving"
+              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+            ></div>
+            <Save v-else class="w-4 h-4" />
+            <span>{{ saving ? t('management.embeds.youtube.saving') : t('management.embeds.youtube.saveBtn') }}</span>
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Save Button -->
-    <div v-if="canEdit && eventData && hasChanges" class="flex justify-end">
-      <button
-        @click="saveChanges"
-        :disabled="saving"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base rounded-xl font-medium transition-all duration-300 sm:hover:scale-105 shadow-lg shadow-emerald-500/25 flex items-center space-x-1.5 sm:space-x-2 disabled:opacity-50"
-      >
+    <!-- Toast Feedback -->
+    <Transition name="slide-up">
+      <div v-if="message" class="fixed bottom-20 lg:bottom-4 right-6 z-50">
         <div
-          v-if="saving"
-          class="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
-        ></div>
-        <Save v-else class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-        <span>{{ saving ? t('management.embeds.youtube.saving') : t('management.embeds.youtube.saveBtn') }}</span>
-      </button>
-    </div>
-
-    <!-- Success Message -->
-    <div v-if="showSuccess" class="bg-green-50 border border-green-200 rounded-xl sm:rounded-2xl p-3 sm:p-4">
-      <div class="flex items-center space-x-2 sm:space-x-3">
-        <CheckCircle class="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
-        <p class="text-xs sm:text-sm text-green-700 font-medium">{{ t('management.embeds.youtube.successMessage') }}</p>
+          :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
+          class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
+        >
+          <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2" />
+          <AlertCircle v-else class="w-5 h-5 mr-2" />
+          {{ message.text }}
+        </div>
       </div>
-    </div>
-
-    <!-- Error Message -->
-    <div v-if="error" class="bg-red-50 border border-red-200 rounded-xl sm:rounded-2xl p-3 sm:p-4">
-      <div class="flex items-center space-x-2 sm:space-x-3">
-        <AlertCircle class="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
-        <p class="text-xs sm:text-sm text-red-700 font-medium">{{ error }}</p>
-      </div>
-    </div>
+    </Transition>
 
     <!-- Delete Confirmation Modal -->
     <DeleteConfirmModal
@@ -103,12 +120,12 @@
       <Transition name="modal">
         <div
           v-if="showYouTubeHelpModal"
-          class="fixed inset-0 z-[70] overflow-y-auto"
+          class="fixed inset-0 z-[1000] overflow-y-auto"
           @click="showYouTubeHelpModal = false"
         >
           <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
           <div class="flex min-h-full items-center justify-center p-4">
-            <div class="relative bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full" @click.stop>
+            <div class="relative bg-white rounded-3xl shadow-2xl p-4 sm:p-6 max-w-lg w-full" @click.stop>
               <!-- Header -->
               <div class="flex items-start justify-between mb-4">
                 <div class="flex items-center gap-3">
@@ -127,69 +144,69 @@
 
               <!-- Content -->
               <div class="space-y-4">
-                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                  <p class="text-sm text-blue-900 mb-3 font-medium">
+                <div class="bg-sky-50 border border-sky-200 rounded-xl p-4">
+                  <p class="text-sm text-sky-900 mb-3 font-medium">
                     {{ t('management.embeds.helpModal.intro') }}
                   </p>
 
                   <div class="space-y-3">
                     <div>
-                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">1</span>
+                      <h4 class="text-sm font-semibold text-sky-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-sky-500 text-white text-xs">1</span>
                         {{ t('management.embeds.helpModal.step1Title') }}
                       </h4>
-                      <p class="text-sm text-blue-800 ml-7">
+                      <p class="text-sm text-slate-600 ml-7">
                         {{ t('management.embeds.helpModal.step1Desc') }}
                       </p>
                     </div>
 
                     <div>
-                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">2</span>
+                      <h4 class="text-sm font-semibold text-sky-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-sky-500 text-white text-xs">2</span>
                         {{ t('management.embeds.helpModal.step2Title') }}
                       </h4>
-                      <p class="text-sm text-blue-800 ml-7">
+                      <p class="text-sm text-slate-600 ml-7">
                         {{ t('management.embeds.helpModal.step2Desc') }}
                       </p>
                     </div>
 
                     <div>
-                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">3</span>
+                      <h4 class="text-sm font-semibold text-sky-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-sky-500 text-white text-xs">3</span>
                         {{ t('management.embeds.helpModal.step3Title') }}
                       </h4>
-                      <p class="text-sm text-blue-800 ml-7">
+                      <p class="text-sm text-slate-600 ml-7">
                         {{ t('management.embeds.helpModal.step3Desc') }}
                       </p>
                     </div>
 
                     <div>
-                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">4</span>
+                      <h4 class="text-sm font-semibold text-sky-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-sky-500 text-white text-xs">4</span>
                         {{ t('management.embeds.helpModal.step4Title') }}
                       </h4>
-                      <p class="text-sm text-blue-800 ml-7">
+                      <p class="text-sm text-slate-600 ml-7">
                         {{ t('management.embeds.helpModal.step4Desc') }}
                       </p>
                     </div>
 
                     <div>
-                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">5</span>
+                      <h4 class="text-sm font-semibold text-sky-900 mb-2 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-sky-500 text-white text-xs">5</span>
                         {{ t('management.embeds.helpModal.step5Title') }}
                       </h4>
-                      <p class="text-sm text-blue-800 ml-7">
+                      <p class="text-sm text-slate-600 ml-7">
                         {{ t('management.embeds.helpModal.step5Desc') }}
                       </p>
                     </div>
 
-                    <div class="pt-3 border-t border-blue-200">
-                      <h4 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-1.5">
+                    <div class="pt-3 border-t border-sky-200">
+                      <h4 class="text-sm font-semibold text-sky-900 mb-2 flex items-center gap-1.5">
                         <span>💡</span>
                         <span>{{ t('management.embeds.helpModal.exampleLabel') }}</span>
                       </h4>
-                      <p class="text-xs text-blue-800 mb-2">{{ t('management.embeds.helpModal.exampleHint') }}</p>
-                      <code class="block text-xs bg-blue-100 p-2 rounded text-blue-900 break-all">
+                      <p class="text-xs text-slate-600 mb-2">{{ t('management.embeds.helpModal.exampleHint') }}</p>
+                      <code class="block text-xs bg-sky-100 p-2 rounded text-sky-900 break-all">
                         https://www.youtube.com/embed/VIDEO_ID
                       </code>
                     </div>
@@ -200,7 +217,7 @@
                 <div class="flex justify-end pt-2">
                   <button
                     @click="showYouTubeHelpModal = false"
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors duration-200"
+                    class="px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 shadow-md transition-all duration-200"
                   >
                     {{ t('management.embeds.helpModal.gotIt') }}
                   </button>
@@ -222,6 +239,7 @@ import { eventsService, type Event } from '../services/api'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import { extractYouTubeEmbedUrl } from '../utils/embedExtractor'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useToast } from '../composables/useToast'
 
 interface Props {
   eventData?: Event
@@ -236,6 +254,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const { t } = useAppLanguage()
+const { message, showSuccess, showError } = useToast()
 
 // State
 const formData = ref({
@@ -243,8 +262,6 @@ const formData = ref({
 })
 
 const saving = ref(false)
-const error = ref<string | null>(null)
-const showSuccess = ref(false)
 const showDeleteModal = ref(false)
 const deleting = ref(false)
 const deleteModalData = ref({
@@ -253,6 +270,7 @@ const deleteModalData = ref({
   fieldToDelete: '',
 })
 const showYouTubeHelpModal = ref(false)
+const urlInputRef = ref<HTMLInputElement | null>(null)
 
 // Computed
 const hasChanges = computed(() => {
@@ -260,6 +278,15 @@ const hasChanges = computed(() => {
 
   return formData.value.youtube_embed_link !== (props.eventData.youtube_embed_link || '')
 })
+
+const urlError = computed(() => {
+  const url = formData.value.youtube_embed_link
+  return url && !validateYouTubeUrl(url) ? t('management.embeds.errors.invalidUrl') : null
+})
+
+const focusUrlInput = () => {
+  if (props.canEdit) urlInputRef.value?.focus()
+}
 
 // Watch for prop changes
 watch(
@@ -276,11 +303,9 @@ watch(
 
 // Methods
 const saveChanges = async () => {
-  if (!props.eventData) return
+  if (!props.eventData || urlError.value) return
 
   saving.value = true
-  error.value = null
-  showSuccess.value = false
 
   try {
     // Prepare data - convert empty strings to null for removal
@@ -292,17 +317,12 @@ const saveChanges = async () => {
 
     if (response.success && response.data) {
       emit('updated', response.data)
-      showSuccess.value = true
-
-      // Hide success message after 3 seconds
-      setTimeout(() => {
-        showSuccess.value = false
-      }, 3000)
+      showSuccess(t('management.embeds.youtube.successMessage'))
     } else {
-      error.value = response.message || t('management.embeds.errors.updateFailed')
+      showError(response.message || t('management.embeds.errors.updateFailed'))
     }
-  } catch (err) {
-    error.value = t('management.embeds.errors.updateNetworkError')
+  } catch {
+    showError(t('management.embeds.errors.updateNetworkError'))
   } finally {
     saving.value = false
   }
@@ -322,8 +342,6 @@ const handleDeleteConfirm = async () => {
   if (!props.eventData) return
 
   deleting.value = true
-  error.value = null
-  showSuccess.value = false
 
   try {
     const updateData = {
@@ -340,17 +358,12 @@ const handleDeleteConfirm = async () => {
 
       emit('updated', response.data)
       showDeleteModal.value = false
-      showSuccess.value = true
-
-      // Hide success message after 3 seconds
-      setTimeout(() => {
-        showSuccess.value = false
-      }, 3000)
+      showSuccess(t('management.embeds.youtube.successMessage'))
     } else {
-      error.value = response.message || t('management.embeds.errors.removeFailed')
+      showError(response.message || t('management.embeds.errors.removeFailed'))
     }
-  } catch (err) {
-    error.value = t('management.embeds.errors.removeNetworkError')
+  } catch {
+    showError(t('management.embeds.errors.removeNetworkError'))
   } finally {
     deleting.value = false
   }
@@ -377,19 +390,6 @@ const handleYouTubePaste = (event: ClipboardEvent) => {
     formData.value.youtube_embed_link = extractedUrl
   }
 }
-
-// Watch for URL validation
-watch(
-  () => formData.value.youtube_embed_link,
-  (newValue) => {
-    if (newValue && !validateYouTubeUrl(newValue)) {
-      error.value = t('management.embeds.errors.invalidUrl')
-    } else if (error.value?.includes('YouTube')) {
-      error.value = null
-    }
-  },
-)
-
 </script>
 
 <style scoped>
@@ -401,6 +401,21 @@ watch(
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(0.95);
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 </style>

@@ -18,13 +18,32 @@
       </span>
     </button>
 
+    <!-- Desktop: anchored dropdown -->
     <Transition name="dropdown">
       <NotificationDropdown
-        v-if="open"
-        :variant="variant"
+        v-if="open && variant === 'desktop'"
+        variant="desktop"
         @close="close"
       />
     </Transition>
+
+    <!-- Mobile: bottom sheet with backdrop, teleported above FABs/tab bar -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div
+          v-if="open && variant === 'mobile'"
+          class="fixed inset-0 z-[998] bg-black/40 backdrop-blur-sm"
+          @click="close"
+        />
+      </Transition>
+      <Transition name="sheet">
+        <NotificationDropdown
+          v-if="open && variant === 'mobile'"
+          variant="mobile"
+          @close="close"
+        />
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -36,7 +55,7 @@ import NotificationDropdown from './NotificationDropdown.vue'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     variant?: 'desktop' | 'mobile'
   }>(),
@@ -64,7 +83,9 @@ function close() {
 }
 
 function handleClickOutside(event: MouseEvent) {
-  if (!open.value) return
+  // Desktop only — the mobile sheet is teleported outside rootRef and
+  // closes via its backdrop instead.
+  if (!open.value || props.variant === 'mobile') return
   const target = event.target
   if (!(target instanceof Node)) return
   if (rootRef.value && !rootRef.value.contains(target)) {
@@ -86,6 +107,13 @@ watch(
   },
 )
 
+// Lock body scroll while the mobile sheet is open
+watch(open, (isOpen) => {
+  if (props.variant === 'mobile') {
+    document.body.style.overflow = isOpen ? 'hidden' : ''
+  }
+})
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleKeyDown)
@@ -94,6 +122,9 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleKeyDown)
+  if (props.variant === 'mobile' && open.value) {
+    document.body.style.overflow = ''
+  }
 })
 </script>
 
@@ -107,5 +138,38 @@ onBeforeUnmount(() => {
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* Mobile bottom sheet: backdrop fade + panel slide-up */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.sheet-enter-active {
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.sheet-leave-active {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.sheet-enter-from,
+.sheet-leave-to {
+  transform: translateY(100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-enter-active,
+  .sheet-leave-active,
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: none;
+  }
 }
 </style>

@@ -1,12 +1,20 @@
 <template>
   <div
-    class="glass-dropdown rounded-2xl overflow-hidden z-[100] flex flex-col"
+    class="flex flex-col overflow-hidden"
     :class="panelPositionClass"
-    role="menu"
+    :role="variant === 'mobile' ? 'dialog' : 'menu'"
+    :aria-modal="variant === 'mobile' ? 'true' : undefined"
     aria-label="Notifications"
   >
+    <!-- Drag handle (mobile sheet) -->
+    <div
+      v-if="variant === 'mobile'"
+      class="w-10 h-1 rounded-full bg-slate-300 mx-auto mt-3 flex-shrink-0"
+      aria-hidden="true"
+    />
+
     <!-- Header -->
-    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 flex-shrink-0">
       <div class="flex items-center gap-2">
         <div class="font-semibold text-slate-900">{{ t('common.notifications.title') }}</div>
         <span
@@ -28,7 +36,7 @@
     </div>
 
     <!-- Body -->
-    <div class="flex-1 overflow-y-auto" role="list">
+    <div class="flex-1 overflow-y-auto overscroll-contain" role="list">
       <!-- Initial loading -->
       <div
         v-if="store.loadingList && store.items.length === 0"
@@ -101,7 +109,10 @@
     </div>
 
     <!-- Footer -->
-    <div class="px-5 py-2.5 border-t border-slate-100 flex items-center justify-between">
+    <div
+      class="px-5 py-2.5 border-t border-slate-100 flex items-center justify-between flex-shrink-0"
+      :class="variant === 'mobile' ? 'pb-[max(env(safe-area-inset-bottom),0.625rem)]' : ''"
+    >
       <RouterLink
         to="/settings?tab=notifications"
         class="text-xs text-slate-500 hover:text-slate-700 inline-flex items-center gap-1"
@@ -136,15 +147,14 @@ const { t } = useAppLanguage()
 
 const markingAll = ref(false)
 
-// Mobile: span the viewport with horizontal margins, anchored under the
-// fixed top bar (h-14). Fixed positioning so it ignores the bell's right edge
-// and reads as a centered sheet — like the FB notifications panel.
+// Mobile: bottom sheet teleported to <body> by NotificationBell — sits above
+// the FABs and mobile tab bar (overlay z ladder) with its own backdrop.
 //
-// Desktop: classic right-aligned dropdown anchored to the bell.
+// Desktop: classic right-aligned glass dropdown anchored to the bell.
 const panelPositionClass = computed(() =>
   props.variant === 'mobile'
-    ? 'fixed inset-x-3 top-[60px] max-h-[80vh]'
-    : 'absolute right-0 top-full mt-2 w-[380px] max-h-[70vh]',
+    ? 'fixed inset-x-0 bottom-0 z-[999] bg-white rounded-t-3xl shadow-2xl max-h-[85vh]'
+    : 'glass-dropdown absolute right-0 top-full mt-2 w-[380px] max-h-[70vh] rounded-2xl z-[100]',
 )
 
 onMounted(() => {
