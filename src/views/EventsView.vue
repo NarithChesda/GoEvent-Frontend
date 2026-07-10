@@ -1,12 +1,14 @@
 <template>
-  <MainLayout :contact-fab-has-fab-below="true">
-    <div class="min-h-screen">
+  <MainLayout :contact-fab-has-fab-below="showCreateFab">
+    <!-- min-height offsets MainLayout's pb-20 (mobile tab bar) / lg:pt-16 (desktop nav)
+         so the sticky footer lands at the viewport bottom without a phantom scrollbar -->
+    <div class="flex flex-col min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-4rem)]">
       <!-- Mobile Top Bar -->
       <MobileTopBar @search="openSearch" />
 
       <!-- Main Content -->
-      <section class="py-4 sm:py-6 lg:py-8">
-        <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section class="flex-1 flex flex-col py-4 sm:py-6 lg:py-8">
+        <div class="flex-1 flex flex-col w-full max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <!-- Header with Toggle -->
           <div class="flex items-center justify-between gap-2 mb-6 sm:mb-8 lg:mb-10">
             <h1
@@ -46,9 +48,11 @@
             @event-manage="manageEvent"
           />
 
-          <!-- Login Required State -->
+          <!-- Login Required State (my-auto centers it in the leftover column
+               height; the slight lift optically balances the bottom tab bar) -->
           <EventsEmptyState
             v-else-if="!authStore.isAuthenticated"
+            class="my-auto -translate-y-6"
             :title="t('events.emptyState.signInTitle')"
             :description="t('events.emptyState.signInDescription')"
             :action-label="t('events.createEvent')"
@@ -59,6 +63,7 @@
           <!-- Empty State -->
           <EventsEmptyState
             v-else-if="isEmpty"
+            class="my-auto -translate-y-6"
             :title="emptyStateTitle"
             :description="emptyStateDescription"
             :action-label="t('events.createFirstEvent')"
@@ -89,6 +94,7 @@
 
       <!-- Create Event FAB -->
       <button
+        v-if="showCreateFab"
         @click="handleCreateEventClick"
         class="fixed bottom-20 lg:bottom-4 right-4 lg:right-6 w-14 h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 flex items-center justify-center z-[60] group"
         :aria-label="t('events.createEvent')"
@@ -260,6 +266,12 @@ const isEmpty = computed(
     !loading.value &&
     authStore.isAuthenticated &&
     filteredEvents.value.length === 0
+)
+
+// The FAB is redundant while an empty state with its own Create Event button
+// is shown; keep it for the 'past' filter, whose empty state has no action.
+const showCreateFab = computed(
+  () => hasEvents.value || (isEmpty.value && timeFilter.value === 'past')
 )
 
 // Empty state messages

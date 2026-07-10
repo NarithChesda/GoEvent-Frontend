@@ -1,5 +1,7 @@
 <template>
-  <footer class="mt-16 mb-20 lg:mb-0">
+  <!-- Hidden below lg: mobile uses the bottom tab bar as navigation, so the
+       footer only renders alongside the desktop top nav -->
+  <footer class="hidden lg:block mt-16">
     <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="border-t border-slate-200 pt-6 pb-6">
       <!-- Top Row: Logo and Social Icons -->
@@ -10,21 +12,15 @@
           class="flex items-center"
           aria-label="Go to home page"
         >
-          <!-- Mobile: logo.png, Desktop: icon.svg -->
-          <img
-            :src="LogoPng"
-            alt="GoEvent Logo"
-            class="h-5 w-auto sm:hidden"
-          />
           <img
             :src="IconSvg"
             alt="GoEvent Logo"
-            class="h-5 w-auto hidden sm:block"
+            class="h-5 w-auto"
           />
         </button>
 
-        <!-- Desktop Navigation (inline with logo) -->
-        <nav class="hidden sm:flex items-center space-x-4 flex-1 ml-6">
+        <!-- Navigation (inline with logo) -->
+        <nav class="flex items-center space-x-4 flex-1 ml-6">
           <RouterLink
             to="/home"
             class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
@@ -100,30 +96,8 @@
         </div>
       </div>
 
-      <!-- Mobile Navigation Row -->
-      <nav class="flex sm:hidden items-center space-x-4 mb-4">
-        <RouterLink
-          to="/home"
-          class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
-        >
-          {{ t('common.footer.home') }}
-        </RouterLink>
-        <RouterLink
-          to="/home#pricing"
-          class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
-        >
-          {{ t('common.footer.pricing') }}
-        </RouterLink>
-        <RouterLink
-          to="/about"
-          class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
-        >
-          {{ t('common.footer.aboutUs') }}
-        </RouterLink>
-      </nav>
-
       <!-- Bottom Row: CTA -->
-      <div class="sm:text-center">
+      <div class="text-center">
         <RouterLink
           to="/events?createEvent=true"
           class="inline-flex items-center text-sm font-medium text-[#2ecc71] hover:text-[#27ae60] transition-colors"
@@ -144,7 +118,6 @@
 import { RouterLink, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import IconSvg from '@/assets/icon.svg'
-import LogoPng from '@/assets/logo.png'
 
 const { t } = useI18n()
 const router = useRouter()

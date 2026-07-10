@@ -1,14 +1,16 @@
 <template>
   <MainLayout>
+    <!-- min-height offsets MainLayout's pb-20 (mobile tab bar) / lg:pt-16 (desktop nav)
+         so the sticky footer lands at the viewport bottom without a phantom scrollbar -->
     <div
-      class="min-h-screen bg-gradient-to-r from-[#2ecc71]/[0.02] via-white to-[#1e90ff]/[0.02]"
+      class="flex flex-col min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-4rem)] bg-gradient-to-r from-[#2ecc71]/[0.02] via-white to-[#1e90ff]/[0.02]"
     >
       <!-- Mobile Top Bar -->
       <MobileTopBar @search="openSearch" />
 
       <!-- Main Content -->
-      <section class="py-4 sm:py-6 lg:py-8">
-        <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section class="flex-1 flex flex-col py-4 sm:py-6 lg:py-8">
+        <div class="flex-1 flex flex-col w-full max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <!-- Header with Toggle -->
           <div class="flex items-center justify-between gap-2 mb-6 sm:mb-8 lg:mb-10">
             <h1
@@ -70,9 +72,11 @@
             </div>
           </div>
 
-          <!-- Empty State -->
+          <!-- Empty State (my-auto centers it in the leftover column height;
+               the slight lift optically balances the bottom tab bar) -->
           <EventsEmptyState
             v-else-if="isEmpty"
+            class="my-auto -translate-y-6"
             :title="t('discover.emptyState.title')"
             :description="t('discover.emptyState.description')"
             :show-action="false"
