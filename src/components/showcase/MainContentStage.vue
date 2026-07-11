@@ -471,7 +471,7 @@
                                 class="w-full h-auto object-contain max-h-[64px] lg:max-h-[72px]"
                                 :class="showLiquidGlass ? 'brightness-110' : ''"
                                 :style="{
-                                  height: 'min(5.6vh, 64px)',
+                                  height: 'clamp(44px, 5.6vh, 64px)',
                                   maxWidth: '100%',
                                   filter: showLiquidGlass
                                     ? 'drop-shadow(0 2px 8px rgba(0,0,0,0.15))'
@@ -503,7 +503,7 @@
                                 viewBox="0 0 222.09 69.13"
                                 class="w-full h-auto max-h-[64px] lg:max-h-[72px]"
                                 :style="{
-                                  height: 'min(5.6vh, 64px)',
+                                  height: 'clamp(44px, 5.6vh, 64px)',
                                   maxWidth: '100%',
                                   filter: 'drop-shadow(0 2px 8px rgba(255,255,255,0.25))',
                                 }"
@@ -588,7 +588,7 @@
                                 viewBox="0 0 222.09 69.13"
                                 class="w-full h-auto max-h-[64px] lg:max-h-[72px]"
                                 :style="{
-                                  height: 'min(5.6vh, 64px)',
+                                  height: 'clamp(44px, 5.6vh, 64px)',
                                   maxWidth: '100%',
                                   filter: `drop-shadow(0 2px 8px ${primaryColor}40)`,
                                 }"
@@ -681,7 +681,7 @@
                             viewBox="0 0 222.09 69.13"
                             class="w-auto max-h-[64px] lg:max-h-[72px]"
                             :style="{
-                              height: 'min(5.6vh, 64px)',
+                              height: 'clamp(44px, 5.6vh, 64px)',
                               fill: showLiquidGlass ? '#ffffff' : primaryColor,
                               filter: showLiquidGlass
                                 ? 'drop-shadow(0 2px 8px rgba(255,255,255,0.25))'
@@ -873,7 +873,7 @@
                       <!-- Contact Info -->
                       <div class="space-y-2 lg:space-y-1">
                         <div
-                          class="inline-flex items-center justify-center text-md lg:text-xs xl:text-md px-2 opacity-90"
+                          class="footer-website-link inline-flex items-center justify-center text-md lg:text-xs xl:text-md px-2 opacity-90"
                           :class="showLiquidGlass ? 'text-white' : ''"
                           :style="{
                             fontFamily: secondaryFont || currentFont,
@@ -1868,6 +1868,24 @@ onUnmounted(() => {
 @media (max-width: 640px) {
   .animate-reveal {
     transform: translateY(16px);
+  }
+}
+
+/* Footer proportions on mobile: social buttons and website link scale with
+   viewport height like the logo does (clamp on 5.6vh). Short screens such as
+   Galaxy S8 (360×740) shrink them slightly so the logo stays visually
+   dominant; taller screens like S20 (360×800) stay at today's sizes. */
+@media (max-width: 1023px) {
+  .social-btn {
+    width: clamp(26px, 4.2vh, 34px);
+    height: clamp(26px, 4.2vh, 34px);
+  }
+  .social-btn svg {
+    width: clamp(13px, 2.1vh, 17px);
+    height: clamp(13px, 2.1vh, 17px);
+  }
+  .footer-website-link {
+    font-size: clamp(0.75rem, 2vh, 1rem);
   }
 }
 
