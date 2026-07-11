@@ -25,6 +25,7 @@ export const COVER_STAGE_LAYOUT_DEFAULTS: Required<CoverStageLayout> = {
   topDecorationZIndex: 25,
   bottomDecorationZIndex: 25,
   showcaseAnimationType: 'decoration',
+  contentWidth: 'standard',
 }
 
 /**
@@ -82,6 +83,7 @@ export function useCoverStageLayout(
         config.bottomDecorationZIndex ?? COVER_STAGE_LAYOUT_DEFAULTS.bottomDecorationZIndex,
       showcaseAnimationType:
         config.showcaseAnimationType ?? COVER_STAGE_LAYOUT_DEFAULTS.showcaseAnimationType,
+      contentWidth: config.contentWidth ?? COVER_STAGE_LAYOUT_DEFAULTS.contentWidth,
     }
   })
 

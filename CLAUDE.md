@@ -178,6 +178,7 @@ Optional env vars:
 - `VITE_IMAGEKIT_ENABLED`: Enable ImageKit CDN image optimization (default: true, can toggle via `localStorage.setItem('imagekit_enabled', 'false')`)
 - `VITE_ASSET_PROTECTION_ENABLED`: Enable asset protection in dev mode (default: false, auto-enabled in production)
 - `VITE_SHOWCASE_ANIMATION_TYPE`: Showcase transition animation type. Options: `decoration` (default - decorations slide out individually), `door` (cover splits in half like opening doors)
+- `VITE_SHOWCASE_CONTENT_WIDTH`: **Temporary, for visual testing only** — widens the main-content liquid glass card and shrinks its inner horizontal padding. Options: `standard` (default), `wide`. Will be replaced by a `template_assets` backend field (mirroring how `showcase_animation_type` evolved from an env-only toggle into a template-driven prop).
 
 ### Authentication Flow
 1. User authenticates via email/password, Google OAuth, or Telegram

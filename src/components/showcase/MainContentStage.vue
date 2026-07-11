@@ -110,13 +110,13 @@
       <div class="absolute inset-0 overflow-y-auto custom-scrollbar z-20">
         <div :class="containerClasses">
           <!-- Liquid Glass Card -->
-          <div class="liquid-glass-card" :class="cardAnimationClass">
+          <div class="liquid-glass-card" :class="[cardAnimationClass, cardWidthClass]">
             <!-- Glass Background Effects -->
             <div v-if="showLiquidGlass" class="glass-background"></div>
 
             <!-- Content Container with Scroll -->
             <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
-              <div class="p-6 sm:p-6 md:p-4 laptop-sm:p-5 laptop-md:p-5 laptop-lg:p-6 desktop:p-5">
+              <div :class="contentPaddingClasses">
                 <!-- Host Information (now includes welcome header) -->
                 <div ref="hostInfoRef" class="animate-reveal">
                   <HostInfo
@@ -417,7 +417,8 @@
                 <!-- Footer Section -->
                 <div
                   ref="footerSectionRef"
-                  class="mt-8 -mx-6 sm:-mx-6 md:-mx-4 laptop-sm:-mx-5 laptop-md:-mx-5 laptop-lg:-mx-6 desktop:-mx-5 animate-reveal"
+                  class="mt-8 animate-reveal"
+                  :class="footerMarginClasses"
                 >
                   <!-- Footer Card with Conditional Styling -->
                   <div
@@ -1063,6 +1064,33 @@ const showLiquidGlass = computed(() => {
   return value !== false
 })
 
+// "Wide content" mode: backed by template_assets.cover_stage_layout.contentWidth.
+// Falls back to the VITE_SHOWCASE_CONTENT_WIDTH env var for local visual testing
+// when a template hasn't set the field yet (mirrors `showcaseAnimationType`'s override pattern).
+const isWideContent = computed(() => {
+  const backendValue = props.mainStageLayout?.contentWidth
+  if (backendValue === 'wide' || backendValue === 'standard') {
+    return backendValue === 'wide'
+  }
+  return import.meta.env.VITE_SHOWCASE_CONTENT_WIDTH === 'wide'
+})
+
+// Card grows toward the viewport edges in wide mode (see .liquid-glass-card--wide below)
+const cardWidthClass = computed(() => (isWideContent.value ? 'liquid-glass-card--wide' : ''))
+
+// Horizontal padding shrinks in wide mode to hand more of the card's width to the content;
+// vertical rhythm is unchanged. Footer uses the negative-margin counterpart to stay flush.
+const contentPaddingClasses = computed(() =>
+  isWideContent.value
+    ? 'py-6 sm:py-6 md:py-4 laptop-sm:py-5 laptop-md:py-5 laptop-lg:py-6 desktop:py-5 px-3 sm:px-3 md:px-2 laptop-sm:px-3 laptop-md:px-3 laptop-lg:px-4 desktop:px-3'
+    : 'p-6 sm:p-6 md:p-4 laptop-sm:p-5 laptop-md:p-5 laptop-lg:p-6 desktop:p-5'
+)
+const footerMarginClasses = computed(() =>
+  isWideContent.value
+    ? '-mx-3 sm:-mx-3 md:-mx-2 laptop-sm:-mx-3 laptop-md:-mx-3 laptop-lg:-mx-4 desktop:-mx-3'
+    : '-mx-6 sm:-mx-6 md:-mx-4 laptop-sm:-mx-5 laptop-md:-mx-5 laptop-lg:-mx-6 desktop:-mx-5'
+)
+
 // Computed property for language-aware logo selection
 const logoUrl = computed(() => {
   // For Khmer language (kh), use primary logo (logo_one)
@@ -1695,6 +1723,30 @@ onUnmounted(() => {
 @media (min-width: 1536px) {
   .liquid-glass-card {
     max-width: calc(100vw - 5rem);
+  }
+}
+
+/* Wide content mode (temporary VITE_SHOWCASE_CONTENT_WIDTH=wide toggle) - card grows closer to viewport edges */
+.liquid-glass-card--wide {
+  width: 94vw;
+  max-width: 94vw;
+}
+
+@media (min-width: 1024px) {
+  .liquid-glass-card--wide {
+    max-width: calc(100vw - 1.5rem);
+  }
+}
+
+@media (min-width: 1366px) {
+  .liquid-glass-card--wide {
+    max-width: calc(100vw - 2rem);
+  }
+}
+
+@media (min-width: 1536px) {
+  .liquid-glass-card--wide {
+    max-width: calc(100vw - 2.5rem);
   }
 }
 

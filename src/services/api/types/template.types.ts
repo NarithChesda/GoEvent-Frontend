@@ -125,6 +125,10 @@ export interface CoverStageLayout {
 
   // Animation settings
   showcaseAnimationType?: 'decoration' | 'door'  // default: 'decoration'
+
+  // Main-content liquid glass card width. 'wide' grows the card toward the
+  // viewport edges and shrinks its inner horizontal padding for more content width.
+  contentWidth?: 'standard' | 'wide'  // default: 'standard'
 }
 
 /**
