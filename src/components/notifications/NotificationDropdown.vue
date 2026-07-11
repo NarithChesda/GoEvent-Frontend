@@ -1,20 +1,51 @@
 <template>
   <div
+    ref="panelRef"
     class="flex flex-col overflow-hidden"
     :class="panelPositionClass"
     :role="variant === 'mobile' ? 'dialog' : 'menu'"
     :aria-modal="variant === 'mobile' ? 'true' : undefined"
     aria-label="Notifications"
   >
-    <!-- Drag handle (mobile sheet) -->
+    <!-- Drag-to-close area (mobile sheet): handle + header, kept out of the
+         scrollable body so it doesn't fight list scrolling -->
     <div
       v-if="variant === 'mobile'"
-      class="w-10 h-1 rounded-full bg-slate-300 mx-auto mt-3 flex-shrink-0"
-      aria-hidden="true"
-    />
+      class="flex-shrink-0 touch-none"
+      @touchstart.passive="onDragStart"
+      @touchmove.passive="onDragMove"
+      @touchend="onDragEnd"
+      @touchcancel="onDragEnd"
+    >
+      <div class="w-10 h-1 rounded-full bg-slate-300 mx-auto mt-3" aria-hidden="true" />
 
-    <!-- Header -->
-    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 flex-shrink-0">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="font-semibold text-slate-900">{{ t('common.notifications.title') }}</div>
+          <span
+            v-if="store.unreadCount > 0"
+            class="px-1.5 py-0.5 text-[11px] font-semibold rounded-full bg-[#2ecc71]/10 text-[#27ae60]"
+          >
+            {{ store.unreadCount }}
+          </span>
+        </div>
+        <button
+          v-if="store.unreadCount > 0"
+          type="button"
+          class="text-xs font-medium text-[#1e90ff] hover:text-[#1873cc] disabled:opacity-50"
+          :disabled="markingAll"
+          @click="handleMarkAllRead"
+        >
+          {{ t('common.notifications.actions.markAllRead') }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Header (desktop) -->
+    <div
+      v-if="variant !== 'mobile'"
+      class="flex items-center justify-between px-5 py-4 border-b border-slate-100 flex-shrink-0"
+    >
       <div class="flex items-center gap-2">
         <div class="font-semibold text-slate-900">{{ t('common.notifications.title') }}</div>
         <span
@@ -137,7 +168,7 @@ const props = defineProps<{
   variant?: 'desktop' | 'mobile'
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
@@ -146,6 +177,58 @@ const store = useNotificationsStore()
 const { t } = useAppLanguage()
 
 const markingAll = ref(false)
+const panelRef = ref<HTMLElement | null>(null)
+
+// Swipe-to-close for the mobile bottom sheet — dragged from the handle/header
+// only, so it doesn't fight scrolling inside the notification list.
+const CLOSE_DISTANCE_PX = 120
+const CLOSE_VELOCITY_PX_PER_MS = 0.5
+let dragging = false
+let dragStartY = 0
+let dragOffset = 0
+let dragStartedAt = 0
+
+function onDragStart(event: TouchEvent) {
+  if (props.variant !== 'mobile') return
+  dragging = true
+  dragStartY = event.touches[0].clientY
+  dragOffset = 0
+  dragStartedAt = Date.now()
+  if (panelRef.value) panelRef.value.style.transition = 'none'
+}
+
+function onDragMove(event: TouchEvent) {
+  if (!dragging) return
+  dragOffset = Math.max(0, event.touches[0].clientY - dragStartY)
+  if (panelRef.value) panelRef.value.style.transform = `translateY(${dragOffset}px)`
+}
+
+function onDragEnd() {
+  if (!dragging) return
+  dragging = false
+
+  const elapsedMs = Math.max(Date.now() - dragStartedAt, 1)
+  const velocity = dragOffset / elapsedMs
+  const shouldClose = dragOffset > CLOSE_DISTANCE_PX || velocity > CLOSE_VELOCITY_PX_PER_MS
+
+  const panel = panelRef.value
+  if (!panel) {
+    if (shouldClose) emit('close')
+    return
+  }
+
+  panel.style.transition = 'transform 0.25s cubic-bezier(0.4, 0, 0.6, 1)'
+  if (shouldClose) {
+    panel.style.transform = 'translateY(100%)'
+    const handleTransitionEnd = () => {
+      panel.removeEventListener('transitionend', handleTransitionEnd)
+      emit('close')
+    }
+    panel.addEventListener('transitionend', handleTransitionEnd)
+  } else {
+    panel.style.transform = ''
+  }
+}
 
 // Mobile: bottom sheet teleported to <body> by NotificationBell — sits above
 // the FABs and mobile tab bar (overlay z ladder) with its own backdrop.
