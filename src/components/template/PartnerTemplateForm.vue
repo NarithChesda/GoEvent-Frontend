@@ -406,6 +406,17 @@
                 <option value="door">{{ t('management.partnerTemplateForm.coverLayout.animationDoor') }}</option>
               </select>
             </div>
+            <!-- Main Content Width -->
+            <div class="space-y-1.5">
+              <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.coverLayout.contentWidth') }}</label>
+              <select
+                v-model="form.cover_stage_layout.contentWidth"
+                class="w-full px-3 py-2 pr-8 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m4%206%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat"
+              >
+                <option value="standard">{{ t('management.partnerTemplateForm.coverLayout.contentWidthStandard') }}</option>
+                <option value="wide">{{ t('management.partnerTemplateForm.coverLayout.contentWidthWide') }}</option>
+              </select>
+            </div>
             <!-- Container Positioning -->
             <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">{{ t('management.partnerTemplateForm.coverLayout.containerPositioning') }}</p>
             <div class="grid grid-cols-2 gap-3">
@@ -983,6 +994,7 @@ const defaultCoverStageLayout = (): CoverStageLayout => ({
   topDecorationZIndex: 25,
   bottomDecorationZIndex: 25,
   showcaseAnimationType: 'decoration',
+  contentWidth: 'standard',
 })
 
 interface FallingEffectFormState {
