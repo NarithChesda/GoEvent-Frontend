@@ -12,7 +12,7 @@
             type="text"
             :placeholder="t('management.registrationList.searchPlaceholder')"
             :aria-label="t('management.registrationList.searchAriaLabel')"
-            class="w-full pl-9 pr-8 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
+            class="w-full pl-9 pr-8 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-200 focus:bg-white transition-all"
           />
           <button
             v-if="searchQuery"
@@ -133,7 +133,7 @@
               type="text"
               :placeholder="t('management.registrationList.searchPlaceholder')"
               :aria-label="t('management.registrationList.searchAriaLabel')"
-              class="w-full pl-9 pr-8 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
+              class="w-full pl-9 pr-8 py-2 bg-slate-50/50 border-0 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-200 focus:bg-white transition-all"
             />
             <button
               v-if="searchQuery"
@@ -190,7 +190,7 @@
         <button
           v-if="canEdit"
           @click="$emit('open-checkin')"
-          class="flex items-center gap-1.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2 px-3 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-green-500/25 hover:shadow-green-600/30 text-sm flex-shrink-0"
+          class="flex items-center gap-1.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:opacity-90 text-white font-semibold py-2 px-3 rounded-xl shadow-md transition-all duration-200 text-sm flex-shrink-0"
         >
           <UserCheck class="w-4 h-4" />
           <span class="hidden sm:inline">{{ t('management.registrationList.checkIn') }}</span>

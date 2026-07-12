@@ -30,7 +30,7 @@
             :class="[
               'flex items-center gap-2 px-3 py-2.5 transition-all duration-200',
               modelValue === group.id
-                ? 'bg-gradient-to-r from-emerald-500 to-sky-500'
+                ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]'
                 : 'hover:bg-slate-50'
             ]"
           >

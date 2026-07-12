@@ -44,14 +44,19 @@
       @open-checkin="showCheckinModal = true"
     />
 
-    <!-- Loading State -->
-    <div
-      v-if="loading"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8"
-    >
-      <div class="flex items-center justify-center">
-        <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
-        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">{{ t('management.registrationTab.loading') }}</span>
+    <!-- Loading State (skeleton mirrors the registration rows) -->
+    <div v-if="loading" class="animate-pulse space-y-2" aria-hidden="true">
+      <div
+        v-for="i in 3"
+        :key="i"
+        class="flex items-center gap-3 rounded-2xl border border-slate-200/60 bg-white/80 px-4 py-3"
+      >
+        <div class="h-9 w-9 flex-shrink-0 rounded-full bg-slate-200"></div>
+        <div class="min-w-0 flex-1 space-y-2">
+          <div class="h-3 w-40 max-w-full rounded bg-slate-200"></div>
+          <div class="h-3 w-24 rounded bg-slate-200"></div>
+        </div>
+        <div class="h-8 w-8 flex-shrink-0 rounded-xl bg-slate-200"></div>
       </div>
     </div>
 
@@ -84,26 +89,13 @@
       @qr-scan-error="showMessage('error', $event)"
     />
 
-    <!-- Success/Error Messages -->
-    <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-20 lg:bottom-8 right-4 sm:right-8 left-4 sm:left-auto z-[100]">
-        <div
-          :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-          class="text-white px-4 sm:px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-lg flex items-center text-sm sm:text-base"
-        >
-          <CheckCircle v-if="message.type === 'success'" class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
-          <AlertCircle v-else class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
-          <span class="flex-1">{{ message.text }}</span>
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { CheckCircle, AlertCircle } from 'lucide-vue-next'
+import { useNotifications } from '@/composables/useNotifications'
 import type { EventRegistrationDetail } from '../services/api'
 
 // Import composables
@@ -166,10 +158,10 @@ const totalAttendees = computed(() => {
   return registrations.value.reduce((sum, r) => sum + (r.total_attendees || 1), 0)
 })
 
-// Local state for modals and messages
+// Local state for modals
 const showCheckinModal = ref(false)
 const isChecking = ref(false)
-const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
+const { success: notifySuccess, error: notifyError } = useNotifications()
 
 // Methods
 const handleCheckin = async (code: string) => {
@@ -196,10 +188,11 @@ const closeCheckinModal = () => {
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {
-  message.value = { type, text }
-  setTimeout(() => {
-    message.value = null
-  }, 5000)
+  if (type === 'success') {
+    notifySuccess(text)
+  } else {
+    notifyError(text)
+  }
 }
 
 const copyToClipboard = async (text: string) => {
@@ -215,7 +208,7 @@ const copyToClipboard = async (text: string) => {
       document.body.removeChild(el)
     }
     showMessage('success', t('management.registrationTab.toast.codeCopied'))
-  } catch (e) {
+  } catch {
     showMessage('error', t('management.registrationTab.toast.copyFailed'))
   }
 }
@@ -243,20 +236,3 @@ defineExpose({
   }
 })
 </script>
-
-<style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-</style>

@@ -6,7 +6,7 @@
     <div class="flex items-center gap-3 px-4 py-3">
       <!-- Avatar (compact) -->
       <div
-        class="w-9 h-9 bg-gradient-to-br from-emerald-500 to-sky-500 rounded-full flex items-center justify-center text-white font-semibold text-xs flex-shrink-0"
+        class="w-9 h-9 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full flex items-center justify-center text-white font-semibold text-xs flex-shrink-0"
       >
         {{ initials }}
       </div>

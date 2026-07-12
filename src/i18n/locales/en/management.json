@@ -1422,7 +1422,24 @@
     "guestListItem": {
       "renameHint": "Click to rename",
       "changeGroupHint": "Click to change group",
-      "moreDetails": "More details"
+      "moreDetails": "More details",
+      "invitationSent": "Invitation sent",
+      "sent": "Sent",
+      "copy": "Copy",
+      "copied": "Copied!",
+      "markAsSent": "Mark as sent",
+      "copyLink": "Copy invitation link",
+      "editGuest": "Edit guest",
+      "deleteGuest": "Delete guest",
+      "languageKhmer": "Khmer",
+      "languageEnglish": "English",
+      "seatedAt": "Seated at {table}",
+      "seatedAtWithSeat": "Seated at {table}, seat {seat}",
+      "rsvp": {
+        "going": "Going",
+        "maybe": "Maybe",
+        "declined": "Declined"
+      }
     },
     "quickAdd": {
       "addGuestPill": "+ Add guest",
@@ -1878,7 +1895,9 @@
       "deleteCategory": "Delete Category",
       "deleteConfirm": "Are you sure you want to delete \"{name}\"?",
       "cannotBeUndone": "This action cannot be undone!",
-      "deleting": "Deleting..."
+      "deleting": "Deleting...",
+      "editItem": "Edit {name}",
+      "deleteItem": "Delete {name}"
     },
     "budgetInfo": {
       "autoSetBudget": "Budget will be set to match this expense",
@@ -2876,6 +2895,53 @@
           "done": "Done"
         }
       }
+    }
+  },
+  "guestManagementTab": {
+    "checkingTemplate": "Checking template status...",
+    "noTemplate": {
+      "title": "No Template Selected",
+      "description": "You need to select an event template before you can send invitations.",
+      "cta": "Select Template"
+    },
+    "paymentRequired": {
+      "title": "Template Payment Required",
+      "description": "Your template {name} requires payment before you can send invitations.",
+      "cta": "Complete Payment"
+    },
+    "deleteGuestTitle": "Delete Guest",
+    "bulkDeleteTitle": "Delete Multiple Guests",
+    "bulkDeleteMessage": "Are you sure you want to delete {count} guest(s)?",
+    "toast": {
+      "groupCreated": "Group \"{name}\" created",
+      "groupCreateFailed": "Failed to create group",
+      "groupUpdated": "Group \"{name}\" updated",
+      "groupUpdateFailed": "Failed to update group",
+      "groupDeleted": "Group \"{name}\" deleted",
+      "groupDeletedGeneric": "Group deleted",
+      "groupDeleteFailed": "Failed to delete group",
+      "guestRenamed": "Renamed to \"{name}\"",
+      "guestRenameFailed": "Failed to rename guest",
+      "guestMoved": "Moved to \"{name}\"",
+      "guestMoveFailed": "Failed to move guest",
+      "guestAdded": "{name} added to guest list",
+      "guestAddFailed": "Failed to add guest",
+      "importedWithSkipped": "Imported {created} guests. {skipped} skipped: {names}",
+      "imported": "Successfully imported {count} guests",
+      "importFailed": "Failed to import guests",
+      "guestRemoved": "{name} removed from guest list",
+      "guestRemoveFailed": "Failed to remove guest",
+      "markedSent": "{name} marked as sent",
+      "markSentFailed": "Failed to mark guest as sent",
+      "guestUpdated": "{name} updated successfully",
+      "guestUpdateFailed": "Failed to update guest",
+      "linkCopied": "Showcase link ({lang}) copied for {name}",
+      "linkCopyFailed": "Failed to copy link",
+      "noGuestsSelected": "No guests selected",
+      "bulkMarkedSent": "Marked {count} guest(s) as sent",
+      "bulkMarkSentFailed": "Failed to mark guests as sent",
+      "bulkDeleted": "Deleted {count} guest(s)",
+      "bulkDeleteFailed": "Failed to delete guests"
     }
   }
 }

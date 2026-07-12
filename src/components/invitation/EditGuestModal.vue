@@ -35,7 +35,7 @@
             <div class="relative px-5 pt-4 pb-4">
               <button
                 @click="handleClose"
-                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 backdrop-blur hover:bg-white text-slate-500 hover:text-slate-800 flex items-center justify-center shadow-sm ring-1 ring-slate-900/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40"
+                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 backdrop-blur hover:bg-white text-slate-500 hover:text-slate-800 flex items-center justify-center shadow-sm ring-1 ring-slate-900/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
                 :aria-label="t('management.guestGroupsView.editGuestModal.close')"
               >
                 <X class="w-4 h-4" />

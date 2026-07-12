@@ -1422,7 +1422,24 @@
     "guestListItem": {
       "renameHint": "ចុចដើម្បីប្តូរឈ្មោះ",
       "changeGroupHint": "ចុចដើម្បីប្តូរក្រុម",
-      "moreDetails": "ព័ត៌មានលម្អិត"
+      "moreDetails": "ព័ត៌មានលម្អិត",
+      "invitationSent": "បានផ្ញើលិខិតអញ្ជើញ",
+      "sent": "បានផ្ញើ",
+      "copy": "ចម្លង",
+      "copied": "បានចម្លង!",
+      "markAsSent": "សម្គាល់ថាបានផ្ញើ",
+      "copyLink": "ចម្លងតំណលិខិតអញ្ជើញ",
+      "editGuest": "កែប្រែភ្ញៀវ",
+      "deleteGuest": "លុបភ្ញៀវ",
+      "languageKhmer": "ខ្មែរ",
+      "languageEnglish": "អង់គ្លេស",
+      "seatedAt": "អង្គុយនៅ {table}",
+      "seatedAtWithSeat": "អង្គុយនៅ {table} កៅអីលេខ {seat}",
+      "rsvp": {
+        "going": "ចូលរួម",
+        "maybe": "ប្រហែល",
+        "declined": "បដិសេធ"
+      }
     },
     "quickAdd": {
       "addGuestPill": "+ បន្ថែមភ្ញៀវ",
@@ -1878,7 +1895,9 @@
       "deleteCategory": "លុបប្រភេទ",
       "deleteConfirm": "តើអ្នកពិតជាចង់លុប \"{name}\" មែនទេ?",
       "cannotBeUndone": "សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ!",
-      "deleting": "កំពុងលុប..."
+      "deleting": "កំពុងលុប...",
+      "editItem": "កែប្រែ {name}",
+      "deleteItem": "លុប {name}"
     },
     "budgetInfo": {
       "autoSetBudget": "ថវិកានឹងត្រូវបានកំណត់ស្មើនឹងការចំណាយនេះ",
@@ -2876,6 +2895,53 @@
           "done": "រួចរាល់"
         }
       }
+    }
+  },
+  "guestManagementTab": {
+    "checkingTemplate": "កំពុងពិនិត្យស្ថានភាពគំរូ...",
+    "noTemplate": {
+      "title": "មិនទាន់បានជ្រើសរើសគំរូ",
+      "description": "អ្នកត្រូវជ្រើសរើសគំរូព្រឹត្តិការណ៍មុនពេលអាចផ្ញើលិខិតអញ្ជើញបាន។",
+      "cta": "ជ្រើសរើសគំរូ"
+    },
+    "paymentRequired": {
+      "title": "តម្រូវឱ្យបង់ប្រាក់សម្រាប់គំរូ",
+      "description": "គំរូ {name} របស់អ្នកតម្រូវឱ្យបង់ប្រាក់មុនពេលអាចផ្ញើលិខិតអញ្ជើញបាន។",
+      "cta": "បញ្ចប់ការបង់ប្រាក់"
+    },
+    "deleteGuestTitle": "លុបភ្ញៀវ",
+    "bulkDeleteTitle": "លុបភ្ញៀវច្រើននាក់",
+    "bulkDeleteMessage": "តើអ្នកប្រាកដថាចង់លុបភ្ញៀវ {count} នាក់មែនទេ?",
+    "toast": {
+      "groupCreated": "បានបង្កើតក្រុម \"{name}\"",
+      "groupCreateFailed": "បរាជ័យក្នុងការបង្កើតក្រុម",
+      "groupUpdated": "បានកែប្រែក្រុម \"{name}\"",
+      "groupUpdateFailed": "បរាជ័យក្នុងការកែប្រែក្រុម",
+      "groupDeleted": "បានលុបក្រុម \"{name}\"",
+      "groupDeletedGeneric": "បានលុបក្រុម",
+      "groupDeleteFailed": "បរាជ័យក្នុងការលុបក្រុម",
+      "guestRenamed": "បានប្តូរឈ្មោះទៅ \"{name}\"",
+      "guestRenameFailed": "បរាជ័យក្នុងការប្តូរឈ្មោះភ្ញៀវ",
+      "guestMoved": "បានផ្លាស់ទៅក្រុម \"{name}\"",
+      "guestMoveFailed": "បរាជ័យក្នុងការផ្លាស់ទីភ្ញៀវ",
+      "guestAdded": "បានបន្ថែម {name} ទៅក្នុងបញ្ជីភ្ញៀវ",
+      "guestAddFailed": "បរាជ័យក្នុងការបន្ថែមភ្ញៀវ",
+      "importedWithSkipped": "បាននាំចូលភ្ញៀវ {created} នាក់។ បានរំលង {skipped} នាក់៖ {names}",
+      "imported": "បាននាំចូលភ្ញៀវ {count} នាក់ដោយជោគជ័យ",
+      "importFailed": "បរាជ័យក្នុងការនាំចូលភ្ញៀវ",
+      "guestRemoved": "បានលុប {name} ចេញពីបញ្ជីភ្ញៀវ",
+      "guestRemoveFailed": "បរាជ័យក្នុងការលុបភ្ញៀវ",
+      "markedSent": "បានសម្គាល់ {name} ថាបានផ្ញើ",
+      "markSentFailed": "បរាជ័យក្នុងការសម្គាល់ភ្ញៀវថាបានផ្ញើ",
+      "guestUpdated": "បានកែប្រែ {name} ដោយជោគជ័យ",
+      "guestUpdateFailed": "បរាជ័យក្នុងការកែប្រែភ្ញៀវ",
+      "linkCopied": "បានចម្លងតំណលិខិតអញ្ជើញ ({lang}) សម្រាប់ {name}",
+      "linkCopyFailed": "បរាជ័យក្នុងការចម្លងតំណ",
+      "noGuestsSelected": "មិនបានជ្រើសរើសភ្ញៀវទេ",
+      "bulkMarkedSent": "បានសម្គាល់ភ្ញៀវ {count} នាក់ថាបានផ្ញើ",
+      "bulkMarkSentFailed": "បរាជ័យក្នុងការសម្គាល់ភ្ញៀវថាបានផ្ញើ",
+      "bulkDeleted": "បានលុបភ្ញៀវ {count} នាក់",
+      "bulkDeleteFailed": "បរាជ័យក្នុងការលុបភ្ញៀវ"
     }
   }
 }

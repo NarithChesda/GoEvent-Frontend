@@ -4,6 +4,7 @@ import { RouterView, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useNotificationsStore } from './stores/notifications'
 import { secureStorage } from './utils/secureStorage'
+import NotificationContainer from './components/NotificationContainer.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -69,4 +70,5 @@ onMounted(async () => {
 
 <template>
   <RouterView />
+  <NotificationContainer />
 </template>

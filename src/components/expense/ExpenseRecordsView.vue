@@ -45,7 +45,7 @@
         :class="[
           'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap',
           activeFilter === filter.id
-            ? 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white shadow-md'
+            ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
             : 'bg-white border border-slate-200 text-slate-600 hover:border-emerald-300 hover:bg-emerald-50'
         ]"
       >

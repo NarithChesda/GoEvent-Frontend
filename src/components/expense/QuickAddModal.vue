@@ -50,7 +50,7 @@
                     :class="[
                       'flex-1 py-2.5 px-3 rounded-lg font-medium text-sm transition-all duration-200',
                       selectedType === 'expense'
-                        ? 'bg-gradient-to-r from-emerald-500 to-sky-500 text-white shadow-md'
+                        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
                     ]"
                   >
@@ -63,7 +63,7 @@
                     :class="[
                       'flex-1 py-2.5 px-3 rounded-lg font-medium text-sm transition-all duration-200',
                       selectedType === 'budget'
-                        ? 'bg-gradient-to-r from-emerald-500 to-sky-500 text-white shadow-md'
+                        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
                     ]"
                   >
@@ -90,8 +90,8 @@
 
                 <!-- Inline Create Category Form -->
                 <Transition name="slide-down">
-                  <div v-if="showCreateCategoryForm" class="mb-3 p-3 bg-purple-50 border border-purple-200 rounded-xl space-y-3">
-                    <div class="flex items-center gap-2 text-purple-700 mb-2">
+                  <div v-if="showCreateCategoryForm" class="mb-3 p-3 bg-sky-50 border border-sky-200 rounded-xl space-y-3">
+                    <div class="flex items-center gap-2 text-sky-700 mb-2">
                       <FolderOpen class="w-4 h-4" />
                       <span class="text-sm font-medium">{{ t('management.quickAdd.category.newCategory') }}</span>
                     </div>
@@ -100,19 +100,19 @@
                       type="text"
                       :placeholder="t('management.quickAdd.category.namePlaceholder')"
                       maxlength="100"
-                      class="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 bg-white"
+                      class="w-full px-3 py-2 text-sm border border-sky-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                     />
                     <textarea
                       v-model="newCategoryDescription"
                       rows="2"
                       :placeholder="t('management.quickAdd.category.descriptionPlaceholder')"
-                      class="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 bg-white resize-none"
+                      class="w-full px-3 py-2 text-sm border border-sky-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white resize-none"
                     ></textarea>
                     <div class="flex items-center gap-2">
                       <input
                         v-model="newCategoryColor"
                         type="color"
-                        class="w-10 h-8 rounded border border-purple-200 cursor-pointer"
+                        class="w-10 h-8 rounded border border-sky-200 cursor-pointer"
                       />
                       <div class="flex-1 flex flex-wrap gap-1.5">
                         <button
@@ -132,7 +132,7 @@
                       type="button"
                       @click="handleCreateCategory"
                       :disabled="!newCategoryName.trim() || isCreatingCategory"
-                      class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-sky-500 hover:bg-sky-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span v-if="isCreatingCategory" class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"></span>
                       <span>{{ isCreatingCategory ? t('management.quickAdd.category.creating') : t('management.quickAdd.category.create') }}</span>
@@ -146,9 +146,9 @@
                     type="button"
                     @click="isCategoryDropdownOpen = !isCategoryDropdownOpen"
                     :disabled="isEditMode"
-                    class="w-full flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium transition-all duration-200 hover:border-purple-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-slate-200"
+                    class="w-full flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium transition-all duration-200 hover:border-sky-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-slate-200"
                   >
-                    <FolderOpen class="w-4 h-4 text-purple-600 flex-shrink-0" />
+                    <FolderOpen class="w-4 h-4 text-sky-500 flex-shrink-0" />
                     <span class="flex-1 text-left text-slate-900 truncate">
                       {{ selectedCategory?.name || t('management.quickAdd.category.selectCategory') }}
                     </span>
@@ -174,7 +174,7 @@
                           :class="[
                             'flex items-center gap-2 px-3 py-2.5 transition-all duration-200',
                             formData.category_id === category.id.toString()
-                              ? 'bg-gradient-to-r from-emerald-500 to-sky-500'
+                              ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]'
                               : 'hover:bg-slate-50'
                           ]"
                         >
@@ -198,7 +198,7 @@
                             <button
                               type="button"
                               @click.stop="handleEditCategory(category)"
-                              :title="`Edit ${category.name}`"
+                              :title="t('management.quickAdd.category.editItem', { name: category.name })"
                               :class="[
                                 'p-1.5 rounded-md transition-all',
                                 formData.category_id === category.id.toString()
@@ -211,7 +211,7 @@
                             <button
                               type="button"
                               @click.stop="handleDeleteCategory(category)"
-                              :title="`Delete ${category.name}`"
+                              :title="t('management.quickAdd.category.deleteItem', { name: category.name })"
                               :class="[
                                 'p-1.5 rounded-md transition-all',
                                 formData.category_id === category.id.toString()
@@ -450,7 +450,7 @@
                         step="0.01"
                         min="0.01"
                         aria-required="true"
-                        class="w-full pl-10 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
+                        class="w-full pl-10 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                         required
                       />
                     </div>
@@ -465,7 +465,7 @@
                       id="expense-currency"
                       v-model="formData.currency"
                       aria-required="true"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none"
                       required
                     >
                       <option
@@ -490,7 +490,7 @@
                     v-model="formData.description"
                     :placeholder="t('management.quickAdd.expense.descriptionPlaceholder')"
                     aria-required="true"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                     required
                   />
                 </div>
@@ -529,7 +529,7 @@
                             id="expense-date"
                             type="date"
                             v-model="formData.date"
-                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
+                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                           />
                         </div>
 
@@ -539,7 +539,7 @@
                           <select
                             id="expense-payment-method"
                             v-model="formData.payment_method"
-                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none"
+                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none"
                           >
                             <option
                               v-for="method in PAYMENT_METHOD_OPTIONS"
@@ -560,7 +560,7 @@
                           type="text"
                           v-model="formData.paid_to"
                           :placeholder="t('management.quickAdd.expense.vendorPlaceholder')"
-                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
+                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                         />
                       </div>
 
@@ -596,7 +596,7 @@
                           v-model="formData.notes"
                           rows="2"
                           :placeholder="t('management.quickAdd.expense.notesPlaceholder')"
-                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 resize-none"
+                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
                         ></textarea>
                       </div>
                     </div>
@@ -653,7 +653,7 @@
                         step="0.01"
                         min="0"
                         aria-required="true"
-                        class="w-full pl-10 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90"
+                        class="w-full pl-10 pr-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90"
                         required
                       />
                     </div>
@@ -668,7 +668,7 @@
                       id="budget-currency"
                       v-model="formData.currency"
                       aria-required="true"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 appearance-none"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 appearance-none"
                       required
                     >
                       <option
@@ -700,7 +700,7 @@
                     v-model="formData.notes"
                     rows="3"
                     :placeholder="t('management.quickAdd.budget.notesPlaceholder')"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-white/90 resize-none"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white/90 resize-none"
                   ></textarea>
                 </div>
               </template>

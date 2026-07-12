@@ -453,23 +453,6 @@
       @confirm="handleDeleteExpense"
       @cancel="() => { showDeleteExpenseModal = false; deletingExpense = null }"
     />
-
-    <!-- Success Toast -->
-    <Teleport to="body">
-      <Transition name="toast">
-        <div
-          v-if="showSuccessToast"
-          role="status"
-          aria-live="polite"
-          class="fixed bottom-6 right-6 bg-emerald-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-[200]"
-        >
-          <div class="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-            <Check class="w-4 h-4" />
-          </div>
-          <span class="font-medium">{{ successMessage }}</span>
-        </div>
-      </Transition>
-    </Teleport>
   </div>
 </template>
 
@@ -480,7 +463,6 @@ import {
   Edit2,
   Trash2,
   AlertCircle,
-  Check,
   Wallet,
   ChevronDown,
   Plus,
@@ -498,7 +480,7 @@ import {
   type ExpenseRecord
 } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
-import { useSuccessToast } from '@/composables/useSuccessToast'
+import { useNotifications } from '@/composables/useNotifications'
 import { getErrorMessage } from '@/utils/errorMessages'
 import {
   updateBudgetAfterExpenseDelete,
@@ -585,7 +567,7 @@ const selectFilter = (filter: string) => {
 }
 
 // Use composables
-const { showToast: showSuccessToast, message: successMessage, showSuccess } = useSuccessToast()
+const { success: showSuccess } = useNotifications()
 
 // Use shared icon utilities
 const { getIconComponent } = useExpenseIcons()
@@ -961,17 +943,6 @@ defineExpose({
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}
-
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.3s ease;
-}
-
-.toast-enter-from,
-.toast-leave-to {
-  opacity: 0;
-  transform: translateY(1rem);
 }
 
 .slide-down-enter-active,

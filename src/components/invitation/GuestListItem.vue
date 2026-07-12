@@ -10,7 +10,7 @@
         :checked="selected"
         @change="$emit('toggle-select', guest)"
         @click.stop
-        class="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-2 focus:ring-emerald-500/20 focus:ring-offset-0 cursor-pointer flex-shrink-0 transition-colors"
+        class="w-4 h-4 rounded border-slate-300 text-sky-500 focus:ring-2 focus:ring-sky-200 focus:ring-offset-0 cursor-pointer flex-shrink-0 transition-colors"
       />
 
       <!-- Initials avatar tinted with the guest's group color -->
@@ -68,10 +68,10 @@
           <div
             v-if="guest.invitation_status === 'sent' || guest.invitation_status === 'viewed'"
             class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-medium"
-            title="Invitation sent"
+            :title="t('management.guestGroupsView.guestListItem.invitationSent')"
           >
             <CheckCheck class="w-3 h-3" />
-            <span>Sent</span>
+            <span>{{ t('management.guestGroupsView.guestListItem.sent') }}</span>
           </div>
 
           <!-- RSVP status badge (private-event response) -->
@@ -103,7 +103,9 @@
               color: guest.table_details.color || '#0ea5e9',
               backgroundColor: `${guest.table_details.color || '#0ea5e9'}14`
             }"
-            :title="`Seated at ${guest.table_details.name}${guest.seat_number ? `, seat ${guest.seat_number}` : ''}`"
+            :title="guest.seat_number
+              ? t('management.guestGroupsView.guestListItem.seatedAtWithSeat', { table: guest.table_details.name, seat: guest.seat_number })
+              : t('management.guestGroupsView.guestListItem.seatedAt', { table: guest.table_details.name })"
           >
             <Armchair class="w-3 h-3" />
             <span class="truncate max-w-[100px]">{{ guest.table_details.name }}<template v-if="guest.seat_number"> · {{ guest.seat_number }}</template></span>
@@ -119,7 +121,7 @@
           ? 'text-emerald-700 bg-emerald-100'
           : 'text-slate-600 bg-slate-100 hover:bg-slate-200 active:bg-slate-300'"
       >
-        {{ showCopiedFeedback ? 'Copied!' : 'Copy' }}
+        {{ showCopiedFeedback ? t('management.guestGroupsView.guestListItem.copied') : t('management.guestGroupsView.guestListItem.copy') }}
       </button>
 
       <!-- Mobile "more details" button — opens the full edit modal (RSVP, cash gift, contact info) -->
@@ -142,7 +144,7 @@
         <button
           v-if="guest.invitation_status === 'not_sent'"
           @click.stop="$emit('mark-sent', guest)"
-          title="Mark as sent"
+          :title="t('management.guestGroupsView.guestListItem.markAsSent')"
           class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
         >
           <Send class="w-4 h-4" />
@@ -153,7 +155,7 @@
           <button
             ref="linkButton"
             @click.stop="toggleLinkMenu"
-            title="Copy invitation link"
+            :title="t('management.guestGroupsView.guestListItem.copyLink')"
             class="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all"
             :class="{ 'bg-slate-100 text-slate-700': showLinkMenu }"
           >
@@ -164,7 +166,7 @@
         <!-- Edit -->
         <button
           @click.stop="$emit('edit', guest)"
-          title="Edit guest"
+          :title="t('management.guestGroupsView.guestListItem.editGuest')"
           class="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
         >
           <Edit2 class="w-4 h-4" />
@@ -173,7 +175,7 @@
         <!-- Delete -->
         <button
           @click.stop="$emit('delete', guest)"
-          title="Delete guest"
+          :title="t('management.guestGroupsView.guestListItem.deleteGuest')"
           class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
         >
           <Trash2 class="w-4 h-4" />
@@ -198,14 +200,14 @@
             class="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition-colors flex items-center gap-2"
           >
             <Globe class="w-3.5 h-3.5 text-slate-400" />
-            Khmer
+            {{ t('management.guestGroupsView.guestListItem.languageKhmer') }}
           </button>
           <button
             @click="handleCopyLink('en')"
             class="w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition-colors flex items-center gap-2"
           >
             <Globe class="w-3.5 h-3.5 text-slate-400" />
-            English
+            {{ t('management.guestGroupsView.guestListItem.languageEnglish') }}
           </button>
         </div>
       </div>
@@ -386,7 +388,7 @@ const rsvpBadge = computed<RsvpBadgeConfig | null>(() => {
 
   if (status === 'attending') {
     return {
-      label: 'Going',
+      label: t('management.guestGroupsView.guestListItem.rsvp.going'),
       classes: 'bg-emerald-50 text-emerald-700',
       icon: Check,
       title: baseTitle,
@@ -396,7 +398,7 @@ const rsvpBadge = computed<RsvpBadgeConfig | null>(() => {
 
   if (status === 'maybe') {
     return {
-      label: 'Maybe',
+      label: t('management.guestGroupsView.guestListItem.rsvp.maybe'),
       classes: 'bg-amber-50 text-amber-700',
       icon: HelpCircle,
       title: baseTitle,
@@ -406,7 +408,7 @@ const rsvpBadge = computed<RsvpBadgeConfig | null>(() => {
 
   // not_attending
   return {
-    label: 'Declined',
+    label: t('management.guestGroupsView.guestListItem.rsvp.declined'),
     classes: 'bg-rose-50 text-rose-700',
     icon: XIcon,
     title: baseTitle,

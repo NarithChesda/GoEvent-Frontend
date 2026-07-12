@@ -6,50 +6,57 @@
     <!-- Loading State -->
     <div
       v-if="loadingPayments"
-      class="bg-white rounded-3xl shadow-sm ring-1 ring-slate-900/5 p-6 sm:p-8"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8"
     >
-      <div class="flex items-center justify-center">
-        <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
-        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">Checking template status...</span>
+      <div class="flex items-center justify-center text-slate-600">
+        <div class="w-6 h-6 sm:w-8 sm:h-8 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+        <span class="ml-2 sm:ml-3 text-xs sm:text-sm">{{ t('management.guestManagementTab.checkingTemplate') }}</span>
       </div>
     </div>
 
     <!-- No Template Selected -->
     <div
       v-else-if="!props.event?.event_template"
-      class="bg-white rounded-3xl shadow-sm ring-1 ring-slate-900/5 p-8 sm:p-12 text-center"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
     >
-      <Mail class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
-      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">No Template Selected</h3>
-      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6 max-w-md mx-auto">
-        You need to select an event template before you can send invitations.
+      <div
+        class="w-24 h-24 rounded-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center mx-auto mb-4 sm:mb-6"
+      >
+        <Mail class="w-10 h-10 text-[#2ecc71]" aria-hidden="true" />
+      </div>
+      <h3 class="text-xl lg:text-2xl font-bold text-slate-900 mb-2">{{ t('management.guestManagementTab.noTemplate.title') }}</h3>
+      <p class="text-sm sm:text-base text-slate-600 leading-relaxed mb-6 max-w-md mx-auto">
+        {{ t('management.guestManagementTab.noTemplate.description') }}
       </p>
       <button
         @click="redirectToTemplateTab"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-sm sm:text-base"
+        class="inline-flex items-center px-5 py-2.5 lg:px-6 lg:py-3 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-xl transition-colors duration-200"
       >
-        <Mail class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-        Select Template
+        <Mail class="w-4 h-4 mr-2" />
+        {{ t('management.guestManagementTab.noTemplate.cta') }}
       </button>
     </div>
 
     <!-- Template Payment Check -->
     <div
       v-else-if="!hasTemplatePayment"
-      class="bg-white rounded-3xl shadow-sm ring-1 ring-slate-900/5 p-8 sm:p-12 text-center"
+      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
     >
-      <Lock class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
-      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">Template Payment Required</h3>
-      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6 max-w-md mx-auto">
-        Your template {{ props.event.event_template_details?.name || 'Selected Template' }}
-        requires payment before you can send invitations.
+      <div
+        class="w-24 h-24 rounded-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center mx-auto mb-4 sm:mb-6"
+      >
+        <Lock class="w-10 h-10 text-[#2ecc71]" aria-hidden="true" />
+      </div>
+      <h3 class="text-xl lg:text-2xl font-bold text-slate-900 mb-2">{{ t('management.guestManagementTab.paymentRequired.title') }}</h3>
+      <p class="text-sm sm:text-base text-slate-600 leading-relaxed mb-6 max-w-md mx-auto">
+        {{ t('management.guestManagementTab.paymentRequired.description', { name: props.event.event_template_details?.name || '' }) }}
       </p>
       <button
         @click="redirectToPaymentTab"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center text-sm sm:text-base"
+        class="inline-flex items-center px-5 py-2.5 lg:px-6 lg:py-3 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-xl transition-colors duration-200"
       >
-        <CreditCard class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-        Complete Payment
+        <CreditCard class="w-4 h-4 mr-2" />
+        {{ t('management.guestManagementTab.paymentRequired.cta') }}
       </button>
     </div>
 
@@ -127,7 +134,7 @@
     <!-- Delete Guest Modal -->
     <DeleteConfirmModal
       :show="showDeleteModal"
-      title="Delete Guest"
+      :title="t('management.guestManagementTab.deleteGuestTitle')"
       :item-name="(deleteTargetGuest && deleteTargetGuest.name) || ''"
       :loading="deletingGuest"
       @confirm="confirmDeleteGuest"
@@ -137,8 +144,8 @@
     <!-- Bulk Delete Guests Modal -->
     <DeleteConfirmModal
       :show="showBulkDeleteModal"
-      title="Delete Multiple Guests"
-      :message="`Are you sure you want to delete ${bulkDeleteGuestIds.length} guest(s)?`"
+      :title="t('management.guestManagementTab.bulkDeleteTitle')"
+      :message="t('management.guestManagementTab.bulkDeleteMessage', { count: bulkDeleteGuestIds.length })"
       :loading="bulkDeletingGuests"
       @confirm="confirmBulkDelete"
       @cancel="cancelBulkDelete"
@@ -187,19 +194,6 @@
       @copy-link="copyShowcaseLink"
     />
 
-    <!-- Success/Error Messages -->
-    <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-20 lg:bottom-8 right-4 sm:right-8 left-4 sm:left-auto z-[100]">
-        <div
-          :class="message.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'"
-          class="text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-lg flex items-center text-sm sm:text-base"
-        >
-          <CheckCircle v-if="message.type === 'success'" class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
-          <AlertCircle v-else class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
-          <span class="flex-1">{{ message.text }}</span>
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -207,15 +201,13 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
-  CheckCircle,
-  Users,
   Lock,
   CreditCard,
   Mail,
   UserPlus,
-  AlertCircle,
   Armchair,
 } from 'lucide-vue-next'
+import { useNotifications } from '@/composables/useNotifications'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { useGuestManagementStore } from '../stores/guestManagement'
 import { useBulkImport } from '../composables/invitation/useBulkImport'
@@ -331,7 +323,6 @@ const markGuestAsSent = (guestId: number, groupId: number) =>
 const getGroupPagination = (groupId: number) => store.getGroupPaginationState(groupId)
 const getGroupGuests = (groupId: number) => store.getGroupPaginationState(groupId).guests
 const isGroupLoading = (groupId: number) => store.getGroupPaginationState(groupId).loading
-const getAllGuestsPagination = () => allGuestsPaginationValue.value
 const isAllGuestsLoading = () => allGuestsPaginationValue.value.loading
 
 // Pagination actions
@@ -379,7 +370,7 @@ onUnmounted(() => {
 
 // Local state
 const activeSubTab = ref('guests')
-const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
+const { success: notifySuccess, error: notifyError } = useNotifications()
 const showAddGuestModal = ref(false)
 const isCreatingGroup = ref(false)
 const pendingGuestGroupSelection = ref<number | null>(null)
@@ -451,9 +442,9 @@ const handleInlineCreateGroup = async (data: { name: string; description?: strin
   })
 
   if (response.success && response.data) {
-    showMessage('success', `Group "${response.data.name}" created`)
+    showMessage('success', t('management.guestManagementTab.toast.groupCreated', { name: response.data.name }))
   } else {
-    showMessage('error', response.message || 'Failed to create group')
+    showMessage('error', response.message || t('management.guestManagementTab.toast.groupCreateFailed'))
   }
 }
 
@@ -461,9 +452,9 @@ const handleInlineUpdateGroup = async (groupId: number, data: { name: string; de
   const response = await updateGroup(groupId, data)
 
   if (response.success && response.data) {
-    showMessage('success', `Group "${response.data.name}" updated`)
+    showMessage('success', t('management.guestManagementTab.toast.groupUpdated', { name: response.data.name }))
   } else {
-    showMessage('error', response.message || 'Failed to update group')
+    showMessage('error', response.message || t('management.guestManagementTab.toast.groupUpdateFailed'))
   }
 }
 
@@ -472,9 +463,14 @@ const handleInlineDeleteGroup = async (groupId: number) => {
   const response = await deleteGroup(groupId)
 
   if (response.success) {
-    showMessage('success', groupName ? `Group "${groupName}" deleted` : 'Group deleted')
+    showMessage(
+      'success',
+      groupName
+        ? t('management.guestManagementTab.toast.groupDeleted', { name: groupName })
+        : t('management.guestManagementTab.toast.groupDeletedGeneric'),
+    )
   } else {
-    showMessage('error', response.message || 'Failed to delete group')
+    showMessage('error', response.message || t('management.guestManagementTab.toast.groupDeleteFailed'))
   }
 }
 
@@ -483,9 +479,9 @@ const handleInlineUpdateGuestName = async (guest: EventGuest, name: string) => {
   const response = await updateGuest(guest.id, guest.group, { name })
 
   if (response.success && response.data) {
-    showMessage('success', `Renamed to "${response.data.name}"`)
+    showMessage('success', t('management.guestManagementTab.toast.guestRenamed', { name: response.data.name }))
   } else {
-    showMessage('error', response.message || 'Failed to rename guest')
+    showMessage('error', response.message || t('management.guestManagementTab.toast.guestRenameFailed'))
   }
 }
 
@@ -495,9 +491,9 @@ const handleInlineUpdateGuestGroup = async (guest: EventGuest, groupId: number) 
   const response = await updateGuest(guest.id, guest.group, { group: groupId })
 
   if (response.success && response.data) {
-    showMessage('success', `Moved to "${response.data.group_details?.name ?? ''}"`)
+    showMessage('success', t('management.guestManagementTab.toast.guestMoved', { name: response.data.group_details?.name ?? '' }))
   } else {
-    showMessage('error', response.message || 'Failed to move guest')
+    showMessage('error', response.message || t('management.guestManagementTab.toast.guestMoveFailed'))
   }
 }
 
@@ -506,9 +502,9 @@ const handleQuickAddGuest = async (name: string, groupId: number) => {
   const response = await createGuest(name, groupId)
 
   if (response.success && response.data) {
-    showMessage('success', `${response.data.name} added to guest list`)
+    showMessage('success', t('management.guestManagementTab.toast.guestAdded', { name: response.data.name }))
   } else {
-    showMessage('error', response.message || 'Failed to add guest')
+    showMessage('error', response.message || t('management.guestManagementTab.toast.guestAddFailed'))
   }
 }
 
@@ -536,15 +532,19 @@ const handleBulkImport = async (groupId: number) => {
     if (skipped > 0) {
       showMessage(
         'success',
-        `Imported ${created} guests. ${skipped} skipped: ${skipped_guests.map((g) => g.name).join(', ')}`,
+        t('management.guestManagementTab.toast.importedWithSkipped', {
+          created,
+          skipped,
+          names: skipped_guests.map((g) => g.name).join(', '),
+        }),
       )
     } else {
-      showMessage('success', `Successfully imported ${created} guests`)
+      showMessage('success', t('management.guestManagementTab.toast.imported', { count: created }))
     }
 
     showAddGuestModal.value = false
   } else {
-    showMessage('error', response.message || 'Failed to import guests')
+    showMessage('error', response.message || t('management.guestManagementTab.toast.importFailed'))
   }
 }
 
@@ -590,10 +590,10 @@ const handleCreateGroupFromAddGuest = async (data: { name: string; description?:
   })
 
   if (response.success && response.data) {
-    showMessage('success', `Group "${response.data.name}" created`)
+    showMessage('success', t('management.guestManagementTab.toast.groupCreated', { name: response.data.name }))
     // The AddGuestModal watches groups.length and will auto-select the new group
   } else {
-    showMessage('error', response.message || 'Failed to create group')
+    showMessage('error', response.message || t('management.guestManagementTab.toast.groupCreateFailed'))
   }
 
   isCreatingGroup.value = false
@@ -607,10 +607,10 @@ const handleEditGroupFromAddGuest = async (group: GuestGroup) => {
   })
 
   if (response.success && response.data) {
-    showMessage('success', `Group "${response.data.name}" updated`)
+    showMessage('success', t('management.guestManagementTab.toast.groupUpdated', { name: response.data.name }))
     await loadGroups()
   } else {
-    showMessage('error', response.message || 'Failed to update group')
+    showMessage('error', response.message || t('management.guestManagementTab.toast.groupUpdateFailed'))
   }
 }
 
@@ -618,10 +618,10 @@ const handleDeleteGroupFromAddGuest = async (group: GuestGroup) => {
   const response = await deleteGroup(group.id)
 
   if (response.success) {
-    showMessage('success', `Group "${group.name}" deleted`)
+    showMessage('success', t('management.guestManagementTab.toast.groupDeleted', { name: group.name }))
     // Store handles stats updates internally
   } else {
-    showMessage('error', response.message || 'Failed to delete group')
+    showMessage('error', response.message || t('management.guestManagementTab.toast.groupDeleteFailed'))
   }
 }
 
@@ -639,10 +639,10 @@ const confirmDeleteGuest = async () => {
   const response = await deleteGuest(deleteTargetGuest.value.id, groupId)
 
   if (response.success) {
-    showMessage('success', deleteTargetGuest.value.name + ' removed from guest list')
+    showMessage('success', t('management.guestManagementTab.toast.guestRemoved', { name: deleteTargetGuest.value.name }))
     // Counts are now updated reactively via callbacks - no need for loadGuestStats() or loadGroups()
   } else {
-    showMessage('error', response.message || 'Failed to remove guest')
+    showMessage('error', response.message || t('management.guestManagementTab.toast.guestRemoveFailed'))
   }
 
   deletingGuest.value = false
@@ -660,9 +660,9 @@ const handleMarkAsSent = async (guest: EventGuest) => {
   const response = await markGuestAsSent(guest.id, guest.group)
 
   if (response.success) {
-    showMessage('success', `${guest.name} marked as sent`)
+    showMessage('success', t('management.guestManagementTab.toast.markedSent', { name: guest.name }))
   } else {
-    showMessage('error', response.message || 'Failed to mark guest as sent')
+    showMessage('error', response.message || t('management.guestManagementTab.toast.markSentFailed'))
   }
 }
 
@@ -712,7 +712,7 @@ const handleUpdateGuest = async (guestId: number, data: any) => {
   const response = await updateGuest(guestId, originalGroupId, data)
 
   if (response.success && response.data) {
-    showMessage('success', `${response.data.name} updated successfully`)
+    showMessage('success', t('management.guestManagementTab.toast.guestUpdated', { name: response.data.name }))
     showEditGuestModal.value = false
     editTargetGuest.value = null
 
@@ -731,12 +731,12 @@ const handleUpdateGuest = async (guestId: number, data: any) => {
       if (hasFieldErrors && editGuestModalRef.value) {
         editGuestModalRef.value.setFieldErrors(response.errors as Record<string, string[]>)
       } else if (editGuestModalRef.value) {
-        editGuestModalRef.value.setErrorMessage(response.message || 'Failed to update guest')
+        editGuestModalRef.value.setErrorMessage(response.message || t('management.guestManagementTab.toast.guestUpdateFailed'))
       }
     } else if (editGuestModalRef.value) {
-      editGuestModalRef.value.setErrorMessage(response.message || 'Failed to update guest')
+      editGuestModalRef.value.setErrorMessage(response.message || t('management.guestManagementTab.toast.guestUpdateFailed'))
     }
-    showMessage('error', response.message || 'Failed to update guest')
+    showMessage('error', response.message || t('management.guestManagementTab.toast.guestUpdateFailed'))
   }
 
   isUpdatingGuest.value = false
@@ -753,11 +753,6 @@ const getGuestShowcaseUrl = (guest: EventGuest, language: 'en' | 'kh' = 'kh') =>
   return getGuestSSRMetaUrl(props.eventId, guest.name, language)
 }
 
-const getDirectGuestShowcaseUrl = (guest: EventGuest, language: 'en' | 'kh' = 'kh') => {
-  const showcaseUrl = `/events/${props.eventId}/showcase?guest_name=${encodeURIComponent(guest.name)}&lang=${language}`
-  return `${window.location.origin}${showcaseUrl}`
-}
-
 /**
  * Copy personalized shortlink for guest invitation
  *
@@ -772,8 +767,8 @@ const copyShowcaseLink = (guest: EventGuest, language: 'en' | 'kh') => {
     console.warn('[copyShowcaseLink] No short_url for guest, using fallback URL:', guest.id)
     const fallbackUrl = getGuestShowcaseUrl(guest, language)
     navigator.clipboard.writeText(fallbackUrl)
-      .then(() => showMessage('success', `Showcase link (${language.toUpperCase()}) copied for ${guest.name}`))
-      .catch(() => showMessage('error', 'Failed to copy link'))
+      .then(() => showMessage('success', t('management.guestManagementTab.toast.linkCopied', { lang: language.toUpperCase(), name: guest.name })))
+      .catch(() => showMessage('error', t('management.guestManagementTab.toast.linkCopyFailed')))
     return
   }
 
@@ -783,17 +778,17 @@ const copyShowcaseLink = (guest: EventGuest, language: 'en' | 'kh') => {
   navigator.clipboard
     .writeText(fullShortLink)
     .then(() => {
-      showMessage('success', `Showcase link (${language.toUpperCase()}) copied for ${guest.name}`)
+      showMessage('success', t('management.guestManagementTab.toast.linkCopied', { lang: language.toUpperCase(), name: guest.name }))
     })
     .catch((error) => {
       console.error('[copyShowcaseLink] Clipboard API failed:', error)
-      showMessage('error', 'Failed to copy link. Please try again.')
+      showMessage('error', t('management.guestManagementTab.toast.linkCopyFailed'))
     })
 }
 
 const handleBulkMarkSent = async (groupId: number, selectedIds: number[]) => {
   if (selectedIds.length === 0) {
-    showMessage('error', 'No guests selected')
+    showMessage('error', t('management.guestManagementTab.toast.noGuestsSelected'))
     return
   }
 
@@ -802,19 +797,19 @@ const handleBulkMarkSent = async (groupId: number, selectedIds: number[]) => {
 
   if (response.success && response.data) {
     const count = response.data.count
-    showMessage('success', `Marked ${count} guest(s) as sent`)
+    showMessage('success', t('management.guestManagementTab.toast.bulkMarkedSent', { count }))
 
     // Clear selection after successful operation
     guestGroupsViewRef.value?.clearSelection()
   } else {
-    showMessage('error', response.message || 'Failed to mark guests as sent')
+    showMessage('error', response.message || t('management.guestManagementTab.toast.bulkMarkSentFailed'))
     // Selection remains intact so user can retry
   }
 }
 
 const handleBulkDelete = (groupId: number, selectedIds: number[]) => {
   if (selectedIds.length === 0) {
-    showMessage('error', 'No guests selected')
+    showMessage('error', t('management.guestManagementTab.toast.noGuestsSelected'))
     return
   }
 
@@ -840,12 +835,12 @@ const confirmBulkDelete = async () => {
 
   if (response.success && response.data) {
     const count = response.data.count
-    showMessage('success', `Deleted ${count} guest(s)`)
+    showMessage('success', t('management.guestManagementTab.toast.bulkDeleted', { count }))
 
     // Clear selection after successful operation
     guestGroupsViewRef.value?.clearSelection()
   } else {
-    showMessage('error', response.message || 'Failed to delete guests')
+    showMessage('error', response.message || t('management.guestManagementTab.toast.bulkDeleteFailed'))
 
     // Restore selection on failure so user can retry
     guestGroupsViewRef.value?.restoreSelection(originalSelection)
@@ -865,10 +860,11 @@ const cancelBulkDelete = () => {
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {
-  message.value = { type, text }
-  setTimeout(() => {
-    message.value = null
-  }, 5000)
+  if (type === 'success') {
+    notifySuccess(text)
+  } else {
+    notifyError(text)
+  }
 }
 
 // Lifecycle
@@ -908,21 +904,6 @@ defineExpose({
 </script>
 
 <style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-
 /* Hide scrollbar but keep functionality */
 .scrollbar-hide {
   -ms-overflow-style: none;

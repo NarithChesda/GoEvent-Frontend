@@ -66,7 +66,7 @@ export function useNotifications() {
   }
 
   return {
-    notifications: notifications.value,
+    notifications,
     addNotification,
     removeNotification,
     clearAllNotifications,

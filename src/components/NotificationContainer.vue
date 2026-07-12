@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed bottom-8 right-8 z-50 space-y-4 max-w-sm">
+  <div class="fixed bottom-20 lg:bottom-4 right-4 lg:right-6 z-50 space-y-4 max-w-sm">
     <TransitionGroup name="notification" tag="div" class="space-y-4">
       <div
         v-for="notification in notifications"
@@ -49,7 +49,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { CheckCircle, AlertCircle, AlertTriangle, Info, X } from 'lucide-vue-next'
 import { useNotifications, type Notification } from '../composables/useNotifications'
 
