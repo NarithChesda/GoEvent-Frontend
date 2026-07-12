@@ -46,7 +46,7 @@ Weights: `font-bold` page/section titles, `font-semibold` card titles + primary 
 
 ## 4. Layout & Pages
 
-- Page shell: wrap in `<MainLayout>`; content section `py-4 sm:py-6 lg:py-8` inside `max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8`.
+- Page shell: wrap in `<MainLayout>`; content section `py-4 sm:py-6 lg:py-8` inside `max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8`. Top-level list pages (Events/Discover/Services) add the subtle brand tint on the page wrapper: `bg-gradient-to-r from-[#2ecc71]/[0.02] via-white to-[#1e90ff]/[0.02]`.
 - Page title row: `flex items-center justify-between gap-2` header, one line, no wrap; `mb-6 sm:mb-8 lg:mb-10`. Title gets `flex-1 min-w-0 truncate` so it yields space instead of pushing controls off-screen or wrapping the row. When there's more than one right-side control (e.g. a time toggle + category filter), group them in `flex items-center gap-1.5 sm:gap-2 flex-shrink-0` so the group holds its size and never wraps.
 - Vertical rhythm: sibling sections `space-y-5` or `space-y-6 sm:space-y-8`; within a group `space-y-3`; grids `gap-3` (forms) to `gap-6` (card grids).
 - **Every page needs four states**: loading skeleton, populated content, empty state, and (where auth-gated) unauthenticated state. Reuse `EventsLoadingSkeleton` / `EventsEmptyState` patterns.

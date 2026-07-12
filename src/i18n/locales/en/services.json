@@ -9,6 +9,11 @@
     "title": "No services found.",
     "description": "Try adjusting your filters or check back later."
   },
+  "errorState": {
+    "title": "Couldn't load services",
+    "description": "Something went wrong while loading services. Please check your connection and try again.",
+    "retry": "Try Again"
+  },
   "sort": {
     "featured": "Featured First",
     "newest": "Newest First",

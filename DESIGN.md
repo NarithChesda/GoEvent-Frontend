@@ -190,6 +190,7 @@ Mobile-first, always. Base classes target phones; scale up with `sm:` (640) → 
 ### 5.2 Page shell
 
 - Wrap pages in `<MainLayout>`; content: `py-4 sm:py-6 lg:py-8` inside `max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8`.
+- Top-level list pages (Events, Discover, Services) paint the page wrapper with the subtle brand tint: `bg-gradient-to-r from-[#2ecc71]/[0.02] via-white to-[#1e90ff]/[0.02]`.
 - Vertical rhythm: sibling sections `space-y-5` or `space-y-6 sm:space-y-8`; within a group `space-y-3`; grids `gap-3` (forms) to `gap-6` (card grids).
 - Top bar height is `4rem`; fixed sub-navigation sits at `top-16`.
 - **Any fixed bottom element uses `bottom-20 lg:bottom-4`** to clear the mobile tab bar.

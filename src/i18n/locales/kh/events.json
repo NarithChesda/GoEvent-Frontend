@@ -6,8 +6,7 @@
     "guestCount": "{count} ភ្ញៀវ",
     "hostOthers": "& {count} នាក់ផ្សេងទៀត",
     "today": "ថ្ងៃនេះ",
-    "fromPrice": "ចាប់ពី {price}",
-    "freeRsvp": "RSVP ឥតគិតថ្លៃ"
+    "fromPrice": "ចាប់ពី {price}"
   },
   "createEvent": "បង្កើតព្រឹត្តិការណ៍",
   "createFirstEvent": "បង្កើតព្រឹត្តិការណ៍ដំបូងរបស់អ្នក",

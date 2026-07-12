@@ -8,7 +8,7 @@
  * @module composables/useServices
  */
 
-import { ref, computed, type Ref, type ComputedRef } from 'vue'
+import { ref, computed, type ComputedRef } from 'vue'
 import {
   serviceCategoriesService,
   serviceListingsService,
@@ -166,6 +166,7 @@ export function useServices() {
   // State - Listings
   const listings = ref<Listing[]>([])
   const isLoadingListings = ref(false)
+  const listingsError = ref(false)
   const currentPage = ref(1)
   const totalPages = ref(1)
   const hasMore = ref(false)
@@ -222,6 +223,7 @@ export function useServices() {
    */
   const fetchListings = async (filters?: ListingFilters): Promise<void> => {
     isLoadingListings.value = true
+    listingsError.value = false
 
     try {
       // Build filter params
@@ -283,6 +285,7 @@ export function useServices() {
         if (import.meta.env.DEV) {
           console.error('Failed to fetch listings:', response.message)
         }
+        listingsError.value = true
         if (currentPage.value === 1) {
           listings.value = []
         }
@@ -291,6 +294,7 @@ export function useServices() {
       if (import.meta.env.DEV) {
         console.error('Error fetching listings:', error)
       }
+      listingsError.value = true
       if (currentPage.value === 1) {
         listings.value = []
       }
@@ -559,6 +563,7 @@ export function useServices() {
     // State - Listings
     listings,
     isLoadingListings,
+    listingsError,
     currentPage,
     totalPages,
     hasMore,

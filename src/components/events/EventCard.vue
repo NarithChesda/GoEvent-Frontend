@@ -13,14 +13,9 @@
           <span class="text-slate-400">{{ formatEventTime(event.start_date) }}</span>
           <span
             v-if="ticketBadge"
-            :class="[
-              'px-2 py-0.5 rounded-full text-[11px] font-medium',
-              ticketBadge.kind === 'ticket'
-                ? 'bg-amber-50 text-amber-700'
-                : 'bg-emerald-50 text-emerald-700',
-            ]"
+            class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700"
           >
-            {{ ticketBadge.label }}
+            {{ ticketBadge }}
           </span>
         </div>
 
@@ -155,14 +150,9 @@
           </span>
           <span
             v-if="ticketBadge"
-            :class="[
-              'px-2 py-0.5 rounded-full text-xs font-medium',
-              ticketBadge.kind === 'ticket'
-                ? 'bg-amber-50 text-amber-700'
-                : 'bg-emerald-50 text-emerald-700',
-            ]"
+            class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700"
           >
-            {{ ticketBadge.label }}
+            {{ ticketBadge }}
           </span>
         </div>
 
@@ -390,22 +380,15 @@ const hostNames = computed(() => formatHostNames(props.event))
 const guestCount = computed(() => getGuestCount(props.event))
 const category = computed(() => getEventCategory(props.event))
 
-// Ticket / RSVP badge — single source of truth used by both card variants.
+// Ticket price badge — single source of truth used by both card variants.
 // Backend returns `has_ticketed_sales` + `min_ticket_price` + `min_ticket_currency`
-// on every list row (see TICKETS_FRONTEND_GUIDE.md). Falls back to "Free RSVP"
-// when the event has no ticketed sales but RSVP is enabled.
-const ticketBadge = computed<{ kind: 'ticket' | 'rsvp'; label: string } | null>(() => {
+// on every list row (see TICKETS_FRONTEND_GUIDE.md). Free events show no badge.
+const ticketBadge = computed<string | null>(() => {
   const event = props.event
   if (event.has_ticketed_sales && event.min_ticket_price && event.min_ticket_currency) {
-    return {
-      kind: 'ticket',
-      label: t('events.card.fromPrice', {
-        price: formatCurrency(event.min_ticket_price, event.min_ticket_currency as CurrencyCode),
-      }),
-    }
-  }
-  if (event.rsvp_enabled) {
-    return { kind: 'rsvp', label: t('events.card.freeRsvp') }
+    return t('events.card.fromPrice', {
+      price: formatCurrency(event.min_ticket_price, event.min_ticket_currency as CurrencyCode),
+    })
   }
   return null
 })

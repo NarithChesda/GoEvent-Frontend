@@ -6,8 +6,7 @@
     "guestCount": "{count} guest | {count} guests",
     "hostOthers": "& {count} other | & {count} others",
     "today": "Today",
-    "fromPrice": "From {price}",
-    "freeRsvp": "Free RSVP"
+    "fromPrice": "From {price}"
   },
   "createEvent": "Create Event",
   "createFirstEvent": "Create Your First Event",

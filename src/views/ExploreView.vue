@@ -60,7 +60,7 @@
               class="flex items-center gap-3 text-slate-600"
             >
               <div
-                class="w-6 h-6 border-3 border-[#2ecc71] border-t-transparent rounded-full animate-spin"
+                class="w-6 h-6 border-2 border-[#2ecc71] border-t-transparent rounded-full animate-spin"
               ></div>
               <span class="text-sm font-medium">{{ t('discover.loadingMore') }}</span>
             </div>
@@ -103,8 +103,6 @@
           </div>
         </div>
       </Transition>
-
-      <!-- Contact Us FAB (Telegram) -->
 
       <!-- Public Event Drawer -->
       <PublicEventDrawer
