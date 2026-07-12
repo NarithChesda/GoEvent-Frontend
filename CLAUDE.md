@@ -14,6 +14,13 @@ GoEvent is a Vue 3 + TypeScript event management platform with a sophisticated e
 - Guest invitation system with tracking
 - Payment method integration
 
+## Documentation Map
+
+- **[DESIGN.md](DESIGN.md)** — the authoritative brand & design standard (logos, brand colors, typography, layout, motion, accessibility, definition-of-done checklist). Read it before any UI work.
+- **[.claude/skills/goevent-design/SKILL.md](.claude/skills/goevent-design/SKILL.md)** — component-by-component Tailwind recipes implementing DESIGN.md (auto-loaded as the `goevent-design` skill).
+- **[docs/README.md](docs/README.md)** — index of all other docs: backend API references in [docs/backend-api/](docs/backend-api/), feature/deployment guides in [docs/guides/](docs/guides/).
+- **Doc hygiene**: durable docs live in `docs/`; never leave loose `.md` files in the repo root (the root is reserved for README.md, CLAUDE.md, DESIGN.md). Do not commit one-off session reports (fix summaries, refactor reports) — summarize in the PR/commit instead.
+
 ## Common Development Commands
 
 ### Development & Build
@@ -287,7 +294,8 @@ Field-specific errors come as: `{ "field_name": ["Error message"] }`
 - Custom breakpoints: 2xl (1536px), 3xl (1920px), 4xl (2560px)
 - Custom font: Figtree, Kantumruy Pro
 - Tailwind forms plugin included
-- **Design system guide**: [.claude/skills/goevent-design/SKILL.md](.claude/skills/goevent-design/SKILL.md) — the authoritative reference for colors, typography, radius/shadow scales, navigation, buttons, cards, forms, drawers, modals, toasts, loading/empty states, z-index layers, and animation patterns (including the showcase transition stages). Follow it for all UI work.
+- **Design standard**: [DESIGN.md](DESIGN.md) — brand identity (logos, brand colors), color system, typography, layout, motion, accessibility, and the definition-of-done checklist. The binding standard for all UI.
+- **Design system recipes**: [.claude/skills/goevent-design/SKILL.md](.claude/skills/goevent-design/SKILL.md) — component-by-component Tailwind class recipes (navigation, buttons, cards, forms, drawers, modals, toasts, loading/empty states, z-index layers, and animation patterns including the showcase transition stages). Follow it for all UI implementation.
 - **Neutral palette is `slate` only** — the codebase was fully migrated from `gray-*` to `slate-*` (July 2026); never reintroduce `gray`/`zinc`/`neutral`/`stone` utilities
 - Brand gradient: `bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]` (raw hex form is the convention)
 - Light mode only — no dark-mode variants

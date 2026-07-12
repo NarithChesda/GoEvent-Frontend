@@ -9,6 +9,8 @@ Follow these conventions whenever you build or modify UI in this repo. When in d
 
 ## 1. Brand & Color
 
+> Brand identity — logo assets, exact logo gradient colors, logo usage rules, and governance — is defined in [DESIGN.md](DESIGN.md) (§1). This skill covers the working UI conventions.
+
 - **Brand gradient** (primary CTA, drawer headers, FABs, active nav/filter states, hero accents):
   `bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]` with hover `hover:from-[#27ae60] hover:to-[#1873cc]` (or `hover:opacity-90` on small buttons).
   Use the raw hex arbitrary values — that is the established convention (43+ usages), not the `brand-*` Tailwind aliases. A few older spots use `from-emerald-500 to-blue-500`; prefer the hex form for new code.

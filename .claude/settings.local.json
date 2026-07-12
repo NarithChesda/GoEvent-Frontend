@@ -188,7 +188,20 @@
       "Bash(python3:*)",
       "Bash(timeout 30 npm run build-skip-typecheck:*)",
       "Bash(git diff:*)",
-      "Bash(timeout 30 npm run type-check-noEmit:*)"
+      "Bash(timeout 30 npm run type-check-noEmit:*)",
+      "Bash(git push *)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('src/i18n/locales/en/management.json','utf8'\\)\\); JSON.parse\\(require\\('fs'\\).readFileSync\\('src/i18n/locales/kh/management.json','utf8'\\)\\); console.log\\('OK'\\)\")",
+      "Bash(npm run *)",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(npx eslint *)",
+      "Bash(git stash *)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('src/i18n/locales/en/management.json','utf8'\\)\\); JSON.parse\\(require\\('fs'\\).readFileSync\\('src/i18n/locales/kh/management.json','utf8'\\)\\); console.log\\('JSON OK'\\)\")",
+      "Bash(git log *)",
+      "Bash(node -e \"const icons = require\\('lucide-vue-next'\\); console.log\\(typeof icons.Pipette, typeof icons.Palette, typeof icons.Check\\)\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git fetch *)"
     ],
     "deny": [],
     "additionalDirectories": [
