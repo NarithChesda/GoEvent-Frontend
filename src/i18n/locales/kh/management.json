@@ -1396,6 +1396,7 @@
       "searchPlaceholder": "ស្វែងរកភ្ញៀវ...",
       "searchAriaLabel": "ស្វែងរកភ្ញៀវតាមឈ្មោះ អ៊ីមែល ឬទូរស័ព្ទ",
       "allGroups": "ក្រុមទាំងអស់",
+      "filterByGroup": "ត្រងតាមក្រុម",
       "select": "ជ្រើសរើស",
       "helpTitle": "របៀបគ្រប់គ្រងភ្ញៀវ",
       "addGuestAriaLabel": "នាំចូលភ្ញៀវ",
@@ -1421,6 +1422,7 @@
     },
     "guestListItem": {
       "renameHint": "ចុចដើម្បីប្តូរឈ្មោះ",
+      "selectHint": "ចុចដើម្បីជ្រើសរើស",
       "changeGroupHint": "ចុចដើម្បីប្តូរក្រុម",
       "moreDetails": "ព័ត៌មានលម្អិត",
       "invitationSent": "បានផ្ញើលិខិតអញ្ជើញ",
@@ -1831,9 +1833,15 @@
   },
   "expenseBudgets": {
     "filter": {
+      "all": "ទាំងអស់",
       "allCategories": "ប្រភេទទាំងអស់",
-      "select": "ជ្រើសរើស"
+      "select": "ជ្រើសរើស",
+      "filterByCategory": "ត្រងតាមប្រភេទ"
     },
+    "remainingShort": "នៅសល់ {amount}",
+    "overShort": "លើស {amount}",
+    "budgetPrefix": "នៃ",
+    "spentSummary": "បានចំណាយ {amount} · {count} ការចំណាយ",
     "budgetCount": "{count} ថវិកា",
     "actions": "សកម្មភាព",
     "quickAdd": "បន្ថែមរហ័ស",
@@ -1844,8 +1852,25 @@
     "over": "លើស",
     "editBudget": "កែប្រែថវិកា",
     "deleteBudget": "លុបថវិកា",
-    "editExpense": "កែប្រែការចំណាយ",
+    "editExpense": "កែព័ត៌មានលម្អិត",
     "deleteExpense": "លុបការចំណាយ",
+    "inlineAdd": {
+      "addExpense": "បន្ថែមការចំណាយ",
+      "detailed": "បន្ថែមជាមួយព័ត៌មានលម្អិត (បង្កាន់ដៃ, អ្នកផ្គត់ផ្គង់...)",
+      "newCategory": "ប្រភេទថ្មី",
+      "categoryNamePlaceholder": "ឈ្មោះប្រភេទ",
+      "descriptionPlaceholder": "តើអ្នកបានចំណាយលើអ្វី?",
+      "amountLabel": "ចំនួនទឹកប្រាក់",
+      "currencyLabel": "រូបិយប័ណ្ណ",
+      "pickCategory": "ប្រភេទ",
+      "save": "រក្សាទុក",
+      "cancel": "បោះបង់"
+    },
+    "inlineEdit": {
+      "descriptionHint": "ចុចដើម្បីកែការពិពណ៌នា",
+      "amountHint": "ចុចដើម្បីកែចំនួនទឹកប្រាក់",
+      "budgetHint": "ចុចដើម្បីកែថវិកា"
+    },
     "receipt": "បង្កាន់ដៃ",
     "viewReceipt": "ចុចដើម្បីមើលបង្កាន់ដៃ",
     "noExpensesYet": "មិនទាន់មានការចំណាយកត់ត្រា",
@@ -1868,12 +1893,21 @@
     "toast": {
       "expenseDeleted": "បានលុបការចំណាយដោយជោគជ័យ!",
       "budgetDeleted": "បានលុបថវិកាដោយជោគជ័យ!",
-      "budgetAndExpensesDeleted": "បានលុបថវិកា និង {count} ការចំណាយដោយជោគជ័យ!"
+      "budgetAndExpensesDeleted": "បានលុបថវិកា និង {count} ការចំណាយដោយជោគជ័យ!",
+      "expenseAdded": "បានបន្ថែមការចំណាយ!",
+      "expenseUpdated": "បានកែប្រែការចំណាយ!",
+      "budgetUpdated": "បានកែប្រែថវិកា!",
+      "addFailed": "មិនអាចបន្ថែមការចំណាយបានទេ",
+      "updateFailed": "មិនអាចរក្សាទុកការផ្លាស់ប្តូរបានទេ"
     }
   },
   "quickAdd": {
     "title": "បន្ថែមរហ័ស",
     "editTitle": "កែប្រែ",
+    "addExpenseTitle": "បន្ថែមការចំណាយ",
+    "addBudgetTitle": "បន្ថែមថវិកា",
+    "editExpenseTitle": "កែប្រែការចំណាយ",
+    "editBudgetTitle": "កែប្រែថវិកា",
     "close": "បិទ",
     "tabs": {
       "expense": "ការចំណាយ",

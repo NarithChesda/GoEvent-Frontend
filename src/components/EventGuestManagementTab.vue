@@ -107,7 +107,6 @@
         @mark-sent="handleMarkAsSent"
         @edit-guest="openEditGuestModal"
         @delete-guest="openDeleteGuestModal"
-        @update-guest-name="handleInlineUpdateGuestName"
         @update-guest-group="handleInlineUpdateGuestGroup"
         @quick-add-guest="handleQuickAddGuest"
         @inline-create-group="handleInlineCreateGroup"
@@ -475,16 +474,6 @@ const handleInlineDeleteGroup = async (groupId: number) => {
 }
 
 // Inline guest edits (name / group reassignment directly in the row)
-const handleInlineUpdateGuestName = async (guest: EventGuest, name: string) => {
-  const response = await updateGuest(guest.id, guest.group, { name })
-
-  if (response.success && response.data) {
-    showMessage('success', t('management.guestManagementTab.toast.guestRenamed', { name: response.data.name }))
-  } else {
-    showMessage('error', response.message || t('management.guestManagementTab.toast.guestRenameFailed'))
-  }
-}
-
 const handleInlineUpdateGuestGroup = async (guest: EventGuest, groupId: number) => {
   if (groupId === guest.group) return
 

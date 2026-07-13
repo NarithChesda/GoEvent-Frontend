@@ -1,49 +1,45 @@
 <template>
-  <!-- Guest Card - Clean minimalist design -->
+  <!-- Guest Card - Clean minimalist design. On mobile the whole card is
+       tappable (opens details); the avatar doubles as the selection toggle. -->
   <div
-    class="bg-white rounded-2xl ring-1 ring-slate-900/5 hover:ring-slate-900/10 hover:shadow-sm transition-all duration-200 group"
+    class="bg-white rounded-2xl transition-all duration-200 group"
+    :class="selected
+      ? 'ring-2 ring-sky-300 shadow-sm'
+      : 'ring-1 ring-slate-900/5 hover:ring-slate-900/10 hover:shadow-sm'"
   >
-    <div class="flex items-center gap-3 px-4 py-3">
-      <!-- Checkbox -->
+    <div
+      class="flex items-center gap-3 px-4 py-3 rounded-2xl active:bg-slate-50 md:active:bg-transparent transition-colors"
+      @click="handleCardTap"
+    >
+      <!-- Checkbox (desktop only — mobile selects via the avatar) -->
       <input
         type="checkbox"
         :checked="selected"
         @change="$emit('toggle-select', guest)"
         @click.stop
-        class="w-4 h-4 rounded border-slate-300 text-sky-500 focus:ring-2 focus:ring-sky-200 focus:ring-offset-0 cursor-pointer flex-shrink-0 transition-colors"
+        class="hidden md:block w-4 h-4 rounded border-slate-300 text-sky-500 focus:ring-2 focus:ring-sky-200 focus:ring-offset-0 cursor-pointer flex-shrink-0 transition-colors"
       />
 
-      <!-- Initials avatar tinted with the guest's group color -->
-      <div
-        class="flex w-8 h-8 sm:w-9 sm:h-9 rounded-full items-center justify-center text-[11px] sm:text-xs font-bold flex-shrink-0 select-none"
-        :style="{ backgroundColor: `${avatarColor}1a`, color: avatarColor }"
+      <!-- Initials avatar tinted with the guest's group color; tap to select
+           (flips to a checkmark). ::after pad extends the touch target to ~44px. -->
+      <button
+        type="button"
+        @click.stop="$emit('toggle-select', guest)"
+        class="relative flex w-8 h-8 sm:w-9 sm:h-9 rounded-full items-center justify-center text-[11px] sm:text-xs font-bold flex-shrink-0 select-none transition-all duration-200 after:absolute after:-inset-1.5 after:content-[''] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+        :style="selected ? {} : { backgroundColor: `${avatarColor}1a`, color: avatarColor }"
+        :class="{ 'bg-sky-500 text-white': selected }"
+        :aria-pressed="selected"
+        :title="t('management.guestGroupsView.guestListItem.selectHint')"
+        :aria-label="`${t('management.guestGroupsView.guestListItem.selectHint')} - ${guest.name}`"
       >
-        {{ guestInitials }}
-      </div>
+        <Check v-if="selected" class="w-4 h-4" />
+        <template v-else>{{ guestInitials }}</template>
+      </button>
 
-      <!-- Guest Info (grows to fill space) -->
+      <!-- Guest Info (grows to fill space; part of the card's tap target —
+           renaming happens in the edit modal) -->
       <div class="flex-1 min-w-0">
-        <!-- Guest Name (click/tap to rename inline) -->
-        <input
-          v-if="isEditingName"
-          ref="nameInputRef"
-          v-model="draftName"
-          type="text"
-          @click.stop
-          @keydown.enter.prevent="commitNameEdit"
-          @keydown.esc.prevent="cancelNameEdit"
-          @blur="commitNameEdit"
-          class="w-full -mx-1 px-1 py-0 font-semibold text-slate-900 bg-white border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-sky-200"
-        />
-        <button
-          v-else
-          type="button"
-          @click.stop="startNameEdit"
-          class="block w-full text-left font-semibold text-slate-900 truncate rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-          :title="t('management.guestGroupsView.guestListItem.renameHint')"
-        >
-          {{ guest.name }}
-        </button>
+        <p class="font-semibold text-slate-900 truncate">{{ guest.name }}</p>
 
         <!-- Badges under name -->
         <div class="flex items-center gap-1.5 mt-1 flex-wrap">
@@ -122,17 +118,6 @@
           : 'text-slate-600 bg-slate-100 hover:bg-slate-200 active:bg-slate-300'"
       >
         {{ showCopiedFeedback ? t('management.guestGroupsView.guestListItem.copied') : t('management.guestGroupsView.guestListItem.copy') }}
-      </button>
-
-      <!-- Mobile "more details" button — opens the full edit modal (RSVP, cash gift, contact info) -->
-      <button
-        type="button"
-        @click.stop="$emit('edit', guest)"
-        class="md:hidden flex items-center justify-center w-10 h-10 flex-shrink-0 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
-        :title="t('management.guestGroupsView.guestListItem.moreDetails')"
-        :aria-label="t('management.guestGroupsView.guestListItem.moreDetails')"
-      >
-        <ChevronRight class="w-5 h-5" />
       </button>
 
       <!-- Actions (hidden on mobile; revealed on row hover / keyboard focus on desktop) -->
@@ -251,7 +236,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   Trash2,
@@ -266,7 +251,6 @@ import {
   X as XIcon,
   Armchair,
   ChevronDown,
-  ChevronRight,
 } from 'lucide-vue-next'
 import type { EventGuest, GuestGroup } from '../../services/api'
 
@@ -320,7 +304,6 @@ const emit = defineEmits<{
   edit: [guest: EventGuest]
   delete: [guest: EventGuest]
   'toggle-select': [guest: EventGuest]
-  'update-name': [guest: EventGuest, name: string]
   'update-group': [guest: EventGuest, groupId: number]
 }>()
 
@@ -332,11 +315,6 @@ const dropdownMenu = ref<HTMLElement | null>(null)
 const dropdownPosition = ref<'top' | 'bottom'>('bottom')
 const dropdownStyle = ref<Record<string, string>>({})
 const showCopiedFeedback = ref(false)
-
-// Inline name-edit state
-const isEditingName = ref(false)
-const draftName = ref('')
-const nameInputRef = ref<HTMLInputElement | null>(null)
 
 // Inline group-reassignment popover state
 const showGroupPopover = ref(false)
@@ -358,6 +336,14 @@ const guestInitials = computed(() =>
     .join('')
     .toUpperCase(),
 )
+
+// Mobile: tapping the card (outside the inline-edit/badge/copy targets, which
+// stop propagation) opens the full edit modal — replaces the old chevron button.
+// Desktop keeps its hover action icons, so the card itself stays inert there.
+const handleCardTap = () => {
+  if (window.matchMedia('(min-width: 768px)').matches) return
+  emit('edit', props.guest)
+}
 
 // Mobile copy link handler with feedback
 const handleMobileCopyLink = () => {
@@ -417,28 +403,6 @@ const rsvpBadge = computed<RsvpBadgeConfig | null>(() => {
 })
 
 // Methods
-
-// Inline name-edit handlers
-const startNameEdit = () => {
-  draftName.value = props.guest.name
-  isEditingName.value = true
-  nextTick(() => {
-    nameInputRef.value?.focus()
-    nameInputRef.value?.select()
-  })
-}
-
-const cancelNameEdit = () => {
-  isEditingName.value = false
-}
-
-const commitNameEdit = () => {
-  if (!isEditingName.value) return
-  const trimmed = draftName.value.trim()
-  isEditingName.value = false
-  if (!trimmed || trimmed === props.guest.name) return
-  emit('update-name', props.guest, trimmed)
-}
 
 // Inline group-reassignment popover handlers
 const calculateGroupPopoverPosition = () => {

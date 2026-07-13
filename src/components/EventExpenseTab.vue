@@ -24,6 +24,7 @@
         @edit-budget="handleEditBudget"
         @edit-expense="handleEditExpense"
         @budget-deleted="handleBudgetDeleted"
+        @data-changed="handleDataChanged"
       />
     </div>
 
@@ -38,6 +39,7 @@
       :edit-data="editData"
       @close="handleCloseQuickAdd"
       @success="handleQuickAddSuccess"
+      @delete="handleDrawerDelete"
     />
   </div>
 </template>
@@ -129,42 +131,46 @@ const handleCloseQuickAdd = () => {
 // Handle Quick Add success - update local state instead of reloading
 const handleQuickAddSuccess = async (
   type: 'expense' | 'budget' | 'category',
-  data?: ExpenseBudget | ExpenseRecord | any
+  data?: ExpenseBudget | ExpenseRecord | ExpenseCategory
 ) => {
   // Update local categories/budgets arrays for the modal
+  // (`type` tells us which shape `data` carries)
   if (type === 'category' && data) {
-    const existingIndex = categories.value.findIndex(c => c.id === data.id)
+    const category = data as ExpenseCategory
+    const existingIndex = categories.value.findIndex(c => c.id === category.id)
     if (existingIndex >= 0) {
       // Update existing category
-      categories.value[existingIndex] = data
+      categories.value[existingIndex] = category
     } else {
       // Add new category
-      categories.value.push(data)
+      categories.value.push(category)
     }
     // Reload categories in budgets view
     budgetsViewRef.value?.reloadCategories()
   } else if (type === 'budget' && data) {
-    const existingIndex = budgets.value.findIndex(b => b.id === data.id)
+    const budget = data as ExpenseBudget
+    const existingIndex = budgets.value.findIndex(b => b.id === budget.id)
     if (existingIndex >= 0) {
       // Update existing budget
-      budgets.value[existingIndex] = data
+      budgets.value[existingIndex] = budget
     } else {
       // Add new budget
-      budgets.value.push(data)
+      budgets.value.push(budget)
     }
     // Update budget in budgets view locally (no reload)
-    budgetsViewRef.value?.updateLocalBudget(data)
+    budgetsViewRef.value?.updateLocalBudget(budget)
 
     // Refresh summary view silently (no loading state)
     summaryViewRef.value?.refresh()
   } else if (type === 'expense' && data) {
+    const expense = data as ExpenseRecord
     // Update expense locally (automatically updates affected budgets)
     if (isEditMode.value) {
       // Editing existing expense
-      budgetsViewRef.value?.updateLocalExpense(data)
+      budgetsViewRef.value?.updateLocalExpense(expense)
     } else {
       // Adding new expense
-      budgetsViewRef.value?.addLocalExpense(data)
+      budgetsViewRef.value?.addLocalExpense(expense)
     }
 
     // Update budgets array for modal with fresh data
@@ -186,6 +192,21 @@ const handleQuickAddSuccess = async (
 const handleCreateCategory = () => {
   // This is now handled within each view component (budgets/expenses)
   // to support nested modals
+}
+
+// Inline add/edit in the budgets view - refresh summary and modal data
+const handleDataChanged = async () => {
+  summaryViewRef.value?.refresh()
+  await loadCategoriesAndBudgets()
+}
+
+// Trash pressed in the drawer header - open the matching confirm modal in the budgets view
+const handleDrawerDelete = (type: 'expense' | 'budget', data: ExpenseBudget | ExpenseRecord) => {
+  if (type === 'expense') {
+    budgetsViewRef.value?.confirmDeleteExpense(data as ExpenseRecord)
+  } else {
+    budgetsViewRef.value?.confirmDeleteBudget(data as ExpenseBudget)
+  }
 }
 
 // Handle budget deletion - refresh summary and budgets list for modal

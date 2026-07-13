@@ -1,148 +1,24 @@
 <template>
-  <div class="space-y-6">
-    <!-- Filter and Actions Bar -->
-    <div class="sticky top-0 z-20">
-      <div class="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-sm">
-        <div class="flex items-center gap-3 p-3">
-          <!-- Filter Dropdown -->
-          <div class="relative" ref="filterContainer">
-            <button
-              @click="isFilterDropdownOpen = !isFilterDropdownOpen"
-              class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 border"
-              :class="activeFilter === 'all'
-                ? 'text-slate-700 bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                : 'text-white border-transparent'"
-              :style="activeFilter !== 'all' && selectedCategory ? {
-                backgroundColor: selectedCategory.color || '#10b981'
-              } : {}"
-            >
-              <component
-                :is="activeFilter === 'all' ? Filter : getIconComponent(selectedCategory?.icon || 'Wallet')"
-                class="w-4 h-4 flex-shrink-0"
-                :class="activeFilter === 'all' ? 'text-slate-500' : 'text-white/80'"
-              />
-              <span class="truncate max-w-[100px] sm:max-w-[160px]">
-                {{ activeFilter === 'all' ? t('management.expenseBudgets.filter.allCategories') : selectedCategory?.name || t('management.expenseBudgets.filter.select') }}
-              </span>
-              <ChevronDown
-                class="w-4 h-4 transition-transform flex-shrink-0"
-                :class="[{ 'rotate-180': isFilterDropdownOpen }, activeFilter === 'all' ? 'text-slate-400' : 'text-white/80']"
-              />
-            </button>
-
-            <!-- Dropdown Menu -->
-            <Transition name="dropdown">
-              <div
-                v-if="isFilterDropdownOpen"
-                class="absolute top-full left-0 mt-2 min-w-[220px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100] max-h-[320px] overflow-y-auto"
-                @click.stop
-              >
-                <div class="p-1.5">
-                  <!-- All Categories Option -->
-                  <button
-                    @click="selectFilter('all')"
-                    :class="[
-                      'w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150',
-                      activeFilter === 'all'
-                        ? 'bg-slate-100 text-slate-900'
-                        : 'text-slate-700 hover:bg-slate-50'
-                    ]"
-                  >
-                    <Filter class="w-4 h-4 text-slate-400" />
-                    <span class="flex-1 text-left">{{ t('management.expenseBudgets.filter.allCategories') }}</span>
-                    <span class="text-xs text-slate-400 tabular-nums">{{ budgets.length }}</span>
-                  </button>
-
-                  <!-- Divider -->
-                  <div v-if="budgets.length > 0" class="my-1.5 border-t border-slate-100"></div>
-
-                  <!-- Individual Categories from Budgets -->
-                  <button
-                    v-for="budget in budgets"
-                    :key="budget.id"
-                    @click="selectFilter(budget.category.toString())"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150"
-                    :class="activeFilter === budget.category.toString() ? 'text-white' : 'text-slate-700 hover:bg-slate-50'"
-                    :style="activeFilter === budget.category.toString() ? {
-                      backgroundColor: budget.category_info.color || '#10b981'
-                    } : {}"
-                  >
-                    <component
-                      v-if="activeFilter !== budget.category.toString()"
-                      :is="getIconComponent(budget.category_info.icon)"
-                      class="w-4 h-4 flex-shrink-0"
-                      :style="{ color: budget.category_info.color || '#10b981' }"
-                    />
-                    <component
-                      v-else
-                      :is="getIconComponent(budget.category_info.icon)"
-                      class="w-4 h-4 flex-shrink-0 text-white/80"
-                    />
-                    <span class="flex-1 text-left truncate">{{ budget.category_info.name }}</span>
-                    <span
-                      class="text-xs tabular-nums"
-                      :class="activeFilter === budget.category.toString() ? 'text-white/70' : 'text-slate-400'"
-                    >
-                      {{ budget.percentage_used.toFixed(0) }}%
-                    </span>
-                  </button>
-                </div>
-              </div>
-            </Transition>
-
-            <!-- Click outside to close dropdown -->
-            <div
-              v-if="isFilterDropdownOpen"
-              @click="isFilterDropdownOpen = false"
-              class="fixed inset-0 z-[90]"
-            ></div>
-          </div>
-
-          <!-- Divider -->
-          <div class="w-px h-5 bg-slate-200 hidden sm:block"></div>
-
-          <!-- Budget Count -->
-          <div class="hidden sm:flex items-center gap-1 text-sm text-slate-500 tabular-nums flex-shrink-0">
-            <span class="font-medium text-slate-700">{{ filteredBudgets.length }}</span>
-            <span>{{ t('management.expenseBudgets.budgetCount', filteredBudgets.length) }}</span>
-          </div>
-
-          <!-- Spacer -->
-          <div class="flex-1"></div>
-
-          <!-- Quick Add Button -->
-          <button
-            v-if="canEdit"
-            @click="$emit('quick-add')"
-            class="flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:opacity-90 text-white text-sm font-semibold rounded-xl shadow-md transition-all duration-200 flex-shrink-0"
-          >
-            <Plus class="w-4 h-4" />
-            <span class="hidden sm:inline">{{ t('management.expenseBudgets.quickAdd') }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Click outside to close row action menus -->
-    <div
-      v-if="openActionMenu"
-      @click="closeActionMenu"
-      class="fixed inset-0 z-[90]"
-    ></div>
-
+  <div class="space-y-4">
     <!-- Loading skeleton -->
-    <div v-if="loading" class="animate-pulse space-y-3" aria-hidden="true">
-      <div
-        v-for="i in 3"
-        :key="i"
-        class="flex items-center gap-3 rounded-2xl border border-slate-200/60 bg-white/80 px-4 py-3"
-      >
-        <div class="h-9 w-9 flex-shrink-0 rounded-lg bg-slate-100" />
-        <div class="min-w-0 flex-1 space-y-2">
-          <div class="h-3 w-40 max-w-full rounded bg-slate-100" />
-          <div class="h-1.5 w-full rounded-full bg-slate-100" />
+    <div v-if="loading" class="animate-pulse space-y-4" aria-hidden="true">
+      <div class="flex items-center gap-2">
+        <div class="h-12 w-32 flex-shrink-0 rounded-2xl bg-slate-100" />
+        <div class="h-12 flex-1 rounded-2xl border-2 border-dashed border-slate-200" />
+        <div class="h-12 w-12 flex-shrink-0 rounded-2xl border-2 border-dashed border-slate-200" />
+      </div>
+      <div class="rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100">
+        <div v-for="i in 4" :key="i" class="flex items-center gap-3 px-4 py-3.5">
+          <div class="h-10 w-10 flex-shrink-0 rounded-xl bg-slate-100" />
+          <div class="min-w-0 flex-1 space-y-2">
+            <div class="h-3 w-32 max-w-full rounded bg-slate-100" />
+            <div class="h-1.5 w-full rounded-full bg-slate-100" />
+          </div>
+          <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+            <div class="h-3 w-16 rounded bg-slate-100" />
+            <div class="h-2.5 w-12 rounded bg-slate-100" />
+          </div>
         </div>
-        <div class="h-3 w-20 flex-shrink-0 rounded bg-slate-100" />
       </div>
     </div>
 
@@ -162,24 +38,212 @@
       </div>
     </div>
 
-    <!-- Budget List - Collapsible with Expense Items -->
-    <div v-else class="space-y-3">
-      <!-- Dynamic Budget Cards -->
-      <div
-        v-for="budget in filteredBudgets"
-        :key="budget.id"
-        class="bg-white/80 border border-slate-200/60 rounded-2xl hover:border-slate-300 hover:bg-white transition-all duration-200"
-      >
-        <!-- Budget Header (Clickable) - Compact -->
+    <!-- Budget List -->
+    <div v-else class="space-y-4">
+      <!-- Filter + add row: category filter shares the row with the add-expense controls -->
+      <div v-if="budgets.length > 1 || (canEdit && budgets.length > 0)" class="flex items-start gap-2">
+        <!-- Category filter (same pattern as the guest group filter).
+          Yields the row to the quick-add form on small screens while composing. -->
         <div
-          @click="toggleBudget(budget.id)"
-          class="group relative px-4 py-3 cursor-pointer transition-colors"
+          v-if="budgets.length > 1"
+          class="relative flex-shrink-0"
+          :class="{ 'hidden sm:block': quickAddExpanded }"
         >
-          <div class="flex items-center gap-3">
+          <!-- Mobile: icon-only trigger (gradient when a filter is active) -->
+          <button
+            type="button"
+            @click="isFilterDropdownOpen = !isFilterDropdownOpen"
+            class="sm:hidden flex items-center justify-center w-12 h-12 rounded-full transition-all"
+            :class="activeFilter === 'all'
+              ? 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              : 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'"
+            :title="t('management.expenseBudgets.filter.filterByCategory')"
+            :aria-label="t('management.expenseBudgets.filter.filterByCategory')"
+          >
+            <Filter class="w-5 h-5" />
+          </button>
+
+          <!-- Desktop: labeled trigger -->
+          <button
+            type="button"
+            @click="isFilterDropdownOpen = !isFilterDropdownOpen"
+            class="hidden sm:flex items-center gap-2 h-12 px-3.5 rounded-2xl text-sm font-medium bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors"
+          >
+            <Filter v-if="activeFilter === 'all'" class="w-4 h-4 text-slate-400 flex-shrink-0" />
+            <span
+              v-else
+              class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+              :style="{ backgroundColor: selectedCategory?.color || '#3498db' }"
+            ></span>
+            <span class="truncate max-w-[160px]">
+              {{ activeFilter === 'all' ? t('management.expenseBudgets.filter.allCategories') : selectedCategory?.name || t('management.expenseBudgets.filter.select') }}
+            </span>
+            <ChevronDown
+              class="w-4 h-4 text-slate-400 transition-transform flex-shrink-0"
+              :class="{ 'rotate-180': isFilterDropdownOpen }"
+            />
+          </button>
+
+          <!-- Desktop Dropdown Menu -->
+          <Transition name="dropdown">
+            <div
+              v-if="isFilterDropdownOpen && isDesktop"
+              class="hidden sm:block absolute top-full left-0 mt-2 w-[280px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100] max-h-[420px] overflow-y-auto"
+              @click.stop
+            >
+              <div class="p-1.5">
+                <!-- All Categories -->
+                <button
+                  @click="selectFilter('all')"
+                  :class="[
+                    'w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150',
+                    activeFilter === 'all'
+                      ? 'bg-slate-100 text-slate-900'
+                      : 'text-slate-700 hover:bg-slate-50'
+                  ]"
+                >
+                  <span class="flex-1 text-left">{{ t('management.expenseBudgets.filter.allCategories') }}</span>
+                  <span class="text-xs text-slate-400 tabular-nums">{{ budgets.length }}</span>
+                </button>
+
+                <!-- Divider -->
+                <div class="my-1.5 border-t border-slate-100"></div>
+
+                <!-- Budgeted categories -->
+                <button
+                  v-for="budget in budgets"
+                  :key="`filter-${budget.id}`"
+                  @click="selectFilter(budget.category.toString())"
+                  class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150"
+                  :class="activeFilter === budget.category.toString()
+                    ? 'bg-slate-100 text-slate-900'
+                    : 'text-slate-700 hover:bg-slate-50'"
+                >
+                  <span
+                    class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                    :style="{ backgroundColor: budget.category_info.color || '#3498db' }"
+                  ></span>
+                  <span class="flex-1 text-left truncate">{{ budget.category_info.name }}</span>
+                  <span
+                    class="text-xs tabular-nums"
+                    :class="budget.is_over_budget ? 'text-red-500 font-semibold' : 'text-slate-400'"
+                  >
+                    {{ budget.percentage_used.toFixed(0) }}%
+                  </span>
+                </button>
+              </div>
+            </div>
+          </Transition>
+
+          <!-- Desktop click outside to close dropdown -->
+          <div
+            v-if="isFilterDropdownOpen && isDesktop"
+            @click="isFilterDropdownOpen = false"
+            class="hidden sm:block fixed inset-0 z-[90]"
+          ></div>
+        </div>
+
+        <!-- Inline quick add + drawer entry for detailed adds -->
+        <template v-if="canEdit && budgets.length > 0">
+          <div class="flex-1 min-w-0">
+            <QuickAddExpenseRow
+              :categories="categories"
+              :budgets="budgets"
+              :default-category-id="activeFilterCategoryId"
+              :submitting="quickAddSubmitting"
+              @submit="handleInlineAdd"
+              @require-category="$emit('quick-add')"
+              @category-created="handleCategoryCreated"
+              @expand-change="quickAddExpanded = $event"
+            />
+          </div>
+          <button
+            type="button"
+            @click="$emit('quick-add')"
+            class="items-center justify-center w-12 h-12 flex-shrink-0 text-slate-500 border-2 border-dashed border-slate-300 rounded-2xl hover:border-emerald-400 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
+            :class="quickAddExpanded ? 'hidden sm:flex' : 'flex'"
+            :title="t('management.expenseBudgets.inlineAdd.detailed')"
+            :aria-label="t('management.expenseBudgets.inlineAdd.detailed')"
+          >
+            <ReceiptText class="w-4 h-4" />
+          </button>
+        </template>
+      </div>
+
+      <!-- Mobile Filter Bottom Sheet (swipe down to close) -->
+      <MobileBottomSheet
+        :show="isFilterDropdownOpen && !isDesktop"
+        :title="t('management.expenseBudgets.filter.filterByCategory')"
+        @close="isFilterDropdownOpen = false"
+      >
+        <div class="py-1">
+              <!-- All Categories -->
+              <button
+                type="button"
+                :aria-pressed="activeFilter === 'all'"
+                @click="selectFilter('all')"
+                class="w-full flex items-center gap-3 px-5 py-3 transition-colors active:bg-slate-50"
+              >
+                <span
+                  class="w-3 h-3 rounded-full flex-shrink-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
+                  aria-hidden="true"
+                ></span>
+                <span
+                  :class="[
+                    'flex-1 text-left text-sm',
+                    activeFilter === 'all' ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'
+                  ]"
+                >{{ t('management.expenseBudgets.filter.allCategories') }}</span>
+                <span class="text-xs text-slate-400 tabular-nums flex-shrink-0">{{ budgets.length }}</span>
+                <Check v-if="activeFilter === 'all'" class="w-5 h-5 text-[#2ecc71] flex-shrink-0" />
+              </button>
+
+              <!-- Budgeted categories -->
+              <button
+                v-for="budget in budgets"
+                :key="`sheet-filter-${budget.id}`"
+                type="button"
+                :aria-pressed="activeFilter === budget.category.toString()"
+                @click="selectFilter(budget.category.toString())"
+                class="w-full flex items-center gap-3 px-5 py-3 transition-colors active:bg-slate-50"
+              >
+                <span
+                  class="w-3 h-3 rounded-full flex-shrink-0"
+                  :style="{ backgroundColor: budget.category_info.color || '#3498db' }"
+                  aria-hidden="true"
+                ></span>
+                <span
+                  :class="[
+                    'flex-1 text-left text-sm truncate',
+                    activeFilter === budget.category.toString() ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'
+                  ]"
+                >{{ budget.category_info.name }}</span>
+                <span
+                  class="text-xs tabular-nums flex-shrink-0"
+                  :class="budget.is_over_budget ? 'text-red-500 font-semibold' : 'text-slate-400'"
+                >{{ budget.percentage_used.toFixed(0) }}%</span>
+                <Check v-if="activeFilter === budget.category.toString()" class="w-5 h-5 text-[#2ecc71] flex-shrink-0" />
+              </button>
+        </div>
+      </MobileBottomSheet>
+
+      <!-- Unified budget list card -->
+      <div
+        v-if="filteredBudgets.length > 0"
+        class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden"
+      >
+        <div v-for="budget in filteredBudgets" :key="budget.id">
+          <!-- Budget row (clickable) -->
+          <div
+            @click="toggleBudget(budget.id)"
+            role="button"
+            :aria-expanded="isBudgetExpanded(budget.id)"
+            class="flex items-center gap-3 px-4 py-3.5 min-h-[64px] cursor-pointer hover:bg-slate-50 active:bg-slate-100 transition-colors"
+          >
             <!-- Icon -->
             <div
-              class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-              :style="{ backgroundColor: `${budget.category_info.color}12` }"
+              class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              :style="{ backgroundColor: `${budget.category_info.color}14` }"
             >
               <component
                 :is="getIconComponent(budget.category_info.icon)"
@@ -188,203 +252,218 @@
               />
             </div>
 
-            <!-- Info Section -->
+            <!-- Name + progress -->
             <div class="flex-1 min-w-0">
-              <!-- Top Row: Name + Badge + Amount -->
-              <div class="flex items-center justify-between gap-2 mb-1">
-                <div class="flex items-center gap-1.5 min-w-0">
-                  <h4 class="font-semibold text-slate-900 truncate">{{ budget.category_info.name }}</h4>
-                  <span
-                    v-if="budget.is_over_budget"
-                    class="px-1.5 py-0.5 bg-red-50 text-red-600 text-[10px] font-bold rounded uppercase tracking-wide flex-shrink-0"
-                  >
-                    {{ t('management.expenseBudgets.over') }}
-                  </span>
-                </div>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                  <span class="font-bold text-slate-900 tabular-nums">
-                    {{ formatAmount(budget.spent_amount, budget.currency) }}
-                  </span>
-                  <span class="text-xs text-slate-400">/</span>
-                  <span class="text-sm font-medium text-slate-500 tabular-nums">
-                    {{ formatAmount(budget.budgeted_amount, budget.currency) }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Bottom Row: Progress + Stats -->
-              <div class="flex items-center gap-3">
-                <!-- Progress Bar -->
-                <div class="flex-1 min-w-0">
-                  <div class="relative h-1 bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                      class="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
-                      :class="budget.is_over_budget ? 'bg-red-500' : budget.percentage_used >= 90 ? 'bg-amber-500' : 'bg-emerald-500'"
-                      :style="{ width: `${Math.min(budget.percentage_used, 100)}%` }"
-                    ></div>
-                  </div>
-                </div>
-
-                <!-- Stats -->
-                <div class="flex items-center gap-2 flex-shrink-0">
-                  <span
-                    class="text-xs font-semibold tabular-nums"
-                    :class="budget.is_over_budget ? 'text-red-600' : budget.percentage_used >= 90 ? 'text-amber-600' : 'text-emerald-600'"
-                  >
-                    {{ budget.percentage_used.toFixed(0) }}%
-                  </span>
-                  <span class="text-xs text-slate-400">•</span>
-                  <span class="text-xs text-slate-500">
-                    {{ getExpenseCount(budget.category) }}
-                  </span>
-                </div>
+              <h4 class="text-sm font-semibold text-slate-900 truncate mb-1.5">
+                {{ budget.category_info.name }}
+              </h4>
+              <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div
+                  class="h-full rounded-full transition-all duration-500"
+                  :class="budget.is_over_budget ? 'bg-red-500' : budget.percentage_used >= 85 ? 'bg-amber-500' : 'bg-emerald-500'"
+                  :style="{ width: `${Math.min(budget.percentage_used, 100)}%` }"
+                ></div>
               </div>
             </div>
 
-            <!-- Actions: single kebab button opening a menu (works the same
-              on desktop and touch — no hover dependency, no reserved space) -->
-            <div v-if="canEdit" class="relative flex-shrink-0">
-              <button
-                @click.stop="toggleActionMenu(`budget-${budget.id}`)"
-                :aria-label="`${t('management.expenseBudgets.actions')} - ${budget.category_info.name}`"
-                :title="t('management.expenseBudgets.actions')"
-                :aria-expanded="openActionMenu === `budget-${budget.id}`"
-                class="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-                :class="{ 'bg-slate-100 text-slate-600': openActionMenu === `budget-${budget.id}` }"
+            <!-- Remaining hero + budget total -->
+            <div class="flex flex-col items-end flex-shrink-0">
+              <p
+                class="text-sm font-semibold tabular-nums"
+                :class="budget.is_over_budget ? 'text-red-600' : 'text-slate-900'"
               >
-                <MoreVertical class="w-4 h-4" />
-              </button>
-
-              <Transition name="dropdown">
-                <div
-                  v-if="openActionMenu === `budget-${budget.id}`"
-                  class="absolute right-0 top-full z-[100] mt-1 w-44 rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
+                {{
+                  budget.is_over_budget
+                    ? t('management.expenseBudgets.overShort', { amount: remainingDisplay(budget) })
+                    : t('management.expenseBudgets.remainingShort', { amount: remainingDisplay(budget) })
+                }}
+              </p>
+              <p class="text-xs text-slate-400 tabular-nums flex items-center gap-1">
+                <span>{{ t('management.expenseBudgets.budgetPrefix') }}</span>
+                <!-- Budgeted amount: tap to adjust in place -->
+                <input
+                  v-if="budgetEditId === budget.id"
+                  :ref="setInlineEditInputRef"
+                  v-model="budgetEditValue"
+                  type="number"
+                  inputmode="decimal"
+                  step="0.01"
+                  min="0.01"
                   @click.stop
+                  @keydown.enter.prevent="commitBudgetEdit(budget)"
+                  @keydown.esc.prevent="cancelBudgetEdit"
+                  @blur="commitBudgetEdit(budget)"
+                  class="w-20 px-1 py-0 text-xs text-right tabular-nums text-slate-700 bg-white border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-sky-200"
+                />
+                <button
+                  v-else-if="canEdit"
+                  type="button"
+                  @click.stop="startBudgetEdit(budget)"
+                  class="tabular-nums rounded px-0.5 -mx-0.5 hover:text-sky-600 hover:bg-sky-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 transition-colors"
+                  :title="t('management.expenseBudgets.inlineEdit.budgetHint')"
                 >
-                  <button
-                    @click.stop="closeActionMenu(); editBudget(budget)"
-                    class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
-                  >
-                    <Edit2 class="w-4 h-4 text-slate-400" />
-                    {{ t('management.expenseBudgets.editBudget') }}
-                  </button>
-                  <button
-                    @click.stop="closeActionMenu(); confirmDeleteBudget(budget)"
-                    class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
-                  >
-                    <Trash2 class="w-4 h-4" />
-                    {{ t('management.expenseBudgets.deleteBudget') }}
-                  </button>
-                </div>
-              </Transition>
+                  {{ formatAmount(budget.budgeted_amount, budget.currency) }}
+                </button>
+                <span v-else class="tabular-nums">
+                  {{ formatAmount(budget.budgeted_amount, budget.currency) }}
+                </span>
+              </p>
             </div>
 
-            <!-- Expand indicator (always visible) -->
-            <div class="w-6 flex justify-center flex-shrink-0">
-              <ChevronDown
-                class="w-4 h-4 text-slate-400 transition-transform duration-200"
-                :class="{ 'rotate-180': isBudgetExpanded(budget.id) }"
-              />
-            </div>
+            <!-- Expand indicator -->
+            <ChevronDown
+              class="w-4 h-4 text-slate-400 transition-transform duration-200 flex-shrink-0"
+              :class="{ 'rotate-180': isBudgetExpanded(budget.id) }"
+            />
           </div>
-        </div>
 
-        <!-- Expense Items (Collapsible) -->
-        <Transition name="slide-down">
-          <div v-if="isBudgetExpanded(budget.id)" class="border-t border-slate-100">
-            <div class="px-3 sm:px-4 py-2.5 bg-slate-50/40 rounded-b-2xl">
-              <!-- Loading expenses -->
-              <div v-if="loadingExpenses" class="flex justify-center py-3">
-                <div class="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-              </div>
+          <!-- Expense Items (Collapsible) -->
+          <Transition name="slide-down">
+            <div v-if="isBudgetExpanded(budget.id)" class="bg-slate-50/60 border-t border-slate-100">
+              <div class="px-3 sm:px-4 py-3">
+                <!-- Loading expenses -->
+                <div v-if="loadingExpenses" class="flex justify-center py-3">
+                  <div class="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
 
-              <!-- Expense items -->
-              <div
-                v-else-if="getBudgetExpenses(budget.category).length > 0"
-                class="space-y-2"
-              >
-                <div
-                  v-for="expense in getBudgetExpenses(budget.category)"
-                  :key="expense.id"
-                  class="relative bg-white/80 border border-slate-200/60 rounded-2xl hover:border-slate-300 hover:bg-white transition-all duration-200 group"
-                >
-                  <div class="flex items-center gap-3 px-4 py-3">
+                <div v-else class="space-y-2">
+                  <!-- Spent summary + budget actions -->
+                  <div class="flex items-center justify-between gap-2 px-1">
+                    <p class="text-xs font-medium text-slate-500 tabular-nums">
+                      {{ t('management.expenseBudgets.spentSummary', {
+                        amount: formatAmount(budget.spent_amount, budget.currency),
+                        count: getExpenseCount(budget.category)
+                      }, getExpenseCount(budget.category)) }}
+                    </p>
+                    <button
+                      v-if="canEdit"
+                      type="button"
+                      @click.stop="editBudget(budget)"
+                      class="flex items-center gap-1 px-2 py-1 -my-1 text-xs font-medium text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors"
+                      :title="t('management.expenseBudgets.editBudget')"
+                    >
+                      <Edit2 class="w-3 h-3" />
+                      <span>{{ t('management.expenseBudgets.editBudget') }}</span>
+                    </button>
+                  </div>
+
+                  <!-- Expense rows -->
+                  <div
+                    v-if="getBudgetExpenses(budget.category).length > 0"
+                    class="bg-white rounded-xl border border-slate-200/60 divide-y divide-slate-100 overflow-hidden"
+                  >
+                    <div
+                      v-for="expense in getBudgetExpenses(budget.category)"
+                      :key="expense.id"
+                      class="flex items-center gap-3 px-3 sm:px-4 py-2.5"
+                      :class="canEdit ? 'cursor-pointer hover:bg-slate-50 active:bg-slate-100 transition-colors' : ''"
+                      :role="canEdit ? 'button' : undefined"
+                      :title="canEdit ? t('management.expenseBudgets.editExpense') : undefined"
+                      @click="canEdit && editExpense(expense)"
+                    >
                     <div class="flex-1 min-w-0">
-                      <div class="flex items-center justify-between gap-2 mb-1">
-                        <h5 class="font-semibold text-slate-900 truncate">{{ expense.description }}</h5>
-                        <span class="font-medium text-slate-900 tabular-nums flex-shrink-0">
+                      <div class="flex items-center justify-between gap-2 mb-0.5">
+                        <!-- Description: tap to edit in place -->
+                        <input
+                          v-if="isInlineEditing(expense.id, 'description')"
+                          :ref="setInlineEditInputRef"
+                          v-model="inlineEditValue"
+                          type="text"
+                          @click.stop
+                          @keydown.enter.prevent="commitInlineEdit(expense)"
+                          @keydown.esc.prevent="cancelInlineEdit"
+                          @blur="commitInlineEdit(expense)"
+                          class="flex-1 min-w-0 -mx-1 px-1 py-0 text-sm font-medium text-slate-900 bg-white border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-sky-200"
+                        />
+                        <button
+                          v-else-if="canEdit"
+                          type="button"
+                          @click.stop="startInlineEdit(expense, 'description')"
+                          class="min-w-0 text-left text-sm font-medium text-slate-900 truncate rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+                          :title="t('management.expenseBudgets.inlineEdit.descriptionHint')"
+                        >
+                          {{ expense.description }}
+                        </button>
+                        <h5 v-else class="text-sm font-medium text-slate-900 truncate">{{ expense.description }}</h5>
+
+                        <!-- Amount: tap to edit in place -->
+                        <input
+                          v-if="isInlineEditing(expense.id, 'amount')"
+                          :ref="setInlineEditInputRef"
+                          v-model="inlineEditValue"
+                          type="number"
+                          inputmode="decimal"
+                          step="0.01"
+                          min="0.01"
+                          @click.stop
+                          @keydown.enter.prevent="commitInlineEdit(expense)"
+                          @keydown.esc.prevent="cancelInlineEdit"
+                          @blur="commitInlineEdit(expense)"
+                          class="w-24 flex-shrink-0 px-1.5 py-0.5 font-medium text-right tabular-nums text-slate-900 bg-white border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-sky-200"
+                        />
+                        <button
+                          v-else-if="canEdit"
+                          type="button"
+                          @click.stop="startInlineEdit(expense, 'amount')"
+                          class="text-sm font-medium text-slate-900 tabular-nums flex-shrink-0 rounded px-0.5 -mx-0.5 hover:text-sky-600 hover:bg-sky-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 transition-colors"
+                          :title="t('management.expenseBudgets.inlineEdit.amountHint')"
+                        >
+                          {{ formatAmount(expense.amount, expense.currency) }}
+                        </button>
+                        <span v-else class="text-sm font-medium text-slate-900 tabular-nums flex-shrink-0">
                           {{ formatAmount(expense.amount, expense.currency) }}
                         </span>
                       </div>
-                      <div class="flex items-center gap-1.5 flex-wrap">
-                        <div class="flex items-center gap-1 px-1.5 py-0.5 bg-slate-50 text-slate-700 rounded-lg text-xs font-medium">
-                          <span>{{ formatDate(expense.date) }}</span>
-                        </div>
-                        <div v-if="expense.paid_to" class="flex items-center gap-1 px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium">
-                          <span class="truncate max-w-[100px]">{{ expense.paid_to }}</span>
-                        </div>
-                        <a
-                          v-if="expense.receipt"
-                          :href="expense.receipt"
-                          target="_blank"
-                          @click.stop
-                          class="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-medium cursor-pointer transition-colors"
-                          :title="t('management.expenseBudgets.viewReceipt')"
-                        >
-                          <Paperclip class="w-3 h-3" />
-                          <span>{{ t('management.expenseBudgets.receipt') }}</span>
-                          <Eye class="w-3 h-3 opacity-60" />
-                        </a>
+                      <div class="flex items-center gap-1.5 flex-wrap text-xs text-slate-400">
+                        <span>{{ formatDate(expense.date) }}</span>
+                        <template v-if="expense.paid_to">
+                          <span aria-hidden="true">·</span>
+                          <span class="truncate max-w-[120px]">{{ expense.paid_to }}</span>
+                        </template>
+                        <template v-if="expense.receipt">
+                          <span aria-hidden="true">·</span>
+                          <a
+                            :href="expense.receipt"
+                            target="_blank"
+                            @click.stop
+                            class="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+                            :title="t('management.expenseBudgets.viewReceipt')"
+                          >
+                            <Paperclip class="w-3 h-3" />
+                            <span>{{ t('management.expenseBudgets.receipt') }}</span>
+                          </a>
+                        </template>
                       </div>
                     </div>
 
-                    <!-- Actions: kebab menu, consistent with the budget rows -->
-                    <div v-if="canEdit" class="relative flex-shrink-0">
-                      <button
-                        @click.stop="toggleActionMenu(`expense-${expense.id}`)"
-                        :aria-label="`${t('management.expenseBudgets.actions')} - ${expense.description}`"
-                        :title="t('management.expenseBudgets.actions')"
-                        :aria-expanded="openActionMenu === `expense-${expense.id}`"
-                        class="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-                        :class="{ 'bg-slate-100 text-slate-600': openActionMenu === `expense-${expense.id}` }"
-                      >
-                        <MoreVertical class="w-4 h-4" />
-                      </button>
-
-                      <Transition name="dropdown">
-                        <div
-                          v-if="openActionMenu === `expense-${expense.id}`"
-                          class="absolute right-0 top-full z-[100] mt-1 w-44 rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
-                          @click.stop
-                        >
-                          <button
-                            @click.stop="closeActionMenu(); editExpense(expense)"
-                            class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
-                          >
-                            <Edit2 class="w-4 h-4 text-slate-400" />
-                            {{ t('management.expenseBudgets.editExpense') }}
-                          </button>
-                          <button
-                            @click.stop="closeActionMenu(); confirmDeleteExpense(expense)"
-                            class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
-                          >
-                            <Trash2 class="w-4 h-4" />
-                            {{ t('management.expenseBudgets.deleteExpense') }}
-                          </button>
-                        </div>
-                      </Transition>
-                    </div>
+                    <!-- Tap affordance: the row opens the details drawer (delete lives in its header) -->
+                    <ChevronRight v-if="canEdit" class="w-4 h-4 text-slate-300 flex-shrink-0" aria-hidden="true" />
                   </div>
                 </div>
-              </div>
 
-              <!-- No expenses -->
-              <div v-else class="text-center py-4">
-                <p class="text-xs text-slate-400">{{ t('management.expenseBudgets.noExpensesYet') }}</p>
+                <!-- Per-budget quick add: category and currency are implied -->
+                <QuickAddExpenseRow
+                  v-if="canEdit"
+                  compact
+                  :fixed-category-id="budget.category"
+                  :categories="categories"
+                  :budgets="budgets"
+                  :submitting="quickAddSubmitting"
+                  @submit="handleInlineAdd"
+                />
+
+                <!-- No expenses (read-only) -->
+                <div
+                  v-if="!canEdit && getBudgetExpenses(budget.category).length === 0"
+                  class="text-center py-4"
+                >
+                  <p class="text-xs text-slate-400">{{ t('management.expenseBudgets.noExpensesYet') }}</p>
+                </div>
+                </div>
               </div>
             </div>
-          </div>
-        </Transition>
+          </Transition>
+        </div>
       </div>
 
       <!-- Empty State - No budgets at all -->
@@ -457,19 +536,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { useMediaQuery } from '@vueuse/core'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import {
   Edit2,
-  Trash2,
   AlertCircle,
   Wallet,
   ChevronDown,
-  Plus,
+  ChevronRight,
   Paperclip,
   Filter,
-  Eye,
-  MoreVertical
+  ReceiptText,
+  Check
 } from 'lucide-vue-next'
 import {
   expenseBudgetsService,
@@ -477,7 +556,8 @@ import {
   expensesService,
   type ExpenseBudget,
   type ExpenseCategory,
-  type ExpenseRecord
+  type ExpenseRecord,
+  type CreateExpenseBudgetRequest
 } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
 import { useNotifications } from '@/composables/useNotifications'
@@ -488,6 +568,8 @@ import {
   parseExpenseAmount
 } from '@/utils/budgetCalculations'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
+import MobileBottomSheet from '@/components/common/MobileBottomSheet.vue'
+import QuickAddExpenseRow, { type QuickAddExpensePayload } from './QuickAddExpenseRow.vue'
 
 interface Props {
   eventId: string
@@ -504,6 +586,8 @@ const emit = defineEmits<{
   'edit-budget': [budget: ExpenseBudget]
   'edit-expense': [expense: ExpenseRecord]
   'budget-deleted': []
+  /** Budgets/expenses changed inline — parent should refresh summary + modal data. */
+  'data-changed': []
 }>()
 
 const loading = ref(false)
@@ -523,18 +607,19 @@ const showDeleteExpenseModal = ref(false)
 // Filter state
 const activeFilter = ref<string>('all')
 const isFilterDropdownOpen = ref(false)
-const filterContainer = ref<HTMLElement | null>(null)
 
-// Row action menus (kebab) — one open at a time, keyed `budget-{id}` / `expense-{id}`
-const openActionMenu = ref<string | null>(null)
+// One open state drives the desktop dropdown and the mobile bottom sheet —
+// gate on viewport so only one is ever mounted (matches Tailwind's `sm`)
+const isDesktop = useMediaQuery('(min-width: 640px)')
 
-const toggleActionMenu = (id: string) => {
-  openActionMenu.value = openActionMenu.value === id ? null : id
-}
+// Whether the global quick-add row is composing (filter + detail button yield space on mobile)
+const quickAddExpanded = ref(false)
 
-const closeActionMenu = () => {
-  openActionMenu.value = null
-}
+const selectedCategory = computed(() => {
+  if (activeFilter.value === 'all') return null
+  const budget = budgets.value.find(b => b.category.toString() === activeFilter.value)
+  return budget?.category_info || null
+})
 
 // Computed properties for filtering
 const filteredBudgets = computed(() => {
@@ -542,12 +627,6 @@ const filteredBudgets = computed(() => {
     return budgets.value
   }
   return budgets.value.filter(b => b.category.toString() === activeFilter.value)
-})
-
-const selectedCategory = computed(() => {
-  if (activeFilter.value === 'all') return null
-  const budget = budgets.value.find(b => b.category.toString() === activeFilter.value)
-  return budget?.category_info || null
 })
 
 // Computed warning message for delete budget modal
@@ -566,8 +645,207 @@ const selectFilter = (filter: string) => {
   isFilterDropdownOpen.value = false
 }
 
+// Mobile bottom sheet: lock body scroll and close on Escape while open
+const handleFilterKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && isFilterDropdownOpen.value) {
+    isFilterDropdownOpen.value = false
+  }
+}
+
+watch(isFilterDropdownOpen, (open) => {
+  if (open && window.matchMedia('(max-width: 639px)').matches) {
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
+  }
+})
+
+// "$105 left" / "$50 over" hero value for a budget row.
+// Computed from spent/budgeted because the backend clamps remaining_amount to 0 when over.
+const remainingDisplay = (budget: ExpenseBudget): string =>
+  formatAmount(
+    Math.abs(parseFloat(budget.budgeted_amount) - parseFloat(budget.spent_amount)),
+    budget.currency
+  )
+
 // Use composables
-const { success: showSuccess } = useNotifications()
+const { success: showSuccess, error: showError } = useNotifications()
+
+// --- Inline quick add (global row + per-budget rows) ---
+const quickAddSubmitting = ref(false)
+
+const activeFilterCategoryId = computed(() =>
+  activeFilter.value === 'all' ? null : parseInt(activeFilter.value)
+)
+
+const handleInlineAdd = async (payload: QuickAddExpensePayload) => {
+  if (quickAddSubmitting.value) return
+  quickAddSubmitting.value = true
+
+  try {
+    // Auto-create a baseline budget when the category has none (same behavior as the drawer)
+    if (!budgets.value.some((b) => b.category === payload.categoryId)) {
+      try {
+        const budgetResponse = await expenseBudgetsService.createBudget(props.eventId, {
+          category: payload.categoryId,
+          category_id: payload.categoryId,
+          budgeted_amount: payload.amount,
+          currency: payload.currency
+        } as CreateExpenseBudgetRequest & { category: number })
+
+        if (budgetResponse.success && budgetResponse.data) {
+          budgets.value.push(budgetResponse.data)
+        }
+      } catch (err) {
+        // Don't block expense creation if the baseline budget fails
+        console.warn('Auto-budget creation failed:', err)
+      }
+    }
+
+    const response = await expensesService.createExpense(props.eventId, {
+      category: payload.categoryId,
+      category_id: payload.categoryId,
+      description: payload.description,
+      amount: payload.amount,
+      currency: payload.currency,
+      date: new Date().toISOString().split('T')[0],
+      payment_method: 'cash',
+      is_public: false
+    })
+
+    if (response.success && response.data) {
+      addLocalExpense(response.data)
+      showSuccess(t('management.expenseBudgets.toast.expenseAdded'))
+      emit('data-changed')
+    } else {
+      showError(response.message || t('management.expenseBudgets.toast.addFailed'))
+    }
+  } catch (err) {
+    showError(getErrorMessage(err, 'create expense'))
+  } finally {
+    quickAddSubmitting.value = false
+  }
+}
+
+// A category was created from the quick-add picker
+const handleCategoryCreated = (category: ExpenseCategory) => {
+  categories.value.push(category)
+  emit('data-changed')
+}
+
+// --- Inline click-to-edit (expense description/amount, budget amount) ---
+const inlineEdit = ref<{ id: number; field: 'description' | 'amount' } | null>(null)
+const inlineEditValue = ref('')
+const budgetEditId = ref<number | null>(null)
+const budgetEditValue = ref('')
+
+// Function ref: focus + select the just-rendered edit input (guarded so
+// re-renders while typing don't re-select the text).
+const setInlineEditInputRef = (el: unknown) => {
+  if (el instanceof HTMLInputElement && document.activeElement !== el) {
+    nextTick(() => {
+      el.focus()
+      el.select()
+    })
+  }
+}
+
+const isInlineEditing = (expenseId: number, field: 'description' | 'amount'): boolean =>
+  inlineEdit.value?.id === expenseId && inlineEdit.value?.field === field
+
+const startInlineEdit = (expense: ExpenseRecord, field: 'description' | 'amount') => {
+  inlineEdit.value = { id: expense.id, field }
+  inlineEditValue.value =
+    field === 'description' ? expense.description : parseExpenseAmount(expense.amount).toString()
+}
+
+const cancelInlineEdit = () => {
+  inlineEdit.value = null
+}
+
+const commitInlineEdit = async (expense: ExpenseRecord) => {
+  const edit = inlineEdit.value
+  if (!edit || edit.id !== expense.id) return
+  inlineEdit.value = null
+
+  let patch: { description: string } | { amount: number }
+  let updated: ExpenseRecord
+
+  if (edit.field === 'description') {
+    const newDescription = inlineEditValue.value.trim()
+    if (!newDescription || newDescription === expense.description) return
+    patch = { description: newDescription }
+    updated = { ...expense, description: newDescription }
+  } else {
+    const newAmount = parseFloat(inlineEditValue.value)
+    if (isNaN(newAmount) || newAmount <= 0 || newAmount === parseExpenseAmount(expense.amount)) return
+    patch = { amount: newAmount }
+    updated = { ...expense, amount: newAmount.toString() }
+  }
+
+  const previous = { ...expense }
+  updateLocalExpense(updated) // optimistic — also adjusts the budget totals
+
+  try {
+    const response = await expensesService.updateExpense(props.eventId, expense.id, patch)
+
+    if (response.success && response.data) {
+      updateLocalExpense(response.data)
+      showSuccess(t('management.expenseBudgets.toast.expenseUpdated'))
+      emit('data-changed')
+    } else {
+      updateLocalExpense(previous)
+      showError(response.message || t('management.expenseBudgets.toast.updateFailed'))
+    }
+  } catch (err) {
+    updateLocalExpense(previous)
+    showError(getErrorMessage(err, 'update expense'))
+  }
+}
+
+const startBudgetEdit = (budget: ExpenseBudget) => {
+  budgetEditId.value = budget.id
+  budgetEditValue.value = parseFloat(budget.budgeted_amount).toString()
+}
+
+const cancelBudgetEdit = () => {
+  budgetEditId.value = null
+}
+
+const commitBudgetEdit = async (budget: ExpenseBudget) => {
+  if (budgetEditId.value !== budget.id) return
+  budgetEditId.value = null
+
+  const newAmount = parseFloat(budgetEditValue.value)
+  if (isNaN(newAmount) || newAmount <= 0 || newAmount === parseFloat(budget.budgeted_amount)) return
+
+  const previous = cloneBudget(budget)
+
+  // Optimistic update
+  const spent = parseFloat(budget.spent_amount)
+  budget.budgeted_amount = newAmount.toString()
+  budget.remaining_amount = (newAmount - spent).toString()
+  budget.percentage_used = (spent / newAmount) * 100
+  budget.is_over_budget = spent > newAmount
+
+  try {
+    const response = await expenseBudgetsService.patchBudget(props.eventId, budget.id, {
+      budgeted_amount: newAmount
+    })
+
+    if (response.success && response.data) {
+      updateLocalBudget(response.data)
+      showSuccess(t('management.expenseBudgets.toast.budgetUpdated'))
+      emit('data-changed')
+    } else {
+      Object.assign(budget, previous)
+      showError(response.message || t('management.expenseBudgets.toast.updateFailed'))
+    }
+  } catch (err) {
+    Object.assign(budget, previous)
+    showError(getErrorMessage(err, 'update budget'))
+  }
+}
 
 // Use shared icon utilities
 const { getIconComponent } = useExpenseIcons()
@@ -804,10 +1082,13 @@ const editBudget = (budget: ExpenseBudget) => {
 
 
 onMounted(async () => {
+  document.addEventListener('keydown', handleFilterKeydown)
   await Promise.all([loadBudgets(), loadCategories()])
 })
 
 onUnmounted(() => {
+  document.removeEventListener('keydown', handleFilterKeydown)
+  document.body.style.overflow = ''
   // Clean up state to prevent memory leaks
   deletingBudget.value = null
 })
@@ -911,7 +1192,10 @@ defineExpose({
   // New methods for optimistic updates
   updateLocalBudget,
   updateLocalExpense,
-  addLocalExpense
+  addLocalExpense,
+  // Delete confirmations, triggered from the edit drawer's header
+  confirmDeleteExpense,
+  confirmDeleteBudget
 })
 </script>
 
@@ -971,6 +1255,6 @@ defineExpose({
 .dropdown-enter-from,
 .dropdown-leave-to {
   opacity: 0;
-  transform: translateY(-8px);
+  transform: translateY(-10px);
 }
 </style>

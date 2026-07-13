@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-3xl border border-white/70 bg-white p-6 sm:p-8 shadow-lg shadow-slate-200/60">
+  <div class="rounded-3xl border border-white/70 bg-white p-5 sm:p-6 shadow-lg shadow-slate-200/60">
     <!-- Header -->
     <div class="mb-6 flex items-start justify-between gap-4">
       <div class="min-w-0">
@@ -67,7 +67,7 @@
               {{ t('management.expenseSummary.currencyBudget', { currency: row.currency }) }}
             </p>
             <p
-              class="mt-1 text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900"
+              class="mt-1 text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900"
               aria-live="polite"
             >
               {{ formatCurrency(row.totalBudget, row.currency) }}

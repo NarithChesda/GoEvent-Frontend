@@ -124,9 +124,23 @@
 
             <!-- Filter Dropdown -->
             <div class="relative" ref="tabsContainer">
+              <!-- Mobile: icon-only trigger (gradient when a filter is active) -->
               <button
                 @click="isDropdownOpen = !isDropdownOpen"
-                class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors"
+                class="sm:hidden flex items-center justify-center w-10 h-10 rounded-full transition-all"
+                :class="activeFilter === 'all'
+                  ? 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                  : 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'"
+                :title="t('management.guestGroupsView.filterBar.filterByGroup')"
+                :aria-label="t('management.guestGroupsView.filterBar.filterByGroup')"
+              >
+                <Filter class="w-4 h-4" />
+              </button>
+
+              <!-- Desktop: labeled trigger -->
+              <button
+                @click="isDropdownOpen = !isDropdownOpen"
+                class="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors"
               >
                 <Filter v-if="activeFilter === 'all'" class="w-4 h-4 text-slate-400 flex-shrink-0" />
                 <span
@@ -134,16 +148,16 @@
                   class="w-2.5 h-2.5 rounded-full flex-shrink-0"
                   :style="{ backgroundColor: groups.find(g => g.id.toString() === activeFilter)?.color || '#3498db' }"
                 ></span>
-                <span class="truncate max-w-[100px] sm:max-w-[160px]">
+                <span class="truncate max-w-[160px]">
                   {{ activeFilter === 'all' ? t('management.guestGroupsView.filterBar.allGroups') : groups.find(g => g.id.toString() === activeFilter)?.name || t('management.guestGroupsView.filterBar.select') }}
                 </span>
                 <ChevronDown class="w-4 h-4 text-slate-400 transition-transform flex-shrink-0" :class="{ 'rotate-180': isDropdownOpen }" />
               </button>
 
-              <!-- Dropdown Menu -->
+              <!-- Dropdown Menu (desktop) -->
               <Transition name="dropdown">
                 <div
-                  v-if="isDropdownOpen"
+                  v-if="isDropdownOpen && isDesktop"
                   class="absolute top-full left-0 mt-2 w-[280px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100] max-h-[420px] overflow-y-auto"
                   @click.stop
                 >
@@ -245,10 +259,120 @@
 
               <!-- Click outside to close dropdown -->
               <div
-                v-if="isDropdownOpen"
+                v-if="isDropdownOpen && isDesktop"
                 @click="isDropdownOpen = false"
                 class="fixed inset-0 z-[90]"
               ></div>
+
+              <!-- Mobile Group Filter Bottom Sheet (swipe down to close) -->
+              <MobileBottomSheet
+                :show="isDropdownOpen && !isDesktop"
+                :title="t('management.guestGroupsView.filterBar.filterByGroup')"
+                @close="isDropdownOpen = false"
+              >
+                <div class="py-1">
+                  <!-- All Groups -->
+                  <button
+                    type="button"
+                    :aria-pressed="activeFilter === 'all'"
+                    @click="selectFilter('all')"
+                    class="w-full flex items-center gap-3 px-5 py-3 transition-colors active:bg-slate-50"
+                  >
+                    <span
+                      class="w-3 h-3 rounded-full flex-shrink-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
+                      aria-hidden="true"
+                    ></span>
+                    <span
+                      :class="[
+                        'flex-1 text-left text-sm',
+                        activeFilter === 'all' ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'
+                      ]"
+                    >{{ t('management.guestGroupsView.filterBar.allGroups') }}</span>
+                    <span class="text-xs text-slate-400 tabular-nums flex-shrink-0">{{ totalGuestCount }}</span>
+                    <Check v-if="activeFilter === 'all'" class="w-5 h-5 text-[#2ecc71] flex-shrink-0" />
+                  </button>
+
+                  <div class="mx-5 my-1 border-t border-slate-100"></div>
+
+                  <!-- Groups (with the same inline management as the desktop dropdown) -->
+                  <template v-for="group in groups" :key="`sheet-${group.id}`">
+                    <InlineGroupForm
+                      v-if="editingGroupId === group.id"
+                      mode="edit"
+                      :group="group"
+                      class="mx-3 my-1"
+                      @submit="(data) => submitEditGroup(group, data)"
+                      @cancel="cancelEditGroup"
+                    />
+                    <InlineGroupForm
+                      v-else-if="deletingGroupId === group.id"
+                      mode="delete"
+                      :group="group"
+                      class="mx-3 my-1"
+                      @submit="submitDeleteGroup(group)"
+                      @cancel="cancelDeleteGroup"
+                    />
+                    <div v-else class="flex items-center">
+                      <button
+                        type="button"
+                        :aria-pressed="activeFilter === group.id.toString()"
+                        @click="selectFilter(group.id.toString())"
+                        class="flex-1 min-w-0 flex items-center gap-3 px-5 py-3 transition-colors active:bg-slate-50"
+                      >
+                        <span
+                          class="w-3 h-3 rounded-full flex-shrink-0"
+                          :style="{ backgroundColor: group.color || '#3498db' }"
+                          aria-hidden="true"
+                        ></span>
+                        <span
+                          :class="[
+                            'flex-1 text-left text-sm truncate',
+                            activeFilter === group.id.toString() ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'
+                          ]"
+                        >{{ group.name }}</span>
+                        <span class="text-xs text-slate-400 tabular-nums flex-shrink-0">{{ group.guest_count }}</span>
+                        <Check v-if="activeFilter === group.id.toString()" class="w-5 h-5 text-[#2ecc71] flex-shrink-0" />
+                      </button>
+                      <button
+                        type="button"
+                        @click.stop="startEditGroup(group)"
+                        :title="t('management.guestGroupsView.filterBar.editGroup')"
+                        class="p-2 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-100 transition-all flex-shrink-0"
+                      >
+                        <Edit2 class="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        @click.stop="startDeleteGroup(group)"
+                        :title="t('management.guestGroupsView.filterBar.deleteGroup')"
+                        class="p-2 mr-3 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-100 transition-all flex-shrink-0"
+                      >
+                        <Trash2 class="w-4 h-4" />
+                      </button>
+                    </div>
+                  </template>
+
+                  <div class="mx-5 my-1 border-t border-slate-100"></div>
+
+                  <!-- Inline create-group -->
+                  <InlineGroupForm
+                    v-if="showCreateGroupForm"
+                    mode="create"
+                    class="mx-3 my-1"
+                    @submit="submitCreateGroup"
+                    @cancel="showCreateGroupForm = false"
+                  />
+                  <button
+                    v-else
+                    type="button"
+                    @click.stop="showCreateGroupForm = true"
+                    class="mx-3 my-2 w-[calc(100%-1.5rem)] flex items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-lg hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 transition-all"
+                  >
+                    <Users class="w-3.5 h-3.5" />
+                    <span>{{ t('management.guestGroupsView.filterBar.newGroup') }}</span>
+                  </button>
+                </div>
+              </MobileBottomSheet>
             </div>
 
             <!-- Search Input (Desktop Only) -->
@@ -363,7 +487,6 @@
             @edit="$emit('edit-guest', $event)"
             @delete="$emit('delete-guest', $event)"
             @toggle-select="handleToggleSelect"
-            @update-name="(guest, name) => $emit('update-guest-name', guest, name)"
             @update-group="(guest, groupId) => $emit('update-guest-group', guest, groupId)"
           />
 
@@ -536,13 +659,15 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { UserPlus, Search, Filter, Users, X, Send, Trash2, Edit2, ChevronDown, Info, FileSpreadsheet, Link, Mail, DollarSign, Upload } from 'lucide-vue-next'
+import { useMediaQuery } from '@vueuse/core'
+import { UserPlus, Search, Filter, Users, X, Send, Trash2, Edit2, ChevronDown, Info, FileSpreadsheet, Link, Mail, DollarSign, Upload, Check } from 'lucide-vue-next'
 import GuestListItem from './GuestListItem.vue'
 import GuestStatsCard from './GuestStatsCard.vue'
 import GuestRsvpStatsCard from './GuestRsvpStatsCard.vue'
 import RsvpQuestionsManager from './RsvpQuestionsManager.vue'
 import InlineGroupForm from './InlineGroupForm.vue'
 import QuickAddGuestRow from './QuickAddGuestRow.vue'
+import MobileBottomSheet from '../common/MobileBottomSheet.vue'
 import type {
   GuestGroup,
   EventGuest,
@@ -598,7 +723,6 @@ const emit = defineEmits<{
   'mark-sent': [guest: EventGuest]
   'edit-guest': [guest: EventGuest]
   'delete-guest': [guest: EventGuest]
-  'update-guest-name': [guest: EventGuest, name: string]
   'update-guest-group': [guest: EventGuest, groupId: number]
   'quick-add-guest': [name: string, groupId: number]
   'inline-create-group': [data: { name: string; description?: string; color: string }]
@@ -628,6 +752,10 @@ const groupSearchQuery = ref('')
 const selectedGuestIds = ref<Set<number>>(new Set())
 const isDropdownOpen = ref(false)
 const isSearchExpanded = ref(false)
+
+// One open state drives the desktop dropdown and the mobile bottom sheet —
+// gate on viewport so only one is ever mounted (matches Tailwind's `sm`)
+const isDesktop = useMediaQuery('(min-width: 640px)')
 const showInstructionModal = ref(false)
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 

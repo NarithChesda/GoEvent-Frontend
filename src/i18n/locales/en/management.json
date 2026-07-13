@@ -1396,6 +1396,7 @@
       "searchPlaceholder": "Search guests...",
       "searchAriaLabel": "Search guests by name, email, or phone",
       "allGroups": "All Groups",
+      "filterByGroup": "Filter by Group",
       "select": "Select",
       "helpTitle": "How to manage guests",
       "addGuestAriaLabel": "Import Guests",
@@ -1421,6 +1422,7 @@
     },
     "guestListItem": {
       "renameHint": "Click to rename",
+      "selectHint": "Tap to select",
       "changeGroupHint": "Click to change group",
       "moreDetails": "More details",
       "invitationSent": "Invitation sent",
@@ -1831,9 +1833,15 @@
   },
   "expenseBudgets": {
     "filter": {
+      "all": "All",
       "allCategories": "All Categories",
-      "select": "Select"
+      "select": "Select",
+      "filterByCategory": "Filter by Category"
     },
+    "remainingShort": "{amount} left",
+    "overShort": "{amount} over",
+    "budgetPrefix": "of",
+    "spentSummary": "Spent {amount} · {count} expense | Spent {amount} · {count} expenses",
     "budgetCount": "budget | budgets",
     "actions": "Actions",
     "quickAdd": "Quick Add",
@@ -1844,8 +1852,25 @@
     "over": "Over",
     "editBudget": "Edit budget",
     "deleteBudget": "Delete budget",
-    "editExpense": "Edit expense",
+    "editExpense": "Edit details",
     "deleteExpense": "Delete expense",
+    "inlineAdd": {
+      "addExpense": "Add expense",
+      "detailed": "Add with details (receipt, vendor, budget...)",
+      "newCategory": "New category",
+      "categoryNamePlaceholder": "Category name",
+      "descriptionPlaceholder": "What did you pay for?",
+      "amountLabel": "Amount",
+      "currencyLabel": "Currency",
+      "pickCategory": "Category",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "inlineEdit": {
+      "descriptionHint": "Tap to edit description",
+      "amountHint": "Tap to edit amount",
+      "budgetHint": "Tap to adjust budget"
+    },
     "receipt": "Receipt",
     "viewReceipt": "Click to view receipt",
     "noExpensesYet": "No expenses recorded yet",
@@ -1868,12 +1893,21 @@
     "toast": {
       "expenseDeleted": "Expense deleted successfully!",
       "budgetDeleted": "Budget deleted successfully!",
-      "budgetAndExpensesDeleted": "Budget and {count} expense deleted successfully! | Budget and {count} expenses deleted successfully!"
+      "budgetAndExpensesDeleted": "Budget and {count} expense deleted successfully! | Budget and {count} expenses deleted successfully!",
+      "expenseAdded": "Expense added!",
+      "expenseUpdated": "Expense updated!",
+      "budgetUpdated": "Budget updated!",
+      "addFailed": "Failed to add expense",
+      "updateFailed": "Failed to save changes"
     }
   },
   "quickAdd": {
     "title": "Quick Add",
     "editTitle": "Edit",
+    "addExpenseTitle": "Add Expense",
+    "addBudgetTitle": "Add Budget",
+    "editExpenseTitle": "Edit Expense",
+    "editBudgetTitle": "Edit Budget",
     "close": "Close",
     "tabs": {
       "expense": "Expense",

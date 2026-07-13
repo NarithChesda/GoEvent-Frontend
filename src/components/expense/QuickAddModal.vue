@@ -18,9 +18,9 @@
       >
         <!-- Header -->
         <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
-          <div class="flex items-center px-3 py-2.5">
+          <div class="flex items-center justify-between px-3 py-2.5">
             <!-- Left: Close button & Title -->
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 min-w-0">
               <button
                 @click="handleClose"
                 class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
@@ -28,8 +28,18 @@
               >
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
-              <h2 class="text-base font-semibold text-white">{{ isEditMode ? t('management.quickAdd.editTitle') : t('management.quickAdd.title') }}</h2>
+              <h2 class="text-base font-semibold text-white truncate">{{ drawerTitle }}</h2>
             </div>
+            <!-- Right: Delete (edit mode only) — parent owns the confirm modal -->
+            <button
+              v-if="isEditMode"
+              @click="handleDelete"
+              class="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
+              :title="selectedType === 'budget' ? t('management.expenseBudgets.deleteBudget') : t('management.expenseBudgets.deleteExpense')"
+              :aria-label="selectedType === 'budget' ? t('management.expenseBudgets.deleteBudget') : t('management.expenseBudgets.deleteExpense')"
+            >
+              <Trash2 class="w-5 h-5 text-white" />
+            </button>
           </div>
         </div>
 
@@ -495,8 +505,8 @@
                   />
                 </div>
 
-                <!-- Smart Defaults Info -->
-                <div class="flex items-center gap-2 px-4 py-3 bg-slate-50 rounded-lg border border-slate-200">
+                <!-- Smart Defaults Info (add mode only — in edit mode the real values are shown below) -->
+                <div v-if="!isEditMode" class="flex items-center gap-2 px-4 py-3 bg-slate-50 rounded-lg border border-slate-200">
                   <Sparkles class="w-4 h-4 text-slate-400" />
                   <span class="text-sm text-slate-600">
                     {{ t('management.quickAdd.expense.autoFilled') }} <strong>{{ new Date(formData.date).toLocaleDateString() }}</strong>,
@@ -793,6 +803,8 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   close: []
   success: [type: 'expense' | 'budget' | 'category', data?: ExpenseBudget | ExpenseRecord | ExpenseCategory]
+  /** Trash pressed in the header (edit mode) — parent owns the delete confirmation. */
+  delete: [type: 'expense' | 'budget', data: ExpenseBudget | ExpenseRecord]
 }>()
 
 // Color presets for category quick selection
@@ -897,6 +909,17 @@ const formatCurrency = (amount: string | number, currency: string): string => {
   }
   return `${currency} ${numAmount.toFixed(2)}`
 }
+
+const drawerTitle = computed(() => {
+  if (selectedType.value === 'budget') {
+    return isEditMode.value
+      ? t('management.quickAdd.editBudgetTitle')
+      : t('management.quickAdd.addBudgetTitle')
+  }
+  return isEditMode.value
+    ? t('management.quickAdd.editExpenseTitle')
+    : t('management.quickAdd.addExpenseTitle')
+})
 
 const getSubmitButtonText = () => {
   if (isEditMode.value) {
@@ -1343,6 +1366,13 @@ const handleClose = () => {
   emit('close')
 }
 
+// Header trash (edit mode): hand off to the parent, which owns the confirm modal
+const handleDelete = () => {
+  if (!props.editData) return
+  emit('delete', selectedType.value === 'budget' ? 'budget' : 'expense', props.editData)
+  handleClose()
+}
+
 // Calculate scrollbar width to prevent layout shift
 const getScrollbarWidth = (): number => {
   return window.innerWidth - document.documentElement.clientWidth
@@ -1365,6 +1395,9 @@ const isExpenseBudget = (data: ExpenseBudget | ExpenseRecord): data is ExpenseBu
 // Populate form with edit data
 const populateEditData = () => {
   if (!props.editData || !props.editMode) return
+
+  // Editing: surface date/payment/vendor/receipt/notes instead of hiding them
+  showMoreDetails.value = true
 
   if (selectedType.value === 'expense' && isExpenseRecord(props.editData)) {
     formData.value = {
