@@ -1815,6 +1815,7 @@
     },
     "title": "Budget Overview",
     "subtitle": "How your spending tracks against each budget",
+    "toggle": "Show or hide budget overview",
     "refresh": "Refresh summary",
     "currencyBudget": "{currency} Budget",
     "categoriesBudgeted": "{count} categories budgeted",

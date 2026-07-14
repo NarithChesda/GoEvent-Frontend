@@ -126,7 +126,9 @@
                 </button>
 
                 <Transition name="collapse">
-                  <div v-show="isContactInfoExpanded" class="space-y-4 pl-6 border-l-2 border-slate-200">
+                  <div v-show="isContactInfoExpanded" class="grid grid-rows-[1fr]">
+                  <div class="min-h-0 overflow-hidden">
+                  <div class="space-y-4 pl-6 border-l-2 border-slate-200">
                     <!-- Email -->
                     <div>
                       <label for="editGuestEmail" class="block text-sm font-medium text-slate-700 mb-2">
@@ -162,6 +164,8 @@
                       />
                       <p v-if="fieldErrors.phone_number" id="edit-guest-phone-error" class="mt-1 text-xs text-red-600">{{ fieldErrors.phone_number }}</p>
                     </div>
+                  </div>
+                  </div>
                   </div>
                 </Transition>
               </div>
@@ -859,23 +863,26 @@ defineExpose({
   }
 }
 
-/* Collapse transition */
+/* Collapse transition — grid-template-rows 0fr↔1fr tracks real content
+   height so both directions ease evenly (DESIGN.md §7) */
 .collapse-enter-active,
 .collapse-leave-active {
-  transition: all 0.3s ease;
-  overflow: hidden;
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
 }
 
 .collapse-enter-from,
 .collapse-leave-to {
+  grid-template-rows: 0fr;
   opacity: 0;
-  max-height: 0;
 }
 
-.collapse-enter-to,
-.collapse-leave-from {
-  opacity: 1;
-  max-height: 500px;
+@media (prefers-reduced-motion: reduce) {
+  .collapse-enter-active,
+  .collapse-leave-active {
+    transition: none;
+  }
 }
 
 /* Dropdown transition for mobile link menu */

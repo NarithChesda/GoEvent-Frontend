@@ -228,8 +228,9 @@ Full class-by-class recipes live in the [design skill](.claude/skills/goevent-de
 
 - Micro-interactions: `transition-colors duration-200`; composite hovers `transition-all duration-300`; image zooms `duration-500`.
 - Scale on hover only for FABs and primary CTAs (`hover:scale-110`); cards lift via border + shadow. Mobile press feedback: `active:scale-95`.
-- Named Vue transitions in use: `fade` (backdrops), `slide-right` (drawers), `slide-fade` (conditional fields), `modal` (dialogs), `slide-up` (toasts), `dropdown` (menus), `notification` (toast group), `sheet` (bottom sheets).
+- Named Vue transitions in use: `fade` (backdrops), `slide-right` (drawers), `slide-fade` (conditional fields), `modal` (dialogs), `slide-up` (toasts), `dropdown` (menus), `notification` (toast group), `sheet` (bottom sheets), `collapse` (expand/collapse sections).
 - Drawer/sheet enter: `cubic-bezier(0.32, 0.72, 0, 1)` (spring-like); leave: `cubic-bezier(0.4, 0, 0.6, 1)`.
+- **Expand/collapse sections** (accordion rows, collapsible overview cards, "more details" reveals) use the `collapse` transition built on `grid-template-rows: 0fr ↔ 1fr` — never animate `max-height` (a large max-height cap makes one direction ease unevenly with dead time). Structure: the transitioned element is `grid grid-rows-[1fr]`, wrapping a `min-h-0 overflow-hidden` clip div, wrapping the content (put the content's own padding/margins on this innermost layer so they collapse too). Timing: `grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1)` + `opacity 0.3s ease`; disable under `prefers-reduced-motion`. Reference implementation: `ExpenseSummaryView.vue` / `ExpenseBudgetsView.vue`.
 - Prefer transform + opacity (compositor-friendly); add `will-change` only on elements that actually animate.
 - The showcase cover → main-content transition is the app's cinematic signature — see §16 of the design skill for the full choreography (veil reveal, Ken Burns, light sweep, letter bloom, bokeh). **All showcase-grade animation must honor `@media (prefers-reduced-motion: reduce)`**: kill drifts/sweeps/particles, shorten fades, zero out stagger delays.
 

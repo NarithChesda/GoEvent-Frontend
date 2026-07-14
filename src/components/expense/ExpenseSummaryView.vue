@@ -1,27 +1,70 @@
 <template>
   <div class="rounded-3xl border border-white/70 bg-white p-5 sm:p-6 shadow-lg shadow-slate-200/60">
-    <!-- Header -->
-    <div class="mb-6 flex items-start justify-between gap-4">
-      <div class="min-w-0">
+    <!-- Header (click to expand/collapse) -->
+    <div class="flex items-start justify-between gap-4">
+      <button
+        type="button"
+        class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
+        :aria-expanded="isExpanded"
+        :aria-label="t('management.expenseSummary.toggle')"
+        @click="toggleExpanded"
+      >
         <p class="text-xs font-semibold tracking-[0.2em] text-slate-400 uppercase">
           {{ t('management.expenseSummary.title') }}
         </p>
-        <p class="mt-1 text-sm text-slate-500">
+        <!-- Collapsed: compact per-currency spent/total peek; expanded: subtitle -->
+        <p
+          v-if="!isExpanded && currencyTotals.length > 0"
+          class="mt-1 text-sm text-slate-500 tabular-nums truncate"
+        >
+          <span v-for="(row, index) in currencyTotals" :key="row.currency">
+            <span v-if="index > 0" class="text-slate-300"> · </span>
+            <span
+              class="inline-block w-1.5 h-1.5 rounded-full align-middle mr-1.5"
+              :class="row.isOver ? 'bg-red-500' : 'bg-emerald-500'"
+              aria-hidden="true"
+            ></span>
+            <span class="font-semibold text-slate-700">{{ formatCurrency(row.totalExpenses, row.currency) }}</span>
+            <span> / {{ formatCurrency(row.totalBudget, row.currency) }}</span>
+          </span>
+        </p>
+        <p v-else class="mt-1 text-sm text-slate-500">
           {{ t('management.expenseSummary.subtitle') }}
         </p>
-      </div>
-      <button
-        type="button"
-        class="flex-shrink-0 rounded-lg p-2 text-slate-400 transition-colors duration-200 hover:bg-slate-100 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-50"
-        :disabled="loading"
-        :aria-label="t('management.expenseSummary.refresh')"
-        :title="t('management.expenseSummary.refresh')"
-        @click="() => loadSummary()"
-      >
-        <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': loading }" />
       </button>
+      <div class="flex items-center flex-shrink-0">
+        <button
+          v-if="isExpanded"
+          type="button"
+          class="rounded-lg p-2 text-slate-400 transition-colors duration-200 hover:bg-slate-100 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-50"
+          :disabled="loading"
+          :aria-label="t('management.expenseSummary.refresh')"
+          :title="t('management.expenseSummary.refresh')"
+          @click="() => loadSummary()"
+        >
+          <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': loading }" />
+        </button>
+        <button
+          type="button"
+          class="rounded-lg p-2 text-slate-400 transition-colors duration-200 hover:bg-slate-100 hover:text-slate-600"
+          :aria-expanded="isExpanded"
+          :aria-label="t('management.expenseSummary.toggle')"
+          :title="t('management.expenseSummary.toggle')"
+          @click="toggleExpanded"
+        >
+          <ChevronDown
+            class="h-4 w-4 transition-transform duration-200"
+            :class="{ 'rotate-180': isExpanded }"
+          />
+        </button>
+      </div>
     </div>
 
+    <!-- Grid-rows collapse: animates true content height (no max-height dead time) -->
+    <Transition name="collapse">
+    <div v-if="isExpanded" class="grid grid-rows-[1fr]">
+    <div class="min-h-0 overflow-hidden">
+    <div class="pt-6">
     <!-- Loading skeleton (first load only — refreshes keep content visible) -->
     <div v-if="loading && !summary" class="animate-pulse space-y-4" aria-hidden="true">
       <div class="h-3 w-24 rounded bg-slate-100" />
@@ -140,13 +183,17 @@
         {{ t('management.expenseSummary.empty.description') }}
       </p>
     </div>
+    </div>
+    </div>
+    </div>
+    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { AlertCircle, RefreshCw, Wallet } from 'lucide-vue-next'
+import { AlertCircle, ChevronDown, RefreshCw, Wallet } from 'lucide-vue-next'
 import { expensesService, expenseBudgetsService } from '@/services/api'
 
 interface Props {
@@ -190,6 +237,25 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const summary = ref<ExpenseSummary | null>(null)
 const abortController = ref<AbortController | null>(null)
+
+// Collapsed by default — the overview is glanceable from the peek line;
+// the expanded preference is remembered across visits.
+const EXPANDED_STORAGE_KEY = 'expense_summary_expanded'
+const isExpanded = ref(false)
+try {
+  isExpanded.value = localStorage.getItem(EXPANDED_STORAGE_KEY) === 'true'
+} catch {
+  // Storage unavailable (private mode) — fall back to collapsed
+}
+
+const toggleExpanded = () => {
+  isExpanded.value = !isExpanded.value
+  try {
+    localStorage.setItem(EXPANDED_STORAGE_KEY, String(isExpanded.value))
+  } catch {
+    // Non-fatal: preference just won't persist
+  }
+}
 
 const loadSummary = async (silent = false) => {
   // Cancel previous request if exists
@@ -380,9 +446,26 @@ defineExpose({
 </script>
 
 <style scoped>
+/* Collapse/expand via grid-template-rows 0fr↔1fr — tracks real content
+   height so both directions ease evenly (no max-height dead time) */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .transition-all,
-  .transition-colors {
+  .transition-colors,
+  .collapse-enter-active,
+  .collapse-leave-active {
     transition: none !important;
   }
 }

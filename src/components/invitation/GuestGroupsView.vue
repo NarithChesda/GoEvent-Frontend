@@ -30,7 +30,9 @@
       </button>
 
       <Transition name="collapse">
-        <div v-show="isStatsExpanded" class="px-4 sm:px-8 pb-6 sm:pb-8 space-y-6">
+        <div v-show="isStatsExpanded" class="grid grid-rows-[1fr]">
+        <div class="min-h-0 overflow-hidden">
+        <div class="px-4 sm:px-8 pb-6 sm:pb-8 space-y-6">
           <div class="border-t border-slate-100 pt-6">
             <GuestStatsCard :stats="guestStats" :loading="loadingStats" />
           </div>
@@ -51,6 +53,8 @@
               @message="(type, text) => $emit('rsvp-questions-message', type, text)"
             />
           </div>
+        </div>
+        </div>
         </div>
       </Transition>
     </div>
@@ -1210,23 +1214,26 @@ defineExpose({
 </script>
 
 <style scoped>
-/* Collapse transition for the stats section */
+/* Collapse transition for the stats section — grid-template-rows 0fr↔1fr
+   tracks real content height so both directions ease evenly (DESIGN.md §7) */
 .collapse-enter-active,
 .collapse-leave-active {
-  transition: all 0.3s ease;
-  overflow: hidden;
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
 }
 
 .collapse-enter-from,
 .collapse-leave-to {
+  grid-template-rows: 0fr;
   opacity: 0;
-  max-height: 0;
 }
 
-.collapse-enter-to,
-.collapse-leave-from {
-  opacity: 1;
-  max-height: 1000px;
+@media (prefers-reduced-motion: reduce) {
+  .collapse-enter-active,
+  .collapse-leave-active {
+    transition: none;
+  }
 }
 
 .scrollbar-hide {

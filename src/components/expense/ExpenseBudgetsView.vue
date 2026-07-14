@@ -9,10 +9,10 @@
       </div>
       <div class="rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100">
         <div v-for="i in 4" :key="i" class="flex items-center gap-3 px-4 py-3.5">
-          <div class="h-10 w-10 flex-shrink-0 rounded-xl bg-slate-100" />
+          <div class="h-11 w-11 flex-shrink-0 rounded-full border-[3.5px] border-slate-100" />
           <div class="min-w-0 flex-1 space-y-2">
             <div class="h-3 w-32 max-w-full rounded bg-slate-100" />
-            <div class="h-1.5 w-full rounded-full bg-slate-100" />
+            <div class="h-2.5 w-20 rounded bg-slate-100" />
           </div>
           <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
             <div class="h-3 w-16 rounded bg-slate-100" />
@@ -240,30 +240,45 @@
             :aria-expanded="isBudgetExpanded(budget.id)"
             class="flex items-center gap-3 px-4 py-3.5 min-h-[64px] cursor-pointer hover:bg-slate-50 active:bg-slate-100 transition-colors"
           >
-            <!-- Icon -->
-            <div
-              class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              :style="{ backgroundColor: `${budget.category_info.color}14` }"
-            >
-              <component
-                :is="getIconComponent(budget.category_info.icon)"
-                class="w-4.5 h-4.5"
-                :style="{ color: budget.category_info.color }"
-              />
+            <!-- Progress ring around the category icon (category color; red when over) -->
+            <div class="relative w-11 h-11 flex-shrink-0" aria-hidden="true">
+              <svg class="w-11 h-11 -rotate-90" viewBox="0 0 44 44">
+                <circle cx="22" cy="22" r="19" fill="none" stroke-width="3.5" class="stroke-slate-100" />
+                <circle
+                  cx="22"
+                  cy="22"
+                  r="19"
+                  fill="none"
+                  stroke-width="3.5"
+                  stroke-linecap="round"
+                  :stroke="ringColor(budget)"
+                  :stroke-dasharray="RING_CIRCUMFERENCE"
+                  :stroke-dashoffset="ringOffset(budget)"
+                  class="transition-[stroke-dashoffset] duration-700 ease-out"
+                />
+              </svg>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <component
+                  :is="getIconComponent(budget.category_info.icon)"
+                  class="w-4 h-4"
+                  :style="{ color: budget.category_info.color }"
+                />
+              </div>
             </div>
 
-            <!-- Name + progress -->
+            <!-- Name + spent/percent -->
             <div class="flex-1 min-w-0">
-              <h4 class="text-sm font-semibold text-slate-900 truncate mb-1.5">
+              <h4 class="text-sm font-semibold text-slate-900 truncate">
                 {{ budget.category_info.name }}
               </h4>
-              <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                <div
-                  class="h-full rounded-full transition-all duration-500"
-                  :class="budget.is_over_budget ? 'bg-red-500' : budget.percentage_used >= 85 ? 'bg-amber-500' : 'bg-emerald-500'"
-                  :style="{ width: `${Math.min(budget.percentage_used, 100)}%` }"
-                ></div>
-              </div>
+              <p
+                class="text-xs tabular-nums mt-0.5"
+                :class="budget.is_over_budget
+                  ? 'text-red-500 font-medium'
+                  : budget.percentage_used >= 85 ? 'text-amber-600' : 'text-slate-400'"
+              >
+                {{ formatAmount(budget.spent_amount, budget.currency) }} · {{ Math.round(budget.percentage_used) }}%
+              </p>
             </div>
 
             <!-- Remaining hero + budget total -->
@@ -317,10 +332,11 @@
             />
           </div>
 
-          <!-- Expense Items (Collapsible) -->
-          <Transition name="slide-down">
-            <div v-if="isBudgetExpanded(budget.id)" class="bg-slate-50/60 border-t border-slate-100">
-              <div class="px-3 sm:px-4 py-3">
+          <!-- Expense Items (Collapsible; grid-rows collapse animates true content height) -->
+          <Transition name="collapse">
+            <div v-if="isBudgetExpanded(budget.id)" class="grid grid-rows-[1fr]">
+              <div class="min-h-0 overflow-hidden">
+              <div class="bg-slate-50/60 border-t border-slate-100 px-3 sm:px-4 py-3">
                 <!-- Loading expenses -->
                 <div v-if="loadingExpenses" class="flex justify-center py-3">
                   <div class="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
@@ -460,6 +476,7 @@
                   <p class="text-xs text-slate-400">{{ t('management.expenseBudgets.noExpensesYet') }}</p>
                 </div>
                 </div>
+              </div>
               </div>
             </div>
           </Transition>
@@ -659,6 +676,16 @@ watch(isFilterDropdownOpen, (open) => {
     document.body.style.overflow = ''
   }
 })
+
+// Progress ring geometry (r=19 inside a 44px box, 3.5px stroke)
+const RING_CIRCUMFERENCE = 2 * Math.PI * 19
+
+const ringOffset = (budget: ExpenseBudget): number =>
+  RING_CIRCUMFERENCE * (1 - Math.min(budget.percentage_used, 100) / 100)
+
+// The ring wears the category's own color; red is reserved for actually over budget
+const ringColor = (budget: ExpenseBudget): string =>
+  budget.is_over_budget ? '#ef4444' : budget.category_info.color || '#10b981'
 
 // "$105 left" / "$50 over" hero value for a budget row.
 // Computed from spent/budgeted because the backend clamps remaining_amount to 0 when over.
@@ -1229,22 +1256,26 @@ defineExpose({
   background: #94a3b8;
 }
 
-.slide-down-enter-active,
-.slide-down-leave-active {
-  transition: all 0.3s ease;
-  overflow: hidden;
+/* Collapse/expand via grid-template-rows 0fr↔1fr — tracks real content
+   height so both directions ease evenly (no max-height dead time) */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
 }
 
-.slide-down-enter-from,
-.slide-down-leave-to {
+.collapse-enter-from,
+.collapse-leave-to {
+  grid-template-rows: 0fr;
   opacity: 0;
-  max-height: 0;
 }
 
-.slide-down-enter-to,
-.slide-down-leave-from {
-  opacity: 1;
-  max-height: 1000px;
+@media (prefers-reduced-motion: reduce) {
+  .collapse-enter-active,
+  .collapse-leave-active {
+    transition: none;
+  }
 }
 
 .dropdown-enter-active,
