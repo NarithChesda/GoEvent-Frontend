@@ -61,14 +61,12 @@ interface Props {
   tabs: TabConfig[]
   canViewRegistration?: boolean
   canViewMedia?: boolean
-  canViewCollaborators?: boolean
   canViewTemplate?: boolean
   canViewPayment?: boolean
   canViewGuestManagement?: boolean
   canViewAnalytics?: boolean
   canViewExpenses?: boolean
   canViewDonation?: boolean
-  canViewReview?: boolean
   canViewTickets?: boolean
 }
 
@@ -84,13 +82,11 @@ const visibleTabs = computed(() => {
   return props.tabs.filter((tab) => {
     if (tab.id === 'registration' && !props.canViewRegistration) return false
     if (tab.id === 'media' && !props.canViewMedia) return false
-    if (tab.id === 'collaborator' && !props.canViewCollaborators) return false
     if (tab.id === 'template-payment' && !props.canViewTemplate) return false
     if (tab.id === 'guest-management' && !props.canViewGuestManagement) return false
     if (tab.id === 'analytics' && !props.canViewAnalytics) return false
     if (tab.id === 'expenses' && !props.canViewExpenses) return false
     if (tab.id === 'donation' && !props.canViewDonation) return false
-    if (tab.id === 'review' && !props.canViewReview) return false
     if (tab.id === 'tickets' && !props.canViewTickets) return false
     return tab.visible !== false
   })

@@ -28,14 +28,12 @@
       :tabs="navigationTabs"
       :can-view-registration="canViewRegistration"
       :can-view-media="canViewMedia"
-      :can-view-collaborators="canViewCollaborators"
       :can-view-template="canViewTemplate"
       :can-view-payment="canViewPayment"
       :can-view-guest-management="canViewGuestManagement"
       :can-view-analytics="canViewAnalytics"
       :can-view-expenses="canViewExpenses"
       :can-view-donation="canViewDonation"
-      :can-view-review="canViewReview"
       :can-view-tickets="canViewTickets"
       :can-edit="event?.can_edit"
       @tab-change="activeTab = $event"
@@ -83,14 +81,12 @@
       :tabs="navigationTabs"
       :can-view-registration="canViewRegistration"
       :can-view-media="canViewMedia"
-      :can-view-collaborators="canViewCollaborators"
       :can-view-template="canViewTemplate"
       :can-view-payment="canViewPayment"
       :can-view-guest-management="canViewGuestManagement"
       :can-view-analytics="canViewAnalytics"
       :can-view-expenses="canViewExpenses"
       :can-view-donation="canViewDonation"
-      :can-view-review="canViewReview"
       :can-view-tickets="canViewTickets"
       @tab-change="activeTab = $event"
     />
@@ -186,29 +182,6 @@
                 @media-updated="handleMediaUpdated"
                 @event-updated="handleEventUpdated"
                 @sub-tab-change="activeSubTab = $event"
-              />
-            </div>
-
-            <!-- Collaborator Tab -->
-            <div v-if="activeTab === 'collaborator'">
-              <div v-if="!canViewCollaborators" class="text-center py-12">
-                <div
-                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
-                >
-                  <Lock class="w-8 h-8 text-slate-400" />
-                </div>
-                <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
-                <p class="text-slate-600 max-w-md mx-auto">
-                  Only the event organizer and collaborators can view and manage team members.
-                </p>
-              </div>
-              <EventCollaboratorsTab
-                v-else-if="event?.id"
-                ref="collaboratorTabRef"
-                :event-id="event.id"
-                :event-title="event.title"
-                :can-edit="event.can_edit || false"
-                :organizer-details="event.organizer_details"
               />
             </div>
 
@@ -343,26 +316,6 @@
                 :can-edit="event.can_edit || false"
               />
             </div>
-
-            <!-- Review Tab -->
-            <div v-if="activeTab === 'review'">
-              <div v-if="!canViewReview" class="text-center py-12">
-                <div
-                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
-                >
-                  <Lock class="w-8 h-8 text-slate-400" />
-                </div>
-                <h3 class="text-lg font-semibold text-slate-900 mb-2">Access Restricted</h3>
-                <p class="text-slate-600 max-w-md mx-auto">
-                  Only the event organizer can review their hosting experience on GoEvent.
-                </p>
-              </div>
-              <EventReviewTab
-                v-else-if="event?.id"
-                :event-id="event.id"
-                :can-edit="event.can_edit || false"
-              />
-            </div>
           </div>
         </div>
       </div>
@@ -455,13 +408,11 @@ import type { TabConfig } from '../components/EventNavigationTabs.vue'
 const EventAgendaTab = defineAsyncComponent(() => import('../components/EventAgendaTab.vue'))
 const EventHostsTab = defineAsyncComponent(() => import('../components/EventHostsTab.vue'))
 const EventMediaTab = defineAsyncComponent(() => import('../components/EventMediaTab.vue'))
-const EventCollaboratorsTab = defineAsyncComponent(() => import('../components/EventCollaboratorsTab.vue'))
 const EventRegistrationTab = defineAsyncComponent(() => import('../components/EventRegistrationTab.vue'))
 const EventTemplatePaymentTab = defineAsyncComponent(() => import('../components/EventTemplatePaymentTab.vue'))
 const EventGuestManagementTab = defineAsyncComponent(() => import('../components/EventGuestManagementTab.vue'))
 const EventAnalyticsTab = defineAsyncComponent(() => import('../components/EventAnalyticsTab.vue'))
 const EventExpenseTab = defineAsyncComponent(() => import('../components/EventExpenseTab.vue'))
-const EventReviewTab = defineAsyncComponent(() => import('../components/EventReviewTab.vue'))
 const EventDonationTab = defineAsyncComponent(() => import('../components/EventDonationTab.vue'))
 const EventTicketsTab = defineAsyncComponent(() => import('../components/EventTicketsTab.vue'))
 
@@ -532,7 +483,6 @@ const agendaTabRef = ref<InstanceType<typeof EventAgendaTab> | null>(null)
 const hostsTabRef = ref<InstanceType<typeof EventHostsTab> | null>(null)
 const mediaTabRef = ref<InstanceType<typeof EventMediaTab> | null>(null)
 const registrationTabRef = ref<InstanceType<typeof EventRegistrationTab> | null>(null)
-const collaboratorTabRef = ref<InstanceType<typeof EventCollaboratorsTab> | null>(null)
 const templatePaymentTabRef = ref<InstanceType<typeof EventTemplatePaymentTab> | null>(null)
 const guestManagementTabRef = ref<InstanceType<typeof EventGuestManagementTab> | null>(null)
 const expenseTabRef = ref<InstanceType<typeof EventExpenseTab> | null>(null)
@@ -550,8 +500,6 @@ const navigationTabs = computed<TabConfig[]>(() => [
   { id: 'tickets', label: t('management.tabs.tickets'), icon: 'ticket', mobileLabel: t('management.tabs.ticketsMobile') },
   { id: 'registration', label: t('management.tabs.registration'), icon: 'user-plus' },
   { id: 'analytics', label: t('management.tabs.analytics'), icon: 'bar-chart', mobileLabel: t('management.tabs.analytics') },
-  { id: 'collaborator', label: t('management.tabs.collaborators'), icon: 'users', mobileLabel: t('management.tabs.teamMobile') },
-  { id: 'review', label: t('management.tabs.eventReview'), icon: 'star', mobileLabel: t('management.tabs.reviewMobile') },
 ])
 
 // Computed properties
@@ -610,9 +558,17 @@ watch(
   { immediate: true },
 )
 
-const canViewCollaborators = computed(() => {
-  return canViewRestrictedTabs.value
-})
+// Team & Review no longer exist as standalone tabs — they now live as
+// sections at the bottom of the Overview tab. Redirect old deep links.
+watch(
+  activeTab,
+  (tab) => {
+    if (tab === 'collaborator' || tab === 'review') {
+      activeTab.value = 'overview'
+    }
+  },
+  { immediate: true },
+)
 
 const canViewTemplate = computed(() => {
   // Only show template tab for wedding, birthday, housewarming events
@@ -645,10 +601,6 @@ const canViewExpenses = computed(() => {
 const canViewDonation = computed(() => {
   // Only show donation tab if event has fundraising enabled
   return canViewRestrictedTabs.value && event.value?.is_fundraising === true
-})
-
-const canViewReview = computed(() => {
-  return canViewRestrictedTabs.value
 })
 
 const canViewTickets = computed(() => {

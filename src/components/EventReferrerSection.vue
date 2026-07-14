@@ -1,70 +1,93 @@
 <template>
-  <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6">
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <h3 class="text-lg font-bold text-slate-900 flex items-center">
-          <UserPlus class="w-5 h-5 text-[#1e90ff] mr-2" />
-          {{ t('management.eventReferrerSection.title') }}
-        </h3>
-        <p class="text-sm text-slate-600 mt-1">{{ t('management.eventReferrerSection.subtitle') }}</p>
-      </div>
+  <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
+    <div class="flex items-center justify-between gap-2 mb-3">
+      <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center min-w-0">
+        <UserPlus class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2 flex-shrink-0" />
+        <span class="truncate">{{ t('management.eventReferrerSection.title') }}</span>
+      </h3>
+      <button
+        type="button"
+        @click="showInfo = !showInfo"
+        class="p-1.5 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors flex-shrink-0"
+        :aria-label="t('management.eventReferrerSection.info.title')"
+        :aria-expanded="showInfo"
+      >
+        <Info class="w-4 h-4" />
+      </button>
     </div>
 
     <!-- Current Referrer Display -->
-    <div v-if="referrerDetails && !isEditing" class="mb-4">
-      <div
-        class="p-4 bg-gradient-to-br from-emerald-50 to-sky-50 rounded-2xl border border-[#87CEEB]/50"
-      >
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center">
-              <User class="w-5 h-5 text-[#1e90ff]" />
-            </div>
-            <div>
-              <p class="font-semibold text-slate-900">
-                {{ referrerDetails.first_name }} {{ referrerDetails.last_name }}
-              </p>
-              <p class="text-sm text-slate-600">{{ referrerDetails.email }}</p>
-            </div>
-          </div>
-          <div v-if="canEdit" class="flex items-center space-x-2">
-            <button
-              @click="startEditing"
-              class="p-2 text-[#1e90ff] hover:bg-[#B0E0E6] rounded-lg transition-colors"
-              :title="t('management.eventReferrerSection.editTitle')"
-            >
-              <Pencil class="w-4 h-4" />
-            </button>
-            <button
-              @click="confirmRemoveReferrer"
-              class="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
-              :title="t('management.eventReferrerSection.removeTitle')"
-            >
-              <Trash2 class="w-4 h-4" />
-            </button>
-          </div>
+    <div
+      v-if="referrerDetails && !isEditing"
+      class="bg-white rounded-2xl border border-slate-200 overflow-hidden"
+    >
+      <div class="flex items-center gap-3 p-3 min-h-[56px]">
+        <div class="w-10 h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center flex-shrink-0">
+          <User class="w-5 h-5 text-[#1e90ff]" />
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-slate-900 truncate">
+            {{ referrerDetails.first_name }} {{ referrerDetails.last_name }}
+          </p>
+          <p class="text-xs sm:text-sm text-slate-500 truncate">{{ referrerDetails.email }}</p>
+        </div>
+        <div v-if="canEdit" class="flex items-center gap-1 flex-shrink-0">
+          <button
+            @click="startEditing"
+            class="p-2 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors"
+            :title="t('management.eventReferrerSection.editTitle')"
+            :aria-label="t('management.eventReferrerSection.editTitle')"
+          >
+            <Pencil class="w-4 h-4" />
+          </button>
+          <button
+            @click="confirmRemoveReferrer"
+            class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            :title="t('management.eventReferrerSection.removeTitle')"
+            :aria-label="t('management.eventReferrerSection.removeTitle')"
+          >
+            <Trash2 class="w-4 h-4" />
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- No Referrer State -->
-    <div v-else-if="!referrerDetails && !isEditing" class="mb-4">
-      <div class="p-8 bg-slate-50/50 rounded-2xl border border-slate-200/50 text-center">
-        <UserX class="w-12 h-12 text-slate-300 mx-auto mb-3" />
-        <p class="text-slate-600 mb-4">{{ t('management.eventReferrerSection.noReferrer') }}</p>
-        <button
-          v-if="canEdit"
-          @click="startEditing"
-          class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 inline-flex items-center"
-        >
-          <UserPlus class="w-4 h-4 mr-2" />
-          {{ t('management.eventReferrerSection.addReferrerBtn') }}
-        </button>
+    <!-- No Referrer State (editable) -->
+    <button
+      v-else-if="!referrerDetails && !isEditing && canEdit"
+      type="button"
+      @click="startEditing"
+      class="w-full flex items-center gap-3 p-3 min-h-[56px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-emerald-50/50 hover:border-emerald-300 active:bg-emerald-50 transition-colors text-left group"
+    >
+      <div
+        class="w-9 h-9 rounded-full bg-white border border-slate-200 group-hover:border-emerald-300 flex items-center justify-center flex-shrink-0 transition-colors"
+      >
+        <UserPlus class="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
       </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-slate-700 group-hover:text-emerald-700 transition-colors">
+          {{ t('management.eventReferrerSection.addReferrerBtn') }}
+        </p>
+        <p class="text-xs text-slate-500 truncate">{{ t('management.eventReferrerSection.noReferrer') }}</p>
+      </div>
+      <ChevronRight
+        class="w-4 h-4 text-slate-300 group-hover:text-emerald-500 flex-shrink-0 transition-colors"
+      />
+    </button>
+
+    <!-- No Referrer State (read-only) -->
+    <div
+      v-else-if="!referrerDetails && !isEditing"
+      class="flex items-center gap-3 p-3 min-h-[56px] rounded-2xl border border-slate-200 bg-slate-50/50"
+    >
+      <div class="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center flex-shrink-0">
+        <UserX class="w-4 h-4 text-slate-400" />
+      </div>
+      <p class="text-sm text-slate-500">{{ t('management.eventReferrerSection.noReferrer') }}</p>
     </div>
 
     <!-- Edit/Add Referrer Form -->
-    <div v-if="isEditing" class="mb-4">
+    <div v-if="isEditing">
       <form @submit.prevent="saveReferrer" class="space-y-4">
         <div>
           <label for="referrerEmail" class="block text-sm font-medium text-slate-700 mb-2">
@@ -117,20 +140,22 @@
       </form>
     </div>
 
-    <!-- Referrer Benefits Info -->
-    <div class="mt-6 p-4 bg-[#E6F4FF]/50 rounded-xl border border-[#87CEEB]/50">
-      <div class="flex items-start space-x-3">
-        <Info class="w-5 h-5 text-[#1e90ff] flex-shrink-0 mt-0.5" />
-        <div class="text-sm text-slate-700">
-          <p class="font-medium mb-1">{{ t('management.eventReferrerSection.info.title') }}</p>
-          <p>
-            {{ t('management.eventReferrerSection.info.body') }}
-            <br />
-            <span class="italic">{{ t('management.eventReferrerSection.info.note') }}</span>
-          </p>
+    <!-- Referrer Benefits Info (collapsible) -->
+    <Transition name="collapse">
+      <div v-if="showInfo" class="grid grid-rows-[1fr]">
+        <div class="min-h-0 overflow-hidden">
+          <div class="pt-3">
+            <div class="p-3 bg-[#E6F4FF]/50 rounded-xl border border-[#87CEEB]/50 flex items-start gap-2.5">
+              <Info class="w-4 h-4 text-[#1e90ff] flex-shrink-0 mt-0.5" />
+              <div class="text-xs sm:text-sm text-slate-700">
+                <p>{{ t('management.eventReferrerSection.info.body') }}</p>
+                <p class="italic text-slate-500 mt-1">{{ t('management.eventReferrerSection.info.note') }}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </Transition>
 
     <!-- Remove Confirmation Modal -->
     <Teleport to="body">
@@ -192,6 +217,7 @@ import {
   Mail,
   Info,
   AlertTriangle,
+  ChevronRight,
 } from 'lucide-vue-next'
 import { apiService } from '../services/api'
 import { useNotifications } from '../composables/useNotifications'
@@ -227,6 +253,7 @@ const isEditing = ref(false)
 const isSaving = ref(false)
 const isRemoving = ref(false)
 const showRemoveConfirm = ref(false)
+const showInfo = ref(false)
 const referrerEmail = ref('')
 const error = ref('')
 
@@ -395,5 +422,25 @@ watch(
 .modal-enter-from > div,
 .modal-leave-to > div {
   transform: scale(0.95);
+}
+
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse-enter-active,
+  .collapse-leave-active {
+    transition: opacity 0.2s ease;
+  }
 }
 </style>

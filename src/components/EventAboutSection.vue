@@ -393,6 +393,22 @@
         </div>
       </div>
     </div>
+
+    <!-- ============ 8. TEAM ============ -->
+    <EventCollaboratorsTab
+      v-if="event.can_edit"
+      :event-id="event.id"
+      :event-title="event.title"
+      :can-edit="event.can_edit || false"
+      :organizer-details="event.organizer_details"
+    />
+
+    <!-- ============ 9. REVIEW ============ -->
+    <EventReviewTab
+      v-if="event.can_edit"
+      :event-id="event.id"
+      :can-edit="event.can_edit || false"
+    />
   </div>
 
   <!-- Add to Calendar bottom sheet -->
@@ -496,7 +512,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, defineAsyncComponent } from 'vue'
 import DOMPurify from 'dompurify'
 import {
   MapPin,
@@ -526,6 +542,9 @@ import type { EventAgendaItem } from '../services/api/types/event.types'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { useAppLanguage } from '../composables/useAppLanguage'
 import { isImageKitEnabled } from '../composables/useImageKitConfig'
+
+const EventCollaboratorsTab = defineAsyncComponent(() => import('./EventCollaboratorsTab.vue'))
+const EventReviewTab = defineAsyncComponent(() => import('./EventReviewTab.vue'))
 
 interface Props {
   event: Event

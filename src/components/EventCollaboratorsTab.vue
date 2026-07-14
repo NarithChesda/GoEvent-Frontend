@@ -1,160 +1,233 @@
 ﻿<template>
-  <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">
-          {{ t('management.collaboratorsTab.title') }}
-        </h2>
-        <p class="text-xs sm:text-sm text-slate-600 mt-1">{{ t('management.collaboratorsTab.subtitle') }}</p>
-      </div>
-      <button
-        v-if="canInvite"
-        @click="showInviteModal = true"
-        class="flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold p-2 sm:py-2 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 items-center text-sm sm:text-base"
-      >
-        <UserPlus class="w-4 h-4 sm:mr-2" />
-        <span class="hidden sm:inline">{{ t('management.collaboratorsTab.inviteCollaborator') }}</span>
-      </button>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-100 flex items-center justify-center">
-            <Crown class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
-          </div>
-          <div>
-            <p class="text-lg sm:text-2xl font-bold text-slate-900">1</p>
-            <p class="text-xs sm:text-sm text-slate-600">{{ t('management.collaboratorsTab.stats.organizer') }}</p>
-          </div>
+  <div>
+    <!-- Team Panel: stats + organizer + collaborators unified -->
+    <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <div class="flex items-center gap-2 min-w-0">
+          <h2 class="text-base font-semibold text-slate-900">{{ t('management.collaboratorsTab.team.title') }}</h2>
+          <span class="text-sm font-normal text-slate-400">· {{ teamCount }}</span>
+        </div>
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <button
+            type="button"
+            @click="showRolesInfo = !showRolesInfo"
+            class="p-1.5 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors"
+            :aria-label="t('management.collaboratorsTab.roles.title')"
+            :aria-expanded="showRolesInfo"
+          >
+            <Shield class="w-4 h-4" />
+          </button>
+          <button
+            v-if="canInvite"
+            type="button"
+            @click="toggleInviteForm"
+            class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-full border border-dashed transition-all"
+            :class="
+              showInviteForm
+                ? 'border-emerald-300 text-emerald-700 bg-emerald-50'
+                : 'border-slate-300 text-slate-600 hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50'
+            "
+            :aria-expanded="showInviteForm"
+            :aria-label="t('management.collaboratorsTab.inviteCollaborator')"
+          >
+            <X v-if="showInviteForm" class="w-3.5 h-3.5 flex-shrink-0" />
+            <UserPlus v-else class="w-3.5 h-3.5 flex-shrink-0" />
+            <span class="hidden sm:inline">
+              {{ showInviteForm ? t('management.inviteDrawer.cancel') : t('management.collaboratorsTab.inviteCollaborator') }}
+            </span>
+          </button>
         </div>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#B0E0E6] flex items-center justify-center">
-            <Users class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff]" />
-          </div>
-          <div>
-            <p class="text-lg sm:text-2xl font-bold text-slate-900">{{ collaborators.length }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">{{ t('management.collaboratorsTab.stats.collaborators') }}</p>
-          </div>
-        </div>
+      <!-- Stats -->
+      <div class="grid grid-cols-2 sm:flex sm:items-center gap-x-4 gap-y-2 sm:gap-y-1 text-xs sm:text-sm text-slate-600 pb-3 mb-3 border-b border-slate-100">
+        <span class="inline-flex items-center gap-1.5">
+          <Crown class="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
+          <span class="font-semibold text-slate-900">1</span> {{ t('management.collaboratorsTab.stats.organizer') }}
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <Users class="w-3.5 h-3.5 text-[#1e90ff] flex-shrink-0" />
+          <span class="font-semibold text-slate-900">{{ collaborators.length }}</span> {{ t('management.collaboratorsTab.stats.collaborators') }}
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <CheckCircle class="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+          <span class="font-semibold text-slate-900">{{ acceptedCount }}</span> {{ t('management.collaboratorsTab.stats.accepted') }}
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <Clock class="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />
+          <span class="font-semibold text-slate-900">{{ pendingCount }}</span> {{ t('management.collaboratorsTab.stats.pending') }}
+        </span>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-100 flex items-center justify-center">
-            <CheckCircle class="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-          </div>
-          <div>
-            <p class="text-lg sm:text-2xl font-bold text-slate-900">{{ acceptedCount }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">{{ t('management.collaboratorsTab.stats.accepted') }}</p>
+      <!-- Inline Invite Form -->
+      <Transition name="collapse">
+        <div v-if="showInviteForm" class="grid grid-rows-[1fr] mb-3">
+          <div class="min-h-0 overflow-hidden">
+            <form
+              @submit.prevent="submitInvite"
+              class="p-3 sm:p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3"
+            >
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label for="inviteEmail" class="block text-sm font-medium text-slate-700">
+                    {{ t('management.inviteDrawer.email') }} <span class="text-red-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    @click="fillAdminHelp"
+                    class="text-xs text-sky-600 hover:text-sky-700 font-medium flex items-center gap-1 transition-colors"
+                  >
+                    <LifeBuoy class="w-3 h-3" />
+                    {{ t('management.inviteDrawer.askAdminHelp') }}
+                  </button>
+                </div>
+                <input
+                  id="inviteEmail"
+                  v-model="inviteEmail"
+                  type="email"
+                  required
+                  :disabled="isInviting"
+                  @blur="validateInviteEmail"
+                  :placeholder="t('management.inviteDrawer.emailPlaceholder')"
+                  :class="[
+                    'w-full px-3.5 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 bg-white disabled:opacity-50',
+                    inviteEmailError
+                      ? 'border-red-300 focus:ring-red-200 focus:border-red-400'
+                      : 'border-slate-300 focus:ring-sky-200 focus:border-sky-400'
+                  ]"
+                />
+                <p v-if="inviteEmailError" class="mt-1.5 text-xs text-red-600">{{ inviteEmailError }}</p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label for="inviteRole" class="block text-sm font-medium text-slate-700 mb-1.5">
+                    {{ t('management.inviteDrawer.role') }}
+                  </label>
+                  <div class="relative">
+                    <select
+                      id="inviteRole"
+                      v-model="inviteRole"
+                      :disabled="isInviting"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 appearance-none bg-white pr-10 disabled:opacity-50"
+                    >
+                      <option value="viewer">{{ t('management.inviteDrawer.roles.viewer') }}</option>
+                      <option value="editor">{{ t('management.inviteDrawer.roles.editor') }}</option>
+                      <option value="admin">{{ t('management.inviteDrawer.roles.admin') }}</option>
+                    </select>
+                    <ChevronDown class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  </div>
+                </div>
+                <div>
+                  <label for="inviteMessage" class="block text-sm font-medium text-slate-700 mb-1.5">
+                    {{ t('management.inviteDrawer.message') }}
+                  </label>
+                  <input
+                    id="inviteMessage"
+                    v-model="inviteMessage"
+                    type="text"
+                    maxlength="500"
+                    :disabled="isInviting"
+                    :placeholder="t('management.inviteDrawer.messagePlaceholder')"
+                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white disabled:opacity-50"
+                  />
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button
+                  type="submit"
+                  :disabled="isInviting || !inviteEmail"
+                  class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white text-sm font-semibold rounded-lg transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span
+                    v-if="isInviting"
+                    class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
+                  ></span>
+                  <Send v-else class="w-4 h-4" />
+                  {{ isInviting ? t('management.inviteDrawer.sending') : t('management.inviteDrawer.sendInvitation') }}
+                </button>
+                <button
+                  type="button"
+                  @click="closeInviteForm"
+                  :disabled="isInviting"
+                  class="px-4 py-2 text-slate-600 hover:bg-slate-200 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {{ t('management.inviteDrawer.cancel') }}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
+      </Transition>
+
+      <!-- Loading State -->
+      <div v-if="loading" class="flex items-center justify-center py-8">
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-[#1e90ff]"></div>
+        <span class="ml-3 text-sm text-slate-600">{{ t('management.collaboratorsTab.loading') }}</span>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4">
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-orange-100 flex items-center justify-center">
-            <Clock class="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
-          </div>
-          <div>
-            <p class="text-lg sm:text-2xl font-bold text-slate-900">{{ pendingCount }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">{{ t('management.collaboratorsTab.stats.pending') }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Organizer Card -->
-    <div
-      v-if="sanitizedOrganizerDetails"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6"
-    >
-      <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4 flex items-center">
-        <Crown class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 mr-1.5 sm:mr-2" />
-        {{ t('management.collaboratorsTab.organizer.title') }}
-      </h3>
-      <div class="flex items-center space-x-3 sm:space-x-4">
-        <div
-          class="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden bg-gradient-to-br from-emerald-600 to-sky-600 flex items-center justify-center"
+      <!-- Error State -->
+      <div v-else-if="loadError" class="text-center py-6">
+        <AlertCircle class="w-8 h-8 text-red-500 mx-auto mb-2" />
+        <p class="text-sm font-medium text-slate-900 mb-1">{{ t('management.collaboratorsTab.error.title') }}</p>
+        <p class="text-xs text-slate-600 mb-3">{{ loadError }}</p>
+        <button
+          @click="retryLoadCollaborators"
+          class="text-sm font-semibold text-[#1e90ff] hover:underline"
         >
-          <img
-            v-if="sanitizedOrganizerDetails.profile_picture"
-            :src="apiClient.getProfilePictureUrl(sanitizedOrganizerDetails.profile_picture ?? undefined) || undefined"
-            :alt="sanitizedOrganizerDetails.first_name + ' ' + sanitizedOrganizerDetails.last_name"
-            class="w-full h-full object-cover"
-          />
-          <span v-else class="text-white text-base sm:text-lg font-bold">
-            {{ getInitials(sanitizedOrganizerDetails.first_name, sanitizedOrganizerDetails.last_name) }}
-          </span>
-        </div>
-        <div class="flex-1">
-          <h4 class="text-base sm:text-lg font-semibold text-slate-800">
-            {{ sanitizedOrganizerDetails.first_name }} {{ sanitizedOrganizerDetails.last_name }}
-          </h4>
-          <p class="text-xs sm:text-sm text-slate-600">@{{ sanitizedOrganizerDetails.username }}</p>
-          <p class="text-xs sm:text-sm text-slate-500">{{ sanitizedOrganizerDetails.email }}</p>
+          {{ t('management.collaboratorsTab.error.tryAgain') }}
+        </button>
+      </div>
+
+      <!-- Rows -->
+      <div v-else class="space-y-2">
+        <!-- Organizer row -->
+        <div v-if="sanitizedOrganizerDetails" class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+          <div class="relative flex-shrink-0">
+            <div
+              class="w-11 h-11 rounded-full overflow-hidden bg-gradient-to-br from-emerald-600 to-sky-600 flex items-center justify-center"
+            >
+              <img
+                v-if="sanitizedOrganizerDetails.profile_picture"
+                :src="apiClient.getProfilePictureUrl(sanitizedOrganizerDetails.profile_picture ?? undefined) || undefined"
+                :alt="sanitizedOrganizerDetails.first_name + ' ' + sanitizedOrganizerDetails.last_name"
+                class="w-full h-full object-cover"
+              />
+              <span v-else class="text-white text-sm font-bold">
+                {{ getInitials(sanitizedOrganizerDetails.first_name, sanitizedOrganizerDetails.last_name) }}
+              </span>
+            </div>
+            <div
+              class="absolute -bottom-0.5 -right-0.5 w-4 h-4 sm:w-[18px] sm:h-[18px] rounded-full bg-purple-500 border-2 border-white flex items-center justify-center"
+            >
+              <Crown class="w-2 h-2 sm:w-2.5 sm:h-2.5 text-white" />
+            </div>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm sm:text-base font-semibold text-slate-900 truncate">
+              {{ sanitizedOrganizerDetails.first_name }} {{ sanitizedOrganizerDetails.last_name }}
+            </p>
+            <p class="text-xs sm:text-sm text-slate-500 truncate">
+              @{{ sanitizedOrganizerDetails.username }} · {{ sanitizedOrganizerDetails.email }}
+            </p>
+          </div>
           <span
-            class="inline-block mt-1 px-2 py-0.5 sm:px-3 sm:py-1 bg-purple-100 text-purple-700 text-[10px] sm:text-xs font-medium rounded-full"
+            class="flex-shrink-0 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-purple-100 text-purple-700 text-[10px] sm:text-xs font-medium rounded-full"
           >
             {{ t('management.collaboratorsTab.organizer.badge') }}
           </span>
         </div>
-      </div>
-    </div>
 
-    <!-- Loading State -->
-    <div
-      v-if="loading"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8"
-    >
-      <div class="flex items-center justify-center">
-        <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
-        <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">{{ t('management.collaboratorsTab.loading') }}</span>
-      </div>
-    </div>
-
-    <!-- Error State -->
-    <div
-      v-else-if="loadError"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8 text-center"
-    >
-      <AlertCircle class="w-10 h-10 sm:w-12 sm:h-12 text-red-500 mx-auto mb-3 sm:mb-4" />
-      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ t('management.collaboratorsTab.error.title') }}</h3>
-      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">{{ loadError }}</p>
-      <button
-        @click="retryLoadCollaborators"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 text-sm sm:text-base"
-      >
-        {{ t('management.collaboratorsTab.error.tryAgain') }}
-      </button>
-    </div>
-
-    <!-- Collaborators List -->
-    <div
-      v-else-if="enrichedCollaborators.length > 0"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6"
-    >
-      <div class="flex items-center justify-between mb-3 sm:mb-4">
-        <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center">
-          <Users class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
-          {{ t('management.collaboratorsTab.list.title', { count: collaborators.length }) }}
-        </h3>
-        <p v-if="canUpdateRole" class="text-[10px] sm:text-xs text-slate-500 italic">{{ t('management.collaboratorsTab.list.clickToEdit') }}</p>
-      </div>
-      <div class="space-y-3 sm:space-y-4">
+        <!-- Collaborator rows -->
         <div
           v-for="collaborator in enrichedCollaborators"
           :key="collaborator.id"
-          class="flex items-center justify-between p-3 sm:p-4 bg-slate-50/50 rounded-xl sm:rounded-2xl hover:bg-slate-100/50 transition-colors duration-200"
+          class="flex items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors duration-200"
         >
-          <div class="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+          <div class="flex items-center space-x-3 flex-1 min-w-0">
             <div
-              class="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-gradient-to-br from-emerald-600 to-sky-600 flex items-center justify-center flex-shrink-0"
+              class="w-11 h-11 rounded-full overflow-hidden bg-gradient-to-br from-emerald-600 to-sky-600 flex items-center justify-center flex-shrink-0"
             >
               <img
                 v-if="collaborator.profileImageUrl"
@@ -178,19 +251,19 @@
                 </span>
                 <span v-else class="text-slate-500">{{ collaborator.sanitizedEmail }}</span>
               </h4>
-              <p class="text-xs sm:text-sm text-slate-600 truncate">
+              <p class="text-xs sm:text-sm text-slate-500 truncate">
                 <span v-if="collaborator.sanitizedUserDetails">
                   @{{ collaborator.sanitizedUserDetails.username }}
                 </span>
                 <span v-else>{{ collaborator.sanitizedEmail }}</span>
               </p>
-              <p class="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1 truncate">
+              <p class="text-[10px] sm:text-xs text-slate-400 mt-0.5 truncate">
                 {{ t('management.collaboratorsTab.list.invitedBy', { name: collaborator.invited_by_name }) }} ·
                 {{ collaborator.formattedInviteDate }}
               </p>
             </div>
           </div>
-          <div class="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+          <div class="flex items-center space-x-2 flex-shrink-0">
             <div class="text-center">
               <!-- Role Selection or Display -->
               <div v-if="canUpdateRole && editingRole === collaborator.id" class="min-w-[80px] sm:min-w-[100px]">
@@ -270,72 +343,60 @@
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Empty State -->
-    <div
-      v-else-if="!loading"
-      class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-8 sm:p-12 text-center"
-    >
-      <Users class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-3 sm:mb-4" />
-      <h3 class="text-base sm:text-lg font-semibold text-slate-900 mb-1.5 sm:mb-2">{{ t('management.collaboratorsTab.empty.title') }}</h3>
-      <p class="text-xs sm:text-sm text-slate-600 mb-4 sm:mb-6">
-        {{ t('management.collaboratorsTab.empty.description') }}
-      </p>
-      <button
-        v-if="canInvite"
-        @click="showInviteModal = true"
-        class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center mx-auto text-sm sm:text-base"
-      >
-        <UserPlus class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-        {{ t('management.collaboratorsTab.empty.inviteFirst') }}
-      </button>
-    </div>
+        <!-- Empty state (editable) -->
+        <button
+          v-if="!loading && enrichedCollaborators.length === 0 && canInvite && !showInviteForm"
+          type="button"
+          @click="openInviteForm"
+          class="w-full border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 rounded-2xl p-6 text-center transition-colors group"
+        >
+          <UserPlus class="w-8 h-8 mx-auto text-slate-400 group-hover:text-emerald-500 transition-colors" />
+          <p class="mt-2 text-sm font-medium text-slate-700">{{ t('management.collaboratorsTab.empty.inviteFirst') }}</p>
+          <p class="mt-0.5 text-xs text-slate-500">{{ t('management.collaboratorsTab.empty.title') }}</p>
+        </button>
 
-    <!-- Collaboration Permissions Info -->
-    <div
-      class="bg-gradient-to-br from-emerald-50 to-sky-50 border border-[#87CEEB]/50 rounded-3xl p-4 sm:p-6"
-    >
-      <div class="flex items-center justify-between mb-3 sm:mb-4">
-        <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center">
-          <Shield class="w-4 h-4 sm:w-5 sm:h-5 text-[#1e90ff] mr-1.5 sm:mr-2" />
-          {{ t('management.collaboratorsTab.roles.title') }}
-        </h3>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3">
-        <div class="bg-white/70 rounded-lg sm:rounded-xl p-2 sm:p-3">
-          <div class="flex items-center mb-0.5 sm:mb-1">
-            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-red-500 rounded-full mr-1.5 sm:mr-2"></div>
-            <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ t('management.collaboratorsTab.roles.admin') }}</span>
-          </div>
-          <p class="text-[10px] sm:text-xs text-slate-600">{{ t('management.collaboratorsTab.roles.adminDesc') }}</p>
-        </div>
-        <div class="bg-white/70 rounded-lg sm:rounded-xl p-2 sm:p-3">
-          <div class="flex items-center mb-0.5 sm:mb-1">
-            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-[#E6F4FF]0 rounded-full mr-1.5 sm:mr-2"></div>
-            <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ t('management.collaboratorsTab.roles.editor') }}</span>
-          </div>
-          <p class="text-[10px] sm:text-xs text-slate-600">{{ t('management.collaboratorsTab.roles.editorDesc') }}</p>
-        </div>
-        <div class="bg-white/70 rounded-lg sm:rounded-xl p-2 sm:p-3">
-          <div class="flex items-center mb-0.5 sm:mb-1">
-            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full mr-1.5 sm:mr-2"></div>
-            <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ t('management.collaboratorsTab.roles.viewer') }}</span>
-          </div>
-          <p class="text-[10px] sm:text-xs text-slate-600">{{ t('management.collaboratorsTab.roles.viewerDesc') }}</p>
+        <!-- Empty state (read-only) -->
+        <div
+          v-else-if="!loading && enrichedCollaborators.length === 0"
+          class="w-full border-2 border-dashed border-slate-200 bg-slate-50/50 rounded-2xl p-6 text-center"
+        >
+          <Users class="w-8 h-8 mx-auto text-slate-300" />
+          <p class="mt-2 text-sm text-slate-500">{{ t('management.collaboratorsTab.empty.title') }}</p>
         </div>
       </div>
-    </div>
 
-    <!-- Invite Collaborator Drawer -->
-    <InviteCollaboratorDrawer
-      :show="showInviteModal"
-      :is-inviting="isInviting"
-      :event-title="eventTitle"
-      @close="closeInviteModal"
-      @invite="handleInvite"
-    />
+      <!-- Collapsible Roles Info -->
+      <Transition name="collapse">
+        <div v-if="showRolesInfo" class="grid grid-rows-[1fr]">
+          <div class="min-h-0 overflow-hidden">
+            <div class="pt-3 sm:pt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div class="bg-slate-50 rounded-lg sm:rounded-xl p-2 sm:p-3">
+                <div class="flex items-center mb-0.5 sm:mb-1">
+                  <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-red-500 rounded-full mr-1.5 sm:mr-2"></div>
+                  <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ t('management.collaboratorsTab.roles.admin') }}</span>
+                </div>
+                <p class="text-[10px] sm:text-xs text-slate-600">{{ t('management.collaboratorsTab.roles.adminDesc') }}</p>
+              </div>
+              <div class="bg-slate-50 rounded-lg sm:rounded-xl p-2 sm:p-3">
+                <div class="flex items-center mb-0.5 sm:mb-1">
+                  <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-[#1e90ff] rounded-full mr-1.5 sm:mr-2"></div>
+                  <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ t('management.collaboratorsTab.roles.editor') }}</span>
+                </div>
+                <p class="text-[10px] sm:text-xs text-slate-600">{{ t('management.collaboratorsTab.roles.editorDesc') }}</p>
+              </div>
+              <div class="bg-slate-50 rounded-lg sm:rounded-xl p-2 sm:p-3">
+                <div class="flex items-center mb-0.5 sm:mb-1">
+                  <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full mr-1.5 sm:mr-2"></div>
+                  <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ t('management.collaboratorsTab.roles.viewer') }}</span>
+                </div>
+                <p class="text-[10px] sm:text-xs text-slate-600">{{ t('management.collaboratorsTab.roles.viewerDesc') }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </div>
 
     <!-- Remove Confirmation Modal -->
     <DeleteConfirmModal
@@ -383,6 +444,9 @@ import {
   Shield,
   X,
   Trash2,
+  ChevronDown,
+  LifeBuoy,
+  Send,
 } from 'lucide-vue-next'
 import { eventsService, type EventCollaborator } from '../services/api'
 import { apiClient } from '../services/api'
@@ -391,7 +455,6 @@ import { inputValidator } from '@/utils/inputValidation'
 import { sanitizePlainText } from '@/utils/sanitize'
 import { useCollaboratorRole } from '@/composables/useCollaboratorRole'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
-import { InviteCollaboratorDrawer } from './collaborator'
 
 interface Props {
   eventId: string
@@ -415,13 +478,20 @@ const authStore = useAuthStore()
 const collaborators = ref<EventCollaborator[]>([])
 const loading = ref(false)
 const loadError = ref<string | null>(null)
-const showInviteModal = ref(false)
+const showInviteForm = ref(false)
+const showRolesInfo = ref(false)
 const showRemoveModal = ref(false)
 const isInviting = ref(false)
 const isRemoving = ref(false)
 const collaboratorToRemove = ref<EventCollaborator | null>(null)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const messageTimer = ref<number | null>(null)
+
+// Inline invite form state
+const inviteEmail = ref('')
+const inviteRole = ref<'admin' | 'editor' | 'viewer'>('editor')
+const inviteMessage = ref('')
+const inviteEmailError = ref<string | null>(null)
 
 /**
  * Show a temporary message to the user
@@ -511,6 +581,8 @@ const canUpdateRole = computed(() => {
 const acceptedCount = computed(() => collaborators.value.filter((c) => c.is_accepted).length)
 
 const pendingCount = computed(() => collaborators.value.filter((c) => !c.is_accepted).length)
+
+const teamCount = computed(() => collaborators.value.length + (props.organizerDetails ? 1 : 0))
 
 /**
  * Sanitized organizer details for safe display
@@ -613,20 +685,71 @@ const retryLoadCollaborators = async (): Promise<void> => {
 }
 
 /**
- * Handle invite from drawer component
+ * Open the inline invite form, resetting its fields
+ */
+const openInviteForm = (): void => {
+  inviteEmail.value = ''
+  inviteRole.value = 'editor'
+  inviteMessage.value = ''
+  inviteEmailError.value = null
+  showInviteForm.value = true
+}
+
+/**
+ * Close the inline invite form
+ */
+const closeInviteForm = (): void => {
+  showInviteForm.value = false
+}
+
+const toggleInviteForm = (): void => {
+  if (showInviteForm.value) {
+    closeInviteForm()
+  } else {
+    openInviteForm()
+  }
+}
+
+const validateInviteEmail = (): void => {
+  if (!inviteEmail.value) {
+    inviteEmailError.value = null
+    return
+  }
+  const validation = inputValidator.validateEmail(inviteEmail.value)
+  inviteEmailError.value = validation.isValid ? null : validation.errors[0]
+}
+
+/**
+ * Prefill the form to ask the GoEvent admin for help managing this event
+ */
+const fillAdminHelp = (): void => {
+  inviteEmail.value = 'admin@goevent.com'
+  inviteRole.value = 'admin'
+  inviteMessage.value = props.eventTitle
+    ? `${props.eventTitle} asks admin for help`
+    : 'Event asks admin for help'
+  inviteEmailError.value = null
+}
+
+/**
+ * Submit the inline invite form
  * Validates and sanitizes data before sending to API
  */
-const handleInvite = async (data: { email: string; role: 'admin' | 'editor' | 'viewer'; message?: string }): Promise<void> => {
-  // Validate email
-  const emailValidation = inputValidator.validateEmail(data.email)
+const submitInvite = async (): Promise<void> => {
+  validateInviteEmail()
+  if (inviteEmailError.value || !inviteEmail.value.trim()) {
+    return
+  }
+
+  const emailValidation = inputValidator.validateEmail(inviteEmail.value)
   if (!emailValidation.isValid) {
     showMessage('error', emailValidation.errors[0])
     return
   }
 
   // Sanitize message if provided
-  const sanitizedMessage = data.message
-    ? sanitizePlainText(data.message, 500)
+  const sanitizedMessage = inviteMessage.value
+    ? sanitizePlainText(inviteMessage.value, 500)
     : ''
 
   // Check message length after sanitization
@@ -639,7 +762,7 @@ const handleInvite = async (data: { email: string; role: 'admin' | 'editor' | 'v
   try {
     const response = await eventsService.inviteCollaborator(props.eventId, {
       email: emailValidation.sanitizedValue!,
-      role: data.role,
+      role: inviteRole.value,
       message: sanitizedMessage || undefined,
     })
 
@@ -660,7 +783,7 @@ const handleInvite = async (data: { email: string; role: 'admin' | 'editor' | 'v
         }
       }
 
-      closeInviteModal()
+      closeInviteForm()
     } else {
       showMessage('error', response.message || t('management.collaboratorsTab.toast.inviteFailed'))
     }
@@ -670,13 +793,6 @@ const handleInvite = async (data: { email: string; role: 'admin' | 'editor' | 'v
   } finally {
     isInviting.value = false
   }
-}
-
-/**
- * Close the invite modal
- */
-const closeInviteModal = (): void => {
-  showInviteModal.value = false
 }
 
 const confirmRemoveCollaborator = (collaborator: EventCollaborator) => {
@@ -772,9 +888,7 @@ onUnmounted(() => {
 
 // Expose methods for parent component (Smart FAB)
 defineExpose({
-  openInviteModal: () => {
-    showInviteModal.value = true
-  },
+  openInviteModal: openInviteForm,
   retryLoadCollaborators,
 })
 </script>
@@ -793,6 +907,26 @@ defineExpose({
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse-enter-active,
+  .collapse-leave-active {
+    transition: opacity 0.2s ease;
+  }
 }
 </style>
 

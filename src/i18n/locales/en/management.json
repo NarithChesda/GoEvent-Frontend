@@ -383,12 +383,8 @@
     "registration": "Registration",
     "registrations": "Registrations",
     "analytics": "Analytics",
-    "teamMobile": "Team",
-    "eventReview": "Event Review",
-    "reviewMobile": "Review",
     "payment": "Payment",
     "expenses": "Expenses",
-    "collaborators": "Collaborators",
     "settings": "Settings",
     "tickets": "Tickets",
     "ticketsMobile": "Tickets"
@@ -2178,8 +2174,6 @@
     }
   },
   "collaboratorsTab": {
-    "title": "Team Collaboration",
-    "subtitle": "Manage your event collaborators and team members",
     "inviteCollaborator": "Invite Collaborator",
     "stats": {
       "organizer": "Organizer",
@@ -2198,8 +2192,10 @@
       "loadFailed": "Failed to load collaborators",
       "networkError": "An error occurred while loading collaborators. Please check your connection."
     },
+    "team": {
+      "title": "Team"
+    },
     "list": {
-      "title": "Collaborators ({count})",
       "clickToEdit": "Click role badges to edit",
       "invitedBy": "Invited by {name}",
       "accepted": "Accepted",
@@ -2211,7 +2207,6 @@
     },
     "empty": {
       "title": "No Collaborators Yet",
-      "description": "Start building your team by inviting collaborators to help manage this event.",
       "inviteFirst": "Invite Your First Collaborator"
     },
     "roles": {
@@ -2259,8 +2254,9 @@
   },
   "reviewTab": {
     "title": "Event Review",
-    "subtitle": "Share your experience hosting this event on GoEvent",
+    "yourReview": "Your Review",
     "loading": "Loading review...",
+    "refresh": "Refresh review",
     "unknownUser": "Unknown User",
     "ratingDisplay": "{rating} out of 5 stars",
     "editReview": "Edit review",
@@ -2269,6 +2265,14 @@
       "ratingLabel": "Rate your hosting experience",
       "ratingHint": "Rate the GoEvent platform's tools, features, and support",
       "ratingError": "Please select a rating between 1 and 5 stars",
+      "ratingPlaceholder": "Select a rating",
+      "ratingLabels": {
+        "1": "Poor",
+        "2": "Fair",
+        "3": "Good",
+        "4": "Very Good",
+        "5": "Excellent"
+      },
       "feedbackLabel": "Your feedback",
       "feedbackPlaceholder": "Share your experience hosting this event on GoEvent. How were the planning tools? Was the support helpful? Any suggestions for improvement?",
       "feedbackHint": "Tell us about your experience with GoEvent's platform and services",
