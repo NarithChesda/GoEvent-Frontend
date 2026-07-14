@@ -166,21 +166,32 @@
         <!-- Footer -->
         <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
           <div class="flex items-center justify-between">
-            <button
-              v-if="canEdit"
-              type="button"
-              @click="triggerFileInput"
-              :disabled="isUploading"
-              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Loader v-if="isUploading" class="w-4 h-4 animate-spin" aria-hidden="true" />
-              <Upload v-else class="w-4 h-4" aria-hidden="true" />
-              <span>
-                {{ isUploading
-                  ? t('management.media.mediaUploads.drawer.uploading')
-                  : (mediaUrl ? t('management.media.mediaUploads.card.replace') : t('management.media.mediaUploads.drawer.uploadBtn')) }}
-              </span>
-            </button>
+            <div v-if="canEdit" class="flex items-center gap-2">
+              <button
+                type="button"
+                @click="triggerFileInput"
+                :disabled="isUploading"
+                class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Loader v-if="isUploading" class="w-4 h-4 animate-spin" aria-hidden="true" />
+                <Upload v-else class="w-4 h-4" aria-hidden="true" />
+                <span>
+                  {{ isUploading
+                    ? t('management.media.mediaUploads.drawer.uploading')
+                    : (mediaUrl ? t('management.media.mediaUploads.card.replace') : t('management.media.mediaUploads.drawer.uploadBtn')) }}
+                </span>
+              </button>
+              <button
+                v-if="allowCrop && mediaUrl"
+                type="button"
+                @click="emit('crop')"
+                :disabled="isUploading"
+                class="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Crop class="w-4 h-4" aria-hidden="true" />
+                <span>{{ t('management.media.mediaUploads.banner.crop') }}</span>
+              </button>
+            </div>
             <span v-else></span>
 
             <button
@@ -202,6 +213,7 @@ import { ref, watch, onUnmounted } from 'vue'
 import {
   ArrowRight,
   AlertCircle,
+  Crop,
   Download,
   ImageIcon,
   Info,
@@ -230,12 +242,15 @@ interface Props {
   downloadFilename?: string
   /** Upload error surfaced from the parent's upload composable */
   error?: string | null
+  /** Whether to show a "Crop" action for re-cropping the current image without re-uploading */
+  allowCrop?: boolean
 }
 
 interface Emits {
   (e: 'update:modelValue', value: boolean): void
   (e: 'upload', file: File): void
   (e: 'remove'): void
+  (e: 'crop'): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -243,6 +258,7 @@ const props = withDefaults(defineProps<Props>(), {
   isUploading: false,
   downloadUrl: null,
   error: null,
+  allowCrop: false,
 })
 
 const emit = defineEmits<Emits>()

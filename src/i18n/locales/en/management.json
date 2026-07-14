@@ -433,6 +433,15 @@
         "title": "Brand Assets",
         "subtitle": "Logos and video shown on your event showcase"
       },
+      "banner": {
+        "title": "Event Banner",
+        "description": "The main banner image shown at the top of your event page. For best results, use 1200x630px (1.9:1 ratio)",
+        "empty": "No banner uploaded",
+        "deleteTitle": "Delete Event Banner",
+        "crop": "Crop",
+        "cropperTitle": "Crop Banner Image",
+        "cropperHelpText": "Adjust the crop area to frame your banner image (1200x630px ratio)"
+      },
       "row": {
         "ariaLabel": "Edit {name}",
         "emptyPreview": "Not uploaded yet",
@@ -602,6 +611,20 @@
     "unpublishSuccess": "Event unpublished successfully"
   },
   "embeds": {
+    "map": {
+      "title": "Google Maps",
+      "description": "Embed a map to help guests find your venue",
+      "empty": "No map embedded",
+      "inputPlaceholder": "Paste Google Maps embed code or URL here",
+      "hint": "Paste the embed code or URL from Google Maps' Share > Embed a map option",
+      "saving": "Saving...",
+      "saveBtn": "Save Changes",
+      "successMessage": "Map link updated successfully!",
+      "deleteModal": {
+        "title": "Remove Map",
+        "itemName": "Google Maps Embed"
+      }
+    },
     "youtube": {
       "title": "YouTube Video",
       "description": "Embed a YouTube video for your event",
@@ -1009,14 +1032,6 @@
       "title": "Unable to Load Event",
       "tryAgain": "Try Again"
     },
-    "banner": {
-      "label": "Event Banner",
-      "replace": "Replace",
-      "crop": "Crop",
-      "remove": "Remove",
-      "uploadClick": "Click to upload banner",
-      "uploadHint": "1200x630px recommended"
-    },
     "basicInfo": {
       "heading": "Basic Information",
       "titleLabel": "Event Title *",
@@ -1043,9 +1058,7 @@
       "inPersonDesc": "Event will be held at a physical location",
       "addressLabel": "Address",
       "addressPlaceholder": "Enter location address",
-      "mapLabel": "Map",
-      "mapPlaceholder": "Paste Google Maps embed URL",
-      "mapHint": "Paste Google Maps embed code or URL",
+      "mapMovedHint": "Manage the map embed in the Showcase tab",
       "virtualLinkLabel": "Virtual Meeting Link"
     },
     "privacy": {
@@ -1092,10 +1105,6 @@
       "saving": "Saving...",
       "saveBtn": "Update Event",
       "cancel": "Cancel"
-    },
-    "cropperModal": {
-      "title": "Crop Banner Image",
-      "helpText": "Adjust the crop area to frame your banner image (1200x630px ratio)"
     },
     "deleteModal": {
       "title": "Delete Event",

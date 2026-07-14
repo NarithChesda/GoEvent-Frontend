@@ -1,5 +1,79 @@
 <template>
-  <div>
+  <div class="space-y-6">
+    <!-- Google Maps Embed -->
+    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
+      <div class="mb-6">
+        <h5 class="font-semibold text-slate-900">{{ t('management.embeds.map.title') }}</h5>
+        <p class="text-sm text-slate-600">{{ t('management.embeds.map.description') }}</p>
+      </div>
+
+      <div class="space-y-3 sm:space-y-4">
+        <!-- Map Preview -->
+        <div v-if="formData.google_map_embed_link" class="relative">
+          <iframe
+            :src="formData.google_map_embed_link"
+            class="w-full h-48 sm:h-56 md:h-64 rounded-xl sm:rounded-2xl"
+            style="border: 0"
+            allowfullscreen
+            loading="lazy"
+          ></iframe>
+          <button
+            v-if="canEdit && eventData"
+            @click="confirmRemoveMap"
+            class="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur-sm rounded-lg border border-slate-200 text-slate-600 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors duration-200"
+            :aria-label="t('management.embeds.map.deleteModal.title')"
+          >
+            <X class="w-4 h-4" />
+          </button>
+        </div>
+
+        <button
+          v-else
+          type="button"
+          :disabled="!canEdit"
+          @click="focusMapUrlInput"
+          :class="[
+            'w-full border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center transition-all duration-300',
+            canEdit
+              ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200'
+              : 'border-slate-300 bg-slate-50 cursor-default'
+          ]"
+        >
+          <Map class="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 mx-auto mb-1.5 sm:mb-2 transition-colors group-hover:text-emerald-600" />
+          <p class="text-xs sm:text-sm text-slate-600">{{ t('management.embeds.map.empty') }}</p>
+        </button>
+
+        <div>
+          <input
+            ref="mapUrlInputRef"
+            v-model="formData.google_map_embed_link"
+            type="text"
+            :disabled="!canEdit"
+            :placeholder="t('management.embeds.map.inputPlaceholder')"
+            @paste="handleMapsPaste"
+            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
+          />
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">{{ t('management.embeds.map.hint') }}</p>
+        </div>
+
+        <!-- Save Button -->
+        <div v-if="canEdit && eventData && hasMapChanges" class="flex justify-end">
+          <button
+            @click="saveMapChanges"
+            :disabled="savingMap"
+            class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <div
+              v-if="savingMap"
+              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+            ></div>
+            <Save v-else class="w-4 h-4" />
+            <span>{{ savingMap ? t('management.embeds.map.saving') : t('management.embeds.map.saveBtn') }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- YouTube Embed -->
     <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
       <div class="mb-6">
@@ -74,18 +148,18 @@
         </div>
 
         <!-- Save Button -->
-        <div v-if="canEdit && eventData && hasChanges" class="flex justify-end">
+        <div v-if="canEdit && eventData && hasYoutubeChanges" class="flex justify-end">
           <button
-            @click="saveChanges"
-            :disabled="saving || !!urlError"
+            @click="saveYoutubeChanges"
+            :disabled="savingYoutube || !!urlError"
             class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <div
-              v-if="saving"
+              v-if="savingYoutube"
               class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
             ></div>
             <Save v-else class="w-4 h-4" />
-            <span>{{ saving ? t('management.embeds.youtube.saving') : t('management.embeds.youtube.saveBtn') }}</span>
+            <span>{{ savingYoutube ? t('management.embeds.youtube.saving') : t('management.embeds.youtube.saveBtn') }}</span>
           </button>
         </div>
       </div>
@@ -234,10 +308,10 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { Youtube, X, Save, CheckCircle, AlertCircle, Info } from 'lucide-vue-next'
+import { Youtube, Map, X, Save, CheckCircle, AlertCircle, Info } from 'lucide-vue-next'
 import { eventsService, type Event } from '../services/api'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
-import { extractYouTubeEmbedUrl } from '../utils/embedExtractor'
+import { extractYouTubeEmbedUrl, extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useToast } from '../composables/useToast'
 
@@ -259,9 +333,11 @@ const { message, showSuccess, showError } = useToast()
 // State
 const formData = ref({
   youtube_embed_link: props.eventData?.youtube_embed_link || '',
+  google_map_embed_link: props.eventData?.google_map_embed_link || '',
 })
 
-const saving = ref(false)
+const savingYoutube = ref(false)
+const savingMap = ref(false)
 const showDeleteModal = ref(false)
 const deleting = ref(false)
 const deleteModalData = ref({
@@ -271,12 +347,19 @@ const deleteModalData = ref({
 })
 const showYouTubeHelpModal = ref(false)
 const urlInputRef = ref<HTMLInputElement | null>(null)
+const mapUrlInputRef = ref<HTMLInputElement | null>(null)
 
 // Computed
-const hasChanges = computed(() => {
+const hasYoutubeChanges = computed(() => {
   if (!props.eventData) return false
 
   return formData.value.youtube_embed_link !== (props.eventData.youtube_embed_link || '')
+})
+
+const hasMapChanges = computed(() => {
+  if (!props.eventData) return false
+
+  return formData.value.google_map_embed_link !== (props.eventData.google_map_embed_link || '')
 })
 
 const urlError = computed(() => {
@@ -288,6 +371,10 @@ const focusUrlInput = () => {
   if (props.canEdit) urlInputRef.value?.focus()
 }
 
+const focusMapUrlInput = () => {
+  if (props.canEdit) mapUrlInputRef.value?.focus()
+}
+
 // Watch for prop changes
 watch(
   () => props.eventData,
@@ -295,6 +382,7 @@ watch(
     if (newEventData) {
       formData.value = {
         youtube_embed_link: newEventData.youtube_embed_link || '',
+        google_map_embed_link: newEventData.google_map_embed_link || '',
       }
     }
   },
@@ -302,10 +390,10 @@ watch(
 )
 
 // Methods
-const saveChanges = async () => {
+const saveYoutubeChanges = async () => {
   if (!props.eventData || urlError.value) return
 
-  saving.value = true
+  savingYoutube.value = true
 
   try {
     // Prepare data - convert empty strings to null for removal
@@ -324,7 +412,33 @@ const saveChanges = async () => {
   } catch {
     showError(t('management.embeds.errors.updateNetworkError'))
   } finally {
-    saving.value = false
+    savingYoutube.value = false
+  }
+}
+
+const saveMapChanges = async () => {
+  if (!props.eventData) return
+
+  savingMap.value = true
+
+  try {
+    // Prepare data - convert empty strings to null for removal
+    const updateData = {
+      google_map_embed_link: formData.value.google_map_embed_link.trim() || null,
+    }
+
+    const response = await eventsService.patchEvent(props.eventData.id, updateData)
+
+    if (response.success && response.data) {
+      emit('updated', response.data)
+      showSuccess(t('management.embeds.map.successMessage'))
+    } else {
+      showError(response.message || t('management.embeds.errors.updateFailed'))
+    }
+  } catch {
+    showError(t('management.embeds.errors.updateNetworkError'))
+  } finally {
+    savingMap.value = false
   }
 }
 
@@ -338,27 +452,43 @@ const confirmRemoveYouTube = () => {
   showDeleteModal.value = true
 }
 
+const confirmRemoveMap = () => {
+  deleteModalData.value = {
+    title: t('management.embeds.map.deleteModal.title'),
+    itemName: t('management.embeds.map.deleteModal.itemName'),
+    fieldToDelete: 'google_map_embed_link',
+  }
+  showDeleteModal.value = true
+}
+
 const handleDeleteConfirm = async () => {
   if (!props.eventData) return
 
   deleting.value = true
 
   try {
+    const fieldToDelete = deleteModalData.value.fieldToDelete
     const updateData = {
-      [deleteModalData.value.fieldToDelete]: null,
+      [fieldToDelete]: null,
     }
 
     const response = await eventsService.patchEvent(props.eventData.id, updateData)
 
     if (response.success && response.data) {
       // Update local form data
-      if (deleteModalData.value.fieldToDelete === 'youtube_embed_link') {
+      if (fieldToDelete === 'youtube_embed_link') {
         formData.value.youtube_embed_link = ''
+      } else if (fieldToDelete === 'google_map_embed_link') {
+        formData.value.google_map_embed_link = ''
       }
 
       emit('updated', response.data)
       showDeleteModal.value = false
-      showSuccess(t('management.embeds.youtube.successMessage'))
+      showSuccess(
+        fieldToDelete === 'google_map_embed_link'
+          ? t('management.embeds.map.successMessage')
+          : t('management.embeds.youtube.successMessage'),
+      )
     } else {
       showError(response.message || t('management.embeds.errors.removeFailed'))
     }
@@ -388,6 +518,20 @@ const handleYouTubePaste = (event: ClipboardEvent) => {
   if (extractedUrl) {
     event.preventDefault()
     formData.value.youtube_embed_link = extractedUrl
+  }
+}
+
+// Handle paste events for Google Maps iframe
+const handleMapsPaste = (event: ClipboardEvent) => {
+  const pastedText = event.clipboardData?.getData('text')
+  if (!pastedText) return
+
+  // Try to extract Google Maps URL from iframe code
+  const extractedUrl = extractGoogleMapsEmbedUrl(pastedText)
+
+  if (extractedUrl) {
+    event.preventDefault()
+    formData.value.google_map_embed_link = extractedUrl
   }
 }
 </script>

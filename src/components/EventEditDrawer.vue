@@ -5,7 +5,7 @@
       <div
         v-if="modelValue"
         class="fixed inset-0 bg-black/50 z-[998]"
-        @click="!showBannerCropper && closeDrawer()"
+        @click="closeDrawer()"
       />
     </Transition>
 
@@ -76,104 +76,8 @@
 
           <!-- Edit Form -->
           <div v-else class="p-3 laptop-sm:p-4 space-y-4 laptop-sm:space-y-5 pb-24">
-            <!-- Banner Image Upload -->
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.banner.label') }}</h3>
-                <!-- Options button when banner exists -->
-                <div v-if="event?.banner_image" class="relative">
-                  <button
-                    @click.stop="showBannerDropdown = !showBannerDropdown"
-                    :disabled="isUploadingBanner"
-                    class="text-slate-500 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-lg transition-colors"
-                  >
-                    <MoreHorizontal class="w-4 h-4" />
-                  </button>
-                  <!-- Dropdown menu -->
-                  <div
-                    v-if="showBannerDropdown"
-                    @click.stop
-                    class="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-20 min-w-[120px]"
-                  >
-                    <button
-                      @click="triggerBannerUpload(); showBannerDropdown = false"
-                      :disabled="isUploadingBanner"
-                      class="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                    >
-                      <Upload class="w-4 h-4" />
-                      <span>{{ t('management.editEventDrawer.banner.replace') }}</span>
-                    </button>
-                    <button
-                      @click="openBannerCropper(); showBannerDropdown = false"
-                      :disabled="isUploadingBanner"
-                      class="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                    >
-                      <Crop class="w-4 h-4" />
-                      <span>{{ t('management.editEventDrawer.banner.crop') }}</span>
-                    </button>
-                    <button
-                      @click="removeBanner"
-                      :disabled="isUploadingBanner"
-                      class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                    >
-                      <X class="w-4 h-4" />
-                      <span>{{ t('management.editEventDrawer.banner.remove') }}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Hidden file input -->
-              <input
-                ref="bannerFileInput"
-                type="file"
-                accept="image/*"
-                @change="handleBannerFileSelect"
-                class="hidden"
-              />
-
-              <!-- Banner Preview or Upload Area -->
-              <div
-                v-if="event?.banner_image"
-                class="relative rounded-lg overflow-hidden"
-                style="padding-bottom: 52.5%;"
-              >
-                <img
-                  :src="getMediaUrl(event.banner_image)"
-                  alt="Event Banner"
-                  class="absolute inset-0 w-full h-full object-cover"
-                />
-                <!-- Loading overlay -->
-                <div
-                  v-if="isUploadingBanner"
-                  class="absolute inset-0 bg-black/50 flex items-center justify-center"
-                >
-                  <Loader class="w-6 h-6 text-white animate-spin" />
-                </div>
-              </div>
-              <div
-                v-else
-                @click="triggerBannerUpload"
-                class="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center cursor-pointer hover:border-[#2ecc71] hover:bg-slate-50 transition-all group"
-              >
-                <div class="flex flex-col items-center gap-1.5">
-                  <div class="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-emerald-100 flex items-center justify-center transition-colors">
-                    <ImageIcon class="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
-                  </div>
-                  <div>
-                    <p class="text-xs font-medium text-slate-600 group-hover:text-slate-900">{{ t('management.editEventDrawer.banner.uploadClick') }}</p>
-                    <p class="text-[10px] text-slate-400">{{ t('management.editEventDrawer.banner.uploadHint') }}</p>
-                  </div>
-                </div>
-                <!-- Loading state -->
-                <div v-if="isUploadingBanner" class="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
-                  <Loader class="w-5 h-5 text-[#2ecc71] animate-spin" />
-                </div>
-              </div>
-            </div>
-
             <!-- Basic Information -->
-            <div class="space-y-3 border-t border-slate-100 pt-4 laptop-sm:pt-5">
+            <div class="space-y-3">
               <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.basicInfo.heading') }}</h3>
 
               <!-- Title -->
@@ -322,42 +226,8 @@
                       <X class="w-3 h-3 text-slate-500" />
                     </button>
                   </div>
-                </div>
-
-                <!-- Google Maps Embed -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.location.mapLabel') }}</label>
-
-                  <!-- Map Preview -->
-                  <div v-if="form.google_map_embed_link" class="relative mb-2">
-                    <iframe
-                      :src="form.google_map_embed_link"
-                      class="w-full h-32 laptop-sm:h-36 rounded-lg border border-slate-200"
-                      style="border: 0"
-                      allowfullscreen
-                      loading="lazy"
-                    ></iframe>
-                    <button
-                      type="button"
-                      @click="form.google_map_embed_link = ''"
-                      class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full transition-colors"
-                    >
-                      <X class="w-3 h-3" />
-                    </button>
-                  </div>
-
-                  <div class="relative">
-                    <Map class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    <input
-                      v-model="form.google_map_embed_link"
-                      type="text"
-                      :placeholder="t('management.editEventDrawer.location.mapPlaceholder')"
-                      @paste="handleMapsPaste"
-                      class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                    />
-                  </div>
-                  <p class="text-xs text-slate-500 mt-1">
-                    {{ t('management.editEventDrawer.location.mapHint') }}
+                  <p class="text-xs text-slate-400 mt-1">
+                    {{ t('management.editEventDrawer.location.mapMovedHint') }}
                   </p>
                 </div>
               </div>
@@ -739,20 +609,6 @@
 
   </Teleport>
 
-  <!-- Banner Image Cropper Modal - Outside drawer's Teleport to avoid z-index issues -->
-  <ImageCropperModal
-    v-if="showBannerCropper"
-    :show="showBannerCropper"
-    :image-source="bannerCropperImage"
-    :title="t('management.editEventDrawer.cropperModal.title')"
-    :aspect-ratio="BANNER_ASPECT_RATIO"
-    cropper-height="400px"
-    :help-text="t('management.editEventDrawer.cropperModal.helpText')"
-    @close="closeBannerCropper"
-    @apply="handleBannerCropApply"
-    @update:cropper-ref="setBannerCropperRef"
-  />
-
   <!-- Delete Confirmation Modal -->
   <DeleteConfirmModal
     :show="showDeleteConfirm"
@@ -776,11 +632,6 @@ import {
   Video,
   Link2,
   Save,
-  Map,
-  ImageIcon,
-  Upload,
-  Crop,
-  MoreHorizontal,
   ArrowRight,
   Trash2,
   Globe,
@@ -795,7 +646,6 @@ import {
   TrendingUp,
 } from 'lucide-vue-next'
 import RichTextEditor from './RichTextEditor.vue'
-import ImageCropperModal from './common/ImageCropperModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import DateTimePickerField from '@/components/common/DateTimePickerField.vue'
 import SelectField, { type SelectFieldOption } from '@/components/common/SelectField.vue'
@@ -806,8 +656,6 @@ import {
   type EventCategory,
 } from '../services/api'
 import { TIMEZONE_OPTIONS, getUserTimezone } from '../utils/timezones'
-import { extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
-import { useMediaUrl } from '../composables/useMediaUrl'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
 
@@ -837,19 +685,6 @@ const isDeleting = ref(false)
 const showDeleteConfirm = ref(false)
 const error = ref<string | null>(null)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
-
-// Banner upload state
-const bannerFileInput = ref<HTMLInputElement | null>(null)
-const isUploadingBanner = ref(false)
-const showBannerDropdown = ref(false)
-const showBannerCropper = ref(false)
-const bannerCropperImage = ref<string | null>(null)
-const bannerCropperRef = ref<any>(null)
-const pendingBannerFile = ref<File | null>(null)
-const BANNER_ASPECT_RATIO = 1200 / 630
-
-// Composables
-const { getMediaUrl } = useMediaUrl()
 
 // Form data
 const form = reactive({
@@ -1210,150 +1045,13 @@ const handleDeleteConfirm = async () => {
   }
 }
 
-// Handle paste events for Google Maps iframe
-const handleMapsPaste = (event: ClipboardEvent) => {
-  const pastedText = event.clipboardData?.getData('text')
-  if (!pastedText) return
-
-  // Try to extract Google Maps URL from iframe code
-  const extractedUrl = extractGoogleMapsEmbedUrl(pastedText)
-
-  if (extractedUrl) {
-    event.preventDefault()
-    form.google_map_embed_link = extractedUrl
-  }
-}
-
-// Banner upload methods
-const triggerBannerUpload = () => {
-  bannerFileInput.value?.click()
-}
-
-const handleBannerFileSelect = (e: globalThis.Event) => {
-  const target = e.target as HTMLInputElement
-  const file = target.files?.[0]
-  target.value = '' // Reset input
-
-  if (!file) return
-
-  // Validate file type
-  if (!file.type.startsWith('image/')) {
-    showMessage('error', 'Please select an image file')
-    return
-  }
-
-  // Store the file and open cropper
-  pendingBannerFile.value = file
-  const reader = new FileReader()
-  reader.onload = (ev) => {
-    bannerCropperImage.value = ev.target?.result as string
-    showBannerCropper.value = true
-  }
-  reader.readAsDataURL(file)
-}
-
-const openBannerCropper = () => {
-  const bannerUrl = getMediaUrl(event.value?.banner_image)
-  if (bannerUrl) {
-    bannerCropperImage.value = bannerUrl
-    showBannerCropper.value = true
-  }
-}
-
-const closeBannerCropper = () => {
-  showBannerCropper.value = false
-  bannerCropperImage.value = null
-  pendingBannerFile.value = null
-}
-
-const setBannerCropperRef = (ref: InstanceType<typeof ImageCropperModal> | null) => {
-  bannerCropperRef.value = ref
-}
-
-const handleBannerCropApply = async () => {
-  if (!bannerCropperRef.value || !event.value) return
-
-  const { canvas } = bannerCropperRef.value.getResult()
-  if (!canvas) return
-
-  // Create a new canvas with exact 1200x630 dimensions
-  const outputCanvas = document.createElement('canvas')
-  outputCanvas.width = 1200
-  outputCanvas.height = 630
-  const ctx = outputCanvas.getContext('2d')
-  if (!ctx) return
-
-  // Draw the cropped image scaled to 1200x630
-  ctx.drawImage(canvas, 0, 0, 1200, 630)
-
-  outputCanvas.toBlob(async (blob: Blob | null) => {
-    if (!blob || !event.value) return
-
-    const fileName = pendingBannerFile.value?.name?.replace(/\.[^/.]+$/, '.jpg') || 'banner.jpg'
-    const croppedFile = new File([blob], fileName, { type: 'image/jpeg' })
-
-    closeBannerCropper()
-    await uploadBanner(croppedFile)
-  }, 'image/jpeg', 0.85)
-}
-
-const uploadBanner = async (file: File) => {
-  if (!event.value) return
-
-  isUploadingBanner.value = true
-
-  try {
-    const formData = new FormData()
-    formData.append('banner_image', file)
-
-    const response = await eventsService.updateEventWithFiles(event.value.id, formData)
-
-    if (response.success && response.data) {
-      event.value = response.data
-      emit('updated', response.data)
-      showMessage('success', 'Banner uploaded successfully')
-    } else {
-      showMessage('error', response.message || 'Failed to upload banner')
-    }
-  } catch (err) {
-    console.error('Error uploading banner:', err)
-    showMessage('error', 'Failed to upload banner')
-  } finally {
-    isUploadingBanner.value = false
-  }
-}
-
-const removeBanner = async () => {
-  if (!event.value) return
-
-  isUploadingBanner.value = true
-
-  try {
-    const response = await eventsService.patchEvent(event.value.id, { banner_image: null })
-
-    if (response.success && response.data) {
-      event.value = response.data
-      emit('updated', response.data)
-      showMessage('success', 'Banner removed successfully')
-    } else {
-      showMessage('error', response.message || 'Failed to remove banner')
-    }
-  } catch (err) {
-    console.error('Error removing banner:', err)
-    showMessage('error', 'Failed to remove banner')
-  } finally {
-    isUploadingBanner.value = false
-    showBannerDropdown.value = false
-  }
-}
-
 // Calculate scrollbar width to prevent layout shift
 const getScrollbarWidth = (): number => {
   return window.innerWidth - document.documentElement.clientWidth
 }
 
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape' && !showBannerCropper.value) closeDrawer()
+  if (e.key === 'Escape') closeDrawer()
 }
 
 // Watch for drawer open/close

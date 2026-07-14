@@ -392,9 +392,11 @@
       :accept-types="activeAsset?.acceptTypes ?? 'image/*'"
       :empty-state-text="activeAsset?.emptyText ?? ''"
       :download-url="activeAsset?.downloadUrl ?? null"
+      :allow-crop="activeAsset?.allowCrop ?? false"
       :error="mediaUpload.error.value"
       @upload="handleAssetUpload"
       @remove="handleAssetRemove"
+      @crop="openBannerCropper"
     />
 
     <!-- Delete Confirmation Modal -->
@@ -417,6 +419,20 @@
       @clear="handleClearLibraryMusic"
     />
 
+    <!-- Banner Image Cropper Modal -->
+    <ImageCropperModal
+      v-if="showBannerCropper"
+      :show="showBannerCropper"
+      :image-source="bannerCropperImage"
+      :title="t('management.media.mediaUploads.banner.cropperTitle')"
+      :aspect-ratio="BANNER_ASPECT_RATIO"
+      cropper-height="400px"
+      :help-text="t('management.media.mediaUploads.banner.cropperHelpText')"
+      @close="closeBannerCropper"
+      @apply="handleBannerCropApply"
+      @update:cropper-ref="setBannerCropperRef"
+    />
+
   </div>
 </template>
 
@@ -433,6 +449,7 @@ import { usePaymentTemplateIntegration } from '@/composables/usePaymentTemplateI
 import MediaAssetDrawer from './MediaAssetDrawer.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import MusicSelectionModal from './MusicSelectionModal.vue'
+import ImageCropperModal from './common/ImageCropperModal.vue'
 
 interface Props {
   eventData?: Event
@@ -500,7 +517,7 @@ const shouldShowVideoSection = computed(() => {
 
 // ---- Brand asset rows ----
 
-type AssetField = Extract<MediaFieldName, 'logo_one' | 'logo_two' | 'event_video'>
+type AssetField = Extract<MediaFieldName, 'banner_image' | 'logo_one' | 'logo_two' | 'event_video'>
 
 interface AssetRow {
   field: AssetField
@@ -516,10 +533,26 @@ interface AssetRow {
   /** Resolved absolute URL for display */
   mediaUrl?: string
   downloadUrl?: string | null
+  /** Whether this asset supports the crop-before-upload flow (banner only) */
+  allowCrop?: boolean
 }
 
 const assetRows = computed<AssetRow[]>(() => {
   const rows: AssetRow[] = [
+    {
+      field: 'banner_image',
+      contentType: 'image',
+      mediaType: 'image',
+      acceptTypes: 'image/*',
+      title: t('management.media.mediaUploads.banner.title'),
+      description: t('management.media.mediaUploads.banner.description'),
+      emptyText: t('management.media.mediaUploads.banner.empty'),
+      deleteTitle: t('management.media.mediaUploads.banner.deleteTitle'),
+      rawUrl: props.eventData?.banner_image,
+      mediaUrl: getMediaUrl(props.eventData?.banner_image),
+      downloadUrl: null,
+      allowCrop: true,
+    },
     {
       field: 'logo_one',
       contentType: 'image',
@@ -582,9 +615,24 @@ const openAsset = (field: AssetField) => {
 }
 
 const handleAssetUpload = (file: File) => {
-  if (activeAsset.value) {
-    handleUpload(activeAsset.value.field, file, activeAsset.value.mediaType)
+  if (!activeAsset.value) return
+
+  // Banner images go through the crop step before uploading
+  if (activeAsset.value.field === 'banner_image') {
+    const validation = mediaUpload.validateFile(file, 'image')
+    if (!validation.valid) return
+
+    pendingBannerFile.value = file
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      bannerCropperImage.value = ev.target?.result as string
+      showBannerCropper.value = true
+    }
+    reader.readAsDataURL(file)
+    return
   }
+
+  handleUpload(activeAsset.value.field, file, activeAsset.value.mediaType)
 }
 
 const handleAssetRemove = () => {
@@ -603,6 +651,60 @@ const filenameFromUrl = (url?: string | null): string | null => {
   } catch {
     return null
   }
+}
+
+// ---- Banner image (upload + crop) ----
+
+const BANNER_ASPECT_RATIO = 1200 / 630
+const showBannerCropper = ref(false)
+const bannerCropperImage = ref<string | null>(null)
+const bannerCropperRef = ref<any>(null)
+const pendingBannerFile = ref<File | null>(null)
+
+const openBannerCropper = () => {
+  const bannerUrl = getMediaUrl(props.eventData?.banner_image)
+  if (bannerUrl) {
+    pendingBannerFile.value = null
+    bannerCropperImage.value = bannerUrl
+    showBannerCropper.value = true
+  }
+}
+
+const closeBannerCropper = () => {
+  showBannerCropper.value = false
+  bannerCropperImage.value = null
+  pendingBannerFile.value = null
+}
+
+const setBannerCropperRef = (ref: InstanceType<typeof ImageCropperModal> | null) => {
+  bannerCropperRef.value = ref
+}
+
+const handleBannerCropApply = async () => {
+  if (!bannerCropperRef.value) return
+
+  const { canvas } = bannerCropperRef.value.getResult()
+  if (!canvas) return
+
+  // Create a new canvas with exact 1200x630 dimensions
+  const outputCanvas = document.createElement('canvas')
+  outputCanvas.width = 1200
+  outputCanvas.height = 630
+  const ctx = outputCanvas.getContext('2d')
+  if (!ctx) return
+
+  // Draw the cropped image scaled to 1200x630
+  ctx.drawImage(canvas, 0, 0, 1200, 630)
+
+  outputCanvas.toBlob(async (blob: Blob | null) => {
+    if (!blob) return
+
+    const fileName = pendingBannerFile.value?.name?.replace(/\.[^/.]+$/, '.jpg') || 'banner.jpg'
+    const croppedFile = new File([blob], fileName, { type: 'image/jpeg' })
+
+    closeBannerCropper()
+    await mediaUpload.uploadMedia('banner_image', croppedFile)
+  }, 'image/jpeg', 0.85)
 }
 
 // Delete modal state
