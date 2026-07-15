@@ -412,6 +412,7 @@
       "description": "Only the event organizer and collaborators can view and manage event media."
     },
     "loading": "Loading media...",
+    "sectionToggle": "Expand or collapse section",
     "photos": {
       "title": "Event Photos",
       "description": "Photos will be displayed on the event showcase page in order. Drag and drop to reorder.",

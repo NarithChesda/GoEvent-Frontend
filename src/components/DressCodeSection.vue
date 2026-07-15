@@ -1,8 +1,14 @@
 <template>
   <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
-    <!-- Header -->
-    <div class="flex items-start justify-between gap-3 mb-6">
-      <div class="min-w-0">
+    <!-- Header (click to expand/collapse) -->
+    <div class="flex items-start justify-between gap-3">
+      <button
+        type="button"
+        class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
+        :aria-expanded="isExpanded"
+        :aria-label="t('management.media.sectionToggle')"
+        @click="toggleExpanded"
+      >
         <h5 class="font-semibold text-slate-900">{{ t('management.dressCode.section.title') }}</h5>
         <p class="text-sm text-slate-600">{{ t('management.dressCode.section.subtitle') }}</p>
         <p
@@ -12,19 +18,35 @@
           <ArrowUpDown class="w-3 h-3" aria-hidden="true" />
           {{ t('management.dressCode.section.dragHint') }}
         </p>
-      </div>
-
-      <!-- Add pill -->
-      <button
-        v-if="canEdit && dressCodes.length > 0"
-        @click="openAddDrawer"
-        class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all flex-shrink-0"
-      >
-        <Plus class="w-3.5 h-3.5" aria-hidden="true" />
-        {{ t('management.dressCode.section.addCard.label') }}
       </button>
+
+      <div class="flex items-center gap-1 flex-shrink-0">
+        <!-- Add pill -->
+        <button
+          v-if="canEdit && dressCodes.length > 0"
+          @click="openAddDrawer"
+          class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
+        >
+          <Plus class="w-3.5 h-3.5" aria-hidden="true" />
+          {{ t('management.dressCode.section.addCard.label') }}
+        </button>
+        <button
+          type="button"
+          class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+          :aria-expanded="isExpanded"
+          :aria-label="t('management.media.sectionToggle')"
+          :title="t('management.media.sectionToggle')"
+          @click="toggleExpanded"
+        >
+          <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isExpanded }" aria-hidden="true" />
+        </button>
+      </div>
     </div>
 
+    <Transition name="collapse">
+    <div v-if="isExpanded" class="grid grid-rows-[1fr]">
+    <div class="min-h-0 overflow-hidden">
+    <div class="pt-6">
     <!-- Loading State -->
     <div v-if="loading" aria-hidden="true">
       <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
@@ -141,6 +163,10 @@
         <ChevronRight v-if="canEdit" class="w-4 h-4 text-slate-400 flex-shrink-0" aria-hidden="true" />
       </button>
     </div>
+    </div>
+    </div>
+    </div>
+    </Transition>
 
     <!-- Create/Edit Drawer -->
     <EditDressCodeDrawer
@@ -165,10 +191,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { Shirt, AlertCircle, ArrowUpDown, ChevronRight, Plus } from 'lucide-vue-next'
+import { Shirt, AlertCircle, ArrowUpDown, ChevronDown, ChevronRight, Plus } from 'lucide-vue-next'
 import { dressCodeService, type EventDressCode } from '../services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useNotifications } from '@/composables/useNotifications'
+import { useCollapsibleSection } from '@/composables/useCollapsibleSection'
 import EditDressCodeDrawer from './EditDressCodeDrawer.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 
@@ -181,6 +208,7 @@ const props = defineProps<Props>()
 
 const { t } = useAppLanguage()
 const notify = useNotifications()
+const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection('showcase_dress_code_expanded')
 
 // State
 const dressCodes = ref<EventDressCode[]>([])
@@ -379,3 +407,27 @@ defineExpose({
   openAddModal: openAddDrawer,
 })
 </script>
+
+<style scoped>
+/* Collapse/expand via grid-template-rows 0fr↔1fr — tracks real content
+   height so both directions ease evenly (no max-height dead time) */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse-enter-active,
+  .collapse-leave-active {
+    transition: none !important;
+  }
+}
+</style>

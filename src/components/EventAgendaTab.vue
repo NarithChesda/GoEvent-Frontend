@@ -5,9 +5,15 @@
       v-if="embedded"
       class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20"
     >
-      <!-- Header -->
-      <div class="mb-6 flex items-start justify-between gap-3">
-        <div>
+      <!-- Header (click to expand/collapse) -->
+      <div class="flex items-start justify-between gap-3">
+        <button
+          type="button"
+          class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
+          :aria-expanded="isExpanded"
+          :aria-label="t('management.media.sectionToggle')"
+          @click="toggleExpanded"
+        >
           <h5 class="font-semibold text-slate-900">{{ t('management.agenda.title') }}</h5>
           <p class="text-sm text-slate-600">{{ t('management.agenda.subtitle') }}</p>
           <!-- Drag and Drop Hint (Desktop Only) -->
@@ -20,17 +26,33 @@
             </svg>
             <span>{{ t('management.agenda.dragHint') }}</span>
           </div>
-        </div>
-        <button
-          v-if="canEdit"
-          @click="openCreateDrawer"
-          class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all flex-shrink-0"
-        >
-          <Plus class="w-3.5 h-3.5" aria-hidden="true" />
-          {{ t('management.agenda.addBtn') }}
         </button>
+        <div class="flex items-center gap-1 flex-shrink-0">
+          <button
+            v-if="canEdit"
+            @click="openCreateDrawer"
+            class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
+          >
+            <Plus class="w-3.5 h-3.5" aria-hidden="true" />
+            {{ t('management.agenda.addBtn') }}
+          </button>
+          <button
+            type="button"
+            class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+            :aria-expanded="isExpanded"
+            :aria-label="t('management.media.sectionToggle')"
+            :title="t('management.media.sectionToggle')"
+            @click="toggleExpanded"
+          >
+            <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isExpanded }" aria-hidden="true" />
+          </button>
+        </div>
       </div>
 
+      <Transition name="collapse">
+      <div v-if="isExpanded" class="grid grid-rows-[1fr]">
+      <div class="min-h-0 overflow-hidden">
+      <div class="pt-6">
       <!-- Loading State -->
       <div v-if="loading" class="space-y-5" aria-hidden="true">
         <div v-for="g in 2" :key="g" class="space-y-2">
@@ -187,6 +209,10 @@
           </div>
         </div>
       </div>
+      </div>
+      </div>
+      </div>
+      </Transition>
     </div>
 
     <!-- Standalone tab mode -->
@@ -477,6 +503,7 @@ import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import EditDateGroupModal from './EditDateGroupModal.vue'
 import { useDateGroupOperations } from '@/composables/useDateGroupOperations'
 import { useToast } from '@/composables/useToast'
+import { useCollapsibleSection } from '@/composables/useCollapsibleSection'
 import { isUnscheduled, fromApiDate } from '@/constants/agenda'
 import { sortEventTextLanguages } from '@/utils/eventTextSlots'
 
@@ -490,6 +517,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const { t, locale } = useAppLanguage()
+const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection('showcase_agenda_expanded')
 
 // State
 const agendaItems = ref<EventAgendaItem[]>([])

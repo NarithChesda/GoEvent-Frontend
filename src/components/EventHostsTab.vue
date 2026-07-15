@@ -5,9 +5,15 @@
       v-if="embedded"
       class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20"
     >
-      <!-- Header -->
-      <div class="mb-6 flex items-start justify-between gap-3">
-        <div>
+      <!-- Header (click to expand/collapse) -->
+      <div class="flex items-start justify-between gap-3">
+        <button
+          type="button"
+          class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
+          :aria-expanded="isExpanded"
+          :aria-label="t('management.media.sectionToggle')"
+          @click="toggleExpanded"
+        >
           <h5 class="font-semibold text-slate-900">{{ t('management.hosts.title') }}</h5>
           <p class="text-sm text-slate-600">
             {{ canEdit ? t('management.hosts.subtitleEdit') : t('management.hosts.subtitleView') }}
@@ -22,17 +28,33 @@
             </svg>
             <span>{{ t('management.hosts.reorderHint') }}</span>
           </div>
-        </div>
-        <button
-          v-if="canEdit"
-          @click="showCreateModal = true"
-          class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all flex-shrink-0"
-        >
-          <UserPlus class="w-3.5 h-3.5" aria-hidden="true" />
-          {{ t('management.hosts.addBtn') }}
         </button>
+        <div class="flex items-center gap-1 flex-shrink-0">
+          <button
+            v-if="canEdit"
+            @click="showCreateModal = true"
+            class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
+          >
+            <UserPlus class="w-3.5 h-3.5" aria-hidden="true" />
+            {{ t('management.hosts.addBtn') }}
+          </button>
+          <button
+            type="button"
+            class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+            :aria-expanded="isExpanded"
+            :aria-label="t('management.media.sectionToggle')"
+            :title="t('management.media.sectionToggle')"
+            @click="toggleExpanded"
+          >
+            <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isExpanded }" aria-hidden="true" />
+          </button>
+        </div>
       </div>
 
+      <Transition name="collapse">
+      <div v-if="isExpanded" class="grid grid-rows-[1fr]">
+      <div class="min-h-0 overflow-hidden">
+      <div class="pt-6">
       <!-- Loading State -->
       <div v-if="loading" class="space-y-2" aria-hidden="true">
         <div class="h-3 w-24 bg-slate-200 rounded animate-pulse"></div>
@@ -142,6 +164,10 @@
           </button>
         </div>
       </div>
+      </div>
+      </div>
+      </div>
+      </Transition>
     </div>
 
     <!-- Standalone tab mode -->
@@ -360,15 +386,17 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { Users, UserPlus, Info, CheckCircle, AlertCircle, ChevronRight } from 'lucide-vue-next'
+import { Users, UserPlus, Info, CheckCircle, AlertCircle, ChevronDown, ChevronRight } from 'lucide-vue-next'
 import { hostsService, type EventHost, apiService } from '../services/api'
 import HostCard from './HostCard.vue'
 import EditHostDrawer from './EditHostDrawer.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useCollapsibleSection } from '@/composables/useCollapsibleSection'
 import { sortEventTextLanguages } from '@/utils/eventTextSlots'
 
 const { locale, t } = useAppLanguage()
+const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection('showcase_hosts_expanded')
 
 const getLocalizedHost = (host: EventHost) => {
   const translation = host.translations?.find((tr) => tr.language === locale.value)
@@ -743,5 +771,27 @@ defineExpose({
 .host-item.dragging {
   transform: rotate(2deg) scale(1.02);
   z-index: 10;
+}
+
+/* Collapse/expand via grid-template-rows 0fr↔1fr — tracks real content
+   height so both directions ease evenly (no max-height dead time) */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse-enter-active,
+  .collapse-leave-active {
+    transition: none !important;
+  }
 }
 </style>

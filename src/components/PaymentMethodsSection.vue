@@ -1,9 +1,15 @@
 <template>
   <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
-    <!-- Header -->
-    <div class="mb-6">
+    <!-- Header (click to expand/collapse) -->
+    <div>
       <div class="flex items-start justify-between gap-4">
-        <div class="flex-1">
+        <button
+          type="button"
+          class="flex-1 min-w-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
+          :aria-expanded="isExpanded"
+          :aria-label="t('management.media.sectionToggle')"
+          @click="toggleExpanded"
+        >
           <div class="flex items-center gap-2">
             <h5 class="font-semibold text-slate-900">{{ t('management.paymentMethods.header.title') }}</h5>
             <span
@@ -18,9 +24,9 @@
           <p v-if="isPaymentLocked" class="text-xs text-amber-700 mt-1">
             {{ t('management.paymentMethods.header.lockedDescription') }}
           </p>
-        </div>
+        </button>
 
-        <!-- Add, Lock & Info Buttons -->
+        <!-- Add, Lock, Info & Toggle Buttons -->
         <div class="flex items-center gap-2 flex-shrink-0">
           <!-- Add Pill -->
           <button
@@ -66,10 +72,25 @@
             />
             <span class="hidden sm:inline">{{ isToggling ? t('management.paymentMethods.header.processing') : (isPaymentLocked ? t('management.paymentMethods.header.unlock') : t('management.paymentMethods.header.lock')) }}</span>
           </button>
+
+          <button
+            type="button"
+            class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+            :aria-expanded="isExpanded"
+            :aria-label="t('management.media.sectionToggle')"
+            :title="t('management.media.sectionToggle')"
+            @click="toggleExpanded"
+          >
+            <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isExpanded }" aria-hidden="true" />
+          </button>
         </div>
       </div>
     </div>
 
+    <Transition name="collapse">
+    <div v-if="isExpanded" class="grid grid-rows-[1fr]">
+    <div class="min-h-0 overflow-hidden">
+    <div class="pt-6">
     <!-- Lock Error Message (shown above content) -->
     <div v-if="lockError" class="mb-4">
       <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4">
@@ -247,6 +268,10 @@
         </div>
       </div>
     </div>
+    </div>
+    </div>
+    </div>
+    </Transition>
 
     <!-- Modals -->
     <PaymentMethodModal
@@ -501,6 +526,7 @@ import {
   CreditCard,
   Plus,
   AlertCircle,
+  ChevronDown,
   ChevronRight,
   QrCode,
   Building2,
@@ -513,6 +539,7 @@ import {
 } from 'lucide-vue-next'
 import { paymentMethodsService, eventsService, type EventPaymentMethod, type Event } from '../services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useCollapsibleSection } from '@/composables/useCollapsibleSection'
 import PaymentMethodModal from './PaymentMethodModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 
@@ -523,6 +550,7 @@ interface Props {
 }
 
 const { t } = useAppLanguage()
+const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection('showcase_payment_expanded')
 
 const props = defineProps<Props>()
 const emit = defineEmits<{
@@ -935,5 +963,27 @@ defineExpose({
 .modal-leave-to {
   opacity: 0;
   transform: scale(0.95);
+}
+
+/* Collapse/expand via grid-template-rows 0fr↔1fr — tracks real content
+   height so both directions ease evenly (no max-height dead time) */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse-enter-active,
+  .collapse-leave-active {
+    transition: none !important;
+  }
 }
 </style>

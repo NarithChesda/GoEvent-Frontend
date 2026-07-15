@@ -2,13 +2,35 @@
   <div class="space-y-6" @click="dropdownManager.handleClickOutside">
     <!-- Brand Assets Section (logos + event video) -->
     <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
-      <!-- Header -->
-      <div class="mb-6">
-        <h5 class="font-semibold text-slate-900">{{ t('management.media.mediaUploads.brandAssets.title') }}</h5>
-        <p class="text-sm text-slate-600">{{ t('management.media.mediaUploads.brandAssets.subtitle') }}</p>
+      <!-- Header (click to expand/collapse) -->
+      <div class="flex items-start justify-between gap-3">
+        <button
+          type="button"
+          class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
+          :aria-expanded="isBrandAssetsExpanded"
+          :aria-label="t('management.media.sectionToggle')"
+          @click="toggleBrandAssets"
+        >
+          <h5 class="font-semibold text-slate-900">{{ t('management.media.mediaUploads.brandAssets.title') }}</h5>
+          <p class="text-sm text-slate-600">{{ t('management.media.mediaUploads.brandAssets.subtitle') }}</p>
+        </button>
+        <button
+          type="button"
+          class="p-2 -mt-1 -mr-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+          :aria-expanded="isBrandAssetsExpanded"
+          :aria-label="t('management.media.sectionToggle')"
+          :title="t('management.media.sectionToggle')"
+          @click="toggleBrandAssets"
+        >
+          <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isBrandAssetsExpanded }" aria-hidden="true" />
+        </button>
       </div>
 
       <!-- Asset rows -->
+      <Transition name="collapse">
+        <div v-if="isBrandAssetsExpanded" class="grid grid-rows-[1fr]">
+          <div class="min-h-0 overflow-hidden">
+          <div class="pt-6">
       <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
         <button
           v-for="row in assetRows"
@@ -61,75 +83,102 @@
           <ChevronRight v-else class="w-4 h-4 text-slate-400 flex-shrink-0" aria-hidden="true" />
         </button>
       </div>
+          </div>
+          </div>
+        </div>
+      </Transition>
     </div>
 
     <!-- Event Music Section -->
     <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
-      <!-- Header -->
-      <div class="flex items-center justify-between gap-3 mb-6">
-        <div class="min-w-0">
+      <!-- Header (click to expand/collapse) -->
+      <div class="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
+          :aria-expanded="isMusicExpanded"
+          :aria-label="t('management.media.sectionToggle')"
+          @click="toggleMusic"
+        >
           <h5 class="font-semibold text-slate-900">{{ t('management.media.mediaUploads.music.title') }}</h5>
           <p class="text-sm text-slate-600">{{ t('management.media.mediaUploads.music.description') }}</p>
-        </div>
+        </button>
 
-        <!-- Options button when content exists -->
-        <div v-if="canEdit && musicSource !== 'none'" class="relative flex-shrink-0">
-          <button
-            @click.stop="dropdownManager.toggleDropdown('music')"
-            :disabled="mediaUpload.isUploading.value('music') || savingMusicSelection"
-            :title="t('management.media.mediaUploads.music.optionsAriaLabel')"
-            :aria-label="t('management.media.mediaUploads.music.optionsAriaLabel')"
-            class="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <MoreHorizontal class="w-5 h-5" aria-hidden="true" />
-          </button>
-
-          <!-- Dropdown menu -->
-          <Transition name="dropdown">
-            <div
-              v-if="dropdownManager.isOpen('music')"
-              @click.stop
-              class="absolute right-0 top-full mt-2 min-w-[220px] bg-white border border-slate-200 rounded-xl shadow-xl z-[100] py-1"
+        <div class="flex items-center gap-1 flex-shrink-0">
+          <!-- Options button when content exists -->
+          <div v-if="canEdit && musicSource !== 'none'" class="relative">
+            <button
+              @click.stop="dropdownManager.toggleDropdown('music')"
+              :disabled="mediaUpload.isUploading.value('music') || savingMusicSelection"
+              :title="t('management.media.mediaUploads.music.optionsAriaLabel')"
+              :aria-label="t('management.media.mediaUploads.music.optionsAriaLabel')"
+              class="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <button
-                @click="showMusicModal = true; dropdownManager.closeAllDropdowns()"
-                :disabled="savingMusicSelection"
-                class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200 text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              <MoreHorizontal class="w-5 h-5" aria-hidden="true" />
+            </button>
+
+            <!-- Dropdown menu -->
+            <Transition name="dropdown">
+              <div
+                v-if="dropdownManager.isOpen('music')"
+                @click.stop
+                class="absolute right-0 top-full mt-2 min-w-[220px] bg-white border border-slate-200 rounded-xl shadow-xl z-[100] py-1"
               >
-                <Library class="w-4 h-4 text-slate-500" aria-hidden="true" />
-                <span>{{ t('management.media.mediaUploads.music.library.browse') }}</span>
-              </button>
-              <button
-                @click="openTrimEditor(); dropdownManager.closeAllDropdowns()"
-                :disabled="savingMusicSelection"
-                class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200 text-left border-t border-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Scissors class="w-4 h-4 text-slate-500" aria-hidden="true" />
-                <span>{{ t('management.media.mediaUploads.music.trim.open') }}</span>
-              </button>
-              <button
-                v-if="musicSource === 'library'"
-                @click="handleClearLibraryMusic(); dropdownManager.closeAllDropdowns()"
-                :disabled="savingMusicSelection"
-                class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200 text-left border-t border-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <X class="w-4 h-4" aria-hidden="true" />
-                <span>{{ t('management.media.mediaUploads.music.library.remove') }}</span>
-              </button>
-              <button
-                v-if="musicSource === 'custom'"
-                @click="confirmRemove('music', t('management.media.mediaUploads.music.deleteTitle'), t('management.media.mediaUploads.music.title')); dropdownManager.closeAllDropdowns()"
-                :disabled="mediaUpload.isUploading.value('music')"
-                class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200 text-left border-t border-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <X class="w-4 h-4" aria-hidden="true" />
-                <span>{{ t('management.media.mediaUploads.music.custom.delete') }}</span>
-              </button>
-            </div>
-          </Transition>
+                <button
+                  @click="showMusicModal = true; dropdownManager.closeAllDropdowns()"
+                  :disabled="savingMusicSelection"
+                  class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200 text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Library class="w-4 h-4 text-slate-500" aria-hidden="true" />
+                  <span>{{ t('management.media.mediaUploads.music.library.browse') }}</span>
+                </button>
+                <button
+                  @click="openTrimEditor(); dropdownManager.closeAllDropdowns()"
+                  :disabled="savingMusicSelection"
+                  class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200 text-left border-t border-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Scissors class="w-4 h-4 text-slate-500" aria-hidden="true" />
+                  <span>{{ t('management.media.mediaUploads.music.trim.open') }}</span>
+                </button>
+                <button
+                  v-if="musicSource === 'library'"
+                  @click="handleClearLibraryMusic(); dropdownManager.closeAllDropdowns()"
+                  :disabled="savingMusicSelection"
+                  class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200 text-left border-t border-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <X class="w-4 h-4" aria-hidden="true" />
+                  <span>{{ t('management.media.mediaUploads.music.library.remove') }}</span>
+                </button>
+                <button
+                  v-if="musicSource === 'custom'"
+                  @click="confirmRemove('music', t('management.media.mediaUploads.music.deleteTitle'), t('management.media.mediaUploads.music.title')); dropdownManager.closeAllDropdowns()"
+                  :disabled="mediaUpload.isUploading.value('music')"
+                  class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200 text-left border-t border-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <X class="w-4 h-4" aria-hidden="true" />
+                  <span>{{ t('management.media.mediaUploads.music.custom.delete') }}</span>
+                </button>
+              </div>
+            </Transition>
+          </div>
+
+          <button
+            type="button"
+            class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+            :aria-expanded="isMusicExpanded"
+            :aria-label="t('management.media.sectionToggle')"
+            :title="t('management.media.sectionToggle')"
+            @click="toggleMusic"
+          >
+            <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isMusicExpanded }" aria-hidden="true" />
+          </button>
         </div>
       </div>
 
+      <Transition name="collapse">
+        <div v-if="isMusicExpanded" class="grid grid-rows-[1fr]">
+          <div class="min-h-0 overflow-hidden">
+          <div class="pt-6">
       <!-- Player - when music exists -->
       <div v-if="musicSource !== 'none'">
         <div class="bg-white rounded-2xl border border-slate-200 p-4">
@@ -370,6 +419,10 @@
           class="hidden"
         />
       </div>
+          </div>
+          </div>
+        </div>
+      </Transition>
     </div>
 
     <!-- Error Display -->
@@ -439,13 +492,14 @@
 <script setup lang="ts">
 import { ref, toRef, watch, computed, reactive, onUnmounted } from 'vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { AlertCircle, ChevronRight, ImageIcon, Library, MoreHorizontal, Music, Pause, Play, Scissors, Upload, Video, X } from 'lucide-vue-next'
+import { AlertCircle, ChevronDown, ChevronRight, ImageIcon, Library, MoreHorizontal, Music, Pause, Play, Scissors, Upload, Video, X } from 'lucide-vue-next'
 import type { Event, BackgroundMusic } from '@/services/api'
 import { eventsService } from '@/services/api'
 import { useMediaUpload, type MediaFieldName, type MediaType } from '@/composables/useMediaUpload'
 import { useDropdownManager } from '@/composables/useDropdownManager'
 import { useMediaUrl } from '@/composables/useMediaUrl'
 import { usePaymentTemplateIntegration } from '@/composables/usePaymentTemplateIntegration'
+import { useCollapsibleSection } from '@/composables/useCollapsibleSection'
 import MediaAssetDrawer from './MediaAssetDrawer.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import MusicSelectionModal from './MusicSelectionModal.vue'
@@ -470,6 +524,8 @@ const eventDataRef = toRef(props, 'eventData')
 const mediaUpload = useMediaUpload(eventDataRef, (event) => emit('updated', event))
 const dropdownManager = useDropdownManager(['music'])
 const { getMediaUrl } = useMediaUrl()
+const { isExpanded: isBrandAssetsExpanded, toggle: toggleBrandAssets } = useCollapsibleSection('showcase_brand_assets_expanded')
+const { isExpanded: isMusicExpanded, toggle: toggleMusic } = useCollapsibleSection('showcase_music_expanded')
 
 // Create a reactive proxy for the event data to use with payment integration
 // This is needed because usePaymentTemplateIntegration expects a plain object
@@ -1175,5 +1231,27 @@ watch(
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* Collapse/expand via grid-template-rows 0fr↔1fr — tracks real content
+   height so both directions ease evenly (no max-height dead time) */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse-enter-active,
+  .collapse-leave-active {
+    transition: none !important;
+  }
 }
 </style>

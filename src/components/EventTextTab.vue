@@ -1,11 +1,33 @@
 <template>
   <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
-    <!-- Header -->
-    <div class="mb-6">
-      <h5 class="font-semibold text-slate-900">{{ t('management.eventTextTab.header.title') }}</h5>
-      <p class="text-sm text-slate-600">{{ t('management.eventTextTab.header.subtitle') }}</p>
+    <!-- Header (click to expand/collapse) -->
+    <div class="flex items-start justify-between gap-3">
+      <button
+        type="button"
+        class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
+        :aria-expanded="isExpanded"
+        :aria-label="t('management.media.sectionToggle')"
+        @click="toggleExpanded"
+      >
+        <h5 class="font-semibold text-slate-900">{{ t('management.eventTextTab.header.title') }}</h5>
+        <p class="text-sm text-slate-600">{{ t('management.eventTextTab.header.subtitle') }}</p>
+      </button>
+      <button
+        type="button"
+        class="p-2 -mt-1 -mr-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+        :aria-expanded="isExpanded"
+        :aria-label="t('management.media.sectionToggle')"
+        :title="t('management.media.sectionToggle')"
+        @click="toggleExpanded"
+      >
+        <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isExpanded }" aria-hidden="true" />
+      </button>
     </div>
 
+    <Transition name="collapse">
+    <div v-if="isExpanded" class="grid grid-rows-[1fr]">
+    <div class="min-h-0 overflow-hidden">
+    <div class="pt-6">
     <!-- Loading State -->
     <div v-if="loading" class="space-y-5" aria-hidden="true">
       <div v-for="g in 2" :key="g" class="space-y-2">
@@ -163,6 +185,10 @@
         </div>
       </div>
     </div>
+    </div>
+    </div>
+    </div>
+    </Transition>
 
     <!-- Per-slot Edit Drawer -->
     <EditEventTextDrawer
@@ -178,10 +204,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { Plus, X, AlertCircle, ChevronRight } from 'lucide-vue-next'
+import { Plus, X, AlertCircle, ChevronDown, ChevronRight } from 'lucide-vue-next'
 import { eventTextsService, type EventText } from '../services/api'
 import EditEventTextDrawer from './EditEventTextDrawer.vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useCollapsibleSection } from '@/composables/useCollapsibleSection'
 import {
   EVENT_TEXT_SLOTS,
   EVENT_TEXT_SLOT_GROUPS,
@@ -196,6 +223,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const { t, locale } = useAppLanguage()
+const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection('showcase_texts_expanded')
 
 // Track component mount state to prevent state updates after unmount
 let isMounted = true
@@ -350,5 +378,27 @@ defineExpose({
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* Collapse/expand via grid-template-rows 0fr↔1fr — tracks real content
+   height so both directions ease evenly (no max-height dead time) */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse-enter-active,
+  .collapse-leave-active {
+    transition: none !important;
+  }
 }
 </style>

@@ -2,12 +2,34 @@
   <div class="space-y-6">
     <!-- Google Maps Embed -->
     <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
-      <div class="mb-6">
-        <h5 class="font-semibold text-slate-900">{{ t('management.embeds.map.title') }}</h5>
-        <p class="text-sm text-slate-600">{{ t('management.embeds.map.description') }}</p>
+      <!-- Header (click to expand/collapse) -->
+      <div class="flex items-start justify-between gap-3">
+        <button
+          type="button"
+          class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
+          :aria-expanded="isMapExpanded"
+          :aria-label="t('management.media.sectionToggle')"
+          @click="toggleMap"
+        >
+          <h5 class="font-semibold text-slate-900">{{ t('management.embeds.map.title') }}</h5>
+          <p class="text-sm text-slate-600">{{ t('management.embeds.map.description') }}</p>
+        </button>
+        <button
+          type="button"
+          class="p-2 -mt-1 -mr-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+          :aria-expanded="isMapExpanded"
+          :aria-label="t('management.media.sectionToggle')"
+          :title="t('management.media.sectionToggle')"
+          @click="toggleMap"
+        >
+          <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isMapExpanded }" aria-hidden="true" />
+        </button>
       </div>
 
-      <div class="space-y-3 sm:space-y-4">
+      <Transition name="collapse">
+      <div v-if="isMapExpanded" class="grid grid-rows-[1fr]">
+      <div class="min-h-0 overflow-hidden">
+      <div class="space-y-3 sm:space-y-4 pt-6">
         <!-- Map Preview -->
         <div v-if="formData.google_map_embed_link" class="relative">
           <iframe
@@ -72,29 +94,52 @@
           </button>
         </div>
       </div>
+      </div>
+      </div>
+      </Transition>
     </div>
 
     <!-- YouTube Embed -->
     <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
-      <div class="mb-6">
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex-1 min-w-0">
-            <h5 class="font-semibold text-slate-900">{{ t('management.embeds.youtube.title') }}</h5>
-            <p class="text-sm text-slate-600">{{ t('management.embeds.youtube.description') }}</p>
-          </div>
+      <!-- Header (click to expand/collapse) -->
+      <div class="flex items-start justify-between gap-3">
+        <button
+          type="button"
+          class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
+          :aria-expanded="isYoutubeExpanded"
+          :aria-label="t('management.media.sectionToggle')"
+          @click="toggleYoutube"
+        >
+          <h5 class="font-semibold text-slate-900">{{ t('management.embeds.youtube.title') }}</h5>
+          <p class="text-sm text-slate-600">{{ t('management.embeds.youtube.description') }}</p>
+        </button>
 
+        <div class="flex items-center gap-1 flex-shrink-0">
           <!-- Help Button -->
           <button
             @click="showYouTubeHelpModal = true"
-            class="p-2 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+            class="p-2 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
             :title="t('management.embeds.youtube.helpButtonTitle')"
           >
             <Info class="w-4 h-4" />
           </button>
+          <button
+            type="button"
+            class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+            :aria-expanded="isYoutubeExpanded"
+            :aria-label="t('management.media.sectionToggle')"
+            :title="t('management.media.sectionToggle')"
+            @click="toggleYoutube"
+          >
+            <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isYoutubeExpanded }" aria-hidden="true" />
+          </button>
         </div>
       </div>
 
-      <div class="space-y-3 sm:space-y-4">
+      <Transition name="collapse">
+      <div v-if="isYoutubeExpanded" class="grid grid-rows-[1fr]">
+      <div class="min-h-0 overflow-hidden">
+      <div class="space-y-3 sm:space-y-4 pt-6">
         <!-- YouTube Preview -->
         <div v-if="formData.youtube_embed_link" class="relative">
           <iframe
@@ -163,6 +208,9 @@
           </button>
         </div>
       </div>
+      </div>
+      </div>
+      </Transition>
     </div>
 
     <!-- Toast Feedback -->
@@ -308,12 +356,13 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { Youtube, Map, X, Save, CheckCircle, AlertCircle, Info } from 'lucide-vue-next'
+import { Youtube, Map, X, Save, CheckCircle, ChevronDown, AlertCircle, Info } from 'lucide-vue-next'
 import { eventsService, type Event } from '../services/api'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import { extractYouTubeEmbedUrl, extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useToast } from '../composables/useToast'
+import { useCollapsibleSection } from '@/composables/useCollapsibleSection'
 
 interface Props {
   eventData?: Event
@@ -329,6 +378,8 @@ const emit = defineEmits<Emits>()
 
 const { t } = useAppLanguage()
 const { message, showSuccess, showError } = useToast()
+const { isExpanded: isMapExpanded, toggle: toggleMap } = useCollapsibleSection('showcase_map_expanded')
+const { isExpanded: isYoutubeExpanded, toggle: toggleYoutube } = useCollapsibleSection('showcase_youtube_expanded')
 
 // State
 const formData = ref({
@@ -561,5 +612,27 @@ const handleMapsPaste = (event: ClipboardEvent) => {
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+/* Collapse/expand via grid-template-rows 0fr↔1fr — tracks real content
+   height so both directions ease evenly (no max-height dead time) */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse-enter-active,
+  .collapse-leave-active {
+    transition: none !important;
+  }
 }
 </style>
