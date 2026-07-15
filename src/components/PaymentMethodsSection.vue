@@ -550,7 +550,7 @@ interface Props {
 }
 
 const { t } = useAppLanguage()
-const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection('showcase_payment_expanded')
+const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection()
 
 const props = defineProps<Props>()
 const emit = defineEmits<{

@@ -208,7 +208,7 @@ const props = defineProps<Props>()
 
 const { t } = useAppLanguage()
 const notify = useNotifications()
-const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection('showcase_dress_code_expanded')
+const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection()
 
 // State
 const dressCodes = ref<EventDressCode[]>([])

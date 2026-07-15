@@ -292,7 +292,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useAppLanguage()
-const { isExpanded: isPhotosExpanded, toggle: togglePhotosExpanded } = useCollapsibleSection('showcase_photos_expanded')
+const { isExpanded: isPhotosExpanded, toggle: togglePhotosExpanded } = useCollapsibleSection()
 
 // Toast notifications with automatic cleanup
 const { message, showSuccess, showError } = useToast()

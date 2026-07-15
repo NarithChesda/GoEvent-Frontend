@@ -524,8 +524,8 @@ const eventDataRef = toRef(props, 'eventData')
 const mediaUpload = useMediaUpload(eventDataRef, (event) => emit('updated', event))
 const dropdownManager = useDropdownManager(['music'])
 const { getMediaUrl } = useMediaUrl()
-const { isExpanded: isBrandAssetsExpanded, toggle: toggleBrandAssets } = useCollapsibleSection('showcase_brand_assets_expanded')
-const { isExpanded: isMusicExpanded, toggle: toggleMusic } = useCollapsibleSection('showcase_music_expanded')
+const { isExpanded: isBrandAssetsExpanded, toggle: toggleBrandAssets } = useCollapsibleSection()
+const { isExpanded: isMusicExpanded, toggle: toggleMusic } = useCollapsibleSection()
 
 // Create a reactive proxy for the event data to use with payment integration
 // This is needed because usePaymentTemplateIntegration expects a plain object

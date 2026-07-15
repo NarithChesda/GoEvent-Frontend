@@ -517,7 +517,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const { t, locale } = useAppLanguage()
-const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection('showcase_agenda_expanded')
+const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection()
 
 // State
 const agendaItems = ref<EventAgendaItem[]>([])

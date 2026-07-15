@@ -223,7 +223,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const { t, locale } = useAppLanguage()
-const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection('showcase_texts_expanded')
+const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection()
 
 // Track component mount state to prevent state updates after unmount
 let isMounted = true
