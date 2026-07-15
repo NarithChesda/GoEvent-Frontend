@@ -106,51 +106,105 @@
             </div>
 
             <!-- Time selection -->
-            <div class="mt-3 pt-3 border-t border-slate-100 space-y-2.5">
+            <div class="mt-3 pt-3 border-t border-slate-100 space-y-3">
               <span class="flex items-center gap-1.5 text-sm font-medium text-slate-700">
                 <Clock class="w-4 h-4 text-slate-400" aria-hidden="true" />
                 {{ t('common.dateTimePicker.time') }}
               </span>
 
+              <!-- Digital time display: custom hour/minute pickers (native <select> renders as an unstyled OS listbox) -->
+              <div class="flex items-center justify-center gap-1.5 py-2 bg-slate-50 rounded-xl border border-slate-200">
+                <div class="relative" ref="hourWrapRef">
+                  <button
+                    type="button"
+                    @click="toggleHour"
+                    :aria-label="t('common.dateTimePicker.hour')"
+                    aria-haspopup="listbox"
+                    :aria-expanded="hourOpen"
+                    class="w-14 py-1.5 text-center text-lg font-semibold text-slate-900 tabular-nums rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    :class="hourOpen ? 'bg-white shadow-sm' : 'hover:bg-white'"
+                  >
+                    {{ pad(draftHour) }}
+                  </button>
+                  <Transition name="dropdown">
+                    <div
+                      v-if="hourOpen"
+                      ref="hourListRef"
+                      role="listbox"
+                      :aria-label="t('common.dateTimePicker.hour')"
+                      class="absolute z-10 top-full left-1/2 -translate-x-1/2 mt-1.5 w-16 max-h-44 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl py-1"
+                    >
+                      <button
+                        v-for="h in 24"
+                        :key="h - 1"
+                        type="button"
+                        role="option"
+                        :aria-selected="draftHour === h - 1"
+                        @click="selectHour(h - 1)"
+                        class="w-full py-1.5 text-sm text-center tabular-nums transition-colors"
+                        :class="draftHour === h - 1
+                          ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white font-semibold'
+                          : 'text-slate-700 hover:bg-slate-100'"
+                      >
+                        {{ pad(h - 1) }}
+                      </button>
+                    </div>
+                  </Transition>
+                </div>
+                <span class="text-lg font-semibold text-slate-300" aria-hidden="true">:</span>
+                <div class="relative" ref="minuteWrapRef">
+                  <button
+                    type="button"
+                    @click="toggleMinute"
+                    :aria-label="t('common.dateTimePicker.minute')"
+                    aria-haspopup="listbox"
+                    :aria-expanded="minuteOpen"
+                    class="w-14 py-1.5 text-center text-lg font-semibold text-slate-900 tabular-nums rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    :class="minuteOpen ? 'bg-white shadow-sm' : 'hover:bg-white'"
+                  >
+                    {{ pad(draftMinute) }}
+                  </button>
+                  <Transition name="dropdown">
+                    <div
+                      v-if="minuteOpen"
+                      ref="minuteListRef"
+                      role="listbox"
+                      :aria-label="t('common.dateTimePicker.minute')"
+                      class="absolute z-10 top-full left-1/2 -translate-x-1/2 mt-1.5 w-16 max-h-44 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl py-1"
+                    >
+                      <button
+                        v-for="m in minuteOptions"
+                        :key="m"
+                        type="button"
+                        role="option"
+                        :aria-selected="draftMinute === m"
+                        @click="selectMinute(m)"
+                        class="w-full py-1.5 text-sm text-center tabular-nums transition-colors"
+                        :class="draftMinute === m
+                          ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white font-semibold'
+                          : 'text-slate-700 hover:bg-slate-100'"
+                      >
+                        {{ pad(m) }}
+                      </button>
+                    </div>
+                  </Transition>
+                </div>
+              </div>
+
               <!-- Quick time presets -->
-              <div v-if="quickTimes.length" class="flex flex-wrap gap-1.5">
+              <div v-if="quickTimes.length" class="grid grid-cols-3 gap-1.5">
                 <button
                   v-for="qt in quickTimes"
                   :key="qt"
                   type="button"
                   @click="selectQuickTime(qt)"
-                  class="px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors"
+                  class="px-2 py-1.5 text-sm font-medium rounded-lg border text-center transition-colors"
                   :class="draftHour === qt && draftMinute === 0
                     ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white border-transparent shadow-sm'
                     : 'bg-white border-slate-300 text-slate-600 hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50'"
                 >
                   {{ formatHourLabel(qt) }}
                 </button>
-              </div>
-
-              <!-- Manual hour/minute selection -->
-              <div class="flex items-center gap-2">
-                <div class="relative">
-                  <select
-                    v-model.number="draftHour"
-                    :aria-label="t('common.dateTimePicker.hour')"
-                    class="pl-3 pr-8 py-2 text-sm border border-slate-300 rounded-lg bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400"
-                  >
-                    <option v-for="h in 24" :key="h - 1" :value="h - 1">{{ pad(h - 1) }}</option>
-                  </select>
-                  <ChevronDown class="w-4 h-4 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
-                </div>
-                <span class="text-sm font-semibold text-slate-400">:</span>
-                <div class="relative">
-                  <select
-                    v-model.number="draftMinute"
-                    :aria-label="t('common.dateTimePicker.minute')"
-                    class="pl-3 pr-8 py-2 text-sm border border-slate-300 rounded-lg bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400"
-                  >
-                    <option v-for="m in minuteOptions" :key="m" :value="m">{{ pad(m) }}</option>
-                  </select>
-                  <ChevronDown class="w-4 h-4 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
-                </div>
               </div>
             </div>
 
@@ -182,6 +236,7 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick, onUnmounted } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 import { Calendar, ChevronDown, ChevronLeft, ChevronRight, Clock } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 
@@ -229,6 +284,21 @@ const draftMinute = ref(0)
 const viewYear = ref(0)
 const viewMonth = ref(0)
 
+// Custom hour/minute popovers (native <select> renders as an unstyled OS listbox)
+const hourOpen = ref(false)
+const minuteOpen = ref(false)
+const hourWrapRef = ref<HTMLElement>()
+const minuteWrapRef = ref<HTMLElement>()
+const hourListRef = ref<HTMLElement>()
+const minuteListRef = ref<HTMLElement>()
+
+onClickOutside(hourWrapRef, () => {
+  hourOpen.value = false
+})
+onClickOutside(minuteWrapRef, () => {
+  minuteOpen.value = false
+})
+
 const intlLocale = computed(() => (locale.value === 'kh' ? 'km-KH' : 'en-US'))
 
 const hourLabelFormatter = computed(
@@ -241,6 +311,39 @@ const formatHourLabel = (hour: number): string =>
 const selectQuickTime = (hour: number) => {
   draftHour.value = hour
   draftMinute.value = 0
+  hourOpen.value = false
+  minuteOpen.value = false
+}
+
+const toggleHour = async () => {
+  minuteOpen.value = false
+  hourOpen.value = !hourOpen.value
+  if (hourOpen.value) {
+    await nextTick()
+    const el = hourListRef.value?.children[draftHour.value] as HTMLElement | undefined
+    el?.scrollIntoView({ block: 'center' })
+  }
+}
+
+const toggleMinute = async () => {
+  hourOpen.value = false
+  minuteOpen.value = !minuteOpen.value
+  if (minuteOpen.value) {
+    await nextTick()
+    const idx = minuteOptions.value.indexOf(draftMinute.value)
+    const el = minuteListRef.value?.children[idx] as HTMLElement | undefined
+    el?.scrollIntoView({ block: 'center' })
+  }
+}
+
+const selectHour = (hour: number) => {
+  draftHour.value = hour
+  hourOpen.value = false
+}
+
+const selectMinute = (minute: number) => {
+  draftMinute.value = minute
+  minuteOpen.value = false
 }
 
 const pad = (n: number) => String(n).padStart(2, '0')
@@ -444,6 +547,8 @@ const openPicker = () => {
 
 const closePicker = () => {
   isOpen.value = false
+  hourOpen.value = false
+  minuteOpen.value = false
   document.removeEventListener('keydown', handleKeydown, true)
 }
 
