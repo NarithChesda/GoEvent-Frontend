@@ -106,31 +106,51 @@
             </div>
 
             <!-- Time selection -->
-            <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
-              <span class="flex items-center gap-1.5 text-sm font-medium text-slate-700 flex-1">
+            <div class="mt-3 pt-3 border-t border-slate-100 space-y-2.5">
+              <span class="flex items-center gap-1.5 text-sm font-medium text-slate-700">
                 <Clock class="w-4 h-4 text-slate-400" aria-hidden="true" />
                 {{ t('common.dateTimePicker.time') }}
               </span>
-              <div class="relative">
-                <select
-                  v-model.number="draftHour"
-                  :aria-label="t('common.dateTimePicker.hour')"
-                  class="pl-3 pr-8 py-2 text-sm border border-slate-300 rounded-lg bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400"
+
+              <!-- Quick time presets -->
+              <div v-if="quickTimes.length" class="flex flex-wrap gap-1.5">
+                <button
+                  v-for="qt in quickTimes"
+                  :key="qt"
+                  type="button"
+                  @click="selectQuickTime(qt)"
+                  class="px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors"
+                  :class="draftHour === qt && draftMinute === 0
+                    ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white border-transparent shadow-sm'
+                    : 'bg-white border-slate-300 text-slate-600 hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50'"
                 >
-                  <option v-for="h in 24" :key="h - 1" :value="h - 1">{{ pad(h - 1) }}</option>
-                </select>
-                <ChevronDown class="w-4 h-4 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+                  {{ formatHourLabel(qt) }}
+                </button>
               </div>
-              <span class="text-sm font-semibold text-slate-400">:</span>
-              <div class="relative">
-                <select
-                  v-model.number="draftMinute"
-                  :aria-label="t('common.dateTimePicker.minute')"
-                  class="pl-3 pr-8 py-2 text-sm border border-slate-300 rounded-lg bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400"
-                >
-                  <option v-for="m in minuteOptions" :key="m" :value="m">{{ pad(m) }}</option>
-                </select>
-                <ChevronDown class="w-4 h-4 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+
+              <!-- Manual hour/minute selection -->
+              <div class="flex items-center gap-2">
+                <div class="relative">
+                  <select
+                    v-model.number="draftHour"
+                    :aria-label="t('common.dateTimePicker.hour')"
+                    class="pl-3 pr-8 py-2 text-sm border border-slate-300 rounded-lg bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400"
+                  >
+                    <option v-for="h in 24" :key="h - 1" :value="h - 1">{{ pad(h - 1) }}</option>
+                  </select>
+                  <ChevronDown class="w-4 h-4 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+                </div>
+                <span class="text-sm font-semibold text-slate-400">:</span>
+                <div class="relative">
+                  <select
+                    v-model.number="draftMinute"
+                    :aria-label="t('common.dateTimePicker.minute')"
+                    class="pl-3 pr-8 py-2 text-sm border border-slate-300 rounded-lg bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400"
+                  >
+                    <option v-for="m in minuteOptions" :key="m" :value="m">{{ pad(m) }}</option>
+                  </select>
+                  <ChevronDown class="w-4 h-4 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+                </div>
               </div>
             </div>
 
@@ -179,13 +199,17 @@ interface Props {
   clearable?: boolean
   /** Render error styling on the trigger */
   error?: boolean
+  /** Hour-of-day (0-23) quick-pick chips shown above the manual hour/minute selects */
+  quickTimes?: number[]
 }
 
 interface Emits {
   (e: 'update:modelValue', value: string): void
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  quickTimes: () => [],
+})
 const emit = defineEmits<Emits>()
 
 const { t, locale } = useAppLanguage()
@@ -206,6 +230,18 @@ const viewYear = ref(0)
 const viewMonth = ref(0)
 
 const intlLocale = computed(() => (locale.value === 'kh' ? 'km-KH' : 'en-US'))
+
+const hourLabelFormatter = computed(
+  () => new Intl.DateTimeFormat(intlLocale.value, { hour: 'numeric' }),
+)
+
+const formatHourLabel = (hour: number): string =>
+  hourLabelFormatter.value.format(new Date(2000, 0, 1, hour, 0))
+
+const selectQuickTime = (hour: number) => {
+  draftHour.value = hour
+  draftMinute.value = 0
+}
 
 const pad = (n: number) => String(n).padStart(2, '0')
 

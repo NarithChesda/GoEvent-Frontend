@@ -114,6 +114,7 @@
                       :model-value="form.start_date"
                       @update:model-value="onStartDateChange"
                       :title="t('events.createDrawer.fields.startDateTime')"
+                      :quick-times="commonStartTimes"
                     />
                   </div>
                   <div>
@@ -123,6 +124,7 @@
                       :min="form.start_date"
                       :error="!!dateError"
                       :title="t('events.createDrawer.fields.endDateTime')"
+                      :quick-times="commonEndTimes"
                     />
                     <p v-if="dateError" class="text-xs sm:text-sm text-red-600 mt-1">{{ dateError }}</p>
                   </div>
@@ -292,6 +294,11 @@ import SelectField, { type SelectFieldOption } from '@/components/common/SelectF
 
 const { t } = useAppLanguage()
 const { translateEventCategory } = useCategoryTranslation()
+
+// Common start/end times for hosted events (weddings, birthdays, housewarmings, etc.)
+// so users can pick a typical slot instead of scrolling the hour/minute selects.
+const commonStartTimes = [8, 10, 12, 14, 17, 18]
+const commonEndTimes = [12, 14, 17, 19, 21, 22]
 import { getUserTimezone } from '../utils/timezones'
 import { eventCategoriesService, type EventCategory } from '../services/api'
 import eventDescriptionTemplates from '../assets/event-description-templates.json'
