@@ -138,7 +138,7 @@
                 <button
                   type="submit"
                   :disabled="isInviting || !inviteEmail"
-                  class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white text-sm font-semibold rounded-lg transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white text-sm font-semibold rounded-lg transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span
                     v-if="isInviting"
@@ -151,7 +151,7 @@
                   type="button"
                   @click="closeInviteForm"
                   :disabled="isInviting"
-                  class="px-4 py-2 text-slate-600 hover:bg-slate-200 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                  class="flex-1 sm:flex-none text-center px-4 py-2 text-slate-600 hover:bg-slate-200 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
                 >
                   {{ t('management.inviteDrawer.cancel') }}
                 </button>
@@ -349,20 +349,20 @@
           v-if="!loading && enrichedCollaborators.length === 0 && canInvite && !showInviteForm"
           type="button"
           @click="openInviteForm"
-          class="w-full border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 rounded-2xl p-6 text-center transition-colors group"
+          class="w-full border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 rounded-2xl p-4 sm:p-6 text-center transition-colors group"
         >
-          <UserPlus class="w-8 h-8 mx-auto text-slate-400 group-hover:text-emerald-500 transition-colors" />
-          <p class="mt-2 text-sm font-medium text-slate-700">{{ t('management.collaboratorsTab.empty.inviteFirst') }}</p>
+          <UserPlus class="w-6 h-6 sm:w-8 sm:h-8 mx-auto text-slate-400 group-hover:text-emerald-500 transition-colors" />
+          <p class="mt-1.5 sm:mt-2 text-sm font-medium text-slate-700">{{ t('management.collaboratorsTab.empty.inviteFirst') }}</p>
           <p class="mt-0.5 text-xs text-slate-500">{{ t('management.collaboratorsTab.empty.title') }}</p>
         </button>
 
         <!-- Empty state (read-only) -->
         <div
           v-else-if="!loading && enrichedCollaborators.length === 0"
-          class="w-full border-2 border-dashed border-slate-200 bg-slate-50/50 rounded-2xl p-6 text-center"
+          class="w-full border-2 border-dashed border-slate-200 bg-slate-50/50 rounded-2xl p-4 sm:p-6 text-center"
         >
-          <Users class="w-8 h-8 mx-auto text-slate-300" />
-          <p class="mt-2 text-sm text-slate-500">{{ t('management.collaboratorsTab.empty.title') }}</p>
+          <Users class="w-6 h-6 sm:w-8 sm:h-8 mx-auto text-slate-300" />
+          <p class="mt-1.5 sm:mt-2 text-sm text-slate-500">{{ t('management.collaboratorsTab.empty.title') }}</p>
         </div>
       </div>
 
