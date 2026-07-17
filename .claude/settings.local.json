@@ -201,7 +201,19 @@
       "Bash(node -e \"const icons = require\\('lucide-vue-next'\\); console.log\\(typeof icons.Pipette, typeof icons.Palette, typeof icons.Check\\)\")",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git fetch *)"
+      "Bash(git fetch *)",
+      "PowerShell(npm run type-check-noEmit)",
+      "PowerShell(Get-Command chromium-cli -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Content \"c:\\\\Users\\\\narit\\\\Code\\\\GoEvent-Frontend\\\\.env\" | Select-String \"VITE_API_BASE_URL\"; try { \\(Invoke-WebRequest -Uri \"http://127.0.0.1:8000/api/services/listings/\" -UseBasicParsing -TimeoutSec 5\\).StatusCode } catch { \"backend probe: $\\($_.Exception.Message\\)\" })",
+      "PowerShell(npm run dev)",
+      "PowerShell(node .claude-smoke/drive.mjs)",
+      "PowerShell(node .claude-smoke/drive2.mjs)",
+      "PowerShell(node .claude-smoke/drive3.mjs)",
+      "PowerShell(git -C \"c:\\\\Users\\\\narit\\\\Code\\\\GoEvent-Frontend\" status --short)",
+      "PowerShell(node .claude-smoke/portfolio.mjs)",
+      "PowerShell($r = Invoke-RestMethod -Uri \"http://127.0.0.1:8000/api/services/listings/?page_size=50\" -UseBasicParsing; $r.results | Select-Object title, vendor_name, cover_image_url | Format-Table -AutoSize | Out-String -Width 200)",
+      "PowerShell(node .claude-smoke/check.mjs)",
+      "PowerShell(node .claude-smoke/coverflow.mjs)"
     ],
     "deny": [],
     "additionalDirectories": [

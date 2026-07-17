@@ -164,6 +164,45 @@ export function getVendorLogoWithFallback(logoUrl: string | null | undefined): s
 }
 
 /**
+ * Curated pool used to pad placeholder portfolios with visual variety
+ */
+const portfolioPlaceholderPool = [
+  categoryCoverImages['wedding'],
+  categoryCoverImages['venue'],
+  categoryCoverImages['decoration'],
+  categoryCoverImages['catering'],
+  categoryCoverImages['entertainment'],
+  categoryCoverImages['photography'],
+]
+
+/**
+ * Request a larger rendition of an Unsplash fallback for hero-sized display
+ */
+const upsizeForHero = (url: string): string => url.replace('w=800&h=450', 'w=1600&h=900')
+
+/**
+ * Build a placeholder portfolio for vendors with no uploaded photos.
+ * Used only when VITE_SERVICES_PORTFOLIO_PLACEHOLDER is enabled (visual
+ * testing) — starts from the vendor's own listing categories so the
+ * placeholder imagery stays on-theme, then pads from the curated pool.
+ *
+ * @param categories - Category names of the vendor's listings
+ * @returns Up to 6 deduplicated hero-sized image URLs
+ */
+export function getPortfolioPlaceholderImages(
+  categories: (string | null | undefined)[] = [],
+): string[] {
+  const images: string[] = []
+  categories.forEach((category) => {
+    if (category) {
+      images.push(getCategoryFallbackImage(category))
+    }
+  })
+  images.push(...portfolioPlaceholderPool)
+  return [...new Set(images)].slice(0, 6).map(upsizeForHero)
+}
+
+/**
  * Export category images map for testing/reference
  */
 export const serviceCategoryImages = categoryCoverImages

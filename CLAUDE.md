@@ -186,6 +186,7 @@ Optional env vars:
 - `VITE_ASSET_PROTECTION_ENABLED`: Enable asset protection in dev mode (default: false, auto-enabled in production)
 - `VITE_SHOWCASE_ANIMATION_TYPE`: Showcase transition animation type. Options: `decoration` (default - decorations slide out individually), `door` (cover splits in half like opening doors)
 - `VITE_SHOWCASE_CONTENT_WIDTH`: **Temporary, for visual testing only** — widens the main-content liquid glass card and shrinks its inner horizontal padding. Options: `standard` (default), `wide`. Will be replaced by a `template_assets` backend field (mirroring how `showcase_animation_type` evolved from an env-only toggle into a template-driven prop).
+- `VITE_SERVICES_PORTFOLIO_PLACEHOLDER`: **Visual testing only** — when `true`, vendors with no uploaded listing photos get a category-themed placeholder portfolio on their storefront page (`/services/vendors/:id` hero slideshow + portfolio strip). Default: off. Real vendor portfolios are aggregated from listing cover images + gallery media; a dedicated backend portfolio field may replace this later.
 
 ### Authentication Flow
 1. User authenticates via email/password, Google OAuth, or Telegram

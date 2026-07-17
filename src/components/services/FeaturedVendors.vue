@@ -4,13 +4,13 @@
       <h2 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
         <Sparkles v-if="!showAll" class="w-5 h-5 text-amber-500" />
         <Store v-else class="w-5 h-5 text-[#2ecc71]" />
-        {{ showAll ? 'All Vendors' : 'Featured Vendors' }}
+        {{ showAll ? t('services.vendors.allTitle') : t('services.vendors.featuredTitle') }}
       </h2>
       <button
         @click="$emit('toggle-view')"
         class="text-sm text-[#2ecc71] hover:text-[#27ae60] font-medium"
       >
-        {{ showAll ? 'Show Featured' : 'View All' }}
+        {{ showAll ? t('services.vendors.showFeatured') : t('services.vendors.viewAll') }}
       </button>
     </div>
 
@@ -25,27 +25,43 @@
         v-for="vendor in vendors"
         :key="vendor.id"
         @click="$emit('vendor-click', vendor)"
-        class="group cursor-pointer bg-white rounded-xl border border-slate-200/80 overflow-hidden hover:shadow-lg hover:border-[#2ecc71]/30 transition-all duration-300"
+        @keydown.enter="$emit('vendor-click', vendor)"
+        tabindex="0"
+        role="article"
+        :aria-label="vendor.name"
+        class="group cursor-pointer bg-white rounded-2xl border border-slate-200/60 hover:border-slate-300/80 overflow-hidden hover:shadow-lg hover:shadow-slate-200/40 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
       >
-        <div class="aspect-[4/3] relative overflow-hidden bg-slate-100">
-          <img
-            :src="vendor.logo"
-            :alt="vendor.name"
-            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-          <div class="absolute top-2 right-2">
-            <div class="px-2 py-1 bg-amber-500 text-white text-xs font-medium rounded-full flex items-center gap-1">
-              <Star class="w-3 h-3 fill-current" />
-              Verified
-            </div>
+        <!-- Gradient banner -->
+        <div class="h-14 sm:h-16 bg-gradient-to-r from-[#2ecc71]/20 to-[#1e90ff]/20" aria-hidden="true"></div>
+
+        <!-- Round logo avatar -->
+        <img
+          :src="logoSrc(vendor)"
+          :alt="vendor.name"
+          class="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-4 border-white shadow-md object-cover bg-white mx-auto -mt-7 sm:-mt-8 group-hover:scale-105 transition-transform duration-300"
+          @error="handleLogoError"
+        />
+
+        <div class="px-3 pb-3.5 pt-2 text-center">
+          <div class="flex items-center justify-center gap-1 min-w-0">
+            <h3 class="font-semibold text-slate-900 text-xs sm:text-sm truncate group-hover:text-[#2ecc71] transition-colors">
+              {{ vendor.name }}
+            </h3>
+            <BadgeCheck
+              class="w-3.5 h-3.5 text-[#2ecc71] flex-shrink-0"
+              :aria-label="t('services.vendors.verified')"
+            />
           </div>
-        </div>
-        <div class="p-2.5 lg:p-3">
-          <h3 class="font-medium text-slate-900 text-xs lg:text-sm truncate">{{ vendor.name }}</h3>
-          <p class="text-[10px] lg:text-xs text-slate-500 truncate">{{ vendor.tagline }}</p>
-          <div class="flex items-center gap-1 mt-1.5 lg:mt-2">
-            <MapPin class="w-2.5 h-2.5 lg:w-3 lg:h-3 text-slate-400" />
-            <span class="text-[10px] lg:text-xs text-slate-500">{{ vendor.city }}</span>
+          <p class="text-[10px] sm:text-xs text-slate-500 truncate mt-0.5">{{ vendor.tagline }}</p>
+          <div class="flex items-center justify-center gap-1 mt-2 text-[10px] sm:text-xs text-slate-400 min-w-0">
+            <template v-if="vendor.city">
+              <MapPin class="w-3 h-3 flex-shrink-0" />
+              <span class="truncate">{{ vendor.city }}</span>
+              <span aria-hidden="true">·</span>
+            </template>
+            <span class="flex-shrink-0">
+              {{ t('services.vendors.listingsCount', { count: vendor.listingsCount }, vendor.listingsCount) }}
+            </span>
           </div>
         </div>
       </div>
@@ -57,15 +73,19 @@
         @click="$emit('load-more')"
         class="px-4 py-2 text-sm font-medium text-[#2ecc71] hover:text-[#27ae60] border border-[#2ecc71] hover:border-[#27ae60] rounded-lg transition-colors"
       >
-        Load More
+        {{ t('services.vendors.loadMore') }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Sparkles, Star, MapPin, Store } from 'lucide-vue-next'
+import { Sparkles, BadgeCheck, MapPin, Store } from 'lucide-vue-next'
 import type { Vendor } from './types'
+import { getVendorLogoFallback } from '@/utils/serviceFallbackImages'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { t } = useAppLanguage()
 
 defineProps<{
   vendors: Vendor[]
@@ -79,4 +99,14 @@ defineEmits<{
   'toggle-view': []
   'load-more': []
 }>()
+
+const logoSrc = (vendor: Vendor) => vendor.logo || getVendorLogoFallback()
+
+const handleLogoError = (event: Event) => {
+  const target = event.target as HTMLImageElement
+  const fallback = getVendorLogoFallback()
+  if (target.src !== fallback) {
+    target.src = fallback
+  }
+}
 </script>

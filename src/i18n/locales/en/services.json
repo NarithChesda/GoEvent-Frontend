@@ -26,5 +26,57 @@
     "listingUpdated": "Listing \"{title}\" updated successfully!",
     "listingDeleted": "Listing deleted successfully",
     "contactInitiated": "Contact via {type} initiated!"
+  },
+  "card": {
+    "featured": "Featured"
+  },
+  "vendors": {
+    "featuredTitle": "Featured Vendors",
+    "allTitle": "All Vendors",
+    "viewAll": "View All",
+    "showFeatured": "Show Featured",
+    "verified": "Verified",
+    "loadMore": "Load More",
+    "listingsCount": "{count} service | {count} services"
+  },
+  "detail": {
+    "back": "Back to Services",
+    "share": "Share",
+    "linkCopied": "Link copied to clipboard",
+    "about": "About This Service",
+    "showcase": "Showcase",
+    "tags": "Tags",
+    "serviceArea": "Service Area",
+    "startingPrice": "Starting price",
+    "views": "{count} views",
+    "inquiries": "{count} inquiries",
+    "contactTitle": "Contact Vendor",
+    "telegram": "Telegram",
+    "call": "Call",
+    "website": "Website",
+    "moreFromVendor": "More from {vendor}",
+    "viewVendorProfile": "View Profile",
+    "notFound": {
+      "title": "Service not found",
+      "description": "This service may have been removed or is no longer available.",
+      "action": "Browse Services"
+    }
+  },
+  "vendorDetail": {
+    "about": "About",
+    "portfolio": "Portfolio",
+    "servicesTitle": "Services",
+    "location": "Location",
+    "email": "Email",
+    "notFound": {
+      "title": "Vendor not found",
+      "description": "This vendor may have been removed or is no longer available.",
+      "action": "Browse Services"
+    }
+  },
+  "lightbox": {
+    "close": "Close",
+    "previous": "Previous photo",
+    "next": "Next photo"
   }
 }

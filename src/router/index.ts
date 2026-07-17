@@ -83,6 +83,18 @@ const router = createRouter({
       meta: { title: 'Event Services - GoEvent' },
     },
     {
+      path: '/services/vendors/:id',
+      name: 'vendor-detail',
+      component: () => import('../views/VendorStorefrontView.vue'),
+      meta: { title: 'Vendor - GoEvent' },
+    },
+    {
+      path: '/services/:id',
+      name: 'service-detail',
+      component: () => import('../views/ServiceDetailView.vue'),
+      meta: { title: 'Service Details - GoEvent' },
+    },
+    {
       path: '/calendars',
       name: 'calendars',
       component: () => import('../views/CalendarsView.vue'),

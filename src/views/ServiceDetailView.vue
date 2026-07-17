@@ -1,0 +1,320 @@
+<template>
+  <MainLayout>
+    <div
+      class="min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-4rem)] bg-gradient-to-r from-[#2ecc71]/[0.02] via-white to-[#1e90ff]/[0.02]"
+    >
+      <div
+        class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto sm:px-6 lg:px-8 lg:py-8 pb-24 lg:pb-8"
+      >
+        <!-- Loading skeleton -->
+        <div v-if="isLoading" class="animate-pulse">
+          <div class="aspect-[4/3] sm:aspect-[16/9] lg:aspect-[2.2/1] bg-slate-200 lg:rounded-3xl"></div>
+          <div class="px-4 sm:px-0 mt-6 lg:grid lg:grid-cols-[1fr_360px] lg:gap-8">
+            <div class="space-y-4">
+              <div class="h-4 bg-slate-200 rounded w-1/3"></div>
+              <div class="h-4 bg-slate-200 rounded w-full"></div>
+              <div class="h-4 bg-slate-200 rounded w-5/6"></div>
+              <div class="grid grid-cols-3 gap-2 mt-6">
+                <div class="aspect-square bg-slate-200 rounded-xl"></div>
+                <div class="aspect-square bg-slate-200 rounded-xl"></div>
+                <div class="aspect-square bg-slate-200 rounded-xl"></div>
+              </div>
+            </div>
+            <div class="hidden lg:block">
+              <div class="h-64 bg-slate-200 rounded-2xl"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Not found / error -->
+        <div v-else-if="notFound" class="px-4 sm:px-0 pt-6">
+          <button
+            @click="goBack"
+            class="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 px-2 py-1.5 -mx-2 rounded-lg hover:bg-slate-100/60 transition-colors mb-4"
+          >
+            <ArrowLeft class="w-4 h-4" />
+            {{ t('services.detail.back') }}
+          </button>
+          <ServicesEmptyState
+            variant="error"
+            :title="t('services.detail.notFound.title')"
+            :description="t('services.detail.notFound.description')"
+            :action-label="t('services.detail.notFound.action')"
+            :show-action="true"
+            @action="router.push({ name: 'services' })"
+          />
+        </div>
+
+        <!-- Content -->
+        <template v-else-if="listing">
+          <ServiceDetailHero :listing="listing" @back="goBack" @share="shareListing" />
+
+          <div class="px-4 sm:px-0 mt-6 sm:mt-8 lg:grid lg:grid-cols-[1fr_360px] lg:gap-8 lg:items-start">
+            <!-- Main column -->
+            <div class="space-y-6 sm:space-y-8 min-w-0">
+              <!-- About -->
+              <section>
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                  {{ t('services.detail.about') }}
+                </h3>
+                <p v-if="listing.tagline" class="text-base font-medium text-slate-700 mb-2">
+                  {{ listing.tagline }}
+                </p>
+                <p class="text-sm sm:text-base text-slate-600 leading-relaxed whitespace-pre-line">
+                  {{ listing.description }}
+                </p>
+              </section>
+
+              <!-- Showcase: 3D coverflow of the service's work photos -->
+              <section v-if="galleryImages.length > 0">
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                  {{ t('services.detail.showcase') }}
+                  <span class="text-slate-400 normal-case tracking-normal">· {{ galleryImages.length }}</span>
+                </h3>
+                <div class="-mx-4 sm:mx-0">
+                  <ServiceShowcaseCarousel :images="galleryImages" />
+                </div>
+              </section>
+
+              <!-- Tags -->
+              <section v-if="listing.tags.length > 0">
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                  {{ t('services.detail.tags') }}
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  <span
+                    v-for="tag in listing.tags"
+                    :key="tag"
+                    class="px-3 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-full"
+                  >
+                    {{ tag }}
+                  </span>
+                </div>
+              </section>
+
+              <!-- Service Area -->
+              <section v-if="listing.serviceArea" class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <MapPin class="w-4 h-4 text-slate-600" />
+                </div>
+                <div class="min-w-0">
+                  <p class="font-medium text-slate-900 text-sm sm:text-base">{{ listing.serviceArea }}</p>
+                  <p class="text-xs sm:text-sm text-slate-500">{{ t('services.detail.serviceArea') }}</p>
+                </div>
+              </section>
+
+              <!-- More from this vendor -->
+              <section v-if="moreFromVendor.length > 0" class="border-t border-slate-100 pt-6">
+                <div class="flex items-center justify-between gap-2 mb-4">
+                  <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+                    {{ t('services.detail.moreFromVendor', { vendor: listing.vendorName }) }}
+                  </h3>
+                  <router-link
+                    v-if="listing.vendorId"
+                    :to="{ name: 'vendor-detail', params: { id: listing.vendorId } }"
+                    class="text-sm text-[#2ecc71] hover:text-[#27ae60] font-medium flex-shrink-0"
+                  >
+                    {{ t('services.detail.viewVendorProfile') }}
+                  </router-link>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <ServiceCard
+                    v-for="item in moreFromVendor"
+                    :key="item.id"
+                    :listing="item"
+                    @click="openListing"
+                  />
+                </div>
+              </section>
+            </div>
+
+            <!-- Desktop sticky contact sidebar -->
+            <aside class="hidden lg:block sticky top-20">
+              <ServiceContactCard :listing="listing" @contact="handleContact" />
+            </aside>
+          </div>
+
+          <!-- Mobile fixed CTA bar -->
+          <ServiceMobileCtaBar :listing="listing" @contact="handleContact" />
+        </template>
+      </div>
+
+      <!-- Link copied toast -->
+      <Transition name="slide-up">
+        <div v-if="showCopiedToast" class="fixed bottom-36 lg:bottom-4 right-4 lg:right-6 z-50">
+          <div class="bg-green-500 text-white px-6 py-4 rounded-xl shadow-lg flex items-center">
+            <CheckCircle class="w-5 h-5 mr-2" />
+            {{ t('services.detail.linkCopied') }}
+          </div>
+        </div>
+      </Transition>
+    </div>
+  </MainLayout>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ArrowLeft, MapPin, CheckCircle } from 'lucide-vue-next'
+import MainLayout from '@/components/MainLayout.vue'
+import { ServiceCard, ServicesEmptyState, type Listing } from '@/components/services'
+import ServiceDetailHero from '@/components/services/detail/ServiceDetailHero.vue'
+import ServiceContactCard from '@/components/services/detail/ServiceContactCard.vue'
+import ServiceMobileCtaBar from '@/components/services/detail/ServiceMobileCtaBar.vue'
+import ServiceShowcaseCarousel from '@/components/services/detail/ServiceShowcaseCarousel.vue'
+import { useServices } from '@/composables/useServices'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+import { updateMetaTags, resetMetaTags } from '@/utils/metaUtils'
+import { getPortfolioPlaceholderImages } from '@/utils/serviceFallbackImages'
+
+const { t } = useAppLanguage()
+const route = useRoute()
+const router = useRouter()
+
+const {
+  selectedListing,
+  vendorListings,
+  fetchListingDetail,
+  fetchVendorListings,
+  trackView,
+  trackContact,
+} = useServices()
+
+const isLoading = ref(true)
+const notFound = ref(false)
+const showCopiedToast = ref(false)
+let copiedToastTimer: ReturnType<typeof setTimeout> | null = null
+
+const listing = computed(() => selectedListing.value)
+
+// Visual-testing toggle: listings with no uploaded gallery photos get an
+// on-theme placeholder gallery so the display can be previewed.
+const galleryImages = computed(() => {
+  if (!listing.value) return []
+  if (listing.value.gallery.length > 0) return listing.value.gallery
+  if (import.meta.env.VITE_SERVICES_PORTFOLIO_PLACEHOLDER === 'true') {
+    return getPortfolioPlaceholderImages([listing.value.category])
+  }
+  return []
+})
+
+const moreFromVendor = computed(() =>
+  vendorListings.value.filter((l) => l.id !== listing.value?.id).slice(0, 4),
+)
+
+const load = async (id: string) => {
+  isLoading.value = true
+  notFound.value = false
+  vendorListings.value = []
+
+  await fetchListingDetail(id)
+
+  if (!selectedListing.value) {
+    notFound.value = true
+    isLoading.value = false
+    return
+  }
+
+  isLoading.value = false
+
+  // Fire-and-forget: analytics + related listings
+  trackView(id, 'direct')
+  applyMeta(selectedListing.value)
+  if (selectedListing.value.vendorId) {
+    fetchVendorListings(selectedListing.value.vendorId)
+  }
+}
+
+const applyMeta = (item: Listing) => {
+  updateMetaTags({
+    title: `${item.title} - GoEvent Services`,
+    description: item.tagline || item.description.slice(0, 157),
+    image: item.coverImage,
+    url: window.location.href,
+    type: 'website',
+  })
+}
+
+const goBack = () => {
+  if (window.history.state?.back) {
+    router.back()
+  } else {
+    router.push({ name: 'services' })
+  }
+}
+
+const shareListing = async () => {
+  const shareData = {
+    title: listing.value?.title || 'GoEvent Service',
+    text: listing.value?.tagline || '',
+    url: window.location.href,
+  }
+
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData)
+      return
+    } catch {
+      // User cancelled or share failed — fall through to clipboard
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(shareData.url)
+    showCopiedToast.value = true
+    if (copiedToastTimer) clearTimeout(copiedToastTimer)
+    copiedToastTimer = setTimeout(() => {
+      showCopiedToast.value = false
+    }, 3000)
+  } catch {
+    // Clipboard unavailable — nothing else to do
+  }
+}
+
+const handleContact = (type: string) => {
+  if (listing.value) {
+    trackContact(listing.value.id, type)
+  }
+}
+
+const openListing = (item: Listing) => {
+  router.push({ name: 'service-detail', params: { id: item.id } })
+}
+
+onMounted(() => {
+  load(String(route.params.id))
+})
+
+// Handle service→service navigation (component instance is reused)
+watch(
+  () => route.params.id,
+  (id) => {
+    if (route.name === 'service-detail' && id) {
+      load(String(id))
+      window.scrollTo({ top: 0 })
+    }
+  },
+)
+
+onUnmounted(() => {
+  resetMetaTags()
+  if (copiedToastTimer) clearTimeout(copiedToastTimer)
+})
+</script>
+
+<style scoped>
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+</style>

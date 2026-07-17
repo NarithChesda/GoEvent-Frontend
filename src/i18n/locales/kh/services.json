@@ -26,5 +26,57 @@
     "listingUpdated": "បានធ្វើបច្ចុប្បន្នភាពបញ្ជី \"{title}\" ដោយជោគជ័យ!",
     "listingDeleted": "បានលុបបញ្ជីដោយជោគជ័យ",
     "contactInitiated": "បានចាប់ផ្តើមទំនាក់ទំនងតាមរយៈ {type}!"
+  },
+  "card": {
+    "featured": "លេចធ្លោ"
+  },
+  "vendors": {
+    "featuredTitle": "អ្នកផ្តល់សេវាកម្មលេចធ្លោ",
+    "allTitle": "អ្នកផ្តល់សេវាកម្មទាំងអស់",
+    "viewAll": "មើលទាំងអស់",
+    "showFeatured": "បង្ហាញលេចធ្លោ",
+    "verified": "បានផ្ទៀងផ្ទាត់",
+    "loadMore": "ផ្ទុកបន្ថែម",
+    "listingsCount": "សេវាកម្ម {count}"
+  },
+  "detail": {
+    "back": "ត្រឡប់ទៅសេវាកម្ម",
+    "share": "ចែករំលែក",
+    "linkCopied": "បានចម្លងតំណរួចរាល់",
+    "about": "អំពីសេវាកម្មនេះ",
+    "showcase": "ស្នាដៃរបស់យើង",
+    "tags": "ស្លាក",
+    "serviceArea": "តំបន់សេវាកម្ម",
+    "startingPrice": "តម្លៃចាប់ផ្តើម",
+    "views": "ការមើល {count}",
+    "inquiries": "ការសាកសួរ {count}",
+    "contactTitle": "ទាក់ទងអ្នកផ្តល់សេវាកម្ម",
+    "telegram": "តេឡេក្រាម",
+    "call": "ហៅទូរស័ព្ទ",
+    "website": "គេហទំព័រ",
+    "moreFromVendor": "បន្ថែមទៀតពី {vendor}",
+    "viewVendorProfile": "មើលប្រវត្តិរូប",
+    "notFound": {
+      "title": "រកមិនឃើញសេវាកម្ម",
+      "description": "សេវាកម្មនេះប្រហែលជាត្រូវបានលុប ឬលែងមានទៀតហើយ។",
+      "action": "រកមើលសេវាកម្ម"
+    }
+  },
+  "vendorDetail": {
+    "about": "អំពី",
+    "portfolio": "ស្នាដៃ",
+    "servicesTitle": "សេវាកម្ម",
+    "location": "ទីតាំង",
+    "email": "អ៊ីមែល",
+    "notFound": {
+      "title": "រកមិនឃើញអ្នកផ្តល់សេវាកម្ម",
+      "description": "អ្នកផ្តល់សេវាកម្មនេះប្រហែលជាត្រូវបានលុប ឬលែងមានទៀតហើយ។",
+      "action": "រកមើលសេវាកម្ម"
+    }
+  },
+  "lightbox": {
+    "close": "បិទ",
+    "previous": "រូបភាពមុន",
+    "next": "រូបភាពបន្ទាប់"
   }
 }

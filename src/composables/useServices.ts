@@ -23,10 +23,11 @@ import {
   type VendorProfileBrief,
   type ListingFilters,
 } from '@/services/api'
-import type { Listing, Vendor, ServiceCategory } from '@/components/services/types'
+import type { Listing, Vendor, ServiceCategory, PriceType, Currency } from '@/components/services/types'
 import {
   getCategoryFallbackImage,
   getVendorLogoFallback,
+  getPortfolioPlaceholderImages,
 } from '@/utils/serviceFallbackImages'
 
 /**
@@ -64,6 +65,32 @@ const getVendorLogoUrl = (logoUrl: string | null | undefined): string => {
 }
 
 /**
+ * Derive raw price fields from API decimal strings.
+ * priceType is inferred: 0/0 = quote, equal = fixed, otherwise range.
+ */
+const mapPriceFields = (
+  priceMin: string,
+  priceMax: string,
+  currency: string,
+): Pick<Listing, 'priceType' | 'priceMin' | 'priceMax' | 'currency' | 'priceUnit'> => {
+  const min = parseFloat(priceMin) || 0
+  const max = parseFloat(priceMax) || 0
+  let priceType: PriceType = 'range'
+  if (min === 0 && max === 0) {
+    priceType = 'quote'
+  } else if (min === max) {
+    priceType = 'fixed'
+  }
+  return {
+    priceType,
+    priceMin: min || null,
+    priceMax: max || null,
+    currency: (currency || 'USD') as Currency,
+    priceUnit: '',
+  }
+}
+
+/**
  * Map API ServiceListingBrief to component Listing type
  */
 const mapBriefToListing = (brief: ServiceListingBrief): Listing => {
@@ -74,7 +101,9 @@ const mapBriefToListing = (brief: ServiceListingBrief): Listing => {
     description: '', // Not available in brief, will be filled when fetching full listing
     coverImage: getCoverImageUrl(brief.cover_image_url, brief.category_name),
     category: brief.category_name,
+    ...mapPriceFields(brief.price_min, brief.price_max, brief.currency),
     priceDisplay: brief.price_display_text || `$${brief.price_min} - $${brief.price_max}`,
+    vendorId: '', // Not available in brief
     vendorName: brief.vendor_name,
     vendorLogo: getVendorLogoFallback(), // Not available in brief, use fallback
     vendorVerified: true, // Assume verified since only approved listings are shown
@@ -84,6 +113,9 @@ const mapBriefToListing = (brief: ServiceListingBrief): Listing => {
     contactClicks: 0, // Not in brief
     isFeatured: brief.is_featured,
     gallery: [],
+    telegramUsername: '', // Not in brief
+    phone: '', // Not in brief
+    website: '', // Not in brief
   }
 }
 
@@ -98,7 +130,9 @@ const mapFullToListing = (listing: ServiceListing): Listing => {
     description: listing.description,
     coverImage: getCoverImageUrl(listing.cover_image_url, listing.category_details.name),
     category: listing.category_details.name,
+    ...mapPriceFields(listing.price_min, listing.price_max, listing.currency),
     priceDisplay: listing.price_display_text || `$${listing.price_min} - $${listing.price_max}`,
+    vendorId: listing.vendor,
     vendorName: listing.vendor_details.business_name,
     vendorLogo: getVendorLogoUrl(listing.vendor_details.logo),
     vendorVerified: listing.vendor_details.verification_status === 'verified',
@@ -185,6 +219,7 @@ export function useServices() {
   const selectedListing = ref<Listing | null>(null)
   const selectedVendor = ref<Vendor | null>(null)
   const vendorListings = ref<Listing[]>([])
+  const vendorPortfolio = ref<string[]>([])
 
   // State - Filters
   const selectedCategory = ref<string>('all')
@@ -489,6 +524,71 @@ export function useServices() {
   }
 
   /**
+   * Fetch a vendor's portfolio images.
+   *
+   * There is no dedicated portfolio field on the vendor profile yet, so the
+   * portfolio is aggregated from the photos the vendor already uploaded to
+   * their listings: real cover images (briefs expose the raw URL, so local
+   * fallbacks are never included) plus gallery media from the first few
+   * listings. Deduplicated and capped at 10 images.
+   */
+  const fetchVendorPortfolio = async (vendorId: string): Promise<void> => {
+    vendorPortfolio.value = []
+
+    try {
+      const response: ApiResponse<PaginatedResponse<ServiceListingBrief>> =
+        await serviceListingsService.browseListings({
+          vendor: vendorId,
+          page_size: 12,
+        })
+
+      if (!response.success || !response.data) return
+
+      const briefs = response.data.results
+      const images: string[] = []
+
+      briefs.forEach((brief) => {
+        if (brief.cover_image_url) {
+          images.push(getFullImageUrl(brief.cover_image_url))
+        }
+      })
+
+      // Pull gallery media from the first few listings (one request each)
+      const detailResponses = await Promise.all(
+        briefs.slice(0, 4).map((brief) =>
+          serviceListingsService.getListing(brief.id).catch(() => null),
+        ),
+      )
+
+      detailResponses.forEach((detail) => {
+        if (detail?.success && detail.data) {
+          detail.data.media.forEach((m) => {
+            if (m.image) {
+              images.push(getFullImageUrl(m.image))
+            }
+          })
+        }
+      })
+
+      // Visual-testing toggle: vendors with no uploaded photos get an
+      // on-theme placeholder portfolio so the display can be previewed.
+      if (images.length === 0 && import.meta.env.VITE_SERVICES_PORTFOLIO_PLACEHOLDER === 'true') {
+        vendorPortfolio.value = getPortfolioPlaceholderImages(
+          briefs.map((brief) => brief.category_name),
+        )
+        return
+      }
+
+      vendorPortfolio.value = [...new Set(images)].slice(0, 10)
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('Error fetching vendor portfolio:', error)
+      }
+      vendorPortfolio.value = []
+    }
+  }
+
+  /**
    * Load more listings (pagination)
    */
   const loadMore = async (): Promise<void> => {
@@ -579,6 +679,7 @@ export function useServices() {
     selectedListing,
     selectedVendor,
     vendorListings,
+    vendorPortfolio,
 
     // State - Filters
     selectedCategory,
@@ -594,6 +695,7 @@ export function useServices() {
     fetchListingDetail,
     fetchVendorDetail,
     fetchVendorListings,
+    fetchVendorPortfolio,
     loadMore,
     trackView,
     trackContact,

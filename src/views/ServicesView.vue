@@ -104,21 +104,6 @@
         </div>
       </button>
 
-      <!-- Listing Detail Drawer -->
-      <ListingDetailDrawer
-        v-model="showListingDrawer"
-        :listing="selectedListing"
-        @contact="handleContactVendor"
-      />
-
-      <!-- Vendor Profile Drawer -->
-      <VendorProfileDrawer
-        v-model="showVendorDrawer"
-        :vendor="selectedVendor"
-        :listings="vendorListings"
-        @listing-click="handleVendorListingClick"
-      />
-
       <!-- Success/Info Messages -->
       <Transition name="slide-up">
         <div v-if="message" class="fixed bottom-20 lg:bottom-4 right-6 z-50">
@@ -148,6 +133,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { Plus, CheckCircle, Info } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
 import AppFooter from '@/components/AppFooter.vue'
@@ -155,8 +141,6 @@ import { MobileTopBar } from '@/components/events'
 import {
   FeaturedVendors,
   ServiceListingsGrid,
-  ListingDetailDrawer,
-  VendorProfileDrawer,
   ListingFormDrawer,
   ServicesCategoryFilter,
   ServicesLoadingSkeleton,
@@ -169,15 +153,13 @@ import { useVendorProfile } from '@/composables/settings'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 
 const { t } = useAppLanguage()
+const router = useRouter()
 
 // Use the services composable
 const {
   // State
   featuredVendors,
   allVendors,
-  selectedListing: composableSelectedListing,
-  selectedVendor: composableSelectedVendor,
-  vendorListings: composableVendorListings,
   selectedCategory,
   sortBy,
   isLoadingListings,
@@ -193,12 +175,7 @@ const {
   fetchFeaturedVendors,
   fetchAllVendors,
   loadMoreVendors,
-  fetchListingDetail,
-  fetchVendorDetail,
-  fetchVendorListings,
   loadMore: composableLoadMore,
-  trackView,
-  trackContact,
 
   // Computed
   filteredListings,
@@ -210,19 +187,12 @@ const { vendorState, loadProfile: loadVendorProfile } = useVendorProfile()
 const isVerifiedVendor = computed(() => vendorState.value === 'verified')
 
 // UI State
-const showListingDrawer = ref(false)
-const showVendorDrawer = ref(false)
 const showListingFormDrawer = ref(false)
 const editingListing = ref<Listing | null>(null)
 const showAllVendors = ref(false)
 
 // Message state
 const message = ref<{ type: 'success' | 'info'; text: string } | null>(null)
-
-// Use composable state directly for drawers
-const selectedListing = computed(() => composableSelectedListing.value)
-const selectedVendor = computed(() => composableSelectedVendor.value)
-const vendorListings = computed(() => composableVendorListings.value)
 
 // Service categories from composable
 const serviceCategories = computed(() => serviceCategoriesForUI.value)
@@ -273,27 +243,12 @@ const showMessage = (type: 'success' | 'info', text: string) => {
   }, 5000)
 }
 
-const openListingDetail = async (listing: Listing) => {
-  // Fetch full listing details
-  await fetchListingDetail(listing.id)
-  showListingDrawer.value = true
-
-  // Track view
-  await trackView(listing.id, 'browse')
+const openListingDetail = (listing: Listing) => {
+  router.push({ name: 'service-detail', params: { id: listing.id } })
 }
 
-const openVendorProfile = async (vendor: Vendor) => {
-  // Fetch full vendor details and listings
-  await Promise.all([
-    fetchVendorDetail(vendor.id),
-    fetchVendorListings(vendor.id),
-  ])
-  showVendorDrawer.value = true
-}
-
-const handleVendorListingClick = async (listing: Listing) => {
-  showVendorDrawer.value = false
-  await openListingDetail(listing)
+const openVendorProfile = (vendor: Vendor) => {
+  router.push({ name: 'vendor-detail', params: { id: vendor.id } })
 }
 
 const handleListService = () => {
@@ -335,14 +290,6 @@ const handleToggleVendorView = async () => {
 // Load more vendors when showing all
 const handleLoadMoreVendors = async () => {
   await loadMoreVendors()
-}
-
-const handleContactVendor = async (type: string) => {
-  if (selectedListing.value) {
-    // Track contact click
-    await trackContact(selectedListing.value.id, type)
-  }
-  showMessage('success', t('services.messages.contactInitiated', { type }))
 }
 
 const loadMore = async () => {
