@@ -2,7 +2,11 @@
   <!-- Standalone chapter (no V2ChapterShell): the pinned stage needs the
        chapter heading inside the pin, and must not sit under a transformed
        ancestor -->
-  <section id="story-section" ref="rootEl" class="v2-story relative z-10 px-5 sm:px-8 py-14 sm:py-20">
+  <section
+    id="story-section"
+    ref="rootEl"
+    class="v2-story relative z-10 px-5 sm:px-8 py-14 sm:py-20"
+  >
     <!-- One-screen pinned 3D stage: chapter title top-center, groom upper-left,
          bride lower-right, a gold thread drawing between them and interlocked
          wedding rings zooming in from depth at the center as you scroll -->
@@ -18,7 +22,10 @@
         <div class="v2-story-rule" aria-hidden="true"></div>
       </header>
 
-      <!-- gold thread connecting the couple through the rings -->
+      <!-- gold dotted thread connecting the couple through the rings. The
+           100x100 coords are rescaled to stage pixels at mount (same curve).
+           The dotted path can't draw itself via dashoffset (that would march
+           the dots), so a solid mask path sweeps along it to reveal it -->
       <svg
         v-if="couple.length === 2"
         class="v2-story-thread"
@@ -26,11 +33,28 @@
         preserveAspectRatio="none"
         aria-hidden="true"
       >
+        <defs>
+          <mask
+            id="v2-thread-reveal"
+            maskUnits="userSpaceOnUse"
+            x="0"
+            y="0"
+            width="100%"
+            height="100%"
+          >
+            <path
+              ref="threadMaskEl"
+              class="v2-story-thread-reveal"
+              d="M 24 28 C 42 40 58 60 76 72"
+              pathLength="1"
+            />
+          </mask>
+        </defs>
         <path
           ref="threadEl"
           class="v2-story-thread-path"
           d="M 24 28 C 42 40 58 60 76 72"
-          pathLength="1"
+          mask="url(#v2-thread-reveal)"
         />
       </svg>
 
@@ -134,7 +158,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useScrollStory } from '../../composables/showcase-v2/useScrollStory'
 import { translateV2 } from '../../composables/showcase-v2/v2Translations'
 import { toKhmerNumerals } from '../../utils/translations'
@@ -157,6 +181,7 @@ const rootEl = ref<HTMLElement | null>(null)
 const stageEl = ref<HTMLElement | null>(null)
 const ringsEl = ref<HTMLElement | null>(null)
 const threadEl = ref<SVGPathElement | null>(null)
+const threadMaskEl = ref<SVGPathElement | null>(null)
 const { createStory } = useScrollStory(rootEl)
 
 const chapterLabel = computed(() => {
@@ -193,7 +218,31 @@ const people = computed<StoryPerson[]>(() =>
 const couple = computed(() => people.value.slice(0, 2))
 const extras = computed(() => people.value.slice(2))
 
+/**
+ * Re-express the thread's 100x100 design coords in stage pixels (identical
+ * curve — scaling a Bézier's control points equals stretching the drawn
+ * curve). Keeps the viewBox unstretched so the stroke stays a uniform
+ * hairline without vector-effect: non-scaling-stroke, whose Chromium
+ * dash-normalization bug would leave the pathLength draw effect inert.
+ */
+const scaleThreadToStage = () => {
+  const path = threadEl.value
+  const stage = stageEl.value
+  const svg = path?.ownerSVGElement
+  if (!path || !svg || !stage) return
+  const sx = (stage.offsetWidth || 100) / 100
+  const sy = (stage.offsetHeight || 100) / 100
+  svg.setAttribute('viewBox', `0 0 ${sx * 100} ${sy * 100}`)
+  const d = `M ${24 * sx} ${28 * sy} C ${42 * sx} ${40 * sy} ${58 * sx} ${60 * sy} ${76 * sx} ${72 * sy}`
+  path.setAttribute('d', d)
+  threadMaskEl.value?.setAttribute('d', d)
+}
+
+onUnmounted(() => window.removeEventListener('resize', scaleThreadToStage))
+
 onMounted(() => {
+  scaleThreadToStage()
+  window.addEventListener('resize', scaleThreadToStage)
   createStory(({ gsap, rich }) => {
     const root = rootEl.value
     if (!root) return
@@ -215,7 +264,15 @@ onMounted(() => {
     const cardA = stage.querySelector<HTMLElement>('.v2-story-card--a')
     const cardB = stage.querySelector<HTMLElement>('.v2-story-card--b')
     const rings = ringsEl.value
-    const thread = threadEl.value
+    // The draw tweens animate the solid mask path that reveals the dotted
+    // thread — never the dotted path itself (dashoffset would march its dots)
+    const thread = threadMaskEl.value
+    const threadSvg = threadEl.value?.ownerSVGElement ?? null
+
+    // The thread's tweens sit late in the sequence, so hide it up front —
+    // otherwise it renders fully drawn until the playhead first reaches it
+    // (matchMedia reverts this, so reduced-motion still sees it complete)
+    if (thread) gsap.set(thread, { strokeDashoffset: 1 })
 
     if (rich) {
       // ---- pinned 3D choreography, scrubbed to scroll ----
@@ -225,18 +282,18 @@ onMounted(() => {
         scrollTrigger: {
           trigger: stage,
           start: 'top top',
-          end: '+=160%',
+          end: '+=175%',
           pin: true,
-          scrub: 0.9,
+          scrub: 1.2,
           anticipatePin: 1,
           // One scroll nudge pulls the user through the full choreography to
           // the completed composition (and back out on the next scroll) —
           // no manual scrubbing distance to grind through
           snap: {
             snapTo: [0, 1],
-            duration: { min: 0.8, max: 1.6 },
+            duration: { min: 1.6, max: 2.6 },
             delay: 0.05,
-            ease: 'power2.inOut',
+            ease: 'power1.inOut',
             directional: true,
           },
         },
@@ -257,40 +314,73 @@ onMounted(() => {
       if (cardA)
         tl.from(
           cardA,
-          { autoAlpha: 0, xPercent: -16, yPercent: -10, rotateY: 38, z: -280, duration: 1, ease: 'power1.out' },
+          {
+            autoAlpha: 0,
+            xPercent: -16,
+            yPercent: -10,
+            rotateY: 38,
+            z: -280,
+            duration: 1,
+            ease: 'power1.out',
+          },
           0.3,
         )
       if (cardB)
         tl.from(
           cardB,
-          { autoAlpha: 0, xPercent: 16, yPercent: 10, rotateY: -38, z: -280, duration: 1, ease: 'power1.out' },
+          {
+            autoAlpha: 0,
+            xPercent: 16,
+            yPercent: 10,
+            rotateY: -38,
+            z: -280,
+            duration: 1,
+            ease: 'power1.out',
+          },
           0.75,
         )
+      // Only once both cards have landed does the string spool out of the
+      // groom's frame and pause at center stage…
       if (thread)
         tl.fromTo(
           thread,
           { strokeDashoffset: 1 },
-          { strokeDashoffset: 0, duration: 0.8, ease: 'none' },
-          1.35,
+          { strokeDashoffset: 0.5, duration: 0.55, ease: 'power1.in' },
+          1.8,
         )
-      if (rings) {
-        // the rings zoom in from deep space at the center, spinning as they arrive
+      // …the rings zoom in from deep space to catch it…
+      if (rings)
         tl.from(
           rings,
-          { autoAlpha: 0, scale: 0.1, z: -800, rotateY: 240, duration: 1.3, ease: 'power2.out' },
-          1.5,
+          { autoAlpha: 0, scale: 0.1, z: -800, rotateY: 240, duration: 0.9, ease: 'power2.out' },
+          2.15,
         )
+      // …then it threads on through the interlock and ties off at the bride
+      if (thread) tl.to(thread, { strokeDashoffset: 0, duration: 0.5, ease: 'power1.out' }, 2.8)
+      if (rings)
         tl.from(
           '.v2-ring-glint',
           { autoAlpha: 0, scale: 0, transformOrigin: 'center', duration: 0.35 },
-          2.55,
+          3.15,
         )
+      // …and once tied off, the string draws the couple a breath closer
+      if (thread && cardA && cardB) {
+        tl.to(cardA, { x: 7, y: 5, duration: 0.45, ease: 'back.out(1.8)' }, 3.35)
+        tl.to(cardB, { x: -7, y: -5, duration: 0.45, ease: 'back.out(1.8)' }, 3.35)
       }
       // brief hold on the completed composition before the pin releases
-      tl.to({}, { duration: 0.5 })
+      tl.to({}, { duration: 0.4 })
 
-      // gentle idle float so the rings feel alive while pinned
-      if (rings) gsap.to(rings, { y: 10, duration: 2.8, ease: 'sine.inOut', repeat: -1, yoyo: true })
+      // gentle idle float while pinned — the thread sways with the rings
+      // (same clock, smaller amplitude) so the composition breathes as one
+      if (rings)
+        gsap.to([rings, threadSvg].filter(Boolean), {
+          y: (i: number) => (i === 0 ? 10 : 5),
+          duration: 2.8,
+          ease: 'sine.inOut',
+          repeat: -1,
+          yoyo: true,
+        })
     } else {
       // ---- lite: one-shot reveals, no pin/scrub ----
       const liteIn = (target: gsap.TweenTarget | null, vars: gsap.TweenVars) => {
@@ -305,6 +395,7 @@ onMounted(() => {
       liteIn(cardA, { autoAlpha: 0, x: -36, y: -20, duration: 1, delay: 0.15 })
       liteIn(cardB, { autoAlpha: 0, x: 36, y: 20, duration: 1, delay: 0.3 })
       liteIn(rings, { autoAlpha: 0, scale: 0.6, duration: 1, delay: 0.5 })
+      // string draws last, once the cards have settled
       if (thread)
         gsap.fromTo(
           thread,
@@ -312,9 +403,13 @@ onMounted(() => {
           {
             strokeDashoffset: 0,
             duration: 1.2,
-            delay: 0.35,
+            delay: 1.15,
             ease: 'power1.inOut',
-            scrollTrigger: { trigger: stage, start: 'top 70%', toggleActions: 'play none none none' },
+            scrollTrigger: {
+              trigger: stage,
+              start: 'top 70%',
+              toggleActions: 'play none none none',
+            },
           },
         )
     }
@@ -390,14 +485,24 @@ onMounted(() => {
   pointer-events: none;
 }
 
+/* dotted string-of-pearls look (px units — the path is in pixel space) */
 .v2-story-thread-path {
   fill: none;
   stroke: var(--v2-gold);
-  stroke-width: 1.2px;
+  stroke-width: 2px;
   stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-  stroke-dasharray: 1;
+  stroke-dasharray: 0.1 6;
   opacity: 0.65;
+}
+
+/* solid white sweep inside the mask that reveals the dots as it draws;
+   wide enough to cover the dot diameter with room to spare */
+.v2-story-thread-reveal {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 8px;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
 }
 
 /* ---------- rings ---------- */

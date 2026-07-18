@@ -268,6 +268,7 @@ import YouTubeVideoSection from '../showcase/YouTubeVideoSection.vue'
 import PaymentSection from '../showcase/PaymentSection.vue'
 import FloatingActionMenu from '../showcase/FloatingActionMenu.vue'
 
+import { gsap, ScrollTrigger } from '../../plugins/gsap'
 import { useScrollStory, refreshScrollTriggers } from '../../composables/showcase-v2/useScrollStory'
 import { translateV2, type V2TranslationKey } from '../../composables/showcase-v2/v2Translations'
 import { V2_COLORS, V2_FONTS, V2_CSS_VARS } from '../../composables/showcase-v2/v2Theme'
@@ -436,10 +437,48 @@ const activeSectionId = ref<string | null>(null)
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
+// Cinematic scroll glide into the pinned story choreography, in two phases:
+// approach the pin's start at travel pace, then play the scrubbed timeline
+// over the SAME duration + ease as the stage's own 0→1 snap — so the motion
+// in mirrors the motion out exactly.
+//
+// The glide runs through ScrollTrigger's shared per-scroller scroll tween
+// (`trigger.tweenTo`) rather than a plain gsap tween: while that shared tween
+// exists every ScrollTrigger snap stands down, a wheel/touch gesture kills it
+// natively (control returns to the user), and no second scroll-writer can
+// ever race it — a plain tween here previously fought the snap systems and
+// caused a visible yank/stall entering the story section.
+const PIN_PLAY_DURATION = 2.6 // keep in sync with V2StorySection's snap duration max
+type PinRange = { start: number; end: number }
+// Assigned inside createStory once the snap trigger exists (rich/lite motion
+// only) — stays null under reduced motion, where callers jump instantly.
+let glideThroughPin: ((pin: PinRange) => void) | null = null
+let glideActive = false
+let killGlide: () => void = () => {}
+
 const scrollToSection = (sectionId: string) => {
-  document.getElementById(sectionId)?.scrollIntoView({
+  const el = document.getElementById(sectionId)
+  if (!el) return
+
+  // Chapters that pin a scrubbed timeline (the story stage) sit at progress 0
+  // at their start — landing there shows an empty stage. Glide to the pin's
+  // end instead, so the choreography scrubs through at a matched pace and
+  // settles on the completed composition.
+  const pin = ScrollTrigger.getAll().find(
+    (st) => st.pin && st.trigger instanceof Element && el.contains(st.trigger),
+  )
+  if (pin) {
+    if (glideThroughPin && !prefersReducedMotion()) glideThroughPin(pin)
+    else window.scrollTo({ top: pin.end })
+    return
+  }
+
+  // Center chapters that fit the viewport; taller ones align to the top so
+  // the heading is visible and the content reads downward
+  const fitsViewport = el.offsetHeight <= window.innerHeight * 0.92
+  el.scrollIntoView({
     behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-    block: 'start',
+    block: fitsViewport ? 'center' : 'start',
   })
 }
 
@@ -452,20 +491,176 @@ const handleGift = () => {
 onMounted(async () => {
   await nextTick()
   // One lightweight trigger per chapter drives the progress rail — the same
-  // instances the dots read from (no second observer set)
+  // instances the dots read from (no second observer set). Their live
+  // start/end positions also feed the section snap below, so snap targets
+  // stay correct through every ScrollTrigger.refresh().
   createStory(({ ScrollTrigger }) => {
+    const chapterTriggers: InstanceType<typeof ScrollTrigger>[] = []
     chapters.value.forEach((chapter) => {
       const el = document.getElementById(chapter.id)
       if (!el) return
-      ScrollTrigger.create({
-        trigger: el,
-        start: 'top center',
-        end: 'bottom center',
-        onToggle: (self) => {
-          if (self.isActive) activeSectionId.value = chapter.id
-        },
-      })
+      chapterTriggers.push(
+        ScrollTrigger.create({
+          trigger: el,
+          start: 'top center',
+          end: 'bottom center',
+          onToggle: (self) => {
+            if (self.isActive) activeSectionId.value = chapter.id
+          },
+        }),
+      )
     })
+
+    // Directional section snap: when free scrolling stops, glide the viewport
+    // to the next chapter in the direction of travel — landing exactly where
+    // the progress dots would (centered when the chapter fits the viewport) —
+    // so only the destination chapter's entrance plays out, during the glide.
+    let snapTrigger: InstanceType<typeof ScrollTrigger> | undefined
+
+    const snapToChapter = (value: number): number => {
+      const max = ScrollTrigger.maxScroll(window)
+      if (!max) return value
+      // A glide already owns the scroll — don't let the snap tween fight it
+      // (inertia:false makes `value` the current position, so this is a no-op)
+      if (glideActive) return value
+      // inertia:false below makes `value` the exact current scroll progress,
+      // so returning it unchanged is a true no-op (GSAP skips the snap tween
+      // when the target equals the current position)
+      const scroll = value * max
+      const vh = window.innerHeight
+
+      // The pinned story stage owns snapping inside its own scroll range
+      // (its scrubbed timeline snaps to 0/1) — never fight it from here
+      const pins = ScrollTrigger.getAll().filter((st) => st.pin)
+      if (pins.some((st) => scroll > st.start + 1 && scroll < st.end - 1)) return value
+
+      // Candidate stops: page top, each chapter (centered when it fits,
+      // paged in viewport-sized steps when taller), pin edges, page end.
+      // Chapter triggers run top-center → bottom-center, so start+vh/2 puts
+      // the chapter top at the viewport top and end-vh/2 its bottom at the
+      // viewport bottom.
+      let points: number[] = [0, max]
+      for (const st of chapterTriggers) {
+        const height = st.end - st.start
+        if (height <= vh * 0.92) {
+          points.push((st.start + st.end) / 2)
+        } else {
+          const bottom = st.end - vh / 2
+          for (let p = st.start + vh / 2; p < bottom; p += vh * 0.85) points.push(p)
+          points.push(bottom)
+        }
+      }
+      // A pinned choreography's only valid resting stop is the pin's END
+      // (the completed composition). Any stop at or just above the pin's
+      // start would park the user on an empty stage at timeline progress 0,
+      // so the whole approach zone is cleared of stops and the glide carries
+      // through the full scrubbed choreography instead.
+      pins.forEach((pin) => points.push(pin.end))
+      points = points
+        .map((p) => Math.min(max, Math.max(0, p)))
+        .filter((p) => !pins.some((pin) => p > pin.start - vh * 0.25 && p < pin.end - 1))
+        .sort((a, b) => a - b)
+        // collapse stops that landed within a sliver of each other
+        .filter((p, i, arr) => i === 0 || p - arr[i - 1] >= vh * 0.15)
+
+      // Already resting on a stop (e.g. right after dot navigation): stay put
+      const near = points.find((p) => Math.abs(p - scroll) < 10)
+      if (near !== undefined) return near / max
+
+      const direction = snapTrigger?.direction ?? 0
+      if (direction > 0) {
+        const next = points.find((p) => p > scroll) ?? max
+        // Entering a pinned choreography from above: hand the traversal to
+        // the distance-paced glide so the scrub plays at a readable speed
+        const crossing = pins.find((pin) => scroll < pin.start && next >= pin.end - 1)
+        if (crossing) {
+          // Start on the next tick: the snap code that invoked this callback
+          // may still create its own shared scroll tween after we return
+          // (fractional scroll positions make even a stay-put snap tween).
+          // Deferring lets the glide be created last, so it replaces that
+          // tween instead of being clobbered by it.
+          glideActive = true
+          gsap.delayedCall(0, () => glideThroughPin?.(crossing))
+          return value
+        }
+        return next / max
+      }
+      if (direction < 0) {
+        for (let i = points.length - 1; i >= 0; i--) {
+          if (points[i] < scroll) return points[i] / max
+        }
+        return 0
+      }
+      return (
+        points.reduce((best, p) => (Math.abs(p - scroll) < Math.abs(best - scroll) ? p : best)) /
+        max
+      )
+    }
+
+    snapTrigger = ScrollTrigger.create({
+      start: 0,
+      end: 'max',
+      snap: {
+        snapTo: snapToChapter,
+        duration: { min: 0.45, max: 1.5 },
+        delay: 0.08,
+        ease: 'power2.inOut',
+        inertia: false,
+      },
+    })
+
+    // The scroller's shared scroll tween. The public type only declares
+    // tweenTo(position), but the runtime accepts vars and exposes the live
+    // tween on `.tween` — cast to reach both.
+    const tweenScroll = snapTrigger.tweenTo as unknown as {
+      (position: number, vars?: gsap.TweenVars): gsap.core.Tween
+      tween?: gsap.core.Tween | 0
+    }
+
+    killGlide = () => {
+      glideActive = false
+      if (tweenScroll.tween) {
+        tweenScroll.tween.kill()
+        tweenScroll.tween = 0
+      }
+    }
+
+    glideThroughPin = (pin: PinRange) => {
+      glideActive = true
+      const done = () => {
+        glideActive = false
+      }
+      const playPin = () => {
+        // Partial traversal (e.g. dot click from inside the pin) plays at the
+        // same pace as a full one rather than stretching to fill the duration
+        const remaining = Math.min(1, Math.abs(pin.end - window.scrollY) / (pin.end - pin.start))
+        tweenScroll(pin.end, {
+          duration: Math.max(0.6, PIN_PLAY_DURATION * remaining),
+          ease: 'power1.inOut',
+          onComplete: done,
+          onInterrupt: done,
+        })
+      }
+      const approach = pin.start - window.scrollY
+      if (approach > 4) {
+        tweenScroll(pin.start, {
+          duration: gsap.utils.clamp(0.5, 1.4, (approach / window.innerHeight) * 0.8),
+          ease: 'sine.out',
+          // chained synchronously in onComplete — no gap for another snap
+          // system to slip a competing tween into
+          onComplete: playPin,
+          onInterrupt: done,
+        })
+      } else {
+        playPin()
+      }
+    }
+
+    return () => {
+      killGlide()
+      glideThroughPin = null
+      killGlide = () => {}
+    }
   })
 
   // Recalculate trigger positions once late layout settles (fonts/images) —
@@ -483,7 +678,10 @@ onMounted(async () => {
 })
 
 const refreshTimers: ReturnType<typeof setTimeout>[] = []
-onUnmounted(() => refreshTimers.forEach(clearTimeout))
+onUnmounted(() => {
+  refreshTimers.forEach(clearTimeout)
+  killGlide()
+})
 
 // ---------------------------------------------------------------------------
 // Google Calendar reminder (same behavior as the V1 showcase)
