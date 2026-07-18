@@ -8,6 +8,10 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Figtree', 'Kantumruy Pro', 'system-ui', 'sans-serif'],
+        // Showcase V2 "Storybook Romance" template — self-contained theme,
+        // never overridden by event template fonts
+        'v2-display': ['"Cormorant Garamond"', '"Kantumruy Pro"', 'Georgia', 'serif'],
+        'v2-body': ['Karla', '"Kantumruy Pro"', 'system-ui', 'sans-serif'],
       },
       colors: {
         'primary': {

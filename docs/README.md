@@ -32,6 +32,9 @@ Contracts and guides for backend endpoints and template-driven systems this fron
 
 Frontend-authored design requests for backend changes (the reverse direction of `backend-api/`).
 
+- [event-details-design.md](backend-api-requirements/event-details-design.md) / [host-info-design.md](backend-api-requirements/host-info-design.md) — per-template date/location and host-info block designs
+- [showcase-template-version.md](backend-api-requirements/showcase-template-version.md) — per-template V1/V2 showcase selection (V2 "Storybook Romance"), currently gated by `VITE_SHOWCASE_TEMPLATE_VERSION` env var
+
 ## Feature plans & implementation records ([features/](features/))
 
 Living documentation for large multi-phase features:

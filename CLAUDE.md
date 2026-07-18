@@ -129,6 +129,15 @@ The showcase system is a complex, multi-stage component system for displaying ev
   - RSVP forms and payment method displays
   - Error boundaries and loading states
 
+- **Showcase V2 "Storybook Romance" template** (wedding events, gated by `VITE_SHOWCASE_TEMPLATE_VERSION=v2`):
+  - GSAP + ScrollTrigger scroll-story presentation layer. **Deliberately ignores event template data** — colors, fonts, and motion all come from the fixed theme in `v2Theme.ts` (ivory/blush/sage/gold/charcoal, Cormorant Garamond + Karla)
+  - New V2-native sections: envelope cover gate, hero (countdown + cursor parallax), pinned **3D scroll-storytelling** story pages, timeline-accordion agenda, snap-strip gallery, venue card, petal parallax field, progress dots, footer
+  - Reuses only the V1 *form/logic* sections (RSVP, Payment, Comments, DressCode, YouTube) wrapped in V2 cards with palette colors passed as props
+  - [src/components/showcase-v2/](src/components/showcase-v2/): `ShowcaseV2Experience.vue` orchestrator + section components
+  - [src/composables/showcase-v2/](src/composables/showcase-v2/): `useScrollStory.ts` (gsap.matchMedia + context boilerplate — **all GSAP animations must be created through it** so cleanup/reduced-motion is automatic), `useCountdown.ts`, `v2Theme.ts`, `v2Translations.ts`
+  - [src/plugins/gsap.ts](src/plugins/gsap.ts): the **only** place ScrollTrigger is registered — import `gsap`/`ScrollTrigger` from here, never from `'gsap'` directly. Deliberately not imported from `main.ts` so GSAP ships in the lazy showcase-v2 chunk, not the app entry
+  - Version selection is currently env-only and category-based, not template-driven — see [docs/backend-api-requirements/showcase-template-version.md](docs/backend-api-requirements/showcase-template-version.md) for the pending backend field that will replace it
+
 ### Component Organization
 - **Feature-based structure**:
   - `components/settings/`: Settings page components
@@ -186,6 +195,7 @@ Optional env vars:
 - `VITE_ASSET_PROTECTION_ENABLED`: Enable asset protection in dev mode (default: false, auto-enabled in production)
 - `VITE_SHOWCASE_ANIMATION_TYPE`: Showcase transition animation type. Options: `decoration` (default - decorations slide out individually), `door` (cover splits in half like opening doors)
 - `VITE_SHOWCASE_CONTENT_WIDTH`: **Temporary, for visual testing only** — widens the main-content liquid glass card and shrinks its inner horizontal padding. Options: `standard` (default), `wide`. Will be replaced by a `template_assets` backend field (mirroring how `showcase_animation_type` evolved from an env-only toggle into a template-driven prop).
+- `VITE_SHOWCASE_TEMPLATE_VERSION`: **Temporary, for visual testing only** — `v2` renders the new GSAP-driven "Storybook Romance" scroll-story showcase for **all wedding-category events**; `v1` (default) keeps the existing cover/transition/main-content showcase. Will move to backend event template data later (same evolution path as `showcase_animation_type`).
 - `VITE_SERVICES_PORTFOLIO_PLACEHOLDER`: **Visual testing only** — when `true`, vendors with no uploaded listing photos get a category-themed placeholder portfolio on their storefront page (`/services/vendors/:id` hero slideshow + portfolio strip). Default: off. Real vendor portfolios are aggregated from listing cover images + gallery media; a dedicated backend portfolio field may replace this later.
 
 ### Authentication Flow

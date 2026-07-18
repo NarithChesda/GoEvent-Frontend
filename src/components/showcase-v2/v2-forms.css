@@ -1,0 +1,200 @@
+/* Shared "Storybook Romance" form chrome (prototype .card / label / input /
+   radio-pill / btn recipes) — scoped-imported by V2RSVPSection + V2GuestbookSection */
+
+.v2-form-card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(168, 181, 160, 0.35);
+  border-radius: 16px;
+  padding: 24px;
+  font-family: var(--v2-body);
+  color: var(--v2-charcoal);
+}
+
+.v2-form-label {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--v2-sage-deep);
+  margin-bottom: 6px;
+}
+
+.v2-form-hint {
+  font-size: 14px;
+  color: var(--v2-ink-soft);
+}
+
+.v2-input {
+  width: 100%;
+  padding: 13px 14px;
+  margin-bottom: 16px;
+  border: 1px solid #d9d2c7;
+  border-radius: 10px;
+  font-family: var(--v2-body);
+  font-size: 15px;
+  background: #fff;
+  min-height: 44px;
+  color: var(--v2-charcoal);
+  appearance: none;
+}
+
+.v2-input:focus {
+  outline: 2px solid var(--v2-blush);
+  border-color: var(--v2-blush);
+}
+
+textarea.v2-input {
+  resize: vertical;
+  min-height: 78px;
+}
+
+.v2-select-wrap {
+  position: relative;
+}
+
+.v2-select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 16px;
+  top: 18px;
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid var(--v2-sage-deep);
+  border-bottom: 1.5px solid var(--v2-sage-deep);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.v2-radio-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.v2-radio-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid #d9d2c7;
+  border-radius: 999px;
+  font-family: var(--v2-body);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s;
+  background: #fff;
+  color: var(--v2-charcoal);
+}
+
+.v2-radio-pill--on {
+  background: var(--v2-blush);
+  border-color: var(--v2-blush);
+  color: #fff;
+}
+
+.v2-radio-pill:focus-visible {
+  outline: 2px solid var(--v2-charcoal);
+}
+
+.v2-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 12px 26px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--v2-body);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: opacity 0.25s;
+}
+
+.v2-btn--primary {
+  background: var(--v2-charcoal);
+  color: var(--v2-ivory);
+}
+
+.v2-btn--ghost {
+  background: transparent;
+  border: 1px solid var(--v2-sage-deep);
+  color: var(--v2-sage-deep);
+}
+
+.v2-btn:hover:not(:disabled),
+.v2-btn:focus-visible {
+  opacity: 0.85;
+}
+
+.v2-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.v2-form-error {
+  color: #b4544f;
+  font-size: 13px;
+  margin: -6px 0 14px;
+}
+
+.v2-success-big {
+  font-family: var(--v2-display);
+  font-size: 26px;
+  font-style: italic;
+  color: var(--v2-blush-deep);
+  margin-bottom: 8px;
+}
+
+.v2-total-line {
+  font-size: 14px;
+  color: var(--v2-ink-soft);
+}
+
+.v2-confirm-chip {
+  display: inline-block;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--v2-charcoal);
+  background: rgba(201, 166, 107, 0.14);
+  border: 1px solid rgba(201, 166, 107, 0.4);
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+
+.v2-ended-note {
+  font-family: var(--v2-display);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.7;
+  text-align: center;
+  color: var(--v2-sage-deep);
+  padding: 10px 4px;
+}
+
+.v2-spinner {
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--v2-sage);
+  border-top-color: transparent;
+  border-radius: 999px;
+  animation: v2-spin 0.8s linear infinite;
+}
+
+@keyframes v2-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-radio-pill,
+  .v2-btn {
+    transition: none;
+  }
+}

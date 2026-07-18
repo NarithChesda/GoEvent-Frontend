@@ -1,5 +1,56 @@
 <template>
+  <!-- V2 "Storybook Romance" template — wedding events, gated by
+       VITE_SHOWCASE_TEMPLATE_VERSION=v2 (temporary env toggle; will move to
+       template_assets backend data, mirroring showcaseAnimationType) -->
+  <div v-if="useV2Showcase" class="v2-showcase-root" :class="protectionClasses" :style="protectionStyles">
+    <ShowcaseV2Experience
+      :event="event"
+      :event-texts="eventTexts"
+      :hosts="hosts"
+      :agenda-items="agendaItems"
+      :event-photos="eventPhotos"
+      :payment-methods="paymentMethods"
+      :dress-codes="dressCodes"
+      :current-language="currentLanguage"
+      :available-languages="availableLanguages"
+      :guest-name="guestName"
+      :guest-shortcode="guestShortcode"
+      :is-event-past="isEventPast"
+      :is-music-playing="isMusicPlaying"
+      :is-authenticated="authStore.isAuthenticated"
+      :skip-cover="shouldSkipToMainContent"
+      :get-media-url="getMediaUrl"
+      @opened="handleV2Opened"
+      @open-photo="openPhotoModal"
+      @open-map="openGoogleMap"
+      @change-language="changeLanguage"
+      @music-toggle="toggleMusic"
+      @logout="handleLogout"
+      @show-auth-modal="openAuthModal"
+      @comment-submitted="handleCommentSubmitted"
+      @register="registerForEvent"
+      @video-state-change="handleVideoStateChange"
+      @main-content-viewed="handleMainContentViewed"
+    />
+
+    <!-- Shared modals (V2 branch) -->
+    <AuthModal
+      :is-visible="showAuthModal"
+      @close="onAuthModalClose"
+      @authenticated="onUserAuthenticated"
+    />
+    <PhotoModal
+      :is-open="isPhotoModalOpen"
+      :photos="eventPhotos"
+      :current-photo="currentModalPhoto"
+      :get-media-url="getMediaUrl"
+      @close="closePhotoModal"
+      @navigate="navigateToPhoto"
+    />
+  </div>
+
   <div
+    v-else
     class="showcase-wrapper"
     :class="protectionClasses"
     :style="[{ backgroundColor: backgroundColor || primaryColor || '#000' }, protectionStyles]"
@@ -156,7 +207,7 @@
 
 <script setup lang="ts">
 // Vue core
-import { onMounted, onUnmounted, watch, provide, nextTick, ref, computed } from 'vue'
+import { onMounted, onUnmounted, watch, provide, nextTick, ref, computed, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
 
 // Composables & Stores
@@ -182,6 +233,11 @@ import TransitionStage from '../components/showcase/TransitionStage.vue'
 import PhotoModal from '../components/showcase/PhotoModal.vue'
 import AuthModal from '../components/AuthModal.vue'
 import { useAuthModal } from '../composables/useAuthModal'
+
+// V2 storybook template — lazy so GSAP + V2 code only load when the gate is on
+const ShowcaseV2Experience = defineAsyncComponent(
+  () => import('../components/showcase-v2/ShowcaseV2Experience.vue'),
+)
 
 // Router and stores
 const router = useRouter()
@@ -231,6 +287,8 @@ const {
   musicStartTime,
   musicEndTime,
   availableLanguages,
+  initializeAudio,
+  playMusic,
   // Methods
   loadShowcase,
   openEnvelope,
@@ -304,6 +362,31 @@ const isBasicWedding = computed(() => {
 const hasFeaturedPhoto = computed(() => {
   return eventPhotos.value?.some((p) => p.is_featured) ?? false
 })
+
+// V2 "Storybook Romance" template gate — temporary env toggle: with
+// VITE_SHOWCASE_TEMPLATE_VERSION=v2, all wedding events render the V2
+// scroll-story template. Will move to template_assets backend data later
+// (same evolution path as showcaseAnimationType).
+const V2_TEMPLATE_ENABLED =
+  (import.meta.env.VITE_SHOWCASE_TEMPLATE_VERSION || 'v1') === 'v2'
+
+const useV2Showcase = computed(() => {
+  if (!V2_TEMPLATE_ENABLED || !event.value?.id) return false
+  const categoryName = (
+    event.value.category_details?.name || event.value.category_name || ''
+  ).toLowerCase()
+  return categoryName === 'wedding'
+})
+
+// V2 cover opened: align stage/redirect state with V1 and start the music
+const handleV2Opened = () => {
+  setStage('main_content')
+  markMainContentSeen()
+  if (eventMusicUrl.value) {
+    initializeAudio(eventMusicUrl.value, musicStartTime.value, musicEndTime.value)
+    playMusic()
+  }
+}
 
 // Override the openEnvelope function to include video synchronization
 const openEnvelopeWithVideoSync = async () => {
@@ -535,6 +618,14 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* V2 storybook template root: normal document flow so the page scrolls and
+   ScrollTrigger can use the window as its scroller */
+.v2-showcase-root {
+  width: 100%;
+  min-height: 100svh;
+  background: #faf6f0;
+}
+
 /* Container Styles */
 .showcase-wrapper {
   width: 100vw;
