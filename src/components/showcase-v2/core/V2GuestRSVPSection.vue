@@ -317,18 +317,18 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import V2ChapterShell from './V2ChapterShell.vue'
-import { translateV2, type V2TranslationKey } from '../../composables/showcase-v2/v2Translations'
-import { guestRsvpService } from '../../services/api'
+import { translateV2, type V2TranslationKey } from '../../../composables/showcase-v2/v2Translations'
+import { guestRsvpService } from '../../../services/api'
 import type {
   GuestRsvpAnswer,
   GuestRsvpFormState,
   GuestRsvpStatus,
-} from '../../services/api/types/rsvp.types'
+} from '../../../services/api/types/rsvp.types'
 import {
   translateRSVP,
   toKhmerNumerals,
   type SupportedLanguage,
-} from '../../utils/translations'
+} from '../../../utils/translations'
 
 interface Props {
   chapterNumber: number

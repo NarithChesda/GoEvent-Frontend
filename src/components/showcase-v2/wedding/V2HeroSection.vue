@@ -44,10 +44,14 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { useScrollStory } from '../../composables/showcase-v2/useScrollStory'
-import { useCountdown } from '../../composables/showcase-v2/useCountdown'
-import { translateV2, type V2TranslationKey } from '../../composables/showcase-v2/v2Translations'
-import { translateRSVP, toKhmerNumerals, type SupportedLanguage } from '../../utils/translations'
+import { useScrollStory } from '../../../composables/showcase-v2/useScrollStory'
+import { useCountdown } from '../../../composables/showcase-v2/useCountdown'
+import { translateV2, type V2TranslationKey } from '../../../composables/showcase-v2/v2Translations'
+import {
+  WEDDING_TRANSLATIONS,
+  type WeddingTranslationKey,
+} from '../../../composables/showcase-v2/categories/wedding.data'
+import { translateRSVP, toKhmerNumerals, type SupportedLanguage } from '../../../utils/translations'
 
 interface Props {
   eventTitle: string
@@ -68,7 +72,8 @@ const innerEl = ref<HTMLElement | null>(null)
 const parallaxLayer = ref<HTMLElement | null>(null)
 const { createStory } = useScrollStory(rootEl)
 
-const t = (key: V2TranslationKey) => translateV2(key, props.currentLanguage)
+const t = (key: V2TranslationKey | WeddingTranslationKey) =>
+  translateV2(key, props.currentLanguage, WEDDING_TRANSLATIONS)
 
 // Split "A & B" so the ampersand can get its italic gold treatment
 const nameParts = computed(() => {

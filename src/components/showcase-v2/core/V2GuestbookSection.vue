@@ -125,11 +125,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import V2ChapterShell from './V2ChapterShell.vue'
-import { translateV2, type V2TranslationKey } from '../../composables/showcase-v2/v2Translations'
-import { formatDateLocalized, type SupportedLanguage } from '../../utils/translations'
-import { commentsService } from '../../services/api'
-import { useAuthStore } from '../../stores/auth'
-import { sanitizeComment } from '../../utils/sanitize'
+import {
+  translateV2,
+  type V2TranslationKey,
+  type V2CategoryTranslations,
+} from '../../../composables/showcase-v2/v2Translations'
+import { formatDateLocalized, type SupportedLanguage } from '../../../utils/translations'
+import { commentsService } from '../../../services/api'
+import { useAuthStore } from '../../../stores/auth'
+import { sanitizeComment } from '../../../utils/sanitize'
 
 // Backend now decorates comments with author/guest info beyond the base type
 interface GuestbookComment {
@@ -150,6 +154,8 @@ interface Props {
   guestName?: string
   guestShortcode?: string | null
   currentLanguage?: string
+  /** Category-flavored copy overrides (e.g. wedding's "blessing" wording) — see the active variant's `translations`. */
+  categoryTranslations?: V2CategoryTranslations
 }
 
 const props = defineProps<Props>()
@@ -162,7 +168,7 @@ const emit = defineEmits<{
 const authStore = useAuthStore()
 const rootEl = ref<HTMLElement | null>(null)
 
-const t = (key: V2TranslationKey) => translateV2(key, props.currentLanguage)
+const t = (key: V2TranslationKey) => translateV2(key, props.currentLanguage, props.categoryTranslations)
 const lang = computed(() => (props.currentLanguage as SupportedLanguage) || 'en')
 
 const PAGE_SIZE = 6

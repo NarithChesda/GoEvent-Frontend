@@ -32,7 +32,7 @@
 import { computed } from 'vue'
 import { MapPin } from 'lucide-vue-next'
 import V2ChapterShell from './V2ChapterShell.vue'
-import { translateV2 } from '../../composables/showcase-v2/v2Translations'
+import { translateV2 } from '../../../composables/showcase-v2/v2Translations'
 
 interface Props {
   chapterNumber: number

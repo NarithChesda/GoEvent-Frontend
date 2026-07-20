@@ -11,6 +11,9 @@
       :event-photos="eventPhotos"
       :payment-methods="paymentMethods"
       :dress-codes="dressCodes"
+      :template-colors="templateColors"
+      :template-fonts="templateFonts"
+      :fonts-loaded="fontsLoaded"
       :current-language="currentLanguage"
       :available-languages="availableLanguages"
       :guest-name="guestName"
@@ -264,6 +267,8 @@ const {
   guestShortcode,
   templateAssets,
   templateColors,
+  templateFonts,
+  fontsLoaded,
   eventTexts,
   hosts,
   agendaItems,
@@ -363,15 +368,23 @@ const hasFeaturedPhoto = computed(() => {
   return eventPhotos.value?.some((p) => p.is_featured) ?? false
 })
 
-// V2 "Storybook Romance" template gate — temporary env toggle: with
-// VITE_SHOWCASE_TEMPLATE_VERSION=v2, all wedding events render the V2
-// scroll-story template. Will move to template_assets backend data later
-// (same evolution path as showcaseAnimationType).
+// V2 "Storybook Romance" template gate. Per-template selection
+// (event.template_assets.showcase_template_version) takes priority once the
+// backend sends it — see docs/backend-api-requirements/showcase-template-version.md.
+// Until then, every event falls back to the env-var + category heuristic
+// below (VITE_SHOWCASE_TEMPLATE_VERSION=v2 renders V2 for all wedding events).
 const V2_TEMPLATE_ENABLED =
   (import.meta.env.VITE_SHOWCASE_TEMPLATE_VERSION || 'v1') === 'v2'
 
 const useV2Showcase = computed(() => {
-  if (!V2_TEMPLATE_ENABLED || !event.value?.id) return false
+  if (!event.value?.id) return false
+
+  const templateVersion = event.value.template_assets?.showcase_template_version
+  if (templateVersion === 'v1' || templateVersion === 'v2') {
+    return templateVersion === 'v2'
+  }
+
+  if (!V2_TEMPLATE_ENABLED) return false
   const categoryName = (
     event.value.category_details?.name || event.value.category_name || ''
   ).toLowerCase()

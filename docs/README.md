@@ -34,6 +34,7 @@ Frontend-authored design requests for backend changes (the reverse direction of 
 
 - [event-details-design.md](backend-api-requirements/event-details-design.md) / [host-info-design.md](backend-api-requirements/host-info-design.md) — per-template date/location and host-info block designs
 - [showcase-template-version.md](backend-api-requirements/showcase-template-version.md) — per-template V1/V2 showcase selection (V2 "Storybook Romance"), currently gated by `VITE_SHOWCASE_TEMPLATE_VERSION` env var
+- [showcase-v2-theming.md](backend-api-requirements/showcase-v2-theming.md) — `v2-*` color names and font-type convention for template-driven V2 colors/fonts (informational, no schema change)
 
 ## Feature plans & implementation records ([features/](features/))
 

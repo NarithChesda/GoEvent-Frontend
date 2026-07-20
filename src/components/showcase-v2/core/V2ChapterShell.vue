@@ -28,9 +28,9 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useScrollStory } from '../../composables/showcase-v2/useScrollStory'
-import { translateV2 } from '../../composables/showcase-v2/v2Translations'
-import { toKhmerNumerals } from '../../utils/translations'
+import { useScrollStory } from '../../../composables/showcase-v2/useScrollStory'
+import { translateV2 } from '../../../composables/showcase-v2/v2Translations'
+import { toKhmerNumerals } from '../../../utils/translations'
 
 interface Props {
   /** DOM id used by the quick-jump menu and progress dots. */

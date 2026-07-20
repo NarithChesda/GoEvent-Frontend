@@ -92,10 +92,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import V2ChapterShell from './V2ChapterShell.vue'
-import { translateV2, type V2TranslationKey } from '../../composables/showcase-v2/v2Translations'
-import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
-import { eventsService } from '../../services/api'
-import type { EventText } from '../../composables/useEventShowcase'
+import { translateV2, type V2TranslationKey } from '../../../composables/showcase-v2/v2Translations'
+import { translateRSVP, type SupportedLanguage } from '../../../utils/translations'
+import { eventsService } from '../../../services/api'
+import type { EventText } from '../../../composables/useEventShowcase'
 
 interface RegistrationLike {
   status?: string

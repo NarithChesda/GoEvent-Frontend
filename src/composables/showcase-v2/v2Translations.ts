@@ -1,7 +1,13 @@
 import type { SupportedLanguage } from '../../utils/translations'
 
 /**
- * Static UI strings for the V2 "Storybook Romance" showcase template.
+ * Shared UI strings for the V2 scroll-story showcase, generic across event
+ * categories. A category variant (see `categories/wedding.ts`) may override
+ * any of these keys with more specific wording (e.g. "Wedding Gift" instead
+ * of "Gift") via the `categoryTranslations` argument to `translateV2()`.
+ * Keys that only make sense for one category (no reasonable generic default,
+ * e.g. "We're tying the knot") live entirely in that category's own
+ * translation file instead of here.
  *
  * Showcase pages localize from the event's language (URL / backend meta), not
  * the app-wide vue-i18n locale, so — like `rsvpTranslations` — this is a
@@ -12,10 +18,6 @@ const v2Translations = {
     chapter: 'Chapter',
     open_invitation: 'Open Invitation',
     you_are_invited: 'You are cordially invited',
-    eyebrow_families: 'Together with their families',
-    getting_married: 'are getting married',
-    tying_knot: "We're tying the knot",
-    with_love: 'with love',
     dear_guest: 'Dear',
     chapter_story: 'Our Story',
     chapter_agenda: 'The Day',
@@ -24,9 +26,9 @@ const v2Translations = {
     chapter_video: 'Our Film',
     chapter_gallery: 'Moments',
     chapter_rsvp: 'RSVP',
-    chapter_gift: 'Wedding Gift',
+    chapter_gift: 'Gift',
     chapter_guestbook: 'Well Wishes',
-    countdown_title: 'Counting down to our special day',
+    countdown_title: 'Counting down to the big day',
     event_ended: 'This celebration has already taken place — thank you to everyone who joined us',
     rsvp_question: 'Will you attend?',
     rsvp_accept: 'Joyfully accept',
@@ -40,12 +42,12 @@ const v2Translations = {
     rsvp_sign_in: 'Sign in to RSVP',
     confirmation_label: 'Confirmation',
     your_message: 'Your message',
-    leave_blessing: 'Leave a blessing for the couple…',
+    leave_blessing: 'Leave a message for the host…',
     post_guestbook: 'Post to Guestbook',
     load_more: 'Load more',
-    be_first: 'Be the first to leave a blessing',
-    already_blessed: 'Thank you for your blessing!',
-    sign_in_to_comment: 'Sign in to leave a blessing',
+    be_first: 'Be the first to leave a message',
+    already_blessed: 'Thank you for your message!',
+    sign_in_to_comment: 'Sign in to leave a message',
     invite_only_comment: 'Only invited guests can post here',
     posting: 'Posting…',
     sending: 'Sending…',
@@ -61,22 +63,17 @@ const v2Translations = {
     delete_action: 'Delete',
     save_action: 'Save',
     cancel_action: 'Cancel',
-    delete_confirm: 'Delete your blessing?',
+    delete_confirm: 'Delete your message?',
     get_directions: 'Get Directions',
     open_map: 'Open in Google Maps',
-    footer_thank_you: 'Thank you for being part of our story',
+    footer_thank_you: 'Thank you for celebrating with us',
     made_with: 'Crafted with',
     on_goevent: 'on GoEvent',
-    scroll_to_begin: 'Scroll to read our story',
   },
   kh: {
     chapter: 'ជំពូក',
     open_invitation: 'បើកលិខិតអញ្ជើញ',
     you_are_invited: 'សូមគោរពអញ្ជើញ',
-    eyebrow_families: 'រួមជាមួយក្រុមគ្រួសារទាំងពីរ',
-    getting_married: 'នឹងរៀបអាពាហ៍ពិពាហ៍',
-    tying_knot: 'យើងនឹងរៀបការហើយ',
-    with_love: 'ដោយក្តីស្រឡាញ់',
     dear_guest: 'ជូនចំពោះ',
     chapter_story: 'រឿងរ៉ាវរបស់យើង',
     chapter_agenda: 'កម្មវិធីពិធី',
@@ -85,9 +82,9 @@ const v2Translations = {
     chapter_video: 'វីដេអូរបស់យើង',
     chapter_gallery: 'វិចិត្រសាល',
     chapter_rsvp: 'ឆ្លើយតបការអញ្ជើញ',
-    chapter_gift: 'ចងដៃ',
+    chapter_gift: 'អំណោយ',
     chapter_guestbook: 'ពាក្យជូនពរ',
-    countdown_title: 'រាប់ថយក្រោយដល់ថ្ងៃពិសេសរបស់យើង',
+    countdown_title: 'រាប់ថយក្រោយដល់ថ្ងៃដ៏សំខាន់',
     event_ended: 'ពិធីនេះបានប្រព្រឹត្តទៅរួចរាល់ហើយ — សូមអរគុណដល់ភ្ញៀវទាំងអស់ដែលបានចូលរួម',
     rsvp_question: 'តើលោកអ្នកនឹងចូលរួមទេ?',
     rsvp_accept: 'រីករាយចូលរួម',
@@ -101,12 +98,12 @@ const v2Translations = {
     rsvp_sign_in: 'ចូលគណនីដើម្បីឆ្លើយតប',
     confirmation_label: 'លេខបញ្ជាក់',
     your_message: 'សាររបស់អ្នក',
-    leave_blessing: 'សូមផ្ញើពាក្យជូនពរដល់គូស្វាមីភរិយា…',
+    leave_blessing: 'សូមផ្ញើសារជូនម្ចាស់កម្មវិធី…',
     post_guestbook: 'បង្ហោះពាក្យជូនពរ',
     load_more: 'មើលបន្ថែម',
-    be_first: 'ក្លាយជាអ្នកដំបូងដែលផ្ញើពាក្យជូនពរ',
-    already_blessed: 'សូមអរគុណសម្រាប់ពាក្យជូនពររបស់អ្នក!',
-    sign_in_to_comment: 'ចូលគណនីដើម្បីផ្ញើពាក្យជូនពរ',
+    be_first: 'ក្លាយជាអ្នកដំបូងដែលផ្ញើសារ',
+    already_blessed: 'សូមអរគុណសម្រាប់សាររបស់អ្នក!',
+    sign_in_to_comment: 'ចូលគណនីដើម្បីផ្ញើសារ',
     invite_only_comment: 'មានតែភ្ញៀវដែលបានអញ្ជើញប៉ុណ្ណោះដែលអាចផ្ញើពាក្យជូនពរ',
     posting: 'កំពុងបង្ហោះ…',
     sending: 'កំពុងផ្ញើ…',
@@ -122,34 +119,29 @@ const v2Translations = {
     delete_action: 'លុប',
     save_action: 'រក្សាទុក',
     cancel_action: 'បោះបង់',
-    delete_confirm: 'លុបពាក្យជូនពររបស់អ្នក?',
+    delete_confirm: 'លុបសាររបស់អ្នក?',
     get_directions: 'បើកផ្លូវទៅកាន់ទីកន្លែង',
     open_map: 'បើកក្នុង Google Maps',
-    footer_thank_you: 'សូមអរគុណដែលបានចូលរួមក្នុងរឿងរ៉ាវរបស់យើង',
+    footer_thank_you: 'សូមអរគុណដែលបានចូលរួមអបអរជាមួយយើង',
     made_with: 'បង្កើតដោយ',
     on_goevent: 'នៅលើ GoEvent',
-    scroll_to_begin: 'អូសចុះក្រោមដើម្បីអានរឿងរ៉ាវរបស់យើង',
   },
   'zh-cn': {
     chapter: '章节',
     open_invitation: '打开请柬',
     you_are_invited: '诚挚邀请您',
-    eyebrow_families: '两个家庭携手',
-    getting_married: '即将喜结连理',
-    tying_knot: '我们要结婚啦',
-    with_love: '爱意满满',
     dear_guest: '亲爱的',
     chapter_story: '我们的故事',
-    chapter_agenda: '婚礼流程',
+    chapter_agenda: '活动流程',
     chapter_dress_code: '着装要求',
-    chapter_venue: '婚礼地点',
+    chapter_venue: '活动地点',
     chapter_video: '我们的影片',
     chapter_gallery: '美好瞬间',
     chapter_rsvp: '回复邀请',
-    chapter_gift: '礼金',
+    chapter_gift: '礼物',
     chapter_guestbook: '美好祝愿',
-    countdown_title: '距离我们的大喜之日',
-    event_ended: '婚礼已圆满举行 — 感谢所有到场的亲友',
+    countdown_title: '距离这特别的一天',
+    event_ended: '活动已圆满举行 — 感谢所有到场的亲友',
     rsvp_question: '您会出席吗？',
     rsvp_accept: '欣然赴约',
     rsvp_decline: '遗憾缺席',
@@ -162,12 +154,12 @@ const v2Translations = {
     rsvp_sign_in: '登录后回复邀请',
     confirmation_label: '确认码',
     your_message: '您的留言',
-    leave_blessing: '为新人留下祝福…',
+    leave_blessing: '给主人留言…',
     post_guestbook: '发布留言',
     load_more: '加载更多',
-    be_first: '成为第一个送上祝福的人',
-    already_blessed: '感谢您的祝福！',
-    sign_in_to_comment: '登录后留下祝福',
+    be_first: '成为第一个留言的人',
+    already_blessed: '感谢您的留言！',
+    sign_in_to_comment: '登录后留言',
     invite_only_comment: '仅受邀嘉宾可以留言',
     posting: '发布中…',
     sending: '发送中…',
@@ -183,20 +175,32 @@ const v2Translations = {
     delete_action: '删除',
     save_action: '保存',
     cancel_action: '取消',
-    delete_confirm: '删除您的祝福？',
+    delete_confirm: '删除您的留言？',
     get_directions: '获取路线',
     open_map: '在 Google 地图中打开',
-    footer_thank_you: '感谢您成为我们故事的一部分',
+    footer_thank_you: '感谢您与我们一同庆祝',
     made_with: '用心制作',
     on_goevent: '来自 GoEvent',
-    scroll_to_begin: '向下滑动阅读我们的故事',
   },
 } satisfies Record<SupportedLanguage, Record<string, string>>
 
 export type V2TranslationKey = keyof (typeof v2Translations)['en']
 
-export function translateV2(key: V2TranslationKey, language?: string): string {
+/** Per-language key→text overrides supplied by a category variant. */
+export type V2CategoryTranslations = Partial<Record<SupportedLanguage, Record<string, string>>>
+
+export function translateV2(
+  key: string,
+  language?: string,
+  categoryTranslations?: V2CategoryTranslations,
+): string {
   const lang = (language as SupportedLanguage) || 'en'
+
+  if (categoryTranslations) {
+    const fromCategory = categoryTranslations[lang]?.[key] ?? categoryTranslations.en?.[key]
+    if (fromCategory) return fromCategory
+  }
+
   const table = v2Translations[lang] || v2Translations.en
-  return table[key] || v2Translations.en[key] || key
+  return table[key as V2TranslationKey] || v2Translations.en[key as V2TranslationKey] || key
 }

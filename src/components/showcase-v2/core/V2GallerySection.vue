@@ -30,8 +30,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import V2ChapterShell from './V2ChapterShell.vue'
-import { useScrollStory, refreshScrollTriggers } from '../../composables/showcase-v2/useScrollStory'
-import type { EventPhoto } from '../../composables/useEventShowcase'
+import { useScrollStory, refreshScrollTriggers } from '../../../composables/showcase-v2/useScrollStory'
+import type { EventPhoto } from '../../../composables/useEventShowcase'
 
 interface Props {
   chapterNumber: number

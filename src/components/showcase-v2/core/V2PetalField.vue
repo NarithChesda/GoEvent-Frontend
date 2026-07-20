@@ -12,16 +12,19 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useScrollStory } from '../../composables/showcase-v2/useScrollStory'
-import { V2_COLORS } from '../../composables/showcase-v2/v2Theme'
+import { useScrollStory } from '../../../composables/showcase-v2/useScrollStory'
+
+interface Props {
+  /** Petal fill colors, cycled per petal — supplied by the active category variant's palette. */
+  colors: string[]
+}
+
+const props = defineProps<Props>()
 
 const rootEl = ref<HTMLElement | null>(null)
 const { createStory } = useScrollStory(rootEl)
 
 const animate = ref(true)
-
-// Storybook palette petals — blush leads, sage and gold as accents
-const petalColors = [V2_COLORS.blush, V2_COLORS.blushDeep, V2_COLORS.sage, V2_COLORS.gold]
 
 interface Petal {
   id: number
@@ -39,7 +42,7 @@ const buildPetals = (count: number) => {
       style: {
         '--petal-x': `${Math.random() * 100}%`,
         '--petal-size': `${size.toFixed(1)}px`,
-        '--petal-color': petalColors[i % petalColors.length],
+        '--petal-color': props.colors[i % props.colors.length],
         '--petal-drift': `${(Math.random() * 60 - 30).toFixed(0)}px`,
         '--petal-duration': `${(14 + Math.random() * 14).toFixed(1)}s`,
         '--petal-delay': `${(-Math.random() * 28).toFixed(1)}s`,

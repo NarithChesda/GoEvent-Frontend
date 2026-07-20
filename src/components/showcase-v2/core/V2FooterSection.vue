@@ -21,8 +21,8 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useScrollStory } from '../../composables/showcase-v2/useScrollStory'
-import { translateV2 } from '../../composables/showcase-v2/v2Translations'
+import { useScrollStory } from '../../../composables/showcase-v2/useScrollStory'
+import { translateV2 } from '../../../composables/showcase-v2/v2Translations'
 
 interface Props {
   thankYouText: string

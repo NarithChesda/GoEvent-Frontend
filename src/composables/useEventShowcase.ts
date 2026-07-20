@@ -151,6 +151,14 @@ export interface TemplateAssets {
   cover_stage_layout?: CoverStageLayout
   /** Falling particle effect configuration */
   falling_effect?: FallingEffectConfig | null
+  /**
+   * Which showcase presentation layer this template renders: 'v1' (classic
+   * cover/transition/main-content) or 'v2' ("Storybook Romance" scroll-story).
+   * Not yet sent by the backend — see
+   * docs/backend-api-requirements/showcase-template-version.md. Absent/null
+   * is handled as "unset" by callers, which fall back to their own default.
+   */
+  showcase_template_version?: 'v1' | 'v2' | null
   /** Date + location block design (panel | calendar). Defaults to `panel`. */
   event_details_design?: EventDetailsDesignConfig | null
   /** Host info block design (standard | simple). Defaults to `standard`. */

@@ -43,9 +43,9 @@
 import { computed, onMounted, ref } from 'vue'
 import { ChevronDown } from 'lucide-vue-next'
 import V2ChapterShell from './V2ChapterShell.vue'
-import { useScrollStory } from '../../composables/showcase-v2/useScrollStory'
-import { formatDateLocalized, type SupportedLanguage } from '../../utils/translations'
-import type { AgendaItem } from '../../composables/useEventShowcase'
+import { useScrollStory } from '../../../composables/showcase-v2/useScrollStory'
+import { formatDateLocalized, type SupportedLanguage } from '../../../utils/translations'
+import type { AgendaItem } from '../../../composables/useEventShowcase'
 
 interface Props {
   chapterNumber: number

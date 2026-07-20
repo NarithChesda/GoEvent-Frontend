@@ -35,7 +35,7 @@
       >
         <defs>
           <mask
-            id="v2-thread-reveal"
+            idQ="v2-Q-reveal"
             maskUnits="userSpaceOnUse"
             x="0"
             y="0"
@@ -159,10 +159,10 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useScrollStory } from '../../composables/showcase-v2/useScrollStory'
-import { translateV2 } from '../../composables/showcase-v2/v2Translations'
-import { toKhmerNumerals } from '../../utils/translations'
-import type { Host } from '../../composables/useEventShowcase'
+import { useScrollStory } from '../../../composables/showcase-v2/useScrollStory'
+import { translateV2 } from '../../../composables/showcase-v2/v2Translations'
+import { toKhmerNumerals } from '../../../utils/translations'
+import type { Host } from '../../../composables/useEventShowcase'
 
 interface Props {
   chapterNumber: number

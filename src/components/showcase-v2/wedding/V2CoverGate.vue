@@ -40,8 +40,12 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { gsap } from '../../plugins/gsap'
-import { translateV2, type V2TranslationKey } from '../../composables/showcase-v2/v2Translations'
+import { gsap } from '../../../plugins/gsap'
+import { translateV2, type V2TranslationKey } from '../../../composables/showcase-v2/v2Translations'
+import {
+  WEDDING_TRANSLATIONS,
+  type WeddingTranslationKey,
+} from '../../../composables/showcase-v2/categories/wedding.data'
 
 interface Props {
   eventTitle: string
@@ -62,7 +66,8 @@ const rootEl = ref<HTMLElement | null>(null)
 const envelopeEl = ref<HTMLElement | null>(null)
 const opening = ref(false)
 
-const t = (key: V2TranslationKey) => translateV2(key, props.currentLanguage)
+const t = (key: V2TranslationKey | WeddingTranslationKey) =>
+  translateV2(key, props.currentLanguage, WEDDING_TRANSLATIONS)
 
 const monogram = computed(() => props.monogram || '♥')
 const coupleNames = computed(() => props.coupleNames)

@@ -1,13 +1,14 @@
 ﻿<template>
   <div ref="rootEl" class="v2-experience relative" :style="cssVars">
     <!-- Drifting petal parallax layer (behind everything) -->
-    <V2PetalField />
+    <V2PetalField :colors="petalColors" />
 
-    <!-- Envelope cover gate -->
-    <V2CoverGate
+    <!-- Envelope cover gate (category-specific — see useV2CategoryVariant) -->
+    <component
+      :is="variant.CoverGate"
       v-if="showCover"
       :event-title="event.title"
-      :couple-names="coupleNames"
+      v-bind="heroExtraProps"
       :monogram="monogram"
       :guest-name="guestName"
       :current-language="currentLanguage"
@@ -15,10 +16,11 @@
     />
 
     <main class="relative">
-      <!-- 1 · Hero -->
-      <V2HeroSection
+      <!-- 1 · Hero (category-specific) -->
+      <component
+        :is="variant.HeroSection"
         :event-title="event.title"
-        :couple-names="coupleNames"
+        v-bind="heroExtraProps"
         :start-date="event.start_date"
         :date-line="dateLine"
         :location-line="locationLine"
@@ -27,8 +29,9 @@
         :current-language="currentLanguage"
       />
 
-      <!-- 2 · Our Story (pinned 3D scroll storytelling) -->
-      <V2StorySection
+      <!-- 2 · Our Story (pinned 3D scroll storytelling — category-specific) -->
+      <component
+        :is="variant.StorySection"
         v-if="hasChapter('story-section')"
         :chapter-number="chapterNumber('story-section')"
         :title="t('chapter_story')"
@@ -182,6 +185,7 @@
         :guest-name="guestName"
         :guest-shortcode="guestShortcode"
         :current-language="currentLanguage"
+        :category-translations="variant.translations"
         @comment-submitted="$emit('commentSubmitted', $event)"
         @show-auth-modal="$emit('showAuthModal')"
       />
@@ -246,23 +250,26 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 
-// V2 presentation components (self-contained Storybook Romance theme)
-import V2PetalField from './V2PetalField.vue'
-import V2CoverGate from './V2CoverGate.vue'
-import V2HeroSection from './V2HeroSection.vue'
-import V2StorySection from './V2StorySection.vue'
-import V2ChapterShell from './V2ChapterShell.vue'
-import V2AgendaSection from './V2AgendaSection.vue'
-import V2GallerySection from './V2GallerySection.vue'
-import V2VenueSection from './V2VenueSection.vue'
-import V2RSVPSection from './V2RSVPSection.vue'
-import V2GuestRSVPSection from './V2GuestRSVPSection.vue'
-import V2GuestbookSection from './V2GuestbookSection.vue'
-import V2FooterSection from './V2FooterSection.vue'
-import V2ProgressDots, { type ProgressSection } from './V2ProgressDots.vue'
+// Category-agnostic V2 engine components (structure/mechanics shared by
+// every category variant — wedding, birthday, housewarming, …)
+import V2PetalField from './core/V2PetalField.vue'
+import V2ChapterShell from './core/V2ChapterShell.vue'
+import V2AgendaSection from './core/V2AgendaSection.vue'
+import V2GallerySection from './core/V2GallerySection.vue'
+import V2VenueSection from './core/V2VenueSection.vue'
+import V2RSVPSection from './core/V2RSVPSection.vue'
+import V2GuestRSVPSection from './core/V2GuestRSVPSection.vue'
+import V2GuestbookSection from './core/V2GuestbookSection.vue'
+import V2FooterSection from './core/V2FooterSection.vue'
+import V2ProgressDots, { type ProgressSection } from './core/V2ProgressDots.vue'
+
+// Category-specific components (CoverGate/HeroSection/StorySection) are NOT
+// imported directly here — they come from the resolved `variant` (see
+// useV2CategoryVariant.ts) and render via <component :is="variant.X">.
 
 // Reused data-bound showcase components (forms/logic only — styled via the
-// V2 palette props, never event template data)
+// resolved V2 palette/font props below, same template-driven colors as the
+// rest of the V2 experience)
 import DressCodeSection from '../showcase/DressCodeSection.vue'
 import YouTubeVideoSection from '../showcase/YouTubeVideoSection.vue'
 import PaymentSection from '../showcase/PaymentSection.vue'
@@ -271,7 +278,14 @@ import FloatingActionMenu from '../showcase/FloatingActionMenu.vue'
 import { gsap, ScrollTrigger } from '../../plugins/gsap'
 import { useScrollStory, refreshScrollTriggers } from '../../composables/showcase-v2/useScrollStory'
 import { translateV2, type V2TranslationKey } from '../../composables/showcase-v2/v2Translations'
-import { V2_COLORS, V2_FONTS, V2_CSS_VARS } from '../../composables/showcase-v2/v2Theme'
+import {
+  resolveV2Colors,
+  buildV2CssVars,
+  deriveV2Monogram,
+  findV2TemplateFont,
+} from '../../composables/showcase-v2/v2Theme'
+import { resolveV2Variant } from '../../composables/showcase-v2/useV2CategoryVariant'
+import { useTemplateProcessor } from '../../composables/showcase/useTemplateProcessor'
 import { formatDateLocalized, type SupportedLanguage } from '../../utils/translations'
 import type {
   EventData,
@@ -280,6 +294,8 @@ import type {
   AgendaItem,
   EventPhoto,
   DressCode,
+  TemplateColor,
+  TemplateFont,
 } from '../../composables/useEventShowcase'
 import type { EventPaymentMethod } from '../../services/api'
 
@@ -291,6 +307,12 @@ interface Props {
   eventPhotos: EventPhoto[]
   paymentMethods: EventPaymentMethod[]
   dressCodes: DressCode[]
+  /** Template-driven V2 palette (name-keyed, see v2Theme.ts). Falls back to the default Storybook Romance look when absent. */
+  templateColors?: TemplateColor[]
+  /** Template-driven V2 fonts (font_type primary=body, secondary=display). Falls back to Cormorant Garamond/Karla when absent. */
+  templateFonts?: TemplateFont[]
+  /** Whether custom template fonts have finished loading (gates using the custom font-family name vs. the fallback stack). */
+  fontsLoaded?: boolean
   currentLanguage?: string
   availableLanguages?: Array<{ id: number; language: string; language_display: string }>
   guestName?: string
@@ -323,13 +345,57 @@ const emit = defineEmits<{
 const rootEl = ref<HTMLElement | null>(null)
 const { createStory } = useScrollStory(rootEl)
 
-const t = (key: V2TranslationKey) => translateV2(key, props.currentLanguage)
 const lang = computed(() => (props.currentLanguage as SupportedLanguage) || 'en')
 
-// Fixed Storybook Romance theme — no event template data
-const palette = V2_COLORS
-const fonts = V2_FONTS
-const cssVars = V2_CSS_VARS
+// ---------------------------------------------------------------------------
+// Category variant (components + theme + copy) — see useV2CategoryVariant.ts.
+// This is the ONLY place the orchestrator branches on event category; every
+// other computed below is generic and works the same for any variant.
+// ---------------------------------------------------------------------------
+const eventType = computed(
+  () => props.event.category_details?.name || props.event.category_name || 'default',
+)
+const variant = computed(() => resolveV2Variant(eventType.value))
+
+const t = (key: V2TranslationKey) => translateV2(key, props.currentLanguage, variant.value.translations)
+
+// Theme, resolved from the event's template data with the active variant's
+// defaults as fallback for any color/font a template doesn't define — see
+// docs/backend-api-requirements/showcase-v2-theming.md
+const templateProcessor = useTemplateProcessor()
+
+const palette = computed(() => resolveV2Colors(variant.value.colors, props.templateColors))
+
+// Looked up by a V2-only font_type (see findV2TemplateFont) — never falls
+// back to V1's primary/secondary/accent/decorative fonts, so a template
+// keeps rendering the variant's own default typeface until it explicitly
+// assigns a font to one of these two roles.
+const fonts = computed(() => {
+  const language = props.currentLanguage || 'en'
+  const bodyFont = findV2TemplateFont(props.templateFonts || [], language, 'body')
+  const displayFont = findV2TemplateFont(props.templateFonts || [], language, 'display')
+  return {
+    body: templateProcessor.createFontDeclaration(
+      bodyFont,
+      variant.value.fonts.body,
+      props.fontsLoaded ?? false,
+    ),
+    display: templateProcessor.createFontDeclaration(
+      displayFont,
+      variant.value.fonts.display,
+      props.fontsLoaded ?? false,
+    ),
+  }
+})
+
+const cssVars = computed(() => buildV2CssVars(palette.value, fonts.value))
+
+const petalColors = computed(() => [
+  palette.value.blush,
+  palette.value.blushDeep,
+  palette.value.sage,
+  palette.value.gold,
+])
 
 // ---------------------------------------------------------------------------
 // Cover gate / hero hand-off
@@ -353,27 +419,20 @@ onMounted(() => {
 // ---------------------------------------------------------------------------
 // Data-derived content
 // ---------------------------------------------------------------------------
-const eventType = computed(
-  () => props.event.category_details?.name || props.event.category_name || 'default',
+// Extra props the active variant's CoverGate/HeroSection need beyond the
+// shared base props (e.g. wedding's `coupleNames`) — spread via v-bind so
+// this orchestrator never has to know a category-specific prop name.
+const heroExtraProps = computed(() => variant.value.deriveHeroProps(props.hosts))
+
+// Generic initials/monogram (cover seal, footer credit) — works for any
+// category; only the fallback glyph when no names resolve varies by variant.
+const monogram = computed(() =>
+  deriveV2Monogram(
+    props.hosts.slice(0, 2).map((h) => h.name),
+    props.event.title,
+    variant.value.monogramFallback,
+  ),
 )
-
-// Wedding hosts are typically the couple — join the first two names
-const coupleNames = computed(() => {
-  const names = props.hosts
-    .slice(0, 2)
-    .map((h) => h.name)
-    .filter(Boolean)
-  return names.length ? names.join(' & ') : undefined
-})
-
-const monogram = computed(() => {
-  const names = props.hosts
-    .slice(0, 2)
-    .map((h) => h.name?.trim().charAt(0))
-    .filter(Boolean)
-  if (names.length === 2) return `${names[0]} · ${names[1]}`
-  return props.event.title?.trim().charAt(0) || '♥'
-})
 
 const findText = (textType: string): EventText | undefined => {
   const texts = props.eventTexts || []
