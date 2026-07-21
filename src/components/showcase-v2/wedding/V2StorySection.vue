@@ -18,8 +18,9 @@
     >
       <header class="v2-story-head">
         <span class="v2-story-eyebrow">{{ chapterLabel }}</span>
-        <h2 class="v2-story-heading">{{ title }}</h2>
+        <h2 v-if="welcomeText" class="v2-story-heading">{{ welcomeText }}</h2>
         <div class="v2-story-rule" aria-hidden="true"></div>
+
       </header>
 
       <!-- gold dotted thread connecting the couple through the rings. The
@@ -116,6 +117,7 @@
       <span class="v2-story-eyebrow">{{ chapterLabel }}</span>
       <h2 class="v2-story-heading">{{ title }}</h2>
       <div class="v2-story-rule" aria-hidden="true"></div>
+      <p v-if="welcomeText" class="v2-story-welcome">{{ welcomeText }}</p>
     </header>
 
     <!-- Additional hosts beyond the couple -->
@@ -137,19 +139,10 @@
       </article>
     </div>
 
-    <!-- Centered invitation passages, separate from the couple stage -->
-    <div v-if="welcomeText || descriptionTitle || descriptionText" class="v2-story-passages">
-      <p v-if="welcomeText" class="v2-story-welcome v2-story-reveal">{{ welcomeText }}</p>
-      <div
-        v-if="welcomeText && (descriptionTitle || descriptionText)"
-        class="v2-story-flourish v2-story-reveal"
-        aria-hidden="true"
-      >
-        <span class="v2-story-flourish-line"></span>
-        <span class="v2-story-flourish-gem"></span>
-        <span class="v2-story-flourish-line"></span>
-      </div>
-      <div v-if="descriptionTitle || descriptionText" class="v2-story-closing v2-story-reveal">
+    <!-- Centered description passage, separate from the couple stage
+         (welcome text now lives under the chapter heading above) -->
+    <div v-if="descriptionTitle || descriptionText" class="v2-story-passages">
+      <div class="v2-story-closing v2-story-reveal">
         <h3 v-if="descriptionTitle">{{ descriptionTitle }}</h3>
         <p v-if="descriptionText">{{ descriptionText }}</p>
       </div>
@@ -475,6 +468,16 @@ onMounted(() => {
   margin: 14px auto 0;
 }
 
+.v2-story-welcome {
+  font-family: var(--v2-display);
+  font-style: italic;
+  font-size: clamp(16px, 2.4vw, 19px);
+  line-height: 1.7;
+  color: var(--v2-charcoal);
+  max-width: 30rem;
+  margin: 16px auto 0;
+}
+
 /* ---------- connecting thread ---------- */
 .v2-story-thread {
   position: absolute;
@@ -790,37 +793,8 @@ onMounted(() => {
 /* ---------- centered invitation passages ---------- */
 .v2-story-passages {
   max-width: 40rem;
-  margin: clamp(56px, 12vh, 110px) auto 0;
+  margin: clamp(20px, 4vh, 40px) auto 0;
   text-align: center;
-}
-
-.v2-story-welcome {
-  font-family: var(--v2-display);
-  font-style: italic;
-  font-size: clamp(19px, 2.8vw, 23px);
-  line-height: 1.75;
-  color: var(--v2-charcoal);
-}
-
-.v2-story-flourish {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  margin: 34px auto;
-}
-
-.v2-story-flourish-line {
-  width: 46px;
-  height: 1px;
-  background: rgba(201, 166, 107, 0.55);
-}
-
-.v2-story-flourish-gem {
-  width: 7px;
-  height: 7px;
-  background: rgba(201, 166, 107, 0.6);
-  transform: rotate(45deg);
 }
 
 .v2-story-closing h3 {
