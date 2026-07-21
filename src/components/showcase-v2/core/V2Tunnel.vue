@@ -5,11 +5,12 @@
 <script setup lang="ts">
 /**
  * Persistent WebGL background: the camera flies through a tunnel of falling
- * petal particles (depth-layered) as the page scrolls, with an ornament
- * (interlocked rings, for the wedding motif) drifting in the middle
- * distance. Only mounted for the 'rich' motion tier (see useV2MotionTier) —
- * `three` is dynamically imported so its cost is paid only by the
- * sessions that actually render it.
+ * particles (depth-layered, shape/color set by the active category variant
+ * via `shapes`/`colors` — see v2ParticleShapes.ts) as the page scrolls, with
+ * an ornament (interlocked rings, for the wedding motif) drifting in the
+ * middle distance. Only mounted for the 'rich' motion tier (see
+ * useV2MotionTier) — `three` is dynamically imported so its cost is paid
+ * only by the sessions that actually render it.
  *
  * Falling is driven by an internal clock (gravity-like, independent of
  * scroll); flying *through* the tunnel is driven directly by scroll
@@ -18,10 +19,13 @@
  */
 import { onMounted, onUnmounted, ref } from 'vue'
 import type * as ThreeNS from 'three'
+import { V2_PARTICLE_SHAPES, type V2ParticleShape } from '../../../composables/showcase-v2/v2ParticleShapes'
 
 interface Props {
   /** Petal colors, cycled across the three depth layers. */
   colors: string[]
+  /** Particle silhouettes, one per depth layer (cycled if fewer than 3). */
+  shapes?: V2ParticleShape[]
   /** Ring/ornament color (gold thread tone). */
   ringColor?: string
   /** Whether to render the interlocked-rings ornament (wedding motif). */
@@ -29,6 +33,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  shapes: () => ['petals'],
   ringColor: '#C9A66B',
   showRings: true,
 })
@@ -83,31 +88,82 @@ const triggerOpenBurst = () => {
 }
 defineExpose({ triggerOpenBurst })
 
-function buildPetalTexture(THREE: typeof ThreeNS, hex: string): ThreeNS.CanvasTexture {
+// Source resolution for the particle sprite texture. The camera flies
+// through these particles, so any given sprite can end up magnified to a
+// large chunk of the screen for a few frames — a low-res source (the old
+// 64px) shows that moment as a blurry, blocky silhouette. 256px keeps edges
+// clean under that magnification without materially raising GPU memory
+// (only 3 of these textures exist, one per depth layer).
+const PARTICLE_TEXTURE_SIZE = 256
+
+function buildPetalTexture(
+  THREE: typeof ThreeNS,
+  hex: string,
+  shapeName: V2ParticleShape,
+): ThreeNS.CanvasTexture {
+  const shape = V2_PARTICLE_SHAPES[shapeName] ?? V2_PARTICLE_SHAPES.petals
+  const [minX, minY, vbW, vbH] = shape.viewBox.split(' ').map(Number)
+  const extent = Math.max(vbW, vbH)
+  const tex = PARTICLE_TEXTURE_SIZE
+
   const c = document.createElement('canvas')
-  c.width = c.height = 64
+  c.width = c.height = tex
   const ctx = c.getContext('2d')!
-  ctx.translate(32, 32)
+  ctx.translate(tex / 2, tex / 2)
   ctx.rotate(0.6)
-  const grad = ctx.createRadialGradient(0, -4, 2, 0, 0, 26)
-  grad.addColorStop(0, 'rgba(255,255,255,.95)')
-  grad.addColorStop(0.35, hex)
-  grad.addColorStop(1, 'rgba(255,255,255,0)')
+  ctx.scale((tex * 0.85) / extent, (tex * 0.85) / extent)
+  ctx.translate(-(minX + vbW / 2), -(minY + vbH / 2))
+
+  const path = new Path2D(shape.path)
+
+  // A corner-to-corner sheen (rather than a fixed hotspot) reads as a
+  // natural highlight on any silhouette, including elongated/off-center
+  // ones like the leaf and maple shapes where a centered radial highlight
+  // used to land mostly outside the visible fill area.
+  const grad = ctx.createLinearGradient(minX, minY, minX + vbW, minY + vbH)
+  grad.addColorStop(0, `color-mix(in srgb, ${hex} 55%, white)`)
+  grad.addColorStop(0.55, hex)
+  grad.addColorStop(1, `color-mix(in srgb, ${hex} 70%, black)`)
   ctx.fillStyle = grad
-  ctx.beginPath()
-  ctx.ellipse(0, 0, 14, 24, 0, 0, Math.PI * 2)
-  ctx.fill()
+  ctx.fill(path)
+
+  // A thin, slightly darker edge stroke keeps the silhouette reading as a
+  // crisp cut shape instead of a soft blob once stretched across a large
+  // point sprite — and doubles as the leaf shape's vein detail.
+  ctx.lineWidth = extent * 0.025
+  ctx.lineJoin = 'round'
+  ctx.strokeStyle = `color-mix(in srgb, ${hex} 45%, black)`
+  ctx.stroke(path)
+
   return new THREE.CanvasTexture(c)
+}
+
+/**
+ * Caps how large a point sprite can render on screen. Without this, a
+ * particle the camera flies very close to balloons far past its source
+ * texture's resolution for a few frames, reading as pixelated/blurry —
+ * this keeps that moment from ever looking low-res.
+ */
+function clampPointSize(mat: ThreeNS.PointsMaterial, maxPx: number) {
+  mat.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader.replace(
+      'if ( isPerspective ) gl_PointSize *= ( scale / - mvPosition.z );',
+      `if ( isPerspective ) gl_PointSize *= ( scale / - mvPosition.z );
+			gl_PointSize = min( gl_PointSize, ${maxPx.toFixed(1)} );`,
+    )
+  }
 }
 
 function buildField(
   THREE: typeof ThreeNS,
   target: ThreeNS.Scene,
   colorHex: string,
+  shapeName: V2ParticleShape,
   zFrom: number,
   zTo: number,
   count: number,
   size: number,
+  opacity: number,
 ): PetalField {
   const geo = new THREE.BufferGeometry()
   const pos = new Float32Array(count * 3)
@@ -121,11 +177,12 @@ function buildField(
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
   const mat = new THREE.PointsMaterial({
     size,
-    map: buildPetalTexture(THREE, colorHex),
+    map: buildPetalTexture(THREE, colorHex, shapeName),
     transparent: true,
     depthWrite: false,
-    opacity: 0.85,
+    opacity,
   })
+  clampPointSize(mat, 220)
   const points = new THREE.Points(geo, mat)
   target.add(points)
   return { points, seeds }
@@ -224,27 +281,46 @@ onMounted(async () => {
     fill.position.set(-4, -2, 3)
     scene.add(fill)
 
-    const count = isMobile ? 240 : 500
+    // Kept deliberately sparse — this reads as a few graceful falling
+    // accents, not a dense starfield of specks. Distant layers also fade in
+    // opacity (real depth-of-field cue) so they recede into soft atmosphere
+    // rather than competing with the near layer for attention.
+    const count = isMobile ? 70 : 140
     const palette = props.colors
+    const shapeFor = (i: number) => props.shapes[i % props.shapes.length]
     fields = [
-      buildField(THREE, scene, palette[0], 35, -95, Math.floor(count * 0.42), isMobile ? 1.6 : 2.0),
+      buildField(
+        THREE,
+        scene,
+        palette[0],
+        shapeFor(0),
+        35,
+        -95,
+        Math.floor(count * 0.42),
+        isMobile ? 1.6 : 2.0,
+        0.85,
+      ),
       buildField(
         THREE,
         scene,
         palette[2 % palette.length],
+        shapeFor(1),
         -80,
         -150,
         Math.floor(count * 0.3),
         isMobile ? 1.5 : 1.9,
+        0.55,
       ),
       buildField(
         THREE,
         scene,
         palette[3 % palette.length],
+        shapeFor(2),
         -135,
         -215,
         Math.floor(count * 0.28),
         isMobile ? 1.4 : 1.8,
+        0.35,
       ),
     ]
 

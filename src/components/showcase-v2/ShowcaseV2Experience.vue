@@ -6,10 +6,11 @@
       v-if="richMotion"
       ref="tunnelRef"
       :colors="petalColors"
+      :shapes="particleShapes"
       :ring-color="palette.gold"
       @unavailable="richMotion = false"
     />
-    <V2PetalField v-else :colors="petalColors" />
+    <V2PetalField v-else :colors="petalColors" :shapes="particleShapes" />
 
     <!-- Envelope cover gate (category-specific — see useV2CategoryVariant) -->
     <component
@@ -274,6 +275,7 @@ import {
   findV2TemplateFont,
 } from '../../composables/showcase-v2/v2Theme'
 import { resolveV2Variant } from '../../composables/showcase-v2/useV2CategoryVariant'
+import type { V2ParticleShape } from '../../composables/showcase-v2/v2ParticleShapes'
 import { useTemplateProcessor } from '../../composables/showcase/useTemplateProcessor'
 import { formatDateLocalized, type SupportedLanguage } from '../../utils/translations'
 import type {
@@ -386,6 +388,8 @@ const petalColors = computed(() => [
   palette.value.sage,
   palette.value.gold,
 ])
+
+const particleShapes = computed<V2ParticleShape[]>(() => variant.value.particleShapes ?? ['petals'])
 
 // ---------------------------------------------------------------------------
 // Cover gate / hero hand-off

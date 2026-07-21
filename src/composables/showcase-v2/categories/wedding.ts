@@ -8,6 +8,7 @@ import {
   WEDDING_FONTS,
   WEDDING_TRANSLATIONS,
   WEDDING_MONOGRAM_FALLBACK,
+  WEDDING_PARTICLE_SHAPES,
 } from './wedding.data'
 import { getWeddingCoupleNames } from './useWeddingCoupleNames'
 
@@ -21,5 +22,6 @@ export const weddingVariant: V2CategoryVariant = {
   fonts: WEDDING_FONTS,
   translations: WEDDING_TRANSLATIONS,
   monogramFallback: WEDDING_MONOGRAM_FALLBACK,
+  particleShapes: WEDDING_PARTICLE_SHAPES,
   deriveHeroProps: (hosts: Host[]) => ({ coupleNames: getWeddingCoupleNames(hosts) }),
 }

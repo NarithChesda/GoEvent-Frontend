@@ -2,6 +2,7 @@ import type { Component } from 'vue'
 import type { Host } from '../useEventShowcase'
 import type { V2ColorPalette, V2Fonts } from './v2Theme'
 import type { V2CategoryTranslations } from './v2Translations'
+import type { V2ParticleShape } from './v2ParticleShapes'
 import { weddingVariant } from './categories/wedding'
 
 /**
@@ -21,6 +22,12 @@ export interface V2CategoryVariant {
   fonts: V2Fonts
   translations: V2CategoryTranslations
   monogramFallback: string
+  /**
+   * Background particle silhouettes (V2Tunnel's WebGL sprites / V2PetalField's
+   * CSS fallback), cycled per particle/depth-layer. Defaults to `['petals']`
+   * in the orchestrator when a variant doesn't set this.
+   */
+  particleShapes?: V2ParticleShape[]
   /**
    * Extra props this category's CoverGate/HeroSection need beyond the shared
    * base props (eventTitle, monogram, guestName, currentLanguage, …) —

@@ -1,6 +1,7 @@
 import type { SupportedLanguage } from '../../../utils/translations'
 import type { V2ColorPalette, V2Fonts } from '../v2Theme'
 import type { V2CategoryTranslations } from '../v2Translations'
+import type { V2ParticleShape } from '../v2ParticleShapes'
 
 /**
  * "Storybook Romance" — the wedding V2 look. Default palette/fonts used
@@ -32,6 +33,15 @@ export const WEDDING_FONTS: V2Fonts = {
 
 /** Fallback glyph for the cover seal / footer monogram when no names resolve. */
 export const WEDDING_MONOGRAM_FALLBACK = '♥'
+
+/**
+ * Background particle silhouettes for the wedding variant — one per depth
+ * layer in V2Tunnel (hearts nearest, leaves mid, maple farthest), cycled
+ * per-particle in V2PetalField's CSS fallback. Same SVG path data as V1's
+ * falling-effect registry (see v2ParticleShapes.ts) — no backend field
+ * needed to pick these.
+ */
+export const WEDDING_PARTICLE_SHAPES: V2ParticleShape[] = ['hearts', 'leaves', 'maple']
 
 /**
  * Wedding-only strings (no reasonable generic default, e.g. "We're tying the
