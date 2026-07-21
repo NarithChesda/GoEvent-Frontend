@@ -1,7 +1,15 @@
 ﻿<template>
   <div ref="rootEl" class="v2-experience relative" :style="cssVars">
-    <!-- Drifting petal parallax layer (behind everything) -->
-    <V2PetalField :colors="petalColors" />
+    <!-- Background motion layer (behind everything): WebGL tunnel flythrough
+         on capable devices, falling-petal CSS layer otherwise/as a fallback -->
+    <V2Tunnel
+      v-if="richMotion"
+      ref="tunnelRef"
+      :colors="petalColors"
+      :ring-color="palette.gold"
+      @unavailable="richMotion = false"
+    />
+    <V2PetalField v-else :colors="petalColors" />
 
     <!-- Envelope cover gate (category-specific — see useV2CategoryVariant) -->
     <component
@@ -148,32 +156,14 @@
       />
 
       <!-- 9 · Gift -->
-      <V2ChapterShell
+      <V2PaymentSection
         v-if="hasChapter('payment-section')"
-        section-id="payment-section"
         :chapter-number="chapterNumber('payment-section')"
         :title="t('chapter_gift')"
+        :payment-methods="paymentMethods"
+        :get-media-url="getMediaUrl"
         :current-language="currentLanguage"
-      >
-        <div class="v2-card">
-          <PaymentSection
-            ref="paymentRef"
-            :payment-methods="paymentMethods"
-            :primary-color="palette.charcoal"
-            :secondary-color="palette.sageDeep"
-            :accent-color="palette.gold"
-            :current-font="fonts.body"
-            :primary-font="fonts.body"
-            :secondary-font="fonts.display"
-            :get-media-url="getMediaUrl"
-            :event-category="event.category"
-            :event-category-name="event.category_name || undefined"
-            :event-category-details="event.category_details"
-            :event-texts="eventTexts"
-            :current-language="currentLanguage"
-          />
-        </div>
-      </V2ChapterShell>
+      />
 
       <!-- 10 · Guestbook (V2-native "well wishes" list + optimistic post) -->
       <V2GuestbookSection
@@ -253,6 +243,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 // Category-agnostic V2 engine components (structure/mechanics shared by
 // every category variant — wedding, birthday, housewarming, …)
 import V2PetalField from './core/V2PetalField.vue'
+import V2Tunnel from './core/V2Tunnel.vue'
 import V2ChapterShell from './core/V2ChapterShell.vue'
 import V2AgendaSection from './core/V2AgendaSection.vue'
 import V2GallerySection from './core/V2GallerySection.vue'
@@ -261,6 +252,7 @@ import V2RSVPSection from './core/V2RSVPSection.vue'
 import V2GuestRSVPSection from './core/V2GuestRSVPSection.vue'
 import V2GuestbookSection from './core/V2GuestbookSection.vue'
 import V2FooterSection from './core/V2FooterSection.vue'
+import V2PaymentSection from './core/V2PaymentSection.vue'
 import V2ProgressDots, { type ProgressSection } from './core/V2ProgressDots.vue'
 
 // Category-specific components (CoverGate/HeroSection/StorySection) are NOT
@@ -272,11 +264,11 @@ import V2ProgressDots, { type ProgressSection } from './core/V2ProgressDots.vue'
 // rest of the V2 experience)
 import DressCodeSection from '../showcase/DressCodeSection.vue'
 import YouTubeVideoSection from '../showcase/YouTubeVideoSection.vue'
-import PaymentSection from '../showcase/PaymentSection.vue'
 import FloatingActionMenu from '../showcase/FloatingActionMenu.vue'
 
 import { gsap, ScrollTrigger } from '../../plugins/gsap'
 import { useScrollStory, refreshScrollTriggers } from '../../composables/showcase-v2/useScrollStory'
+import { useV2MotionTier } from '../../composables/showcase-v2/useV2MotionTier'
 import { translateV2, type V2TranslationKey } from '../../composables/showcase-v2/v2Translations'
 import {
   resolveV2Colors,
@@ -344,6 +336,8 @@ const emit = defineEmits<{
 
 const rootEl = ref<HTMLElement | null>(null)
 const { createStory } = useScrollStory(rootEl)
+const richMotion = useV2MotionTier()
+const tunnelRef = ref<InstanceType<typeof V2Tunnel> | null>(null)
 
 const lang = computed(() => (props.currentLanguage as SupportedLanguage) || 'en')
 
@@ -406,6 +400,7 @@ const heroActive = ref(props.skipCover === true)
 const handleCoverOpened = () => {
   showCover.value = false
   heroActive.value = true
+  tunnelRef.value?.triggerOpenBurst()
   emit('opened')
   emit('mainContentViewed')
   // Layout was measured while the gate locked scrolling — re-measure now
@@ -541,10 +536,8 @@ const scrollToSection = (sectionId: string) => {
   })
 }
 
-const paymentRef = ref<InstanceType<typeof PaymentSection> | null>(null)
 const handleGift = () => {
   scrollToSection('payment-section')
-  nextTick(() => paymentRef.value?.expandFirstCard?.())
 }
 
 onMounted(async () => {

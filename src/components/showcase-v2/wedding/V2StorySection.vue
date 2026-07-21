@@ -35,7 +35,7 @@
       >
         <defs>
           <mask
-            idQ="v2-Q-reveal"
+            id="v2-thread-reveal"
             maskUnits="userSpaceOnUse"
             x="0"
             y="0"
