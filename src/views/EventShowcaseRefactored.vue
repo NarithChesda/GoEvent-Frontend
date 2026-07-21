@@ -28,7 +28,6 @@
       @open-map="openGoogleMap"
       @change-language="changeLanguage"
       @music-toggle="toggleMusic"
-      @logout="handleLogout"
       @show-auth-modal="openAuthModal"
       @comment-submitted="handleCommentSubmitted"
       @register="registerForEvent"
@@ -143,7 +142,6 @@
             :guest-name="guestName"
             :guest-shortcode="guestShortcode"
             :is-music-playing="isMusicPlaying"
-            :is-authenticated="authStore.isAuthenticated"
             :content-loading="contentLoading"
             :top-decoration="event.template_assets?.assets?.top_decoration || event.top_decoration"
             :bottom-decoration="event.template_assets?.assets?.bottom_decoration || event.bottom_decoration"
@@ -160,7 +158,6 @@
             @change-language="changeLanguage"
             @comment-submitted="handleCommentSubmitted"
             @music-toggle="toggleMusic"
-            @logout="handleLogout"
             @main-content-viewed="handleMainContentViewed"
             @show-auth-modal="openAuthModal"
             @video-state-change="handleVideoStateChange"
@@ -459,16 +456,6 @@ const handleTransitionComplete = () => {
 const handleMainContentViewed = () => {
   // Mark that user has seen the main content stage
   markMainContentSeen()
-}
-
-const handleLogout = async () => {
-  // Remove hash to prevent auto-redirect on re-login
-  if (window.location.hash) {
-    const urlWithoutHash = window.location.href.split('#')[0]
-    window.history.replaceState(window.history.state, '', urlWithoutHash)
-  }
-
-  await authStore.logout()
 }
 
 // Store music state before video plays

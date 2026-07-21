@@ -162,7 +162,6 @@ export const rsvpTranslations: Record<
     floating_menu_gift: string
     floating_menu_comment: string
     floating_menu_comment_funeral: string
-    floating_menu_logout: string
     floating_menu_select_language: string
 
     // Envelope button
@@ -366,7 +365,6 @@ export const rsvpTranslations: Record<
     floating_menu_gift: 'Gift',
     floating_menu_comment: 'Comment',
     floating_menu_comment_funeral: 'Condolence',
-    floating_menu_logout: 'Logout',
     floating_menu_select_language: 'Select Language',
 
     // Envelope button
@@ -570,7 +568,6 @@ export const rsvpTranslations: Record<
     floating_menu_gift: 'ចំណងដៃ',
     floating_menu_comment: 'ជូនពរ',
     floating_menu_comment_funeral: 'រំលែកទុក្ខ',
-    floating_menu_logout: 'ចាកចេញ',
     floating_menu_select_language: 'ជ្រើសរើសភាសា',
 
     // Envelope button
@@ -774,7 +771,6 @@ export const rsvpTranslations: Record<
     floating_menu_gift: '礼物',
     floating_menu_comment: '评论',
     floating_menu_comment_funeral: '吊唁',
-    floating_menu_logout: '退出',
     floating_menu_select_language: '选择语言',
 
     // Envelope button

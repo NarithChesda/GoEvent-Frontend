@@ -200,26 +200,24 @@
     <!-- Desktop chapter progress dots -->
     <V2ProgressDots :sections="chapters" :active-id="activeSectionId" @navigate="scrollToSection" />
 
-    <!-- Mobile quick-jump / language / music menu (fixed viewport host).
-         The host stays transparent to pointer events; only the menu subtree
-         re-enables them (see .v2-fam-host below) so page content stays clickable -->
+    <!-- Floating bottom tab bar: quick-jump / language / music menu (fixed
+         viewport host). The host stays transparent to pointer events; only
+         the bar subtree re-enables them (see .v2-fab-host below) so page
+         content stays clickable -->
     <div class="pointer-events-none fixed inset-0 z-[70]">
-      <div class="v2-fam-host relative h-full w-full">
-        <FloatingActionMenu
-          :primary-color="palette.charcoal"
-          :accent-color="palette.gold"
-          :background-color="palette.ivory"
+      <div class="v2-fab-host relative h-full w-full">
+        <V2FloatingActionBar
           :current-language="currentLanguage"
           :available-languages="availableLanguages"
           :is-music-playing="isMusicPlaying"
-          :is-authenticated="isAuthenticated"
           :has-location="!!event.google_map_embed_link"
+          :has-agenda="hasChapter('agenda-section')"
           :has-video="!!event.youtube_embed_link"
           :has-gallery="eventPhotos.length > 0"
           :has-payment="paymentMethods.length > 0"
           :has-rsvp="event.rsvp_enabled !== false"
           :has-comments="event.comments_enabled !== false"
-          :event-type="eventType"
+          :category-translations="variant.translations"
           @language-change="$emit('changeLanguage', $event)"
           @music-toggle="$emit('musicToggle')"
           @rsvp="scrollToSection('rsvp-section')"
@@ -230,7 +228,6 @@
           @video="scrollToSection('video-section')"
           @gallery="scrollToSection('gallery-section')"
           @comment="scrollToSection('comment-section')"
-          @logout="$emit('logout')"
         />
       </div>
     </div>
@@ -264,7 +261,7 @@ import V2ProgressDots, { type ProgressSection } from './core/V2ProgressDots.vue'
 // rest of the V2 experience)
 import DressCodeSection from '../showcase/DressCodeSection.vue'
 import YouTubeVideoSection from '../showcase/YouTubeVideoSection.vue'
-import FloatingActionMenu from '../showcase/FloatingActionMenu.vue'
+import V2FloatingActionBar from './core/V2FloatingActionBar.vue'
 
 import { gsap, ScrollTrigger } from '../../plugins/gsap'
 import { useScrollStory, refreshScrollTriggers } from '../../composables/showcase-v2/useScrollStory'
@@ -326,7 +323,6 @@ const emit = defineEmits<{
   openMap: []
   changeLanguage: [language: string]
   musicToggle: []
-  logout: []
   showAuthModal: []
   commentSubmitted: [comment: unknown]
   register: []
@@ -612,8 +608,15 @@ onMounted(async () => {
         .map((p) => Math.min(max, Math.max(0, p)))
         .filter((p) => !pins.some((pin) => p > pin.start - vh * 0.25 && p < pin.end - 1))
         .sort((a, b) => a - b)
-        // collapse stops that landed within a sliver of each other
-        .filter((p, i, arr) => i === 0 || p - arr[i - 1] >= vh * 0.15)
+        // Collapse only near-duplicate stops (float rounding, a pin's end
+        // landing right on the next chapter's start, …) — a small fixed
+        // pixel gap, not a share of viewport height. A vh-relative threshold
+        // used to eat legitimate stops for back-to-back short chapters (e.g.
+        // Gift sitting between RSVP and Guestbook): on a short phone
+        // viewport their centered points can land well under vh*0.15 apart
+        // even though each is a real, distinct chapter, so the shorter one
+        // silently lost its landing spot and scrolling jumped straight over it.
+        .filter((p, i, arr) => i === 0 || p - arr[i - 1] >= 24)
 
       // Already resting on a stop (e.g. right after dot navigation): stay put
       const near = points.find((p) => Math.abs(p - scroll) < 10)
@@ -815,11 +818,11 @@ const handleReminder = () => {
   opacity: 0.85;
 }
 
-.v2-fam-host {
+.v2-fab-host {
   pointer-events: none;
 }
 
-.v2-fam-host :deep(.floating-action-menu) {
+.v2-fab-host :deep(.v2-fab-root) {
   pointer-events: auto;
 }
 </style>

@@ -136,17 +136,6 @@
           </button>
         </div>
 
-        <!-- Logout (only show if authenticated) -->
-        <div v-if="props.isAuthenticated" class="menu-item">
-          <button
-            @click="handleLogout"
-            class="menu-button glass-section logout-button"
-            :style="logoutButtonStyle"
-          >
-            <LogOut :size="20" color="white" />
-            <span class="menu-text">{{ translations.logout }}</span>
-          </button>
-        </div>
       </div>
     </Transition>
 
@@ -200,7 +189,6 @@ import {
   Play,
   Image,
   MessageCircle,
-  LogOut,
 } from 'lucide-vue-next'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
@@ -211,7 +199,6 @@ interface Props {
   currentLanguage?: string
   availableLanguages?: Array<{ id: number; language: string; language_display: string }>
   isMusicPlaying?: boolean
-  isAuthenticated?: boolean
   hasLocation?: boolean
   hasVideo?: boolean
   hasGallery?: boolean
@@ -233,7 +220,6 @@ const props = withDefaults(defineProps<Props>(), {
   currentLanguage: 'en',
   availableLanguages: () => [],
   isMusicPlaying: false,
-  isAuthenticated: false,
   hasLocation: true,
   hasVideo: true,
   hasGallery: true,
@@ -253,7 +239,6 @@ const emit = defineEmits<{
   video: []
   gallery: []
   comment: []
-  logout: []
 }>()
 
 const isMenuOpen = ref(false)
@@ -300,7 +285,6 @@ const translations = computed(() => ({
     props.eventType?.toLowerCase() === 'funeral' ? 'floating_menu_comment_funeral' : 'floating_menu_comment',
     currentLang.value,
   ),
-  logout: translateRSVP('floating_menu_logout', currentLang.value),
   selectLanguage: translateRSVP('floating_menu_select_language', currentLang.value),
 }))
 
@@ -318,11 +302,6 @@ const fabButtonStyle = computed(() => ({
 
 const menuButtonStyle = computed(() => ({
   borderColor: themeColor.value,
-}))
-
-const logoutButtonStyle = computed(() => ({
-  borderColor: themeColor.value,
-  background: themeColor.value,
 }))
 
 const modalTitleStyle = computed(() => ({
@@ -394,11 +373,6 @@ const handleGallery = () => {
 
 const handleComment = () => {
   emit('comment')
-  isMenuOpen.value = false
-}
-
-const handleLogout = () => {
-  emit('logout')
   isMenuOpen.value = false
 }
 </script>
@@ -1110,22 +1084,6 @@ const handleLogout = () => {
   /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-}
-
-/* Logout button specific styles */
-.logout-button {
-  /* Reverse style - filled background instead of transparent */
-}
-
-.logout-button:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-color: currentColor !important;
-  transform: translateX(-4px);
-}
-
-.logout-button .menu-text {
-  color: white;
-  font-weight: 600;
 }
 
 .glass-inner {

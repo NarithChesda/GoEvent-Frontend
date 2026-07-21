@@ -84,7 +84,6 @@
       :current-language="currentLanguage"
       :available-languages="availableLanguages"
       :is-music-playing="isMusicPlaying"
-      :is-authenticated="isAuthenticated"
       :has-location="!!event.google_map_embed_link"
       :has-video="!!event.youtube_embed_link"
       :has-gallery="eventPhotos.length > 0"
@@ -102,7 +101,6 @@
       @video="handleVideo"
       @gallery="handleGallery"
       @comment="handleComment"
-      @logout="handleLogout"
     />
 
     <!-- Liquid Glass Floating Box Container -->
@@ -987,7 +985,6 @@ interface Props {
   /** Guest shortcode from `?g=...` — credential for commenting on private events. */
   guestShortcode?: string | null
   isMusicPlaying?: boolean
-  isAuthenticated?: boolean
   contentLoading?: boolean
   topDecoration?: string | null
   bottomDecoration?: string | null
@@ -1215,7 +1212,6 @@ const emit = defineEmits<{
   changeLanguage: [string]
   commentSubmitted: [EventComment]
   musicToggle: []
-  logout: []
   mainContentViewed: []
   showAuthModal: []
   videoStateChange: [isPlaying: boolean]
@@ -1437,7 +1433,6 @@ const scrollToSection = (sectionId: string) => {
 // Floating Action Menu Handlers
 const handleLanguageChange = (language: string) => emit('changeLanguage', language)
 const handleMusicToggle = () => emit('musicToggle')
-const handleLogout = () => emit('logout')
 const handleCommentSubmitted = (comment: EventComment) => emit('commentSubmitted', comment)
 const handleVideoStateChange = (isPlaying: boolean) => emit('videoStateChange', isPlaying)
 
