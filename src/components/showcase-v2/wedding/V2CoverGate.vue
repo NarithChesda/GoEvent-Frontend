@@ -7,8 +7,17 @@
   >
     <p class="v2-cover-item v2-eyebrow mb-4">{{ t('eyebrow_families') }}</p>
 
-    <h1 class="v2-cover-item v2-cover-names">{{ coupleNames || eventTitle }}</h1>
-    <p class="v2-cover-item v2-cover-sub mb-2">{{ t('getting_married') }}</p>
+    <h1 class="v2-cover-item v2-cover-names">
+      <template v-if="nameParts.length === 2">
+        <span class="v2-cover-name-line">{{ nameParts[0] }}</span>
+        <span class="v2-cover-amp" aria-hidden="true">&amp;</span>
+        <span class="v2-cover-name-line">{{ nameParts[1] }}</span>
+      </template>
+      <template v-else>{{ coupleNames || eventTitle }}</template>
+    </h1>
+    <p class="v2-cover-item v2-cover-sub mb-2" :class="{ 'v2-cover-sub--kh': isKhmer }">
+      {{ t('getting_married') }}
+    </p>
 
     <p v-if="guestName" class="v2-cover-item mb-9 text-sm tracking-wide">
       {{ t('you_are_invited') }},
@@ -71,6 +80,14 @@ const t = (key: V2TranslationKey | WeddingTranslationKey) =>
 
 const monogram = computed(() => props.monogram || '♥')
 const coupleNames = computed(() => props.coupleNames)
+const isKhmer = computed(() => props.currentLanguage === 'kh')
+
+// Split "A & B" so each name gets its own line, matching the hero's treatment
+const nameParts = computed(() => {
+  if (!props.coupleNames) return []
+  const parts = props.coupleNames.split('&').map((p) => p.trim())
+  return parts.length === 2 ? parts : []
+})
 
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -151,11 +168,27 @@ onUnmounted(() => {
 }
 
 .v2-cover-names {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   font-family: var(--v2-display);
   font-weight: 500;
-  font-size: clamp(38px, 9vw, 64px);
-  line-height: 1.1;
-  margin-bottom: 6px;
+  font-size: clamp(32px, 8vw, 54px);
+  line-height: 1.18;
+  margin-bottom: 10px;
+}
+
+.v2-cover-name-line {
+  display: block;
+  max-width: 100%;
+}
+
+.v2-cover-amp {
+  display: block;
+  font-style: italic;
+  color: var(--v2-gold);
+  font-size: 0.45em;
+  line-height: 1.4;
 }
 
 .v2-cover-sub {
@@ -163,6 +196,14 @@ onUnmounted(() => {
   font-style: italic;
   font-size: clamp(17px, 4.5vw, 22px);
   color: var(--v2-blush-deep);
+}
+
+/* Khmer display fonts have no true italic glyphs — the browser's synthetic
+   oblique reads as broken text, so fall back to the upright body font. */
+.v2-cover-sub--kh {
+  font-family: var(--v2-body);
+  font-style: normal;
+  font-size: clamp(14px, 3.8vw, 17px);
 }
 
 .v2-cover-guest-name {

@@ -25,7 +25,11 @@
         <template v-else>{{ coupleNames || eventTitle }}</template>
       </h1>
 
-      <p v-if="dateLine" class="v2-hero-item v2-hero-date">
+      <p
+        v-if="dateLine"
+        class="v2-hero-item v2-hero-date"
+        :class="{ 'v2-hero-date--kh': isKhmer }"
+      >
         {{ dateLine }}<template v-if="locationLine"> · {{ locationLine }}</template>
       </p>
 
@@ -79,6 +83,8 @@ const { createStory } = useScrollStory(rootEl)
 
 const t = (key: V2TranslationKey | WeddingTranslationKey) =>
   translateV2(key, props.currentLanguage, WEDDING_TRANSLATIONS)
+
+const isKhmer = computed(() => props.currentLanguage === 'kh')
 
 // Split "A & B" so the ampersand can get its italic gold treatment
 const nameParts = computed(() => {
@@ -221,6 +227,14 @@ onMounted(() => {
   font-size: clamp(18px, 5vw, 24px);
   margin: 16px 0 34px;
   color: var(--v2-sage-deep);
+}
+
+/* Khmer display fonts have no true italic glyphs — the browser's synthetic
+   oblique reads as broken text, so fall back to the upright body font. */
+.v2-hero-date--kh {
+  font-family: var(--v2-body);
+  font-style: normal;
+  font-size: clamp(15px, 4vw, 18px);
 }
 
 .v2-cd-cell {
