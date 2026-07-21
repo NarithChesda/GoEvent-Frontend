@@ -4,19 +4,19 @@
     <div v-if="isMenuOpen || showLanguageModal" class="blur-overlay" @click="closeAllMenus"></div>
 
     <!-- Floating Action Button -->
-    <button
-      @click="toggleMenu"
-      class="fab-button"
-      :class="{ active: isMenuOpen }"
-      :style="fabButtonStyle"
-    >
-      <component
-        :is="isMenuOpen ? ChevronRight : ChevronLeft"
-        :size="22"
-        color="white"
-        class="arrow-icon"
-      />
-    </button>
+    <Transition name="fab">
+      <button
+        v-if="!isMenuOpen"
+        @click="toggleMenu"
+        class="fab-button"
+        :class="{ 'fab-hidden': fabHidden }"
+        :style="fabButtonStyle"
+        :aria-label="translations.open"
+        aria-haspopup="true"
+      >
+        <ChevronLeft :size="22" color="white" class="arrow-icon" />
+      </button>
+    </Transition>
 
     <!-- Menu Items -->
     <Transition name="menu">
@@ -174,10 +174,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import {
   ChevronLeft,
-  ChevronRight,
   X,
   Languages,
   Volume2,
@@ -272,6 +271,7 @@ const currentLang = computed(() => (props.currentLanguage as SupportedLanguage) 
 
 // Single computed object for all translations (better performance - computed once)
 const translations = computed(() => ({
+  open: translateRSVP('floating_menu_open', currentLang.value),
   language: translateRSVP('floating_menu_language', currentLang.value),
   musicOn: translateRSVP('floating_menu_music_on', currentLang.value),
   musicOff: translateRSVP('floating_menu_music_off', currentLang.value),
@@ -328,6 +328,44 @@ const closeAllMenus = () => {
   showLanguageModal.value = false
 }
 
+const handleEscapeKey = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    closeAllMenus()
+  }
+}
+
+// Touch-only scroll-to-hide (mirrors the V2 floating action bar): fades the
+// FAB out while the page is scrolling and only brings it back on a
+// deliberate tap (a `click` only fires for a real tap, not a scroll/drag
+// gesture, so this never fights the hide). Mouse users (no coarse pointer)
+// never see this - the button stays put for them.
+const fabHidden = ref(false)
+let touchMql: MediaQueryList | null = null
+
+const handleScroll = () => {
+  if (!touchMql?.matches) return
+  fabHidden.value = true
+  closeAllMenus()
+}
+
+const revealFab = () => {
+  if (!touchMql?.matches) return
+  fabHidden.value = false
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', handleEscapeKey)
+  touchMql = window.matchMedia('(hover: none) and (pointer: coarse)')
+  window.addEventListener('scroll', handleScroll, { passive: true })
+  window.addEventListener('click', revealFab)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleEscapeKey)
+  window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('click', revealFab)
+})
+
 const selectLanguage = (language: string) => {
   emit('languageChange', language)
   closeLanguageModal()
@@ -381,6 +419,11 @@ const handleComment = () => {
 .floating-action-menu {
   position: absolute;
   top: 50%;
+  /* Fixed height (not shrink-to-fit) so the menu's percentage-based centering
+     never shifts when the FAB button unmounts while the menu is open - the
+     menu is positioned via top:50%/translateY(-50%) against THIS box, so its
+     height must stay constant regardless of which child is present */
+  height: 40px;
   margin-top: -20px; /* Half of FAB button height (40px) */
   right: 0;
   z-index: 9999;
@@ -389,12 +432,14 @@ const handleComment = () => {
 /* Responsive positioning for different screen sizes */
 @media (min-width: 640px) {
   .floating-action-menu {
+    height: 48px;
     margin-top: -24px; /* Half of 48px */
   }
 }
 
 @media (min-width: 768px) {
   .floating-action-menu {
+    height: 56px;
     margin-top: -28px; /* Half of 56px */
   }
 }
@@ -402,6 +447,7 @@ const handleComment = () => {
 /* 13" Laptops - Optimized positioning */
 @media (min-width: 1280px) and (max-width: 1439px) {
   .floating-action-menu {
+    height: 60px;
     margin-top: -30px; /* Half of 60px */
   }
 }
@@ -409,6 +455,7 @@ const handleComment = () => {
 /* 15" Laptops - Balanced positioning */
 @media (min-width: 1440px) and (max-width: 1679px) {
   .floating-action-menu {
+    height: 64px;
     margin-top: -32px; /* Half of 64px */
   }
 }
@@ -416,6 +463,7 @@ const handleComment = () => {
 /* 17" Laptops - Enhanced positioning */
 @media (min-width: 1680px) and (max-width: 1919px) {
   .floating-action-menu {
+    height: 72px;
     margin-top: -36px; /* Half of 72px */
   }
 }
@@ -423,6 +471,7 @@ const handleComment = () => {
 /* Desktop - Original positioning */
 @media (min-width: 1920px) {
   .floating-action-menu {
+    height: 52px;
     margin-top: -26px; /* Half of 52px */
   }
 }
@@ -430,6 +479,7 @@ const handleComment = () => {
 /* Small laptops 13-inch (1024px-1365px) - Apply mobile sizing 20% smaller */
 @media (min-width: 1024px) and (max-width: 1365px) {
   .floating-action-menu {
+    height: 36px !important;
     margin-top: -18px !important; /* Half of 36px */
   }
 
@@ -444,7 +494,6 @@ const handleComment = () => {
   }
 
   .menu-container {
-    right: calc(36px + 0.5rem) !important;
     gap: 0.4rem !important;
     min-width: 144px !important;
     max-height: 70vh !important;
@@ -530,7 +579,7 @@ const handleComment = () => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: box-shadow 0.2s ease;
+  transition: box-shadow 0.2s ease, opacity 0.25s ease, transform 0.25s ease;
   will-change: transform;
   touch-action: manipulation;
   position: relative;
@@ -547,10 +596,6 @@ const handleComment = () => {
 
 .fab-button:hover .arrow-icon {
   animation: arrowSlide 0.8s ease-in-out infinite;
-}
-
-.fab-button.active .arrow-icon {
-  animation: none;
 }
 
 @keyframes arrowPulse {
@@ -570,6 +615,27 @@ const handleComment = () => {
   }
   50% {
     transform: translateX(-4px);
+  }
+}
+
+/* Touch-only scroll-to-hide state (see handleScroll/revealFab) */
+.fab-hidden {
+  opacity: 0;
+  transform: translateX(16px);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fab-button {
+    transition: box-shadow 0.2s ease, opacity 0.15s ease;
+  }
+
+  .fab-hidden {
+    transform: none;
+  }
+
+  .arrow-icon {
+    animation: none;
   }
 }
 
@@ -633,8 +699,9 @@ const handleComment = () => {
 .menu-container {
   position: absolute;
   top: 50%;
+  right: 0.625rem;
+  transform-origin: right center;
   transform: translateY(-50%);
-  right: calc(40px + 0.5rem);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -645,10 +712,10 @@ const handleComment = () => {
   z-index: 10001;
 }
 
-/* Responsive menu container positioning */
+/* Responsive menu container sizing (position stays flush right - the FAB
+   is hidden while the menu is open, so it no longer needs to reserve space) */
 @media (min-width: 640px) {
   .menu-container {
-    right: calc(48px + 0.5rem);
     gap: 0.625rem;
     min-width: 190px;
     max-height: 75vh;
@@ -657,7 +724,6 @@ const handleComment = () => {
 
 @media (min-width: 768px) {
   .menu-container {
-    right: calc(56px + 0.5rem);
     gap: 0.75rem;
     min-width: 200px;
     max-height: 80vh;
@@ -667,7 +733,6 @@ const handleComment = () => {
 /* 13" Laptops - Compact menu */
 @media (min-width: 1280px) and (max-width: 1439px) {
   .menu-container {
-    right: calc(60px + 0.5rem);
     gap: 0.625rem;
     min-width: 200px;
     max-height: 80vh;
@@ -677,7 +742,6 @@ const handleComment = () => {
 /* 15" Laptops - Balanced menu */
 @media (min-width: 1440px) and (max-width: 1679px) {
   .menu-container {
-    right: calc(64px + 0.5rem);
     gap: 0.75rem;
     min-width: 220px;
     max-height: 85vh;
@@ -687,7 +751,6 @@ const handleComment = () => {
 /* 17" Laptops - Enhanced menu */
 @media (min-width: 1680px) and (max-width: 1919px) {
   .menu-container {
-    right: calc(72px + 0.5rem);
     gap: 0.875rem;
     min-width: 240px;
     max-height: 85vh;
@@ -697,7 +760,6 @@ const handleComment = () => {
 /* Desktop - Original positioning */
 @media (min-width: 1920px) {
   .menu-container {
-    right: calc(52px + 0.5rem);
     gap: 0.75rem;
     min-width: 200px;
     max-height: 85vh;
@@ -991,19 +1053,52 @@ const handleComment = () => {
   }
 }
 
-.menu-enter-active,
+/* Menu swipes in from the edge where the FAB sits (Samsung edge-panel
+   style) - a slide + gentle scale, not a bounce, so it reads as smooth
+   rather than springy. */
+.menu-enter-active {
+  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.28s ease;
+}
+
 .menu-leave-active {
-  transition: all 0.2s ease;
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.6, 1), opacity 0.18s ease;
 }
 
-.menu-enter-from {
-  opacity: 0;
-  transform: translateY(-50%) translateX(20px) scale(0.95);
-}
-
+.menu-enter-from,
 .menu-leave-to {
   opacity: 0;
-  transform: translateY(-50%) translateX(20px) scale(0.95);
+  transform: translateY(-50%) translateX(24px) scale(0.96);
+}
+
+/* FAB tucks away toward the edge right as the menu swipes out */
+.fab-enter-active,
+.fab-leave-active {
+  transition: transform 0.2s ease-out, opacity 0.18s ease;
+}
+
+.fab-enter-from,
+.fab-leave-to {
+  opacity: 0;
+  transform: translateX(10px) scale(0.85);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-enter-active,
+  .menu-leave-active,
+  .fab-enter-active,
+  .fab-leave-active {
+    transition: opacity 0.15s ease;
+  }
+
+  .menu-enter-from,
+  .menu-leave-to {
+    transform: translateY(-50%);
+  }
+
+  .fab-enter-from,
+  .fab-leave-to {
+    transform: none;
+  }
 }
 
 .modal-enter-active,

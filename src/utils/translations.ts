@@ -149,6 +149,7 @@ export const rsvpTranslations: Record<
     footer_create_invitations: string
 
     // Floating menu section
+    floating_menu_open: string
     floating_menu_language: string
     floating_menu_music_on: string
     floating_menu_music_off: string
@@ -352,6 +353,7 @@ export const rsvpTranslations: Record<
     footer_create_invitations: 'Create beautiful event invitations',
 
     // Floating menu section
+    floating_menu_open: 'Open menu',
     floating_menu_language: 'Language',
     floating_menu_music_on: 'Music On',
     floating_menu_music_off: 'Music Off',
@@ -555,6 +557,7 @@ export const rsvpTranslations: Record<
     footer_create_invitations: 'ងាយស្រួលពេលមានកម្មវិធី',
 
     // Floating menu section
+    floating_menu_open: 'បើកម៉ឺនុយ',
     floating_menu_language: 'ភាសា',
     floating_menu_music_on: 'បើកតន្ត្រី',
     floating_menu_music_off: 'បិទតន្ត្រី',
@@ -758,6 +761,7 @@ export const rsvpTranslations: Record<
     footer_create_invitations: '创建精美的活动邀请函',
 
     // Floating menu section
+    floating_menu_open: '打开菜单',
     floating_menu_language: '语言',
     floating_menu_music_on: '打开音乐',
     floating_menu_music_off: '关闭音乐',
