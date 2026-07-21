@@ -8,6 +8,7 @@
       :colors="petalColors"
       :shapes="particleShapes"
       :ring-color="palette.gold"
+      :background-color="palette.ivory"
       @unavailable="richMotion = false"
     />
     <V2PetalField v-else :colors="petalColors" :shapes="particleShapes" />
@@ -562,6 +563,59 @@ onMounted(async () => {
         }),
       )
     })
+
+    // The WebGL ring ornament (V2Tunnel) *is* the story section's ring —
+    // there's no separate 2D icon there anymore. It locks from its drifting
+    // hero-background position to a fixed point in front of the camera as
+    // the user scrolls into the pinned story stage, holds there (still
+    // turning/sparkling) for the whole pin, then dissolves once the pin
+    // releases. Both handoffs are timed off the pin's own *live* start/end
+    // (found the same way scrollToSection() locates it) rather than a
+    // page-scroll fraction or hero-relative offset — those drift with page
+    // length/hero height, this doesn't.
+    if (tunnelRef.value) {
+      const storySectionEl = document.getElementById('story-section')
+      const pin = storySectionEl
+        ? ScrollTrigger.getAll().find(
+            (st) => st.pin && st.trigger instanceof Element && storySectionEl.contains(st.trigger),
+          )
+        : undefined
+
+      if (pin) {
+        // Lock-in: glides from the hero's own drifting background presence
+        // to fully locked at screen-center exactly as the pin begins. Kept
+        // relative to the pin's own start (not a hero-element trigger) so
+        // it composes with the absolute pin.start/pin.end used below.
+        ScrollTrigger.create({
+          start: () => pin.start - window.innerHeight * 0.9,
+          end: () => pin.start,
+          onUpdate: (self) => tunnelRef.value?.setRingLock(self.progress),
+          onLeaveBack: () => tunnelRef.value?.setRingLock(0),
+        })
+        // Release: dissolves it in place once the pin (and the thread it
+        // was catching) has finished, over a short stretch of the next
+        // chapter's approach so it doesn't just vanish on release.
+        ScrollTrigger.create({
+          start: () => pin.end,
+          end: () => pin.end + window.innerHeight * 0.5,
+          onUpdate: (self) => tunnelRef.value?.setRingFade(self.progress),
+          onLeaveBack: () => tunnelRef.value?.setRingFade(0),
+        })
+      } else {
+        // No story-stage pin (e.g. no hosts to render it for) — fall back
+        // to a simple dissolve as the hero itself scrolls out of view.
+        const heroEl = document.getElementById('hero')
+        if (heroEl) {
+          ScrollTrigger.create({
+            trigger: heroEl,
+            start: 'bottom 65%',
+            end: 'bottom 5%',
+            onUpdate: (self) => tunnelRef.value?.setRingFade(self.progress),
+            onLeaveBack: () => tunnelRef.value?.setRingFade(0),
+          })
+        }
+      }
+    }
 
     // Directional section snap: when free scrolling stops, glide the viewport
     // to the next chapter in the direction of travel — landing exactly where

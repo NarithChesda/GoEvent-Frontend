@@ -10,6 +10,11 @@
       <span class="v2-hero-orb v2-hero-orb--sage"></span>
     </div>
 
+    <!-- Soft halo behind the title/date block: guarantees the couple's
+         names stay legible over the WebGL tunnel's ring ornament and
+         falling particles no matter how the background theme resolves. -->
+    <div class="v2-hero-scrim" aria-hidden="true"></div>
+
     <div ref="innerEl" class="relative mx-auto w-full max-w-xl">
       <p class="v2-hero-item v2-hero-eyebrow mb-4">{{ t('tying_knot') }}</p>
 
@@ -282,6 +287,20 @@ onMounted(() => {
   max-width: 480px;
   aspect-ratio: 1;
   background: radial-gradient(circle, rgba(168, 181, 160, 0.22) 0%, transparent 70%);
+}
+
+.v2-hero-scrim {
+  position: absolute;
+  inset: 4% 6%;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--v2-ivory) 88%, transparent) 0%,
+    color-mix(in srgb, var(--v2-ivory) 60%, transparent) 42%,
+    transparent 72%
+  );
+  filter: blur(12px);
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -8,8 +8,11 @@
     class="v2-story relative z-10 px-5 sm:px-8 py-14 sm:py-20"
   >
     <!-- One-screen pinned 3D stage: chapter title top-center, groom upper-left,
-         bride lower-right, a gold thread drawing between them and interlocked
-         wedding rings zooming in from depth at the center as you scroll -->
+         bride lower-right, a gold thread drawing between them toward the
+         WebGL ring ornament (V2Tunnel), which locks to screen-center behind
+         this stage for the duration of the pin — see setRingLock in
+         ShowcaseV2Experience.vue for the handoff, there's no local ring
+         element here anymore. -->
     <div
       v-if="couple.length"
       ref="stageEl"
@@ -58,34 +61,6 @@
           mask="url(#v2-thread-reveal)"
         />
       </svg>
-
-      <!-- interlocked wedding rings, zooming in from deep 3D space -->
-      <div ref="ringsEl" class="v2-story-rings" aria-hidden="true">
-        <span class="v2-story-rings-glow"></span>
-        <svg viewBox="0 0 130 100" class="v2-story-rings-svg">
-          <defs>
-            <linearGradient id="v2-ring-gold" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#EAD6AB" />
-              <stop offset="0.5" stop-color="#C9A66B" />
-              <stop offset="1" stop-color="#A9854C" />
-            </linearGradient>
-          </defs>
-          <g fill="none" stroke-linecap="round">
-            <circle cx="50" cy="56" r="28" class="v2-ring" />
-            <circle cx="50" cy="56" r="23.5" class="v2-ring v2-ring--inner" />
-            <circle cx="80" cy="46" r="28" class="v2-ring" />
-            <circle cx="80" cy="46" r="23.5" class="v2-ring v2-ring--inner" />
-            <!-- interlock: the left band passes over the right at the lower crossing -->
-            <path d="M 75.4 67.8 A 28 28 0 0 1 68.4 77.1" class="v2-ring-under" />
-            <path d="M 75.4 67.8 A 28 28 0 0 1 68.4 77.1" class="v2-ring" />
-          </g>
-          <path
-            d="M 80 8 L 82.2 14.8 L 89 17 L 82.2 19.2 L 80 26 L 77.8 19.2 L 71 17 L 77.8 14.8 Z"
-            fill="url(#v2-ring-gold)"
-            class="v2-ring-glint"
-          />
-        </svg>
-      </div>
 
       <article
         v-for="(person, i) in couple"
@@ -172,7 +147,6 @@ const props = defineProps<Props>()
 
 const rootEl = ref<HTMLElement | null>(null)
 const stageEl = ref<HTMLElement | null>(null)
-const ringsEl = ref<HTMLElement | null>(null)
 const threadEl = ref<SVGPathElement | null>(null)
 const threadMaskEl = ref<SVGPathElement | null>(null)
 const { createStory } = useScrollStory(rootEl)
@@ -256,7 +230,6 @@ onMounted(() => {
     const head = stage.querySelector<HTMLElement>('.v2-story-head')
     const cardA = stage.querySelector<HTMLElement>('.v2-story-card--a')
     const cardB = stage.querySelector<HTMLElement>('.v2-story-card--b')
-    const rings = ringsEl.value
     // The draw tweens animate the solid mask path that reveals the dotted
     // thread — never the dotted path itself (dashoffset would march its dots)
     const thread = threadMaskEl.value
@@ -269,7 +242,7 @@ onMounted(() => {
 
     if (rich) {
       // ---- pinned 3D choreography, scrubbed to scroll ----
-      gsap.set([cardA, cardB, rings].filter(Boolean), { transformPerspective: 1100 })
+      gsap.set([cardA, cardB].filter(Boolean), { transformPerspective: 1100 })
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -333,7 +306,9 @@ onMounted(() => {
           0.75,
         )
       // Only once both cards have landed does the string spool out of the
-      // groom's frame and pause at center stage…
+      // groom's frame and pause at center stage — where the WebGL ring
+      // (locked to screen-center behind this stage, see setRingLock in
+      // ShowcaseV2Experience.vue) is waiting to catch it…
       if (thread)
         tl.fromTo(
           thread,
@@ -341,21 +316,8 @@ onMounted(() => {
           { strokeDashoffset: 0.5, duration: 0.55, ease: 'power1.in' },
           1.8,
         )
-      // …the rings zoom in from deep space to catch it…
-      if (rings)
-        tl.from(
-          rings,
-          { autoAlpha: 0, scale: 0.1, z: -800, rotateY: 240, duration: 0.9, ease: 'power2.out' },
-          2.15,
-        )
-      // …then it threads on through the interlock and ties off at the bride
+      // …then it threads on through and ties off at the bride
       if (thread) tl.to(thread, { strokeDashoffset: 0, duration: 0.5, ease: 'power1.out' }, 2.8)
-      if (rings)
-        tl.from(
-          '.v2-ring-glint',
-          { autoAlpha: 0, scale: 0, transformOrigin: 'center', duration: 0.35 },
-          3.15,
-        )
       // …and once tied off, the string draws the couple a breath closer
       if (thread && cardA && cardB) {
         tl.to(cardA, { x: 7, y: 5, duration: 0.45, ease: 'back.out(1.8)' }, 3.35)
@@ -364,11 +326,10 @@ onMounted(() => {
       // brief hold on the completed composition before the pin releases
       tl.to({}, { duration: 0.4 })
 
-      // gentle idle float while pinned — the thread sways with the rings
-      // (same clock, smaller amplitude) so the composition breathes as one
-      if (rings)
-        gsap.to([rings, threadSvg].filter(Boolean), {
-          y: (i: number) => (i === 0 ? 10 : 5),
+      // gentle idle sway while pinned, so the thread breathes in place
+      if (threadSvg)
+        gsap.to(threadSvg, {
+          y: 5,
           duration: 2.8,
           ease: 'sine.inOut',
           repeat: -1,
@@ -387,7 +348,6 @@ onMounted(() => {
       liteIn(head, { autoAlpha: 0, y: 28, duration: 0.9 })
       liteIn(cardA, { autoAlpha: 0, x: -36, y: -20, duration: 1, delay: 0.15 })
       liteIn(cardB, { autoAlpha: 0, x: 36, y: 20, duration: 1, delay: 0.3 })
-      liteIn(rings, { autoAlpha: 0, scale: 0.6, duration: 1, delay: 0.5 })
       // string draws last, once the cards have settled
       if (thread)
         gsap.fromTo(
@@ -506,59 +466,6 @@ onMounted(() => {
   stroke-width: 8px;
   stroke-linecap: round;
   stroke-dasharray: 1;
-}
-
-/* ---------- rings ---------- */
-.v2-story-rings {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: clamp(96px, 27vw, 128px);
-  aspect-ratio: 130 / 100;
-  z-index: 6;
-  will-change: transform;
-  pointer-events: none;
-}
-
-@media (min-width: 640px) {
-  .v2-story-rings {
-    width: clamp(120px, 17vw, 164px);
-  }
-}
-
-.v2-story-stage--solo .v2-story-rings {
-  inset: auto 0 6svh 0;
-  margin-inline: auto;
-}
-
-.v2-story-rings-svg {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: block;
-  filter: drop-shadow(0 10px 22px rgba(169, 133, 76, 0.35));
-}
-
-.v2-story-rings-glow {
-  position: absolute;
-  inset: -34%;
-  background: radial-gradient(circle, rgba(232, 180, 184, 0.5), transparent 62%);
-  pointer-events: none;
-}
-
-.v2-ring {
-  stroke: url(#v2-ring-gold);
-  stroke-width: 2.6;
-}
-
-.v2-ring--inner {
-  stroke-width: 1;
-  opacity: 0.55;
-}
-
-.v2-ring-under {
-  stroke: var(--v2-ivory);
-  stroke-width: 7;
 }
 
 /* ---------- couple cards ----------
