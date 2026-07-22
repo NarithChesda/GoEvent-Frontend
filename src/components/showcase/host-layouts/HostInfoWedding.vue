@@ -193,14 +193,16 @@
       </div>
 
       <!-- Row 4: Logo -->
-      <HostLogo
-        :key="`logo-${currentLanguage}`"
-        :logo-url="logoUrl"
-        :sample-logo-one="sampleLogoOne"
-        :primary-color="primaryColor"
-        :animated="true"
-        :animation-delay="animationDelays.logo"
-      />
+      <EditableRegion :intent="{ kind: 'eventLogo' }">
+        <HostLogo
+          :key="`logo-${currentLanguage}`"
+          :logo-url="logoUrl"
+          :sample-logo-one="sampleLogoOne"
+          :primary-color="primaryColor"
+          :animated="true"
+          :animation-delay="animationDelays.logo"
+        />
+      </EditableRegion>
 
       <!-- Row 5: Host Titles -->
       <div v-if="hosts.length > 0" class="title-row">
@@ -307,26 +309,32 @@
       <!-- Row 7: Host Profile Pictures -->
       <div v-if="showProfilePictures" class="profile-picture-row">
         <div class="host-profile-left">
-          <HostProfilePicture
-            :key="`profile-left-${currentLanguage}`"
-            :image-url="hosts[0].profile_image"
-            :alt="`${hosts[0].name} profile`"
-            :background-color="primaryColor"
-            :animated="true"
-            :animation-delay="animationDelays.profileLeft"
-          />
+          <EditableRegion :intent="{ kind: 'hostImage', hostId: hosts[0].id }">
+            <HostProfilePicture
+              :key="`profile-left-${currentLanguage}`"
+              :image-url="hosts[0].profile_image"
+              :alt="`${hosts[0].name} profile`"
+              :background-color="primaryColor"
+              :animated="true"
+              :animation-delay="animationDelays.profileLeft"
+            />
+          </EditableRegion>
         </div>
         <div class="center-spacer"></div>
         <div class="host-profile-right">
-          <HostProfilePicture
+          <EditableRegion
             v-if="hosts.length > 1"
-            :key="`profile-right-${currentLanguage}`"
-            :image-url="hosts[1]?.profile_image"
-            :alt="`${hosts[1]?.name} profile`"
-            :background-color="primaryColor"
-            :animated="true"
-            :animation-delay="animationDelays.profileRight"
-          />
+            :intent="{ kind: 'hostImage', hostId: hosts[1]?.id ?? 0 }"
+          >
+            <HostProfilePicture
+              :key="`profile-right-${currentLanguage}`"
+              :image-url="hosts[1]?.profile_image"
+              :alt="`${hosts[1]?.name} profile`"
+              :background-color="primaryColor"
+              :animated="true"
+              :animation-delay="animationDelays.profileRight"
+            />
+          </EditableRegion>
         </div>
       </div>
     </div>
@@ -336,7 +344,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { HostInfoProps } from '@/types/showcase'
-import InlineEditableText from '@/components/showcase-preview/InlineEditableText.vue'
+import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
+import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import {
   WelcomeHeader,
   HostLogo,

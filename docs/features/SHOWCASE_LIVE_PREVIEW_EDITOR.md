@@ -1,6 +1,6 @@
 # Showcase Live Preview + Inline Editor — Implementation Notes
 
-**Status: in progress.** Read-only live preview and click-to-edit for text fields are shipped; several follow-ups are still open (see "Known gaps / next steps" below). This doc exists so the feature can be picked back up without re-deriving the architecture.
+**Status: superseded for new work by [SHOWCASE_PREVIEW_EDITOR_PLAN.md](SHOWCASE_PREVIEW_EDITOR_PLAN.md)** — the July 2026 refactor moved these files into a feature module (`src/components/showcase-preview/{edit,bridge,editors,renderers}/`), extracted the save layer, added a preview-renderer registry, and added media edit intents (logo, gmap embed, host image, photos) handled by full-size parent-side editors. File paths below reflect the original implementation; see the plan doc for current locations and the progress checklist. The architectural rationale in this doc (iframes, CoverStage layering, inert shields, inline-edit provide/inject) still applies unchanged.
 
 ## Overview
 

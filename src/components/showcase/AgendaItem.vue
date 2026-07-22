@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { Calendar } from 'lucide-vue-next'
-import InlineEditableText from '@/components/showcase-preview/InlineEditableText.vue'
+import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 
 interface AgendaItemIcon {
   id: number

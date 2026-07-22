@@ -15,14 +15,16 @@
       />
 
       <!-- Row 2: Logo -->
-      <HostLogo
-        :key="`logo-${currentLanguage}`"
-        :logo-url="logoUrl"
-        :sample-logo-one="sampleLogoOne"
-        :primary-color="primaryColor"
-        :animated="true"
-        :animation-delay="animationDelays.logo"
-      />
+      <EditableRegion :intent="{ kind: 'eventLogo' }">
+        <HostLogo
+          :key="`logo-${currentLanguage}`"
+          :logo-url="logoUrl"
+          :sample-logo-one="sampleLogoOne"
+          :primary-color="primaryColor"
+          :animated="true"
+          :animation-delay="animationDelays.logo"
+        />
+      </EditableRegion>
 
       <!-- Row 3: Host Titles -->
       <div v-if="hosts.length > 0" class="title-row">
@@ -120,6 +122,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { HostInfoProps } from '@/types/showcase'
+import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import {
   WelcomeHeader,
   HostLogo,

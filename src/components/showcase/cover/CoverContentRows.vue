@@ -38,6 +38,10 @@
         <!-- Merged logo row: stack with a three-tier base (event logo → sample_logo_1 →
              recoloured temp SVG). sample_logo_2's opaque shape either overlays directly
              or clips the first host's profile image into the shape. -->
+        <EditableRegion
+          :intent="{ kind: 'eventLogo' }"
+          class="h-full w-full flex items-center justify-center"
+        >
         <div
           v-if="useSampleLogos"
           class="sample-logo-stack"
@@ -103,6 +107,7 @@
         >
           <div class="fallback-logo" v-html="processedFallbackLogo" />
         </div>
+        </EditableRegion>
       </div>
     </div>
 
@@ -162,7 +167,8 @@ import { translateRSVP, type SupportedLanguage } from '@/utils/translations'
 import { useAssetProtection } from '@/composables/showcase/useAssetProtection'
 import { useShapeMaskBounds } from '@/composables/showcase/useShapeMaskBounds'
 import GuestNameFrame from './GuestNameFrame.vue'
-import InlineEditableText from '@/components/showcase-preview/InlineEditableText.vue'
+import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
+import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import fallbackLogoSvg from '@/assets/temp-showcase-logo.svg?raw'
 
 interface RowStyles {

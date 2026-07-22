@@ -45,6 +45,7 @@ Living documentation for large multi-phase features:
 - [TICKETS_CHECKIN_FEATURE_PLAN.md](features/TICKETS_CHECKIN_FEATURE_PLAN.md) / [TICKETS_CHECKIN_BACKEND_ASKS.md](features/TICKETS_CHECKIN_BACKEND_ASKS.md) (closed) — door check-in
 - [TABLE_SEATING_FEATURE.md](features/TABLE_SEATING_FEATURE.md) — table seating
 - [SHOWCASE_LIVE_PREVIEW_EDITOR.md](features/SHOWCASE_LIVE_PREVIEW_EDITOR.md) — manage-page live preview + click-to-edit (in progress)
+- [SHOWCASE_PREVIEW_EDITOR_PLAN.md](features/SHOWCASE_PREVIEW_EDITOR_PLAN.md) — target architecture + progress anchor for full showcase editing from the preview (media intents, renderer registry)
 
 ## Guides ([guides/](guides/))
 

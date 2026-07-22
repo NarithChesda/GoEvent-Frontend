@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import InlineEditableText from '@/components/showcase-preview/InlineEditableText.vue'
+import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import { ANIMATION_CONSTANTS } from '@/composables/showcase/useHostInfoUtils'
 
 interface Props {

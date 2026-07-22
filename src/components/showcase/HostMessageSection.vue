@@ -140,7 +140,7 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import InlineEditableText from '@/components/showcase-preview/InlineEditableText.vue'
+import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import type { EventText } from '../../types/showcase'
 import {
   splitToWords,

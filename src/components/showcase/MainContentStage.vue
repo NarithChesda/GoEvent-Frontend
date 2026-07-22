@@ -327,19 +327,21 @@
                   ref="gallerySectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
-                  <PhotoGallery
-                    :photos="eventPhotos"
-                    :primary-color="primaryColor"
-                    :secondary-color="secondaryColor"
-                    :accent-color="accentColor"
-                    :get-media-url="getMediaUrl"
-                    :current-font="currentFont"
-                    :primary-font="primaryFont"
-                    :secondary-font="secondaryFont"
-                    :event-texts="eventTexts"
-                    :current-language="currentLanguage"
-                    @open-photo="$emit('openPhoto', $event)"
-                  />
+                  <EditableRegion :intent="{ kind: 'photos' }">
+                    <PhotoGallery
+                      :photos="eventPhotos"
+                      :primary-color="primaryColor"
+                      :secondary-color="secondaryColor"
+                      :accent-color="accentColor"
+                      :get-media-url="getMediaUrl"
+                      :current-font="currentFont"
+                      :primary-font="primaryFont"
+                      :secondary-font="secondaryFont"
+                      :event-texts="eventTexts"
+                      :current-language="currentLanguage"
+                      @open-photo="$emit('openPhoto', $event)"
+                    />
+                  </EditableRegion>
 
                   <!-- Gallery Section Divider -->
                   <WeddingSectionDivider :primary-color="primaryColor" />
@@ -934,6 +936,7 @@ import HostMessageSection from './HostMessageSection.vue'
 import DressCodeSection from './DressCodeSection.vue'
 import YouTubeVideoSection from './YouTubeVideoSection.vue'
 import PhotoGallery from './PhotoGallery.vue'
+import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import CommentSection from './CommentSection.vue'
 import PaymentSection from './PaymentSection.vue'
 import FloatingActionMenu from './FloatingActionMenu.vue'

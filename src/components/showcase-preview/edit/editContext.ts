@@ -23,3 +23,26 @@ export interface InlineEditContext {
  * behavior change in production.
  */
 export const InlineEditKey: InjectionKey<InlineEditContext> = Symbol('showcase-inline-edit')
+
+/**
+ * An edit that can't be committed inline inside the 390x844 preview frame
+ * (file pickers, crop UIs, URL entry, gallery management would render
+ * unusably tiny at preview scale). EditableRegion posts these through the
+ * preview bridge; the parent manage page opens the matching full-size editor
+ * the forms tab already uses (see PreviewEditorHost.vue).
+ */
+export type EditIntent =
+  | { kind: 'eventLogo' }
+  | { kind: 'gmapEmbed' }
+  | { kind: 'hostImage'; hostId: number }
+  | { kind: 'photos' }
+
+export interface EditIntentContext {
+  requestEdit: (intent: EditIntent) => void
+}
+
+/**
+ * Same inert-by-default contract as InlineEditKey: only the editable preview
+ * frame provides it, so EditableRegion renders a bare slot everywhere else.
+ */
+export const EditIntentKey: InjectionKey<EditIntentContext> = Symbol('showcase-edit-intent')

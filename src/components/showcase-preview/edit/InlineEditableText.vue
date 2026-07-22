@@ -48,7 +48,7 @@
 
 <script setup lang="ts">
 import { inject, ref } from 'vue'
-import { InlineEditKey, type InlineEditTarget } from './inlineEditContext'
+import { InlineEditKey, type InlineEditTarget } from './editContext'
 
 interface Props {
   /** The current raw value editing starts from (usually the displayed text,

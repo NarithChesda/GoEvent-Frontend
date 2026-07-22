@@ -195,7 +195,7 @@
 import { computed, ref, reactive } from 'vue'
 import type { DressCode } from '../../types/showcase'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
-import InlineEditableText from '@/components/showcase-preview/InlineEditableText.vue'
+import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 
 interface Props {
   dressCodes: DressCode[]

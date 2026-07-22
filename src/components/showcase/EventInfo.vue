@@ -225,23 +225,37 @@
             class="pt-2 bounce-in-element"
             :style="{ animationDelay: `${animationDelays.map}s` }"
           >
-            <div
-              class="aspect-video overflow-hidden"
-              :style="{
-                border: `1px solid rgba(255, 255, 255, 0.3)`,
-                borderRadius: '1rem',
-              }"
+            <EditableRegion :intent="{ kind: 'gmapEmbed' }">
+              <div
+                class="aspect-video overflow-hidden"
+                :style="{
+                  border: `1px solid rgba(255, 255, 255, 0.3)`,
+                  borderRadius: '1rem',
+                }"
+              >
+                <iframe
+                  :src="googleMapEmbedLink"
+                  width="100%"
+                  height="100%"
+                  style="border: 0"
+                  :allowfullscreen="false"
+                  loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade"
+                />
+              </div>
+            </EditableRegion>
+          </div>
+          <!-- No map yet: offer an add affordance, but only inside the
+               editable manage-page preview (editIntentCtx is never provided
+               on the public showcase). -->
+          <div v-else-if="editIntentCtx" class="pt-2">
+            <button
+              type="button"
+              class="edit-region-control add-map-placeholder aspect-video"
+              @click.stop.prevent="editIntentCtx.requestEdit({ kind: 'gmapEmbed' })"
             >
-              <iframe
-                :src="googleMapEmbedLink"
-                width="100%"
-                height="100%"
-                style="border: 0"
-                :allowfullscreen="false"
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
-              />
-            </div>
+              + Add Google Map
+            </button>
           </div>
 
           <!-- Countdown Display - Below Map, Above RSVP -->
@@ -339,8 +353,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import InlineEditableText from '@/components/showcase-preview/InlineEditableText.vue'
+import { computed, ref, onMounted, onUnmounted, watch, nextTick, inject } from 'vue'
+import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
+import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
+import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useCountdown } from '../../composables/useCountdown'
 import {
   translateRSVP,
@@ -646,6 +662,10 @@ const isCountdownActive = computed(() => {
 defineEmits<{
   openMap: []
 }>()
+
+// Only provided by the editable manage-page preview frame — undefined on the
+// public showcase, so the add-map placeholder can never leak into production.
+const editIntentCtx = inject(EditIntentKey, undefined)
 
 // Computed property to ensure description starts with capital letter
 const capitalizedDescription = computed(() => {
@@ -1810,5 +1830,27 @@ const countdownNumberFont = computed(() =>
     animation: none;
     color: #b3261e;
   }
+}
+
+/* Manage-preview only (never rendered on the public showcase — gated on the
+   injected edit-intent context). */
+.add-map-placeholder {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px dashed rgba(255, 255, 255, 0.55);
+  border-radius: 1rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.add-map-placeholder:hover {
+  border-color: rgba(30, 144, 255, 0.8);
+  background: rgba(30, 144, 255, 0.12);
 }
 </style>

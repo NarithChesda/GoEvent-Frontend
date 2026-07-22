@@ -32,14 +32,15 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { postToFrame, type ParentToFrameType } from './bridge/previewBridge'
 
 interface Props {
   src: string
-  /** When set, clicking the shield posts `{ type: clickMessage }` to the
-   *  iframe's window (same-origin) — the frame page decides what to do with
-   *  it (e.g. replaying the transition animation). All other interaction
-   *  stays blocked. */
-  clickMessage?: string
+  /** When set, clicking the shield posts this bridge command to the iframe's
+   *  window (same-origin) — the frame page decides what to do with it (e.g.
+   *  `replay` re-runs the transition animation). All other interaction stays
+   *  blocked. */
+  clickMessage?: ParentToFrameType
   /** Drop the shield and let the iframe receive pointer/keyboard input
    *  directly — used for inline-editable frames, where the frame page itself
    *  disables its dangerous interactive elements. */
@@ -52,11 +53,14 @@ const iframeRef = ref<HTMLIFrameElement | null>(null)
 
 const onShieldClick = () => {
   if (!props.clickMessage) return
-  iframeRef.value?.contentWindow?.postMessage(
-    { type: props.clickMessage },
-    window.location.origin,
-  )
+  postToFrame(iframeRef.value?.contentWindow, props.clickMessage)
 }
+
+// Lets the parent tab push bridge commands (e.g. `refresh` after a
+// parent-side media save) into this frame.
+defineExpose({
+  post: (type: ParentToFrameType) => postToFrame(iframeRef.value?.contentWindow, type),
+})
 
 // The iframe is visually shrunk by PreviewFrame's `transform: scale(...)`, so
 // screen-space pointer coordinates must be converted back to the iframe's own

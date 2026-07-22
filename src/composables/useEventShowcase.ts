@@ -788,6 +788,61 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
   }
 
   /**
+   * Silently refetches the showcase data in place — no `loading` toggle, no
+   * stage re-initialization, no font/meta work — so the rendered showcase
+   * updates without unmounting anything (no spinner flash, no re-run of the
+   * mount-driven entry animations, no background video reload). Used by the
+   * manage-page preview after a parent-side editor save; the same-language
+   * event_texts merge mirrors updateLanguageContent's, since the API only
+   * returns texts for the requested language.
+   */
+  const refreshShowcaseData = async () => {
+    const eventId = resolveEventId()
+    if (!eventId) return
+
+    const guest = guestName.value || ''
+    const requestKey = `showcase-refresh-${eventId}-${currentLanguage.value}-${guest}`
+
+    try {
+      const params: { lang?: string; guest_name?: string } = {
+        lang: currentLanguage.value,
+      }
+      if (guestName.value) {
+        params.guest_name = guestName.value as string
+      }
+
+      const data: ShowcaseData = await deduplicateRequest<ShowcaseData>(requestKey, async (): Promise<ShowcaseData> => {
+        const showcaseResponse = await eventsService.getEventShowcase(eventId, params)
+        if (!showcaseResponse.success || !showcaseResponse.data) {
+          throw new Error(showcaseResponse.message || 'Failed to refresh event content')
+        }
+        return showcaseResponse.data as ShowcaseData
+      })
+
+      if (showcaseData.value) {
+        const existingTexts = showcaseData.value.event.event_texts || []
+        const newTexts = data.event.event_texts || []
+        const textsFromOtherLanguages = existingTexts.filter(
+          (text) => text.language !== currentLanguage.value,
+        )
+        showcaseData.value = {
+          ...data,
+          event: {
+            ...data.event,
+            event_texts: [...textsFromOtherLanguages, ...newTexts],
+          },
+        }
+      } else {
+        showcaseData.value = data
+      }
+    } catch (err: unknown) {
+      // A failed background refresh keeps showing the current (stale) data —
+      // never blank an already-rendered showcase over it.
+      console.warn('Silent showcase refresh failed:', err)
+    }
+  }
+
+  /**
    * Updates language content without triggering full loading state
    * This prevents the background video from reloading during language changes
    */
@@ -1177,6 +1232,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
 
     // Methods
     loadShowcase,
+    refreshShowcaseData,
     updateLanguageContent,
     loadCustomFonts: fontManager.loadCustomFonts,
     openEnvelope: stageManager.openEnvelope,

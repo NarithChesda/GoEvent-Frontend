@@ -1,0 +1,187 @@
+# Showcase Preview Editor — Architecture Plan & Progress Anchor
+
+**Status: living document — Phases 1 & 2 implemented 2026-07-22** (foundation refactor + media
+edit intents with silent in-place refresh; manual browser click-through still pending). Phase 3
+items remain open. This is the agreed target architecture for evolving the manage-page
+"Live Preview" tab into the primary GUI for editing the showcase. Check items off as they land —
+this doc is the anchor for how much has been achieved.
+
+Prerequisite reading: [SHOWCASE_LIVE_PREVIEW_EDITOR.md](SHOWCASE_LIVE_PREVIEW_EDITOR.md) — the
+implementation notes for what already shipped (iframe frames, click-to-edit text). This plan
+builds directly on that foundation and supersedes parts of its "Known gaps / next steps" section.
+
+## Goal
+
+The Showcase (forms) tab and the Live Preview tab are two halves of one workflow: configure, then
+see. Today the preview only click-to-edits **text**. The goal is **full showcase editing from the
+preview** — replace logo, Google-Maps embed, event photos, host images, music, etc. — plus room
+for **multiple template renderers** (V1 wedding today; V2 scroll-story and other categories later)
+without rework.
+
+## The two growth axes (and why the architecture separates them)
+
+1. **What can be edited** — text (shipped) → media, embeds, photo gallery, music.
+2. **What renders the preview** — V1 cover/transition/main (shipped) → V2 scroll-story,
+   per-category variants.
+
+The pre-refactor code entangled both inside `ShowcasePreviewFrameView.vue` (hardcoded V1 stages +
+inline save logic). Target: adding an edit capability never touches renderer files; adding a
+renderer never touches edit-layer files.
+
+## Decision 1 — media edits happen in the *parent* page, not inside the iframe
+
+Text stays inline (`InlineEditableText`). Media edits need real UI (file pickers with crop, URL
+validation, gallery management) — inside a 390×844 iframe scaled to ~40 %, any modal is unusably
+tiny. So the frame emits **edit intents** over a typed `postMessage` bridge; the parent manage
+page catches them and opens the **existing full-size editors**:
+
+| Intent | Parent-side editor (reused, not rebuilt) | Save path |
+|---|---|---|
+| Replace logo | hidden file input + `useMediaUpload('logo_one')` | `eventsService.updateEventWithFiles` (FormData) |
+| Google-Maps embed | compact modal reusing `embedExtractor.ts` extraction | `eventsService.patchEvent({ google_map_embed_link })` (same as `EmbedsSection.vue`) |
+| Host image | `EditHostDrawer.vue` (`modelValue`, `eventId`, `host`) | its own save flow (crop included) |
+| Event photos | `UploadMediaDrawer.vue` (`eventId`) for uploads; gallery manage is a later item | `mediaService` |
+| Music / banner / video (later) | `useMediaUpload` field variants | FormData PATCH |
+
+After a parent-side save the parent posts a `refresh` message into every frame → frames refetch
+(`loadShowcase()`), and the tab emits `event-updated` upward so `EventManageView` and sibling tabs
+stay fresh (same contract as `EventMediaTab`).
+
+Because the preview *invokes* the forms' own editors instead of duplicating them, the two surfaces
+can't drift. (This softens the earlier "keep tabs fully separate" decision recorded in the shipped
+doc — the forms tab remains the fallback/primary for bulk work.)
+
+## Decision 2 — a preview-renderer registry, mirroring the V2 category-variant pattern
+
+`resolvePreviewRenderer(ctx)` returns a descriptor; the tab renders whatever frames it declares
+(V1: cover / transition / main; a V2 renderer will declare different pages; a category may drop
+the transition):
+
+```ts
+interface PreviewFrameDescriptor {
+  id: string                    // becomes the ?stage= query param
+  labelKey: string              // i18n key for the frame label
+  editable: boolean             // gets ?editable=1 when the user can edit
+  clickMessage?: string         // frames that replay on click (transition)
+  isVisible?: (ctx) => boolean  // e.g. transition only for basic-wedding + featured photo
+}
+interface PreviewRendererDescriptor {
+  frames: PreviewFrameDescriptor[]
+  FrameComponent: Component     // renders ONE frame given the forced stage id
+}
+```
+
+`ShowcasePreviewFrameView.vue` becomes a thin shell (load data → resolve renderer → provide edit
+context → mount `FrameComponent`). Version/category resolution must eventually be **shared with
+the public showcase route** so both flip together when the backend template-version field lands
+(see [showcase-template-version.md](../backend-api-requirements/showcase-template-version.md)).
+
+## Decision 3 — two edit primitives, both inert-by-default
+
+Both render a bare `<slot />` when no context is injected, so the public showcase page is
+byte-identical and V2 components can adopt them ahead of time at zero cost:
+
+- **`InlineEditableText`** (shipped) — commits text in place via the injected save context.
+- **`EditableRegion`** (new) — overlays a hover/tap affordance ("Replace logo", "Edit map") on any
+  image/embed area; click posts an `EditIntent` through the bridge to the parent. No in-frame UI.
+
+## Target file tree
+
+```
+src/components/showcase-preview/
+  ShowcasePreviewTab.vue          ← moved from components/ root; iterates renderer.frames;
+                                    hosts PreviewEditorHost; accepts :event-data + emits event-updated
+  PreviewFrame.vue                (unchanged)
+  InertIframe.vue                 (unchanged; click-message now typed via bridge constants)
+  bridge/
+    previewBridge.ts              typed postMessage protocol: frame→parent edit-intents,
+                                    parent→frame replay/refresh; origin-checked type guards
+  edit/
+    editContext.ts                ← renamed from inlineEditContext.ts; adds EditIntent union +
+                                    EditIntentKey ("request an edit" context for EditableRegion)
+    InlineEditableText.vue        ← moved
+    EditableRegion.vue            new media/embed affordance primitive
+  editors/
+    PreviewEditorHost.vue         parent-side switchboard: intent → existing drawer/modal/input
+    GmapEmbedModal.vue            compact URL-entry modal (only genuinely new editor UI)
+  renderers/
+    resolvePreviewRenderer.ts     the registry (V1 today; V2 later)
+    V1PreviewFrame.vue            ← CoverStage/Transition/Main wiring extracted from the frame view
+
+src/composables/showcase-preview/
+  useShowcaseEditSaves.ts         ← inline-save switchboard extracted from the frame view
+src/utils/eventTextUpsert.ts      ← shared find-or-create-or-delete-by-(text_type, language) rule
+src/views/ShowcasePreviewFrameView.vue   thin shell only
+```
+
+## Why this shape holds
+
+- **New edit capability** = one `EditIntent` kind + one `EditableRegion` wrapper in a leaf showcase
+  component + one case in `PreviewEditorHost`. No renderer files touched.
+- **New template version/category** = one renderer file + one registry entry. No edit-layer files
+  touched.
+- **No duplicated editor logic** — parent-side editors are the same components the forms tab uses.
+
+## Progress checklist
+
+### Phase 1 — Foundation refactor (zero behavior change) — **done 2026-07-22**
+
+- [x] Move `ShowcasePreviewTab.vue` into `src/components/showcase-preview/`; update
+      `EventManageView.vue` import; pass `:event-data="event"` and listen for `event-updated`
+- [x] Rename `inlineEditContext.ts` → `edit/editContext.ts`; move `InlineEditableText.vue` →
+      `edit/`; update all importing showcase leaf components
+- [x] Extract `src/utils/eventTextUpsert.ts`; use it in the preview save layer
+- [ ] Adopt `eventTextUpsert` in `EditEventTextDrawer.vue` too (closes the duplication gap flagged
+      in the shipped doc) — *deferred: the drawer's save is a multi-language, multi-field diff
+      batch; forcing it through the single-field util would contort it. Revisit if the upsert rule
+      ever changes.*
+- [x] Extract `useShowcaseEditSaves.ts` composable from `ShowcasePreviewFrameView.vue`
+- [x] Create `renderers/resolvePreviewRenderer.ts` + `V1PreviewFrame.vue`; slim the frame view to
+      a shell; `ShowcasePreviewTab` iterates `renderer.frames` (transition visibility becomes a
+      frame `isVisible` predicate)
+- [x] Create `bridge/previewBridge.ts`; replace the raw `'showcase-preview-replay'` string on both
+      ends with typed bridge messages
+- [x] Type-check + lint clean on all touched files
+
+### Phase 2 — Edit intents + parent-side editors — **done 2026-07-22 (pending manual click-through)**
+
+- [x] `EditIntent` union + `EditIntentKey` context in `editContext.ts`
+- [x] `EditableRegion.vue` primitive (inert-by-default, hover/tap affordance, posts intent;
+      per-kind i18n'd labels, en + kh)
+- [x] Frame view provides the intent context (editable mode only) → posts through bridge
+- [x] `PreviewEditorHost.vue` in the tab: window `message` listener with origin + shape guards
+- [x] Logo replace: `EditableRegion` on the cover logo (`CoverContentRows.vue`) and on the
+      main-content host-logo row (`HostLogo` usages in `HostInfoWedding.vue` +
+      `HostInfoHousewarming.vue`) → hidden file input + `useMediaUpload('logo_one')`
+- [x] Google-Maps embed: `EditableRegion` on the map area (`EventInfo.vue`) → `GmapEmbedModal`;
+      when no map exists yet, an "Add Google Map" placeholder shows in edit mode only
+- [x] Host image: `EditableRegion` on host photos (`HostInfoWedding.vue`) → `EditHostDrawer`
+      (host record fetched by id on demand via `hostsService.getHost`)
+- [x] Event photos: "Manage photos" `EditableRegion` on the gallery section
+      (`MainContentStage.vue`) → `UploadMediaDrawer`
+- [x] Post-save `refresh` → frames refetch; tab emits `event-updated` upward
+- [x] Silent post-save refresh: `useEventShowcase.refreshShowcaseData()` refetches and swaps
+      data in place with **no `loading` toggle** (pattern borrowed from `updateLanguageContent`,
+      incl. its same-language event_texts merge). Both the frames' `refresh` handler and the
+      tab's own post-save reload use it — a full `loadShowcase()` in the tab flips its `loading`
+      gate and unmounts/reloads every iframe (spinner flash + replayed mount animations), which
+      read as a whole-page refresh
+- [x] Type-check + lint clean
+- [ ] Manual click-through verification in the browser (each intent → editor → save → frames
+      refresh; public showcase unchanged)
+
+### Phase 3 — Later (not in current scope)
+
+- [ ] Photo gallery full management from preview (reorder / delete / set featured)
+- [ ] Music replace/trim intent (reusing `MediaUploadsSection`'s trim editor in a drawer)
+- [ ] Toast feedback surface for inline-text save failures (gap carried from shipped doc)
+- [ ] V2 renderer (`V2PreviewFrame.vue`) + registry entry once the V2 preview approach is decided
+- [ ] Backend template-version field replaces env-based resolution, shared with the public route
+- [ ] Device-size presets for frames (390×844 is currently fixed)
+- [ ] Automated tests for bridge protocol + save layer
+
+## Verification bar
+
+Every phase: `npm run type-check-noEmit` + `npm run lint` clean on touched files, plus manual
+click-through of the preview tab (text edit still works, no interaction leaks through inert
+frames, public showcase route unchanged).

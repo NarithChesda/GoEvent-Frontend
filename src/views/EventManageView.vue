@@ -204,6 +204,8 @@
                 v-else-if="event?.id"
                 :event-id="event.id"
                 :can-edit="event.can_edit || false"
+                :event-data="event"
+                @event-updated="handleEventUpdated"
               />
             </div>
 
@@ -430,7 +432,7 @@ import type { TabConfig } from '../components/EventNavigationTabs.vue'
 const EventAgendaTab = defineAsyncComponent(() => import('../components/EventAgendaTab.vue'))
 const EventHostsTab = defineAsyncComponent(() => import('../components/EventHostsTab.vue'))
 const EventMediaTab = defineAsyncComponent(() => import('../components/EventMediaTab.vue'))
-const ShowcasePreviewTab = defineAsyncComponent(() => import('../components/ShowcasePreviewTab.vue'))
+const ShowcasePreviewTab = defineAsyncComponent(() => import('../components/showcase-preview/ShowcasePreviewTab.vue'))
 const EventRegistrationTab = defineAsyncComponent(() => import('../components/EventRegistrationTab.vue'))
 const EventTemplatePaymentTab = defineAsyncComponent(() => import('../components/EventTemplatePaymentTab.vue'))
 const EventGuestManagementTab = defineAsyncComponent(() => import('../components/EventGuestManagementTab.vue'))

@@ -416,6 +416,21 @@
     "accessRestricted": {
       "title": "ការចូលប្រើត្រូវបានដាក់កំហិត",
       "description": "មានតែអ្នករៀបចំព្រឹត្តិការណ៍ និងអ្នកសហការប៉ុណ្ណោះ ដែលអាចមើលការមើលផ្ទាល់។"
+    },
+    "editors": {
+      "replaceLogo": "ប្តូរឡូហ្គោ",
+      "editMap": "កែផែនទី",
+      "changeHostPhoto": "ប្តូររូបភាព",
+      "managePhotos": "គ្រប់គ្រងរូបភាព",
+      "gmapTitle": "បង្កប់ផែនទី Google Maps",
+      "gmapDescription": "បិទភ្ជាប់តំណ ឬកូដបង្កប់ Google Maps — URL បង្កប់នឹងត្រូវបានស្រង់ចេញដោយស្វ័យប្រវត្តិ។",
+      "gmapPlaceholder": "បិទភ្ជាប់តំណ Google Maps ឬកូដ <iframe>",
+      "gmapInvalid": "នេះមិនមែនជាតំណ ឬកូដបង្កប់ Google Maps ទេ។",
+      "save": "រក្សាទុក",
+      "saving": "កំពុងរក្សាទុក…",
+      "cancel": "បោះបង់",
+      "logoUploadFailed": "ការផ្ទុកឡូហ្គោបរាជ័យ",
+      "hostLoadFailed": "មិនអាចផ្ទុកព័ត៌មានម្ចាស់កម្មវិធីបានទេ"
     }
   },
   "media": {
