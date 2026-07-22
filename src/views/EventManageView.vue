@@ -35,6 +35,7 @@
       :can-view-expenses="canViewExpenses"
       :can-view-donation="canViewDonation"
       :can-view-tickets="canViewTickets"
+      :can-view-showcase-preview="canViewShowcasePreview"
       :can-edit="event?.can_edit"
       @tab-change="activeTab = $event"
     />
@@ -88,6 +89,7 @@
       :can-view-expenses="canViewExpenses"
       :can-view-donation="canViewDonation"
       :can-view-tickets="canViewTickets"
+      :can-view-showcase-preview="canViewShowcasePreview"
       @tab-change="activeTab = $event"
     />
     <!-- Spacer for fixed mobile/tablet tab bar (h-[52px] = py-2 + button
@@ -182,6 +184,26 @@
                 @media-updated="handleMediaUpdated"
                 @event-updated="handleEventUpdated"
                 @sub-tab-change="activeSubTab = $event"
+              />
+            </div>
+
+            <!-- Showcase Live Preview Tab -->
+            <div v-if="activeTab === 'showcase-preview'">
+              <div v-if="!canViewShowcasePreview" class="text-center py-12">
+                <div
+                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
+                  <Lock class="w-8 h-8 text-slate-400" />
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">{{ t('management.showcasePreview.accessRestricted.title') }}</h3>
+                <p class="text-slate-600 max-w-md mx-auto">
+                  {{ t('management.showcasePreview.accessRestricted.description') }}
+                </p>
+              </div>
+              <ShowcasePreviewTab
+                v-else-if="event?.id"
+                :event-id="event.id"
+                :can-edit="event.can_edit || false"
               />
             </div>
 
@@ -408,6 +430,7 @@ import type { TabConfig } from '../components/EventNavigationTabs.vue'
 const EventAgendaTab = defineAsyncComponent(() => import('../components/EventAgendaTab.vue'))
 const EventHostsTab = defineAsyncComponent(() => import('../components/EventHostsTab.vue'))
 const EventMediaTab = defineAsyncComponent(() => import('../components/EventMediaTab.vue'))
+const ShowcasePreviewTab = defineAsyncComponent(() => import('../components/ShowcasePreviewTab.vue'))
 const EventRegistrationTab = defineAsyncComponent(() => import('../components/EventRegistrationTab.vue'))
 const EventTemplatePaymentTab = defineAsyncComponent(() => import('../components/EventTemplatePaymentTab.vue'))
 const EventGuestManagementTab = defineAsyncComponent(() => import('../components/EventGuestManagementTab.vue'))
@@ -493,6 +516,7 @@ const navigationTabs = computed<TabConfig[]>(() => [
   { id: 'agenda', label: t('management.tabs.agenda'), icon: 'calendar', visible: !agendaHostsMerged.value },
   { id: 'hosts', label: t('management.tabs.hostsLabel'), icon: 'users', mobileLabel: t('management.tabs.hosts'), visible: !agendaHostsMerged.value },
   { id: 'media', label: t('management.tabs.showcase'), icon: 'image' },
+  { id: 'showcase-preview', label: t('management.tabs.showcasePreview'), icon: 'monitor', mobileLabel: t('management.tabs.previewMobile') },
   { id: 'template-payment', label: t('management.tabs.templatePayment'), icon: 'credit-card', mobileLabel: t('management.tabs.templateMobile') },
   { id: 'guest-management', label: t('management.tabs.guestManagement'), icon: 'users', mobileLabel: t('management.tabs.guests') },
   { id: 'expenses', label: t('management.tabs.expenseTracking'), icon: 'wallet', mobileLabel: t('management.tabs.expensesMobile') },
@@ -532,6 +556,15 @@ const isShowcaseCategory = (
 const canViewMedia = computed(() => {
   // Show showcase/media tab for all events that the user can edit
   return canViewRestrictedTabs.value
+})
+
+const canViewShowcasePreview = computed(() => {
+  // Only meaningful for events that actually render the V1 cover/transition/
+  // main-content pipeline this preview reuses.
+  return (
+    canViewRestrictedTabs.value &&
+    isShowcaseCategory(event.value?.category_details?.name || event.value?.category_name)
+  )
 })
 
 // Check if event category supports category-specific showcase features

@@ -32,12 +32,18 @@
         <span>{{ timeText || 'Time TBD' }}</span>
         <span class="time-rule"></span>
       </div>
-      <h3
-        :class="['agenda-title capitalize', isKhmerText && 'is-khmer']"
-        :style="{ fontFamily: primaryFont || currentFont }"
+      <InlineEditableText
+        :value="item.title"
+        :target="{ kind: 'agenda', agendaId: item.id, field: 'title' }"
+        :input-style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
       >
-        {{ item.title || 'Event Activity' }}
-      </h3>
+        <h3
+          :class="['agenda-title capitalize', isKhmerText && 'is-khmer']"
+          :style="{ fontFamily: primaryFont || currentFont }"
+        >
+          {{ item.title || 'Event Activity' }}
+        </h3>
+      </InlineEditableText>
     </div>
   </div>
 </template>
@@ -45,6 +51,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { Calendar } from 'lucide-vue-next'
+import InlineEditableText from '@/components/showcase-preview/InlineEditableText.vue'
 
 interface AgendaItemIcon {
   id: number

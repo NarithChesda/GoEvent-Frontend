@@ -95,6 +95,10 @@ interface Props {
   getMediaUrl: (url: string) => string
   /** Controls animation timing. Door mode starts photo immediately so it's visible as the door opens. */
   animationType?: 'decoration' | 'door'
+  /** Preview-only: hold at the fully-revealed state (photo sharp + "Save the
+   *  Date" bloomed) instead of fading out and emitting transitionComplete.
+   *  Never set on the live showcase. */
+  freezeAtPeak?: boolean
 }
 
 const props = defineProps<Props>()
@@ -218,6 +222,9 @@ onMounted(() => {
   fadeInTimer = setTimeout(() => {
     isContentVisible.value = true
   }, isDoor ? 1200 : 1800)
+
+  // Preview freeze: stop here — photo and text stay at full reveal
+  if (props.freezeAtPeak) return
 
   // Start fading out
   fadeOutTimer = setTimeout(() => {

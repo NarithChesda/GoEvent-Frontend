@@ -13,12 +13,18 @@
       <div
         class="header-content-container flex items-center justify-center px-4 w-full"
       >
-        <h1
-          class="scaled-header font-regular capitalize khmer-text-fix text-center"
-          :style="headerTextStyle"
+        <InlineEditableText
+          :value="displayTitle"
+          :target="{ kind: 'eventText', textType: 'cover_header', field: 'content' }"
+          :input-style="{ fontFamily: headerTextStyle.fontFamily, color: headerTextStyle.color }"
         >
-          {{ displayTitle }}
-        </h1>
+          <h1
+            class="scaled-header font-regular capitalize khmer-text-fix text-center"
+            :style="headerTextStyle"
+          >
+            {{ displayTitle }}
+          </h1>
+        </InlineEditableText>
       </div>
     </div>
 
@@ -111,9 +117,15 @@
         class="invite-content-container flex items-center justify-center px-4 w-full"
         style="height: 60%"
       >
-        <p class="scaled-invite-text khmer-text-fix text-center" :style="inviteTextStyle">
-          {{ displayInviteText }}
-        </p>
+        <InlineEditableText
+          :value="displayInviteText"
+          :target="{ kind: 'eventText', textType: 'invite_text', field: 'content' }"
+          :input-style="{ fontFamily: inviteTextStyle.fontFamily, color: inviteTextStyle.color }"
+        >
+          <p class="scaled-invite-text khmer-text-fix text-center" :style="inviteTextStyle">
+            {{ displayInviteText }}
+          </p>
+        </InlineEditableText>
       </div>
     </div>
 
@@ -150,6 +162,7 @@ import { translateRSVP, type SupportedLanguage } from '@/utils/translations'
 import { useAssetProtection } from '@/composables/showcase/useAssetProtection'
 import { useShapeMaskBounds } from '@/composables/showcase/useShapeMaskBounds'
 import GuestNameFrame from './GuestNameFrame.vue'
+import InlineEditableText from '@/components/showcase-preview/InlineEditableText.vue'
 import fallbackLogoSvg from '@/assets/temp-showcase-logo.svg?raw'
 
 interface RowStyles {

@@ -25,8 +25,10 @@
       </p>
     </div>
 
-    <!-- Time Period Tabs -->
+    <!-- Time Period Tabs (data-preview-safe: still clickable in the manage-page
+         preview's edit mode so every dress code stays reachable for editing) -->
     <div
+      data-preview-safe
       class="time-period-tabs flex justify-center gap-2 sm:gap-3 mb-4 sm:mb-4 laptop-sm:mb-4 laptop-md:mb-4 desktop:mb-4 flex-wrap"
     >
       <button
@@ -91,7 +93,7 @@
         </div>
 
         <!-- Row 2: Gender Tabs -->
-        <div class="gender-tabs-section w-full p-1 sm:p-2 flex items-center justify-center mb-4 laptop-sm:mb-1 laptop-md:mb-1 desktop:mb-1">
+        <div data-preview-safe class="gender-tabs-section w-full p-1 sm:p-2 flex items-center justify-center mb-4 laptop-sm:mb-1 laptop-md:mb-1 desktop:mb-1">
           <div class="gender-tabs flex gap-2 flex-nowrap justify-center">
             <button
               v-for="(genderGroup, index) in currentTimePeriodGenders"
@@ -112,28 +114,41 @@
         <!-- Row 3: Title and Description -->
         <transition name="fade-scale" mode="out-in">
           <div :key="`${activeGender}-${getActiveGenderGroup().activeIndex}`" class="dress-code-info-section px-4 sm:px-6 py-1 text-center">
-            <h4
-              :style="{
-                color: primaryColor,
-                fontFamily: primaryFont || currentFont,
-              }"
-              class="text-lg sm:text-xl font-regular mb-1 dress-code-title"
-              :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+            <InlineEditableText
+              :value="getCurrentDressCodeForActiveGender().title"
+              :target="{ kind: 'dressCode', dressCodeId: getCurrentDressCodeForActiveGender().id, field: 'title' }"
+              :input-style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
             >
-              {{ getCurrentDressCodeForActiveGender().title || translateDressCodeType(getCurrentDressCodeForActiveGender().dress_code_type) }}
-            </h4>
+              <h4
+                :style="{
+                  color: primaryColor,
+                  fontFamily: primaryFont || currentFont,
+                }"
+                class="text-lg sm:text-xl font-regular mb-1 dress-code-title"
+                :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+              >
+                {{ getCurrentDressCodeForActiveGender().title || translateDressCodeType(getCurrentDressCodeForActiveGender().dress_code_type) }}
+              </h4>
+            </InlineEditableText>
 
-            <p
+            <InlineEditableText
               v-if="getCurrentDressCodeForActiveGender().description"
-              :style="{
-                color: accentColor,
-                fontFamily: secondaryFont || currentFont,
-              }"
-              class="text-sm sm:text-base opacity-80 leading-relaxed dress-code-description mb-0"
-              :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+              :value="getCurrentDressCodeForActiveGender().description"
+              :target="{ kind: 'dressCode', dressCodeId: getCurrentDressCodeForActiveGender().id, field: 'description' }"
+              :multiline="true"
+              :input-style="{ fontFamily: secondaryFont || currentFont, color: accentColor }"
             >
-              {{ getCurrentDressCodeForActiveGender().description }}
-            </p>
+              <p
+                :style="{
+                  color: accentColor,
+                  fontFamily: secondaryFont || currentFont,
+                }"
+                class="text-sm sm:text-base opacity-80 leading-relaxed dress-code-description mb-0"
+                :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+              >
+                {{ getCurrentDressCodeForActiveGender().description }}
+              </p>
+            </InlineEditableText>
           </div>
         </transition>
 
@@ -143,6 +158,7 @@
             v-if="getActiveGenderGroup().codes.length > 0"
             :key="`colors-${activeGender}`"
             class="color-navigation-section px-4 sm:px-6 py-1 pb-2 flex justify-center"
+            data-preview-safe
           >
             <div class="color-navigation flex gap-3">
               <button
@@ -179,6 +195,7 @@
 import { computed, ref, reactive } from 'vue'
 import type { DressCode } from '../../types/showcase'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
+import InlineEditableText from '@/components/showcase-preview/InlineEditableText.vue'
 
 interface Props {
   dressCodes: DressCode[]

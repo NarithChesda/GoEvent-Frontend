@@ -10,46 +10,65 @@
     <div v-if="thankYouMessage" class="space-y-4">
       <!-- Thank You Message Title -->
       <div v-if="thankYouMessage.title">
-        <h2
-          :class="[
-            'text-base sm:text-lg md:text-xl lg:text-2xl font-regular leading-tight capitalize',
-            currentLanguage === 'kh' && 'khmer-text-fix',
-          ]"
-          :style="{
-            fontFamily: primaryFont || currentFont,
-            color: primaryColor,
-          }"
+        <InlineEditableText
+          :value="thankYouMessage.title"
+          :target="{ kind: 'eventText', textType: 'thank_you_message', field: 'title' }"
+          :input-style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
         >
-          <span
-            v-for="(word, index) in splitToWords(thankYouMessage.title)"
-            :key="`thank-title-${currentLanguage}-${index}`"
-            class="bounce-word"
-            :style="{ animationDelay: `${animationDelays.thankYouTitle + index * WORD_DELAY}s` }"
-          >{{ word }}{{ index < splitToWords(thankYouMessage.title).length - 1 ? '\u00A0' : '' }}</span>
-        </h2>
+          <h2
+            :class="[
+              'text-base sm:text-lg md:text-xl lg:text-2xl font-regular leading-tight capitalize',
+              currentLanguage === 'kh' && 'khmer-text-fix',
+            ]"
+            :style="{
+              fontFamily: primaryFont || currentFont,
+              color: primaryColor,
+            }"
+          >
+            <span
+              v-for="(word, index) in splitToWords(thankYouMessage.title)"
+              :key="`thank-title-${currentLanguage}-${index}`"
+              class="bounce-word"
+              :style="{ animationDelay: `${animationDelays.thankYouTitle + index * WORD_DELAY}s` }"
+              >{{ word
+              }}{{ index < splitToWords(thankYouMessage.title).length - 1 ? '\u00A0' : '' }}</span
+            >
+          </h2>
+        </InlineEditableText>
       </div>
 
       <!-- Thank You Message Content -->
       <div v-if="thankYouMessage.content">
-        <p
-          :class="[
-            'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap opacity-90 px-4',
-            currentLanguage === 'kh' && 'khmer-text-fix',
-          ]"
-          :style="{
-            fontFamily: secondaryFont || currentFont,
-            color: primaryColor,
-            wordWrap: 'break-word',
-            hyphens: 'auto',
-          }"
+        <InlineEditableText
+          :value="thankYouMessage.content"
+          :target="{ kind: 'eventText', textType: 'thank_you_message', field: 'content' }"
+          :multiline="true"
+          :input-style="{ fontFamily: secondaryFont || currentFont, color: primaryColor }"
         >
-          <span
-            v-for="(word, index) in splitToWords(thankYouMessage.content)"
-            :key="`thank-content-${currentLanguage}-${index}`"
-            class="bounce-word"
-            :style="{ animationDelay: `${animationDelays.thankYouContent + index * WORD_DELAY}s` }"
-          >{{ word }}{{ index < splitToWords(thankYouMessage.content).length - 1 ? '\u00A0' : '' }}</span>
-        </p>
+          <p
+            :class="[
+              'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap opacity-90 px-4',
+              currentLanguage === 'kh' && 'khmer-text-fix',
+            ]"
+            :style="{
+              fontFamily: secondaryFont || currentFont,
+              color: primaryColor,
+              wordWrap: 'break-word',
+              hyphens: 'auto',
+            }"
+          >
+            <span
+              v-for="(word, index) in splitToWords(thankYouMessage.content)"
+              :key="`thank-content-${currentLanguage}-${index}`"
+              class="bounce-word"
+              :style="{
+                animationDelay: `${animationDelays.thankYouContent + index * WORD_DELAY}s`,
+              }"
+              >{{ word
+              }}{{ index < splitToWords(thankYouMessage.content).length - 1 ? '\u00A0' : '' }}</span
+            >
+          </p>
+        </InlineEditableText>
       </div>
     </div>
 
@@ -57,46 +76,63 @@
     <div v-if="sorryMessage" class="space-y-4">
       <!-- Sorry Message Title -->
       <div v-if="sorryMessage.title">
-        <h2
-          :class="[
-            'text-base sm:text-lg md:text-xl lg:text-2xl font-regular leading-tight capitalize',
-            currentLanguage === 'kh' && 'khmer-text-fix',
-          ]"
-          :style="{
-            fontFamily: primaryFont || currentFont,
-            color: primaryColor,
-          }"
+        <InlineEditableText
+          :value="sorryMessage.title"
+          :target="{ kind: 'eventText', textType: 'sorry_message', field: 'title' }"
+          :input-style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
         >
-          <span
-            v-for="(word, index) in splitToWords(sorryMessage.title)"
-            :key="`sorry-title-${currentLanguage}-${index}`"
-            class="bounce-word"
-            :style="{ animationDelay: `${animationDelays.sorryTitle + index * WORD_DELAY}s` }"
-          >{{ word }}{{ index < splitToWords(sorryMessage.title).length - 1 ? '\u00A0' : '' }}</span>
-        </h2>
+          <h2
+            :class="[
+              'text-base sm:text-lg md:text-xl lg:text-2xl font-regular leading-tight capitalize',
+              currentLanguage === 'kh' && 'khmer-text-fix',
+            ]"
+            :style="{
+              fontFamily: primaryFont || currentFont,
+              color: primaryColor,
+            }"
+          >
+            <span
+              v-for="(word, index) in splitToWords(sorryMessage.title)"
+              :key="`sorry-title-${currentLanguage}-${index}`"
+              class="bounce-word"
+              :style="{ animationDelay: `${animationDelays.sorryTitle + index * WORD_DELAY}s` }"
+              >{{ word
+              }}{{ index < splitToWords(sorryMessage.title).length - 1 ? '\u00A0' : '' }}</span
+            >
+          </h2>
+        </InlineEditableText>
       </div>
 
       <!-- Sorry Message Content -->
       <div v-if="sorryMessage.content">
-        <p
-          :class="[
-            'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap opacity-90 px-4',
-            currentLanguage === 'kh' && 'khmer-text-fix',
-          ]"
-          :style="{
-            fontFamily: secondaryFont || currentFont,
-            color: primaryColor,
-            wordWrap: 'break-word',
-            hyphens: 'auto',
-          }"
+        <InlineEditableText
+          :value="sorryMessage.content"
+          :target="{ kind: 'eventText', textType: 'sorry_message', field: 'content' }"
+          :multiline="true"
+          :input-style="{ fontFamily: secondaryFont || currentFont, color: primaryColor }"
         >
-          <span
-            v-for="(word, index) in splitToWords(sorryMessage.content)"
-            :key="`sorry-content-${currentLanguage}-${index}`"
-            class="bounce-word"
-            :style="{ animationDelay: `${animationDelays.sorryContent + index * WORD_DELAY}s` }"
-          >{{ word }}{{ index < splitToWords(sorryMessage.content).length - 1 ? '\u00A0' : '' }}</span>
-        </p>
+          <p
+            :class="[
+              'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap opacity-90 px-4',
+              currentLanguage === 'kh' && 'khmer-text-fix',
+            ]"
+            :style="{
+              fontFamily: secondaryFont || currentFont,
+              color: primaryColor,
+              wordWrap: 'break-word',
+              hyphens: 'auto',
+            }"
+          >
+            <span
+              v-for="(word, index) in splitToWords(sorryMessage.content)"
+              :key="`sorry-content-${currentLanguage}-${index}`"
+              class="bounce-word"
+              :style="{ animationDelay: `${animationDelays.sorryContent + index * WORD_DELAY}s` }"
+              >{{ word
+              }}{{ index < splitToWords(sorryMessage.content).length - 1 ? '\u00A0' : '' }}</span
+            >
+          </p>
+        </InlineEditableText>
       </div>
     </div>
   </div>
@@ -104,6 +140,7 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import InlineEditableText from '@/components/showcase-preview/InlineEditableText.vue'
 import type { EventText } from '../../types/showcase'
 import {
   splitToWords,
@@ -149,7 +186,7 @@ const setupObserver = () => {
     {
       threshold: 0.3,
       rootMargin: '0px 0px -100px 0px',
-    }
+    },
   )
 
   if (containerRef.value) {
@@ -184,7 +221,7 @@ watch(
         }
       }
     }, 100)
-  }
+  },
 )
 
 /**

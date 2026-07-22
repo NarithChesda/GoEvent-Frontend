@@ -374,6 +374,8 @@
     "guests": "ភ្ញៀវ",
     "media": "មេឌៀ",
     "showcase": "តាំងបង្ហាញ",
+    "showcasePreview": "មើលផ្ទាល់",
+    "previewMobile": "មើលជាមុន",
     "templatePayment": "គំរូ & ការទូទាត់",
     "templateMobile": "គំរូ",
     "guestManagement": "គ្រប់គ្រងភ្ញៀវ",
@@ -403,6 +405,18 @@
     "pending": "កំពុងរង់ចាំ",
     "declined": "បានបដិសេធ",
     "checkedIn": "បានចុះឈ្មោះចូលរួម"
+  },
+  "showcasePreview": {
+    "title": "មើលផ្ទាល់",
+    "subtitle": "មើលឃើញអ្វីដែលភ្ញៀវនឹងឃើញ ក្នុងពេលវេលាជាក់ស្តែង។",
+    "coverLabel": "ក្របមុខ",
+    "transitionLabel": "ការផ្លាស់ប្តូរឆាក",
+    "mainContentLabel": "មាតិកាចម្បង",
+    "transitionNotUsed": "គំរូនេះមិនប្រើឆាកផ្លាស់ប្តូរទេ។",
+    "accessRestricted": {
+      "title": "ការចូលប្រើត្រូវបានដាក់កំហិត",
+      "description": "មានតែអ្នករៀបចំព្រឹត្តិការណ៍ និងអ្នកសហការប៉ុណ្ណោះ ដែលអាចមើលការមើលផ្ទាល់។"
+    }
   },
   "media": {
     "title": "វ៉ែបសាយព្រឹត្តិការណ៍",
@@ -988,6 +1002,7 @@
     },
     "typeHints": {
       "cover_header": "ចំណងជើងបង្ហាញលើផ្នែកខាងមុខនៃលិខិតអញ្ជើញ",
+      "invite_text": "អត្ថបទអញ្ជើញ ខាងលើឈ្មោះភ្ញៀវ នៅលើផ្នែកខាងមុខ",
       "welcome_message": "សារស្វាគមន៍នៅផ្នែកខាងលើនៃមាតិកាសំខាន់",
       "description": "ផ្នែកពិពណ៌នាសំខាន់នៃការផ្តល់ជូន",
       "short_description": "អត្ថបទសង្ខេបខ្លីប្រើដោយគំរូមួយចំនួន",
@@ -1001,6 +1016,7 @@
     },
     "textTypes": {
       "cover_header": "ចំណងជើងផ្នែកខាងមុខ",
+      "invite_text": "អត្ថបទអញ្ជើញ",
       "welcome_message": "សារស្វាគមន៍",
       "instructions": "ការណែនាំ",
       "description": "ការពិពណ៌នា",

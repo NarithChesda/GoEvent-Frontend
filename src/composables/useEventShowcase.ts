@@ -304,8 +304,22 @@ export interface ShowcaseError extends Error {
 // ============================
 // Main Composable
 // ============================
-export function useEventShowcase() {
+export interface UseEventShowcaseOptions {
+  /** Explicit event id, bypassing route-param resolution. Used when embedding
+   *  the showcase data pipeline outside the `/events/:id/showcase` route (e.g.
+   *  the manage-page live preview tab). */
+  eventId?: string
+  /** Skip the document.title / <meta> / JSON-LD mutation loadShowcase() performs.
+   *  Default false (unchanged behavior) — set true when embedding in a page that
+   *  owns its own document head (e.g. the manage page). */
+  skipMetaTags?: boolean
+}
+
+export function useEventShowcase(options?: UseEventShowcaseOptions) {
   const route = useRoute()
+
+  const resolveEventId = (): string | undefined =>
+    options?.eventId || (route.params.id as string | undefined)
 
   // ============================
   // External Composables
@@ -373,7 +387,7 @@ export function useEventShowcase() {
   // sessionStorage so it survives intra-session navigation. Treated like a
   // short-lived bearer token: never written to localStorage, cookies, or logs.
   const guestShortcode = computed<string | null>(() => {
-    const eventId = (route.params.id as string) || event.value?.id
+    const eventId = resolveEventId() || event.value?.id
     if (!eventId) return null
 
     const fromQuery = route.query.g
@@ -666,7 +680,7 @@ export function useEventShowcase() {
   // Core Methods
   // ============================
   const loadShowcase = async (forceLanguage?: string) => {
-    const eventId = route.params.id as string
+    const eventId = resolveEventId()
     if (!eventId) {
       error.value = 'Invalid event ID'
       return
@@ -723,8 +737,11 @@ export function useEventShowcase() {
         }
       }
 
-      // Update meta tags for social sharing
-      updateEventMetaTags(data.event)
+      // Update meta tags for social sharing (skipped when embedded in a page
+      // that owns its own document head, e.g. the manage-page preview tab)
+      if (!options?.skipMetaTags) {
+        updateEventMetaTags(data.event)
+      }
 
       // Initialize showcase stage based on redirect state
       const initialStage = await redirectManager.getInitialStage()
@@ -775,7 +792,7 @@ export function useEventShowcase() {
    * This prevents the background video from reloading during language changes
    */
   const updateLanguageContent = async (newLanguage: string) => {
-    const eventId = route.params.id as string
+    const eventId = resolveEventId()
     if (!eventId) {
       error.value = 'Invalid event ID'
       return

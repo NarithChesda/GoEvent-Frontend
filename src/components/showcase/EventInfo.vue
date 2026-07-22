@@ -9,46 +9,59 @@
     <div v-if="descriptionTitle || descriptionText" class="space-y-4">
       <!-- Description Title -->
       <div v-if="descriptionTitle">
-        <h2
-          :class="[
-            'text-base sm:text-lg md:text-xl lg:text-2xl font-regular leading-tight capitalize',
-            currentLanguage === 'kh' && 'khmer-text-fix',
-          ]"
-          :style="{
-            fontFamily: primaryFont || currentFont,
-            color: primaryColor,
-          }"
+        <InlineEditableText
+          :value="descriptionTitle"
+          :target="{ kind: 'eventText', textType: 'description', field: 'title' }"
+          :input-style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
         >
-          <span
-            v-for="(word, index) in splitToWords(descriptionTitle)"
-            :key="`title-${currentLanguage}-${index}`"
-            class="bounce-word"
-            :style="{ animationDelay: `${animationDelays.title + index * WORD_DELAY}s` }"
-          >{{ word }}{{ index < splitToWords(descriptionTitle).length - 1 ? '\u00A0' : '' }}</span>
-        </h2>
+          <h2
+            :class="[
+              'text-base sm:text-lg md:text-xl lg:text-2xl font-regular leading-tight capitalize',
+              currentLanguage === 'kh' && 'khmer-text-fix',
+            ]"
+            :style="{
+              fontFamily: primaryFont || currentFont,
+              color: primaryColor,
+            }"
+          >
+            <span
+              v-for="(word, index) in splitToWords(descriptionTitle)"
+              :key="`title-${currentLanguage}-${index}`"
+              class="bounce-word"
+              :style="{ animationDelay: `${animationDelays.title + index * WORD_DELAY}s` }"
+            >{{ word }}{{ index < splitToWords(descriptionTitle).length - 1 ? '\u00A0' : '' }}</span>
+          </h2>
+        </InlineEditableText>
       </div>
 
       <!-- Description Text -->
       <div v-if="descriptionText">
-        <p
-          :class="[
-            'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap opacity-90 px-4',
-            currentLanguage === 'kh' && 'khmer-text-fix',
-          ]"
-          :style="{
-            fontFamily: secondaryFont || currentFont,
-            color: primaryColor,
-            wordWrap: 'break-word',
-            hyphens: 'auto',
-          }"
+        <InlineEditableText
+          :value="descriptionText"
+          :target="{ kind: 'eventText', textType: 'description', field: 'content' }"
+          :multiline="true"
+          :input-style="{ fontFamily: secondaryFont || currentFont, color: primaryColor }"
         >
-          <span
-            v-for="(word, index) in splitToWords(capitalizedDescription)"
-            :key="`desc-${currentLanguage}-${index}`"
-            class="bounce-word"
-            :style="{ animationDelay: `${animationDelays.description + index * WORD_DELAY}s` }"
-          >{{ word }}{{ index < splitToWords(capitalizedDescription).length - 1 ? '\u00A0' : '' }}</span>
-        </p>
+          <p
+            :class="[
+              'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap opacity-90 px-4',
+              currentLanguage === 'kh' && 'khmer-text-fix',
+            ]"
+            :style="{
+              fontFamily: secondaryFont || currentFont,
+              color: primaryColor,
+              wordWrap: 'break-word',
+              hyphens: 'auto',
+            }"
+          >
+            <span
+              v-for="(word, index) in splitToWords(capitalizedDescription)"
+              :key="`desc-${currentLanguage}-${index}`"
+              class="bounce-word"
+              :style="{ animationDelay: `${animationDelays.description + index * WORD_DELAY}s` }"
+            >{{ word }}{{ index < splitToWords(capitalizedDescription).length - 1 ? '\u00A0' : '' }}</span>
+          </p>
+        </InlineEditableText>
       </div>
     </div>
 
@@ -95,10 +108,17 @@
       ></div>
 
       <div v-if="locationText" class="details-column">
-        <div
-          :class="['details-location', currentLanguage === 'kh' && 'khmer-text-fix']"
-          :style="{ fontFamily: secondaryFont || currentFont }"
-        >{{ locationText }}</div>
+        <InlineEditableText
+          :value="locationText"
+          :target="{ kind: 'eventText', textType: 'location_text', field: 'content' }"
+          :multiline="true"
+          :input-style="{ fontFamily: secondaryFont || currentFont, color: primaryColor }"
+        >
+          <div
+            :class="['details-location', currentLanguage === 'kh' && 'khmer-text-fix']"
+            :style="{ fontFamily: secondaryFont || currentFont }"
+          >{{ locationText }}</div>
+        </InlineEditableText>
       </div>
     </div>
 
@@ -182,15 +202,22 @@
         >
           <!-- Location header (calendar design): centered above the map frame,
                replacing the panel design's location card. -->
-          <div
+          <InlineEditableText
             v-if="isCalendarDesign && locationText"
-            class="map-location-header px-2 pt-2 pb-1 bounce-in-element"
-            :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
-            :style="{
-              fontFamily: secondaryFont || currentFont,
-              animationDelay: `${animationDelays.map}s`,
-            }"
-          >{{ locationText }}</div>
+            :value="locationText"
+            :target="{ kind: 'eventText', textType: 'location_text', field: 'content' }"
+            :multiline="true"
+            :input-style="{ fontFamily: secondaryFont || currentFont, color: primaryColor }"
+          >
+            <div
+              class="map-location-header px-2 pt-2 pb-1 bounce-in-element"
+              :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+              :style="{
+                fontFamily: secondaryFont || currentFont,
+                animationDelay: `${animationDelays.map}s`,
+              }"
+            >{{ locationText }}</div>
+          </InlineEditableText>
 
           <!-- Google Map Embed -->
           <div
@@ -313,6 +340,7 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import InlineEditableText from '@/components/showcase-preview/InlineEditableText.vue'
 import { useCountdown } from '../../composables/useCountdown'
 import {
   translateRSVP,
