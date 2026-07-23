@@ -535,26 +535,10 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
   const hosts = computed(() => event.value?.hosts || [])
   const agendaItems = computed(() => event.value?.agenda_items || [])
 
-  // Photo sorting with cache
-  const photosCache = ref<{ version: number; sorted: EventPhoto[] }>({ version: -1, sorted: [] })
-
   const eventPhotos = computed(() => {
     const photos = event.value?.photos || event.value?.event_photos || []
     if (photos.length === 0) return []
-
-    const currentVersion = photos.length + (photos[0]?.id || 0) + (photos[0]?.order || 0)
-
-    if (
-      photosCache.value.version === currentVersion &&
-      photosCache.value.sorted.length === photos.length
-    ) {
-      return photosCache.value.sorted
-    }
-
-    const sorted = [...photos].sort((a, b) => (a.order || 0) - (b.order || 0))
-    photosCache.value = { version: currentVersion, sorted }
-
-    return sorted
+    return [...photos].sort((a, b) => (a.order || 0) - (b.order || 0))
   })
 
   const paymentMethods = computed(() => {
@@ -1165,7 +1149,6 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
       templateProcessor.clearCaches()
 
       // 6. Reset local state
-      photosCache.value = { version: -1, sorted: [] }
       showcaseData.value = null
       error.value = null
       currentModalPhoto.value = null
