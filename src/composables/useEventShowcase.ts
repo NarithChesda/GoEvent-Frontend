@@ -21,6 +21,7 @@ import { useTemplateProcessor } from './showcase/useTemplateProcessor'
 
 // Imports - Utilities
 import { updateMetaTags, getBestEventImage, createEventDescription } from '../utils/metaUtils'
+import { translateRSVP, type SupportedLanguage } from '../utils/translations'
 
 // Configuration constants moved to specialized composables
 
@@ -314,6 +315,12 @@ export interface UseEventShowcaseOptions {
    *  Default false (unchanged behavior) — set true when embedding in a page that
    *  owns its own document head (e.g. the manage page). */
   skipMetaTags?: boolean
+  /** When there's no real guest link (no `guest_name` query param / meta),
+   *  fall back to a translated "Honored Guest" placeholder instead of an
+   *  empty guestName — used by the manage-page live preview, which has no
+   *  guest context to carry a real name, so the invite text + guest name
+   *  cover rows (gated on `guestName` being truthy) still render. */
+  useDefaultGuestName?: boolean
 }
 
 export function useEventShowcase(options?: UseEventShowcaseOptions) {
@@ -380,7 +387,12 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     const guestNameStr = Array.isArray(guestNameFromQuery)
       ? guestNameFromQuery[0]
       : guestNameFromQuery
-    return meta.value.guest_name || guestNameStr || ''
+    const resolved = meta.value.guest_name || guestNameStr || ''
+    if (resolved) return resolved
+    if (options?.useDefaultGuestName) {
+      return translateRSVP('default_guest_name', currentLanguage.value as SupportedLanguage)
+    }
+    return ''
   })
 
   // Guest shortcode (`g=...`) — write-only credential for commenting on private

@@ -41,8 +41,11 @@ const stage = computed(() => {
 })
 
 // This shell owns the data load; the resolved renderer component receives the
-// whole showcase state and renders one forced stage of it.
-const showcase = useEventShowcase({ skipMetaTags: true })
+// whole showcase state and renders one forced stage of it. There's no real
+// guest link driving this preview, so useDefaultGuestName fills in a
+// translated "Honored Guest" placeholder — otherwise the cover's invite text
+// + guest name rows (gated on a truthy guestName) would render empty.
+const showcase = useEventShowcase({ skipMetaTags: true, useDefaultGuestName: true })
 const {
   loading,
   error,
