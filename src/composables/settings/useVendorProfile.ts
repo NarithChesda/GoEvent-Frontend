@@ -28,6 +28,26 @@ export interface UseVendorProfileOptions {
   autoLoad?: boolean
 }
 
+// Shared across every useVendorProfile() call site so nav chrome that remounts
+// on each route change (TopNavBar, MobileTabBar) doesn't refire the vendor-profile
+// lookup - and its guaranteed 404 for non-vendor accounts - on every navigation.
+const sharedVendorProfile = ref<VendorProfile | null>(null)
+const sharedError = ref<string | null>(null)
+let hasFetchedOnce = false
+let inFlightLoad: Promise<void> | null = null
+
+/**
+ * Clears the shared vendor-profile cache. Must be called on logout (see App.vue's
+ * authStore.isAuthenticated watcher) - otherwise the next signed-in user in the same
+ * tab would see the previous user's cached vendor profile until a forced reload.
+ */
+export function resetVendorProfileCache() {
+  sharedVendorProfile.value = null
+  sharedError.value = null
+  hasFetchedOnce = false
+  inFlightLoad = null
+}
+
 export function useVendorProfile(options: UseVendorProfileOptions = {}) {
   const { autoLoad = true } = options
   const { t } = useI18n()
@@ -120,35 +140,61 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
   }
 
   /**
-   * Load vendor profile
+   * Load vendor profile. Reuses the shared session-wide result unless `force`
+   * is set (e.g. after creating/updating the profile elsewhere).
    */
-  const loadProfile = async () => {
+  const loadProfile = async (force = false) => {
+    if (!force && (hasFetchedOnce || inFlightLoad)) {
+      if (inFlightLoad) {
+        isLoading.value = true
+        await inFlightLoad
+        isLoading.value = false
+      }
+      vendorProfile.value = sharedVendorProfile.value
+      error.value = sharedError.value
+      if (vendorProfile.value) syncFormFromProfile()
+      else resetForm()
+      return
+    }
+
     isLoading.value = true
     error.value = null
 
-    try {
-      const response = await vendorService.getMyProfile()
+    inFlightLoad = (async () => {
+      try {
+        const response = await vendorService.getMyProfile()
 
-      if (response.success && response.data) {
-        vendorProfile.value = response.data
-        syncFormFromProfile()
-      } else {
-        // 404 means user doesn't have a vendor profile yet - this is normal
-        vendorProfile.value = null
-        resetForm()
+        if (response.success && response.data) {
+          sharedVendorProfile.value = response.data
+        } else {
+          // 404 means user doesn't have a vendor profile yet - this is normal
+          sharedVendorProfile.value = null
+        }
+        sharedError.value = null
+        hasFetchedOnce = true
+      } catch (err: any) {
+        // 404 is expected for non-vendors
+        if (err?.status === 404 || err?.message?.includes('404')) {
+          sharedVendorProfile.value = null
+          sharedError.value = null
+          hasFetchedOnce = true
+        } else {
+          // Genuine failure (network/500/etc) - don't cache it, so a retry
+          // (e.g. VendorTab's "Try Again" button) actually refetches.
+          sharedError.value = t('settings.vendor.messages.loadFailed')
+          console.error('Error loading vendor profile:', err)
+        }
       }
-    } catch (err: any) {
-      // 404 is expected for non-vendors
-      if (err?.status === 404 || err?.message?.includes('404')) {
-        vendorProfile.value = null
-        resetForm()
-      } else {
-        error.value = t('settings.vendor.messages.loadFailed')
-        console.error('Error loading vendor profile:', err)
-      }
-    } finally {
-      isLoading.value = false
-    }
+    })()
+
+    await inFlightLoad
+    inFlightLoad = null
+
+    vendorProfile.value = sharedVendorProfile.value
+    error.value = sharedError.value
+    if (vendorProfile.value) syncFormFromProfile()
+    else resetForm()
+    isLoading.value = false
   }
 
   /**
@@ -177,6 +223,8 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
 
       if (response.success && response.data) {
         vendorProfile.value = response.data
+        sharedVendorProfile.value = response.data
+        hasFetchedOnce = true
         syncFormFromProfile()
         successMessage.value = t('settings.vendor.messages.createSuccess')
         return { success: true }
@@ -218,6 +266,7 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
 
       if (response.success && response.data) {
         vendorProfile.value = response.data
+        sharedVendorProfile.value = response.data
         syncFormFromProfile()
         successMessage.value = t('settings.vendor.messages.updateSuccess')
         return { success: true }
@@ -248,6 +297,7 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
 
       if (response.success && response.data) {
         vendorProfile.value = response.data
+        sharedVendorProfile.value = response.data
         successMessage.value = t('settings.vendor.messages.logoSuccess')
         return { success: true }
       } else {
@@ -277,6 +327,7 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
 
       if (response.success && response.data) {
         vendorProfile.value = response.data
+        sharedVendorProfile.value = response.data
         successMessage.value = t('settings.vendor.messages.coverSuccess')
         return { success: true }
       } else {

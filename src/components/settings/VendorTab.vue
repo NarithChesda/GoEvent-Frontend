@@ -15,7 +15,7 @@
       <h3 class="text-lg font-medium text-slate-900 mb-2">{{ t('settings.vendor.errorTitle') }}</h3>
       <p class="text-slate-500 mb-4">{{ error }}</p>
       <button
-        @click="loadProfile"
+        @click="loadProfile(true)"
         class="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors"
       >
         {{ t('settings.vendor.tryAgain') }}

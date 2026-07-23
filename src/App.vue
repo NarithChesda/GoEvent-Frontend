@@ -3,6 +3,7 @@ import { onMounted, onUnmounted, watch } from 'vue'
 import { RouterView, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useNotificationsStore } from './stores/notifications'
+import { resetVendorProfileCache } from './composables/settings'
 import { secureStorage } from './utils/secureStorage'
 import NotificationContainer from './components/NotificationContainer.vue'
 
@@ -38,6 +39,7 @@ watch(
       await handlePendingInvitation()
     } else {
       notificationsStore.reset()
+      resetVendorProfileCache()
     }
   }
 )
