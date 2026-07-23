@@ -448,15 +448,17 @@
                   </button>
                 </div>
 
-                <!-- Footer Section -->
+                <!-- Footer Section - its own full-height, centered "page" so scrolling
+                     to the bottom clears the previous section (e.g. comments) out of
+                     view instead of showing both at once -->
                 <div
                   ref="footerSectionRef"
-                  class="mt-8 animate-reveal"
+                  class="mt-8 min-h-[85vh] flex flex-col items-center justify-center animate-reveal"
                   :class="footerMarginClasses"
                 >
                   <!-- Footer Card with Conditional Styling -->
                   <div
-                    class="footer-card-container rounded-none px-6 pt-6 pb-4 text-center transition-all duration-300 relative overflow-hidden"
+                    class="footer-card-container w-full rounded-none px-6 pt-6 pb-4 text-center transition-all duration-300 relative overflow-hidden"
                     :class="{ 'backdrop-blur-16': showLiquidGlass }"
                     :style="
                       showLiquidGlass
@@ -920,10 +922,6 @@
                     </div>
                   </div>
                 </div>
-
-                <!-- Spacer so the footer can scroll to the center of the viewport,
-                     clearing the bottom decoration overlay -->
-                <div class="h-[42vh]" aria-hidden="true"></div>
               </div>
             </div>
           </div>
