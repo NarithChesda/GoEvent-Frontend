@@ -19,9 +19,11 @@
 
     <!-- Payment Methods -->
     <div class="space-y-3">
-      <div
+      <component
+        :is="canEditPayments ? EditableRegion : 'div'"
         v-for="method in paymentMethods"
         :key="method.id"
+        v-bind="canEditPayments ? { intent: { kind: 'paymentItem', paymentMethodId: method.id } } : {}"
         class="payment-method-section mb-3 last:mb-0"
       >
         <!-- Payment Method Card - Unified Design -->
@@ -317,7 +319,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </component>
     </div>
 
     <!-- No Payment Methods Message -->
@@ -356,15 +358,33 @@
           opacity: '0.8',
         }"
       >
-        No payment methods available
+        {{ paymentLocked ? tApp('management.showcasePreview.editors.paymentLocked') : 'No payment methods available' }}
       </p>
+    </div>
+
+    <!-- Add-payment-method affordance — only inside the editable manage-page
+         preview (editIntentCtx is never provided on the public showcase) and
+         only when payments aren't locked (mirrors the forms tab's own
+         payment_lock gate). Always shown in edit mode, including when there
+         are already payment methods, so more can be added from here. -->
+    <div v-if="canEditPayments" class="add-payment-row">
+      <button
+        type="button"
+        class="edit-region-control add-payment-btn"
+        @click.stop.prevent="editIntentCtx?.requestEdit({ kind: 'paymentAdd' })"
+      >
+        ＋ {{ tApp('management.showcasePreview.editors.addPaymentMethod') }}
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, inject } from 'vue'
 import type { EventPaymentMethod } from '../../services/api'
+import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
+import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 
 interface EventText {
@@ -393,9 +413,19 @@ interface Props {
   } | null
   eventTexts?: EventText[]
   currentLanguage?: string
+  /** Mirrors event.payment_lock — when true, payment methods can't be added
+   *  or edited even from the manage-page preview (same restriction the forms
+   *  tab enforces). */
+  paymentLocked?: boolean
 }
 
 const props = defineProps<Props>()
+
+// Only provided by the editable manage-page preview frame — undefined on the
+// public showcase, so these edit affordances can never leak there.
+const editIntentCtx = inject(EditIntentKey, undefined)
+const { t: tApp } = useAppLanguage()
+const canEditPayments = computed(() => !!editIntentCtx && !props.paymentLocked)
 
 // State
 const expandedCards = ref<Set<string>>(new Set())
@@ -478,6 +508,41 @@ const capitalizeText = (text: string | undefined): string => {
 </script>
 
 <style scoped>
+/* Manage-page preview edit chrome: add-payment-method affordance. Rendered
+   only when the edit-intent context exists (and payments aren't locked),
+   never in production. */
+.add-payment-row {
+  display: flex;
+  justify-content: center;
+  margin: 0.75rem 0 0.25rem;
+}
+
+.add-payment-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25em;
+  width: 100%;
+  max-width: 20rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: #1e90ff;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1.5px dashed rgba(30, 144, 255, 0.5);
+  border-radius: 9999px;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.12);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.add-payment-btn:hover {
+  border-color: rgba(30, 144, 255, 0.9);
+  background: rgba(30, 144, 255, 0.08);
+}
+
 /* Liquid Glass Container - Seamless unified surface */
 .liquid-glass-container {
   border-radius: 2rem;

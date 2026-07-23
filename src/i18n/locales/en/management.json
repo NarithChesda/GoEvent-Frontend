@@ -442,7 +442,22 @@
       "reorderAgendaItem": "Reorder activity",
       "moveUp": "Move up",
       "moveDown": "Move down",
-      "agendaReorderFailed": "Couldn't reorder the activities"
+      "agendaReorderFailed": "Couldn't reorder the activities",
+      "editDressCode": "Edit dress code",
+      "addDressCode": "Add dress code",
+      "dressCodeLoadFailed": "Couldn't load dress code details",
+      "dressCodeDeleteFailed": "Couldn't delete the dress code",
+      "editVideo": "Edit video",
+      "addVideo": "Add video",
+      "youtubeTitle": "YouTube Video",
+      "youtubeDescription": "Paste a YouTube link or embed code — the embed URL is extracted automatically.",
+      "youtubePlaceholder": "Paste a YouTube link or <iframe> embed code",
+      "youtubeInvalid": "That doesn't look like a YouTube link or embed code.",
+      "editPaymentMethod": "Edit payment method",
+      "addPaymentMethod": "Add payment method",
+      "paymentLoadFailed": "Couldn't load payment method details",
+      "paymentDeleteFailed": "Couldn't delete the payment method",
+      "paymentLocked": "Payment methods are locked and can't be edited from here"
     }
   },
   "media": {

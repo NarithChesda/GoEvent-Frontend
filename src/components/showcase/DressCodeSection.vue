@@ -28,6 +28,7 @@
     <!-- Time Period Tabs (data-preview-safe: still clickable in the manage-page
          preview's edit mode so every dress code stays reachable for editing) -->
     <div
+      v-if="timePeriodGroups.length > 0"
       data-preview-safe
       class="time-period-tabs flex justify-center gap-2 sm:gap-3 mb-4 sm:mb-4 laptop-sm:mb-4 laptop-md:mb-4 desktop:mb-4 flex-wrap"
     >
@@ -47,47 +48,51 @@
     </div>
 
     <!-- Main Content -->
-    <transition name="fade" mode="out-in">
+    <transition v-if="timePeriodGroups.length > 0" name="fade" mode="out-in">
       <div :key="activeTimePeriod" class="dress-code-content w-full">
         <!-- Row 1: Image Preview (Full Width) -->
         <div class="image-section w-full p-1 sm:p-2 mb-4">
           <transition name="fade-scale" mode="out-in">
             <div :key="activeGender" class="dress-code-image">
-              <div class="image-wrapper flex justify-center">
-                <div
-                  v-if="getCurrentDressCodeForActiveGender().image"
-                  class="image-container w-full aspect-square max-w-xs rounded-2xl overflow-hidden shadow-md"
-                  :style="{ backgroundColor: `${primaryColor}20` }"
-                >
-                  <img
-                    :src="getMediaUrl(getCurrentDressCodeForActiveGender().image || '')"
-                    :alt="getCurrentDressCodeForActiveGender().dress_code_type_display"
-                    class="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-
-                <!-- Color Display (if no image) -->
-                <div
-                  v-else
-                  class="color-display w-full aspect-square max-w-xs rounded-2xl flex items-center justify-center shadow-md"
-                  :style="{ backgroundColor: getCurrentDressCodeForActiveGender().color }"
-                >
-                  <svg
-                    class="w-24 h-24 sm:w-32 sm:h-32 text-white opacity-30"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+              <EditableRegion
+                :intent="{ kind: 'dressCodeItem', dressCodeId: getCurrentDressCodeForActiveGender().id }"
+              >
+                <div class="image-wrapper flex justify-center">
+                  <div
+                    v-if="getCurrentDressCodeForActiveGender().image"
+                    class="image-container w-full aspect-square max-w-xs rounded-2xl overflow-hidden shadow-md"
+                    :style="{ backgroundColor: `${primaryColor}20` }"
                   >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="1.5"
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    <img
+                      :src="getMediaUrl(getCurrentDressCodeForActiveGender().image || '')"
+                      :alt="getCurrentDressCodeForActiveGender().dress_code_type_display"
+                      class="w-full h-full object-cover"
+                      loading="lazy"
                     />
-                  </svg>
+                  </div>
+
+                  <!-- Color Display (if no image) -->
+                  <div
+                    v-else
+                    class="color-display w-full aspect-square max-w-xs rounded-2xl flex items-center justify-center shadow-md"
+                    :style="{ backgroundColor: getCurrentDressCodeForActiveGender().color }"
+                  >
+                    <svg
+                      class="w-24 h-24 sm:w-32 sm:h-32 text-white opacity-30"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.5"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                  </div>
                 </div>
-              </div>
+              </EditableRegion>
             </div>
           </transition>
         </div>
@@ -188,14 +193,31 @@
         </transition>
       </div>
     </transition>
+
+    <!-- Add-dress-code affordance — only inside the editable manage-page
+         preview (editIntentCtx is never provided on the public showcase).
+         Always shown in edit mode, including when there are no dress codes
+         yet, so the first one can be added from here. -->
+    <div v-if="editIntentCtx" class="add-dress-code-row">
+      <button
+        type="button"
+        class="edit-region-control add-dress-code-btn"
+        @click.stop.prevent="editIntentCtx.requestEdit({ kind: 'dressCodeAdd' })"
+      >
+        ＋ {{ tApp('management.showcasePreview.editors.addDressCode') }}
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, reactive } from 'vue'
+import { computed, ref, reactive, inject } from 'vue'
 import type { DressCode } from '../../types/showcase'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
+import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
+import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
   dressCodes: DressCode[]
@@ -212,6 +234,11 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Only provided by the editable manage-page preview frame — undefined on the
+// public showcase, so the add-dress-code affordance can never leak there.
+const editIntentCtx = inject(EditIntentKey, undefined)
+const { t: tApp } = useAppLanguage()
 
 interface GenderGroup {
   gender: string
@@ -403,6 +430,40 @@ const getGenderTabStyle = (index: number) => {
 .dress-code-section {
   width: 100%;
   max-width: 100%;
+}
+
+/* Manage-page preview edit chrome: add-dress-code affordance. Rendered only
+   when the edit-intent context exists, never in production. */
+.add-dress-code-row {
+  display: flex;
+  justify-content: center;
+  margin: 0.25rem 0 1rem;
+}
+
+.add-dress-code-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25em;
+  width: 100%;
+  max-width: 20rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: #1e90ff;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1.5px dashed rgba(30, 144, 255, 0.5);
+  border-radius: 9999px;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.12);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.add-dress-code-btn:hover {
+  border-color: rgba(30, 144, 255, 0.9);
+  background: rgba(30, 144, 255, 0.08);
 }
 
 /* Enhanced Khmer font rendering */

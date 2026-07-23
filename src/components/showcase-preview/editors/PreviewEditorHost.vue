@@ -18,6 +18,13 @@
     @saved="onEventSaved"
   />
 
+  <YoutubeEmbedModal
+    v-model="youtubeOpen"
+    :event-id="eventId"
+    :current-link="eventData?.youtube_embed_link"
+    @saved="onEventSaved"
+  />
+
   <EditEventDateModal
     v-model="eventDateOpen"
     :event-id="eventId"
@@ -69,6 +76,42 @@
     @confirm="updateDateGroup"
     @cancel="closeEditDateGroupModal"
   />
+
+  <EditDressCodeDrawer
+    v-model="dressCodeDrawerOpen"
+    :event-id="eventId"
+    :dress-code="activeDressCode"
+    :max-order="Math.max(0, dressCodeItems.length - 1)"
+    @saved="onDressCodeSaved"
+    @delete="onDressCodeDeleteRequest"
+  />
+
+  <DeleteConfirmModal
+    :show="!!dressCodeToDelete"
+    :loading="dressCodeDeleteLoading"
+    :title="t('management.dressCode.section.deleteModal.title')"
+    :item-name="dressCodeToDelete?.title || dressCodeToDelete?.dress_code_type_display || t('management.dressCode.section.deleteModal.title')"
+    @confirm="confirmDressCodeDelete"
+    @cancel="dressCodeToDelete = null"
+  />
+
+  <PaymentMethodModal
+    v-if="paymentModalOpen"
+    :event-id="eventId"
+    :existing-payment-method="activePaymentMethod"
+    @close="paymentModalOpen = false"
+    @saved="onPaymentSaved"
+    @delete="onPaymentDeleteRequest"
+  />
+
+  <DeleteConfirmModal
+    :show="!!paymentMethodToDelete"
+    :loading="paymentDeleteLoading"
+    :title="t('management.paymentMethods.deleteModal.title')"
+    :item-name="paymentMethodToDelete?.name"
+    @confirm="confirmPaymentDelete"
+    @cancel="paymentMethodToDelete = null"
+  />
 </template>
 
 <script setup lang="ts">
@@ -81,17 +124,24 @@ import type { EditIntent } from '../edit/editContext'
 import {
   agendaService,
   hostsService,
+  dressCodeService,
+  paymentMethodsService,
   type Event,
   type EventAgendaItem,
   type EventHost,
+  type EventDressCode,
+  type EventPaymentMethod,
 } from '@/services/api'
 import { useDateGroupOperations } from '@/composables/useDateGroupOperations'
 import { fromApiDate, isUnscheduled } from '@/constants/agenda'
 import GmapEmbedModal from './GmapEmbedModal.vue'
+import YoutubeEmbedModal from './YoutubeEmbedModal.vue'
 import EditEventDateModal from './EditEventDateModal.vue'
 import EditHostDrawer from '@/components/EditHostDrawer.vue'
 import UploadMediaDrawer from '@/components/UploadMediaDrawer.vue'
 import EditAgendaDrawer from '@/components/EditAgendaDrawer.vue'
+import EditDressCodeDrawer from '@/components/EditDressCodeDrawer.vue'
+import PaymentMethodModal from '@/components/PaymentMethodModal.vue'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
 import EditDateGroupModal from '@/components/EditDateGroupModal.vue'
 
@@ -127,6 +177,9 @@ const onLogoFileChosen = async (event: globalThis.Event) => {
 
 // --- Google Maps embed -----------------------------------------------------
 const gmapOpen = ref(false)
+
+// --- YouTube embed -----------------------------------------------------------
+const youtubeOpen = ref(false)
 
 // --- Event date --------------------------------------------------------------
 const eventDateOpen = ref(false)
@@ -285,6 +338,144 @@ const formatGroupDate = (date: string): string => {
   })
 }
 
+// --- Dress code (drawer + delete confirm) -----------------------------------
+const dressCodeDrawerOpen = ref(false)
+const activeDressCode = ref<EventDressCode | undefined>(undefined)
+const dressCodeItems = ref<EventDressCode[]>([])
+const dressCodeToDelete = ref<EventDressCode | null>(null)
+const dressCodeDeleteLoading = ref(false)
+
+/** Fetch the full dress code list fresh — the showcase's own copy isn't
+ *  guaranteed to match the strict union types (dress_code_type/gender) the
+ *  drawer's selects need, and the drawer's mobile position control needs an
+ *  accurate sibling count/order. */
+const loadDressCodes = async (): Promise<boolean> => {
+  const response = await dressCodeService.getDressCodes(props.eventId, { ordering: 'order' })
+  if (!response.success || !response.data) {
+    notifyError(t('management.showcasePreview.editors.dressCodeLoadFailed'))
+    return false
+  }
+  dressCodeItems.value = response.data.results
+  return true
+}
+
+const openDressCodeEditor = async (dressCodeId?: number) => {
+  if (!(await loadDressCodes())) return
+  if (dressCodeId !== undefined) {
+    const item = dressCodeItems.value.find((entry) => entry.id === dressCodeId)
+    if (!item) {
+      notifyError(t('management.showcasePreview.editors.dressCodeLoadFailed'))
+      return
+    }
+    activeDressCode.value = item
+  } else {
+    activeDressCode.value = undefined
+  }
+  dressCodeDrawerOpen.value = true
+}
+
+// Persist a fully reordered list (mirrors the forms tab's own drag-reorder)
+const persistDressCodeOrder = async (newList: EventDressCode[]) => {
+  const updates = newList.map((item, order) => ({ id: item.id, order }))
+  const response = await dressCodeService.bulkReorderDressCodes(props.eventId, { updates })
+  if (!response.success) {
+    notifyError(
+      response.message || t('management.showcasePreview.editors.dressCodeLoadFailed'),
+    )
+  }
+}
+
+// Apply the position chosen in the drawer's mobile position control
+const applyRequestedDressCodeOrder = async (item: EventDressCode, requestedOrder: number) => {
+  const list = [...dressCodeItems.value].sort((a, b) => a.order - b.order)
+  const from = list.findIndex((entry) => entry.id === item.id)
+  if (from === -1) return
+  const to = Math.min(Math.max(requestedOrder, 0), list.length - 1)
+  if (from === to) return
+  const [moved] = list.splice(from, 1)
+  list.splice(to, 0, moved)
+  await persistDressCodeOrder(list)
+}
+
+const onDressCodeSaved = async (saved: EventDressCode, requestedOrder?: number) => {
+  if (requestedOrder !== undefined) await applyRequestedDressCodeOrder(saved, requestedOrder)
+  emit('saved')
+}
+
+// The drawer doesn't close itself before emitting `delete` — confirm here,
+// then close the drawer once the delete actually succeeds.
+const onDressCodeDeleteRequest = (dressCode: EventDressCode) => {
+  dressCodeToDelete.value = dressCode
+}
+
+const confirmDressCodeDelete = async () => {
+  if (!dressCodeToDelete.value) return
+  dressCodeDeleteLoading.value = true
+  const response = await dressCodeService.deleteDressCode(props.eventId, dressCodeToDelete.value.id)
+  dressCodeDeleteLoading.value = false
+  if (response.success) {
+    dressCodeToDelete.value = null
+    dressCodeDrawerOpen.value = false
+    emit('saved')
+  } else {
+    notifyError(
+      t('management.showcasePreview.editors.dressCodeDeleteFailed'),
+      response.message || undefined,
+    )
+  }
+}
+
+// --- Payment method (drawer + delete confirm) -------------------------------
+const paymentModalOpen = ref(false)
+const activePaymentMethod = ref<EventPaymentMethod | undefined>(undefined)
+const paymentMethodToDelete = ref<EventPaymentMethod | null>(null)
+const paymentDeleteLoading = ref(false)
+
+const openPaymentEditor = async (paymentMethodId?: number) => {
+  if (paymentMethodId !== undefined) {
+    const response = await paymentMethodsService.getPaymentMethod(props.eventId, paymentMethodId)
+    if (!response.success || !response.data) {
+      notifyError(t('management.showcasePreview.editors.paymentLoadFailed'))
+      return
+    }
+    activePaymentMethod.value = response.data
+  } else {
+    activePaymentMethod.value = undefined
+  }
+  paymentModalOpen.value = true
+}
+
+const onPaymentSaved = () => {
+  paymentModalOpen.value = false
+  emit('saved')
+}
+
+// The modal doesn't tell us which record was deleted — it's whichever one is
+// currently open.
+const onPaymentDeleteRequest = () => {
+  paymentMethodToDelete.value = activePaymentMethod.value ?? null
+}
+
+const confirmPaymentDelete = async () => {
+  if (!paymentMethodToDelete.value) return
+  paymentDeleteLoading.value = true
+  const response = await paymentMethodsService.deletePaymentMethod(
+    props.eventId,
+    paymentMethodToDelete.value.id,
+  )
+  paymentDeleteLoading.value = false
+  if (response.success) {
+    paymentMethodToDelete.value = null
+    paymentModalOpen.value = false
+    emit('saved')
+  } else {
+    notifyError(
+      t('management.showcasePreview.editors.paymentDeleteFailed'),
+      response.message || undefined,
+    )
+  }
+}
+
 // --- Intent routing --------------------------------------------------------
 const handleIntent = (intent: EditIntent) => {
   switch (intent.kind) {
@@ -293,6 +484,9 @@ const handleIntent = (intent: EditIntent) => {
       break
     case 'gmapEmbed':
       gmapOpen.value = true
+      break
+    case 'youtubeEmbed':
+      youtubeOpen.value = true
       break
     case 'eventDate':
       eventDateOpen.value = true
@@ -314,6 +508,18 @@ const handleIntent = (intent: EditIntent) => {
       break
     case 'agendaReorder':
       reorderAgendaItem(intent.agendaId, intent.direction)
+      break
+    case 'dressCodeItem':
+      openDressCodeEditor(intent.dressCodeId)
+      break
+    case 'dressCodeAdd':
+      openDressCodeEditor()
+      break
+    case 'paymentItem':
+      openPaymentEditor(intent.paymentMethodId)
+      break
+    case 'paymentAdd':
+      openPaymentEditor()
       break
   }
 }

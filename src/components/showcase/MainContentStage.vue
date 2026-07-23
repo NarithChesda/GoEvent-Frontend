@@ -222,9 +222,12 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
-                <!-- Dress Code Section -->
+                <!-- Dress Code Section (also rendered when empty inside the
+                     editable manage-page preview, so the first dress code can
+                     be added from there — editIntentCtx is never provided on
+                     the public showcase) -->
                 <div
-                  v-if="dressCodes.length > 0"
+                  v-if="dressCodes.length > 0 || editIntentCtx"
                   id="dress-code-section"
                   ref="dressCodeSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
@@ -298,26 +301,40 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
-                <!-- YouTube Video Section -->
+                <!-- YouTube Video Section (also rendered when empty inside
+                     the editable manage-page preview, so a video link can be
+                     added from there — editIntentCtx is never provided on
+                     the public showcase) -->
                 <div
-                  v-if="event.youtube_embed_link"
+                  v-if="event.youtube_embed_link || editIntentCtx"
                   id="video-section"
                   ref="videoSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
-                  <YouTubeVideoSection
-                    :youtube-embed-link="event.youtube_embed_link"
-                    :primary-color="primaryColor"
-                    :secondary-color="secondaryColor || undefined"
-                    :accent-color="accentColor"
-                    :current-font="currentFont"
-                    :primary-font="primaryFont"
-                    :secondary-font="secondaryFont"
-                    :event-texts="eventTexts"
-                    :current-language="currentLanguage"
-                    :is-music-playing="isMusicPlaying"
-                    @video-state-change="handleVideoStateChange"
-                  />
+                  <EditableRegion v-if="event.youtube_embed_link" :intent="{ kind: 'youtubeEmbed' }">
+                    <YouTubeVideoSection
+                      :youtube-embed-link="event.youtube_embed_link"
+                      :primary-color="primaryColor"
+                      :secondary-color="secondaryColor || undefined"
+                      :accent-color="accentColor"
+                      :current-font="currentFont"
+                      :primary-font="primaryFont"
+                      :secondary-font="secondaryFont"
+                      :event-texts="eventTexts"
+                      :current-language="currentLanguage"
+                      :is-music-playing="isMusicPlaying"
+                      @video-state-change="handleVideoStateChange"
+                    />
+                  </EditableRegion>
+                  <div v-else-if="editIntentCtx" class="add-video-row">
+                    <button
+                      type="button"
+                      class="edit-region-control add-video-btn"
+                      @click.stop.prevent="editIntentCtx.requestEdit({ kind: 'youtubeEmbed' })"
+                    >
+                      ＋ {{ tApp('management.showcasePreview.editors.addVideo') }}
+                    </button>
+                  </div>
 
                   <!-- Video Section Divider -->
                   <WeddingSectionDivider :primary-color="primaryColor" />
@@ -350,9 +367,12 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
-                <!-- Payment Section -->
+                <!-- Payment Section (also rendered when empty inside the
+                     editable manage-page preview, so a payment method can be
+                     added from there — editIntentCtx is never provided on
+                     the public showcase) -->
                 <div
-                  v-if="paymentMethods.length > 0"
+                  v-if="paymentMethods.length > 0 || editIntentCtx"
                   id="payment-section"
                   ref="paymentSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
@@ -372,6 +392,7 @@
                     :event-category-details="event.category_details"
                     :event-texts="eventTexts"
                     :current-language="currentLanguage"
+                    :payment-locked="event.payment_lock"
                   />
 
                   <!-- Payment Section Divider -->
@@ -941,6 +962,7 @@ import YouTubeVideoSection from './YouTubeVideoSection.vue'
 import PhotoGallery from './PhotoGallery.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import CommentSection from './CommentSection.vue'
 import PaymentSection from './PaymentSection.vue'
 import FloatingActionMenu from './FloatingActionMenu.vue'
@@ -1014,6 +1036,7 @@ const props = defineProps<Props>()
 // Only provided by the editable manage-page preview frame — undefined on the
 // public showcase, so the empty-agenda add affordance can never leak there.
 const editIntentCtx = inject(EditIntentKey, undefined)
+const { t: tApp } = useAppLanguage()
 
 // Main stage layout configuration (decoration z-indexes + welcome header visibility)
 const { decorationZIndexes, layout: mainStageLayoutResolved } = useCoverStageLayout(
@@ -1549,6 +1572,41 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* Manage-page preview edit chrome: add-video affordance shown when the event
+   has no YouTube embed yet. Rendered only when the edit-intent context
+   exists, never in production. */
+.add-video-row {
+  display: flex;
+  justify-content: center;
+  margin: 0.25rem 0 1rem;
+}
+
+.add-video-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25em;
+  width: 100%;
+  max-width: 20rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: #1e90ff;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1.5px dashed rgba(30, 144, 255, 0.5);
+  border-radius: 9999px;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.12);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.add-video-btn:hover {
+  border-color: rgba(30, 144, 255, 0.9);
+  background: rgba(30, 144, 255, 0.08);
+}
+
 /* ===================
    ANIMATIONS
    =================== */

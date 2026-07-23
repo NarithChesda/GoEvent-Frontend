@@ -41,6 +41,11 @@ export type EditIntent =
   | { kind: 'agendaAdd' }
   | { kind: 'agendaDate'; date: string | null; itemCount: number }
   | { kind: 'agendaReorder'; agendaId: number; direction: 'up' | 'down' }
+  | { kind: 'dressCodeItem'; dressCodeId: number }
+  | { kind: 'dressCodeAdd' }
+  | { kind: 'youtubeEmbed' }
+  | { kind: 'paymentItem'; paymentMethodId: number }
+  | { kind: 'paymentAdd' }
 
 export interface EditIntentContext {
   requestEdit: (intent: EditIntent) => void

@@ -241,6 +241,7 @@ export interface EventData {
   rsvp_enabled?: boolean
   comments_enabled?: boolean
   countdown_enabled?: boolean
+  payment_lock?: boolean
   privacy?: 'public' | 'private'
   category?: number | null
   category_name?: string | null

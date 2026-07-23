@@ -442,7 +442,22 @@
       "reorderAgendaItem": "រៀបលំដាប់សកម្មភាព",
       "moveUp": "ផ្លាស់ឡើងលើ",
       "moveDown": "ផ្លាស់ចុះក្រោម",
-      "agendaReorderFailed": "មិនអាចរៀបលំដាប់សកម្មភាពបានទេ"
+      "agendaReorderFailed": "មិនអាចរៀបលំដាប់សកម្មភាពបានទេ",
+      "editDressCode": "កែសម្លៀកបំពាក់",
+      "addDressCode": "បន្ថែមសម្លៀកបំពាក់",
+      "dressCodeLoadFailed": "មិនអាចផ្ទុកព័ត៌មានសម្លៀកបំពាក់បានទេ",
+      "dressCodeDeleteFailed": "មិនអាចលុបសម្លៀកបំពាក់បានទេ",
+      "editVideo": "កែវីដេអូ",
+      "addVideo": "បន្ថែមវីដេអូ",
+      "youtubeTitle": "វីដេអូ YouTube",
+      "youtubeDescription": "បិទភ្ជាប់តំណ YouTube ឬកូដបង្កប់ — URL បង្កប់នឹងត្រូវបានស្រង់ចេញដោយស្វ័យប្រវត្តិ។",
+      "youtubePlaceholder": "បិទភ្ជាប់តំណ YouTube ឬកូដ <iframe>",
+      "youtubeInvalid": "នេះមិនមែនជាតំណ ឬកូដបង្កប់ YouTube ទេ។",
+      "editPaymentMethod": "កែវិធីទូទាត់",
+      "addPaymentMethod": "បន្ថែមវិធីទូទាត់",
+      "paymentLoadFailed": "មិនអាចផ្ទុកព័ត៌មានវិធីទូទាត់បានទេ",
+      "paymentDeleteFailed": "មិនអាចលុបវិធីទូទាត់បានទេ",
+      "paymentLocked": "វិធីទូទាត់ត្រូវបានចាក់សោ និងមិនអាចកែពីទីនេះបានទេ"
     }
   },
   "media": {

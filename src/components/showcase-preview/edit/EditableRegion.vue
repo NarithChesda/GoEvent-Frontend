@@ -53,6 +53,11 @@ const DEFAULT_LABEL_KEYS: Record<EditIntent['kind'], string> = {
   agendaAdd: 'management.showcasePreview.editors.addAgendaItem',
   agendaDate: 'management.showcasePreview.editors.changeAgendaDate',
   agendaReorder: 'management.showcasePreview.editors.reorderAgendaItem',
+  dressCodeItem: 'management.showcasePreview.editors.editDressCode',
+  dressCodeAdd: 'management.showcasePreview.editors.addDressCode',
+  youtubeEmbed: 'management.showcasePreview.editors.editVideo',
+  paymentItem: 'management.showcasePreview.editors.editPaymentMethod',
+  paymentAdd: 'management.showcasePreview.editors.addPaymentMethod',
 }
 
 const label = computed(() => props.label || t(DEFAULT_LABEL_KEYS[props.intent.kind]))
