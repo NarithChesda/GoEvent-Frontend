@@ -47,6 +47,13 @@
     @uploaded="onPhotoUploaded"
   />
 
+  <FeaturedPhotoModal
+    v-model="featuredPhotoOpen"
+    :event-id="eventId"
+    @saved="onFeaturedPhotoSaved"
+    @upload-requested="onFeaturedPhotoUploadRequested"
+  />
+
   <EditAgendaDrawer
     v-model="agendaDrawerOpen"
     :event-id="eventId"
@@ -136,6 +143,7 @@ import { useDateGroupOperations } from '@/composables/useDateGroupOperations'
 import { fromApiDate, isUnscheduled } from '@/constants/agenda'
 import GmapEmbedModal from './GmapEmbedModal.vue'
 import YoutubeEmbedModal from './YoutubeEmbedModal.vue'
+import FeaturedPhotoModal from './FeaturedPhotoModal.vue'
 import EditEventDateModal from './EditEventDateModal.vue'
 import EditHostDrawer from '@/components/EditHostDrawer.vue'
 import UploadMediaDrawer from '@/components/UploadMediaDrawer.vue'
@@ -219,6 +227,17 @@ const closePhotos = () => {
     photosDirty.value = false
     emit('saved')
   }
+}
+
+// --- Featured photo (transition stage) --------------------------------------
+const featuredPhotoOpen = ref(false)
+
+const onFeaturedPhotoSaved = () => emit('saved')
+
+// The picker has no photos to offer — hand off to the same upload drawer the
+// photo-gallery section uses (it already closed itself before emitting this).
+const onFeaturedPhotoUploadRequested = () => {
+  photosOpen.value = true
 }
 
 // --- Agenda (item drawer + delete confirm + day-group date modal) ----------
@@ -496,6 +515,9 @@ const handleIntent = (intent: EditIntent) => {
       break
     case 'photos':
       photosOpen.value = true
+      break
+    case 'featuredPhoto':
+      featuredPhotoOpen.value = true
       break
     case 'agendaItem':
       openAgendaEditor(intent.agendaId)

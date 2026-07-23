@@ -152,8 +152,9 @@
         :show-animations="true"
       />
 
-      <!-- Swipe Up Arrow Indicator -->
-      <SwipeUpArrow :color="primaryColor" :bottom="swipeArrowBottom" />
+      <!-- Swipe Up Arrow Indicator (hidden when the envelope can't actually
+           be opened, e.g. the manage-page preview) -->
+      <SwipeUpArrow v-if="!isInteractionDisabled" :color="primaryColor" :bottom="swipeArrowBottom" />
     </div>
   </div>
 </template>

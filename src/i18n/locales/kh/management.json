@@ -457,7 +457,17 @@
       "addPaymentMethod": "បន្ថែមវិធីទូទាត់",
       "paymentLoadFailed": "មិនអាចផ្ទុកព័ត៌មានវិធីទូទាត់បានទេ",
       "paymentDeleteFailed": "មិនអាចលុបវិធីទូទាត់បានទេ",
-      "paymentLocked": "វិធីទូទាត់ត្រូវបានចាក់សោ និងមិនអាចកែពីទីនេះបានទេ"
+      "paymentLocked": "វិធីទូទាត់ត្រូវបានចាក់សោ និងមិនអាចកែពីទីនេះបានទេ",
+      "editFeaturedPhoto": "ប្តូររូបភាពសំខាន់",
+      "addFeaturedPhoto": "កំណត់រូបភាពសំខាន់",
+      "featuredPhotoTitle": "រូបភាពសំខាន់",
+      "featuredPhotoDescription": "បង្ហាញពេញអេក្រង់នៅឆាកផ្លាស់ប្តូរ រវាងក្របមុខ និងសំបុត្រអញ្ជើញចម្បង។",
+      "featuredPhotoEmpty": "មិនទាន់មានរូបភាពទេ",
+      "featuredPhotoUploadPrompt": "សូមផ្ទុករូបភាពជាមុនសិន រួចត្រឡប់មកទីនេះវិញ ដើម្បីជ្រើសរើសរូបភាពសំខាន់។",
+      "featuredPhotoUploadButton": "ផ្ទុករូបភាព",
+      "featuredPhotoLoadFailed": "មិនអាចផ្ទុករូបភាពបានទេ",
+      "featuredPhotoUpdateFailed": "មិនអាចកែប្រែរូបភាពសំខាន់បានទេ",
+      "replayTransition": "ចាក់ឡើងវិញ"
     }
   },
   "media": {

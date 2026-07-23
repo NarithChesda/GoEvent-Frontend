@@ -457,7 +457,17 @@
       "addPaymentMethod": "Add payment method",
       "paymentLoadFailed": "Couldn't load payment method details",
       "paymentDeleteFailed": "Couldn't delete the payment method",
-      "paymentLocked": "Payment methods are locked and can't be edited from here"
+      "paymentLocked": "Payment methods are locked and can't be edited from here",
+      "editFeaturedPhoto": "Change featured photo",
+      "addFeaturedPhoto": "Set featured photo",
+      "featuredPhotoTitle": "Featured Photo",
+      "featuredPhotoDescription": "Shown full-screen on the transition stage between the cover and the main invitation.",
+      "featuredPhotoEmpty": "No photos yet",
+      "featuredPhotoUploadPrompt": "Upload photos first, then come back here to choose one as featured.",
+      "featuredPhotoUploadButton": "Upload photos",
+      "featuredPhotoLoadFailed": "Couldn't load photos",
+      "featuredPhotoUpdateFailed": "Couldn't update the featured photo",
+      "replayTransition": "Replay"
     }
   },
   "media": {

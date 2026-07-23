@@ -39,6 +39,7 @@
     :animation-type="event.template_assets?.cover_stage_layout?.showcaseAnimationType"
     :use-transition-stage="isBasicWedding"
     :get-media-url="getMediaUrl"
+    :disable-envelope-interaction="true"
   >
     <template #main-content>
       <MainContentStage

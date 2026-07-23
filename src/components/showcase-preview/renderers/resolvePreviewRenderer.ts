@@ -14,6 +14,11 @@ export interface PreviewFrameContext {
   }
   templateAssets: { standard_cover_video?: string | null } | null
   hasFeaturedPhoto: boolean
+  /** Whether the viewing user can edit the event. Lets frames that are
+   *  otherwise hidden on an "unused" state (e.g. transition with no featured
+   *  photo yet) stay visible in edit mode so that state can be fixed from
+   *  the preview itself. */
+  canEdit?: boolean
 }
 
 export interface PreviewFrameDescriptor {
@@ -64,9 +69,13 @@ const V1_RENDERER: PreviewRendererDescriptor = {
     {
       id: 'transition',
       labelKey: 'management.showcasePreview.transitionLabel',
-      editable: false,
+      // Editable so the featured-photo affordance can post edit intents even
+      // though the stage itself has no inline-text/EditableRegion fields.
+      editable: true,
       clickMessage: 'replay',
-      isVisible: (ctx) => isBasicWeddingShowcase(ctx) && ctx.hasFeaturedPhoto,
+      // Stays visible in edit mode even without a featured photo yet, so one
+      // can be set from here instead of the frame just disappearing.
+      isVisible: (ctx) => isBasicWeddingShowcase(ctx) && (ctx.hasFeaturedPhoto || !!ctx.canEdit),
       hiddenNoteKey: 'management.showcasePreview.transitionNotUsed',
     },
     {

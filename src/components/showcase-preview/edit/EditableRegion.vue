@@ -58,6 +58,7 @@ const DEFAULT_LABEL_KEYS: Record<EditIntent['kind'], string> = {
   youtubeEmbed: 'management.showcasePreview.editors.editVideo',
   paymentItem: 'management.showcasePreview.editors.editPaymentMethod',
   paymentAdd: 'management.showcasePreview.editors.addPaymentMethod',
+  featuredPhoto: 'management.showcasePreview.editors.editFeaturedPhoto',
 }
 
 const label = computed(() => props.label || t(DEFAULT_LABEL_KEYS[props.intent.kind]))

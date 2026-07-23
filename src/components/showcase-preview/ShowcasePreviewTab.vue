@@ -112,6 +112,7 @@ const rendererContext = computed(() => ({
   event: event.value,
   templateAssets: templateAssets.value,
   hasFeaturedPhoto: eventPhotos.value?.some((p) => p.is_featured) ?? false,
+  canEdit: props.canEdit,
 }))
 
 const renderer = computed(() => resolvePreviewRenderer(rendererContext.value))

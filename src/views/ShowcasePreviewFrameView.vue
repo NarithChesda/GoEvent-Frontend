@@ -65,6 +65,7 @@ const renderer = computed(() =>
     event: event.value,
     templateAssets: templateAssets.value,
     hasFeaturedPhoto: eventPhotos.value?.some((p) => p.is_featured) ?? false,
+    canEdit: route.query.editable === '1',
   }),
 )
 

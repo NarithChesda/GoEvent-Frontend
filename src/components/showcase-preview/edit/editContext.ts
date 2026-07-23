@@ -46,6 +46,7 @@ export type EditIntent =
   | { kind: 'youtubeEmbed' }
   | { kind: 'paymentItem'; paymentMethodId: number }
   | { kind: 'paymentAdd' }
+  | { kind: 'featuredPhoto' }
 
 export interface EditIntentContext {
   requestEdit: (intent: EditIntent) => void

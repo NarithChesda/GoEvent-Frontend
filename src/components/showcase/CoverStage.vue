@@ -147,6 +147,10 @@ interface Props {
   ambientCreatures?: AmbientCreaturesConfig | null
   /** When true, basic mode will only animate decorations out without transitioning to main content */
   useTransitionStage?: boolean
+  /** Manage-page preview only: always block the open-envelope tap/swipe so
+   *  the cover renders as a static "what it looks like" view instead of
+   *  being interactive. Never set on the live showcase. */
+  disableEnvelopeInteraction?: boolean
 }
 
 const props = defineProps<Props>()
@@ -242,7 +246,10 @@ const shouldShowMainContent = computed(() => {
 })
 
 // Disable envelope interaction in standard mode until event video is ready
+// (or unconditionally, when the manage-page preview just wants to show what
+// the cover looks like without letting it be opened/animated away).
 const isEnvelopeInteractionDisabled = computed(() => {
+  if (props.disableEnvelopeInteraction) return true
   if (displayMode.value === 'basic') {
     return false
   }
