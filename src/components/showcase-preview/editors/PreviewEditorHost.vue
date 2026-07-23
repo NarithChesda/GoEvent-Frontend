@@ -18,6 +18,14 @@
     @saved="onEventSaved"
   />
 
+  <EditEventDateModal
+    v-model="eventDateOpen"
+    :event-id="eventId"
+    :start-date="eventData?.start_date"
+    :end-date="eventData?.end_date"
+    @saved="onEventSaved"
+  />
+
   <EditHostDrawer
     v-model="hostDrawerOpen"
     :event-id="eventId"
@@ -80,6 +88,7 @@ import {
 import { useDateGroupOperations } from '@/composables/useDateGroupOperations'
 import { fromApiDate, isUnscheduled } from '@/constants/agenda'
 import GmapEmbedModal from './GmapEmbedModal.vue'
+import EditEventDateModal from './EditEventDateModal.vue'
 import EditHostDrawer from '@/components/EditHostDrawer.vue'
 import UploadMediaDrawer from '@/components/UploadMediaDrawer.vue'
 import EditAgendaDrawer from '@/components/EditAgendaDrawer.vue'
@@ -118,6 +127,9 @@ const onLogoFileChosen = async (event: globalThis.Event) => {
 
 // --- Google Maps embed -----------------------------------------------------
 const gmapOpen = ref(false)
+
+// --- Event date --------------------------------------------------------------
+const eventDateOpen = ref(false)
 
 const onEventSaved = (updated: Event) => emit('saved', updated)
 
@@ -281,6 +293,9 @@ const handleIntent = (intent: EditIntent) => {
       break
     case 'gmapEmbed':
       gmapOpen.value = true
+      break
+    case 'eventDate':
+      eventDateOpen.value = true
       break
     case 'hostImage':
       openHostEditor(intent.hostId)

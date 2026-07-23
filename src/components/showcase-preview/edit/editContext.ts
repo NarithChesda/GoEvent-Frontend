@@ -34,6 +34,7 @@ export const InlineEditKey: InjectionKey<InlineEditContext> = Symbol('showcase-i
 export type EditIntent =
   | { kind: 'eventLogo' }
   | { kind: 'gmapEmbed' }
+  | { kind: 'eventDate' }
   | { kind: 'hostImage'; hostId: number }
   | { kind: 'photos' }
   | { kind: 'agendaItem'; agendaId: number }

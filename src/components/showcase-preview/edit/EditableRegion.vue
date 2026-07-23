@@ -46,6 +46,7 @@ const { t } = useAppLanguage()
 const DEFAULT_LABEL_KEYS: Record<EditIntent['kind'], string> = {
   eventLogo: 'management.showcasePreview.editors.replaceLogo',
   gmapEmbed: 'management.showcasePreview.editors.editMap',
+  eventDate: 'management.showcasePreview.editors.changeEventDate',
   hostImage: 'management.showcasePreview.editors.changeHostPhoto',
   photos: 'management.showcasePreview.editors.managePhotos',
   agendaItem: 'management.showcasePreview.editors.editAgendaItem',

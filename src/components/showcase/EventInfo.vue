@@ -84,21 +84,23 @@
         v-if="hasDateParts"
         :class="['date-column', currentLanguage === 'kh' && 'khmer-text-fix']"
       >
-        <div
-          v-if="dateParts.weekday"
-          class="date-weekday"
-          :style="{ fontFamily: secondaryFont || currentFont }"
-        >{{ dateParts.weekday }}</div>
-        <div
-          v-if="dateParts.day"
-          class="date-day"
-          :style="{ fontFamily: primaryFont || currentFont }"
-        >{{ dateParts.day }}</div>
-        <div
-          v-if="dateParts.month"
-          class="date-month"
-          :style="{ fontFamily: secondaryFont || currentFont }"
-        >{{ dateParts.month }}</div>
+        <EditableRegion :intent="{ kind: 'eventDate' }" class="date-column-region">
+          <div
+            v-if="dateParts.weekday"
+            class="date-weekday"
+            :style="{ fontFamily: secondaryFont || currentFont }"
+          >{{ dateParts.weekday }}</div>
+          <div
+            v-if="dateParts.day"
+            class="date-day"
+            :style="{ fontFamily: primaryFont || currentFont }"
+          >{{ dateParts.day }}</div>
+          <div
+            v-if="dateParts.month"
+            class="date-month"
+            :style="{ fontFamily: secondaryFont || currentFont }"
+          >{{ dateParts.month }}</div>
+        </EditableRegion>
       </div>
 
       <div
@@ -134,6 +136,7 @@
         animationDelay: `${animationDelays.date}s`,
       }"
     >
+      <EditableRegion :intent="{ kind: 'eventDate' }" class="calendar-region">
       <div
         :class="['calendar-heading', currentLanguage === 'kh' && 'khmer-text-fix']"
         :style="{ fontFamily: primaryFont || currentFont }"
@@ -180,6 +183,7 @@
           </svg>
         </div>
       </div>
+      </EditableRegion>
     </div>
 
     <!-- Event Details Block -->
@@ -758,6 +762,16 @@ const countdownNumberFont = computed(() =>
   gap: 0.15rem;
 }
 
+/* Manage-preview only wrapper (bare slot in production, see EditableRegion) —
+   keeps the weekday/day/month stack centered exactly as the plain date-column
+   children were before this wrapper existed. */
+.date-column-region {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
 /* Mobile: scaled down for the 1/3-width date column so "WEDNESDAY"/"SEPTEMBER"
    don't overflow or wrap. Full sizes restored at ≥640px where the column widens. */
 .date-weekday,
@@ -815,6 +829,13 @@ const countdownNumberFont = computed(() =>
   box-sizing: border-box;
   border-top: 1px solid color-mix(in srgb, currentColor 60%, transparent);
   border-bottom: 1px solid color-mix(in srgb, currentColor 60%, transparent);
+}
+
+/* Manage-preview only wrapper around the heading + grid (bare slot in
+   production, see EditableRegion) — no layout of its own beyond block flow,
+   which matches the two children's original stacking inside .calendar-card. */
+.calendar-region {
+  display: block;
 }
 
 .calendar-heading {
