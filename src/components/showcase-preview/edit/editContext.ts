@@ -2,14 +2,14 @@ import type { InjectionKey } from 'vue'
 
 /**
  * Identifies which record + field an inline edit on the showcase preview
- * writes to. Mirrors the four save targets the management forms already use:
- * EventText upsert-by-(text_type, language), Host PATCH, AgendaItem PATCH,
- * DressCode PATCH.
+ * writes to. Mirrors the save targets the management forms already use:
+ * EventText upsert-by-(text_type, language), Host PATCH, DressCode PATCH.
+ * (Agenda titles are no longer inline-edited — the whole agenda card is an
+ * EditableRegion opening EditAgendaDrawer, which handles translations.)
  */
 export type InlineEditTarget =
   | { kind: 'eventText'; textType: string; field: 'title' | 'content' }
   | { kind: 'host'; hostId: number; field: 'name' | 'parent_a_name' | 'parent_b_name' | 'title' }
-  | { kind: 'agenda'; agendaId: number; field: 'title' }
   | { kind: 'dressCode'; dressCodeId: number; field: 'title' | 'description' }
 
 export interface InlineEditContext {
@@ -36,6 +36,10 @@ export type EditIntent =
   | { kind: 'gmapEmbed' }
   | { kind: 'hostImage'; hostId: number }
   | { kind: 'photos' }
+  | { kind: 'agendaItem'; agendaId: number }
+  | { kind: 'agendaAdd' }
+  | { kind: 'agendaDate'; date: string | null; itemCount: number }
+  | { kind: 'agendaReorder'; agendaId: number; direction: 'up' | 'down' }
 
 export interface EditIntentContext {
   requestEdit: (intent: EditIntent) => void

@@ -430,7 +430,16 @@
       "saving": "Saving…",
       "cancel": "Cancel",
       "logoUploadFailed": "Logo upload failed",
-      "hostLoadFailed": "Couldn't load host details"
+      "hostLoadFailed": "Couldn't load host details",
+      "editAgendaItem": "Edit activity",
+      "addAgendaItem": "Add activity",
+      "changeAgendaDate": "Change this day's date",
+      "agendaLoadFailed": "Couldn't load agenda details",
+      "agendaDeleteFailed": "Couldn't delete the activity",
+      "reorderAgendaItem": "Reorder activity",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "agendaReorderFailed": "Couldn't reorder the activities"
     }
   },
   "media": {

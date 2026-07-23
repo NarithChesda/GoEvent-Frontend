@@ -112,6 +112,14 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
+/* The showcase's floating action menu (language/music/map crescent) is guest
+   navigation chrome — inside the preview frames (editable or read-only) it
+   only obscures content, so hide it here rather than in the shared showcase
+   components. */
+.preview-frame-stage :deep(.floating-action-menu) {
+  display: none !important;
+}
+
 /* Edit mode: the parent tab drops its click shield so inline text editing can
    receive real clicks/focus — so the live interactive elements inside the
    showcase (RSVP submit, comment form, payment/map/video links, music toggle,
@@ -119,11 +127,20 @@ onUnmounted(() => {
    controls (.inline-edit-control) and explicitly whitelisted regions
    ([data-preview-safe], e.g. dress-code tabs needed to reach every record)
    stay clickable — as do the EditableRegion affordances (.edit-region-control)
-   that request parent-side media editors. */
-.preview-editable-mode :deep(:is(a, button, input, textarea, select, iframe, [role='button'], audio, video)):not(.inline-edit-control):not(.edit-region-control) {
+   that request parent-side media editors.
+
+   The safe-region exclusion lives INSIDE this rule's :not() (as a complex
+   selector) rather than relying on the re-enable rule below outranking it:
+   chained :not() classes raise this rule's specificity, and a previous
+   :not(.edit-region-control) addition silently pushed it above the re-enable
+   rule, killing every data-preview-safe region (dress-code + agenda day tabs)
+   in edit mode. Keeping the exclusion here makes the whitelist order- and
+   specificity-independent. */
+.preview-editable-mode :deep(:is(a, button, input, textarea, select, iframe, [role='button'], audio, video):not(.inline-edit-control, .edit-region-control, [data-preview-safe] *)) {
   pointer-events: none !important;
 }
 
+/* Belt-and-braces reinforcement of the [data-preview-safe] whitelist */
 .preview-editable-mode :deep([data-preview-safe] :is(a, button, input, select, [role='button'])) {
   pointer-events: auto !important;
 }

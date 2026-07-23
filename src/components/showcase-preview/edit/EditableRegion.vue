@@ -48,6 +48,10 @@ const DEFAULT_LABEL_KEYS: Record<EditIntent['kind'], string> = {
   gmapEmbed: 'management.showcasePreview.editors.editMap',
   hostImage: 'management.showcasePreview.editors.changeHostPhoto',
   photos: 'management.showcasePreview.editors.managePhotos',
+  agendaItem: 'management.showcasePreview.editors.editAgendaItem',
+  agendaAdd: 'management.showcasePreview.editors.addAgendaItem',
+  agendaDate: 'management.showcasePreview.editors.changeAgendaDate',
+  agendaReorder: 'management.showcasePreview.editors.reorderAgendaItem',
 }
 
 const label = computed(() => props.label || t(DEFAULT_LABEL_KEYS[props.intent.kind]))
@@ -72,8 +76,10 @@ const request = () => ctx?.requestEdit(props.intent)
 
 .editable-region__badge {
   position: absolute;
-  top: 0.35rem;
-  right: 0.35rem;
+  /* Overridable so wrappers can steer the badge clear of other edit chrome
+     (e.g. AgendaItem's reorder arrows at the card's top-right). */
+  top: var(--edit-badge-top, 0.35rem);
+  right: var(--edit-badge-right, 0.35rem);
   z-index: 5;
   display: none;
   align-items: center;

@@ -41,6 +41,8 @@ page catches them and opens the **existing full-size editors**:
 | Google-Maps embed | compact modal reusing `embedExtractor.ts` extraction | `eventsService.patchEvent({ google_map_embed_link })` (same as `EmbedsSection.vue`) |
 | Host image | `EditHostDrawer.vue` (`modelValue`, `eventId`, `host`) | its own save flow (crop included) |
 | Event photos | `UploadMediaDrawer.vue` (`eventId`) for uploads; gallery manage is a later item | `mediaService` |
+| Agenda item (edit/add) | `EditAgendaDrawer.vue` (`item?`, `existingAgendaItems`) + `DeleteConfirmModal` for its `delete` emit | `agendaService` create/update/delete (multi-language translations included) |
+| Agenda day-group date | `EditDateGroupModal.vue` via `useDateGroupOperations` | `agendaService.bulkUpdateDate` |
 | Music / banner / video (later) | `useMediaUpload` field variants | FormData PATCH |
 
 After a parent-side save the parent posts a `refresh` message into every frame → frames refetch
@@ -169,6 +171,53 @@ src/views/ShowcasePreviewFrameView.vue   thin shell only
 - [x] Type-check + lint clean
 - [ ] Manual click-through verification in the browser (each intent → editor → save → frames
       refresh; public showcase unchanged)
+
+### Phase 2.5 — Full agenda management from preview — **done 2026-07-23 (pending manual click-through)**
+
+- [x] `agendaItem` / `agendaAdd` / `agendaDate` intents in `editContext.ts` + `EditableRegion`
+      label keys (en + kh)
+- [x] Whole agenda card (`showcase/AgendaItem.vue`) wrapped in `EditableRegion` → opens
+      `EditAgendaDrawer` parent-side for everything: title/times/description/icon/date/speaker/
+      translations/delete. The title's inline edit was **removed** (2026-07-23) — with the whole
+      card clickable the two click targets fought each other, and the drawer handles translations
+      correctly where the inline PATCH wrote the base `title` regardless of preview language. The
+      `agenda` kind was dropped from `InlineEditTarget`/`useShowcaseEditSaves`
+- [x] `AgendaWedding.vue` day tabs marked `data-preview-safe` (they were dead in edit mode —
+      items on non-first days were unreachable; same fix `DressCodeSection` already had)
+- [x] "Change this day's date" chip under the day tabs (edit mode only) → `agendaDate` intent
+      carrying the active tab's date + item count → `EditDateGroupModal` via
+      `useDateGroupOperations` (`agendaService.bulkUpdateDate`, same as the forms tab)
+- [x] "Add activity" row appended in `AgendaSection.vue` after whichever category layout renders
+      (edit mode only) → `agendaAdd` intent → `EditAgendaDrawer` in create mode (existing
+      auto-fill: date/order/languages from the latest item)
+- [x] `MainContentStage.vue` renders the agenda section in edit mode even with zero items, so the
+      first activity can be added from the preview
+- [x] `PreviewEditorHost` fetches the full agenda list fresh (`agendaService.getAgendaItems` —
+      the showcase's localized copy lacks `translations`), routes the three intents, and reuses
+      `DeleteConfirmModal` for the drawer's `delete` emit
+- [x] **`data-preview-safe` specificity fix (2026-07-23)**: the Phase-2 `:not(.edit-region-control)`
+      addition silently raised the disable rule's specificity above the `[data-preview-safe]`
+      re-enable rule, killing every safe region (dress-code tabs + agenda day tabs) in edit mode.
+      The safe-region exclusion now lives inside the disable rule's own `:not()` (as a complex
+      selector), making the whitelist order- and specificity-independent
+- [x] **Reorder (2026-07-23)**: up/down arrow buttons on each agenda card in edit mode →
+      `agendaReorder` intent → parent renumbers the item's day 0..n-1 (same convention as the
+      forms tab's drag-reorder) via `agendaService.bulkReorderAgendaItems`. Deliberately arrows,
+      not drag-and-drop: HTML5 drag inside a `transform: scale()`d iframe has broken coordinate
+      math and no touch support — full drag-and-drop remains in the forms tab
+- [x] Floating action menu (`.floating-action-menu`) hidden in all preview frames via the frame
+      view's stage CSS — it's guest navigation chrome that only obscures content in a preview
+- [x] `EditableRegion`'s hover badge position made overridable via `--edit-badge-top`/
+      `--edit-badge-right` CSS vars (was hardcoded top-right, colliding with the agenda card's
+      reorder arrows); `AgendaItem.vue` sets `--edit-badge-right` to clear them
+- [x] Type-check + lint clean
+- [ ] Manual click-through verification in the browser
+
+Known caveat (pre-existing): inline saves PATCH base fields while the frame shows
+backend-localized values — editing inline while previewing a non-base language overwrites the
+base value instead of that language's translation. The agenda case was resolved by removing the
+inline title edit (the drawer handles translations); **host names still have this caveat** and
+making that save language-aware is tracked as a follow-up.
 
 ### Phase 3 — Later (not in current scope)
 

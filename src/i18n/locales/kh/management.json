@@ -430,7 +430,16 @@
       "saving": "កំពុងរក្សាទុក…",
       "cancel": "បោះបង់",
       "logoUploadFailed": "ការផ្ទុកឡូហ្គោបរាជ័យ",
-      "hostLoadFailed": "មិនអាចផ្ទុកព័ត៌មានម្ចាស់កម្មវិធីបានទេ"
+      "hostLoadFailed": "មិនអាចផ្ទុកព័ត៌មានម្ចាស់កម្មវិធីបានទេ",
+      "editAgendaItem": "កែសកម្មភាព",
+      "addAgendaItem": "បន្ថែមសកម្មភាព",
+      "changeAgendaDate": "ប្ដូរកាលបរិច្ឆេទថ្ងៃនេះ",
+      "agendaLoadFailed": "មិនអាចផ្ទុកព័ត៌មានកម្មវិធីបានទេ",
+      "agendaDeleteFailed": "មិនអាចលុបសកម្មភាពបានទេ",
+      "reorderAgendaItem": "រៀបលំដាប់សកម្មភាព",
+      "moveUp": "ផ្លាស់ឡើងលើ",
+      "moveDown": "ផ្លាស់ចុះក្រោម",
+      "agendaReorderFailed": "មិនអាចរៀបលំដាប់សកម្មភាពបានទេ"
     }
   },
   "media": {

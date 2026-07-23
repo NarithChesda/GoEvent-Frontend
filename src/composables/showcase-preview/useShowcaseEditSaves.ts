@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import { agendaService, hostsService, dressCodeService } from '@/services/api'
+import { hostsService, dressCodeService } from '@/services/api'
 import { saveEventTextField } from '@/utils/eventTextUpsert'
 import type { InlineEditTarget } from '@/components/showcase-preview/edit/editContext'
 import type { ShowcaseData, EventData } from '@/composables/useEventShowcase'
@@ -13,7 +13,7 @@ interface UseShowcaseEditSavesOptions {
 /**
  * The inline-edit save switchboard for the showcase preview frames. Renderer
  * agnostic: any preview renderer (V1 stages today, V2 scroll-story later)
- * provides the returned `save` through InlineEditKey and the same four save
+ * provides the returned `save` through InlineEditKey and the same save
  * shapes apply. Saves go through the same services the management form tabs
  * use — the backend enforces permissions on every call — and on success the
  * loaded showcase data is mutated in place so the frame updates live without
@@ -43,16 +43,6 @@ export function useShowcaseEditSaves(options: UseShowcaseEditSavesOptions) {
           })
           const host = showcaseData.value?.event.hosts?.find((h) => h.id === target.hostId)
           if (res.success && host) host[target.field] = value
-          return res
-        }
-        case 'agenda': {
-          const res = await agendaService.patchAgendaItem(eventId, target.agendaId, {
-            title: value,
-          })
-          const item = showcaseData.value?.event.agenda_items?.find(
-            (a) => a.id === target.agendaId,
-          )
-          if (res.success && item) item.title = value
           return res
         }
         case 'dressCode': {

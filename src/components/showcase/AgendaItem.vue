@@ -1,4 +1,11 @@
 <template>
+  <!-- EditableRegion is a bare slot on the public showcase; in the manage-page
+       preview a click anywhere on the card (except the reorder arrows) opens
+       the full EditAgendaDrawer parent-side. -->
+  <EditableRegion
+    class="agenda-item-region"
+    :intent="{ kind: 'agendaItem', agendaId: item.id }"
+  >
   <div
     ref="cardRef"
     class="agenda-item"
@@ -32,26 +39,49 @@
         <span>{{ timeText || 'Time TBD' }}</span>
         <span class="time-rule"></span>
       </div>
-      <InlineEditableText
-        :value="item.title"
-        :target="{ kind: 'agenda', agendaId: item.id, field: 'title' }"
-        :input-style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
+      <h3
+        :class="['agenda-title capitalize', isKhmerText && 'is-khmer']"
+        :style="{ fontFamily: primaryFont || currentFont }"
       >
-        <h3
-          :class="['agenda-title capitalize', isKhmerText && 'is-khmer']"
-          :style="{ fontFamily: primaryFont || currentFont }"
-        >
-          {{ item.title || 'Event Activity' }}
-        </h3>
-      </InlineEditableText>
+        {{ item.title || 'Event Activity' }}
+      </h3>
+    </div>
+
+    <!-- Reorder arrows — only inside the editable manage-page preview
+         (editIntentCtx is never provided on the public showcase). Clicks
+         stop propagation so they don't trigger the card's edit intent. -->
+    <div v-if="editIntentCtx" class="reorder-controls">
+      <button
+        type="button"
+        class="edit-region-control reorder-btn"
+        :disabled="isFirst"
+        :title="tApp('management.showcasePreview.editors.moveUp')"
+        :aria-label="tApp('management.showcasePreview.editors.moveUp')"
+        @click.stop.prevent="requestReorder('up')"
+      >
+        <ChevronUp class="reorder-icon" aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        class="edit-region-control reorder-btn"
+        :disabled="isLast"
+        :title="tApp('management.showcasePreview.editors.moveDown')"
+        :aria-label="tApp('management.showcasePreview.editors.moveDown')"
+        @click.stop.prevent="requestReorder('down')"
+      >
+        <ChevronDown class="reorder-icon" aria-hidden="true" />
+      </button>
     </div>
   </div>
+  </EditableRegion>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { Calendar } from 'lucide-vue-next'
-import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
+import { computed, inject, onMounted, onUnmounted, ref } from 'vue'
+import { Calendar, ChevronUp, ChevronDown } from 'lucide-vue-next'
+import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
+import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface AgendaItemIcon {
   id: number
@@ -84,6 +114,15 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Only provided by the editable manage-page preview frame — undefined on the
+// public showcase, so the reorder arrows can never leak into production.
+const editIntentCtx = inject(EditIntentKey, undefined)
+const { t: tApp } = useAppLanguage()
+
+const requestReorder = (direction: 'up' | 'down') => {
+  editIntentCtx?.requestEdit({ kind: 'agendaReorder', agendaId: props.item.id, direction })
+}
 
 const processedSvgCode = computed(() => {
   if (!props.item.icon?.svg_code || !props.primaryColor) {
@@ -247,6 +286,53 @@ onUnmounted(() => {
     opacity: 1;
     transform: none;
   }
+}
+
+/* Manage-page preview edit chrome: reorder arrows at the card's right edge.
+   Rendered only when the edit-intent context exists, never in production. */
+.agenda-item-region {
+  /* Keep the hover "Edit activity" badge clear of the reorder arrows
+     (arrow button width + inset + breathing room). */
+  --edit-badge-right: 2.4rem;
+}
+
+.reorder-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.reorder-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.625rem;
+  height: 1.625rem;
+  padding: 0;
+  color: #1e90ff;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1.5px dashed rgba(30, 144, 255, 0.5);
+  border-radius: 9999px;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.18);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+}
+
+.reorder-btn:hover:not(:disabled) {
+  border-color: rgba(30, 144, 255, 0.9);
+  background: rgba(30, 144, 255, 0.08);
+}
+
+.reorder-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.reorder-icon {
+  width: 1rem;
+  height: 1rem;
 }
 
 /* Timeline rail: hairline spine with the medallion at the item's center */

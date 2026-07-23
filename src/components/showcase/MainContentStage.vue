@@ -247,9 +247,12 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
-                <!-- Agenda Section -->
+                <!-- Agenda Section (also rendered when empty inside the
+                     editable manage-page preview, so the first agenda item
+                     can be added from there — editIntentCtx is never provided
+                     on the public showcase) -->
                 <div
-                  v-if="agendaItems.length > 0"
+                  v-if="agendaItems.length > 0 || editIntentCtx"
                   id="agenda-section"
                   ref="agendaSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
@@ -937,6 +940,7 @@ import DressCodeSection from './DressCodeSection.vue'
 import YouTubeVideoSection from './YouTubeVideoSection.vue'
 import PhotoGallery from './PhotoGallery.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
+import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import CommentSection from './CommentSection.vue'
 import PaymentSection from './PaymentSection.vue'
 import FloatingActionMenu from './FloatingActionMenu.vue'
@@ -1006,6 +1010,10 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Only provided by the editable manage-page preview frame — undefined on the
+// public showcase, so the empty-agenda add affordance can never leak there.
+const editIntentCtx = inject(EditIntentKey, undefined)
 
 // Main stage layout configuration (decoration z-indexes + welcome header visibility)
 const { decorationZIndexes, layout: mainStageLayoutResolved } = useCoverStageLayout(
