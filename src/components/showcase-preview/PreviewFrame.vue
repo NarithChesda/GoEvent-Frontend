@@ -17,9 +17,9 @@ interface Props {
   width?: number
   height?: number
   maxWidth?: number
-  /** Vertical space reserved outside the frame itself (label, gaps, page
-   *  chrome above/below) when fitting the frame to the viewport height. */
-  reservedHeight?: number
+  /** Extra space to always leave below the frame (bottom page padding, a
+   *  fixed mobile tab bar) when fitting the frame to the viewport height. */
+  bottomReserve?: number
 }
 
 // Native size matches a real mobile viewport (iPhone 12/13/14 CSS px) rather
@@ -31,12 +31,16 @@ const props = withDefaults(defineProps<Props>(), {
   width: 390,
   height: 844,
   maxWidth: 390,
-  reservedHeight: 160,
+  bottomReserve: 40,
 })
 
 const scalerRef = ref<HTMLElement | null>(null)
 const containerWidth = ref(props.maxWidth)
 const viewportHeight = ref(typeof window !== 'undefined' ? window.innerHeight : 900)
+// Measured live from the frame's own position, rather than a fixed guess at
+// how much page chrome (top bar, tab header, toolbar) sits above it — a
+// hardcoded number silently goes stale the moment that chrome changes height.
+const topOffset = ref(0)
 
 // Fit to whichever dimension is tighter — available width (from the tab
 // panel's own layout) or available height (from the browser viewport) — so
@@ -44,7 +48,11 @@ const viewportHeight = ref(typeof window !== 'undefined' ? window.innerHeight : 
 // just to see one frame's bottom edge.
 const scale = computed(() => {
   const widthScale = containerWidth.value / props.width
-  const heightScale = Math.max(viewportHeight.value - props.reservedHeight, 200) / props.height
+  const availableHeight = Math.max(
+    viewportHeight.value - topOffset.value - props.bottomReserve,
+    200,
+  )
+  const heightScale = availableHeight / props.height
   return Math.min(widthScale, heightScale)
 })
 
@@ -61,32 +69,41 @@ const nativeStyle = computed(() => ({
 
 let resizeObserver: ResizeObserver | null = null
 
-const updateViewportHeight = () => {
+// Re-measures container width, viewport height, and this frame's own
+// distance from the top of the viewport. Exposed so the parent can force a
+// re-measure after a layout change it makes (e.g. switching how many frames
+// are shown per row) that this component itself can't observe.
+const measure = () => {
+  const el = scalerRef.value?.parentElement
+  if (el) {
+    containerWidth.value = Math.min(props.maxWidth, el.clientWidth)
+  }
+  // Measured off the scaler itself, not its parent — the label sits above it
+  // within the same parent, so using the parent's top would over-reserve by
+  // the label's own height.
+  if (scalerRef.value) {
+    topOffset.value = scalerRef.value.getBoundingClientRect().top
+  }
   viewportHeight.value = window.innerHeight
 }
 
 onMounted(() => {
   const el = scalerRef.value?.parentElement
-  if (!el) return
-
-  const updateWidth = () => {
-    const available = el.clientWidth
-    containerWidth.value = Math.min(props.maxWidth, available)
+  measure()
+  if (el) {
+    resizeObserver = new ResizeObserver(measure)
+    resizeObserver.observe(el)
   }
-
-  updateWidth()
-  resizeObserver = new ResizeObserver(updateWidth)
-  resizeObserver.observe(el)
-
-  updateViewportHeight()
-  window.addEventListener('resize', updateViewportHeight)
+  window.addEventListener('resize', measure)
 })
 
 onUnmounted(() => {
   resizeObserver?.disconnect()
   resizeObserver = null
-  window.removeEventListener('resize', updateViewportHeight)
+  window.removeEventListener('resize', measure)
 })
+
+defineExpose({ measure })
 </script>
 
 <style scoped>

@@ -413,6 +413,10 @@
     "transitionLabel": "Transition",
     "mainContentLabel": "Main Content",
     "transitionNotUsed": "This template doesn't use a transition stage.",
+    "layoutSwitchLabel": "Preview layout",
+    "layoutSingle": "Show one screen",
+    "layoutDouble": "Show two screens side by side",
+    "layoutTriple": "Show three screens side by side",
     "accessRestricted": {
       "title": "Access Restricted",
       "description": "Only the event organizer and collaborators can view the live preview."
