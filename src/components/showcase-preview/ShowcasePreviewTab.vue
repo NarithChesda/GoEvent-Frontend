@@ -123,6 +123,14 @@ const isFrameVisible = (frame: PreviewFrameDescriptor) =>
 const frameUrl = (frame: PreviewFrameDescriptor) => {
   const params = new URLSearchParams({ stage: frame.id, lang: currentLanguage.value })
   if (props.canEdit && frame.editable) params.set('editable', '1')
+  // Always pass the selected template id when one exists — `event_template_enabled`
+  // isn't a reliable predictor of whether the showcase endpoint will actually
+  // include template_assets (it can be true with no confirmed Payment row yet),
+  // so let the frame's own check of the real showcase response decide whether
+  // the public-assets fallback is needed instead of gating it here.
+  if (props.eventData?.event_template) {
+    params.set('templateId', String(props.eventData.event_template))
+  }
   return `/events/${props.eventId}/showcase-preview-frame?${params.toString()}`
 }
 

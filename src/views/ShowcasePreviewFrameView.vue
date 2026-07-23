@@ -21,7 +21,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, provide, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { useEventShowcase } from '@/composables/useEventShowcase'
+import { useEventShowcase, type TemplateAssets } from '@/composables/useEventShowcase'
+import { eventTemplateService } from '@/services/api'
 import { useShowcaseEditSaves } from '@/composables/showcase-preview/useShowcaseEditSaves'
 import { InlineEditKey, EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import {
@@ -58,6 +59,7 @@ const {
   currentLanguage,
   loadShowcase,
   refreshShowcaseData,
+  applyPreviewTemplateFallback,
 } = showcase
 
 const renderer = computed(() =>
@@ -95,12 +97,49 @@ const onFrameMessage = (msg: MessageEvent) => {
   const parsed = parsePreviewBridgeMessage(msg)
   if (!parsed) return
   if (parsed.type === 'replay') replayKey.value++
-  if (parsed.type === 'refresh') refreshShowcaseData()
+  if (parsed.type === 'refresh') refreshShowcaseData().then(loadPreviewTemplateFallback)
+}
+
+// Preview-only fallback: ShowcasePreviewTab passes ?templateId=<id> whenever
+// the event has a template selected at all — event_template_enabled isn't a
+// reliable predictor of whether the showcase endpoint (loadShowcase above)
+// will actually include template_assets (it can be true with no confirmed
+// Payment row yet), so this checks the real response instead. Backfills from
+// the public, no-auth template-assets endpoint so the owner can see their
+// pending template's look before paying — a no-op once template_assets is
+// already present (paid, or refreshShowcaseData got a real one back).
+//
+// Known gap: the public endpoint's `assets` doesn't include the border/frame
+// decoration fields (top/bottom/left/right decoration, cover_*_decoration,
+// guest_title_frame_*) — only the paid showcase endpoint returns those, so
+// this preview won't show edge decorations until the backend serializer adds
+// them to public_template_assets too.
+const previewTemplateId = computed(() => {
+  const raw = route.query.templateId
+  const value = Array.isArray(raw) ? raw[0] : raw
+  const parsed = value ? Number(value) : NaN
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
+})
+
+const loadPreviewTemplateFallback = async () => {
+  if (!previewTemplateId.value || event.value?.template_assets) return
+  try {
+    const response = await eventTemplateService.getPublicTemplateAssets(previewTemplateId.value)
+    // Wire shape is `{ template_data: {...} }`, not the flat TemplateAssets
+    // the service's type declares (that type was never exercised before).
+    const templateData = (response.data as unknown as { template_data?: TemplateAssets } | null)
+      ?.template_data
+    if (response.success && templateData) {
+      applyPreviewTemplateFallback(templateData)
+    }
+  } catch {
+    // Non-fatal — preview just renders without the pending template's look.
+  }
 }
 
 onMounted(() => {
-  loadShowcase()
   window.addEventListener('message', onFrameMessage)
+  loadShowcase().then(loadPreviewTemplateFallback)
 })
 
 onUnmounted(() => {

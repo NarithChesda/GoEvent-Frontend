@@ -840,6 +840,30 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
   }
 
   /**
+   * Preview-only escape hatch. The showcase endpoint nulls `event.template_assets`
+   * server-side until payment is confirmed (see `get_template_assets` in the
+   * backend showcase serializer), so an event with a selected-but-unpaid
+   * template otherwise renders with no template look at all. The manage-page
+   * live preview tab wants owners to see their pending template before paying,
+   * so it separately fetches the public, no-auth `public_template_assets`
+   * endpoint (keyed by template id, not event/payment) and feeds the result in
+   * here. Only ever called from the preview frame — the real public showcase
+   * never calls this, so the payment gate stays intact for guests.
+   */
+  const applyPreviewTemplateFallback = (templateData: TemplateAssets) => {
+    if (!showcaseData.value) return
+    if (showcaseData.value.event.template_assets) return // already has real (paid) data
+
+    showcaseData.value = {
+      ...showcaseData.value,
+      event: {
+        ...showcaseData.value.event,
+        template_assets: templateData,
+      },
+    }
+  }
+
+  /**
    * Updates language content without triggering full loading state
    * This prevents the background video from reloading during language changes
    */
@@ -1229,6 +1253,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     // Methods
     loadShowcase,
     refreshShowcaseData,
+    applyPreviewTemplateFallback,
     updateLanguageContent,
     loadCustomFonts: fontManager.loadCustomFonts,
     openEnvelope: stageManager.openEnvelope,
