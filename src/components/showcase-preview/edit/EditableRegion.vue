@@ -59,6 +59,10 @@ const DEFAULT_LABEL_KEYS: Record<EditIntent['kind'], string> = {
   paymentItem: 'management.showcasePreview.editors.editPaymentMethod',
   paymentAdd: 'management.showcasePreview.editors.addPaymentMethod',
   featuredPhoto: 'management.showcasePreview.editors.editFeaturedPhoto',
+  // Not actually rendered through EditableRegion (see the display-toggle
+  // chips in MainContentStage.vue) — listed only to keep this map exhaustive
+  // over EditIntent['kind'].
+  displayToggle: 'management.showcasePreview.editors.countdownLabel',
 }
 
 const label = computed(() => props.label || t(DEFAULT_LABEL_KEYS[props.intent.kind]))

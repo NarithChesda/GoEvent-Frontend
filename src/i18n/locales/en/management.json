@@ -467,7 +467,13 @@
       "featuredPhotoUploadButton": "Upload photos",
       "featuredPhotoLoadFailed": "Couldn't load photos",
       "featuredPhotoUpdateFailed": "Couldn't update the featured photo",
-      "replayTransition": "Replay"
+      "replayTransition": "Replay",
+      "countdownLabel": "Countdown",
+      "rsvpLabel": "RSVP",
+      "commentsLabel": "Comments",
+      "displayToggleFailed": "Couldn't update display setting",
+      "displayToggleOnHint": "{name}: shown to guests. Tap to hide.",
+      "displayToggleOffHint": "{name}: hidden from guests. Tap to show."
     }
   },
   "media": {

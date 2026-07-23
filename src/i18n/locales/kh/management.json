@@ -467,7 +467,13 @@
       "featuredPhotoUploadButton": "ផ្ទុករូបភាព",
       "featuredPhotoLoadFailed": "មិនអាចផ្ទុករូបភាពបានទេ",
       "featuredPhotoUpdateFailed": "មិនអាចកែប្រែរូបភាពសំខាន់បានទេ",
-      "replayTransition": "ចាក់ឡើងវិញ"
+      "replayTransition": "ចាក់ឡើងវិញ",
+      "countdownLabel": "រាប់ថយក្រោយ",
+      "rsvpLabel": "RSVP",
+      "commentsLabel": "មតិយោបល់",
+      "displayToggleFailed": "មិនអាចផ្លាស់ប្តូរការកំណត់បង្ហាញបានទេ",
+      "displayToggleOnHint": "{name}៖ បង្ហាញដល់ភ្ញៀវ។ ចុចដើម្បីលាក់។",
+      "displayToggleOffHint": "{name}៖ លាក់ពីភ្ញៀវ។ ចុចដើម្បីបង្ហាញ។"
     }
   },
   "media": {

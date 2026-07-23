@@ -133,6 +133,7 @@ import {
   hostsService,
   dressCodeService,
   paymentMethodsService,
+  eventsService,
   type Event,
   type EventAgendaItem,
   type EventHost,
@@ -193,6 +194,24 @@ const youtubeOpen = ref(false)
 const eventDateOpen = ref(false)
 
 const onEventSaved = (updated: Event) => emit('saved', updated)
+
+// --- Display toggles (RSVP / Comments / Countdown) --------------------------
+// No modal needed — the preview posts the field to flip, we flip it against
+// the parent's own copy of the event and patch it straight away.
+const toggleDisplayField = async (
+  field: 'rsvp_enabled' | 'comments_enabled' | 'countdown_enabled',
+) => {
+  const current = props.eventData?.[field] !== false
+  const response = await eventsService.patchEvent(props.eventId, { [field]: !current })
+  if (response.success && response.data) {
+    emit('saved', response.data)
+  } else {
+    notifyError(
+      t('management.showcasePreview.editors.displayToggleFailed'),
+      response.message || undefined,
+    )
+  }
+}
 
 // --- Host image ------------------------------------------------------------
 const hostDrawerOpen = ref(false)
@@ -542,6 +561,9 @@ const handleIntent = (intent: EditIntent) => {
       break
     case 'paymentAdd':
       openPaymentEditor()
+      break
+    case 'displayToggle':
+      toggleDisplayField(intent.field)
       break
   }
 }

@@ -262,12 +262,22 @@
             </button>
           </div>
 
-          <!-- Countdown Display - Below Map, Above RSVP -->
+          <!-- Countdown Display - Below Map, Above RSVP (also rendered when
+               turned off inside the editable manage-page preview, so the
+               toggle stays reachable and the organizer can still preview the
+               content — editIntentCtx is never provided on the public
+               showcase) -->
           <div
-            v-if="countdown && showCountdown && isCountdownActive"
+            v-if="countdown && isCountdownActive && (showCountdown || editIntentCtx)"
             class="countdown-container px-4 pt-2 pb-2 bounce-in-element"
+            :class="{ 'has-display-toggle': editIntentCtx }"
             :style="{ animationDelay: `${animationDelays.countdown}s` }"
           >
+            <SectionDisplayToggle
+              field="countdown_enabled"
+              :active="!!showCountdown"
+              :label="tApp('management.showcasePreview.editors.countdownLabel')"
+            />
             <div class="countdown-wrapper">
               <!-- Countdown Header -->
               <div
@@ -335,19 +345,29 @@
 
           <!-- Divider between Countdown and RSVP -->
           <div
-            v-if="countdown && showCountdown && isCountdownActive && showRsvp"
+            v-if="countdown && isCountdownActive && (showCountdown || editIntentCtx) && (showRsvp || editIntentCtx)"
             class="countdown-divider bounce-in-element"
             :style="{ animationDelay: `${animationDelays.divider}s` }"
           >
             <div class="divider-line"></div>
           </div>
 
-          <!-- RSVP Section Integrated Below Map -->
+          <!-- RSVP Section Integrated Below Map (also rendered when turned
+               off inside the editable manage-page preview, so the toggle
+               stays reachable and the organizer can still preview the
+               content — editIntentCtx is never provided on the public
+               showcase) -->
           <div
-            v-if="showRsvp"
-            class="bounce-in-element"
+            v-if="showRsvp || editIntentCtx"
+            class="bounce-in-element rsvp-toggle-container"
+            :class="{ 'has-display-toggle': editIntentCtx }"
             :style="{ animationDelay: `${animationDelays.rsvp}s` }"
           >
+            <SectionDisplayToggle
+              field="rsvp_enabled"
+              :active="!!showRsvp"
+              :label="tApp('management.showcasePreview.editors.rsvpLabel')"
+            />
             <slot name="rsvp"></slot>
           </div>
         </div>
@@ -360,7 +380,9 @@
 import { computed, ref, onMounted, onUnmounted, watch, nextTick, inject } from 'vue'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
+import SectionDisplayToggle from '@/components/showcase-preview/edit/SectionDisplayToggle.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCountdown } from '../../composables/useCountdown'
 import {
   translateRSVP,
@@ -670,6 +692,7 @@ defineEmits<{
 // Only provided by the editable manage-page preview frame — undefined on the
 // public showcase, so the add-map placeholder can never leak into production.
 const editIntentCtx = inject(EditIntentKey, undefined)
+const { t: tApp } = useAppLanguage()
 
 // Computed property to ensure description starts with capital letter
 const capitalizedDescription = computed(() => {
@@ -1160,10 +1183,26 @@ const countdownNumberFont = computed(() =>
 
 /* Countdown styles */
 .countdown-container {
+  position: relative;
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.rsvp-toggle-container {
+  position: relative;
+}
+
+/* Manage-page preview edit chrome: reserves clearance above the section's
+   own content so the top-right corner toggle never overlaps it (e.g. the
+   RSVP question, which otherwise starts flush with the top edge). Compound
+   selector outranks the countdown container's own Tailwind `pt-2` utility
+   regardless of stylesheet order. Never applied on the public showcase
+   (editIntentCtx is undefined there, so the class is never added). */
+.countdown-container.has-display-toggle,
+.rsvp-toggle-container.has-display-toggle {
+  padding-top: 2.25rem;
 }
 
 .countdown-wrapper {

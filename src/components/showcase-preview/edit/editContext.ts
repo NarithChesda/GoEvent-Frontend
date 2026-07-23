@@ -47,6 +47,7 @@ export type EditIntent =
   | { kind: 'paymentItem'; paymentMethodId: number }
   | { kind: 'paymentAdd' }
   | { kind: 'featuredPhoto' }
+  | { kind: 'displayToggle'; field: 'rsvp_enabled' | 'comments_enabled' | 'countdown_enabled' }
 
 export interface EditIntentContext {
   requestEdit: (intent: EditIntent) => void

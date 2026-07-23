@@ -399,13 +399,23 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
-                <!-- Comment Section -->
+                <!-- Comment Section (also rendered when disabled inside the
+                     editable manage-page preview, so the toggle stays
+                     reachable and the organizer can still preview the
+                     content — editIntentCtx is never provided on the public
+                     showcase) -->
                 <div
-                  v-if="event.comments_enabled !== false"
+                  v-if="event.comments_enabled !== false || editIntentCtx"
                   id="comment-section"
                   ref="commentSectionRef"
-                  class="mb-10 sm:mb-12 laptop-sm:mb-12 laptop-md:mb-14 laptop-lg:mb-16 desktop:mb-14 animate-reveal"
+                  class="mb-10 sm:mb-12 laptop-sm:mb-12 laptop-md:mb-14 laptop-lg:mb-16 desktop:mb-14 animate-reveal comment-section-toggle-container"
+                  :class="{ 'has-display-toggle': editIntentCtx }"
                 >
+                  <SectionDisplayToggle
+                    field="comments_enabled"
+                    :active="event.comments_enabled !== false"
+                    :label="tApp('management.showcasePreview.editors.commentsLabel')"
+                  />
                   <CommentSection
                     :event-id="event.id"
                     :event-privacy="event.privacy"
@@ -961,6 +971,7 @@ import DressCodeSection from './DressCodeSection.vue'
 import YouTubeVideoSection from './YouTubeVideoSection.vue'
 import PhotoGallery from './PhotoGallery.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
+import SectionDisplayToggle from '@/components/showcase-preview/edit/SectionDisplayToggle.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import CommentSection from './CommentSection.vue'
@@ -1605,6 +1616,18 @@ onUnmounted(() => {
 .add-video-btn:hover {
   border-color: rgba(30, 144, 255, 0.9);
   background: rgba(30, 144, 255, 0.08);
+}
+
+.comment-section-toggle-container {
+  position: relative;
+}
+
+/* Manage-page preview edit chrome: reserves clearance above the comment
+   section's own heading so the top-right corner toggle never overlaps it.
+   Never applied on the public showcase (editIntentCtx is undefined there, so
+   the class is never added). */
+.comment-section-toggle-container.has-display-toggle {
+  padding-top: 2.25rem;
 }
 
 /* ===================
