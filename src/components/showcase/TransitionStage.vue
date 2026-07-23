@@ -1,7 +1,7 @@
 <template>
   <div class="transition-stage" :class="{ 'stage-fade-out': isStageFadingOut }">
     <!-- Manage-page preview: replay the reveal (real clicks are needed for
-         the featured-photo button below, which drops the frame's normal
+         the featured-photo edit region below, which drops the frame's normal
          click-anywhere-to-replay shield — this restores that capability). -->
     <button
       v-if="editIntentCtx"
@@ -40,17 +40,16 @@
       <!-- Cinematic vignette hugging the edges -->
       <div class="photo-vignette" />
 
-      <!-- Manage-page preview: change-featured-photo affordance. The stage
-           root is pointer-events:none (it's just an animation on the live
-           showcase), so this button opts back in explicitly. -->
-      <button
+      <!-- Manage-page preview: change-featured-photo affordance, covering the
+           whole photo like other image edit regions (dashed outline + corner
+           badge, hover-only). The stage root is pointer-events:none (it's
+           just an animation on the live showcase), so this opts back in
+           explicitly via edit-region-control. -->
+      <EditableRegion
         v-if="editIntentCtx"
-        type="button"
-        class="featured-photo-edit-btn edit-region-control"
-        @click.stop.prevent="editIntentCtx.requestEdit({ kind: 'featuredPhoto' })"
-      >
-        ✎ {{ tApp('management.showcasePreview.editors.editFeaturedPhoto') }}
-      </button>
+        :intent="{ kind: 'featuredPhoto' }"
+        class="featured-photo-edit-region"
+      />
     </div>
 
     <!-- Manage-page preview: no featured photo set yet — same affordance,
@@ -118,6 +117,7 @@ import { RotateCcw } from 'lucide-vue-next'
 import type { EventPhoto } from '@/types/showcase'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 
 interface Props {
   eventTitle: string
@@ -485,32 +485,15 @@ const replay = async () => {
   height: 1.125rem;
 }
 
-.featured-photo-edit-btn {
+/* Overrides EditableRegion's default (relative, no intrinsic size) so the
+   empty-slot region fills the photo like the other overlays instead of
+   collapsing to 0x0 — its dashed outline + corner badge then read as "hover
+   the photo to edit it", matching every other image edit region in the app. */
+.featured-photo-edit-region {
   position: absolute;
-  right: 12px;
-  bottom: 12px;
+  inset: 0;
   z-index: 10;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25em;
-  padding: 0.5rem 0.875rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1.2;
-  white-space: nowrap;
-  color: #1e90ff;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1.5px dashed rgba(30, 144, 255, 0.6);
-  border-radius: 9999px;
-  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.18);
-  cursor: pointer;
   pointer-events: auto;
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-
-.featured-photo-edit-btn:hover {
-  border-color: rgba(30, 144, 255, 0.95);
-  background: #ffffff;
 }
 
 .featured-photo-empty {
