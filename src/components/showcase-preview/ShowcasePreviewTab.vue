@@ -32,7 +32,7 @@
         <!-- Frame picker: only meaningful in single-frame focus mode, where
              the other frames are hidden and need some way to switch to. -->
         <div
-          v-if="layoutMode === 1 && visibleFrames.length > 1"
+          v-if="viewMode === 'single' && visibleFrames.length > 1"
           class="showcase-preview-tab__frame-tabs"
         >
           <button
@@ -47,8 +47,8 @@
           </button>
         </div>
 
-        <!-- Layout switch: how many frames to show at once, so the whole
-             preview can fit on screen without scrolling. -->
+        <!-- Layout switch: single-frame focus vs. every visible frame side
+             by side (2 or 3, however many this event actually has). -->
         <div
           v-if="visibleFrames.length > 1"
           class="showcase-preview-tab__layout-switch"
@@ -56,14 +56,14 @@
           :aria-label="t('management.showcasePreview.layoutSwitchLabel')"
         >
           <button
-            v-for="opt in layoutOptions"
-            :key="opt.count"
+            v-for="opt in VIEW_MODE_OPTIONS"
+            :key="opt.value"
             type="button"
             class="showcase-preview-tab__layout-btn"
-            :class="{ 'is-active': layoutMode === opt.count }"
+            :class="{ 'is-active': viewMode === opt.value }"
             :title="t(opt.labelKey)"
             :aria-label="t(opt.labelKey)"
-            @click="layoutMode = opt.count"
+            @click="viewMode = opt.value"
           >
             <component :is="opt.icon" class="w-4 h-4" />
           </button>
@@ -79,16 +79,16 @@
       <div
         :ref="setFramesContainerRef"
         class="showcase-preview-tab__frames"
-        :class="`showcase-preview-tab__frames--cols-${layoutMode}`"
+        :class="framesLayoutClass"
       >
         <template v-for="frame in renderer.frames" :key="frame.id">
           <PreviewFrame
             v-if="isFrameVisible(frame)"
-            v-show="layoutMode === 1 ? activeFrameId === frame.id : true"
+            v-show="viewMode === 'single' ? activeFrameId === frame.id : true"
             :ref="(el) => setPreviewFrameRef(frame.id, el)"
             :label="t(frame.labelKey)"
-            :fit-height="layoutMode === 1"
-            :width-override="sharedColumnWidth"
+            :fit-height="viewMode === 'single' || !isNarrowViewport"
+            :width-override="viewMode === 'multiple' ? sharedColumnWidth : undefined"
           >
             <InertIframe
               :ref="(el) => setFrameRef(frame.id, el)"
@@ -97,7 +97,17 @@
               :click-message="frame.clickMessage"
             />
           </PreviewFrame>
-          <div v-else-if="frame.hiddenNoteKey" class="showcase-preview-tab__transition-note">
+          <!-- Multiple mode: skip entirely rather than rendering this note —
+               it's a direct sibling of the PreviewFrames inside the grid, so
+               it would occupy its own grid cell and push the next real frame
+               into a wrapped second row (exactly the scroll-required bug this
+               view exists to avoid). Grid columns are already sized off
+               visibleFrames (which excludes this frame), so the remaining
+               frames simply sit side by side with nothing in between. -->
+          <div
+            v-else-if="frame.hiddenNoteKey && viewMode === 'single'"
+            class="showcase-preview-tab__transition-note"
+          >
             {{ t(frame.hiddenNoteKey) }}
           </div>
         </template>
@@ -117,8 +127,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed, ref, nextTick, watch } from 'vue'
-import { Smartphone, Columns2, Columns3 } from 'lucide-vue-next'
+import { onMounted, onUnmounted, computed, ref, nextTick, watch } from 'vue'
+import { Smartphone, LayoutGrid } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useEventShowcase } from '@/composables/useEventShowcase'
 import type { Event } from '@/services/api'
@@ -179,32 +189,30 @@ const isFrameVisible = (frame: PreviewFrameDescriptor) =>
 const visibleFrames = computed(() => renderer.value.frames.filter(isFrameVisible))
 
 // ---------------------------------------------------------------------------
-// Layout switch: how many frames are shown at once. Single-frame focus mode
-// (the default) needs a picker to choose which frame is showing since the
-// others are hidden; 2/3-up modes lay every visible frame out side by side
-// instead so the whole set fits without scrolling.
+// View mode: single-frame focus (default — needs a picker to choose which
+// frame is showing, since the others are hidden) vs. every visible frame
+// (2 or 3, whatever this event actually has — never a fixed count) laid out
+// side by side so the whole set fits without scrolling.
 // ---------------------------------------------------------------------------
-const LAYOUT_OPTIONS = [
-  { count: 1 as const, icon: Smartphone, labelKey: 'management.showcasePreview.layoutSingle' },
-  { count: 2 as const, icon: Columns2, labelKey: 'management.showcasePreview.layoutDouble' },
-  { count: 3 as const, icon: Columns3, labelKey: 'management.showcasePreview.layoutTriple' },
+const VIEW_MODE_OPTIONS = [
+  { value: 'single' as const, icon: Smartphone, labelKey: 'management.showcasePreview.layoutSingle' },
+  { value: 'multiple' as const, icon: LayoutGrid, labelKey: 'management.showcasePreview.layoutMultiple' },
 ]
 
-const layoutMode = ref<1 | 2 | 3>(1)
+const viewMode = ref<'single' | 'multiple'>('single')
 const activeFrameId = ref<string>('cover')
-
-const layoutOptions = computed(() =>
-  LAYOUT_OPTIONS.filter((opt) => opt.count <= Math.max(visibleFrames.value.length, 1)),
-)
 
 watch(
   visibleFrames,
   (frames) => {
     if (!frames.length) return
     if (!frames.some((f) => f.id === activeFrameId.value)) activeFrameId.value = frames[0].id
-    if (layoutMode.value > frames.length) layoutMode.value = Math.max(frames.length, 1) as 1 | 2 | 3
   },
   { immediate: true },
+)
+
+const framesLayoutClass = computed(() =>
+  viewMode.value === 'multiple' ? `showcase-preview-tab__frames--cols-${visibleFrames.value.length}` : '',
 )
 
 type PreviewFrameInstance = InstanceType<typeof PreviewFrame>
@@ -216,26 +224,28 @@ const setPreviewFrameRef = (id: string, el: unknown) => {
   else previewFrameRefs.delete(id)
 }
 
-// Re-fit every mounted frame after a layout change — switching how many
-// frames show per row (or which one is focused) changes each frame's
-// available width/height, which PreviewFrame can't detect on its own.
+// Re-fit every mounted frame after a layout change — switching view modes
+// (or which frame is focused) changes each frame's available width/height,
+// which PreviewFrame can't detect on its own.
 const remeasurePreviewFrames = () => {
   nextTick(() => {
     for (const inst of previewFrameRefs.values()) inst.measure()
   })
 }
 
-watch(layoutMode, remeasurePreviewFrames)
+watch(viewMode, remeasurePreviewFrames)
 watch(activeFrameId, remeasurePreviewFrames)
 
 // ---------------------------------------------------------------------------
-// Shared column width for 2/3-up mode: each PreviewFrame used to
+// Shared column width for "multiple" mode: each PreviewFrame used to
 // self-measure its own DOM parent via its own ResizeObserver, and those N
 // independent observers could settle at slightly different widths depending
 // on timing (worst case, one frame mid-layout reads a stale/tiny value and
 // gets stuck there) — so frames in the same row ended up visibly different
 // sizes. Measuring the shared frames container once here and handing every
-// frame the same computed column width keeps them pixel-identical.
+// frame the same computed column width keeps them pixel-identical. The
+// column count always matches how many frames there are (2 or 3), so the
+// grid never wraps to a second row.
 // ---------------------------------------------------------------------------
 const FRAMES_GRID_GAP_PX = 24 // matches the `gap: 1.5rem` on --cols-2/--cols-3
 
@@ -254,9 +264,20 @@ const setFramesContainerRef = (el: unknown) => {
   framesResizeObserver.observe(element)
 }
 
+// Below this width the `--cols-2`/`--cols-3` CSS falls back to stacking
+// full-width (not enough room for real phone-sized frames side by side —
+// see the `max-width: 768px` rule below); the column-width override must
+// stand down there too, or it'd still hand each frame a divided width while
+// CSS gives it the whole row.
+const NARROW_VIEWPORT_PX = 768
+const isNarrowViewport = ref(typeof window !== 'undefined' ? window.innerWidth <= NARROW_VIEWPORT_PX : false)
+const updateIsNarrowViewport = () => {
+  isNarrowViewport.value = window.innerWidth <= NARROW_VIEWPORT_PX
+}
+
 const sharedColumnWidth = computed(() => {
-  if (layoutMode.value === 1) return undefined
-  const cols = layoutMode.value
+  if (viewMode.value !== 'multiple' || isNarrowViewport.value) return undefined
+  const cols = Math.max(visibleFrames.value.length, 1)
   return Math.max((framesContainerWidth.value - FRAMES_GRID_GAP_PX * (cols - 1)) / cols, 0)
 })
 
@@ -300,6 +321,11 @@ const onEditorSaved = (updated?: Event) => {
 
 onMounted(() => {
   loadShowcase()
+  window.addEventListener('resize', updateIsNarrowViewport)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateIsNarrowViewport)
 })
 </script>
 
