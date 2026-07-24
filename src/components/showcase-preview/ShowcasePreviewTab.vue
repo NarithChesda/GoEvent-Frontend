@@ -12,18 +12,9 @@
       :class="{ 'is-open': panelMode === 'content' }"
     >
       <div class="showcase-studio__panel-inner">
-        <div class="showcase-studio__panel-header">
-          <span>{{ t('management.showcasePreview.panelContent') }}</span>
-          <button
-            v-if="canViewLivePreview"
-            type="button"
-            class="showcase-studio__panel-close"
-            :aria-label="t('management.showcasePreview.panelContent')"
-            @click="togglePanel"
-          >
-            <X class="w-4 h-4" />
-          </button>
-        </div>
+        <!-- No header/close button here — the edge chevron toggle (below)
+             already opens and closes this panel; a second, redundant control
+             just duplicated it and ate vertical space. -->
         <div class="showcase-studio__panel-body">
           <!-- EventMediaTab reused wholesale — its own 10 section cards are
                coordinated into a single-open accordion (see
@@ -121,100 +112,110 @@
       <div v-else-if="error" class="showcase-preview-tab__error">{{ error }}</div>
 
       <div v-else-if="event?.id && canViewLivePreview" class="showcase-preview-tab__viewer">
-        <!-- The frame list comes from the resolved preview renderer (V1's
-             cover/transition/main today — a V2 renderer will declare its own
-             pages). Editable frames are interactive when the user can edit:
-             clicks go into the frame for click-to-edit text and edit-intent
-             regions, while the frame page itself neutralizes live
-             buttons/links (RSVP, envelope, music…). -->
-        <div
-          :ref="setFramesContainerRef"
-          class="showcase-preview-tab__frames"
-          :class="framesLayoutClass"
-        >
-          <template v-for="frame in renderer.frames" :key="frame.id">
-            <PreviewFrame
-              v-if="isFrameVisible(frame)"
-              v-show="viewMode === 'single' ? activeFrameId === frame.id : true"
-              :ref="(el) => setPreviewFrameRef(frame.id, el)"
-              :label="t(frame.labelKey)"
-              :fit-height="viewMode === 'single' || !isNarrowViewport"
-              :width-override="viewMode === 'multiple' ? sharedColumnWidth : undefined"
+        <!-- Row: side controls (language + frame picker) beside the frames,
+             as real flex siblings rather than floated inside whichever frame
+             is "leading" — that used to position them with a small negative
+             offset off a frame's own edge, which only reads correctly when
+             the frame happens to sit right against the available space. In
+             "multiple" view the frames grid starts flush at the row's left
+             edge with no gutter at all, and even in "single" view the frame
+             is centered in a much wider column, so that fixed offset either
+             overlapped the frame's artwork or left a large unused gap
+             instead of actually using it. Real flex siblings make the
+             browser reserve genuine space for this column and hand the rest
+             to the frames — no measuring/anchoring needed, and it now works
+             identically in both view modes. -->
+        <div class="showcase-preview-tab__frames-row">
+          <div
+            v-if="availableLanguages.length > 1 || (viewMode === 'single' && visibleFrames.length > 1)"
+            class="showcase-preview-tab__frame-side-controls"
+          >
+            <!-- Language switch: cycles through the available languages the
+                 preview frames render in. -->
+            <button
+              v-if="availableLanguages.length > 1"
+              type="button"
+              class="showcase-preview-tab__lang-toggle"
+              :title="t('management.showcasePreview.switchLanguage')"
+              :aria-label="t('management.showcasePreview.switchLanguage')"
+              @click="cycleLanguage"
             >
-              <!-- Left-side floating controls, anchored to whichever frame is
-                   currently on screen (in single mode: the active tab, so
-                   the picker below stays reachable no matter which frame
-                   you're viewing; in multiple mode: always the cover frame,
-                   the leftmost one, since every frame is visible already and
-                   there's nothing to pick between). Saves the vertical space
-                   a separate toolbar row above the frames used to take. -->
-              <template v-if="isLeadingFrame(frame)" #leading>
-                <div class="showcase-preview-tab__frame-side-controls">
-                  <!-- Language switch: cycles through the available languages
-                       the preview frames render in. -->
-                  <button
-                    v-if="availableLanguages.length > 1"
-                    type="button"
-                    class="showcase-preview-tab__lang-toggle"
-                    :title="t('management.showcasePreview.switchLanguage')"
-                    :aria-label="t('management.showcasePreview.switchLanguage')"
-                    @click="cycleLanguage"
-                  >
-                    <Languages class="w-3.5 h-3.5" />
-                    <span>{{ currentLanguage.toUpperCase() }}</span>
-                  </button>
+              <Languages class="w-3.5 h-3.5" />
+              <span>{{ currentLanguage.toUpperCase() }}</span>
+            </button>
 
-                  <!-- Frame picker: only meaningful in single-frame focus
-                       mode, where the other frames are hidden and need some
-                       way to switch to — a minimal progress-dot timeline
-                       instead of a boxed tab list. -->
-                  <div
-                    v-if="viewMode === 'single' && visibleFrames.length > 1"
-                    class="showcase-preview-tab__frame-timeline"
-                    role="group"
-                    :aria-label="t('management.showcasePreview.layoutSwitchLabel')"
-                  >
-                    <button
-                      v-for="(pickerFrame, index) in visibleFrames"
-                      :key="pickerFrame.id"
-                      type="button"
-                      class="showcase-preview-tab__frame-step"
-                      :class="{ 'is-active': activeFrameId === pickerFrame.id }"
-                      @click="activeFrameId = pickerFrame.id"
-                    >
-                      <span class="showcase-preview-tab__frame-step-track">
-                        <span class="showcase-preview-tab__frame-step-dot" />
-                        <span
-                          v-if="index < visibleFrames.length - 1"
-                          class="showcase-preview-tab__frame-step-line"
-                        />
-                      </span>
-                      <span class="showcase-preview-tab__frame-step-label">{{ t(pickerFrame.labelKey) }}</span>
-                    </button>
-                  </div>
-                </div>
-              </template>
-              <InertIframe
-                :ref="(el) => setFrameRef(frame.id, el)"
-                :src="frameUrl(frame)"
-                :interactive="frame.editable && canEdit"
-                :click-message="frame.clickMessage"
-              />
-            </PreviewFrame>
-            <!-- Multiple mode: skip entirely rather than rendering this note —
-                 it's a direct sibling of the PreviewFrames inside the grid, so
-                 it would occupy its own grid cell and push the next real frame
-                 into a wrapped second row (exactly the scroll-required bug this
-                 view exists to avoid). Grid columns are already sized off
-                 visibleFrames (which excludes this frame), so the remaining
-                 frames simply sit side by side with nothing in between. -->
+            <!-- Frame picker: only meaningful in single-frame focus mode,
+                 where the other frames are hidden and need some way to
+                 switch to — a minimal progress-dot timeline instead of a
+                 boxed tab list. -->
             <div
-              v-else-if="viewMode === 'single' && shouldShowHiddenNote(frame)"
-              class="showcase-preview-tab__transition-note"
+              v-if="viewMode === 'single' && visibleFrames.length > 1"
+              class="showcase-preview-tab__frame-timeline"
+              role="group"
+              :aria-label="t('management.showcasePreview.layoutSwitchLabel')"
             >
-              {{ t(frame.hiddenNoteKey!) }}
+              <button
+                v-for="(pickerFrame, index) in visibleFrames"
+                :key="pickerFrame.id"
+                type="button"
+                class="showcase-preview-tab__frame-step"
+                :class="{ 'is-active': activeFrameId === pickerFrame.id }"
+                @click="activeFrameId = pickerFrame.id"
+              >
+                <span class="showcase-preview-tab__frame-step-track">
+                  <span class="showcase-preview-tab__frame-step-dot" />
+                  <span
+                    v-if="index < visibleFrames.length - 1"
+                    class="showcase-preview-tab__frame-step-line"
+                  />
+                </span>
+                <span class="showcase-preview-tab__frame-step-label">{{ t(pickerFrame.labelKey) }}</span>
+              </button>
             </div>
-          </template>
+          </div>
+
+          <!-- The frame list comes from the resolved preview renderer (V1's
+               cover/transition/main today — a V2 renderer will declare its
+               own pages). Editable frames are interactive when the user can
+               edit: clicks go into the frame for click-to-edit text and
+               edit-intent regions, while the frame page itself neutralizes
+               live buttons/links (RSVP, envelope, music…). -->
+          <div
+            :ref="setFramesContainerRef"
+            class="showcase-preview-tab__frames"
+            :class="framesLayoutClass"
+          >
+            <template v-for="frame in renderer.frames" :key="frame.id">
+              <PreviewFrame
+                v-if="isFrameVisible(frame)"
+                v-show="viewMode === 'single' ? activeFrameId === frame.id : true"
+                :ref="(el) => setPreviewFrameRef(frame.id, el)"
+                :label="t(frame.labelKey)"
+                :fit-height="viewMode === 'single' || !isNarrowViewport"
+                :width-override="viewMode === 'multiple' ? sharedColumnWidth : undefined"
+              >
+                <InertIframe
+                  :ref="(el) => setFrameRef(frame.id, el)"
+                  :src="frameUrl(frame)"
+                  :interactive="frame.editable && canEdit"
+                  :click-message="frame.clickMessage"
+                />
+              </PreviewFrame>
+              <!-- Multiple mode: skip entirely rather than rendering this note —
+                   it's a direct sibling of the PreviewFrames inside the grid, so
+                   it would occupy its own grid cell and push the next real frame
+                   into a wrapped second row (exactly the scroll-required bug this
+                   view exists to avoid). Grid columns are already sized off
+                   visibleFrames (which excludes this frame), so the remaining
+                   frames simply sit side by side with nothing in between. -->
+              <div
+                v-else-if="viewMode === 'single' && shouldShowHiddenNote(frame)"
+                class="showcase-preview-tab__transition-note"
+              >
+                {{ t(frame.hiddenNoteKey!) }}
+              </div>
+            </template>
+          </div>
         </div>
       </div>
 
@@ -248,7 +249,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, computed, ref, nextTick, watch, inject, type Ref } from 'vue'
-import { Smartphone, LayoutGrid, ChevronLeft, ChevronRight, Palette, Languages, X } from 'lucide-vue-next'
+import { Smartphone, LayoutGrid, ChevronLeft, ChevronRight, Palette, Languages } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useEventShowcase, type TemplateAssets } from '@/composables/useEventShowcase'
 import type { Event, EventPhoto, EventTemplate } from '@/services/api'
@@ -403,14 +404,6 @@ watch(
   },
   { immediate: true },
 )
-
-// Which frame currently hosts the left-side floating controls (language
-// toggle + frame picker — see template): in single mode that's always the
-// one on screen, so the picker stays reachable no matter which tab is
-// active; in multiple mode every frame is visible at once (no picker to
-// show), so it just anchors to the leftmost one, cover.
-const isLeadingFrame = (frame: PreviewFrameDescriptor) =>
-  viewMode.value === 'single' ? activeFrameId.value === frame.id : frame.id === 'cover'
 
 const framesLayoutClass = computed(() =>
   viewMode.value === 'multiple' ? `showcase-preview-tab__frames--cols-${visibleFrames.value.length}` : '',
@@ -573,27 +566,45 @@ onUnmounted(() => {
 }
 
 /* Content panel: a true extension of EventNavigationTabs.vue's own fixed
-   icon sidebar — identical top/height/glass background, docked flush at its
-   trailing edge (--panel-left, computed in script to match that sidebar's
-   own home-sidebar-overlay offset + its 88px rail width) with zero gap, no
-   card rounding/shadow. Slides out in place via transform, not a width
-   animation, since it's fixed (out of document flow either way). */
+   icon sidebar — docked flush at its trailing edge (--panel-left, computed
+   in script to match that sidebar's own home-sidebar-overlay offset + its
+   88px rail width), left edge pinned there permanently. Opens by growing
+   `width` from 0, not by translating a full-width slab in from off-screen —
+   a translateX slide has to sweep its start position across x:0 (behind/
+   under the icon rail) before reaching its resting place past it, so for
+   part of every open animation the panel visibly slid over the rail's
+   icons despite ending up beside them. Growing width outward from a fixed
+   left edge never occupies rail space at all, at any point in the
+   animation — it reads as the panel *extending out of* the sidebar rather
+   than a card sliding in over it. This shell is just the clipping mask
+   (`overflow: hidden`); the actual glass surface (background/blur/border)
+   lives on .panel-inner instead, sized to a constant 440px on desktop (see
+   the min-width:1024px block below) independent of the shell's own
+   animating width, so the reveal looks like a curtain opening rather than
+   text reflowing as the box narrows/widens. */
 .showcase-studio__panel-shell {
   position: fixed;
   top: 4rem;
   left: var(--panel-left);
-  width: 320px;
+  width: 0;
   height: calc(100vh - 4rem);
   z-index: 45;
   overflow: hidden;
-  /* Closed: shift by both its own width AND --panel-left so the panel's
-     right edge lands at true x:0 (fully behind the sidebar), not just at
-     panel-left (the sidebar's own far edge) — translateX(-100%) alone only
-     shifts by the panel's own width, leaving its trailing edge (including
-     the header's close button) sitting exactly on the sidebar and painting
-     over its icons since this panel's z-index is higher. */
-  transform: translateX(calc(-100% - var(--panel-left)));
-  transition: transform 0.3s ease;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.showcase-studio__panel-shell.is-open {
+  width: 440px;
+}
+
+.showcase-studio__panel-inner {
+  /* No explicit width here — defaults to auto (100% of the shell), which is
+     exactly right on mobile (the shell already sits at its real, constant
+     width there; see the max-width:1023px block). Desktop pins this to a
+     literal 440px instead (min-width:1024px block below), decoupled from
+     the shell's own animating width, so the reveal clips a fixed-size
+     surface rather than reflowing its contents as the box grows. */
+  height: 100%;
   border-right: 1px solid rgba(148, 163, 184, 0.3);
   background: linear-gradient(
     180deg,
@@ -603,49 +614,108 @@ onUnmounted(() => {
   );
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-}
-
-.showcase-studio__panel-shell.is-open {
-  transform: translateX(0);
-}
-
-.showcase-studio__panel-inner {
-  height: 100%;
   display: flex;
   flex-direction: column;
-}
-
-.showcase-studio__panel-header {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.25rem 1.5rem 1rem;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  color: rgb(15 23 42);
-}
-
-.showcase-studio__panel-close {
-  padding: 0.375rem;
-  border-radius: 0.5rem;
-  color: rgb(100 116 139);
-}
-
-.showcase-studio__panel-close:hover {
-  background: rgba(148, 163, 184, 0.12);
-  color: rgb(51 65 85);
 }
 
 .showcase-studio__panel-body {
   flex: 1;
   overflow-y: auto;
-  padding: 0 1.5rem 1.5rem;
+  padding: 1.5rem;
+  /* Thin custom scrollbar (same recipe as the app's drawers, see §10 of the
+     design skill) — the OS-default scrollbar this panel used to render is
+     thick and flatly gray, clashing with the glass panel around it. */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.showcase-studio__panel-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.showcase-studio__panel-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.showcase-studio__panel-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.showcase-studio__panel-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* EventMediaTab's ~10 section cards were designed for a full-width tab body,
+   where their subtitle/hint text has room to breathe. Reused here at a fixed
+   440px, that same text wraps across many lines and reads badly — so clamp
+   the subtitle to 2 lines with an ellipsis, and drop the secondary drag-hint
+   line entirely (it's a `hidden sm:flex` viewport breakpoint, not a container
+   query, so it stays visible at any desktop viewport width regardless of how
+   narrow this panel itself is). Scoped to this panel only via :deep() — the
+   same components read fine unclamped in their full-width tab context. */
+.showcase-studio__panel-body :deep(h5.font-semibold + p.text-sm) {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.showcase-studio__panel-body :deep([class*='sm:flex'][class*='text-slate-400']) {
+  display: none !important;
+}
+
+/* Section header action clusters (Add/Info/Lock pill(s) + the expand
+   chevron) are `flex-shrink-0` — sized to their own content, never
+   shrinking — which reads fine beside the title at the full-width tab's
+   width, but crowded and misaligned squeezed into this fixed 440px panel
+   (worst on Payment Methods, which stacks Add + Info + Lock + chevron
+   beside the title). Rather than force the row to wrap (tried first — it
+   just relocated the crowding to a second line and left a lone chevron
+   looking oddly stranded when a section had no other header button),
+   shrink the two space-hungry pieces in place:
+   - The expand chevron button is dropped entirely in this panel — the
+     title block underneath it is already the click target that toggles
+     the section (see useCollapsibleSection.ts), so the icon was a visual
+     affordance only, not the only way to trigger it. Full-width tab
+     context (not this panel) keeps it, via svg.lucide-chevron-down — a
+     class lucide-vue-next itself always adds to every ChevronDown icon
+     (see Icon.js), stable regardless of the Tailwind utility classes each
+     component happens to pass in.
+   - "Add X" pills (Plus icon + label, identified by their shared
+     border-dashed/rounded-full pill styling) collapse to icon-only; the
+     label moves to a native `title` tooltip on hover (added alongside the
+     visible label in each component, so it's inert everywhere else). */
+.showcase-studio__panel-body :deep(button:has(> svg.lucide-chevron-down)) {
+  display: none;
+}
+
+.showcase-studio__panel-body :deep(.border-dashed.border-slate-300.rounded-full) {
+  gap: 0;
+  padding: 0.5rem;
+}
+
+.showcase-studio__panel-body :deep(.border-dashed.border-slate-300.rounded-full > span) {
+  display: none;
+}
+
+/* Payment Methods' Lock/Unlock button has the same viewport-not-container
+   `hidden sm:inline` label bug as the drag-hints above — visible at any
+   desktop window width no matter how narrow this panel is. */
+.showcase-studio__panel-body :deep(button:has(> svg.lucide-lock) > [class*='sm:inline']),
+.showcase-studio__panel-body :deep(button:has(> svg.lucide-lock-open) > [class*='sm:inline']) {
+  display: none;
 }
 
 /* Toggle: a slim chevron handle riding right at the panel's trailing edge,
    tracking it via the same --panel-left + an is-open offset. Fixed at
-   roughly viewport mid-height, independent of the panel's own top anchor. */
+   roughly viewport mid-height, independent of the panel's own top anchor.
+   Styled as a continuation of the panel's own glass surface (same blur +
+   translucent white + soft diffuse shadow as .showcase-studio__panel-shell)
+   rather than a flat opaque chip with a hard offset shadow — reads as part
+   of the same component instead of a disconnected sticker floating on the
+   page background. */
 .showcase-studio__panel-toggle {
   position: fixed;
   top: 42vh;
@@ -657,21 +727,26 @@ onUnmounted(() => {
   width: 1.5rem;
   height: 2.75rem;
   color: rgb(100 116 139);
-  background: white;
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(148, 163, 184, 0.25);
   border-left: none;
   border-radius: 0 0.75rem 0.75rem 0;
-  box-shadow: 2px 2px 8px rgba(15, 23, 42, 0.08);
-  transition: left 0.3s ease, color 0.2s ease, background 0.2s ease;
+  box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.1);
+  /* Same duration + curve as the panel's own width transition — the handle
+     rides exactly at the panel's growing/shrinking trailing edge, so any
+     mismatch here would visibly detach it from that edge mid-animation. */
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease, background 0.2s ease;
 }
 
 .showcase-studio__panel-toggle.is-open {
-  left: calc(var(--panel-left) + 320px);
+  left: calc(var(--panel-left) + 440px);
 }
 
 .showcase-studio__panel-toggle:hover {
   color: rgb(51 65 85);
-  background: rgb(248 250 252);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .showcase-studio__panel-backdrop {
@@ -681,17 +756,27 @@ onUnmounted(() => {
 /* Below the app's own desktop-sidebar breakpoint (`lg`, matches
    EventNavigationTabs.vue, whose icon rail hides here in favor of the mobile
    tab bar) the panel becomes a full-screen overlay from the true left edge
-   instead of hugging a now-hidden sidebar, with a backdrop to close it. */
+   instead of hugging a now-hidden sidebar, with a backdrop to close it.
+   There's no rail to preserve here, so this keeps the simple translateX
+   slide (the desktop width-grow trick above exists specifically to avoid
+   sliding over the rail) — width is a real, constant value the whole time
+   instead of the desktop's 0→440px reveal, so it overrides the base rule's
+   `width` transition back to `transform`. */
 @media (max-width: 1023px) {
   .showcase-studio__panel-shell {
     left: 0;
     top: 0;
     height: 100vh;
-    width: min(340px, 88vw);
+    width: min(470px, 88vw);
     z-index: 60;
-    /* No sidebar to clear here — just its own width. */
     transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 4px 0 24px rgba(15, 23, 42, 0.15);
+  }
+
+  .showcase-studio__panel-shell.is-open {
+    width: min(470px, 88vw);
+    transform: translateX(0);
   }
 
   .showcase-studio__panel-toggle {
@@ -700,7 +785,7 @@ onUnmounted(() => {
   }
 
   .showcase-studio__panel-toggle.is-open {
-    left: min(340px, 88vw);
+    left: min(470px, 88vw);
   }
 
   .showcase-studio__panel-backdrop {
@@ -761,18 +846,21 @@ onUnmounted(() => {
   box-shadow: 0 2px 8px rgba(46, 204, 113, 0.15);
 }
 
-/* Left-side floating controls: language toggle stacked above the vertical
-   frame picker, anchored to whichever frame is currently on screen (via
-   PreviewFrame's #leading slot, see template) — vertically centered on the
-   phone mockup and sitting half outside its left edge. Replaces what used to
-   be a row of per-language buttons plus a separate frame-tabs toolbar row
-   above the frames, saving that vertical space. */
+/* Side controls: language toggle stacked above the vertical frame picker, a
+   real flex sibling of .frames (see .frames-row below) rather than
+   absolutely positioned off one frame's own edge — that anchor point only
+   reads correctly when the frame happens to sit flush against the
+   available space, which isn't true in "multiple" view (frames grid starts
+   with no gutter at all) or even reliably in "single" view (the frame is
+   centered in a much wider column, leaving unused space further left than
+   the anchor). Being a genuine flex item instead reserves real column width
+   for this control, which the frames get out of the way of automatically —
+   no per-frame anchoring needed, and it behaves the same in both view
+   modes. Replaces what used to be a row of per-language buttons plus a
+   separate frame-tabs toolbar row above the frames, saving that vertical
+   space. */
 .showcase-preview-tab__frame-side-controls {
-  position: absolute;
-  left: -0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 1;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -933,19 +1021,26 @@ onUnmounted(() => {
 }
 
 @media (min-width: 1024px) {
+  .showcase-studio__panel-inner {
+    /* Fixed, independent of the shell's own animating width — see the
+       comment on .panel-inner above. */
+    width: 440px;
+  }
+
   .showcase-studio__main {
     padding-left: 1.5rem;
     padding-right: 2rem;
     /* The panel is `position: fixed` (out of flow) — margin-left reserves
        the room for it so it doesn't overlap the frames, and animates in sync
-       so the studio visibly "shrinks" as the panel slides out, matching the
-       panel's own 0.3s transform transition. */
+       so the studio visibly "shrinks" as the panel grows out, matching the
+       panel's own width transition (same duration + curve, so both edges of
+       the reserved gap move together). */
     margin-left: 0;
-    transition: margin-left 0.3s ease;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .showcase-studio__main.is-shrunk {
-    margin-left: 320px;
+    margin-left: 440px;
   }
 }
 
@@ -954,6 +1049,32 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 1.25rem;
   min-width: 0;
+}
+
+/* Row: side controls column + frames, as genuine flex siblings (see the
+   .frame-side-controls comment above for why this replaced absolute
+   positioning). Wraps on narrow viewports so the controls sit above the
+   (already full-width-stacked, see the max-width:768px block below) frames
+   instead of squeezing them for width they don't have to spare. */
+.showcase-preview-tab__frames-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .showcase-preview-tab__frames-row {
+    flex-wrap: wrap;
+  }
+
+  /* Not enough width to spare a whole column for this alongside a
+     full-width-stacked frame (see the frames breakpoint further below) — it
+     takes the row to itself and wraps above instead, keeping its normal
+     (vertical picker) layout rather than needing a second, horizontal
+     variant of the same component. */
+  .showcase-preview-tab__frame-side-controls {
+    flex-basis: 100%;
+  }
 }
 
 /* Step-style segmented control: square icon buttons in a single connected
@@ -991,6 +1112,12 @@ onUnmounted(() => {
 .showcase-preview-tab__frames {
   display: flex;
   flex-direction: column;
+  /* Takes the rest of .frames-row after the side controls column, and must
+     be allowed to shrink below its content size (flex items default to
+     min-width: auto) — otherwise it would refuse to narrow and force the
+     side controls to overflow or get squeezed instead. */
+  flex: 1 1 auto;
+  min-width: 0;
   /* stretch, not center: a centered flex item shrink-wraps to its own
      content width, which is circular with PreviewFrame measuring that same
      width to decide how big to render its content — and locks onto a wrong,

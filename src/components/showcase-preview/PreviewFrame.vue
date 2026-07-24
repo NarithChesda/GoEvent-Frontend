@@ -1,14 +1,20 @@
 <template>
   <div class="preview-frame">
     <div class="preview-frame__label">{{ label }}</div>
-    <div class="preview-frame__frame-wrap">
-      <!-- Floating control anchored to this frame's own left edge, vertically
-           centered on the phone mockup — lives outside the scaler (which
-           clips to the phone shape) so it can sit half-outside the frame. -->
-      <slot name="leading" />
-      <div ref="scalerRef" class="preview-frame__scaler" :style="scalerStyle">
-        <div class="preview-frame__native" :style="nativeStyle">
-          <slot />
+    <div ref="frameWrapRef" class="preview-frame__frame-wrap">
+      <!-- Anchor is sized to exactly match the scaler's own box (not the
+           wider, centered frame-wrap column) so the leading slot's
+           absolutely-positioned control — anchored to *this* element —
+           tracks the phone mockup's real edge instead of drifting when the
+           column's available width changes (e.g. the Studio side panel
+           opening/closing). Lives outside the scaler (which clips to the
+           phone shape) so it can still sit half-outside the frame. -->
+      <div class="preview-frame__anchor" :style="scalerStyle">
+        <slot name="leading" />
+        <div ref="scalerRef" class="preview-frame__scaler">
+          <div class="preview-frame__native" :style="nativeStyle">
+            <slot />
+          </div>
         </div>
       </div>
     </div>
@@ -56,6 +62,7 @@ const props = withDefaults(defineProps<Props>(), {
   fitHeight: true,
 })
 
+const frameWrapRef = ref<HTMLElement | null>(null)
 const scalerRef = ref<HTMLElement | null>(null)
 const measuredWidth = ref(props.maxWidth)
 const containerWidth = computed(() =>
@@ -100,9 +107,12 @@ let resizeObserver: ResizeObserver | null = null
 // re-measure after a layout change it makes (e.g. switching how many frames
 // are shown per row) that this component itself can't observe.
 const measure = () => {
-  const el = scalerRef.value?.parentElement
-  if (el) {
-    measuredWidth.value = Math.min(props.maxWidth, el.clientWidth)
+  // Measured off frame-wrap (the true available column width), not the
+  // anchor — the anchor's own width is set *from* this same measurement
+  // (via scalerStyle), so reading it back would be circular and never
+  // reflect a column resize.
+  if (frameWrapRef.value) {
+    measuredWidth.value = Math.min(props.maxWidth, frameWrapRef.value.clientWidth)
   }
   // Measured off the scaler itself, not its parent — the label sits above it
   // within the same parent, so using the parent's top would over-reserve by
@@ -114,11 +124,10 @@ const measure = () => {
 }
 
 onMounted(() => {
-  const el = scalerRef.value?.parentElement
   measure()
-  if (el) {
+  if (frameWrapRef.value) {
     resizeObserver = new ResizeObserver(measure)
-    resizeObserver.observe(el)
+    resizeObserver.observe(frameWrapRef.value)
   }
   window.addEventListener('resize', measure)
 })
@@ -161,8 +170,19 @@ defineExpose({ measure })
   justify-content: center;
 }
 
+.preview-frame__anchor {
+  /* Sized to exactly match the scaler (via :style="scalerStyle" in the
+     template) and centered by frame-wrap's flex layout same as the scaler
+     alone used to be — so the phone mockup's on-screen position is
+     unchanged, but the leading slot's absolute positioning now has a
+     same-size, non-clipping reference box to anchor against. */
+  position: relative;
+}
+
 .preview-frame__scaler {
   position: relative;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   border-radius: 1.5rem;
   box-shadow:
