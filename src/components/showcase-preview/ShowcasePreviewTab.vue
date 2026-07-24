@@ -362,11 +362,13 @@ const sidebarLeftPosition = computed(() => {
 const panelLeft = computed(() => `calc(${sidebarLeftPosition.value} + 88px)`)
 
 // ---------------------------------------------------------------------------
-// Content panel: defaults closed when there's a live preview to show; when
-// there isn't one for this event's category, the panel is always open —
-// there's nothing else to fall back to.
+// Content panel: defaults open when the Design Studio tab first loads, so
+// the edit sections are immediately visible rather than requiring a click
+// on the edge toggle. When there's no live preview for this event's
+// category, closing isn't offered at all (see togglePanel) — there's
+// nothing else to fall back to — so the point is moot there anyway.
 // ---------------------------------------------------------------------------
-const panelMode = ref<'content' | null>(props.canViewLivePreview ? null : 'content')
+const panelMode = ref<'content' | null>('content')
 
 const togglePanel = () => {
   if (panelMode.value === 'content') {
