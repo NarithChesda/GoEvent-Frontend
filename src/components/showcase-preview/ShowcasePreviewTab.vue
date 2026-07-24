@@ -86,6 +86,7 @@
             v-show="layoutMode === 1 ? activeFrameId === frame.id : true"
             :ref="(el) => setPreviewFrameRef(frame.id, el)"
             :label="t(frame.labelKey)"
+            :fit-height="layoutMode === 1"
           >
             <InertIframe
               :ref="(el) => setFrameRef(frame.id, el)"

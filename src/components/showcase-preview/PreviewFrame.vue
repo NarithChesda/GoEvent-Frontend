@@ -20,6 +20,14 @@ interface Props {
   /** Extra space to always leave below the frame (bottom page padding, a
    *  fixed mobile tab bar) when fitting the frame to the viewport height. */
   bottomReserve?: number
+  /** Whether to also cap scale so the frame's full height fits the viewport
+   *  without scrolling. Only correct for a frame that's alone on its "row" —
+   *  a grid item that has wrapped to a second row sits much further down the
+   *  page, so measuring *its own* distance from the viewport top and
+   *  reserving space below it there would shrink it to near-nothing even
+   *  though scrolling a bit to see row 2 is completely normal. Multi-column
+   *  layouts should pass `false` and just fit width. */
+  fitHeight?: boolean
 }
 
 // Native size matches a real mobile viewport (iPhone 12/13/14 CSS px) rather
@@ -32,6 +40,7 @@ const props = withDefaults(defineProps<Props>(), {
   height: 844,
   maxWidth: 390,
   bottomReserve: 40,
+  fitHeight: true,
 })
 
 const scalerRef = ref<HTMLElement | null>(null)
@@ -48,6 +57,7 @@ const topOffset = ref(0)
 // just to see one frame's bottom edge.
 const scale = computed(() => {
   const widthScale = containerWidth.value / props.width
+  if (!props.fitHeight) return widthScale
   const availableHeight = Math.max(
     viewportHeight.value - topOffset.value - props.bottomReserve,
     200,
