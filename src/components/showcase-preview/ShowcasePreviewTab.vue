@@ -84,6 +84,22 @@
             </button>
           </div>
 
+          <!-- Language switch: cycles through the available languages the
+               preview frames render in. Lives here beside the layout switch
+               (rather than floating beside the frames themselves) so both
+               view-affecting controls sit together in one place. -->
+          <button
+            v-if="canViewLivePreview && availableLanguages.length > 1"
+            type="button"
+            class="showcase-preview-tab__lang-toggle"
+            :title="t('management.showcasePreview.switchLanguage')"
+            :aria-label="t('management.showcasePreview.switchLanguage')"
+            @click="cycleLanguage"
+          >
+            <Languages class="w-3.5 h-3.5" />
+            <span>{{ currentLanguage.toUpperCase() }}</span>
+          </button>
+
           <!-- Templates: the same browse-templates modal used elsewhere, wired
                to broadcast a live non-destructive preview into the frames
                while browsing (see BrowseTemplateModal.vue's
@@ -112,66 +128,47 @@
       <div v-else-if="error" class="showcase-preview-tab__error">{{ error }}</div>
 
       <div v-else-if="event?.id && canViewLivePreview" class="showcase-preview-tab__viewer">
-        <!-- Row: side controls (language + frame picker) beside the frames,
-             as real flex siblings rather than floated inside whichever frame
-             is "leading" — that used to position them with a small negative
-             offset off a frame's own edge, which only reads correctly when
-             the frame happens to sit right against the available space. In
-             "multiple" view the frames grid starts flush at the row's left
-             edge with no gutter at all, and even in "single" view the frame
-             is centered in a much wider column, so that fixed offset either
-             overlapped the frame's artwork or left a large unused gap
-             instead of actually using it. Real flex siblings make the
-             browser reserve genuine space for this column and hand the rest
-             to the frames — no measuring/anchoring needed, and it now works
-             identically in both view modes. -->
+        <!-- Row: side controls (frame picker) beside the frames, as real flex
+             siblings rather than floated inside whichever frame is "leading"
+             — that used to position them with a small negative offset off a
+             frame's own edge, which only reads correctly when the frame
+             happens to sit right against the available space. In "multiple"
+             view the frames grid starts flush at the row's left edge with no
+             gutter at all, and even in "single" view the frame is centered
+             in a much wider column, so that fixed offset either overlapped
+             the frame's artwork or left a large unused gap instead of
+             actually using it. Real flex siblings make the browser reserve
+             genuine space for this column and hand the rest to the frames —
+             no measuring/anchoring needed, and it now works identically in
+             both view modes. (The language toggle that used to live here
+             moved up to the header row, beside the layout switch.) -->
         <div class="showcase-preview-tab__frames-row">
+          <!-- Frame picker: only meaningful in single-frame focus mode, where
+               the other frames are hidden and need some way to switch to —
+               a minimal progress-dot timeline instead of a boxed tab list. -->
           <div
-            v-if="availableLanguages.length > 1 || (viewMode === 'single' && visibleFrames.length > 1)"
-            class="showcase-preview-tab__frame-side-controls"
+            v-if="viewMode === 'single' && visibleFrames.length > 1"
+            class="showcase-preview-tab__frame-timeline"
+            role="group"
+            :aria-label="t('management.showcasePreview.layoutSwitchLabel')"
           >
-            <!-- Language switch: cycles through the available languages the
-                 preview frames render in. -->
             <button
-              v-if="availableLanguages.length > 1"
+              v-for="(pickerFrame, index) in visibleFrames"
+              :key="pickerFrame.id"
               type="button"
-              class="showcase-preview-tab__lang-toggle"
-              :title="t('management.showcasePreview.switchLanguage')"
-              :aria-label="t('management.showcasePreview.switchLanguage')"
-              @click="cycleLanguage"
+              class="showcase-preview-tab__frame-step"
+              :class="{ 'is-active': activeFrameId === pickerFrame.id }"
+              @click="activeFrameId = pickerFrame.id"
             >
-              <Languages class="w-3.5 h-3.5" />
-              <span>{{ currentLanguage.toUpperCase() }}</span>
+              <span class="showcase-preview-tab__frame-step-track">
+                <span class="showcase-preview-tab__frame-step-dot" />
+                <span
+                  v-if="index < visibleFrames.length - 1"
+                  class="showcase-preview-tab__frame-step-line"
+                />
+              </span>
+              <span class="showcase-preview-tab__frame-step-label">{{ t(pickerFrame.labelKey) }}</span>
             </button>
-
-            <!-- Frame picker: only meaningful in single-frame focus mode,
-                 where the other frames are hidden and need some way to
-                 switch to — a minimal progress-dot timeline instead of a
-                 boxed tab list. -->
-            <div
-              v-if="viewMode === 'single' && visibleFrames.length > 1"
-              class="showcase-preview-tab__frame-timeline"
-              role="group"
-              :aria-label="t('management.showcasePreview.layoutSwitchLabel')"
-            >
-              <button
-                v-for="(pickerFrame, index) in visibleFrames"
-                :key="pickerFrame.id"
-                type="button"
-                class="showcase-preview-tab__frame-step"
-                :class="{ 'is-active': activeFrameId === pickerFrame.id }"
-                @click="activeFrameId = pickerFrame.id"
-              >
-                <span class="showcase-preview-tab__frame-step-track">
-                  <span class="showcase-preview-tab__frame-step-dot" />
-                  <span
-                    v-if="index < visibleFrames.length - 1"
-                    class="showcase-preview-tab__frame-step-line"
-                  />
-                </span>
-                <span class="showcase-preview-tab__frame-step-label">{{ t(pickerFrame.labelKey) }}</span>
-              </button>
-            </div>
           </div>
 
           <!-- The frame list comes from the resolved preview renderer (V1's
@@ -846,57 +843,46 @@ onUnmounted(() => {
   box-shadow: 0 2px 8px rgba(46, 204, 113, 0.15);
 }
 
-/* Side controls: language toggle stacked above the vertical frame picker, a
-   real flex sibling of .frames (see .frames-row below) rather than
-   absolutely positioned off one frame's own edge — that anchor point only
-   reads correctly when the frame happens to sit flush against the
-   available space, which isn't true in "multiple" view (frames grid starts
-   with no gutter at all) or even reliably in "single" view (the frame is
-   centered in a much wider column, leaving unused space further left than
-   the anchor). Being a genuine flex item instead reserves real column width
-   for this control, which the frames get out of the way of automatically —
-   no per-frame anchoring needed, and it behaves the same in both view
-   modes. Replaces what used to be a row of per-language buttons plus a
-   separate frame-tabs toolbar row above the frames, saving that vertical
-   space. */
-.showcase-preview-tab__frame-side-controls {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
-}
-
-/* Normal pill chip — this sits in the gutter beside the frame (over the
-   studio's own light page background, not over the frame's image), so it
-   reads fine with regular slate-on-white styling. */
+/* Same glass-toggle recipe as the layout switch beside it (and
+   TimeFilterToggle.vue elsewhere in the app) — a translucent blurred pill
+   rather than an isolated solid-white bordered chip, so both header
+   controls read as one family instead of two different button languages. */
 .showcase-preview-tab__lang-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 700;
+  gap: 0.375rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
   letter-spacing: 0.02em;
-  color: rgb(51 65 85);
-  background: white;
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: rgb(71 85 105);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 9999px;
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1);
   transition: all 0.2s ease;
 }
 
 .showcase-preview-tab__lang-toggle:hover {
-  border-color: rgba(46, 204, 113, 0.4);
-  color: rgb(15 23 42);
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+  color: rgb(30 41 59);
+  background: rgba(255, 255, 255, 0.8);
 }
 
 /* Frame picker: a minimal progress-dot timeline — dots joined by a thread,
    the active step filled with the brand gradient. No card chrome; it sits
-   directly on the page background like the language pill above it. */
+   directly on the page background beside the frames. A real flex sibling of
+   .frames (see .frames-row below) rather than absolutely positioned off one
+   frame's own edge — that anchor point only read correctly when the frame
+   happened to sit flush against the available space, which isn't true in
+   "multiple" view (frames grid starts with no gutter at all) or even
+   reliably in "single" view (the frame is centered in a much wider column,
+   leaving unused space further left than the anchor). Being a genuine flex
+   item instead reserves real column width for this control, which the
+   frames get out of the way of automatically. */
 .showcase-preview-tab__frame-timeline {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   padding: 0.25rem 0;
@@ -1051,9 +1037,9 @@ onUnmounted(() => {
   min-width: 0;
 }
 
-/* Row: side controls column + frames, as genuine flex siblings (see the
-   .frame-side-controls comment above for why this replaced absolute
-   positioning). Wraps on narrow viewports so the controls sit above the
+/* Row: frame picker column + frames, as genuine flex siblings (see the
+   .frame-timeline comment above for why this replaced absolute
+   positioning). Wraps on narrow viewports so the picker sits above the
    (already full-width-stacked, see the max-width:768px block below) frames
    instead of squeezing them for width they don't have to spare. */
 .showcase-preview-tab__frames-row {
@@ -1072,19 +1058,26 @@ onUnmounted(() => {
      takes the row to itself and wraps above instead, keeping its normal
      (vertical picker) layout rather than needing a second, horizontal
      variant of the same component. */
-  .showcase-preview-tab__frame-side-controls {
+  .showcase-preview-tab__frame-timeline {
     flex-basis: 100%;
   }
 }
 
-/* Step-style segmented control: square icon buttons in a single connected
-   pill, the active step filled with the brand gradient. */
+/* Step-style segmented control (the app's own "glass toggle" recipe — see
+   TimeFilterToggle.vue): square icon buttons in a single connected glass
+   pill, the active step filled with the brand gradient. Same background/
+   blur/border/shadow as the language toggle beside it, so the two read as
+   one matched set of header controls rather than two different styles. */
 .showcase-preview-tab__layout-switch {
   display: flex;
   gap: 0.25rem;
   padding: 0.25rem;
-  background: rgba(148, 163, 184, 0.12);
-  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(46, 204, 113, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .showcase-preview-tab__layout-btn {
@@ -1093,20 +1086,20 @@ onUnmounted(() => {
   justify-content: center;
   width: 2.25rem;
   height: 2.25rem;
-  border-radius: 0.5rem;
-  color: rgb(100 116 139);
+  border-radius: 9999px;
+  color: rgb(71 85 105);
   transition: all 0.2s ease;
 }
 
 .showcase-preview-tab__layout-btn:hover {
-  color: rgb(51 65 85);
-  background: rgba(255, 255, 255, 0.7);
+  color: rgb(30 41 59);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .showcase-preview-tab__layout-btn.is-active {
   background: linear-gradient(to right, #2ecc71, #1e90ff);
   color: white;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
+  box-shadow: 0 4px 6px -1px rgba(46, 204, 113, 0.2), 0 2px 4px -2px rgba(46, 204, 113, 0.2);
 }
 
 .showcase-preview-tab__frames {

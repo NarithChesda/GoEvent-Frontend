@@ -77,17 +77,6 @@
           <span class="hidden md:inline">{{ locale === 'en' ? 'EN' : 'KH' }}</span>
         </button>
 
-        <!-- Preview Showcase Button (only for wedding, birthday, housewarming) -->
-        <button
-          v-if="canEdit && eventId && canPreviewShowcase"
-          @click="previewShowcase"
-          class="topbar-outline-btn flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 rounded-lg transition-all duration-200"
-          :title="t('management.topBar.previewTitle')"
-        >
-          <Eye class="w-4 h-4" />
-          <span class="hidden md:inline">{{ t('management.topBar.previewBtn') }}</span>
-        </button>
-
         <!-- Publish Button (for public draft events) -->
         <button
           v-if="canEdit && eventId && eventPrivacy === 'public' && actualEventStatus === 'draft'"
@@ -119,7 +108,7 @@
 <script setup lang="ts">
 import { ref, computed, inject, onMounted, onUnmounted, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Pencil, Eye, ArrowLeft, Globe, Languages } from 'lucide-vue-next'
+import { Pencil, ArrowLeft, Globe, Languages } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
@@ -132,8 +121,6 @@ interface Props {
   canEdit?: boolean
   organizerName?: string
   organizerAvatar?: string
-  /** Event category name (e.g., 'wedding', 'birthday', 'housewarming') */
-  eventCategory?: string | null
 }
 
 const { locale, t, setLocale } = useAppLanguage()
@@ -151,7 +138,6 @@ const props = withDefaults(defineProps<Props>(), {
   canEdit: false,
   organizerName: '',
   organizerAvatar: '',
-  eventCategory: null
 })
 
 const emit = defineEmits<{
@@ -234,18 +220,6 @@ const statusLabel = computed(() => {
   return t(`management.topBar.status.${props.eventStatus}`)
 })
 
-// Categories that support showcase preview. Backend category names may carry a
-// suffix (e.g. "Housewarming Party", "Birthday Party", "Funeral Service"), so we
-// match by prefix rather than exact equality.
-const SHOWCASE_CATEGORIES = ['wedding', 'birthday', 'housewarming', 'funeral']
-
-// Check if event category supports showcase preview
-const canPreviewShowcase = computed(() => {
-  if (!props.eventCategory) return false
-  const normalized = props.eventCategory.toLowerCase()
-  return SHOWCASE_CATEGORIES.some((c) => normalized.startsWith(c))
-})
-
 // Actions
 const editEvent = () => {
   if (props.eventId) {
@@ -256,17 +230,6 @@ const editEvent = () => {
 const publishEvent = () => {
   if (props.eventId) {
     emit('publish')
-  }
-}
-
-const previewShowcase = () => {
-  if (props.eventId) {
-    // Open showcase in new tab with guest name and language params
-    const baseUrl = window.location.origin
-    const url = new URL(`${baseUrl}/events/${props.eventId}/showcase`)
-    url.searchParams.append('guest_name', 'ភ្ញៀវកិត្តិយស')
-    url.searchParams.append('lang', 'kh')
-    window.open(url.toString(), '_blank')
   }
 }
 
