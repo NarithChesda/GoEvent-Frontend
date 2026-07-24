@@ -28,6 +28,13 @@ interface Props {
    *  though scrolling a bit to see row 2 is completely normal. Multi-column
    *  layouts should pass `false` and just fit width. */
   fitHeight?: boolean
+  /** When set, use this as the available width instead of self-measuring
+   *  the parent element. Every frame in a multi-column row independently
+   *  self-measuring via its own ResizeObserver can settle at slightly (or,
+   *  mid-transition, wildly) different values depending on timing — passing
+   *  down one shared, parent-computed column width keeps every frame in the
+   *  row pixel-identical instead. */
+  widthOverride?: number
 }
 
 // Native size matches a real mobile viewport (iPhone 12/13/14 CSS px) rather
@@ -44,7 +51,10 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const scalerRef = ref<HTMLElement | null>(null)
-const containerWidth = ref(props.maxWidth)
+const measuredWidth = ref(props.maxWidth)
+const containerWidth = computed(() =>
+  props.widthOverride != null ? Math.min(props.maxWidth, props.widthOverride) : measuredWidth.value,
+)
 const viewportHeight = ref(typeof window !== 'undefined' ? window.innerHeight : 900)
 // Measured live from the frame's own position, rather than a fixed guess at
 // how much page chrome (top bar, tab header, toolbar) sits above it — a
@@ -86,7 +96,7 @@ let resizeObserver: ResizeObserver | null = null
 const measure = () => {
   const el = scalerRef.value?.parentElement
   if (el) {
-    containerWidth.value = Math.min(props.maxWidth, el.clientWidth)
+    measuredWidth.value = Math.min(props.maxWidth, el.clientWidth)
   }
   // Measured off the scaler itself, not its parent — the label sits above it
   // within the same parent, so using the parent's top would over-reserve by

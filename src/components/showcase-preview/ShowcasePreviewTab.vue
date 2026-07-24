@@ -77,6 +77,7 @@
            regions, while the frame page itself neutralizes live
            buttons/links (RSVP, envelope, music…). -->
       <div
+        :ref="setFramesContainerRef"
         class="showcase-preview-tab__frames"
         :class="`showcase-preview-tab__frames--cols-${layoutMode}`"
       >
@@ -87,6 +88,7 @@
             :ref="(el) => setPreviewFrameRef(frame.id, el)"
             :label="t(frame.labelKey)"
             :fit-height="layoutMode === 1"
+            :width-override="sharedColumnWidth"
           >
             <InertIframe
               :ref="(el) => setFrameRef(frame.id, el)"
@@ -225,6 +227,38 @@ const remeasurePreviewFrames = () => {
 
 watch(layoutMode, remeasurePreviewFrames)
 watch(activeFrameId, remeasurePreviewFrames)
+
+// ---------------------------------------------------------------------------
+// Shared column width for 2/3-up mode: each PreviewFrame used to
+// self-measure its own DOM parent via its own ResizeObserver, and those N
+// independent observers could settle at slightly different widths depending
+// on timing (worst case, one frame mid-layout reads a stale/tiny value and
+// gets stuck there) — so frames in the same row ended up visibly different
+// sizes. Measuring the shared frames container once here and handing every
+// frame the same computed column width keeps them pixel-identical.
+// ---------------------------------------------------------------------------
+const FRAMES_GRID_GAP_PX = 24 // matches the `gap: 1.5rem` on --cols-2/--cols-3
+
+const framesContainerWidth = ref(0)
+let framesResizeObserver: ResizeObserver | null = null
+
+const setFramesContainerRef = (el: unknown) => {
+  framesResizeObserver?.disconnect()
+  framesResizeObserver = null
+  const element = el as HTMLElement | null
+  if (!element) return
+  framesContainerWidth.value = element.clientWidth
+  framesResizeObserver = new ResizeObserver(() => {
+    framesContainerWidth.value = element.clientWidth
+  })
+  framesResizeObserver.observe(element)
+}
+
+const sharedColumnWidth = computed(() => {
+  if (layoutMode.value === 1) return undefined
+  const cols = layoutMode.value
+  return Math.max((framesContainerWidth.value - FRAMES_GRID_GAP_PX * (cols - 1)) / cols, 0)
+})
 
 const frameUrl = (frame: PreviewFrameDescriptor) => {
   const params = new URLSearchParams({ stage: frame.id, lang: currentLanguage.value })
