@@ -206,10 +206,10 @@
                  visibleFrames (which excludes this frame), so the remaining
                  frames simply sit side by side with nothing in between. -->
             <div
-              v-else-if="frame.hiddenNoteKey && viewMode === 'single'"
+              v-else-if="viewMode === 'single' && shouldShowHiddenNote(frame)"
               class="showcase-preview-tab__transition-note"
             >
-              {{ t(frame.hiddenNoteKey) }}
+              {{ t(frame.hiddenNoteKey!) }}
             </div>
           </template>
         </div>
@@ -324,6 +324,14 @@ const isFrameVisible = (frame: PreviewFrameDescriptor) =>
 
 const visibleFrames = computed(() => renderer.value.frames.filter(isFrameVisible))
 
+// Gates the hidden-frame note separately from isFrameVisible: a frame can be
+// hidden either because the template never had this stage at all (no note —
+// nothing to explain) or because it's applicable but transiently unused
+// (e.g. basic wedding with no featured photo yet — show the note).
+const shouldShowHiddenNote = (frame: PreviewFrameDescriptor) =>
+  !!frame.hiddenNoteKey &&
+  (frame.isApplicable ? frame.isApplicable(rendererContext.value) : true)
+
 // Language switch: a single button (see the leading-slot controls in the
 // template) that steps through availableLanguages in order, wrapping around.
 const cycleLanguage = () => {
@@ -371,17 +379,17 @@ const togglePanel = () => {
 const showTemplatesModal = ref(false)
 
 // ---------------------------------------------------------------------------
-// View mode: single-frame focus (default — needs a picker to choose which
-// frame is showing, since the others are hidden) vs. every visible frame
-// (2 or 3, whatever this event actually has — never a fixed count) laid out
-// side by side so the whole set fits without scrolling.
+// View mode: every visible frame (2 or 3, whatever this event actually has —
+// never a fixed count) laid out side by side (default) vs. single-frame focus,
+// which needs a picker to choose which frame is showing since the others are
+// hidden.
 // ---------------------------------------------------------------------------
 const VIEW_MODE_OPTIONS = [
   { value: 'single' as const, icon: Smartphone, labelKey: 'management.showcasePreview.layoutSingle' },
   { value: 'multiple' as const, icon: LayoutGrid, labelKey: 'management.showcasePreview.layoutMultiple' },
 ]
 
-const viewMode = ref<'single' | 'multiple'>('single')
+const viewMode = ref<'single' | 'multiple'>('multiple')
 const activeFrameId = ref<string>('cover')
 
 watch(

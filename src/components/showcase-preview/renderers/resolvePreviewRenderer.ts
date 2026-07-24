@@ -34,6 +34,14 @@ export interface PreviewFrameDescriptor {
   isVisible?: (ctx: PreviewFrameContext) => boolean
   /** i18n key for the note shown in place of a hidden frame. */
   hiddenNoteKey?: string
+  /** Whether this frame conceptually applies to the template at all,
+   *  independent of transient state (featured photo, edit mode) that
+   *  `isVisible` also factors in. Gates `hiddenNoteKey`: the note only makes
+   *  sense when the stage is applicable-but-currently-unused (e.g. basic
+   *  wedding with no featured photo yet) — not when the template never had
+   *  this stage to begin with (e.g. non-wedding categories, V2 templates). If
+   *  omitted, defaults to `isVisible`'s own applicability (no separate gate). */
+  isApplicable?: (ctx: PreviewFrameContext) => boolean
 }
 
 export interface PreviewRendererDescriptor {
@@ -76,6 +84,7 @@ const V1_RENDERER: PreviewRendererDescriptor = {
       // Stays visible in edit mode even without a featured photo yet, so one
       // can be set from here instead of the frame just disappearing.
       isVisible: (ctx) => isBasicWeddingShowcase(ctx) && (ctx.hasFeaturedPhoto || !!ctx.canEdit),
+      isApplicable: isBasicWeddingShowcase,
       hiddenNoteKey: 'management.showcasePreview.transitionNotUsed',
     },
     {
