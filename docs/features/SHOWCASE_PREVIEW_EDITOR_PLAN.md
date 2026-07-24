@@ -6,6 +6,23 @@ items remain open. This is the agreed target architecture for evolving the manag
 "Live Preview" tab into the primary GUI for editing the showcase. Check items off as they land —
 this doc is the anchor for how much has been achieved.
 
+**2026-07-24 — Design Studio merge.** The manage page's Showcase (`media`), Live Preview
+(`showcase-preview`), and template-browsing surfaces were merged into one `design-studio` tab
+(`ShowcasePreviewTab.vue`, still living at this path). It gained a side-panel mode toggle —
+`content` mounts `EventMediaTab.vue` wholesale (new `compactLayout` prop keeps its photo grids
+usable in a ~420px column); `templates` mounts a new `templates/TemplateStagingPanel.vue` that
+reuses `BrowseTemplateModal.vue`'s own composables/components for browsing, but stages a clicked
+template as a **live, non-destructive preview** instead of selecting-then-modal-confirming: it
+fetches `getPublicTemplateAssets` and broadcasts the result to every mounted frame via a new
+`preview-template` bridge message, handled frame-side by `setStagedTemplatePreview` (a
+`force: true` variant of `applyPreviewTemplateFallback` in `useEventShowcase.ts` that also
+overwrites `template_colors`/`template_fonts`, since those computeds are read before
+`template_assets.colors/fonts`). Reverting needs no dedicated bridge message — the existing
+`refresh` message already re-fetches real data wholesale, which naturally clears the staged
+override. `template-payment` (payment/billing) stays a separate, unmerged tab; the Templates
+panel only cross-links to it via a `go-to-payment` emit. See `TemplateStagingPanel.vue` and the
+`stagedTemplateData` handling in `ShowcasePreviewTab.vue` for the concrete wiring.
+
 Prerequisite reading: [SHOWCASE_LIVE_PREVIEW_EDITOR.md](SHOWCASE_LIVE_PREVIEW_EDITOR.md) — the
 implementation notes for what already shipped (iframe frames, click-to-edit text). This plan
 builds directly on that foundation and supersedes parts of its "Known gaps / next steps" section.

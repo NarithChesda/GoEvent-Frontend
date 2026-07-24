@@ -396,7 +396,7 @@ import { useCollapsibleSection } from '@/composables/useCollapsibleSection'
 import { sortEventTextLanguages } from '@/utils/eventTextSlots'
 
 const { locale, t } = useAppLanguage()
-const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection()
+const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection('hosts')
 
 const getLocalizedHost = (host: EventHost) => {
   const translation = host.translations?.find((tr) => tr.language === locale.value)

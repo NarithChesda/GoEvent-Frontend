@@ -60,6 +60,7 @@ const {
   loadShowcase,
   refreshShowcaseData,
   applyPreviewTemplateFallback,
+  setStagedTemplatePreview,
 } = showcase
 
 const renderer = computed(() =>
@@ -98,6 +99,7 @@ const onFrameMessage = (msg: MessageEvent) => {
   if (!parsed) return
   if (parsed.type === 'replay') replayKey.value++
   if (parsed.type === 'refresh') refreshShowcaseData().then(loadPreviewTemplateFallback)
+  if (parsed.type === 'preview-template') setStagedTemplatePreview(parsed.templateData)
 }
 
 // Preview-only fallback: ShowcasePreviewTab passes ?templateId=<id> whenever

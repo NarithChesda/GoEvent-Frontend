@@ -850,17 +850,33 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
    * here. Only ever called from the preview frame — the real public showcase
    * never calls this, so the payment gate stays intact for guests.
    */
-  const applyPreviewTemplateFallback = (templateData: TemplateAssets) => {
+  const applyPreviewTemplateFallback = (templateData: TemplateAssets, options?: { force?: boolean }) => {
     if (!showcaseData.value) return
-    if (showcaseData.value.event.template_assets) return // already has real (paid) data
+    if (showcaseData.value.event.template_assets && !options?.force) return // already has real (paid) data
 
     showcaseData.value = {
       ...showcaseData.value,
       event: {
         ...showcaseData.value.event,
         template_assets: templateData,
+        // templateColors/templateFonts read these top-level fields before
+        // falling back to template_assets.colors/fonts, so a forced preview
+        // must overwrite them too or colors/fonts would stay stuck on
+        // whichever template they came from.
+        ...(options?.force ? { template_colors: templateData.colors, template_fonts: templateData.fonts } : {}),
       },
     }
+  }
+
+  /**
+   * Live, non-destructive template try-on: overlays another template's
+   * assets/colors/fonts onto the currently loaded showcase without touching
+   * the backend, even when the event already has a real active template.
+   * Revert by re-fetching (refreshShowcaseData), which replaces
+   * showcaseData wholesale and naturally wipes this override.
+   */
+  const setStagedTemplatePreview = (templateData: TemplateAssets) => {
+    applyPreviewTemplateFallback(templateData, { force: true })
   }
 
   /**
@@ -1254,6 +1270,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     loadShowcase,
     refreshShowcaseData,
     applyPreviewTemplateFallback,
+    setStagedTemplatePreview,
     updateLanguageContent,
     loadCustomFonts: fontManager.loadCustomFonts,
     openEnvelope: stageManager.openEnvelope,

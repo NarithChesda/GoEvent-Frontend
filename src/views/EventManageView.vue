@@ -35,7 +35,6 @@
       :can-view-expenses="canViewExpenses"
       :can-view-donation="canViewDonation"
       :can-view-tickets="canViewTickets"
-      :can-view-showcase-preview="canViewShowcasePreview"
       :can-edit="event?.can_edit"
       @tab-change="activeTab = $event"
     />
@@ -89,7 +88,6 @@
       :can-view-expenses="canViewExpenses"
       :can-view-donation="canViewDonation"
       :can-view-tickets="canViewTickets"
-      :can-view-showcase-preview="canViewShowcasePreview"
       @tab-change="activeTab = $event"
     />
     <!-- Spacer for fixed mobile/tablet tab bar (h-[52px] = py-2 + button
@@ -104,7 +102,14 @@
       :style="{ marginLeft: contentMarginLeft }"
     >
       <!-- Main Content Section -->
-      <div class="max-w-3xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+      <div
+        :class="[
+          'mx-auto py-6 md:py-8',
+          activeTab === 'design-studio' && canViewShowcasePreview
+            ? 'max-w-[1600px]'
+            : 'px-4 sm:px-6 lg:px-8 max-w-3xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl',
+        ]"
+      >
         <div class="flex flex-col">
           <!-- Main Content Area -->
           <div class="flex-1 min-w-0 pb-20 lg:pb-0">
@@ -160,8 +165,14 @@
               />
             </div>
 
-            <!-- Media Tab -->
-            <div v-if="activeTab === 'media'">
+            <!-- Design Studio Tab: the full live-preview studio (merged
+                 content forms + preview + template try-on) for showcase
+                 categories (wedding/birthday/housewarming/funeral/ceremony);
+                 for everything else (business, music, other) this is the
+                 plain content tab it was before the studio existed — same
+                 EventMediaTab, just not wrapped in the studio's split-pane
+                 preview chrome, since there's no live preview to show. -->
+            <div v-if="activeTab === 'design-studio'">
               <div v-if="!canViewMedia" class="text-center py-12">
                 <div
                   class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
@@ -173,39 +184,26 @@
                   {{ t('management.media.accessRestricted.description') }}
                 </p>
               </div>
+              <ShowcasePreviewTab
+                v-else-if="event?.id && canViewShowcasePreview"
+                :event-id="event.id"
+                :can-edit="event.can_edit || false"
+                :event-data="event"
+                :can-view-live-preview="!!canViewShowcasePreview"
+                :show-category-specific-sections="showCategorySpecificSections"
+                @event-updated="handleEventUpdated"
+                @media-updated="handleMediaUpdated"
+                @template-applied="handleTemplateUpdated"
+              />
               <EventMediaTab
                 v-else-if="event?.id"
-                ref="mediaTabRef"
                 :event-id="event.id"
                 :can-edit="event.can_edit || false"
                 :initial-media="event.photos || []"
                 :event-data="event"
                 :show-category-specific-sections="showCategorySpecificSections"
+                @event-updated="handleEventUpdated"
                 @media-updated="handleMediaUpdated"
-                @event-updated="handleEventUpdated"
-                @sub-tab-change="activeSubTab = $event"
-              />
-            </div>
-
-            <!-- Showcase Live Preview Tab -->
-            <div v-if="activeTab === 'showcase-preview'">
-              <div v-if="!canViewShowcasePreview" class="text-center py-12">
-                <div
-                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
-                >
-                  <Lock class="w-8 h-8 text-slate-400" />
-                </div>
-                <h3 class="text-lg font-semibold text-slate-900 mb-2">{{ t('management.showcasePreview.accessRestricted.title') }}</h3>
-                <p class="text-slate-600 max-w-md mx-auto">
-                  {{ t('management.showcasePreview.accessRestricted.description') }}
-                </p>
-              </div>
-              <ShowcasePreviewTab
-                v-else-if="event?.id"
-                :event-id="event.id"
-                :can-edit="event.can_edit || false"
-                :event-data="event"
-                @event-updated="handleEventUpdated"
               />
             </div>
 
@@ -431,8 +429,11 @@ import type { TabConfig } from '../components/EventNavigationTabs.vue'
 // Lazy load heavy tab components for better code splitting
 const EventAgendaTab = defineAsyncComponent(() => import('../components/EventAgendaTab.vue'))
 const EventHostsTab = defineAsyncComponent(() => import('../components/EventHostsTab.vue'))
-const EventMediaTab = defineAsyncComponent(() => import('../components/EventMediaTab.vue'))
 const ShowcasePreviewTab = defineAsyncComponent(() => import('../components/showcase-preview/ShowcasePreviewTab.vue'))
+// Non-showcase categories (business, music, other) get the plain content tab
+// (no live-preview studio chrome) — same component ShowcasePreviewTab embeds
+// in its own content panel for showcase categories, just rendered directly.
+const EventMediaTab = defineAsyncComponent(() => import('../components/EventMediaTab.vue'))
 const EventRegistrationTab = defineAsyncComponent(() => import('../components/EventRegistrationTab.vue'))
 const EventTemplatePaymentTab = defineAsyncComponent(() => import('../components/EventTemplatePaymentTab.vue'))
 const EventGuestManagementTab = defineAsyncComponent(() => import('../components/EventGuestManagementTab.vue'))
@@ -506,7 +507,6 @@ const expenseTrackingPollInterval = ref<number | null>(null)
 // Template refs for tab components
 const agendaTabRef = ref<InstanceType<typeof EventAgendaTab> | null>(null)
 const hostsTabRef = ref<InstanceType<typeof EventHostsTab> | null>(null)
-const mediaTabRef = ref<InstanceType<typeof EventMediaTab> | null>(null)
 const registrationTabRef = ref<InstanceType<typeof EventRegistrationTab> | null>(null)
 const templatePaymentTabRef = ref<InstanceType<typeof EventTemplatePaymentTab> | null>(null)
 const guestManagementTabRef = ref<InstanceType<typeof EventGuestManagementTab> | null>(null)
@@ -517,8 +517,13 @@ const navigationTabs = computed<TabConfig[]>(() => [
   { id: 'overview', label: t('management.tabs.overview'), icon: 'file-text' },
   { id: 'agenda', label: t('management.tabs.agenda'), icon: 'calendar', visible: !agendaHostsMerged.value },
   { id: 'hosts', label: t('management.tabs.hostsLabel'), icon: 'users', mobileLabel: t('management.tabs.hosts'), visible: !agendaHostsMerged.value },
-  { id: 'media', label: t('management.tabs.showcase'), icon: 'image' },
-  { id: 'showcase-preview', label: t('management.tabs.showcasePreview'), icon: 'monitor', mobileLabel: t('management.tabs.previewMobile') },
+  // Showcase categories get the "Design Studio" live-preview experience;
+  // everything else (business, music, other) keeps the plain "Showcase"
+  // content tab it had before the studio existed (see the design-studio tab
+  // body below, which renders EventMediaTab directly for these).
+  canViewShowcasePreview.value
+    ? { id: 'design-studio', label: t('management.tabs.designStudio'), icon: 'monitor', mobileLabel: t('management.tabs.designStudioMobile') }
+    : { id: 'design-studio', label: t('management.tabs.showcase'), icon: 'image' },
   { id: 'template-payment', label: t('management.tabs.templatePayment'), icon: 'credit-card', mobileLabel: t('management.tabs.templateMobile') },
   { id: 'guest-management', label: t('management.tabs.guestManagement'), icon: 'users', mobileLabel: t('management.tabs.guests') },
   { id: 'expenses', label: t('management.tabs.expenseTracking'), icon: 'wallet', mobileLabel: t('management.tabs.expensesMobile') },
@@ -545,7 +550,7 @@ const canViewRestrictedTabs = computed(() => {
 // Categories that support showcase/template features. Backend category names
 // may include a suffix (e.g. "Housewarming Party", "Birthday Party",
 // "Funeral Service"), so we match by prefix rather than exact equality.
-const SHOWCASE_CATEGORIES = ['wedding', 'birthday', 'housewarming', 'funeral']
+const SHOWCASE_CATEGORIES = ['wedding', 'birthday', 'housewarming', 'funeral', 'ceremony']
 
 const isShowcaseCategory = (
   category: string | null | undefined,
@@ -582,12 +587,13 @@ const showCategorySpecificSections = computed(() => {
 // Showcase tab is hidden from them.
 const agendaHostsMerged = computed(() => canViewMedia.value)
 
-// Redirect deep links / active selections for merged tabs to the Showcase tab
+// Redirect deep links / active selections for merged tabs to the Design
+// Studio tab
 watch(
   [agendaHostsMerged, activeTab],
   ([merged, tab]) => {
     if (merged && (tab === 'agenda' || tab === 'hosts')) {
-      activeTab.value = 'media'
+      activeTab.value = 'design-studio'
     }
   },
   { immediate: true },
@@ -600,6 +606,18 @@ watch(
   (tab) => {
     if (tab === 'collaborator' || tab === 'review') {
       activeTab.value = 'overview'
+    }
+  },
+  { immediate: true },
+)
+
+// Showcase and Live Preview no longer exist as standalone tabs — they merged
+// into the Design Studio tab. Redirect old deep links/bookmarks.
+watch(
+  activeTab,
+  (tab) => {
+    if (tab === 'media' || tab === 'showcase-preview') {
+      activeTab.value = 'design-studio'
     }
   },
   { immediate: true },

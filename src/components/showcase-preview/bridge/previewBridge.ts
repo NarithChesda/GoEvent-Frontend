@@ -1,4 +1,5 @@
 import type { EditIntent } from '../edit/editContext'
+import type { TemplateAssets } from '@/composables/useEventShowcase'
 
 /**
  * Typed same-origin postMessage protocol between the manage-page preview tab
@@ -7,7 +8,8 @@ import type { EditIntent } from '../edit/editContext'
  *
  *   frame → parent : edit intents (media/embed edits that need full-size UI)
  *   parent → frame : replay (re-run a frame's mount animation),
- *                    refresh (refetch showcase data after a parent-side save)
+ *                    refresh (refetch showcase data after a parent-side save),
+ *                    preview-template (live, non-destructive template try-on)
  */
 export const PREVIEW_BRIDGE_SOURCE = 'goevent-showcase-preview'
 
@@ -16,6 +18,7 @@ export type ParentToFrameType = 'replay' | 'refresh'
 export type PreviewBridgeMessage =
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: ParentToFrameType }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'edit-intent'; intent: EditIntent }
+  | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'preview-template'; templateData: TemplateAssets }
 
 /**
  * Validates origin + shape and returns the typed message, or null for
@@ -41,6 +44,17 @@ export function postEditIntentToParent(intent: EditIntent): void {
 export function postToFrame(frameWindow: Window | null | undefined, type: ParentToFrameType): void {
   frameWindow?.postMessage(
     { source: PREVIEW_BRIDGE_SOURCE, type } satisfies PreviewBridgeMessage,
+    window.location.origin,
+  )
+}
+
+/** Parent side: push a staged template's assets into one frame for live try-on. */
+export function postTemplatePreviewToFrame(
+  frameWindow: Window | null | undefined,
+  templateData: TemplateAssets,
+): void {
+  frameWindow?.postMessage(
+    { source: PREVIEW_BRIDGE_SOURCE, type: 'preview-template', templateData } satisfies PreviewBridgeMessage,
     window.location.origin,
   )
 }

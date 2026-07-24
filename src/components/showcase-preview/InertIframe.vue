@@ -32,7 +32,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { postToFrame, type ParentToFrameType } from './bridge/previewBridge'
+import { postToFrame, postTemplatePreviewToFrame, type ParentToFrameType } from './bridge/previewBridge'
+import type { TemplateAssets } from '@/composables/useEventShowcase'
 
 interface Props {
   src: string
@@ -60,6 +61,8 @@ const onShieldClick = () => {
 // parent-side media save) into this frame.
 defineExpose({
   post: (type: ParentToFrameType) => postToFrame(iframeRef.value?.contentWindow, type),
+  postTemplatePreview: (templateData: TemplateAssets) =>
+    postTemplatePreviewToFrame(iframeRef.value?.contentWindow, templateData),
 })
 
 // The iframe is visually shrunk by PreviewFrame's `transform: scale(...)`, so

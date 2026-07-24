@@ -376,6 +376,8 @@
     "showcase": "Showcase",
     "showcasePreview": "Live Preview",
     "previewMobile": "Preview",
+    "designStudio": "Design Studio",
+    "designStudioMobile": "Studio",
     "templatePayment": "Template & Payment",
     "templateMobile": "Template",
     "guestManagement": "Guest Management",
@@ -407,8 +409,8 @@
     "checkedIn": "Checked In"
   },
   "showcasePreview": {
-    "title": "Live Preview",
-    "subtitle": "See exactly what guests will see, in real time.",
+    "title": "Design Studio",
+    "subtitle": "Edit your showcase and try templates, with a live preview of what guests will see.",
     "coverLabel": "Cover",
     "transitionLabel": "Transition",
     "mainContentLabel": "Main Content",
@@ -416,6 +418,10 @@
     "layoutSwitchLabel": "Preview layout",
     "layoutSingle": "Show one screen",
     "layoutMultiple": "Show all screens side by side",
+    "switchLanguage": "Switch preview language",
+    "panelContent": "Edit Content",
+    "panelTemplates": "Templates",
+    "noLivePreview": "This event's category doesn't have a live preview — edit its content from the panel on the left.",
     "accessRestricted": {
       "title": "Access Restricted",
       "description": "Only the event organizer and collaborators can view the live preview."

@@ -376,6 +376,8 @@
     "showcase": "តាំងបង្ហាញ",
     "showcasePreview": "មើលផ្ទាល់",
     "previewMobile": "មើលជាមុន",
+    "designStudio": "បន្ទប់រចនា",
+    "designStudioMobile": "រចនា",
     "templatePayment": "គំរូ & ការទូទាត់",
     "templateMobile": "គំរូ",
     "guestManagement": "គ្រប់គ្រងភ្ញៀវ",
@@ -407,8 +409,8 @@
     "checkedIn": "បានចុះឈ្មោះចូលរួម"
   },
   "showcasePreview": {
-    "title": "មើលផ្ទាល់",
-    "subtitle": "មើលឃើញអ្វីដែលភ្ញៀវនឹងឃើញ ក្នុងពេលវេលាជាក់ស្តែង។",
+    "title": "បន្ទប់រចនា",
+    "subtitle": "កែសម្រួលការតាំងបង្ហាញ និងសាកល្បងគំរូ ជាមួយការមើលផ្ទាល់នូវអ្វីដែលភ្ញៀវនឹងឃើញ។",
     "coverLabel": "ក្របមុខ",
     "transitionLabel": "ការផ្លាស់ប្តូរឆាក",
     "mainContentLabel": "មាតិកាចម្បង",
@@ -416,6 +418,10 @@
     "layoutSwitchLabel": "ប្លង់មើលជាមុន",
     "layoutSingle": "បង្ហាញអេក្រង់មួយ",
     "layoutMultiple": "បង្ហាញអេក្រង់ទាំងអស់ម្តងគ្នា",
+    "switchLanguage": "ប្តូរភាសាមើលជាមុន",
+    "panelContent": "កែសម្រួលមាតិកា",
+    "panelTemplates": "គំរូ",
+    "noLivePreview": "ប្រភេទព្រឹត្តិការណ៍នេះមិនមានការមើលផ្ទាល់ទេ — សូមកែសម្រួលមាតិកាពីបន្ទះខាងឆ្វេង។",
     "accessRestricted": {
       "title": "ការចូលប្រើត្រូវបានដាក់កំហិត",
       "description": "មានតែអ្នករៀបចំព្រឹត្តិការណ៍ និងអ្នកសហការប៉ុណ្ណោះ ដែលអាចមើលការមើលផ្ទាល់។"

@@ -1,9 +1,15 @@
 <template>
   <div class="preview-frame">
     <div class="preview-frame__label">{{ label }}</div>
-    <div ref="scalerRef" class="preview-frame__scaler" :style="scalerStyle">
-      <div class="preview-frame__native" :style="nativeStyle">
-        <slot />
+    <div class="preview-frame__frame-wrap">
+      <!-- Floating control anchored to this frame's own left edge, vertically
+           centered on the phone mockup — lives outside the scaler (which
+           clips to the phone shape) so it can sit half-outside the frame. -->
+      <slot name="leading" />
+      <div ref="scalerRef" class="preview-frame__scaler" :style="scalerStyle">
+        <div class="preview-frame__native" :style="nativeStyle">
+          <slot />
+        </div>
       </div>
     </div>
   </div>
@@ -140,6 +146,19 @@ defineExpose({ measure })
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: rgb(100 116 139);
+}
+
+.preview-frame__frame-wrap {
+  position: relative;
+  /* .preview-frame uses align-items: center for its own children (label +
+     this wrap), which would otherwise shrink-wrap this wrap to the scaler's
+     own explicit width — circular with measure() reading this element's
+     clientWidth as "available width". Forcing full width here keeps that
+     measurement identical to when the scaler was a direct child of
+     .preview-frame (a flex item stretched by its own parent's layout). */
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .preview-frame__scaler {
