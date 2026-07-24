@@ -97,16 +97,19 @@
                to broadcast a live non-destructive preview into the frames
                while browsing (see BrowseTemplateModal.vue's
                preview-stage/preview-clear emits) — Apply persists for real via
-               its own existing confirm flow. -->
+               its own existing confirm flow.
+
+                -->
+
           <button
-            v-if="canEdit"
-            type="button"
-            class="showcase-preview-tab__templates-btn"
-            @click="showTemplatesModal = true"
-          >
-            <Palette class="w-4 h-4" />
-            {{ t('management.showcasePreview.panelTemplates') }}
-          </button>
+        v-if="canEdit"
+        @click="showTemplatesModal = true"
+        class="flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 items-center text-sm sm:text-base"
+      >
+        <Palette class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+        <span>{{ t('management.templatePaymentTab.browseBtn.browse') }}</span>
+        <span class="hidden sm:inline ml-1">{{ t('management.templatePaymentTab.browseBtn.templates') }}</span>
+      </button>
         </div>
       </div>
 
