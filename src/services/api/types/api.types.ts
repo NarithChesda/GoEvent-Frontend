@@ -19,6 +19,12 @@ export interface ApiResponse<T = unknown> {
   data?: T
   message?: string
   errors?: Record<string, string[]>
+  /**
+   * HTTP status of the response, set on failures that reached the server.
+   * Absent for transport-level failures (offline, timeout, network error) so
+   * callers can tell "the server said no" apart from "the request never landed".
+   */
+  status?: number
 }
 
 /**

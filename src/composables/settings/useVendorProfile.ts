@@ -1,7 +1,8 @@
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { vendorService } from '@/services/api'
 import { apiClient } from '@/services/api/core/ApiClient'
+import { useAuthStore } from '@/stores/auth'
 import type {
   VendorProfile,
   CreateVendorProfileData,
@@ -35,6 +36,9 @@ const sharedVendorProfile = ref<VendorProfile | null>(null)
 const sharedError = ref<string | null>(null)
 let hasFetchedOnce = false
 let inFlightLoad: Promise<void> | null = null
+// The user the cached result belongs to. Signing in/out or switching accounts in
+// the same tab invalidates the cache without needing an external reset call.
+let cachedForUserId: number | null = null
 
 /**
  * Clears the shared vendor-profile cache. Must be called on logout (see App.vue's
@@ -46,11 +50,13 @@ export function resetVendorProfileCache() {
   sharedError.value = null
   hasFetchedOnce = false
   inFlightLoad = null
+  cachedForUserId = null
 }
 
 export function useVendorProfile(options: UseVendorProfileOptions = {}) {
   const { autoLoad = true } = options
   const { t } = useI18n()
+  const authStore = useAuthStore()
 
   // State
   const vendorProfile = ref<VendorProfile | null>(null)
@@ -144,6 +150,27 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
    * is set (e.g. after creating/updating the profile elsewhere).
    */
   const loadProfile = async (force = false) => {
+    // `/vendor-profile/me/` is an authenticated endpoint - firing it while signed
+    // out costs a guaranteed 401 (plus a doomed token-refresh round trip) on every
+    // page load for anonymous visitors, since the nav bars mount on public routes.
+    if (!authStore.isAuthenticated) {
+      resetVendorProfileCache()
+      vendorProfile.value = null
+      error.value = null
+      isLoading.value = false
+      resetForm()
+      return
+    }
+
+    // A cache built for a different user (or for the signed-out state) is stale.
+    const currentUserId = authStore.user?.id ?? null
+    if (cachedForUserId !== currentUserId) {
+      hasFetchedOnce = false
+      inFlightLoad = null
+      sharedVendorProfile.value = null
+      sharedError.value = null
+    }
+
     if (!force && (hasFetchedOnce || inFlightLoad)) {
       if (inFlightLoad) {
         isLoading.value = true
@@ -162,28 +189,32 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
 
     inFlightLoad = (async () => {
       try {
+        // apiClient resolves HTTP errors as { success: false, status } - it does not
+        // throw - so the 404 ("not a vendor yet") case is handled here, not in catch.
         const response = await vendorService.getMyProfile()
 
         if (response.success && response.data) {
           sharedVendorProfile.value = response.data
-        } else {
-          // 404 means user doesn't have a vendor profile yet - this is normal
-          sharedVendorProfile.value = null
-        }
-        sharedError.value = null
-        hasFetchedOnce = true
-      } catch (err: any) {
-        // 404 is expected for non-vendors
-        if (err?.status === 404 || err?.message?.includes('404')) {
+          sharedError.value = null
+          hasFetchedOnce = true
+          cachedForUserId = currentUserId
+        } else if (response.status === 404) {
+          // Normal for any account that hasn't become a vendor.
           sharedVendorProfile.value = null
           sharedError.value = null
           hasFetchedOnce = true
+          cachedForUserId = currentUserId
         } else {
-          // Genuine failure (network/500/etc) - don't cache it, so a retry
-          // (e.g. VendorTab's "Try Again" button) actually refetches.
+          // Genuine failure (401/403/500/offline) - never cache it as "not a vendor",
+          // or a verified vendor loses their listings UI for the rest of the session.
+          sharedVendorProfile.value = null
           sharedError.value = t('settings.vendor.messages.loadFailed')
-          console.error('Error loading vendor profile:', err)
+          console.error('Error loading vendor profile:', response.status, response.message)
         }
+      } catch (err: any) {
+        sharedVendorProfile.value = null
+        sharedError.value = t('settings.vendor.messages.loadFailed')
+        console.error('Error loading vendor profile:', err)
       }
     })()
 
@@ -225,6 +256,7 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
         vendorProfile.value = response.data
         sharedVendorProfile.value = response.data
         hasFetchedOnce = true
+        cachedForUserId = authStore.user?.id ?? null
         syncFormFromProfile()
         successMessage.value = t('settings.vendor.messages.createSuccess')
         return { success: true }
@@ -359,12 +391,13 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
     }, delay)
   }
 
-  // Auto-load on mount if enabled
-  onMounted(() => {
-    if (autoLoad) {
-      loadProfile()
-    }
-  })
+  // Auto-load once authenticated. Watching (rather than a plain onMounted) matters
+  // for the long-lived nav bars: they mount before auth is restored and stay mounted
+  // across sign-in, so a mount-only fetch would either fire signed-out or never
+  // re-run for a user who signs in without a full page reload.
+  if (autoLoad) {
+    watch(() => authStore.isAuthenticated, () => loadProfile(), { immediate: true })
+  }
 
   return {
     // State
