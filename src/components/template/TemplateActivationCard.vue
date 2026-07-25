@@ -2,22 +2,31 @@
   <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden">
     <!-- Where this event stands: template → payment → live. Held back until the
          payment rows are in — see `resolved`. -->
-    <div v-if="resolved" class="px-4 sm:px-6 py-4 border-b border-slate-100 bg-slate-50/40">
+    <div v-if="resolved" class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 bg-slate-50/40">
       <ActivationStepper :state="state" />
     </div>
 
-    <div class="grid grid-cols-[auto_1fr] gap-x-4 sm:gap-x-6 gap-y-4 p-4 sm:p-6">
+    <div class="grid grid-cols-[auto_1fr] gap-x-3.5 sm:gap-x-6 gap-y-4 p-4 sm:p-6">
       <!-- Preview column: the real cover screen, rendered by the same frame the
            Design Studio uses, rather than the template's marketing
            `preview_image`. The organizer has already watched this render live —
            paying against a different, static picture of it reads as a
-           downgrade, and it can't show their own content. -->
-      <div class="w-28 sm:w-40 lg:w-52 row-span-2 self-start">
+           downgrade, and it can't show their own content.
+
+           Width comes from one JS value rather than responsive classes: the
+           frame renders a real 390px-wide phone viewport and scales it down, so
+           its intrinsic content is far wider than this column. An `auto` track
+           sized against that (and `min-width: auto` on the grid item) blew the
+           column out to the frame's un-scaled width on phones, pushing the
+           template name off the card — `min-w-0` plus a measured
+           `width-override` keeps the track and the frame agreeing exactly. -->
+      <div class="min-w-0 row-span-2 self-start" :style="{ width: `${previewWidth}px` }">
         <div v-if="canPreview" class="activation-card__preview">
           <PreviewFrame
             ref="previewFrameRef"
             :label="t('management.showcasePreview.coverLabel')"
             :max-width="208"
+            :width-override="previewWidth"
             :fit-height="false"
           >
             <InertIframe :src="coverFrameUrl" />
@@ -27,8 +36,9 @@
             class="activation-card__studio-link"
             @click="emit('open-studio')"
           >
-            <Wand2 class="w-3.5 h-3.5" />
-            {{ t('management.activation.card.openStudio') }}
+            <Wand2 class="w-3.5 h-3.5 flex-shrink-0" />
+            <span class="hidden lg:inline">{{ t('management.activation.card.openStudio') }}</span>
+            <span class="lg:hidden">{{ t('management.activation.card.openStudioShort') }}</span>
           </button>
         </div>
 
@@ -67,7 +77,7 @@
 
       <!-- Identity + price -->
       <div class="min-w-0 self-start">
-        <h3 class="text-xl sm:text-2xl font-bold text-slate-900 break-words">
+        <h3 class="text-lg sm:text-2xl font-bold text-slate-900 break-words leading-snug">
           {{ template?.name || t('management.activation.card.untitledTemplate') }}
         </h3>
 
@@ -110,20 +120,27 @@
 
         <div
           v-if="state !== 'active' && template?.package_plan?.price"
-          class="mt-3 flex items-baseline gap-1.5 flex-wrap"
+          class="mt-2.5 flex items-baseline gap-1.5 flex-wrap"
         >
-          <span class="text-2xl sm:text-3xl font-bold text-slate-900">
+          <span class="text-xl sm:text-3xl font-bold text-slate-900">
             {{ formatCurrency(template.package_plan.price, 'USD') }}
           </span>
           <span class="text-sm text-slate-500">{{ t('management.templateDisplayCard.oneTime') }}</span>
         </div>
       </div>
 
-      <!-- Features + the single primary action -->
+      <!-- Features + the single primary action.
+           On phones the action comes first: the plan's feature chips are a
+           paragraph of reassurance, and pushing the one button this tab exists
+           for below them puts it off-screen. Wide layouts keep the reading
+           order (features, then the action anchored under them). -->
       <div
         class="col-span-2 lg:col-span-1 lg:col-start-2 min-w-0 flex flex-col border-t border-slate-100 pt-4 lg:border-t-0 lg:pt-0"
       >
-        <div v-if="template?.package_plan?.features?.length" class="flex-1">
+        <div
+          v-if="template?.package_plan?.features?.length"
+          class="order-2 lg:order-1 flex-1 pt-4 lg:pt-0"
+        >
           <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2.5">
             {{ t('management.templateDisplayCard.features') }}
             <span class="text-slate-400">· {{ template.package_plan.features.length }}</span>
@@ -140,12 +157,15 @@
           </ul>
         </div>
 
-        <div v-if="resolved" class="mt-4 lg:mt-6 pt-4 border-t border-slate-200">
+        <div
+          v-if="resolved"
+          class="order-1 pb-4 border-b border-slate-100 lg:order-2 lg:pb-0 lg:border-b-0 lg:mt-6 lg:pt-4 lg:border-t lg:border-slate-200"
+        >
           <!-- Unpaid: the whole reason this tab exists. -->
           <template v-if="state === 'unpaid' && canEdit">
             <button
               @click="emit('activate')"
-              class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center text-sm sm:text-base"
+              class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3.5 sm:py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center text-sm sm:text-base"
             >
               <Sparkles class="w-5 h-5 mr-2" />
               {{ t('management.activation.card.activateBtn') }}
@@ -217,6 +237,7 @@ import {
   Wand2,
 } from 'lucide-vue-next'
 import { formatCurrency } from '../../utils/currency'
+import { useMediaQuery } from '../../composables/useMediaQuery'
 import PreviewFrame from '../showcase-preview/PreviewFrame.vue'
 import InertIframe from '../showcase-preview/InertIframe.vue'
 import ActivationStepper from './ActivationStepper.vue'
@@ -252,6 +273,13 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const previewFrameRef = ref<InstanceType<typeof PreviewFrame> | null>(null)
+
+// The preview column's width, in one place, driven off the same breakpoints the
+// rest of the card uses. Given to both the column element and the frame so the
+// grid track can never disagree with what the frame scales itself to.
+const isDesktop = useMediaQuery('(min-width: 1024px)')
+const isTablet = useMediaQuery('(min-width: 640px)')
+const previewWidth = computed(() => (isDesktop.value ? 208 : isTablet.value ? 160 : 104))
 
 const coverFrameUrl = computed(() => {
   const params = new URLSearchParams({ stage: 'cover' })
@@ -303,8 +331,13 @@ const planIcon = computed(() => {
 .activation-card__studio-link {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
+  /* Roomier vertically on phones — it's the only other tap target in this
+     column, and 28px of pill is an easy thing to miss with a thumb. */
+  padding: 0.5rem 0.75rem;
+  max-width: 100%;
+  white-space: nowrap;
   font-size: 0.75rem;
   font-weight: 600;
   color: rgb(71 85 105);
@@ -312,6 +345,12 @@ const planIcon = computed(() => {
   border: 1px solid rgba(148, 163, 184, 0.25);
   border-radius: 9999px;
   transition: all 0.2s ease;
+}
+
+@media (min-width: 1024px) {
+  .activation-card__studio-link {
+    padding: 0.375rem 0.75rem;
+  }
 }
 
 .activation-card__studio-link:hover {

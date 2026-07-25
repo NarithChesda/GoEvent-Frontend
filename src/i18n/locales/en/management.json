@@ -1415,20 +1415,24 @@
       "label": "Activation progress",
       "template": {
         "title": "Template chosen",
+        "short": "Template",
         "hint": "Picked in the Design Studio"
       },
       "payment": {
         "title": "Payment submitted",
+        "short": "Payment",
         "hint": "Transfer, then upload the receipt"
       },
       "live": {
         "title": "Live for guests",
+        "short": "Live",
         "hint": "Guests can open your invitation",
         "waitingHint": "Waiting on payment confirmation"
       }
     },
     "card": {
       "openStudio": "Open in Design Studio",
+      "openStudioShort": "Studio",
       "untitledTemplate": "Selected template",
       "badgeLive": "Live",
       "badgePending": "Under review",

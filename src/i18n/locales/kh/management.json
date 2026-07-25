@@ -1415,20 +1415,24 @@
       "label": "វឌ្ឍនភាពនៃការធ្វើឱ្យសកម្ម",
       "template": {
         "title": "បានជ្រើសរើសគំរូ",
+        "short": "គំរូ",
         "hint": "ជ្រើសរើសនៅ Design Studio"
       },
       "payment": {
         "title": "បានដាក់ស្នើការទូទាត់",
+        "short": "ការទូទាត់",
         "hint": "ផ្ទេរប្រាក់ រួចផ្ទុកបង្កាន់ដៃ"
       },
       "live": {
         "title": "ផ្សាយបន្តផ្ទាល់សម្រាប់ភ្ញៀវ",
+        "short": "ផ្សាយផ្ទាល់",
         "hint": "ភ្ញៀវអាចបើកលិខិតអញ្ជើញរបស់អ្នក",
         "waitingHint": "កំពុងរង់ចាំការបញ្ជាក់ការទូទាត់"
       }
     },
     "card": {
       "openStudio": "បើកនៅ Design Studio",
+      "openStudioShort": "Studio",
       "untitledTemplate": "គំរូដែលបានជ្រើសរើស",
       "badgeLive": "ផ្សាយបន្តផ្ទាល់",
       "badgePending": "កំពុងពិនិត្យ",
