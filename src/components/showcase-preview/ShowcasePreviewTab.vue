@@ -26,6 +26,7 @@
             :initial-media="eventData?.photos || []"
             :event-data="eventData"
             :show-category-specific-sections="showCategorySpecificSections"
+            hide-header
             @media-updated="onMediaUpdated"
             @event-updated="onEditorSaved"
           />
@@ -250,6 +251,7 @@ import { Smartphone, LayoutGrid, ChevronLeft, ChevronRight, Palette, Languages }
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useEventShowcase, type TemplateAssets } from '@/composables/useEventShowcase'
 import type { Event, EventPhoto, EventTemplate } from '@/services/api'
+import { eventTemplateService } from '@/services/api'
 import PreviewFrame from './PreviewFrame.vue'
 import InertIframe from './InertIframe.vue'
 import PreviewEditorHost from './editors/PreviewEditorHost.vue'
@@ -309,11 +311,55 @@ const {
   currentLanguage,
   loadShowcase,
   refreshShowcaseData,
+  applyPreviewTemplateFallback,
 } = useEventShowcase({ eventId: props.eventId, skipMetaTags: true })
 
+// Preview-only fallback (mirrors ShowcasePreviewFrameView.vue's own): the
+// showcase endpoint nulls `template_assets` until payment is confirmed, so a
+// selected-but-unpaid template leaves THIS tab's `templateAssets` null — which
+// gates the frame list (whether the Transition frame even shows for a basic
+// wedding, see isBasicWeddingShowcase). The iframes each backfill this
+// themselves, but the tab runs its own useEventShowcase instance, so without
+// this the Transition frame silently vanishes for an unpaid basic-wedding
+// template even though the frame's own iframe (and the paid guest showcase)
+// render it. No-op once real (paid) assets are present. Keyed by the selected
+// template id, same as frameUrl's templateId param.
+const loadPreviewTemplateFallback = async () => {
+  const templateId = props.eventData?.event_template
+  if (!templateId || event.value?.template_assets) return
+  try {
+    const response = await eventTemplateService.getPublicTemplateAssets(Number(templateId))
+    // Wire shape is `{ template_data: {...} }`, not the flat TemplateAssets the
+    // service's type declares (same unwrap the frame view uses).
+    const templateData = (response.data as unknown as { template_data?: TemplateAssets } | null)
+      ?.template_data
+    if (response.success && templateData) {
+      applyPreviewTemplateFallback(templateData)
+    }
+  } catch {
+    // Non-fatal — the frame list just reflects the paid-only stage layout.
+  }
+}
+
+// Declared here (rather than down by the other template-staging logic) so it
+// exists before rendererContext's computed below reads it — that computed is
+// forced to evaluate during setup by the `immediate: true` watch(visibleFrames)
+// further down, which runs before a later `const` in this same script would
+// have initialized (a TDZ ReferenceError, not just a stale read).
+const stagedTemplateData = ref<TemplateAssets | null>(null)
+
+// While a candidate template is staged (browsing BrowseTemplateModal, before
+// Apply), the frame LIST itself (which tabs — Cover/Transition/Main — even
+// exist to look at) must reflect that candidate's stage layout, not whatever
+// template is actually still applied to the event — otherwise trying on a
+// basic-mode template never shows a "Transition" tab if the currently-applied
+// real template happens to be standard-mode (has a cover video), even though
+// every frame's own iframe content already updated via postTemplatePreview.
 const rendererContext = computed(() => ({
   event: event.value,
-  templateAssets: templateAssets.value,
+  templateAssets: stagedTemplateData.value
+    ? { standard_cover_video: stagedTemplateData.value.assets?.standard_cover_video ?? null }
+    : templateAssets.value,
   hasFeaturedPhoto: eventPhotos.value?.some((p) => p.is_featured) ?? false,
   canEdit: props.canEdit,
 }))
@@ -509,12 +555,23 @@ const setFrameRef = (id: string, el: unknown) => {
 
 // ---------------------------------------------------------------------------
 // Template live try-on: staging a template broadcasts its assets into every
-// mounted frame without touching the backend; any content save (below)
-// re-broadcasts the current staged template afterward, since a `refresh`
-// bridge message re-fetches real data and would otherwise silently cancel
-// an in-progress preview.
+// mounted frame without touching the backend (stagedTemplateData itself is
+// declared earlier, alongside rendererContext, which needs to read it) — any
+// content save (below) re-broadcasts the current staged template afterward,
+// since a `refresh` bridge message re-fetches real data and would otherwise
+// silently cancel an in-progress preview.
 // ---------------------------------------------------------------------------
-const stagedTemplateData = ref<TemplateAssets | null>(null)
+
+// BrowseTemplateModal emits BOTH `template-selected` and `preview-clear` back
+// to back on a successful Apply (its own resetModalState() fires preview-clear
+// whenever a selection was active, which it still is right after applying) —
+// so a real apply used to trigger a soft `refresh` bridge post from EACH
+// handler, then a second, hard reload once `template-applied` propagates back
+// down as a changed `eventData.event_template` (see frameUrl's templateId
+// param) and the iframe `src` actually changes. That's the "refresh happens
+// twice" glitch: two redundant soft refreshes racing a third, real reload.
+// This flag lets the imminent hard reload be the ONLY refresh that fires.
+let suppressNextStageClear = false
 
 const handleTemplateStaged = (templateData: TemplateAssets) => {
   stagedTemplateData.value = templateData
@@ -523,13 +580,28 @@ const handleTemplateStaged = (templateData: TemplateAssets) => {
 
 const handleTemplateStageCleared = () => {
   stagedTemplateData.value = null
+  if (suppressNextStageClear) {
+    suppressNextStageClear = false
+    return
+  }
   for (const frame of frameRefs.values()) frame.post('refresh')
 }
 
 const handleTemplateAppliedFromModal = (template: EventTemplate) => {
   showTemplatesModal.value = false
-  handleTemplateStageCleared()
+  suppressNextStageClear = true
+  stagedTemplateData.value = null
   emit('template-applied', template)
+  // This tab's own `templateAssets` (drives visibleFrames/the hidden-note —
+  // e.g. whether the Transition frame shows at all) come from THIS
+  // component's own useEventShowcase() instance, separate from what's fetched
+  // inside each iframe. Without this, the frame list/tab chrome kept showing
+  // the previous template's stage layout until a full page reload remounted
+  // the tab — even though the iframes themselves (via the src reload above)
+  // already reflected the newly applied template correctly. The fallback runs
+  // after so a newly applied but still-unpaid template's stage layout (e.g. a
+  // basic wedding's Transition frame) shows immediately, not only once paid.
+  refreshShowcaseData().then(loadPreviewTemplateFallback)
 }
 
 const onMediaUpdated = (media: EventPhoto[]) => {
@@ -544,13 +616,16 @@ const onEditorSaved = (updated?: Event) => {
   }
   // Silent refresh: this tab's `loading` flag gates the whole frames block,
   // so a full loadShowcase() here would unmount and reload every iframe —
-  // exactly the "page refresh" jank the silent path exists to avoid.
-  refreshShowcaseData()
+  // exactly the "page refresh" jank the silent path exists to avoid. Re-apply
+  // the unpaid-template fallback afterward, since refreshShowcaseData re-fetches
+  // real (payment-gated, possibly null) template_assets and would otherwise
+  // drop the Transition frame again for a selected-but-unpaid template.
+  refreshShowcaseData().then(loadPreviewTemplateFallback)
   if (updated) emit('event-updated', updated)
 }
 
 onMounted(() => {
-  loadShowcase()
+  loadShowcase().then(loadPreviewTemplateFallback)
   window.addEventListener('resize', updateIsNarrowViewport)
 })
 

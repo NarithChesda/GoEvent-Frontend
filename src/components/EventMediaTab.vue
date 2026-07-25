@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div v-if="!props.hideHeader" class="flex items-center justify-between">
       <div>
         <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">{{ t('management.media.title') }}</h2>
         <p class="text-xs sm:text-sm text-slate-600 mt-1">{{ t('management.media.subtitle') }}</p>
@@ -285,6 +285,10 @@ interface Props {
   initialMedia?: EventPhoto[]
   eventData?: Event
   showCategorySpecificSections?: boolean // Controls visibility of category-specific sections
+  /** Hides the title/subtitle header — set when embedded in Design Studio's
+   *  Content panel, which has its own chrome and no room for it. Left showing
+   *  when this is the full-width Showcase tab body for other categories. */
+  hideHeader?: boolean
 }
 
 const props = defineProps<Props>()
