@@ -61,63 +61,88 @@
         </div>
 
         <div class="showcase-preview-tab__header-actions">
-          <!-- Layout switch: single-frame focus vs. every visible frame side
-               by side (2 or 3, however many this event actually has). Lives
-               in the header row (rather than its own toolbar row below) to
-               save vertical space. -->
+          <!-- Activation status: whether what's on screen is actually what
+               guests get. The studio renders an unpaid template from the public
+               template assets (see loadPreviewTemplateFallback), so without
+               this the preview looks finished while guests still see nothing —
+               and it carries the Activate CTA so buying happens right here
+               instead of on another tab. -->
+          <ActivationStatusPill
+            v-if="activationResolved"
+            :state="activationState"
+            :price="activationPrice"
+            :can-edit="canEdit"
+            @activate="showPaymentDrawer = true"
+            @view-payment="emit('open-activation')"
+          />
+
+          <!-- View controls: "how am I looking at this" — frame layout and
+               preview language — as segments of ONE glass pill rather than two
+               separate floating controls. They were previously styled alike but
+               sized differently (the layout switch's 4px padding made it 8px
+               taller than the language toggle), which read as two unrelated
+               widgets that happened to share a colour. -->
           <div
-            v-if="canViewLivePreview && visibleFrames.length > 1"
-            class="showcase-preview-tab__layout-switch"
+            v-if="canViewLivePreview && (visibleFrames.length > 1 || availableLanguages.length > 1)"
+            class="showcase-preview-tab__view-controls"
             role="group"
-            :aria-label="t('management.showcasePreview.layoutSwitchLabel')"
+            :aria-label="t('management.showcasePreview.viewControlsLabel')"
           >
+            <!-- Single-frame focus vs. every visible frame side by side (2 or 3,
+                 however many this event actually has). Pointless with only one
+                 frame, so the language segment can end up alone in the pill. -->
+            <template v-if="visibleFrames.length > 1">
+              <button
+                v-for="opt in VIEW_MODE_OPTIONS"
+                :key="opt.value"
+                type="button"
+                class="showcase-preview-tab__seg"
+                :class="{ 'is-active': viewMode === opt.value }"
+                :title="t(opt.labelKey)"
+                :aria-label="t(opt.labelKey)"
+                @click="viewMode = opt.value"
+              >
+                <component :is="opt.icon" class="w-4 h-4" />
+              </button>
+            </template>
+
+            <span
+              v-if="visibleFrames.length > 1 && availableLanguages.length > 1"
+              class="showcase-preview-tab__seg-divider"
+              aria-hidden="true"
+            />
+
+            <!-- Cycles through the languages the frames render in. -->
             <button
-              v-for="opt in VIEW_MODE_OPTIONS"
-              :key="opt.value"
+              v-if="availableLanguages.length > 1"
               type="button"
-              class="showcase-preview-tab__layout-btn"
-              :class="{ 'is-active': viewMode === opt.value }"
-              :title="t(opt.labelKey)"
-              :aria-label="t(opt.labelKey)"
-              @click="viewMode = opt.value"
+              class="showcase-preview-tab__seg showcase-preview-tab__seg--lang"
+              :title="t('management.showcasePreview.switchLanguage')"
+              :aria-label="t('management.showcasePreview.switchLanguage')"
+              @click="cycleLanguage"
             >
-              <component :is="opt.icon" class="w-4 h-4" />
+              <Languages class="w-3.5 h-3.5" />
+              <span>{{ currentLanguage.toUpperCase() }}</span>
             </button>
           </div>
 
-          <!-- Language switch: cycles through the available languages the
-               preview frames render in. Lives here beside the layout switch
-               (rather than floating beside the frames themselves) so both
-               view-affecting controls sit together in one place. -->
-          <button
-            v-if="canViewLivePreview && availableLanguages.length > 1"
-            type="button"
-            class="showcase-preview-tab__lang-toggle"
-            :title="t('management.showcasePreview.switchLanguage')"
-            :aria-label="t('management.showcasePreview.switchLanguage')"
-            @click="cycleLanguage"
-          >
-            <Languages class="w-3.5 h-3.5" />
-            <span>{{ currentLanguage.toUpperCase() }}</span>
-          </button>
-
           <!-- Templates: the same browse-templates modal used elsewhere, wired
-               to broadcast a live non-destructive preview into the frames
-               while browsing (see BrowseTemplateModal.vue's
-               preview-stage/preview-clear emits) — Apply persists for real via
-               its own existing confirm flow.
-
-                -->
-
+               to broadcast a live non-destructive preview into the frames while
+               browsing (see BrowseTemplateModal.vue's preview-stage/
+               preview-clear emits) — Apply persists for real via its own
+               existing confirm flow. The studio's primary action, so it keeps
+               the brand gradient; the activation CTA beside it is deliberately
+               amber instead, since two gradients 10px apart read as two
+               competing primaries. -->
           <button
-        v-if="canEdit"
-        @click="showTemplatesModal = true"
-        class="flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 items-center text-sm sm:text-base"
-      >
-        <Palette class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-        <span>{{ t('management.templatePaymentTab.browseBtn.browse') }}</span>
-        <span class="hidden sm:inline ml-1">{{ t('management.templatePaymentTab.browseBtn.templates') }}</span>
-      </button>
+            v-if="canEdit"
+            type="button"
+            class="showcase-preview-tab__templates-btn"
+            @click="showTemplatesModal = true"
+          >
+            <Palette class="w-4 h-4" />
+            <span>{{ t('management.templatePaymentTab.browseBtn.templates') }}</span>
+          </button>
         </div>
       </div>
 
@@ -232,11 +257,26 @@
       @saved="onEditorSaved"
     />
 
+    <!-- Checkout, opened straight from the activation pill — the same drawer the
+         activation tab mounts, so there's one payment flow, not two. -->
+    <PaymentDrawer
+      v-if="canEdit"
+      :open="showPaymentDrawer"
+      :event-id="eventId"
+      :template-package="activationPackage"
+      :template-id="eventData?.event_template ?? null"
+      :template-name="activationTemplateName"
+      :current-payment="activationPayment"
+      @close="showPaymentDrawer = false"
+      @submitted="refreshActivationPayments()"
+    />
+
     <BrowseTemplateModal
       v-if="canEdit"
       :is-open="showTemplatesModal"
       :event-id="eventId"
       :event-category="eventData?.category ?? undefined"
+      :owned-template-names="ownedTemplateNames"
       @close="showTemplatesModal = false"
       @template-selected="handleTemplateAppliedFromModal"
       @preview-stage="handleTemplateStaged"
@@ -252,11 +292,14 @@ import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useEventShowcase, type TemplateAssets } from '@/composables/useEventShowcase'
 import type { Event, EventPhoto, EventTemplate } from '@/services/api'
 import { eventTemplateService } from '@/services/api'
+import { useTemplateActivation } from '@/composables/useTemplateActivation'
 import PreviewFrame from './PreviewFrame.vue'
 import InertIframe from './InertIframe.vue'
 import PreviewEditorHost from './editors/PreviewEditorHost.vue'
 import BrowseTemplateModal from '../BrowseTemplateModal.vue'
 import EventMediaTab from '../EventMediaTab.vue'
+import ActivationStatusPill from '../template/ActivationStatusPill.vue'
+import PaymentDrawer from '../template/PaymentDrawer.vue'
 import {
   resolvePreviewRenderer,
   type PreviewFrameDescriptor,
@@ -292,9 +335,46 @@ const emit = defineEmits<{
    *  emits; EventManageView merges it with the same handler it already uses
    *  for the template-payment tab's own BrowseTemplateModal usage. */
   'template-applied': [template: EventTemplate]
+  /** The organizer asked to see the payment record (pending review / receipt) —
+   *  EventManageView switches to the activation tab. */
+  'open-activation': []
 }>()
 
 const { t } = useAppLanguage()
+
+// ---------------------------------------------------------------------------
+// Activation status: shared with the activation tab so the studio pill and that
+// tab's stepper can never disagree. Drives the header pill, the unpaid frame
+// watermark, and which template/plan the inline checkout charges for.
+// ---------------------------------------------------------------------------
+const {
+  state: activationState,
+  isResolved: activationResolved,
+  price: activationPrice,
+  templateName: activationTemplateName,
+  templatePackage: activationPackage,
+  currentPayment: activationPayment,
+  payments: activationPayments,
+  loadPayments: loadActivationPayments,
+  refreshPayments: refreshActivationPayments,
+} = useTemplateActivation(() => props.eventData)
+
+const showPaymentDrawer = ref(false)
+
+/**
+ * Templates already paid for, so the browser can mark them owned rather than
+ * inviting a second purchase. Matched by name because payments carry no
+ * template id (normalized, same as the activation composable does).
+ */
+const ownedTemplateNames = computed(() => {
+  const names = new Set<string>()
+  for (const payment of activationPayments.value) {
+    if (payment.status === 'confirmed' && payment.template_name) {
+      names.add(payment.template_name.trim().toLowerCase())
+    }
+  }
+  return names
+})
 
 // Only used here to resolve the renderer/frame visibility and drive the
 // language switcher/loading/error chrome — the actual stage rendering happens
@@ -602,6 +682,10 @@ const handleTemplateAppliedFromModal = (template: EventTemplate) => {
   // after so a newly applied but still-unpaid template's stage layout (e.g. a
   // basic wedding's Transition frame) shows immediately, not only once paid.
   refreshShowcaseData().then(loadPreviewTemplateFallback)
+  // A different template means a different plan/price and (almost always) an
+  // unpaid state — re-read the payment rows so the pill stops advertising the
+  // previous template's activation status.
+  refreshActivationPayments()
 }
 
 const onMediaUpdated = (media: EventPhoto[]) => {
@@ -626,11 +710,25 @@ const onEditorSaved = (updated?: Event) => {
 
 onMounted(() => {
   loadShowcase().then(loadPreviewTemplateFallback)
+  // The activation state gates the header pill and the frame watermark, so it
+  // has to be real before the frames are worth looking at. (Explicit rather
+  // than automatic: usePaymentTemplateIntegration only self-refreshes when the
+  // selected template *changes*, and by the time it's constructed here the
+  // event's template id is already in place.)
+  loadActivationPayments()
   window.addEventListener('resize', updateIsNarrowViewport)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateIsNarrowViewport)
+})
+
+// Lets the activation tab hand template-swapping back to the one place that can
+// preview a candidate live (see its "Change template" action).
+defineExpose({
+  openTemplates: () => {
+    showTemplatesModal.value = true
+  },
 })
 </script>
 
@@ -892,59 +990,123 @@ onUnmounted(() => {
   margin-top: 0.25rem;
 }
 
+/* Studio toolbar.
+   Every control in this row is locked to one height via --studio-control-h
+   (inherited by ActivationStatusPill too, which reads the same var) and one
+   radius. Before this they were 34px / 44px / 38px / 40px tall with three
+   different corner radii and two competing brand gradients, which is why the
+   row read as four unrelated widgets rather than one toolbar. */
 .showcase-preview-tab__header-actions {
+  --studio-control-h: 2.25rem;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  flex-shrink: 0;
-}
-
-.showcase-preview-tab__templates-btn {
-  display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: rgb(51 65 85);
-  background: white;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
-  transition: all 0.2s ease;
+  /* Not allowed to grow: the header's own `space-between` then puts this row to
+     the right of the title when both fit on one line, and flush left on its own
+     line when the studio's side panel squeezes it down — which is where it
+     belongs, aligned with the title and the first preview frame rather than
+     floating off at the right edge. */
   flex-shrink: 0;
 }
 
-.showcase-preview-tab__templates-btn:hover {
-  border-color: rgba(46, 204, 113, 0.4);
-  box-shadow: 0 2px 8px rgba(46, 204, 113, 0.15);
-}
-
-/* Same glass-toggle recipe as the layout switch beside it (and
-   TimeFilterToggle.vue elsewhere in the app) — a translucent blurred pill
-   rather than an isolated solid-white bordered chip, so both header
-   controls read as one family instead of two different button languages. */
-.showcase-preview-tab__lang-toggle {
+/* One glass pill holding the layout segments and the language segment. */
+.showcase-preview-tab__view-controls {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-  padding: 0.625rem 1rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: rgb(71 85 105);
+  gap: 0.125rem;
+  height: var(--studio-control-h);
+  padding: 0 0.1875rem;
+  flex-shrink: 0;
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(46, 204, 113, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.showcase-preview-tab__seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3125rem;
+  height: 1.75rem;
+  min-width: 1.75rem;
+  padding: 0 0.3125rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: rgb(71 85 105);
   transition: all 0.2s ease;
 }
 
-.showcase-preview-tab__lang-toggle:hover {
-  color: rgb(30 41 59);
-  background: rgba(255, 255, 255, 0.8);
+.showcase-preview-tab__seg:hover {
+  color: rgb(15 23 42);
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.showcase-preview-tab__seg.is-active {
+  background: linear-gradient(to right, #2ecc71, #1e90ff);
+  color: white;
+  box-shadow: 0 2px 4px -1px rgba(46, 204, 113, 0.3);
+}
+
+/* Language segment carries a text code, so it needs a little more side room
+   than the square icon segments. */
+.showcase-preview-tab__seg--lang {
+  padding: 0 0.5rem;
+}
+
+.showcase-preview-tab__seg-divider {
+  flex-shrink: 0;
+  width: 1px;
+  height: 1.125rem;
+  margin: 0 0.125rem;
+  background: rgba(148, 163, 184, 0.35);
+}
+
+.showcase-preview-tab__templates-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4375rem;
+  height: var(--studio-control-h);
+  padding: 0 0.9375rem;
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+  background: linear-gradient(to right, #2ecc71, #1e90ff);
+  border-radius: 9999px;
+  box-shadow: 0 4px 6px -1px rgba(46, 204, 113, 0.25);
+  transition: all 0.2s ease;
+}
+
+.showcase-preview-tab__templates-btn:hover {
+  background: linear-gradient(to right, #27ae60, #1873cc);
+  box-shadow: 0 6px 10px -2px rgba(46, 204, 113, 0.32);
+  transform: translateY(-1px);
+}
+
+.showcase-preview-tab__templates-btn:active {
+  transform: translateY(0);
+}
+
+/* Narrow: the label goes, the palette icon stays — matching how the activation
+   pill drops its own label at the same width, so the whole row shrinks as one
+   thing instead of one control at a time. */
+@media (max-width: 640px) {
+  .showcase-preview-tab__templates-btn {
+    padding: 0;
+    width: var(--studio-control-h);
+  }
+
+  .showcase-preview-tab__templates-btn span {
+    display: none;
+  }
 }
 
 /* Frame picker: a minimal progress-dot timeline — dots joined by a thread,
@@ -1138,45 +1300,6 @@ onUnmounted(() => {
   .showcase-preview-tab__frame-timeline {
     flex-basis: 100%;
   }
-}
-
-/* Step-style segmented control (the app's own "glass toggle" recipe — see
-   TimeFilterToggle.vue): square icon buttons in a single connected glass
-   pill, the active step filled with the brand gradient. Same background/
-   blur/border/shadow as the language toggle beside it, so the two read as
-   one matched set of header controls rather than two different styles. */
-.showcase-preview-tab__layout-switch {
-  display: flex;
-  gap: 0.25rem;
-  padding: 0.25rem;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 9999px;
-  box-shadow: 0 2px 8px rgba(46, 204, 113, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-}
-
-.showcase-preview-tab__layout-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 9999px;
-  color: rgb(71 85 105);
-  transition: all 0.2s ease;
-}
-
-.showcase-preview-tab__layout-btn:hover {
-  color: rgb(30 41 59);
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.showcase-preview-tab__layout-btn.is-active {
-  background: linear-gradient(to right, #2ecc71, #1e90ff);
-  color: white;
-  box-shadow: 0 4px 6px -1px rgba(46, 204, 113, 0.2), 0 2px 4px -2px rgba(46, 204, 113, 0.2);
 }
 
 .showcase-preview-tab__frames {

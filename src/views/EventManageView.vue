@@ -185,6 +185,7 @@
               </div>
               <ShowcasePreviewTab
                 v-else-if="event?.id && canViewShowcasePreview"
+                ref="showcasePreviewTabRef"
                 :event-id="event.id"
                 :can-edit="event.can_edit || false"
                 :event-data="event"
@@ -193,6 +194,7 @@
                 @event-updated="handleEventUpdated"
                 @media-updated="handleMediaUpdated"
                 @template-applied="handleTemplateUpdated"
+                @open-activation="activeTab = 'template-payment'"
               />
               <EventMediaTab
                 v-else-if="event?.id"
@@ -313,8 +315,10 @@
                 ref="templatePaymentTabRef"
                 :event="event"
                 :can-edit="event.can_edit || false"
-                @template-updated="handleTemplateUpdated"
+                :can-preview="!!canViewShowcasePreview"
                 @event-updated="handleEventUpdated"
+                @open-studio="activeTab = 'design-studio'"
+                @change-template="goToStudioTemplates"
               />
             </div>
 
@@ -508,6 +512,7 @@ const agendaTabRef = ref<InstanceType<typeof EventAgendaTab> | null>(null)
 const hostsTabRef = ref<InstanceType<typeof EventHostsTab> | null>(null)
 const registrationTabRef = ref<InstanceType<typeof EventRegistrationTab> | null>(null)
 const templatePaymentTabRef = ref<InstanceType<typeof EventTemplatePaymentTab> | null>(null)
+const showcasePreviewTabRef = ref<InstanceType<typeof ShowcasePreviewTab> | null>(null)
 const guestManagementTabRef = ref<InstanceType<typeof EventGuestManagementTab> | null>(null)
 const expenseTabRef = ref<InstanceType<typeof EventExpenseTab> | null>(null)
 
@@ -924,6 +929,18 @@ const handleTemplateUpdated = (template: any) => {
     event.value.event_template_enabled = false // Keep for backward compatibility
     showMessage('success', 'Template selected successfully!')
   }
+}
+
+/**
+ * The activation tab's "Change template" action: template browsing belongs to
+ * the Design Studio (only place a candidate can be previewed live on the
+ * organizer's own content), so switch tabs and open its browser in one step —
+ * same handoff pattern as handleGuestTabChange's 'open-payment' below.
+ */
+const goToStudioTemplates = async () => {
+  activeTab.value = 'design-studio'
+  await nextTick()
+  showcasePreviewTabRef.value?.openTemplates?.()
 }
 
 const handleGuestTabChange = async (tab: string, action?: string) => {

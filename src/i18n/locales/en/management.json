@@ -376,8 +376,8 @@
     "previewMobile": "Preview",
     "designStudio": "Design Studio",
     "designStudioMobile": "Studio",
-    "templatePayment": "Template & Payment",
-    "templateMobile": "Template",
+    "templatePayment": "Activation & Billing",
+    "templateMobile": "Activation",
     "guestManagement": "Guest Management",
     "expenseTracking": "Expense Tracking",
     "expensesMobile": "Expenses",
@@ -414,6 +414,7 @@
     "mainContentLabel": "Main Content",
     "transitionNotUsed": "This template doesn't use a transition stage.",
     "layoutSwitchLabel": "Preview layout",
+    "viewControlsLabel": "Preview layout and language",
     "layoutSingle": "Show one screen",
     "layoutMultiple": "Show all screens side by side",
     "switchLanguage": "Switch preview language",
@@ -1384,12 +1385,63 @@
     "watchPreviewBtn": "Watch Template Preview",
     "activeHint": "Template is active and ready to use"
   },
+  "activation": {
+    "changeTemplate": "Change in Design Studio",
+    "changeTemplateShort": "Change",
+    "header": {
+      "descChecking": "Checking your template's activation status…",
+      "descPending": "We're reviewing your payment — your showcase goes live once it's confirmed"
+    },
+    "pill": {
+      "no-template": "No template yet",
+      "unpaid": "Preview only",
+      "pending": "Payment under review",
+      "active": "Live for guests",
+      "activateCta": "Activate",
+      "viewPayment": "View payment",
+      "viewReceipt": "View receipt"
+    },
+    "stepper": {
+      "label": "Activation progress",
+      "template": {
+        "title": "Template chosen",
+        "hint": "Picked in the Design Studio"
+      },
+      "payment": {
+        "title": "Payment submitted",
+        "hint": "Transfer, then upload the receipt"
+      },
+      "live": {
+        "title": "Live for guests",
+        "hint": "Guests can open your invitation",
+        "waitingHint": "Waiting on payment confirmation"
+      }
+    },
+    "card": {
+      "openStudio": "Open in Design Studio",
+      "untitledTemplate": "Selected template",
+      "badgeLive": "Live",
+      "badgePending": "Under review",
+      "badgePreviewOnly": "Preview only",
+      "activateBtn": "Activate template",
+      "activateHint": "Guests can't see your showcase until this is activated",
+      "pendingTitle": "Payment under review",
+      "pendingHint": "You'll be notified once it's confirmed — no further action needed.",
+      "activeTitle": "Your showcase is live",
+      "activeHint": "Guests who open your invitation link see this template."
+    },
+    "empty": {
+      "title": "No template to activate yet",
+      "description": "Templates are chosen in the Design Studio, where you can try each one on your own invitation before deciding. Come back here to activate it for guests.",
+      "cta": "Open Design Studio"
+    }
+  },
   "templatePaymentTab": {
     "header": {
-      "title": "Template & Payment",
+      "title": "Activation & Billing",
       "descActive": "Your template is active and ready to use",
-      "descPendingPayment": "Complete payment to activate your template",
-      "descNoTemplate": "Select a template and complete payment"
+      "descPendingPayment": "Activate your template so guests can see your showcase",
+      "descNoTemplate": "Choose a template in the Design Studio, then activate it here"
     },
     "browseBtn": {
       "browse": "Browse",
@@ -1416,6 +1468,7 @@
     },
     "paymentDrawer": {
       "title": "Make Payment",
+      "close": "Close",
       "currentPayment": "Current payment",
       "total": "Total",
       "promoPlaceholder": "Promo",
