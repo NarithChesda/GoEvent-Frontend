@@ -11,7 +11,13 @@
     @keydown.enter.stop.prevent="request"
   >
     <slot />
-    <span class="editable-region__badge" aria-hidden="true">✎ {{ label }}</span>
+    <span class="editable-region__badge" aria-hidden="true">
+      <span class="editable-region__badge-icon">✎</span>
+      <!-- Separately targetable so hints mode (touch) can keep the pencil and
+           drop the wording — N labelled badges at once would bury the
+           invitation they're annotating. -->
+      <span class="editable-region__badge-text">{{ label }}</span>
+    </span>
   </div>
 
   <!-- Production / read-only preview: bare slot, no wrapper element at all -->
@@ -111,4 +117,14 @@ const request = () => ctx?.requestEdit(props.intent)
 .editable-region:focus-visible .editable-region__badge {
   display: inline-flex;
 }
+
+/* The persistent "hints mode" variant of the affordance above (touch has no
+   hover to reveal it) is NOT defined here — it lives in
+   ShowcasePreviewFrameView's own scoped block, which owns the
+   `.preview-hints-on` root class and reaches in with :deep().
+   Do not reach the other way with `:global(.preview-hints-on) .editable-region`:
+   Vue's scoped-CSS transform drops the descendant compound from a selector
+   that starts with :global(), silently compiling that to a bare
+   `.preview-hints-on { ... }` — which applies the declarations to the stage
+   root instead of the regions. */
 </style>

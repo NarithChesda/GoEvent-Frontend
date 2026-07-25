@@ -3,11 +3,15 @@
     <!-- Content panel: a true extension of EventNavigationTabs.vue's own
          fixed icon sidebar — same top/height/glass background, docked right
          at its trailing edge with zero gap, sliding out in place (not a
-         floating card). Becomes a full-screen overlay below the app
-         sidebar's own `lg` breakpoint — see the max-width: 1023px block in
-         <style>. -->
+         floating card).
+         Desktop only. Below `lg` this used to become a full-screen drawer over
+         the whole app (header included) opened by a 24px-wide chevron — two
+         problems at once: an under-minimum tap target, and a modal covering
+         the page you were meant to be editing *alongside*. On mobile the edit
+         forms are the page itself instead (see .showcase-studio__mobile-body),
+         so there's no drawer and no handle. -->
     <div
-      v-if="canEdit"
+      v-if="canEdit && !isMobileStudio"
       class="showcase-studio__panel-shell"
       :class="{ 'is-open': panelMode === 'content' }"
     >
@@ -35,7 +39,7 @@
     </div>
 
     <button
-      v-if="canEdit"
+      v-if="canEdit && !isMobileStudio"
       type="button"
       class="showcase-studio__panel-toggle"
       :class="{ 'is-open': panelMode === 'content' }"
@@ -48,13 +52,10 @@
     </button>
 
     <div
-      v-if="canEdit && panelMode === 'content'"
-      class="showcase-studio__panel-backdrop"
-      @click="togglePanel"
-    />
-
-    <div class="showcase-studio__main" :class="{ 'is-shrunk': panelMode === 'content' }">
-      <div class="showcase-preview-tab__header">
+      class="showcase-studio__main"
+      :class="{ 'is-shrunk': !isMobileStudio && panelMode === 'content' }"
+    >
+      <div v-if="!isMobileStudio" class="showcase-preview-tab__header">
         <div>
           <h2 class="showcase-preview-tab__title">{{ t('management.showcasePreview.title') }}</h2>
           <p class="showcase-preview-tab__subtitle">{{ t('management.showcasePreview.subtitle') }}</p>
@@ -146,7 +147,88 @@
         </div>
       </div>
 
-      <div v-if="loading" class="showcase-preview-tab__loading">
+      <!-- Mobile toolbar. The desktop header's title + subtitle are dropped
+           rather than stacked: the mobile tab bar sitting directly above
+           already names this tab, and those two lines cost ~90px of a ~730px
+           usable fold to repeat what the user just tapped.
+           Sticky, because the edit surface below it is ~10 accordion sections
+           long and Preview has to stay one tap away from wherever you are in
+           it. -->
+      <div v-else class="studio-mobile-bar">
+        <ActivationStatusPill
+          v-if="activationResolved"
+          :state="activationState"
+          :price="activationPrice"
+          :can-edit="canEdit"
+          @activate="showPaymentDrawer = true"
+          @view-payment="emit('open-activation')"
+        />
+
+        <span v-else class="studio-mobile-bar__spacer" />
+
+        <button
+          v-if="canEdit"
+          type="button"
+          class="showcase-preview-tab__templates-btn"
+          :title="t('management.templatePaymentTab.browseBtn.templates')"
+          :aria-label="t('management.templatePaymentTab.browseBtn.templates')"
+          @click="showTemplatesModal = true"
+        >
+          <Palette class="w-4 h-4" />
+          <span>{{ t('management.templatePaymentTab.browseBtn.templates') }}</span>
+        </button>
+
+        <!-- The mobile studio's primary action, and deliberately NOT a FAB:
+             the bottom-right corner on mobile is already a coordinated stack
+             (MobileTabBar at bottom-0/z-70, the primary FAB slot at bottom-20,
+             ContactUsFAB above that via its own hasFabBelow prop), so a fourth
+             floating button there would either hide under the tab bar or force
+             this tab to negotiate that stack from the inside. It also belongs
+             here on the merits — it's a view control, next to the other view
+             control. -->
+        <button
+          v-if="canViewLivePreview && event?.id && !loading"
+          type="button"
+          class="studio-preview-btn"
+          @click="mobilePreviewOpen = true"
+        >
+          <Eye class="w-4 h-4 flex-shrink-0" />
+          <span>{{ t('management.showcasePreview.mobilePreview.open') }}</span>
+        </button>
+      </div>
+
+      <!-- Mobile: the edit forms ARE the page, and the preview is a full-screen
+           sheet reached from the toolbar above. The desktop side-by-side split
+           can't survive here — there is no width for a phone-shaped frame
+           beside a form column, and the previous fallback (stacking near
+           full-width frames down the page) also created a hard scroll trap,
+           since a finger on an editable frame reaches the iframe (whose
+           cover/transition stages don't scroll) and never the page behind it.
+           Running the forms full-width also drops the ~440px-panel
+           compensations further down in <style> — labels, subtitles and
+           section chevrons all come back. -->
+      <template v-if="isMobileStudio">
+        <div v-if="error" class="showcase-preview-tab__error">{{ error }}</div>
+
+        <div v-if="canEdit" class="showcase-studio__mobile-body">
+          <EventMediaTab
+            :event-id="eventId"
+            :can-edit="canEdit"
+            :initial-media="eventData?.photos || []"
+            :event-data="eventData"
+            :show-category-specific-sections="showCategorySpecificSections"
+            hide-header
+            @media-updated="onMediaUpdated"
+            @event-updated="onEditorSaved"
+          />
+        </div>
+
+        <p v-else class="showcase-preview-tab__no-preview">
+          {{ t('management.showcasePreview.mobilePreview.readOnly') }}
+        </p>
+      </template>
+
+      <div v-else-if="loading" class="showcase-preview-tab__loading">
         <div class="showcase-preview-tab__spinner" />
         <span>{{ t('management.media.loading') }}</span>
       </div>
@@ -214,7 +296,6 @@
                 v-show="viewMode === 'single' ? activeFrameId === frame.id : true"
                 :ref="(el) => setPreviewFrameRef(frame.id, el)"
                 :label="t(frame.labelKey)"
-                :fit-height="viewMode === 'single' || !isNarrowViewport"
                 :width-override="viewMode === 'multiple' ? sharedColumnWidth : undefined"
               >
                 <InertIframe
@@ -246,6 +327,25 @@
         {{ t('management.showcasePreview.noLivePreview') }}
       </p>
     </div>
+
+    <!-- Frames exist only while this is open, which also means mobile no longer
+         keeps 2–3 showcase iframes (each with its own videos) mounted for the
+         whole session just to sit off-screen. -->
+    <MobilePreviewSheet
+      v-if="isMobileStudio && canViewLivePreview && event?.id"
+      :open="mobilePreviewOpen"
+      :frames="visibleFrames"
+      :frame-url="frameUrl"
+      :can-edit="canEdit"
+      :languages="availableLanguages"
+      :current-language="currentLanguage"
+      :activation-state="activationResolved ? activationState : undefined"
+      :staged-template="stagedTemplateData"
+      :register-frame="setFrameRef"
+      @close="mobilePreviewOpen = false"
+      @cycle-language="cycleLanguage"
+      @activate="showPaymentDrawer = true"
+    />
 
     <!-- Parent-side editors for edit intents posted by the frames (logo
          replace, gmap embed, host image, photo uploads) — full-size here in
@@ -286,15 +386,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, computed, ref, nextTick, watch, inject, type Ref } from 'vue'
-import { Smartphone, LayoutGrid, ChevronLeft, ChevronRight, Palette, Languages } from 'lucide-vue-next'
+import { onMounted, computed, ref, nextTick, watch, inject, type Ref } from 'vue'
+import { Smartphone, LayoutGrid, ChevronLeft, ChevronRight, Palette, Languages, Eye } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useEventShowcase, type TemplateAssets } from '@/composables/useEventShowcase'
 import type { Event, EventPhoto, EventTemplate } from '@/services/api'
 import { eventTemplateService } from '@/services/api'
 import { useTemplateActivation } from '@/composables/useTemplateActivation'
 import PreviewFrame from './PreviewFrame.vue'
 import InertIframe from './InertIframe.vue'
+import MobilePreviewSheet from './MobilePreviewSheet.vue'
 import PreviewEditorHost from './editors/PreviewEditorHost.vue'
 import BrowseTemplateModal from '../BrowseTemplateModal.vue'
 import EventMediaTab from '../EventMediaTab.vue'
@@ -470,6 +572,29 @@ const cycleLanguage = () => {
 }
 
 // ---------------------------------------------------------------------------
+// Mobile studio: below `lg` the split-pane studio doesn't fit, and forcing it
+// produced the layout this replaces — a fixed drawer of edit forms over the
+// whole app, plus near-full-width phone frames stacked down the page that a
+// finger couldn't scroll past. So the two halves separate below this boundary:
+// the page becomes the edit surface, and the preview becomes a full-screen
+// sheet (MobilePreviewSheet).
+//
+// `lg` and not the frames' old 768px: it's the same boundary the app's own
+// chrome uses (EventNavigationTabs' icon rail hides here in favour of the
+// mobile tab bar), and tablet portrait has no more room for a phone frame
+// beside a form column than a phone does — 768 − 440 leaves ~300px.
+// ---------------------------------------------------------------------------
+const isMobileStudio = useMediaQuery('(max-width: 1023px)')
+
+const mobilePreviewOpen = ref(false)
+
+// Crossing back to desktop makes the sheet redundant (the frames are on the
+// page again) and would otherwise leave `body { overflow: hidden }` behind.
+watch(isMobileStudio, (mobile) => {
+  if (!mobile) mobilePreviewOpen.value = false
+})
+
+// ---------------------------------------------------------------------------
 // Content panel positioning: the panel is a true extension of
 // EventNavigationTabs.vue's own fixed icon sidebar (same left edge, right at
 // its trailing 88px-wide rail), so it needs the exact same
@@ -586,20 +711,11 @@ const setFramesContainerRef = (el: unknown) => {
   framesResizeObserver.observe(element)
 }
 
-// Below this width the `--cols-2`/`--cols-3` CSS falls back to stacking
-// full-width (not enough room for real phone-sized frames side by side —
-// see the `max-width: 768px` rule below); the column-width override must
-// stand down there too, or it'd still hand each frame a divided width while
-// CSS gives it the whole row. (Separate from the panel's own lg breakpoint —
-// see the max-width: 1023px block in <style>.)
-const NARROW_VIEWPORT_PX = 768
-const isNarrowViewport = ref(typeof window !== 'undefined' ? window.innerWidth <= NARROW_VIEWPORT_PX : false)
-const updateIsNarrowViewport = () => {
-  isNarrowViewport.value = window.innerWidth <= NARROW_VIEWPORT_PX
-}
-
+// Only ever mounted on desktop now (the frames row is `!isMobileStudio`), so
+// there's no narrow-viewport case left to stand down for — the grid always has
+// room for one real phone-sized frame per column.
 const sharedColumnWidth = computed(() => {
-  if (viewMode.value !== 'multiple' || isNarrowViewport.value) return undefined
+  if (viewMode.value !== 'multiple') return undefined
   const cols = Math.max(visibleFrames.value.length, 1)
   return Math.max((framesContainerWidth.value - FRAMES_GRID_GAP_PX * (cols - 1)) / cols, 0)
 })
@@ -716,11 +832,6 @@ onMounted(() => {
   // selected template *changes*, and by the time it's constructed here the
   // event's template id is already in place.)
   loadActivationPayments()
-  window.addEventListener('resize', updateIsNarrowViewport)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', updateIsNarrowViewport)
 })
 
 // Lets the activation tab hand template-swapping back to the one place that can
@@ -921,53 +1032,10 @@ defineExpose({
   background: rgba(255, 255, 255, 0.95);
 }
 
-.showcase-studio__panel-backdrop {
-  display: none;
-}
-
-/* Below the app's own desktop-sidebar breakpoint (`lg`, matches
-   EventNavigationTabs.vue, whose icon rail hides here in favor of the mobile
-   tab bar) the panel becomes a full-screen overlay from the true left edge
-   instead of hugging a now-hidden sidebar, with a backdrop to close it.
-   There's no rail to preserve here, so this keeps the simple translateX
-   slide (the desktop width-grow trick above exists specifically to avoid
-   sliding over the rail) — width is a real, constant value the whole time
-   instead of the desktop's 0→440px reveal, so it overrides the base rule's
-   `width` transition back to `transform`. */
-@media (max-width: 1023px) {
-  .showcase-studio__panel-shell {
-    left: 0;
-    top: 0;
-    height: 100vh;
-    width: min(470px, 88vw);
-    z-index: 60;
-    transform: translateX(-100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 4px 0 24px rgba(15, 23, 42, 0.15);
-  }
-
-  .showcase-studio__panel-shell.is-open {
-    width: min(470px, 88vw);
-    transform: translateX(0);
-  }
-
-  .showcase-studio__panel-toggle {
-    left: 0;
-    z-index: 61;
-  }
-
-  .showcase-studio__panel-toggle.is-open {
-    left: min(470px, 88vw);
-  }
-
-  .showcase-studio__panel-backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 59;
-    background: rgba(15, 23, 42, 0.4);
-  }
-}
+/* The panel and its handle are desktop-only (`!isMobileStudio`), so there's no
+   below-`lg` variant of them any more — the mobile studio runs the same
+   EventMediaTab inline at full width instead. See
+   .showcase-studio__mobile-body. */
 
 .showcase-preview-tab__header {
   display: flex;
@@ -1008,6 +1076,117 @@ defineExpose({
      belongs, aligned with the title and the first preview frame rather than
      floating off at the right edge. */
   flex-shrink: 0;
+}
+
+/* Mobile toolbar: activation status, Templates, Preview — on one row, with the
+   title/subtitle block dropped entirely (see the template). Controls are 44px
+   here rather than the desktop 36px: this row is thumb input, not mouse input.
+
+   Sticky below the app's own two fixed bars (the 4rem header + the 52px
+   EventManageMobileTabBar, whose spacer sits in flow — see EventManageView),
+   and bled out past .showcase-studio__main's 1rem gutters so scrolling form
+   cards pass behind it rather than beside it. */
+.studio-mobile-bar {
+  --studio-control-h: 2.75rem;
+  position: sticky;
+  top: calc(4rem + 52px);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 -1rem 1rem -1rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(
+    135deg,
+    rgba(248, 255, 254, 0.92) 0%,
+    rgba(240, 253, 249, 0.92) 50%,
+    rgba(240, 249, 255, 0.92) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.studio-mobile-bar__spacer {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* ActivationStatusPill's own ≤640px rule drops its wording, which is right in
+   the desktop toolbar (four controls competing for one row) but here left a
+   bare pulsing dot — a status indicator showing no status. This row has the
+   slack, so the label comes back; the pill takes up the slack and ellipsizes
+   on the widest state (unpaid, which also carries an Activate CTA) instead of
+   pushing the buttons off the row. */
+.studio-mobile-bar :deep(.activation-pill) {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.studio-mobile-bar :deep(.activation-pill__label) {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Templates steps down to a glass icon button here: Preview is this row's
+   primary action (the edit forms are already the page), and two gradient
+   buttons 8px apart read as two competing primaries — the same reasoning that
+   makes the desktop activation CTA amber. */
+.studio-mobile-bar .showcase-preview-tab__templates-btn {
+  width: var(--studio-control-h);
+  padding: 0;
+  color: rgb(71 85 105);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  box-shadow: none;
+}
+
+.studio-mobile-bar .showcase-preview-tab__templates-btn span {
+  display: none;
+}
+
+.studio-preview-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4375rem;
+  height: var(--studio-control-h);
+  padding: 0 1rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+  background: linear-gradient(to right, #2ecc71, #1e90ff);
+  border-radius: 9999px;
+  box-shadow: 0 4px 6px -1px rgba(46, 204, 113, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.studio-preview-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 4px -1px rgba(46, 204, 113, 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-preview-btn {
+    transition: none;
+  }
+
+  .studio-preview-btn:active {
+    transform: none;
+  }
+}
+
+/* Full-width edit forms. Deliberately free of the `:deep()` compensations the
+   440px panel needs above: at this width the section subtitles, "Add X" labels
+   and expand chevrons all fit, and on touch those affordances matter more than
+   they do under a mouse. Bottom padding clears MobileTabBar + the FAB stack
+   above it. */
+.showcase-studio__mobile-body {
+  padding-bottom: 6rem;
 }
 
 /* One glass pill holding the layout segments and the language segment. */
@@ -1277,29 +1456,13 @@ defineExpose({
 }
 
 /* Row: frame picker column + frames, as genuine flex siblings (see the
-   .frame-timeline comment above for why this replaced absolute
-   positioning). Wraps on narrow viewports so the picker sits above the
-   (already full-width-stacked, see the max-width:768px block below) frames
-   instead of squeezing them for width they don't have to spare. */
+   .frame-timeline comment above for why this replaced absolute positioning).
+   Desktop-only, so it has no narrow-viewport wrap case — below `lg` the whole
+   frames row is replaced by MobilePreviewSheet. */
 .showcase-preview-tab__frames-row {
   display: flex;
   align-items: center;
   gap: 1.25rem;
-}
-
-@media (max-width: 768px) {
-  .showcase-preview-tab__frames-row {
-    flex-wrap: wrap;
-  }
-
-  /* Not enough width to spare a whole column for this alongside a
-     full-width-stacked frame (see the frames breakpoint further below) — it
-     takes the row to itself and wraps above instead, keeping its normal
-     (vertical picker) layout rather than needing a second, horizontal
-     variant of the same component. */
-  .showcase-preview-tab__frame-timeline {
-    flex-basis: 100%;
-  }
 }
 
 .showcase-preview-tab__frames {
@@ -1336,17 +1499,6 @@ defineExpose({
 
 .showcase-preview-tab__frames--cols-3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-/* Not enough width for real phone-sized frames side by side below tablet
-   width — fall back to single-column stacking instead of squeezing them. */
-@media (max-width: 768px) {
-  .showcase-preview-tab__frames--cols-2,
-  .showcase-preview-tab__frames--cols-3 {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-  }
 }
 
 .showcase-preview-tab__transition-note {

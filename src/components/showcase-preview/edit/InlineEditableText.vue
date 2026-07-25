@@ -99,6 +99,13 @@ const setInputRef = (el: unknown) => {
   if (input && document.activeElement !== input) {
     input.focus()
     input.select()
+    // Touch: the on-screen keyboard covers roughly the bottom half of the
+    // frame, and the frame itself is a fixed-height viewport that can't shrink
+    // to make room — so anything below the fold is edited blind unless it's
+    // pulled to the middle first.
+    if (window.matchMedia?.('(pointer: coarse)').matches) {
+      input.scrollIntoView({ block: 'center' })
+    }
   }
 }
 </script>
@@ -140,6 +147,21 @@ const setInputRef = (el: unknown) => {
 .is-saving .inline-editable__display {
   opacity: 0.55;
   pointer-events: none;
+}
+
+/* The persistent "hints mode" variant of the hover affordances above lives in
+   ShowcasePreviewFrameView's scoped block (it owns the `.preview-hints-on`
+   root class and reaches in with :deep()) — see the note in EditableRegion.vue
+   for why it must not be written here as `:global(.preview-hints-on) .x`. */
+
+/* iOS auto-zooms the whole frame when a focused field computes under 16px,
+   which on a transform-scaled preview leaves the caret nowhere near the
+   finger. The showcase's own type is often larger than this anyway, so the
+   floor only bites on the small strings. */
+@media (pointer: coarse) {
+  .inline-editable__input {
+    font-size: max(1em, 16px);
+  }
 }
 
 .inline-editable__input {

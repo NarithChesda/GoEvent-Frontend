@@ -5,6 +5,7 @@
       class="inert-iframe__frame"
       :class="{ 'inert-iframe__frame--interactive': interactive }"
       :src="src"
+      @load="emit('loaded')"
     />
     <!-- Transparent shield: blocks clicks/taps from reaching the live showcase
          page inside the iframe (real RSVP submission, comments, map/video
@@ -49,6 +50,13 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  /** The frame's document finished loading, so it now has a message listener
+   *  and any state the parent holds (edit hints, a staged template) can
+   *  actually be delivered. Posting before this silently no-ops. */
+  loaded: []
+}>()
 
 const iframeRef = ref<HTMLIFrameElement | null>(null)
 

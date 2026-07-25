@@ -9,11 +9,15 @@ import type { TemplateAssets } from '@/composables/useEventShowcase'
  *   frame → parent : edit intents (media/embed edits that need full-size UI)
  *   parent → frame : replay (re-run a frame's mount animation),
  *                    refresh (refetch showcase data after a parent-side save),
- *                    preview-template (live, non-destructive template try-on)
+ *                    preview-template (live, non-destructive template try-on),
+ *                    edit-hints-on/off (persistently outline the editable
+ *                      parts — the only discoverable affordance on touch,
+ *                      where the hover states these normally rely on can
+ *                      never fire)
  */
 export const PREVIEW_BRIDGE_SOURCE = 'goevent-showcase-preview'
 
-export type ParentToFrameType = 'replay' | 'refresh'
+export type ParentToFrameType = 'replay' | 'refresh' | 'edit-hints-on' | 'edit-hints-off'
 
 export type PreviewBridgeMessage =
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: ParentToFrameType }

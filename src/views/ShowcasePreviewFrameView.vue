@@ -1,7 +1,7 @@
 <template>
   <div
     class="preview-frame-stage"
-    :class="{ 'preview-editable-mode': isEditable }"
+    :class="{ 'preview-editable-mode': isEditable, 'preview-hints-on': isEditable && editHintsOn }"
     :style="{ backgroundColor: backgroundColor || primaryColor || '#000' }"
   >
     <LoadingSpinner v-if="loading" :primary-color="primaryColor" message="Loading event invitation..." />
@@ -94,12 +94,26 @@ if (route.query.editable === '1') {
 // flashing a spinner and replaying every mount animation.
 const replayKey = ref(0)
 
+// Persistent edit outlines. The inline-edit/edit-region affordances are
+// hover-revealed, which means they simply don't exist on a touch device — so
+// the parent (the mobile preview sheet) turns them on permanently there. Off
+// by default so the desktop studio keeps its clean hover-to-reveal preview.
+//
+// The INITIAL value comes from the URL, not the bridge: a frame that mounts
+// wanting hints on would otherwise depend on the parent's post arriving after
+// this listener is attached but before the user looks at it. Toggling
+// afterwards still goes over the bridge, so flipping it never reloads the
+// frame.
+const editHintsOn = ref(route.query.hints === '1')
+
 const onFrameMessage = (msg: MessageEvent) => {
   const parsed = parsePreviewBridgeMessage(msg)
   if (!parsed) return
   if (parsed.type === 'replay') replayKey.value++
   if (parsed.type === 'refresh') refreshShowcaseData().then(loadPreviewTemplateFallback)
   if (parsed.type === 'preview-template') setStagedTemplatePreview(parsed.templateData)
+  if (parsed.type === 'edit-hints-on') editHintsOn.value = true
+  if (parsed.type === 'edit-hints-off') editHintsOn.value = false
 }
 
 // Preview-only fallback: ShowcasePreviewTab passes ?templateId=<id> whenever
@@ -188,5 +202,60 @@ onUnmounted(() => {
 /* Belt-and-braces reinforcement of the [data-preview-safe] whitelist */
 .preview-editable-mode :deep([data-preview-safe] :is(a, button, input, select, [role='button'])) {
   pointer-events: auto !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Hints mode: the edit affordances made permanent.
+   InlineEditableText and EditableRegion reveal themselves on :hover, which
+   simply never fires on a touch device — so the mobile preview sheet had no
+   way to tell an editable part of the invitation from a decorative one. It
+   asks for this mode over the bridge (edit-hints-on) or via ?hints=1.
+
+   Defined here rather than in those two components because the
+   `.preview-hints-on` hook is on THIS component's root, and :deep() is the
+   only direction that compiles correctly — a child writing
+   `:global(.preview-hints-on) .editable-region` gets its descendant compound
+   silently dropped, leaving a bare `.preview-hints-on { ... }` that restyles
+   this stage root instead. Specificity here is one class higher than each
+   child's own rule (the scope attribute lands on `.preview-hints-on`), so
+   these win without !important.
+   --------------------------------------------------------------------------- */
+
+/* Lighter than the hover outline on purpose: every editable region lights up
+   at once, so it has to read as a hint, not a selection. */
+.preview-hints-on :deep(.editable-region) {
+  outline-color: rgba(30, 144, 255, 0.5);
+}
+
+/* Pencil only, no wording — N labelled badges at once would bury the
+   invitation they annotate. Hovering one (a pointer device in hints mode)
+   still expands it to the full label via the child's own hover rule. */
+.preview-hints-on :deep(.editable-region__badge) {
+  display: inline-flex;
+  padding: 0.25rem;
+}
+
+.preview-hints-on :deep(.editable-region:not(:hover) .editable-region__badge-text) {
+  display: none;
+}
+
+.preview-hints-on :deep(.inline-editable__display) {
+  outline-color: rgba(30, 144, 255, 0.4);
+}
+
+/* The child only declares this ::after under :hover, so it's spelled out in
+   full here rather than re-enabled. */
+.preview-hints-on :deep(.inline-editable__display)::after {
+  content: '✎';
+  position: absolute;
+  top: -0.4em;
+  right: -0.2em;
+  font-size: 0.7em;
+  line-height: 1;
+  color: #1e90ff;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  padding: 0.22em;
+  pointer-events: none;
 }
 </style>

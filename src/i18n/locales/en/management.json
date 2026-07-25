@@ -425,6 +425,16 @@
       "title": "Access Restricted",
       "description": "Only the event organizer and collaborators can view the live preview."
     },
+    "mobilePreview": {
+      "open": "Preview",
+      "title": "Live preview",
+      "close": "Close preview",
+      "editHints": "Highlight editable parts",
+      "editHintsTip": "Tap the highlighted parts to edit them",
+      "previewOnly": "Guests can't see this yet",
+      "readOnly": "You have view-only access — tap Preview to see the showcase.",
+      "editHintsOff": "Highlights off — this is how guests see it"
+    },
     "editors": {
       "replaceLogo": "Replace logo",
       "editMap": "Edit map",
