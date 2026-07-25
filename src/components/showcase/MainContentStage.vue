@@ -137,6 +137,7 @@
                     :sample-logo-two="templateAssets?.sample_logo_2"
                     :first-host-image="firstHostImage"
                     :first-host-name="firstHostName"
+                    :first-host-id="firstHostId"
                     :host-clip-style="hostClipStyle"
                     :design-type="hostInfoDesign?.type"
                   />
@@ -1069,6 +1070,7 @@ const hostClipStyle = computed<Record<string, string>>(() => ({
 const firstHost = computed(() => props.hosts[0])
 const firstHostImage = computed(() => firstHost.value?.profile_image ?? null)
 const firstHostName = computed(() => firstHost.value?.name ?? '')
+const firstHostId = computed(() => firstHost.value?.id ?? null)
 
 // Animation type from prop with fallback to 'decoration'
 const currentAnimationType = computed(() => props.animationType || 'decoration')

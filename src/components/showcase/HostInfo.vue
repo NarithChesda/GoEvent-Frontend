@@ -43,6 +43,8 @@ interface Props {
   firstHostImage?: string | null
   /** First host display name — used as alt text for the clipped host image. */
   firstHostName?: string
+  /** First host id — routes the preview editor to the host drawer when sample_logo_2 frames that host's photo. */
+  firstHostId?: number | null
   /** CSS variables (--host-clip-offset-*) from cover_stage_layout for panning the host photo inside the clip shape. */
   hostClipStyle?: Record<string, string>
   /** Host info block design from template (standard | simple). Forwarded to the layout variant. */

@@ -20,47 +20,52 @@
       :key="`avatar-${currentLanguage}`"
       class="flex justify-center mb-3 sm:mb-4"
     >
-      <div
-        class="avatar-container bounce-in-element"
-        :style="{ ...avatarContainerStyle, animationDelay: `${animationDelays.profile}s` }"
-      >
-        <div class="sample-logo-stack">
-          <img
-            v-if="resolvedBaseLogoSrc"
-            :src="resolvedBaseLogoSrc"
-            :alt="`${hosts[0]?.name || ''} logo`"
-            class="sample-logo sample-logo-base"
-            fetchpriority="high"
-          />
-          <div
-            v-else
-            class="sample-logo-base fallback-logo-container"
-            :style="fallbackLogoStyle"
-          >
-            <div class="fallback-logo" v-html="processedFallbackLogo" />
-          </div>
-          <!-- Host image clipped into sample_logo_2's shape -->
-          <div v-if="showClippedHost" class="sample-logo-shape-layer" aria-hidden="false">
-            <div class="host-clip-box" :style="hostClipBoxStyle">
-              <img
-                :src="getMediaUrl(firstHostImage as string)"
-                :alt="firstHostName || hosts[0]?.name || 'host'"
-                class="clipped-host-image"
-                :style="clippedHostStyle"
-                fetchpriority="high"
-              />
+      <!-- EditableRegion wraps the avatar rather than replacing its container:
+           in production it collapses to a bare slot, so avatar-container must
+           keep carrying its own sizing/animation classes. -->
+      <EditableRegion :intent="logoEditIntent">
+        <div
+          class="avatar-container bounce-in-element"
+          :style="{ ...avatarContainerStyle, animationDelay: `${animationDelays.profile}s` }"
+        >
+          <div class="sample-logo-stack">
+            <img
+              v-if="resolvedBaseLogoSrc"
+              :src="resolvedBaseLogoSrc"
+              :alt="`${hosts[0]?.name || ''} logo`"
+              class="sample-logo sample-logo-base"
+              fetchpriority="high"
+            />
+            <div
+              v-else
+              class="sample-logo-base fallback-logo-container"
+              :style="fallbackLogoStyle"
+            >
+              <div class="fallback-logo" v-html="processedFallbackLogo" />
             </div>
+            <!-- Host image clipped into sample_logo_2's shape -->
+            <div v-if="showClippedHost" class="sample-logo-shape-layer" aria-hidden="false">
+              <div class="host-clip-box" :style="hostClipBoxStyle">
+                <img
+                  :src="getMediaUrl(firstHostImage as string)"
+                  :alt="firstHostName || hosts[0]?.name || 'host'"
+                  class="clipped-host-image"
+                  :style="clippedHostStyle"
+                  fetchpriority="high"
+                />
+              </div>
+            </div>
+            <!-- Fallback: plain sample_logo_2 overlay when host image missing or bounds unavailable -->
+            <img
+              v-else-if="sampleLogoTwo"
+              :src="getMediaUrl(sampleLogoTwo)"
+              :alt="`${hosts[0]?.name || ''} logo overlay`"
+              class="sample-logo sample-logo-overlay"
+              fetchpriority="high"
+            />
           </div>
-          <!-- Fallback: plain sample_logo_2 overlay when host image missing or bounds unavailable -->
-          <img
-            v-else-if="sampleLogoTwo"
-            :src="getMediaUrl(sampleLogoTwo)"
-            :alt="`${hosts[0]?.name || ''} logo overlay`"
-            class="sample-logo sample-logo-overlay"
-            fetchpriority="high"
-          />
         </div>
-      </div>
+      </EditableRegion>
     </div>
 
     <!-- Host Name (rendered under the avatar only when the template opts in via showHostNameUnderLogo) -->
@@ -83,6 +88,8 @@
 import { computed, ref, watch } from 'vue'
 import type { HostInfoProps } from '@/types/showcase'
 import { useShapeMaskBounds } from '@/composables/showcase/useShapeMaskBounds'
+import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
+import type { EditIntent } from '@/components/showcase-preview/edit/editContext'
 import {
   WelcomeHeader,
   getMediaUrl,
@@ -160,6 +167,15 @@ const { bounds: shapeBounds } = useShapeMaskBounds(sampleLogoTwoUrl)
 
 const showClippedHost = computed(
   () => !!props.sampleLogoTwo && !!props.firstHostImage && !!shapeBounds.value,
+)
+
+// Mirrors CoverContentRows: when sample_logo_2 is framing the first host's
+// photo the avatar is host content, so a preview click opens the host drawer.
+// Otherwise the avatar is purely the event/template logo.
+const logoEditIntent = computed<EditIntent>(() =>
+  showClippedHost.value && props.firstHostId
+    ? { kind: 'hostImage', hostId: props.firstHostId }
+    : { kind: 'eventLogo' },
 )
 
 const hostClipBoxStyle = computed<Record<string, string>>(() => {

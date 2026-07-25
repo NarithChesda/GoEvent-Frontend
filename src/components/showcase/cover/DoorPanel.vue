@@ -55,6 +55,7 @@
           :sample-logo-two="sampleLogoTwo"
           :first-host-image="firstHostImage"
           :first-host-name="firstHostName"
+          :first-host-id="firstHostId"
           :host-clip-style="hostClipStyle"
           :show-cover-header-text="showCoverHeaderText"
           :guest-name="guestName"
@@ -125,6 +126,8 @@ interface Props {
   firstHostImage?: string | null
   /** First host display name — alt text for the clipped host image. */
   firstHostName?: string
+  /** First host id — routes the preview editor to the host drawer when the logo row frames that host's photo. */
+  firstHostId?: number | null
   /** CSS variables driving host-clip size/offset (from cover_stage_layout). */
   hostClipStyle?: Record<string, string>
   /** Render the cover text header row; when false, the row collapses and its space is merged into the logo row. */
