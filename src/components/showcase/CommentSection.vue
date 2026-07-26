@@ -1748,6 +1748,17 @@ textarea::-webkit-scrollbar-thumb:hover {
   }
 }
 
+/* Mobile (<1024px) - match the event info card shell radius (EventInfo.vue's
+   .gradient-stroke-container is 1.25rem below 1024px) so the comment cards read
+   as part of the same card system. */
+@media (max-width: 1023px) {
+  .comment-form-liquid,
+  .comment-card-liquid,
+  .liquid-glass-state {
+    border-radius: 1.25rem;
+  }
+}
+
 /* Small laptops 13-inch (1024px-1365px) - scaled to 67.5% matching RSVPSection */
 @media (min-width: 1024px) and (max-width: 1365px) {
   /* Comment form container - 67.5% scale */

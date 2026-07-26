@@ -892,6 +892,20 @@ const capitalizeText = (text: string | undefined): string => {
   pointer-events: none;
 }
 
+/* Mobile (<1024px) - match the event info card shell radius (EventInfo.vue's
+   .gradient-stroke-container is 1.25rem below 1024px), and keep the panels
+   nested inside the card a step smaller than the shell. */
+@media (max-width: 1023px) {
+  .payment-card-container {
+    border-radius: 1.25rem;
+  }
+
+  .qr-simple-container,
+  .payment-info-simple {
+    border-radius: 1rem;
+  }
+}
+
 /* Payment card header - no separate styling */
 .payment-card-header {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
