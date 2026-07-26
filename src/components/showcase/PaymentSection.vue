@@ -5,7 +5,7 @@
       <h2
         v-if="paymentSectionTitle"
         :class="[
-          'leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize',
+          'leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 uppercase',
           currentLanguage === 'kh' && 'khmer-text-fix',
         ]"
         :style="{
