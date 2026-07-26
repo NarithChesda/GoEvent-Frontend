@@ -54,12 +54,20 @@
               hyphens: 'auto',
             }"
           >
-            <span
-              v-for="(word, index) in splitToWords(capitalizedDescription)"
-              :key="`desc-${currentLanguage}-${index}`"
-              class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.description + index * WORD_DELAY}s` }"
-            >{{ word }}{{ index < splitToWords(capitalizedDescription).length - 1 ? '\u00A0' : '' }}</span>
+            <template
+              v-for="(line, lineIndex) in descriptionLines"
+              :key="`desc-line-${currentLanguage}-${lineIndex}`"
+            >
+              <br v-if="lineIndex > 0" />
+              <span
+                v-for="(word, wordIndex) in line"
+                :key="`desc-${currentLanguage}-${lineIndex}-${wordIndex}`"
+                class="bounce-word"
+                :style="{
+                  animationDelay: `${animationDelays.description + getGlobalWordIndex(descriptionLines, lineIndex, wordIndex) * WORD_DELAY}s`,
+                }"
+              >{{ word }}{{ wordIndex < line.length - 1 ? '\u00A0' : '' }}</span>
+            </template>
           </p>
         </InlineEditableText>
       </div>
@@ -394,6 +402,8 @@ import {
 } from '../../utils/translations'
 import {
   splitToWords,
+  splitToLines,
+  getGlobalWordIndex,
   ANIMATION_CONSTANTS,
   getTextAnimationDuration,
 } from '@/composables/showcase/useHostInfoUtils'
@@ -701,6 +711,12 @@ const capitalizedDescription = computed(() => {
   if (text.length === 0) return ''
   return text.charAt(0).toUpperCase() + text.slice(1)
 })
+
+// Split per line, not per word: the description is authored in a textarea, so
+// the line breaks typed there are part of the layout the author chose and the
+// invitation has to honour them (the word-reveal stagger keeps running across
+// the breaks via getGlobalWordIndex).
+const descriptionLines = computed(() => splitToLines(capitalizedDescription.value))
 
 // Countdown header and labels
 const countdownHeader = computed(() => {

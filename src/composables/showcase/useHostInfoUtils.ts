@@ -31,6 +31,23 @@ export function splitToLines(text: string | null | undefined): string[][] {
 }
 
 /**
+ * Position of a word within the whole block, once the block has been split by
+ * splitToLines. The word-by-word reveal has to keep counting across the line
+ * breaks, otherwise every line restarts the stagger from zero.
+ */
+export function getGlobalWordIndex(
+  lines: string[][],
+  lineIndex: number,
+  wordIndex: number,
+): number {
+  let count = 0
+  for (let i = 0; i < lineIndex; i++) {
+    count += lines[i].length
+  }
+  return count + wordIndex
+}
+
+/**
  * Animation timing constants
  */
 export const ANIMATION_CONSTANTS = {

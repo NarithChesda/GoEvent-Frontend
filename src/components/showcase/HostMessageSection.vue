@@ -57,16 +57,21 @@
               hyphens: 'auto',
             }"
           >
-            <span
-              v-for="(word, index) in splitToWords(thankYouMessage.content)"
-              :key="`thank-content-${currentLanguage}-${index}`"
-              class="bounce-word"
-              :style="{
-                animationDelay: `${animationDelays.thankYouContent + index * WORD_DELAY}s`,
-              }"
-              >{{ word
-              }}{{ index < splitToWords(thankYouMessage.content).length - 1 ? '\u00A0' : '' }}</span
+            <template
+              v-for="(line, lineIndex) in thankYouLines"
+              :key="`thank-content-line-${currentLanguage}-${lineIndex}`"
             >
+              <br v-if="lineIndex > 0" />
+              <span
+                v-for="(word, wordIndex) in line"
+                :key="`thank-content-${currentLanguage}-${lineIndex}-${wordIndex}`"
+                class="bounce-word"
+                :style="{
+                  animationDelay: `${animationDelays.thankYouContent + getGlobalWordIndex(thankYouLines, lineIndex, wordIndex) * WORD_DELAY}s`,
+                }"
+                >{{ word }}{{ wordIndex < line.length - 1 ? '\u00A0' : '' }}</span
+              >
+            </template>
           </p>
         </InlineEditableText>
       </div>
@@ -123,14 +128,21 @@
               hyphens: 'auto',
             }"
           >
-            <span
-              v-for="(word, index) in splitToWords(sorryMessage.content)"
-              :key="`sorry-content-${currentLanguage}-${index}`"
-              class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.sorryContent + index * WORD_DELAY}s` }"
-              >{{ word
-              }}{{ index < splitToWords(sorryMessage.content).length - 1 ? '\u00A0' : '' }}</span
+            <template
+              v-for="(line, lineIndex) in sorryLines"
+              :key="`sorry-content-line-${currentLanguage}-${lineIndex}`"
             >
+              <br v-if="lineIndex > 0" />
+              <span
+                v-for="(word, wordIndex) in line"
+                :key="`sorry-content-${currentLanguage}-${lineIndex}-${wordIndex}`"
+                class="bounce-word"
+                :style="{
+                  animationDelay: `${animationDelays.sorryContent + getGlobalWordIndex(sorryLines, lineIndex, wordIndex) * WORD_DELAY}s`,
+                }"
+                >{{ word }}{{ wordIndex < line.length - 1 ? '\u00A0' : '' }}</span
+              >
+            </template>
           </p>
         </InlineEditableText>
       </div>
@@ -144,6 +156,8 @@ import InlineEditableText from '@/components/showcase-preview/edit/InlineEditabl
 import type { EventText } from '../../types/showcase'
 import {
   splitToWords,
+  splitToLines,
+  getGlobalWordIndex,
   ANIMATION_CONSTANTS,
   getTextAnimationDuration,
 } from '@/composables/showcase/useHostInfoUtils'
@@ -269,6 +283,13 @@ const sorryMessage = computed(() => {
   // Fallback: use any available sorry message
   return props.eventTexts.find((text) => text.text_type === 'sorry_message') || null
 })
+
+// Split per line, not per word: these messages are authored in a textarea, so
+// the line breaks typed there are part of the layout the author chose and the
+// invitation has to honour them (the word-reveal stagger keeps running across
+// the breaks via getGlobalWordIndex).
+const thankYouLines = computed(() => splitToLines(thankYouMessage.value?.content))
+const sorryLines = computed(() => splitToLines(sorryMessage.value?.content))
 
 // Animation delays calculation
 const animationDelays = computed(() => {

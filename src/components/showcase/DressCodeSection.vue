@@ -147,6 +147,7 @@
                 :style="{
                   color: accentColor,
                   fontFamily: secondaryFont || currentFont,
+                  whiteSpace: 'pre-line',
                 }"
                 class="text-sm sm:text-base opacity-80 leading-relaxed dress-code-description mb-0"
                 :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
