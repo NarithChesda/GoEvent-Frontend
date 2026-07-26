@@ -44,6 +44,8 @@ Living documentation for large multi-phase features:
 - [TICKETS_FEATURE_PLAN.md](features/TICKETS_FEATURE_PLAN.md) → [TICKETS_FEATURE_UPDATES.md](features/TICKETS_FEATURE_UPDATES.md) → [TICKETS_PAYMENT_METHOD_FIX.md](features/TICKETS_PAYMENT_METHOD_FIX.md) → [TICKETS_UI_UNIFICATION.md](features/TICKETS_UI_UNIFICATION.md) — ticketing rollout chain
 - [TICKETS_CHECKIN_FEATURE_PLAN.md](features/TICKETS_CHECKIN_FEATURE_PLAN.md) / [TICKETS_CHECKIN_BACKEND_ASKS.md](features/TICKETS_CHECKIN_BACKEND_ASKS.md) (closed) — door check-in
 - [TABLE_SEATING_FEATURE.md](features/TABLE_SEATING_FEATURE.md) — table seating
+- [SHOWCASE_LIVE_PREVIEW_EDITOR.md](features/SHOWCASE_LIVE_PREVIEW_EDITOR.md) — manage-page live preview + click-to-edit (in progress)
+- [SHOWCASE_PREVIEW_EDITOR_PLAN.md](features/SHOWCASE_PREVIEW_EDITOR_PLAN.md) — target architecture + progress anchor for full showcase editing from the preview (media intents, renderer registry)
 
 ## Guides ([guides/](guides/))
 

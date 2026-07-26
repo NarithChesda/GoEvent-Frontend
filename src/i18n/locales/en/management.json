@@ -270,8 +270,6 @@
     "eventDetailsFallback": "Event Details",
     "switchToKhmer": "Switch to Khmer",
     "switchToEnglish": "Switch to English",
-    "previewBtn": "Preview",
-    "previewTitle": "Preview showcase",
     "publishBtn": "Publish",
     "publishTitle": "Publish event",
     "editBtn": "Edit",
@@ -374,8 +372,12 @@
     "guests": "Guests",
     "media": "Media",
     "showcase": "Showcase",
-    "templatePayment": "Template & Payment",
-    "templateMobile": "Template",
+    "showcasePreview": "Live Preview",
+    "previewMobile": "Preview",
+    "designStudio": "Design Studio",
+    "designStudioMobile": "Studio",
+    "templatePayment": "Activation & Billing",
+    "templateMobile": "Activation",
     "guestManagement": "Guest Management",
     "expenseTracking": "Expense Tracking",
     "expensesMobile": "Expenses",
@@ -403,6 +405,94 @@
     "pending": "Pending",
     "declined": "Declined",
     "checkedIn": "Checked In"
+  },
+  "showcasePreview": {
+    "title": "Design Studio",
+    "subtitle": "Edit your showcase and try templates, with a live preview of what guests will see.",
+    "coverLabel": "Cover",
+    "transitionLabel": "Transition",
+    "mainContentLabel": "Main Content",
+    "transitionNotUsed": "This template doesn't use a transition stage.",
+    "layoutSwitchLabel": "Preview layout",
+    "viewControlsLabel": "Preview layout and language",
+    "layoutSingle": "Show one screen",
+    "layoutMultiple": "Show all screens side by side",
+    "switchLanguage": "Switch preview language",
+    "panelContent": "Edit Content",
+    "panelTemplates": "Templates",
+    "noLivePreview": "This event's category doesn't have a live preview — edit its content from the panel on the left.",
+    "accessRestricted": {
+      "title": "Access Restricted",
+      "description": "Only the event organizer and collaborators can view the live preview."
+    },
+    "mobilePreview": {
+      "open": "Preview",
+      "title": "Live preview",
+      "close": "Close preview",
+      "editHints": "Highlight editable parts",
+      "editHintsTip": "Tap the highlighted parts to edit them",
+      "previewOnly": "Guests can't see this yet",
+      "readOnly": "You have view-only access — tap Preview to see the showcase.",
+      "editHintsOff": "Highlights off — this is how guests see it"
+    },
+    "editors": {
+      "replaceLogo": "Replace logo",
+      "editMap": "Edit map",
+      "changeHostPhoto": "Change photo",
+      "managePhotos": "Manage photos",
+      "gmapTitle": "Google Maps Embed",
+      "gmapDescription": "Paste a Google Maps share link or embed code — the embed URL is extracted automatically.",
+      "gmapPlaceholder": "Paste a Google Maps link or <iframe> embed code",
+      "gmapInvalid": "That doesn't look like a Google Maps embed link or code.",
+      "changeEventDate": "Change event date",
+      "eventDateTitle": "Event Date",
+      "eventDateDescription": "Update the date shown on your invitation. Time and location stay the same.",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "logoUploadFailed": "Logo upload failed",
+      "hostLoadFailed": "Couldn't load host details",
+      "editAgendaItem": "Edit activity",
+      "addAgendaItem": "Add activity",
+      "changeAgendaDate": "Change this day's date",
+      "agendaLoadFailed": "Couldn't load agenda details",
+      "agendaDeleteFailed": "Couldn't delete the activity",
+      "reorderAgendaItem": "Reorder activity",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "agendaReorderFailed": "Couldn't reorder the activities",
+      "editDressCode": "Edit dress code",
+      "addDressCode": "Add dress code",
+      "dressCodeLoadFailed": "Couldn't load dress code details",
+      "dressCodeDeleteFailed": "Couldn't delete the dress code",
+      "editVideo": "Edit video",
+      "addVideo": "Add video",
+      "youtubeTitle": "YouTube Video",
+      "youtubeDescription": "Paste a YouTube link or embed code — the embed URL is extracted automatically.",
+      "youtubePlaceholder": "Paste a YouTube link or <iframe> embed code",
+      "youtubeInvalid": "That doesn't look like a YouTube link or embed code.",
+      "editPaymentMethod": "Edit payment method",
+      "addPaymentMethod": "Add payment method",
+      "paymentLoadFailed": "Couldn't load payment method details",
+      "paymentDeleteFailed": "Couldn't delete the payment method",
+      "paymentLocked": "Payment methods are locked and can't be edited from here",
+      "editFeaturedPhoto": "Change featured photo",
+      "addFeaturedPhoto": "Set featured photo",
+      "featuredPhotoTitle": "Featured Photo",
+      "featuredPhotoDescription": "Shown full-screen on the transition stage between the cover and the main invitation.",
+      "featuredPhotoEmpty": "No photos yet",
+      "featuredPhotoUploadPrompt": "Upload photos first, then come back here to choose one as featured.",
+      "featuredPhotoUploadButton": "Upload photos",
+      "featuredPhotoLoadFailed": "Couldn't load photos",
+      "featuredPhotoUpdateFailed": "Couldn't update the featured photo",
+      "replayTransition": "Replay",
+      "countdownLabel": "Countdown",
+      "rsvpLabel": "RSVP",
+      "commentsLabel": "Comments",
+      "displayToggleFailed": "Couldn't update display setting",
+      "displayToggleOnHint": "{name}: shown to guests. Tap to hide.",
+      "displayToggleOffHint": "{name}: hidden from guests. Tap to show."
+    }
   },
   "media": {
     "title": "Event Showcase",
@@ -988,6 +1078,7 @@
     },
     "typeHints": {
       "cover_header": "Headline shown on the invitation cover",
+      "invite_text": "\"You're Invited\" line above the guest name on the cover",
       "welcome_message": "Opening message at the top of the main content",
       "description": "Main description section of the showcase",
       "short_description": "Short summary text used by some templates",
@@ -1001,6 +1092,7 @@
     },
     "textTypes": {
       "cover_header": "Cover Header",
+      "invite_text": "Invite Text",
       "welcome_message": "Welcome Message",
       "instructions": "Instructions",
       "description": "Description",
@@ -1303,12 +1395,67 @@
     "watchPreviewBtn": "Watch Template Preview",
     "activeHint": "Template is active and ready to use"
   },
+  "activation": {
+    "changeTemplate": "Change in Design Studio",
+    "changeTemplateShort": "Change",
+    "header": {
+      "descChecking": "Checking your template's activation status…",
+      "descPending": "We're reviewing your payment — your showcase goes live once it's confirmed"
+    },
+    "pill": {
+      "no-template": "No template yet",
+      "unpaid": "Preview only",
+      "pending": "Payment under review",
+      "active": "Live for guests",
+      "activateCta": "Activate",
+      "viewPayment": "View payment",
+      "viewReceipt": "View receipt"
+    },
+    "stepper": {
+      "label": "Activation progress",
+      "template": {
+        "title": "Template chosen",
+        "short": "Template",
+        "hint": "Picked in the Design Studio"
+      },
+      "payment": {
+        "title": "Payment submitted",
+        "short": "Payment",
+        "hint": "Transfer, then upload the receipt"
+      },
+      "live": {
+        "title": "Live for guests",
+        "short": "Live",
+        "hint": "Guests can open your invitation",
+        "waitingHint": "Waiting on payment confirmation"
+      }
+    },
+    "card": {
+      "openStudio": "Open in Design Studio",
+      "openStudioShort": "Studio",
+      "untitledTemplate": "Selected template",
+      "badgeLive": "Live",
+      "badgePending": "Under review",
+      "badgePreviewOnly": "Preview only",
+      "activateBtn": "Activate template",
+      "activateHint": "Guests can't see your showcase until this is activated",
+      "pendingTitle": "Payment under review",
+      "pendingHint": "You'll be notified once it's confirmed — no further action needed.",
+      "activeTitle": "Your showcase is live",
+      "activeHint": "Guests who open your invitation link see this template."
+    },
+    "empty": {
+      "title": "No template to activate yet",
+      "description": "Templates are chosen in the Design Studio, where you can try each one on your own invitation before deciding. Come back here to activate it for guests.",
+      "cta": "Open Design Studio"
+    }
+  },
   "templatePaymentTab": {
     "header": {
-      "title": "Template & Payment",
+      "title": "Activation & Billing",
       "descActive": "Your template is active and ready to use",
-      "descPendingPayment": "Complete payment to activate your template",
-      "descNoTemplate": "Select a template and complete payment"
+      "descPendingPayment": "Activate your template so guests can see your showcase",
+      "descNoTemplate": "Choose a template in the Design Studio, then activate it here"
     },
     "browseBtn": {
       "browse": "Browse",
@@ -1335,6 +1482,7 @@
     },
     "paymentDrawer": {
       "title": "Make Payment",
+      "close": "Close",
       "currentPayment": "Current payment",
       "total": "Total",
       "promoPlaceholder": "Promo",
@@ -1410,7 +1558,11 @@
       "guestsPanelSuffix": "guests",
       "editGroup": "Edit group",
       "deleteGroup": "Delete group",
-      "newGroup": "New group"
+      "newGroup": "New group",
+      "rsvpStatus": {
+        "header": "RSVP status",
+        "any": "Any status"
+      }
     },
     "selectionBar": {
       "selected": "selected",
@@ -1522,85 +1674,6 @@
       "pending": "Pending",
       "pendingDesc": "Still waiting to receive an invite.",
       "pendingShort": "Not sent"
-    },
-    "rsvpStatsCard": {
-      "header": "RSVP responses",
-      "loading": "Loading response summary…",
-      "respondedDesc": "{percent}% of invited guests responded",
-      "expectedSuffix": "expected",
-      "expectedTooltip": "Counts each attending guest plus their plus-ones",
-      "filterHint": "Tap a status to filter the guest list",
-      "clearFilter": "Clear filter",
-      "cards": {
-        "going": "Going",
-        "maybe": "Maybe",
-        "declined": "Declined",
-        "pending": "Pending"
-      }
-    },
-    "rsvpQuestions": {
-      "header": "Custom RSVP questions",
-      "subtitle": "Ask guests anything beyond the basic yes/no response.",
-      "addButton": "Add question",
-      "loading": "Loading questions…",
-      "empty": {
-        "title": "No custom questions yet",
-        "description": "Add a question to collect meal preferences, song requests, or anything else."
-      },
-      "requiredBadge": "Required",
-      "types": {
-        "text": "Short answer",
-        "long_text": "Long answer",
-        "yes_no": "Yes / No",
-        "single_choice": "Single choice",
-        "multi_choice": "Multi choice"
-      },
-      "actions": {
-        "moveUp": "Move up",
-        "moveDown": "Move down",
-        "edit": "Edit question",
-        "delete": "Delete question",
-        "saving": "Saving…",
-        "save": "Save",
-        "cancel": "Cancel"
-      },
-      "modal": {
-        "addTitle": "Add question",
-        "editTitle": "Edit question",
-        "typeLabel": "Question type",
-        "typeDescriptions": {
-          "text": "Guests type a brief reply.",
-          "long_text": "Guests write a longer message.",
-          "yes_no": "A simple yes or no answer.",
-          "single_choice": "Guests pick one option from your list.",
-          "multi_choice": "Guests can pick several options from your list."
-        },
-        "requiredLabel": "Required answer",
-        "requiredHint": "Only enforced when the guest replies with Attending or Maybe.",
-        "questionTextLabel": "Question text",
-        "questionTextEnglish": "English",
-        "questionTextKhmer": "Khmer",
-        "questionTextPlaceholder": "e.g. What's your meal preference?",
-        "questionTextKhmerPlaceholder": "Translation (optional)",
-        "choicesLabel": "Answer choices",
-        "choicesHint": "English and Khmer are paired by row — add, remove, or reorder both sides together.",
-        "choiceEnglishPlaceholder": "Choice in English",
-        "choiceKhmerPlaceholder": "Translation (optional)",
-        "addChoice": "Add choice",
-        "removeChoice": "Remove this choice",
-        "validation": {
-          "questionRequired": "Question text is required.",
-          "choicesRequired": "This question type needs at least one choice.",
-          "choiceTextRequired": "Choices cannot be empty."
-        },
-        "errorGeneric": "Something went wrong. Please try again."
-      },
-      "deleteConfirm": {
-        "title": "Delete question?",
-        "body": "This will remove the question and any answers guests have already submitted for it.",
-        "confirm": "Delete",
-        "cancel": "Cancel"
-      }
     },
     "addGuestModal": {
       "title": "Import Guests",
@@ -2108,6 +2181,77 @@
       "otherGroup": "Other"
     }
   },
+  "rsvpStatuses": {
+    "going": "Going",
+    "maybe": "Maybe",
+    "declined": "Declined",
+    "pending": "Pending"
+  },
+  "rsvpQuestions": {
+    "header": "Custom RSVP questions",
+    "subtitle": "Ask guests anything beyond the basic yes/no response.",
+    "addButton": "Add question",
+    "loading": "Loading questions…",
+    "empty": {
+      "title": "No custom questions yet",
+      "description": "Add a question to collect meal preferences, song requests, or anything else."
+    },
+    "requiredBadge": "Required",
+    "types": {
+      "text": "Short answer",
+      "long_text": "Long answer",
+      "yes_no": "Yes / No",
+      "single_choice": "Single choice",
+      "multi_choice": "Multi choice"
+    },
+    "actions": {
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "edit": "Edit question",
+      "delete": "Delete question",
+      "saving": "Saving…",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "modal": {
+      "addTitle": "Add question",
+      "editTitle": "Edit question",
+      "typeLabel": "Question type",
+      "typeDescriptions": {
+        "text": "Guests type a brief reply.",
+        "long_text": "Guests write a longer message.",
+        "yes_no": "A simple yes or no answer.",
+        "single_choice": "Guests pick one option from your list.",
+        "multi_choice": "Guests can pick several options from your list."
+      },
+      "requiredLabel": "Required answer",
+      "requiredHint": "Only enforced when the guest replies with Attending or Maybe.",
+      "questionTextLabel": "Question text",
+      "questionTextEnglish": "English",
+      "questionTextKhmer": "Khmer",
+      "questionTextPlaceholder": "e.g. What's your meal preference?",
+      "questionTextKhmerPlaceholder": "Translation (optional)",
+      "choicesLabel": "Answer choices",
+      "choicesHint": "English and Khmer are paired by row — add, remove, or reorder both sides together.",
+      "choiceEnglishPlaceholder": "Choice in English",
+      "choiceKhmerPlaceholder": "Translation (optional)",
+      "addChoice": "Add choice",
+      "removeChoice": "Remove this choice",
+      "validation": {
+        "questionRequired": "Question text is required.",
+        "choicesRequired": "This question type needs at least one choice.",
+        "choiceTextRequired": "Choices cannot be empty."
+      },
+      "errorGeneric": "Something went wrong. Please try again."
+    },
+    "deleteConfirm": {
+      "title": "Delete question?",
+      "body": "This will remove the question and any answers guests have already submitted for it.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "drawerTitle": "RSVP questions"
+  },
   "rsvpAnalytics": {
     "title": "RSVP Analytics",
     "subtitle": "Track responses and see how guests answered your custom questions",
@@ -2131,20 +2275,11 @@
       "respondedDesc": "{percent}% of invited",
       "responseRate": "Response rate",
       "responseRateDesc": "{responded} of {invited} invited guests replied",
-      "going": "Going",
-      "goingDesc": "{percent}% of invited",
       "expected": "Expected",
       "expectedDesc": "{attending} attending + {plusOnes} plus-ones",
-      "pending": "Pending",
-      "pendingDesc": "Awaiting a reply",
       "plusOnes": "Plus-ones",
-      "plusOnesDesc": "Additional guests being brought"
-    },
-    "distribution": {
-      "title": "Response distribution",
-      "description": "How your guests are replying overall.",
-      "legendCount": "{count} guest | {count} guests",
-      "legendPercent": "{percent}%"
+      "plusOnesDesc": "Additional guests being brought",
+      "repliedShort": "Replied"
     },
     "chase": {
       "title": "Needs follow-up",
@@ -2160,16 +2295,17 @@
       }
     },
     "questions": {
-      "title": "Custom question breakdowns",
-      "description": "Click a question to see who answered what.",
+      "title": "Custom questions",
+      "description": "Tap a question to edit it. Expand to see who answered what.",
       "answersCount": "{count} answer | {count} answers",
       "moreOptions": "+{count} more option | +{count} more options",
       "noAnswers": "No answers yet",
       "choicePercent": "{percent}% of respondents",
       "emptyState": {
         "title": "No custom questions",
-        "description": "Add RSVP questions in the Guest Management tab to start collecting data."
-      }
+        "description": "Add a question to collect meal preferences, song requests, or anything else."
+      },
+      "viewResults": "View results"
     },
     "drill": {
       "loading": "Loading responses…",

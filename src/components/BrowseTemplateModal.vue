@@ -455,6 +455,7 @@ import { useI18n } from 'vue-i18n'
 import type { EventTemplate } from '../services/api'
 import type { PartnerTemplate } from '../services/api'
 import { eventTemplateService } from '../services/api'
+import type { TemplateAssets } from '../composables/useEventShowcase'
 import { useTemplateApi } from '../composables/useTemplateApi'
 import { useTemplateFiltering } from '../composables/useTemplateFiltering'
 import { useTemplateSelection } from '../composables/useTemplateSelection'
@@ -500,6 +501,14 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   close: []
   'template-selected': [template: EventTemplate]
+  /** A browse-grid card was picked — callers with a live preview surface
+   *  (Design Studio) can broadcast these assets non-destructively before the
+   *  user confirms. Not emitted for partner template selection. */
+  'preview-stage': [templateData: TemplateAssets]
+  /** Selection was cleared without confirming (cancel/close/escape/backdrop),
+   *  or a confirmed selection just finished applying — either way, any
+   *  active preview-stage should revert to real data. */
+  'preview-clear': []
 }>()
 
 const { t } = useI18n()
@@ -784,6 +793,26 @@ const handleTemplateSelection = (template: EventTemplate): void => {
   // Clear any partner template selection when selecting a browse template
   selectedPartnerTemplate.value = null
   selectTemplate(template)
+  void stagePreview(template.id)
+}
+
+// Non-destructive live try-on: fetch the template's public assets and let
+// callers with a live preview surface (Design Studio) broadcast them into
+// the preview before the user confirms. Non-fatal on failure — selecting
+// still works, it just won't show live this time.
+const stagePreview = async (templateId: number): Promise<void> => {
+  try {
+    const response = await eventTemplateService.getPublicTemplateAssets(templateId)
+    // Wire shape is `{ template_data: {...} }`, not the flat TemplateAssets
+    // the service's declared return type implies (matches the unwrap already
+    // used in ShowcasePreviewFrameView.vue's pre-payment fallback).
+    const templateData = (response.data as unknown as { template_data?: TemplateAssets } | null)?.template_data
+    if (response.success && templateData) {
+      emit('preview-stage', templateData)
+    }
+  } catch {
+    // Non-fatal.
+  }
 }
 
 // Constants for timeout values
@@ -828,6 +857,7 @@ const handleConfirmSelection = async (): Promise<void> => {
 }
 
 const resetModalState = (): void => {
+  if (hasSelection.value) emit('preview-clear')
   clearSelection()
   selectedPartnerTemplate.value = null
   isPartnerFormOpen.value = false

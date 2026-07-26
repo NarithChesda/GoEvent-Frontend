@@ -1,6 +1,12 @@
 <template>
   <div class="welcome-row">
     <div class="welcome-content mt-2">
+      <InlineEditableText
+        :value="displayMessage"
+        :target="{ kind: 'eventText', textType: 'welcome_message', field: 'content' }"
+        :multiline="true"
+        :input-style="{ fontFamily: fontFamily, color: color }"
+      >
       <h2
         :class="[
           'text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular leading-tight',
@@ -30,12 +36,14 @@
           {{ displayMessage }}
         </template>
       </h2>
+      </InlineEditableText>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import { ANIMATION_CONSTANTS } from '@/composables/showcase/useHostInfoUtils'
 
 interface Props {

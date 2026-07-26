@@ -38,6 +38,7 @@
         :sample-logo-two="sampleLogoTwo"
         :first-host-image="firstHostImage"
         :first-host-name="firstHostName"
+        :first-host-id="firstHostId"
         :host-clip-style="hostClipStyle"
         :show-cover-header-text="showCoverHeaderText"
         :guest-name="guestName"
@@ -76,6 +77,7 @@
         :sample-logo-two="sampleLogoTwo"
         :first-host-image="firstHostImage"
         :first-host-name="firstHostName"
+        :first-host-id="firstHostId"
         :host-clip-style="hostClipStyle"
         :show-cover-header-text="showCoverHeaderText"
         :guest-name="guestName"
@@ -130,6 +132,7 @@
         :sample-logo-two="sampleLogoTwo"
         :first-host-image="firstHostImage"
         :first-host-name="firstHostName"
+        :first-host-id="firstHostId"
         :host-clip-style="hostClipStyle"
         :show-cover-header-text="showCoverHeaderText"
         :guest-name="guestName"
@@ -152,8 +155,9 @@
         :show-animations="true"
       />
 
-      <!-- Swipe Up Arrow Indicator -->
-      <SwipeUpArrow :color="primaryColor" :bottom="swipeArrowBottom" />
+      <!-- Swipe Up Arrow Indicator (hidden when the envelope can't actually
+           be opened, e.g. the manage-page preview) -->
+      <SwipeUpArrow v-if="!isInteractionDisabled" :color="primaryColor" :bottom="swipeArrowBottom" />
     </div>
   </div>
 </template>
@@ -195,6 +199,8 @@ interface Props {
   firstHostImage?: string | null
   /** First host display name — used as the alt text for the clipped host image. */
   firstHostName?: string
+  /** First host id — routes the preview editor to the host drawer when the logo row frames that host's photo. */
+  firstHostId?: number | null
   guestName?: string | null
   templateAssets?: CoverTemplateAssets | null
   primaryColor: string

@@ -11,5 +11,5 @@ export type { UseProfilePictureUploadOptions } from './useProfilePictureUpload'
 export { useLogoUpload } from './useLogoUpload'
 export type { UseLogoUploadOptions } from './useLogoUpload'
 
-export { useVendorProfile } from './useVendorProfile'
+export { useVendorProfile, resetVendorProfileCache } from './useVendorProfile'
 export type { VendorFormData, VendorState, UseVendorProfileOptions } from './useVendorProfile'

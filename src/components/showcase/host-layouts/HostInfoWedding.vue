@@ -16,42 +16,50 @@
       />
 
       <div :class="['simple-names', getKhmerClass(currentLanguage)]">
-        <h2
-          v-if="hosts.length > 0"
-          class="simple-name-text leading-tight"
-          :style="simpleNameStyle"
+        <InlineEditableText
+          :value="hosts[0].name"
+          :target="{ kind: 'host', hostId: hosts[0].id, field: 'name' }"
+          :input-style="{ fontFamily: simpleNameStyle.fontFamily, color: simpleNameStyle.color }"
         >
-          <span
-            v-for="(word, index) in splitToWords(hosts[0].name)"
-            :key="`simple-name-left-${currentLanguage}-${index}`"
-            class="bounce-word"
-            :style="{ animationDelay: `${simpleAnimationDelays.nameLeft + index * WORD_DELAY}s` }"
-          >{{ word }}{{ index < splitToWords(hosts[0].name).length - 1 ? ' ' : '' }}</span>
-        </h2>
+          <h2
+            v-if="hosts.length > 0"
+            class="simple-name-text leading-tight"
+            :style="simpleNameStyle"
+          >
+            <span
+              v-for="(word, index) in splitToWords(hosts[0].name)"
+              :key="`simple-name-left-${currentLanguage}-${index}`"
+              class="bounce-word"
+              :style="{ animationDelay: `${simpleAnimationDelays.nameLeft + index * WORD_DELAY}s` }"
+              >{{ word }}{{ index < splitToWords(hosts[0].name).length - 1 ? ' ' : '' }}</span
+            >
+          </h2>
+        </InlineEditableText>
 
-        <div
-          v-if="hosts.length > 1"
-          class="simple-amp"
-          :style="simpleNameStyle"
-        >
-          <span
-            class="bounce-word"
-            :style="{ animationDelay: `${simpleAnimationDelays.amp}s` }"
-          >&amp;</span>
+        <div v-if="hosts.length > 1" class="simple-amp" :style="simpleNameStyle">
+          <span class="bounce-word" :style="{ animationDelay: `${simpleAnimationDelays.amp}s` }"
+            >&amp;</span
+          >
         </div>
 
-        <h2
+        <InlineEditableText
           v-if="hosts.length > 1"
-          class="simple-name-text leading-tight"
-          :style="simpleNameStyle"
+          :value="hosts[1]?.name"
+          :target="{ kind: 'host', hostId: hosts[1]?.id ?? 0, field: 'name' }"
+          :input-style="{ fontFamily: simpleNameStyle.fontFamily, color: simpleNameStyle.color }"
         >
-          <span
-            v-for="(word, index) in splitToWords(hosts[1]?.name)"
-            :key="`simple-name-right-${currentLanguage}-${index}`"
-            class="bounce-word"
-            :style="{ animationDelay: `${simpleAnimationDelays.nameRight + index * WORD_DELAY}s` }"
-          >{{ word }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? ' ' : '' }}</span>
-        </h2>
+          <h2 class="simple-name-text leading-tight" :style="simpleNameStyle">
+            <span
+              v-for="(word, index) in splitToWords(hosts[1]?.name)"
+              :key="`simple-name-right-${currentLanguage}-${index}`"
+              class="bounce-word"
+              :style="{
+                animationDelay: `${simpleAnimationDelays.nameRight + index * WORD_DELAY}s`,
+              }"
+              >{{ word }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? ' ' : '' }}</span
+            >
+          </h2>
+        </InlineEditableText>
       </div>
     </div>
 
@@ -75,32 +83,58 @@
         <div class="host-parent-left">
           <div
             v-if="hosts[0].parent_a_name || hosts[0].parent_b_name"
-            :class="['parent-name-text leading-normal text-center opacity-90', getKhmerClass(currentLanguage)]"
+            :class="[
+              'parent-name-text leading-normal text-center opacity-90',
+              getKhmerClass(currentLanguage),
+            ]"
           >
-            <AutoFitText
-              :text="hosts[0].parent_a_name || hosts[0].parent_b_name || ''"
-              :color="primaryColor"
-              :font-family="primaryFont || currentFont"
-              :base-delay="animationDelays.parentALeft"
-              :word-delay="WORD_DELAY"
-              :key-prefix="`parent-a-left-${currentLanguage}`"
-            />
+            <InlineEditableText
+              :value="hosts[0].parent_a_name || hosts[0].parent_b_name"
+              :target="{
+                kind: 'host',
+                hostId: hosts[0].id,
+                field: hosts[0].parent_a_name ? 'parent_a_name' : 'parent_b_name',
+              }"
+              :input-style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
+            >
+              <AutoFitText
+                :text="hosts[0].parent_a_name || hosts[0].parent_b_name || ''"
+                :color="primaryColor"
+                :font-family="primaryFont || currentFont"
+                :base-delay="animationDelays.parentALeft"
+                :word-delay="WORD_DELAY"
+                :key-prefix="`parent-a-left-${currentLanguage}`"
+              />
+            </InlineEditableText>
           </div>
         </div>
         <div class="center-spacer"></div>
         <div class="host-parent-right">
           <div
             v-if="hosts.length > 1 && (hosts[1]?.parent_a_name || hosts[1]?.parent_b_name)"
-            :class="['parent-name-text leading-normal text-center opacity-90', getKhmerClass(currentLanguage)]"
+            :class="[
+              'parent-name-text leading-normal text-center opacity-90',
+              getKhmerClass(currentLanguage),
+            ]"
           >
-            <AutoFitText
-              :text="hosts[1]?.parent_a_name || hosts[1]?.parent_b_name || ''"
-              :color="primaryColor"
-              :font-family="primaryFont || currentFont"
-              :base-delay="animationDelays.parentARight"
-              :word-delay="WORD_DELAY"
-              :key-prefix="`parent-a-right-${currentLanguage}`"
-            />
+            <InlineEditableText
+              :value="hosts[1]?.parent_a_name || hosts[1]?.parent_b_name"
+              :target="{
+                kind: 'host',
+                hostId: hosts[1]?.id ?? 0,
+                field: hosts[1]?.parent_a_name ? 'parent_a_name' : 'parent_b_name',
+              }"
+              :input-style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
+            >
+              <AutoFitText
+                :text="hosts[1]?.parent_a_name || hosts[1]?.parent_b_name || ''"
+                :color="primaryColor"
+                :font-family="primaryFont || currentFont"
+                :base-delay="animationDelays.parentARight"
+                :word-delay="WORD_DELAY"
+                :key-prefix="`parent-a-right-${currentLanguage}`"
+              />
+            </InlineEditableText>
           </div>
         </div>
       </div>
@@ -110,133 +144,197 @@
         <div class="host-parent-left">
           <div
             v-if="hosts[0].parent_b_name && hosts[0].parent_a_name"
-            :class="['parent-name-text leading-normal text-center opacity-90', getKhmerClass(currentLanguage)]"
+            :class="[
+              'parent-name-text leading-normal text-center opacity-90',
+              getKhmerClass(currentLanguage),
+            ]"
           >
-            <AutoFitText
-              :text="hosts[0].parent_b_name || ''"
-              :color="primaryColor"
-              :font-family="primaryFont || currentFont"
-              :base-delay="animationDelays.parentBLeft"
-              :word-delay="WORD_DELAY"
-              :key-prefix="`parent-b-left-${currentLanguage}`"
-            />
+            <InlineEditableText
+              :value="hosts[0].parent_b_name"
+              :target="{ kind: 'host', hostId: hosts[0].id, field: 'parent_b_name' }"
+              :input-style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
+            >
+              <AutoFitText
+                :text="hosts[0].parent_b_name || ''"
+                :color="primaryColor"
+                :font-family="primaryFont || currentFont"
+                :base-delay="animationDelays.parentBLeft"
+                :word-delay="WORD_DELAY"
+                :key-prefix="`parent-b-left-${currentLanguage}`"
+              />
+            </InlineEditableText>
           </div>
         </div>
         <div class="center-spacer"></div>
         <div class="host-parent-right">
           <div
             v-if="hosts.length > 1 && hosts[1]?.parent_b_name && hosts[1]?.parent_a_name"
-            :class="['parent-name-text leading-normal text-center opacity-90', getKhmerClass(currentLanguage)]"
+            :class="[
+              'parent-name-text leading-normal text-center opacity-90',
+              getKhmerClass(currentLanguage),
+            ]"
           >
-            <AutoFitText
-              :text="hosts[1]?.parent_b_name || ''"
-              :color="primaryColor"
-              :font-family="primaryFont || currentFont"
-              :base-delay="animationDelays.parentBRight"
-              :word-delay="WORD_DELAY"
-              :key-prefix="`parent-b-right-${currentLanguage}`"
-            />
+            <InlineEditableText
+              :value="hosts[1]?.parent_b_name"
+              :target="{ kind: 'host', hostId: hosts[1]?.id ?? 0, field: 'parent_b_name' }"
+              :input-style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
+            >
+              <AutoFitText
+                :text="hosts[1]?.parent_b_name || ''"
+                :color="primaryColor"
+                :font-family="primaryFont || currentFont"
+                :base-delay="animationDelays.parentBRight"
+                :word-delay="WORD_DELAY"
+                :key-prefix="`parent-b-right-${currentLanguage}`"
+              />
+            </InlineEditableText>
           </div>
         </div>
       </div>
 
       <!-- Row 4: Logo -->
-      <HostLogo
-        :key="`logo-${currentLanguage}`"
-        :logo-url="logoUrl"
-        :sample-logo-one="sampleLogoOne"
-        :primary-color="primaryColor"
-        :animated="true"
-        :animation-delay="animationDelays.logo"
-      />
+      <EditableRegion :intent="{ kind: 'eventLogo' }">
+        <HostLogo
+          :key="`logo-${currentLanguage}`"
+          :logo-url="logoUrl"
+          :sample-logo-one="sampleLogoOne"
+          :primary-color="primaryColor"
+          :animated="true"
+          :animation-delay="animationDelays.logo"
+        />
+      </EditableRegion>
 
       <!-- Row 5: Host Titles -->
       <div v-if="hosts.length > 0" class="title-row">
         <div class="host-title-left">
-          <p
-            :class="['parent-name-text leading-normal text-center opacity-90', getKhmerClass(currentLanguage)]"
-            :style="titleTextStyle"
+          <InlineEditableText
+            :value="leftHostTitle"
+            :target="{ kind: 'host', hostId: hosts[0].id, field: 'title' }"
+            :input-style="{ fontFamily: titleTextStyle.fontFamily, color: titleTextStyle.color }"
           >
-            <span
-              v-for="(word, index) in splitToWords(leftHostTitle)"
-              :key="`title-left-${currentLanguage}-${index}`"
-              class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.titleLeft + index * WORD_DELAY}s` }"
-            >{{ word }}{{ index < splitToWords(leftHostTitle).length - 1 ? '\u00A0' : '' }}</span>
-          </p>
+            <p
+              :class="[
+                'parent-name-text leading-normal text-center opacity-90',
+                getKhmerClass(currentLanguage),
+              ]"
+              :style="titleTextStyle"
+            >
+              <span
+                v-for="(word, index) in splitToWords(leftHostTitle)"
+                :key="`title-left-${currentLanguage}-${index}`"
+                class="bounce-word"
+                :style="{ animationDelay: `${animationDelays.titleLeft + index * WORD_DELAY}s` }"
+                >{{ word
+                }}{{ index < splitToWords(leftHostTitle).length - 1 ? '\u00A0' : '' }}</span
+              >
+            </p>
+          </InlineEditableText>
         </div>
         <div class="center-spacer"></div>
         <div class="host-title-right">
-          <p
+          <InlineEditableText
             v-if="hosts.length > 1"
-            :class="['parent-name-text leading-normal text-center opacity-90', getKhmerClass(currentLanguage)]"
-            :style="titleTextStyle"
+            :value="rightHostTitle"
+            :target="{ kind: 'host', hostId: hosts[1]?.id ?? 0, field: 'title' }"
+            :input-style="{ fontFamily: titleTextStyle.fontFamily, color: titleTextStyle.color }"
           >
-            <span
-              v-for="(word, index) in splitToWords(rightHostTitle)"
-              :key="`title-right-${currentLanguage}-${index}`"
-              class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.titleRight + index * WORD_DELAY}s` }"
-            >{{ word }}{{ index < splitToWords(rightHostTitle).length - 1 ? '\u00A0' : '' }}</span>
-          </p>
+            <p
+              :class="[
+                'parent-name-text leading-normal text-center opacity-90',
+                getKhmerClass(currentLanguage),
+              ]"
+              :style="titleTextStyle"
+            >
+              <span
+                v-for="(word, index) in splitToWords(rightHostTitle)"
+                :key="`title-right-${currentLanguage}-${index}`"
+                class="bounce-word"
+                :style="{ animationDelay: `${animationDelays.titleRight + index * WORD_DELAY}s` }"
+                >{{ word
+                }}{{ index < splitToWords(rightHostTitle).length - 1 ? '\u00A0' : '' }}</span
+              >
+            </p>
+          </InlineEditableText>
         </div>
       </div>
 
       <!-- Row 6: Host Names -->
       <div v-if="hosts.length > 0" class="name-row">
         <div class="host-name-left">
-          <h3
-            :class="['host-name-text font-regular leading-tight', getKhmerClass(currentLanguage)]"
-            :style="nameTextStyle"
+          <InlineEditableText
+            :value="hosts[0].name"
+            :target="{ kind: 'host', hostId: hosts[0].id, field: 'name' }"
+            :input-style="{ fontFamily: nameTextStyle.fontFamily, color: nameTextStyle.color }"
           >
-            <span
-              v-for="(word, index) in splitToWords(hosts[0].name)"
-              :key="`name-left-${currentLanguage}-${index}`"
-              class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.nameLeft + index * WORD_DELAY}s` }"
-            >{{ word }}{{ index < splitToWords(hosts[0].name).length - 1 ? '\u00A0' : '' }}</span>
-          </h3>
+            <h3
+              :class="['host-name-text font-regular leading-tight', getKhmerClass(currentLanguage)]"
+              :style="nameTextStyle"
+            >
+              <span
+                v-for="(word, index) in splitToWords(hosts[0].name)"
+                :key="`name-left-${currentLanguage}-${index}`"
+                class="bounce-word"
+                :style="{ animationDelay: `${animationDelays.nameLeft + index * WORD_DELAY}s` }"
+                >{{ word
+                }}{{ index < splitToWords(hosts[0].name).length - 1 ? '\u00A0' : '' }}</span
+              >
+            </h3>
+          </InlineEditableText>
         </div>
         <div class="center-spacer"></div>
         <div class="host-name-right">
-          <h3
+          <InlineEditableText
             v-if="hosts.length > 1"
-            :class="['host-name-text font-regular leading-tight', getKhmerClass(currentLanguage)]"
-            :style="nameTextStyle"
+            :value="hosts[1]?.name"
+            :target="{ kind: 'host', hostId: hosts[1]?.id ?? 0, field: 'name' }"
+            :input-style="{ fontFamily: nameTextStyle.fontFamily, color: nameTextStyle.color }"
           >
-            <span
-              v-for="(word, index) in splitToWords(hosts[1]?.name)"
-              :key="`name-right-${currentLanguage}-${index}`"
-              class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.nameRight + index * WORD_DELAY}s` }"
-            >{{ word }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? '\u00A0' : '' }}</span>
-          </h3>
+            <h3
+              :class="['host-name-text font-regular leading-tight', getKhmerClass(currentLanguage)]"
+              :style="nameTextStyle"
+            >
+              <span
+                v-for="(word, index) in splitToWords(hosts[1]?.name)"
+                :key="`name-right-${currentLanguage}-${index}`"
+                class="bounce-word"
+                :style="{ animationDelay: `${animationDelays.nameRight + index * WORD_DELAY}s` }"
+                >{{ word
+                }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? '\u00A0' : '' }}</span
+              >
+            </h3>
+          </InlineEditableText>
         </div>
       </div>
 
       <!-- Row 7: Host Profile Pictures -->
       <div v-if="showProfilePictures" class="profile-picture-row">
         <div class="host-profile-left">
-          <HostProfilePicture
-            :key="`profile-left-${currentLanguage}`"
-            :image-url="hosts[0].profile_image"
-            :alt="`${hosts[0].name} profile`"
-            :background-color="primaryColor"
-            :animated="true"
-            :animation-delay="animationDelays.profileLeft"
-          />
+          <EditableRegion :intent="{ kind: 'hostImage', hostId: hosts[0].id }">
+            <HostProfilePicture
+              :key="`profile-left-${currentLanguage}`"
+              :image-url="hosts[0].profile_image"
+              :alt="`${hosts[0].name} profile`"
+              :background-color="primaryColor"
+              :animated="true"
+              :animation-delay="animationDelays.profileLeft"
+            />
+          </EditableRegion>
         </div>
         <div class="center-spacer"></div>
         <div class="host-profile-right">
-          <HostProfilePicture
+          <EditableRegion
             v-if="hosts.length > 1"
-            :key="`profile-right-${currentLanguage}`"
-            :image-url="hosts[1]?.profile_image"
-            :alt="`${hosts[1]?.name} profile`"
-            :background-color="primaryColor"
-            :animated="true"
-            :animation-delay="animationDelays.profileRight"
-          />
+            :intent="{ kind: 'hostImage', hostId: hosts[1]?.id ?? 0 }"
+          >
+            <HostProfilePicture
+              :key="`profile-right-${currentLanguage}`"
+              :image-url="hosts[1]?.profile_image"
+              :alt="`${hosts[1]?.name} profile`"
+              :background-color="primaryColor"
+              :animated="true"
+              :animation-delay="animationDelays.profileRight"
+            />
+          </EditableRegion>
         </div>
       </div>
     </div>
@@ -246,6 +344,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { HostInfoProps } from '@/types/showcase'
+import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
+import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import {
   WelcomeHeader,
   HostLogo,
@@ -263,25 +363,30 @@ const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 
 // Computed visibility flags
-const showParentARow = computed(() =>
-  props.hosts.length > 0 &&
-  (props.hosts[0].parent_a_name || props.hosts[0].parent_b_name ||
-   (props.hosts.length > 1 && (props.hosts[1]?.parent_a_name || props.hosts[1]?.parent_b_name)))
+const showParentARow = computed(
+  () =>
+    props.hosts.length > 0 &&
+    (props.hosts[0].parent_a_name ||
+      props.hosts[0].parent_b_name ||
+      (props.hosts.length > 1 && (props.hosts[1]?.parent_a_name || props.hosts[1]?.parent_b_name))),
 )
 
-const showParentBRow = computed(() =>
-  props.hosts.length > 0 &&
-  ((props.hosts[0].parent_b_name && props.hosts[0].parent_a_name) ||
-   (props.hosts.length > 1 && props.hosts[1]?.parent_b_name && props.hosts[1]?.parent_a_name))
+const showParentBRow = computed(
+  () =>
+    props.hosts.length > 0 &&
+    ((props.hosts[0].parent_b_name && props.hosts[0].parent_a_name) ||
+      (props.hosts.length > 1 && props.hosts[1]?.parent_b_name && props.hosts[1]?.parent_a_name)),
 )
 
-const showProfilePictures = computed(() =>
-  props.hosts.length === 2 && props.hosts[0].profile_image && props.hosts[1].profile_image
+const showProfilePictures = computed(
+  () => props.hosts.length === 2 && props.hosts[0].profile_image && props.hosts[1].profile_image,
 )
 
 // Host titles with defaults
-const leftHostTitle = computed(() =>
-  props.hosts[0]?.title || (props.hosts.length === 2 ? 'Bridegroom' : props.hosts.length === 1 ? 'Host' : 'Host 1')
+const leftHostTitle = computed(
+  () =>
+    props.hosts[0]?.title ||
+    (props.hosts.length === 2 ? 'Bridegroom' : props.hosts.length === 1 ? 'Host' : 'Host 1'),
 )
 
 const rightHostTitle = computed(() => props.hosts[1]?.title || 'Bride')
@@ -343,18 +448,23 @@ const animationDelays = computed(() => {
   }
 
   const welcome = getNextDelay(
-    props.showWelcomeHeaderText === false ? undefined : (props.welcomeMessage || 'Welcome to Our Event'),
+    props.showWelcomeHeaderText === false
+      ? undefined
+      : props.welcomeMessage || 'Welcome to Our Event',
   )
   const parentALeft = getNextDelay(props.hosts[0]?.parent_a_name || props.hosts[0]?.parent_b_name)
   const parentARight = getNextDelay(
-    props.hosts.length > 1 ? (props.hosts[1]?.parent_a_name || props.hosts[1]?.parent_b_name) : null
+    props.hosts.length > 1 ? props.hosts[1]?.parent_a_name || props.hosts[1]?.parent_b_name : null,
   )
   const parentBLeft = getNextDelay(
-    (props.hosts[0]?.parent_b_name && props.hosts[0]?.parent_a_name) ? props.hosts[0].parent_b_name : null
+    props.hosts[0]?.parent_b_name && props.hosts[0]?.parent_a_name
+      ? props.hosts[0].parent_b_name
+      : null,
   )
   const parentBRight = getNextDelay(
-    (props.hosts.length > 1 && props.hosts[1]?.parent_b_name && props.hosts[1]?.parent_a_name)
-      ? props.hosts[1].parent_b_name : null
+    props.hosts.length > 1 && props.hosts[1]?.parent_b_name && props.hosts[1]?.parent_a_name
+      ? props.hosts[1].parent_b_name
+      : null,
   )
   const logo = currentDelay
   currentDelay += 0.25

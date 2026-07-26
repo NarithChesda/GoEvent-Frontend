@@ -1,5 +1,18 @@
 <template>
   <div class="transition-stage" :class="{ 'stage-fade-out': isStageFadingOut }">
+    <!-- Manage-page preview: replay the reveal (real clicks are needed for
+         the featured-photo edit region below, which drops the frame's normal
+         click-anywhere-to-replay shield — this restores that capability). -->
+    <button
+      v-if="editIntentCtx"
+      type="button"
+      class="replay-btn edit-region-control"
+      :title="tApp('management.showcasePreview.editors.replayTransition')"
+      @click.stop.prevent="replay"
+    >
+      <RotateCcw class="replay-icon" aria-hidden="true" />
+    </button>
+
     <!-- Feature Image: fills the viewport with a slow Ken Burns drift -->
     <div
       v-if="featureImageUrl"
@@ -26,6 +39,29 @@
 
       <!-- Cinematic vignette hugging the edges -->
       <div class="photo-vignette" />
+
+      <!-- Manage-page preview: change-featured-photo affordance, covering the
+           whole photo like other image edit regions (dashed outline + corner
+           badge, hover-only). The stage root is pointer-events:none (it's
+           just an animation on the live showcase), so this opts back in
+           explicitly via edit-region-control. -->
+      <EditableRegion
+        v-if="editIntentCtx"
+        :intent="{ kind: 'featuredPhoto' }"
+        class="featured-photo-edit-region"
+      />
+    </div>
+
+    <!-- Manage-page preview: no featured photo set yet — same affordance,
+         centered where the photo would be. -->
+    <div v-else-if="editIntentCtx" class="featured-photo-empty">
+      <button
+        type="button"
+        class="edit-region-control add-featured-photo-btn"
+        @click.stop.prevent="editIntentCtx.requestEdit({ kind: 'featuredPhoto' })"
+      >
+        ＋ {{ tApp('management.showcasePreview.editors.addFeaturedPhoto') }}
+      </button>
     </div>
 
     <!-- Floating bokeh particles in template accent color -->
@@ -76,8 +112,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, inject } from 'vue'
+import { RotateCcw } from 'lucide-vue-next'
 import type { EventPhoto } from '@/types/showcase'
+import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 
 interface Props {
   eventTitle: string
@@ -95,6 +135,10 @@ interface Props {
   getMediaUrl: (url: string) => string
   /** Controls animation timing. Door mode starts photo immediately so it's visible as the door opens. */
   animationType?: 'decoration' | 'door'
+  /** Preview-only: hold at the fully-revealed state (photo sharp + "Save the
+   *  Date" bloomed) instead of fading out and emitting transitionComplete.
+   *  Never set on the live showcase. */
+  freezeAtPeak?: boolean
 }
 
 const props = defineProps<Props>()
@@ -102,6 +146,11 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   transitionComplete: []
 }>()
+
+// Only provided by the editable manage-page preview frame — undefined on the
+// live showcase, so the featured-photo affordances can never leak there.
+const editIntentCtx = inject(EditIntentKey, undefined)
+const { t: tApp } = useAppLanguage()
 
 const isContentVisible = ref(false)
 const isCouplePhotoVisible = ref(false)
@@ -203,7 +252,18 @@ const formattedDate = computed(() => {
 //   1200ms - Footer scrim + text sequence begins (door fully open)
 //   5300ms - Everything starts fading out
 //   6500ms - Fully faded out → emit transitionComplete
-onMounted(() => {
+const clearTimers = () => {
+  if (fadeInTimer) clearTimeout(fadeInTimer)
+  if (couplePhotoTimer) clearTimeout(couplePhotoTimer)
+  if (fadeOutTimer) clearTimeout(fadeOutTimer)
+  if (completeTimer) clearTimeout(completeTimer)
+  fadeInTimer = null
+  couplePhotoTimer = null
+  fadeOutTimer = null
+  completeTimer = null
+}
+
+const runRevealSequence = () => {
   const isDoor = props.animationType === 'door'
 
   generateBokeh()
@@ -219,6 +279,9 @@ onMounted(() => {
     isContentVisible.value = true
   }, isDoor ? 1200 : 1800)
 
+  // Preview freeze: stop here — photo and text stay at full reveal
+  if (props.freezeAtPeak) return
+
   // Start fading out
   fadeOutTimer = setTimeout(() => {
     isStageFadingOut.value = true
@@ -228,14 +291,25 @@ onMounted(() => {
   completeTimer = setTimeout(() => {
     emit('transitionComplete')
   }, isDoor ? 6500 : 7000)
-})
+}
 
-onUnmounted(() => {
-  if (fadeInTimer) clearTimeout(fadeInTimer)
-  if (couplePhotoTimer) clearTimeout(couplePhotoTimer)
-  if (fadeOutTimer) clearTimeout(fadeOutTimer)
-  if (completeTimer) clearTimeout(completeTimer)
-})
+onMounted(runRevealSequence)
+
+onUnmounted(clearTimers)
+
+// Manage-page preview only: replay the reveal from the start. The frame's
+// inert click-shield normally sends a `replay` bridge command on any click
+// when the stage isn't interactive — dropped here in favor of real clicks
+// once editIntentCtx exists (needed for the featured-photo button below), so
+// this button restores the same capability for editors.
+const replay = async () => {
+  clearTimers()
+  isCouplePhotoVisible.value = false
+  isContentVisible.value = false
+  isStageFadingOut.value = false
+  await nextTick()
+  runRevealSequence()
+}
 </script>
 
 <style scoped>
@@ -374,6 +448,86 @@ onUnmounted(() => {
 
 .show .photo-vignette {
   opacity: 1;
+}
+
+/* ---------- Manage-page preview: featured-photo edit chrome ---------- */
+/* The stage root is pointer-events:none (a pure animation on the live
+   showcase) — these opt back into pointer-events explicitly. Rendered only
+   when the edit-intent context exists, never in production. */
+
+.replay-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  color: #1e90ff;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1.5px dashed rgba(30, 144, 255, 0.6);
+  border-radius: 9999px;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.18);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.replay-btn:hover {
+  border-color: rgba(30, 144, 255, 0.95);
+  background: #ffffff;
+}
+
+.replay-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+/* Overrides EditableRegion's default (relative, no intrinsic size) so the
+   empty-slot region fills the photo like the other overlays instead of
+   collapsing to 0x0 — its dashed outline + corner badge then read as "hover
+   the photo to edit it", matching every other image edit region in the app. */
+.featured-photo-edit-region {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.featured-photo-empty {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.add-featured-photo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25em;
+  padding: 0.625rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: #1e90ff;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1.5px dashed rgba(30, 144, 255, 0.6);
+  border-radius: 9999px;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.18);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.add-featured-photo-btn:hover {
+  border-color: rgba(30, 144, 255, 0.95);
+  background: #ffffff;
 }
 
 /* ---------- Bokeh particles ---------- */

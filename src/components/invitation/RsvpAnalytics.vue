@@ -12,7 +12,7 @@
       </div>
       <button
         type="button"
-        class="flex-shrink-0 rounded-lg p-2 text-slate-400 transition-colors duration-200 hover:bg-slate-100 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-50"
+        class="inline-flex min-h-[40px] min-w-[40px] flex-shrink-0 items-center justify-center rounded-lg p-2 text-slate-400 transition-colors duration-200 hover:bg-slate-100 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-50"
         :disabled="loading"
         :aria-label="t('management.rsvpAnalytics.refresh')"
         :title="t('management.rsvpAnalytics.refresh')"
@@ -24,13 +24,15 @@
 
     <!-- Loading skeleton (first load only — refreshes keep content visible) -->
     <div v-if="loading && !summary" class="animate-pulse space-y-8" aria-hidden="true">
-      <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div v-for="i in 4" :key="i" class="h-28 rounded-2xl bg-slate-100" />
-      </div>
-      <div class="space-y-3">
-        <div class="h-3 w-44 rounded bg-slate-100" />
-        <div class="h-3 w-full rounded-full bg-slate-100" />
-        <div class="h-3 w-64 max-w-full rounded bg-slate-100" />
+      <!-- Mirrors the donut + legend / stat-tile split below -->
+      <div class="grid gap-3 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+        <div class="flex items-center gap-4 rounded-2xl bg-slate-100 p-4 sm:gap-6 sm:p-5">
+          <div class="h-32 w-32 flex-shrink-0 rounded-full bg-slate-200 sm:h-36 sm:w-36" />
+          <div class="flex-1 space-y-2.5">
+            <div v-for="i in 4" :key="i" class="h-3 rounded bg-slate-200" />
+          </div>
+        </div>
+        <div class="h-32 rounded-2xl bg-slate-100 lg:h-auto" />
       </div>
       <div class="space-y-3">
         <div v-for="i in 2" :key="i" class="h-16 rounded-2xl bg-slate-100" />
@@ -58,56 +60,112 @@
     <!-- Content -->
     <div v-else class="flex flex-col gap-8">
       <!-- ================================================================
-        Section 1 · KPI tiles
-        Response rate is the single hero figure; the other three tiles are
-        quiet supporting stats. Colors stay on marks (meter), not text.
+        Section 1 · Response
+        One question — "have you replied, and how?" — split into four
+        mutually exclusive answers, so this is part-to-whole at a glance:
+        a donut, with the response rate as the centre KPI and the legend
+        carrying the exact counts. Palette validated with the dataviz
+        validator (worst adjacent CVD ΔE 10.8 protan / 22.9 normal);
+        pending is a deliberate neutral remainder, and every segment is
+        named + counted in the legend, so nothing reads on colour alone.
       ================================================================= -->
-      <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <!-- Hero: response rate -->
-        <div
-          class="col-span-2 rounded-2xl border border-emerald-100/70 bg-gradient-to-br from-[#2ecc71]/10 to-[#1e90ff]/10 p-4 sm:p-5 lg:col-span-1"
-        >
-          <p class="text-xs font-medium text-slate-500">
-            {{ t('management.rsvpAnalytics.metrics.responseRate') }}
-          </p>
-          <p class="mt-1.5 text-3xl sm:text-4xl font-bold leading-none text-slate-900">
-            {{ respondedPercent }}%
-          </p>
-          <div class="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-900/10">
-            <div
-              class="h-full rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] transition-all duration-500"
-              :style="{ width: `${respondedPercent}%` }"
-            />
+      <section class="grid gap-3 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+        <div class="rounded-2xl border border-slate-200/70 bg-white p-4 sm:p-5">
+          <div class="flex items-center gap-4 sm:gap-6">
+            <!-- Donut -->
+            <div class="relative h-32 w-32 flex-shrink-0 sm:h-36 sm:w-36">
+              <svg
+                class="h-full w-full -rotate-90"
+                viewBox="0 0 42 42"
+                role="img"
+                :aria-label="
+                  t('management.rsvpAnalytics.metrics.responseRateDesc', {
+                    responded: respondedCount,
+                    invited: summary.total_invited,
+                  })
+                "
+              >
+                <circle
+                  cx="21"
+                  cy="21"
+                  r="15.9155"
+                  fill="none"
+                  stroke="#f1f5f9"
+                  stroke-width="4.5"
+                />
+                <circle
+                  v-for="seg in donutSegments"
+                  :key="seg.key"
+                  cx="21"
+                  cy="21"
+                  r="15.9155"
+                  fill="none"
+                  stroke-linecap="butt"
+                  stroke-width="4.5"
+                  class="donut-arc"
+                  :stroke="seg.color"
+                  :stroke-dasharray="seg.dash"
+                  :stroke-dashoffset="seg.offset"
+                >
+                  <title>{{ seg.label }} · {{ seg.count }} ({{ seg.percent }}%)</title>
+                </circle>
+              </svg>
+
+              <!-- Centre KPI -->
+              <div class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                <span class="text-3xl font-bold leading-none text-slate-900 sm:text-4xl">
+                  {{ respondedPercent }}%
+                </span>
+                <span class="mt-1 text-[10px] font-medium uppercase tracking-wide text-slate-400">
+                  {{ t('management.rsvpAnalytics.metrics.repliedShort') }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Legend doubles as the value table: identity from the dot,
+                 numbers from the columns, so the donut is never the only
+                 way to read a figure. -->
+            <div class="min-w-0 flex-1">
+              <p class="mb-2 text-[11px] leading-snug text-slate-500">
+                {{
+                  t('management.rsvpAnalytics.metrics.responseRateDesc', {
+                    responded: respondedCount,
+                    invited: summary.total_invited,
+                  })
+                }}
+              </p>
+              <div
+                v-for="row in distributionRows"
+                :key="row.key"
+                class="grid grid-cols-[1fr_auto_2.25rem] items-baseline gap-x-2 py-1"
+              >
+                <p class="flex min-w-0 items-center gap-1.5">
+                  <span
+                    class="h-2 w-2 flex-shrink-0 self-center rounded-full"
+                    :style="{ backgroundColor: row.color }"
+                    aria-hidden="true"
+                  />
+                  <span class="truncate text-[11px] font-medium uppercase tracking-wide text-slate-500">
+                    {{ row.label }}
+                  </span>
+                </p>
+                <span class="text-sm font-semibold tabular-nums text-slate-900">
+                  {{ row.count }}
+                </span>
+                <span class="text-right text-[11px] tabular-nums text-slate-400">
+                  {{ row.percent }}%
+                </span>
+              </div>
+            </div>
           </div>
-          <p class="mt-2 text-[11px] leading-snug text-slate-500">
-            {{
-              t('management.rsvpAnalytics.metrics.responseRateDesc', {
-                responded: respondedCount,
-                invited: summary.total_invited,
-              })
-            }}
-          </p>
         </div>
 
-        <!-- Going -->
-        <div class="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-4 sm:p-5">
-          <p class="text-xs font-medium text-slate-500">
-            {{ t('management.rsvpAnalytics.metrics.going') }}
-          </p>
-          <p class="mt-1.5 text-2xl sm:text-3xl font-semibold leading-none text-slate-900">
-            {{ summary.status_counts.attending }}
-          </p>
-          <p class="mt-2 text-[11px] leading-snug text-slate-500">
-            {{ t('management.rsvpAnalytics.metrics.goingDesc', { percent: attendingPercent }) }}
-          </p>
-        </div>
-
-        <!-- Expected attendees (incl. plus-ones) -->
-        <div class="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-4 sm:p-5">
+        <!-- The one headcount the donut can't carry: attendees incl. plus-ones -->
+        <div class="flex flex-col justify-center rounded-2xl border border-slate-200/70 bg-slate-50/70 p-4 sm:p-5">
           <p class="text-xs font-medium text-slate-500">
             {{ t('management.rsvpAnalytics.hero.expectedLabel') }}
           </p>
-          <p class="mt-1.5 text-2xl sm:text-3xl font-semibold leading-none text-slate-900">
+          <p class="mt-1.5 text-3xl font-semibold leading-none text-slate-900">
             {{ summary.total_expected_attendees }}
           </p>
           <p class="mt-2 text-[11px] leading-snug text-slate-500">
@@ -118,73 +176,6 @@
               })
             }}
           </p>
-        </div>
-
-        <!-- Awaiting reply -->
-        <div class="rounded-2xl border border-slate-200/70 bg-slate-50/60 p-4 sm:p-5">
-          <p class="text-xs font-medium text-slate-500">
-            {{ t('management.rsvpAnalytics.metrics.pending') }}
-          </p>
-          <p class="mt-1.5 text-2xl sm:text-3xl font-semibold leading-none text-slate-900">
-            {{ summary.status_counts.pending }}
-          </p>
-          <p class="mt-2 text-[11px] leading-snug text-slate-500">
-            {{ t('management.rsvpAnalytics.metrics.pendingDesc') }}
-          </p>
-        </div>
-      </section>
-
-      <!-- ================================================================
-        Section 2 · Response distribution
-        Segmented bar with 2px surface gaps; hover reveals a tooltip per
-        segment. Legend below always carries labels + counts, so color is
-        never the only identity channel.
-      ================================================================= -->
-      <section>
-        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-          {{ t('management.rsvpAnalytics.distribution.title') }}
-        </p>
-
-        <div class="mt-3 flex h-3 w-full gap-[3px]">
-          <div
-            v-for="row in visibleSegments"
-            :key="row.key"
-            class="group relative h-full"
-            :style="{ flexGrow: row.count, flexBasis: '0%' }"
-          >
-            <div
-              class="h-full w-full rounded-full transition-all duration-500"
-              :style="{ backgroundColor: row.color }"
-            />
-            <div
-              class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] font-medium text-white shadow-lg group-hover:block"
-            >
-              {{ row.label }} · {{ row.count }} ({{ row.percent }}%)
-            </div>
-          </div>
-        </div>
-
-        <!-- Legend -->
-        <div class="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 sm:flex sm:flex-wrap sm:gap-x-6">
-          <div
-            v-for="row in distributionRows"
-            :key="row.key"
-            class="flex items-baseline gap-2"
-          >
-            <span
-              class="h-2 w-2 flex-shrink-0 self-center rounded-full"
-              :style="{ backgroundColor: row.color }"
-            />
-            <p class="text-[11px] font-medium uppercase tracking-wide text-slate-500">
-              {{ row.label }}
-            </p>
-            <p class="text-sm font-semibold tabular-nums text-slate-900">
-              {{ row.count }}
-            </p>
-            <p class="text-[11px] tabular-nums text-slate-400">
-              {{ row.percent }}%
-            </p>
-          </div>
         </div>
       </section>
 
@@ -286,363 +277,30 @@
       </section>
 
       <!-- ================================================================
-        Section 4 · Per-question breakdowns
-        Each question is a clickable card. Expanding loads drill-through,
-        offers an RSVP-status filter, and renders guest chips inline under
-        each bar (no duplicate list).
+        Section 3 · Questions
+        One list for authoring and results — rows open the editor in place,
+        the chevron expands the answer breakdown.
       ================================================================= -->
-      <section>
-        <div class="mb-4">
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-            {{ t('management.rsvpAnalytics.questions.title') }}
-          </p>
-          <p class="mt-1 text-sm text-slate-500">
-            {{ t('management.rsvpAnalytics.questions.description') }}
-          </p>
-        </div>
-
-        <!-- No questions yet -->
-        <div
-          v-if="summary.question_breakdowns.length === 0"
-          class="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/40 p-6 text-center"
-        >
-          <MessageSquareText class="mx-auto mb-2 h-10 w-10 text-slate-300" />
-          <p class="text-sm font-medium text-slate-600">
-            {{ t('management.rsvpAnalytics.questions.emptyState.title') }}
-          </p>
-          <p class="mx-auto mt-1 max-w-md text-xs text-slate-400">
-            {{ t('management.rsvpAnalytics.questions.emptyState.description') }}
-          </p>
-        </div>
-
-        <!-- Question list -->
-        <div v-else class="space-y-3">
-          <article
-            v-for="(q, qIdx) in summary.question_breakdowns"
-            :key="q.question_id"
-            class="rounded-2xl border bg-white transition-all duration-200"
-            :class="
-              isExpanded(q.question_id)
-                ? 'border-slate-300 shadow-sm'
-                : 'border-slate-200/80 hover:border-slate-300'
-            "
-          >
-            <!-- Header (clickable) -->
-            <button
-              type="button"
-              class="flex w-full items-start justify-between gap-4 rounded-2xl p-4 text-left sm:p-5"
-              :aria-expanded="isExpanded(q.question_id)"
-              @click="toggleQuestion(q.question_id)"
-            >
-              <div class="min-w-0 flex-1">
-                <p class="break-words text-sm font-semibold text-slate-900">
-                  <span class="mr-1.5 font-normal tabular-nums text-slate-300">Q{{ qIdx + 1 }}.</span>
-                  {{ localizeQuestionText(q.question_id, q.question_text) }}
-                </p>
-                <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500">
-                  <span>{{ getTypeLabel(q.question_type) }}</span>
-                  <span v-if="q.is_required" class="text-rose-600">
-                    · {{ t('management.guestGroupsView.rsvpQuestions.requiredBadge') }}
-                  </span>
-                  <span>
-                    · {{ t('management.rsvpAnalytics.questions.answersCount', { count: q.total_answers }, q.total_answers) }}
-                  </span>
-                </div>
-              </div>
-              <ChevronDown
-                class="mt-1 h-4 w-4 flex-shrink-0 text-slate-400 transition-transform duration-200"
-                :class="{ 'rotate-180': isExpanded(q.question_id) }"
-              />
-            </button>
-
-            <!-- Body — collapsed cards only render a body when there's a
-              chart preview to show (choice bars); free-text and unanswered
-              questions collapse to just the header, whose meta line already
-              carries the answer count. -->
-            <div
-              v-if="isExpanded(q.question_id) || hasCollapsedPreview(q)"
-              class="-mt-1 px-4 pb-4 sm:px-5 sm:pb-5"
-            >
-              <!-- Drill status filter (only when expanded, with answers) -->
-              <div
-                v-if="isExpanded(q.question_id) && q.total_answers > 0"
-                class="mb-3 flex flex-wrap items-center gap-1.5"
-                :title="t('management.rsvpAnalytics.drill.filterHint')"
-              >
-                <button
-                  v-for="option in drillFilterOptions"
-                  :key="option.key"
-                  type="button"
-                  class="rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors duration-200"
-                  :class="
-                    drillFilter === option.value
-                      ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-sm'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  "
-                  @click="setDrillFilter(option.value)"
-                >
-                  {{ option.label }}
-                </button>
-              </div>
-
-              <!-- No answers yet -->
-              <div
-                v-if="q.total_answers === 0"
-                class="rounded-lg bg-slate-50 p-3 text-center"
-              >
-                <p class="text-xs text-slate-400">
-                  {{ t('management.rsvpAnalytics.questions.noAnswers') }}
-                </p>
-              </div>
-
-              <!-- Choice breakdown: bars + inline guests when expanded -->
-              <div
-                v-else-if="q.breakdown && Object.keys(q.breakdown).length > 0"
-                class="space-y-3.5"
-              >
-                <div
-                  v-for="row in getVisibleBreakdown(q)"
-                  :key="row.label"
-                >
-                  <div class="flex items-baseline justify-between gap-3">
-                    <p
-                      class="min-w-0 truncate text-xs font-medium text-slate-700"
-                      :title="localizeChoice(q.question_id, row.label)"
-                    >
-                      {{ localizeChoice(q.question_id, row.label) }}
-                    </p>
-                    <p class="flex-shrink-0 text-xs tabular-nums">
-                      <span class="font-semibold text-slate-900">{{ row.count }}</span>
-                      <span class="text-slate-400"> · {{ row.percentOfTotal }}%</span>
-                    </p>
-                  </div>
-                  <div class="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
-                    <div
-                      class="h-full rounded-r-full bg-[#1e90ff] transition-all duration-500"
-                      :style="{ width: `${Math.max(row.percentOfTotal, 2)}%` }"
-                    />
-                  </div>
-
-                  <!-- Inline guest chips for this bar (only when expanded + loaded) -->
-                  <div
-                    v-if="isExpanded(q.question_id) && getBucketGuests(row.label).length > 0"
-                    class="mt-2 flex flex-wrap gap-1"
-                  >
-                    <span
-                      v-for="guest in getVisibleBucketGuests(row.label)"
-                      :key="guest.id"
-                      class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-700"
-                    >
-                      <span
-                        v-if="guest.group_color"
-                        class="h-1 w-1 flex-shrink-0 rounded-full"
-                        :style="{ backgroundColor: guest.group_color }"
-                      />
-                      {{ guest.name }}
-                      <span
-                        v-if="(guest.plus_ones_count ?? 0) > 0"
-                        class="text-slate-400"
-                      >+{{ guest.plus_ones_count }}</span>
-                    </span>
-
-                    <button
-                      v-if="!isBucketExpanded(row.label) && bucketRemainder(row.label) > 0"
-                      type="button"
-                      class="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 transition-colors duration-200 hover:bg-slate-200"
-                      @click="toggleBucket(row.label)"
-                    >
-                      +{{ bucketRemainder(row.label) }} {{ t('management.rsvpAnalytics.chase.moreShort') }}
-                    </button>
-                    <button
-                      v-else-if="isBucketExpanded(row.label) && getBucketGuests(row.label).length > BUCKET_PREVIEW_COUNT"
-                      type="button"
-                      class="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 transition-colors duration-200 hover:bg-slate-200"
-                      @click="toggleBucket(row.label)"
-                    >
-                      {{ t('management.rsvpAnalytics.showLess') }}
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Collapsed cards cap the option list -->
-                <p
-                  v-if="!isExpanded(q.question_id) && hiddenChoiceCount(q) > 0"
-                  class="text-[11px] text-slate-400"
-                >
-                  {{ t('management.rsvpAnalytics.questions.moreOptions', { count: hiddenChoiceCount(q) }, hiddenChoiceCount(q)) }}
-                </p>
-              </div>
-
-              <!-- Free-text: the body only renders when expanded, so this is
-                always the drill-through list -->
-              <div v-else>
-                <div
-                  v-if="drillData?.free_text_answers?.length"
-                  class="space-y-2"
-                >
-                  <div
-                    v-for="entry in visibleFreeTextAnswers"
-                    :key="entry.id"
-                    class="rounded-lg bg-slate-50 p-3"
-                  >
-                    <div class="mb-1 flex items-center justify-between gap-2">
-                      <div class="flex min-w-0 items-center gap-1.5">
-                        <span
-                          v-if="entry.group_color"
-                          class="h-1.5 w-1.5 flex-shrink-0 rounded-full"
-                          :style="{ backgroundColor: entry.group_color }"
-                        />
-                        <p class="truncate text-xs font-semibold text-slate-900">
-                          {{ entry.name }}
-                        </p>
-                        <span
-                          v-if="entry.group_name"
-                          class="truncate text-[10px] text-slate-400"
-                        >· {{ entry.group_name }}</span>
-                      </div>
-                      <p class="flex-shrink-0 text-[10px] text-slate-400">
-                        {{ formatRelativeDate(entry.updated_at) }}
-                      </p>
-                    </div>
-                    <p class="whitespace-pre-line break-words text-sm text-slate-700">
-                      {{ entry.answer_text }}
-                    </p>
-                  </div>
-
-                  <button
-                    v-if="!showAllFreeText && freeTextRemainder > 0"
-                    type="button"
-                    class="text-xs font-medium text-slate-500 transition-colors duration-200 hover:text-slate-900"
-                    @click="showAllFreeText = true"
-                  >
-                    {{ t('management.rsvpAnalytics.showAll', { count: drillData.free_text_answers.length }) }}
-                  </button>
-                  <button
-                    v-else-if="showAllFreeText && drillData.free_text_answers.length > FREE_TEXT_PREVIEW_COUNT"
-                    type="button"
-                    class="text-xs font-medium text-slate-500 transition-colors duration-200 hover:text-slate-900"
-                    @click="showAllFreeText = false"
-                  >
-                    {{ t('management.rsvpAnalytics.showLess') }}
-                  </button>
-                </div>
-
-                <!-- Expanded but no answers -->
-                <div
-                  v-else-if="isExpanded(q.question_id) && !drillLoading && !drillError"
-                  class="rounded-lg bg-slate-50 p-3 text-center"
-                >
-                  <p class="text-xs text-slate-400">
-                    {{ t('management.rsvpAnalytics.drill.noFreeText') }}
-                  </p>
-                </div>
-              </div>
-
-              <!-- Drill-through loading / error (shared across types) -->
-              <div
-                v-if="isExpanded(q.question_id) && drillLoading"
-                class="mt-3 flex items-center justify-center py-3"
-              >
-                <div class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent text-emerald-600" />
-                <span class="ml-2 text-xs text-slate-500">
-                  {{ t('management.rsvpAnalytics.drill.loading') }}
-                </span>
-              </div>
-              <div
-                v-else-if="isExpanded(q.question_id) && drillError"
-                class="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700"
-              >
-                {{ drillError }}
-              </div>
-
-              <!-- Still-expected list -->
-              <div
-                v-if="
-                  isExpanded(q.question_id) &&
-                  drillData &&
-                  drillData.guests_without_answer.length > 0
-                "
-                class="mt-4 border-t border-dashed border-amber-200 pt-3"
-              >
-                <div class="mb-2 flex items-center justify-between">
-                  <p class="text-[10px] font-semibold uppercase tracking-wide text-amber-600">
-                    {{ t('management.rsvpAnalytics.drill.missingTitle') }}
-                  </p>
-                  <span class="text-[10px] tabular-nums text-amber-700/70">
-                    {{ drillData.guests_without_answer.length }}
-                  </span>
-                </div>
-                <div class="flex flex-wrap gap-1">
-                  <span
-                    v-for="guest in visibleMissingGuests"
-                    :key="guest.id"
-                    class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-800"
-                  >
-                    <span
-                      v-if="guest.group_color"
-                      class="h-1 w-1 flex-shrink-0 rounded-full"
-                      :style="{ backgroundColor: guest.group_color }"
-                    />
-                    {{ guest.name }}
-                  </span>
-
-                  <button
-                    v-if="!showAllMissing && collapsedMissingRemainder > 0"
-                    type="button"
-                    class="inline-flex items-center rounded-full border border-amber-200 bg-amber-100/60 px-2 py-0.5 text-[10px] font-medium text-amber-700 transition-colors duration-200 hover:bg-amber-100"
-                    @click="showAllMissing = true"
-                  >
-                    +{{ collapsedMissingRemainder }} {{ t('management.rsvpAnalytics.chase.moreShort') }}
-                  </button>
-                  <button
-                    v-else-if="
-                      showAllMissing &&
-                      drillData.guests_without_answer.length > MISSING_PREVIEW_COUNT
-                    "
-                    type="button"
-                    class="inline-flex items-center rounded-full border border-amber-200 bg-amber-100/60 px-2 py-0.5 text-[10px] font-medium text-amber-700 transition-colors duration-200 hover:bg-amber-100"
-                    @click="showAllMissing = false"
-                  >
-                    {{ t('management.rsvpAnalytics.showLess') }}
-                  </button>
-                </div>
-                <p
-                  v-if="showAllMissing && drillData.guests_without_answer_truncated"
-                  class="mt-2 text-[10px] text-amber-700/70"
-                >
-                  {{ t('management.rsvpAnalytics.drill.missingTruncated') }}
-                </p>
-              </div>
-            </div>
-          </article>
-        </div>
-      </section>
+      <RsvpQuestionsSection
+        :event-id="props.eventId"
+        :questions="questions"
+        :breakdowns="summary.question_breakdowns"
+        @refresh="loadSummary"
+      />
     </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import {
-  BellRing,
-  ChevronDown,
-  ClipboardList,
-  MessageSquareText,
-  PartyPopper,
-  RefreshCw,
-} from 'lucide-vue-next'
+import { BellRing, ClipboardList, PartyPopper, RefreshCw } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import RsvpQuestionsSection from './RsvpQuestionsSection.vue'
 import { guestService, rsvpQuestionsService } from '../../services/api'
-import type {
-  EventRsvpQuestion,
-  EventRsvpQuestionType,
-  GuestRsvpQuestionBreakdown,
-  GuestRsvpStatus,
-  GuestRsvpSummary,
-  RsvpQuestionResponses,
-} from '../../services/api'
+import type { EventRsvpQuestion, GuestRsvpSummary } from '../../services/api'
 
-const { t, locale } = useAppLanguage()
+const { t } = useAppLanguage()
 
 const props = defineProps<{
   eventId: string
@@ -673,39 +331,6 @@ const loadSummary = async () => {
   }
 }
 
-// Map question_id → full question record (with translations) for quick
-// lookup during render. Rebuilt whenever the questions array changes.
-const questionsById = computed(() => {
-  const map = new Map<number, EventRsvpQuestion>()
-  for (const q of questions.value) map.set(q.id, q)
-  return map
-})
-
-const localizeQuestionText = (
-  questionId: number,
-  fallback: string,
-): string => {
-  if (locale.value === 'en') return fallback
-  const q = questionsById.value.get(questionId)
-  if (!q?.translations) return fallback
-  const match = q.translations.find((tr) => tr.language === locale.value)
-  return match?.question_text?.trim() || fallback
-}
-
-const localizeChoice = (
-  questionId: number,
-  baseChoice: string,
-): string => {
-  if (locale.value === 'en') return baseChoice
-  const q = questionsById.value.get(questionId)
-  if (!q?.choices || !q.translations) return baseChoice
-  const idx = q.choices.indexOf(baseChoice)
-  if (idx === -1) return baseChoice
-  const match = q.translations.find((tr) => tr.language === locale.value)
-  const translated = match?.choices?.[idx]?.trim()
-  return translated || baseChoice
-}
-
 // ---- Metrics -------------------------------------------------------------
 const respondedCount = computed(() => {
   if (!summary.value) return 0
@@ -716,13 +341,6 @@ const respondedCount = computed(() => {
 const respondedPercent = computed(() => {
   if (!summary.value || summary.value.total_invited === 0) return 0
   return Math.round((respondedCount.value / summary.value.total_invited) * 100)
-})
-
-const attendingPercent = computed(() => {
-  if (!summary.value || summary.value.total_invited === 0) return 0
-  return Math.round(
-    (summary.value.status_counts.attending / summary.value.total_invited) * 100,
-  )
 })
 
 // Plus-ones = expected - attending guests themselves. `total_expected_attendees`
@@ -799,9 +417,9 @@ const invitationLegend = computed(() => [
 // remainder — the legend always carries its label + count.
 const statusColors = {
   attending: '#059669', // emerald-600
-  maybe: '#d97706', // amber-600
+  maybe: '#f0930d', // amber, re-stepped off amber-600
   not_attending: '#e11d48', // rose-600
-  pending: '#cbd5e1', // slate-300
+  pending: '#94a3b8', // slate-400 — the deliberate "nothing yet" neutral
 }
 
 interface DistributionRow {
@@ -821,28 +439,28 @@ const distributionRows = computed<DistributionRow[]>(() => {
   return [
     {
       key: 'attending',
-      label: t('management.guestGroupsView.rsvpStatsCard.cards.going'),
+      label: t('management.rsvpStatuses.going'),
       count: c.attending,
       percent: pct(c.attending),
       color: statusColors.attending,
     },
     {
       key: 'maybe',
-      label: t('management.guestGroupsView.rsvpStatsCard.cards.maybe'),
+      label: t('management.rsvpStatuses.maybe'),
       count: c.maybe,
       percent: pct(c.maybe),
       color: statusColors.maybe,
     },
     {
       key: 'not_attending',
-      label: t('management.guestGroupsView.rsvpStatsCard.cards.declined'),
+      label: t('management.rsvpStatuses.declined'),
       count: c.not_attending,
       percent: pct(c.not_attending),
       color: statusColors.not_attending,
     },
     {
       key: 'pending',
-      label: t('management.guestGroupsView.rsvpStatsCard.cards.pending'),
+      label: t('management.rsvpStatuses.pending'),
       count: c.pending,
       percent: pct(c.pending),
       color: statusColors.pending,
@@ -850,247 +468,44 @@ const distributionRows = computed<DistributionRow[]>(() => {
   ]
 })
 
-// Zero-count segments are dropped from the bar (they'd only add stray gaps)
-// but stay in the legend below with an explicit 0.
-const visibleSegments = computed(() =>
-  distributionRows.value.filter((row) => row.count > 0),
-)
-
-// ---- Question breakdowns -------------------------------------------------
-const typeLabels: Record<EventRsvpQuestionType, string> = {
-  text: 'text',
-  long_text: 'long_text',
-  yes_no: 'yes_no',
-  single_choice: 'single_choice',
-  multi_choice: 'multi_choice',
-}
-
-const getTypeLabel = (type: string) => {
-  const key = typeLabels[type as EventRsvpQuestionType] ?? 'text'
-  return t(`management.guestGroupsView.rsvpQuestions.types.${key}`)
-}
-
-interface BreakdownRow {
-  label: string
-  count: number
-  percentOfTotal: number
-}
-
-const getSortedBreakdown = (q: GuestRsvpQuestionBreakdown): BreakdownRow[] => {
-  if (!q.breakdown) return []
-  const entries = Object.entries(q.breakdown)
-  if (entries.length === 0) return []
-  const total = q.total_answers || 1
-  return entries
-    .map(([label, count]) => ({
-      label,
-      count,
-      percentOfTotal: Math.round((count / total) * 100),
-    }))
-    .sort((a, b) => b.count - a.count)
-}
-
-// Collapsed cards only preview the top choice rows; expanding shows all.
-const CHOICE_ROWS_PREVIEW_COUNT = 5
-
-const getVisibleBreakdown = (q: GuestRsvpQuestionBreakdown): BreakdownRow[] => {
-  const rows = getSortedBreakdown(q)
-  return isExpanded(q.question_id) ? rows : rows.slice(0, CHOICE_ROWS_PREVIEW_COUNT)
-}
-
-const hiddenChoiceCount = (q: GuestRsvpQuestionBreakdown): number => {
-  if (isExpanded(q.question_id)) return 0
-  return Math.max(0, getSortedBreakdown(q).length - CHOICE_ROWS_PREVIEW_COUNT)
-}
-
-// A collapsed card only renders a body when there are choice bars to
-// preview; free-text and unanswered questions collapse to the header alone.
-const hasCollapsedPreview = (q: GuestRsvpQuestionBreakdown): boolean =>
-  q.total_answers > 0 && !!q.breakdown && Object.keys(q.breakdown).length > 0
-
-// ---- Drill-through -------------------------------------------------------
-// Clicking a question expands it and lazy-loads the per-question drill-through
-// from `rsvpQuestionsService.getQuestionResponses`. Results are cached by
-// question id + status filter so re-expanding or re-filtering is free.
-const expandedQuestionId = ref<number | null>(null)
-const drillFilter = ref<GuestRsvpStatus | null>(null)
-const drillLoading = ref(false)
-const drillError = ref<string | null>(null)
-const drillData = ref<RsvpQuestionResponses | null>(null)
-const drillCache = new Map<string, RsvpQuestionResponses>()
-
-const drillFilterOptions = computed<
-  Array<{ key: string; value: GuestRsvpStatus | null; label: string }>
->(() => [
-  {
-    key: 'all',
-    value: null,
-    label: t('management.rsvpAnalytics.drill.filterAll'),
-  },
-  {
-    key: 'attending',
-    value: 'attending',
-    label: t('management.guestGroupsView.rsvpStatsCard.cards.going'),
-  },
-  {
-    key: 'maybe',
-    value: 'maybe',
-    label: t('management.guestGroupsView.rsvpStatsCard.cards.maybe'),
-  },
-  {
-    key: 'not_attending',
-    value: 'not_attending',
-    label: t('management.guestGroupsView.rsvpStatsCard.cards.declined'),
-  },
-])
-
-const isExpanded = (questionId: number) => expandedQuestionId.value === questionId
-
-// Same progressive-disclosure treatment for the "still expected to answer"
-// list inside an expanded question. Resets whenever the drill target changes.
-const MISSING_PREVIEW_COUNT = 8
-const showAllMissing = ref(false)
-
-const visibleMissingGuests = computed(() => {
-  const guests = drillData.value?.guests_without_answer ?? []
-  return showAllMissing.value ? guests : guests.slice(0, MISSING_PREVIEW_COUNT)
-})
-
-const collapsedMissingRemainder = computed(() => {
-  const guests = drillData.value?.guests_without_answer ?? []
-  return Math.max(0, guests.length - MISSING_PREVIEW_COUNT)
-})
-
-// Per-bucket guest chips also collapse to a preview; each choice bucket
-// expands independently (keyed by its answer label).
-const BUCKET_PREVIEW_COUNT = 8
-const expandedBuckets = ref(new Set<string>())
-
-const isBucketExpanded = (label: string) => expandedBuckets.value.has(label)
-
-const toggleBucket = (label: string) => {
-  const next = new Set(expandedBuckets.value)
-  if (next.has(label)) {
-    next.delete(label)
-  } else {
-    next.add(label)
-  }
-  expandedBuckets.value = next
-}
-
-const getVisibleBucketGuests = (label: string) => {
-  const guests = getBucketGuests(label)
-  return isBucketExpanded(label) ? guests : guests.slice(0, BUCKET_PREVIEW_COUNT)
-}
-
-const bucketRemainder = (label: string) =>
-  Math.max(0, getBucketGuests(label).length - BUCKET_PREVIEW_COUNT)
-
-// Free-text answers preview the most recent few, with a show-all toggle.
-const FREE_TEXT_PREVIEW_COUNT = 5
-const showAllFreeText = ref(false)
-
-const visibleFreeTextAnswers = computed(() => {
-  const answers = drillData.value?.free_text_answers ?? []
-  return showAllFreeText.value ? answers : answers.slice(0, FREE_TEXT_PREVIEW_COUNT)
-})
-
-const freeTextRemainder = computed(() => {
-  const answers = drillData.value?.free_text_answers ?? []
-  return Math.max(0, answers.length - FREE_TEXT_PREVIEW_COUNT)
-})
-
-const loadDrill = async (
-  questionId: number,
-  filter: GuestRsvpStatus | null,
-) => {
-  drillError.value = null
-
-  const cacheKey = `${questionId}|${filter ?? 'all'}`
-  const cached = drillCache.get(cacheKey)
-  if (cached) {
-    drillData.value = cached
-    return
-  }
-
-  drillData.value = null
-  drillLoading.value = true
-  try {
-    const response = await rsvpQuestionsService.getQuestionResponses(
-      props.eventId,
-      questionId,
-      filter ? { rsvp_status: filter } : undefined,
-    )
-    if (response.success && response.data) {
-      drillCache.set(cacheKey, response.data)
-      if (
-        expandedQuestionId.value === questionId &&
-        drillFilter.value === filter
-      ) {
-        drillData.value = response.data
-      }
-    } else {
-      drillError.value =
-        response.message || t('management.rsvpAnalytics.drill.loadError')
-    }
-  } catch {
-    drillError.value = t('management.rsvpAnalytics.drill.loadError')
-  } finally {
-    drillLoading.value = false
-  }
-}
-
-const toggleQuestion = (questionId: number) => {
-  if (expandedQuestionId.value === questionId) {
-    expandedQuestionId.value = null
-    drillData.value = null
-    drillError.value = null
-    return
-  }
-
-  expandedQuestionId.value = questionId
-  drillFilter.value = null
-  showAllMissing.value = false
-  showAllFreeText.value = false
-  expandedBuckets.value = new Set()
-  loadDrill(questionId, null)
-}
-
-const setDrillFilter = (filter: GuestRsvpStatus | null) => {
-  if (drillFilter.value === filter) return
-  drillFilter.value = filter
-  showAllMissing.value = false
-  showAllFreeText.value = false
-  expandedBuckets.value = new Set()
-  if (expandedQuestionId.value !== null) {
-    loadDrill(expandedQuestionId.value, filter)
-  }
-}
-
 /**
- * Return the guest list for a given choice bucket in the currently-expanded
- * question's drill-through. Returns an empty array if drill data isn't
- * loaded yet or if this bucket isn't in `grouped_by_answer`. Used to
- * render guest chips inline under each breakdown bar.
+ * Donut arcs, drawn as dashed strokes on a circle whose circumference is
+ * exactly 100 (r = 15.9155), so a percentage maps 1:1 onto dash length.
+ *
+ * Each arc is shortened by `DONUT_GAP` to leave the 2px surface gap the mark
+ * spec asks for — but only when more than one status has a count, since a
+ * lone full-circle segment would otherwise show a notch for no reason.
+ * Zero-count statuses are skipped entirely (they'd contribute nothing but a
+ * stray gap) and are still named, counted and shown as 0 in the legend.
  */
-const getBucketGuests = (answerLabel: string) => {
-  const buckets = drillData.value?.grouped_by_answer
-  if (!buckets) return []
-  const bucket = buckets.find((b) => b.answer === answerLabel)
-  return bucket?.guests ?? []
-}
+const DONUT_GAP = 0.6
 
-const formatRelativeDate = (iso: string): string => {
-  try {
-    const date = new Date(iso)
-    return date.toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-    })
-  } catch {
-    return ''
-  }
-}
+const donutSegments = computed(() => {
+  const present = distributionRows.value.filter((row) => row.count > 0)
+  if (present.length === 0 || !summary.value) return []
+
+  const total = summary.value.total_invited || 1
+  const gap = present.length > 1 ? DONUT_GAP : 0
+  let cumulative = 0
+
+  return present.map((row) => {
+    // Use the exact fraction, not the rounded legend percent, so the arcs
+    // always close the circle.
+    const length = (row.count / total) * 100
+    const drawn = Math.max(length - gap, 0.5)
+    const segment = {
+      key: row.key,
+      label: row.label,
+      count: row.count,
+      percent: row.percent,
+      color: row.color,
+      dash: `${drawn} ${100 - drawn}`,
+      offset: -cumulative,
+    }
+    cumulative += length
+    return segment
+  })
+})
 
 // ---- Lifecycle -----------------------------------------------------------
 onMounted(() => {
@@ -1100,17 +515,29 @@ onMounted(() => {
 watch(
   () => props.eventId,
   () => {
-    drillCache.clear()
-    expandedQuestionId.value = null
-    drillFilter.value = null
-    drillData.value = null
+    // The question section resets its own drill state off the same prop.
     showAllPending.value = false
-    showAllMissing.value = false
-    showAllFreeText.value = false
-    expandedBuckets.value = new Set()
     loadSummary()
   },
 )
 
 defineExpose({ reload: loadSummary })
 </script>
+
+<style scoped>
+/* Hover feedback on a donut arc. Written here rather than as a Tailwind
+   utility because `stroke-[n]` sets stroke *colour*, not width. */
+.donut-arc {
+  transition: stroke-width 0.2s ease;
+}
+
+.donut-arc:hover {
+  stroke-width: 5.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .donut-arc {
+    transition: none;
+  }
+}
+</style>

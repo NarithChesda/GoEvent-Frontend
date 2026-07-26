@@ -10,6 +10,9 @@ export const rsvpTranslations: Record<
     rsvp_header_birthday: string
     rsvp_header_default: string
     invite_text: string
+    /** Placeholder guest name used where no real guest link/name is available
+     *  (e.g. the manage-page live preview). */
+    default_guest_name: string
 
     // Buttons
     rsvp_yes_button: string
@@ -214,6 +217,7 @@ export const rsvpTranslations: Record<
     rsvp_header_birthday: 'Will you join our birthday party?',
     rsvp_header_default: 'Will you attend our event?',
     invite_text: "You're Invited",
+    default_guest_name: 'Honored Guest',
 
     // Buttons
     rsvp_yes_button: "Yes, I'll attend",
@@ -418,6 +422,7 @@ export const rsvpTranslations: Record<
     rsvp_header_birthday: 'តើលោកអ្នកនឹងចូលរួមពិធីជប់លៀងខួបកំណើតរបស់យើងខ្ញុំទេ?',
     rsvp_header_default: 'តើលោកអ្នកនឹងចូលរួមព្រឹត្តិការណ៍របស់យើងខ្ញុំទេ?',
     invite_text: 'សូមគោរពអញ្ជើញ',
+    default_guest_name: 'ភ្ញៀវកិត្តិយស',
 
     // Buttons
     rsvp_yes_button: 'ចូលរួម',
@@ -622,6 +627,7 @@ export const rsvpTranslations: Record<
     rsvp_header_birthday: '您会参加我们的生日派对吗？',
     rsvp_header_default: '您会参加我们的活动吗？',
     invite_text: '诚邀您',
+    default_guest_name: '尊敬的来宾',
 
     // Buttons
     rsvp_yes_button: '是的，我会参加',

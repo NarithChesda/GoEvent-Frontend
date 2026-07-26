@@ -104,6 +104,7 @@ import {
   getKhmerClass,
   splitToWords,
   splitToLines,
+  getGlobalWordIndex,
   ANIMATION_CONSTANTS,
   getTextAnimationDuration,
 } from './shared'
@@ -118,14 +119,6 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
 
 const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
-
-const getGlobalWordIndex = (lines: string[][], lineIndex: number, wordIndex: number): number => {
-  let count = 0
-  for (let i = 0; i < lineIndex; i++) {
-    count += lines[i].length
-  }
-  return count + wordIndex
-}
 
 const hostsHeaderText = computed(() => {
   const lang = (props.currentLanguage as SupportedLanguage) || 'en'

@@ -47,11 +47,14 @@
     <!-- Unified Tab Container -->
     <div class="unified-tab-container" :style="{ '--primary-color': primaryColor }">
       <!-- Tab Bar Navigation -->
+      <!-- data-preview-safe: keeps the day tabs clickable in the manage-page
+           preview's edit mode (same escape hatch as DressCodeSection's tabs),
+           so items on every day stay reachable for editing. -->
       <div
         class="tab-bar-scroll-wrapper bounce-in-element"
         :style="{ animationDelay: `${animationDelays.tabs}s` }"
       >
-        <div class="tab-bar">
+        <div class="tab-bar" data-preview-safe>
           <button
             v-for="date in agendaTabs"
             :key="date"
@@ -75,6 +78,19 @@
             </span>
           </button>
         </div>
+      </div>
+
+      <!-- Change the active day's date for all its items — only inside the
+           editable manage-page preview (editIntentCtx is never provided on
+           the public showcase). Opens EditDateGroupModal parent-side. -->
+      <div v-if="editIntentCtx && activeTab" class="edit-date-chip-row">
+        <button
+          type="button"
+          class="edit-region-control edit-date-chip"
+          @click.stop.prevent="requestDateChange"
+        >
+          ✎ {{ tApp('management.showcasePreview.editors.changeAgendaDate') }}
+        </button>
       </div>
 
       <!-- Tab Content -->
@@ -131,8 +147,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch, nextTick, inject } from 'vue'
 import AgendaItem from '../AgendaItem.vue'
+import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import {
   translateRSVP,
   formatDateLocalized,
@@ -177,6 +195,20 @@ interface EventText {
 }
 
 const props = defineProps<Props>()
+
+// Only provided by the editable manage-page preview frame — undefined on the
+// public showcase, so the edit affordances can never leak into production.
+const editIntentCtx = inject(EditIntentKey, undefined)
+const { t: tApp } = useAppLanguage()
+
+const requestDateChange = () => {
+  if (!activeTab.value) return
+  editIntentCtx?.requestEdit({
+    kind: 'agendaDate',
+    date: activeTab.value === 'No Date' ? null : activeTab.value,
+    itemCount: (agendaByDate.value[activeTab.value] || []).length,
+  })
+}
 
 const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
@@ -552,6 +584,37 @@ watch(
   padding-bottom: 0 !important;
   margin-top: 0 !important;
   margin-bottom: 0 !important;
+}
+
+/* Manage-page preview edit chrome: change-date chip under the day tabs.
+   Rendered only when the edit-intent context exists, never in production. */
+.edit-date-chip-row {
+  display: flex;
+  justify-content: center;
+  margin: -0.75rem 0 1rem;
+}
+
+.edit-date-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: #1e90ff;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1.5px dashed rgba(30, 144, 255, 0.5);
+  border-radius: 9999px;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.18);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.edit-date-chip:hover {
+  border-color: rgba(30, 144, 255, 0.9);
+  background: rgba(30, 144, 255, 0.08);
 }
 
 /* Tab Content Area */

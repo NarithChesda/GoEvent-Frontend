@@ -213,7 +213,22 @@
       "PowerShell(node .claude-smoke/portfolio.mjs)",
       "PowerShell($r = Invoke-RestMethod -Uri \"http://127.0.0.1:8000/api/services/listings/?page_size=50\" -UseBasicParsing; $r.results | Select-Object title, vendor_name, cover_image_url | Format-Table -AutoSize | Out-String -Width 200)",
       "PowerShell(node .claude-smoke/check.mjs)",
-      "PowerShell(node .claude-smoke/coverflow.mjs)"
+      "PowerShell(node .claude-smoke/coverflow.mjs)",
+      "Bash(xargs grep -l \"templatePayment\")",
+      "Bash(npx vue-tsc *)",
+      "Bash(chromium-cli --help)",
+      "Bash(node -e \"console.log\\(require.resolve\\('playwright'\\)\\)\")",
+      "Bash(curl -sf http://127.0.0.1:8000/api/ -o /dev/null)",
+      "Bash(lsof -ti:5173 -sTCP:LISTEN)",
+      "Bash(xargs -r kill)",
+      "Bash(curl -sf http://localhost:5173)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 5173 -State Listen | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force }; Start-Sleep -Seconds 1; try { \\(Invoke-WebRequest -Uri http://localhost:5173 -UseBasicParsing -TimeoutSec 2\\) | Out-Null; \"STILL UP\" } catch { \"DOWN\" })",
+      "Bash(node -e ' *)",
+      "Bash(grep -v \"^[0-9]*:.*//\")",
+      "Bash(node \"C:/Users/narit/AppData/Local/Temp/claude/c--Users-narit-Code-GoEvent-Frontend/85478f69-da41-402c-8c66-5c4beb2b58d1/scratchpad/wrap-sorry.js\")",
+      "Bash(node \"C:/Users/narit/AppData/Local/Temp/claude/c--Users-narit-Code-GoEvent-Frontend/85478f69-da41-402c-8c66-5c4beb2b58d1/scratchpad/wrap-wedding.js\")",
+      "Bash(npx prettier *)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('src/i18n/locales/kh/management.json','utf8'\\)\\); JSON.parse\\(require\\('fs'\\).readFileSync\\('src/i18n/locales/en/management.json','utf8'\\)\\); console.log\\('JSON valid'\\)\")"
     ],
     "deny": [],
     "additionalDirectories": [

@@ -125,6 +125,16 @@ const router = createRouter({
       meta: { title: 'Event Showcase - GoEvent' },
     },
     {
+      // Renders a single showcase stage at a fixed native resolution, meant to be
+      // embedded via <iframe> in the manage-page "Live Preview" tab
+      // (ShowcasePreviewTab.vue) and visually scaled from the outside. Not linked
+      // from anywhere in the UI directly.
+      path: '/events/:id/showcase-preview-frame',
+      name: 'event-showcase-preview-frame',
+      component: () => import('../views/ShowcasePreviewFrameView.vue'),
+      meta: { title: 'Event Showcase Preview - GoEvent' },
+    },
+    {
       path: '/settings',
       name: 'settings',
       component: () => import('../views/SettingsView.vue'),

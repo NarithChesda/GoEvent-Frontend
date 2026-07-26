@@ -81,7 +81,7 @@ const tabButtons = ref<HTMLElement[]>([])
 const visibleTabs = computed(() => {
   return props.tabs.filter((tab) => {
     if (tab.id === 'registration' && !props.canViewRegistration) return false
-    if (tab.id === 'media' && !props.canViewMedia) return false
+    if (tab.id === 'design-studio' && !props.canViewMedia) return false
     if (tab.id === 'template-payment' && !props.canViewTemplate) return false
     if (tab.id === 'guest-management' && !props.canViewGuestManagement) return false
     if (tab.id === 'analytics' && !props.canViewAnalytics) return false

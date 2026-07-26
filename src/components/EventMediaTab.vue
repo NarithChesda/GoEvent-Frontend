@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div v-if="!props.hideHeader" class="flex items-center justify-between">
       <div>
         <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">{{ t('management.media.title') }}</h2>
         <p class="text-xs sm:text-sm text-slate-600 mt-1">{{ t('management.media.subtitle') }}</p>
@@ -83,6 +83,7 @@
                 type="button"
                 @click="openUploadModal"
                 class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
+                :title="t('management.media.photos.addPhotos')"
               >
                 <Plus class="w-3.5 h-3.5" />
                 <span>{{ t('management.media.photos.addPhotos') }}</span>
@@ -107,7 +108,7 @@
           <!-- Loading State -->
           <div
             v-if="loading"
-            class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
+            class="grid grid-cols-2 gap-4 sm:gap-6"
           >
             <div v-for="i in 8" :key="i" class="animate-pulse">
               <div class="bg-slate-200 aspect-square rounded-xl sm:rounded-2xl"></div>
@@ -162,7 +163,7 @@
             </div>
 
             <!-- Media Grid with Upload Card -->
-            <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div v-else class="grid grid-cols-2 gap-4 sm:gap-6">
               <MediaCard
                 v-for="(mediaItem, index) in media"
                 :key="mediaItem.id"
@@ -266,6 +267,7 @@ import { mediaService, type EventPhoto, type Event } from '../services/api'
 import { useToast } from '../composables/useToast'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCollapsibleSection } from '@/composables/useCollapsibleSection'
+import { provideAccordionGroup } from '@/composables/useAccordionGroup'
 import MediaCard from './MediaCard.vue'
 import UploadMediaDrawer from './UploadMediaDrawer.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
@@ -283,6 +285,10 @@ interface Props {
   initialMedia?: EventPhoto[]
   eventData?: Event
   showCategorySpecificSections?: boolean // Controls visibility of category-specific sections
+  /** Hides the title/subtitle header — set when embedded in Design Studio's
+   *  Content panel, which has its own chrome and no room for it. Left showing
+   *  when this is the full-width Showcase tab body for other categories. */
+  hideHeader?: boolean
 }
 
 const props = defineProps<Props>()
@@ -292,7 +298,14 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useAppLanguage()
-const { isExpanded: isPhotosExpanded, toggle: togglePhotosExpanded } = useCollapsibleSection()
+// Mounted either inside Design Studio's narrow Content panel (showcase
+// categories) or directly as the full-width Showcase tab body (business,
+// music, other) — either way its sections are coordinated into a
+// single-open accordion so only one card (Brand Assets, Music, Texts,
+// Hosts, Agenda, Dress Code, Photos, Map, YouTube, Payment) is expanded at
+// a time. See useAccordionGroup.ts.
+provideAccordionGroup()
+const { isExpanded: isPhotosExpanded, toggle: togglePhotosExpanded } = useCollapsibleSection('photos')
 
 // Toast notifications with automatic cleanup
 const { message, showSuccess, showError } = useToast()

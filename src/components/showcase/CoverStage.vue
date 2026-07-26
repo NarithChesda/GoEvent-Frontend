@@ -37,6 +37,7 @@
       :event-logo="eventLogo"
       :first-host-image="firstHostImage"
       :first-host-name="firstHostName"
+      :first-host-id="firstHostId"
       :guest-name="guestName || null"
       :template-assets="templateAssets"
       :primary-color="primaryColor"
@@ -116,6 +117,8 @@ interface Props {
   firstHostImage?: string | null
   /** First host display name — used as the alt text for the clipped host image. */
   firstHostName?: string
+  /** First host id — routes the preview editor to the host drawer when the logo row frames that host's photo. */
+  firstHostId?: number | null
   eventVideoUrl?: string | null
   backgroundVideoUrl?: string | null
   primaryColor: string
@@ -147,6 +150,10 @@ interface Props {
   ambientCreatures?: AmbientCreaturesConfig | null
   /** When true, basic mode will only animate decorations out without transitioning to main content */
   useTransitionStage?: boolean
+  /** Manage-page preview only: always block the open-envelope tap/swipe so
+   *  the cover renders as a static "what it looks like" view instead of
+   *  being interactive. Never set on the live showcase. */
+  disableEnvelopeInteraction?: boolean
 }
 
 const props = defineProps<Props>()
@@ -242,7 +249,10 @@ const shouldShowMainContent = computed(() => {
 })
 
 // Disable envelope interaction in standard mode until event video is ready
+// (or unconditionally, when the manage-page preview just wants to show what
+// the cover looks like without letting it be opened/animated away).
 const isEnvelopeInteractionDisabled = computed(() => {
+  if (props.disableEnvelopeInteraction) return true
   if (displayMode.value === 'basic') {
     return false
   }

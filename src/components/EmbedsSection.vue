@@ -378,8 +378,8 @@ const emit = defineEmits<Emits>()
 
 const { t } = useAppLanguage()
 const { message, showSuccess, showError } = useToast()
-const { isExpanded: isMapExpanded, toggle: toggleMap } = useCollapsibleSection()
-const { isExpanded: isYoutubeExpanded, toggle: toggleYoutube } = useCollapsibleSection()
+const { isExpanded: isMapExpanded, toggle: toggleMap } = useCollapsibleSection('map')
+const { isExpanded: isYoutubeExpanded, toggle: toggleYoutube } = useCollapsibleSection('youtube')
 
 // State
 const formData = ref({

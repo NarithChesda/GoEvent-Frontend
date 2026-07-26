@@ -270,8 +270,6 @@
     "eventDetailsFallback": "ព័ត៌មានព្រឹត្តិការណ៍",
     "switchToKhmer": "ប្តូរទៅភាសាខ្មែរ",
     "switchToEnglish": "ប្តូរទៅភាសាអង់គ្លេស",
-    "previewBtn": "មើលជាមុន",
-    "previewTitle": "មើលជាមុននូវវ៉ែបសាយ",
     "publishBtn": "ផ្សព្វផ្សាយ",
     "publishTitle": "ផ្សព្វផ្សាយព្រឹត្តិការណ៍",
     "editBtn": "កែប្រែ",
@@ -374,8 +372,12 @@
     "guests": "ភ្ញៀវ",
     "media": "មេឌៀ",
     "showcase": "តាំងបង្ហាញ",
-    "templatePayment": "គំរូ & ការទូទាត់",
-    "templateMobile": "គំរូ",
+    "showcasePreview": "មើលផ្ទាល់",
+    "previewMobile": "មើលជាមុន",
+    "designStudio": "បន្ទប់រចនា",
+    "designStudioMobile": "រចនា",
+    "templatePayment": "ការធ្វើឱ្យសកម្ម & វិក្កយបត្រ",
+    "templateMobile": "ធ្វើឱ្យសកម្ម",
     "guestManagement": "គ្រប់គ្រងភ្ញៀវ",
     "expenseTracking": "តាមដានចំណាយ",
     "expensesMobile": "ចំណាយ",
@@ -403,6 +405,94 @@
     "pending": "កំពុងរង់ចាំ",
     "declined": "បានបដិសេធ",
     "checkedIn": "បានចុះឈ្មោះចូលរួម"
+  },
+  "showcasePreview": {
+    "title": "បន្ទប់រចនា",
+    "subtitle": "កែសម្រួលការតាំងបង្ហាញ និងសាកល្បងគំរូ ជាមួយការមើលផ្ទាល់នូវអ្វីដែលភ្ញៀវនឹងឃើញ។",
+    "coverLabel": "ក្របមុខ",
+    "transitionLabel": "ការផ្លាស់ប្តូរឆាក",
+    "mainContentLabel": "មាតិកាចម្បង",
+    "transitionNotUsed": "គំរូនេះមិនប្រើឆាកផ្លាស់ប្តូរទេ។",
+    "layoutSwitchLabel": "ប្លង់មើលជាមុន",
+    "viewControlsLabel": "ប្លង់ និងភាសានៃការមើលជាមុន",
+    "layoutSingle": "បង្ហាញអេក្រង់មួយ",
+    "layoutMultiple": "បង្ហាញអេក្រង់ទាំងអស់ម្តងគ្នា",
+    "switchLanguage": "ប្តូរភាសាមើលជាមុន",
+    "panelContent": "កែសម្រួលមាតិកា",
+    "panelTemplates": "គំរូ",
+    "noLivePreview": "ប្រភេទព្រឹត្តិការណ៍នេះមិនមានការមើលផ្ទាល់ទេ — សូមកែសម្រួលមាតិកាពីបន្ទះខាងឆ្វេង។",
+    "accessRestricted": {
+      "title": "ការចូលប្រើត្រូវបានដាក់កំហិត",
+      "description": "មានតែអ្នករៀបចំព្រឹត្តិការណ៍ និងអ្នកសហការប៉ុណ្ណោះ ដែលអាចមើលការមើលផ្ទាល់។"
+    },
+    "mobilePreview": {
+      "open": "មើលជាមុន",
+      "title": "ការមើលជាមុនផ្ទាល់",
+      "close": "បិទការមើលជាមុន",
+      "editHints": "បង្ហាញកន្លែងដែលអាចកែបាន",
+      "editHintsTip": "ចុចលើកន្លែងដែលបានបញ្ជាក់ ដើម្បីកែសម្រួល",
+      "previewOnly": "ភ្ញៀវមិនអាចមើលឃើញនៅឡើយទេ",
+      "readOnly": "អ្នកមានសិទ្ធិមើលតែប៉ុណ្ណោះ — ចុច មើលជាមុន ដើម្បីមើលការបង្ហាញ។",
+      "editHintsOff": "បានបិទការបញ្ជាក់ — នេះជាទិដ្ឋភាពដែលភ្ញៀវឃើញ"
+    },
+    "editors": {
+      "replaceLogo": "ប្តូរឡូហ្គោ",
+      "editMap": "កែផែនទី",
+      "changeHostPhoto": "ប្តូររូបភាព",
+      "managePhotos": "គ្រប់គ្រងរូបភាព",
+      "gmapTitle": "បង្កប់ផែនទី Google Maps",
+      "gmapDescription": "បិទភ្ជាប់តំណ ឬកូដបង្កប់ Google Maps — URL បង្កប់នឹងត្រូវបានស្រង់ចេញដោយស្វ័យប្រវត្តិ។",
+      "gmapPlaceholder": "បិទភ្ជាប់តំណ Google Maps ឬកូដ <iframe>",
+      "gmapInvalid": "នេះមិនមែនជាតំណ ឬកូដបង្កប់ Google Maps ទេ។",
+      "changeEventDate": "ប្តូរកាលបរិច្ឆេទព្រឹត្តិការណ៍",
+      "eventDateTitle": "កាលបរិច្ឆេទព្រឹត្តិការណ៍",
+      "eventDateDescription": "ធ្វើបច្ចុប្បន្នភាពកាលបរិច្ឆេទដែលបង្ហាញលើសំបុត្រអញ្ជើញរបស់អ្នក។ ម៉ោង និងទីតាំងនៅដដែល។",
+      "save": "រក្សាទុក",
+      "saving": "កំពុងរក្សាទុក…",
+      "cancel": "បោះបង់",
+      "logoUploadFailed": "ការផ្ទុកឡូហ្គោបរាជ័យ",
+      "hostLoadFailed": "មិនអាចផ្ទុកព័ត៌មានម្ចាស់កម្មវិធីបានទេ",
+      "editAgendaItem": "កែសកម្មភាព",
+      "addAgendaItem": "បន្ថែមសកម្មភាព",
+      "changeAgendaDate": "ប្ដូរកាលបរិច្ឆេទថ្ងៃនេះ",
+      "agendaLoadFailed": "មិនអាចផ្ទុកព័ត៌មានកម្មវិធីបានទេ",
+      "agendaDeleteFailed": "មិនអាចលុបសកម្មភាពបានទេ",
+      "reorderAgendaItem": "រៀបលំដាប់សកម្មភាព",
+      "moveUp": "ផ្លាស់ឡើងលើ",
+      "moveDown": "ផ្លាស់ចុះក្រោម",
+      "agendaReorderFailed": "មិនអាចរៀបលំដាប់សកម្មភាពបានទេ",
+      "editDressCode": "កែសម្លៀកបំពាក់",
+      "addDressCode": "បន្ថែមសម្លៀកបំពាក់",
+      "dressCodeLoadFailed": "មិនអាចផ្ទុកព័ត៌មានសម្លៀកបំពាក់បានទេ",
+      "dressCodeDeleteFailed": "មិនអាចលុបសម្លៀកបំពាក់បានទេ",
+      "editVideo": "កែវីដេអូ",
+      "addVideo": "បន្ថែមវីដេអូ",
+      "youtubeTitle": "វីដេអូ YouTube",
+      "youtubeDescription": "បិទភ្ជាប់តំណ YouTube ឬកូដបង្កប់ — URL បង្កប់នឹងត្រូវបានស្រង់ចេញដោយស្វ័យប្រវត្តិ។",
+      "youtubePlaceholder": "បិទភ្ជាប់តំណ YouTube ឬកូដ <iframe>",
+      "youtubeInvalid": "នេះមិនមែនជាតំណ ឬកូដបង្កប់ YouTube ទេ។",
+      "editPaymentMethod": "កែវិធីទូទាត់",
+      "addPaymentMethod": "បន្ថែមវិធីទូទាត់",
+      "paymentLoadFailed": "មិនអាចផ្ទុកព័ត៌មានវិធីទូទាត់បានទេ",
+      "paymentDeleteFailed": "មិនអាចលុបវិធីទូទាត់បានទេ",
+      "paymentLocked": "វិធីទូទាត់ត្រូវបានចាក់សោ និងមិនអាចកែពីទីនេះបានទេ",
+      "editFeaturedPhoto": "ប្តូររូបភាពសំខាន់",
+      "addFeaturedPhoto": "កំណត់រូបភាពសំខាន់",
+      "featuredPhotoTitle": "រូបភាពសំខាន់",
+      "featuredPhotoDescription": "បង្ហាញពេញអេក្រង់នៅឆាកផ្លាស់ប្តូរ រវាងក្របមុខ និងសំបុត្រអញ្ជើញចម្បង។",
+      "featuredPhotoEmpty": "មិនទាន់មានរូបភាពទេ",
+      "featuredPhotoUploadPrompt": "សូមផ្ទុករូបភាពជាមុនសិន រួចត្រឡប់មកទីនេះវិញ ដើម្បីជ្រើសរើសរូបភាពសំខាន់។",
+      "featuredPhotoUploadButton": "ផ្ទុករូបភាព",
+      "featuredPhotoLoadFailed": "មិនអាចផ្ទុករូបភាពបានទេ",
+      "featuredPhotoUpdateFailed": "មិនអាចកែប្រែរូបភាពសំខាន់បានទេ",
+      "replayTransition": "ចាក់ឡើងវិញ",
+      "countdownLabel": "រាប់ថយក្រោយ",
+      "rsvpLabel": "RSVP",
+      "commentsLabel": "មតិយោបល់",
+      "displayToggleFailed": "មិនអាចផ្លាស់ប្តូរការកំណត់បង្ហាញបានទេ",
+      "displayToggleOnHint": "{name}៖ បង្ហាញដល់ភ្ញៀវ។ ចុចដើម្បីលាក់។",
+      "displayToggleOffHint": "{name}៖ លាក់ពីភ្ញៀវ។ ចុចដើម្បីបង្ហាញ។"
+    }
   },
   "media": {
     "title": "វ៉ែបសាយព្រឹត្តិការណ៍",
@@ -988,6 +1078,7 @@
     },
     "typeHints": {
       "cover_header": "ចំណងជើងបង្ហាញលើផ្នែកខាងមុខនៃលិខិតអញ្ជើញ",
+      "invite_text": "អត្ថបទអញ្ជើញ ខាងលើឈ្មោះភ្ញៀវ នៅលើផ្នែកខាងមុខ",
       "welcome_message": "សារស្វាគមន៍នៅផ្នែកខាងលើនៃមាតិកាសំខាន់",
       "description": "ផ្នែកពិពណ៌នាសំខាន់នៃការផ្តល់ជូន",
       "short_description": "អត្ថបទសង្ខេបខ្លីប្រើដោយគំរូមួយចំនួន",
@@ -1001,6 +1092,7 @@
     },
     "textTypes": {
       "cover_header": "ចំណងជើងផ្នែកខាងមុខ",
+      "invite_text": "អត្ថបទអញ្ជើញ",
       "welcome_message": "សារស្វាគមន៍",
       "instructions": "ការណែនាំ",
       "description": "ការពិពណ៌នា",
@@ -1303,12 +1395,67 @@
     "watchPreviewBtn": "មើលការបង្ហាញគំរូ",
     "activeHint": "គំរូសកម្ម ហើយត្រៀមរួចរាល់ហើយ"
   },
+  "activation": {
+    "changeTemplate": "ប្តូរនៅ Design Studio",
+    "changeTemplateShort": "ប្តូរ",
+    "header": {
+      "descChecking": "កំពុងពិនិត្យស្ថានភាពសកម្មភាពនៃគំរូរបស់អ្នក…",
+      "descPending": "យើងកំពុងពិនិត្យការទូទាត់របស់អ្នក — ការបង្ហាញនឹងផ្សាយបន្តផ្ទាល់ពេលបានបញ្ជាក់"
+    },
+    "pill": {
+      "no-template": "មិនទាន់មានគំរូ",
+      "unpaid": "គំរូបង្ហាញតែប៉ុណ្ណោះ",
+      "pending": "កំពុងពិនិត្យការទូទាត់",
+      "active": "ផ្សាយបន្តផ្ទាល់សម្រាប់ភ្ញៀវ",
+      "activateCta": "ធ្វើឱ្យសកម្ម",
+      "viewPayment": "មើលការទូទាត់",
+      "viewReceipt": "មើលបង្កាន់ដៃ"
+    },
+    "stepper": {
+      "label": "វឌ្ឍនភាពនៃការធ្វើឱ្យសកម្ម",
+      "template": {
+        "title": "បានជ្រើសរើសគំរូ",
+        "short": "គំរូ",
+        "hint": "ជ្រើសរើសនៅ Design Studio"
+      },
+      "payment": {
+        "title": "បានដាក់ស្នើការទូទាត់",
+        "short": "ការទូទាត់",
+        "hint": "ផ្ទេរប្រាក់ រួចផ្ទុកបង្កាន់ដៃ"
+      },
+      "live": {
+        "title": "ផ្សាយបន្តផ្ទាល់សម្រាប់ភ្ញៀវ",
+        "short": "ផ្សាយផ្ទាល់",
+        "hint": "ភ្ញៀវអាចបើកលិខិតអញ្ជើញរបស់អ្នក",
+        "waitingHint": "កំពុងរង់ចាំការបញ្ជាក់ការទូទាត់"
+      }
+    },
+    "card": {
+      "openStudio": "បើកនៅ Design Studio",
+      "openStudioShort": "Studio",
+      "untitledTemplate": "គំរូដែលបានជ្រើសរើស",
+      "badgeLive": "ផ្សាយបន្តផ្ទាល់",
+      "badgePending": "កំពុងពិនិត្យ",
+      "badgePreviewOnly": "គំរូបង្ហាញតែប៉ុណ្ណោះ",
+      "activateBtn": "ធ្វើឱ្យគំរូសកម្ម",
+      "activateHint": "ភ្ញៀវមិនអាចមើលការបង្ហាញរបស់អ្នកបានទេ រហូតដល់វាសកម្ម",
+      "pendingTitle": "កំពុងពិនិត្យការទូទាត់",
+      "pendingHint": "យើងនឹងជូនដំណឹងពេលបានបញ្ជាក់ — មិនត្រូវធ្វើអ្វីបន្ថែមទេ។",
+      "activeTitle": "ការបង្ហាញរបស់អ្នកកំពុងផ្សាយបន្តផ្ទាល់",
+      "activeHint": "ភ្ញៀវដែលបើកតំណអញ្ជើញរបស់អ្នកនឹងឃើញគំរូនេះ។"
+    },
+    "empty": {
+      "title": "មិនទាន់មានគំរូដើម្បីធ្វើឱ្យសកម្ម",
+      "description": "គំរូត្រូវជ្រើសរើសនៅ Design Studio ដែលអ្នកអាចសាកល្បងគំរូនីមួយៗលើលិខិតអញ្ជើញរបស់អ្នកមុនពេលសម្រេចចិត្ត។ ត្រឡប់មកទីនេះដើម្បីធ្វើឱ្យវាសកម្មសម្រាប់ភ្ញៀវ។",
+      "cta": "បើក Design Studio"
+    }
+  },
   "templatePaymentTab": {
     "header": {
-      "title": "គំរូ & ការទូទាត់",
+      "title": "ការធ្វើឱ្យសកម្ម & ការចេញវិក្កយបត្រ",
       "descActive": "គំរូរបស់អ្នកសកម្មហើយ ត្រៀមរួចរាល់ហើយ",
-      "descPendingPayment": "បំពេញការទូទាត់ដើម្បីធ្វើឱ្យគំរូសកម្ម",
-      "descNoTemplate": "ជ្រើសរើសគំរូ ហើយបំពេញការទូទាត់"
+      "descPendingPayment": "ធ្វើឱ្យគំរូសកម្ម ដើម្បីឱ្យភ្ញៀវឃើញការបង្ហាញរបស់អ្នក",
+      "descNoTemplate": "ជ្រើសរើសគំរូនៅ Design Studio រួចធ្វើឱ្យវាសកម្មនៅទីនេះ"
     },
     "browseBtn": {
       "browse": "រុករក",
@@ -1335,6 +1482,7 @@
     },
     "paymentDrawer": {
       "title": "ធ្វើការទូទាត់",
+      "close": "បិទ",
       "currentPayment": "ការទូទាត់បច្ចុប្បន្ន",
       "total": "សរុប",
       "promoPlaceholder": "លេខកូដបញ្ចុះតម្លៃ",
@@ -1410,7 +1558,11 @@
       "guestsPanelSuffix": "ភ្ញៀវ",
       "editGroup": "កែសម្រួលក្រុម",
       "deleteGroup": "លុបក្រុម",
-      "newGroup": "ក្រុមថ្មី"
+      "newGroup": "ក្រុមថ្មី",
+      "rsvpStatus": {
+        "header": "ស្ថានភាព RSVP",
+        "any": "គ្រប់ស្ថានភាព"
+      }
     },
     "selectionBar": {
       "selected": "បានជ្រើសរើស",
@@ -1522,85 +1674,6 @@
       "pending": "នៅមិនទាន់ផ្ញើ",
       "pendingDesc": "នៅតែរង់ចាំទទួលការអញ្ជើញ។",
       "pendingShort": "មិនទាន់ផ្ញើ"
-    },
-    "rsvpStatsCard": {
-      "header": "ការឆ្លើយតប RSVP",
-      "loading": "កំពុងផ្ទុកសង្ខេបការឆ្លើយតប…",
-      "respondedDesc": "ភ្ញៀវដែលបានអញ្ជើញបានឆ្លើយតប {percent}%",
-      "expectedSuffix": "រំពឹងទុក",
-      "expectedTooltip": "រាប់ភ្ញៀវដែលនឹងចូលរួម រួមជាមួយភ្ញៀវបន្ថែមរបស់ពួកគេ",
-      "filterHint": "ចុចលើស្ថានភាពមួយ ដើម្បីត្រងបញ្ជីភ្ញៀវ",
-      "clearFilter": "លុបការត្រង",
-      "cards": {
-        "going": "នឹងចូលរួម",
-        "maybe": "មិនប្រាកដ",
-        "declined": "មិនចូលរួម",
-        "pending": "មិនទាន់ឆ្លើយតប"
-      }
-    },
-    "rsvpQuestions": {
-      "header": "សំណួរ RSVP ផ្ទាល់ខ្លួន",
-      "subtitle": "សួរភ្ញៀវបន្ថែមពីលើការឆ្លើយ​ចូលរួម/មិនចូលរួម។",
-      "addButton": "បន្ថែមសំណួរ",
-      "loading": "កំពុងផ្ទុកសំណួរ…",
-      "empty": {
-        "title": "មិនទាន់មានសំណួរទេ",
-        "description": "បន្ថែមសំណួរដើម្បីប្រមូលចំណូលចិត្តអាហារ សំណើចម្រៀង ឬសំណួរផ្សេងទៀត។"
-      },
-      "requiredBadge": "ចាំបាច់",
-      "types": {
-        "text": "ចម្លើយខ្លី",
-        "long_text": "ចម្លើយវែង",
-        "yes_no": "បាទ/ចាស ឬ ទេ",
-        "single_choice": "ជ្រើសរើសមួយ",
-        "multi_choice": "ជ្រើសរើសច្រើន"
-      },
-      "actions": {
-        "moveUp": "រំកិលឡើងលើ",
-        "moveDown": "រំកិលចុះក្រោម",
-        "edit": "កែសំណួរ",
-        "delete": "លុបសំណួរ",
-        "saving": "កំពុងរក្សាទុក…",
-        "save": "រក្សាទុក",
-        "cancel": "បោះបង់"
-      },
-      "modal": {
-        "addTitle": "បន្ថែមសំណួរ",
-        "editTitle": "កែសំណួរ",
-        "typeLabel": "ប្រភេទសំណួរ",
-        "typeDescriptions": {
-          "text": "ភ្ញៀវវាយចម្លើយខ្លីមួយ។",
-          "long_text": "ភ្ញៀវសរសេរសារវែងជាងនេះ។",
-          "yes_no": "ចម្លើយ បាទ/ចាស ឬ ទេ សាមញ្ញ។",
-          "single_choice": "ភ្ញៀវជ្រើសរើសជម្រើសមួយពីបញ្ជីរបស់អ្នក។",
-          "multi_choice": "ភ្ញៀវអាចជ្រើសរើសជម្រើសច្រើនពីបញ្ជីរបស់អ្នក។"
-        },
-        "requiredLabel": "ចាំបាច់ឆ្លើយ",
-        "requiredHint": "អនុវត្តតែនៅពេលភ្ញៀវឆ្លើយ \"នឹងចូលរួម\" ឬ \"មិនប្រាកដ\"។",
-        "questionTextLabel": "អត្ថបទសំណួរ",
-        "questionTextEnglish": "អង់គ្លេស",
-        "questionTextKhmer": "ខ្មែរ",
-        "questionTextPlaceholder": "ឧ. តើអ្នកចូលចិត្តអាហារអ្វី?",
-        "questionTextKhmerPlaceholder": "ការបកប្រែ (ស្រេចចិត្ត)",
-        "choicesLabel": "ជម្រើសចម្លើយ",
-        "choicesHint": "អង់គ្លេស និង ខ្មែរ ត្រូវបានភ្ជាប់គ្នាតាមជួរ — បន្ថែម លុប ឬ​រៀបរៀងទាំងពីរជាមួយគ្នា។",
-        "choiceEnglishPlaceholder": "ជម្រើសជាភាសាអង់គ្លេស",
-        "choiceKhmerPlaceholder": "ការបកប្រែ (ស្រេចចិត្ត)",
-        "addChoice": "បន្ថែមជម្រើស",
-        "removeChoice": "លុបជម្រើសនេះ",
-        "validation": {
-          "questionRequired": "ត្រូវការអត្ថបទសំណួរ។",
-          "choicesRequired": "ប្រភេទសំណួរនេះត្រូវការជម្រើសយ៉ាងហោចណាស់មួយ។",
-          "choiceTextRequired": "ជម្រើសមិនអាចទទេទេ។"
-        },
-        "errorGeneric": "មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្ដងទៀត។"
-      },
-      "deleteConfirm": {
-        "title": "លុបសំណួរ?",
-        "body": "វានឹងលុបសំណួរនិងចម្លើយទាំងអស់ដែលភ្ញៀវបានបញ្ជូនសម្រាប់សំណួរនេះ។",
-        "confirm": "លុប",
-        "cancel": "បោះបង់"
-      }
     },
     "addGuestModal": {
       "title": "នាំចូលភ្ញៀវ",
@@ -2108,6 +2181,77 @@
       "otherGroup": "ផ្សេងទៀត"
     }
   },
+  "rsvpStatuses": {
+    "going": "នឹងចូលរួម",
+    "maybe": "មិនប្រាកដ",
+    "declined": "មិនចូលរួម",
+    "pending": "មិនទាន់ឆ្លើយតប"
+  },
+  "rsvpQuestions": {
+    "header": "សំណួរ RSVP ផ្ទាល់ខ្លួន",
+    "subtitle": "សួរភ្ញៀវបន្ថែមពីលើការឆ្លើយ​ចូលរួម/មិនចូលរួម។",
+    "addButton": "បន្ថែមសំណួរ",
+    "loading": "កំពុងផ្ទុកសំណួរ…",
+    "empty": {
+      "title": "មិនទាន់មានសំណួរទេ",
+      "description": "បន្ថែមសំណួរដើម្បីប្រមូលចំណូលចិត្តអាហារ សំណើចម្រៀង ឬសំណួរផ្សេងទៀត។"
+    },
+    "requiredBadge": "ចាំបាច់",
+    "types": {
+      "text": "ចម្លើយខ្លី",
+      "long_text": "ចម្លើយវែង",
+      "yes_no": "បាទ/ចាស ឬ ទេ",
+      "single_choice": "ជ្រើសរើសមួយ",
+      "multi_choice": "ជ្រើសរើសច្រើន"
+    },
+    "actions": {
+      "moveUp": "រំកិលឡើងលើ",
+      "moveDown": "រំកិលចុះក្រោម",
+      "edit": "កែសំណួរ",
+      "delete": "លុបសំណួរ",
+      "saving": "កំពុងរក្សាទុក…",
+      "save": "រក្សាទុក",
+      "cancel": "បោះបង់"
+    },
+    "modal": {
+      "addTitle": "បន្ថែមសំណួរ",
+      "editTitle": "កែសំណួរ",
+      "typeLabel": "ប្រភេទសំណួរ",
+      "typeDescriptions": {
+        "text": "ភ្ញៀវវាយចម្លើយខ្លីមួយ។",
+        "long_text": "ភ្ញៀវសរសេរសារវែងជាងនេះ។",
+        "yes_no": "ចម្លើយ បាទ/ចាស ឬ ទេ សាមញ្ញ។",
+        "single_choice": "ភ្ញៀវជ្រើសរើសជម្រើសមួយពីបញ្ជីរបស់អ្នក។",
+        "multi_choice": "ភ្ញៀវអាចជ្រើសរើសជម្រើសច្រើនពីបញ្ជីរបស់អ្នក។"
+      },
+      "requiredLabel": "ចាំបាច់ឆ្លើយ",
+      "requiredHint": "អនុវត្តតែនៅពេលភ្ញៀវឆ្លើយ \"នឹងចូលរួម\" ឬ \"មិនប្រាកដ\"។",
+      "questionTextLabel": "អត្ថបទសំណួរ",
+      "questionTextEnglish": "អង់គ្លេស",
+      "questionTextKhmer": "ខ្មែរ",
+      "questionTextPlaceholder": "ឧ. តើអ្នកចូលចិត្តអាហារអ្វី?",
+      "questionTextKhmerPlaceholder": "ការបកប្រែ (ស្រេចចិត្ត)",
+      "choicesLabel": "ជម្រើសចម្លើយ",
+      "choicesHint": "អង់គ្លេស និង ខ្មែរ ត្រូវបានភ្ជាប់គ្នាតាមជួរ — បន្ថែម លុប ឬ​រៀបរៀងទាំងពីរជាមួយគ្នា។",
+      "choiceEnglishPlaceholder": "ជម្រើសជាភាសាអង់គ្លេស",
+      "choiceKhmerPlaceholder": "ការបកប្រែ (ស្រេចចិត្ត)",
+      "addChoice": "បន្ថែមជម្រើស",
+      "removeChoice": "លុបជម្រើសនេះ",
+      "validation": {
+        "questionRequired": "ត្រូវការអត្ថបទសំណួរ។",
+        "choicesRequired": "ប្រភេទសំណួរនេះត្រូវការជម្រើសយ៉ាងហោចណាស់មួយ។",
+        "choiceTextRequired": "ជម្រើសមិនអាចទទេទេ។"
+      },
+      "errorGeneric": "មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្ដងទៀត។"
+    },
+    "deleteConfirm": {
+      "title": "លុបសំណួរ?",
+      "body": "វានឹងលុបសំណួរនិងចម្លើយទាំងអស់ដែលភ្ញៀវបានបញ្ជូនសម្រាប់សំណួរនេះ។",
+      "confirm": "លុប",
+      "cancel": "បោះបង់"
+    },
+    "drawerTitle": "សំណួរ RSVP"
+  },
   "rsvpAnalytics": {
     "title": "ការវិភាគ RSVP",
     "subtitle": "តាមដានការឆ្លើយតប និងមើលរបៀបដែលភ្ញៀវឆ្លើយសំណួរផ្ទាល់ខ្លួន",
@@ -2131,20 +2275,11 @@
       "respondedDesc": "{percent}% នៃអ្នកដែលបានអញ្ជើញ",
       "responseRate": "អត្រាឆ្លើយតប",
       "responseRateDesc": "{responded} នៃភ្ញៀវ {invited} នាក់ដែលបានអញ្ជើញ បានឆ្លើយតប",
-      "going": "ចូលរួម",
-      "goingDesc": "{percent}% នៃអ្នកដែលបានអញ្ជើញ",
       "expected": "រំពឹងទុក",
       "expectedDesc": "ចូលរួម {attending} នាក់ + ភ្ញៀវបន្ថែម {plusOnes} នាក់",
-      "pending": "មិនទាន់ឆ្លើយ",
-      "pendingDesc": "កំពុងរង់ចាំការឆ្លើយតប",
       "plusOnes": "ភ្ញៀវបន្ថែម",
-      "plusOnesDesc": "ភ្ញៀវបន្ថែមដែលត្រូវនាំមកជាមួយ"
-    },
-    "distribution": {
-      "title": "ការបែងចែកការឆ្លើយតប",
-      "description": "របៀបដែលភ្ញៀវកំពុងឆ្លើយតបជារួម។",
-      "legendCount": "{count} នាក់",
-      "legendPercent": "{percent}%"
+      "plusOnesDesc": "ភ្ញៀវបន្ថែមដែលត្រូវនាំមកជាមួយ",
+      "repliedShort": "បានឆ្លើយតប"
     },
     "chase": {
       "title": "ត្រូវតាមដាន",
@@ -2160,16 +2295,17 @@
       }
     },
     "questions": {
-      "title": "ការបែងចែកតាមសំណួរ",
-      "description": "ចុចលើសំណួរ ដើម្បីមើលថាអ្នកណាបានឆ្លើយអ្វី។",
+      "title": "សំណួរផ្ទាល់ខ្លួន",
+      "description": "ចុចលើសំណួរដើម្បីកែសម្រួល។ ពង្រីកដើម្បីមើលថានរណាឆ្លើយអ្វី។",
       "answersCount": "ចម្លើយ {count}",
       "moreOptions": "ជម្រើស {count} ផ្សេងទៀត",
       "noAnswers": "មិនទាន់មានចម្លើយទេ",
       "choicePercent": "{percent}% នៃអ្នកឆ្លើយ",
       "emptyState": {
         "title": "មិនទាន់មានសំណួរផ្ទាល់ខ្លួន",
-        "description": "បន្ថែមសំណួរ RSVP នៅក្នុងផ្ទាំងការគ្រប់គ្រងភ្ញៀវ ដើម្បីចាប់ផ្ដើមប្រមូលទិន្នន័យ។"
-      }
+        "description": "បន្ថែមសំណួរ ដើម្បីប្រមូលចំណូលចិត្តម្ហូប សំណើចម្រៀង ឬអ្វីផ្សេងទៀត។"
+      },
+      "viewResults": "មើលលទ្ធផល"
     },
     "drill": {
       "loading": "កំពុងផ្ទុកការឆ្លើយតប…",

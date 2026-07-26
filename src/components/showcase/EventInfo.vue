@@ -9,46 +9,67 @@
     <div v-if="descriptionTitle || descriptionText" class="space-y-4">
       <!-- Description Title -->
       <div v-if="descriptionTitle">
-        <h2
-          :class="[
-            'text-base sm:text-lg md:text-xl lg:text-2xl font-regular leading-tight capitalize',
-            currentLanguage === 'kh' && 'khmer-text-fix',
-          ]"
-          :style="{
-            fontFamily: primaryFont || currentFont,
-            color: primaryColor,
-          }"
+        <InlineEditableText
+          :value="descriptionTitle"
+          :target="{ kind: 'eventText', textType: 'description', field: 'title' }"
+          :input-style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
         >
-          <span
-            v-for="(word, index) in splitToWords(descriptionTitle)"
-            :key="`title-${currentLanguage}-${index}`"
-            class="bounce-word"
-            :style="{ animationDelay: `${animationDelays.title + index * WORD_DELAY}s` }"
-          >{{ word }}{{ index < splitToWords(descriptionTitle).length - 1 ? '\u00A0' : '' }}</span>
-        </h2>
+          <h2
+            :class="[
+              'text-base sm:text-lg md:text-xl lg:text-2xl font-regular leading-tight capitalize',
+              currentLanguage === 'kh' && 'khmer-text-fix',
+            ]"
+            :style="{
+              fontFamily: primaryFont || currentFont,
+              color: primaryColor,
+            }"
+          >
+            <span
+              v-for="(word, index) in splitToWords(descriptionTitle)"
+              :key="`title-${currentLanguage}-${index}`"
+              class="bounce-word"
+              :style="{ animationDelay: `${animationDelays.title + index * WORD_DELAY}s` }"
+            >{{ word }}{{ index < splitToWords(descriptionTitle).length - 1 ? '\u00A0' : '' }}</span>
+          </h2>
+        </InlineEditableText>
       </div>
 
       <!-- Description Text -->
       <div v-if="descriptionText">
-        <p
-          :class="[
-            'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap opacity-90 px-4',
-            currentLanguage === 'kh' && 'khmer-text-fix',
-          ]"
-          :style="{
-            fontFamily: secondaryFont || currentFont,
-            color: primaryColor,
-            wordWrap: 'break-word',
-            hyphens: 'auto',
-          }"
+        <InlineEditableText
+          :value="descriptionText"
+          :target="{ kind: 'eventText', textType: 'description', field: 'content' }"
+          :multiline="true"
+          :input-style="{ fontFamily: secondaryFont || currentFont, color: primaryColor }"
         >
-          <span
-            v-for="(word, index) in splitToWords(capitalizedDescription)"
-            :key="`desc-${currentLanguage}-${index}`"
-            class="bounce-word"
-            :style="{ animationDelay: `${animationDelays.description + index * WORD_DELAY}s` }"
-          >{{ word }}{{ index < splitToWords(capitalizedDescription).length - 1 ? '\u00A0' : '' }}</span>
-        </p>
+          <p
+            :class="[
+              'text-sm sm:text-base leading-normal text-center max-w-full break-words whitespace-pre-wrap opacity-90 px-4',
+              currentLanguage === 'kh' && 'khmer-text-fix',
+            ]"
+            :style="{
+              fontFamily: secondaryFont || currentFont,
+              color: primaryColor,
+              wordWrap: 'break-word',
+              hyphens: 'auto',
+            }"
+          >
+            <template
+              v-for="(line, lineIndex) in descriptionLines"
+              :key="`desc-line-${currentLanguage}-${lineIndex}`"
+            >
+              <br v-if="lineIndex > 0" />
+              <span
+                v-for="(word, wordIndex) in line"
+                :key="`desc-${currentLanguage}-${lineIndex}-${wordIndex}`"
+                class="bounce-word"
+                :style="{
+                  animationDelay: `${animationDelays.description + getGlobalWordIndex(descriptionLines, lineIndex, wordIndex) * WORD_DELAY}s`,
+                }"
+              >{{ word }}{{ wordIndex < line.length - 1 ? '\u00A0' : '' }}</span>
+            </template>
+          </p>
+        </InlineEditableText>
       </div>
     </div>
 
@@ -71,21 +92,23 @@
         v-if="hasDateParts"
         :class="['date-column', currentLanguage === 'kh' && 'khmer-text-fix']"
       >
-        <div
-          v-if="dateParts.weekday"
-          class="date-weekday"
-          :style="{ fontFamily: secondaryFont || currentFont }"
-        >{{ dateParts.weekday }}</div>
-        <div
-          v-if="dateParts.day"
-          class="date-day"
-          :style="{ fontFamily: primaryFont || currentFont }"
-        >{{ dateParts.day }}</div>
-        <div
-          v-if="dateParts.month"
-          class="date-month"
-          :style="{ fontFamily: secondaryFont || currentFont }"
-        >{{ dateParts.month }}</div>
+        <EditableRegion :intent="{ kind: 'eventDate' }" class="date-column-region">
+          <div
+            v-if="dateParts.weekday"
+            class="date-weekday"
+            :style="{ fontFamily: secondaryFont || currentFont }"
+          >{{ dateParts.weekday }}</div>
+          <div
+            v-if="dateParts.day"
+            class="date-day"
+            :style="{ fontFamily: primaryFont || currentFont }"
+          >{{ dateParts.day }}</div>
+          <div
+            v-if="dateParts.month"
+            class="date-month"
+            :style="{ fontFamily: secondaryFont || currentFont }"
+          >{{ dateParts.month }}</div>
+        </EditableRegion>
       </div>
 
       <div
@@ -95,10 +118,17 @@
       ></div>
 
       <div v-if="locationText" class="details-column">
-        <div
-          :class="['details-location', currentLanguage === 'kh' && 'khmer-text-fix']"
-          :style="{ fontFamily: secondaryFont || currentFont }"
-        >{{ locationText }}</div>
+        <InlineEditableText
+          :value="locationText"
+          :target="{ kind: 'eventText', textType: 'location_text', field: 'content' }"
+          :multiline="true"
+          :input-style="{ fontFamily: secondaryFont || currentFont, color: primaryColor }"
+        >
+          <div
+            :class="['details-location', currentLanguage === 'kh' && 'khmer-text-fix']"
+            :style="{ fontFamily: secondaryFont || currentFont }"
+          >{{ locationText }}</div>
+        </InlineEditableText>
       </div>
     </div>
 
@@ -114,6 +144,7 @@
         animationDelay: `${animationDelays.date}s`,
       }"
     >
+      <EditableRegion :intent="{ kind: 'eventDate' }" class="calendar-region">
       <div
         :class="['calendar-heading', currentLanguage === 'kh' && 'khmer-text-fix']"
         :style="{ fontFamily: primaryFont || currentFont }"
@@ -160,6 +191,7 @@
           </svg>
         </div>
       </div>
+      </EditableRegion>
     </div>
 
     <!-- Event Details Block -->
@@ -182,15 +214,22 @@
         >
           <!-- Location header (calendar design): centered above the map frame,
                replacing the panel design's location card. -->
-          <div
+          <InlineEditableText
             v-if="isCalendarDesign && locationText"
-            class="map-location-header px-2 pt-2 pb-1 bounce-in-element"
-            :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
-            :style="{
-              fontFamily: secondaryFont || currentFont,
-              animationDelay: `${animationDelays.map}s`,
-            }"
-          >{{ locationText }}</div>
+            :value="locationText"
+            :target="{ kind: 'eventText', textType: 'location_text', field: 'content' }"
+            :multiline="true"
+            :input-style="{ fontFamily: secondaryFont || currentFont, color: primaryColor }"
+          >
+            <div
+              class="map-location-header px-2 pt-2 pb-1 bounce-in-element"
+              :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+              :style="{
+                fontFamily: secondaryFont || currentFont,
+                animationDelay: `${animationDelays.map}s`,
+              }"
+            >{{ locationText }}</div>
+          </InlineEditableText>
 
           <!-- Google Map Embed -->
           <div
@@ -198,31 +237,55 @@
             class="pt-2 bounce-in-element"
             :style="{ animationDelay: `${animationDelays.map}s` }"
           >
-            <div
-              class="aspect-video overflow-hidden"
-              :style="{
-                border: `1px solid rgba(255, 255, 255, 0.3)`,
-                borderRadius: '1rem',
-              }"
+            <EditableRegion :intent="{ kind: 'gmapEmbed' }">
+              <div
+                class="aspect-video overflow-hidden"
+                :style="{
+                  border: `1px solid rgba(255, 255, 255, 0.3)`,
+                  borderRadius: '1rem',
+                }"
+              >
+                <iframe
+                  :src="googleMapEmbedLink"
+                  width="100%"
+                  height="100%"
+                  style="border: 0"
+                  :allowfullscreen="false"
+                  loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade"
+                />
+              </div>
+            </EditableRegion>
+          </div>
+          <!-- No map yet: offer an add affordance, but only inside the
+               editable manage-page preview (editIntentCtx is never provided
+               on the public showcase). -->
+          <div v-else-if="editIntentCtx" class="pt-2">
+            <button
+              type="button"
+              class="edit-region-control add-map-placeholder aspect-video"
+              @click.stop.prevent="editIntentCtx.requestEdit({ kind: 'gmapEmbed' })"
             >
-              <iframe
-                :src="googleMapEmbedLink"
-                width="100%"
-                height="100%"
-                style="border: 0"
-                :allowfullscreen="false"
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
-              />
-            </div>
+              + Add Google Map
+            </button>
           </div>
 
-          <!-- Countdown Display - Below Map, Above RSVP -->
+          <!-- Countdown Display - Below Map, Above RSVP (also rendered when
+               turned off inside the editable manage-page preview, so the
+               toggle stays reachable and the organizer can still preview the
+               content — editIntentCtx is never provided on the public
+               showcase) -->
           <div
-            v-if="countdown && showCountdown && isCountdownActive"
+            v-if="countdown && isCountdownActive && (showCountdown || editIntentCtx)"
             class="countdown-container px-4 pt-2 pb-2 bounce-in-element"
+            :class="{ 'has-display-toggle': editIntentCtx }"
             :style="{ animationDelay: `${animationDelays.countdown}s` }"
           >
+            <SectionDisplayToggle
+              field="countdown_enabled"
+              :active="!!showCountdown"
+              :label="tApp('management.showcasePreview.editors.countdownLabel')"
+            />
             <div class="countdown-wrapper">
               <!-- Countdown Header -->
               <div
@@ -290,19 +353,29 @@
 
           <!-- Divider between Countdown and RSVP -->
           <div
-            v-if="countdown && showCountdown && isCountdownActive && showRsvp"
+            v-if="countdown && isCountdownActive && (showCountdown || editIntentCtx) && (showRsvp || editIntentCtx)"
             class="countdown-divider bounce-in-element"
             :style="{ animationDelay: `${animationDelays.divider}s` }"
           >
             <div class="divider-line"></div>
           </div>
 
-          <!-- RSVP Section Integrated Below Map -->
+          <!-- RSVP Section Integrated Below Map (also rendered when turned
+               off inside the editable manage-page preview, so the toggle
+               stays reachable and the organizer can still preview the
+               content — editIntentCtx is never provided on the public
+               showcase) -->
           <div
-            v-if="showRsvp"
-            class="bounce-in-element"
+            v-if="showRsvp || editIntentCtx"
+            class="bounce-in-element rsvp-toggle-container"
+            :class="{ 'has-display-toggle': editIntentCtx }"
             :style="{ animationDelay: `${animationDelays.rsvp}s` }"
           >
+            <SectionDisplayToggle
+              field="rsvp_enabled"
+              :active="!!showRsvp"
+              :label="tApp('management.showcasePreview.editors.rsvpLabel')"
+            />
             <slot name="rsvp"></slot>
           </div>
         </div>
@@ -312,7 +385,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch, nextTick, inject } from 'vue'
+import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
+import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
+import SectionDisplayToggle from '@/components/showcase-preview/edit/SectionDisplayToggle.vue'
+import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCountdown } from '../../composables/useCountdown'
 import {
   translateRSVP,
@@ -324,6 +402,8 @@ import {
 } from '../../utils/translations'
 import {
   splitToWords,
+  splitToLines,
+  getGlobalWordIndex,
   ANIMATION_CONSTANTS,
   getTextAnimationDuration,
 } from '@/composables/showcase/useHostInfoUtils'
@@ -619,6 +699,11 @@ defineEmits<{
   openMap: []
 }>()
 
+// Only provided by the editable manage-page preview frame — undefined on the
+// public showcase, so the add-map placeholder can never leak into production.
+const editIntentCtx = inject(EditIntentKey, undefined)
+const { t: tApp } = useAppLanguage()
+
 // Computed property to ensure description starts with capital letter
 const capitalizedDescription = computed(() => {
   if (!props.descriptionText) return ''
@@ -626,6 +711,12 @@ const capitalizedDescription = computed(() => {
   if (text.length === 0) return ''
   return text.charAt(0).toUpperCase() + text.slice(1)
 })
+
+// Split per line, not per word: the description is authored in a textarea, so
+// the line breaks typed there are part of the layout the author chose and the
+// invitation has to honour them (the word-reveal stagger keeps running across
+// the breaks via getGlobalWordIndex).
+const descriptionLines = computed(() => splitToLines(capitalizedDescription.value))
 
 // Countdown header and labels
 const countdownHeader = computed(() => {
@@ -710,6 +801,16 @@ const countdownNumberFont = computed(() =>
   gap: 0.15rem;
 }
 
+/* Manage-preview only wrapper (bare slot in production, see EditableRegion) —
+   keeps the weekday/day/month stack centered exactly as the plain date-column
+   children were before this wrapper existed. */
+.date-column-region {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
 /* Mobile: scaled down for the 1/3-width date column so "WEDNESDAY"/"SEPTEMBER"
    don't overflow or wrap. Full sizes restored at ≥640px where the column widens. */
 .date-weekday,
@@ -767,6 +868,13 @@ const countdownNumberFont = computed(() =>
   box-sizing: border-box;
   border-top: 1px solid color-mix(in srgb, currentColor 60%, transparent);
   border-bottom: 1px solid color-mix(in srgb, currentColor 60%, transparent);
+}
+
+/* Manage-preview only wrapper around the heading + grid (bare slot in
+   production, see EditableRegion) — no layout of its own beyond block flow,
+   which matches the two children's original stacking inside .calendar-card. */
+.calendar-region {
+  display: block;
 }
 
 .calendar-heading {
@@ -1091,10 +1199,26 @@ const countdownNumberFont = computed(() =>
 
 /* Countdown styles */
 .countdown-container {
+  position: relative;
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.rsvp-toggle-container {
+  position: relative;
+}
+
+/* Manage-page preview edit chrome: reserves clearance above the section's
+   own content so the top-right corner toggle never overlaps it (e.g. the
+   RSVP question, which otherwise starts flush with the top edge). Compound
+   selector outranks the countdown container's own Tailwind `pt-2` utility
+   regardless of stylesheet order. Never applied on the public showcase
+   (editIntentCtx is undefined there, so the class is never added). */
+.countdown-container.has-display-toggle,
+.rsvp-toggle-container.has-display-toggle {
+  padding-top: 2.25rem;
 }
 
 .countdown-wrapper {
@@ -1782,5 +1906,27 @@ const countdownNumberFont = computed(() =>
     animation: none;
     color: #b3261e;
   }
+}
+
+/* Manage-preview only (never rendered on the public showcase — gated on the
+   injected edit-intent context). */
+.add-map-placeholder {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px dashed rgba(255, 255, 255, 0.55);
+  border-radius: 1rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.add-map-placeholder:hover {
+  border-color: rgba(30, 144, 255, 0.8);
+  background: rgba(30, 144, 255, 0.12);
 }
 </style>

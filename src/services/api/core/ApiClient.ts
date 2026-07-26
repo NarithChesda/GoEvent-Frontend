@@ -446,6 +446,7 @@ export class ApiClient {
         return {
           success: false,
           message,
+          status: response.status,
           errors: data?.errors || (isJson ? data : undefined),
         }
       }

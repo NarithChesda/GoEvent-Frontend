@@ -13,6 +13,7 @@ export {
   getMediaUrl,
   splitToWords,
   splitToLines,
+  getGlobalWordIndex,
   ANIMATION_CONSTANTS,
   getTextAnimationDuration,
   useFallbackLogo,

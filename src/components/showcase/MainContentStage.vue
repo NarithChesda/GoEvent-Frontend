@@ -137,6 +137,7 @@
                     :sample-logo-two="templateAssets?.sample_logo_2"
                     :first-host-image="firstHostImage"
                     :first-host-name="firstHostName"
+                    :first-host-id="firstHostId"
                     :host-clip-style="hostClipStyle"
                     :design-type="hostInfoDesign?.type"
                   />
@@ -222,9 +223,12 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
-                <!-- Dress Code Section -->
+                <!-- Dress Code Section (also rendered when empty inside the
+                     editable manage-page preview, so the first dress code can
+                     be added from there — editIntentCtx is never provided on
+                     the public showcase) -->
                 <div
-                  v-if="dressCodes.length > 0"
+                  v-if="dressCodes.length > 0 || editIntentCtx"
                   id="dress-code-section"
                   ref="dressCodeSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
@@ -247,9 +251,12 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
-                <!-- Agenda Section -->
+                <!-- Agenda Section (also rendered when empty inside the
+                     editable manage-page preview, so the first agenda item
+                     can be added from there — editIntentCtx is never provided
+                     on the public showcase) -->
                 <div
-                  v-if="agendaItems.length > 0"
+                  v-if="agendaItems.length > 0 || editIntentCtx"
                   id="agenda-section"
                   ref="agendaSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
@@ -295,26 +302,40 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
-                <!-- YouTube Video Section -->
+                <!-- YouTube Video Section (also rendered when empty inside
+                     the editable manage-page preview, so a video link can be
+                     added from there — editIntentCtx is never provided on
+                     the public showcase) -->
                 <div
-                  v-if="event.youtube_embed_link"
+                  v-if="event.youtube_embed_link || editIntentCtx"
                   id="video-section"
                   ref="videoSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
-                  <YouTubeVideoSection
-                    :youtube-embed-link="event.youtube_embed_link"
-                    :primary-color="primaryColor"
-                    :secondary-color="secondaryColor || undefined"
-                    :accent-color="accentColor"
-                    :current-font="currentFont"
-                    :primary-font="primaryFont"
-                    :secondary-font="secondaryFont"
-                    :event-texts="eventTexts"
-                    :current-language="currentLanguage"
-                    :is-music-playing="isMusicPlaying"
-                    @video-state-change="handleVideoStateChange"
-                  />
+                  <EditableRegion v-if="event.youtube_embed_link" :intent="{ kind: 'youtubeEmbed' }">
+                    <YouTubeVideoSection
+                      :youtube-embed-link="event.youtube_embed_link"
+                      :primary-color="primaryColor"
+                      :secondary-color="secondaryColor || undefined"
+                      :accent-color="accentColor"
+                      :current-font="currentFont"
+                      :primary-font="primaryFont"
+                      :secondary-font="secondaryFont"
+                      :event-texts="eventTexts"
+                      :current-language="currentLanguage"
+                      :is-music-playing="isMusicPlaying"
+                      @video-state-change="handleVideoStateChange"
+                    />
+                  </EditableRegion>
+                  <div v-else-if="editIntentCtx" class="add-video-row">
+                    <button
+                      type="button"
+                      class="edit-region-control add-video-btn"
+                      @click.stop.prevent="editIntentCtx.requestEdit({ kind: 'youtubeEmbed' })"
+                    >
+                      ＋ {{ tApp('management.showcasePreview.editors.addVideo') }}
+                    </button>
+                  </div>
 
                   <!-- Video Section Divider -->
                   <WeddingSectionDivider :primary-color="primaryColor" />
@@ -327,27 +348,32 @@
                   ref="gallerySectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
-                  <PhotoGallery
-                    :photos="eventPhotos"
-                    :primary-color="primaryColor"
-                    :secondary-color="secondaryColor"
-                    :accent-color="accentColor"
-                    :get-media-url="getMediaUrl"
-                    :current-font="currentFont"
-                    :primary-font="primaryFont"
-                    :secondary-font="secondaryFont"
-                    :event-texts="eventTexts"
-                    :current-language="currentLanguage"
-                    @open-photo="$emit('openPhoto', $event)"
-                  />
+                  <EditableRegion :intent="{ kind: 'photos' }">
+                    <PhotoGallery
+                      :photos="eventPhotos"
+                      :primary-color="primaryColor"
+                      :secondary-color="secondaryColor"
+                      :accent-color="accentColor"
+                      :get-media-url="getMediaUrl"
+                      :current-font="currentFont"
+                      :primary-font="primaryFont"
+                      :secondary-font="secondaryFont"
+                      :event-texts="eventTexts"
+                      :current-language="currentLanguage"
+                      @open-photo="$emit('openPhoto', $event)"
+                    />
+                  </EditableRegion>
 
                   <!-- Gallery Section Divider -->
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
-                <!-- Payment Section -->
+                <!-- Payment Section (also rendered when empty inside the
+                     editable manage-page preview, so a payment method can be
+                     added from there — editIntentCtx is never provided on
+                     the public showcase) -->
                 <div
-                  v-if="paymentMethods.length > 0"
+                  v-if="paymentMethods.length > 0 || editIntentCtx"
                   id="payment-section"
                   ref="paymentSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
@@ -367,19 +393,30 @@
                     :event-category-details="event.category_details"
                     :event-texts="eventTexts"
                     :current-language="currentLanguage"
+                    :payment-locked="event.payment_lock"
                   />
 
                   <!-- Payment Section Divider -->
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
-                <!-- Comment Section -->
+                <!-- Comment Section (also rendered when disabled inside the
+                     editable manage-page preview, so the toggle stays
+                     reachable and the organizer can still preview the
+                     content — editIntentCtx is never provided on the public
+                     showcase) -->
                 <div
-                  v-if="event.comments_enabled !== false"
+                  v-if="event.comments_enabled !== false || editIntentCtx"
                   id="comment-section"
                   ref="commentSectionRef"
-                  class="mb-10 sm:mb-12 laptop-sm:mb-12 laptop-md:mb-14 laptop-lg:mb-16 desktop:mb-14 animate-reveal"
+                  class="mb-10 sm:mb-12 laptop-sm:mb-12 laptop-md:mb-14 laptop-lg:mb-16 desktop:mb-14 animate-reveal comment-section-toggle-container"
+                  :class="{ 'has-display-toggle': editIntentCtx }"
                 >
+                  <SectionDisplayToggle
+                    field="comments_enabled"
+                    :active="event.comments_enabled !== false"
+                    :label="tApp('management.showcasePreview.editors.commentsLabel')"
+                  />
                   <CommentSection
                     :event-id="event.id"
                     :event-privacy="event.privacy"
@@ -412,15 +449,17 @@
                   </button>
                 </div>
 
-                <!-- Footer Section -->
+                <!-- Footer Section - its own full-height, centered "page" so scrolling
+                     to the bottom clears the previous section (e.g. comments) out of
+                     view instead of showing both at once -->
                 <div
                   ref="footerSectionRef"
-                  class="mt-8 animate-reveal"
+                  class="mt-8 min-h-[85vh] flex flex-col items-center justify-center animate-reveal"
                   :class="footerMarginClasses"
                 >
                   <!-- Footer Card with Conditional Styling -->
                   <div
-                    class="footer-card-container rounded-none px-6 pt-6 pb-4 text-center transition-all duration-300 relative overflow-hidden"
+                    class="footer-card-container w-full rounded-none px-6 pt-6 pb-4 text-center transition-all duration-300 relative overflow-hidden"
                     :class="{ 'backdrop-blur-16': showLiquidGlass }"
                     :style="
                       showLiquidGlass
@@ -884,10 +923,6 @@
                     </div>
                   </div>
                 </div>
-
-                <!-- Spacer so the footer can scroll to the center of the viewport,
-                     clearing the bottom decoration overlay -->
-                <div class="h-[42vh]" aria-hidden="true"></div>
               </div>
             </div>
           </div>
@@ -934,6 +969,10 @@ import HostMessageSection from './HostMessageSection.vue'
 import DressCodeSection from './DressCodeSection.vue'
 import YouTubeVideoSection from './YouTubeVideoSection.vue'
 import PhotoGallery from './PhotoGallery.vue'
+import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
+import SectionDisplayToggle from '@/components/showcase-preview/edit/SectionDisplayToggle.vue'
+import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import CommentSection from './CommentSection.vue'
 import PaymentSection from './PaymentSection.vue'
 import FloatingActionMenu from './FloatingActionMenu.vue'
@@ -1004,6 +1043,11 @@ interface Props {
 
 const props = defineProps<Props>()
 
+// Only provided by the editable manage-page preview frame — undefined on the
+// public showcase, so the empty-agenda add affordance can never leak there.
+const editIntentCtx = inject(EditIntentKey, undefined)
+const { t: tApp } = useAppLanguage()
+
 // Main stage layout configuration (decoration z-indexes + welcome header visibility)
 const { decorationZIndexes, layout: mainStageLayoutResolved } = useCoverStageLayout(
   computed(() => props.mainStageLayout),
@@ -1026,6 +1070,7 @@ const hostClipStyle = computed<Record<string, string>>(() => ({
 const firstHost = computed(() => props.hosts[0])
 const firstHostImage = computed(() => firstHost.value?.profile_image ?? null)
 const firstHostName = computed(() => firstHost.value?.name ?? '')
+const firstHostId = computed(() => firstHost.value?.id ?? null)
 
 // Animation type from prop with fallback to 'decoration'
 const currentAnimationType = computed(() => props.animationType || 'decoration')
@@ -1538,6 +1583,53 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* Manage-page preview edit chrome: add-video affordance shown when the event
+   has no YouTube embed yet. Rendered only when the edit-intent context
+   exists, never in production. */
+.add-video-row {
+  display: flex;
+  justify-content: center;
+  margin: 0.25rem 0 1rem;
+}
+
+.add-video-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25em;
+  width: 100%;
+  max-width: 20rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: #1e90ff;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1.5px dashed rgba(30, 144, 255, 0.5);
+  border-radius: 9999px;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.12);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.add-video-btn:hover {
+  border-color: rgba(30, 144, 255, 0.9);
+  background: rgba(30, 144, 255, 0.08);
+}
+
+.comment-section-toggle-container {
+  position: relative;
+}
+
+/* Manage-page preview edit chrome: reserves clearance above the comment
+   section's own heading so the top-right corner toggle never overlaps it.
+   Never applied on the public showcase (editIntentCtx is undefined there, so
+   the class is never added). */
+.comment-section-toggle-container.has-display-toggle {
+  padding-top: 2.25rem;
+}
+
 /* ===================
    ANIMATIONS
    =================== */

@@ -95,12 +95,7 @@
         :guest-stats="guestStats"
         :loading-stats="loadingStats"
         :rsvp-summary="rsvpSummary"
-        :loading-rsvp-summary="loadingRsvpSummary"
         :event-id="props.eventId"
-        :rsvp-questions="rsvpQuestions"
-        :loading-rsvp-questions="loadingRsvpQuestions"
-        @refresh-rsvp-questions="loadRsvpQuestions"
-        @rsvp-questions-message="handleRsvpQuestionsMessage"
         @add-guest="showAddGuestModal = true"
         @toggle-group="handleGroupToggle"
         @copy-link="copyShowcaseLink"
@@ -213,11 +208,10 @@ import { useBulkImport } from '../composables/invitation/useBulkImport'
 import type {
   Event,
   EventGuest,
-  EventRsvpQuestion,
   GuestGroup,
   GuestRsvpSummary,
 } from '../services/api'
-import { guestService, rsvpQuestionsService } from '../services/api'
+import { guestService } from '../services/api'
 import { getGuestSSRMetaUrl } from '../utils/metaUtils'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import AddGuestModal from './invitation/AddGuestModal.vue'
@@ -256,41 +250,15 @@ const PAGE_SIZE = store.PAGE_SIZE
 // This ensures the child component receives reactive updates when the store's ref changes
 const allGuestsPaginationValue = computed(() => store.allGuestsPagination)
 
-// RSVP summary (response funnel) — fetched directly from the service since
-// the store doesn't own this resource. Loaded alongside guest stats.
+// RSVP summary — only feeds the per-status counts in the guest filter
+// dropdown now; the RSVP stats themselves live in the Analytics tab.
 const rsvpSummary = ref<GuestRsvpSummary | null>(null)
-const loadingRsvpSummary = ref(false)
 
 const loadRsvpSummary = async () => {
-  loadingRsvpSummary.value = true
-  try {
-    const response = await guestService.getGuestsRsvpSummary(props.eventId)
-    if (response.success && response.data) {
-      rsvpSummary.value = response.data
-    }
-  } finally {
-    loadingRsvpSummary.value = false
+  const response = await guestService.getGuestsRsvpSummary(props.eventId)
+  if (response.success && response.data) {
+    rsvpSummary.value = response.data
   }
-}
-
-// Custom RSVP questions (host-defined questionnaire).
-const rsvpQuestions = ref<EventRsvpQuestion[]>([])
-const loadingRsvpQuestions = ref(false)
-
-const loadRsvpQuestions = async () => {
-  loadingRsvpQuestions.value = true
-  try {
-    const response = await rsvpQuestionsService.listQuestions(props.eventId)
-    if (response.success && response.data) {
-      rsvpQuestions.value = response.data
-    }
-  } finally {
-    loadingRsvpQuestions.value = false
-  }
-}
-
-const handleRsvpQuestionsMessage = (type: 'success' | 'error', text: string) => {
-  showMessage(type, text)
 }
 
 // Store action wrappers that include eventId
@@ -867,7 +835,6 @@ watch(hasTemplatePayment, (isActivated) => {
     loadGroups()
     loadGuestStats()
     loadRsvpSummary()
-    loadRsvpQuestions()
   }
 })
 

@@ -32,9 +32,10 @@
             v-if="canEdit"
             @click="openCreateDrawer"
             class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
+            :title="t('management.agenda.addBtn')"
           >
             <Plus class="w-3.5 h-3.5" aria-hidden="true" />
-            {{ t('management.agenda.addBtn') }}
+            <span>{{ t('management.agenda.addBtn') }}</span>
           </button>
           <button
             type="button"
@@ -517,7 +518,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const { t, locale } = useAppLanguage()
-const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection()
+const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection('agenda')
 
 // State
 const agendaItems = ref<EventAgendaItem[]>([])

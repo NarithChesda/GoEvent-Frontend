@@ -84,6 +84,7 @@
         :event-logo="event.logo_one"
         :first-host-image="hosts[0]?.profile_image || null"
         :first-host-name="hosts[0]?.name || ''"
+        :first-host-id="hosts[0]?.id ?? null"
         :event-video-url="eventVideoUrl"
         :background-video-url="backgroundVideoUrl"
         :primary-color="primaryColor"

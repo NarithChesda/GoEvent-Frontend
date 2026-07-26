@@ -21,6 +21,7 @@ import { useTemplateProcessor } from './showcase/useTemplateProcessor'
 
 // Imports - Utilities
 import { updateMetaTags, getBestEventImage, createEventDescription } from '../utils/metaUtils'
+import { translateRSVP, type SupportedLanguage } from '../utils/translations'
 
 // Configuration constants moved to specialized composables
 
@@ -241,6 +242,7 @@ export interface EventData {
   rsvp_enabled?: boolean
   comments_enabled?: boolean
   countdown_enabled?: boolean
+  payment_lock?: boolean
   privacy?: 'public' | 'private'
   category?: number | null
   category_name?: string | null
@@ -304,8 +306,28 @@ export interface ShowcaseError extends Error {
 // ============================
 // Main Composable
 // ============================
-export function useEventShowcase() {
+export interface UseEventShowcaseOptions {
+  /** Explicit event id, bypassing route-param resolution. Used when embedding
+   *  the showcase data pipeline outside the `/events/:id/showcase` route (e.g.
+   *  the manage-page live preview tab). */
+  eventId?: string
+  /** Skip the document.title / <meta> / JSON-LD mutation loadShowcase() performs.
+   *  Default false (unchanged behavior) — set true when embedding in a page that
+   *  owns its own document head (e.g. the manage page). */
+  skipMetaTags?: boolean
+  /** When there's no real guest link (no `guest_name` query param / meta),
+   *  fall back to a translated "Honored Guest" placeholder instead of an
+   *  empty guestName — used by the manage-page live preview, which has no
+   *  guest context to carry a real name, so the invite text + guest name
+   *  cover rows (gated on `guestName` being truthy) still render. */
+  useDefaultGuestName?: boolean
+}
+
+export function useEventShowcase(options?: UseEventShowcaseOptions) {
   const route = useRoute()
+
+  const resolveEventId = (): string | undefined =>
+    options?.eventId || (route.params.id as string | undefined)
 
   // ============================
   // External Composables
@@ -365,7 +387,12 @@ export function useEventShowcase() {
     const guestNameStr = Array.isArray(guestNameFromQuery)
       ? guestNameFromQuery[0]
       : guestNameFromQuery
-    return meta.value.guest_name || guestNameStr || ''
+    const resolved = meta.value.guest_name || guestNameStr || ''
+    if (resolved) return resolved
+    if (options?.useDefaultGuestName) {
+      return translateRSVP('default_guest_name', currentLanguage.value as SupportedLanguage)
+    }
+    return ''
   })
 
   // Guest shortcode (`g=...`) — write-only credential for commenting on private
@@ -373,7 +400,7 @@ export function useEventShowcase() {
   // sessionStorage so it survives intra-session navigation. Treated like a
   // short-lived bearer token: never written to localStorage, cookies, or logs.
   const guestShortcode = computed<string | null>(() => {
-    const eventId = (route.params.id as string) || event.value?.id
+    const eventId = resolveEventId() || event.value?.id
     if (!eventId) return null
 
     const fromQuery = route.query.g
@@ -508,26 +535,10 @@ export function useEventShowcase() {
   const hosts = computed(() => event.value?.hosts || [])
   const agendaItems = computed(() => event.value?.agenda_items || [])
 
-  // Photo sorting with cache
-  const photosCache = ref<{ version: number; sorted: EventPhoto[] }>({ version: -1, sorted: [] })
-
   const eventPhotos = computed(() => {
     const photos = event.value?.photos || event.value?.event_photos || []
     if (photos.length === 0) return []
-
-    const currentVersion = photos.length + (photos[0]?.id || 0) + (photos[0]?.order || 0)
-
-    if (
-      photosCache.value.version === currentVersion &&
-      photosCache.value.sorted.length === photos.length
-    ) {
-      return photosCache.value.sorted
-    }
-
-    const sorted = [...photos].sort((a, b) => (a.order || 0) - (b.order || 0))
-    photosCache.value = { version: currentVersion, sorted }
-
-    return sorted
+    return [...photos].sort((a, b) => (a.order || 0) - (b.order || 0))
   })
 
   const paymentMethods = computed(() => {
@@ -666,7 +677,7 @@ export function useEventShowcase() {
   // Core Methods
   // ============================
   const loadShowcase = async (forceLanguage?: string) => {
-    const eventId = route.params.id as string
+    const eventId = resolveEventId()
     if (!eventId) {
       error.value = 'Invalid event ID'
       return
@@ -723,8 +734,11 @@ export function useEventShowcase() {
         }
       }
 
-      // Update meta tags for social sharing
-      updateEventMetaTags(data.event)
+      // Update meta tags for social sharing (skipped when embedded in a page
+      // that owns its own document head, e.g. the manage-page preview tab)
+      if (!options?.skipMetaTags) {
+        updateEventMetaTags(data.event)
+      }
 
       // Initialize showcase stage based on redirect state
       const initialStage = await redirectManager.getInitialStage()
@@ -771,11 +785,106 @@ export function useEventShowcase() {
   }
 
   /**
+   * Silently refetches the showcase data in place — no `loading` toggle, no
+   * stage re-initialization, no font/meta work — so the rendered showcase
+   * updates without unmounting anything (no spinner flash, no re-run of the
+   * mount-driven entry animations, no background video reload). Used by the
+   * manage-page preview after a parent-side editor save; the same-language
+   * event_texts merge mirrors updateLanguageContent's, since the API only
+   * returns texts for the requested language.
+   */
+  const refreshShowcaseData = async () => {
+    const eventId = resolveEventId()
+    if (!eventId) return
+
+    const guest = guestName.value || ''
+    const requestKey = `showcase-refresh-${eventId}-${currentLanguage.value}-${guest}`
+
+    try {
+      const params: { lang?: string; guest_name?: string } = {
+        lang: currentLanguage.value,
+      }
+      if (guestName.value) {
+        params.guest_name = guestName.value as string
+      }
+
+      const data: ShowcaseData = await deduplicateRequest<ShowcaseData>(requestKey, async (): Promise<ShowcaseData> => {
+        const showcaseResponse = await eventsService.getEventShowcase(eventId, params)
+        if (!showcaseResponse.success || !showcaseResponse.data) {
+          throw new Error(showcaseResponse.message || 'Failed to refresh event content')
+        }
+        return showcaseResponse.data as ShowcaseData
+      })
+
+      if (showcaseData.value) {
+        const existingTexts = showcaseData.value.event.event_texts || []
+        const newTexts = data.event.event_texts || []
+        const textsFromOtherLanguages = existingTexts.filter(
+          (text) => text.language !== currentLanguage.value,
+        )
+        showcaseData.value = {
+          ...data,
+          event: {
+            ...data.event,
+            event_texts: [...textsFromOtherLanguages, ...newTexts],
+          },
+        }
+      } else {
+        showcaseData.value = data
+      }
+    } catch (err: unknown) {
+      // A failed background refresh keeps showing the current (stale) data —
+      // never blank an already-rendered showcase over it.
+      console.warn('Silent showcase refresh failed:', err)
+    }
+  }
+
+  /**
+   * Preview-only escape hatch. The showcase endpoint nulls `event.template_assets`
+   * server-side until payment is confirmed (see `get_template_assets` in the
+   * backend showcase serializer), so an event with a selected-but-unpaid
+   * template otherwise renders with no template look at all. The manage-page
+   * live preview tab wants owners to see their pending template before paying,
+   * so it separately fetches the public, no-auth `public_template_assets`
+   * endpoint (keyed by template id, not event/payment) and feeds the result in
+   * here. Only ever called from the preview frame — the real public showcase
+   * never calls this, so the payment gate stays intact for guests.
+   */
+  const applyPreviewTemplateFallback = (templateData: TemplateAssets, options?: { force?: boolean }) => {
+    if (!showcaseData.value) return
+    if (showcaseData.value.event.template_assets && !options?.force) return // already has real (paid) data
+
+    showcaseData.value = {
+      ...showcaseData.value,
+      event: {
+        ...showcaseData.value.event,
+        template_assets: templateData,
+        // templateColors/templateFonts read these top-level fields before
+        // falling back to template_assets.colors/fonts, so a forced preview
+        // must overwrite them too or colors/fonts would stay stuck on
+        // whichever template they came from.
+        ...(options?.force ? { template_colors: templateData.colors, template_fonts: templateData.fonts } : {}),
+      },
+    }
+  }
+
+  /**
+   * Live, non-destructive template try-on: overlays another template's
+   * assets/colors/fonts onto the currently loaded showcase without touching
+   * the backend, even when the event already has a real active template.
+   * Revert by re-fetching (refreshShowcaseData), which replaces
+   * showcaseData wholesale and naturally wipes this override.
+   */
+  const setStagedTemplatePreview = (templateData: TemplateAssets) => {
+    applyPreviewTemplateFallback(templateData, { force: true })
+  }
+
+  /**
    * Updates language content without triggering full loading state
    * This prevents the background video from reloading during language changes
    */
   const updateLanguageContent = async (newLanguage: string) => {
-    const eventId = route.params.id as string
+    const eventId = resolveEventId()
     if (!eventId) {
       error.value = 'Invalid event ID'
       return
@@ -1080,7 +1189,6 @@ export function useEventShowcase() {
       templateProcessor.clearCaches()
 
       // 6. Reset local state
-      photosCache.value = { version: -1, sorted: [] }
       showcaseData.value = null
       error.value = null
       currentModalPhoto.value = null
@@ -1160,6 +1268,9 @@ export function useEventShowcase() {
 
     // Methods
     loadShowcase,
+    refreshShowcaseData,
+    applyPreviewTemplateFallback,
+    setStagedTemplatePreview,
     updateLanguageContent,
     loadCustomFonts: fontManager.loadCustomFonts,
     openEnvelope: stageManager.openEnvelope,

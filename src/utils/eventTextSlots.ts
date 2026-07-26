@@ -31,6 +31,7 @@ export interface EventTextSlot {
 
 export const EVENT_TEXT_SLOTS: EventTextSlot[] = [
   { value: 'cover_header', icon: Type, group: 'cover', hasTitle: false },
+  { value: 'invite_text', icon: MessageSquare, group: 'cover', hasTitle: false },
   { value: 'welcome_message', icon: MessageSquare, group: 'main', hasTitle: false },
   { value: 'description', icon: AlignLeft, group: 'main', hasTitle: true },
   { value: 'date_text', icon: Calendar, group: 'main', hasTitle: false },
