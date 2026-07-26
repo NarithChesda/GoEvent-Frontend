@@ -55,7 +55,7 @@
                 </p>
               </div>
               <span
-                class="inline-flex items-center px-3 py-1 rounded-full text-[11px] sm:text-xs font-medium"
+                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
                 :class="statusBadgeClass(currentPayment.status)"
               >
                 {{ statusDisplay(currentPayment.status) }}
@@ -668,18 +668,19 @@ const sanitizeInput = (input: string): string =>
     return entities[match] || match
   })
 
+/** Kept identical to PaymentHistoryList's badges — same statuses, same recipe. */
 const statusBadgeClass = (status?: PaymentStatus) => {
   switch (status) {
     case 'pending':
-      return 'bg-orange-100 text-orange-700'
+      return 'bg-amber-50 text-amber-700 ring-1 ring-amber-200'
     case 'confirmed':
-      return 'bg-green-100 text-green-700'
+      return 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
     case 'failed':
-      return 'bg-red-100 text-red-700'
+      return 'bg-red-50 text-red-700 ring-1 ring-red-200'
     case 'refunded':
-      return 'bg-purple-100 text-purple-700'
+      return 'bg-purple-50 text-purple-700 ring-1 ring-purple-200'
     default:
-      return 'bg-slate-100 text-slate-700'
+      return 'bg-slate-50 text-slate-600 ring-1 ring-slate-200'
   }
 }
 

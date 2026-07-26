@@ -34,10 +34,10 @@
           <div class="text-right flex-shrink-0">
             <p class="text-base sm:text-lg font-bold text-slate-900">{{ formatCurrency(payment.amount, 'USD') }}</p>
             <span
-              class="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium mt-1"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold mt-1"
               :class="getStatusBadgeClass(payment.status)"
             >
-              <component :is="getStatusIcon(payment.status)" class="w-3 h-3 mr-1" />
+              <component :is="getStatusIcon(payment.status)" class="w-3 h-3" />
               {{ getStatusDisplay(payment.status) }}
             </span>
           </div>
@@ -188,20 +188,26 @@ const getStatusIcon = (status?: string): Component => {
   }
 }
 
+/**
+ * Same recipe as TemplateActivationCard's status badges (50-level tint + a
+ * ring hairline), so the row's status and the activation card's status above
+ * it read as one system rather than two. `pending` is amber, not orange —
+ * DESIGN.md §2.3 has no orange in the status palette.
+ */
 const getStatusBadgeClass = (status?: string) => {
   switch (status) {
     case 'pending':
-      return 'bg-orange-100 text-orange-700'
+      return 'bg-amber-50 text-amber-700 ring-1 ring-amber-200'
     case 'confirmed':
-      return 'bg-green-100 text-green-700'
+      return 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
     case 'failed':
-      return 'bg-red-100 text-red-700'
+      return 'bg-red-50 text-red-700 ring-1 ring-red-200'
     case 'cancelled':
-      return 'bg-slate-100 text-slate-700'
+      return 'bg-slate-50 text-slate-600 ring-1 ring-slate-200'
     case 'refunded':
-      return 'bg-purple-100 text-purple-700'
+      return 'bg-purple-50 text-purple-700 ring-1 ring-purple-200'
     default:
-      return 'bg-slate-100 text-slate-700'
+      return 'bg-slate-50 text-slate-600 ring-1 ring-slate-200'
   }
 }
 
