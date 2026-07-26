@@ -160,6 +160,16 @@ const findTypeSource = (box: HTMLElement): HTMLElement => {
   return box
 }
 
+/** Whether the box lays its text out as one inline-block box per word, the
+ *  shape every word-by-word reveal in the showcase produces. */
+const usesWordBoxes = (box: HTMLElement) =>
+  Array.from(box.children).some(
+    (child) =>
+      child instanceof HTMLElement &&
+      hasOwnText(child) &&
+      getComputedStyle(child).display === 'inline-block',
+  )
+
 // iOS Safari zooms the page whenever a focused field computes under 16px, and
 // this preview is a transform-scaled iframe — that zoom parks the caret nowhere
 // near the finger. It's the only engine that does this, so it's the only one
@@ -214,6 +224,16 @@ const measureDisplay = (): Record<string, string> => {
   for (const prop of BOX_PROPS) style[prop] = boxStyle[prop]
   style.fontSize = clampFontSize(typeStyle.fontSize)
   style.backgroundColor = plateFor(typeStyle.color)
+
+  // Copying every style still isn't enough when the text is laid out as one
+  // inline-block box per word (the word-by-word reveal animation needs a block
+  // box to transform). That coarsens line breaking: a run can only break
+  // BETWEEN those boxes, never inside one. Plain text in a field breaks
+  // wherever the script allows, which for Khmer — no spaces between words — is
+  // mid-run, so it packs visibly more onto each line than the invitation does.
+  // `keep-all` suppresses those implicit opportunities and leaves only the
+  // breaks at spaces, i.e. exactly the box boundaries the rendered text has.
+  if (usesWordBoxes(box)) style.wordBreak = 'keep-all'
 
   // Match the box's exact width and horizontal position, not just the wrapper's
   // — a centred or inset text box wraps at different points than its container.
