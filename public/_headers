@@ -3,7 +3,12 @@
 # Apply to all files
 /*
   # Security headers
-  X-Frame-Options: DENY
+  # SAMEORIGIN, not DENY: the manage page's Design Studio renders the showcase
+  # in same-origin <iframe>s (/events/:id/showcase-preview-frame). DENY blocks
+  # those too, so the previews show "refused to connect" in production while
+  # working in dev (the Vite dev server never applies this file).
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: frame-ancestors 'self'
   X-Content-Type-Options: nosniff
   X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
