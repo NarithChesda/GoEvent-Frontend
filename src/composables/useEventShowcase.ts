@@ -866,6 +866,42 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
         ...(options?.force ? { template_colors: templateData.colors, template_fonts: templateData.fonts } : {}),
       },
     }
+
+    // Colors apply from data alone, but fonts need their files fetched, and
+    // loadShowcase() already did its one-and-only loadCustomFonts() pass —
+    // with an EMPTY list, because template_assets was still nulled at that
+    // point. That left fontsLoaded=true with no @font-face rules injected, so
+    // primaryFont/secondaryFont now resolve to `"<TemplateFont>", <fallback>`
+    // naming a family the browser never downloaded, and every string silently
+    // renders in the fallback instead. Load this template's fonts now.
+    void loadFontsForCurrentLanguage()
+  }
+
+  /**
+   * Fetches + registers the custom fonts for whatever template data is
+   * currently in `showcaseData`, for the active language. Safe to call any
+   * time template fonts change outside the initial load.
+   */
+  const loadFontsForCurrentLanguage = async () => {
+    // getLanguageFonts is memoized per language, and it was populated while
+    // the font list was still empty — without this, the fresh fonts are never
+    // seen no matter how many times they're loaded.
+    templateProcessor.invalidateFontCache()
+    await nextTick()
+
+    const langFonts = templateFonts.value.filter((f) => f.language === currentLanguage.value)
+    if (langFonts.length === 0) return
+
+    try {
+      await fontManager.loadCustomFonts(langFonts, {
+        display: 'swap',
+        timeout: fontManager.FONT_CONFIG.DEFAULT_TIMEOUT,
+        retryAttempts: fontManager.FONT_CONFIG.DEFAULT_MAX_RETRIES,
+      })
+      await nextTick()
+    } catch (fontError) {
+      console.warn('Preview template font loading failed, using fallback fonts:', fontError)
+    }
   }
 
   /**
