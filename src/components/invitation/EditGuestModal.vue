@@ -338,8 +338,8 @@
                         >
                           {{
                             answer.answer_text.toLowerCase() === 'yes'
-                              ? t('management.guestGroupsView.rsvpQuestions.types.yes_no').split(' / ')[0]
-                              : t('management.guestGroupsView.rsvpQuestions.types.yes_no').split(' / ')[1]
+                              ? t('management.rsvpQuestions.types.yes_no').split(' / ')[0]
+                              : t('management.rsvpQuestions.types.yes_no').split(' / ')[1]
                           }}
                         </span>
                       </div>

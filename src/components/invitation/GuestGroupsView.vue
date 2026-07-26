@@ -36,23 +36,6 @@
           <div class="border-t border-slate-100 pt-6">
             <GuestStatsCard :stats="guestStats" :loading="loadingStats" />
           </div>
-          <div class="border-t border-slate-100 pt-6">
-            <GuestRsvpStatsCard
-              :summary="rsvpSummary"
-              :loading="loadingRsvpSummary"
-              :active-status="activeRsvpStatus"
-              @select-status="handleSelectRsvpStatus"
-            />
-          </div>
-          <div class="border-t border-slate-100 pt-6">
-            <RsvpQuestionsManager
-              :event-id="eventId"
-              :questions="rsvpQuestions"
-              :loading="loadingRsvpQuestions"
-              @refresh="$emit('refresh-rsvp-questions')"
-              @message="(type, text) => $emit('rsvp-questions-message', type, text)"
-            />
-          </div>
         </div>
         </div>
         </div>
@@ -132,7 +115,7 @@
               <button
                 @click="isDropdownOpen = !isDropdownOpen"
                 class="sm:hidden flex items-center justify-center w-10 h-10 rounded-full transition-all"
-                :class="activeFilter === 'all'
+                :class="!hasActiveFilter
                   ? 'bg-slate-50 text-slate-600 hover:bg-slate-100'
                   : 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'"
                 :title="t('management.guestGroupsView.filterBar.filterByGroup')"
@@ -152,8 +135,18 @@
                   class="w-2.5 h-2.5 rounded-full flex-shrink-0"
                   :style="{ backgroundColor: groups.find(g => g.id.toString() === activeFilter)?.color || '#3498db' }"
                 ></span>
-                <span class="truncate max-w-[160px]">
+                <span class="truncate max-w-[120px]">
                   {{ activeFilter === 'all' ? t('management.guestGroupsView.filterBar.allGroups') : groups.find(g => g.id.toString() === activeFilter)?.name || t('management.guestGroupsView.filterBar.select') }}
+                </span>
+                <!-- RSVP status reads as a second, independent axis, so it
+                     gets its own chip rather than replacing the group label -->
+                <span
+                  v-if="activeRsvpOption"
+                  class="flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold flex-shrink-0"
+                  :class="activeRsvpOption.chipClass"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="activeRsvpOption.dotClass" aria-hidden="true"></span>
+                  {{ activeRsvpOption.label }}
                 </span>
                 <ChevronDown class="w-4 h-4 text-slate-400 transition-transform flex-shrink-0" :class="{ 'rotate-180': isDropdownOpen }" />
               </button>
@@ -256,6 +249,35 @@
                     >
                       <Users class="w-3.5 h-3.5" />
                       <span>{{ t('management.guestGroupsView.filterBar.newGroup') }}</span>
+                    </button>
+
+                    <!-- RSVP status: a second filter axis, combinable with
+                         the group filter above -->
+                    <div class="my-1.5 border-t border-slate-100"></div>
+                    <p class="px-3 pt-1 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                      {{ t('management.guestGroupsView.filterBar.rsvpStatus.header') }}
+                    </p>
+                    <button
+                      v-for="option in rsvpStatusOptions"
+                      :key="option.key ?? 'any'"
+                      type="button"
+                      @click="selectRsvpStatus(option.key)"
+                      :class="[
+                        'w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150',
+                        activeRsvpStatus === option.key
+                          ? 'bg-slate-100 text-slate-900'
+                          : 'text-slate-700 hover:bg-slate-50'
+                      ]"
+                    >
+                      <span
+                        class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                        :class="option.dotClass"
+                        aria-hidden="true"
+                      ></span>
+                      <span class="flex-1 text-left truncate">{{ option.label }}</span>
+                      <span v-if="option.count !== null" class="text-xs tabular-nums text-slate-400">
+                        {{ option.count }}
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -374,6 +396,36 @@
                   >
                     <Users class="w-3.5 h-3.5" />
                     <span>{{ t('management.guestGroupsView.filterBar.newGroup') }}</span>
+                  </button>
+
+                  <!-- RSVP status (mirrors the desktop dropdown section) -->
+                  <div class="mx-5 my-1 border-t border-slate-100"></div>
+                  <p class="px-5 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                    {{ t('management.guestGroupsView.filterBar.rsvpStatus.header') }}
+                  </p>
+                  <button
+                    v-for="option in rsvpStatusOptions"
+                    :key="`sheet-rsvp-${option.key ?? 'any'}`"
+                    type="button"
+                    :aria-pressed="activeRsvpStatus === option.key"
+                    @click="selectRsvpStatus(option.key)"
+                    class="w-full flex items-center gap-3 px-5 py-3 transition-colors active:bg-slate-50"
+                  >
+                    <span
+                      class="w-3 h-3 rounded-full flex-shrink-0"
+                      :class="option.dotClass"
+                      aria-hidden="true"
+                    ></span>
+                    <span
+                      :class="[
+                        'flex-1 text-left text-sm truncate',
+                        activeRsvpStatus === option.key ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'
+                      ]"
+                    >{{ option.label }}</span>
+                    <span v-if="option.count !== null" class="text-xs text-slate-400 tabular-nums flex-shrink-0">
+                      {{ option.count }}
+                    </span>
+                    <Check v-if="activeRsvpStatus === option.key" class="w-5 h-5 text-[#2ecc71] flex-shrink-0" />
                   </button>
                 </div>
               </MobileBottomSheet>
@@ -667,15 +719,12 @@ import { useMediaQuery } from '@vueuse/core'
 import { UserPlus, Search, Filter, Users, X, Send, Trash2, Edit2, ChevronDown, Info, FileSpreadsheet, Link, Mail, DollarSign, Upload, Check } from 'lucide-vue-next'
 import GuestListItem from './GuestListItem.vue'
 import GuestStatsCard from './GuestStatsCard.vue'
-import GuestRsvpStatsCard from './GuestRsvpStatsCard.vue'
-import RsvpQuestionsManager from './RsvpQuestionsManager.vue'
 import InlineGroupForm from './InlineGroupForm.vue'
 import QuickAddGuestRow from './QuickAddGuestRow.vue'
 import MobileBottomSheet from '../common/MobileBottomSheet.vue'
 import type {
   GuestGroup,
   EventGuest,
-  EventRsvpQuestion,
   GuestStats,
   GuestRsvpStatusValue,
   GuestRsvpSummary,
@@ -707,13 +756,9 @@ interface Props {
   // Guest statistics
   guestStats: GuestStats | null
   loadingStats: boolean
-  // RSVP summary
+  // RSVP summary — sources the per-status counts in the filter dropdown.
+  // The stats themselves live in the Analytics tab, not here.
   rsvpSummary: GuestRsvpSummary | null
-  loadingRsvpSummary: boolean
-  // Custom RSVP questions (host-defined questionnaire)
-  eventId: string
-  rsvpQuestions: EventRsvpQuestion[]
-  loadingRsvpQuestions: boolean
 }
 
 const props = defineProps<Props>()
@@ -739,8 +784,6 @@ const emit = defineEmits<{
   'bulk-mark-sent': [groupId: number, selectedIds: number[]]
   'bulk-delete': [groupId: number, selectedIds: number[]]
   'register-group-card': [groupId: number, el: any]
-  'refresh-rsvp-questions': []
-  'rsvp-questions-message': [type: 'success' | 'error', text: string]
 }>()
 
 // Inline group-management state (filter dropdown)
@@ -812,10 +855,68 @@ const submitCreateGroup = (data?: { name: string; description?: string; color: s
   showCreateGroupForm.value = false
 }
 
-// Toggle the RSVP-status filter (driven by GuestRsvpStatsCard clicks)
-const handleSelectRsvpStatus = (status: GuestRsvpStatusValue | null) => {
+/**
+ * RSVP status is the filter dropdown's second axis, combinable with the
+ * group filter. Counts come from the server-side summary because the guest
+ * list is paginated — tallying loaded rows would under-report.
+ */
+const rsvpStatusOptions = computed(() => {
+  const counts = props.rsvpSummary?.status_counts
+  return [
+    {
+      key: null as GuestRsvpStatusValue | null,
+      label: t('management.guestGroupsView.filterBar.rsvpStatus.any'),
+      count: props.rsvpSummary?.total_invited ?? null,
+      dotClass: 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]',
+      chipClass: 'bg-slate-100 text-slate-600',
+    },
+    {
+      key: 'attending' as GuestRsvpStatusValue | null,
+      label: t('management.rsvpStatuses.going'),
+      count: counts?.attending ?? null,
+      dotClass: 'bg-emerald-500',
+      chipClass: 'bg-emerald-50 text-emerald-700',
+    },
+    {
+      key: 'maybe' as GuestRsvpStatusValue | null,
+      label: t('management.rsvpStatuses.maybe'),
+      count: counts?.maybe ?? null,
+      dotClass: 'bg-amber-400',
+      chipClass: 'bg-amber-50 text-amber-700',
+    },
+    {
+      key: 'not_attending' as GuestRsvpStatusValue | null,
+      label: t('management.rsvpStatuses.declined'),
+      count: counts?.not_attending ?? null,
+      dotClass: 'bg-rose-400',
+      chipClass: 'bg-rose-50 text-rose-700',
+    },
+    {
+      key: 'pending' as GuestRsvpStatusValue | null,
+      label: t('management.rsvpStatuses.pending'),
+      count: counts?.pending ?? null,
+      dotClass: 'bg-slate-400',
+      chipClass: 'bg-slate-100 text-slate-600',
+    },
+  ]
+})
+
+/** The chip shown on the trigger — null while "Any status" is selected. */
+const activeRsvpOption = computed(() =>
+  activeRsvpStatus.value
+    ? rsvpStatusOptions.value.find((o) => o.key === activeRsvpStatus.value) ?? null
+    : null,
+)
+
+/** Drives the mobile trigger's active (gradient) treatment. */
+const hasActiveFilter = computed(
+  () => activeFilter.value !== 'all' || activeRsvpStatus.value !== null,
+)
+
+const selectRsvpStatus = (status: GuestRsvpStatusValue | null) => {
   activeRsvpStatus.value = status
   selectedGuestIds.value.clear()
+  isDropdownOpen.value = false
 }
 
 // Tab container ref
