@@ -1,21 +1,42 @@
 <template>
   <div class="transition-stage" :class="{ 'stage-fade-out': isStageFadingOut }">
-    <!-- Manage-page preview: replay the reveal (real clicks are needed for
-         the featured-photo edit region below, which drops the frame's normal
-         click-anywhere-to-replay shield — this restores that capability). -->
-    <button
-      v-if="editIntentCtx"
-      type="button"
-      class="replay-btn edit-region-control"
-      :title="tApp('management.showcasePreview.editors.replayTransition')"
-      @click.stop.prevent="replay"
-    >
-      <RotateCcw class="replay-icon" aria-hidden="true" />
-    </button>
+    <!-- Manage-page preview controls: replay the reveal, and re-aim the
+         featured photo's crop. Replay has to be a real button because the
+         featured-photo edit region below drops the frame's normal
+         click-anywhere-to-replay shield. -->
+    <div v-if="editIntentCtx" class="preview-controls">
+      <button
+        type="button"
+        class="preview-control-btn edit-region-control"
+        :title="tApp('management.showcasePreview.editors.replayTransition')"
+        @click.stop.prevent="replay"
+      >
+        <RotateCcw class="preview-control-icon" aria-hidden="true" />
+      </button>
 
-    <!-- Feature Image: fills the viewport with a slow Ken Burns drift -->
+      <!-- Re-frame the photo that's already featured. Separate from the
+           whole-photo region below (which swaps which photo is used) — the crop
+           UI itself can't live in here: this frame is a 390x844 iframe scaled
+           down, so dragging a crop box at that size would be guesswork. -->
+      <button
+        v-if="featuredPhoto"
+        type="button"
+        class="preview-control-btn edit-region-control"
+        :title="tApp('management.showcasePreview.editors.adjustCrop')"
+        @click.stop.prevent="editIntentCtx.requestEdit({ kind: 'featuredPhoto', focus: 'crop' })"
+      >
+        <Crop class="preview-control-icon" aria-hidden="true" />
+      </button>
+    </div>
+
+    <!-- Feature Image: fills the viewport with a slow Ken Burns drift.
+         Geometry comes from the organizer's stored crop rectangle (photoStyle),
+         which lays the image out so the chosen region fills the viewport. With
+         no stored crop that resolves to the whole image, i.e. exactly the
+         plain centre `cover` this stage has always used. -->
     <div
       v-if="featureImageUrl"
+      ref="photoContainerRef"
       class="couple-photo-container"
       :class="[{ 'show': isCouplePhotoVisible }, { 'door-mode': animationType === 'door' }]"
     >
@@ -24,14 +45,25 @@
           :src="featureImageUrl"
           :alt="eventTitle"
           class="couple-photo"
+          :style="photoStyle"
+          @load="onPhotoLoad"
         />
-        <!-- Veil copy: identical image, pre-blurred and bright; fades away to "lift the veil" -->
-        <img
-          :src="featureImageUrl"
-          alt=""
-          aria-hidden="true"
-          class="couple-photo couple-photo-veil"
-        />
+        <!-- Veil copy: identical image, pre-blurred and bright; fades away to
+             "lift the veil". Its 4%-larger scale (which hides the blur's
+             translucent edge bleed) lives on this wrapper rather than on the
+             img, so it scales about the *viewport* centre — on the img it
+             would scale about the cropped image's own centre, which sits
+             off-screen and would slide the veil out of register with the
+             sharp copy beneath it. -->
+        <div class="veil-frame">
+          <img
+            :src="featureImageUrl"
+            alt=""
+            aria-hidden="true"
+            class="couple-photo couple-photo-veil"
+            :style="photoStyle"
+          />
+        </div>
       </div>
 
       <!-- One-time soft light sweep across the photo after it sharpens -->
@@ -112,10 +144,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick, inject } from 'vue'
-import { RotateCcw } from 'lucide-vue-next'
+import { ref, computed, onMounted, onUnmounted, nextTick, inject, watch } from 'vue'
+import { RotateCcw, Crop } from 'lucide-vue-next'
 import type { EventPhoto } from '@/types/showcase'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import { cropToCoverGeometry, resolvePhotoCrop, type Size } from '@/utils/photoCrop'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 
@@ -161,12 +194,57 @@ let couplePhotoTimer: ReturnType<typeof setTimeout> | null = null
 let fadeOutTimer: ReturnType<typeof setTimeout> | null = null
 let completeTimer: ReturnType<typeof setTimeout> | null = null
 
-const featureImageUrl = computed(() => {
-  const featuredPhoto = props.eventPhotos?.find((p) => p.is_featured)
-  if (featuredPhoto) {
-    return props.getMediaUrl(featuredPhoto.image)
+const featuredPhoto = computed(() => props.eventPhotos?.find((p) => p.is_featured) ?? null)
+
+const featureImageUrl = computed(() =>
+  featuredPhoto.value ? props.getMediaUrl(featuredPhoto.value.image) : null,
+)
+
+// --- Organizer-chosen crop -------------------------------------------------
+// The stored rectangle is in percentages of the source image, so turning it
+// into pixels needs both the image's intrinsic size and the viewport's.
+
+const photoContainerRef = ref<HTMLElement | null>(null)
+const naturalSize = ref<Size | null>(null)
+const viewportSize = ref<Size | null>(null)
+
+const onPhotoLoad = (event: globalThis.Event) => {
+  const image = event.target as HTMLImageElement
+  if (!image.naturalWidth || !image.naturalHeight) return
+  naturalSize.value = { width: image.naturalWidth, height: image.naturalHeight }
+}
+
+const measureViewport = () => {
+  const container = photoContainerRef.value
+  if (!container) return
+  // Layout values rather than getBoundingClientRect: the manage-page preview
+  // renders this stage inside a CSS-scaled frame, and a scaled rect would
+  // shrink the computed geometry to match the scale.
+  viewportSize.value = { width: container.clientWidth, height: container.clientHeight }
+}
+
+let viewportObserver: ResizeObserver | null = null
+
+/** Plain centre `cover` — what the stage shows until both sizes are known. */
+const COVER_FALLBACK_STYLE = {
+  inset: '0',
+  width: '100%',
+  height: '100%',
+} as const
+
+const photoStyle = computed(() => {
+  const geometry = cropToCoverGeometry(
+    resolvePhotoCrop(featuredPhoto.value),
+    naturalSize.value,
+    viewportSize.value,
+  )
+  if (!geometry) return { ...COVER_FALLBACK_STYLE }
+  return {
+    left: `${geometry.left}px`,
+    top: `${geometry.top}px`,
+    width: `${geometry.width}px`,
+    height: `${geometry.height}px`,
   }
-  return null
 })
 
 const cloudMistStyle = computed(() => {
@@ -295,7 +373,28 @@ const runRevealSequence = () => {
 
 onMounted(runRevealSequence)
 
-onUnmounted(clearTimers)
+// The crop's pixel geometry depends on the viewport, so it's measured live
+// rather than once. Keyed off the element appearing rather than off mount: the
+// photo container is v-if'd on there being a featured photo, so on a slower
+// load it doesn't exist yet when onMounted runs, and observing "whatever is
+// there at mount" would silently never measure anything — leaving every crop
+// stuck on the uncropped fallback.
+watch(photoContainerRef, (container) => {
+  viewportObserver?.disconnect()
+  viewportObserver = null
+  if (!container) return
+  measureViewport()
+  if (typeof ResizeObserver !== 'undefined') {
+    viewportObserver = new ResizeObserver(measureViewport)
+    viewportObserver.observe(container)
+  }
+})
+
+onUnmounted(() => {
+  clearTimers()
+  viewportObserver?.disconnect()
+  viewportObserver = null
+})
 
 // Manage-page preview only: replay the reveal from the start. The frame's
 // inert click-shield normally sends a `replay` bridge command on any click
@@ -371,14 +470,32 @@ const replay = async () => {
   }
 }
 
+/* Geometry (inset/left/top/width/height) is supplied inline by photoStyle —
+   either the organizer's crop laid out in pixels, or a plain full-bleed cover
+   while the sizes are still being measured. */
 .couple-photo {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
   display: block;
   object-fit: cover;
-  object-position: center;
+  /* Tailwind Preflight applies `img { max-width: 100%; height: auto }`. Cropping
+     works by sizing the image *larger* than the viewport and offsetting it, so
+     that cap would shrink the box while photoStyle's `left`/`top` still pointed
+     at the full-size layout — sliding the photo off-frame and leaving the stage
+     mostly empty. This opts out. */
+  max-width: none;
+  max-height: none;
+  /* Floor: even if a measurement is stale or wrong, the photo can never be
+     smaller than the stage, so the transition can't letterbox. `cover` keeps it
+     undistorted either way. */
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.veil-frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  transform: scale(1.04); /* hide the blur's translucent edge bleed */
 }
 
 /* Veil copy: pre-blurred and luminous, stacked on the sharp photo.
@@ -386,7 +503,6 @@ const replay = async () => {
    transition on a fullscreen image would be far more expensive). */
 .couple-photo-veil {
   filter: blur(16px) brightness(1.18) saturate(0.92);
-  transform: scale(1.04); /* hide blur edge bleed */
   opacity: 1;
   transition: opacity 2.4s ease-in-out;
 }
@@ -455,11 +571,18 @@ const replay = async () => {
    showcase) — these opt back into pointer-events explicitly. Rendered only
    when the edit-intent context exists, never in production. */
 
-.replay-btn {
+.preview-controls {
   position: absolute;
   top: 12px;
   left: 12px;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  pointer-events: none;
+}
+
+.preview-control-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -475,12 +598,12 @@ const replay = async () => {
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.replay-btn:hover {
+.preview-control-btn:hover {
   border-color: rgba(30, 144, 255, 0.95);
   background: #ffffff;
 }
 
-.replay-icon {
+.preview-control-icon {
   width: 1.125rem;
   height: 1.125rem;
 }

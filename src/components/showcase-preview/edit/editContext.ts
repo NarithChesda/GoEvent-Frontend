@@ -46,7 +46,10 @@ export type EditIntent =
   | { kind: 'youtubeEmbed' }
   | { kind: 'paymentItem'; paymentMethodId: number }
   | { kind: 'paymentAdd' }
-  | { kind: 'featuredPhoto' }
+  /** `focus: 'crop'` opens the picker straight on its crop tab — the transition
+   *  stage offers both (tap the photo to swap it, the crop button to re-frame
+   *  the one already chosen). */
+  | { kind: 'featuredPhoto'; focus?: 'choose' | 'crop' }
   | { kind: 'displayToggle'; field: 'rsvp_enabled' | 'comments_enabled' | 'countdown_enabled' }
 
 export interface EditIntentContext {

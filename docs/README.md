@@ -36,6 +36,8 @@ Frontend-authored design requests for backend changes (the reverse direction of 
 - [showcase-template-version.md](backend-api-requirements/showcase-template-version.md) — per-template V1/V2 showcase selection (V2 "Storybook Romance"), currently gated by `VITE_SHOWCASE_TEMPLATE_VERSION` env var
 - [showcase-v2-theming.md](backend-api-requirements/showcase-v2-theming.md) — `v2-*` color names and font-type convention for template-driven V2 colors/fonts (informational, no schema change)
 - [showcase-v2-template-presets.md](backend-api-requirements/showcase-v2-template-presets.md) — 6 ready-to-enter color/font presets for V2 templates, plus per-slot admin-panel help text ("which color is used where")
+- [featured-photo-crop.md](backend-api-requirements/featured-photo-crop.md) — `crop_x`/`crop_y`/`crop_width`/`crop_height` on event photos so organizers can crop the transition stage's full-screen photo instead of always getting a centre crop
+- [public-template-assets-decorations.md](backend-api-requirements/public-template-assets-decorations.md) — decoration assets in the pre-payment public template payload for the live preview
 
 ## Feature plans & implementation records ([features/](features/))
 
