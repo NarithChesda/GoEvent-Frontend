@@ -201,6 +201,10 @@ const emit = defineEmits<{
   'cycle-language': []
   /** Open checkout — the sheet has no drawer of its own. */
   activate: []
+  /** Which stage is on screen right now — the sheet shows exactly one frame
+   *  at a time (unlike the desktop studio's "multiple" default), so the host
+   *  tab needs this to know which frame(s) a post-save refresh can skip. */
+  'active-frame-changed': [id: string]
 }>()
 
 const { t } = useAppLanguage()
@@ -226,6 +230,8 @@ watch(
   },
   { immediate: true },
 )
+
+watch(activeId, (id) => emit('active-frame-changed', id), { immediate: true })
 
 // Frame ids are renderer-defined vocabulary (V1's cover/transition/main today,
 // a V2 renderer will declare its own pages), so an unknown id has to degrade to

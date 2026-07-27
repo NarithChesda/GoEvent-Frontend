@@ -52,6 +52,8 @@
 <script setup lang="ts">
 import { computed, inject, nextTick, ref } from 'vue'
 import { InlineEditKey, type InlineEditTarget } from './editContext'
+import { useNotifications } from '@/composables/useNotifications'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
   /** The current raw value editing starts from (usually the displayed text,
@@ -67,6 +69,8 @@ interface Props {
 const props = defineProps<Props>()
 
 const ctx = inject(InlineEditKey, undefined)
+const { error: notifyError } = useNotifications()
+const { t } = useAppLanguage()
 
 const isEditing = ref(false)
 const saving = ref(false)
@@ -284,7 +288,15 @@ const commit = async () => {
   if (newValue === (props.value ?? '').trim()) return
   saving.value = true
   try {
-    await ctx.save(props.target, newValue)
+    // ctx.save mutates the local showcase copy optimistically (before this
+    // resolves) and rolls it back if the request fails — so a failure here
+    // means the display has already reverted to the pre-edit value by the
+    // time this rejects/resolves false. The notification is the only signal
+    // left that the edit didn't actually stick.
+    const result = await ctx.save(props.target, newValue)
+    if (!result.success) {
+      notifyError(t('management.showcasePreview.editors.inlineEditFailed'), result.message)
+    }
   } finally {
     saving.value = false
   }

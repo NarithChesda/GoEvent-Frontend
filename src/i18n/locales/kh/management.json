@@ -488,7 +488,8 @@
       "commentsLabel": "មតិយោបល់",
       "displayToggleFailed": "មិនអាចផ្លាស់ប្តូរការកំណត់បង្ហាញបានទេ",
       "displayToggleOnHint": "{name}៖ បង្ហាញដល់ភ្ញៀវ។ ចុចដើម្បីលាក់។",
-      "displayToggleOffHint": "{name}៖ លាក់ពីភ្ញៀវ។ ចុចដើម្បីបង្ហាញ។"
+      "displayToggleOffHint": "{name}៖ លាក់ពីភ្ញៀវ។ ចុចដើម្បីបង្ហាញ។",
+      "inlineEditFailed": "មិនអាចរក្សាទុកការផ្លាស់ប្តូររបស់អ្នកបានទេ"
     }
   },
   "media": {

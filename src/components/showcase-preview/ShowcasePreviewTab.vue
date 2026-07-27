@@ -347,6 +347,7 @@
       @close="closeMobilePreview"
       @cycle-language="cycleLanguage"
       @activate="showPaymentDrawer = true"
+      @active-frame-changed="onMobileActiveFrameChanged"
     />
 
     <!-- Parent-side editors for edit intents posted by the frames (logo
@@ -737,7 +738,27 @@ const sharedColumnWidth = computed(() => {
   return Math.max((framesContainerWidth.value - FRAMES_GRID_GAP_PX * (cols - 1)) / cols, 0)
 })
 
+// Remembers the src last computed for each frame id, keyed by the parts that
+// legitimately should force a real reload of an ALREADY-mounted frame
+// (language, edit mode). `event_template` is deliberately NOT part of that
+// key: applying a template now updates already-mounted frames live over the
+// bridge (see handleTemplateAppliedFromModal) instead of by changing `src` —
+// and changing an <iframe>'s `src` at all, even by one query param, always
+// forces the browser to navigate/reload it, for zero visual gain when the
+// frame is already showing the right thing. A frame id seen for the first
+// time (nothing cached yet) still gets a fresh URL built from whatever
+// `event_template` is current, so a newly-visible frame (e.g. the Transition
+// stage appearing after a template swap) starts out correct. Entries are
+// deleted in setFrameRef when a frame actually unmounts, so a frame that goes
+// away and later comes back (a template swap can change which stages apply)
+// recomputes fresh instead of reusing a stale cached URL.
+const frameSrcCache = new Map<string, { key: string; url: string }>()
+
 const frameUrl = (frame: PreviewFrameDescriptor) => {
+  const reactiveKey = `${currentLanguage.value}|${props.canEdit && frame.editable ? '1' : '0'}`
+  const cached = frameSrcCache.get(frame.id)
+  if (cached && cached.key === reactiveKey) return cached.url
+
   const params = new URLSearchParams({ stage: frame.id, lang: currentLanguage.value })
   if (props.canEdit && frame.editable) params.set('editable', '1')
   // Always pass the selected template id when one exists — `event_template_enabled`
@@ -748,7 +769,9 @@ const frameUrl = (frame: PreviewFrameDescriptor) => {
   if (props.eventData?.event_template) {
     params.set('templateId', String(props.eventData.event_template))
   }
-  return `/events/${props.eventId}/showcase-preview-frame?${params.toString()}`
+  const url = `/events/${props.eventId}/showcase-preview-frame?${params.toString()}`
+  frameSrcCache.set(frame.id, { key: reactiveKey, url })
+  return url
 }
 
 // ---------------------------------------------------------------------------
@@ -762,8 +785,55 @@ type InertIframeInstance = InstanceType<typeof InertIframe>
 const frameRefs = new Map<string, InertIframeInstance>()
 
 const setFrameRef = (id: string, el: unknown) => {
-  if (el) frameRefs.set(id, el as InertIframeInstance)
-  else frameRefs.delete(id)
+  if (el) {
+    frameRefs.set(id, el as InertIframeInstance)
+  } else {
+    frameRefs.delete(id)
+    // A frame that's actually gone (not just v-show hidden — e.g. a template
+    // swap dropped this stage) needs a fresh src if it ever comes back, not
+    // the one cached from before — see frameUrl's cache above.
+    frameSrcCache.delete(id)
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Deferred refresh for frames the user isn't currently looking at. In
+// "single" focus mode the other 1-2 applicable frames stay mounted (just
+// `v-show`n away) so switching to them is instant — but that also means a
+// naive "post refresh to every frame" on every save fires a full showcase
+// re-fetch for frames nobody is looking at right now. Frames skipped this way
+// are marked stale instead, and caught up the moment they actually become
+// visible (switching focus in "single" mode, or switching to "multiple",
+// where every applicable frame is visible at once).
+// ---------------------------------------------------------------------------
+const staleFrameIds = new Set<string>()
+
+const refreshFrame = (id: string) => {
+  const frame = frameRefs.get(id)
+  if (!frame) return
+  frame.post('refresh')
+  if (stagedTemplateData.value) frame.postTemplatePreview(stagedTemplateData.value)
+}
+
+const catchUpFrame = (id: string) => {
+  if (!staleFrameIds.delete(id)) return
+  refreshFrame(id)
+}
+
+watch(activeFrameId, catchUpFrame)
+watch(viewMode, (mode) => {
+  if (mode === 'multiple') for (const frame of visibleFrames.value) catchUpFrame(frame.id)
+})
+
+// The mobile sheet shows exactly one stage at a time (there's no "multiple"
+// layout there — no room for it on a real device viewport), so it's tracked
+// the same way as desktop's "single" focus mode: whichever stage it reports
+// as active is the only one that needs a live refresh right now.
+const mobileActiveFrameId = ref<string | null>(null)
+
+const onMobileActiveFrameChanged = (id: string) => {
+  mobileActiveFrameId.value = id
+  catchUpFrame(id)
 }
 
 // ---------------------------------------------------------------------------
@@ -778,12 +848,12 @@ const setFrameRef = (id: string, el: unknown) => {
 // BrowseTemplateModal emits BOTH `template-selected` and `preview-clear` back
 // to back on a successful Apply (its own resetModalState() fires preview-clear
 // whenever a selection was active, which it still is right after applying) —
-// so a real apply used to trigger a soft `refresh` bridge post from EACH
-// handler, then a second, hard reload once `template-applied` propagates back
-// down as a changed `eventData.event_template` (see frameUrl's templateId
-// param) and the iframe `src` actually changes. That's the "refresh happens
-// twice" glitch: two redundant soft refreshes racing a third, real reload.
-// This flag lets the imminent hard reload be the ONLY refresh that fires.
+// so without this flag, handleTemplateStageCleared would run right after
+// handleTemplateAppliedFromModal and revert the just-applied template's live
+// preview back to whatever was staged/real before it (via
+// clearStagedTemplatePreview's snapshot restore). handleTemplateAppliedFromModal
+// sets this synchronously before either bridge message can go out, so it's
+// already true by the time the modal's own close-triggered preview-clear fires.
 let suppressNextStageClear = false
 
 const handleTemplateStaged = (templateData: TemplateAssets) => {
@@ -791,30 +861,73 @@ const handleTemplateStaged = (templateData: TemplateAssets) => {
   for (const frame of frameRefs.values()) frame.postTemplatePreview(templateData)
 }
 
+// Only the frame(s) actually on screen right now need the real data back
+// immediately — the rest are marked stale and pick it up via catchUpFrame the
+// moment they're actually shown (see the deferred-refresh block above). Mobile
+// is always single-frame (see mobileActiveFrameId above); desktop only narrows
+// to one frame in "single" focus mode — "multiple" shows every applicable
+// frame side by side, so all of them are genuinely on screen at once there.
+const refreshVisibleFrames = () => {
+  const focusedId = isMobileStudio.value
+    ? mobileActiveFrameId.value
+    : viewMode.value === 'single'
+      ? activeFrameId.value
+      : null
+  for (const id of frameRefs.keys()) {
+    if (focusedId !== null && id !== focusedId) staleFrameIds.add(id)
+    else refreshFrame(id)
+  }
+}
+
+// Cancelling a try-on (closing the modal without confirming, or picking a
+// different template while it's staged) never touched the backend, so it
+// reverts every frame locally via `preview-template-clear` (see
+// clearStagedTemplatePreview in useEventShowcase.ts) rather than the real
+// `refresh` refetch onEditorSaved uses — no need to defer this to hidden
+// frames either, since it's a free postMessage, not a network request.
+// No-ops entirely when suppressed (see suppressNextStageClear above) — a
+// real Apply owns clearing stagedTemplateData itself, on its own timing.
 const handleTemplateStageCleared = () => {
-  stagedTemplateData.value = null
   if (suppressNextStageClear) {
     suppressNextStageClear = false
     return
   }
-  for (const frame of frameRefs.values()) frame.post('refresh')
+  stagedTemplateData.value = null
+  for (const frame of frameRefs.values()) frame.post('preview-template-clear')
 }
 
-const handleTemplateAppliedFromModal = (template: EventTemplate) => {
+// Confirming Apply used to force a hard iframe reload (frameUrl's templateId
+// param changing `src`, which the browser always navigates on, however
+// small the change): that was needed because the staged preview's public
+// template-assets endpoint was missing the border/frame decoration fields
+// the paid showcase endpoint had, so only a real reload (real data) showed
+// the template completely. That backend gap is now closed — verified live
+// against the running backend on 2026-07-27, see the "Optimistic saves,
+// scoped refresh, local try-on revert" note in
+// docs/features/SHOWCASE_PREVIEW_EDITOR_PLAN.md — so the already-staged
+// preview (see stagePreview in BrowseTemplateModal.vue, which runs the
+// instant a template card is picked, well before Apply is even clickable)
+// IS the complete, correct look already. Applying for real now just:
+//   1. Persists the change server-side (selectTemplateApi, already done by
+//      the time this fires) and lets it propagate to the rest of the page.
+//   2. Refreshes this tab's OWN bookkeeping (frame list/hidden-note/language
+//      list all key off its own templateAssets) — awaited before dropping
+//      the staged overlay, so the frame chrome never flashes back to the OLD
+//      template for a render while that refetch is in flight.
+//   3. Tells every frame to forget its try-on-revert snapshot (the staged
+//      data is the real data now) — no visual change, since nothing about
+//      showcaseData itself needs to change in the frames.
+// frameUrl's cache (see above) separately makes sure the emitted
+// `template-applied` — which does update `eventData.event_template` — never
+// touches an already-mounted frame's `src` in the first place.
+const handleTemplateAppliedFromModal = async (template: EventTemplate) => {
   showTemplatesModal.value = false
   suppressNextStageClear = true
-  stagedTemplateData.value = null
   emit('template-applied', template)
-  // This tab's own `templateAssets` (drives visibleFrames/the hidden-note —
-  // e.g. whether the Transition frame shows at all) come from THIS
-  // component's own useEventShowcase() instance, separate from what's fetched
-  // inside each iframe. Without this, the frame list/tab chrome kept showing
-  // the previous template's stage layout until a full page reload remounted
-  // the tab — even though the iframes themselves (via the src reload above)
-  // already reflected the newly applied template correctly. The fallback runs
-  // after so a newly applied but still-unpaid template's stage layout (e.g. a
-  // basic wedding's Transition frame) shows immediately, not only once paid.
-  refreshShowcaseData().then(loadPreviewTemplateFallback)
+  await refreshShowcaseData()
+  await loadPreviewTemplateFallback()
+  stagedTemplateData.value = null
+  for (const frame of frameRefs.values()) frame.post('preview-template-commit')
   // A different template means a different plan/price and (almost always) an
   // unpaid state — re-read the payment rows so the pill stops advertising the
   // previous template's activation status.
@@ -827,10 +940,7 @@ const onMediaUpdated = (media: EventPhoto[]) => {
 }
 
 const onEditorSaved = (updated?: Event) => {
-  for (const frame of frameRefs.values()) frame.post('refresh')
-  if (stagedTemplateData.value) {
-    for (const frame of frameRefs.values()) frame.postTemplatePreview(stagedTemplateData.value)
-  }
+  refreshVisibleFrames()
   // Silent refresh: this tab's `loading` flag gates the whole frames block,
   // so a full loadShowcase() here would unmount and reload every iframe —
   // exactly the "page refresh" jank the silent path exists to avoid. Re-apply
