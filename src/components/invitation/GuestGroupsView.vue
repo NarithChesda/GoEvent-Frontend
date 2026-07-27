@@ -6,42 +6,6 @@
       <p class="text-xs sm:text-sm text-slate-600 mt-1">{{ t('management.guestGroupsView.header.subtitle') }}</p>
     </div>
 
-    <!-- Guest Statistics Card (collapsed by default — expand on demand) -->
-    <div class="rounded-3xl bg-white shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
-      <button
-        type="button"
-        @click="isStatsExpanded = !isStatsExpanded"
-        class="w-full flex items-center justify-between gap-3 p-4 sm:p-6 text-left hover:bg-slate-50/70 transition-colors"
-        :aria-expanded="isStatsExpanded"
-      >
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#2ecc71]/15 to-[#1e90ff]/15 flex-shrink-0">
-            <Users class="w-5 h-5 text-[#1e90ff]" />
-          </div>
-          <div class="min-w-0">
-            <h3 class="text-sm font-semibold text-slate-900">{{ t('management.guestGroupsView.statsCard.invitedGuests') }}</h3>
-            <p class="text-xs text-slate-500 truncate">{{ statsSummaryLine }}</p>
-          </div>
-        </div>
-        <ChevronDown
-          class="w-5 h-5 text-slate-400 transition-transform duration-200 flex-shrink-0"
-          :class="{ 'rotate-180': isStatsExpanded }"
-        />
-      </button>
-
-      <Transition name="collapse">
-        <div v-show="isStatsExpanded" class="grid grid-rows-[1fr]">
-        <div class="min-h-0 overflow-hidden">
-        <div class="px-4 sm:px-8 pb-6 sm:pb-8 space-y-6">
-          <div class="border-t border-slate-100 pt-6">
-            <GuestStatsCard :stats="guestStats" :loading="loadingStats" />
-          </div>
-        </div>
-        </div>
-        </div>
-      </Transition>
-    </div>
-
     <!-- Loading State -->
     <div v-if="loadingGroups" class="flex justify-center items-center py-12">
       <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
@@ -70,6 +34,14 @@
       :aria-label="`${activeFilter === 'all' ? t('management.guestGroupsView.filterBar.allGroups') : groups.find(g => g.id.toString() === activeFilter)?.name || ''} ${t('management.guestGroupsView.filterBar.guestsPanelSuffix')}`"
       class="rounded-3xl bg-white ring-1 ring-slate-900/5 shadow-sm"
     >
+      <!-- Guest Statistics band (donut + legend) — the panel's header row -->
+      <section
+        class="border-b border-slate-100"
+        :aria-label="t('management.guestGroupsView.statsCard.invitedGuests')"
+      >
+        <GuestStatsCard :stats="guestStats" :loading="loadingStats" />
+      </section>
+
       <!-- Filter and Actions Header -->
       <div>
           <!-- Search Row (Mobile Only - appears first on mobile) -->
@@ -792,7 +764,6 @@ const deletingGroupId = ref<number | null>(null)
 const showCreateGroupForm = ref(false)
 
 // Local state
-const isStatsExpanded = ref(false)
 const activeFilter = ref('all')
 const activeRsvpStatus = ref<GuestRsvpStatusValue | null>(null)
 const groupSearchQuery = ref('')
@@ -977,13 +948,6 @@ onMounted(() => {
 // Computed properties
 const totalGuestCount = computed(() => {
   return props.groups.reduce((sum, group) => sum + group.guest_count, 0)
-})
-
-// One-line glance summary shown on the collapsed stats header.
-const statsSummaryLine = computed(() => {
-  const total = props.guestStats?.total_guests ?? 0
-  const sent = props.guestStats?.sent ?? 0
-  return t('management.guestGroupsView.statsCard.summaryLine', { total, sent })
 })
 
 // Pre-fills the quick-add row's group picker when a specific group is
@@ -1315,28 +1279,6 @@ defineExpose({
 </script>
 
 <style scoped>
-/* Collapse transition for the stats section — grid-template-rows 0fr↔1fr
-   tracks real content height so both directions ease evenly (DESIGN.md §7) */
-.collapse-enter-active,
-.collapse-leave-active {
-  transition:
-    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease;
-}
-
-.collapse-enter-from,
-.collapse-leave-to {
-  grid-template-rows: 0fr;
-  opacity: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .collapse-enter-active,
-  .collapse-leave-active {
-    transition: none;
-  }
-}
-
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;

@@ -1,238 +1,207 @@
 <template>
-  <div :class="compact ? 'space-y-4' : 'space-y-5'">
-    <!-- Stats Summary -->
-    <div class="flex flex-wrap items-end justify-between gap-4 sm:gap-6">
-      <div>
-        <p
-          :class="[
-            'uppercase',
-            compact ? 'text-xs font-medium tracking-wide text-slate-400' : 'text-[11px] font-semibold tracking-wider text-slate-400'
-          ]"
-        >
-          {{ t('management.guestGroupsView.statsCard.invitedGuests') }}
-        </p>
-        <div
-          v-if="loading"
-          :class="['mt-1 animate-pulse rounded-lg bg-slate-100', compact ? 'h-8 w-16' : 'h-10 w-20']"
-          aria-hidden="true"
-        ></div>
-        <p
-          v-else
-          :class="[
-            'font-semibold text-slate-900 tabular-nums transition-all duration-300',
-            compact ? 'text-3xl' : 'text-4xl tracking-tight'
-          ]"
-          aria-live="polite"
-        >
-          {{ totalGuests }}
-        </p>
-        <p v-if="!compact" class="mt-1 text-sm text-slate-500">
-          {{ t('management.guestGroupsView.statsCard.totalAudienceDesc') }}
-        </p>
-      </div>
-      <div
-        :class="[
-          'inline-flex items-center gap-1.5 rounded-full bg-emerald-50 font-semibold text-emerald-600',
-          compact ? 'px-2.5 py-1.5 text-xs' : 'px-3 py-2 text-sm ring-1 ring-emerald-200'
-        ]"
-      >
-        <Send :class="compact ? 'h-3.5 w-3.5' : 'h-4 w-4'" aria-hidden="true" />
-        <span v-if="loading" class="inline-block h-3 w-12 animate-pulse rounded bg-emerald-100" aria-hidden="true"></span>
-        <span v-else>{{ `${sentInvitations} ${t('management.guestGroupsView.statsCard.sent')}` }}</span>
+  <!-- Slim stats band — sits as the header row of the guest list panel.
+       Loading skeleton on first load only; a refetch dims the previous render
+       instead of flashing back to skeleton. -->
+  <div
+    v-if="loading && !hasStats"
+    class="flex items-center gap-3 px-3 py-3 sm:gap-5 sm:px-4"
+    aria-hidden="true"
+  >
+    <div class="h-12 w-12 shrink-0 animate-pulse rounded-full border-[7px] border-slate-100 sm:h-14 sm:w-14 sm:border-8"></div>
+    <div class="h-8 w-10 shrink-0 animate-pulse rounded bg-slate-100"></div>
+    <div class="grid min-w-0 flex-1 grid-cols-3 gap-2 sm:gap-4">
+      <div v-for="n in 3" :key="n" class="space-y-1.5">
+        <div class="h-2.5 w-full max-w-[64px] animate-pulse rounded bg-slate-100"></div>
+        <div class="h-3.5 w-8 animate-pulse rounded bg-slate-100"></div>
       </div>
     </div>
+  </div>
 
-    <!-- Progress Bar -->
-    <div
-      :class="[
-        'flex w-full overflow-hidden rounded-full',
-        loading ? 'animate-pulse bg-slate-100' : 'bg-slate-100',
-        compact ? 'h-2' : 'h-3 shadow-inner'
-      ]"
-      role="img"
+  <div
+    v-else
+    class="flex items-center gap-3 px-3 py-3 transition-opacity sm:gap-5 sm:px-4"
+    :class="{ 'opacity-60': loading }"
+  >
+    <!-- Donut: the three invitation stages as one part-to-whole ring.
+         Purely visual — every value is also in the legend. -->
+    <svg
+      viewBox="0 0 100 100"
+      class="h-12 w-12 shrink-0 -rotate-90 sm:h-14 sm:w-14"
       aria-hidden="true"
+      focusable="false"
     >
-      <template v-if="!loading">
-        <div
-          :class="[
-            'h-full transition-all duration-700 ease-out',
-            compact ? 'bg-emerald-500' : 'bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600'
-          ]"
-          :style="{ width: segmentWidth(viewedInvitations) }"
-        ></div>
-        <div
-          :class="[
-            'h-full transition-all duration-700 ease-out',
-            compact ? 'bg-sky-500' : 'bg-gradient-to-r from-sky-400 via-sky-500 to-sky-600'
-          ]"
-          :style="{ width: segmentWidth(awaitingViewInvitations) }"
-        ></div>
-        <div
-          :class="[
-            'h-full transition-all duration-700 ease-out',
-            compact ? 'bg-slate-300' : 'bg-gradient-to-r from-slate-300 via-slate-300 to-slate-400'
-          ]"
-          :style="{ width: segmentWidth(pendingInvitations) }"
-        ></div>
-      </template>
+      <circle cx="50" cy="50" :r="RADIUS" fill="none" :stroke-width="STROKE" class="stroke-slate-100" />
+      <circle
+        v-for="arc in arcs"
+        :key="arc.key"
+        cx="50"
+        cy="50"
+        :r="RADIUS"
+        fill="none"
+        :stroke-width="STROKE"
+        stroke-linecap="butt"
+        :stroke-dasharray="`${arc.dash} ${CIRCUMFERENCE - arc.dash}`"
+        :stroke-dashoffset="arc.offset"
+        :class="['donut-arc', arc.strokeClass]"
+      >
+        <title>{{ `${arc.label}: ${arc.count} (${arc.percent}%)` }}</title>
+      </circle>
+    </svg>
+
+    <!-- Total -->
+    <div class="shrink-0">
+      <p class="text-xl font-semibold leading-none text-slate-900 sm:text-2xl" aria-live="polite">
+        {{ totalGuests }}
+      </p>
+      <p class="mt-1.5 text-[10px] font-semibold uppercase leading-none tracking-wide text-slate-400">
+        {{ t('management.guestGroupsView.statsCard.invited') }}
+      </p>
     </div>
 
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-3 gap-2 sm:gap-3">
-      <div
-        v-for="tile in tiles"
-        :key="tile.key"
-        :class="[
-          'ring-1 transition-colors',
-          tile.surfaceClass,
-          compact ? 'rounded-xl p-3' : 'rounded-xl sm:rounded-2xl p-2.5 sm:p-4'
-        ]"
-      >
-        <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
-          <span
-            :class="[
-              'flex flex-shrink-0 items-center justify-center rounded-lg bg-white shadow-sm ring-1',
-              tile.chipClass,
-              compact ? 'h-6 w-6' : 'h-6 w-6 sm:h-7 sm:w-7'
-            ]"
-          >
-            <component :is="tile.icon" :class="compact ? 'h-3 w-3' : 'h-3 w-3 sm:h-3.5 sm:w-3.5'" aria-hidden="true" />
+    <div class="hidden h-8 w-px shrink-0 bg-slate-100 sm:block" aria-hidden="true"></div>
+
+    <!-- Legend: carries the numbers so nothing depends on colour alone -->
+    <dl class="grid min-w-0 flex-1 grid-cols-3 gap-2 sm:gap-4">
+      <div v-for="segment in segments" :key="segment.key" class="min-w-0">
+        <dt class="flex items-center gap-1.5">
+          <span class="h-1.5 w-1.5 shrink-0 rounded-full" :class="segment.dotClass" aria-hidden="true"></span>
+          <span class="truncate text-[11px] font-medium leading-none text-slate-500 sm:text-xs">
+            {{ segment.label }}
           </span>
-          <span
-            :class="[
-              'truncate text-[10px] sm:text-xs',
-              compact ? 'font-medium' : 'font-semibold uppercase tracking-wide',
-              tile.labelClass
-            ]"
-          >
-            {{ tile.label }}
+        </dt>
+        <dd class="mt-1.5 flex items-baseline gap-1.5">
+          <span class="text-sm font-semibold leading-none tabular-nums text-slate-900 sm:text-base">
+            {{ segment.count }}
           </span>
-        </div>
-        <div :class="['flex items-baseline gap-1.5', compact ? 'mt-2' : 'mt-2 sm:mt-3']">
-          <span
-            v-if="loading"
-            class="inline-block h-6 w-10 animate-pulse rounded bg-white/80"
-            aria-hidden="true"
-          ></span>
-          <template v-else>
-            <span
-              :class="[
-                'font-bold leading-none text-slate-900 tabular-nums transition-all duration-300',
-                compact ? 'text-lg' : 'text-lg sm:text-2xl'
-              ]"
-            >
-              {{ tile.count }}
-            </span>
-            <span :class="['text-[10px] sm:text-xs font-semibold tabular-nums', tile.labelClass]">
-              {{ tile.percent }}%
-            </span>
-          </template>
-        </div>
-        <template v-if="!compact">
-          <p class="mt-1.5 hidden sm:block text-[11px] leading-snug" :class="tile.descClass">
-            {{ tile.desc }}
-          </p>
-          <p class="mt-1 sm:hidden text-[9px] leading-tight" :class="tile.descClass">
-            {{ tile.shortDesc }}
-          </p>
-        </template>
+          <span class="text-[10px] font-medium leading-none tabular-nums text-slate-400 sm:text-[11px]">
+            {{ segment.percent }}%
+          </span>
+        </dd>
       </div>
-    </div>
+    </dl>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Send, Eye, Mail, Clock } from 'lucide-vue-next'
 import type { GuestStats } from '../../services/api'
 
 interface Props {
   stats: GuestStats | null
   loading?: boolean
-  compact?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
-  compact: false,
 })
 
 const { t } = useI18n()
 
-// Computed properties for guest statistics
+const RADIUS = 42
+const STROKE = 13
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS
+// Arc-length equivalent of the ~2px surface gap between adjacent segments.
+const SEGMENT_GAP = 4
+
+const hasStats = computed(() => props.stats !== null)
+
 const totalGuests = computed(() => props.stats?.total_guests || 0)
-const sentInvitations = computed(() => props.stats?.sent || 0)
-const viewedInvitations = computed(() => props.stats?.viewed || 0)
-const pendingInvitations = computed(() => Math.max(0, totalGuests.value - sentInvitations.value))
-const awaitingViewInvitations = computed(() => Math.max(0, sentInvitations.value - viewedInvitations.value))
+const rawSent = computed(() => props.stats?.sent || 0)
+const rawViewed = computed(() => props.stats?.viewed || 0)
+
+// A guest can open an invite that was never marked "sent" (the host shared the
+// link out of band), so `viewed` is not reliably a subset of `sent`. Take
+// whichever is larger as "reached" and clamp to the total, which keeps the three
+// segments mutually exclusive and summing to exactly `total_guests`. The old
+// tiles derived pending straight from `total - sent`, so viewed + awaiting +
+// pending could exceed the total and overflow the bar.
+const reached = computed(() =>
+  Math.min(Math.max(rawSent.value, rawViewed.value), totalGuests.value),
+)
+const viewedInvitations = computed(() => Math.min(rawViewed.value, reached.value))
+const awaitingViewInvitations = computed(() => reached.value - viewedInvitations.value)
+const pendingInvitations = computed(() => totalGuests.value - reached.value)
 
 const percentage = (count: number) => {
   if (totalGuests.value === 0) return 0
   return Math.round((count / totalGuests.value) * 100)
 }
 
-const segmentWidth = (count: number) => {
-  if (totalGuests.value === 0) return '0%'
-  const pct = (Math.min(Math.max(count, 0), totalGuests.value) / totalGuests.value) * 100
-  return `${pct.toFixed(1)}%`
-}
-
-interface TileConfig {
+interface Segment {
   key: string
   label: string
-  desc: string
-  shortDesc: string
   count: number
   percent: number
-  icon: typeof Eye
-  surfaceClass: string
-  chipClass: string
-  labelClass: string
-  descClass: string
+  dotClass: string
+  strokeClass: string
 }
 
-// Tile colors mirror the progress bar segments (emerald → sky → slate)
-// so the grid doubles as the bar's legend.
-const tiles = computed<TileConfig[]>(() => [
+// Ordered as the invitation funnel runs, and drawn in this order around the ring.
+const segments = computed<Segment[]>(() => [
   {
     key: 'viewed',
     label: t('management.guestGroupsView.statsCard.viewed'),
-    desc: t('management.guestGroupsView.statsCard.viewedDesc'),
-    shortDesc: t('management.guestGroupsView.statsCard.viewedShort'),
     count: viewedInvitations.value,
     percent: percentage(viewedInvitations.value),
-    icon: Eye,
-    surfaceClass: 'bg-emerald-50/70 ring-emerald-100',
-    chipClass: 'text-emerald-600 ring-emerald-100',
-    labelClass: 'text-emerald-600',
-    descClass: 'text-emerald-700/70',
+    dotClass: 'bg-emerald-600',
+    strokeClass: 'stroke-emerald-600',
   },
   {
     key: 'awaiting',
     label: t('management.guestGroupsView.statsCard.awaiting'),
-    desc: t('management.guestGroupsView.statsCard.awaitingDesc'),
-    shortDesc: t('management.guestGroupsView.statsCard.awaitingShort'),
     count: awaitingViewInvitations.value,
     percent: percentage(awaitingViewInvitations.value),
-    icon: Mail,
-    surfaceClass: 'bg-sky-50/70 ring-sky-100',
-    chipClass: 'text-sky-600 ring-sky-100',
-    labelClass: 'text-sky-600',
-    descClass: 'text-sky-700/70',
+    dotClass: 'bg-sky-600',
+    strokeClass: 'stroke-sky-600',
   },
   {
     key: 'pending',
     label: t('management.guestGroupsView.statsCard.pending'),
-    desc: t('management.guestGroupsView.statsCard.pendingDesc'),
-    shortDesc: t('management.guestGroupsView.statsCard.pendingShort'),
     count: pendingInvitations.value,
     percent: percentage(pendingInvitations.value),
-    icon: Clock,
-    surfaceClass: 'bg-slate-50 ring-slate-100',
-    chipClass: 'text-slate-500 ring-slate-200',
-    labelClass: 'text-slate-500',
-    descClass: 'text-slate-500',
+    dotClass: 'bg-slate-300',
+    strokeClass: 'stroke-slate-300',
   },
 ])
+
+const arcs = computed(() => {
+  const total = totalGuests.value
+  if (total <= 0) return []
+
+  const visible = segments.value.filter((segment) => segment.count > 0)
+  let cursor = 0
+
+  return visible.map((segment) => {
+    const length = (segment.count / total) * CIRCUMFERENCE
+    // Only carve a gap when there's a neighbour to separate from, and never eat
+    // more than half a segment (a 1-guest slice must still be visible).
+    const gap = visible.length > 1 ? Math.min(SEGMENT_GAP, length * 0.5) : 0
+    const arc = {
+      key: segment.key,
+      label: segment.label,
+      count: segment.count,
+      percent: segment.percent,
+      strokeClass: segment.strokeClass,
+      dash: Math.max(length - gap, 1.5),
+      offset: -cursor,
+    }
+    cursor += length
+    return arc
+  })
+})
 </script>
+
+<style scoped>
+.donut-arc {
+  transition:
+    stroke-dasharray 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+    stroke-dashoffset 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .donut-arc {
+    transition: none;
+  }
+}
+</style>
