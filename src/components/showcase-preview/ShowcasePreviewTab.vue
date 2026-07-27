@@ -1082,29 +1082,45 @@ defineExpose({
    title/subtitle block dropped entirely (see the template). Controls are 44px
    here rather than the desktop 36px: this row is thumb input, not mouse input.
 
-   Sticky below the app's own two fixed bars (the 4rem header + the 52px
+   Sticky below the app's own two fixed bars (the 4rem header +
    EventManageMobileTabBar, whose spacer sits in flow — see EventManageView),
    and bled out past .showcase-studio__main's 1rem gutters so scrolling form
    cards pass behind it rather than beside it. */
 .studio-mobile-bar {
   --studio-control-h: 2.75rem;
   position: sticky;
-  top: calc(4rem + 52px);
+  /* The tab bar's height is measured and published by EventManageMobileTabBar
+     rather than assumed here — this used to hardcode 52px, which didn't match
+     what that bar actually renders, so once this row was stuck there was a
+     permanent band of page background between the two with scrolling content
+     legible through it. The trailing -1px makes the two overlap by a pixel
+     instead of risking a sub-pixel gap on fractional device pixel ratios (the
+     same trick EventManageTopBar uses against this bar). */
+  top: calc(4rem + var(--manage-tabbar-h, 52px) - 1px);
   z-index: 30;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin: 0 -1rem 1rem -1rem;
+  /* Negative top margin cancels EventManageView's own `py-6` on the content
+     section. Without it this row floated 24px below the fixed tab bar at rest —
+     a band of page background between two pieces of header chrome — and that
+     band is also where scrolling cards briefly showed through on their way
+     behind the sticky row. Flush against the tab bar, the two read as one
+     two-row header (the `md` bump below matches that padding's `md:py-8`). */
+  margin: -1.5rem -1rem 1rem -1rem;
   padding: 0.5rem 1rem;
-  background: linear-gradient(
-    135deg,
-    rgba(248, 255, 254, 0.92) 0%,
-    rgba(240, 253, 249, 0.92) 50%,
-    rgba(240, 249, 255, 0.92) 100%
-  );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  /* Opaque, not glass: this is fixed chrome that scrolling form cards pass
+     directly behind, and at 0.92 alpha their text read through it (and through
+     the tab labels above). Same gradient as EventManageMobileTabBar's, so the
+     two surfaces are one continuous header block. */
+  background: linear-gradient(135deg, #f8fffe 0%, #f0fdf9 50%, #f0f9ff 100%);
   border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+@media (min-width: 768px) {
+  .studio-mobile-bar {
+    margin-top: -2rem;
+  }
 }
 
 .studio-mobile-bar__spacer {

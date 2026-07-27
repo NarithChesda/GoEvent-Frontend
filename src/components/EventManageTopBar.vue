@@ -242,15 +242,14 @@ const goBackToEvents = () => {
 
 <style scoped>
 /* Glass header effect - blends with brand gradient background */
+/* Opaque, matching EventManageMobileTabBar's own surface — these two plus the
+   Design Studio's sticky toolbar are meant to read as one continuous header
+   (hence the 1px overlap hack below), so they have to agree on transparency.
+   At 0.9 alpha the page content scrolling behind this bar competed with the
+   event title on top of it; blur(20px) blurred that content without stopping
+   it. The gradient itself is unchanged. */
 .glass-manage-header {
-  background: linear-gradient(
-    135deg,
-    rgba(248, 255, 254, 0.9) 0%,
-    rgba(240, 253, 249, 0.9) 50%,
-    rgba(240, 249, 255, 0.9) 100%
-  );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: linear-gradient(135deg, #f8fffe 0%, #f0fdf9 50%, #f0f9ff 100%);
 }
 
 /* On mobile, add 1px overlap to prevent sub-pixel gap with tab bar */

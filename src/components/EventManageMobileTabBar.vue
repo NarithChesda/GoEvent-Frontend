@@ -5,7 +5,10 @@
        Desktop sidebar breakpoint is `lg:flex` in EventNavigationTabs.vue,
        so these two must stay in sync or the 768–1023 range loses navigation
        entirely. -->
-  <div class="lg:hidden fixed top-16 left-0 right-0 z-40 glass-manage-mobile-tabs tab-bar-container">
+  <div
+    ref="rootRef"
+    class="lg:hidden fixed top-16 left-0 right-0 z-40 glass-manage-mobile-tabs tab-bar-container"
+  >
     <div class="relative">
       <!-- Left scroll fade -->
       <div
@@ -53,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import type { TabConfig } from './EventNavigationTabs.vue'
 
 interface Props {
@@ -77,6 +80,48 @@ const emit = defineEmits<{
 
 const tabContainer = ref<HTMLElement>()
 const tabButtons = ref<HTMLElement[]>([])
+
+// ---------------------------------------------------------------------------
+// Published height.
+//
+// This bar is `position: fixed`, so everything that has to live under it needs
+// to know where its bottom edge is: EventManageView's in-flow spacer, and the
+// Design Studio's own sticky toolbar (which docks directly beneath it). Both
+// used to hardcode `52px` — two independent guesses at a height nothing
+// measured, and they were wrong, which left a band of page background between
+// this bar and that toolbar with scrolling content visible through it.
+//
+// Measured once on mount and re-measured on resize (the tab row's own height can
+// change with font metrics, a longer Khmer label wrapping, or the `lg:hidden`
+// breakpoint being crossed), then published as a document-level custom property
+// so every consumer derives from the same real number.
+// ---------------------------------------------------------------------------
+const TABBAR_HEIGHT_VAR = '--manage-tabbar-h'
+
+const rootRef = ref<HTMLElement | null>(null)
+let heightObserver: ResizeObserver | null = null
+
+const publishHeight = () => {
+  const height = rootRef.value?.offsetHeight
+  // `lg:hidden` keeps this component mounted (display: none) on desktop, where
+  // it measures 0. Ignore that rather than publishing a 0 no consumer wants —
+  // above `lg` neither the spacer nor the studio toolbar exists anyway.
+  if (!height) return
+  document.documentElement.style.setProperty(TABBAR_HEIGHT_VAR, `${height}px`)
+}
+
+onMounted(() => {
+  publishHeight()
+  if (!rootRef.value) return
+  heightObserver = new ResizeObserver(publishHeight)
+  heightObserver.observe(rootRef.value)
+})
+
+onUnmounted(() => {
+  heightObserver?.disconnect()
+  heightObserver = null
+  document.documentElement.style.removeProperty(TABBAR_HEIGHT_VAR)
+})
 
 const visibleTabs = computed(() => {
   return props.tabs.filter((tab) => {
@@ -171,16 +216,15 @@ const handleKeyboard = (event: KeyboardEvent, index: number) => {
   display: none;
 }
 
-/* Glass mobile tabs effect - matches header for seamless connection */
+/* Matches EventManageTopBar's surface for a seamless connection with it.
+   Opaque rather than glass. This bar is fixed over a scrolling page, and at
+   0.9 alpha the content passing behind it stayed legible *through* the tab
+   labels — blur(20px) softens that content but doesn't stop it competing with
+   the text on top of it. The gradient is unchanged, so at rest (nothing behind
+   it but the page's own brand-tinted background) this looks the same as before;
+   it only differs while scrolling, which is exactly the case it was failing. */
 .glass-manage-mobile-tabs {
-  background: linear-gradient(
-    135deg,
-    rgba(248, 255, 254, 0.9) 0%,
-    rgba(240, 253, 249, 0.9) 50%,
-    rgba(240, 249, 255, 0.9) 100%
-  );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: linear-gradient(135deg, #f8fffe 0%, #f0fdf9 50%, #f0f9ff 100%);
   /* Bottom border for separation from content */
   border-bottom: 1px solid rgba(148, 163, 184, 0.15);
 }
