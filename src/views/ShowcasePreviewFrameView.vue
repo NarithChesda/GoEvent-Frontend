@@ -166,8 +166,19 @@ onUnmounted(() => {
 <style scoped>
 .preview-frame-stage {
   position: relative;
-  width: 390px;
-  height: 844px;
+  /* Fill the iframe's own viewport rather than a hardcoded phone box. Both
+     callers already size the iframe *element* to the box they want, so this
+     resolves to exactly that: 390x844 for the desktop studio's frames (which
+     then scale the whole element down to fit their column), and the device's
+     real viewport for the full-bleed mobile preview sheet. A fixed 390x844
+     here left black bands down the right and bottom of any phone bigger than
+     an iPhone 12 — the stage simply stopped before the iframe did.
+     Viewport units, not 100%, so this doesn't depend on html/body/#app having
+     a resolved height; nothing scrolls at document level in here (the
+     showcase's own scroll container is nested inside), so there are no
+     scrollbars for 100vw to overshoot. */
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
 }
 
