@@ -12,26 +12,90 @@
         aria-modal="true"
         :aria-label="t('management.showcasePreview.mobilePreview.title')"
       >
-        <!-- One 48px bar, not a header block: every pixel spent on chrome is a
-             pixel the invitation doesn't get, and at this size the frame is
-             the entire point. -->
-        <div class="preview-sheet__bar">
+        <!-- The frame IS the sheet: edge-to-edge, at the device's own viewport
+             size, with no chrome taking layout height from it. Every control
+             floats on top instead, so the invitation renders at exactly the
+             size a guest's phone gives it — no letterboxing, no scaling, and
+             no "preview of a preview" mismatch. -->
+        <div class="preview-sheet__stage">
+          <div
+            v-for="frame in frames"
+            v-show="activeId === frame.id"
+            :key="frame.id"
+            class="preview-sheet__frame"
+          >
+            <InertIframe
+              :ref="(el) => registerFrameInstance(frame.id, el)"
+              :src="frameSrc(frame)"
+              :interactive="frame.editable && canEdit"
+              :click-message="frame.clickMessage"
+              @loaded="onFrameLoaded(frame.id)"
+            />
+          </div>
+        </div>
+
+        <!-- The one thing worth floating chrome: that what's on screen is not
+             what guests have. Recedes with the rest of the chrome so it never
+             permanently sits on the cover artwork. -->
+        <div
+          v-if="showActivationBar"
+          class="preview-sheet__notice"
+          :class="{ 'is-idle': chromeIdle }"
+          @pointerdown="wakeChrome"
+        >
+          <TriangleAlert class="w-3.5 h-3.5 flex-shrink-0" />
+          <span class="preview-sheet__notice-text">
+            {{ t('management.showcasePreview.mobilePreview.previewOnly') }}
+          </span>
+          <button
+            v-if="canEdit"
+            type="button"
+            class="preview-sheet__notice-cta"
+            @click="emit('activate')"
+          >
+            <Sparkles class="w-3 h-3 flex-shrink-0" />
+            <span>{{ t('management.activation.pill.activateCta') }}</span>
+          </button>
+        </div>
+
+        <!-- Overlaid just above the bar it talks about, and self-dismissing, so
+             it costs no frame height. -->
+        <Transition name="preview-sheet-tip">
+          <p v-if="tipKey" class="preview-sheet__tip">
+            {{ t(`management.showcasePreview.mobilePreview.${tipKey}`) }}
+          </p>
+        </Transition>
+
+        <!-- Floating control bar: icon-only so the whole editing toolbar costs
+             one 54px pill instead of a header row plus a footer row, following
+             the showcase's own V2FloatingActionBar (labels on hover / press-
+             and-hold, never permanently). -->
+        <nav
+          class="preview-sheet__bar"
+          :class="{ 'is-idle': chromeIdle }"
+          :aria-label="t('management.showcasePreview.mobilePreview.controls')"
+          @pointerdown="wakeChrome"
+          @focusin="wakeChrome"
+        >
           <button
             type="button"
-            class="preview-sheet__icon-btn"
+            class="preview-sheet__btn"
             :aria-label="t('management.showcasePreview.mobilePreview.close')"
             @click="emit('close')"
           >
             <X class="w-5 h-5" />
+            <span class="preview-sheet__tooltip">
+              {{ t('management.showcasePreview.mobilePreview.close') }}
+            </span>
           </button>
 
-          <!-- Stage picker. Horizontal chips rather than the desktop's vertical
-               dot-timeline: on a phone the stages are the primary navigation,
-               and a vertical control would take a column this layout has none
-               of. Scrolls rather than wrapping so the bar stays one row. -->
+          <!-- Stage picker. The desktop studio's vertical dot-timeline and the
+               previous horizontal text chips both need width this bar doesn't
+               have; icons in an inset track read as one control and keep the
+               stage labels one press-and-hold away. -->
           <div
             v-if="frames.length > 1"
-            class="preview-sheet__stages"
+            class="preview-sheet__seg"
             role="group"
             :aria-label="t('management.showcasePreview.layoutSwitchLabel')"
           >
@@ -39,91 +103,45 @@
               v-for="frame in frames"
               :key="frame.id"
               type="button"
-              class="preview-sheet__chip"
+              class="preview-sheet__btn preview-sheet__btn--seg"
               :class="{ 'is-active': activeId === frame.id }"
               :aria-pressed="activeId === frame.id"
+              :aria-label="t(frame.labelKey)"
               @click="activeId = frame.id"
             >
-              {{ t(frame.labelKey) }}
+              <component :is="stageIcon(frame.id)" class="w-[1.125rem] h-[1.125rem]" />
+              <span class="preview-sheet__tooltip">{{ t(frame.labelKey) }}</span>
             </button>
-          </div>
-          <div v-else class="preview-sheet__stages preview-sheet__stages--single">
-            {{ frames.length ? t(frames[0].labelKey) : '' }}
           </div>
 
           <button
             v-if="languages.length > 1"
             type="button"
-            class="preview-sheet__icon-btn preview-sheet__icon-btn--lang"
+            class="preview-sheet__btn preview-sheet__btn--lang"
             :aria-label="t('management.showcasePreview.switchLanguage')"
             @click="emit('cycle-language')"
           >
             {{ currentLanguage.toUpperCase() }}
+            <span class="preview-sheet__tooltip">
+              {{ t('management.showcasePreview.switchLanguage') }}
+            </span>
           </button>
 
           <button
             v-if="canEdit"
             type="button"
-            class="preview-sheet__icon-btn"
+            class="preview-sheet__btn"
             :class="{ 'is-on': hintsOn }"
             :aria-pressed="hintsOn"
             :aria-label="t('management.showcasePreview.mobilePreview.editHints')"
-            :title="t('management.showcasePreview.mobilePreview.editHints')"
             @click="toggleHints"
           >
-            <Pencil class="w-4 h-4" />
+            <Pencil class="w-[1.125rem] h-[1.125rem]" />
+            <span class="preview-sheet__tooltip">
+              {{ t('management.showcasePreview.mobilePreview.editHints') }}
+            </span>
           </button>
-        </div>
-
-        <!-- Stage: sized by its own ResizeObserver, never by window.innerHeight.
-             Mobile browsers fire `resize` on every URL-bar collapse, so a
-             viewport-derived scale makes the frame visibly jump while you use
-             it; the sheet's own box (100dvh, handled in CSS) doesn't. -->
-        <div ref="stageRef" class="preview-sheet__stage">
-          <div class="preview-sheet__scaler" :style="scalerStyle">
-            <div class="preview-sheet__native" :style="nativeStyle">
-              <div
-                v-for="frame in frames"
-                v-show="activeId === frame.id"
-                :key="frame.id"
-                class="preview-sheet__frame"
-              >
-                <InertIframe
-                  :ref="(el) => registerFrameInstance(frame.id, el)"
-                  :src="frameSrc(frame)"
-                  :interactive="frame.editable && canEdit"
-                  :click-message="frame.clickMessage"
-                  @loaded="onFrameLoaded(frame.id)"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Overlaid and self-dismissing, so it costs no frame height. -->
-          <Transition name="preview-sheet-tip">
-            <p v-if="tipKey" class="preview-sheet__tip">
-              {{ t(`management.showcasePreview.mobilePreview.${tipKey}`) }}
-            </p>
-          </Transition>
-        </div>
-
-        <!-- The one thing worth permanent space: that what's on screen is not
-             what guests have. Placed here rather than in the bar because it
-             carries the fix, and a CTA belongs at thumb height. -->
-        <div v-if="showActivationBar" class="preview-sheet__activation">
-          <span class="preview-sheet__activation-text">
-            {{ t('management.showcasePreview.mobilePreview.previewOnly') }}
-          </span>
-          <button
-            v-if="canEdit"
-            type="button"
-            class="preview-sheet__activation-cta"
-            @click="emit('activate')"
-          >
-            <Sparkles class="w-3.5 h-3.5 flex-shrink-0" />
-            <span>{{ t('management.activation.pill.activateCta') }}</span>
-          </button>
-        </div>
+        </nav>
       </div>
     </Transition>
   </Teleport>
@@ -140,23 +158,22 @@
  * don't scroll) and never the page behind it.
  *
  * So on mobile the two halves separate: the page is the edit surface, and the
- * preview is this full-screen sheet, where the frame renders at very close to
- * 1:1 and the only scrollable thing on screen is the invitation itself.
+ * preview is this sheet, where the frame gets the entire screen and the only
+ * scrollable thing on it is the invitation itself.
+ *
+ * Chrome is floating, not stacked: a header row plus an activation footer used
+ * to spend ~100px of a ~740px screen, and the frame then had to be *scaled
+ * down* to fit what was left, so the template was never shown at the size a
+ * guest actually sees. Now the iframe fills the sheet at 1:1 and the controls
+ * are one icon-only pill that dims itself when idle.
  */
-import { computed, onUnmounted, ref, watch } from 'vue'
-import { Pencil, Sparkles, X } from 'lucide-vue-next'
+import { computed, onUnmounted, ref, watch, type Component } from 'vue'
+import { BookOpen, DoorOpen, Layers, Pencil, ScrollText, Sparkles, TriangleAlert, X } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import InertIframe from './InertIframe.vue'
 import type { PreviewFrameDescriptor } from './renderers/resolvePreviewRenderer'
 import type { TemplateAssets } from '@/composables/useEventShowcase'
 import type { ActivationState } from '@/composables/useTemplateActivation'
-
-// Native frame size — a real iPhone 12/13/14 viewport, matching PreviewFrame's
-// own constant. The showcase components lay out against real vh/vw, so the
-// frame has to be a genuine phone-sized browsing context that we then scale,
-// not a box we resize to fit.
-const NATIVE_WIDTH = 390
-const NATIVE_HEIGHT = 844
 
 interface Props {
   open: boolean
@@ -167,7 +184,7 @@ interface Props {
   canEdit: boolean
   languages: { language: string }[]
   currentLanguage: string
-  /** Drives the preview-only bar; undefined until the payment rows resolve. */
+  /** Drives the preview-only notice; undefined until the payment rows resolve. */
   activationState?: ActivationState
   /** A template being tried on but not yet applied — re-posted into each frame
    *  as it loads, since frames only exist while this sheet is open. */
@@ -209,6 +226,18 @@ watch(
   },
   { immediate: true },
 )
+
+// Frame ids are renderer-defined vocabulary (V1's cover/transition/main today,
+// a V2 renderer will declare its own pages), so an unknown id has to degrade to
+// a generic icon rather than render nothing — the labels still come from the
+// descriptor's own labelKey, and press-and-hold reveals them.
+const STAGE_ICONS: Record<string, Component> = {
+  cover: BookOpen,
+  transition: DoorOpen,
+  main: ScrollText,
+}
+
+const stageIcon = (id: string): Component => STAGE_ICONS[id] ?? Layers
 
 // --- Edit hints ------------------------------------------------------------
 // On by default: this sheet is reached from the editing studio, and outlines
@@ -254,48 +283,32 @@ watch(
   },
 )
 
-// --- Fit-to-sheet scaling --------------------------------------------------
-const stageRef = ref<HTMLElement | null>(null)
-const stageWidth = ref(NATIVE_WIDTH)
-const stageHeight = ref(NATIVE_HEIGHT)
-
-let stageObserver: ResizeObserver | null = null
-
-const observeStage = (el: HTMLElement | null) => {
-  stageObserver?.disconnect()
-  stageObserver = null
-  if (!el) return
-  const read = () => {
-    stageWidth.value = el.clientWidth
-    stageHeight.value = el.clientHeight
-  }
-  read()
-  stageObserver = new ResizeObserver(read)
-  stageObserver.observe(el)
-}
-
-watch(stageRef, observeStage)
-onUnmounted(() => stageObserver?.disconnect())
-
-const scale = computed(() =>
-  Math.min(stageWidth.value / NATIVE_WIDTH, stageHeight.value / NATIVE_HEIGHT),
-)
-
-const scalerStyle = computed(() => ({
-  width: `${NATIVE_WIDTH * scale.value}px`,
-  height: `${NATIVE_HEIGHT * scale.value}px`,
-}))
-
-const nativeStyle = computed(() => ({
-  width: `${NATIVE_WIDTH}px`,
-  height: `${NATIVE_HEIGHT}px`,
-  transform: `scale(${scale.value})`,
-}))
-
-// --- Activation bar --------------------------------------------------------
+// --- Activation notice -----------------------------------------------------
 const showActivationBar = computed(
   () => props.activationState === 'unpaid' || props.activationState === 'pending',
 )
+
+// --- Idle chrome -----------------------------------------------------------
+// The bar is the only way out of the sheet, so it can never disappear — but it
+// also sits on top of the invitation it's there to show. So it dims and sinks
+// after a few seconds of not being touched, and any press (or hover/focus, via
+// CSS) brings it straight back. It stays interactive while dimmed: the press
+// that wakes it also does what it was pressed for.
+const IDLE_DELAY = 3200
+
+const chromeIdle = ref(false)
+let idleTimer: ReturnType<typeof setTimeout> | null = null
+
+const clearIdleTimer = () => {
+  if (idleTimer) clearTimeout(idleTimer)
+  idleTimer = null
+}
+
+const wakeChrome = () => {
+  chromeIdle.value = false
+  clearIdleTimer()
+  idleTimer = setTimeout(() => (chromeIdle.value = true), IDLE_DELAY)
+}
 
 // --- Tip -------------------------------------------------------------------
 // An icon-only toggle can't say what it does, and a permanent caption would
@@ -331,10 +344,13 @@ watch(
       // underneath it.
       document.body.style.overflow = 'hidden'
       window.addEventListener('keydown', onKeydown)
+      wakeChrome()
       if (props.canEdit && hintsOn.value) showTipFor('editHintsTip')
     } else {
       document.body.style.overflow = ''
       window.removeEventListener('keydown', onKeydown)
+      clearIdleTimer()
+      chromeIdle.value = false
       frameInstances.clear()
     }
   },
@@ -342,146 +358,39 @@ watch(
 
 onUnmounted(() => {
   clearTipTimer()
+  clearIdleTimer()
   document.body.style.overflow = ''
   window.removeEventListener('keydown', onKeydown)
 })
 </script>
 
 <style scoped>
-/* Deliberately dark, in a light-mode-only app: this is a media viewer, and a
-   white chrome around a white invitation gives the frame no edge at all. Same
-   reasoning as the black backing behind the desktop frames. */
 .preview-sheet {
   position: fixed;
   inset: 0;
   /* dvh, not vh: on mobile Safari/Chrome `100vh` is the *expanded* viewport, so
-     a vh-sized sheet runs under the URL bar and the activation bar at its
-     bottom is unreachable. */
+     a vh-sized sheet runs under the URL bar and the floating bar at its bottom
+     is unreachable. */
   height: 100dvh;
   /* Below the drawer/modal ladder (§14) on purpose — tapping an editable region
      in here opens one of PreviewEditorHost's drawers, which must land on top. */
   z-index: 900;
-  display: flex;
-  flex-direction: column;
-  background: rgb(15 23 42);
+  /* Black rather than white behind the frame: this is a media viewer, and on the
+     one frame that doesn't paint its own full-bleed background there should be
+     an edge, not a seam. */
+  background: #000;
   overscroll-behavior: contain;
 }
 
-.preview-sheet__bar {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  height: 3rem;
-  padding: 0 0.5rem;
-  padding-top: env(safe-area-inset-top);
-  box-sizing: content-box;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
-}
-
-.preview-sheet__icon-btn {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  /* 44px: the platform minimum. The desktop studio's 24px-wide chevron handle
-     is the control this replaces. */
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 9999px;
-  color: rgb(226 232 240);
-  background: transparent;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.preview-sheet__icon-btn:active {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.preview-sheet__icon-btn--lang {
-  width: auto;
-  min-width: 2.75rem;
-  padding: 0 0.625rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.preview-sheet__icon-btn.is-on {
-  color: white;
-  background: linear-gradient(to right, #2ecc71, #1e90ff);
-}
-
-.preview-sheet__stages {
-  flex: 1 1 auto;
-  /* Must be allowed to shrink below its content: the chips scroll, the bar
-     doesn't grow, and the buttons either side keep their 44px. */
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.preview-sheet__stages::-webkit-scrollbar {
-  display: none;
-}
-
-.preview-sheet__stages--single {
-  justify-content: center;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: rgb(148 163 184);
-}
-
-.preview-sheet__chip {
-  flex-shrink: 0;
-  height: 2rem;
-  padding: 0 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
-  color: rgb(203 213 225);
-  background: rgba(255, 255, 255, 0.08);
-  transition: all 0.2s ease;
-}
-
-.preview-sheet__chip.is-active {
-  color: white;
-  font-weight: 700;
-  background: linear-gradient(to right, #2ecc71, #1e90ff);
-  box-shadow: 0 2px 6px -1px rgba(46, 204, 113, 0.4);
-}
-
+/* Full-bleed: the frame gets the entire sheet, so the iframe's own viewport is
+   the device's viewport and the showcase's vh/vw units resolve to exactly what
+   a guest gets. Nothing to measure, nothing to scale. */
 .preview-sheet__stage {
-  position: relative;
-  flex: 1 1 auto;
-  /* The page never scrolls in here — the frame is fitted to this box, so the
-     only scroll surface left is the invitation inside the iframe. That is the
-     whole fix for the mobile scroll trap. */
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem;
-}
-
-.preview-sheet__scaler {
-  position: relative;
-  overflow: hidden;
-  border-radius: 1rem;
-  background: #000;
-  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.6);
-}
-
-.preview-sheet__native {
-  position: relative;
-  transform-origin: top left;
+  position: absolute;
+  inset: 0;
+  /* The page never scrolls in here — the only scroll surface left is the
+     invitation inside the iframe. That is the whole fix for the mobile scroll
+     trap. */
   overflow: hidden;
 }
 
@@ -490,12 +399,222 @@ onUnmounted(() => {
   inset: 0;
 }
 
+/* ---------- floating control bar ---------- */
+.preview-sheet__bar {
+  position: absolute;
+  left: 50%;
+  bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: calc(100vw - 1.5rem);
+  padding: 0.25rem;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.55);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  /* Deliberately NOT a scroll container: `overflow-x: auto` makes overflow-y
+     compute to `auto` as well, which would clip every tooltip (they sit above
+     the bar, outside its box). The current renderer's 3 stages + 3 global
+     actions measure ~268px, so the bar fits without scrolling down to 320px;
+     a renderer that ever declares more pages than fit needs an overflow
+     popover (like the showcase's own V2FloatingActionBar "More"), not
+     clipping. */
+}
+
+/* Dimmed, not hidden: still the way out, still tappable, just out of the way.
+   Hover/focus-within covers mouse and keyboard; `wakeChrome` covers touch. */
+.preview-sheet__bar.is-idle {
+  opacity: 0.4;
+  transform: translateX(-50%) translateY(0.25rem) scale(0.97);
+}
+
+.preview-sheet__bar.is-idle:hover,
+.preview-sheet__bar.is-idle:focus-within {
+  opacity: 1;
+  transform: translateX(-50%);
+}
+
+.preview-sheet__btn {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 2.5rem = 40px, the §17 touch-target floor. The bar packs 6 of them plus
+     padding into ~292px, so it still clears both edges at 375px. */
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  color: rgb(226 232 240);
+  background: transparent;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.preview-sheet__btn:hover,
+.preview-sheet__btn:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.preview-sheet__btn:active {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.preview-sheet__btn--lang {
+  width: auto;
+  min-width: 2.5rem;
+  padding: 0 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.preview-sheet__btn.is-on {
+  color: white;
+  background: linear-gradient(to right, #2ecc71, #1e90ff);
+}
+
+/* Stage picker: an inset track so the three stages read as one segmented
+   control rather than three loose icons among the global actions. */
+.preview-sheet__seg {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.1875rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.preview-sheet__btn--seg {
+  width: 2.375rem;
+  height: 2.375rem;
+}
+
+.preview-sheet__btn--seg.is-active {
+  color: white;
+  background: linear-gradient(to right, #2ecc71, #1e90ff);
+  box-shadow: 0 2px 6px -1px rgba(46, 204, 113, 0.45);
+}
+
+/* Hold-to-see-text. Hidden until hover (mouse) or held (touch — the delayed
+   :active rule below), and never pointer-events, so it can't intercept the tap
+   meant for the button under it. Same mechanism as the showcase's own
+   V2FloatingActionBar, so both bars behave identically. */
+.preview-sheet__tooltip {
+  position: absolute;
+  bottom: calc(100% + 0.625rem);
+  left: 50%;
+  transform: translateX(-50%) translateY(0.25rem);
+  padding: 0.375rem 0.625rem;
+  border-radius: 0.5rem;
+  background: rgb(15 23 42);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: rgb(226 232 240);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.preview-sheet__btn:hover .preview-sheet__tooltip,
+.preview-sheet__btn:focus-visible .preview-sheet__tooltip {
+  opacity: 1;
+  transform: translateX(-50%);
+}
+
+/* Touch long-press: opacity only starts transitioning after ~450ms of :active.
+   A quick tap releases :active well before that, so the pending transition
+   never runs and no tooltip flashes on a normal tap — holding the button down
+   is what reveals it. */
+.preview-sheet__btn:active .preview-sheet__tooltip {
+  opacity: 1;
+  transform: translateX(-50%);
+  transition-delay: 0.45s;
+}
+
+/* ---------- floating activation notice ---------- */
+.preview-sheet__notice {
+  position: absolute;
+  left: 50%;
+  top: calc(0.75rem + env(safe-area-inset-top));
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: calc(100vw - 1.5rem);
+  padding: 0.375rem 0.375rem 0.375rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: rgb(254 243 199);
+  background: rgba(120, 53, 15, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(252, 211, 77, 0.32);
+  box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.5);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.preview-sheet__notice.is-idle {
+  opacity: 0.4;
+  transform: translateX(-50%) translateY(-0.25rem) scale(0.97);
+}
+
+.preview-sheet__notice.is-idle:hover,
+.preview-sheet__notice.is-idle:focus-within {
+  opacity: 1;
+  transform: translateX(-50%);
+}
+
+/* Khmer runs longer than English — let the sentence wrap inside the pill
+   rather than truncating a warning. */
+.preview-sheet__notice-text {
+  min-width: 0;
+}
+
+.preview-sheet__notice-cta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 1.75rem;
+  padding: 0 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+  background: rgb(180 83 9);
+  box-shadow: 0 2px 4px -1px rgba(120, 53, 15, 0.45);
+  touch-action: manipulation;
+}
+
+.preview-sheet__notice-cta:active {
+  background: rgb(146 64 14);
+}
+
+/* ---------- tip ---------- */
+/* Sits directly above the bar it explains (the pencil lives there), which also
+   keeps it clear of the activation notice at the top. */
 .preview-sheet__tip {
   position: absolute;
-  top: 0.75rem;
   left: 50%;
+  bottom: calc(4.5rem + env(safe-area-inset-bottom));
   transform: translateX(-50%);
-  max-width: calc(100% - 2rem);
+  z-index: 2;
+  max-width: calc(100vw - 2rem);
   padding: 0.4375rem 0.875rem;
   border-radius: 9999px;
   font-size: 0.75rem;
@@ -507,45 +626,6 @@ onUnmounted(() => {
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(148, 163, 184, 0.25);
   pointer-events: none;
-}
-
-.preview-sheet__activation {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.5rem 0.875rem;
-  padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: rgb(253 230 138);
-  background: rgba(120, 53, 15, 0.55);
-  border-top: 1px solid rgba(252, 211, 77, 0.3);
-}
-
-.preview-sheet__activation-text {
-  min-width: 0;
-}
-
-.preview-sheet__activation-cta {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  height: 2rem;
-  padding: 0 0.875rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: white;
-  white-space: nowrap;
-  background: rgb(180 83 9);
-  box-shadow: 0 2px 4px -1px rgba(120, 53, 15, 0.45);
-}
-
-.preview-sheet__activation-cta:active {
-  background: rgb(146 64 14);
 }
 
 /* Sheet motion follows §10's bottom-sheet curve — this rises from the bottom
@@ -572,20 +652,32 @@ onUnmounted(() => {
 .preview-sheet-tip-enter-from,
 .preview-sheet-tip-leave-to {
   opacity: 0;
-  transform: translateX(-50%) translateY(-0.5rem);
+  transform: translateX(-50%) translateY(0.5rem);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .preview-sheet-enter-active,
   .preview-sheet-leave-active,
   .preview-sheet-tip-enter-active,
-  .preview-sheet-tip-leave-active {
+  .preview-sheet-tip-leave-active,
+  .preview-sheet__bar,
+  .preview-sheet__notice,
+  .preview-sheet__tooltip {
     transition: none;
   }
 
   .preview-sheet-enter-from,
   .preview-sheet-leave-to {
     transform: none;
+  }
+
+  /* Keep the idle state a pure opacity change — no sink/scale. */
+  .preview-sheet__bar.is-idle {
+    transform: translateX(-50%);
+  }
+
+  .preview-sheet__notice.is-idle {
+    transform: translateX(-50%);
   }
 }
 </style>

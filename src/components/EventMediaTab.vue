@@ -224,6 +224,17 @@
         />
       </div>
 
+      <!-- Display Settings Section (all categories). Duplicates the live
+           preview's per-section on/off chips on purpose — see the component
+           header for why the preview alone isn't enough. -->
+      <div v-if="localEventData?.id">
+        <DisplaySettingsSection
+          :event-data="localEventData"
+          :can-edit="canEdit"
+          @updated="handleEventUpdated"
+        />
+      </div>
+
     </div>
 
     <!-- Upload Drawer -->
@@ -277,6 +288,7 @@ import EventAgendaTab from './EventAgendaTab.vue'
 import EventHostsTab from './EventHostsTab.vue'
 import EmbedsSection from './EmbedsSection.vue'
 import PaymentMethodsSection from './PaymentMethodsSection.vue'
+import DisplaySettingsSection from './DisplaySettingsSection.vue'
 import EventTextTab from './EventTextTab.vue'
 
 interface Props {
@@ -302,8 +314,8 @@ const { t } = useAppLanguage()
 // categories) or directly as the full-width Showcase tab body (business,
 // music, other) — either way its sections are coordinated into a
 // single-open accordion so only one card (Brand Assets, Music, Texts,
-// Hosts, Agenda, Dress Code, Photos, Map, YouTube, Payment) is expanded at
-// a time. See useAccordionGroup.ts.
+// Hosts, Agenda, Dress Code, Photos, Map, YouTube, Payment, Display
+// Settings) is expanded at a time. See useAccordionGroup.ts.
 provideAccordionGroup()
 const { isExpanded: isPhotosExpanded, toggle: togglePhotosExpanded } = useCollapsibleSection('photos')
 

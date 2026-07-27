@@ -89,10 +89,13 @@
       :can-view-tickets="canViewTickets"
       @tab-change="activeTab = $event"
     />
-    <!-- Spacer for fixed mobile/tablet tab bar (h-[52px] = py-2 + button
-         height). Breakpoint must match EventManageMobileTabBar.vue
-         (`lg:hidden`) so tablet portrait keeps the right offset. -->
-    <div v-if="event" class="lg:hidden h-[52px]"></div>
+    <!-- Spacer for the fixed mobile/tablet tab bar. Height comes from that bar's
+         own measurement (`--manage-tabbar-h`, published by
+         EventManageMobileTabBar on mount/resize) — the 52px here is only the
+         pre-measurement fallback, not a second source of truth. Breakpoint must
+         match EventManageMobileTabBar.vue (`lg:hidden`) so tablet portrait keeps
+         the right offset. -->
+    <div v-if="event" class="lg:hidden" style="height: var(--manage-tabbar-h, 52px)"></div>
 
     <!-- Event Detail -->
     <div
