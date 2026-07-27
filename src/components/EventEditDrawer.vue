@@ -348,97 +348,10 @@
               </Transition>
             </div>
 
-            <!-- Display Settings -->
-            <div class="space-y-3 border-t border-slate-100 pt-4 laptop-sm:pt-5">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.displaySettings.heading') }}</h3>
-
-              <!-- RSVP Enabled Toggle -->
-              <div
-                @click="form.rsvp_enabled = !form.rsvp_enabled"
-                class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="p-2 bg-white rounded-lg shadow-sm">
-                    <UserCheck class="w-4 h-4 text-sky-500" />
-                  </div>
-                  <div>
-                    <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.displaySettings.rsvpLabel') }}</p>
-                    <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.displaySettings.rsvpDesc') }}</p>
-                  </div>
-                </div>
-                <div
-                  role="switch"
-                  :aria-checked="form.rsvp_enabled"
-                  :class="[
-                    'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                    form.rsvp_enabled ? 'bg-sky-500' : 'bg-slate-200'
-                  ]"
-                >
-                  <span
-                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
-                    :style="{ transform: form.rsvp_enabled ? 'translateX(20px)' : 'translateX(0)' }"
-                  />
-                </div>
-              </div>
-
-              <!-- Comments Enabled Toggle -->
-              <div
-                @click="form.comments_enabled = !form.comments_enabled"
-                class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="p-2 bg-white rounded-lg shadow-sm">
-                    <MessageSquare class="w-4 h-4 text-sky-500" />
-                  </div>
-                  <div>
-                    <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.displaySettings.commentsLabel') }}</p>
-                    <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.displaySettings.commentsDesc') }}</p>
-                  </div>
-                </div>
-                <div
-                  role="switch"
-                  :aria-checked="form.comments_enabled"
-                  :class="[
-                    'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                    form.comments_enabled ? 'bg-sky-500' : 'bg-slate-200'
-                  ]"
-                >
-                  <span
-                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
-                    :style="{ transform: form.comments_enabled ? 'translateX(20px)' : 'translateX(0)' }"
-                  />
-                </div>
-              </div>
-
-              <!-- Countdown Enabled Toggle -->
-              <div
-                @click="form.countdown_enabled = !form.countdown_enabled"
-                class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="p-2 bg-white rounded-lg shadow-sm">
-                    <Timer class="w-4 h-4 text-sky-500" />
-                  </div>
-                  <div>
-                    <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.displaySettings.countdownLabel') }}</p>
-                    <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.displaySettings.countdownDesc') }}</p>
-                  </div>
-                </div>
-                <div
-                  role="switch"
-                  :aria-checked="form.countdown_enabled"
-                  :class="[
-                    'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                    form.countdown_enabled ? 'bg-sky-500' : 'bg-slate-200'
-                  ]"
-                >
-                  <span
-                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
-                    :style="{ transform: form.countdown_enabled ? 'translateX(20px)' : 'translateX(0)' }"
-                  />
-                </div>
-              </div>
-            </div>
+            <!-- Showcase display settings (RSVP / Comments / Countdown) used to
+                 live here. They now belong to the Design Studio live preview,
+                 where each section carries its own on/off chip — see
+                 components/showcase-preview/edit/SectionDisplayToggle.vue. -->
 
             <!-- Fundraising Settings -->
             <div class="space-y-3 border-t border-slate-100 pt-4 laptop-sm:pt-5">
@@ -637,9 +550,6 @@ import {
   Globe,
   Lock,
   ClipboardList,
-  UserCheck,
-  MessageSquare,
-  Timer,
   Heart,
   Target,
   Users,
@@ -705,10 +615,6 @@ const form = reactive({
   registration_required: false,
   registration_deadline: '',
   max_attendees: null as number | null,
-  // Feature toggles
-  rsvp_enabled: true,
-  comments_enabled: true,
-  countdown_enabled: true,
   // Fundraising fields
   is_fundraising: false,
   fundraising_goal: null as number | null,
@@ -813,10 +719,6 @@ const populateForm = (eventData: Event) => {
   form.registration_required = eventData.registration_required || false
   form.registration_deadline = eventData.registration_deadline ? eventData.registration_deadline.slice(0, 16) : ''
   form.max_attendees = eventData.max_attendees || null
-  // Feature toggles (default to true for backward compatibility)
-  form.rsvp_enabled = eventData.rsvp_enabled ?? true
-  form.comments_enabled = eventData.comments_enabled ?? true
-  form.countdown_enabled = eventData.countdown_enabled ?? true
   // Fundraising fields
   form.is_fundraising = eventData.is_fundraising ?? false
   form.fundraising_goal = eventData.fundraising_goal ?? null
@@ -942,17 +844,6 @@ const handleSubmit = async () => {
     if (original.max_attendees) {
       updateData.max_attendees = null
     }
-  }
-
-  // Check feature toggle fields
-  if (form.rsvp_enabled !== original.rsvp_enabled) {
-    updateData.rsvp_enabled = form.rsvp_enabled
-  }
-  if (form.comments_enabled !== original.comments_enabled) {
-    updateData.comments_enabled = form.comments_enabled
-  }
-  if (form.countdown_enabled !== original.countdown_enabled) {
-    updateData.countdown_enabled = form.countdown_enabled
   }
 
   // Check fundraising fields

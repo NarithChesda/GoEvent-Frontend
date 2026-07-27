@@ -701,6 +701,19 @@
     "publishSuccess": "Event published successfully",
     "unpublishSuccess": "Event unpublished successfully"
   },
+  "displaySettings": {
+    "title": "Display Settings",
+    "description": "Choose which sections guests see on your showcase page",
+    "rsvpLabel": "Show RSVP Section",
+    "rsvpDesc": "Allow guests to RSVP on your showcase page",
+    "commentsLabel": "Show Comments Section",
+    "commentsDesc": "Allow guests to leave comments and wishes",
+    "countdownLabel": "Show Countdown Timer",
+    "countdownDesc": "Display a countdown to the event start",
+    "successMessage": "Display setting updated",
+    "errorMessage": "Failed to update display setting",
+    "networkErrorMessage": "Network error while updating display setting"
+  },
   "embeds": {
     "map": {
       "title": "Google Maps",
@@ -1171,15 +1184,6 @@
       "maxAttendeesLabel": "Max Attendees",
       "maxAttendeesPlaceholder": "Unlimited",
       "maxAttendeesHint": "Leave empty for unlimited"
-    },
-    "displaySettings": {
-      "heading": "Display Settings",
-      "rsvpLabel": "Show RSVP Section",
-      "rsvpDesc": "Allow guests to RSVP on event page",
-      "commentsLabel": "Show Comments Section",
-      "commentsDesc": "Allow comments on event page",
-      "countdownLabel": "Show Countdown Timer",
-      "countdownDesc": "Display countdown to event start"
     },
     "fundraising": {
       "heading": "Fundraising",
