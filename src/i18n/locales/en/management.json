@@ -265,7 +265,7 @@
     }
   },
   "topBar": {
-    "backToEvents": "Back to Events",
+    "back": "Back",
     "organizedBy": "by {name}",
     "eventDetailsFallback": "Event Details",
     "switchToKhmer": "Switch to Khmer",

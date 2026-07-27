@@ -265,7 +265,7 @@
     }
   },
   "topBar": {
-    "backToEvents": "ត្រលប់ទៅព្រឹត្តិការណ៍",
+    "back": "ត្រលប់ក្រោយ",
     "organizedBy": "ដោយ {name}",
     "eventDetailsFallback": "ព័ត៌មានព្រឹត្តិការណ៍",
     "switchToKhmer": "ប្តូរទៅភាសាខ្មែរ",

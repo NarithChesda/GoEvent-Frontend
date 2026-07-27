@@ -7,12 +7,13 @@
     <div class="flex items-center justify-between h-full px-4 sm:px-6">
       <!-- Left Section: Back Button + Host Avatar + Event Title -->
       <div class="flex items-center gap-3 min-w-0 flex-1">
-        <!-- Back to Events Button -->
+        <!-- Back Button: returns to wherever this page was opened from, and
+             only falls back to the events list on a cold entry. -->
         <button
-          @click="goBackToEvents"
+          @click="goBack"
           class="flex-shrink-0 flex items-center justify-center w-10 h-10 lg:w-11 lg:h-11 rounded-xl hover:bg-slate-50/80 transition-all duration-200"
-          :aria-label="t('management.topBar.backToEvents')"
-          :title="t('management.topBar.backToEvents')"
+          :aria-label="t('management.topBar.back')"
+          :title="t('management.topBar.back')"
         >
           <ArrowLeft class="w-5 h-5 lg:w-5 lg:h-5 text-slate-600" />
         </button>
@@ -107,7 +108,7 @@
 
 <script setup lang="ts">
 import { ref, computed, inject, onMounted, onUnmounted, type Ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Pencil, ArrowLeft, Globe, Languages } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 
@@ -234,9 +235,37 @@ const publishEvent = () => {
 }
 
 const router = useRouter()
+const route = useRoute()
 
-const goBackToEvents = () => {
-  router.push('/events')
+const isInternalPath = (path: unknown): path is string =>
+  typeof path === 'string' && path.startsWith('/') && !path.startsWith('//')
+
+/**
+ * Where this page was entered from, captured once at setup — before the user
+ * can switch tabs and put one of the page's own history entries behind us.
+ * `undefined` for a cold entry: a shared link, a new tab, an external referrer.
+ */
+const entryReferrer = (window.history.state as { back?: unknown } | null)?.back
+
+/** A history entry belonging to this same manage page (another tab). */
+const isSamePage = (path: string) => path.split('?')[0] === route.path
+
+const goBack = () => {
+  const previous = (window.history.state as { back?: unknown } | null)?.back
+
+  // Straight back whenever the entry behind us is a different page: that's what
+  // the arrow's shape promises, and it restores the caller's scroll position.
+  if (isInternalPath(previous) && !isSamePage(previous)) {
+    router.back()
+    return
+  }
+
+  // Otherwise the entry behind us is this page on another tab, so back would
+  // land the user right back here. Go to where the page was entered from
+  // instead, falling back to the events list when that isn't known.
+  router.push(
+    isInternalPath(entryReferrer) && !isSamePage(entryReferrer) ? entryReferrer : '/events',
+  )
 }
 </script>
 
