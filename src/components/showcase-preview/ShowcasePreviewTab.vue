@@ -33,6 +33,7 @@
             hide-header
             @media-updated="onMediaUpdated"
             @event-updated="onEditorSaved"
+            @content-refreshed="onEditorSaved()"
           />
         </div>
       </div>
@@ -220,6 +221,7 @@
             hide-header
             @media-updated="onMediaUpdated"
             @event-updated="onEditorSaved"
+            @content-refreshed="onEditorSaved()"
           />
         </div>
 

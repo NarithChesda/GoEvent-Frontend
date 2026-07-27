@@ -1,15 +1,6 @@
 {
   "title": "Event Management",
   "overview": {
-    "populate": {
-      "label": "Auto-fill from category template",
-      "btn": "Populate",
-      "loading": "Loading…",
-      "success": "Done! Created {total} items ({texts} texts, {hosts} hosts, {agenda} agenda).",
-      "errorCheck": "Failed to check template availability.",
-      "errorNoTemplate": "No template available for \"{category}\" events.",
-      "errorGeneric": "Something went wrong. Please try again."
-    },
     "glance": {
       "title": "At a glance",
       "guests": "Guests",
@@ -58,16 +49,6 @@
     "agendaCount": {
       "item": "item",
       "items": "items"
-    },
-    "dialog": {
-      "title": "Event already has content",
-      "contains": "This event already contains:",
-      "texts": "Texts:",
-      "hosts": "Hosts:",
-      "agendaItems": "Agenda items:",
-      "howToProceed": "How would you like to proceed?",
-      "skipExisting": "Skip existing — only fill gaps",
-      "overwriteAll": "Overwrite all — replace everything"
     }
   },
   "agendaDrawer": {
@@ -504,6 +485,31 @@
     },
     "loading": "Loading media...",
     "sectionToggle": "Expand or collapse section",
+    "populate": {
+      "label": "Auto-fill from category template",
+      "description": "Fill the texts, hosts and agenda below with a ready-made starting point for this event category.",
+      "btn": "Populate",
+      "loading": "Loading…",
+      "success": "Done! Created {total} items ({texts} texts, {hosts} hosts, {agenda} agenda).",
+      "errorCheck": "Failed to check template availability.",
+      "errorNoTemplate": "No template available for \"{category}\" events.",
+      "errorGeneric": "Something went wrong. Please try again.",
+      "confirm": {
+        "title": "Auto-fill this event?",
+        "body": "Texts, hosts and agenda items will be created from the \"{category}\" template. You can edit or delete any of them afterwards.",
+        "action": "Yes, auto-fill"
+      },
+      "dialog": {
+        "title": "Event already has content",
+        "contains": "This event already contains:",
+        "texts": "Texts:",
+        "hosts": "Hosts:",
+        "agendaItems": "Agenda items:",
+        "howToProceed": "How would you like to proceed?",
+        "skipExisting": "Skip existing — only fill gaps",
+        "overwriteAll": "Overwrite all — replace everything"
+      }
+    },
     "photos": {
       "title": "Event Photos",
       "description": "Photos will be displayed on the event showcase page in order. Drag and drop to reorder.",

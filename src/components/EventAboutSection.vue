@@ -173,34 +173,6 @@
         </p>
       </button>
 
-      <!-- Populate from Template (only while the event still looks empty) -->
-      <div v-if="showPopulateTool" class="space-y-2">
-        <div class="flex items-center justify-between gap-3 p-3 bg-gradient-to-r from-emerald-50 to-sky-50 border border-emerald-100 rounded-xl">
-          <div class="flex items-center gap-2 min-w-0">
-            <Wand2 class="w-4 h-4 text-emerald-600 flex-shrink-0" />
-            <span class="text-sm font-medium text-slate-700 truncate">{{ t('management.overview.populate.label') }}</span>
-          </div>
-          <button
-            @click="handlePopulateClick"
-            :disabled="populateLoading"
-            class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 min-h-[40px] text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-sky-500 hover:from-emerald-600 hover:to-sky-600 rounded-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            <Loader2 v-if="populateLoading" class="w-3.5 h-3.5 animate-spin" />
-            <Wand2 v-else class="w-3.5 h-3.5" />
-            {{ populateLoading ? t('management.overview.populate.loading') : t('management.overview.populate.btn') }}
-          </button>
-        </div>
-      </div>
-      <!-- Populate feedback message -->
-      <Transition name="fade">
-        <div
-          v-if="populateMessage"
-          :class="populateMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'"
-          class="text-xs px-3 py-2 rounded-lg border"
-        >
-          {{ populateMessage.text }}
-        </div>
-      </Transition>
     </div>
 
     <!-- ============ 3. ABOUT ============ -->
@@ -460,55 +432,6 @@
     </Transition>
   </Teleport>
 
-  <!-- Populate from Template Dialog -->
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="populateDialog" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="populateDialog = null" />
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
-          <div class="flex items-start gap-3">
-            <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <AlertTriangle class="w-5 h-5 text-amber-600" />
-            </div>
-            <div>
-              <h3 class="font-semibold text-slate-900">{{ t('management.overview.dialog.title') }}</h3>
-              <p class="text-sm text-slate-600 mt-1">
-                {{ t('management.overview.dialog.contains') }}
-              </p>
-              <ul class="text-sm text-slate-700 mt-2 space-y-0.5">
-                <li v-if="populateDialog.existing_data.texts">{{ t('management.overview.dialog.texts') }} <strong>{{ populateDialog.existing_data.texts }}</strong></li>
-                <li v-if="populateDialog.existing_data.hosts">{{ t('management.overview.dialog.hosts') }} <strong>{{ populateDialog.existing_data.hosts }}</strong></li>
-                <li v-if="populateDialog.existing_data.agenda">{{ t('management.overview.dialog.agendaItems') }} <strong>{{ populateDialog.existing_data.agenda }}</strong></li>
-              </ul>
-              <p class="text-sm text-slate-600 mt-3">{{ t('management.overview.dialog.howToProceed') }}</p>
-            </div>
-          </div>
-          <div class="flex flex-col gap-2 pt-2">
-            <button
-              @click="runPopulate('skip')"
-              :disabled="populateLoading"
-              class="w-full px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-60"
-            >
-              {{ t('management.overview.dialog.skipExisting') }}
-            </button>
-            <button
-              @click="runPopulate('overwrite')"
-              :disabled="populateLoading"
-              class="w-full px-4 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors disabled:opacity-60"
-            >
-              {{ t('management.overview.dialog.overwriteAll') }}
-            </button>
-            <button
-              @click="populateDialog = null"
-              class="w-full px-4 py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
-            >
-              {{ t('common.actions.cancel') }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -531,11 +454,8 @@ import {
   Pencil,
   Share2,
   Users,
-  Wand2,
-  Loader2,
-  AlertTriangle,
 } from 'lucide-vue-next'
-import { type Event, guestService, type GuestStats, eventsService } from '../services/api'
+import { type Event, guestService, type GuestStats } from '../services/api'
 import { apiClient } from '../services/api'
 import { extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
 import type { EventAgendaItem } from '../services/api/types/event.types'
@@ -620,8 +540,6 @@ const onKeydown = (e: KeyboardEvent) => {
   if (e.key !== 'Escape') return
   if (showCalendarSheet.value) {
     showCalendarSheet.value = false
-  } else if (populateDialog.value) {
-    populateDialog.value = null
   }
 }
 
@@ -630,78 +548,6 @@ onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown)
   document.body.style.overflow = ''
 })
-
-// Populate from template state
-type PopulateCheckData = {
-  category: string
-  template_available: boolean
-  existing_data: { texts: number; hosts: number; agenda: number; has_data: boolean }
-}
-const populateLoading = ref(false)
-const populateDialog = ref<PopulateCheckData | null>(null)
-const populateMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
-
-// Only surface the populate tool while the event still looks empty
-const showPopulateTool = computed(() => {
-  if (!props.event.can_edit) return false
-  const agendaCount = props.event.agenda_items?.length ?? 0
-  const hostsCount = props.event.hosts?.length ?? 0
-  return agendaCount === 0 || hostsCount === 0
-})
-
-const handlePopulateClick = async () => {
-  populateLoading.value = true
-  populateMessage.value = null
-  try {
-    const response = await eventsService.checkPopulateTemplate(props.event.id)
-    if (!response.success || !response.data) {
-      populateMessage.value = { type: 'error', text: response.message || t('management.overview.populate.errorCheck') }
-      return
-    }
-    const check = response.data
-    if (!check.template_available) {
-      populateMessage.value = { type: 'error', text: t('management.overview.populate.errorNoTemplate', { category: check.category }) }
-      return
-    }
-    if (!check.existing_data.has_data) {
-      await runPopulate('skip')
-    } else {
-      populateDialog.value = check
-    }
-  } catch {
-    populateMessage.value = { type: 'error', text: t('management.overview.populate.errorCheck') }
-  } finally {
-    populateLoading.value = false
-  }
-}
-
-const runPopulate = async (mode: 'skip' | 'overwrite') => {
-  populateLoading.value = true
-  populateDialog.value = null
-  try {
-    const response = await eventsService.populateTemplate(props.event.id, mode)
-    if (!response.success || !response.data) {
-      populateMessage.value = { type: 'error', text: response.message || t('management.overview.populate.errorGeneric') }
-      return
-    }
-    const { texts, hosts, agenda } = response.data.results
-    const total = texts.created + hosts.created + agenda.created
-    populateMessage.value = {
-      type: 'success',
-      text: t('management.overview.populate.success', {
-        total,
-        texts: texts.created,
-        hosts: hosts.created,
-        agenda: agenda.created,
-      }),
-    }
-    setTimeout(() => { populateMessage.value = null }, 5000)
-  } catch {
-    populateMessage.value = { type: 'error', text: t('management.overview.populate.errorGeneric') }
-  } finally {
-    populateLoading.value = false
-  }
-}
 
 // Avatar error states
 const organizerAvatarError = ref(false)
@@ -1118,15 +964,6 @@ END:VCALENDAR`
 }
 .fade-enter-from,
 .fade-leave-to {
-  opacity: 0;
-}
-
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-.modal-enter-from,
-.modal-leave-to {
   opacity: 0;
 }
 

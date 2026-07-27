@@ -10,6 +10,15 @@
 
     <!-- All Sections Stacked -->
     <div class="space-y-6">
+      <!-- Auto-fill from the category template — sits above the very sections
+           it creates (Texts, Hosts, Agenda). Self-hides once the event no
+           longer looks empty. -->
+      <PopulateFromTemplateCard
+        :event="localEventData"
+        :can-edit="canEdit"
+        @populated="handlePopulated"
+      />
+
       <!-- Brand Assets Section: Logo & Music (Category-specific: wedding, birthday, housewarming) -->
       <div v-if="props.showCategorySpecificSections">
         <div v-if="!localEventData && props.eventId" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8">
@@ -30,6 +39,7 @@
       <div v-if="props.showCategorySpecificSections && localEventData?.id">
         <EventTextTab
           ref="eventTextTabRef"
+          :key="`texts-${contentVersion}`"
           :event-id="localEventData.id"
         />
       </div>
@@ -37,6 +47,7 @@
       <!-- Hosts Section (merged from the standalone tab, all categories) -->
       <div v-if="localEventData?.id">
         <EventHostsTab
+          :key="`hosts-${contentVersion}`"
           :event-id="localEventData.id"
           :can-edit="canEdit"
           :event-category="localEventData.category_details?.name || localEventData.category_name || ''"
@@ -47,6 +58,7 @@
       <!-- Agenda Section (merged from the standalone tab, all categories) -->
       <div v-if="localEventData?.id">
         <EventAgendaTab
+          :key="`agenda-${contentVersion}`"
           :event-id="localEventData.id"
           :can-edit="canEdit"
           embedded
@@ -290,6 +302,7 @@ import EmbedsSection from './EmbedsSection.vue'
 import PaymentMethodsSection from './PaymentMethodsSection.vue'
 import DisplaySettingsSection from './DisplaySettingsSection.vue'
 import EventTextTab from './EventTextTab.vue'
+import PopulateFromTemplateCard from './PopulateFromTemplateCard.vue'
 
 interface Props {
   eventId?: string
@@ -307,6 +320,10 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   (e: 'media-updated', media: EventPhoto[]): void
   (e: 'event-updated', event: Event): void
+  /** Content was created/changed outside the normal per-section save path
+   *  (template auto-fill) — lets the live preview refresh its frames without
+   *  a fresh Event payload to hand up. */
+  (e: 'content-refreshed'): void
 }>()
 
 const { t } = useAppLanguage()
@@ -335,6 +352,16 @@ const deleting = ref(false)
 const localEventData = ref<Event | undefined>(props.eventData ? { ...props.eventData } : undefined)
 
 const canUpload = computed(() => props.canEdit && !!props.eventData && !!props.eventId)
+
+// Bumped after a template auto-fill: the Texts/Hosts/Agenda sections each load
+// their own data on mount and have no idea rows appeared underneath them, so
+// remounting them via :key is what makes the new content actually show up.
+const contentVersion = ref(0)
+
+const handlePopulated = () => {
+  contentVersion.value++
+  emit('content-refreshed')
+}
 
 // Drag and drop state
 const draggedMedia = ref<EventPhoto | null>(null)
