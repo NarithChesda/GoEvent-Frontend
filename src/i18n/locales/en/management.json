@@ -488,7 +488,8 @@
       "commentsLabel": "Comments",
       "displayToggleFailed": "Couldn't update display setting",
       "displayToggleOnHint": "{name}: shown to guests. Tap to hide.",
-      "displayToggleOffHint": "{name}: hidden from guests. Tap to show."
+      "displayToggleOffHint": "{name}: hidden from guests. Tap to show.",
+      "inlineEditFailed": "Couldn't save your change"
     }
   },
   "media": {

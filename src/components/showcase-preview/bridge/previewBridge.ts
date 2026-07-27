@@ -10,6 +10,12 @@ import type { TemplateAssets } from '@/composables/useEventShowcase'
  *   parent → frame : replay (re-run a frame's mount animation),
  *                    refresh (refetch showcase data after a parent-side save),
  *                    preview-template (live, non-destructive template try-on),
+ *                    preview-template-clear (cancel a try-on and restore the
+ *                      frame's own real template fields — purely local, no
+ *                      refetch, since the try-on never touched the backend),
+ *                    preview-template-commit (a try-on was just confirmed for
+ *                      real — the frame is already showing it correctly, so
+ *                      this only forgets the revert snapshot; no visual change),
  *                    edit-hints-on/off (persistently outline the editable
  *                      parts — the only discoverable affordance on touch,
  *                      where the hover states these normally rely on can
@@ -17,7 +23,13 @@ import type { TemplateAssets } from '@/composables/useEventShowcase'
  */
 export const PREVIEW_BRIDGE_SOURCE = 'goevent-showcase-preview'
 
-export type ParentToFrameType = 'replay' | 'refresh' | 'edit-hints-on' | 'edit-hints-off'
+export type ParentToFrameType =
+  | 'replay'
+  | 'refresh'
+  | 'preview-template-clear'
+  | 'preview-template-commit'
+  | 'edit-hints-on'
+  | 'edit-hints-off'
 
 export type PreviewBridgeMessage =
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: ParentToFrameType }

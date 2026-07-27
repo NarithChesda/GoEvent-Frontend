@@ -300,6 +300,23 @@ const agendaTabs = computed(() => {
   })
 })
 
+// Keeps the active tab valid whenever the underlying dates change — e.g. an
+// inline "change this day's date" edit moves every item in the currently-
+// viewed group to a new date string. Without this, activeTab kept pointing
+// at the OLD date, which no longer exists in agendaTabs/agendaByDate after
+// the refetch, so the moved items simply vanished from view until the page
+// was hard-refreshed (remounting re-ran what used to be a one-time onMounted
+// pick). `immediate: true` also covers that original initial-pick job, so
+// onMounted no longer needs to.
+watch(
+  agendaTabs,
+  (tabs) => {
+    if (activeTab.value !== null && tabs.includes(activeTab.value)) return
+    activeTab.value = tabs[0] ?? null
+  },
+  { immediate: true },
+)
+
 // Translatable text computed properties
 const agendaHeaderText = computed(() => getTextContent('agenda_header', 'Event Schedule'))
 
@@ -384,11 +401,8 @@ watch(isVisible, (newVal) => {
   }
 })
 
-// Select the first tab by default on mount
 onMounted(() => {
-  if (agendaTabs.value.length > 0) {
-    activeTab.value = agendaTabs.value[0]
-  }
+  // Initial tab selection is handled by the immediate agendaTabs watcher above.
   setupObserver()
 })
 

@@ -61,6 +61,8 @@ const {
   refreshShowcaseData,
   applyPreviewTemplateFallback,
   setStagedTemplatePreview,
+  clearStagedTemplatePreview,
+  commitStagedTemplatePreview,
 } = showcase
 
 const renderer = computed(() =>
@@ -91,7 +93,14 @@ if (route.query.editable === '1') {
 // Bridge commands from the parent tab: `replay` remounts the transition
 // stage's animation; `refresh` refetches after a parent-side editor save —
 // silently (no loading state), so the frame updates in place instead of
-// flashing a spinner and replaying every mount animation.
+// flashing a spinner and replaying every mount animation; `preview-template-
+// clear` cancels a live try-on by restoring this frame's own last-known real
+// template fields locally — the try-on never touched the backend, so
+// cancelling it doesn't need a refetch either; `preview-template-commit`
+// confirms a try-on that was just applied for real — this frame is already
+// showing it correctly (the modal stages a template live before Apply is
+// even clickable), so there's nothing to change here either, just the
+// revert snapshot to forget.
 const replayKey = ref(0)
 
 // Persistent edit outlines. The inline-edit/edit-region affordances are
@@ -112,6 +121,8 @@ const onFrameMessage = (msg: MessageEvent) => {
   if (parsed.type === 'replay') replayKey.value++
   if (parsed.type === 'refresh') refreshShowcaseData().then(loadPreviewTemplateFallback)
   if (parsed.type === 'preview-template') setStagedTemplatePreview(parsed.templateData)
+  if (parsed.type === 'preview-template-clear') clearStagedTemplatePreview()
+  if (parsed.type === 'preview-template-commit') commitStagedTemplatePreview()
   if (parsed.type === 'edit-hints-on') editHintsOn.value = true
   if (parsed.type === 'edit-hints-off') editHintsOn.value = false
 }
@@ -125,11 +136,10 @@ const onFrameMessage = (msg: MessageEvent) => {
 // pending template's look before paying — a no-op once template_assets is
 // already present (paid, or refreshShowcaseData got a real one back).
 //
-// Known gap: the public endpoint's `assets` doesn't include the border/frame
-// decoration fields (top/bottom/left/right decoration, cover_*_decoration,
-// guest_title_frame_*) — only the paid showcase endpoint returns those, so
-// this preview won't show edge decorations until the backend serializer adds
-// them to public_template_assets too.
+// The public endpoint's `assets` now matches the paid showcase endpoint's
+// field-for-field (border/frame decorations, guest_title_frame_* included —
+// see docs/backend-api-requirements/public-template-assets-decorations.md),
+// so this fallback is a faithful full preview, not a partial one.
 const previewTemplateId = computed(() => {
   const raw = route.query.templateId
   const value = Array.isArray(raw) ? raw[0] : raw

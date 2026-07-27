@@ -23,6 +23,35 @@ override. `template-payment` (payment/billing) stays a separate, unmerged tab; t
 panel only cross-links to it via a `go-to-payment` emit. See `TemplateStagingPanel.vue` and the
 `stagedTemplateData` handling in `ShowcasePreviewTab.vue` for the concrete wiring.
 
+**2026-07-27 — Optimistic saves, scoped refresh, local try-on revert.** Three data-flow fixes,
+prompted by the inline editor feeling slow/flickery in practice:
+1. **Optimistic inline-edit saves.** `useShowcaseEditSaves.ts`/`eventTextUpsert.ts` now mutate the
+   local `showcaseData` copy *before* awaiting the PATCH/POST/DELETE (rolling back on failure)
+   instead of after. `InlineEditableText.commit()` flips out of edit mode synchronously, so
+   mutating only on success meant the display briefly re-rendered the stale value for the
+   round-trip's duration before jumping to the new one — a flash on every save. Mutating first
+   keeps both changes in the same synchronous tick.
+2. **Refresh scoped to visible frames.** `onEditorSaved()` (parent-side editor saves — host image,
+   embeds, agenda, dress code, payment, photos) used to post `refresh` to *every* mounted frame,
+   including ones hidden by desktop's "single" focus mode or not the mobile sheet's current stage
+   — each triggering its own full showcase re-fetch. Hidden/inactive frames are now marked stale in
+   `ShowcasePreviewTab.vue` and only refetched once actually shown (`catchUpFrame`); the mobile
+   sheet reports its active stage up via a new `active-frame-changed` emit so this works there too.
+3. **Local try-on revert.** Cancelling a staged template try-on (closing the browse modal without
+   confirming, the docs above previously said this "needs no dedicated bridge message — the
+   existing `refresh` message already re-fetches real data wholesale") turned out to cost a real
+   full showcase re-fetch just to undo a client-side-only overlay. `useEventShowcase.ts` now
+   snapshots the real `template_assets`/`colors`/`fonts` the first time a try-on is staged, and a
+   new `preview-template-clear` bridge message (`clearStagedTemplatePreview`) restores that
+   snapshot locally, no request — since the try-on never touched the backend, undoing it doesn't
+   need to either.
+
+Separately verified live: the backend's `public_template_assets` gap (see
+[public-template-assets-decorations.md](../backend-api-requirements/public-template-assets-decorations.md),
+already marked done there) is confirmed fixed — the endpoint now returns the border/frame
+decoration + guest-title-frame fields matching the paid showcase endpoint field-for-field. The
+stale "known gap" comment in `ShowcasePreviewFrameView.vue` referencing this has been updated.
+
 Prerequisite reading: [SHOWCASE_LIVE_PREVIEW_EDITOR.md](SHOWCASE_LIVE_PREVIEW_EDITOR.md) — the
 implementation notes for what already shipped (iframe frames, click-to-edit text). This plan
 builds directly on that foundation and supersedes parts of its "Known gaps / next steps" section.
@@ -240,7 +269,8 @@ making that save language-aware is tracked as a follow-up.
 
 - [ ] Photo gallery full management from preview (reorder / delete / set featured)
 - [ ] Music replace/trim intent (reusing `MediaUploadsSection`'s trim editor in a drawer)
-- [ ] Toast feedback surface for inline-text save failures (gap carried from shipped doc)
+- [x] Toast feedback surface for inline-text save failures (gap carried from shipped doc;
+      closed 2026-07-27 alongside the optimistic-save fix — see note above)
 - [ ] V2 renderer (`V2PreviewFrame.vue`) + registry entry once the V2 preview approach is decided
 - [ ] Backend template-version field replaces env-based resolution, shared with the public route
 - [ ] Device-size presets for frames (390×844 is currently fixed)

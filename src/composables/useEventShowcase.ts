@@ -918,11 +918,59 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
    * Live, non-destructive template try-on: overlays another template's
    * assets/colors/fonts onto the currently loaded showcase without touching
    * the backend, even when the event already has a real active template.
-   * Revert by re-fetching (refreshShowcaseData), which replaces
-   * showcaseData wholesale and naturally wipes this override.
+   * The real (pre-try-on) fields are snapshotted the first time this is
+   * called so `clearStagedTemplatePreview` below can restore them locally —
+   * cancelling a try-on never needs to touch the network.
    */
+  let stagedPreviewSnapshot: {
+    template_assets: EventData['template_assets']
+    template_colors: EventData['template_colors']
+    template_fonts: EventData['template_fonts']
+  } | null = null
+
   const setStagedTemplatePreview = (templateData: TemplateAssets) => {
+    if (!stagedPreviewSnapshot && showcaseData.value) {
+      stagedPreviewSnapshot = {
+        template_assets: showcaseData.value.event.template_assets,
+        template_colors: showcaseData.value.event.template_colors,
+        template_fonts: showcaseData.value.event.template_fonts,
+      }
+    }
     applyPreviewTemplateFallback(templateData, { force: true })
+  }
+
+  /**
+   * Cancels a live try-on locally (no request) by restoring whatever the real
+   * template fields were before the first `setStagedTemplatePreview` call.
+   * A no-op if nothing is currently staged — e.g. the modal closed without
+   * ever picking a template.
+   */
+  const clearStagedTemplatePreview = () => {
+    if (!stagedPreviewSnapshot || !showcaseData.value) return
+    const snapshot = stagedPreviewSnapshot
+    stagedPreviewSnapshot = null
+    showcaseData.value = {
+      ...showcaseData.value,
+      event: {
+        ...showcaseData.value.event,
+        template_assets: snapshot.template_assets,
+        template_colors: snapshot.template_colors,
+        template_fonts: snapshot.template_fonts,
+      },
+    }
+    void loadFontsForCurrentLanguage()
+  }
+
+  /**
+   * A staged try-on was just confirmed for real (the event's template was
+   * actually persisted server-side) — the currently staged fields already
+   * ARE the new real state, so this only forgets the revert snapshot without
+   * touching `showcaseData`. Without this, browsing-and-cancelling a later
+   * try-on in the same frame session would incorrectly revert past the
+   * just-applied template back to whatever was staged/real before it.
+   */
+  const commitStagedTemplatePreview = () => {
+    stagedPreviewSnapshot = null
   }
 
   /**
@@ -1317,6 +1365,8 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     refreshShowcaseData,
     applyPreviewTemplateFallback,
     setStagedTemplatePreview,
+    clearStagedTemplatePreview,
+    commitStagedTemplatePreview,
     updateLanguageContent,
     loadCustomFonts: fontManager.loadCustomFonts,
     openEnvelope: stageManager.openEnvelope,
