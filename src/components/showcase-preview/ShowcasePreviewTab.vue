@@ -33,6 +33,7 @@
             hide-header
             @media-updated="onMediaUpdated"
             @event-updated="onEditorSaved"
+            @content-refreshed="onEditorSaved()"
           />
         </div>
       </div>
@@ -190,7 +191,7 @@
           v-if="canViewLivePreview && event?.id && !loading"
           type="button"
           class="studio-preview-btn"
-          @click="mobilePreviewOpen = true"
+          @click="openMobilePreview"
         >
           <Eye class="w-4 h-4 flex-shrink-0" />
           <span>{{ t('management.showcasePreview.mobilePreview.open') }}</span>
@@ -220,6 +221,7 @@
             hide-header
             @media-updated="onMediaUpdated"
             @event-updated="onEditorSaved"
+            @content-refreshed="onEditorSaved()"
           />
         </div>
 
@@ -342,7 +344,7 @@
       :activation-state="activationResolved ? activationState : undefined"
       :staged-template="stagedTemplateData"
       :register-frame="setFrameRef"
-      @close="mobilePreviewOpen = false"
+      @close="closeMobilePreview"
       @cycle-language="cycleLanguage"
       @activate="showPaymentDrawer = true"
     />
@@ -390,6 +392,7 @@ import { onMounted, computed, ref, nextTick, watch, inject, type Ref } from 'vue
 import { Smartphone, LayoutGrid, ChevronLeft, ChevronRight, Palette, Languages, Eye } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useMediaQuery } from '@/composables/useMediaQuery'
+import { useHistoryOverlay } from '@/composables/useHistoryOverlay'
 import { useEventShowcase, type TemplateAssets } from '@/composables/useEventShowcase'
 import type { Event, EventPhoto, EventTemplate } from '@/services/api'
 import { eventTemplateService } from '@/services/api'
@@ -586,13 +589,27 @@ const cycleLanguage = () => {
 // ---------------------------------------------------------------------------
 const isMobileStudio = useMediaQuery('(max-width: 1023px)')
 
-const mobilePreviewOpen = ref(false)
+// The sheet is a full-screen surface, so it reads as a page — which makes the
+// hardware back button read as "close it". Backing it with a history entry
+// makes that true; otherwise back would tear down the whole manage page from
+// under it. Also makes the open sheet survive a reload.
+const {
+  isOpen: mobilePreviewOpen,
+  open: openMobilePreview,
+  close: closeMobilePreview,
+} = useHistoryOverlay('preview')
 
 // Crossing back to desktop makes the sheet redundant (the frames are on the
 // page again) and would otherwise leave `body { overflow: hidden }` behind.
-watch(isMobileStudio, (mobile) => {
-  if (!mobile) mobilePreviewOpen.value = false
-})
+// Immediate because the same is true of landing on desktop with the sheet's
+// flag already in the URL — a link shared from a phone, or a rotated tablet.
+watch(
+  isMobileStudio,
+  (mobile) => {
+    if (!mobile) closeMobilePreview()
+  },
+  { immediate: true },
+)
 
 // ---------------------------------------------------------------------------
 // Content panel positioning: the panel is a true extension of

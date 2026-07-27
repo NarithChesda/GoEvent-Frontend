@@ -501,6 +501,10 @@ const error = ref<string | null>(null)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 // Initialize activeTab from URL query parameter or default to 'overview'
 const activeTab = ref((route.query.tab as string) || 'overview')
+// The tab this visit started on — the "start destination" the back button
+// returns to before leaving the page (see the activeTab watcher below).
+const landingTab = activeTab.value
+let tabEntryPushed = false
 const activeSubTab = ref<string>('')
 const guestManagementSubTab = ref<string>('guests')
 const expenseTrackingSubTab = ref<string>('summary')
@@ -1076,21 +1080,38 @@ watch(
   { immediate: true }
 )
 
-// Watch activeTab and update URL query parameter for tab persistence
+// Watch activeTab and update URL query parameter for tab persistence.
+//
+// The first switch away from the tab the user landed on pushes a history entry;
+// every switch after that replaces. That's the bottom-tab-bar convention: back
+// returns to the start destination, then leaves the page — it does not walk
+// back through every tab visited. Capping it at one entry is what keeps that
+// true, otherwise escaping the page after browsing eight tabs would take eight
+// back presses.
 watch(activeTab, (newTab) => {
-  // Update URL query parameter without triggering navigation
-  router.replace({
-    query: { ...route.query, tab: newTab }
-  })
+  // Already in sync — we got here from the URL (a back press), not a tab click.
+  if (route.query.tab === newTab) return
+
+  const query = { ...route.query, tab: newTab }
+  if (!tabEntryPushed && newTab !== landingTab) {
+    tabEntryPushed = true
+    router.push({ query })
+  } else {
+    router.replace({ query })
+  }
 })
 
 // Watch route.query.tab to sync activeTab when user uses browser back/forward
 watch(
   () => route.query.tab,
   (newTab) => {
-    if (newTab && typeof newTab === 'string' && newTab !== activeTab.value) {
-      activeTab.value = newTab
-    }
+    // Falling back to the landing tab matters when that tab came from the
+    // bare URL: back to it drops the param entirely rather than setting it,
+    // and the tab would otherwise stay on whatever the user last opened.
+    const tab = typeof newTab === 'string' && newTab ? newTab : landingTab
+    // Back at the start destination, so the next tab switch pushes again.
+    if (tab === landingTab) tabEntryPushed = false
+    if (tab !== activeTab.value) activeTab.value = tab
   }
 )
 
