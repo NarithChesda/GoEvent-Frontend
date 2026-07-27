@@ -1673,18 +1673,10 @@
     },
     "statsCard": {
       "invitedGuests": "ភ្ញៀវដែលបានអញ្ជើញ",
-      "summaryLine": "អញ្ជើញ {total} នាក់ · បានផ្ញើ {sent}",
-      "totalAudienceDesc": "អ្នកចូលរួមសរុបដែលអ្នកកំពុងជូនដំណឹង។",
-      "sent": "បានផ្ញើ",
+      "invited": "បានអញ្ជើញ",
       "viewed": "បានមើល",
-      "viewedDesc": "បានចូលរួមជាមួយការអញ្ជើញរបស់ពួកគេរួចហើយ។",
-      "viewedShort": "បានចូលរួម",
       "awaiting": "កំពុងរង់ចាំ",
-      "awaitingDesc": "មិនទាន់បើកការអញ្ជើញរបស់ពួកគេ។",
-      "awaitingShort": "មិនទាន់បើក",
-      "pending": "នៅមិនទាន់ផ្ញើ",
-      "pendingDesc": "នៅតែរង់ចាំទទួលការអញ្ជើញ។",
-      "pendingShort": "មិនទាន់ផ្ញើ"
+      "pending": "នៅមិនទាន់ផ្ញើ"
     },
     "addGuestModal": {
       "title": "នាំចូលភ្ញៀវ",

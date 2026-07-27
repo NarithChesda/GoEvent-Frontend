@@ -1673,18 +1673,10 @@
     },
     "statsCard": {
       "invitedGuests": "Invited Guests",
-      "summaryLine": "{total} invited · {sent} sent",
-      "totalAudienceDesc": "Total audience you're keeping in the loop.",
-      "sent": "sent",
+      "invited": "Invited",
       "viewed": "Viewed",
-      "viewedDesc": "Already engaged with their invite.",
-      "viewedShort": "Engaged",
       "awaiting": "Awaiting",
-      "awaitingDesc": "Haven't opened their invitation yet.",
-      "awaitingShort": "Not opened",
-      "pending": "Pending",
-      "pendingDesc": "Still waiting to receive an invite.",
-      "pendingShort": "Not sent"
+      "pending": "Pending"
     },
     "addGuestModal": {
       "title": "Import Guests",
