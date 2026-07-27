@@ -111,6 +111,16 @@ export interface EventPhoto {
   order: number
   is_featured: boolean
   created_at: string
+  /**
+   * Organizer-chosen crop rectangle, in percentages of the source image, used
+   * when the photo is displayed full-screen (the transition stage's featured
+   * photo). All four absent = the whole image = a plain centre crop.
+   * See src/utils/photoCrop.ts.
+   */
+  crop_x?: number | null
+  crop_y?: number | null
+  crop_width?: number | null
+  crop_height?: number | null
 }
 
 export interface EventComment {

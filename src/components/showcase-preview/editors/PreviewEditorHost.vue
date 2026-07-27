@@ -50,6 +50,7 @@
   <FeaturedPhotoModal
     v-model="featuredPhotoOpen"
     :event-id="eventId"
+    :initial-focus="featuredPhotoFocus"
     @saved="onFeaturedPhotoSaved"
     @upload-requested="onFeaturedPhotoUploadRequested"
   />
@@ -250,6 +251,9 @@ const closePhotos = () => {
 
 // --- Featured photo (transition stage) --------------------------------------
 const featuredPhotoOpen = ref(false)
+/** Which tab the picker opens on — the stage has one affordance for swapping
+ *  the photo and another for re-framing its crop. */
+const featuredPhotoFocus = ref<'choose' | 'crop'>('choose')
 
 const onFeaturedPhotoSaved = () => emit('saved')
 
@@ -536,6 +540,7 @@ const handleIntent = (intent: EditIntent) => {
       photosOpen.value = true
       break
     case 'featuredPhoto':
+      featuredPhotoFocus.value = intent.focus ?? 'choose'
       featuredPhotoOpen.value = true
       break
     case 'agendaItem':
