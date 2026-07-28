@@ -305,6 +305,7 @@
                   :src="frameUrl(frame)"
                   :interactive="frame.editable && canEdit"
                   :click-message="frame.clickMessage"
+                  @ready="onFrameReady(frame.id)"
                 />
               </PreviewFrame>
               <!-- Multiple mode: skip entirely rather than rendering this note —
@@ -859,6 +860,23 @@ let suppressNextStageClear = false
 const handleTemplateStaged = (templateData: TemplateAssets) => {
   stagedTemplateData.value = templateData
   for (const frame of frameRefs.values()) frame.postTemplatePreview(templateData)
+}
+
+// Staging can make a frame appear that wasn't there a moment ago: the frame
+// LIST is derived from the staged template's own stage layout (see
+// rendererContext), so trying on a basic template while a standard one is
+// applied adds the Transition frame — and trying on a standard template adds
+// the Event Video frame. Those frames mount as a RESULT of the broadcast above,
+// which iterated the frames that existed when it ran, so they never received
+// the try-on and loaded the still-applied template's real data instead: the new
+// frame rendered in the old template's colours and stayed that way until a full
+// page reload. Catching them on their bridge handshake covers that — and it has
+// to be the handshake rather than the iframe's `load` event, which fires too
+// early to be heard (see postFrameReadyToParent). Harmless for frames that were
+// already up: the frame side just re-applies the same staged data over itself.
+const onFrameReady = (id: string) => {
+  if (!stagedTemplateData.value) return
+  frameRefs.get(id)?.postTemplatePreview(stagedTemplateData.value)
 }
 
 // Only the frame(s) actually on screen right now need the real data back

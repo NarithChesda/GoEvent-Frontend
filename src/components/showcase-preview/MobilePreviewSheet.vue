@@ -29,7 +29,7 @@
               :src="frameSrc(frame)"
               :interactive="frame.editable && canEdit"
               :click-message="frame.clickMessage"
-              @loaded="onFrameLoaded(frame.id)"
+              @ready="onFrameReady(frame.id)"
             />
           </div>
         </div>
@@ -273,8 +273,10 @@ const toggleHints = () => {
 }
 
 // Frames mount only while the sheet is open, so a staged (tried-on but
-// unapplied) template has to be re-pushed as each one loads.
-const onFrameLoaded = (id: string) => {
+// unapplied) template has to be re-pushed as each one comes up — on its bridge
+// handshake, not the iframe's `load` event, which fires before anything in the
+// frame is listening (see postFrameReadyToParent).
+const onFrameReady = (id: string) => {
   const frame = frameInstances.get(id)
   if (!frame) return
   if (props.stagedTemplate) frame.postTemplatePreview(props.stagedTemplate)
