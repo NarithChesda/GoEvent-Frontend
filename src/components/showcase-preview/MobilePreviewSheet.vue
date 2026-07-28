@@ -29,7 +29,7 @@
               :src="frameSrc(frame)"
               :interactive="frame.editable && canEdit"
               :click-message="frame.clickMessage"
-              @loaded="onFrameLoaded(frame.id)"
+              @ready="onFrameReady(frame.id)"
             />
           </div>
         </div>
@@ -168,7 +168,7 @@
  * are one icon-only pill that dims itself when idle.
  */
 import { computed, onUnmounted, ref, watch, type Component } from 'vue'
-import { BookOpen, DoorOpen, Layers, Pencil, ScrollText, Sparkles, TriangleAlert, X } from 'lucide-vue-next'
+import { BookOpen, Clapperboard, DoorOpen, Layers, Pencil, ScrollText, Sparkles, TriangleAlert, X } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import InertIframe from './InertIframe.vue'
 import type { PreviewFrameDescriptor } from './renderers/resolvePreviewRenderer'
@@ -240,6 +240,7 @@ watch(activeId, (id) => emit('active-frame-changed', id), { immediate: true })
 const STAGE_ICONS: Record<string, Component> = {
   cover: BookOpen,
   transition: DoorOpen,
+  event_video: Clapperboard,
   main: ScrollText,
 }
 
@@ -272,8 +273,10 @@ const toggleHints = () => {
 }
 
 // Frames mount only while the sheet is open, so a staged (tried-on but
-// unapplied) template has to be re-pushed as each one loads.
-const onFrameLoaded = (id: string) => {
+// unapplied) template has to be re-pushed as each one comes up — on its bridge
+// handshake, not the iframe's `load` event, which fires before anything in the
+// frame is listening (see postFrameReadyToParent).
+const onFrameReady = (id: string) => {
   const frame = frameInstances.get(id)
   if (!frame) return
   if (props.stagedTemplate) frame.postTemplatePreview(props.stagedTemplate)

@@ -97,7 +97,12 @@
     </div>
 
     <!-- Floating bokeh particles in template accent color -->
-    <div class="bokeh-field" :class="{ 'show': isCouplePhotoVisible }" aria-hidden="true">
+    <div
+      class="bokeh-field"
+      :class="{ 'show': isCouplePhotoVisible }"
+      :style="{ '--bokeh-accent': bokehAccentColor }"
+      aria-hidden="true"
+    >
       <span
         v-for="particle in bokehParticles"
         :key="particle.id"
@@ -275,8 +280,14 @@ interface BokehParticle {
 
 const bokehParticles = ref<BokehParticle[]>([])
 
+// Only the randomized geometry is frozen at reveal time — the colour is left to
+// a CSS var set on the field so it stays live. The manage-page preview can swap
+// the template underneath an already-revealed stage (trying one on from the
+// Templates modal), and baking the accent into each particle at generate time
+// left the sparkles glowing in the previous template's colour until remount.
+const bokehAccentColor = computed(() => props.accentColor || props.primaryColor || '#ffffff')
+
 const generateBokeh = () => {
-  const color = props.accentColor || props.primaryColor || '#ffffff'
   const particles: BokehParticle[] = []
   const count = 14
   for (let i = 0; i < count; i++) {
@@ -284,7 +295,7 @@ const generateBokeh = () => {
     particles.push({
       id: i,
       style: {
-        '--bokeh-color': i % 3 === 0 ? '#ffffff' : color,
+        '--bokeh-color': i % 3 === 0 ? '#ffffff' : 'var(--bokeh-accent)',
         left: `${Math.random() * 100}%`,
         bottom: `${-5 + Math.random() * 55}%`,
         width: `${size}px`,

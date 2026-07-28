@@ -11,6 +11,9 @@ export interface PreviewFrameContext {
   event: {
     category_details?: { name?: string } | null
     category_name?: string | null
+    /** Gates the standard-mode Event Video frame — that stage only exists once
+     *  the organizer has actually uploaded a video (see isStandardShowcase). */
+    event_video?: string | null
   }
   templateAssets: { standard_cover_video?: string | null } | null
   hasFeaturedPhoto: boolean
@@ -65,6 +68,19 @@ export function isBasicWeddingShowcase(ctx: PreviewFrameContext): boolean {
   return isBasicMode && categoryName === 'wedding'
 }
 
+/**
+ * "Standard mode" is CoverStage's own definition — the template ships a
+ * `standard_cover_video`. Standard templates have no transition stage at all:
+ * the middle beat of the guest flow is the organizer's own event video playing
+ * full screen (cover → event video → background video + main content, see
+ * openEnvelopeWithVideoSync in EventShowcaseRefactored.vue). Unlike the
+ * transition stage this isn't wedding-only — every category on a standard
+ * template gets it.
+ */
+export function isStandardShowcase(ctx: PreviewFrameContext): boolean {
+  return !!ctx.templateAssets?.standard_cover_video
+}
+
 const V1_RENDERER: PreviewRendererDescriptor = {
   id: 'v1',
   FrameComponent: V1PreviewFrame,
@@ -86,6 +102,22 @@ const V1_RENDERER: PreviewRendererDescriptor = {
       isVisible: (ctx) => isBasicWeddingShowcase(ctx) && (ctx.hasFeaturedPhoto || !!ctx.canEdit),
       isApplicable: isBasicWeddingShowcase,
       hiddenNoteKey: 'management.showcasePreview.transitionNotUsed',
+    },
+    {
+      // Standard mode's counterpart to the transition stage. Mutually
+      // exclusive with it by construction — `standard_cover_video` is exactly
+      // what makes a template standard rather than basic — so the two never
+      // both show, and neither shows a hidden-note for the other's templates.
+      id: 'event_video',
+      labelKey: 'management.showcasePreview.eventVideoLabel',
+      // Nothing on this stage is inline-editable (it's one full-bleed video),
+      // and staying non-editable keeps InertIframe's click shield, which is
+      // what turns a click into the `replay` command below.
+      editable: false,
+      clickMessage: 'replay',
+      isVisible: (ctx) => isStandardShowcase(ctx) && !!ctx.event.event_video,
+      isApplicable: isStandardShowcase,
+      hiddenNoteKey: 'management.showcasePreview.eventVideoNotSet',
     },
     {
       id: 'main',

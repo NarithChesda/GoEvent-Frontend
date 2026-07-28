@@ -8,6 +8,7 @@
        redirect manager's "already seen main content" heuristic. -->
   <CoverStage
     v-if="stage === 'cover' || stage === 'main'"
+    :key="videoPipelineKey"
     :template-assets="templateAssets"
     :template-colors="templateColors"
     :guest-name="guestName"
@@ -86,6 +87,15 @@
     </template>
   </CoverStage>
 
+  <!-- Standard templates' middle stage (see the frame registry): the transition
+       stage never runs for them, the event video does. -->
+  <V1EventVideoStage
+    v-else-if="stage === 'event_video'"
+    :event-video-url="eventVideoUrl"
+    :primary-color="primaryColor"
+    :replay-key="replayKey"
+  />
+
   <TransitionStage
     v-else-if="stage === 'transition'"
     :key="replayKey"
@@ -121,6 +131,7 @@ import { computed } from 'vue'
 import type { useEventShowcase } from '@/composables/useEventShowcase'
 import { isBasicWeddingShowcase } from './resolvePreviewRenderer'
 import CoverStage from '@/components/showcase/CoverStage.vue'
+import V1EventVideoStage from './V1EventVideoStage.vue'
 import TransitionStage from '@/components/showcase/TransitionStage.vue'
 import MainContentStage from '@/components/showcase/MainContentStage.vue'
 import PhotoModal from '@/components/showcase/PhotoModal.vue'
@@ -177,6 +188,25 @@ const {
   changeLanguage,
   toggleMusic,
 } = props.showcase
+
+// useCoverStageVideo takes a one-off SNAPSHOT of its video URLs at CoverStage's
+// setup and never re-reads them (the object CoverStage hands it is built from
+// plain prop reads, not a reactive source). In the live showcase that's fine —
+// the showcase endpoint delivers template_assets with the very first response.
+// Here it isn't: the studio backfills an unpaid template's assets from the
+// public endpoint AFTER the first load, and the Templates modal stages a
+// candidate template into an already-mounted frame. Either way the URLs arrive
+// late, and the video pipeline would stay pinned to the empty snapshot — a
+// standard template's background video simply never plays. Remounting when the
+// URLs actually change re-initializes it with the real ones. Content-only saves
+// don't touch these, so this doesn't reintroduce reload-on-every-edit.
+const videoPipelineKey = computed(() =>
+  [
+    eventVideoUrl.value || '',
+    backgroundVideoUrl.value || '',
+    event.value?.template_assets?.assets?.standard_cover_video || '',
+  ].join('|'),
+)
 
 // Same template-capability check EventShowcaseRefactored.vue uses — tells
 // CoverStage whether the basic-mode decoration background should persist.

@@ -775,6 +775,15 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
           console.warn('Font loading failed, falling back to system fonts:', fontError)
         })
 
+      // A template try-on that arrived before there was anything to overlay it
+      // onto (see pendingStagedPreview). Replayed last so its own font load
+      // supersedes the real template's above, and early enough that the
+      // preview frame's `loadShowcase().then(loadPreviewTemplateFallback)`
+      // chain sees template_assets already filled and stands down.
+      if (pendingStagedPreview) {
+        setStagedTemplatePreview(pendingStagedPreview)
+      }
+
       // Clear language change flags after successful showcase load
       setTimeout(() => {
         redirectManager.clearLanguageChangeFlags()
@@ -841,6 +850,12 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
         }
       } else {
         showcaseData.value = data
+      }
+
+      // Re-overlay a committed (applied but not yet paid for) template that the
+      // server just answered without — see committedPreviewTemplate.
+      if (committedPreviewTemplate && !showcaseData.value.event.template_assets) {
+        applyPreviewTemplateFallback(committedPreviewTemplate, { force: true })
       }
     } catch (err: unknown) {
       // A failed background refresh keeps showing the current (stale) data —
@@ -928,8 +943,24 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     template_fonts: EventData['template_fonts']
   } | null = null
 
+  /**
+   * A try-on pushed in before this instance had any showcase data to overlay it
+   * onto. The preview tab posts a staged template into a frame the moment the
+   * iframe's `load` event fires, and that event doesn't wait on the frame's own
+   * showcase request — so on a fast API the push can land first, and
+   * applyPreviewTemplateFallback would drop it on the floor (it bails without
+   * `showcaseData`), leaving that frame showing the applied template forever.
+   * Held here instead and replayed by loadShowcase once there's data.
+   */
+  let pendingStagedPreview: TemplateAssets | null = null
+
   const setStagedTemplatePreview = (templateData: TemplateAssets) => {
-    if (!stagedPreviewSnapshot && showcaseData.value) {
+    if (!showcaseData.value) {
+      pendingStagedPreview = templateData
+      return
+    }
+    pendingStagedPreview = null
+    if (!stagedPreviewSnapshot) {
       stagedPreviewSnapshot = {
         template_assets: showcaseData.value.event.template_assets,
         template_colors: showcaseData.value.event.template_colors,
@@ -946,6 +977,9 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
    * ever picking a template.
    */
   const clearStagedTemplatePreview = () => {
+    // Cancelling also cancels a try-on still waiting on the initial load —
+    // otherwise it would be applied after the user already backed out of it.
+    pendingStagedPreview = null
     if (!stagedPreviewSnapshot || !showcaseData.value) return
     const snapshot = stagedPreviewSnapshot
     stagedPreviewSnapshot = null
@@ -962,6 +996,22 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
   }
 
   /**
+   * The template look a committed try-on left in place, so `refreshShowcaseData`
+   * can put it back.
+   *
+   * A just-applied template is almost always still unpaid, and the showcase
+   * endpoint nulls `template_assets` until payment confirms — so every silent
+   * refresh (i.e. every content save) hands back an event with no template at
+   * all. The frame's own id-keyed fallback can't recover it either: that id is
+   * baked into the frame's URL, which deliberately never changes on an applied
+   * template (changing an iframe's `src` reloads it), so it still names the
+   * PREVIOUS template. Without this the preview snapped back to the old
+   * template's assets and colours on the first save after switching, and only a
+   * full page reload brought the new one back.
+   */
+  let committedPreviewTemplate: TemplateAssets | null = null
+
+  /**
    * A staged try-on was just confirmed for real (the event's template was
    * actually persisted server-side) — the currently staged fields already
    * ARE the new real state, so this only forgets the revert snapshot without
@@ -971,6 +1021,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
    */
   const commitStagedTemplatePreview = () => {
     stagedPreviewSnapshot = null
+    committedPreviewTemplate = showcaseData.value?.event.template_assets ?? null
   }
 
   /**

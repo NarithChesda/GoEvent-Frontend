@@ -28,6 +28,7 @@ import { InlineEditKey, EditIntentKey } from '@/components/showcase-preview/edit
 import {
   parsePreviewBridgeMessage,
   postEditIntentToParent,
+  postFrameReadyToParent,
 } from '@/components/showcase-preview/bridge/previewBridge'
 import { resolvePreviewRenderer } from '@/components/showcase-preview/renderers/resolvePreviewRenderer'
 import LoadingSpinner from '@/components/showcase/LoadingSpinner.vue'
@@ -165,6 +166,12 @@ const loadPreviewTemplateFallback = async () => {
 
 onMounted(() => {
   window.addEventListener('message', onFrameMessage)
+  // Strictly after the listener above, and deliberately before loadShowcase:
+  // a `preview-template` that beats the data is held by the composable and
+  // replayed once there is something to overlay it onto (pendingStagedPreview),
+  // so announcing early costs nothing and closes the window in which the parent
+  // has state to hand over but nothing here can hear it.
+  postFrameReadyToParent()
   loadShowcase().then(loadPreviewTemplateFallback)
 })
 
