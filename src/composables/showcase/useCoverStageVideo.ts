@@ -620,6 +620,10 @@ export function useCoverStageVideo(
     }
   }
 
+  // Guards the one deferred retry below so a genuinely absent element can't
+  // schedule an unbounded nextTick loop.
+  let backgroundPlayDeferred = false
+
   const playBackgroundVideo = () => {
     if (!props.backgroundVideoUrl) {
       // No background video, just keep the event video frozen
@@ -628,7 +632,21 @@ export function useCoverStageVideo(
 
     const bgVideo = videoRefs.backgroundVideoElement()
     if (!bgVideo) {
-      // No background video element available
+      // Called before VideoContainer mounted. This composable is created — and
+      // initializeVideoState plus the immediate watchers below all run — during
+      // CoverStage's setup, so any stage that STARTS past the cover asks to play
+      // a <video> that doesn't exist yet, and the request was previously dropped
+      // on the floor: the manage-page preview's Main Content frame (forced
+      // straight to `main_content`) and a returning guest skipped past the cover
+      // both ended up showing the main content over the bare primary colour with
+      // no background video behind it. Retry once the refs are populated.
+      if (!backgroundPlayDeferred) {
+        backgroundPlayDeferred = true
+        nextTick(() => {
+          backgroundPlayDeferred = false
+          playBackgroundVideo()
+        })
+      }
       return
     }
 

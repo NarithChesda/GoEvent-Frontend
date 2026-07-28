@@ -168,7 +168,7 @@
  * are one icon-only pill that dims itself when idle.
  */
 import { computed, onUnmounted, ref, watch, type Component } from 'vue'
-import { BookOpen, DoorOpen, Layers, Pencil, ScrollText, Sparkles, TriangleAlert, X } from 'lucide-vue-next'
+import { BookOpen, Clapperboard, DoorOpen, Layers, Pencil, ScrollText, Sparkles, TriangleAlert, X } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import InertIframe from './InertIframe.vue'
 import type { PreviewFrameDescriptor } from './renderers/resolvePreviewRenderer'
@@ -240,6 +240,7 @@ watch(activeId, (id) => emit('active-frame-changed', id), { immediate: true })
 const STAGE_ICONS: Record<string, Component> = {
   cover: BookOpen,
   transition: DoorOpen,
+  event_video: Clapperboard,
   main: ScrollText,
 }
 
