@@ -552,12 +552,13 @@
       },
       "banner": {
         "title": "Event Banner",
-        "description": "The main banner image shown at the top of your event page. For best results, use 1200x630px (1.9:1 ratio)",
+        "description": "Shown on your event card and in the link preview when your event is shared on messaging apps. For best results, upload at least 1920x1005px (1.91:1 ratio)",
         "empty": "No banner uploaded",
         "deleteTitle": "Delete Event Banner",
         "crop": "Crop",
         "cropperTitle": "Crop Banner Image",
-        "cropperHelpText": "Adjust the crop area to frame your banner image (1200x630px ratio)"
+        "cropperHelpText": "Scroll or pinch to zoom, drag to reposition. Keep faces and text inside the dashed square — some messaging apps crop the preview down to it. The shaded band along the bottom is covered by the event title.",
+        "prepareFailed": "Could not read that image. Please try a different file."
       },
       "row": {
         "ariaLabel": "Edit {name}",

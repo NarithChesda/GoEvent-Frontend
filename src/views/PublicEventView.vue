@@ -57,7 +57,7 @@
       <!-- Main Content -->
       <div class="max-w-3xl mx-auto px-4 py-6 md:py-8">
         <!-- Banner Image -->
-        <div v-if="event.banner_image" class="relative w-full mb-6 rounded-2xl overflow-hidden shadow-lg" style="aspect-ratio: 1200 / 630;">
+        <div v-if="event.banner_image" class="relative w-full mb-6 rounded-2xl overflow-hidden shadow-lg aspect-banner">
           <img
             :src="getBannerUrl(event.banner_image)"
             :alt="event.title"
@@ -589,6 +589,7 @@ import PublicDonationForm from '../components/PublicDonationForm.vue'
 import { useAuthStore } from '../stores/auth'
 import { apiClient } from '../services/api'
 import { extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
+import { BANNER_WIDTHS, getBannerUrl as resolveBannerUrl } from '@/utils/mediaUrl'
 import type { EventAgendaItem } from '../services/api/types/event.types'
 
 const route = useRoute()
@@ -983,16 +984,8 @@ const showMessage = (type: 'success' | 'error', text: string) => {
 }
 
 // URL helpers
-const getBannerUrl = (bannerImage: string): string => {
-  if (bannerImage.startsWith('http://') || bannerImage.startsWith('https://')) {
-    return bannerImage
-  }
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-  if (bannerImage.startsWith('/')) {
-    return `${API_BASE_URL}${bannerImage}`
-  }
-  return `${API_BASE_URL}/media/${bannerImage}`
-}
+const getBannerUrl = (bannerImage: string): string =>
+  resolveBannerUrl(bannerImage, BANNER_WIDTHS.page) ?? ''
 
 const getProfileUrl = (profileImage: string): string => {
   return apiClient.getProfilePictureUrl(profileImage) || ''

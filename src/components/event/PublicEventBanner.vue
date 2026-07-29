@@ -1,10 +1,9 @@
 <template>
   <div class="relative">
-    <!-- Banner Image -->
-    <div
-      class="relative w-full"
-      :style="isFundraising ? 'aspect-ratio: 16/9;' : 'aspect-ratio: 1200 / 630;'"
-    >
+    <!-- Banner Image. One ratio for every event type: fundraisers used to
+         render 16/9, which re-cropped a banner the host had already framed
+         against the 1.91:1 stencil. -->
+    <div class="relative w-full aspect-banner">
       <img
         v-if="!fallbackError"
         :src="bannerSrc"

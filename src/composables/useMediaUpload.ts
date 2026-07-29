@@ -83,11 +83,21 @@ export function useMediaUpload(
   const hasActiveUpload = computed(() => Object.values(uploading.value).some(Boolean))
 
   /**
-   * Validate a file against media type constraints
+   * Validate a file against media type constraints.
+   *
+   * `checkSize` can be disabled by callers that re-encode the file client-side
+   * before uploading (the banner cropper, which always emits a fixed-size
+   * image). For those, the source file's size says nothing about what actually
+   * gets sent, so rejecting a large original is pure user-hostility.
    */
-  const validateFile = (file: File, type: MediaType): ValidationResult => {
+  const validateFile = (
+    file: File,
+    type: MediaType,
+    options: { checkSize?: boolean } = {},
+  ): ValidationResult => {
     error.value = null
 
+    const { checkSize = true } = options
     const config = MEDIA_TYPE_CONFIGS[type]
 
     if (!config) {
@@ -102,13 +112,21 @@ export function useMediaUpload(
     }
 
     // Validate file size
-    if (file.size > config.maxSize) {
+    if (checkSize && file.size > config.maxSize) {
       const errorMsg = `File too large. Maximum size is ${config.maxSizeMB}MB.`
       error.value = errorMsg
       return { valid: false, error: errorMsg }
     }
 
     return { valid: true }
+  }
+
+  /**
+   * Surface an error raised by a caller's own pre-upload processing, so it
+   * renders in the same place as upload errors.
+   */
+  const setError = (message: string) => {
+    error.value = message
   }
 
   /**
@@ -242,6 +260,7 @@ export function useMediaUpload(
     uploadMedia,
     removeMedia,
     handleFileUpload,
-    clearError
+    clearError,
+    setError
   }
 }

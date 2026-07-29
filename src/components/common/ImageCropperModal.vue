@@ -22,11 +22,16 @@
 
             <!-- Cropper Content -->
             <div class="p-6">
-              <div v-if="imageSource" class="bg-slate-100 rounded-lg overflow-hidden" :style="{ height: cropperHeight }">
+              <div
+                v-if="imageSource"
+                class="bg-slate-100 rounded-lg overflow-hidden"
+                :style="{ height: cropperHeight, ...safeZoneVars }"
+              >
                 <Cropper
                   ref="cropperRef"
                   :src="imageSource"
                   :stencil-props="stencilProps"
+                  :image-restriction="imageRestriction"
                   class="h-full w-full"
                   @error="handleCropperError"
                   @ready="handleCropperReady"
@@ -83,6 +88,26 @@ interface Props {
   aspectRatio?: number
   cropperHeight?: string
   helpText?: string
+  /**
+   * Draw framing guides inside the crop box. Off by default — only the event
+   * banner needs them, because it is the one crop whose output gets re-cropped
+   * by consumers we don't control (messaging-app link previews) and overlaid
+   * with text by consumers we do (PublicEventBanner's title gradient).
+   */
+  safeZones?: boolean
+  /** Share of the crop height covered by a title/gradient overlay downstream. */
+  safeZoneBottomPercent?: number
+  /**
+   * How far the image may be zoomed out / panned relative to the crop box.
+   *
+   * `fill-area` (vue-advanced-cropper's default) forces the image to cover the
+   * whole cropper viewport, so a portrait or square source can never be zoomed
+   * out far enough to show all of itself — the edges are simply unreachable.
+   * `stencil` only requires the image to cover the crop box itself, which is
+   * the freedom most people expect while still guaranteeing the result has no
+   * empty regions.
+   */
+  imageRestriction?: 'fill-area' | 'fit-area' | 'stencil' | 'none'
 }
 
 interface Emits {
@@ -96,6 +121,11 @@ const props = withDefaults(defineProps<Props>(), {
   aspectRatio: 1,
   cropperHeight: '400px',
   helpText: '',
+  safeZones: false,
+  safeZoneBottomPercent: 35,
+  // Unchanged for existing callers (host photos, payment QR, profile pictures);
+  // the banner opts into `stencil`.
+  imageRestriction: 'fill-area',
 })
 
 const emit = defineEmits<Emits>()
@@ -106,7 +136,22 @@ const isCropperReady = ref(false)
 
 const stencilProps = computed(() => ({
   aspectRatio: props.aspectRatio,
+  ...(props.safeZones ? { previewClass: 'crop-safe-zones' } : {}),
 }))
+
+/**
+ * Horizontal inset of the centred square guide, as a share of the crop width.
+ * A 1:1 centre crop of an `aspectRatio`-wide box keeps `1 / aspectRatio` of the
+ * width, so each side loses half the remainder.
+ */
+const safeZoneVars = computed(() => {
+  if (!props.safeZones) return {}
+  const squareInset = Math.max(0, (1 - 1 / props.aspectRatio) / 2) * 100
+  return {
+    '--safe-square-inset': `${squareInset.toFixed(2)}%`,
+    '--safe-bottom': `${props.safeZoneBottomPercent}%`,
+  }
+})
 
 const handleCropperError = (error: any) => {
   console.error('Cropper error:', error)
@@ -162,5 +207,43 @@ watch(
 .modal-leave-to {
   opacity: 0;
   transform: scale(0.9);
+}
+
+/* Framing guides drawn inside the stencil preview (opt-in via `safeZones`).
+   `.crop-safe-zones` is rendered by vue-advanced-cropper's stencil, so it has
+   to be reached with :deep() from here. The CSS vars are set on the cropper
+   wrapper above and inherit down to it. */
+:deep(.crop-safe-zones)::before,
+:deep(.crop-safe-zones)::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Centre square — the only region guaranteed to survive a 1:1 re-crop
+   (WhatsApp's small preview, Twitter's summary card, some Android
+   notification previews). Faces and text belong inside it. */
+:deep(.crop-safe-zones)::before {
+  top: 0;
+  bottom: 0;
+  left: var(--safe-square-inset, 0%);
+  right: var(--safe-square-inset, 0%);
+  border-left: 1px dashed rgba(255, 255, 255, 0.9);
+  border-right: 1px dashed rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(to right, rgba(15, 23, 42, 0.25), transparent 12px),
+    linear-gradient(to left, rgba(15, 23, 42, 0.25), transparent 12px);
+}
+
+/* Bottom band — mirrors the title/organizer gradient that
+   PublicEventBanner.vue lays over the banner at render time. */
+:deep(.crop-safe-zones)::after {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--safe-bottom, 35%);
+  border-top: 1px dashed rgba(255, 255, 255, 0.55);
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0));
 }
 </style>

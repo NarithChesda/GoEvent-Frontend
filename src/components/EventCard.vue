@@ -29,8 +29,8 @@
       </button>
     </div>
 
-    <!-- Banner Image - 1.9:1 aspect ratio (1200x630) -->
-    <div class="relative w-full aspect-[1.9/1] overflow-hidden">
+    <!-- Banner Image - shared 1.91:1 banner ratio (see tailwind.config.js) -->
+    <div class="relative w-full aspect-banner overflow-hidden">
       <img
         v-if="!fallbackImageError"
         :src="getCurrentImageSrc()"
@@ -221,6 +221,7 @@ import {
 import type { Event } from '../services/api'
 import { getEventFallbackImage } from '@/composables/useEventFormatters'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
+import { BANNER_WIDTHS, getBannerUrl, imagekitUrl, resolveMediaUrl } from '@/utils/mediaUrl'
 
 const { translateEventCategory } = useCategoryTranslation()
 
@@ -268,84 +269,13 @@ const handleDelete = (event: MouseEvent) => {
   emit('delete', props.event)
 }
 
-const getBannerImageUrl = (bannerImage: string | null): string | undefined => {
-  if (!bannerImage) return undefined
-
-  let url: string
-
-  // If it's already a full URL, use as is
-  if (bannerImage.startsWith('http://') || bannerImage.startsWith('https://')) {
-    url = bannerImage
-  } else {
-    // If it's a relative URL, prepend the API base URL
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-    if (bannerImage.startsWith('/')) {
-      url = `${API_BASE_URL}${bannerImage}`
-    } else {
-      // If it doesn't start with /, assume it needs /media/ prefix
-      url = `${API_BASE_URL}/media/${bannerImage}`
-    }
-  }
-
-  // Convert API server URLs to ImageKit proxy URLs
-  if (url.includes('api.goevent.online/media/')) {
-    url = url.replace(
-      'https://api.goevent.online/media/',
-      'https://ik.imagekit.io/goevent/media/'
-    )
-  }
-
-  // Apply ImageKit.io transformation for optimized thumbnails
-  // Using same size as events/EventCard: 528x336 (3x of 176x112)
-  if (url.includes('ik.imagekit.io')) {
-    const imagekitRegex = /(https:\/\/ik\.imagekit\.io\/[^/]+)(\/.*)/
-    const match = url.match(imagekitRegex)
-    if (match) {
-      return `${match[1]}/tr:w-528,h-336${match[2]}`
-    }
-  }
-
-  return url
-}
+const getBannerImageUrl = (bannerImage: string | null): string | undefined =>
+  getBannerUrl(bannerImage, BANNER_WIDTHS.card)
 
 const getHostImageUrl = (profileImage: string | null): string | undefined => {
-  if (!profileImage) return undefined
-
-  let url: string
-
-  // If it's already a full URL, use as is
-  if (profileImage.startsWith('http://') || profileImage.startsWith('https://')) {
-    url = profileImage
-  } else {
-    // If it's a relative URL, prepend the API base URL
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-    if (profileImage.startsWith('/')) {
-      url = `${API_BASE_URL}${profileImage}`
-    } else {
-      // If it doesn't start with /, assume it needs /media/ prefix
-      url = `${API_BASE_URL}/media/${profileImage}`
-    }
-  }
-
-  // Convert API server URLs to ImageKit proxy URLs
-  if (url.includes('api.goevent.online/media/')) {
-    url = url.replace(
-      'https://api.goevent.online/media/',
-      'https://ik.imagekit.io/goevent/media/'
-    )
-  }
-
-  // Apply ImageKit.io transformation for host avatars
-  // Display size is 24-28px, using 2x for retina = 56x56
-  if (url.includes('ik.imagekit.io')) {
-    const imagekitRegex = /(https:\/\/ik\.imagekit\.io\/[^/]+)(\/.*)/
-    const match = url.match(imagekitRegex)
-    if (match) {
-      return `${match[1]}/tr:w-56,h-56,fo-auto${match[2]}`
-    }
-  }
-
-  return url
+  // Avatars display at 24-28px; 56x56 is 2x for retina. Square crop is
+  // intentional here, with fo-auto picking the subject.
+  return imagekitUrl(resolveMediaUrl(profileImage), 'w-56,h-56,fo-auto')
 }
 
 const formatDate = (dateString: string): string => {

@@ -55,6 +55,53 @@ export const IMAGE_COMPRESSION = {
   OUTPUT_TYPE: 'image/jpeg',
 } as const
 
+/**
+ * Event banner geometry.
+ *
+ * The banner is used in two places with different consumers:
+ *  - the in-app event card / about hero, and
+ *  - the `og:image` link preview rendered by messaging apps.
+ *
+ * Both converge on 1.91:1 (Open Graph's large-card ratio), so one crop serves
+ * both. The CSS side of this lives in tailwind.config.js as `aspect-banner`.
+ *
+ * We upload a 1920-wide master rather than the 1200x630 OG minimum: the hero in
+ * EventHeroSection.vue renders full-bleed, where a 1200px source is upscaled on
+ * desktop and retina. The backend derives the <=300KB 1200x630 OG variant that
+ * `og:image` actually points at — see
+ * docs/backend-api-requirements/event-banner-image-sizing.md.
+ */
+export const BANNER_IMAGE = {
+  /** Crop stencil ratio; also the ratio of OUTPUT_WIDTH / OUTPUT_HEIGHT. */
+  ASPECT_RATIO: 1200 / 630,
+  OUTPUT_WIDTH: 1920,
+  OUTPUT_HEIGHT: 1005,
+  /**
+   * Encode quality for the cropped upload. Higher than a display-quality
+   * setting on purpose: the backend re-encodes this to WebP, and two stacked
+   * lossy passes at 0.85 visibly soften edges and flat colour areas.
+   */
+  QUALITY: 0.92,
+  /**
+   * Preferred encode format, with a fallback for browsers whose canvas cannot
+   * encode WebP. Per the HTML spec, `toBlob` silently falls back to image/png
+   * for an unsupported type, so callers must check the resulting blob type.
+   */
+  OUTPUT_TYPE: 'image/webp',
+  FALLBACK_OUTPUT_TYPE: 'image/jpeg',
+  /**
+   * Bounding box for the working copy handed to the cropper.
+   *
+   * Sources are downscaled to this before cropping so the browser never decodes
+   * a 50MP camera bitmap, but it is deliberately ~2x the output width: crop
+   * headroom. Downscaling the source to OUTPUT_WIDTH first would mean anyone
+   * cropping *into* their photo gets an upscaled master.
+   */
+  SOURCE_MAX_DIMENSION: 4096,
+  /** Near-transparent: the working copy is re-encoded again after cropping. */
+  SOURCE_QUALITY: 0.95,
+} as const
+
 // Media types
 export type MediaType = 'image' | 'video' | 'audio'
 export type MediaField = typeof MEDIA_FIELDS[keyof typeof MEDIA_FIELDS]

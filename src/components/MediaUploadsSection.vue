@@ -441,7 +441,7 @@
       :content-type="activeAsset?.contentType ?? 'image'"
       :media-url="activeAsset?.mediaUrl ?? null"
       :can-edit="canEdit"
-      :is-uploading="activeAsset ? mediaUpload.isUploading.value(activeAsset.field) : false"
+      :is-uploading="(activeAsset ? mediaUpload.isUploading.value(activeAsset.field) : false) || preparingBanner"
       :accept-types="activeAsset?.acceptTypes ?? 'image/*'"
       :empty-state-text="activeAsset?.emptyText ?? ''"
       :download-url="activeAsset?.downloadUrl ?? null"
@@ -478,8 +478,10 @@
       :show="showBannerCropper"
       :image-source="bannerCropperImage"
       :title="t('management.media.mediaUploads.banner.cropperTitle')"
-      :aspect-ratio="BANNER_ASPECT_RATIO"
+      :aspect-ratio="BANNER_IMAGE.ASPECT_RATIO"
       cropper-height="400px"
+      safe-zones
+      image-restriction="stencil"
       :help-text="t('management.media.mediaUploads.banner.cropperHelpText')"
       @close="closeBannerCropper"
       @apply="handleBannerCropApply"
@@ -496,6 +498,8 @@ import { AlertCircle, ChevronDown, ChevronRight, ImageIcon, Library, MoreHorizon
 import type { Event, BackgroundMusic } from '@/services/api'
 import { eventsService } from '@/services/api'
 import { useMediaUpload, type MediaFieldName, type MediaType } from '@/composables/useMediaUpload'
+import { BANNER_IMAGE } from '@/constants/media'
+import { compressImage } from '@/utils/imageCompression'
 import { useDropdownManager } from '@/composables/useDropdownManager'
 import { useMediaUrl } from '@/composables/useMediaUrl'
 import { usePaymentTemplateIntegration } from '@/composables/usePaymentTemplateIntegration'
@@ -675,16 +679,7 @@ const handleAssetUpload = (file: File) => {
 
   // Banner images go through the crop step before uploading
   if (activeAsset.value.field === 'banner_image') {
-    const validation = mediaUpload.validateFile(file, 'image')
-    if (!validation.valid) return
-
-    pendingBannerFile.value = file
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      bannerCropperImage.value = ev.target?.result as string
-      showBannerCropper.value = true
-    }
-    reader.readAsDataURL(file)
+    startBannerCrop(file)
     return
   }
 
@@ -711,11 +706,51 @@ const filenameFromUrl = (url?: string | null): string | null => {
 
 // ---- Banner image (upload + crop) ----
 
-const BANNER_ASPECT_RATIO = 1200 / 630
 const showBannerCropper = ref(false)
 const bannerCropperImage = ref<string | null>(null)
 const bannerCropperRef = ref<any>(null)
 const pendingBannerFile = ref<File | null>(null)
+/** True while an oversized source is being downscaled for the cropper. */
+const preparingBanner = ref(false)
+/** Object URL for the working copy, revoked when the cropper closes. */
+const bannerObjectUrl = ref<string | null>(null)
+
+/**
+ * Open the cropper for a newly picked banner file.
+ *
+ * Only the file *type* is checked, not its size. The crop step always re-encodes
+ * to a fixed BANNER_IMAGE.OUTPUT_WIDTH x OUTPUT_HEIGHT image, so a 40MB camera
+ * original and a 2MB phone snap produce byte-comparable uploads — rejecting the
+ * former on size told hosts to go find image-editing software for no benefit.
+ * (The event-photo flow in UploadMediaDrawer.vue has always downscaled instead.)
+ *
+ * Oversized sources are downscaled to a working copy first, which keeps the
+ * cropper from decoding a 50MP bitmap on a mid-range phone.
+ */
+const startBannerCrop = async (file: File) => {
+  const validation = mediaUpload.validateFile(file, 'image', { checkSize: false })
+  if (!validation.valid) return
+
+  preparingBanner.value = true
+  try {
+    const working = await compressImage(file, {
+      maxWidth: BANNER_IMAGE.SOURCE_MAX_DIMENSION,
+      maxHeight: BANNER_IMAGE.SOURCE_MAX_DIMENSION,
+      quality: BANNER_IMAGE.SOURCE_QUALITY,
+    })
+
+    pendingBannerFile.value = working
+    // Object URL rather than a data URL: sources can now be tens of megabytes,
+    // and base64 would inflate that by a third again in memory.
+    bannerObjectUrl.value = URL.createObjectURL(working)
+    bannerCropperImage.value = bannerObjectUrl.value
+    showBannerCropper.value = true
+  } catch {
+    mediaUpload.setError(t('management.media.mediaUploads.banner.prepareFailed'))
+  } finally {
+    preparingBanner.value = false
+  }
+}
 
 const openBannerCropper = () => {
   const bannerUrl = getMediaUrl(props.eventData?.banner_image)
@@ -730,11 +765,35 @@ const closeBannerCropper = () => {
   showBannerCropper.value = false
   bannerCropperImage.value = null
   pendingBannerFile.value = null
+  if (bannerObjectUrl.value) {
+    URL.revokeObjectURL(bannerObjectUrl.value)
+    bannerObjectUrl.value = null
+  }
 }
 
 const setBannerCropperRef = (ref: InstanceType<typeof ImageCropperModal> | null) => {
   bannerCropperRef.value = ref
 }
+
+/**
+ * Encode the banner canvas, preferring WebP. `toBlob` silently falls back to
+ * image/png for a type the browser cannot encode (older Safari), so check the
+ * returned type and retry as JPEG rather than uploading a huge PNG.
+ */
+const encodeBannerCanvas = (canvas: HTMLCanvasElement): Promise<Blob | null> =>
+  new Promise((resolve) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob?.type === BANNER_IMAGE.OUTPUT_TYPE) {
+          resolve(blob)
+          return
+        }
+        canvas.toBlob(resolve, BANNER_IMAGE.FALLBACK_OUTPUT_TYPE, BANNER_IMAGE.QUALITY)
+      },
+      BANNER_IMAGE.OUTPUT_TYPE,
+      BANNER_IMAGE.QUALITY,
+    )
+  })
 
 const handleBannerCropApply = async () => {
   if (!bannerCropperRef.value) return
@@ -742,25 +801,28 @@ const handleBannerCropApply = async () => {
   const { canvas } = bannerCropperRef.value.getResult()
   if (!canvas) return
 
-  // Create a new canvas with exact 1200x630 dimensions
+  // Normalise to the master banner size. The cropper's own canvas is however
+  // many pixels the source crop happened to cover; every consumer assumes a
+  // fixed 1.91:1 master, and the backend derives the smaller OG variant.
   const outputCanvas = document.createElement('canvas')
-  outputCanvas.width = 1200
-  outputCanvas.height = 630
+  outputCanvas.width = BANNER_IMAGE.OUTPUT_WIDTH
+  outputCanvas.height = BANNER_IMAGE.OUTPUT_HEIGHT
   const ctx = outputCanvas.getContext('2d')
   if (!ctx) return
 
-  // Draw the cropped image scaled to 1200x630
-  ctx.drawImage(canvas, 0, 0, 1200, 630)
+  ctx.imageSmoothingQuality = 'high'
+  ctx.drawImage(canvas, 0, 0, BANNER_IMAGE.OUTPUT_WIDTH, BANNER_IMAGE.OUTPUT_HEIGHT)
 
-  outputCanvas.toBlob(async (blob: Blob | null) => {
-    if (!blob) return
+  const blob = await encodeBannerCanvas(outputCanvas)
+  if (!blob) return
 
-    const fileName = pendingBannerFile.value?.name?.replace(/\.[^/.]+$/, '.jpg') || 'banner.jpg'
-    const croppedFile = new File([blob], fileName, { type: 'image/jpeg' })
+  const extension = blob.type === 'image/webp' ? 'webp' : 'jpg'
+  const fileName =
+    pendingBannerFile.value?.name?.replace(/\.[^/.]+$/, `.${extension}`) || `banner.${extension}`
+  const croppedFile = new File([blob], fileName, { type: blob.type })
 
-    closeBannerCropper()
-    await mediaUpload.uploadMedia('banner_image', croppedFile)
-  }, 'image/jpeg', 0.85)
+  closeBannerCropper()
+  await mediaUpload.uploadMedia('banner_image', croppedFile)
 }
 
 // Delete modal state

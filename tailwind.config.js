@@ -47,6 +47,13 @@ export default {
           900: '#581c87',
         },
       },
+      aspectRatio: {
+        // Event banner. 1.91:1 is the Open Graph / Facebook large-card ratio,
+        // so the same crop serves both the in-app card and messaging-app link
+        // previews. Keep in sync with BANNER_IMAGE in src/constants/media.ts —
+        // every surface that renders `banner_image` must use `aspect-banner`.
+        banner: '1200 / 630',
+      },
       screens: {
         'laptop-sm': '1024px',
         'laptop-md': '1366px',
