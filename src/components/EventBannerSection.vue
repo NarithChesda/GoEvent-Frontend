@@ -12,20 +12,35 @@
         <h5 class="font-semibold text-slate-900">{{ t('management.media.eventBanner.title') }}</h5>
         <p class="text-sm text-slate-600">{{ t('management.media.eventBanner.subtitle') }}</p>
       </button>
-      <button
-        type="button"
-        class="p-2 -mt-1 -mr-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-        :aria-expanded="isExpanded"
-        :aria-label="t('management.media.sectionToggle')"
-        :title="t('management.media.sectionToggle')"
-        @click="toggle"
-      >
-        <ChevronDown
-          class="w-4 h-4 transition-transform duration-200"
-          :class="{ 'rotate-180': isExpanded }"
-          aria-hidden="true"
-        />
-      </button>
+      <div class="flex items-center gap-1 flex-shrink-0">
+        <button
+          v-if="canEdit"
+          type="button"
+          @click="pickFile"
+          :disabled="isBusy"
+          :title="changeLabel"
+          :aria-label="changeLabel"
+          class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Loader v-if="isBusy" class="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+          <ImagePlus v-else class="w-3.5 h-3.5" aria-hidden="true" />
+          <span>{{ changeLabel }}</span>
+        </button>
+        <button
+          type="button"
+          class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+          :aria-expanded="isExpanded"
+          :aria-label="t('management.media.sectionToggle')"
+          :title="t('management.media.sectionToggle')"
+          @click="toggle"
+        >
+          <ChevronDown
+            class="w-4 h-4 transition-transform duration-200"
+            :class="{ 'rotate-180': isExpanded }"
+            aria-hidden="true"
+          />
+        </button>
+      </div>
     </div>
 
     <Transition name="collapse">
@@ -41,110 +56,124 @@
               <p class="flex-1 text-sm text-red-700">{{ mediaUpload.error.value }}</p>
             </div>
 
-            <!-- Link preview card: a mock-up of the card messaging apps render
-                 for a shared showcase link. Nothing overlays the image — the
-                 whole point is seeing the banner exactly as guests will. The
-                 card doubles as a shortcut to the picker; the labelled buttons
-                 below are the discoverable path. -->
-            <component
-              :is="canEdit ? 'button' : 'div'"
-              :type="canEdit ? 'button' : undefined"
-              :disabled="canEdit ? isBusy : undefined"
-              :aria-label="canEdit ? changeLabel : undefined"
-              class="block w-full text-left border border-slate-300 rounded-xl overflow-hidden bg-white"
+            <!-- Empty State — only when there is nothing at all to preview.
+                 With no banner but a logo/photo to fall back on, the card below
+                 still renders it: that fallback *is* what recipients get. -->
+            <button
+              v-if="!previewImage"
+              type="button"
+              :disabled="!canEdit || isBusy"
+              @click="pickFile"
+              class="w-full border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-300"
               :class="
                 canEdit
-                  ? 'transition-all duration-300 hover:border-slate-400 hover:shadow-lg hover:shadow-slate-200/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 disabled:opacity-60 disabled:cursor-not-allowed'
-                  : ''
+                  ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200'
+                  : 'border-slate-300 bg-slate-50 cursor-default'
               "
-              @click="canEdit ? pickFile() : undefined"
             >
-              <div class="aspect-banner relative overflow-hidden bg-slate-200">
-                <img
-                  v-if="previewImage"
-                  :src="previewImage"
-                  :alt="event?.title || t('management.media.eventBanner.title')"
-                  class="w-full h-full object-cover"
-                  loading="lazy"
-                />
-                <div v-else class="w-full h-full flex flex-col items-center justify-center gap-2">
-                  <ImageIcon class="w-10 h-10 text-slate-400" aria-hidden="true" />
-                  <span class="text-xs font-medium text-slate-500">
-                    {{ t('management.media.eventBanner.empty') }}
-                  </span>
-                </div>
+              <ImagePlus
+                class="w-8 h-8 text-slate-400 mx-auto mb-3"
+                :class="{ 'group-hover:text-emerald-600 transition-colors': canEdit }"
+                aria-hidden="true"
+              />
+              <span
+                class="block font-semibold text-slate-600"
+                :class="{ 'group-hover:text-slate-900 transition-colors': canEdit }"
+              >
+                {{ t('management.media.eventBanner.empty.title') }}
+              </span>
+              <span class="block text-sm text-slate-500 mt-1">
+                {{ t('management.media.eventBanner.empty.description') }}
+              </span>
+              <span v-if="canEdit" class="block text-xs text-slate-400 mt-1">
+                {{ t('management.media.eventBanner.empty.hint') }}
+              </span>
+            </button>
 
-                <!-- Busy overlay (preparing the crop source, or uploading) -->
-                <div
-                  v-if="isBusy"
-                  class="absolute inset-0 bg-white/70 flex items-center justify-center"
-                >
-                  <div class="flex items-center gap-2 text-slate-600">
-                    <div
-                      class="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"
-                    ></div>
-                    <span class="text-sm font-medium">
-                      {{ t('management.media.mediaUploads.drawer.uploading') }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="p-4 border-t border-slate-100">
-                <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">{{ hostname }}</div>
-                <div class="text-base font-semibold text-slate-900 mb-1 line-clamp-2">{{ metaTitle }}</div>
-                <div class="text-sm text-slate-600 line-clamp-2">{{ metaDescription }}</div>
-              </div>
-            </component>
-
-            <!-- Actions. Always one row: labels drop out as the section
-                 narrows (see the container queries below) rather than wrapping.
-                 Deliberately not the dashed "Add X" pill recipe — the Design
-                 Studio panel strips the label off those (see
-                 ShowcasePreviewTab.vue), leaving a bare icon. -->
-            <div v-if="canEdit" class="space-y-2">
-              <div class="banner-actions">
-                <div class="flex items-center gap-2 overflow-hidden">
+            <!-- Link preview group: micro-heading + per-item icon actions, then
+                 the preview card itself — the same anatomy the Agenda section
+                 uses for a day group. -->
+            <div v-else class="space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider min-w-0 truncate">
+                  {{ t('management.media.eventBanner.previewLabel') }}
+                </p>
+                <!-- Crop/Remove act on the banner itself, so they only exist
+                     once there is one — not for a logo/photo fallback. -->
+                <div v-if="canEdit && hasBanner" class="flex items-center flex-shrink-0">
                   <button
-                    type="button"
-                    @click="pickFile"
-                    :disabled="isBusy"
-                    :title="changeLabel"
-                    :aria-label="changeLabel"
-                    class="banner-action bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white font-semibold shadow-md hover:opacity-90 transition-all duration-200"
-                  >
-                    <Loader v-if="isBusy" class="w-4 h-4 flex-shrink-0 animate-spin" aria-hidden="true" />
-                    <ImagePlus v-else class="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-                    <span class="banner-action__label">{{ changeLabel }}</span>
-                  </button>
-                  <button
-                    v-if="hasBanner"
                     type="button"
                     @click="openCropperForCurrent"
                     :disabled="isBusy"
                     :title="t('management.media.mediaUploads.banner.crop')"
                     :aria-label="t('management.media.mediaUploads.banner.crop')"
-                    class="banner-action banner-action--secondary font-medium text-slate-600 hover:bg-slate-100 transition-colors duration-200"
+                    class="p-1.5 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Crop class="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-                    <span class="banner-action__label">{{ t('management.media.mediaUploads.banner.crop') }}</span>
+                    <Crop class="w-3.5 h-3.5" aria-hidden="true" />
                   </button>
                   <button
-                    v-if="hasBanner"
                     type="button"
                     @click="showDeleteModal = true"
                     :disabled="isBusy"
                     :title="t('management.media.eventBanner.remove')"
                     :aria-label="t('management.media.eventBanner.remove')"
-                    class="banner-action banner-action--secondary font-medium text-red-600 hover:bg-red-50 transition-colors duration-200"
+                    class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Trash2 class="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-                    <span class="banner-action__label">{{ t('management.media.eventBanner.remove') }}</span>
+                    <Trash2 class="w-3.5 h-3.5" aria-hidden="true" />
                   </button>
                 </div>
               </div>
 
-              <p class="text-xs text-slate-500">
+              <!-- A mock-up of the card messaging apps render for a shared
+                   showcase link. Nothing overlays the image — the whole point
+                   is seeing the banner exactly as guests will. The card doubles
+                   as a shortcut to the picker; the header pill is the
+                   discoverable path. -->
+              <component
+                :is="canEdit ? 'button' : 'div'"
+                :type="canEdit ? 'button' : undefined"
+                :disabled="canEdit ? isBusy : undefined"
+                :aria-label="canEdit ? changeLabel : undefined"
+                class="block w-full text-left bg-white rounded-2xl border border-slate-200 overflow-hidden"
+                :class="
+                  canEdit
+                    ? 'transition-all duration-300 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 disabled:opacity-60 disabled:cursor-not-allowed'
+                    : ''
+                "
+                @click="canEdit ? pickFile() : undefined"
+              >
+                <div class="aspect-banner relative overflow-hidden bg-slate-100">
+                  <img
+                    :src="previewImage"
+                    :alt="event?.title || t('management.media.eventBanner.title')"
+                    class="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+
+                  <!-- Busy overlay (preparing the crop source, or uploading) -->
+                  <div
+                    v-if="isBusy"
+                    class="absolute inset-0 bg-white/70 flex items-center justify-center"
+                  >
+                    <div class="flex items-center gap-2 text-slate-600">
+                      <div
+                        class="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"
+                      ></div>
+                      <span class="text-sm font-medium">
+                        {{ t('management.media.mediaUploads.drawer.uploading') }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-4 border-t border-slate-100">
+                  <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">{{ hostname }}</div>
+                  <div class="text-base font-semibold text-slate-900 mb-1 line-clamp-2">{{ metaTitle }}</div>
+                  <div class="text-sm text-slate-600 line-clamp-2">{{ metaDescription }}</div>
+                </div>
+              </component>
+
+              <p v-if="canEdit" class="text-xs text-slate-500">
                 {{
                   hasBanner
                     ? t('management.media.eventBanner.sizeNote')
@@ -204,7 +233,7 @@
  * logos in MediaUploadsSection's Brand Assets list.
  */
 import { computed, ref, toRef } from 'vue'
-import { AlertCircle, ChevronDown, Crop, ImageIcon, ImagePlus, Loader, Trash2 } from 'lucide-vue-next'
+import { AlertCircle, ChevronDown, Crop, ImagePlus, Loader, Trash2 } from 'lucide-vue-next'
 import type { Event } from '@/services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCollapsibleSection } from '@/composables/useCollapsibleSection'
@@ -307,60 +336,6 @@ const handleRemove = async () => {
 </script>
 
 <style scoped>
-/* The action row must stay on a single line at every width, shedding labels
-   instead of wrapping. This is a *container* query, not a `sm:` breakpoint:
-   the section is reused inside the Design Studio's fixed ~440px panel, where
-   viewport breakpoints still report "desktop" and would keep every label —
-   the same trap ShowcasePreviewTab.vue's own CSS documents. */
-.banner-actions {
-  container-type: inline-size;
-}
-
-.banner-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
-  min-height: 40px;
-  padding: 0.625rem 1rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  white-space: nowrap;
-}
-
-.banner-action:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Crop/Remove shed their labels first — the primary action keeps its wording
-   longest, since it is the one a host is looking for. */
-@container (max-width: 400px) {
-  .banner-action--secondary .banner-action__label {
-    display: none;
-  }
-
-  .banner-action--secondary {
-    padding-left: 0.625rem;
-    padding-right: 0.625rem;
-  }
-}
-
-/* Safety net for extremely narrow hosts: everything collapses to icons. Each
-   button carries title + aria-label, so it stays labelled for pointer and
-   assistive tech alike. */
-@container (max-width: 250px) {
-  .banner-action__label {
-    display: none;
-  }
-
-  .banner-action {
-    padding-left: 0.625rem;
-    padding-right: 0.625rem;
-  }
-}
-
 .collapse-enter-active,
 .collapse-leave-active {
   transition:

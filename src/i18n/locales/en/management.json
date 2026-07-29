@@ -546,7 +546,12 @@
     "eventBanner": {
       "title": "Event Banner Image",
       "subtitle": "The picture guests see when you send them your invitation link",
-      "empty": "No banner uploaded",
+      "previewLabel": "Link preview",
+      "empty": {
+        "title": "No banner added",
+        "description": "Add an image so your invitation link arrives with a picture instead of a blank card",
+        "hint": "Click to add an image"
+      },
       "change": "Change image",
       "add": "Add image",
       "remove": "Remove",
