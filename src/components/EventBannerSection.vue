@@ -126,23 +126,25 @@
 
               <!-- A mock-up of the card messaging apps render for a shared
                    showcase link. Nothing overlays the image — the whole point
-                   is seeing the banner exactly as guests will. The card doubles
-                   as a shortcut to the picker; the header pill is the
-                   discoverable path. -->
-              <component
-                :is="canEdit ? 'button' : 'div'"
-                :type="canEdit ? 'button' : undefined"
-                :disabled="canEdit ? isBusy : undefined"
-                :aria-label="canEdit ? changeLabel : undefined"
-                class="block w-full text-left bg-white rounded-2xl border border-slate-200 overflow-hidden"
-                :class="
-                  canEdit
-                    ? 'transition-all duration-300 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 disabled:opacity-60 disabled:cursor-not-allowed'
-                    : ''
-                "
-                @click="canEdit ? pickFile() : undefined"
-              >
-                <div class="aspect-banner relative overflow-hidden bg-slate-100">
+                   is seeing the banner exactly as guests will. The image is the
+                   shortcut to the picker (the header pill is the discoverable
+                   path); the text below it is click-to-edit, so the card can't
+                   be one big button. -->
+              <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <component
+                  :is="canEdit ? 'button' : 'div'"
+                  :type="canEdit ? 'button' : undefined"
+                  :disabled="canEdit ? isBusy : undefined"
+                  :aria-label="canEdit ? changeLabel : undefined"
+                  :title="canEdit ? changeLabel : undefined"
+                  class="block w-full aspect-banner relative overflow-hidden bg-slate-100"
+                  :class="
+                    canEdit
+                      ? 'cursor-pointer transition-opacity duration-200 hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-300 disabled:opacity-60 disabled:cursor-not-allowed'
+                      : ''
+                  "
+                  @click="canEdit ? pickFile() : undefined"
+                >
                   <img
                     :src="previewImage"
                     :alt="event?.title || t('management.media.eventBanner.title')"
@@ -164,14 +166,69 @@
                       </span>
                     </div>
                   </div>
-                </div>
+                </component>
 
                 <div class="p-4 border-t border-slate-100">
                   <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">{{ hostname }}</div>
-                  <div class="text-base font-semibold text-slate-900 mb-1 line-clamp-2">{{ metaTitle }}</div>
-                  <div class="text-sm text-slate-600 line-clamp-2">{{ metaDescription }}</div>
+
+                  <!-- Title: the event title plus the fixed greeting the
+                       showcase appends. Clicking the line edits the title only
+                       — the suffix is a constant in EventShowcaseRefactored.vue.
+                       No `block` alongside `line-clamp-2`: the clamp sets its
+                       own display, and which utility wins would come down to
+                       stylesheet order. -->
+                  <div class="text-base font-semibold text-slate-900 mb-1">
+                    <input
+                      v-if="editingField === 'title'"
+                      :ref="setEditInputRef"
+                      v-model="draft"
+                      type="text"
+                      @keydown.enter.prevent="commitEdit"
+                      @keydown.esc.prevent="cancelEdit"
+                      @blur="commitEdit"
+                      class="w-full px-1 -mx-1 py-0 text-base font-semibold text-slate-900 bg-white border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                    <button
+                      v-else-if="canEdit"
+                      type="button"
+                      @click="startEdit('title')"
+                      :disabled="!!savingField"
+                      :title="t('management.media.eventBanner.inlineEdit.titleHint')"
+                      class="w-full text-left line-clamp-2 rounded px-0.5 -mx-0.5 hover:text-sky-600 hover:bg-sky-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 transition-colors"
+                      :class="{ 'opacity-50': savingField === 'title' }"
+                    >{{ eventTitle }}{{ META_TITLE_SUFFIX }}</button>
+                    <span v-else class="line-clamp-2">{{ eventTitle }}{{ META_TITLE_SUFFIX }}</span>
+                  </div>
+
+                  <!-- Description: saved as the event's short description, the
+                       first thing createEventDescription() reaches for. -->
+                  <div class="text-sm text-slate-600">
+                    <textarea
+                      v-if="editingField === 'description'"
+                      :ref="setEditInputRef"
+                      v-model="draft"
+                      rows="3"
+                      maxlength="300"
+                      @keydown.enter.prevent="commitEdit"
+                      @keydown.esc.prevent="cancelEdit"
+                      @blur="commitEdit"
+                      class="w-full px-1 -mx-1 py-0 text-sm text-slate-600 bg-white border border-sky-300 rounded resize-none overflow-y-auto focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    ></textarea>
+                    <button
+                      v-else-if="canEdit"
+                      type="button"
+                      @click="startEdit('description')"
+                      :disabled="!!savingField"
+                      :title="t('management.media.eventBanner.inlineEdit.descriptionHint')"
+                      class="w-full text-left line-clamp-2 rounded px-0.5 -mx-0.5 hover:text-sky-600 hover:bg-sky-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 transition-colors"
+                      :class="{ 'opacity-50': savingField === 'description' }"
+                    >
+                      {{ metaDescription }}
+                    </button>
+                    <span v-else class="line-clamp-2">{{ metaDescription }}</span>
+                  </div>
                 </div>
-              </component>
+              </div>
 
               <p v-if="canEdit" class="text-xs text-slate-500">
                 {{
@@ -231,11 +288,16 @@
  * `og:image` serves), so it is edited in the shape it will be seen in rather
  * than as a filename row — this is why it lives here instead of alongside the
  * logos in MediaUploadsSection's Brand Assets list.
+ *
+ * The card's headline and blurb are click-to-edit for the same reason: they are
+ * `og:title` and `og:description`, so the place to fix a bad one is the mock-up
+ * that shows it being bad — not a form field two tabs away.
  */
-import { computed, ref, toRef } from 'vue'
+import { computed, nextTick, ref, toRef } from 'vue'
 import { AlertCircle, ChevronDown, Crop, ImagePlus, Loader, Trash2 } from 'lucide-vue-next'
-import type { Event } from '@/services/api'
+import { eventsService, type Event } from '@/services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useNotifications } from '@/composables/useNotifications'
 import { useCollapsibleSection } from '@/composables/useCollapsibleSection'
 import { useMediaUpload } from '@/composables/useMediaUpload'
 import { useBannerCropUpload } from '@/composables/useBannerCropUpload'
@@ -258,6 +320,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const { t } = useAppLanguage()
+const { error: notifyError } = useNotifications()
 
 const { isExpanded, toggle } = useCollapsibleSection('eventBanner')
 
@@ -297,15 +360,91 @@ const previewImage = computed(
 
 const hostname = computed(() => window.location.hostname)
 
-// Kept in sync with updateEventMetaTags() in EventShowcaseRefactored.vue.
-const metaTitle = computed(() => {
-  if (!props.event?.title) return 'សូមគោរពអញ្ជើញ ភ្ញៀវកិត្តិយស'
-  return `${props.event.title} - សូមគោរពអញ្ជើញ ភ្ញៀវកិត្តិយស`
-})
+/** The greeting the showcase appends to every og:title — a constant there, so
+ *  it is shown but not editable here. Kept in sync with updateEventMetaTags()
+ *  in EventShowcaseRefactored.vue. */
+const META_TITLE_SUFFIX = ' - សូមគោរពអញ្ជើញ ភ្ញៀវកិត្តិយស'
+
+const eventTitle = computed(
+  () => props.event?.title || t('management.media.eventBanner.inlineEdit.titlePlaceholder'),
+)
 
 const metaDescription = computed(() =>
   props.event ? createEventDescription(metaSource.value) : '',
 )
+
+// ---- Editing the preview text in place ----
+//
+// Both lines are derived, not stored: the title is `event.title` plus the
+// constant above, and the description is whatever createEventDescription()
+// resolves — short_description, else a truncation of the full description, else
+// a generated sentence. Editing therefore writes to the two fields those come
+// from, and the description opens on the text as *displayed* so click-to-edit
+// promotes a fallback into short_description instead of starting from blank.
+
+type MetaField = 'title' | 'description'
+
+const editingField = ref<MetaField | null>(null)
+const savingField = ref<MetaField | null>(null)
+const draft = ref('')
+
+/** Function ref: focus + select the field as it renders, guarded so re-renders
+ *  while typing don't re-select the text. */
+const setEditInputRef = (el: unknown) => {
+  if (
+    (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) &&
+    document.activeElement !== el
+  ) {
+    nextTick(() => {
+      el.focus()
+      el.select()
+    })
+  }
+}
+
+const currentValue = (field: MetaField) =>
+  field === 'title' ? (props.event?.title ?? '') : metaDescription.value
+
+const startEdit = (field: MetaField) => {
+  if (savingField.value) return
+  draft.value = currentValue(field)
+  editingField.value = field
+}
+
+const cancelEdit = () => {
+  editingField.value = null
+}
+
+const commitEdit = async () => {
+  const field = editingField.value
+  // Also the guard for the blur that follows Enter/Escape closing the field.
+  if (!field) return
+  editingField.value = null
+
+  const next = draft.value.trim()
+  // Comparing against what was on screen keeps a click in and straight back out
+  // of a derived description from persisting that derived text.
+  if (!props.event?.id || next === currentValue(field).trim()) return
+  // The title is required — the showcase headline is built from it.
+  if (field === 'title' && !next) return
+
+  savingField.value = field
+  try {
+    const response = await eventsService.patchEvent(
+      props.event.id,
+      field === 'title' ? { title: next } : { short_description: next },
+    )
+    if (response.success && response.data) {
+      emit('updated', response.data)
+    } else {
+      notifyError(t('management.media.eventBanner.inlineEdit.saveFailed'), response.message)
+    }
+  } catch {
+    notifyError(t('management.media.eventBanner.inlineEdit.saveFailed'))
+  } finally {
+    savingField.value = null
+  }
+}
 
 // ---- Picking a new banner ----
 
