@@ -55,6 +55,53 @@ export const IMAGE_COMPRESSION = {
   OUTPUT_TYPE: 'image/jpeg',
 } as const
 
+/**
+ * Event banner geometry.
+ *
+ * The banner is used in two places with different consumers:
+ *  - the in-app event card / about hero, and
+ *  - the `og:image` link preview rendered by messaging apps.
+ *
+ * Both converge on 1.91:1 (Open Graph's large-card ratio), so one crop serves
+ * both. The CSS side of this lives in tailwind.config.js as `aspect-banner`.
+ *
+ * The upload is a single 1200x630 file, which is exactly what `og:image` points
+ * at. A larger master would be better for the full-bleed hero in
+ * EventHeroSection.vue, but it can only happen once the backend derives a
+ * separate small OG variant: served directly, anything much over ~300KB makes
+ * WhatsApp fall back from the large link card to a corner thumbnail. That
+ * backend work was reverted along with an SSR change, so this stays at the OG
+ * size — see docs/backend-api-requirements/event-banner-image-sizing.md.
+ */
+export const BANNER_IMAGE = {
+  /** Crop stencil ratio; also the ratio of OUTPUT_WIDTH / OUTPUT_HEIGHT. */
+  ASPECT_RATIO: 1200 / 630,
+  OUTPUT_WIDTH: 1200,
+  OUTPUT_HEIGHT: 630,
+  /** Keeps a 1200x630 photo comfortably inside the og:image size budget. */
+  QUALITY: 0.85,
+  /**
+   * JPEG rather than WebP: with the OG variant reverted, `og:image` serves this
+   * exact file, and WebP link-preview support is still uneven across smaller
+   * messaging clients. Flip to 'image/webp' once a dedicated OG variant exists.
+   * Per the HTML spec `toBlob` silently falls back to image/png for a type the
+   * browser cannot encode, so the encoder checks the resulting blob type.
+   */
+  OUTPUT_TYPE: 'image/jpeg',
+  FALLBACK_OUTPUT_TYPE: 'image/jpeg',
+  /**
+   * Bounding box for the working copy handed to the cropper.
+   *
+   * Sources are downscaled to this before cropping so the browser never decodes
+   * a 50MP camera bitmap, but it is deliberately far larger than the output:
+   * crop headroom. Downscaling the source to OUTPUT_WIDTH first would mean
+   * anyone cropping *into* their photo gets an upscaled result.
+   */
+  SOURCE_MAX_DIMENSION: 4096,
+  /** Near-transparent: the working copy is re-encoded again after cropping. */
+  SOURCE_QUALITY: 0.95,
+} as const
+
 // Media types
 export type MediaType = 'image' | 'video' | 'audio'
 export type MediaField = typeof MEDIA_FIELDS[keyof typeof MEDIA_FIELDS]

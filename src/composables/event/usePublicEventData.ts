@@ -12,6 +12,7 @@ import { eventsService, donationService, expensesService, type Event, type Event
 import type { FundraisingProgress, DonationCategorySummary, EventDonation } from '@/services/api/types/donation.types'
 import type { PublicExpenseRecord } from '@/services/api/types/expense.types'
 import { getEventFallbackImage } from '@/composables/useEventFormatters'
+import { BANNER_WIDTHS, getBannerUrl as resolveBannerUrl } from '@/utils/mediaUrl'
 import { useAuthStore } from '@/stores/auth'
 import { apiClient } from '@/services/api'
 
@@ -308,16 +309,8 @@ export function usePublicEventData() {
   }
 
   // URL helpers
-  const getBannerUrl = (bannerImage: string): string => {
-    if (bannerImage.startsWith('http://') || bannerImage.startsWith('https://')) {
-      return bannerImage
-    }
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-    if (bannerImage.startsWith('/')) {
-      return `${API_BASE_URL}${bannerImage}`
-    }
-    return `${API_BASE_URL}/media/${bannerImage}`
-  }
+  const getBannerUrl = (bannerImage: string): string =>
+    resolveBannerUrl(bannerImage, BANNER_WIDTHS.page) ?? ''
 
   const getProfileUrl = (profileImage: string): string => {
     return apiClient.getProfilePictureUrl(profileImage) || ''

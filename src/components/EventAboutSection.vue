@@ -2,8 +2,8 @@
   <div class="space-y-4 sm:space-y-5 pb-8">
     <!-- ============ 1. HERO ============ -->
     <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden">
-      <!-- Banner Image (1200x630 ratio) -->
-      <div v-if="event.banner_image" class="relative w-full aspect-[1.9/1] bg-slate-100">
+      <!-- Banner Image (shared 1.91:1 banner ratio) -->
+      <div v-if="event.banner_image" class="relative w-full aspect-banner bg-slate-100">
         <img
           :src="bannerUrl"
           :alt="event.title"
@@ -345,7 +345,7 @@
       <div v-show="showSocialPreview" class="px-4 pb-4 sm:px-6 sm:pb-6">
         <!-- Facebook Preview Card -->
         <div class="border border-slate-300 rounded-xl overflow-hidden bg-white">
-          <div class="aspect-[1.91/1] relative overflow-hidden bg-slate-200">
+          <div class="aspect-banner relative overflow-hidden bg-slate-200">
             <img
               v-if="previewImage"
               :src="previewImage"
@@ -461,7 +461,7 @@ import { extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
 import type { EventAgendaItem } from '../services/api/types/event.types'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
 import { useAppLanguage } from '../composables/useAppLanguage'
-import { isImageKitEnabled } from '../composables/useImageKitConfig'
+import { BANNER_WIDTHS, getBannerUrl } from '@/utils/mediaUrl'
 
 const EventCollaboratorsTab = defineAsyncComponent(() => import('./EventCollaboratorsTab.vue'))
 const EventReviewTab = defineAsyncComponent(() => import('./EventReviewTab.vue'))
@@ -721,39 +721,13 @@ const agendaPreview = computed(() => {
 const hostsPreview = computed(() => (props.event.hosts ?? []).slice(0, 4))
 
 // URL helpers
-const resolveMediaUrl = (path: string): string => {
-  if (path.startsWith('http://') || path.startsWith('https://')) {
-    return path
-  }
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-  return path.startsWith('/') ? `${API_BASE_URL}${path}` : `${API_BASE_URL}/media/${path}`
-}
+const bannerUrl = computed(() => getBannerUrl(props.event.banner_image, BANNER_WIDTHS.page) ?? '')
 
-// Route media through the ImageKit proxy with a sized transform (same convention as EventCard)
-const optimizeImage = (url: string, transform: string): string => {
-  if (!isImageKitEnabled()) return url
-  let out = url
-  if (out.includes('api.goevent.online/media/')) {
-    out = out.replace('https://api.goevent.online/media/', 'https://ik.imagekit.io/goevent/media/')
-  }
-  if (out.includes('ik.imagekit.io')) {
-    const match = out.match(/(https:\/\/ik\.imagekit\.io\/[^/]+)(\/.*)/)
-    if (match) {
-      return `${match[1]}/tr:${transform}${match[2]}`
-    }
-  }
-  return out
-}
-
-const bannerUrl = computed(() => {
-  if (!props.event.banner_image) return ''
-  return optimizeImage(resolveMediaUrl(props.event.banner_image), 'w-1080,h-567')
-})
-
-const previewImage = computed(() => {
-  if (!props.event?.banner_image) return null
-  return optimizeImage(resolveMediaUrl(props.event.banner_image), 'w-640,h-335')
-})
+// The social preview card mocks up what a shared link looks like. It renders
+// small, so it takes the card width rather than the full banner.
+const previewImage = computed(
+  () => getBannerUrl(props.event?.banner_image, BANNER_WIDTHS.card) ?? null,
+)
 
 const getProfileUrl = (profileImage: string): string => {
   return apiClient.getProfilePictureUrl(profileImage) || ''

@@ -50,7 +50,7 @@
         <!-- Valid Invitation -->
         <div v-else-if="invitation?.valid" class="glass-card rounded-2xl overflow-hidden">
           <!-- Event Banner -->
-          <div v-if="invitation.event?.banner_image" class="aspect-video bg-slate-100 relative">
+          <div v-if="invitation.event?.banner_image" class="aspect-banner bg-slate-100 relative">
             <img
               :src="getBannerUrl(invitation.event.banner_image)"
               :alt="sanitizedEventTitle"
@@ -235,10 +235,11 @@ import {
 } from 'lucide-vue-next'
 import LogoSvg from '@/assets/logo.png'
 import { useAuthStore } from '@/stores/auth'
-import { invitationsService, apiClient, type CollaboratorInvitationData } from '@/services/api'
+import { invitationsService, type CollaboratorInvitationData } from '@/services/api'
 import { googleTokenLogin } from 'vue3-google-login'
 import { isNormalBrowser } from '@/utils/browserDetection'
 import { sanitizePlainText } from '@/utils/sanitize'
+import { BANNER_WIDTHS, getBannerUrl as resolveBannerUrl } from '@/utils/mediaUrl'
 
 const router = useRouter()
 const route = useRoute()
@@ -309,9 +310,9 @@ const sanitizedErrorMessage = computed(() =>
   sanitizePlainText(errorMessage.value, 500)
 )
 
-// Get banner URL using apiClient
+// Get banner URL, sized for the invitation card
 function getBannerUrl(bannerPath: string | null): string {
-  return apiClient.getProfilePictureUrl(bannerPath) || ''
+  return resolveBannerUrl(bannerPath, BANNER_WIDTHS.page) ?? ''
 }
 
 // Format date

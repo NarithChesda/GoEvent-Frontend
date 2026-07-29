@@ -9,7 +9,7 @@
 
 import { apiService, type Event } from '@/services/api'
 import { i18n } from '@/i18n'
-import { isImageKitEnabled } from './useImageKitConfig'
+import { imagekitUrl, toImageKitProxy } from '@/utils/mediaUrl'
 
 export interface EventHost {
   name: string
@@ -165,19 +165,7 @@ export function getGuestCount(event: Event): string | null {
  * Returns original URL if ImageKit is disabled
  */
 export function toImageKitUrl(url: string): string {
-  // Check if ImageKit is enabled
-  if (!isImageKitEnabled()) {
-    return url
-  }
-
-  // Rewrite api.goevent.online URLs to ImageKit proxy
-  if (url.includes('api.goevent.online/media/')) {
-    return url.replace(
-      'https://api.goevent.online/media/',
-      'https://ik.imagekit.io/goevent/media/'
-    )
-  }
-  return url
+  return toImageKitProxy(url)
 }
 
 /**
@@ -196,33 +184,8 @@ export function applyImageKitTransform(
 ): string | null {
   if (!url) return null
 
-  // Check if ImageKit is enabled
-  if (!isImageKitEnabled()) {
-    return url
-  }
-
-  // Convert API server URLs to ImageKit proxy URLs
-  const imageKitUrl = toImageKitUrl(url)
-
-  // Only transform ImageKit URLs
-  if (!imageKitUrl.includes('ik.imagekit.io')) {
-    return url
-  }
-
-  // Build transformation string
-  const transform = height ? `tr:w-${width},h-${height}` : `tr:w-${width}`
-
-  // Insert transformation after the ImageKit base path
-  // URL format: https://ik.imagekit.io/{imagekit_id}/path/to/image.ext
-  // Transformed: https://ik.imagekit.io/{imagekit_id}/tr:w-240,h-126/path/to/image.ext
-  const imagekitRegex = /(https:\/\/ik\.imagekit\.io\/[^/]+)(\/.*)/
-  const match = imageKitUrl.match(imagekitRegex)
-
-  if (match) {
-    return `${match[1]}/${transform}${match[2]}`
-  }
-
-  return imageKitUrl
+  const transform = height ? `w-${width},h-${height}` : `w-${width}`
+  return imagekitUrl(url, transform) ?? url
 }
 
 /**
@@ -268,23 +231,8 @@ export function getEventThumbnail(event: Event): string {
  */
 export function getEventThumbnailMobile(event: Event): string {
   const imageUrl = getEventImageWithFallback(event)
-
-  // Convert API server URLs to ImageKit proxy URLs
-  const imageKitUrl = toImageKitUrl(imageUrl)
-
-  if (!imageKitUrl.includes('ik.imagekit.io')) {
-    return imageUrl
-  }
-
-  // Use fo-auto for smart focus cropping, 160x160 for 2x retina
-  const imagekitRegex = /(https:\/\/ik\.imagekit\.io\/[^/]+)(\/.*)/
-  const match = imageKitUrl.match(imagekitRegex)
-
-  if (match) {
-    return `${match[1]}/tr:w-160,h-160,fo-auto${match[2]}`
-  }
-
-  return imageKitUrl
+  // fo-auto for smart focus cropping, 160x160 for 2x retina
+  return imagekitUrl(imageUrl, 'w-160,h-160,fo-auto') ?? imageUrl
 }
 
 /**
@@ -297,21 +245,7 @@ function getHostAvatarUrl(profileImage: string | null | undefined): string | nul
   const url = apiService.getProfilePictureUrl(profileImage)
   if (!url) return null
 
-  // Convert and transform through ImageKit
-  const imageKitUrl = toImageKitUrl(url)
-
-  if (!imageKitUrl.includes('ik.imagekit.io')) {
-    return url
-  }
-
-  const imagekitRegex = /(https:\/\/ik\.imagekit\.io\/[^/]+)(\/.*)/
-  const match = imageKitUrl.match(imagekitRegex)
-
-  if (match) {
-    return `${match[1]}/tr:w-40,h-40,fo-auto${match[2]}`
-  }
-
-  return imageKitUrl
+  return imagekitUrl(url, 'w-40,h-40,fo-auto') ?? url
 }
 
 /**

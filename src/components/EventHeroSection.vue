@@ -188,6 +188,7 @@ import { computed, ref } from 'vue'
 import { Calendar, MapPin, Monitor, Users, DollarSign, Clock } from 'lucide-vue-next'
 import { type Event } from '../services/api'
 import EventStatusBadge from './EventStatusBadge.vue'
+import { BANNER_WIDTHS, getBannerUrl } from '@/utils/mediaUrl'
 
 interface Props {
   event: Event
@@ -281,23 +282,8 @@ const urgencyMessage = computed(() => {
 })
 
 // Image handling utilities
-const getBannerImageUrl = (bannerImage: string | null): string | null => {
-  if (!bannerImage) return null
-
-  // If it's already a full URL, return as is
-  if (bannerImage.startsWith('http://') || bannerImage.startsWith('https://')) {
-    return bannerImage
-  }
-
-  // If it's a relative URL, prepend the API base URL
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-  if (bannerImage.startsWith('/')) {
-    return `${API_BASE_URL}${bannerImage}`
-  }
-
-  // If it doesn't start with /, assume it needs /media/ prefix
-  return `${API_BASE_URL}/media/${bannerImage}`
-}
+const getBannerImageUrl = (bannerImage: string | null): string | null =>
+  getBannerUrl(bannerImage, BANNER_WIDTHS.hero) ?? null
 
 const getHostProfileUrl = (profileImage: string | null): string => {
   if (!profileImage) {
