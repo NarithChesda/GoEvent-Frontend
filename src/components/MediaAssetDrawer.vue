@@ -181,16 +181,6 @@
                     : (mediaUrl ? t('management.media.mediaUploads.card.replace') : t('management.media.mediaUploads.drawer.uploadBtn')) }}
                 </span>
               </button>
-              <button
-                v-if="allowCrop && mediaUrl"
-                type="button"
-                @click="emit('crop')"
-                :disabled="isUploading"
-                class="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Crop class="w-4 h-4" aria-hidden="true" />
-                <span>{{ t('management.media.mediaUploads.banner.crop') }}</span>
-              </button>
             </div>
             <span v-else></span>
 
@@ -213,7 +203,6 @@ import { ref, watch, onUnmounted } from 'vue'
 import {
   ArrowRight,
   AlertCircle,
-  Crop,
   Download,
   ImageIcon,
   Info,
@@ -242,15 +231,12 @@ interface Props {
   downloadFilename?: string
   /** Upload error surfaced from the parent's upload composable */
   error?: string | null
-  /** Whether to show a "Crop" action for re-cropping the current image without re-uploading */
-  allowCrop?: boolean
 }
 
 interface Emits {
   (e: 'update:modelValue', value: boolean): void
   (e: 'upload', file: File): void
   (e: 'remove'): void
-  (e: 'crop'): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -258,7 +244,6 @@ const props = withDefaults(defineProps<Props>(), {
   isUploading: false,
   downloadUrl: null,
   error: null,
-  allowCrop: false,
 })
 
 const emit = defineEmits<Emits>()

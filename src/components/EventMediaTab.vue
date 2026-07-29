@@ -35,6 +35,16 @@
         />
       </div>
 
+      <!-- Event Banner (all categories) — the sole editor for banner_image,
+           shown as the link-preview card guests actually receive. -->
+      <div v-if="localEventData?.id">
+        <EventBannerSection
+          :event="localEventData"
+          :can-edit="canEdit"
+          @updated="handleEventUpdated"
+        />
+      </div>
+
       <!-- Event Texts Section (Category-specific: wedding, birthday, housewarming) -->
       <div v-if="props.showCategorySpecificSections && localEventData?.id">
         <EventTextTab
@@ -295,6 +305,7 @@ import MediaCard from './MediaCard.vue'
 import UploadMediaDrawer from './UploadMediaDrawer.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import MediaUploadsSection from './MediaUploadsSection.vue'
+import EventBannerSection from './EventBannerSection.vue'
 import DressCodeSection from './DressCodeSection.vue'
 import EventAgendaTab from './EventAgendaTab.vue'
 import EventHostsTab from './EventHostsTab.vue'

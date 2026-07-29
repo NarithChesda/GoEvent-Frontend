@@ -42,8 +42,6 @@
       "agenda": "Agenda",
       "location": "Location",
       "hostedBy": "Hosted By",
-      "socialPreview": "Social Media Preview",
-      "socialPreviewDesc": "Preview how your event showcase will appear when shared on social media",
       "guestOverview": "Guest Overview"
     },
     "agendaCount": {
@@ -545,16 +543,23 @@
     "deleteModal": {
       "title": "Delete Media"
     },
+    "eventBanner": {
+      "title": "Event Banner Image",
+      "subtitle": "The picture guests see when you send them your invitation link",
+      "empty": "No banner uploaded",
+      "change": "Change image",
+      "add": "Add image",
+      "remove": "Remove",
+      "deleteTitle": "Delete Event Banner",
+      "sizeNote": "Saved at 1200×630 (1.91:1) — the size messaging apps expect. Upload a much larger photo and crop it here.",
+      "noBannerHint": "No banner yet — messaging apps fall back to your logo or first photo."
+    },
     "mediaUploads": {
       "brandAssets": {
         "title": "Brand Assets",
         "subtitle": "Logos and video shown on your event showcase"
       },
       "banner": {
-        "title": "Event Banner",
-        "description": "Shown on your event card and in the link preview when your event is shared on messaging apps. Saved at 1200x630px (1.91:1 ratio) — you can upload a much larger photo and crop it here",
-        "empty": "No banner uploaded",
-        "deleteTitle": "Delete Event Banner",
         "crop": "Crop",
         "cropperTitle": "Crop Banner Image",
         "cropperHelpText": "Scroll or pinch to zoom, drag to reposition. Keep faces and text inside the dashed square — some messaging apps crop the preview down to it. The shaded band along the bottom is covered by the event title.",

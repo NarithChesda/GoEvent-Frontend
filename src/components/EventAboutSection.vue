@@ -320,53 +320,7 @@
       </button>
     </div>
 
-    <!-- ============ 7. SOCIAL MEDIA PREVIEW (collapsed) ============ -->
-    <div v-if="event.can_edit" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden">
-      <button
-        @click="showSocialPreview = !showSocialPreview"
-        class="w-full flex items-center justify-between gap-3 p-4 sm:p-6 text-left hover:bg-slate-50/50 transition-colors"
-        :aria-expanded="showSocialPreview"
-      >
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Share2 class="w-4 h-4 text-slate-600" />
-          </div>
-          <div class="min-w-0">
-            <h2 class="text-base font-semibold text-slate-900">{{ t('management.overview.sections.socialPreview') }}</h2>
-            <p class="text-xs text-slate-500 line-clamp-1">{{ t('management.overview.sections.socialPreviewDesc') }}</p>
-          </div>
-        </div>
-        <ChevronDown
-          class="w-5 h-5 text-slate-400 flex-shrink-0 transition-transform duration-200"
-          :class="{ 'rotate-180': showSocialPreview }"
-        />
-      </button>
-
-      <div v-show="showSocialPreview" class="px-4 pb-4 sm:px-6 sm:pb-6">
-        <!-- Facebook Preview Card -->
-        <div class="border border-slate-300 rounded-xl overflow-hidden bg-white">
-          <div class="aspect-banner relative overflow-hidden bg-slate-200">
-            <img
-              v-if="previewImage"
-              :src="previewImage"
-              :alt="event.title || 'Event Preview'"
-              class="w-full h-full object-cover"
-              loading="lazy"
-            />
-            <div v-else class="w-full h-full flex items-center justify-center">
-              <ImageIcon class="w-16 h-16 text-slate-400" />
-            </div>
-          </div>
-          <div class="p-4">
-            <div class="text-sm text-slate-600 uppercase tracking-wide mb-1">{{ hostname }}</div>
-            <div class="text-lg font-semibold text-slate-900 mb-1 line-clamp-2">{{ metaTitle }}</div>
-            <div class="text-sm text-slate-600 line-clamp-3">{{ metaDescription }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ============ 8. TEAM ============ -->
+    <!-- ============ 7. TEAM ============ -->
     <EventCollaboratorsTab
       v-if="event.can_edit"
       :event-id="event.id"
@@ -375,7 +329,7 @@
       :organizer-details="event.organizer_details"
     />
 
-    <!-- ============ 9. REVIEW ============ -->
+    <!-- ============ 8. REVIEW ============ -->
     <EventReviewTab
       v-if="event.can_edit"
       :event-id="event.id"
@@ -443,16 +397,13 @@ import {
   Calendar,
   CalendarDays,
   CalendarPlus,
-  ChevronDown,
   ChevronRight,
   Clock,
   Download,
   ExternalLink,
   FileText,
-  ImageIcon,
   Mic,
   Pencil,
-  Share2,
   Users,
 } from 'lucide-vue-next'
 import { type Event, guestService, type GuestStats } from '../services/api'
@@ -529,7 +480,6 @@ watch(hasTemplatePayment, (isActivated) => {
 
 // UI state
 const showCalendarSheet = ref(false)
-const showSocialPreview = ref(false)
 
 // Lock page scroll while the calendar sheet is open
 watch(showCalendarSheet, (open) => {
@@ -635,20 +585,6 @@ const segmentWidth = (count: number) => {
   return `${pct.toFixed(1)}%`
 }
 
-const hostname = computed(() => {
-  return window.location.hostname
-})
-
-const metaTitle = computed(() => {
-  if (!props.event?.title) return 'សូមគោរពអញ្ជើញ ភ្ញៀវកិត្តិយស'
-  return `${props.event.title} - សូមគោរពអញ្ជើញ ភ្ញៀវកិត្តិយស`
-})
-
-const metaDescription = computed(() => {
-  if (!props.event) return 'Event description will appear here.'
-  return props.event.short_description?.trim() || 'Event description will appear here.'
-})
-
 // Get organizer name
 const organizerName = computed(() => {
   if (!props.event.organizer_details) return 'GoEvent'
@@ -722,12 +658,6 @@ const hostsPreview = computed(() => (props.event.hosts ?? []).slice(0, 4))
 
 // URL helpers
 const bannerUrl = computed(() => getBannerUrl(props.event.banner_image, BANNER_WIDTHS.page) ?? '')
-
-// The social preview card mocks up what a shared link looks like. It renders
-// small, so it takes the card width rather than the full banner.
-const previewImage = computed(
-  () => getBannerUrl(props.event?.banner_image, BANNER_WIDTHS.card) ?? null,
-)
 
 const getProfileUrl = (profileImage: string): string => {
   return apiClient.getProfilePictureUrl(profileImage) || ''
