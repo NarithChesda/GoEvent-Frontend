@@ -306,10 +306,15 @@
         </div>
       </div>
 
-      <!-- Row 7: Host Profile Pictures -->
+      <!-- Row 7: Host Profile Pictures. In the preview editor a host with no
+           photo yet still gets an (empty) avatar so the slot is visible and
+           clickable — see showProfilePictures. -->
       <div v-if="showProfilePictures" class="profile-picture-row">
         <div class="host-profile-left">
-          <EditableRegion :intent="{ kind: 'hostImage', hostId: hosts[0].id }">
+          <EditableRegion
+            :intent="{ kind: 'hostImage', hostId: hosts[0].id }"
+            :label="hosts[0].profile_image ? undefined : addPhotoLabel"
+          >
             <HostProfilePicture
               :key="`profile-left-${currentLanguage}`"
               :image-url="hosts[0].profile_image"
@@ -317,6 +322,7 @@
               :background-color="primaryColor"
               :animated="true"
               :animation-delay="animationDelays.profileLeft"
+              :wrapper-class="hosts[0].profile_image ? '' : 'photo-placeholder'"
             />
           </EditableRegion>
         </div>
@@ -325,6 +331,7 @@
           <EditableRegion
             v-if="hosts.length > 1"
             :intent="{ kind: 'hostImage', hostId: hosts[1]?.id ?? 0 }"
+            :label="hosts[1]?.profile_image ? undefined : addPhotoLabel"
           >
             <HostProfilePicture
               :key="`profile-right-${currentLanguage}`"
@@ -333,6 +340,7 @@
               :background-color="primaryColor"
               :animated="true"
               :animation-delay="animationDelays.profileRight"
+              :wrapper-class="hosts[1]?.profile_image ? '' : 'photo-placeholder'"
             />
           </EditableRegion>
         </div>
@@ -342,10 +350,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import type { HostInfoProps } from '@/types/showcase'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
+import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import {
   WelcomeHeader,
   HostLogo,
@@ -358,6 +368,13 @@ import {
 } from './shared'
 
 const props = defineProps<HostInfoProps>()
+
+// Only provided by the editable manage-page preview frame — undefined on the
+// public showcase, so the empty avatar slots below can never reach guests.
+const editIntentCtx = inject(EditIntentKey, undefined)
+const { t: tApp } = useAppLanguage()
+
+const addPhotoLabel = computed(() => tApp('management.showcasePreview.editors.addHostPhoto'))
 
 const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
@@ -378,9 +395,16 @@ const showParentBRow = computed(
       (props.hosts.length > 1 && props.hosts[1]?.parent_b_name && props.hosts[1]?.parent_a_name)),
 )
 
-const showProfilePictures = computed(
-  () => props.hosts.length === 2 && props.hosts[0].profile_image && props.hosts[1].profile_image,
-)
+// The portrait row is a matched pair by design, so it stays two-hosts-only.
+// What differs by context is the missing-photo case: guests only see the row
+// once both portraits exist (one photo beside an empty circle reads as broken),
+// while the preview editor always gets it so an organizer with no host photos
+// yet can still see — and click — where they go.
+const showProfilePictures = computed(() => {
+  if (props.hosts.length !== 2) return false
+  if (editIntentCtx) return true
+  return !!(props.hosts[0].profile_image && props.hosts[1].profile_image)
+})
 
 // Host titles with defaults
 const leftHostTitle = computed(
@@ -509,6 +533,17 @@ const animationDelays = computed(() => {
 /* Reduce spacing between title and name rows */
 .name-row {
   margin-top: -0.125rem;
+}
+
+/* Preview editor only: the empty avatar standing in for a host photo that
+   hasn't been uploaded yet. The dashed ring (preview accent, same language as
+   EditableRegion's outline) marks it as a slot to fill rather than something
+   guests already see. Reached with :deep() because the class lands on
+   HostProfilePicture's inner fallback element, not its scoped root. */
+.host-profile-left :deep(.photo-placeholder),
+.host-profile-right :deep(.photo-placeholder) {
+  outline: 1.5px dashed rgba(30, 144, 255, 0.6);
+  outline-offset: 2px;
 }
 
 /* ============================================================

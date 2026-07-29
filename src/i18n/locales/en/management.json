@@ -423,6 +423,7 @@
       "replaceLogo": "Replace logo",
       "editMap": "Edit map",
       "changeHostPhoto": "Change photo",
+      "addHostPhoto": "Add photo",
       "managePhotos": "Manage photos",
       "gmapTitle": "Google Maps Embed",
       "gmapDescription": "Paste a Google Maps share link or embed code — the embed URL is extracted automatically.",
