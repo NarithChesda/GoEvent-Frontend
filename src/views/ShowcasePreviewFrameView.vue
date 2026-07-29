@@ -60,6 +60,7 @@ const {
   currentLanguage,
   loadShowcase,
   refreshShowcaseData,
+  applyEventFieldPatch,
   applyPreviewTemplateFallback,
   setStagedTemplatePreview,
   clearStagedTemplatePreview,
@@ -94,7 +95,10 @@ if (route.query.editable === '1') {
 // Bridge commands from the parent tab: `replay` remounts the transition
 // stage's animation; `refresh` refetches after a parent-side editor save —
 // silently (no loading state), so the frame updates in place instead of
-// flashing a spinner and replaying every mount animation; `preview-template-
+// flashing a spinner and replaying every mount animation; `patch-event` merges
+// a few just-saved fields in place of that refetch, for saves whose whole
+// effect is a value already bound here (see previewRefreshScope.ts);
+// `preview-template-
 // clear` cancels a live try-on by restoring this frame's own last-known real
 // template fields locally — the try-on never touched the backend, so
 // cancelling it doesn't need a refetch either; `preview-template-commit`
@@ -121,6 +125,7 @@ const onFrameMessage = (msg: MessageEvent) => {
   if (!parsed) return
   if (parsed.type === 'replay') replayKey.value++
   if (parsed.type === 'refresh') refreshShowcaseData().then(loadPreviewTemplateFallback)
+  if (parsed.type === 'patch-event') applyEventFieldPatch(parsed.fields)
   if (parsed.type === 'preview-template') setStagedTemplatePreview(parsed.templateData)
   if (parsed.type === 'preview-template-clear') clearStagedTemplatePreview()
   if (parsed.type === 'preview-template-commit') commitStagedTemplatePreview()

@@ -12,6 +12,12 @@ import type { TemplateAssets } from '@/composables/useEventShowcase'
  *                      postFrameReadyToParent)
  *   parent → frame : replay (re-run a frame's mount animation),
  *                    refresh (refetch showcase data after a parent-side save),
+ *                    patch-event (merge a handful of just-saved event fields
+ *                      straight into the frame's showcase data — the SPA-style
+ *                      update for saves whose whole effect is a value the frame
+ *                      already binds, e.g. a replaced logo; no refetch, so no
+ *                      re-mount flicker. See previewRefreshScope.ts for which
+ *                      fields qualify),
  *                    preview-template (live, non-destructive template try-on),
  *                    preview-template-clear (cancel a try-on and restore the
  *                      frame's own real template fields — purely local, no
@@ -34,10 +40,14 @@ export type ParentToFrameType =
   | 'edit-hints-on'
   | 'edit-hints-off'
 
+/** Just-saved event fields, in the shape the event serializer returns them. */
+export type EventFieldPatch = Record<string, unknown>
+
 export type PreviewBridgeMessage =
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: ParentToFrameType }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'edit-intent'; intent: EditIntent }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'preview-template'; templateData: TemplateAssets }
+  | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'patch-event'; fields: EventFieldPatch }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'frame-ready' }
 
 /**
@@ -87,6 +97,26 @@ export function postEditIntentToParent(intent: EditIntent): void {
 export function postToFrame(frameWindow: Window | null | undefined, type: ParentToFrameType): void {
   frameWindow?.postMessage(
     { source: PREVIEW_BRIDGE_SOURCE, type } satisfies PreviewBridgeMessage,
+    window.location.origin,
+  )
+}
+
+/**
+ * Parent side: push just-saved event fields into one frame, to be merged over
+ * whatever it already holds. The values come off an API response the parent
+ * usually keeps in a ref or a prop, so unwrap any reactive proxy here for the
+ * same reason postTemplatePreviewToFrame does — structured clone throws on one.
+ */
+export function postEventPatchToFrame(
+  frameWindow: Window | null | undefined,
+  fields: EventFieldPatch,
+): void {
+  frameWindow?.postMessage(
+    {
+      source: PREVIEW_BRIDGE_SOURCE,
+      type: 'patch-event',
+      fields: JSON.parse(JSON.stringify(fields)) as EventFieldPatch,
+    } satisfies PreviewBridgeMessage,
     window.location.origin,
   )
 }
