@@ -213,27 +213,59 @@ Node.js version: 20
 **Important**: Use `npm run build-cloudflare` which skips TypeScript checking for faster builds.
 
 #### 1.3 Environment Variables
-Set these environment variables in Cloudflare Pages dashboard:
 
-**Production Environment Variables:**
+> **The Cloudflare Pages dashboard is the authority for production, not the
+> committed `.env`.** The `.env` on `clean-production` is a local/reference copy;
+> the deployed build reads its `VITE_*` values from the Pages project's
+> "Variables and secrets" panel. A flag's value in the repo is **not** evidence
+> of what the live site does — always check the dashboard.
+
+**Currently set on the production Pages project** (verified 2026-07-29):
+
+| Variable | Value | Read by |
+|---|---|---|
+| `VITE_API_BASE_URL` | `https://api.goevent.online` | api client, all media URL resolution |
+| `VITE_GOOGLE_CLIENT_ID` | `671277865303-…` | Google OAuth |
+| `VITE_TELEGRAM_BOT_USERNAME` | `goevent_authentication_bot` | Telegram login widget |
+| `VITE_IMAGEKIT_ENABLED` | `true` | [`src/utils/mediaUrl.ts`](../../src/utils/mediaUrl.ts), `useImageKitConfig` |
+| `VITE_ASSET_PROTECTION_ENABLED` | `true` | showcase asset protection |
+| `VITE_GENERATE_SOURCEMAP` | `true` | `vite.config.ts` — see warning below |
+| `VITE_ENVIRONMENT` | `production` | **nothing — unused** |
+| `VITE_MEDIA_BASE_URL` | `https://api.goevent.online` | **nothing — unused** |
+| `VITE_TELEGRAM_BOT_TOKEN` | *(secret)* | **nothing — see warning below** |
+| `VITE_TELEGRAM_ADMIN_CHAT_ID` | `6934534080` | **nothing — see warning below** |
+
+**Deliberately absent**, so they fall back to their safe defaults — do not add
+them to production:
+
+- `VITE_SHOWCASE_TEMPLATE_VERSION` — absent ⇒ `v1`. Setting `v2` would put the
+  in-development scroll-story showcase in front of every wedding customer.
+- `VITE_SERVICES_PORTFOLIO_PLACEHOLDER` — absent ⇒ `false`. Visual testing only.
+- `VITE_SHOWCASE_CONTENT_WIDTH` — absent ⇒ `standard`.
+
+> ⚠️ **`VITE_TELEGRAM_BOT_TOKEN` should not be here.** Any `VITE_*` variable is
+> inlined into the client bundle at build time and is readable by anyone who
+> opens the JS. Today nothing in `src/` references this variable, so Vite does
+> not actually inline it and there is no live leak — but it is one
+> `import.meta.env.VITE_TELEGRAM_BOT_TOKEN` away from being published, and a bot
+> token does not belong in a frontend build config regardless. Telegram
+> notifications already go through the backend (`POST /notifications/telegram/`)
+> with the token held server-side in Django. **Delete `VITE_TELEGRAM_BOT_TOKEN`
+> and `VITE_TELEGRAM_ADMIN_CHAT_ID` from the Pages project, and rotate the bot
+> token** — it has been sitting in a broadly-readable location.
+
+> ⚠️ **`VITE_GENERATE_SOURCEMAP=true` publishes the original source.** The build
+> emits `.map` files (several MB) that Cloudflare serves as static assets, so
+> anyone can reconstruct unminified source from the live site. Set it to `false`
+> for production and leave it on only for preview/debug builds.
+
+`VITE_ENVIRONMENT` and `VITE_MEDIA_BASE_URL` are read by nothing in the
+codebase; they can be removed whenever convenient.
+
+**Build settings** (not `VITE_*`, set alongside the above):
 ```env
-VITE_API_BASE_URL=https://api.goevent.online
-VITE_MEDIA_BASE_URL=https://api.goevent.online
-VITE_ENVIRONMENT=production
-VITE_GENERATE_SOURCEMAP=true
-VITE_GOOGLE_CLIENT_ID=your_actual_google_client_id_here
 NODE_VERSION=20
 NPM_FLAGS=--frozen-lockfile
-```
-
-**Preview Environment Variables (for branch previews):**
-```env
-VITE_API_BASE_URL=https://api.goevent.online
-VITE_MEDIA_BASE_URL=https://api.goevent.online
-VITE_ENVIRONMENT=preview
-VITE_GENERATE_SOURCEMAP=true
-VITE_GOOGLE_CLIENT_ID=your_actual_google_client_id_here
-NODE_VERSION=20
 ```
 
 ### Step 2: Domain Configuration
