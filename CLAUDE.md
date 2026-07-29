@@ -190,6 +190,12 @@ The showcase system is a complex, multi-stage component system for displaying ev
 
 ## Important Development Notes
 
+### Deployment & production environment
+
+- **Deploy branch is `clean-production`.** Deploying = `git checkout clean-production && git merge main && git push origin clean-production`. Cloudflare Pages auto-builds the branch with `npm run build-cloudflare`. `main` is never deployed directly.
+- **`clean-production` carries its own `.env`** (real API URL; testing-only toggles such as `VITE_SHOWCASE_TEMPLATE_VERSION` and `VITE_SERVICES_PORTFOLIO_PLACEHOLDER` deliberately removed so they stay off in production). A merge from `main` must never overwrite it — verify with `git diff origin/clean-production -- .env .env.example` after merging, and expect an empty diff.
+- **The committed `.env` does not decide what production runs.** The deployed build takes its `VITE_*` values from the Cloudflare Pages project's environment variables, which are configured per-environment in the dashboard. So the value of a flag in the repo (e.g. `VITE_IMAGEKIT_ENABLED=false` in `clean-production`'s `.env`) is *not* evidence of what the live site does — check the Pages dashboard. Changing a production flag means changing it there, not in the repo.
+
 ### Environment Variables
 Required env vars (see [.env.example](.env.example)):
 - `VITE_API_BASE_URL`: Backend API URL (default: http://127.0.0.1:8000)
