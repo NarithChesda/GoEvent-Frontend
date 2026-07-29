@@ -1,9 +1,19 @@
 # Backend API Requirements: Event Banner Sizing & OG Variant
 
-> **Status: PENDING** — Frontend changes are shipped and work against the
-> current backend. Three backend changes are needed to complete the picture;
-> none of them are blocking, but items 1 and 2 cap image quality and link
-> preview reliability until done.
+> **Status: ON HOLD** — these changes were implemented on the backend and then
+> reverted along with an SSR change. The frontend has been rolled back to match:
+> the banner is uploaded as a single **1200x630 JPEG** again, which is what
+> `og:image` serves directly.
+>
+> Nothing here is lost work — the analysis below still holds, and the frontend
+> side is a three-constant change in
+> [`src/constants/media.ts`](../../src/constants/media.ts)
+> (`OUTPUT_WIDTH` / `OUTPUT_HEIGHT` / `OUTPUT_TYPE`) plus the `BANNER_WIDTHS`
+> cap in [`src/utils/mediaUrl.ts`](../../src/utils/mediaUrl.ts) whenever the
+> backend work is re-attempted. **Do not raise the frontend master resolution
+> before Ask 2 lands**: served directly, a large master pushes `og:image` past
+> the size budget and WhatsApp silently drops to a corner thumbnail — worse than
+> where we started.
 
 ## Context
 
@@ -23,27 +33,28 @@ fact that a single file is being asked to do both jobs.
 ## What the frontend now does
 
 The banner cropper ([MediaUploadsSection.vue](../../src/components/MediaUploadsSection.vue))
-previously rasterised every banner to exactly **1200×630 JPEG @ 0.85**. It now
-produces:
+rasterises every banner to exactly **1200×630 JPEG @ 0.85**. That is the current
+(rolled-back) state and the state this document proposes changing:
 
-| | Before | After |
+| | Today | Proposed, once Asks 1-3 land |
 |---|---|---|
-| Dimensions | 1200×630 | **1920×1005** (same 1.91:1) |
+| Dimensions | 1200×630 | 1920×1005 (same 1.91:1) |
 | Format | JPEG | WebP, falling back to JPEG where the browser's canvas can't encode WebP |
 | Quality | 0.85 | 0.92 |
 
 Ratio constants live in [`src/constants/media.ts`](../../src/constants/media.ts)
 (`BANNER_IMAGE`) and `tailwind.config.js` (`aspect-banner`).
 
-Source files are no longer size-checked before cropping. The upload is always a
-re-encode at a fixed size, so a 40MB camera original and a 2MB phone snap
-produce byte-comparable uploads — the old 10MB client-side rejection blocked
-hosts for no benefit. Oversized sources are downscaled to a 4096px working copy
-first, mirroring what the event-photo flow already did. **Upload sizes reaching
-the backend are unchanged (~200-400KB); only what hosts are allowed to pick has
+Separately — and **still live**, since it needs no backend support — source files
+are no longer size-checked before cropping. The upload is always a re-encode at a
+fixed size, so a 40MB camera original and a 2MB phone snap produce
+byte-comparable uploads; the old 10MB client-side rejection blocked hosts for no
+benefit. Oversized sources are downscaled to a 4096px working copy first,
+mirroring what the event-photo flow already did. **Upload sizes reaching the
+backend are unchanged (~150KB); only what hosts are allowed to pick has
 widened.**
 
-Rationale for each change:
+Rationale for the proposed change:
 
 - **1920 wide** — 1200px is the OG *minimum*, and it was being used as a
   ceiling. `EventHeroSection.vue` renders the banner full-bleed with
@@ -123,21 +134,20 @@ Two changes:
 > update both together. (Those client-side tags do nothing for link previews
 > regardless, since no crawler runs JS; the SSR path is what matters.)
 
-## Please verify: WebP uploads are accepted
+## When re-attempting: verify WebP uploads are accepted
 
-The frontend now uploads `.webp` where the browser supports encoding it
-(previously always `.jpg`). This *should* be fine — `banner_image` values are
-already stored as `.webp`, so `optimize_banner` demonstrably handles WebP input
-on re-save — but it is a new code path for a fresh upload and worth one
-explicit test. If Django's `ImageField` validation or Pillow rejects it, tell
-us and we'll flip `BANNER_IMAGE.OUTPUT_TYPE` in
-[`src/constants/media.ts`](../../src/constants/media.ts) back to `image/jpeg`;
-it is a one-line change.
+The proposed change has the frontend upload `.webp` where the browser can encode
+it (today it always sends `.jpg`). This *should* be fine — `banner_image` values
+are already stored as `.webp`, so `optimize_banner` demonstrably handles WebP
+input on re-save — but it is a new code path for a fresh upload and needs one
+explicit test before `BANNER_IMAGE.OUTPUT_TYPE` in
+[`src/constants/media.ts`](../../src/constants/media.ts) is flipped.
 
-Separately, worth testing whether a **WebP `og:image`** renders across clients.
+Also worth testing whether a **WebP `og:image`** renders across clients.
 Facebook and Twitter handle WebP fine now, but support is uneven in smaller
-clients (LINE, older WhatsApp builds). If any client fails, emit the OG variant
-as JPEG and leave the master as WebP — hence `og:image:type` above.
+clients (LINE, older WhatsApp builds) — which is the reason the frontend
+currently stays on JPEG. If any client fails, emit the OG variant as JPEG and
+leave the master as WebP — hence `og:image:type` above.
 
 ## Out of scope
 

@@ -776,9 +776,9 @@ const setBannerCropperRef = (ref: InstanceType<typeof ImageCropperModal> | null)
 }
 
 /**
- * Encode the banner canvas, preferring WebP. `toBlob` silently falls back to
- * image/png for a type the browser cannot encode (older Safari), so check the
- * returned type and retry as JPEG rather than uploading a huge PNG.
+ * Encode the banner canvas as BANNER_IMAGE.OUTPUT_TYPE. `toBlob` silently falls
+ * back to image/png for a type the browser cannot encode, so check the returned
+ * type and retry with the fallback format rather than uploading a huge PNG.
  */
 const encodeBannerCanvas = (canvas: HTMLCanvasElement): Promise<Blob | null> =>
   new Promise((resolve) => {
@@ -801,9 +801,9 @@ const handleBannerCropApply = async () => {
   const { canvas } = bannerCropperRef.value.getResult()
   if (!canvas) return
 
-  // Normalise to the master banner size. The cropper's own canvas is however
-  // many pixels the source crop happened to cover; every consumer assumes a
-  // fixed 1.91:1 master, and the backend derives the smaller OG variant.
+  // Normalise to the banner size. The cropper's own canvas is however many
+  // pixels the source crop happened to cover; every consumer assumes a fixed
+  // 1.91:1 image at BANNER_IMAGE's dimensions.
   const outputCanvas = document.createElement('canvas')
   outputCanvas.width = BANNER_IMAGE.OUTPUT_WIDTH
   outputCanvas.height = BANNER_IMAGE.OUTPUT_HEIGHT

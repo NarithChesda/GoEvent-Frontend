@@ -724,8 +724,7 @@ const hostsPreview = computed(() => (props.event.hosts ?? []).slice(0, 4))
 const bannerUrl = computed(() => getBannerUrl(props.event.banner_image, BANNER_WIDTHS.page) ?? '')
 
 // The social preview card mocks up what a shared link looks like. It renders
-// small, so it takes the card width — the real OG variant the platforms fetch
-// is a separate 1200x630 file derived by the backend.
+// small, so it takes the card width rather than the full banner.
 const previewImage = computed(
   () => getBannerUrl(props.event?.banner_image, BANNER_WIDTHS.card) ?? null,
 )

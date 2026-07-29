@@ -552,7 +552,7 @@
       },
       "banner": {
         "title": "Event Banner",
-        "description": "Shown on your event card and in the link preview when your event is shared on messaging apps. For best results, upload at least 1920x1005px (1.91:1 ratio)",
+        "description": "Shown on your event card and in the link preview when your event is shared on messaging apps. Saved at 1200x630px (1.91:1 ratio) — you can upload a much larger photo and crop it here",
         "empty": "No banner uploaded",
         "deleteTitle": "Delete Event Banner",
         "crop": "Crop",

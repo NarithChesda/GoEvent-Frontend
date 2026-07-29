@@ -64,16 +64,21 @@ export function imagekitUrl(
 }
 
 /**
- * Rendered widths for the event banner, by surface. Roughly 2x the CSS width
+ * Rendered widths for the event banner, by surface — roughly 2x the CSS width
  * each surface displays at, for retina.
+ *
+ * Capped at 1200 because that is the stored master's width (see BANNER_IMAGE in
+ * constants/media.ts). Asking ImageKit for more than the source has does not
+ * add detail. `page` and `hero` are both at the cap today; they stay separate
+ * so the full-bleed hero can grow on its own if the master ever does.
  */
 export const BANNER_WIDTHS = {
   /** Event grid card (~320px rendered) */
   card: 640,
   /** Banner inside a content column — public event page, invitation card */
-  page: 1280,
+  page: 1200,
   /** Full-bleed hero */
-  hero: 1920,
+  hero: 1200,
 } as const
 
 export type BannerWidth = (typeof BANNER_WIDTHS)[keyof typeof BANNER_WIDTHS]
