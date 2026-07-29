@@ -865,6 +865,29 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
   }
 
   /**
+   * Merges a handful of just-saved event fields into the loaded showcase data,
+   * without a refetch.
+   *
+   * Preview-only (the manage page's live preview frames, over the bridge's
+   * `patch-event`). A full `refreshShowcaseData()` replaces every field at once
+   * and re-runs the font pass, which the host sees as the preview blinking; when
+   * a save's entire effect is a value the frame already binds — a replaced logo,
+   * say — copying that value in is enough, and Vue re-renders just the bound
+   * node. The parent decides which fields qualify (previewRefreshScope.ts).
+   *
+   * A patch arriving before the initial load has nothing to merge into, and
+   * needs nothing: the save is already server-side, so the load in flight
+   * returns it anyway.
+   */
+  const applyEventFieldPatch = (fields: Record<string, unknown>) => {
+    if (!showcaseData.value) return
+    showcaseData.value = {
+      ...showcaseData.value,
+      event: { ...showcaseData.value.event, ...fields },
+    }
+  }
+
+  /**
    * Preview-only escape hatch. The showcase endpoint nulls `event.template_assets`
    * server-side until payment is confirmed (see `get_template_assets` in the
    * backend showcase serializer), so an event with a selected-but-unpaid
@@ -1414,6 +1437,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     // Methods
     loadShowcase,
     refreshShowcaseData,
+    applyEventFieldPatch,
     applyPreviewTemplateFallback,
     setStagedTemplatePreview,
     clearStagedTemplatePreview,

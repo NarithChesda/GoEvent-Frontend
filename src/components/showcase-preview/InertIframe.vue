@@ -35,7 +35,9 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import {
   parsePreviewBridgeMessage,
   postToFrame,
+  postEventPatchToFrame,
   postTemplatePreviewToFrame,
+  type EventFieldPatch,
   type ParentToFrameType,
 } from './bridge/previewBridge'
 import type { TemplateAssets } from '@/composables/useEventShowcase'
@@ -87,6 +89,8 @@ const onShieldClick = () => {
 // parent-side media save) into this frame.
 defineExpose({
   post: (type: ParentToFrameType) => postToFrame(iframeRef.value?.contentWindow, type),
+  postEventPatch: (fields: EventFieldPatch) =>
+    postEventPatchToFrame(iframeRef.value?.contentWindow, fields),
   postTemplatePreview: (templateData: TemplateAssets) =>
     postTemplatePreviewToFrame(iframeRef.value?.contentWindow, templateData),
 })

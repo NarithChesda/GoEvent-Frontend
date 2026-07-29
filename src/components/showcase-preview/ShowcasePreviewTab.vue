@@ -399,6 +399,10 @@ import { useEventShowcase, type TemplateAssets } from '@/composables/useEventSho
 import type { Event, EventPhoto, EventTemplate } from '@/services/api'
 import { eventTemplateService } from '@/services/api'
 import { useTemplateActivation } from '@/composables/useTemplateActivation'
+import {
+  resolvePreviewSaveScope,
+  type PreviewSaveScope,
+} from '@/composables/showcase-preview/previewRefreshScope'
 import PreviewFrame from './PreviewFrame.vue'
 import InertIframe from './InertIframe.vue'
 import MobilePreviewSheet from './MobilePreviewSheet.vue'
@@ -957,15 +961,36 @@ const onMediaUpdated = (media: EventPhoto[]) => {
   onEditorSaved()
 }
 
+// Every save is propagated upward so EventManageView's copy — and therefore
+// this panel's own cards — stay current. What the *frames* owe it varies (see
+// previewRefreshScope.ts):
+//
+//   inert   nothing a frame paints (the link preview's og: text, the music
+//           track): leave the frames alone entirely.
+//   patch   one value the frames already bind (a replaced logo): push it over
+//           the bridge, and Vue re-renders that node in place. No refetch, so
+//           no re-mount and no blink. Free postMessage, so every mounted frame
+//           gets it, on-screen or not — nothing to defer.
+//   refresh anything else, including a payload-less save (photo reorder,
+//           template auto-fill) that says nothing about what changed.
 const onEditorSaved = (updated?: Event) => {
-  refreshVisibleFrames()
-  // Silent refresh: this tab's `loading` flag gates the whole frames block,
-  // so a full loadShowcase() here would unmount and reload every iframe —
-  // exactly the "page refresh" jank the silent path exists to avoid. Re-apply
-  // the unpaid-template fallback afterward, since refreshShowcaseData re-fetches
-  // real (payment-gated, possibly null) template_assets and would otherwise
-  // drop the Transition frame again for a selected-but-unpaid template.
-  refreshShowcaseData().then(loadPreviewTemplateFallback)
+  const scope: PreviewSaveScope = updated
+    ? resolvePreviewSaveScope(props.eventData, updated)
+    : { kind: 'refresh' }
+
+  if (scope.kind === 'patch') {
+    for (const frame of frameRefs.values()) frame.postEventPatch(scope.fields)
+  } else if (scope.kind === 'refresh') {
+    refreshVisibleFrames()
+    // Silent refresh: this tab's `loading` flag gates the whole frames block,
+    // so a full loadShowcase() here would unmount and reload every iframe —
+    // exactly the "page refresh" jank the silent path exists to avoid. Re-apply
+    // the unpaid-template fallback afterward, since refreshShowcaseData re-fetches
+    // real (payment-gated, possibly null) template_assets and would otherwise
+    // drop the Transition frame again for a selected-but-unpaid template.
+    refreshShowcaseData().then(loadPreviewTemplateFallback)
+  }
+
   if (updated) emit('event-updated', updated)
 }
 
