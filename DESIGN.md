@@ -155,8 +155,8 @@ Weights: `font-bold` for page/section titles, `font-semibold` for card titles an
 | Radius | Components |
 |---|---|
 | `rounded-lg` (8px) | Inputs, small buttons, badges, icon buttons |
-| `rounded-xl` (12px) | Toasts, dropdown menus, list rows, large buttons |
-| `rounded-2xl` (16px) | Cards, drawer panels |
+| `rounded-xl` (12px) | Dropdown menus, list rows, large buttons |
+| `rounded-2xl` (16px) | Cards, drawer panels, toasts |
 | `rounded-3xl` (24px) | Modals, glass section panels, bottom sheets |
 | `rounded-full` | Pills, avatars, FABs, toggles, icon discs |
 
@@ -205,7 +205,7 @@ Mobile-first, always. Base classes target phones; scale up with `sm:` (640) → 
 
 ### 5.4 Z-index ladder
 
-Page toast `z-50` → FAB `z-[60]` → mobile tab bar `z-[70]`; sub-nav/sidebars `z-40`. Dropdown click-outside overlay `z-[90]`, menu `z-[100]`. Drawer backdrop `z-[998]`, drawer panel `z-[999]`, modal `z-[1000]`. Always match neighboring components.
+Sub-nav/sidebars `z-40` → contact FAB `z-[55]` → primary FAB `z-[60]` → mobile tab bar `z-[70]`. Dropdown click-outside overlay `z-[90]`, menu `z-[100]`. Drawer backdrop `z-[998]`, drawer panel `z-[999]`, modal `z-[1000]`. The toast stack tops the ladder at `z-[1100]` — a toast raised from inside a drawer or modal must still be visible. Always match neighboring components.
 
 ---
 
@@ -218,7 +218,7 @@ Full class-by-class recipes live in the [design skill](.claude/skills/goevent-de
 - **Drawers, not modals, for create/edit flows**: full-screen sheet on mobile, floating right panel on desktop, brand-gradient header, sticky footer with gradient submit. Modals are reserved for confirmations and pickers (`rounded-3xl`, centered, destructive confirms use the red icon-disc layout).
 - **Multilingual editing**: per-language stacked cards (base language first), never language tabs.
 - **Dropdowns**: white `rounded-xl shadow-xl` menus with a transparent click-outside overlay; selected item = brand gradient + white text.
-- **Toasts**: `useNotifications()` + `NotificationContainer` — type-colored at 90% alpha with white text, sliding in from the right.
+- **Toasts**: one app-wide stack only — `useToast()` feeding `ToastHost` (mounted once in `App.vue`); never render toast markup in a feature component. Light glass cards with a colored icon disc and progress hairline, anchored top-center on mobile and top-right on desktop, auto-dismissing with hover-pause, duplicate coalescing, and swipe-to-dismiss.
 - **Every page ships four states**: loading skeleton (mirrors the real layout with `animate-pulse` slate blocks), populated content, empty state (gradient-tinted icon disc + title + description + optional CTA), and error (red icon disc + friendly message + retry). Auth-gated pages add an unauthenticated state.
 - **Icons**: `lucide-vue-next` only — `w-4 h-4` inline/buttons, `w-5 h-5` nav/toasts, `w-6 h-6` FABs; larger only inside icon discs.
 
@@ -228,7 +228,7 @@ Full class-by-class recipes live in the [design skill](.claude/skills/goevent-de
 
 - Micro-interactions: `transition-colors duration-200`; composite hovers `transition-all duration-300`; image zooms `duration-500`.
 - Scale on hover only for FABs and primary CTAs (`hover:scale-110`); cards lift via border + shadow. Mobile press feedback: `active:scale-95`.
-- Named Vue transitions in use: `fade` (backdrops), `slide-right` (drawers), `slide-fade` (conditional fields), `modal` (dialogs), `slide-up` (toasts), `dropdown` (menus), `notification` (toast group), `sheet` (bottom sheets), `collapse` (expand/collapse sections).
+- Named Vue transitions in use: `fade` (backdrops), `slide-right` (drawers), `slide-fade` (conditional fields), `modal` (dialogs), `slide-up` (mobile sheet panels, in-drawer inline messages), `dropdown` (menus), `toast` (the toast TransitionGroup), `sheet` (bottom sheets), `collapse` (expand/collapse sections).
 - Drawer/sheet enter: `cubic-bezier(0.32, 0.72, 0, 1)` (spring-like); leave: `cubic-bezier(0.4, 0, 0.6, 1)`.
 - **Expand/collapse sections** (accordion rows, collapsible overview cards, "more details" reveals) use the `collapse` transition built on `grid-template-rows: 0fr ↔ 1fr` — never animate `max-height` (a large max-height cap makes one direction ease unevenly with dead time). Structure: the transitioned element is `grid grid-rows-[1fr]`, wrapping a `min-h-0 overflow-hidden` clip div, wrapping the content (put the content's own padding/margins on this innermost layer so they collapse too). Timing: `grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1)` + `opacity 0.3s ease`; disable under `prefers-reduced-motion`. Reference implementation: `ExpenseSummaryView.vue` / `ExpenseBudgetsView.vue`.
 - Prefer transform + opacity (compositor-friendly); add `will-change` only on elements that actually animate.
@@ -264,5 +264,5 @@ Every new page or component must pass all of these before merge:
 ## 10. Governance
 
 - **Changing the standard**: propose changes as a PR that edits this file *and* the design skill together, with before/after screenshots. A convention change is only real once both documents and the reference components agree.
-- **Reference components** (copy these, don't invent): [EventCard.vue](src/components/EventCard.vue), [EventCreateDrawer.vue](src/components/EventCreateDrawer.vue), [DeleteConfirmModal.vue](src/components/DeleteConfirmModal.vue), [EventTextTab.vue](src/components/EventTextTab.vue), [NotificationContainer.vue](src/components/NotificationContainer.vue).
+- **Reference components** (copy these, don't invent): [EventCard.vue](src/components/EventCard.vue), [EventCreateDrawer.vue](src/components/EventCreateDrawer.vue), [DeleteConfirmModal.vue](src/components/DeleteConfirmModal.vue), [EventTextTab.vue](src/components/EventTextTab.vue), [ToastHost.vue](src/components/ToastHost.vue).
 - **Deviation is a bug.** If a design need genuinely isn't covered here, extend the closest existing pattern, then document it — never ship a one-off style.

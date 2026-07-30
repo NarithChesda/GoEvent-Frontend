@@ -369,25 +369,13 @@
       @cancel="closeDeleteModal"
     />
 
-    <!-- Success/Error Messages -->
-    <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-8 right-8 z-50">
-        <div
-          :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-          class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
-        >
-          <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2" />
-          <AlertCircle v-else class="w-5 h-5 mr-2" />
-          {{ message.text }}
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { Users, UserPlus, Info, CheckCircle, AlertCircle, ChevronDown, ChevronRight } from 'lucide-vue-next'
+import { Users, UserPlus, Info, ChevronDown, ChevronRight } from 'lucide-vue-next'
+import { useToast } from '../composables/useToast'
 import { hostsService, type EventHost, apiService } from '../services/api'
 import HostCard from './HostCard.vue'
 import EditHostDrawer from './EditHostDrawer.vue'
@@ -428,7 +416,7 @@ const showDeleteModal = ref(false)
 const isDeleting = ref(false)
 const selectedHost = ref<EventHost | null>(null)
 const hostToDelete = ref<EventHost | null>(null)
-const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
+const { showToast } = useToast()
 const draggedHost = ref<EventHost | null>(null)
 // Controls state
 const searchQuery = ref('')
@@ -557,10 +545,7 @@ const handleHostUpdated = async () => {
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {
-  message.value = { type, text }
-  setTimeout(() => {
-    message.value = null
-  }, 5000)
+  showToast(type, text)
 }
 
 // --- Embedded (Showcase section) presentation helpers ---
@@ -750,21 +735,6 @@ defineExpose({
 </script>
 
 <style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-
 .host-item {
   transition: transform 0.2s ease;
 }

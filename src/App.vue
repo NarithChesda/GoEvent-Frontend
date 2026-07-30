@@ -5,7 +5,7 @@ import { useAuthStore } from './stores/auth'
 import { useNotificationsStore } from './stores/notifications'
 import { resetVendorProfileCache } from './composables/settings'
 import { secureStorage } from './utils/secureStorage'
-import NotificationContainer from './components/NotificationContainer.vue'
+import ToastHost from './components/ToastHost.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -72,5 +72,5 @@ onMounted(async () => {
 
 <template>
   <RouterView />
-  <NotificationContainer />
+  <ToastHost />
 </template>

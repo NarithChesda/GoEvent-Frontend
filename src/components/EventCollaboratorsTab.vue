@@ -415,25 +415,13 @@
       @cancel="closeRemoveModal"
     />
 
-    <!-- Success/Error Messages -->
-    <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-8 right-8 z-50">
-        <div
-          :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-          class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
-        >
-          <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2" />
-          <AlertCircle v-else class="w-5 h-5 mr-2" />
-          {{ message.text }}
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useToast } from '@/composables/useToast'
 import {
   Users,
   UserPlus,
@@ -484,8 +472,7 @@ const showRemoveModal = ref(false)
 const isInviting = ref(false)
 const isRemoving = ref(false)
 const collaboratorToRemove = ref<EventCollaborator | null>(null)
-const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
-const messageTimer = ref<number | null>(null)
+const { showToast } = useToast()
 
 // Inline invite form state
 const inviteEmail = ref('')
@@ -494,26 +481,13 @@ const inviteMessage = ref('')
 const inviteEmailError = ref<string | null>(null)
 
 /**
- * Show a temporary message to the user
- * Properly manages timeout to prevent memory leaks
+ * Show a temporary message to the user via the app-wide toast stack
  *
  * @param type - Message type (success or error)
  * @param text - Message text to display
  */
 const showMessage = (type: 'success' | 'error', text: string): void => {
-  // Clear existing timer if any
-  if (messageTimer.value !== null) {
-    clearTimeout(messageTimer.value)
-    messageTimer.value = null
-  }
-
-  message.value = { type, text }
-
-  // Set new timer
-  messageTimer.value = window.setTimeout(() => {
-    message.value = null
-    messageTimer.value = null
-  }, 5000)
+  showToast(type, text)
 }
 
 // Use the role management composable
@@ -878,14 +852,6 @@ onMounted(async () => {
   }
 })
 
-onUnmounted(() => {
-  // Clean up message timer to prevent memory leaks
-  if (messageTimer.value !== null) {
-    clearTimeout(messageTimer.value)
-    messageTimer.value = null
-  }
-})
-
 // Expose methods for parent component (Smart FAB)
 defineExpose({
   openInviteModal: openInviteForm,
@@ -894,21 +860,6 @@ defineExpose({
 </script>
 
 <style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-
 .collapse-enter-active,
 .collapse-leave-active {
   transition:

@@ -483,20 +483,6 @@
       </div>
     </div>
 
-    <!-- Success/Error Messages -->
-    <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-20 lg:bottom-4 right-4 left-4 sm:left-auto z-50">
-        <div
-          :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-          class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center justify-center sm:justify-start"
-        >
-          <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2" />
-          <AlertCircle v-else class="w-5 h-5 mr-2" />
-          {{ message.text }}
-        </div>
-      </div>
-    </Transition>
-
     <!-- QR Code Modal -->
     <Transition name="fade">
       <div
@@ -574,7 +560,6 @@ import {
   Video,
   Calendar,
   AlertCircle,
-  CheckCircle,
   Clock,
   CalendarPlus,
   Share2,
@@ -587,6 +572,7 @@ import { eventsService, donationService, type Event, type EventRegistration } fr
 import type { FundraisingProgress } from '../services/api/types/donation.types'
 import PublicDonationForm from '../components/PublicDonationForm.vue'
 import { useAuthStore } from '../stores/auth'
+import { useToast } from '../composables/useToast'
 import { apiClient } from '../services/api'
 import { extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
 import { BANNER_WIDTHS, getBannerUrl as resolveBannerUrl } from '@/utils/mediaUrl'
@@ -604,7 +590,7 @@ const isRegistering = ref(false)
 const isCancelling = ref(false)
 const linkCopied = ref(false)
 const showCalendarOptions = ref(false)
-const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
+const { showToast } = useToast()
 const userRegistration = ref<EventRegistration | null>(null)
 const registrationChecked = ref(false)
 const showQRModal = ref(false)
@@ -977,10 +963,7 @@ const joinVirtualEvent = () => {
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {
-  message.value = { type, text }
-  setTimeout(() => {
-    message.value = null
-  }, 5000)
+  showToast(type, text)
 }
 
 // URL helpers
@@ -1159,21 +1142,6 @@ watch(
 </script>
 
 <style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-
 /* Fade transition for QR modal */
 .fade-enter-active,
 .fade-leave-active {

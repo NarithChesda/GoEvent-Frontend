@@ -27,9 +27,10 @@ export const Z_INDEX = {
   modalBackdrop: 49,
   modalContent: 51,
 
-  // Notification layers
-  toast: 200,
-  tooltip: 300,
+  // Notification layers — the toast stack sits above drawers (999) and modals
+  // (1000) so a toast raised from inside one is still visible.
+  toast: 1100,
+  tooltip: 1200,
 
   // Maximum layer (for debugging overlays)
   debug: 9999,

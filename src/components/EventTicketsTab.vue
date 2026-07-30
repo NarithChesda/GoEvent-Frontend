@@ -84,20 +84,6 @@
       />
     </div>
 
-    <!-- Local toast (matches the guest-tab toast pattern) -->
-    <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-20 lg:bottom-8 right-4 sm:right-8 left-4 sm:left-auto z-[100]">
-        <div
-          :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-          class="text-white px-4 sm:px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl shadow-lg flex items-center text-sm sm:text-base"
-        >
-          <CheckCircle v-if="message.type === 'success'" class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
-          <AlertCircle v-else class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
-          <span class="flex-1">{{ message.text }}</span>
-        </div>
-      </div>
-    </Transition>
-
     <!-- Door-scan drawer — slides over the tab while the camera is in use. -->
     <TicketScanDrawer
       v-model:show="showScanDrawer"
@@ -118,16 +104,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import {
-  CheckCircle,
-  AlertCircle,
-  Inbox,
-  Ticket,
-  MessageSquareText,
-  ScanLine,
-  Receipt,
-} from 'lucide-vue-next'
+import { Inbox, Ticket, MessageSquareText, ScanLine, Receipt } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useToast } from '@/composables/useToast'
 import TicketOrdersList from './tickets/TicketOrdersList.vue'
 import TicketTypesManager from './tickets/TicketTypesManager.vue'
 import CheckoutQuestionsManager from './tickets/CheckoutQuestionsManager.vue'
@@ -235,42 +214,14 @@ onMounted(() => {
 })
 
 // ---- Toast --------------------------------------------------------------
-interface Toast {
-  type: 'success' | 'error'
-  text: string
-}
+const { showToast } = useToast()
 
-const message = ref<Toast | null>(null)
-let messageTimer: number | null = null
-
-const showMessage = (type: Toast['type'], text: string) => {
-  message.value = { type, text }
-  if (messageTimer !== null) {
-    clearTimeout(messageTimer)
-  }
-  messageTimer = window.setTimeout(() => {
-    message.value = null
-    messageTimer = null
-  }, 4000)
+const showMessage = (type: 'success' | 'error', text: string) => {
+  showToast(type, text)
 }
 </script>
 
 <style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-
 /* Hide scrollbar but keep functionality */
 .scrollbar-hide {
   -ms-overflow-style: none;

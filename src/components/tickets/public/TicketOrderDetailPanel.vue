@@ -211,32 +211,17 @@
       @submit="submitRefund"
     />
 
-    <!-- Toast (matches canonical: bottom-20 lg:bottom-8 / right-4 sm:right-8 / left-4 sm:left-auto) -->
-    <Transition name="slide-up">
-      <div
-        v-if="message"
-        class="fixed bottom-20 lg:bottom-8 right-4 sm:right-8 left-4 sm:left-auto z-[100]"
-      >
-        <div
-          :class="message.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'"
-          class="text-white px-5 py-3 rounded-2xl shadow-lg flex items-center gap-2 sm:max-w-sm"
-        >
-          <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 flex-shrink-0" />
-          <AlertCircle v-else class="w-5 h-5 flex-shrink-0" />
-          <span class="text-sm">{{ message.text }}</span>
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { CheckCircle, AlertCircle } from 'lucide-vue-next'
+import { AlertCircle } from 'lucide-vue-next'
 import TicketCard from '@/components/tickets/public/TicketCard.vue'
 import TicketProofUploadForm from '@/components/tickets/public/TicketProofUploadForm.vue'
 import RefundRequestModal from '@/components/tickets/public/RefundRequestModal.vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useToast } from '@/composables/useToast'
 import { ticketOrdersService, type TicketOrderDetail } from '@/services/api'
 import { formatCurrency, type CurrencyCode } from '@/utils/currency'
 
@@ -256,16 +241,9 @@ const refundModalRef = ref<InstanceType<typeof RefundRequestModal> | null>(null)
 
 const isCancelling = ref(false)
 
-interface Toast { type: 'success' | 'error'; text: string }
-const message = ref<Toast | null>(null)
-let messageTimer: number | null = null
-const handleMessage = (type: Toast['type'], text: string) => {
-  message.value = { type, text }
-  if (messageTimer !== null) clearTimeout(messageTimer)
-  messageTimer = window.setTimeout(() => {
-    message.value = null
-    messageTimer = null
-  }, 4000)
+const { showToast } = useToast()
+const handleMessage = (type: 'success' | 'error', text: string) => {
+  showToast(type, text)
 }
 
 // ---- Live ticking for the refund-window countdown ------------------------
@@ -279,7 +257,6 @@ onMounted(() => {
 })
 onBeforeUnmount(() => {
   if (tickInterval !== null) clearInterval(tickInterval)
-  if (messageTimer !== null) clearTimeout(messageTimer)
 })
 
 // ---- Load ----------------------------------------------------------------
@@ -470,17 +447,3 @@ const submitRefund = async (reason: string) => {
 }
 </script>
 
-<style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-</style>

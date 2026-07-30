@@ -139,15 +139,6 @@
         </template>
       </div>
 
-      <!-- Link copied toast -->
-      <Transition name="slide-up">
-        <div v-if="showCopiedToast" class="fixed bottom-36 lg:bottom-4 right-4 lg:right-6 z-50">
-          <div class="bg-green-500 text-white px-6 py-4 rounded-xl shadow-lg flex items-center">
-            <CheckCircle class="w-5 h-5 mr-2" />
-            {{ t('services.detail.linkCopied') }}
-          </div>
-        </div>
-      </Transition>
     </div>
   </MainLayout>
 </template>
@@ -155,7 +146,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, MapPin, CheckCircle } from 'lucide-vue-next'
+import { ArrowLeft, MapPin } from 'lucide-vue-next'
+import { useToast } from '@/composables/useToast'
 import MainLayout from '@/components/MainLayout.vue'
 import { ServiceCard, ServicesEmptyState, type Listing } from '@/components/services'
 import ServiceDetailHero from '@/components/services/detail/ServiceDetailHero.vue'
@@ -182,8 +174,7 @@ const {
 
 const isLoading = ref(true)
 const notFound = ref(false)
-const showCopiedToast = ref(false)
-let copiedToastTimer: ReturnType<typeof setTimeout> | null = null
+const { showSuccess } = useToast()
 
 const listing = computed(() => selectedListing.value)
 
@@ -261,11 +252,7 @@ const shareListing = async () => {
 
   try {
     await navigator.clipboard.writeText(shareData.url)
-    showCopiedToast.value = true
-    if (copiedToastTimer) clearTimeout(copiedToastTimer)
-    copiedToastTimer = setTimeout(() => {
-      showCopiedToast.value = false
-    }, 3000)
+    showSuccess(t('services.detail.linkCopied'))
   } catch {
     // Clipboard unavailable — nothing else to do
   }
@@ -298,23 +285,6 @@ watch(
 
 onUnmounted(() => {
   resetMetaTags()
-  if (copiedToastTimer) clearTimeout(copiedToastTimer)
 })
 </script>
 
-<style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-</style>

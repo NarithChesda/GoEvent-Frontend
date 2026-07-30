@@ -430,32 +430,6 @@
       </Transition>
     </Teleport>
 
-    <!-- Toast Messages -->
-    <Transition name="slide-up">
-      <div v-if="toastMessage" class="fixed bottom-20 lg:bottom-4 right-4 z-[1001]">
-        <div
-          :class="[
-            'px-4 py-3 rounded-lg shadow-lg flex items-center gap-2',
-            toastMessage.type === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-red-50 border border-red-200 text-red-800'
-          ]"
-        >
-          <div
-            :class="[
-              'w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0',
-              toastMessage.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'
-            ]"
-          >
-            <svg v-if="toastMessage.type === 'success'" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-            <svg v-else class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </div>
-          <span class="font-medium">{{ toastMessage.text }}</span>
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -480,6 +454,7 @@ import {
 import { ListingFormDrawer } from '@/components/services'
 import { serviceListingsService, serviceCategoriesService, apiClient } from '@/services/api'
 import { useVendorProfile } from '@/composables/settings/useVendorProfile'
+import { useToast } from '@/composables/useToast'
 import type { ServiceListing, ServiceListingAnalytics, ServiceCategory } from '@/services/api/types'
 
 const { t } = useI18n()
@@ -510,7 +485,7 @@ const analytics = ref<ServiceListingAnalytics | null>(null)
 const isLoadingAnalytics = ref(false)
 
 // Toast state
-const toastMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
+const { showToast } = useToast()
 
 // Computed stats
 const activeCount = computed(() => listings.value.filter(l => l.status === 'approved').length)
@@ -599,13 +574,6 @@ const getStatusLabel = (status: string): string => {
     default:
       return status
   }
-}
-
-const showToast = (type: 'success' | 'error', text: string) => {
-  toastMessage.value = { type, text }
-  setTimeout(() => {
-    toastMessage.value = null
-  }, 4000)
 }
 
 const loadListings = async (page = 1) => {
@@ -731,21 +699,6 @@ onMounted(async () => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-}
-
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
 }
 
 .line-clamp-1 {

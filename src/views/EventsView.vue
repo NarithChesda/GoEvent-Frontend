@@ -78,22 +78,6 @@
       <!-- Footer -->
       <AppFooter />
 
-      <!-- Success/Error Messages -->
-      <Transition name="slide-up">
-        <div v-if="message" class="fixed bottom-20 lg:bottom-4 right-6 z-50">
-          <div
-            :class="
-              message.type === 'success' ? 'bg-green-500' : 'bg-red-500'
-            "
-            class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
-          >
-            <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2" />
-            <AlertCircle v-else class="w-5 h-5 mr-2" />
-            {{ message.text }}
-          </div>
-        </div>
-      </Transition>
-
       <!-- Create Event FAB -->
       <button
         v-if="showCreateFab"
@@ -147,7 +131,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Plus, CheckCircle, AlertCircle } from 'lucide-vue-next'
+import { Plus } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
 import EventCreateDrawer from '@/components/EventCreateDrawer.vue'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
@@ -169,11 +153,13 @@ import { groupEventsByDate } from '@/composables/useEventFormatters'
 import { eventsService, type Event } from '@/services/api'
 import { useEventsData } from '@/composables/useEventsData'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useToast } from '@/composables/useToast'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const { t } = useAppLanguage()
+const { showToast } = useToast()
 
 // Global search
 const { open: openSearch } = useGlobalSearch()
@@ -191,7 +177,6 @@ const timeFilterOptions = computed(() => [
 ])
 
 // UI state
-const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const showCreateModal = ref(false)
 const showDeleteModal = ref(false)
 const isDeleting = ref(false)
@@ -384,10 +369,7 @@ const closeDeleteModal = () => {
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {
-  message.value = { type, text }
-  setTimeout(() => {
-    message.value = null
-  }, 5000)
+  showToast(type, text)
 }
 
 const shouldOpenCreateModalFromQuery = () => {
@@ -544,19 +526,3 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-</style>

@@ -382,19 +382,6 @@
       </div>
     </div>
 
-    <!-- Success/Error Messages -->
-    <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-20 lg:bottom-4 right-6 z-50">
-        <div
-          :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-          class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
-        >
-          <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2" />
-          <AlertCircle v-else class="w-5 h-5 mr-2" />
-          {{ message.text }}
-        </div>
-      </div>
-    </Transition>
     </div>
   </MainLayout>
 </template>
@@ -404,11 +391,10 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick, inject, defineA
 import { useRoute, useRouter } from 'vue-router'
 import { useSidebar } from '../composables/useSidebar'
 import { useAppLanguage } from '../composables/useAppLanguage'
+import { useToast } from '../composables/useToast'
 import {
   Lock,
   Pencil,
-  CheckCircle,
-  AlertCircle,
   AlertTriangle,
   Calendar,
   FileText,
@@ -453,6 +439,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 const { isCollapsed } = useSidebar()
 const { t } = useAppLanguage()
+const { showToast } = useToast()
 
 // Inject home sidebar state from MainLayout (with default value to prevent warnings)
 const showHomeSidebarOverlay = inject<Ref<boolean>>('showHomeSidebarOverlay', ref(false))
@@ -498,7 +485,6 @@ const contentMarginLeft = computed(() => {
 const event = ref<Event | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
-const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 // Initialize activeTab from URL query parameter or default to 'overview'
 const activeTab = ref((route.query.tab as string) || 'overview')
 // The tab this visit started on — the "start destination" the back button
@@ -964,10 +950,7 @@ const handleGuestTabChange = async (tab: string, action?: string) => {
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {
-  message.value = { type, text }
-  setTimeout(() => {
-    message.value = null
-  }, 5000)
+  showToast(type, text)
 }
 
 // Date formatting utilities (still used in About section)
@@ -1132,21 +1115,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-
 .prose p {
   margin-bottom: 1rem;
 }

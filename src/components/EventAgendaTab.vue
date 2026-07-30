@@ -477,26 +477,13 @@
       @cancel="closeEditDateGroupModal"
     />
 
-    <!-- Success/Error Messages -->
-    <Transition name="slide-up">
-      <div v-if="toast.message.value" class="fixed bottom-8 right-8 z-50">
-        <div
-          :class="toast.message.value.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-          class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
-        >
-          <CheckCircle v-if="toast.message.value.type === 'success'" class="w-5 h-5 mr-2" />
-          <AlertCircle v-else class="w-5 h-5 mr-2" />
-          {{ toast.message.value.text }}
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, toRef } from 'vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { Calendar, Plus, ChevronDown, ChevronRight, Clock, Star, Info, CheckCircle, AlertCircle, Edit2, Trash2 } from 'lucide-vue-next'
+import { Calendar, Plus, ChevronDown, ChevronRight, Clock, Star, Info, Edit2, Trash2 } from 'lucide-vue-next'
 import { agendaService, type EventAgendaItem } from '../services/api'
 import AgendaItemCard from './AgendaItemCard.vue'
 import EditAgendaDrawer from './EditAgendaDrawer.vue'
@@ -1085,22 +1072,6 @@ defineExpose({
 .collapse-leave-to {
   height: 0;
   opacity: 0;
-}
-
-/* Toast slide-up transition */
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
 }
 
 .agenda-item {

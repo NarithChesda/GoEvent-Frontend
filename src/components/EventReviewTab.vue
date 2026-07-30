@@ -189,20 +189,6 @@
       </form>
     </div>
 
-    <!-- Success/Error Messages -->
-    <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-20 lg:bottom-4 right-6 z-50">
-        <div
-          :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-          class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
-        >
-          <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2" />
-          <AlertCircle v-else class="w-5 h-5 mr-2" />
-          {{ message.text }}
-        </div>
-      </div>
-    </Transition>
-
     <!-- Delete Confirmation Modal -->
     <DeleteConfirmModal
       :show="showDeleteConfirm"
@@ -216,18 +202,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import {
-  Star,
-  RefreshCw,
-  Pencil,
-  Trash2,
-  Send,
-  Info,
-  CheckCircle,
-  AlertCircle,
-} from 'lucide-vue-next'
+import { useToast } from '@/composables/useToast'
+import { Star, RefreshCw, Pencil, Trash2, Send, Info } from 'lucide-vue-next'
 import { reviewsService, type EventReview } from '../services/api'
 import { useAuthStore } from '@/stores/auth'
 import { sanitizePlainText } from '@/utils/sanitize'
@@ -241,6 +219,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const { t } = useAppLanguage()
+const { showToast } = useToast()
 
 // Auth store
 const authStore = useAuthStore()
@@ -254,7 +233,6 @@ const isEditing = ref(false)
 const hoverRating = ref(0)
 const showInfo = ref(false)
 const showDeleteConfirm = ref(false)
-const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
 // Form data
 const formData = ref({
@@ -263,7 +241,6 @@ const formData = ref({
 })
 
 const errors = ref<Record<string, string>>({})
-const messageTimeout = ref<number | null>(null)
 
 // Computed properties
 const sanitizedReviewText = computed(() => {
@@ -468,47 +445,16 @@ const getInitials = (firstName?: string, lastName?: string): string => {
 
 // Helper: Show message with cleanup
 const showMessage = (type: 'success' | 'error', text: string) => {
-  // Clear any existing timeout
-  if (messageTimeout.value) {
-    clearTimeout(messageTimeout.value)
-  }
-
-  message.value = { type, text }
-  messageTimeout.value = window.setTimeout(() => {
-    message.value = null
-    messageTimeout.value = null
-  }, 5000)
+  showToast(type, text)
 }
 
 // Lifecycle
 onMounted(() => {
   loadReview()
 })
-
-onUnmounted(() => {
-  // Clear message timeout to prevent memory leak
-  if (messageTimeout.value) {
-    clearTimeout(messageTimeout.value)
-  }
-})
 </script>
 
 <style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-
 .collapse-enter-active,
 .collapse-leave-active {
   transition:

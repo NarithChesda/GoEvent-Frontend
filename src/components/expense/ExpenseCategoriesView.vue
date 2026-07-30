@@ -205,7 +205,6 @@
       </div>
     </ExpenseModal>
 
-
     <!-- Delete Confirmation Modal -->
     <DeleteConfirmModal
       :show="!!deletingCategory"
@@ -217,22 +216,6 @@
       @cancel="deletingCategory = null"
     />
 
-    <!-- Success Toast -->
-    <Teleport to="body">
-      <Transition name="toast">
-        <div
-          v-if="showSuccessToast"
-          role="status"
-          aria-live="polite"
-          class="fixed bottom-6 right-6 bg-emerald-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-[200]"
-        >
-          <div class="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-            <Check class="w-4 h-4" />
-          </div>
-          <span class="font-medium">{{ successMessage }}</span>
-        </div>
-      </Transition>
-    </Teleport>
   </div>
 </template>
 
@@ -245,13 +228,12 @@ import {
   Palette,
   Info,
   AlertCircle,
-  Check,
   ChevronDown,
   Plus
 } from 'lucide-vue-next'
 import { expenseCategoriesService, type ExpenseCategory } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
-import { useSuccessToast } from '@/composables/useSuccessToast'
+import { useToast } from '@/composables/useToast'
 import { getErrorMessage } from '@/utils/errorMessages'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
 import ExpenseModal from './ExpenseModal.vue'
@@ -272,7 +254,7 @@ const submitting = ref(false)
 const modalError = ref<string | null>(null)
 
 // Use composables
-const { showToast: showSuccessToast, message: successMessage, showSuccess } = useSuccessToast()
+const { showSuccess } = useToast()
 
 // Use shared icon utilities
 const { getIconComponent } = useExpenseIcons()
@@ -283,7 +265,6 @@ const formData = ref({
   icon: '',
   color: '#3498db'
 })
-
 
 const loadCategories = async () => {
   loading.value = true
@@ -436,16 +417,5 @@ defineExpose({
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}
-
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.3s ease;
-}
-
-.toast-enter-from,
-.toast-leave-to {
-  opacity: 0;
-  transform: translateY(1rem);
 }
 </style>
