@@ -87,23 +87,6 @@
       <!-- Footer -->
       <AppFooter />
 
-      <!-- Success/Error Messages -->
-      <Transition name="slide-up">
-        <div v-if="message" class="fixed bottom-20 lg:bottom-4 right-6 z-50">
-          <div
-            :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-            class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
-          >
-            <CheckCircle
-              v-if="message.type === 'success'"
-              class="w-5 h-5 mr-2"
-            />
-            <AlertCircle v-else class="w-5 h-5 mr-2" />
-            {{ message.text }}
-          </div>
-        </div>
-      </Transition>
-
       <!-- Public Event Drawer -->
       <PublicEventDrawer
         v-model="showEventDrawer"
@@ -122,7 +105,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { CheckCircle, AlertCircle } from 'lucide-vue-next'
+import { useToast } from '@/composables/useToast'
 import MainLayout from '@/components/MainLayout.vue'
 import PublicEventDrawer from '@/components/PublicEventDrawer.vue'
 import AppFooter from '@/components/AppFooter.vue'
@@ -178,7 +161,7 @@ const likedEventsLoaded = ref(false) // Track if liked events have been loaded a
 const filters = ref<EventFiltersType>({})
 
 // UI state
-const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
+const { showToast } = useToast()
 const loadMoreTrigger = ref<HTMLElement | null>(null)
 
 // Public Event Drawer state
@@ -348,10 +331,7 @@ const handleLikeChanged = (eventId: string, isLiked: boolean, likesCount: number
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {
-  message.value = { type, text }
-  setTimeout(() => {
-    message.value = null
-  }, 5000)
+  showToast(type, text)
 }
 
 // Filter handlers
@@ -460,19 +440,3 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-</style>

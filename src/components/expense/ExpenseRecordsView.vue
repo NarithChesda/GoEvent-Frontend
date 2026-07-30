@@ -388,22 +388,6 @@
       @cancel="deletingExpense = null"
     />
 
-    <!-- Success Toast -->
-    <Teleport to="body">
-      <Transition name="toast">
-        <div
-          v-if="showSuccessToast"
-          role="status"
-          aria-live="polite"
-          class="fixed bottom-6 right-6 bg-emerald-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-[200]"
-        >
-          <div class="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-            <Check class="w-4 h-4" />
-          </div>
-          <span class="font-medium">{{ successMessage }}</span>
-        </div>
-      </Transition>
-    </Teleport>
   </div>
 </template>
 
@@ -420,7 +404,6 @@ import {
   Trash2,
   AlertCircle,
   Filter,
-  Check,
   DollarSign,
   Upload,
   ChevronDown,
@@ -434,7 +417,7 @@ import {
   type ExpenseCategory
 } from '@/services/api'
 import { useExpenseIcons } from '@/composables/useExpenseIcons'
-import { useSuccessToast } from '@/composables/useSuccessToast'
+import { useToast } from '@/composables/useToast'
 import { formatPaymentMethod, PAYMENT_METHOD_OPTIONS } from '@/constants/paymentMethods'
 import { SUPPORTED_CURRENCIES, type CurrencyCode } from '@/constants/currencies'
 import { getErrorMessage } from '@/utils/errorMessages'
@@ -481,7 +464,7 @@ const editForm = ref({
 })
 
 // Use composables
-const { showToast: showSuccessToast, message: successMessage, showSuccess } = useSuccessToast()
+const { showSuccess } = useToast()
 
 // Use shared icon utilities
 const { getIconComponent } = useExpenseIcons()
@@ -527,7 +510,6 @@ const filteredExpenses = computed(() => {
 
   return result
 })
-
 
 const loadExpenses = async () => {
   loading.value = true
@@ -758,17 +740,6 @@ defineExpose({
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}
-
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.3s ease;
-}
-
-.toast-enter-from,
-.toast-leave-to {
-  opacity: 0;
-  transform: translateY(1rem);
 }
 
 .collapse-enter-active,

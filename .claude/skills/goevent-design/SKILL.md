@@ -159,8 +159,21 @@ Pattern from [DeleteConfirmModal.vue](src/components/DeleteConfirmModal.vue):
 
 ## 12. Toasts & notifications
 
-- Global system: `useNotifications()` composable + [NotificationContainer.vue](src/components/NotificationContainer.vue) — `fixed bottom-8 right-8 z-50 space-y-4 max-w-sm`; each toast `rounded-xl shadow-lg p-4 backdrop-blur-sm border border-white/20` with type color at 90% alpha (`bg-green-500/90`, `bg-red-500/90`, `bg-yellow-500/90`, `bg-[#1e90ff]/90`), white text/icons (`CheckCircle`/`AlertCircle`/`AlertTriangle`/`Info` at `w-5 h-5`), dismiss `X` at `text-white/70 hover:text-white` with an `aria-label`. `TransitionGroup name="notification"` slides in/out from the right (`translateX(100%)`, 0.3s ease).
-- Simple page-local messages may use the inline pattern: fixed `bottom-20 lg:bottom-4 right-6 z-50`, `bg-green-500`/`bg-red-500 text-white px-6 py-4 rounded-xl shadow-lg` with icon, entering via `slide-up`. Prefer `useNotifications` for new code.
+**There is exactly one toast stack in the app.** Never render toast markup inside a feature component — that is how toasts used to end up overlapping each other and hiding behind the FABs. Call the composable; [ToastHost.vue](src/components/ToastHost.vue), mounted once in [App.vue](src/App.vue), renders everything.
+
+```ts
+const { showSuccess, showError, showWarning, showInfo } = useToast()
+showSuccess('Event published')
+showError('Upload failed', { description: 'The file is larger than 10 MB.' })
+showError('Needs your attention', { duration: 0 }) // sticky until dismissed
+```
+
+- **API** ([useToast.ts](src/composables/useToast.ts)): `showToast(type, title, options?)` plus the four type shorthands; `options` is `{ description?, duration?, dismissible? }` (a bare number is accepted as the duration). Also `dismissToast(id)`, `clearToasts()`, `pauseToasts()`/`resumeToasts()`. [useNotifications.ts](src/composables/useNotifications.ts) is a title+message adapter over the same queue — either is fine, `useToast` is preferred for new code.
+- **Behaviour**, all handled by the host: success/info dismiss after 4s and error/warning after 6s (`duration: 0` = sticky); the countdown pauses on hover, on keyboard focus, and while the tab is backgrounded; re-raising a message that is already on screen refreshes its timer and bumps a `×N` chip instead of stacking a duplicate; the stack caps at 3 and evicts the oldest.
+- **Placement**: top-center on mobile (`top-[calc(env(safe-area-inset-top,0px)_+_4.5rem)]`, below the top bar), top-right from `lg` (`lg:top-20 lg:right-6`), at `z-[1100]` so it clears drawers (`z-[999]`) and modals (`z-[1000]`). The bottom-right corner is reserved for the FAB stack and the mobile tab bar — do not anchor transient UI there.
+- **Toast surface**: `rounded-2xl border border-white/70 bg-white/85 backdrop-blur-xl px-3.5 py-3 shadow-lg shadow-slate-900/10 ring-1 ring-slate-900/5` — a light glass card, not a solid color block. Type reads from a `w-8 h-8 rounded-full` icon disc (`bg-emerald-50 text-emerald-600` / `bg-red-50 text-red-600` / `bg-amber-50 text-amber-600` / `bg-sky-50 text-sky-600`) plus a matching `h-[3px]` progress hairline pinned to the bottom edge. Title `text-sm font-semibold text-slate-900`, description `text-xs text-slate-500`.
+- **Dismissal**: `X` button (`h-7 w-7 rounded-lg text-slate-400 hover:bg-slate-100`) with an i18n `aria-label`, or swipe/drag the toast upward past ~56px (releases short of that spring back). Each toast carries `role="status"`/`role="alert"` + `aria-live`; motion collapses under `prefers-reduced-motion`.
+- **Inside a drawer**, a message tied to the drawer's own save action may stay inline above the footer (`absolute bottom-16 left-4 right-4 z-10`) so it reads next to the button that produced it — see [EventEditDrawer.vue](src/components/EventEditDrawer.vue). Everything else goes through `useToast`.
 
 ## 13. Loading, empty & error states
 
@@ -171,13 +184,13 @@ Pattern from [DeleteConfirmModal.vue](src/components/DeleteConfirmModal.vue):
 
 ## 14. Z-index ladder
 
-Fixed page chrome: page toast `z-50`, FAB `z-[60]`, mobile tab bar `z-[70]`; sub-nav/sidebars `z-40`. In-page dropdowns: click-outside overlay `z-[90]`, menu `z-[100]`. Overlays: drawer backdrop `z-[998]`, drawer panel `z-[999]`, modal `z-[1000]`. Match neighboring components.
+Fixed page chrome: sub-nav/sidebars `z-40`, contact FAB `z-[55]`, primary FAB `z-[60]`, mobile tab bar `z-[70]`. In-page dropdowns: click-outside overlay `z-[90]`, menu `z-[100]`. Overlays: drawer backdrop `z-[998]`, drawer panel `z-[999]`, modal `z-[1000]`. The toast stack sits above everything at `z-[1100]` — a toast fired from inside a drawer or modal has to be visible. Match neighboring components.
 
 ## 15. Motion language (general UI)
 
 - Micro-interactions: `transition-colors duration-200`; composite hovers `transition-all duration-300`; image zooms `duration-500`.
 - Scale on hover only for FABs/primary CTAs (`hover:scale-110`); cards lift via border + shadow instead. Mobile press feedback: `active:scale-95`.
-- Vue `<Transition>` names in use: `fade` (backdrops), `slide-right` (drawers), `slide-fade` (conditional form fields), `modal` (dialogs), `slide-up` (toasts), `dropdown` (menus), `notification` (toast group), `sheet` (bottom sheets), `collapse` (expand/collapse sections).
+- Vue `<Transition>` names in use: `fade` (backdrops), `slide-right` (drawers), `slide-fade` (conditional form fields), `modal` (dialogs), `slide-up` (mobile sheet panels, in-drawer inline messages), `dropdown` (menus), `toast` (the toast TransitionGroup in [ToastHost.vue](src/components/ToastHost.vue)), `sheet` (bottom sheets), `collapse` (expand/collapse sections).
 - **Expand/collapse sections** (accordion rows, collapsible cards, "more details" reveals): use the `collapse` transition on a grid wrapper — never `max-height` animation (a large cap makes one direction ease unevenly with dead time). Markup: `<Transition name="collapse"><div v-if="open" class="grid grid-rows-[1fr]"><div class="min-h-0 overflow-hidden"><div class="pt-…"> content </div></div></div></Transition>` — content padding/margins go on the innermost layer so they collapse too. CSS: `.collapse-enter-active, .collapse-leave-active { transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease; }` and `.collapse-enter-from, .collapse-leave-to { grid-template-rows: 0fr; opacity: 0; }`, disabled under `prefers-reduced-motion`. Works with `v-if` and `v-show`; reference: [ExpenseSummaryView.vue](src/components/expense/ExpenseSummaryView.vue), [ExpenseBudgetsView.vue](src/components/expense/ExpenseBudgetsView.vue).
 - Prefer transform+opacity transitions (compositor-friendly); add `will-change` only on elements that actually animate.
 

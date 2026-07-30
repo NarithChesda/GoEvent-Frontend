@@ -104,20 +104,6 @@
         </div>
       </button>
 
-      <!-- Success/Info Messages -->
-      <Transition name="slide-up">
-        <div v-if="message" class="fixed bottom-20 lg:bottom-4 right-6 z-50">
-          <div
-            :class="message.type === 'success' ? 'bg-green-500' : 'bg-[#1e90ff]'"
-            class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
-          >
-            <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2" />
-            <Info v-else class="w-5 h-5 mr-2" />
-            {{ message.text }}
-          </div>
-        </div>
-      </Transition>
-
       <!-- Listing Form Drawer (Create/Edit) -->
       <ListingFormDrawer
         v-model="showListingFormDrawer"
@@ -134,7 +120,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { Plus, CheckCircle, Info } from 'lucide-vue-next'
+import { Plus } from 'lucide-vue-next'
+import { useToast } from '@/composables/useToast'
 import MainLayout from '@/components/MainLayout.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import { MobileTopBar } from '@/components/events'
@@ -192,7 +179,7 @@ const editingListing = ref<Listing | null>(null)
 const showAllVendors = ref(false)
 
 // Message state
-const message = ref<{ type: 'success' | 'info'; text: string } | null>(null)
+const { showToast } = useToast()
 
 // Service categories from composable
 const serviceCategories = computed(() => serviceCategoriesForUI.value)
@@ -237,10 +224,7 @@ watch([selectedCategory, sortBy], async () => {
 
 // Methods
 const showMessage = (type: 'success' | 'info', text: string) => {
-  message.value = { type, text }
-  setTimeout(() => {
-    message.value = null
-  }, 5000)
+  showToast(type, text)
 }
 
 const openListingDetail = (listing: Listing) => {
@@ -297,19 +281,3 @@ const loadMore = async () => {
 }
 </script>
 
-<style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-</style>

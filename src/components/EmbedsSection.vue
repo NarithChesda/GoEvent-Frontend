@@ -214,19 +214,6 @@
     </div>
 
     <!-- Toast Feedback -->
-    <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-20 lg:bottom-4 right-6 z-50">
-        <div
-          :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-          class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
-        >
-          <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2" />
-          <AlertCircle v-else class="w-5 h-5 mr-2" />
-          {{ message.text }}
-        </div>
-      </div>
-    </Transition>
-
     <!-- Delete Confirmation Modal -->
     <DeleteConfirmModal
       :show="showDeleteModal"
@@ -356,7 +343,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { Youtube, Map, X, Save, CheckCircle, ChevronDown, AlertCircle, Info } from 'lucide-vue-next'
+import { Youtube, Map, X, Save, ChevronDown, Info } from 'lucide-vue-next'
 import { eventsService, type Event } from '../services/api'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import { extractYouTubeEmbedUrl, extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
@@ -377,7 +364,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const { t } = useAppLanguage()
-const { message, showSuccess, showError } = useToast()
+const { showSuccess, showError } = useToast()
 const { isExpanded: isMapExpanded, toggle: toggleMap } = useCollapsibleSection('map')
 const { isExpanded: isYoutubeExpanded, toggle: toggleYoutube } = useCollapsibleSection('youtube')
 
@@ -597,21 +584,6 @@ const handleMapsPaste = (event: ClipboardEvent) => {
 .modal-leave-to {
   opacity: 0;
   transform: scale(0.95);
-}
-
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
 }
 
 /* Collapse/expand via grid-template-rows 0fr↔1fr — tracks real content

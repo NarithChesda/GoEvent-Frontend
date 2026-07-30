@@ -277,25 +277,12 @@
       @cancel="showDeleteModal = false"
     />
 
-    <!-- Success/Error Messages -->
-    <Transition name="slide-up">
-      <div v-if="message" class="fixed bottom-20 lg:bottom-4 right-6 z-50">
-        <div
-          :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-          class="text-white px-6 py-4 rounded-xl shadow-lg flex items-center"
-        >
-          <CheckCircle v-if="message.type === 'success'" class="w-5 h-5 mr-2" />
-          <AlertCircle v-else class="w-5 h-5 mr-2" />
-          {{ message.text }}
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { Upload, ImageIcon, AlertCircle, CheckCircle, ChevronDown, Plus } from 'lucide-vue-next'
+import { Upload, ImageIcon, AlertCircle, ChevronDown, Plus } from 'lucide-vue-next'
 import { mediaService, type EventPhoto, type Event } from '../services/api'
 import { useToast } from '../composables/useToast'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -348,7 +335,7 @@ provideAccordionGroup()
 const { isExpanded: isPhotosExpanded, toggle: togglePhotosExpanded } = useCollapsibleSection('photos')
 
 // Toast notifications with automatic cleanup
-const { message, showSuccess, showError } = useToast()
+const { showSuccess, showError } = useToast()
 
 // State
 const media = ref<EventPhoto[]>([])
@@ -391,7 +378,6 @@ watch(
   },
   { deep: true },
 )
-
 
 // Methods
 const fetchMedia = async () => {
@@ -718,21 +704,6 @@ defineExpose({
 .media-item.dragging {
   transform: rotate(2deg) scale(1.05);
   z-index: 10;
-}
-
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
 }
 
 .scrollbar-hide {

@@ -1,75 +1,48 @@
-import { ref } from 'vue'
+import { useToast, type ToastType } from './useToast'
 
 export interface Notification {
   id: string
-  type: 'success' | 'error' | 'warning' | 'info'
+  type: ToastType
   title: string
   message?: string
   duration?: number
   dismissable?: boolean
 }
 
-const notifications = ref<Notification[]>([])
-
 /**
- * Composable for managing app-wide notifications
- * Provides a centralized notification system to replace alert() calls
+ * Title + supporting-message flavour of the toast API.
+ *
+ * This is a thin adapter over `useToast` — both feed the same queue and the same
+ * `ToastHost`, so it doesn't matter which one a component reaches for. Prefer
+ * `useToast` in new code; this exists so the existing call sites keep working.
  */
 export function useNotifications() {
-  const addNotification = (notification: Omit<Notification, 'id'>): string => {
-    const id = `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    const newNotification: Notification = {
-      id,
-      duration: 5000,
-      dismissable: true,
-      ...notification,
-    }
+  const { toasts, showToast, dismissToast, clearToasts } = useToast()
 
-    notifications.value.push(newNotification)
+  const addNotification = (notification: Omit<Notification, 'id'>): string =>
+    showToast(notification.type, notification.title, {
+      description: notification.message,
+      duration: notification.duration,
+      dismissible: notification.dismissable,
+    })
 
-    // Auto-dismiss if duration is set
-    if (newNotification.duration && newNotification.duration > 0) {
-      setTimeout(() => {
-        removeNotification(id)
-      }, newNotification.duration)
-    }
+  const success = (title: string, message?: string, duration?: number): string =>
+    showToast('success', title, { description: message, duration })
 
-    return id
-  }
+  const error = (title: string, message?: string, duration?: number): string =>
+    showToast('error', title, { description: message, duration })
 
-  const removeNotification = (id: string): void => {
-    const index = notifications.value.findIndex((n) => n.id === id)
-    if (index > -1) {
-      notifications.value.splice(index, 1)
-    }
-  }
+  const warning = (title: string, message?: string, duration?: number): string =>
+    showToast('warning', title, { description: message, duration })
 
-  const clearAllNotifications = (): void => {
-    notifications.value = []
-  }
-
-  // Convenience methods for different notification types
-  const success = (title: string, message?: string, duration?: number): string => {
-    return addNotification({ type: 'success', title, message, duration })
-  }
-
-  const error = (title: string, message?: string, duration?: number): string => {
-    return addNotification({ type: 'error', title, message, duration: duration || 8000 })
-  }
-
-  const warning = (title: string, message?: string, duration?: number): string => {
-    return addNotification({ type: 'warning', title, message, duration })
-  }
-
-  const info = (title: string, message?: string, duration?: number): string => {
-    return addNotification({ type: 'info', title, message, duration })
-  }
+  const info = (title: string, message?: string, duration?: number): string =>
+    showToast('info', title, { description: message, duration })
 
   return {
-    notifications,
+    notifications: toasts,
     addNotification,
-    removeNotification,
-    clearAllNotifications,
+    removeNotification: dismissToast,
+    clearAllNotifications: clearToasts,
     success,
     error,
     warning,
