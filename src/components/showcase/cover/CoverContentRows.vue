@@ -374,10 +374,16 @@ const getTextContent = (textType: string, fallback = ''): string => {
   return fallback
 }
 
-// Cover header from event texts
-const coverHeader = computed(
-  () => props.eventTexts?.find((text) => text.text_type === 'cover_header')?.content,
-)
+// Cover header from event texts.
+//
+// The language filter is load-bearing. On a first load the showcase response
+// only carries the requested language's texts, so an unfiltered `find` happened
+// to be right — but a language switch MERGES the new language's texts over the
+// old ones (see updateLanguageContent), leaving every language in this array at
+// once, previous languages first. Without the filter the header then locks onto
+// whichever language was loaded first and lags a switch behind the invite text
+// below, which has always filtered.
+const coverHeader = computed(() => getTextContent('cover_header'))
 
 // Display title (cover header or event title)
 const displayTitle = computed(() => coverHeader.value || props.eventTitle)

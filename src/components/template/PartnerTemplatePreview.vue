@@ -80,7 +80,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useAppLanguage } from '@/composables/useAppLanguage'
 import type { Event, PartnerTemplate } from '@/services/api'
 import PreviewFrame from '../showcase-preview/PreviewFrame.vue'
 import InertIframe from '../showcase-preview/InertIframe.vue'
@@ -121,9 +120,6 @@ const props = withDefaults(defineProps<Props>(), { savedTemplate: null, eventDat
 const emit = defineEmits<{ 'update:stage': [string] }>()
 
 const { t } = useI18n()
-// The app's own locale — the language this partner is working in, and so the
-// one the preview should open in when the event offers it.
-const { locale } = useAppLanguage()
 
 // ---------------------------------------------------------------------------
 // The draft as showcase data. Unsaved File picks are previewed straight from
@@ -240,17 +236,21 @@ const frameLoading = ref(true)
 const frameLanguages = ref<string[]>([])
 
 /**
- * Seeded from the app's own locale, and it matters that this is non-empty from
- * the very first render: it is what puts `?lang=` on the frame's initial `src`.
- * Without it the frame fell through to `useEventShowcase`'s hardcoded `'kh'`
- * default (see the `urlLang` line there), so every preview opened in Khmer no
- * matter who was looking at it or what the event's own default was.
+ * The language the preview opens in. Khmer, deliberately — NOT the partner's own
+ * app locale. A template is judged on how it renders the script its guests will
+ * actually read, and Khmer is both the demanding case (taller glyphs, custom
+ * fonts) and what the live showcase itself defaults to (`useEventShowcase`'s
+ * `urlLang` fallback). Seeding from the app locale meant a partner working in
+ * English opened every preview in English and never saw the layout that matters.
+ *
+ * It matters that this is non-empty from the very first render: it is what puts
+ * `?lang=` on the frame's initial `src`.
  *
  * The parent only ever *proposes* a language this way. Whatever the frame
  * actually resolves — the event may not carry texts in this one — comes back on
  * the `languages` report below and wins.
  */
-const previewLanguage = ref<string>(locale.value)
+const previewLanguage = ref<string>('kh')
 
 const previewLanguages = computed(() => {
   const langs = new Set<string>(frameLanguages.value)
@@ -353,9 +353,8 @@ watch(
 const frameSrc = computed(() => {
   if (!frameKey.value || !activeFrame.value) return ''
   const params = new URLSearchParams({ stage: activeFrame.value.id })
-  // Always present in practice — `previewLanguage` is seeded from the app locale
-  // before the first frame mounts. Leaving it off would drop the frame onto
-  // useEventShowcase's hardcoded `'kh'` fallback.
+  // Always present in practice — `previewLanguage` is seeded before the first
+  // frame mounts, and reconciled to whatever the frame reports thereafter.
   if (srcLanguage.value) params.set('lang', srcLanguage.value)
   return `/events/${props.eventId}/showcase-preview-frame?${params.toString()}`
 })
