@@ -15,6 +15,7 @@
     <!-- Ambient creature effect (butterflies hovering near decorations) — only when template has config -->
     <AmbientEffect
       v-if="ambientCreatures"
+      :key="ambientCreaturesKey"
       :config="ambientCreatures"
       :primary-color="primaryColor"
       :accent-color="accentColor"
@@ -234,6 +235,28 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   openEnvelope: []
 }>()
+
+// AmbientEffect snapshots its config during setup exactly the way FallingEffect
+// does (useAmbientCreatures destructures its options into plain locals), so a
+// mounted instance can't see a changed creature list, count or speed. The `v-if`
+// only covers turning the effect on and off wholesale; everything else needs a
+// remount. Same rationale as MainContentStage's fallingEffectKey — no-op for
+// guests, required for the partner template studio's live preview. Colors stay
+// out of the key for the same reason: they resolve through a per-creature
+// callback that already picks up palette edits.
+const ambientCreaturesKey = computed(() => {
+  const config = props.ambientCreatures
+  if (!config) return 'none'
+  return [
+    config.creatures
+      .map((creature) => `${creature.type}:${creature.weight ?? 1}:${creature.min_size ?? ''}:${creature.max_size ?? ''}`)
+      .join(','),
+    config.count ?? 6,
+    config.speed ?? 'normal',
+    config.color_source ?? 'accent',
+    config.custom_color ?? '',
+  ].join('|')
+})
 
 // Optimized cover decoration image URLs
 const {

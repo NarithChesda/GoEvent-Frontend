@@ -5,6 +5,7 @@
 
     <!-- Falling Particle Effect (petals, confetti, custom image, etc.) -->
     <FallingEffect
+      :key="fallingEffectKey"
       :config="fallingEffect"
       :primary-color="primaryColor"
       :accent-color="accentColor"
@@ -1042,6 +1043,33 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// FallingEffect reads its config ONCE, during setup: useFallingParticles
+// destructures its options into plain locals and derives the motion profile,
+// intensity preset and cached custom image from them right there, so nothing
+// about a later config change can reach a mounted instance. Remounting on a
+// changed config is what makes it react.
+//
+// Inert on the public showcase — a guest's template can't change mid-session —
+// and load-bearing in the partner template studio, where editing this effect
+// and watching it is the entire point.
+//
+// Deliberately keyed on the effect's own config only, not on primaryColor /
+// accentColor: those are resolved through a `color()` callback the composable
+// invokes per spawned particle, so palette edits already reach new particles
+// (converging as the field recycles) without tearing the whole field down on
+// every drag of an unrelated color picker.
+const fallingEffectKey = computed(() => {
+  const config = props.fallingEffect
+  if (!config) return 'none'
+  return [
+    config.type,
+    config.intensity ?? 'normal',
+    config.color_source ?? 'primary',
+    config.custom_color ?? '',
+    config.custom_image ?? '',
+  ].join('|')
+})
 
 // Only provided by the editable manage-page preview frame — undefined on the
 // public showcase, so the empty-agenda add affordance can never leak there.
