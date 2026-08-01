@@ -2530,11 +2530,94 @@
       "adminNote": "Admin note:"
     }
   },
+  "templateSlots": {
+    "field": {
+      "toggle": "Show suggestions",
+      "alreadySet": "Already set",
+      "notRendered": "Not used yet",
+      "fallbackPrefix": "If unset:",
+      "customHint": "Custom names are allowed, but the showcase only looks up the names above. An unrecognised colour still counts toward the position-based fallbacks (1st, 2nd and 3rd colour)."
+    },
+    "colors": {
+      "primary": {
+        "label": "Primary",
+        "description": "The main colour, used across every stage for titles and headings — and as the fallback for most other colours.",
+        "fallback": "the first colour in this list, then a default blue"
+      },
+      "secondary": {
+        "label": "Secondary",
+        "description": "Supporting colour for secondary text and details.",
+        "fallback": "the second colour in this list"
+      },
+      "accent": {
+        "label": "Accent",
+        "description": "Highlights and dividers, and the default tint for falling particles and ambient creatures.",
+        "fallback": "the third colour in this list, then Primary"
+      },
+      "background": {
+        "label": "Background",
+        "description": "Backdrop behind the main content.",
+        "fallback": "Primary"
+      },
+      "template": {
+        "label": "Template",
+        "description": "Cover backdrop before the envelope is opened, used when the template has no background photo or video.",
+        "fallback": "the cover decoration photo, then white"
+      },
+      "guestname": {
+        "label": "Guest name",
+        "description": "The guest's name on the cover.",
+        "fallback": "the cover's own default"
+      },
+      "blurEffect": {
+        "label": "Blur effect",
+        "description": "Tint of the blurred veil on the transition stage.",
+        "fallback": "white"
+      }
+    },
+    "fonts": {
+      "primary": {
+        "label": "Primary",
+        "description": "Main typeface — event title and headers."
+      },
+      "secondary": {
+        "label": "Secondary",
+        "description": "Supporting typeface — invite line and body text."
+      },
+      "accent": {
+        "label": "Accent",
+        "description": "Accepted by the API, but no part of the showcase renders it yet — attaching a font here has no visible effect."
+      },
+      "decorative": {
+        "label": "Decorative",
+        "description": "Accepted by the API, but no part of the showcase renders it yet — attaching a font here has no visible effect."
+      }
+    }
+  },
+  "partnerTemplatePreview": {
+    "eventLabel": "Preview this template on",
+    "eventLoading": "Loading your events…",
+    "noEventsShort": "No events yet",
+    "stageLabel": "Preview stage",
+    "languageLabel": "Preview language",
+    "hint": "Live preview — nothing here is saved until you save the template.",
+    "loadError": "Couldn't load your events.",
+    "tryAgain": "Try again",
+    "noEvents": {
+      "title": "Nothing to preview on",
+      "description": "The preview renders your template around a real event. Create an event first, then come back to see the template on it."
+    }
+  },
   "partnerTemplateForm": {
     "header": {
       "goBack": "Go back",
       "edit": "Edit Template",
-      "create": "Create Template"
+      "create": "Create Template",
+      "paneSwitch": "Editor or preview",
+      "pane": {
+        "edit": "Edit",
+        "preview": "Preview"
+      }
     },
     "fileField": {
       "choose": "Choose file",

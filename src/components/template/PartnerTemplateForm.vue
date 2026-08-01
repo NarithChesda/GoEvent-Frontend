@@ -1,9 +1,17 @@
 <template>
   <!-- Slide-over form panel -->
   <Transition name="slide">
-    <div v-if="isOpen" class="absolute inset-0 z-10 flex flex-col bg-white overflow-hidden">
+    <!-- Editor beside a live preview of the draft. A grid rather than nested
+         flex columns: the header and footer span the full width while only the
+         middle row splits, and on mobile (single column, one of the two panes
+         `hidden`) the same three template rows still line up without a second
+         wrapper element. -->
+    <div
+      v-if="isOpen"
+      class="absolute inset-0 z-10 grid grid-rows-[auto_minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,1fr)_340px] bg-white overflow-hidden"
+    >
       <!-- Header -->
-      <div class="flex items-center gap-3 px-4 py-4 border-b border-slate-100 flex-shrink-0">
+      <div class="lg:col-span-2 flex items-center gap-3 px-4 py-4 border-b border-slate-100">
         <button
           type="button"
           @click="emit('close')"
@@ -15,10 +23,30 @@
         <h3 class="text-lg font-semibold tracking-tight text-slate-900">
           {{ isEditing ? t('management.partnerTemplateForm.header.edit') : t('management.partnerTemplateForm.header.create') }}
         </h3>
+
+        <!-- Below `lg` the modal is a full-screen sheet with no room for a
+             phone frame beside the form, so the two swap places instead of
+             sitting side by side. From `lg` up both are always visible and
+             this control isn't rendered at all. -->
+        <div class="ml-auto lg:hidden flex gap-0.5 p-1 bg-slate-100 rounded-full" role="group" :aria-label="t('management.partnerTemplateForm.header.paneSwitch')">
+          <button
+            v-for="pane in (['edit', 'preview'] as const)"
+            :key="pane"
+            type="button"
+            class="px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-300"
+            :class="mobilePane === pane ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md' : 'text-slate-600 hover:text-slate-800'"
+            @click="mobilePane = pane"
+          >
+            {{ t(`management.partnerTemplateForm.header.pane.${pane}`) }}
+          </button>
+        </div>
       </div>
 
       <!-- Form Content (scrollable) -->
-      <div class="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
+      <div
+        class="overflow-y-auto p-4 space-y-5 custom-scrollbar"
+        :class="{ 'hidden lg:block': mobilePane === 'preview' }"
+      >
         <!-- Error Banner -->
         <div v-if="error" class="flex items-start gap-2 p-3 bg-red-50 ring-1 ring-red-200 rounded-xl text-sm text-red-700">
           <AlertCircle class="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -109,53 +137,65 @@
                     {{ t('management.partnerTemplateForm.colors.deleteBtn') }}
                   </button>
                 </div>
-                <!-- Add / Edit color form -->
-                <div class="flex items-end gap-2">
+                <!-- Add / Edit color form. Two rows rather than one: the name
+                     field's suggestion list expands in flow (see
+                     TemplateSlotField), which inside the old single `items-end`
+                     row would have dragged the swatch and the Add button down
+                     to the bottom of the expanded list. Splitting it also gives
+                     the name — the field that actually wires a color into the
+                     showcase — the full width it deserves. -->
+                <div class="space-y-2">
+                  <div class="flex items-end gap-2">
+                    <div class="space-y-1">
+                      <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.colors.colorLabel') }}</label>
+                      <input
+                        v-model="colorForm.hex_color_code"
+                        type="color"
+                        class="w-10 h-[34px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors"
+                      />
+                    </div>
+                    <div class="space-y-1 flex-1">
+                      <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.colors.hexLabel') }}</label>
+                      <input
+                        v-model="colorForm.hex_color_code"
+                        type="text"
+                        maxlength="7"
+                        :placeholder="t('management.partnerTemplateForm.colors.hexPlaceholder')"
+                        class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      @click="handleAddOrUpdateColor"
+                      :disabled="colorSaving || !colorForm.hex_color_code || !colorForm.name"
+                      class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white shadow-sm shadow-sky-500/25 hover:bg-sky-600 disabled:opacity-50 disabled:shadow-none transition-all whitespace-nowrap"
+                    >
+                      <Loader2 v-if="colorSaving" class="w-3 h-3 animate-spin inline" />
+                      <template v-else>{{ editingColorId ? t('management.partnerTemplateForm.colors.updateBtn') : t('management.partnerTemplateForm.colors.addBtn') }}</template>
+                    </button>
+                    <button
+                      v-if="editingColorId"
+                      type="button"
+                      @click="cancelEditColor"
+                      class="px-2 py-1.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
+                    >
+                      {{ t('management.partnerTemplateForm.colors.cancelBtn') }}
+                    </button>
+                  </div>
+
                   <div class="space-y-1">
-                    <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.colors.colorLabel') }}</label>
-                    <input
-                      v-model="colorForm.hex_color_code"
-                      type="color"
-                      class="w-10 h-[34px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors"
-                    />
-                  </div>
-                  <div class="space-y-1 flex-1">
-                    <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.colors.hexLabel') }}</label>
-                    <input
-                      v-model="colorForm.hex_color_code"
-                      type="text"
-                      maxlength="7"
-                      :placeholder="t('management.partnerTemplateForm.colors.hexPlaceholder')"
-                      class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
-                    />
-                  </div>
-                  <div class="space-y-1 flex-1">
                     <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.colors.nameLabel') }}</label>
-                    <input
+                    <!-- The showcase looks colors up BY NAME (see templateSlots.ts),
+                         so this isn't a free label — it's the wiring. -->
+                    <TemplateSlotField
                       v-model="colorForm.name"
-                      type="text"
-                      maxlength="50"
+                      :options="TEMPLATE_COLOR_SLOTS"
+                      :used-values="definedColorNames"
+                      allow-custom
+                      :maxlength="50"
                       :placeholder="t('management.partnerTemplateForm.colors.namePlaceholder')"
-                      class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
                     />
                   </div>
-                  <button
-                    type="button"
-                    @click="handleAddOrUpdateColor"
-                    :disabled="colorSaving || !colorForm.hex_color_code || !colorForm.name"
-                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white shadow-sm shadow-sky-500/25 hover:bg-sky-600 disabled:opacity-50 disabled:shadow-none transition-all whitespace-nowrap"
-                  >
-                    <Loader2 v-if="colorSaving" class="w-3 h-3 animate-spin inline" />
-                    <template v-else>{{ editingColorId ? t('management.partnerTemplateForm.colors.updateBtn') : t('management.partnerTemplateForm.colors.addBtn') }}</template>
-                  </button>
-                  <button
-                    v-if="editingColorId"
-                    type="button"
-                    @click="cancelEditColor"
-                    class="px-2 py-1.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
-                  >
-                    {{ t('management.partnerTemplateForm.colors.cancelBtn') }}
-                  </button>
                 </div>
               </div>
             </details>
@@ -189,59 +229,65 @@
                     {{ t('management.partnerTemplateForm.fonts.deleteBtn') }}
                   </button>
                 </div>
-                <!-- Add / Edit font form -->
-                <div class="flex items-end gap-2">
-                  <div class="space-y-1 flex-1">
-                    <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.fonts.languageLabel') }}</label>
-                    <select
-                      v-model="fontForm.language"
-                      :class="selectClass"
+                <!-- Add / Edit font form. Split for the same reason as the
+                     colors form above — the font-type field's suggestion list
+                     expands in flow, so it gets its own row. -->
+                <div class="space-y-2">
+                  <div class="flex items-end gap-2">
+                    <div class="space-y-1 flex-1">
+                      <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.fonts.languageLabel') }}</label>
+                      <select
+                        v-model="fontForm.language"
+                        :class="selectClass"
+                      >
+                        <option v-for="(label, code) in LANGUAGE_CODE_LABELS" :key="code" :value="code">
+                          {{ label }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="space-y-1 flex-1">
+                      <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.fonts.fontLabel') }}</label>
+                      <select
+                        v-model="fontForm.font"
+                        :class="selectClass"
+                      >
+                        <option :value="null" disabled>{{ availableCustomFonts.length ? t('management.partnerTemplateForm.fonts.fontSelect') : t('management.partnerTemplateForm.fonts.fontSelectLoading') }}</option>
+                        <option v-for="cf in availableCustomFonts" :key="cf.id" :value="cf.id">
+                          {{ cf.name }}
+                        </option>
+                      </select>
+                    </div>
+                    <button
+                      type="button"
+                      @click="handleAddOrUpdateFont"
+                      :disabled="fontSaving || !fontForm.font || !fontForm.language || !fontForm.font_type"
+                      class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white shadow-sm shadow-sky-500/25 hover:bg-sky-600 disabled:opacity-50 disabled:shadow-none transition-all whitespace-nowrap"
                     >
-                      <option v-for="(label, code) in LANGUAGE_CODE_LABELS" :key="code" :value="code">
-                        {{ label }}
-                      </option>
-                    </select>
-                  </div>
-                  <div class="space-y-1 flex-1">
-                    <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.fonts.fontLabel') }}</label>
-                    <select
-                      v-model="fontForm.font"
-                      :class="selectClass"
+                      <Loader2 v-if="fontSaving" class="w-3 h-3 animate-spin inline" />
+                      <template v-else>{{ editingFontId ? t('management.partnerTemplateForm.fonts.updateBtn') : t('management.partnerTemplateForm.fonts.addBtn') }}</template>
+                    </button>
+                    <button
+                      v-if="editingFontId"
+                      type="button"
+                      @click="cancelEditFont"
+                      class="px-2 py-1.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
                     >
-                      <option :value="null" disabled>{{ availableCustomFonts.length ? t('management.partnerTemplateForm.fonts.fontSelect') : t('management.partnerTemplateForm.fonts.fontSelectLoading') }}</option>
-                      <option v-for="cf in availableCustomFonts" :key="cf.id" :value="cf.id">
-                        {{ cf.name }}
-                      </option>
-                    </select>
+                      {{ t('management.partnerTemplateForm.fonts.cancelBtn') }}
+                    </button>
                   </div>
-                  <div class="space-y-1 flex-1">
+
+                  <div class="space-y-1">
                     <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.fonts.typeLabel') }}</label>
-                    <select
-                      v-model="fontForm.font_type"
-                      :class="selectClass"
-                    >
-                      <option v-for="(label, type) in FONT_TYPE_LABELS" :key="type" :value="type">
-                        {{ label }}
-                      </option>
-                    </select>
+                    <!-- Which role this font plays. Two of the four types are
+                         resolved but never rendered — the picker says so
+                         rather than letting a partner attach a font that
+                         silently does nothing. -->
+                    <TemplateSlotField
+                      v-model="fontTypeModel"
+                      :options="TEMPLATE_FONT_TYPE_SLOTS"
+                      :used-values="definedFontTypes"
+                    />
                   </div>
-                  <button
-                    type="button"
-                    @click="handleAddOrUpdateFont"
-                    :disabled="fontSaving || !fontForm.font || !fontForm.language || !fontForm.font_type"
-                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white shadow-sm shadow-sky-500/25 hover:bg-sky-600 disabled:opacity-50 disabled:shadow-none transition-all whitespace-nowrap"
-                  >
-                    <Loader2 v-if="fontSaving" class="w-3 h-3 animate-spin inline" />
-                    <template v-else>{{ editingFontId ? t('management.partnerTemplateForm.fonts.updateBtn') : t('management.partnerTemplateForm.fonts.addBtn') }}</template>
-                  </button>
-                  <button
-                    v-if="editingFontId"
-                    type="button"
-                    @click="cancelEditFont"
-                    class="px-2 py-1.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
-                  >
-                    {{ t('management.partnerTemplateForm.fonts.cancelBtn') }}
-                  </button>
                 </div>
               </div>
             </details>
@@ -860,8 +906,18 @@
         </details>
       </div>
 
+      <!-- Live preview of the draft, fed over the same bridge the manage-page
+           studio uses to try templates on — so unsaved edits (files included)
+           show up without a save or a reload. -->
+      <aside
+        class="flex-col border-l border-slate-200/70 bg-slate-50/60 p-3 overflow-hidden"
+        :class="mobilePane === 'preview' ? 'flex' : 'hidden lg:flex'"
+      >
+        <PartnerTemplatePreview :draft="previewDraft" :saved-template="existingTemplate" />
+      </aside>
+
       <!-- Footer Actions -->
-      <div class="flex-shrink-0 px-4 py-3 border-t border-slate-200/70 bg-white/90 backdrop-blur-md flex items-center gap-3">
+      <div class="lg:col-span-2 px-4 py-3 border-t border-slate-200/70 bg-white/90 backdrop-blur-md flex items-center gap-3">
         <button
           type="button"
           @click="emit('close')"
@@ -907,6 +963,14 @@ import type {
   AmbientCreatureEffectType,
 } from '../../services/api'
 import PartnerTemplateFileField from './PartnerTemplateFileField.vue'
+import PartnerTemplatePreview from './PartnerTemplatePreview.vue'
+import TemplateSlotField from './TemplateSlotField.vue'
+import { TEMPLATE_COLOR_SLOTS, TEMPLATE_FONT_TYPE_SLOTS } from './templateSlots'
+import {
+  PARTNER_TEMPLATE_ASSET_FIELDS,
+  type PartnerTemplateAssetField,
+  type PartnerTemplateDraft,
+} from './partnerTemplateAssets'
 
 const { t } = useI18n()
 
@@ -1183,6 +1247,33 @@ const pendingFonts = computed(() => {
     return fonts.value
   }
   return localFonts.value
+})
+
+// ---------------------------------------------------------------------------
+// Slot occupancy, for the name/type suggestion lists. Both the colors and the
+// fonts the showcase reads are looked up by name, and only the FIRST match
+// counts — so knowing which slots are already spoken for is the difference
+// between filling a gap and quietly shadowing an existing row.
+// ---------------------------------------------------------------------------
+const definedColorNames = computed(() => pendingColors.value.map((color) => color.name))
+
+// Scoped to the language being edited: font types are per-language, so
+// `primary` already existing for English says nothing about Khmer.
+const definedFontTypes = computed(() =>
+  pendingFonts.value
+    .filter((entry) => entry.language === fontForm.language)
+    .map((entry) => entry.font_type),
+)
+
+// TemplateSlotField speaks plain strings; font_type is a narrowed union. The
+// cast is safe because the field only ever emits one of the values it was
+// handed, and those come from TEMPLATE_FONT_TYPE_SLOTS (which mirrors
+// TemplateFontType) with free text disabled.
+const fontTypeModel = computed<string>({
+  get: () => fontForm.font_type,
+  set: (value) => {
+    fontForm.font_type = value as TemplateFontType
+  },
 })
 
 // Track open state of details elements
@@ -1483,6 +1574,7 @@ watch(
   () => props.isOpen,
   (open) => {
     if (open) {
+      mobilePane.value = 'edit'
       fetchPlans()
       fetchCustomFonts()
       if (!props.existingTemplate) {
@@ -1582,15 +1674,11 @@ async function handleSave(): Promise<void> {
       host_info_design: { type: form.host_info_design_type },
     }
 
-    // Add file fields that have been set
-    const fileFields = [
-      'preview_image', 'basic_background_photo', 'basic_decoration_photo',
-      'standard_background_video', 'standard_cover_video',
-      'top_decoration', 'bottom_decoration', 'left_decoration', 'right_decoration',
-      'cover_top_decoration', 'cover_bottom_decoration', 'cover_left_decoration', 'cover_right_decoration',
-      'guest_title_frame_left', 'guest_title_frame_mid', 'guest_title_frame_right',
-      'sample_logo_1', 'sample_logo_2', 'header_text_image',
-    ] as const
+    // Add file fields that have been set. The asset list is shared with the
+    // live preview (see partnerTemplateAssets.ts) so the two can't drift;
+    // `preview_image` is the gallery thumbnail, which no stage renders and the
+    // preview therefore doesn't carry.
+    const fileFields = ['preview_image', ...PARTNER_TEMPLATE_ASSET_FIELDS] as const
     for (const field of fileFields) {
       const file = form[field]
       if (file instanceof File) {
@@ -1679,6 +1767,67 @@ async function handleSave(): Promise<void> {
     saving.value = false
   }
 }
+
+// ---------------------------------------------------------------------------
+// Live preview. The draft is handed to PartnerTemplatePreview, which converts it
+// to the `TemplateAssets` shape the showcase frames already understand and
+// pushes it into a real frame over the preview bridge — the same mechanism the
+// manage-page studio uses to try a template on before applying it. Nothing here
+// touches the backend; unsaved Files preview from blob URLs.
+// ---------------------------------------------------------------------------
+
+/** Below `lg`, the form and the preview take turns (see the header switch). */
+const mobilePane = ref<'edit' | 'preview'>('edit')
+
+/**
+ * Fonts in the shape the showcase resolves them from. In edit mode the API
+ * already returns the font file with each entry; while creating, the selection
+ * is still just a custom-font id, so it's joined against the loaded custom-font
+ * list here — otherwise picking a font would show nothing until the first save.
+ */
+const previewFonts = computed<EventTemplateLanguageFont[]>(() => {
+  if (isEditing.value) return fonts.value
+  return localFonts.value.flatMap((entry, index) => {
+    const custom = availableCustomFonts.value.find((cf) => cf.id === entry.font)
+    if (!custom) return []
+    return [
+      {
+        // Negative ids keep these distinguishable from saved rows; nothing
+        // downstream persists them.
+        id: -(index + 1),
+        language: entry.language,
+        language_display: entry.language,
+        font: { id: custom.id, name: custom.name, font_file: custom.font_file },
+        font_type: entry.font_type,
+        font_type_display: entry.font_type,
+      },
+    ]
+  })
+})
+
+const previewDraft = computed<PartnerTemplateDraft>(() => {
+  const files: Partial<Record<PartnerTemplateAssetField, File | null>> = {}
+  for (const field of PARTNER_TEMPLATE_ASSET_FIELDS) {
+    files[field] = form[field]
+  }
+
+  return {
+    name: form.name,
+    display_liquid_glass_background: form.display_liquid_glass_background,
+    cover_stage_layout: form.cover_stage_layout,
+    // Reuses the exact builders the save path uses, so the preview can't drift
+    // from what actually gets persisted.
+    falling_effect: buildFallingEffectPayload(),
+    ambient_creatures: buildAmbientCreaturesPayload(),
+    event_details_design: { type: form.event_details_design_type },
+    host_info_design: { type: form.host_info_design_type },
+    colors: pendingColors.value,
+    fonts: previewFonts.value,
+    files,
+    fallingEffectCustomImage: form.falling_effect_custom_image,
+    clearFallingEffectCustomImage: form.clear_falling_effect_custom_image,
+  }
+})
 
 onMounted(() => {
   if (props.isOpen) {
