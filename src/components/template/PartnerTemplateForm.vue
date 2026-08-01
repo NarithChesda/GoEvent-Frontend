@@ -913,7 +913,12 @@
         class="flex-col border-l border-slate-200/70 bg-slate-50/60 p-3 overflow-hidden"
         :class="mobilePane === 'preview' ? 'flex' : 'hidden lg:flex'"
       >
-        <PartnerTemplatePreview :draft="previewDraft" :saved-template="existingTemplate" />
+        <PartnerTemplatePreview
+          :draft="previewDraft"
+          :event-id="eventId"
+          :event-data="eventData"
+          :saved-template="existingTemplate"
+        />
       </aside>
 
       <!-- Footer Actions -->
@@ -945,6 +950,9 @@ import { useI18n } from 'vue-i18n'
 import { ArrowLeft, Upload, AlertCircle, Loader2, ChevronDown } from 'lucide-vue-next'
 import { partnerTemplateService, packagePlanService, customFontsService, FONT_TYPE_LABELS, LANGUAGE_CODE_LABELS } from '../../services/api'
 import type {
+  // Aliased: this file's file-input handlers take the DOM `Event`, which an
+  // unaliased import would shadow.
+  Event as EventRecord,
   PartnerTemplate,
   PartnerTemplateCreatePayload,
   PackagePlan,
@@ -983,9 +991,13 @@ const selectClass = "w-full px-2 py-1.5 pr-8 bg-slate-100 border border-transpar
 interface Props {
   isOpen: boolean
   existingTemplate?: PartnerTemplate | null
+  /** The event this form was opened from — the live preview's sample content. */
+  eventId: string
+  /** That event's record, for the preview's frame-list decisions. */
+  eventData?: EventRecord | null
 }
 
-const props = withDefaults(defineProps<Props>(), { existingTemplate: null })
+const props = withDefaults(defineProps<Props>(), { existingTemplate: null, eventData: null })
 
 const emit = defineEmits<{
   close: []

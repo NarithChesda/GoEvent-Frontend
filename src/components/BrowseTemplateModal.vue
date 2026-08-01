@@ -382,6 +382,8 @@
                 <PartnerTemplatesPanel
                   v-if="isPartner && activeTab === 'my-templates'"
                   class="flex-1 overflow-hidden"
+                  :event-id="eventId"
+                  :event-data="eventData"
                   @template-selected="handlePartnerTemplateSelected"
                   @form-opened="isPartnerFormOpen = true"
                   @form-closed="isPartnerFormOpen = false"
@@ -452,7 +454,7 @@
 <script setup lang="ts">
 import { watch, onMounted, onUnmounted, ref, nextTick, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { EventTemplate } from '../services/api'
+import type { Event, EventTemplate } from '../services/api'
 import type { PartnerTemplate } from '../services/api'
 import { eventTemplateService } from '../services/api'
 import type { TemplateAssets } from '../composables/useEventShowcase'
@@ -494,6 +496,13 @@ interface Props {
   eventId: string
   eventCategory?: number
   ownedTemplateNames?: Set<string>
+  /**
+   * The full event record. `eventCategory` above is a category *id*, which is
+   * enough to filter the browse grid but not enough for the partner form's live
+   * preview — that needs the category name (which stages a template has) and
+   * the event video. Passed through to PartnerTemplatesPanel.
+   */
+  eventData?: Event | null
 }
 
 const props = defineProps<Props>()

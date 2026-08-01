@@ -380,6 +380,7 @@
       :is-open="showTemplatesModal"
       :event-id="eventId"
       :event-category="eventData?.category ?? undefined"
+      :event-data="eventData"
       :owned-template-names="ownedTemplateNames"
       @close="showTemplatesModal = false"
       @template-selected="handleTemplateAppliedFromModal"

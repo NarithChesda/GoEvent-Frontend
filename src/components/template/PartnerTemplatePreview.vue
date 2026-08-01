@@ -1,29 +1,16 @@
 <template>
   <div class="tpl-preview">
-    <!-- Controls: what the template is being previewed against, and which
-         stage of it. Kept above the frame (not floating over it) — the frame
-         column is only ~340px wide inside the templates modal, so anything
-         overlaying the phone eats the very thing being judged. -->
-    <div class="tpl-preview__controls">
-      <div class="relative">
-        <select
-          v-model="selectedEventId"
-          class="w-full appearance-none pr-9 pl-3 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 disabled:opacity-60"
-          :disabled="eventsLoading || previewEvents.length === 0"
-          :aria-label="t('management.partnerTemplatePreview.eventLabel')"
-        >
-          <option v-if="eventsLoading" :value="null">{{ t('management.partnerTemplatePreview.eventLoading') }}</option>
-          <option v-else-if="previewEvents.length === 0" :value="null">
-            {{ t('management.partnerTemplatePreview.noEventsShort') }}
-          </option>
-          <option v-for="ev in previewEvents" :key="ev.id" :value="ev.id">{{ ev.title }}</option>
-        </select>
-        <ChevronDown
-          class="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-          aria-hidden="true"
-        />
-      </div>
+    <!-- Controls: which stage of the template, and in which language. Kept
+         above the frame (not floating over it) — the frame column is only
+         ~340px wide inside the templates modal, so anything overlaying the
+         phone eats the very thing being judged.
 
+         There is deliberately no event picker. This form is only ever reached
+         from inside an event's manage page (BrowseTemplateModal's single call
+         site is ShowcasePreviewTab), so the event being managed is already the
+         obvious sample data — asking the partner to choose one was asking a
+         question they had already answered by being here. -->
+    <div class="tpl-preview__controls">
       <!-- Stage picker + language, in one glass pill (§5 segmented control).
            The stage list comes from the preview renderer keyed on the DRAFT's
            own assets, so switching the plan's background video on/off adds or
@@ -59,34 +46,8 @@
     </div>
 
     <div ref="bodyRef" class="tpl-preview__body">
-      <!-- Loading the partner's own events -->
-      <div v-if="eventsLoading" class="tpl-preview__state">
-        <div class="w-7 h-7 border-2 border-slate-300 border-t-sky-500 rounded-full animate-spin" />
-      </div>
-
-      <!-- No event to render the template onto. The preview needs a real event
-           for its content (names, dates, hosts, photos) — the template only
-           supplies the look. -->
-      <div v-else-if="previewEvents.length === 0" class="tpl-preview__state">
-        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center mb-3">
-          <MonitorSmartphone class="w-7 h-7 text-[#2ecc71]" aria-hidden="true" />
-        </div>
-        <p class="text-sm font-semibold text-slate-700">{{ t('management.partnerTemplatePreview.noEvents.title') }}</p>
-        <p class="text-xs text-slate-500 mt-1 max-w-[15rem]">
-          {{ t('management.partnerTemplatePreview.noEvents.description') }}
-        </p>
-      </div>
-
-      <div v-else-if="eventsError" class="tpl-preview__state">
-        <AlertCircle class="w-8 h-8 text-red-400 mb-2" aria-hidden="true" />
-        <p class="text-sm font-medium text-slate-700">{{ t('management.partnerTemplatePreview.loadError') }}</p>
-        <button type="button" class="mt-2 text-xs font-medium text-sky-600 hover:underline" @click="loadPreviewEvents">
-          {{ t('management.partnerTemplatePreview.tryAgain') }}
-        </button>
-      </div>
-
       <PreviewFrame
-        v-else-if="selectedEventId && activeFrame"
+        v-if="activeFrame"
         ref="previewFrameRef"
         :label="t(activeFrame.labelKey)"
         :bottom-reserve="bottomReserve"
@@ -101,14 +62,12 @@
         />
       </PreviewFrame>
 
-      <!-- Covers the reload that a stage/event/language switch forces (the
-           iframe's src changes, so the browser navigates it). Without this the
-           partner watches the previous stage sit there stale, then jump. -->
+      <!-- Covers the reload a stage switch forces (that one does change the
+           iframe's src, so the browser navigates it) and the content refetch a
+           language switch triggers. Without it the partner watches the previous
+           stage sit there stale, then jump. -->
       <Transition name="fade">
-        <div
-          v-if="(frameLoading || languageSwitching) && selectedEventId"
-          class="tpl-preview__loading-veil"
-        >
+        <div v-if="frameLoading || languageSwitching" class="tpl-preview__loading-veil">
           <div class="w-6 h-6 border-2 border-slate-300 border-t-sky-500 rounded-full animate-spin" />
         </div>
       </Transition>
@@ -122,8 +81,6 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { AlertCircle, ChevronDown, MonitorSmartphone } from 'lucide-vue-next'
-import { eventsService } from '@/services/api'
 import type { Event, PartnerTemplate } from '@/services/api'
 import PreviewFrame from '../showcase-preview/PreviewFrame.vue'
 import InertIframe from '../showcase-preview/InertIframe.vue'
@@ -136,80 +93,28 @@ import { partnerTemplateDraftToAssets, type PartnerTemplateDraft } from './partn
 interface Props {
   /** The template form's live state — unsaved files and all. */
   draft: PartnerTemplateDraft
+  /**
+   * The event being managed — the sample content the template is drawn around.
+   * Always present: this form is only reachable from inside an event's manage
+   * page, so there is nothing to choose and nothing to fetch.
+   */
+  eventId: string
+  /**
+   * That same event's record, for the frame-list decisions below (category and
+   * event video). Optional only because the manage view's own copy can still be
+   * in flight on first paint.
+   */
+  eventData?: Event | null
   /** The template as last persisted, for anything the draft hasn't touched. */
   savedTemplate?: PartnerTemplate | null
 }
 
-const props = withDefaults(defineProps<Props>(), { savedTemplate: null })
+const props = withDefaults(defineProps<Props>(), { savedTemplate: null, eventData: null })
 
 const { t } = useI18n()
 // The app's own locale — the language this partner is working in, and so the
 // one the preview should open in when the event offers it.
 const { locale } = useAppLanguage()
-
-// ---------------------------------------------------------------------------
-// Preview subject. A template describes a *look*; the showcase still needs an
-// event to supply the content it wraps. Partners preview against one of their
-// own events, which is also what they actually want to see — the template with
-// a real client's names and photos in it, not a stranger's.
-// ---------------------------------------------------------------------------
-const STORED_EVENT_KEY = 'partner_template_preview_event'
-
-const previewEvents = ref<Event[]>([])
-const eventsLoading = ref(false)
-const eventsError = ref(false)
-const selectedEventId = ref<string | null>(null)
-
-const selectedEvent = computed(
-  () => previewEvents.value.find((ev) => ev.id === selectedEventId.value) ?? null,
-)
-
-const isWedding = (ev: Event) =>
-  (ev.category_details?.name || ev.category_name || '').toLowerCase() === 'wedding'
-
-async function loadPreviewEvents(): Promise<void> {
-  eventsLoading.value = true
-  eventsError.value = false
-  try {
-    const response = await eventsService.getMyEvents()
-    if (response.success && response.data) {
-      previewEvents.value = response.data.organized ?? []
-    } else {
-      eventsError.value = true
-    }
-  } catch {
-    eventsError.value = true
-  } finally {
-    eventsLoading.value = false
-  }
-
-  if (previewEvents.value.length === 0) return
-
-  // Last choice wins if it's still one of theirs, then the first wedding (what
-  // most partner templates are built for), then simply the first event.
-  const stored = readStoredEventId()
-  selectedEventId.value =
-    previewEvents.value.find((ev) => ev.id === stored)?.id ??
-    previewEvents.value.find(isWedding)?.id ??
-    previewEvents.value[0].id
-}
-
-function readStoredEventId(): string | null {
-  try {
-    return localStorage.getItem(STORED_EVENT_KEY)
-  } catch {
-    return null
-  }
-}
-
-watch(selectedEventId, (id) => {
-  if (!id) return
-  try {
-    localStorage.setItem(STORED_EVENT_KEY, id)
-  } catch {
-    // Private-mode/quota — the picker just won't be remembered.
-  }
-})
 
 // ---------------------------------------------------------------------------
 // The draft as showcase data. Unsaved File picks are previewed straight from
@@ -243,7 +148,7 @@ const draftAssets = computed(() =>
 // Transition stage, without either being hardcoded here.
 // ---------------------------------------------------------------------------
 const rendererContext = computed(() => ({
-  event: selectedEvent.value ?? {},
+  event: props.eventData ?? {},
   templateAssets: { standard_cover_video: draftAssets.value.assets?.standard_cover_video ?? null },
   // Someone building a template wants to see every stage that template defines,
   // so the basic flow's Transition stage is always offered rather than gated on
@@ -375,14 +280,10 @@ const measureBottomReserve = () => {
 
 let bodyResizeObserver: ResizeObserver | null = null
 
-// What genuinely requires a new document: a different event or a different
-// forced stage. Language is deliberately absent — it's swapped in place over
-// the bridge instead (see selectLanguage).
-const frameKey = computed(() =>
-  selectedEventId.value && activeFrame.value
-    ? `${selectedEventId.value}|${activeFrame.value.id}`
-    : '',
-)
+// What genuinely requires a new document: a different forced stage. The event
+// never changes here, and language is deliberately absent — it's swapped in
+// place over the bridge instead (see selectLanguage).
+const frameKey = computed(() => (activeFrame.value ? `${props.eventId}|${activeFrame.value.id}` : ''))
 
 // The language baked into `src`, captured only when the frame is about to mount
 // anyway. `src` must not track `previewLanguage` directly: changing an iframe's
@@ -406,7 +307,7 @@ const frameSrc = computed(() => {
   // Omitted entirely until a language is known, so the frame picks the event's
   // own default rather than being forced to a guess.
   if (srcLanguage.value) params.set('lang', srcLanguage.value)
-  return `/events/${selectedEventId.value}/showcase-preview-frame?${params.toString()}`
+  return `/events/${props.eventId}/showcase-preview-frame?${params.toString()}`
 })
 
 const onFrameReady = () => {
@@ -444,7 +345,6 @@ watch(
 )
 
 onMounted(() => {
-  loadPreviewEvents()
   measureBottomReserve()
   // The controls above the frame change height as stages/languages appear, and
   // the modal itself resizes with the window — both move this body's bottom
@@ -539,16 +439,6 @@ onUnmounted(() => {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-}
-
-.tpl-preview__state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  flex: 1;
-  padding: 2rem 0.5rem;
 }
 
 .tpl-preview__loading-veil {

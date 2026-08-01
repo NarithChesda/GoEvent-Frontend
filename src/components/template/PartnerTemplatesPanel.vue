@@ -141,6 +141,8 @@
     <PartnerTemplateForm
       :is-open="showForm"
       :existing-template="editingTemplate"
+      :event-id="eventId"
+      :event-data="eventData"
       @close="closeForm"
       @saved="handleSaved"
     />
@@ -163,11 +165,25 @@ import {
   type LucideComponent,
 } from 'lucide-vue-next'
 import { partnerTemplateService } from '../../services/api'
-import type { PartnerTemplate } from '../../services/api'
+import type { Event, PartnerTemplate } from '../../services/api'
 import PartnerTemplateCard from './PartnerTemplateCard.vue'
 import PartnerTemplateForm from './PartnerTemplateForm.vue'
 
 const { t } = useI18n()
+
+interface Props {
+  /**
+   * The event this panel was opened from. Partner templates are only ever
+   * created from inside an event's manage page, and the create/edit form uses
+   * that event as the live preview's sample content — so it's passed straight
+   * through rather than picked or fetched.
+   */
+  eventId: string
+  /** That event's record, for the preview's frame-list decisions. */
+  eventData?: Event | null
+}
+
+withDefaults(defineProps<Props>(), { eventData: null })
 
 const emit = defineEmits<{
   'template-selected': [template: PartnerTemplate]

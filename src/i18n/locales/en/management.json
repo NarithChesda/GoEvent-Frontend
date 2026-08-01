@@ -2595,18 +2595,9 @@
     }
   },
   "partnerTemplatePreview": {
-    "eventLabel": "Preview this template on",
-    "eventLoading": "Loading your events…",
-    "noEventsShort": "No events yet",
     "stageLabel": "Preview stage",
     "languageLabel": "Preview language",
-    "hint": "Live preview — nothing here is saved until you save the template.",
-    "loadError": "Couldn't load your events.",
-    "tryAgain": "Try again",
-    "noEvents": {
-      "title": "Nothing to preview on",
-      "description": "The preview renders your template around a real event. Create an event first, then come back to see the template on it."
-    }
+    "hint": "Live preview — nothing here is saved until you save the template."
   },
   "partnerTemplateForm": {
     "header": {
