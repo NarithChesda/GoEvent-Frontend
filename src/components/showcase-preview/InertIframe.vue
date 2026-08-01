@@ -37,6 +37,7 @@ import {
   postToFrame,
   postEventPatchToFrame,
   postTemplatePreviewToFrame,
+  postSetLanguageToFrame,
   type EventFieldPatch,
   type ParentToFrameType,
 } from './bridge/previewBridge'
@@ -62,6 +63,11 @@ const emit = defineEmits<{
    *  staged template, edit hints) can finally be delivered. Anything posted
    *  before this is dropped silently — postMessage does not queue. */
   ready: []
+  /** The frame reported which languages this event has and which one it is
+   *  currently showing — after its initial load, and after every language
+   *  switch. Parents can't derive this themselves (see
+   *  postShowcaseLanguagesToParent). */
+  languages: [languages: string[], currentLanguage: string]
 }>()
 
 const iframeRef = ref<HTMLIFrameElement | null>(null)
@@ -74,7 +80,10 @@ const iframeRef = ref<HTMLIFrameElement | null>(null)
 // that owns the sending window reacts.
 const onWindowMessage = (event: MessageEvent) => {
   if (event.source !== iframeRef.value?.contentWindow) return
-  if (parsePreviewBridgeMessage(event)?.type === 'frame-ready') emit('ready')
+  const parsed = parsePreviewBridgeMessage(event)
+  if (!parsed) return
+  if (parsed.type === 'frame-ready') emit('ready')
+  if (parsed.type === 'showcase-languages') emit('languages', parsed.languages, parsed.currentLanguage)
 }
 
 onMounted(() => window.addEventListener('message', onWindowMessage))
@@ -93,6 +102,8 @@ defineExpose({
     postEventPatchToFrame(iframeRef.value?.contentWindow, fields),
   postTemplatePreview: (templateData: TemplateAssets) =>
     postTemplatePreviewToFrame(iframeRef.value?.contentWindow, templateData),
+  postSetLanguage: (language: string) =>
+    postSetLanguageToFrame(iframeRef.value?.contentWindow, language),
 })
 
 // The iframe is visually shrunk by PreviewFrame's `transform: scale(...)`, so

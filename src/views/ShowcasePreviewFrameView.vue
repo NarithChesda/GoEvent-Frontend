@@ -29,6 +29,7 @@ import {
   parsePreviewBridgeMessage,
   postEditIntentToParent,
   postFrameReadyToParent,
+  postShowcaseLanguagesToParent,
 } from '@/components/showcase-preview/bridge/previewBridge'
 import { resolvePreviewRenderer } from '@/components/showcase-preview/renderers/resolvePreviewRenderer'
 import LoadingSpinner from '@/components/showcase/LoadingSpinner.vue'
@@ -60,6 +61,8 @@ const {
   currentLanguage,
   loadShowcase,
   refreshShowcaseData,
+  updateLanguageContent,
+  availableLanguages,
   applyEventFieldPatch,
   applyPreviewTemplateFallback,
   setStagedTemplatePreview,
@@ -120,11 +123,35 @@ const replayKey = ref(0)
 // frame.
 const editHintsOn = ref(route.query.hints === '1')
 
+/**
+ * Tell the parent which languages this event has and which is showing. Only the
+ * frame knows: `available_languages` comes back on the showcase response, so a
+ * parent holding just an event id can't discover it (see
+ * postShowcaseLanguagesToParent).
+ */
+const publishLanguages = () => {
+  postShowcaseLanguagesToParent(
+    availableLanguages.value.map((lang) => lang.language),
+    currentLanguage.value,
+  )
+}
+
 const onFrameMessage = (msg: MessageEvent) => {
   const parsed = parsePreviewBridgeMessage(msg)
   if (!parsed) return
   if (parsed.type === 'replay') replayKey.value++
   if (parsed.type === 'refresh') refreshShowcaseData().then(loadPreviewTemplateFallback)
+  // In-place language swap — no navigation, no remount, no replayed animations.
+  // updateLanguageContent refetches only the localized content and merges it
+  // over the existing showcase data, then reloads that language's fonts.
+  //
+  // `finally` rather than `then`: updateLanguageContent early-returns when the
+  // language is already current, and reverts on error — the parent still needs
+  // to hear what actually ended up on screen either way, or its switcher would
+  // sit showing a language the frame never adopted.
+  if (parsed.type === 'set-language') {
+    void updateLanguageContent(parsed.language).finally(publishLanguages)
+  }
   if (parsed.type === 'patch-event') applyEventFieldPatch(parsed.fields)
   if (parsed.type === 'preview-template') setStagedTemplatePreview(parsed.templateData)
   if (parsed.type === 'preview-template-clear') clearStagedTemplatePreview()
@@ -177,7 +204,9 @@ onMounted(() => {
   // so announcing early costs nothing and closes the window in which the parent
   // has state to hand over but nothing here can hear it.
   postFrameReadyToParent()
-  loadShowcase().then(loadPreviewTemplateFallback)
+  // Languages are only knowable once the showcase response is in, so they're
+  // published after the load rather than as part of the ready handshake.
+  loadShowcase().then(loadPreviewTemplateFallback).then(publishLanguages)
 })
 
 onUnmounted(() => {

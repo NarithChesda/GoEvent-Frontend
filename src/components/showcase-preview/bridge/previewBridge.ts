@@ -49,6 +49,13 @@ export type PreviewBridgeMessage =
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'preview-template'; templateData: TemplateAssets }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'patch-event'; fields: EventFieldPatch }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'frame-ready' }
+  | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'set-language'; language: string }
+  | {
+      source: typeof PREVIEW_BRIDGE_SOURCE
+      type: 'showcase-languages'
+      languages: string[]
+      currentLanguage: string
+    }
 
 /**
  * Validates origin + shape and returns the typed message, or null for
@@ -80,6 +87,53 @@ export function postFrameReadyToParent(): void {
   if (window.parent === window) return
   window.parent.postMessage(
     { source: PREVIEW_BRIDGE_SOURCE, type: 'frame-ready' } satisfies PreviewBridgeMessage,
+    window.location.origin,
+  )
+}
+
+/**
+ * Frame side: publish which languages this event actually has, and which one is
+ * showing now.
+ *
+ * A parent can't work this out for itself. `available_languages` lives on the
+ * *showcase* response, not on the events list — so a parent that only has an
+ * event id (the partner template studio) has no way to know an event is
+ * English+Khmer until the frame that loaded it says so. Posted after the initial
+ * load and again after every `set-language`, so the parent's switcher and the
+ * frame can never disagree about what's on screen.
+ */
+export function postShowcaseLanguagesToParent(
+  languages: string[],
+  currentLanguage: string,
+): void {
+  if (window.parent === window) return
+  window.parent.postMessage(
+    {
+      source: PREVIEW_BRIDGE_SOURCE,
+      type: 'showcase-languages',
+      languages,
+      currentLanguage,
+    } satisfies PreviewBridgeMessage,
+    window.location.origin,
+  )
+}
+
+/**
+ * Parent side: switch the frame's language in place.
+ *
+ * Deliberately a bridge message rather than a new `?lang=` on the iframe's
+ * `src`: any change to `src`, however small, makes the browser navigate the
+ * frame — a full reload, a spinner, and every mount animation replayed, for
+ * what should be a content swap. The frame handles this with the showcase's own
+ * `updateLanguageContent`, which refetches just the localized content and
+ * merges it in place.
+ */
+export function postSetLanguageToFrame(
+  frameWindow: Window | null | undefined,
+  language: string,
+): void {
+  frameWindow?.postMessage(
+    { source: PREVIEW_BRIDGE_SOURCE, type: 'set-language', language } satisfies PreviewBridgeMessage,
     window.location.origin,
   )
 }
