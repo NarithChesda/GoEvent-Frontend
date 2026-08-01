@@ -23,44 +23,22 @@
             ref="modalRef"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="browse-templates-title"
+            :aria-label="t('management.browseTemplateModal.title')"
             class="relative bg-white lg:rounded-2xl shadow-2xl shadow-slate-950/40 lg:ring-1 lg:ring-white/10 overflow-hidden flex flex-col lg:flex-row w-full h-full lg:w-[95vw] lg:max-w-[1400px] lg:h-[90vh] lg:max-h-[900px]"
             @keydown.esc="handleEscapeKey"
           >
-            <!-- Desktop Left Sidebar (hidden on mobile) -->
-            <div class="hidden lg:flex w-56 bg-slate-50/60 border-r border-slate-200/70 flex-shrink-0 flex-col">
-              <!-- Sidebar Header -->
-              <div class="px-6 pt-6 pb-5">
-                <h2 id="browse-templates-title" class="text-xl font-bold tracking-tight text-slate-900">{{ t('management.browseTemplateModal.title') }}</h2>
-              </div>
-
-              <!-- Partner Tab (only for partner users) -->
-              <div v-if="isPartner" class="px-3 mb-3">
-                <div class="flex gap-1 p-1 bg-slate-200/60 rounded-xl">
-                  <button
-                    type="button"
-                    @click="setActiveTab('browse')"
-                    :class="[
-                      'flex-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all',
-                      activeTab === 'browse' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700',
-                    ]"
-                  >{{ t('management.browseTemplateModal.tabs.browse') }}</button>
-                  <button
-                    type="button"
-                    @click="setActiveTab('my-templates')"
-                    :class="[
-                      'flex-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1',
-                      activeTab === 'my-templates' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700',
-                    ]"
-                  >
-                    <LayoutTemplate class="w-3 h-3" />
-                    {{ t('management.browseTemplateModal.tabs.mine') }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Sidebar Navigation (only when on browse tab) -->
-              <nav v-if="activeTab === 'browse'" class="flex-1 overflow-y-auto px-3 pb-4 custom-scrollbar" aria-label="Template filters">
+            <!-- Desktop Left Sidebar (hidden on mobile). Filters only, and only
+                 on the browse tab — it used to also carry the title and the
+                 Browse/Mine switch, which meant the "Mine" tab stared at a
+                 224px column holding two buttons and a thousand pixels of
+                 nothing. Those moved into the content header; the rail now
+                 collapses to zero width when it has nothing to say. -->
+            <div
+              class="hidden lg:flex flex-col flex-shrink-0 bg-slate-50/60 overflow-hidden transition-[width] duration-300 ease-out"
+              :class="activeTab === 'browse' ? 'w-56 border-r border-slate-200/70' : 'w-0'"
+              :inert="activeTab !== 'browse'"
+            >
+              <nav class="w-56 h-full overflow-y-auto px-3 py-4 custom-scrollbar" :aria-label="t('management.browseTemplateModal.sidebar.filtersLabel')">
                 <!-- Package Filter -->
                 <div class="mb-5">
                   <h3 class="px-3 mb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-widest">{{ t('management.browseTemplateModal.sidebar.packageLabel') }}</h3>
@@ -134,8 +112,10 @@
             <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-white">
               <!-- Mobile Header -->
               <div class="lg:hidden">
-                <!-- Tab Switcher Row (partner users only): sliding gradient thumb, close button never moves -->
-                <div v-if="isPartner" class="flex items-center gap-3 px-4 pt-4 pb-2">
+                <!-- Tab Switcher Row (partner users only): sliding gradient thumb, close button never moves.
+                     Hidden while the template editor is open — it has its own
+                     header, and tab switching mid-edit isn't a thing. -->
+                <div v-if="isPartner && !isPartnerFormOpen" class="flex items-center gap-3 px-4 pt-4 pb-2">
                   <div class="relative flex flex-1 p-1 bg-slate-100 rounded-full">
                     <span
                       aria-hidden="true"
@@ -239,9 +219,49 @@
                 </div>
               </div>
 
-              <!-- Desktop Search Header (browse tab only) -->
-              <div v-if="activeTab === 'browse'" class="hidden lg:block px-6 py-4">
-                <div class="relative max-w-md">
+              <!-- Desktop header: one row for everything. Title, the
+                   Browse/Mine switch and search live here, and the panes
+                   rendered below teleport their own controls into
+                   `headerSlotEl` rather than each opening a second full-width
+                   bar of their own. When the template editor is open it owns
+                   the whole row — you can't switch tabs mid-edit anyway. -->
+              <div class="hidden lg:flex items-center gap-4 px-6 py-3 border-b border-slate-200/70 min-h-[3.5rem]">
+                <h2
+                  v-if="!isPartnerFormOpen"
+                  class="text-lg font-bold tracking-tight text-slate-900 flex-shrink-0"
+                >
+                  {{ t('management.browseTemplateModal.title') }}
+                </h2>
+
+                <!-- Sliding gradient thumb, same control as the mobile row -->
+                <div v-if="isPartner && !isPartnerFormOpen" class="relative flex p-1 bg-slate-100 rounded-full flex-shrink-0">
+                  <span
+                    aria-hidden="true"
+                    class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] shadow-md shadow-[#2ecc71]/20 transition-transform duration-300 ease-out"
+                    :class="activeTab === 'my-templates' ? 'translate-x-full' : ''"
+                  />
+                  <button
+                    type="button"
+                    @click="setActiveTab('browse')"
+                    :class="[
+                      'relative w-24 py-1.5 rounded-full text-xs font-semibold transition-colors duration-300',
+                      activeTab === 'browse' ? 'text-white' : 'text-slate-600 hover:text-slate-800',
+                    ]"
+                  >{{ t('management.browseTemplateModal.tabs.browse') }}</button>
+                  <button
+                    type="button"
+                    @click="setActiveTab('my-templates')"
+                    :class="[
+                      'relative w-24 py-1.5 rounded-full text-xs font-semibold transition-colors duration-300 flex items-center justify-center gap-1.5',
+                      activeTab === 'my-templates' ? 'text-white' : 'text-slate-600 hover:text-slate-800',
+                    ]"
+                  >
+                    <LayoutTemplate class="w-3.5 h-3.5" />
+                    {{ t('management.browseTemplateModal.tabs.mine') }}
+                  </button>
+                </div>
+
+                <div v-if="activeTab === 'browse' && !isPartnerFormOpen" class="relative ml-auto w-full max-w-xs">
                   <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden="true" />
                   <label for="template-search" class="sr-only">{{ t('management.browseTemplateModal.search.srLabel') }}</label>
                   <input
@@ -250,9 +270,13 @@
                     type="text"
                     :placeholder="t('management.browseTemplateModal.search.placeholder')"
                     :aria-label="t('management.browseTemplateModal.search.ariaLabel')"
-                    class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-100 border border-transparent rounded-xl transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100 placeholder:text-slate-400"
+                    class="w-full pl-10 pr-4 py-2 text-sm bg-slate-100 border border-transparent rounded-xl transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100 placeholder:text-slate-400"
                   />
                 </div>
+
+                <!-- Teleport target. `display: contents` so whatever a pane
+                     sends up sits directly in this flex row. -->
+                <div ref="headerSlotEl" class="contents" />
               </div>
 
               <!-- Package Bottom Sheet (mobile only) -->
@@ -452,7 +476,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch, onMounted, onUnmounted, ref, nextTick, computed } from 'vue'
+import { watch, onMounted, onUnmounted, ref, nextTick, computed, provide } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { Event, EventTemplate } from '../services/api'
 import type { PartnerTemplate } from '../services/api'
@@ -469,6 +493,7 @@ import TemplateGrid from './template/TemplateGrid.vue'
 import TemplateEmptyState from './template/TemplateEmptyState.vue'
 import TemplateMessage from './template/TemplateMessage.vue'
 import PartnerTemplatesPanel from './template/PartnerTemplatesPanel.vue'
+import { TEMPLATES_HEADER_SLOT } from './template/templatesHeaderSlot'
 import {
   X,
   Check,
@@ -541,6 +566,11 @@ const setActiveTab = (tab: 'browse' | 'my-templates'): void => {
   tabDirection.value = tab === 'my-templates' ? 'forward' : 'back'
   activeTab.value = tab
 }
+
+// The desktop header row the panes below teleport their own controls into, so
+// each one doesn't open a second full-width bar. See templatesHeaderSlot.ts.
+const headerSlotEl = ref<HTMLElement | null>(null)
+provide(TEMPLATES_HEADER_SLOT, headerSlotEl)
 
 // Template refs for focus management
 const modalRef = ref<HTMLElement>()

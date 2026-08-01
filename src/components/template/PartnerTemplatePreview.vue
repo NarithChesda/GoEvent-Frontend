@@ -23,7 +23,7 @@
             type="button"
             class="tpl-preview__seg"
             :class="{ 'is-active': activeFrameId === frame.id }"
-            @click="activeFrameId = frame.id"
+            @click="selectFrame(frame.id)"
           >
             {{ t(frame.labelKey) }}
           </button>
@@ -107,9 +107,18 @@ interface Props {
   eventData?: Event | null
   /** The template as last persisted, for anything the draft hasn't touched. */
   savedTemplate?: PartnerTemplate | null
+  /**
+   * Which stage to show, driven from outside. The form's section rail sets it so
+   * the pane always shows the stage the open section actually affects — editing
+   * background decorations while staring at the cover was the old default.
+   * Ignored when it names a stage this draft doesn't have.
+   */
+  stage?: string
 }
 
-const props = withDefaults(defineProps<Props>(), { savedTemplate: null, eventData: null })
+const props = withDefaults(defineProps<Props>(), { savedTemplate: null, eventData: null, stage: '' })
+
+const emit = defineEmits<{ 'update:stage': [string] }>()
 
 const { t } = useI18n()
 // The app's own locale — the language this partner is working in, and so the
@@ -181,6 +190,23 @@ watch(visibleFrames, (frames) => {
   }
 })
 
+/** The stage tabs stay usable on their own; they just report where they landed. */
+const selectFrame = (frameId: string): void => {
+  activeFrameId.value = frameId
+  emit('update:stage', frameId)
+}
+
+watch(
+  () => props.stage,
+  (stage) => {
+    if (!stage || stage === activeFrameId.value) return
+    // A stage the current draft doesn't render (no cover video → no Event Video
+    // frame) is dropped rather than blanking the pane.
+    if (visibleFrames.value.some((frame) => frame.id === stage)) activeFrameId.value = stage
+  },
+  { immediate: true },
+)
+
 // Declared ahead of the language block below, which posts into the frame.
 const frameRef = ref<InstanceType<typeof InertIframe> | null>(null)
 const previewFrameRef = ref<InstanceType<typeof PreviewFrame> | null>(null)
@@ -202,12 +228,29 @@ const frameLoading = ref(true)
 //
 // Font languages are still unioned in, so a font attached for a language the
 // event has no texts in can still be selected and checked.
+//
+// One direction of authority, which is what keeps the toggle honest: the parent
+// PROPOSES (`?lang=` on mount, `set-language` after) and the frame REPORTS what
+// it could actually render. The highlighted segment always comes from the
+// report. An earlier version instead let the frame load in whatever it liked
+// and then corrected it to the app locale on the first report — which set the
+// toggle to the requested language before knowing whether the frame would honour
+// it, so a switch that no-op'd left EN lit up over Khmer content.
 // ---------------------------------------------------------------------------
 const frameLanguages = ref<string[]>([])
-const previewLanguage = ref('')
 
-/** Stops the app-locale default from overriding a deliberate choice. */
-const languageTouched = ref(false)
+/**
+ * Seeded from the app's own locale, and it matters that this is non-empty from
+ * the very first render: it is what puts `?lang=` on the frame's initial `src`.
+ * Without it the frame fell through to `useEventShowcase`'s hardcoded `'kh'`
+ * default (see the `urlLang` line there), so every preview opened in Khmer no
+ * matter who was looking at it or what the event's own default was.
+ *
+ * The parent only ever *proposes* a language this way. Whatever the frame
+ * actually resolves — the event may not carry texts in this one — comes back on
+ * the `languages` report below and wins.
+ */
+const previewLanguage = ref<string>(locale.value)
 
 const previewLanguages = computed(() => {
   const langs = new Set<string>(frameLanguages.value)
@@ -220,20 +263,28 @@ const previewLanguages = computed(() => {
 const languageSwitching = ref(false)
 
 const selectLanguage = (language: string) => {
-  languageTouched.value = true
   if (language === previewLanguage.value) return
+
+  // Without a mounted frame there is nothing to post to, and `postSetLanguage`
+  // would swallow that silently — leaving the toggle highlighting a language
+  // nothing is rendering. Better to ignore the click than to lie about it.
+  const frame = frameRef.value
+  if (!frame) return
+
+  // Optimistic: the segment lights up now and the veil covers the refetch. The
+  // frame's own report reconciles it either way, so a switch the event can't
+  // honour lands back on whatever it actually rendered.
   previewLanguage.value = language
   languageSwitching.value = true
   // In place, over the bridge — never by touching the iframe's `src`.
-  frameRef.value?.postSetLanguage(language)
+  frame.postSetLanguage(language)
 }
 
 /**
  * The frame finished loading (or finished a language switch) and reported where
- * it landed. On the first report, prefer the language the partner is actually
- * working in — the app's own locale — over whatever the event defaulted to,
- * since a Khmer-speaking vendor building a Khmer template shouldn't have to
- * switch the preview every single time it mounts.
+ * it landed. This is the authority on what is on screen: the parent proposes a
+ * language (via `?lang=` on mount, or `set-language` after), the frame decides
+ * what it could actually render, and the toggle follows the frame.
  */
 const onFrameLanguages = (languages: string[], current: string) => {
   frameLanguages.value = languages
@@ -247,12 +298,6 @@ const onFrameLanguages = (languages: string[], current: string) => {
   // the moment the language changes. Same reason ShowcasePreviewTab re-posts its
   // staged template after every `refresh`.
   pushDraft()
-
-  if (languageTouched.value) return
-  languageTouched.value = true
-
-  const preferred = locale.value
-  if (preferred !== current && languages.includes(preferred)) selectLanguage(preferred)
 }
 
 // ---------------------------------------------------------------------------
@@ -296,6 +341,10 @@ watch(
   frameKey,
   () => {
     frameLoading.value = true
+    // Any bridge language switch still in flight belonged to the frame being
+    // replaced; its report will never arrive (that InertIframe unmounts with its
+    // listener), so the flag would otherwise stay stuck until the *next* switch.
+    languageSwitching.value = false
     srcLanguage.value = previewLanguage.value
   },
   { immediate: true },
@@ -304,8 +353,9 @@ watch(
 const frameSrc = computed(() => {
   if (!frameKey.value || !activeFrame.value) return ''
   const params = new URLSearchParams({ stage: activeFrame.value.id })
-  // Omitted entirely until a language is known, so the frame picks the event's
-  // own default rather than being forced to a guess.
+  // Always present in practice — `previewLanguage` is seeded from the app locale
+  // before the first frame mounts. Leaving it off would drop the frame onto
+  // useEventShowcase's hardcoded `'kh'` fallback.
   if (srcLanguage.value) params.set('lang', srcLanguage.value)
   return `/events/${props.eventId}/showcase-preview-frame?${params.toString()}`
 })

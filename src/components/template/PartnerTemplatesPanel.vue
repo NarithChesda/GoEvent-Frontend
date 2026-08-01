@@ -1,22 +1,49 @@
 <template>
   <div class="relative flex flex-col h-full overflow-hidden">
-    <!-- Panel Header -->
-    <div class="flex-shrink-0 px-4 sm:px-6 py-4 bg-white">
-      <div class="flex items-center justify-between">
-        <div>
-          <h3 class="text-base font-semibold tracking-tight text-slate-900">{{ t('management.partnerTemplatesPanel.title') }}</h3>
-          <p class="text-xs text-slate-500 mt-0.5">{{ t('management.partnerTemplatesPanel.subtitle') }}</p>
-        </div>
-        <button
-          type="button"
-          @click="openForm(null)"
-          class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white hover:from-[#27ae60] hover:to-[#1873cc] transition-all shadow-lg shadow-sky-500/25 hover:shadow-sky-500/35 hover:-translate-y-px active:translate-y-0"
+    <!-- Panel controls: the status roll-up and the one action this tab exists
+         for. From `lg` these ride in the modal's own header row (they used to
+         take a full-width bar of their own directly under it, which is a lot of
+         chrome for two chips and a button); below that they stay in place,
+         where a second row costs less than the width would. -->
+    <Teleport v-if="headerSlot && useSharedHeader" :to="headerSlot">
+      <div class="ml-auto flex items-center gap-2 flex-shrink-0">
+        <span
+          v-for="stat in statusStats"
+          :key="stat.status"
+          :class="['inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium', stat.class]"
         >
+          <component :is="stat.icon" class="w-3 h-3" />
+          {{ stat.count }} {{ stat.label }}
+        </span>
+        <button type="button" @click="openForm(null)" :class="newTemplateButtonClass">
           <Plus class="w-4 h-4" />
-          <span class="hidden sm:inline">{{ t('management.partnerTemplatesPanel.newTemplate') }}</span>
-          <span class="sm:hidden">{{ t('management.partnerTemplatesPanel.newShort') }}</span>
+          {{ t('management.partnerTemplatesPanel.newTemplate') }}
         </button>
       </div>
+    </Teleport>
+
+    <!-- Deliberately `!useSharedHeader` rather than `v-else`: Vue assigns
+         template refs after the subtree mounts, so on the first desktop frame
+         `headerSlot` is still null. A `v-else` would render this bar for that
+         one frame and then yank it away — better to show nothing until the
+         teleport target lands (it happens under the modal's own enter
+         transition anyway). -->
+    <div v-if="!useSharedHeader" class="flex-shrink-0 flex items-center justify-between gap-3 px-4 sm:px-6 py-3 bg-white">
+      <div class="flex gap-1.5 flex-wrap min-w-0">
+        <span
+          v-for="stat in statusStats"
+          :key="stat.status"
+          :class="['inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium', stat.class]"
+        >
+          <component :is="stat.icon" class="w-3 h-3" />
+          {{ stat.count }} {{ stat.label }}
+        </span>
+      </div>
+      <button type="button" @click="openForm(null)" :class="newTemplateButtonClass">
+        <Plus class="w-4 h-4" />
+        <span class="hidden sm:inline">{{ t('management.partnerTemplatesPanel.newTemplate') }}</span>
+        <span class="sm:hidden">{{ t('management.partnerTemplatesPanel.newShort') }}</span>
+      </button>
     </div>
 
     <!-- Content -->
@@ -53,47 +80,19 @@
       </div>
 
       <!-- Templates Grid -->
-      <div v-else>
-        <!-- Status Summary -->
-        <div class="flex gap-2 mb-4 flex-wrap">
-          <span
-            v-for="stat in statusStats"
-            :key="stat.status"
-            :class="['inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium', stat.class]"
-          >
-            <component :is="stat.icon" class="w-3 h-3" />
-            {{ stat.count }} {{ stat.label }}
-          </span>
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          <PartnerTemplateCard
-            v-for="template in templates"
-            :key="template.id"
-            :template="template"
-            :is-selected="selectedTemplateId === template.id && template.status === 'approved'"
-            @select="handleSelect"
-            @edit="handleEdit"
-            @submit="handleSubmit"
-            @delete="handleDelete"
-          />
-        </div>
+      <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
+        <PartnerTemplateCard
+          v-for="template in templates"
+          :key="template.id"
+          :template="template"
+          :is-selected="selectedTemplateId === template.id && template.status === 'approved'"
+          @select="handleSelect"
+          @edit="handleEdit"
+          @submit="handleSubmit"
+          @delete="handleDelete"
+        />
       </div>
     </div>
-
-    <!-- Toast / feedback message -->
-    <Transition name="toast">
-      <div
-        v-if="feedback"
-        :class="[
-          'absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg text-sm font-medium text-white z-20',
-          feedback.type === 'success' ? 'bg-emerald-500' : 'bg-red-500',
-        ]"
-      >
-        <component :is="feedback.type === 'success' ? CheckCircle : AlertCircle" class="w-4 h-4" />
-        {{ feedback.text }}
-      </div>
-    </Transition>
 
     <!-- Delete Confirmation Dialog -->
     <Transition name="fade">
@@ -150,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, inject, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   Plus,
@@ -162,14 +161,20 @@ import {
   Clock,
   XCircle,
   FileEdit,
-  type LucideComponent,
+  type LucideIcon,
 } from 'lucide-vue-next'
+import { useToast } from '../../composables/useToast'
+import { useMediaQuery } from '../../composables/useMediaQuery'
+import { TEMPLATES_HEADER_SLOT } from './templatesHeaderSlot'
 import { partnerTemplateService } from '../../services/api'
 import type { Event, PartnerTemplate } from '../../services/api'
 import PartnerTemplateCard from './PartnerTemplateCard.vue'
 import PartnerTemplateForm from './PartnerTemplateForm.vue'
 
 const { t } = useI18n()
+// There is exactly one toast stack in the app (§12) — this panel used to render
+// its own, which put it underneath the modal it lives in.
+const { showSuccess, showError } = useToast()
 
 interface Props {
   /**
@@ -199,14 +204,23 @@ const selectedTemplateId = ref<number | null>(null)
 const showForm = ref(false)
 const editingTemplate = ref<PartnerTemplate | null>(null)
 const templateToDelete = ref<PartnerTemplate | null>(null)
-const feedback = ref<{ type: 'success' | 'error'; text: string } | null>(null)
+
+// From `lg` up these controls ride in the modal's header row instead of opening
+// a bar of their own; the editor takes that row over while it's open, so the
+// panel stands down rather than both teleporting into it at once.
+const headerSlot = inject(TEMPLATES_HEADER_SLOT, ref(null))
+const isDesktop = useMediaQuery('(min-width: 1024px)')
+const useSharedHeader = computed(() => isDesktop.value && !showForm.value)
+
+const newTemplateButtonClass =
+  'flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white hover:from-[#27ae60] hover:to-[#1873cc] transition-all shadow-md shadow-sky-500/25 hover:shadow-sky-500/35 hover:-translate-y-px active:translate-y-0'
 
 const statusStats = computed(() => {
   const counts = { draft: 0, pending_review: 0, approved: 0, rejected: 0 }
   for (const tpl of templates.value) {
     counts[tpl.status]++
   }
-  const items: Array<{ status: string; count: number; label: string; class: string; icon: LucideComponent }> = []
+  const items: Array<{ status: string; count: number; label: string; class: string; icon: LucideIcon }> = []
   if (counts.approved > 0) items.push({ status: 'approved', count: counts.approved, label: t('management.partnerTemplatesPanel.status.approved'), class: 'bg-emerald-100 text-emerald-700', icon: CheckCircle })
   if (counts.pending_review > 0) items.push({ status: 'pending_review', count: counts.pending_review, label: t('management.partnerTemplatesPanel.status.pendingReview'), class: 'bg-amber-100 text-amber-700', icon: Clock })
   if (counts.draft > 0) items.push({ status: 'draft', count: counts.draft, label: t('management.partnerTemplatesPanel.status.draft'), class: 'bg-slate-100 text-slate-600', icon: FileEdit })
@@ -271,12 +285,12 @@ async function handleSubmit(template: PartnerTemplate): Promise<void> {
     if (response.success && response.data) {
       const idx = templates.value.findIndex((tpl) => tpl.id === template.id)
       if (idx !== -1) templates.value[idx] = response.data.template
-      showFeedback('success', t('management.partnerTemplatesPanel.toast.submitted'))
+      showSuccess(t('management.partnerTemplatesPanel.toast.submitted'))
     } else {
-      showFeedback('error', response.message || t('management.partnerTemplatesPanel.toast.submitFailed'))
+      showError(response.message || t('management.partnerTemplatesPanel.toast.submitFailed'))
     }
   } catch {
-    showFeedback('error', t('management.partnerTemplatesPanel.toast.submitError'))
+    showError(t('management.partnerTemplatesPanel.toast.submitError'))
   }
 }
 
@@ -293,10 +307,10 @@ async function confirmDelete(): Promise<void> {
     if (selectedTemplateId.value === templateToDelete.value.id) {
       selectedTemplateId.value = null
     }
-    showFeedback('success', t('management.partnerTemplatesPanel.toast.deleted'))
+    showSuccess(t('management.partnerTemplatesPanel.toast.deleted'))
     templateToDelete.value = null
   } catch {
-    showFeedback('error', t('management.partnerTemplatesPanel.toast.deleteFailed'))
+    showError(t('management.partnerTemplatesPanel.toast.deleteFailed'))
   } finally {
     deleting.value = false
   }
@@ -311,16 +325,7 @@ function handleSaved(template: PartnerTemplate): void {
     templates.value.unshift(template)
   }
   closeForm()
-  showFeedback('success', wasEditing ? t('management.partnerTemplatesPanel.toast.updated') : t('management.partnerTemplatesPanel.toast.created'))
-}
-
-let feedbackTimer: ReturnType<typeof setTimeout> | null = null
-function showFeedback(type: 'success' | 'error', text: string): void {
-  if (feedbackTimer) clearTimeout(feedbackTimer)
-  feedback.value = { type, text }
-  feedbackTimer = setTimeout(() => {
-    feedback.value = null
-  }, 3000)
+  showSuccess(wasEditing ? t('management.partnerTemplatesPanel.toast.updated') : t('management.partnerTemplatesPanel.toast.created'))
 }
 
 onMounted(() => {
@@ -329,16 +334,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.25s ease;
-}
-.toast-enter-from,
-.toast-leave-to {
-  opacity: 0;
-  transform: translateX(-50%) translateY(10px);
-}
-
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;

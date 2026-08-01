@@ -1396,7 +1396,8 @@
     },
     "sidebar": {
       "packageLabel": "Package",
-      "categoryLabel": "Category"
+      "categoryLabel": "Category",
+      "filtersLabel": "Template filters"
     },
     "filters": {
       "all": "All",
@@ -2486,8 +2487,6 @@
     }
   },
   "partnerTemplatesPanel": {
-    "title": "My Templates",
-    "subtitle": "Create and manage your custom templates",
     "newTemplate": "New Template",
     "newShort": "New",
     "loadError": "Failed to load templates",
@@ -2597,7 +2596,7 @@
   "partnerTemplatePreview": {
     "stageLabel": "Preview stage",
     "languageLabel": "Preview language",
-    "hint": "Live preview — nothing here is saved until you save the template."
+    "hint": "Nothing here is saved until you save the template."
   },
   "partnerTemplateForm": {
     "header": {
@@ -2608,7 +2607,8 @@
       "pane": {
         "edit": "Edit",
         "preview": "Preview"
-      }
+      },
+      "untitled": "Untitled template"
     },
     "fileField": {
       "choose": "Choose file",
@@ -2619,15 +2619,15 @@
       "nameLabel": "Template Name",
       "namePlaceholder": "e.g. Elegant Gold Wedding",
       "planLabel": "Package Plan",
-      "planLoading": "Loading plans...",
-      "planSelect": "Select a package plan",
       "previewUrlLabel": "Preview URL",
       "liquidGlass": "Liquid Glass Background",
       "liquidGlassHint": "Show liquid glass visual effect",
       "previewImageLabel": "Preview Image",
       "previewImageChange": "Change",
       "previewImageUpload": "Upload preview",
-      "previewImageAspect": "9:16 portrait"
+      "previewImageAspect": "9:16 portrait",
+      "previewUrlHint": "A public showcase link partners can share as a sample.",
+      "planEmpty": "No package plans are available right now."
     },
     "colors": {
       "sectionTitle": "Template Colors",
@@ -2640,7 +2640,8 @@
       "deleteBtn": "Delete",
       "addBtn": "Add",
       "updateBtn": "Update",
-      "cancelBtn": "Cancel"
+      "cancelBtn": "Cancel",
+      "empty": "No colors yet. Add one below."
     },
     "fonts": {
       "sectionTitle": "Template Fonts",
@@ -2653,10 +2654,11 @@
       "deleteBtn": "Delete",
       "addBtn": "Add",
       "updateBtn": "Update",
-      "cancelBtn": "Cancel"
+      "cancelBtn": "Cancel",
+      "empty": "No fonts yet. Add one below.",
+      "unknownFont": "Unknown font"
     },
     "backgroundStage": {
-      "sectionTitle": "Background Stage",
       "backgroundPhoto": "Background Photo",
       "backgroundVideo": "Background Video",
       "topDecoration": "Top Decoration",
@@ -2665,7 +2667,6 @@
       "rightDecoration": "Right Decoration"
     },
     "coverDecorations": {
-      "sectionTitle": "Cover Stage Decorations",
       "coverBackground": "Cover Stage Background",
       "coverTop": "Cover Top",
       "coverBottom": "Cover Bottom",
@@ -2676,10 +2677,12 @@
       "frameRight": "Frame Right",
       "sampleLogo1": "Sample Logo 1",
       "sampleLogo2": "Sample Logo 2",
-      "headerTextImage": "Header Text Image"
+      "headerTextImage": "Header Text Image",
+      "backdropGroup": "Backdrop & decorations",
+      "guestFrameGroup": "Guest name frame",
+      "brandingGroup": "Logos & header art"
     },
     "coverLayout": {
-      "sectionTitle": "Cover Stage Layout",
       "animationType": "Animation Type",
       "animationDecoration": "Decoration (slide out)",
       "animationDoor": "Door (split open)",
@@ -2712,12 +2715,10 @@
       "left": "Left",
       "right": "Right",
       "top": "Top",
-      "bottom": "Bottom"
+      "bottom": "Bottom",
+      "presentationGroup": "Presentation"
     },
     "fallingEffect": {
-      "sectionTitle": "Falling Effect",
-      "enabled": "enabled",
-      "disabled": "disabled",
       "enableLabel": "Enable Falling Particles",
       "enableHint": "Animated petals, confetti, snowflakes, etc.",
       "particleType": "Particle Type",
@@ -2726,9 +2727,6 @@
       "intensityNormal": "Normal",
       "intensityHeavy": "Heavy",
       "colorSource": "Color Source",
-      "sourcePrimary": "Primary (from template colors)",
-      "sourceAccent": "Accent (from template colors)",
-      "sourceCustom": "Custom hex color",
       "pickLabel": "Pick",
       "hexLabel": "Hex",
       "customImage": "Custom Particle Image (optional)",
@@ -2746,12 +2744,12 @@
         "maple": "Japanese Maple",
         "hearts": "Hearts",
         "none": "None (container only)"
-      }
+      },
+      "sourcePrimaryShort": "Primary",
+      "sourceAccentShort": "Accent",
+      "sourceCustomShort": "Custom"
     },
     "ambientCreatures": {
-      "sectionTitle": "Ambient Creatures",
-      "enabled": "enabled",
-      "disabled": "disabled",
       "enableLabel": "Enable Ambient Creatures",
       "enableHint": "Butterflies, doves, fireflies, dragonflies, balloons, hummingbirds drifting across the page.",
       "count": "Count (1–15)",
@@ -2762,11 +2760,10 @@
       "colorSource": "Color Source",
       "sourcePrimary": "Primary",
       "sourceAccent": "Accent",
-      "sourceCustom": "Custom hex color",
       "pickLabel": "Pick",
       "hexLabel": "Hex",
       "creaturesLabel": "Creatures",
-      "addCreature": "+ Add creature",
+      "addCreature": "Add creature",
       "typeLabel": "Type",
       "weightLabel": "Weight (1–10)",
       "minSize": "Min Size (px)",
@@ -2784,7 +2781,6 @@
     },
     "eventDetailsDesign": {
       "sectionTitle": "Date & Location Design",
-      "designLabel": "Layout style",
       "designHint": "Controls how the event date and location are displayed in the showcase.",
       "types": {
         "panel": "Panel (stacked date + location)",
@@ -2793,7 +2789,6 @@
     },
     "hostInfoDesign": {
       "sectionTitle": "Host Info Design",
-      "designLabel": "Layout style",
       "designHint": "Controls how the host information is displayed in the showcase.",
       "types": {
         "standard": "Standard (parents, logo, titles, photos)",
@@ -2804,7 +2799,11 @@
       "cancel": "Cancel",
       "saving": "Saving...",
       "saveChanges": "Save Changes",
-      "createTemplate": "Create Template"
+      "createTemplate": "Create Template",
+      "missingRequired": "Add a name and a package plan to save.",
+      "autosaveHint": "Changes preview live; nothing is saved until you save.",
+      "saveChangesShort": "Save",
+      "createShort": "Create"
     },
     "errors": {
       "colorSaveFailed": "Failed to save color.",
@@ -2821,6 +2820,41 @@
       "warningsJoin": " and ",
       "saveFailed": "Failed to save template. Please try again.",
       "connectionFailed": "Unable to connect. Please check your connection and try again."
+    },
+    "sections": {
+      "navLabel": "Template sections",
+      "basics": {
+        "label": "Basics",
+        "description": "Name, package plan and the thumbnail shown in the browse grid."
+      },
+      "brand": {
+        "label": "Colors & Fonts",
+        "description": "The palette and typefaces the showcase looks up by name."
+      },
+      "cover": {
+        "label": "Cover Stage",
+        "description": "Artwork for the invitation cover — backdrop, frames and logos."
+      },
+      "layout": {
+        "label": "Cover Layout",
+        "description": "Where each row of the cover sits, and what it shows. Drag a slider to see it move."
+      },
+      "background": {
+        "label": "Background",
+        "description": "The backdrop and frame decorations behind the main content."
+      },
+      "content": {
+        "label": "Main Content",
+        "description": "How the date, location and host blocks are laid out."
+      },
+      "effects": {
+        "label": "Effects",
+        "description": "Falling particles and drifting ambient creatures."
+      }
+    },
+    "planRequired": {
+      "title": "Pick a package plan first",
+      "action": "The available slots depend on it — go to Basics"
     }
   },
   "tickets": {
