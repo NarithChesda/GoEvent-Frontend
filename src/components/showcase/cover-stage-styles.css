@@ -137,7 +137,7 @@ p {
 }
 
 .content-row-header .scaled-header {
-  font-size: clamp(0.75rem, 3vh, 1.8rem);
+  font-size: calc(clamp(0.75rem, 3vh, 1.8rem) * var(--cover-font-scale, 1));
   line-height: 1.1;
   max-width: 95%;
   width: auto;
@@ -187,7 +187,7 @@ p {
 }
 
 .content-row-invite .scaled-invite-text {
-  font-size: clamp(0.75rem, 2.2vh, 1rem);
+  font-size: calc(clamp(0.75rem, 2.2vh, 1rem) * var(--cover-font-scale, 1));
   line-height: 1.1;
   max-width: 95%;
   width: auto;
@@ -224,7 +224,7 @@ p {
 }
 
 .content-row-guest .scaled-guest-name {
-  font-size: clamp(0.75rem, 3.5vh, 2rem);
+  font-size: calc(clamp(0.75rem, 3.5vh, 2rem) * var(--cover-font-scale, 1));
   line-height: 1.2;
   max-width: 60%;
   width: 100%;
@@ -255,7 +255,7 @@ p {
 /* Desktop-specific adjustments for guest name - reduce size moderately */
 @media (min-width: 1024px) {
   .content-row-guest .scaled-guest-name {
-    font-size: clamp(0.65rem, 2.5vh, 1.5rem) !important;
+    font-size: calc(clamp(0.65rem, 2.5vh, 1.5rem) * var(--cover-font-scale, 1)) !important;
   }
 }
 
@@ -286,30 +286,30 @@ p {
 /* If text is too long for single line, allow wrapping and scale down */
 .content-row-header .scaled-header {
   /* Scale down font size more aggressively if content is long */
-  font-size: clamp(0.75rem, 3vh, 1.8rem);
+  font-size: calc(clamp(0.75rem, 3vh, 1.8rem) * var(--cover-font-scale, 1));
 }
 
 .content-row-guest .scaled-guest-name {
   /* Scale down font size more aggressively if content is long */
-  font-size: clamp(0.625rem, 3vh, 1.75rem);
+  font-size: calc(clamp(0.625rem, 3vh, 1.75rem) * var(--cover-font-scale, 1));
 }
 
 /* Override for desktop */
 @media (min-width: 1024px) {
   .content-row-guest .scaled-guest-name {
-    font-size: clamp(0.65rem, 2.5vh, 1.5rem) !important;
+    font-size: calc(clamp(0.65rem, 2.5vh, 1.5rem) * var(--cover-font-scale, 1)) !important;
   }
 }
 
 /* Additional constraint for very long text */
 @media (max-width: 480px) {
   .content-row-header .scaled-header {
-    font-size: clamp(0.78125rem, 3.125vh, 1.5rem);
+    font-size: calc(clamp(0.78125rem, 3.125vh, 1.5rem) * var(--cover-font-scale, 1));
     line-height: 1.05;
   }
 
   .content-row-guest .scaled-guest-name {
-    font-size: clamp(0.5rem, 2.2vh, 1.1rem);
+    font-size: calc(clamp(0.5rem, 2.2vh, 1.1rem) * var(--cover-font-scale, 1));
     line-height: 1.1;
   }
 }
@@ -317,20 +317,20 @@ p {
 /* Responsive adjustments for very small screens */
 @media (max-height: 500px) {
   .content-row-header .scaled-header {
-    font-size: clamp(0.625rem, 2.5vh, 1.2rem);
+    font-size: calc(clamp(0.625rem, 2.5vh, 1.2rem) * var(--cover-font-scale, 1));
     line-height: 1.05;
   }
 
   .content-row-invite .scaled-invite-text {
-    font-size: clamp(0.625rem, 1.8vh, 0.8rem);
+    font-size: calc(clamp(0.625rem, 1.8vh, 0.8rem) * var(--cover-font-scale, 1));
   }
 
   .content-row-guest .scaled-guest-name {
-    font-size: clamp(0.5rem, 2.5vh, 1.25rem);
+    font-size: calc(clamp(0.5rem, 2.5vh, 1.25rem) * var(--cover-font-scale, 1));
   }
 
   .content-row-button .scaled-button-text {
-    font-size: clamp(0.75rem, 2vh, 1rem);
+    font-size: calc(clamp(0.75rem, 2vh, 1rem) * var(--cover-font-scale, 1));
   }
 }
 

@@ -76,6 +76,60 @@ export interface TemplateAssets {
 }
 
 /**
+ * The four cover-stage blocks a template can place freely.
+ *
+ * Deliberately NOT the swipe arrow: that one is navigation chrome with a fixed
+ * pixel size and its own responsive rules, and `swipeArrowBottom` already
+ * positions it in both layout modes.
+ */
+export type CoverElementId = 'header' | 'logo' | 'invite' | 'guest'
+
+/**
+ * One block's placement on the cover stage, in stage-relative percentages.
+ *
+ * The anchor is the block's CENTRE, not its top-left corner: the cover is a
+ * centred composition, so a centre anchor keeps a block optically in place when
+ * its width or height changes, and makes "put this on the middle axis" the
+ * single value `x: 50` rather than a width-dependent calculation.
+ *
+ * Percentages (not px, not vh+vw mixed) because the cover stage always fills the
+ * viewport: `x`/`width` are % of stage width, `y`/`height` are % of stage height
+ * — the latter being numerically identical to vh, which is what the row model
+ * already used.
+ */
+export interface CoverElementBox {
+  /** Centre X as % of the cover stage width. 0 = left edge, 50 = middle. */
+  x: number
+  /** Centre Y as % of the cover stage height (equivalently, vh). */
+  y: number
+  /** Box width as % of the cover stage width. */
+  width: number
+  /** Box height as % of the cover stage height. */
+  height: number
+  /**
+   * Multiplier on the block's own responsive font size. 1 (the default) is
+   * exactly what the row model rendered, so an unset value never changes a
+   * template's look. Ignored by `logo`, which has no text — that block's size
+   * is its box.
+   */
+  fontScale?: number
+}
+
+/** Placement per block. Partial: any missing block falls back to the row model. */
+export type CoverElementBoxes = Partial<Record<CoverElementId, CoverElementBox>>
+
+/**
+ * How the cover blocks are positioned.
+ *
+ * - `rows` — the original stacked model: one absolutely-positioned container
+ *   (`contentTopPosition` + `innerContainerHeight`), inside which the four
+ *   blocks are flex rows with percentage heights.
+ * - `free` — each block is placed independently from `coverElements`. Blocks may
+ *   overlap, sit anywhere on the stage, and carry their own text scale.
+ */
+export type CoverLayoutMode = 'rows' | 'free'
+
+/**
  * Cover stage layout configuration
  * All values are optional with sensible defaults applied in components
  */
@@ -129,6 +183,18 @@ export interface CoverStageLayout {
   // Main-content liquid glass card width. 'wide' grows the card toward the
   // viewport edges and shrinks its inner horizontal padding for more content width.
   contentWidth?: 'standard' | 'wide'  // default: 'standard'
+
+  // How the four cover blocks are placed. Omitted (or 'rows') keeps every
+  // existing template rendering exactly as before — the free model is opt-in.
+  layoutMode?: CoverLayoutMode        // default: 'rows'
+
+  // Free placement per block. Only read when layoutMode is 'free'; a block
+  // missing from here falls back to the box the row model would have given it,
+  // so a partially-authored free layout is still a complete one.
+  //
+  // Kept even while layoutMode is 'rows' so switching back and forth in the
+  // template editor doesn't discard hand-placed positions.
+  coverElements?: CoverElementBoxes
 }
 
 /**

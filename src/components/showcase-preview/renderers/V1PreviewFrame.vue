@@ -33,7 +33,7 @@
     :current-showcase-stage="stage === 'main' ? 'main_content' : 'cover'"
     :should-skip-to-main-content="false"
     :content-top-position="event.template_assets?.cover_content_top_position"
-    :cover-stage-layout="event.template_assets?.cover_stage_layout"
+    :cover-stage-layout="coverStageLayout"
     :cover-top-decoration="event.template_assets?.assets?.cover_top_decoration"
     :cover-bottom-decoration="event.template_assets?.assets?.cover_bottom_decoration"
     :cover-left-decoration="event.template_assets?.assets?.cover_left_decoration"
@@ -117,6 +117,20 @@
     :animation-type="event.template_assets?.cover_stage_layout?.showcaseAnimationType"
   />
 
+  <!-- Direct-manipulation cover layout. A sibling of CoverStage rather than
+       something inside it: the boxes are percentages of the whole stage, and
+       this element IS the whole stage, so overlay coordinates and rendered
+       coordinates are the same numbers with no conversion anywhere. -->
+  <CoverLayoutEditor
+    v-if="coverLayoutEdit?.active.value && stage === 'cover'"
+    :elements="coverElements"
+    :visible="coverElementVisibility"
+    :selected="coverLayoutEdit.selected.value"
+    @select="onCoverLayoutSelect"
+    @change="onCoverLayoutChange"
+    @dragging="onCoverLayoutDragging"
+  />
+
   <PhotoModal
     :is-open="isPhotoModalOpen"
     :photos="eventPhotos"
@@ -128,10 +142,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import type { useEventShowcase } from '@/composables/useEventShowcase'
 import { isBasicWeddingShowcase } from './resolvePreviewRenderer'
+import { useCoverStageLayout } from '@/composables/showcase/useCoverStageLayout'
+import { CoverLayoutEditKey } from '@/components/showcase-preview/edit/coverLayoutEditContext'
+import {
+  postCoverLayoutChangeToParent,
+  postCoverLayoutSelection,
+} from '@/components/showcase-preview/bridge/previewBridge'
+import type {
+  CoverElementBoxes,
+  CoverElementId,
+  CoverStageLayout,
+} from '@/services/api/types/template.types'
 import CoverStage from '@/components/showcase/CoverStage.vue'
+import CoverLayoutEditor from '@/components/showcase-preview/edit/CoverLayoutEditor.vue'
 import V1EventVideoStage from './V1EventVideoStage.vue'
 import TransitionStage from '@/components/showcase/TransitionStage.vue'
 import MainContentStage from '@/components/showcase/MainContentStage.vue'
@@ -208,6 +234,68 @@ const videoPipelineKey = computed(() =>
     event.value?.template_assets?.assets?.standard_cover_video || '',
   ].join('|'),
 )
+
+// ---------------------------------------------------------------------------
+// Cover layout editing. Inert unless the frame shell provided the context (only
+// the partner template editor asks for it), so nothing below costs the live
+// showcase or a read-only preview anything.
+// ---------------------------------------------------------------------------
+const coverLayoutEdit = inject(CoverLayoutEditKey, undefined)
+
+/**
+ * The template's cover layout with any in-flight drag laid over it.
+ *
+ * The override is what makes dragging feel local: it renders the block at the
+ * new position on the same frame the pointer moved, instead of waiting for the
+ * value to reach the editor pane, get debounced, and come back as a template
+ * push. Forcing `layoutMode: 'free'` alongside it means a partner can drag a
+ * block while the template is still nominally on rows and see the result — the
+ * editor pane flips the real mode when they commit.
+ */
+const coverStageLayout = computed<CoverStageLayout | undefined>(() => {
+  const base = event.value?.template_assets?.cover_stage_layout ?? undefined
+  const override = coverLayoutEdit?.override.value
+  if (!override) return base
+  return {
+    ...(base ?? {}),
+    layoutMode: 'free',
+    coverElements: { ...(base?.coverElements ?? {}), ...override },
+  }
+})
+
+// The same resolution the cover itself runs, so the overlay's handles are drawn
+// from exactly the boxes the blocks rendered at — never a parallel calculation.
+const { layout: resolvedCoverLayout, elements: coverElements } = useCoverStageLayout(
+  coverStageLayout,
+  computed(() => event.value?.template_assets?.cover_content_top_position),
+)
+
+/** Which blocks the cover is actually rendering, and so which are draggable. */
+const coverElementVisibility = computed<Record<CoverElementId, boolean>>(() => ({
+  header: resolvedCoverLayout.value.showCoverHeaderText,
+  logo: true,
+  // Both are gated on a guest name in CoverContentRows. Preview frames always
+  // have one (useDefaultGuestName), but a frame opened without it shouldn't
+  // offer handles for blocks that aren't on screen.
+  invite: !!guestName.value,
+  guest: !!guestName.value,
+}))
+
+const onCoverLayoutChange = (elements: CoverElementBoxes, commit: boolean): void => {
+  if (coverLayoutEdit) coverLayoutEdit.override.value = elements
+  postCoverLayoutChangeToParent(elements, commit)
+}
+
+const onCoverLayoutSelect = (id: CoverElementId | null): void => {
+  if (coverLayoutEdit) coverLayoutEdit.selected.value = id
+  // Only ever an iframe in practice; the guard keeps a standalone visit to the
+  // frame route from posting selection messages to itself.
+  if (window.parent !== window) postCoverLayoutSelection(window.parent, id)
+}
+
+const onCoverLayoutDragging = (value: boolean): void => {
+  if (coverLayoutEdit) coverLayoutEdit.dragging.value = value
+}
 
 // Same template-capability check EventShowcaseRefactored.vue uses — tells
 // CoverStage whether the basic-mode decoration background should persist.

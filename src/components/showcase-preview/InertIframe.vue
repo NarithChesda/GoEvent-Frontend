@@ -38,10 +38,12 @@ import {
   postEventPatchToFrame,
   postTemplatePreviewToFrame,
   postSetLanguageToFrame,
+  postCoverLayoutSelection,
   type EventFieldPatch,
   type ParentToFrameType,
 } from './bridge/previewBridge'
 import type { TemplateAssets } from '@/composables/useEventShowcase'
+import type { CoverElementBoxes, CoverElementId } from '@/services/api/types/template.types'
 
 interface Props {
   src: string
@@ -68,6 +70,11 @@ const emit = defineEmits<{
    *  switch. Parents can't derive this themselves (see
    *  postShowcaseLanguagesToParent). */
   languages: [languages: string[], currentLanguage: string]
+  /** A cover block was dragged or resized inside the frame. `commit` is false
+   *  for every frame of the gesture and true on release. */
+  coverLayoutChange: [elements: CoverElementBoxes, commit: boolean]
+  /** A cover block was selected (or deselected) inside the frame. */
+  coverLayoutSelect: [elementId: CoverElementId | null]
 }>()
 
 const iframeRef = ref<HTMLIFrameElement | null>(null)
@@ -84,6 +91,8 @@ const onWindowMessage = (event: MessageEvent) => {
   if (!parsed) return
   if (parsed.type === 'frame-ready') emit('ready')
   if (parsed.type === 'showcase-languages') emit('languages', parsed.languages, parsed.currentLanguage)
+  if (parsed.type === 'cover-layout-change') emit('coverLayoutChange', parsed.elements, parsed.commit)
+  if (parsed.type === 'cover-layout-select') emit('coverLayoutSelect', parsed.elementId)
 }
 
 onMounted(() => window.addEventListener('message', onWindowMessage))
@@ -104,6 +113,8 @@ defineExpose({
     postTemplatePreviewToFrame(iframeRef.value?.contentWindow, templateData),
   postSetLanguage: (language: string) =>
     postSetLanguageToFrame(iframeRef.value?.contentWindow, language),
+  postCoverLayoutSelect: (elementId: CoverElementId | null) =>
+    postCoverLayoutSelection(iframeRef.value?.contentWindow, elementId),
 })
 
 // The iframe is visually shrunk by PreviewFrame's `transform: scale(...)`, so

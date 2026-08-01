@@ -56,9 +56,12 @@
           :key="frameKey"
           ref="frameRef"
           :src="frameSrc"
-          :click-message="activeFrame.clickMessage"
+          :click-message="layoutEditActive ? undefined : activeFrame.clickMessage"
+          :interactive="layoutEditActive"
           @ready="onFrameReady"
           @languages="onFrameLanguages"
+          @cover-layout-change="(elements, commit) => emit('layout-change', elements, commit)"
+          @cover-layout-select="(id) => emit('update:selectedElement', id)"
         />
       </PreviewFrame>
 
@@ -73,7 +76,11 @@
       </Transition>
     </div>
 
-    <p class="tpl-preview__hint">{{ t('management.partnerTemplatePreview.hint') }}</p>
+    <p class="tpl-preview__hint">
+      {{ layoutEditActive
+        ? t('management.coverLayoutEditor.previewHint')
+        : t('management.partnerTemplatePreview.hint') }}
+    </p>
   </div>
 </template>
 
@@ -81,6 +88,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { Event, PartnerTemplate } from '@/services/api'
+import type { CoverElementBoxes, CoverElementId } from '@/services/api/types/template.types'
 import PreviewFrame from '../showcase-preview/PreviewFrame.vue'
 import InertIframe from '../showcase-preview/InertIframe.vue'
 import {
@@ -113,11 +121,30 @@ interface Props {
    * Ignored when it names a stage this draft doesn't have.
    */
   stage?: string
+  /**
+   * Turn the cover's direct-manipulation layout overlay on. Only meaningful on
+   * the cover stage, which is where the boxes live — the frame is told to drop
+   * the mode whenever another stage is showing, so switching tabs mid-edit can't
+   * leave an invisible overlay swallowing clicks.
+   */
+  layoutEditing?: boolean
+  /** Which cover block the editor pane has selected; kept in step with the frame. */
+  selectedElement?: CoverElementId | null
 }
 
-const props = withDefaults(defineProps<Props>(), { savedTemplate: null, eventData: null, stage: '' })
+const props = withDefaults(defineProps<Props>(), {
+  savedTemplate: null,
+  eventData: null,
+  stage: '',
+  layoutEditing: false,
+  selectedElement: null,
+})
 
-const emit = defineEmits<{ 'update:stage': [string] }>()
+const emit = defineEmits<{
+  'update:stage': [string]
+  'update:selectedElement': [CoverElementId | null]
+  'layout-change': [elements: CoverElementBoxes, commit: boolean]
+}>()
 
 const { t } = useI18n()
 
@@ -207,6 +234,38 @@ watch(
 const frameRef = ref<InstanceType<typeof InertIframe> | null>(null)
 const previewFrameRef = ref<InstanceType<typeof PreviewFrame> | null>(null)
 const frameLoading = ref(true)
+
+// ---------------------------------------------------------------------------
+// Direct-manipulation cover layout.
+//
+// Only ever on the cover stage: the boxes are cover geometry, and an overlay
+// left running on the Main Content stage would be an invisible sheet eating
+// every click. Gating here rather than asking the parent to remember means the
+// preview's own stage tabs can't desynchronise it either.
+// ---------------------------------------------------------------------------
+const layoutEditActive = computed(
+  () => props.layoutEditing && activeFrame.value?.id === 'cover',
+)
+
+const syncLayoutEditMode = (): void => {
+  frameRef.value?.post(layoutEditActive.value ? 'cover-layout-edit-on' : 'cover-layout-edit-off')
+}
+
+// The frame is replaced outright on a stage switch, so this covers both turning
+// the mode on/off and carrying it across into a freshly mounted cover frame
+// (the `ready` handshake calls the same function).
+watch(layoutEditActive, () => {
+  if (!frameLoading.value) syncLayoutEditMode()
+})
+
+// The editor pane's block list and the overlay's own selection are the same
+// selection; whichever end changes it, the other follows.
+watch(
+  () => props.selectedElement,
+  (id) => {
+    if (!frameLoading.value && layoutEditActive.value) frameRef.value?.postCoverLayoutSelect(id)
+  },
+)
 
 // ---------------------------------------------------------------------------
 // Language. Two things depend on it: which of the event's texts render, and
@@ -362,6 +421,11 @@ const frameSrc = computed(() => {
 const onFrameReady = () => {
   frameLoading.value = false
   pushDraft()
+  // A stage switch mounts a brand-new frame that knows nothing about the mode
+  // or the selection, so both are re-established at the handshake rather than
+  // only on change.
+  syncLayoutEditMode()
+  if (layoutEditActive.value) frameRef.value?.postCoverLayoutSelect(props.selectedElement)
   measureBottomReserve()
   previewFrameRef.value?.measure()
 }

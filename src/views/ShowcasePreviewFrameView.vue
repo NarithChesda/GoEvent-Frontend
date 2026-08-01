@@ -25,6 +25,8 @@ import { useEventShowcase, type TemplateAssets } from '@/composables/useEventSho
 import { eventTemplateService } from '@/services/api'
 import { useShowcaseEditSaves } from '@/composables/showcase-preview/useShowcaseEditSaves'
 import { InlineEditKey, EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import { CoverLayoutEditKey } from '@/components/showcase-preview/edit/coverLayoutEditContext'
+import type { CoverElementBoxes, CoverElementId } from '@/services/api/types/template.types'
 import {
   parsePreviewBridgeMessage,
   postEditIntentToParent,
@@ -123,6 +125,27 @@ const replayKey = ref(0)
 // frame.
 const editHintsOn = ref(route.query.hints === '1')
 
+// ---------------------------------------------------------------------------
+// Direct-manipulation cover layout. Turned on by the partner template editor
+// while its Cover Layout section is on free placement; off (and therefore
+// entirely absent) everywhere else, including the live showcase.
+//
+// `?layoutEdit=1` seeds it for the same reason `?hints=1` exists: a frame that
+// mounts already in this mode shouldn't depend on the parent's post landing
+// after the listener is attached.
+// ---------------------------------------------------------------------------
+const coverLayoutEditing = ref(route.query.layoutEdit === '1')
+const coverLayoutOverride = ref<CoverElementBoxes | null>(null)
+const coverLayoutSelected = ref<CoverElementId | null>(null)
+const coverLayoutDragging = ref(false)
+
+provide(CoverLayoutEditKey, {
+  active: coverLayoutEditing,
+  override: coverLayoutOverride,
+  selected: coverLayoutSelected,
+  dragging: coverLayoutDragging,
+})
+
 /**
  * Tell the parent which languages this event has and which is showing. Only the
  * frame knows: `available_languages` comes back on the showcase response, so a
@@ -153,11 +176,25 @@ const onFrameMessage = (msg: MessageEvent) => {
     void updateLanguageContent(parsed.language).finally(publishLanguages)
   }
   if (parsed.type === 'patch-event') applyEventFieldPatch(parsed.fields)
-  if (parsed.type === 'preview-template') setStagedTemplatePreview(parsed.templateData)
+  if (parsed.type === 'preview-template') {
+    setStagedTemplatePreview(parsed.templateData)
+    // The push now carries whatever this frame last reported, so the local
+    // override has served its purpose — unless a drag is still running, in
+    // which case this is a stale echo of a position two frames old and
+    // adopting it would visibly snap the block backwards.
+    if (!coverLayoutDragging.value) coverLayoutOverride.value = null
+  }
   if (parsed.type === 'preview-template-clear') clearStagedTemplatePreview()
   if (parsed.type === 'preview-template-commit') commitStagedTemplatePreview()
   if (parsed.type === 'edit-hints-on') editHintsOn.value = true
   if (parsed.type === 'edit-hints-off') editHintsOn.value = false
+  if (parsed.type === 'cover-layout-edit-on') coverLayoutEditing.value = true
+  if (parsed.type === 'cover-layout-edit-off') {
+    coverLayoutEditing.value = false
+    coverLayoutOverride.value = null
+    coverLayoutSelected.value = null
+  }
+  if (parsed.type === 'cover-layout-select') coverLayoutSelected.value = parsed.elementId
 }
 
 // Preview-only fallback: ShowcasePreviewTab passes ?templateId=<id> whenever

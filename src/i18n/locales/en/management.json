@@ -2598,6 +2598,33 @@
     "languageLabel": "Preview language",
     "hint": "Nothing here is saved until you save the template."
   },
+  "coverLayoutEditor": {
+    "sectionTitle": "Block Placement",
+    "modes": {
+      "rows": "Stacked rows",
+      "free": "Free placement"
+    },
+    "rowsHint": "Blocks stack in a fixed order inside one container. Switch to free placement to move and resize each one on its own.",
+    "dragHint": "Drag a block on the preview to move it, or its handles to resize. Arrow keys nudge, Shift for bigger steps, Alt to ignore the guides.",
+    "previewHint": "Drag the blocks to place them. Nothing is saved until you save the template.",
+    "blockPicker": "Cover block",
+    "pickBlock": "Pick a block above, or click one straight on the preview.",
+    "blocks": {
+      "header": "Header text",
+      "logo": "Logo",
+      "invite": "Invite text",
+      "guest": "Guest name"
+    },
+    "fields": {
+      "x": "Centre X",
+      "y": "Centre Y",
+      "width": "Width",
+      "height": "Height",
+      "fontScale": "Text size"
+    },
+    "resetBlock": "Reset this block",
+    "resetAll": "Reset all blocks"
+  },
   "partnerTemplateForm": {
     "header": {
       "goBack": "Go back",

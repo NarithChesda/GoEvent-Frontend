@@ -69,6 +69,8 @@
           :current-language="currentLanguage"
           :container-style="containerStyle"
           :row-styles="rowStyles"
+          :layout-mode="layoutMode"
+          :element-styles="elementStyles"
           :get-media-url="getMediaUrl"
           :display-liquid-glass="displayLiquidGlass"
           :guest-title-frame-left="guestTitleFrameLeft"
@@ -84,6 +86,7 @@
 
 <script setup lang="ts">
 import { useAssetProtection } from '@/composables/showcase/useAssetProtection'
+import type { CoverElementId, CoverLayoutMode } from '@/services/api/types/template.types'
 import CoverContentRows from './CoverContentRows.vue'
 
 interface RowStyles {
@@ -143,6 +146,9 @@ interface Props {
   currentLanguage?: string
   containerStyle: { top: string; height: string }
   rowStyles: RowStyles
+  /** Forwarded straight through: the doors render the same cover blocks. */
+  layoutMode?: CoverLayoutMode
+  elementStyles?: Record<CoverElementId, Record<string, string>>
   getMediaUrl: (url: string) => string
   displayLiquidGlass?: boolean
   guestTitleFrameLeft?: string | null

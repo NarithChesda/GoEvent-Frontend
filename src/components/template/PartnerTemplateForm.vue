@@ -546,18 +546,105 @@
               />
             </section>
 
+            <!-- Placement model. Rows is the original stacked layout; free hands
+                 each block its own rectangle, which is what the preview's drag
+                 handles write to. Switching to free seeds every block from the
+                 row geometry, so nothing on the cover moves until something is
+                 actually dragged. -->
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                {{ t('management.coverLayoutEditor.sectionTitle') }}
+              </h5>
+              <TemplateFormChoice v-model="layoutModeModel" :options="layoutModeOptions" />
+
+              <template v-if="isFreeCoverLayout">
+                <p class="flex items-start gap-1.5 text-[11px] leading-snug text-sky-700 bg-sky-50 ring-1 ring-sky-100 rounded-xl p-2.5">
+                  <Move class="w-3.5 h-3.5 flex-shrink-0 mt-px" />
+                  {{ t('management.coverLayoutEditor.dragHint') }}
+                </p>
+
+                <!-- Same selection the overlay uses: clicking a chip highlights
+                     the block in the preview, and clicking it there lights the
+                     chip. -->
+                <div class="flex flex-wrap gap-1.5" role="group" :aria-label="t('management.coverLayoutEditor.blockPicker')">
+                  <button
+                    v-for="block in coverBlockChips"
+                    :key="block.id"
+                    type="button"
+                    :disabled="!block.available"
+                    :aria-pressed="selectedCoverElement === block.id"
+                    class="px-3 py-1.5 rounded-full text-xs font-medium ring-1 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    :class="
+                      selectedCoverElement === block.id
+                        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white ring-transparent shadow-sm'
+                        : 'bg-white text-slate-600 ring-slate-200 hover:ring-slate-300 hover:bg-slate-50'
+                    "
+                    @click="selectCoverElement(block.id)"
+                  >
+                    {{ block.label }}
+                  </button>
+                </div>
+
+                <div v-if="selectedCoverBox" class="space-y-3">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                    <TemplateFormNumber v-model="coverBoxX" :label="t('management.coverLayoutEditor.fields.x')" :min="0" :max="100" :step="0.5" unit="%" />
+                    <TemplateFormNumber v-model="coverBoxY" :label="t('management.coverLayoutEditor.fields.y')" :min="0" :max="100" :step="0.5" unit="%" />
+                    <TemplateFormNumber v-model="coverBoxWidth" :label="t('management.coverLayoutEditor.fields.width')" :min="3" :max="100" :step="0.5" unit="%" />
+                    <TemplateFormNumber v-model="coverBoxHeight" :label="t('management.coverLayoutEditor.fields.height')" :min="2" :max="100" :step="0.5" unit="%" />
+                    <!-- The logo scales with its box; only the text blocks have
+                         a size that the box alone can't express. -->
+                    <TemplateFormNumber
+                      v-if="selectedCoverElement !== 'logo'"
+                      v-model="coverBoxFontScale"
+                      :label="t('management.coverLayoutEditor.fields.fontScale')"
+                      :min="40"
+                      :max="250"
+                      :step="5"
+                      unit="%"
+                    />
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      @click="resetSelectedCoverBlock"
+                      class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 transition-colors"
+                    >
+                      {{ t('management.coverLayoutEditor.resetBlock') }}
+                    </button>
+                    <button
+                      type="button"
+                      @click="resetAllCoverBlocks"
+                      class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      {{ t('management.coverLayoutEditor.resetAll') }}
+                    </button>
+                  </div>
+                </div>
+                <p v-else class="text-[11px] text-slate-400 leading-snug">
+                  {{ t('management.coverLayoutEditor.pickBlock') }}
+                </p>
+              </template>
+              <p v-else class="text-[11px] text-slate-400 leading-snug">
+                {{ t('management.coverLayoutEditor.rowsHint') }}
+              </p>
+            </section>
+
             <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
               <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 {{ t('management.partnerTemplateForm.coverLayout.containerPositioning') }}
               </h5>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
-                <TemplateFormNumber v-model="form.cover_stage_layout.contentTopPosition" :label="t('management.partnerTemplateForm.coverLayout.contentTop')" :min="0" :max="60" :step="0.5" unit="vh" />
-                <TemplateFormNumber v-model="form.cover_stage_layout.innerContainerHeight" :label="t('management.partnerTemplateForm.coverLayout.innerHeight')" :min="10" :max="90" :step="0.5" unit="vh" />
+                <!-- Free placement ignores the container box entirely; the swipe
+                     arrow is positioned the same way in both models. -->
+                <template v-if="!isFreeCoverLayout">
+                  <TemplateFormNumber v-model="form.cover_stage_layout.contentTopPosition" :label="t('management.partnerTemplateForm.coverLayout.contentTop')" :min="0" :max="60" :step="0.5" unit="vh" />
+                  <TemplateFormNumber v-model="form.cover_stage_layout.innerContainerHeight" :label="t('management.partnerTemplateForm.coverLayout.innerHeight')" :min="10" :max="90" :step="0.5" unit="vh" />
+                </template>
                 <TemplateFormNumber v-model="form.cover_stage_layout.swipeArrowBottom" :label="t('management.partnerTemplateForm.coverLayout.swipeArrowBottom')" :min="0" :max="20" :step="0.5" unit="vh" />
               </div>
             </section>
 
-            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+            <section v-if="!isFreeCoverLayout" class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
               <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 {{ t('management.partnerTemplateForm.coverLayout.rowHeights') }}
               </h5>
@@ -886,10 +973,13 @@
       >
         <PartnerTemplatePreview
           v-model:stage="previewStage"
+          v-model:selected-element="selectedCoverElement"
           :draft="previewDraft"
           :event-id="eventId"
           :event-data="eventData"
           :saved-template="existingTemplate"
+          :layout-editing="coverLayoutEditing"
+          @layout-change="onCoverLayoutChange"
         />
       </aside>
 
@@ -950,6 +1040,8 @@ import {
   LayoutPanelTop,
   Users,
   UserRound,
+  Move,
+  Rows3,
   type LucideIcon,
 } from 'lucide-vue-next'
 import { partnerTemplateService, packagePlanService, customFontsService, FONT_TYPE_LABELS, LANGUAGE_CODE_LABELS } from '../../services/api'
@@ -961,6 +1053,10 @@ import type {
   PartnerTemplateCreatePayload,
   PackagePlan,
   CoverStageLayout,
+  CoverElementBox,
+  CoverElementBoxes,
+  CoverElementId,
+  CoverLayoutMode,
   EventTemplateColor,
   EventTemplateLanguageFont,
   CustomFont,
@@ -984,6 +1080,11 @@ import TemplateFormSelect from './TemplateFormSelect.vue'
 import PlanRequiredNotice from './TemplateFormPlanNotice.vue'
 import { TEMPLATES_HEADER_SLOT } from './templatesHeaderSlot'
 import { useMediaQuery } from '../../composables/useMediaQuery'
+import {
+  COVER_ELEMENT_IDS,
+  resolveCoverElements,
+  rowsToCoverElements,
+} from '../../composables/showcase/useCoverStageLayout'
 import { TEMPLATE_COLOR_SLOTS, TEMPLATE_FONT_TYPE_SLOTS } from './templateSlots'
 import {
   PARTNER_TEMPLATE_ASSET_FIELDS,
@@ -1068,6 +1169,8 @@ async function fetchPlans(): Promise<void> {
 
 // Cover stage layout defaults
 const defaultCoverStageLayout = (): Required<CoverStageLayout> => ({
+  layoutMode: 'rows',
+  coverElements: {},
   contentTopPosition: 23.5,
   innerContainerHeight: 53,
   eventTitleHeight: 18.75,
@@ -1332,6 +1435,131 @@ const contentWidthModel = computed<string>({
   get: () => form.cover_stage_layout.contentWidth,
   set: (value) => { form.cover_stage_layout.contentWidth = value as 'standard' | 'wide' },
 })
+
+// ---------------------------------------------------------------------------
+// Free placement of the cover blocks.
+//
+// The preview frame is the primary editor — drag a block there and it reports
+// the whole map back through `onCoverLayoutChange`. Everything below is the
+// numeric half of that: the same values, typed or nudged when a pointer can't
+// be precise enough at preview scale.
+// ---------------------------------------------------------------------------
+const selectedCoverElement = ref<CoverElementId | null>(null)
+
+const isFreeCoverLayout = computed(() => form.cover_stage_layout.layoutMode === 'free')
+
+/**
+ * Handles only appear while the section that owns them is open. Leaving the
+ * overlay armed after navigating to, say, Effects would mean an invisible sheet
+ * sitting over a preview nobody is trying to drag.
+ */
+const coverLayoutEditing = computed(() => activeSection.value === 'layout' && isFreeCoverLayout.value)
+
+/**
+ * The boxes as they'd render right now: whatever the template specifies, over
+ * the geometry the row model would have produced. Same function the showcase
+ * resolves with, so the numbers here and the ones on screen can't diverge.
+ */
+const resolvedCoverElements = computed(() => resolveCoverElements(form.cover_stage_layout))
+
+const selectedCoverBox = computed<Required<CoverElementBox> | null>(() =>
+  selectedCoverElement.value ? resolvedCoverElements.value[selectedCoverElement.value] : null,
+)
+
+const layoutModeOptions = computed(() => [
+  { value: 'rows', label: t('management.coverLayoutEditor.modes.rows'), icon: Rows3 },
+  { value: 'free', label: t('management.coverLayoutEditor.modes.free'), icon: Move },
+])
+
+const layoutModeModel = computed<string>({
+  get: () => form.cover_stage_layout.layoutMode,
+  set: (value) => {
+    const mode = value as CoverLayoutMode
+    // Seeding on the way in is what makes the switch non-destructive: free mode
+    // starts as a pixel-identical copy of the rows the partner already tuned,
+    // rather than a blank canvas they have to rebuild.
+    if (mode === 'free' && Object.keys(form.cover_stage_layout.coverElements ?? {}).length === 0) {
+      form.cover_stage_layout.coverElements = rowsToCoverElements(form.cover_stage_layout)
+    }
+    form.cover_stage_layout.layoutMode = mode
+    if (mode !== 'free') selectedCoverElement.value = null
+  },
+})
+
+const coverBlockChips = computed(() =>
+  COVER_ELEMENT_IDS.map((id) => ({
+    id,
+    label: t(`management.coverLayoutEditor.blocks.${id}`),
+    // A hidden header row isn't on the cover, so there's nothing to place.
+    available: id !== 'header' || form.cover_stage_layout.showCoverHeaderText,
+  })),
+)
+
+function selectCoverElement(id: CoverElementId): void {
+  selectedCoverElement.value = selectedCoverElement.value === id ? null : id
+}
+
+/**
+ * Writes one block and persists all four.
+ *
+ * Storing the complete map rather than just the edited block matters for what
+ * the template does later: a half-specified `coverElements` leaves the other
+ * blocks implicitly tied to the row numbers, so editing an unrelated row height
+ * months later would silently move them.
+ */
+function updateSelectedCoverBox(patch: Partial<CoverElementBox>): void {
+  const id = selectedCoverElement.value
+  if (!id) return
+  const next: CoverElementBoxes = {}
+  for (const key of COVER_ELEMENT_IDS) {
+    next[key] =
+      key === id
+        ? { ...resolvedCoverElements.value[key], ...patch }
+        : { ...resolvedCoverElements.value[key] }
+  }
+  form.cover_stage_layout.coverElements = next
+}
+
+function coverBoxModel(field: 'x' | 'y' | 'width' | 'height') {
+  return computed<number>({
+    get: () => selectedCoverBox.value?.[field] ?? 0,
+    set: (value) => updateSelectedCoverBox({ [field]: value }),
+  })
+}
+
+const coverBoxX = coverBoxModel('x')
+const coverBoxY = coverBoxModel('y')
+const coverBoxWidth = coverBoxModel('width')
+const coverBoxHeight = coverBoxModel('height')
+
+// Stored as a multiplier, edited as a percentage — "120%" reads as a size, "1.2"
+// reads as an implementation detail.
+const coverBoxFontScale = computed<number>({
+  get: () => Math.round((selectedCoverBox.value?.fontScale ?? 1) * 100),
+  set: (value) => updateSelectedCoverBox({ fontScale: Math.max(0.1, value / 100) }),
+})
+
+/** Puts one block back where the row model would have put it. */
+function resetSelectedCoverBlock(): void {
+  const id = selectedCoverElement.value
+  if (!id) return
+  updateSelectedCoverBox(rowsToCoverElements(form.cover_stage_layout)[id])
+}
+
+/**
+ * Drops every hand-placed box. The template then carries no `coverElements` at
+ * all, which is also what makes "reset" a real reset: the blocks go back to
+ * tracking the row numbers rather than to a frozen copy of them.
+ */
+function resetAllCoverBlocks(): void {
+  form.cover_stage_layout.coverElements = {}
+  selectedCoverElement.value = null
+}
+
+/** A block was dragged or resized in the preview frame. */
+function onCoverLayoutChange(elements: CoverElementBoxes): void {
+  form.cover_stage_layout.coverElements = elements
+}
 
 const eventDetailsDesignModel = computed<string>({
   get: () => form.event_details_design_type,

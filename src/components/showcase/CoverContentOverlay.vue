@@ -53,6 +53,8 @@
         :current-language="currentLanguage"
         :container-style="containerStyle"
         :row-styles="rowStyles"
+        :layout-mode="layoutMode"
+        :element-styles="elementStyles"
         :get-media-url="getMediaUrl"
         :display-liquid-glass="displayLiquidGlass"
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
@@ -92,6 +94,8 @@
         :current-language="currentLanguage"
         :container-style="containerStyle"
         :row-styles="rowStyles"
+        :layout-mode="layoutMode"
+        :element-styles="elementStyles"
         :get-media-url="getMediaUrl"
         :display-liquid-glass="displayLiquidGlass"
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
@@ -147,6 +151,8 @@
         :current-language="currentLanguage"
         :container-style="containerStyle"
         :row-styles="rowStyles"
+        :layout-mode="layoutMode"
+        :element-styles="elementStyles"
         :get-media-url="getMediaUrl"
         :display-liquid-glass="displayLiquidGlass"
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
@@ -276,6 +282,8 @@ const { optimizedDecorationPhotoUrl: doorBackgroundImageUrl } = useOptimizedBack
 const {
   containerStyle,
   rowStyles,
+  layoutMode,
+  elementStyles,
   decorationZIndexes,
   layout,
 } = useCoverStageLayout(
