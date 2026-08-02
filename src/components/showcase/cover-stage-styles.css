@@ -141,6 +141,10 @@ p {
   line-height: 1.1;
   max-width: 95%;
   width: auto;
+  /* See the note on .scaled-invite-text below — same max-width-in-a-block-box
+     centring problem, same fix. */
+  margin-left: auto;
+  margin-right: auto;
   height: auto;
   max-height: none;
   display: block;
@@ -191,6 +195,19 @@ p {
   line-height: 1.1;
   max-width: 95%;
   width: auto;
+  /* Load-bearing for the preview editor. This is a `display: block` box capped
+     at 95%, so its 5% of slack has to go somewhere — and a normal-flow block
+     box puts all of it on the right, leaving the text centred at 47.5% of the
+     row instead of 50%. On the live showcase (and the partner template editor)
+     that never showed, because there the <p> is a direct flex item of a
+     `justify-center` row and shrink-wraps its text. In the showcase preview
+     frame InlineEditableText wraps it in a full-width click-to-edit div, the
+     <p> stops being that flex item, and the 2.5% left shift becomes visible
+     against the perfectly-centred logo and guest name. Auto margins split the
+     slack evenly in both layouts (on a flex item they absorb free space before
+     justify-content, so the production result is unchanged). */
+  margin-left: auto;
+  margin-right: auto;
   height: auto;
   max-height: none;
   display: block;
