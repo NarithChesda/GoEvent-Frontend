@@ -2661,7 +2661,8 @@
     "fileField": {
       "choose": "Choose file",
       "uploaded": "File uploaded",
-      "replace": "Replace"
+      "replace": "Replace",
+      "remove": "Remove"
     },
     "fields": {
       "nameLabel": "Template Name",
@@ -2707,6 +2708,7 @@
       "unknownFont": "Unknown font"
     },
     "backgroundStage": {
+      "sectionTitle": "Background",
       "backgroundPhoto": "Background Photo",
       "backgroundVideo": "Background Video",
       "topDecoration": "Top Decoration",
@@ -2881,23 +2883,15 @@
       },
       "cover": {
         "label": "Cover Stage",
-        "description": "Artwork for the invitation cover — backdrop, frames and logos."
+        "description": "Artwork for the invitation cover — backdrop, frames, logos and ambient creatures."
       },
       "layout": {
         "label": "Cover Layout",
         "description": "Where each row of the cover sits, and what it shows. Drag a slider to see it move."
       },
-      "background": {
-        "label": "Background",
-        "description": "The backdrop and frame decorations behind the main content."
-      },
       "content": {
         "label": "Main Content",
-        "description": "How the date, location and host blocks are laid out."
-      },
-      "effects": {
-        "label": "Effects",
-        "description": "Falling particles and drifting ambient creatures."
+        "description": "The backdrop, the content card, the blocks laid out on it, and falling particles."
       }
     },
     "planRequired": {

@@ -1,4 +1,5 @@
 import { computed, type ComputedRef } from 'vue'
+import { isResolvedMediaUrl } from '@/utils/mediaUrl'
 
 /**
  * Composable for handling media URL resolution
@@ -17,8 +18,9 @@ export function useMediaUrl() {
   const getMediaUrl = (mediaUrl: string | null | undefined): string | undefined => {
     if (!mediaUrl) return undefined
 
-    // If it's already a full URL, return as is
-    if (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://')) {
+    // Already complete: absolute http(s), or an in-memory blob:/data: URL for a
+    // file that has been picked but not uploaded yet.
+    if (isResolvedMediaUrl(mediaUrl)) {
       return mediaUrl
     }
 

@@ -61,6 +61,12 @@ export interface PartnerTemplateDraft {
   fonts: EventTemplateLanguageFont[]
   /** Files chosen in this editing session, not yet uploaded. */
   files: Partial<Record<PartnerTemplateAssetField, File | null>>
+  /**
+   * Saved assets the partner has marked for removal but hasn't saved yet. The
+   * preview must honour these or removing a decoration appears to do nothing
+   * until the save round trip completes.
+   */
+  clearedFiles: PartnerTemplateAssetField[]
   /** Unsaved replacement for the falling effect's custom particle image. */
   fallingEffectCustomImage: File | null
   /** The partner removed the saved custom particle image. */
@@ -69,8 +75,8 @@ export interface PartnerTemplateDraft {
 
 /**
  * Resolves one asset field to the URL the preview should render: the unsaved
- * file the partner just picked, else whatever is already saved on the template,
- * else nothing.
+ * file the partner just picked, else whatever is already saved on the template
+ * (unless they've marked it for removal), else nothing.
  *
  * `resolveFileUrl` is injected rather than calling `URL.createObjectURL` here so
  * the caller can cache and revoke the object URLs it creates — minting a fresh
@@ -85,6 +91,7 @@ function resolveAssetUrl(
 ): string | undefined {
   const pending = draft.files[field]
   if (pending instanceof File) return resolveFileUrl(pending)
+  if (draft.clearedFiles.includes(field)) return undefined
   return saved?.[field] ?? undefined
 }
 

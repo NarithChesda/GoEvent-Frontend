@@ -4,6 +4,7 @@
  */
 
 import { secureStorage } from '@/utils/secureStorage'
+import { isResolvedMediaUrl } from '@/utils/mediaUrl'
 import { tokenManager, type TokenRefreshResponse } from '@/services/tokenManager'
 import { networkManager } from './NetworkManager'
 import { SecureLogger } from './SecureLogger'
@@ -48,8 +49,11 @@ export class ApiClient {
   public getProfilePictureUrl(profilePictureUrl: string | null | undefined): string | null {
     if (!profilePictureUrl) return null
 
-    // If it's already a full URL (starts with http/https), return as is
-    if (profilePictureUrl.startsWith('http://') || profilePictureUrl.startsWith('https://')) {
+    // Already complete: absolute http(s), or an in-memory blob:/data: URL
+    // standing in for a file that has been picked but not uploaded yet (the
+    // live template preview renders unsaved uploads that way). Prefixing the
+    // API base onto one of those yields `/media/blob:http://...`, which 404s.
+    if (isResolvedMediaUrl(profilePictureUrl)) {
       return profilePictureUrl
     }
 

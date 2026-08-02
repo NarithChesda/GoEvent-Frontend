@@ -434,31 +434,39 @@ export interface PartnerTemplate {
   updated_at: string
 }
 
+/**
+ * A file field on the way to the server. `File` uploads, `''` deletes whatever
+ * is stored, and omitting the key leaves the stored file alone — the three
+ * states the template editor needs to distinguish (see TEMPLATE_FILE_FIELDS in
+ * templates.service.ts).
+ */
+type TemplateFileUpload = File | ''
+
 export interface PartnerTemplateCreatePayload {
   name: string
   package_plan_id?: number | null
-  preview_image?: File
+  preview_image?: TemplateFileUpload
   youtube_preview_url?: string
-  basic_background_photo?: File
-  basic_decoration_photo?: File
-  top_decoration?: File
-  bottom_decoration?: File
-  left_decoration?: File
-  right_decoration?: File
-  cover_top_decoration?: File
-  cover_bottom_decoration?: File
-  cover_left_decoration?: File
-  cover_right_decoration?: File
-  guest_title_frame_left?: File
-  guest_title_frame_mid?: File
-  guest_title_frame_right?: File
-  standard_cover_video?: File
-  standard_background_video?: File
-  sample_logo_1?: File
-  sample_logo_2?: File
-  header_text_image?: File
+  basic_background_photo?: TemplateFileUpload
+  basic_decoration_photo?: TemplateFileUpload
+  top_decoration?: TemplateFileUpload
+  bottom_decoration?: TemplateFileUpload
+  left_decoration?: TemplateFileUpload
+  right_decoration?: TemplateFileUpload
+  cover_top_decoration?: TemplateFileUpload
+  cover_bottom_decoration?: TemplateFileUpload
+  cover_left_decoration?: TemplateFileUpload
+  cover_right_decoration?: TemplateFileUpload
+  guest_title_frame_left?: TemplateFileUpload
+  guest_title_frame_mid?: TemplateFileUpload
+  guest_title_frame_right?: TemplateFileUpload
+  standard_cover_video?: TemplateFileUpload
+  standard_background_video?: TemplateFileUpload
+  sample_logo_1?: TemplateFileUpload
+  sample_logo_2?: TemplateFileUpload
+  header_text_image?: TemplateFileUpload
   display_liquid_glass_background?: boolean
-  open_envelope_button?: File
+  open_envelope_button?: TemplateFileUpload
   cover_stage_layout?: CoverStageLayout
   /** Falling particle effect config. Pass `null` to disable the effect. */
   falling_effect?: FallingEffectConfig | null

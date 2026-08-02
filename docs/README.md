@@ -39,6 +39,7 @@ Frontend-authored design requests for backend changes (the reverse direction of 
 - [showcase-v2-template-presets.md](backend-api-requirements/showcase-v2-template-presets.md) — 6 ready-to-enter color/font presets for V2 templates, plus per-slot admin-panel help text ("which color is used where")
 - [featured-photo-crop.md](backend-api-requirements/featured-photo-crop.md) — `crop_x`/`crop_y`/`crop_width`/`crop_height` on event photos so organizers can crop the transition stage's full-screen photo instead of always getting a centre crop
 - [public-template-assets-decorations.md](backend-api-requirements/public-template-assets-decorations.md) — decoration assets in the pre-payment public template payload for the live preview
+- [partner-template-asset-removal.md](backend-api-requirements/partner-template-asset-removal.md) — accept `''` on the template's file fields so a partner can remove a saved asset, not only replace it
 - [event-banner-image-sizing.md](backend-api-requirements/event-banner-image-sizing.md) — **on hold** (implemented then reverted with an SSR change) — raise the banner optimizer bound to 1920×1005 and derive a ≤300KB 1200×630 `og:image` variant so messaging-app link previews render the large card
 
 ## Feature plans & implementation records ([features/](features/))

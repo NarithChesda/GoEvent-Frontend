@@ -61,7 +61,7 @@
     <!-- When keepDecorationBackground is true (transition stage), keep decoration photo visible -->
     <!-- When skipDecorationSlideUp is true (after transition stage), hide instantly without slide-up -->
     <div
-      v-if="optimizedDecorationPhotoUrl && !templateAssets?.standard_cover_video"
+      v-if="decorationPhotoUrl && !templateAssets?.standard_cover_video"
       class="absolute inset-0"
       :class="{
         'transition-all duration-700 ease-out': !skipDecorationSlideUp,
@@ -73,11 +73,12 @@
       }"
     >
       <img
-        :src="optimizedDecorationPhotoUrl"
+        :src="decorationPhotoUrl"
         alt="Decoration"
         class="w-full h-full object-cover"
         loading="eager"
         v-bind="protectionAttrs"
+        @error="onPhotoError(decorationPhotoUrl)"
       />
     </div>
 
@@ -85,44 +86,46 @@
     <!-- Not shown when keepDecorationBackground is true (transition stage keeps decoration photo) -->
     <!-- Background Photo Layer (optimized via ImageKit) for Main Content Stage -->
     <div
-      v-if="isContentHidden && !keepDecorationBackground && optimizedBackgroundPhotoUrl && !templateAssets?.standard_cover_video"
+      v-if="isContentHidden && !keepDecorationBackground && backgroundPhotoUrl && !templateAssets?.standard_cover_video"
       class="absolute inset-0"
       style="z-index: -1"
     >
       <img
-        :src="optimizedBackgroundPhotoUrl"
+        :src="backgroundPhotoUrl"
         alt="Background"
         class="w-full h-full object-cover"
         loading="eager"
         v-bind="protectionAttrs"
+        @error="onPhotoError(backgroundPhotoUrl)"
       />
     </div>
 
     <!-- Fallback 1: Template Color for Main Content Stage when no background photo -->
     <div
-      v-if="isContentHidden && !keepDecorationBackground && !optimizedBackgroundPhotoUrl && templateColor && !templateAssets?.standard_cover_video"
+      v-if="isContentHidden && !keepDecorationBackground && !backgroundPhotoUrl && templateColor && !templateAssets?.standard_cover_video"
       class="absolute inset-0"
       :style="{ backgroundColor: templateColor, zIndex: -1 }"
     />
 
     <!-- Fallback 2: Use Decoration Photo when no background photo AND no templateColor -->
     <div
-      v-if="isContentHidden && !keepDecorationBackground && !optimizedBackgroundPhotoUrl && !templateColor && optimizedDecorationPhotoUrl && !templateAssets?.standard_cover_video"
+      v-if="isContentHidden && !keepDecorationBackground && !backgroundPhotoUrl && !templateColor && decorationPhotoUrl && !templateAssets?.standard_cover_video"
       class="absolute inset-0"
       style="z-index: -1"
     >
       <img
-        :src="optimizedDecorationPhotoUrl"
+        :src="decorationPhotoUrl"
         alt="Background"
         class="w-full h-full object-cover"
         loading="eager"
         v-bind="protectionAttrs"
+        @error="onPhotoError(decorationPhotoUrl)"
       />
     </div>
 
     <!-- Fallback 3: White color when no background photo, no templateColor, and no decoration photo -->
     <div
-      v-if="isContentHidden && !keepDecorationBackground && !optimizedBackgroundPhotoUrl && !templateColor && !optimizedDecorationPhotoUrl && !templateAssets?.standard_cover_video"
+      v-if="isContentHidden && !keepDecorationBackground && !backgroundPhotoUrl && !templateColor && !decorationPhotoUrl && !templateAssets?.standard_cover_video"
       class="absolute inset-0"
       style="background-color: #ffffff; z-index: -1"
     />
@@ -202,6 +205,30 @@ const { optimizedDecorationPhotoUrl, optimizedBackgroundPhotoUrl } = useOptimize
   computed(() => props.templateAssets?.basic_decoration_photo ?? null),
   computed(() => props.templateAssets?.basic_background_photo ?? null)
 )
+
+// A photo URL that exists but cannot actually load (unreachable media host, a
+// deleted asset, a still-uploading file) used to be indistinguishable from a
+// working one here: the layer rendered, and its presence suppressed the
+// template-colour / decoration / white fallbacks below, leaving nothing but the
+// stage's own flat background colour. Remembering the failure lets the same
+// fallback chain that handles "no background photo" handle "background photo
+// that won't load" too. Keyed by URL so a corrected asset gets a fresh try
+// rather than staying written off for the life of the component.
+const failedPhotoUrls = ref(new Set<string>())
+
+const onPhotoError = (url: string | null) => {
+  if (url) failedPhotoUrls.value = new Set(failedPhotoUrls.value).add(url)
+}
+
+const decorationPhotoUrl = computed(() => {
+  const url = optimizedDecorationPhotoUrl.value
+  return url && !failedPhotoUrls.value.has(url) ? url : null
+})
+
+const backgroundPhotoUrl = computed(() => {
+  const url = optimizedBackgroundPhotoUrl.value
+  return url && !failedPhotoUrls.value.has(url) ? url : null
+})
 
 // Compute the background color for decoration photo
 const decorationBackgroundColor = computed(() => {

@@ -1,29 +1,53 @@
 <template>
   <div class="space-y-1">
     <label class="block text-xs font-medium text-slate-600">{{ label }}</label>
-    <label
-      class="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all group"
-      :class="fileStateClasses"
-    >
-      <component :is="fileIcon" class="w-4 h-4 flex-shrink-0" :class="iconColorClass" />
-      <span class="text-xs truncate flex-1" :class="textColorClass">
-        {{ fileStatusText }}
-      </span>
-      <span
-        v-if="hasExistingFile && !fileName"
-        class="text-[10px] px-1.5 py-0.5 rounded-full bg-white text-emerald-700 ring-1 ring-emerald-200 font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+    <!-- The clear button is a SIBLING of the picker label, not a child of it:
+         anything inside a <label> forwards its clicks to the label's control, so
+         a nested button would open the file dialog on the way to removing the
+         file. Overlaying it keeps one full-width click target for picking. -->
+    <div class="relative">
+      <label
+        class="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all group"
+        :class="[fileStateClasses, canClear ? 'pr-9' : '']"
       >
-        {{ t('management.partnerTemplateForm.fileField.replace') }}
-      </span>
-      <input :type="'file'" :accept="accept" class="sr-only" @change="emit('change', $event)" />
-    </label>
+        <component :is="fileIcon" class="w-4 h-4 flex-shrink-0" :class="iconColorClass" />
+        <span class="text-xs truncate flex-1" :class="textColorClass">
+          {{ fileStatusText }}
+        </span>
+        <span
+          v-if="hasExistingFile && !fileName"
+          class="text-[10px] px-1.5 py-0.5 rounded-full bg-white text-emerald-700 ring-1 ring-emerald-200 font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          {{ t('management.partnerTemplateForm.fileField.replace') }}
+        </span>
+        <!-- Resetting the input's value means picking the SAME file twice in a
+             row still fires `change` — otherwise, choosing a file, removing it,
+             and choosing it again silently did nothing. -->
+        <input
+          :type="'file'"
+          :accept="accept"
+          class="sr-only"
+          @change="onChange"
+        />
+      </label>
+      <button
+        v-if="canClear"
+        type="button"
+        class="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+        :aria-label="t('management.partnerTemplateForm.fileField.remove')"
+        :title="t('management.partnerTemplateForm.fileField.remove')"
+        @click="emit('clear')"
+      >
+        <X class="w-3.5 h-3.5" />
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Upload, CheckCircle2, FileCheck } from 'lucide-vue-next'
+import { Upload, CheckCircle2, FileCheck, X } from 'lucide-vue-next'
 
 const props = defineProps<{
   label: string
@@ -32,9 +56,22 @@ const props = defineProps<{
   hasExistingFile?: boolean
 }>()
 
-const emit = defineEmits<{ change: [event: Event] }>()
+const emit = defineEmits<{
+  change: [event: Event]
+  /** Drop whatever this field currently holds. The owner decides what that
+   *  means — undoing an unsaved pick, or marking a saved asset for removal. */
+  clear: []
+}>()
 
 const { t } = useI18n()
+
+/** Nothing to remove when the field is empty. */
+const canClear = computed(() => !!props.fileName || !!props.hasExistingFile)
+
+const onChange = (event: Event) => {
+  emit('change', event)
+  ;(event.target as HTMLInputElement).value = ''
+}
 
 const fileIcon = computed(() => {
   if (props.fileName) return FileCheck

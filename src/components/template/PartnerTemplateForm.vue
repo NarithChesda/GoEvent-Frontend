@@ -208,11 +208,20 @@
                       :alt="t('management.partnerTemplateForm.fields.previewImageLabel')"
                       class="w-full h-full object-cover"
                     />
-                    <div class="absolute inset-0 bg-slate-950/25 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <div class="absolute inset-0 bg-slate-950/25 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       <label class="cursor-pointer px-2.5 py-1.5 bg-white/95 rounded-lg text-[11px] font-medium text-slate-700 shadow-sm">
                         {{ t('management.partnerTemplateForm.fields.previewImageChange') }}
                         <input type="file" accept="image/*" class="sr-only" @change="handleFileChange('preview_image', $event)" />
                       </label>
+                      <button
+                        type="button"
+                        class="p-1.5 bg-white/95 rounded-lg text-slate-500 hover:text-red-600 shadow-sm transition-colors"
+                        :aria-label="t('management.partnerTemplateForm.fileField.remove')"
+                        :title="t('management.partnerTemplateForm.fileField.remove')"
+                        @click="clearAssetField('preview_image')"
+                      >
+                        <X class="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                   <label v-else class="flex flex-col items-center justify-center aspect-[9/16] cursor-pointer">
@@ -479,22 +488,24 @@
                   :label="t('management.partnerTemplateForm.coverDecorations.coverBackground')"
                   accept="image/*"
                   :file-name="form.basic_decoration_photo?.name"
-                  :has-existing-file="!!existingTemplate?.basic_decoration_photo"
+                  :has-existing-file="hasSavedAsset('basic_decoration_photo')"
                   @change="handleFileChange('basic_decoration_photo', $event)"
+                  @clear="clearAssetField('basic_decoration_photo')"
                 />
                 <FileUploadField
                   v-if="isStandardPlan"
                   :label="t('management.partnerTemplateForm.coverDecorations.coverBackground')"
                   accept="video/*"
                   :file-name="form.standard_cover_video?.name"
-                  :has-existing-file="!!existingTemplate?.standard_cover_video"
+                  :has-existing-file="hasSavedAsset('standard_cover_video')"
                   @change="handleFileChange('standard_cover_video', $event)"
+                  @clear="clearAssetField('standard_cover_video')"
                 />
                 <div v-if="isBasicPlan" class="grid grid-cols-2 gap-2.5">
-                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverTop')" accept="image/*" :file-name="form.cover_top_decoration?.name" :has-existing-file="!!existingTemplate?.cover_top_decoration" @change="handleFileChange('cover_top_decoration', $event)" />
-                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverBottom')" accept="image/*" :file-name="form.cover_bottom_decoration?.name" :has-existing-file="!!existingTemplate?.cover_bottom_decoration" @change="handleFileChange('cover_bottom_decoration', $event)" />
-                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverLeft')" accept="image/*" :file-name="form.cover_left_decoration?.name" :has-existing-file="!!existingTemplate?.cover_left_decoration" @change="handleFileChange('cover_left_decoration', $event)" />
-                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverRight')" accept="image/*" :file-name="form.cover_right_decoration?.name" :has-existing-file="!!existingTemplate?.cover_right_decoration" @change="handleFileChange('cover_right_decoration', $event)" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverTop')" accept="image/*" :file-name="form.cover_top_decoration?.name" :has-existing-file="hasSavedAsset('cover_top_decoration')" @change="handleFileChange('cover_top_decoration', $event)" @clear="clearAssetField('cover_top_decoration')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverBottom')" accept="image/*" :file-name="form.cover_bottom_decoration?.name" :has-existing-file="hasSavedAsset('cover_bottom_decoration')" @change="handleFileChange('cover_bottom_decoration', $event)" @clear="clearAssetField('cover_bottom_decoration')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverLeft')" accept="image/*" :file-name="form.cover_left_decoration?.name" :has-existing-file="hasSavedAsset('cover_left_decoration')" @change="handleFileChange('cover_left_decoration', $event)" @clear="clearAssetField('cover_left_decoration')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverRight')" accept="image/*" :file-name="form.cover_right_decoration?.name" :has-existing-file="hasSavedAsset('cover_right_decoration')" @change="handleFileChange('cover_right_decoration', $event)" @clear="clearAssetField('cover_right_decoration')" />
                 </div>
               </section>
 
@@ -503,9 +514,9 @@
                   {{ t('management.partnerTemplateForm.coverDecorations.guestFrameGroup') }}
                 </h5>
                 <div class="grid grid-cols-3 gap-2.5">
-                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameLeft')" accept="image/*" :file-name="form.guest_title_frame_left?.name" :has-existing-file="!!existingTemplate?.guest_title_frame_left" @change="handleFileChange('guest_title_frame_left', $event)" />
-                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameMid')" accept="image/*" :file-name="form.guest_title_frame_mid?.name" :has-existing-file="!!existingTemplate?.guest_title_frame_mid" @change="handleFileChange('guest_title_frame_mid', $event)" />
-                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameRight')" accept="image/*" :file-name="form.guest_title_frame_right?.name" :has-existing-file="!!existingTemplate?.guest_title_frame_right" @change="handleFileChange('guest_title_frame_right', $event)" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameLeft')" accept="image/*" :file-name="form.guest_title_frame_left?.name" :has-existing-file="hasSavedAsset('guest_title_frame_left')" @change="handleFileChange('guest_title_frame_left', $event)" @clear="clearAssetField('guest_title_frame_left')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameMid')" accept="image/*" :file-name="form.guest_title_frame_mid?.name" :has-existing-file="hasSavedAsset('guest_title_frame_mid')" @change="handleFileChange('guest_title_frame_mid', $event)" @clear="clearAssetField('guest_title_frame_mid')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameRight')" accept="image/*" :file-name="form.guest_title_frame_right?.name" :has-existing-file="hasSavedAsset('guest_title_frame_right')" @change="handleFileChange('guest_title_frame_right', $event)" @clear="clearAssetField('guest_title_frame_right')" />
                 </div>
               </section>
 
@@ -514,12 +525,131 @@
                   {{ t('management.partnerTemplateForm.coverDecorations.brandingGroup') }}
                 </h5>
                 <div class="grid grid-cols-3 gap-2.5">
-                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo1')" accept="image/png,image/svg+xml,image/*" :file-name="form.sample_logo_1?.name" :has-existing-file="!!existingTemplate?.sample_logo_1" @change="handleFileChange('sample_logo_1', $event)" />
-                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo2')" accept="image/png,image/svg+xml,image/*" :file-name="form.sample_logo_2?.name" :has-existing-file="!!existingTemplate?.sample_logo_2" @change="handleFileChange('sample_logo_2', $event)" />
-                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.headerTextImage')" accept="image/png,image/svg+xml,image/*" :file-name="form.header_text_image?.name" :has-existing-file="!!existingTemplate?.header_text_image" @change="handleFileChange('header_text_image', $event)" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo1')" accept="image/png,image/svg+xml,image/*" :file-name="form.sample_logo_1?.name" :has-existing-file="hasSavedAsset('sample_logo_1')" @change="handleFileChange('sample_logo_1', $event)" @clear="clearAssetField('sample_logo_1')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo2')" accept="image/png,image/svg+xml,image/*" :file-name="form.sample_logo_2?.name" :has-existing-file="hasSavedAsset('sample_logo_2')" @change="handleFileChange('sample_logo_2', $event)" @clear="clearAssetField('sample_logo_2')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.headerTextImage')" accept="image/png,image/svg+xml,image/*" :file-name="form.header_text_image?.name" :has-existing-file="hasSavedAsset('header_text_image')" @change="handleFileChange('header_text_image', $event)" @clear="clearAssetField('header_text_image')" />
                 </div>
               </section>
             </template>
+
+            <!-- Ambient creatures are a cover-stage effect — CoverStage hands
+                 them to CoverContentOverlay and nothing else renders them — so
+                 they belong here rather than in an effects tab of their own.
+                 Deliberately outside the plan gate above: unlike the decoration
+                 slots, they do not depend on which package plan is chosen. -->
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+              <TemplateFormSwitch
+                v-model="form.ambient_creatures_enabled"
+                :icon="Bird"
+                :label="t('management.partnerTemplateForm.ambientCreatures.enableLabel')"
+                :description="t('management.partnerTemplateForm.ambientCreatures.enableHint')"
+              />
+
+              <Transition name="collapse">
+                <div v-if="form.ambient_creatures_enabled" class="grid grid-rows-[1fr]">
+                  <div class="min-h-0 overflow-hidden">
+                    <div class="space-y-4 pt-1">
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                        <TemplateFormNumber
+                          v-model="form.ambient_creatures.count"
+                          :label="t('management.partnerTemplateForm.ambientCreatures.count')"
+                          :min="1"
+                          :max="15"
+                          :step="1"
+                        />
+                        <TemplateFormChoice
+                          v-model="creatureSpeedModel"
+                          :label="t('management.partnerTemplateForm.ambientCreatures.speed')"
+                          :options="speedOptions"
+                          :columns="3"
+                        />
+                      </div>
+
+                      <TemplateFormChoice
+                        v-model="creatureColorSourceModel"
+                        :label="t('management.partnerTemplateForm.ambientCreatures.colorSource')"
+                        :options="creatureColorSourceOptions"
+                        :columns="3"
+                      />
+
+                      <div v-if="form.ambient_creatures.color_source === 'custom'" class="flex items-end gap-2">
+                        <input
+                          v-model="form.ambient_creatures.custom_color"
+                          type="color"
+                          class="w-10 h-[38px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
+                          :aria-label="t('management.partnerTemplateForm.ambientCreatures.pickLabel')"
+                        />
+                        <input
+                          v-model="form.ambient_creatures.custom_color"
+                          type="text"
+                          maxlength="7"
+                          placeholder="#FFD700"
+                          :aria-label="t('management.partnerTemplateForm.ambientCreatures.hexLabel')"
+                          class="flex-1 min-w-0 px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm uppercase tabular-nums transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                        />
+                      </div>
+
+                      <div class="space-y-2">
+                        <div class="flex items-center justify-between gap-2">
+                          <span class="text-xs font-medium text-slate-600">
+                            {{ t('management.partnerTemplateForm.ambientCreatures.creaturesLabel') }}
+                            <span class="text-slate-400">· {{ form.ambient_creatures.creatures.length }}/4</span>
+                          </span>
+                          <button
+                            type="button"
+                            @click="addCreatureEntry"
+                            :disabled="form.ambient_creatures.creatures.length >= 4 || availableCreatureTypes.length === 0"
+                            class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-slate-300 disabled:hover:text-slate-600 disabled:hover:bg-transparent"
+                          >
+                            <Plus class="w-3.5 h-3.5" />
+                            {{ t('management.partnerTemplateForm.ambientCreatures.addCreature') }}
+                          </button>
+                        </div>
+
+                        <div
+                          v-for="(entry, index) in form.ambient_creatures.creatures"
+                          :key="index"
+                          class="p-3 ring-1 ring-slate-200 rounded-xl space-y-3 bg-slate-50/70"
+                        >
+                          <div class="flex items-center gap-2">
+                            <TemplateFormSelect
+                              class="flex-1 min-w-0"
+                              :model-value="entry.type"
+                              :options="creatureTypeOptionsFor(index)"
+                              :label="t('management.partnerTemplateForm.ambientCreatures.typeLabel')"
+                              @update:model-value="(value) => (entry.type = value as AmbientCreatureEffectType)"
+                            />
+                            <button
+                              v-if="form.ambient_creatures.creatures.length > 1"
+                              type="button"
+                              @click="removeCreatureEntry(index)"
+                              class="mt-5 p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors flex-shrink-0"
+                              :aria-label="t('management.partnerTemplateForm.ambientCreatures.removeBtn')"
+                            >
+                              <Trash2 class="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div class="grid grid-cols-3 gap-2">
+                            <div class="space-y-1">
+                              <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.weightLabel') }}</label>
+                              <input v-model.number="entry.weight" type="number" min="1" max="10" step="1" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
+                            </div>
+                            <div class="space-y-1">
+                              <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.minSize') }}</label>
+                              <input v-model.number="entry.min_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
+                            </div>
+                            <div class="space-y-1">
+                              <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.maxSize') }}</label>
+                              <input v-model.number="entry.max_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
+            </section>
           </template>
 
           <!-- ======================== COVER LAYOUT ========================= -->
@@ -532,17 +662,6 @@
                 v-model="animationTypeModel"
                 :label="t('management.partnerTemplateForm.coverLayout.animationType')"
                 :options="animationOptions"
-              />
-              <TemplateFormChoice
-                v-model="contentWidthModel"
-                :label="t('management.partnerTemplateForm.coverLayout.contentWidth')"
-                :options="contentWidthOptions"
-              />
-              <TemplateFormSwitch
-                v-model="form.display_liquid_glass_background"
-                :icon="Droplets"
-                :label="t('management.partnerTemplateForm.fields.liquidGlass')"
-                :description="t('management.partnerTemplateForm.fields.liquidGlassHint')"
               />
             </section>
 
@@ -742,37 +861,68 @@
             </section>
           </template>
 
-          <!-- ====================== BACKGROUND STAGE ======================= -->
-          <template v-else-if="activeSection === 'background'">
+          <!-- ======================== MAIN CONTENT ========================= -->
+          <!-- Everything the main content stage is made of, in the order it
+               stacks on screen: the backdrop behind the card, then the card
+               itself, then the blocks inside it. The backdrop used to be its own
+               "Background" rail entry, which put the image and the thing it sits
+               behind two clicks apart even though both only ever show on this
+               one stage. -->
+          <template v-else-if="activeSection === 'content'">
+            <!-- Plan-gated on its own, unlike the rest of this section: which
+                 backdrop field even applies (photo vs video) is decided by the
+                 plan, while card width, glass and the block designs are not. -->
             <PlanRequiredNotice v-if="!form.package_plan_id" @pick="selectSection('basics')" />
             <section v-else class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
+              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                {{ t('management.partnerTemplateForm.backgroundStage.sectionTitle') }}
+              </h5>
               <FileUploadField
                 v-if="isBasicPlan"
                 :label="t('management.partnerTemplateForm.backgroundStage.backgroundPhoto')"
                 accept="image/*"
                 :file-name="form.basic_background_photo?.name"
-                :has-existing-file="!!existingTemplate?.basic_background_photo"
+                :has-existing-file="hasSavedAsset('basic_background_photo')"
                 @change="handleFileChange('basic_background_photo', $event)"
+                @clear="clearAssetField('basic_background_photo')"
               />
               <FileUploadField
                 v-if="isStandardPlan"
                 :label="t('management.partnerTemplateForm.backgroundStage.backgroundVideo')"
                 accept="video/*"
                 :file-name="form.standard_background_video?.name"
-                :has-existing-file="!!existingTemplate?.standard_background_video"
+                :has-existing-file="hasSavedAsset('standard_background_video')"
                 @change="handleFileChange('standard_background_video', $event)"
+                @clear="clearAssetField('standard_background_video')"
               />
               <div v-if="isBasicPlan" class="grid grid-cols-2 gap-2.5">
-                <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.topDecoration')" accept="image/*" :file-name="form.top_decoration?.name" :has-existing-file="!!existingTemplate?.top_decoration" @change="handleFileChange('top_decoration', $event)" />
-                <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.bottomDecoration')" accept="image/*" :file-name="form.bottom_decoration?.name" :has-existing-file="!!existingTemplate?.bottom_decoration" @change="handleFileChange('bottom_decoration', $event)" />
-                <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.leftDecoration')" accept="image/*" :file-name="form.left_decoration?.name" :has-existing-file="!!existingTemplate?.left_decoration" @change="handleFileChange('left_decoration', $event)" />
-                <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.rightDecoration')" accept="image/*" :file-name="form.right_decoration?.name" :has-existing-file="!!existingTemplate?.right_decoration" @change="handleFileChange('right_decoration', $event)" />
+                <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.topDecoration')" accept="image/*" :file-name="form.top_decoration?.name" :has-existing-file="hasSavedAsset('top_decoration')" @change="handleFileChange('top_decoration', $event)" @clear="clearAssetField('top_decoration')" />
+                <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.bottomDecoration')" accept="image/*" :file-name="form.bottom_decoration?.name" :has-existing-file="hasSavedAsset('bottom_decoration')" @change="handleFileChange('bottom_decoration', $event)" @clear="clearAssetField('bottom_decoration')" />
+                <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.leftDecoration')" accept="image/*" :file-name="form.left_decoration?.name" :has-existing-file="hasSavedAsset('left_decoration')" @change="handleFileChange('left_decoration', $event)" @clear="clearAssetField('left_decoration')" />
+                <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.rightDecoration')" accept="image/*" :file-name="form.right_decoration?.name" :has-existing-file="hasSavedAsset('right_decoration')" @change="handleFileChange('right_decoration', $event)" @clear="clearAssetField('right_decoration')" />
               </div>
             </section>
-          </template>
 
-          <!-- ======================== MAIN CONTENT ========================= -->
-          <template v-else-if="activeSection === 'content'">
+            <!-- How the content card itself is presented: how wide it sits and
+                 whether it wears the glass treatment. Both were under Cover
+                 Layout because both are stored inside `cover_stage_layout`, but
+                 what they change is this stage. The glass switch does also govern
+                 the cover's own glass panels (see CoverContentOverlay's
+                 displayLiquidGlass); it is one switch for both stages. -->
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+              <TemplateFormChoice
+                v-model="contentWidthModel"
+                :label="t('management.partnerTemplateForm.coverLayout.contentWidth')"
+                :options="contentWidthOptions"
+              />
+              <TemplateFormSwitch
+                v-model="form.display_liquid_glass_background"
+                :icon="Droplets"
+                :label="t('management.partnerTemplateForm.fields.liquidGlass')"
+                :description="t('management.partnerTemplateForm.fields.liquidGlassHint')"
+              />
+            </section>
+
             <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
               <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 {{ t('management.partnerTemplateForm.eventDetailsDesign.sectionTitle') }}
@@ -788,10 +938,10 @@
               <TemplateFormChoice v-model="hostInfoDesignModel" :options="hostInfoDesignOptions" :columns="1" />
               <p class="text-[11px] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.hostInfoDesign.designHint') }}</p>
             </section>
-          </template>
 
-          <!-- =========================== EFFECTS ========================== -->
-          <template v-else-if="activeSection === 'effects'">
+            <!-- Falling particles render inside the main content stage (see
+                 MainContentStage's FallingEffect), never over the cover, so the
+                 effect is configured on the stage that actually shows it. -->
             <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
               <TemplateFormSwitch
                 v-model="form.falling_effect_enabled"
@@ -880,121 +1030,8 @@
                 </div>
               </Transition>
             </section>
-
-            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
-              <TemplateFormSwitch
-                v-model="form.ambient_creatures_enabled"
-                :icon="Bird"
-                :label="t('management.partnerTemplateForm.ambientCreatures.enableLabel')"
-                :description="t('management.partnerTemplateForm.ambientCreatures.enableHint')"
-              />
-
-              <Transition name="collapse">
-                <div v-if="form.ambient_creatures_enabled" class="grid grid-rows-[1fr]">
-                  <div class="min-h-0 overflow-hidden">
-                    <div class="space-y-4 pt-1">
-                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
-                        <TemplateFormNumber
-                          v-model="form.ambient_creatures.count"
-                          :label="t('management.partnerTemplateForm.ambientCreatures.count')"
-                          :min="1"
-                          :max="15"
-                          :step="1"
-                        />
-                        <TemplateFormChoice
-                          v-model="creatureSpeedModel"
-                          :label="t('management.partnerTemplateForm.ambientCreatures.speed')"
-                          :options="speedOptions"
-                          :columns="3"
-                        />
-                      </div>
-
-                      <TemplateFormChoice
-                        v-model="creatureColorSourceModel"
-                        :label="t('management.partnerTemplateForm.ambientCreatures.colorSource')"
-                        :options="creatureColorSourceOptions"
-                        :columns="3"
-                      />
-
-                      <div v-if="form.ambient_creatures.color_source === 'custom'" class="flex items-end gap-2">
-                        <input
-                          v-model="form.ambient_creatures.custom_color"
-                          type="color"
-                          class="w-10 h-[38px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
-                          :aria-label="t('management.partnerTemplateForm.ambientCreatures.pickLabel')"
-                        />
-                        <input
-                          v-model="form.ambient_creatures.custom_color"
-                          type="text"
-                          maxlength="7"
-                          placeholder="#FFD700"
-                          :aria-label="t('management.partnerTemplateForm.ambientCreatures.hexLabel')"
-                          class="flex-1 min-w-0 px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm uppercase tabular-nums transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
-                        />
-                      </div>
-
-                      <div class="space-y-2">
-                        <div class="flex items-center justify-between gap-2">
-                          <span class="text-xs font-medium text-slate-600">
-                            {{ t('management.partnerTemplateForm.ambientCreatures.creaturesLabel') }}
-                            <span class="text-slate-400">· {{ form.ambient_creatures.creatures.length }}/4</span>
-                          </span>
-                          <button
-                            type="button"
-                            @click="addCreatureEntry"
-                            :disabled="form.ambient_creatures.creatures.length >= 4 || availableCreatureTypes.length === 0"
-                            class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-slate-300 disabled:hover:text-slate-600 disabled:hover:bg-transparent"
-                          >
-                            <Plus class="w-3.5 h-3.5" />
-                            {{ t('management.partnerTemplateForm.ambientCreatures.addCreature') }}
-                          </button>
-                        </div>
-
-                        <div
-                          v-for="(entry, index) in form.ambient_creatures.creatures"
-                          :key="index"
-                          class="p-3 ring-1 ring-slate-200 rounded-xl space-y-3 bg-slate-50/70"
-                        >
-                          <div class="flex items-center gap-2">
-                            <TemplateFormSelect
-                              class="flex-1 min-w-0"
-                              :model-value="entry.type"
-                              :options="creatureTypeOptionsFor(index)"
-                              :label="t('management.partnerTemplateForm.ambientCreatures.typeLabel')"
-                              @update:model-value="(value) => (entry.type = value as AmbientCreatureEffectType)"
-                            />
-                            <button
-                              v-if="form.ambient_creatures.creatures.length > 1"
-                              type="button"
-                              @click="removeCreatureEntry(index)"
-                              class="mt-5 p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors flex-shrink-0"
-                              :aria-label="t('management.partnerTemplateForm.ambientCreatures.removeBtn')"
-                            >
-                              <Trash2 class="w-4 h-4" />
-                            </button>
-                          </div>
-                          <div class="grid grid-cols-3 gap-2">
-                            <div class="space-y-1">
-                              <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.weightLabel') }}</label>
-                              <input v-model.number="entry.weight" type="number" min="1" max="10" step="1" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-                            </div>
-                            <div class="space-y-1">
-                              <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.minSize') }}</label>
-                              <input v-model.number="entry.min_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-                            </div>
-                            <div class="space-y-1">
-                              <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.maxSize') }}</label>
-                              <input v-model.number="entry.max_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Transition>
-            </section>
           </template>
+
         </div>
       </div>
 
@@ -1055,9 +1092,7 @@ import {
   Palette,
   Image as ImageIcon,
   SlidersHorizontal,
-  Layers,
   AlignLeft,
-  Wand2,
   Check,
   Crown,
   Sparkles,
@@ -1065,6 +1100,7 @@ import {
   Trash2,
   Type,
   Plus,
+  X,
   Droplets,
   Snowflake,
   Bird,
@@ -1359,7 +1395,24 @@ const fallingEffectCustomImagePreview = ref<string | null>(null)
 const saving = ref(false)
 const error = ref<string | null>(null)
 
-const hasPreviewImage = computed(() => !!previewImagePreview.value || !!props.existingTemplate?.preview_image)
+/**
+ * Saved assets the partner has asked to remove. Held apart from `form` because
+ * these aren't values being edited — they're deletions staged against the
+ * server's copy, and they only reach it on Save (see handleSave, which sends
+ * `''` for each). Everything else the form holds is either a pending File or an
+ * untouched saved URL, neither of which can express "delete this".
+ */
+type ClearableAssetField = PartnerTemplateAssetField | 'preview_image'
+
+const clearedAssets = ref(new Set<ClearableAssetField>())
+
+/** Whether the server still has a file for this field, removals accounted for. */
+const hasSavedAsset = (field: ClearableAssetField): boolean =>
+  !!props.existingTemplate?.[field] && !clearedAssets.value.has(field)
+
+const hasPreviewImage = computed(
+  () => !!previewImagePreview.value || hasSavedAsset('preview_image'),
+)
 
 const canSave = computed(() => !!form.name.trim() && !!form.package_plan_id)
 
@@ -1784,7 +1837,14 @@ const fontIdModel = computed<string | number | null>({
 // also names the showcase stage it affects, so selecting it points the live
 // preview at the thing being edited instead of leaving that to the partner.
 // ---------------------------------------------------------------------------
-type SectionId = 'basics' | 'brand' | 'cover' | 'layout' | 'background' | 'content' | 'effects'
+// One entry per *stage* of the showcase rather than per kind of setting, so
+// anything that only shows on one stage is edited from that stage's section with
+// the preview already pointing at it. Hence no 'background' entry (the main
+// content backdrop sits in 'content', beside the card it goes behind) and no
+// 'effects' entry: falling particles render in the main content stage while
+// ambient creatures only ever render over the cover, so a single Effects tab
+// could only point the preview at one of its two halves.
+type SectionId = 'basics' | 'brand' | 'cover' | 'layout' | 'content'
 
 interface SectionDescriptor {
   id: SectionId
@@ -1798,9 +1858,7 @@ const SECTION_DESCRIPTORS: SectionDescriptor[] = [
   { id: 'brand', icon: Palette, stage: 'cover' },
   { id: 'cover', icon: ImageIcon, stage: 'cover' },
   { id: 'layout', icon: SlidersHorizontal, stage: 'cover' },
-  { id: 'background', icon: Layers, stage: 'main' },
   { id: 'content', icon: AlignLeft, stage: 'main' },
-  { id: 'effects', icon: Wand2, stage: 'main' },
 ]
 
 const activeSection = ref<SectionId>('basics')
@@ -1850,18 +1908,16 @@ const sections = computed(() =>
         if (count) badge = String(count)
         break
       }
+      // Each stage's badge counts everything configured ON that stage, effects
+      // included — they moved into these two sections, so their toggles have to
+      // move with them or turning one on stops showing up anywhere in the rail.
       case 'cover': {
-        const count = countAssets(COVER_ASSET_FIELDS)
+        const count = countAssets(COVER_ASSET_FIELDS) + Number(form.ambient_creatures_enabled)
         if (count) badge = String(count)
         break
       }
-      case 'background': {
-        const count = countAssets(BACKGROUND_ASSET_FIELDS)
-        if (count) badge = String(count)
-        break
-      }
-      case 'effects': {
-        const count = Number(form.falling_effect_enabled) + Number(form.ambient_creatures_enabled)
+      case 'content': {
+        const count = countAssets(BACKGROUND_ASSET_FIELDS) + Number(form.falling_effect_enabled)
         if (count) badge = String(count)
         break
       }
@@ -2123,6 +2179,8 @@ watch(
     previewImagePreview.value = null
     bgPhotoPreview.value = null
     fallingEffectCustomImagePreview.value = null
+    // Staged removals belong to the template they were staged against.
+    clearedAssets.value = new Set()
     error.value = null
     if (template) {
       form.name = template.name
@@ -2190,6 +2248,7 @@ watch(
       previewStage.value = 'cover'
       fetchPlans()
       fetchCustomFonts()
+      clearedAssets.value = new Set()
       if (!props.existingTemplate) {
         Object.assign(form, defaultForm())
         previewImagePreview.value = null
@@ -2218,6 +2277,8 @@ function handleFileChange(field: keyof FormState, event: Event): void {
   const file = input.files?.[0]
   if (!file) return
   ;(form[field] as File | null) = file
+  // Picking again takes back a pending removal of the same field.
+  unmarkAssetCleared(field as ClearableAssetField)
   if (field === 'preview_image') {
     previewImagePreview.value = URL.createObjectURL(file)
   }
@@ -2228,6 +2289,45 @@ function handleFileChange(field: keyof FormState, event: Event): void {
     fallingEffectCustomImagePreview.value = URL.createObjectURL(file)
     form.clear_falling_effect_custom_image = false
   }
+}
+
+/**
+ * Undoing an upload, in the two senses a partner means by it.
+ *
+ * A pending pick is dropped first, which reveals whatever was saved underneath —
+ * that is what "I chose the wrong file" wants, and it costs nothing because the
+ * file never left the browser. Only when there is no pick left to undo does a
+ * click mark the SAVED asset for removal, which is a real change and therefore
+ * doesn't take effect until Save. Both states are reversible right up to that
+ * point: choosing a new file for the field takes the mark back off.
+ *
+ * The falling effect's particle image is deliberately not routed through here —
+ * it has its own preview thumbnail and its own clear flag on the payload
+ * (`falling_effect_custom_image: ''`), which predates this.
+ */
+function clearAssetField(field: ClearableAssetField): void {
+  if (form[field] instanceof File) {
+    ;(form[field] as File | null) = null
+    if (field === 'preview_image') {
+      if (previewImagePreview.value) URL.revokeObjectURL(previewImagePreview.value)
+      previewImagePreview.value = null
+    }
+    if (field === 'basic_background_photo') {
+      if (bgPhotoPreview.value) URL.revokeObjectURL(bgPhotoPreview.value)
+      bgPhotoPreview.value = null
+    }
+    return
+  }
+  if (props.existingTemplate?.[field]) {
+    clearedAssets.value = new Set(clearedAssets.value).add(field)
+  }
+}
+
+function unmarkAssetCleared(field: ClearableAssetField): void {
+  if (!clearedAssets.value.has(field)) return
+  const next = new Set(clearedAssets.value)
+  next.delete(field)
+  clearedAssets.value = next
 }
 
 function clearFallingEffectCustomImage(): void {
@@ -2291,11 +2391,18 @@ async function handleSave(): Promise<void> {
     // live preview (see partnerTemplateAssets.ts) so the two can't drift;
     // `preview_image` is the gallery thumbnail, which no stage renders and the
     // preview therefore doesn't carry.
+    //
+    // An empty string is the delete instruction, matching the convention
+    // `falling_effect_custom_image` already used. Untouched fields are simply
+    // absent, which is what leaves the saved file alone — so "no file here" and
+    // "remove the file that is here" stay distinguishable on the wire.
     const fileFields = ['preview_image', ...PARTNER_TEMPLATE_ASSET_FIELDS] as const
     for (const field of fileFields) {
       const file = form[field]
       if (file instanceof File) {
         ;(payload as unknown as Record<string, unknown>)[field] = file
+      } else if (clearedAssets.value.has(field)) {
+        ;(payload as unknown as Record<string, unknown>)[field] = ''
       }
     }
 
@@ -2437,6 +2544,12 @@ const previewDraft = computed<PartnerTemplateDraft>(() => {
     colors: pendingColors.value,
     fonts: previewFonts.value,
     files,
+    // A staged removal has to reach the preview too, or the frame keeps
+    // rendering the saved asset and the partner can't see what they just
+    // removed until after a save.
+    clearedFiles: PARTNER_TEMPLATE_ASSET_FIELDS.filter((field) =>
+      clearedAssets.value.has(field),
+    ),
     fallingEffectCustomImage: form.falling_effect_custom_image,
     clearFallingEffectCustomImage: form.clear_falling_effect_custom_image,
   }
