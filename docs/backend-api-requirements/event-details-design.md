@@ -33,19 +33,32 @@ is fully backward compatible — existing templates need no migration.
 
 ```json
 {
-  "type": "calendar"
+  "type": "calendar",
+  "marker_color_source": "accent",
+  "marker_custom_color": "#B3261E"
 }
 ```
 
-| Field  | Type   | Required | Allowed values         | Notes                                  |
-|--------|--------|----------|------------------------|----------------------------------------|
-| `type` | string | yes      | `"panel"`, `"calendar"`| Reject any other value (400).          |
+| Field                 | Type           | Required | Allowed values                                       | Notes                                                                 |
+|-----------------------|----------------|----------|------------------------------------------------------|-----------------------------------------------------------------------|
+| `type`                | string         | yes      | `"panel"`, `"calendar"`                              | Reject any other value (400).                                          |
+| `marker_color_source` | string         | no       | `"accent"`, `"primary"`, `"secondary"`, `"custom"`   | Calendar design only. Defaults to `accent` when absent.                |
+| `marker_custom_color` | string \| null | no       | Hex colour (`#RRGGBB`)                               | Only read when `marker_color_source` is `custom`.                      |
 
 The whole `event_details_design` field may also be `null` (meaning "use the
-default `panel`"). It is **not** a file and carries no images — `type` is the
-only key. Keep it an object (rather than a bare string) so future design options
-can add sibling keys without a breaking change, matching the `falling_effect`
-precedent.
+default `panel`"). It is **not** a file and carries no images. Keep it an object
+(rather than a bare string) so future design options can add sibling keys without
+a breaking change, matching the `falling_effect` precedent.
+
+`marker_color_source` / `marker_custom_color` control the colour of the calendar
+design's **event-day marker** — the hand-drawn heart circling the date and the
+matching tint on the day number. It mirrors `falling_effect.color_source` /
+`falling_effect.custom_color`: the named sources resolve against the template's
+own colour palette on the client, so no colour value needs storing for them. This
+replaced a hardcoded red that could vanish against a red template background.
+
+The frontend only sends the marker keys when `type` is `calendar`, and treats a
+missing `marker_color_source` as `accent`.
 
 ---
 
@@ -70,6 +83,9 @@ On create and update, validate the field when present:
 
 - Accept `null` (clears the field → frontend uses `panel`).
 - When an object is provided, require `type` ∈ {`panel`, `calendar`}.
+- When present, require `marker_color_source` ∈ {`accent`, `primary`,
+  `secondary`, `custom`} and `marker_custom_color` to be a hex colour or `null`.
+  Both are optional — absent means "use the client default" (`accent`).
 - Reject unknown `type` values and unknown extra keys with a `400` and a
   field-specific error under `event_details_design`.
 
@@ -95,7 +111,7 @@ string field** within the form data — exactly like `falling_effect`,
 `cover_stage_layout`, and `ambient_creatures`:
 
 ```
-event_details_design = '{"type":"calendar"}'
+event_details_design = '{"type":"calendar","marker_color_source":"accent"}'
 ```
 
 Backend must `JSON.parse` this string before validating/storing it. As with
@@ -164,6 +180,8 @@ defaults to `panel` either way.
 - [ ] Partner-template update accepts and updates the field; sending `null`
       clears it.
 - [ ] Invalid `type` values return `400` with a field-specific error.
+- [ ] `marker_color_source` / `marker_custom_color` round-trip unchanged through
+      create, update, and both read paths (including `template_assets`).
 - [ ] Partner-template read endpoints return the field (object or `null`).
 - [ ] Event showcase payload exposes the field under
       `template_assets.event_details_design`.
@@ -178,6 +196,10 @@ defaults to `panel` either way.
   field's model definition, serializer handling, form-data parsing, and
   `template_assets` assembly, you've covered everything here.
 - No new endpoints, no file handling, no images.
-- The only enum to enforce is `type ∈ {panel, calendar}`. Treat the object as
-  extensible (don't hard-fail on future sibling keys unless you prefer strict
-  validation — current frontend only sends `type`).
+- The enums to enforce are `type ∈ {panel, calendar}` and
+  `marker_color_source ∈ {accent, primary, secondary, custom}`. Treat the object
+  as extensible (don't hard-fail on future sibling keys unless you prefer strict
+  validation).
+- The marker keys are pure pass-through: the backend never resolves a colour
+  slot to a hex value — the showcase does that against the template palette it
+  already ships.

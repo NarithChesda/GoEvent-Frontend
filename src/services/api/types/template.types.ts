@@ -244,6 +244,16 @@ export interface CoverStageLayout {
 export type EventDetailsDesignType = 'panel' | 'calendar'
 
 /**
+ * Where the calendar design's event-day marker (the hand-drawn heart around the
+ * date, and the matching tint on the day number) takes its colour from.
+ *
+ * Mirrors `FallingEffectConfig.color_source`. Defaults to `accent` so the marker
+ * follows the template's own highlight colour instead of a fixed red that can
+ * disappear against a red background.
+ */
+export type EventDetailsMarkerColorSource = 'accent' | 'primary' | 'secondary' | 'custom'
+
+/**
  * Configuration for the event date + location block on the showcase.
  *
  * Mirrors the `FallingEffectConfig` pattern: a small JSON object sent inside
@@ -253,6 +263,13 @@ export type EventDetailsDesignType = 'panel' | 'calendar'
 export interface EventDetailsDesignConfig {
   /** Which date/location layout to render. Defaults to `panel`. */
   type: EventDetailsDesignType
+  /**
+   * Colour slot for the calendar design's event-day marker. Ignored by the
+   * `panel` design. Defaults to `accent`.
+   */
+  marker_color_source?: EventDetailsMarkerColorSource
+  /** Hex colour, read only when `marker_color_source` is `custom`. */
+  marker_custom_color?: string | null
 }
 
 /**

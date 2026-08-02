@@ -142,6 +142,7 @@
       :style="{
         color: primaryColor,
         animationDelay: `${animationDelays.date}s`,
+        '--calendar-marker-color': calendarMarkerColor,
       }"
     >
       <EditableRegion :intent="{ kind: 'eventDate' }" class="calendar-region">
@@ -390,6 +391,7 @@ import InlineEditableText from '@/components/showcase-preview/edit/InlineEditabl
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import SectionDisplayToggle from '@/components/showcase-preview/edit/SectionDisplayToggle.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import type { EventDetailsMarkerColorSource } from '@/services/api/types/template.types'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCountdown } from '../../composables/useCountdown'
 import {
@@ -430,6 +432,13 @@ interface Props {
   baseDelay?: number
   /** Date/location block design from the template package. Defaults to 'panel'. */
   detailsDesign?: 'panel' | 'calendar'
+  /**
+   * Colour slot the calendar design's event-day marker (heart ring + day-number
+   * tint) draws from. Defaults to 'accent' so it tracks the template palette.
+   */
+  detailsMarkerColorSource?: EventDetailsMarkerColorSource
+  /** Hex colour, read only when detailsMarkerColorSource is 'custom'. */
+  detailsMarkerCustomColor?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -437,6 +446,7 @@ const props = withDefaults(defineProps<Props>(), {
   showCountdown: true,
   baseDelay: 0.25,
   detailsDesign: 'panel',
+  detailsMarkerColorSource: 'accent',
 })
 
 const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
@@ -537,6 +547,27 @@ const hasDateParts = computed(
 const isCalendarDesign = computed(
   () => props.detailsDesign === 'calendar' && hasDateParts.value,
 )
+
+/** Used only when the chosen colour slot resolves to nothing (custom source
+ *  with no hex yet). Matches the original hand-drawn-heart red. */
+const CALENDAR_MARKER_FALLBACK = '#b3261e'
+
+// Colour of the calendar's event-day marker — the heart ring drawn around the
+// date and the matching tint applied to the day number once it finishes drawing.
+// Template-driven so it can sit on any background instead of always being red.
+const calendarMarkerColor = computed(() => {
+  switch (props.detailsMarkerColorSource) {
+    case 'custom':
+      return props.detailsMarkerCustomColor || CALENDAR_MARKER_FALLBACK
+    case 'primary':
+      return props.primaryColor || CALENDAR_MARKER_FALLBACK
+    case 'secondary':
+      return props.secondaryColor || props.primaryColor || CALENDAR_MARKER_FALLBACK
+    case 'accent':
+    default:
+      return props.accentColor || props.primaryColor || CALENDAR_MARKER_FALLBACK
+  }
+})
 
 // Localized SUN–SAT weekday header labels for the calendar grid. Uses the
 // explicit Khmer short names for 'kh' and Intl 'short' weekday names otherwise,
@@ -972,7 +1003,10 @@ const countdownNumberFont = computed(() =>
 /* Hand-drawn-style heart ring drawn around the event day. Slightly larger than
    the cell so it reads as circling the number, with a slight tilt for a
    sketched-by-hand feel. Once revealed it settles into a slow heartbeat pulse
-   (delay set via --heart-pulse-delay on the event cell). */
+   (delay set via --heart-pulse-delay on the event cell).
+
+   Colour comes from --calendar-marker-color, resolved from the template's
+   marker colour slot on .calendar-card; the red is only a last-resort default. */
 .calendar-day-ring {
   position: absolute;
   left: 50%;
@@ -981,7 +1015,7 @@ const countdownNumberFont = computed(() =>
   height: 150%;
   transform: translate(-50%, -50%) rotate(-5deg);
   pointer-events: none;
-  color: #b3261e; /* warm red, reminiscent of the reference image's hand-drawn heart */
+  color: var(--calendar-marker-color, #b3261e);
   opacity: 0.9;
 }
 
@@ -1042,7 +1076,7 @@ const countdownNumberFont = computed(() =>
 
 @keyframes eventDayTint {
   to {
-    color: #b3261e;
+    color: var(--calendar-marker-color, #b3261e);
   }
 }
 
@@ -1904,7 +1938,7 @@ const countdownNumberFont = computed(() =>
 
   .animate-active .calendar-day.is-event .calendar-day-num {
     animation: none;
-    color: #b3261e;
+    color: var(--calendar-marker-color, #b3261e);
   }
 }
 

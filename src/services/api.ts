@@ -94,6 +94,7 @@ export type {
   FallingEffectConfig,
   EventDetailsDesignType,
   EventDetailsDesignConfig,
+  EventDetailsMarkerColorSource,
   HostInfoDesignType,
   HostInfoDesignConfig,
   AmbientCreatureEffectType,

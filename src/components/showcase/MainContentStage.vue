@@ -174,6 +174,8 @@
                     :show-countdown="event.countdown_enabled !== false"
                     :event-start-date="event.start_date"
                     :details-design="eventDetailsDesign?.type"
+                    :details-marker-color-source="eventDetailsDesign?.marker_color_source"
+                    :details-marker-custom-color="eventDetailsDesign?.marker_custom_color"
                     @open-map="$emit('openMap')"
                   >
                     <template #rsvp>

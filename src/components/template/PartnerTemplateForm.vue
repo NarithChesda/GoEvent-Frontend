@@ -929,6 +929,39 @@
               </h5>
               <TemplateFormChoice v-model="eventDetailsDesignModel" :options="eventDetailsDesignOptions" :columns="1" />
               <p class="text-[11px] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.eventDetailsDesign.designHint') }}</p>
+
+              <!-- Marker colour only affects the calendar design's circled day. -->
+              <Transition name="collapse">
+                <div v-if="form.event_details_design_type === 'calendar'" class="grid grid-rows-[1fr]">
+                  <div class="min-h-0 overflow-hidden">
+                    <div class="space-y-3 pt-1">
+                      <TemplateFormChoice
+                        v-model="eventDetailsMarkerColorSourceModel"
+                        :label="t('management.partnerTemplateForm.eventDetailsDesign.markerColorSource')"
+                        :options="eventDetailsMarkerColorOptions"
+                        :columns="2"
+                      />
+                      <div v-if="form.event_details_marker_color_source === 'custom'" class="flex items-end gap-2">
+                        <input
+                          v-model="form.event_details_marker_custom_color"
+                          type="color"
+                          class="w-10 h-[38px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
+                          :aria-label="t('management.partnerTemplateForm.fallingEffect.pickLabel')"
+                        />
+                        <input
+                          v-model="form.event_details_marker_custom_color"
+                          type="text"
+                          maxlength="7"
+                          placeholder="#B3261E"
+                          :aria-label="t('management.partnerTemplateForm.fallingEffect.hexLabel')"
+                          class="flex-1 min-w-0 px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm uppercase tabular-nums transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                        />
+                      </div>
+                      <p class="text-[11px] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.eventDetailsDesign.markerColorHint') }}</p>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
             </section>
 
             <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
@@ -1137,6 +1170,8 @@ import type {
   FallingEffectConfig,
   FallingEffectType,
   EventDetailsDesignType,
+  EventDetailsDesignConfig,
+  EventDetailsMarkerColorSource,
   HostInfoDesignType,
   AmbientCreaturesConfig,
   AmbientCreatureEntry,
@@ -1314,6 +1349,10 @@ interface FormState {
   ambient_creatures: AmbientCreaturesFormState
   /** Date/location block design rendered in the showcase (panel | calendar). */
   event_details_design_type: EventDetailsDesignType
+  /** Colour slot for the calendar design's event-day marker (calendar only). */
+  event_details_marker_color_source: EventDetailsMarkerColorSource
+  /** Hex colour used when the marker colour source is 'custom'. */
+  event_details_marker_custom_color: string
   /** Host info block design rendered in the showcase (standard | simple). */
   host_info_design_type: HostInfoDesignType
 }
@@ -1365,6 +1404,8 @@ const defaultForm = (): FormState => ({
   ambient_creatures_enabled: false,
   ambient_creatures: defaultAmbientCreatures(),
   event_details_design_type: 'panel',
+  event_details_marker_color_source: 'accent',
+  event_details_marker_custom_color: '#B3261E',
   host_info_design_type: 'standard',
 })
 
@@ -1461,6 +1502,13 @@ const contentWidthOptions = computed(() => [
 const eventDetailsDesignOptions = computed(() => [
   { value: 'panel', label: t('management.partnerTemplateForm.eventDetailsDesign.types.panel'), icon: LayoutPanelTop },
   { value: 'calendar', label: t('management.partnerTemplateForm.eventDetailsDesign.types.calendar'), icon: CalendarDays },
+])
+
+const eventDetailsMarkerColorOptions = computed(() => [
+  { value: 'accent', label: t('management.partnerTemplateForm.eventDetailsDesign.sourceAccent') },
+  { value: 'primary', label: t('management.partnerTemplateForm.eventDetailsDesign.sourcePrimary') },
+  { value: 'secondary', label: t('management.partnerTemplateForm.eventDetailsDesign.sourceSecondary') },
+  { value: 'custom', label: t('management.partnerTemplateForm.fallingEffect.sourceCustomShort') },
 ])
 
 const hostInfoDesignOptions = computed(() => [
@@ -1727,6 +1775,11 @@ function onCoverLayoutChange(elements: CoverElementBoxes): void {
 const eventDetailsDesignModel = computed<string>({
   get: () => form.event_details_design_type,
   set: (value) => { form.event_details_design_type = value as EventDetailsDesignType },
+})
+
+const eventDetailsMarkerColorSourceModel = computed<string>({
+  get: () => form.event_details_marker_color_source,
+  set: (value) => { form.event_details_marker_color_source = value as EventDetailsMarkerColorSource },
 })
 
 const hostInfoDesignModel = computed<string>({
@@ -2201,8 +2254,12 @@ watch(
       } else {
         form.falling_effect_enabled = false
       }
-      // Hydrate event details design (panel | calendar)
+      // Hydrate event details design (panel | calendar) + calendar marker colour
       form.event_details_design_type = template.event_details_design?.type ?? 'panel'
+      form.event_details_marker_color_source =
+        template.event_details_design?.marker_color_source ?? 'accent'
+      form.event_details_marker_custom_color =
+        template.event_details_design?.marker_custom_color ?? '#B3261E'
       // Hydrate host info design (standard | simple)
       form.host_info_design_type = template.host_info_design?.type ?? 'standard'
       // Hydrate ambient creatures
@@ -2349,6 +2406,19 @@ function buildFallingEffectPayload(): FallingEffectConfig | null {
   return cfg
 }
 
+// The marker colour only drives the calendar design, so the panel design sends
+// just its type — nothing stale to interpret if the template switches back.
+function buildEventDetailsDesignPayload(): EventDetailsDesignConfig {
+  const cfg: EventDetailsDesignConfig = { type: form.event_details_design_type }
+  if (form.event_details_design_type !== 'calendar') return cfg
+
+  cfg.marker_color_source = form.event_details_marker_color_source
+  if (form.event_details_marker_color_source === 'custom') {
+    cfg.marker_custom_color = form.event_details_marker_custom_color
+  }
+  return cfg
+}
+
 function buildAmbientCreaturesPayload(): AmbientCreaturesConfig | null {
   if (!form.ambient_creatures_enabled) return null
   const creatures: AmbientCreatureEntry[] = form.ambient_creatures.creatures.map((c: AmbientCreatureEntry) => {
@@ -2383,7 +2453,7 @@ async function handleSave(): Promise<void> {
       cover_stage_layout: form.cover_stage_layout,
       falling_effect: buildFallingEffectPayload(),
       ambient_creatures: buildAmbientCreaturesPayload(),
-      event_details_design: { type: form.event_details_design_type },
+      event_details_design: buildEventDetailsDesignPayload(),
       host_info_design: { type: form.host_info_design_type },
     }
 
@@ -2539,7 +2609,7 @@ const previewDraft = computed<PartnerTemplateDraft>(() => {
     // from what actually gets persisted.
     falling_effect: buildFallingEffectPayload(),
     ambient_creatures: buildAmbientCreaturesPayload(),
-    event_details_design: { type: form.event_details_design_type },
+    event_details_design: buildEventDetailsDesignPayload(),
     host_info_design: { type: form.host_info_design_type },
     colors: pendingColors.value,
     fonts: previewFonts.value,

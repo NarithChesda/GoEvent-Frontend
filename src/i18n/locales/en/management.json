@@ -2835,7 +2835,12 @@
       "types": {
         "panel": "Panel (stacked date + location)",
         "calendar": "Calendar (month grid, day circled)"
-      }
+      },
+      "markerColorSource": "Circled day colour",
+      "markerColorHint": "Colour of the heart drawn around the event day and the day number itself. Pick a template colour that stands out against the background.",
+      "sourceAccent": "Accent",
+      "sourcePrimary": "Primary",
+      "sourceSecondary": "Secondary"
     },
     "hostInfoDesign": {
       "sectionTitle": "Host Info Design",
