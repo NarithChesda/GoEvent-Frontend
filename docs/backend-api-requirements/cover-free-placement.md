@@ -52,8 +52,10 @@ renders byte-for-byte as it does today.
     "coverElements": {
       "header": { "x": 50, "y": 33.4, "width": 100, "height": 9.9, "fontScale": 1 },
       "logo":   { "x": 50, "y": 51.1, "width": 100, "height": 25.4, "fontScale": 1 },
-      "invite": { "x": 50, "y": 66.1, "width": 100, "height": 4.6, "fontScale": 1.2 },
-      "guest":  { "x": 50, "y": 72.6, "width": 60,  "height": 8.5, "fontScale": 1 }
+      "invite": { "x": 50, "y": 66.1, "width": 100, "height": 4.6, "fontScale": 1.2,
+                  "fontType": "accent", "colorSource": "accent" },
+      "guest":  { "x": 50, "y": 72.6, "width": 60,  "height": 8.5, "fontScale": 1,
+                  "colorSource": "custom", "customColor": "#F5E6C8" }
     }
   }
 }
@@ -79,8 +81,31 @@ in both models.
 | `width` | number | 3–200 | Box width, as % of stage width |
 | `height` | number | 2–200 | Box height, as % of stage height |
 | `fontScale` | number, optional | 0.1–2.5 | Multiplier on the block's own responsive font size. `1` (the default) is exactly what the row model rendered. Ignored by `logo`, which has no text. |
+| `fontType` | string, optional | `primary` \| `secondary` \| `accent` \| `decorative` | Which of the template's **font slots** this block renders in. Omitted = the slot the block has always used. Ignored by `logo`. |
+| `colorSource` | string, optional | `primary` \| `secondary` \| `accent` \| `guestname` \| `custom` | Which **palette slot** the block's text colour comes from. Omitted = the colour the block has always used. Ignored by `logo`. |
+| `customColor` | string, optional | `#rrggbb` | Read only when `colorSource` is `custom`. |
 
-All values are emitted rounded to one decimal place.
+The numeric values are emitted rounded to one decimal place (`fontScale` to two).
+
+### Why `fontType`/`colorSource` name slots instead of carrying values
+
+Neither field stores a font family or a hex, and that is deliberate:
+
+- **Fonts are declared per language.** `template_fonts` is keyed on
+  (`language`, `font_type`), so a block carrying `"fontFamily": "Moul"` would
+  freeze the cover to one script and the showcase's language switch would stop
+  changing the type. Naming the slot lets the existing per-language resolution
+  keep working — switching language re-resolves the family with no change to
+  this blob.
+- **The palette is the template's single source of colour.** A per-block hex
+  forks it, so recolouring a template would stop propagating to the cover.
+  `custom` + `customColor` is the escape hatch, mirroring the pair
+  `falling_effect` and `ambient_creatures` already use.
+
+Both are **optional and mean "unchanged" when absent** — which is not the same as
+naming the slot the block happens to use today. The guest name, for example,
+overrides its font to a script face for Latin names; omitting `fontType` keeps
+that rule, while setting `fontType: "primary"` deliberately overrides it.
 
 Three properties of this shape are worth stating explicitly, because they are what
 make it forward-compatible:
@@ -132,6 +157,10 @@ Keep it permissive. Suggested bounds, matching what the editor itself clamps to:
   keys rather than failing the save.
 - `x`, `y` ∈ [0, 100]; `width` ∈ [3, 200]; `height` ∈ [2, 200];
   `fontScale` ∈ [0.1, 2.5].
+- `fontType` ∈ `{"primary", "secondary", "accent", "decorative"}` and
+  `colorSource` ∈ `{"primary", "secondary", "accent", "guestname", "custom"}` —
+  drop an unrecognised value rather than failing the save; the frontend treats a
+  missing field as "unchanged", which is the safe outcome.
 
 Out-of-range numbers are safer clamped than rejected — the frontend already
 clamps on every edit, so a value outside these bounds means old or hand-written

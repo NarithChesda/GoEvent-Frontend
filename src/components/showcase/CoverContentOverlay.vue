@@ -1,6 +1,12 @@
 <template>
-  <!-- Wrapper for decorations and content -->
-  <div class="absolute inset-0">
+  <!-- Wrapper for decorations and content.
+       `slotVarStyle` publishes the template's four font families and four
+       palette entries as CSS variables here — the highest element that has all
+       of them and contains every cover block, including the two rendered inside
+       DoorPanel. Free-placed blocks reference these by name (see
+       coverElementStyle), which is what lets a partner point a block at a font
+       or colour slot without a prop being threaded down for it. -->
+  <div class="absolute inset-0" :style="slotVarStyle">
     <!-- DECORATION ANIMATION: Individual decoration images that slide out -->
     <CoverDecorations
       :left-url="coverLeftDecorationUrl"
@@ -172,7 +178,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useOptimizedDecorations, useOptimizedBackgrounds } from '@/composables/showcase/useOptimizedDecorations'
-import { useCoverStageLayout } from '@/composables/showcase/useCoverStageLayout'
+import {
+  COVER_COLOR_SLOT_VARS,
+  COVER_FONT_SLOT_VARS,
+  useCoverStageLayout,
+} from '@/composables/showcase/useCoverStageLayout'
 import { useShowcaseAnimation, type ShowcaseAnimationType } from '@/composables/showcase/useShowcaseAnimation'
 import { useTouchGesture } from '@/composables/showcase/useTouchGesture'
 import type { CoverStageLayout, AmbientCreaturesConfig } from '@/services/api/types/template.types'
@@ -219,6 +229,9 @@ interface Props {
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
+  /** Only used to publish the font slot variables (see slotVarStyle). */
+  accentFont?: string
+  decorativeFont?: string
   eventTexts?: EventText[]
   currentLanguage?: string
   shouldShowButtonLoading: boolean
@@ -290,6 +303,30 @@ const {
   computed(() => props.coverStageLayout),
   computed(() => props.contentTopPosition)
 )
+
+/**
+ * The template's font and colour slots, published as CSS variables for
+ * free-placed blocks to reference by name.
+ *
+ * Every entry falls back the way the showcase itself already falls back
+ * (accent → primary, decorative → accent, and so on), so a block pointed at a
+ * slot this template doesn't fill renders in something sensible rather than in
+ * the browser default.
+ */
+const slotVarStyle = computed<Record<string, string>>(() => {
+  const body = props.primaryFont || props.currentFont
+  const accentFont = props.accentFont || body
+  return {
+    [COVER_FONT_SLOT_VARS.primary]: body,
+    [COVER_FONT_SLOT_VARS.secondary]: props.secondaryFont || body,
+    [COVER_FONT_SLOT_VARS.accent]: accentFont,
+    [COVER_FONT_SLOT_VARS.decorative]: props.decorativeFont || accentFont,
+    [COVER_COLOR_SLOT_VARS.primary]: props.primaryColor,
+    [COVER_COLOR_SLOT_VARS.secondary]: props.secondaryColor || props.primaryColor,
+    [COVER_COLOR_SLOT_VARS.accent]: props.accentColor || props.primaryColor,
+    [COVER_COLOR_SLOT_VARS.guestname]: props.guestnameColor || props.primaryColor,
+  }
+})
 
 // Swipe arrow bottom position
 const swipeArrowBottom = computed(() => layout.value.swipeArrowBottom)

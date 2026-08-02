@@ -32,6 +32,53 @@
           @pointerdown.stop="startResize(id, handle, $event)"
         />
       </template>
+
+      <!-- Type controls, hung off the selected block so the text and the thing
+           changing it are in the same glance. `pointerdown.stop` is what keeps
+           a button press from also starting a drag of the block underneath. -->
+      <div
+        v-if="id === toolbarId"
+        class="cly-tools"
+        :class="{ 'is-above': toolbarAbove }"
+        @pointerdown.stop
+      >
+        <div class="cly-tools__group">
+          <button
+            type="button"
+            class="cly-tool"
+            :aria-label="t('management.coverLayoutEditor.text.smaller')"
+            @click="bumpFontScale(-FONT_SCALE_STEP)"
+          >
+            <span class="cly-tool__a cly-tool__a--sm">A</span>
+          </button>
+          <span class="cly-tools__value">{{ fontScalePercent }}%</span>
+          <button
+            type="button"
+            class="cly-tool"
+            :aria-label="t('management.coverLayoutEditor.text.larger')"
+            @click="bumpFontScale(FONT_SCALE_STEP)"
+          >
+            <span class="cly-tool__a">A</span>
+          </button>
+        </div>
+
+        <div v-if="swatches.length" class="cly-tools__group">
+          <button
+            v-for="swatch in swatches"
+            :key="swatch.source ?? 'auto'"
+            type="button"
+            class="cly-swatch"
+            :class="{
+              'is-auto': !swatch.source,
+              'is-active': (toolbarBox?.colorSource ?? null) === swatch.source,
+            }"
+            :style="swatch.hex ? { background: swatch.hex } : undefined"
+            :title="swatch.label"
+            :aria-label="swatch.label"
+            @click="setColorSource(swatch.source)"
+          />
+        </div>
+      </div>
     </div>
 
     <!-- Alignment guides, drawn only while they're actually holding an edge. -->
@@ -60,8 +107,17 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import type { CoverElementBox, CoverElementBoxes, CoverElementId } from '@/services/api/types/template.types'
-import { COVER_ELEMENT_IDS, type ResolvedCoverElements } from '@/composables/showcase/useCoverStageLayout'
+import type {
+  CoverElementBoxes,
+  CoverElementColorSource,
+  CoverElementId,
+} from '@/services/api/types/template.types'
+import {
+  COVER_ELEMENT_IDS,
+  type CoverTextPalette,
+  type ResolvedCoverElementBox,
+  type ResolvedCoverElements,
+} from '@/composables/showcase/useCoverStageLayout'
 
 interface Props {
   /** Every block's current box — already reflects any in-flight drag. */
@@ -69,6 +125,11 @@ interface Props {
   /** Blocks the cover is actually rendering; the rest get no handles. */
   visible: Record<CoverElementId, boolean>
   selected: CoverElementId | null
+  /**
+   * The template's palette, resolved to hex. Drives the selected block's colour
+   * swatches; omit it and the toolbar shows text size only.
+   */
+  palette?: CoverTextPalette
 }
 
 const props = defineProps<Props>()
@@ -133,7 +194,7 @@ const HANDLES: HandleSpec[] = [
 interface DragState {
   id: CoverElementId
   handle: HandleSpec | null
-  startBox: Required<CoverElementBox>
+  startBox: ResolvedCoverElementBox
   pointerX: number
   pointerY: number
   /** Stage size in px, captured once — it can't change mid-drag. */
@@ -149,6 +210,11 @@ const MIN_WIDTH = 3
 const MIN_HEIGHT = 2
 /** Pointer distance at which an edge is considered "on" a guide. */
 const SNAP_PX = 5
+
+// Text scale, in the same 40–250% range the editor pane's number field offers.
+const FONT_SCALE_MIN = 0.4
+const FONT_SCALE_MAX = 2.5
+const FONT_SCALE_STEP = 0.05
 
 const round = (value: number): number => Math.round(value * 10) / 10
 const clamp = (value: number, min: number, max: number): number =>
@@ -223,7 +289,7 @@ function applyDrag(event: PointerEvent): void {
   const snapping = !event.altKey
 
   const start = state.startBox
-  const next: Required<CoverElementBox> = { ...start }
+  const next: ResolvedCoverElementBox = { ...start }
   const activeGuides: { x: number[]; y: number[] } = { x: [], y: [] }
 
   if (!state.handle) {
@@ -303,15 +369,19 @@ function applyDrag(event: PointerEvent): void {
 }
 
 /** Rounds, clamps to a recoverable range, and publishes the whole map. */
-function commitBox(id: CoverElementId, box: Required<CoverElementBox>, commit: boolean): void {
-  const normalized: Required<CoverElementBox> = {
+function commitBox(id: CoverElementId, box: ResolvedCoverElementBox, commit: boolean): void {
+  const normalized: ResolvedCoverElementBox = {
+    // Spread first so every field this function doesn't know about — the type
+    // and colour slots, and anything added later — survives a drag. Naming each
+    // field individually silently dropped whatever wasn't listed.
+    ...box,
     // Centres stay on-stage so a block can hang half off an edge by design but
     // can never be dragged somewhere with no handle left to grab.
     x: round(clamp(box.x, 0, 100)),
     y: round(clamp(box.y, 0, 100)),
     width: round(clamp(box.width, MIN_WIDTH, 200)),
     height: round(clamp(box.height, MIN_HEIGHT, 200)),
-    fontScale: box.fontScale,
+    fontScale: round(clamp(box.fontScale, FONT_SCALE_MIN, FONT_SCALE_MAX) * 100) / 100,
   }
 
   const elements: CoverElementBoxes = {}
@@ -369,6 +439,92 @@ const startResize = (id: CoverElementId, handle: HandleSpec, event: PointerEvent
 const clearSelection = (): void => emit('select', null)
 
 // ---------------------------------------------------------------------------
+// Type controls for the selected block.
+//
+// Deliberately not folded into the eight resize handles: those change the
+// block's BOX, which is a different thing from the size of the text inside it —
+// a partner routinely wants a bigger word in the same rectangle. So text size
+// gets its own affordance, and it lives on the block rather than in the editor
+// pane because judging type size is the thing you do by looking, not by typing
+// a number and waiting to see what happened.
+//
+// The logo block is excluded throughout: it has no text, and its size IS its
+// box. Same rule the editor pane's font-size field already follows.
+// ---------------------------------------------------------------------------
+const hasText = (id: CoverElementId): boolean => id !== 'logo'
+
+/** The block whose toolbar is showing: the selection, unless it's mid-drag. */
+const toolbarId = computed<CoverElementId | null>(() => {
+  const id = props.selected
+  if (!id || drag.value || !props.visible[id] || !hasText(id)) return null
+  return id
+})
+
+const toolbarBox = computed(() => (toolbarId.value ? props.elements[toolbarId.value] : null))
+
+/**
+ * Flip the toolbar above the block when hanging it below would put it off the
+ * bottom of the stage. Cheap threshold rather than a measured collision: the
+ * bar is a known ~34px tall against a stage that is always the full viewport.
+ */
+const toolbarAbove = computed(() => {
+  const box = toolbarBox.value
+  return !!box && box.y + box.height / 2 > 84
+})
+
+const fontScalePercent = computed(() => Math.round((toolbarBox.value?.fontScale ?? 1) * 100))
+
+function setFontScale(id: CoverElementId, value: number): void {
+  commitBox(id, { ...props.elements[id], fontScale: value }, true)
+}
+
+function bumpFontScale(delta: number): void {
+  const id = toolbarId.value
+  if (!id) return
+  setFontScale(id, (props.elements[id].fontScale ?? 1) + delta)
+}
+
+/**
+ * Colour swatches, built from whatever palette slots this template actually
+ * fills. `null` is the "auto" chip — it clears the block's own choice so the
+ * text goes back to the colour that block has always used.
+ */
+interface SwatchSpec {
+  source: CoverElementColorSource | null
+  hex: string | null
+  label: string
+}
+
+const swatches = computed<SwatchSpec[]>(() => {
+  const palette = props.palette
+  if (!palette) return []
+  const slots: Array<Exclude<CoverElementColorSource, 'custom'>> = [
+    'primary',
+    'secondary',
+    'accent',
+    'guestname',
+  ]
+  const chips: SwatchSpec[] = [
+    { source: null, hex: null, label: t('management.coverLayoutEditor.colorSources.auto') },
+  ]
+  for (const slot of slots) {
+    const hex = palette[slot]
+    if (!hex) continue
+    // A template that reuses one hex across slots would otherwise show the same
+    // dot several times over, with nothing to tell them apart.
+    if (chips.some((chip) => chip.hex?.toLowerCase() === hex.toLowerCase())) continue
+    chips.push({ source: slot, hex, label: t(`management.coverLayoutEditor.colorSources.${slot}`) })
+  }
+  return chips.length > 1 ? chips : []
+})
+
+function setColorSource(source: CoverElementColorSource | null): void {
+  const id = toolbarId.value
+  if (!id) return
+  commitBox(id, { ...props.elements[id], colorSource: source ?? undefined }, true)
+}
+
+// ---------------------------------------------------------------------------
 // Keyboard. Arrow keys are the precision half of "direct manipulation" — a
 // pixel-perfect nudge is not something a pointer can do at preview scale.
 // ---------------------------------------------------------------------------
@@ -382,6 +538,17 @@ function onKeydown(event: KeyboardEvent): void {
   }
   const id = props.selected
   if (!id || !props.visible[id]) return
+
+  // Ctrl/Cmd + up/down scales the text instead of moving the block — the
+  // precision counterpart to the toolbar's A−/A+, and the pairing people
+  // already expect from every other editor.
+  if ((event.ctrlKey || event.metaKey) && hasText(id)) {
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return
+    event.preventDefault()
+    const direction = event.key === 'ArrowUp' ? 1 : -1
+    setFontScale(id, (props.elements[id].fontScale ?? 1) + direction * FONT_SCALE_STEP)
+    return
+  }
 
   const step = event.shiftKey ? NUDGE_FAST : NUDGE
   const box = { ...props.elements[id] }
@@ -442,6 +609,10 @@ onUnmounted(() => {
   border-color: #1e90ff;
   background: rgba(30, 144, 255, 0.12);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
+  /* Each box is its own stacking context (they're all transformed), so without
+     this the blocks rendered after the selected one paint over its handles and
+     its toolbar — which hang outside the box's own bounds. */
+  z-index: 2;
 }
 
 .cly-box.is-dragging {
@@ -494,6 +665,119 @@ onUnmounted(() => {
 .cly-handle--sw { top: 100%; left: 0; cursor: nesw-resize; }
 .cly-handle--w { top: 50%; left: 0; cursor: ew-resize; }
 
+/* Type controls. Sized like the handles above — generously, because the whole
+   frame is scaled down by ~25% in the editor's preview column. */
+.cly-tools {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, 8px);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.35);
+  white-space: nowrap;
+  cursor: default;
+  z-index: 2;
+}
+
+.cly-tools.is-above {
+  top: auto;
+  bottom: 100%;
+  transform: translate(-50%, -8px);
+}
+
+.cly-tools__group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 2px;
+}
+
+.cly-tools__group + .cly-tools__group {
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  margin-left: 2px;
+  padding-left: 6px;
+}
+
+.cly-tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.cly-tool:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.cly-tool__a {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cly-tool__a--sm {
+  font-size: 10px;
+}
+
+.cly-tools__value {
+  min-width: 34px;
+  text-align: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.cly-swatch {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.cly-swatch:hover {
+  transform: scale(1.15);
+}
+
+.cly-swatch.is-active {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+/* The "leave it as it was" chip. A slashed circle rather than a colour, because
+   it isn't one — it's the absence of a choice. */
+.cly-swatch.is-auto {
+  position: relative;
+  background: transparent;
+  overflow: hidden;
+}
+
+.cly-swatch.is-auto::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -20%;
+  width: 140%;
+  height: 1.5px;
+  background: rgba(255, 255, 255, 0.75);
+  transform: rotate(-45deg);
+}
+
 .cly-guide {
   position: absolute;
   background: #ec4899;
@@ -533,8 +817,14 @@ onUnmounted(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .cly-box,
-  .cly-box__label {
+  .cly-box__label,
+  .cly-tool,
+  .cly-swatch {
     transition: none;
+  }
+
+  .cly-swatch:hover {
+    transform: none;
   }
 }
 </style>

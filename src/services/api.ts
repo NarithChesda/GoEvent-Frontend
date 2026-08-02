@@ -77,6 +77,7 @@ export type {
   CoverElementId,
   CoverElementBox,
   CoverElementBoxes,
+  CoverElementColorSource,
   BrowseTemplatesResponse,
   PartnerTemplate,
   PartnerTemplateStatus,

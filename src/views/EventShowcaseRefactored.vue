@@ -96,6 +96,8 @@
         :current-font="currentFont"
         :primary-font="primaryFont"
         :secondary-font="secondaryFont"
+        :accent-font="accentFont"
+        :decorative-font="decorativeFont"
         :event-texts="eventTexts"
         :current-language="currentLanguage"
         :current-showcase-stage="currentShowcaseStage"
@@ -283,6 +285,8 @@ const {
   currentFont,
   primaryFont,
   secondaryFont,
+  accentFont,
+  decorativeFont,
   isEventPast,
   eventVideoUrl,
   backgroundVideoUrl,

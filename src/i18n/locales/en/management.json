@@ -2605,7 +2605,7 @@
       "free": "Free placement"
     },
     "rowsHint": "Blocks stack in a fixed order inside one container. Switch to free placement to move and resize each one on its own.",
-    "dragHint": "Drag a block on the preview to move it, or its handles to resize. Arrow keys nudge, Shift for bigger steps, Alt to ignore the guides.",
+    "dragHint": "Drag a block on the preview to move it, or its handles to resize. Select one to set its text size and colour from the bar beneath it. Arrow keys nudge, Ctrl + up/down scales the text, Shift for bigger steps, Alt to ignore the guides.",
     "previewHint": "Drag the blocks to place them. Nothing is saved until you save the template.",
     "blockPicker": "Cover block",
     "pickBlock": "Pick a block above, or click one straight on the preview.",
@@ -2620,7 +2620,28 @@
       "y": "Centre Y",
       "width": "Width",
       "height": "Height",
-      "fontScale": "Text size"
+      "fontScale": "Text size",
+      "fontType": "Font",
+      "colorSource": "Text colour"
+    },
+    "fontTypes": {
+      "auto": "Default",
+      "primary": "Primary",
+      "secondary": "Secondary",
+      "accent": "Accent",
+      "decorative": "Decorative"
+    },
+    "colorSources": {
+      "auto": "Default",
+      "primary": "Primary",
+      "secondary": "Secondary",
+      "accent": "Accent",
+      "guestname": "Guest name",
+      "custom": "Custom colour"
+    },
+    "text": {
+      "smaller": "Smaller text",
+      "larger": "Larger text"
     },
     "resetBlock": "Reset this block",
     "resetAll": "Reset all blocks"

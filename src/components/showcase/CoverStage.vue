@@ -49,6 +49,8 @@
       :current-font="currentFont"
       :primary-font="primaryFont"
       :secondary-font="secondaryFont"
+      :accent-font="accentFont"
+      :decorative-font="decorativeFont"
       :event-texts="eventTexts"
       :current-language="currentLanguage"
       :should-show-button-loading="videoState.shouldShowButtonLoading.value"
@@ -130,6 +132,9 @@ interface Props {
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
+  /** Forwarded only so free-placed cover blocks can point at these font slots. */
+  accentFont?: string
+  decorativeFont?: string
   eventTexts?: EventText[]
   currentLanguage?: string
   isEnvelopeButtonReady?: boolean

@@ -114,15 +114,22 @@ const formattedGuestName = computed(() => {
 const guestNameChars = computed(() => formattedGuestName.value.split(''))
 const guestNameWords = computed(() => formattedGuestName.value.split(/\s+/).filter(Boolean))
 
-// Text style
+// Text style.
+//
+// The two var()s are set by the free-placement layout only when the guest block
+// explicitly picked a font or colour slot (see coverElementStyle); otherwise
+// they're undefined and the fallback — this component's original rule — wins.
+// Note this deliberately lets an explicit slot beat the Great Vibes override
+// below: a partner who chose a font for the guest name should get that font,
+// Latin script or not.
 const textStyle = computed(() => {
   const fontFamily = isEnglishGuestName.value
     ? '"Great Vibes", cursive'
     : props.primaryFont || props.currentFont
 
   return {
-    fontFamily,
-    color: props.guestnameColor || props.primaryColor,
+    fontFamily: `var(--cover-block-font, ${fontFamily})`,
+    color: `var(--cover-block-color, ${props.guestnameColor || props.primaryColor})`,
     fontWeight: isEnglishGuestName.value ? '400' : 'normal',
     background: 'none',
     backgroundColor: 'transparent',

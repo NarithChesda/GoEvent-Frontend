@@ -85,6 +85,22 @@ export interface TemplateAssets {
 export type CoverElementId = 'header' | 'logo' | 'invite' | 'guest'
 
 /**
+ * Where one cover block's text takes its colour from.
+ *
+ * Named palette slots rather than a bare hex, for the same reason `fontType`
+ * names a font slot: the template's `template_colors` are the single source of
+ * the palette, so recolouring a template keeps propagating to every block that
+ * didn't deliberately opt out. `custom` + `customColor` is the escape hatch —
+ * the same pair `FallingEffectConfig` / `AmbientCreaturesConfig` already use.
+ */
+export type CoverElementColorSource =
+  | 'primary'
+  | 'secondary'
+  | 'accent'
+  | 'guestname'
+  | 'custom'
+
+/**
  * One block's placement on the cover stage, in stage-relative percentages.
  *
  * The anchor is the block's CENTRE, not its top-left corner: the cover is a
@@ -113,6 +129,23 @@ export interface CoverElementBox {
    * is its box.
    */
   fontScale?: number
+  /**
+   * Which of the template's font slots this block renders in.
+   *
+   * A slot name, never a font family string: `template_fonts` declares fonts
+   * PER LANGUAGE (language + font_type), so a baked-in family would freeze the
+   * cover to one script and the showcase's language switch would stop changing
+   * the type. Naming the slot lets the existing per-language resolution in
+   * useTemplateProcessor keep doing its job.
+   *
+   * Unset means "whatever this block used before free placement existed" —
+   * primary for the header and guest name, secondary for the invite line.
+   */
+  fontType?: TemplateFontType
+  /** Which palette slot the block's text colour comes from. Unset = unchanged. */
+  colorSource?: CoverElementColorSource
+  /** Hex colour, read only when `colorSource` is `custom`. */
+  customColor?: string | null
 }
 
 /** Placement per block. Partial: any missing block falls back to the row model. */

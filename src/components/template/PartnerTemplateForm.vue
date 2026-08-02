@@ -594,13 +594,48 @@
                     <!-- The logo scales with its box; only the text blocks have
                          a size that the box alone can't express. -->
                     <TemplateFormNumber
-                      v-if="selectedCoverElement !== 'logo'"
+                      v-if="selectedCoverBlockHasText"
                       v-model="coverBoxFontScale"
                       :label="t('management.coverLayoutEditor.fields.fontScale')"
                       :min="40"
                       :max="250"
                       :step="5"
                       unit="%"
+                    />
+                  </div>
+
+                  <!-- Type slots. Both name a slot from this template's own
+                       palette/fonts rather than a literal value: fonts are
+                       declared per language, so a baked-in family would freeze
+                       the cover to one script, and a baked-in hex would stop
+                       following the template's colours. -->
+                  <div v-if="selectedCoverBlockHasText" class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                    <TemplateFormSelect
+                      v-model="coverBoxFontType"
+                      :label="t('management.coverLayoutEditor.fields.fontType')"
+                      :options="coverFontTypeOptions"
+                    />
+                    <TemplateFormSelect
+                      v-model="coverBoxColorSource"
+                      :label="t('management.coverLayoutEditor.fields.colorSource')"
+                      :options="coverColorSourceOptions"
+                    />
+                  </div>
+
+                  <div v-if="selectedCoverBlockHasText && selectedCoverBox.colorSource === 'custom'" class="flex items-end gap-2">
+                    <input
+                      v-model="coverBoxCustomColor"
+                      type="color"
+                      class="w-10 h-[38px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
+                      :aria-label="t('management.partnerTemplateForm.fallingEffect.pickLabel')"
+                    />
+                    <input
+                      v-model="coverBoxCustomColor"
+                      type="text"
+                      maxlength="7"
+                      placeholder="#FFFFFF"
+                      :aria-label="t('management.partnerTemplateForm.fallingEffect.hexLabel')"
+                      class="flex-1 min-w-0 px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm uppercase tabular-nums transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
                     />
                   </div>
                   <div class="flex flex-wrap items-center gap-2">
@@ -1055,6 +1090,7 @@ import type {
   CoverStageLayout,
   CoverElementBox,
   CoverElementBoxes,
+  CoverElementColorSource,
   CoverElementId,
   CoverLayoutMode,
   EventTemplateColor,
@@ -1076,7 +1112,7 @@ import TemplateSlotField from './TemplateSlotField.vue'
 import TemplateFormSwitch from './TemplateFormSwitch.vue'
 import TemplateFormNumber from './TemplateFormNumber.vue'
 import TemplateFormChoice from './TemplateFormChoice.vue'
-import TemplateFormSelect from './TemplateFormSelect.vue'
+import TemplateFormSelect, { type TemplateFormSelectOption } from './TemplateFormSelect.vue'
 import PlanRequiredNotice from './TemplateFormPlanNotice.vue'
 import { TEMPLATES_HEADER_SLOT } from './templatesHeaderSlot'
 import { useMediaQuery } from '../../composables/useMediaQuery'
@@ -1084,6 +1120,7 @@ import {
   COVER_ELEMENT_IDS,
   resolveCoverElements,
   rowsToCoverElements,
+  type ResolvedCoverElementBox,
 } from '../../composables/showcase/useCoverStageLayout'
 import { TEMPLATE_COLOR_SLOTS, TEMPLATE_FONT_TYPE_SLOTS } from './templateSlots'
 import {
@@ -1462,7 +1499,7 @@ const coverLayoutEditing = computed(() => activeSection.value === 'layout' && is
  */
 const resolvedCoverElements = computed(() => resolveCoverElements(form.cover_stage_layout))
 
-const selectedCoverBox = computed<Required<CoverElementBox> | null>(() =>
+const selectedCoverBox = computed<ResolvedCoverElementBox | null>(() =>
   selectedCoverElement.value ? resolvedCoverElements.value[selectedCoverElement.value] : null,
 )
 
@@ -1539,11 +1576,84 @@ const coverBoxFontScale = computed<number>({
   set: (value) => updateSelectedCoverBox({ fontScale: Math.max(0.1, value / 100) }),
 })
 
-/** Puts one block back where the row model would have put it. */
+/** The logo block has no text, so none of the type controls apply to it. */
+const selectedCoverBlockHasText = computed(
+  () => !!selectedCoverBox.value && selectedCoverElement.value !== 'logo',
+)
+
+/**
+ * `auto` is the unset state, and it is not the same as picking the slot the
+ * block happens to use today: unset means "keep following whatever rule this
+ * block has always followed", which for the guest name includes the Great Vibes
+ * override for Latin names. Storing `undefined` keeps that rule intact;
+ * storing `primary` deliberately overrides it.
+ */
+const COVER_SLOT_AUTO = 'auto'
+
+const coverFontTypeOptions = computed<TemplateFormSelectOption[]>(() => [
+  { value: COVER_SLOT_AUTO, label: t('management.coverLayoutEditor.fontTypes.auto') },
+  ...(Object.keys(FONT_TYPE_LABELS) as TemplateFontType[]).map((slot) => ({
+    value: slot,
+    label: t(`management.coverLayoutEditor.fontTypes.${slot}`),
+  })),
+])
+
+const coverColorSourceOptions = computed<TemplateFormSelectOption[]>(() => [
+  { value: COVER_SLOT_AUTO, label: t('management.coverLayoutEditor.colorSources.auto') },
+  ...(['primary', 'secondary', 'accent', 'guestname', 'custom'] as CoverElementColorSource[]).map(
+    (source) => ({
+      value: source,
+      label: t(`management.coverLayoutEditor.colorSources.${source}`),
+    }),
+  ),
+])
+
+const coverBoxFontType = computed<string>({
+  get: () => selectedCoverBox.value?.fontType ?? COVER_SLOT_AUTO,
+  set: (value) =>
+    updateSelectedCoverBox({
+      fontType: value === COVER_SLOT_AUTO ? undefined : (value as TemplateFontType),
+    }),
+})
+
+const coverBoxColorSource = computed<string>({
+  get: () => selectedCoverBox.value?.colorSource ?? COVER_SLOT_AUTO,
+  set: (value) => {
+    const source = value === COVER_SLOT_AUTO ? undefined : (value as CoverElementColorSource)
+    updateSelectedCoverBox({
+      colorSource: source,
+      // Seed the picker with something visible rather than an empty swatch the
+      // partner has to notice is empty before the colour can change at all.
+      ...(source === 'custom' && !selectedCoverBox.value?.customColor
+        ? { customColor: '#FFFFFF' }
+        : {}),
+    })
+  },
+})
+
+const coverBoxCustomColor = computed<string>({
+  get: () => selectedCoverBox.value?.customColor ?? '#FFFFFF',
+  set: (value) => updateSelectedCoverBox({ customColor: value }),
+})
+
+/**
+ * Puts one block back where the row model would have put it.
+ *
+ * `updateSelectedCoverBox` merges the patch onto the block's *current* resolved
+ * values, so the type slots need to be named with an explicit `undefined`
+ * here — omitting the keys entirely (which is what the row model's own boxes
+ * do, since they never had a type slot to begin with) would leave the block's
+ * existing fontType/colorSource/customColor untouched instead of clearing them.
+ */
 function resetSelectedCoverBlock(): void {
   const id = selectedCoverElement.value
   if (!id) return
-  updateSelectedCoverBox(rowsToCoverElements(form.cover_stage_layout)[id])
+  updateSelectedCoverBox({
+    ...rowsToCoverElements(form.cover_stage_layout)[id],
+    fontType: undefined,
+    colorSource: undefined,
+    customColor: undefined,
+  })
 }
 
 /**

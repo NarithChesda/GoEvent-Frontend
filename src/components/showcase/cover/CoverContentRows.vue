@@ -423,17 +423,23 @@ const displayTitle = computed(() => coverHeader.value || props.eventTitle)
 // Invite text
 const displayInviteText = computed(() => getTextContent('invite_text', "You're Invited"))
 
-// Header text style
+// Header / invite text styles.
+//
+// `--cover-block-font` and `--cover-block-color` are set on the block's own
+// wrapper by coverElementStyle, but ONLY when that block picked a font or
+// colour slot in free placement. Writing each rule as `var(<slot>, <the value
+// this block has always used>)` is what makes the feature additive: rows mode
+// and every free block that didn't opt in never define the variable, so the
+// fallback — the original expression, unchanged — is what renders.
 const headerTextStyle = computed(() => ({
-  fontFamily: props.primaryFont || props.currentFont,
-  color: props.primaryColor,
+  fontFamily: `var(--cover-block-font, ${props.primaryFont || props.currentFont})`,
+  color: `var(--cover-block-color, ${props.primaryColor})`,
   whiteSpace: 'pre-line' as const,
 }))
 
-// Invite text style
 const inviteTextStyle = computed(() => ({
-  color: props.primaryColor || props.secondaryColor || 'rgba(255, 255, 255, 0.9)',
-  fontFamily: props.secondaryFont || props.currentFont,
+  color: `var(--cover-block-color, ${props.primaryColor || props.secondaryColor || 'rgba(255, 255, 255, 0.9)'})`,
+  fontFamily: `var(--cover-block-font, ${props.secondaryFont || props.currentFont})`,
   textShadow: 'none',
 }))
 

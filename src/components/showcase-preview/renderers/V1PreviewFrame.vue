@@ -28,6 +28,8 @@
     :current-font="currentFont"
     :primary-font="primaryFont"
     :secondary-font="secondaryFont"
+    :accent-font="accentFont"
+    :decorative-font="decorativeFont"
     :event-texts="eventTexts"
     :current-language="currentLanguage"
     :current-showcase-stage="stage === 'main' ? 'main_content' : 'cover'"
@@ -125,6 +127,7 @@
     v-if="coverLayoutEdit?.active.value && stage === 'cover'"
     :elements="coverElements"
     :visible="coverElementVisibility"
+    :palette="coverTextPalette"
     :selected="coverLayoutEdit.selected.value"
     @select="onCoverLayoutSelect"
     @change="onCoverLayoutChange"
@@ -145,7 +148,10 @@
 import { computed, inject } from 'vue'
 import type { useEventShowcase } from '@/composables/useEventShowcase'
 import { isBasicWeddingShowcase } from './resolvePreviewRenderer'
-import { useCoverStageLayout } from '@/composables/showcase/useCoverStageLayout'
+import {
+  useCoverStageLayout,
+  type CoverTextPalette,
+} from '@/composables/showcase/useCoverStageLayout'
 import { CoverLayoutEditKey } from '@/components/showcase-preview/edit/coverLayoutEditContext'
 import {
   postCoverLayoutChangeToParent,
@@ -198,6 +204,8 @@ const {
   currentFont,
   primaryFont,
   secondaryFont,
+  accentFont,
+  decorativeFont,
   isEventPast,
   eventVideoUrl,
   backgroundVideoUrl,
@@ -269,6 +277,18 @@ const { layout: resolvedCoverLayout, elements: coverElements } = useCoverStageLa
   coverStageLayout,
   computed(() => event.value?.template_assets?.cover_content_top_position),
 )
+
+/**
+ * The palette the overlay's colour swatches offer, resolved exactly as the
+ * cover resolves it — so a dot in the toolbar is the colour the text will
+ * actually take, including whatever fallbacks the template's own palette needs.
+ */
+const coverTextPalette = computed<CoverTextPalette>(() => ({
+  primary: primaryColor.value,
+  secondary: secondaryColor.value,
+  accent: accentColor.value,
+  guestname: guestnameColor.value,
+}))
 
 /** Which blocks the cover is actually rendering, and so which are draggable. */
 const coverElementVisibility = computed<Record<CoverElementId, boolean>>(() => ({
