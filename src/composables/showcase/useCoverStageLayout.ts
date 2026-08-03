@@ -1,5 +1,12 @@
 import { computed, type ComputedRef } from 'vue'
-import type { CoverStageLayout } from '@/services/api/types/template.types'
+import type {
+  CoverElementBox,
+  CoverElementBoxes,
+  CoverElementColorSource,
+  CoverElementId,
+  CoverStageLayout,
+  TemplateFontType,
+} from '@/services/api/types/template.types'
 
 /**
  * Default values matching current hard-coded values in CoverContentOverlay.vue
@@ -26,6 +33,193 @@ export const COVER_STAGE_LAYOUT_DEFAULTS: Required<CoverStageLayout> = {
   bottomDecorationZIndex: 25,
   showcaseAnimationType: 'decoration',
   contentWidth: 'standard',
+  layoutMode: 'rows',
+  coverElements: {},
+}
+
+/** Render order, which is also z-order: later blocks sit above earlier ones. */
+export const COVER_ELEMENT_IDS: readonly CoverElementId[] = ['header', 'logo', 'invite', 'guest']
+
+/**
+ * One block with its GEOMETRY fully resolved.
+ *
+ * The type slots stay optional on purpose. Geometry always has an answer — the
+ * row model supplies one for every block — but "which font slot" and "which
+ * palette colour" have a meaningful *unset* state: keep rendering whatever this
+ * block rendered before free placement existed. Seeding them with today's
+ * effective values instead would look identical at first and then quietly
+ * diverge, because the guest name's font is not simply "primary" (an English
+ * name overrides it to Great Vibes) and the invite colour carries its own
+ * fallback chain. Leaving them undefined keeps those rules where they live.
+ */
+export type ResolvedCoverElementBox = Required<
+  Pick<CoverElementBox, 'x' | 'y' | 'width' | 'height' | 'fontScale'>
+> &
+  Pick<CoverElementBox, 'fontType' | 'colorSource' | 'customColor'>
+
+/** Every block resolved, keyed by id. */
+export type ResolvedCoverElements = Record<CoverElementId, ResolvedCoverElementBox>
+
+/** The template's palette slots resolved to real hex values. */
+export type CoverTextPalette = Partial<
+  Record<Exclude<CoverElementColorSource, 'custom'>, string | null>
+>
+
+/**
+ * The stage-level CSS variables every font/colour slot is published under.
+ *
+ * A block's own `--cover-block-font` / `--cover-block-color` is set to a
+ * `var()` REFERENCE into these rather than to a resolved value, which is what
+ * keeps the whole feature free of prop threading: the four font families and
+ * four palette entries are declared once on the cover overlay's root (the only
+ * place that has all of them), and the blocks — three component layers down,
+ * behind DoorPanel — pick them up by inheritance. It also means a language
+ * switch re-resolves the font with no work here at all: the variable's value
+ * changes, every block that references it follows.
+ */
+export const COVER_FONT_SLOT_VARS: Record<TemplateFontType, string> = {
+  primary: '--tpl-font-primary',
+  secondary: '--tpl-font-secondary',
+  accent: '--tpl-font-accent',
+  decorative: '--tpl-font-decorative',
+}
+
+export const COVER_COLOR_SLOT_VARS: Record<
+  Exclude<CoverElementColorSource, 'custom'>,
+  string
+> = {
+  primary: '--tpl-color-primary',
+  secondary: '--tpl-color-secondary',
+  accent: '--tpl-color-accent',
+  guestname: '--tpl-color-guestname',
+}
+
+const round = (value: number): number => Math.round(value * 10) / 10
+
+/**
+ * The boxes the row model would produce for this layout.
+ *
+ * This is what makes `free` mode adoptable rather than a blank canvas: turning
+ * it on seeds every block with the geometry it already had, so nothing moves
+ * until the partner actually drags something. It's also the per-block fallback
+ * for a `coverElements` map that only names some of the four, and the "reset
+ * this block" target in the editor.
+ *
+ * The arithmetic mirrors `rowStyles` below exactly: the container spans
+ * `contentTopPosition` → `+ innerContainerHeight` (vh), and each row takes its
+ * percentage of that container, stacked from the top.
+ */
+export function rowsToCoverElements(layout: Required<CoverStageLayout>): ResolvedCoverElements {
+  const containerHeight = layout.innerContainerHeight
+  const headerVisible = layout.showCoverHeaderText
+
+  // Same absorption rule the row model applies: a hidden header row gives its
+  // height to the logo row rather than leaving a gap.
+  const heights: Record<CoverElementId, number> = {
+    header: (headerVisible ? layout.eventTitleHeight : 0) / 100 * containerHeight,
+    logo:
+      (headerVisible ? layout.logoHeight : layout.logoHeight + layout.eventTitleHeight) /
+      100 *
+      containerHeight,
+    invite: (layout.inviteTextHeight / 100) * containerHeight,
+    guest: (layout.guestNameHeight / 100) * containerHeight,
+  }
+
+  // Full-bleed rows, except the guest frame, which the row model already capped
+  // at a percentage of its row.
+  const widths: Record<CoverElementId, number> = {
+    header: 100,
+    logo: 100,
+    invite: 100,
+    guest: layout.guestNameMaxWidthPercent,
+  }
+
+  const boxes = {} as ResolvedCoverElements
+  let cursor = layout.contentTopPosition
+
+  for (const id of COVER_ELEMENT_IDS) {
+    const height = heights[id]
+    // A hidden header contributes no height and doesn't advance the stack, but
+    // it still needs a usable box: the moment someone re-enables the header in
+    // free mode, a zero-height block would be invisible and undraggable.
+    const boxHeight = height > 0 ? height : (layout.eventTitleHeight / 100) * containerHeight
+    boxes[id] = {
+      x: 50,
+      y: round(cursor + boxHeight / 2),
+      width: widths[id],
+      height: round(boxHeight),
+      fontScale: 1,
+    }
+    cursor += height
+  }
+
+  return boxes
+}
+
+/**
+ * The row-derived seed overlaid with whatever the template actually specifies.
+ * Per-field, not per-block: a box that only carries `y` still gets a sane width.
+ */
+export function resolveCoverElements(layout: Required<CoverStageLayout>): ResolvedCoverElements {
+  const seeded = rowsToCoverElements(layout)
+  const overrides: CoverElementBoxes = layout.coverElements ?? {}
+
+  for (const id of COVER_ELEMENT_IDS) {
+    const override = overrides[id]
+    if (!override) continue
+    seeded[id] = {
+      x: override.x ?? seeded[id].x,
+      y: override.y ?? seeded[id].y,
+      width: override.width ?? seeded[id].width,
+      height: override.height ?? seeded[id].height,
+      fontScale: override.fontScale ?? 1,
+      // Passed through rather than defaulted: undefined is the real answer for
+      // a block that hasn't picked a slot, and the renderer keys its "leave
+      // this exactly as it was" branch off that.
+      fontType: override.fontType,
+      colorSource: override.colorSource,
+      customColor: override.customColor,
+    }
+  }
+
+  return seeded
+}
+
+/**
+ * The inline style that places one free block.
+ *
+ * The stored anchor is the box's centre, but this resolves it to a top-left
+ * corner rather than pairing `left: x%` with `translate(-50%, -50%)`. The two
+ * are arithmetically identical (a translate percentage resolves against the
+ * element's own size, which is exactly `width`/`height` percent of the stage) —
+ * but the cover's entrance animation keyframes set `transform` themselves, and
+ * an animation with `fill-mode: forwards` would win and leave every free-placed
+ * block offset by half its own size, permanently.
+ */
+export function coverElementStyle(box: ResolvedCoverElementBox): Record<string, string> {
+  const style: Record<string, string> = {
+    left: `${round(box.x - box.width / 2)}%`,
+    top: `${round(box.y - box.height / 2)}%`,
+    width: `${box.width}%`,
+    height: `${box.height}%`,
+    // Read by the text-scaling clamps in cover-stage-styles.css / GuestNameFrame.
+    '--cover-font-scale': `${box.fontScale}`,
+  }
+
+  // Only set when the block actually opted in. Leaving the variable undefined
+  // is what makes "unset" mean "render exactly as before": the consumers spell
+  // their old value as the var()'s fallback, so an absent variable is not a
+  // missing style but the original one.
+  if (box.fontType) {
+    style['--cover-block-font'] = `var(${COVER_FONT_SLOT_VARS[box.fontType]})`
+  }
+  if (box.colorSource === 'custom') {
+    if (box.customColor) style['--cover-block-color'] = box.customColor
+  } else if (box.colorSource) {
+    style['--cover-block-color'] = `var(${COVER_COLOR_SLOT_VARS[box.colorSource]})`
+  }
+
+  return style
 }
 
 /**
@@ -84,7 +278,27 @@ export function useCoverStageLayout(
       showcaseAnimationType:
         config.showcaseAnimationType ?? COVER_STAGE_LAYOUT_DEFAULTS.showcaseAnimationType,
       contentWidth: config.contentWidth ?? COVER_STAGE_LAYOUT_DEFAULTS.contentWidth,
+      layoutMode: config.layoutMode ?? COVER_STAGE_LAYOUT_DEFAULTS.layoutMode,
+      coverElements: config.coverElements ?? COVER_STAGE_LAYOUT_DEFAULTS.coverElements,
     }
+  })
+
+  /** `rows` unless the template explicitly opted into free placement. */
+  const layoutMode = computed(() => layout.value.layoutMode)
+  const isFreeLayout = computed(() => layoutMode.value === 'free')
+
+  /**
+   * Every block's box, resolved whatever the mode. Always computed — in `rows`
+   * mode nothing renders from it, but the template editor still needs the
+   * row-derived geometry to seed its handles from.
+   */
+  const elements = computed<ResolvedCoverElements>(() => resolveCoverElements(layout.value))
+
+  /** Ready-to-bind inline styles for the free blocks, keyed the same way. */
+  const elementStyles = computed<Record<CoverElementId, Record<string, string>>>(() => {
+    const styles = {} as Record<CoverElementId, Record<string, string>>
+    for (const id of COVER_ELEMENT_IDS) styles[id] = coverElementStyle(elements.value[id])
+    return styles
   })
 
   /**
@@ -135,6 +349,10 @@ export function useCoverStageLayout(
 
   return {
     layout,
+    layoutMode,
+    isFreeLayout,
+    elements,
+    elementStyles,
     containerStyle,
     rowStyles,
     swipeArrowStyle,

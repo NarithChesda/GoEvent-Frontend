@@ -137,7 +137,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ImageOff, Check, Pencil, Send, Trash2, Clock, CheckCircle, XCircle, FileEdit, type LucideComponent } from 'lucide-vue-next'
+import { ImageOff, Check, Pencil, Send, Trash2, Clock, CheckCircle, XCircle, FileEdit, type LucideIcon } from 'lucide-vue-next'
 import type { PartnerTemplate } from '../../services/api'
 
 interface Props {
@@ -175,7 +175,7 @@ const statusClass = computed(() => {
   }
 })
 
-const statusIcon = computed((): LucideComponent => {
+const statusIcon = computed((): LucideIcon => {
   switch (props.template.status) {
     case 'approved': return CheckCircle
     case 'pending_review': return Clock

@@ -114,15 +114,22 @@ const formattedGuestName = computed(() => {
 const guestNameChars = computed(() => formattedGuestName.value.split(''))
 const guestNameWords = computed(() => formattedGuestName.value.split(/\s+/).filter(Boolean))
 
-// Text style
+// Text style.
+//
+// The two var()s are set by the free-placement layout only when the guest block
+// explicitly picked a font or colour slot (see coverElementStyle); otherwise
+// they're undefined and the fallback — this component's original rule — wins.
+// Note this deliberately lets an explicit slot beat the Great Vibes override
+// below: a partner who chose a font for the guest name should get that font,
+// Latin script or not.
 const textStyle = computed(() => {
   const fontFamily = isEnglishGuestName.value
     ? '"Great Vibes", cursive'
     : props.primaryFont || props.currentFont
 
   return {
-    fontFamily,
-    color: props.guestnameColor || props.primaryColor,
+    fontFamily: `var(--cover-block-font, ${fontFamily})`,
+    color: `var(--cover-block-color, ${props.guestnameColor || props.primaryColor})`,
     fontWeight: isEnglishGuestName.value ? '400' : 'normal',
     background: 'none',
     backgroundColor: 'transparent',
@@ -257,7 +264,11 @@ defineExpose({
   flex-direction: column;
   align-items: center;
   gap: 0;
-  max-width: 70%;
+  /* 70% of the row it sits in, unless a free-placed cover block overrides it —
+     there the block's own width IS the intended extent, and applying a second
+     70% cap on top would make the same numbers render narrower than the row
+     model they were seeded from. */
+  max-width: var(--guest-frame-max-width, 70%);
 }
 
 /* Premium Name Frame */
@@ -281,9 +292,13 @@ defineExpose({
   align-items: center;
   justify-content: center;
   width: calc(100% + 40px);
-  min-width: 200px;
-  max-width: 500px;
-  height: 75px;
+  /* The frame graphic is the guest name's decoration, so it grows with the
+     name rather than staying a fixed 75px slab around scaled-up text. Every
+     px length here (and in the two media queries below) rides the same
+     --cover-font-scale the text does. */
+  min-width: calc(200px * var(--cover-font-scale, 1));
+  max-width: calc(500px * var(--cover-font-scale, 1));
+  height: calc(75px * var(--cover-font-scale, 1));
   pointer-events: none;
   z-index: 0;
   opacity: 0;
@@ -446,35 +461,35 @@ defineExpose({
 /* Desktop */
 @media (min-width: 1024px) {
   .scaled-guest-name {
-    font-size: clamp(0.65rem, 2vh, 1.2rem) !important;
+    font-size: calc(clamp(0.65rem, 2vh, 1.2rem) * var(--cover-font-scale, 1)) !important;
   }
 
   .scaled-guest-name[style*="Great Vibes"] {
-    font-size: clamp(0.85rem, 2.6vh, 1.6rem) !important;
+    font-size: calc(clamp(0.85rem, 2.6vh, 1.6rem) * var(--cover-font-scale, 1)) !important;
   }
 }
 
 /* Laptop only */
 @media (min-width: 1024px) and (max-width: 1535px) {
   .split-frame-container {
-    max-width: 400px;
-    height: 50px;
+    max-width: calc(400px * var(--cover-font-scale, 1));
+    height: calc(50px * var(--cover-font-scale, 1));
   }
 }
 
 /* Mobile */
 @media (max-width: 640px) {
   .scaled-guest-name {
-    font-size: clamp(0.65rem, 2vh, 1.2rem) !important;
+    font-size: calc(clamp(0.65rem, 2vh, 1.2rem) * var(--cover-font-scale, 1)) !important;
   }
 
   .scaled-guest-name[style*="Great Vibes"] {
-    font-size: clamp(0.85rem, 2.6vh, 1.6rem) !important;
+    font-size: calc(clamp(0.85rem, 2.6vh, 1.6rem) * var(--cover-font-scale, 1)) !important;
   }
 
   .guest-name-container {
     gap: 0;
-    max-width: 70%;
+    max-width: var(--guest-frame-max-width, 70%);
   }
 
   .guest-name-container.english-name .premium-name-frame {
@@ -482,7 +497,7 @@ defineExpose({
   }
 
   .split-frame-container {
-    height: 60px;
+    height: calc(60px * var(--cover-font-scale, 1));
   }
 }
 </style>

@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import type { TemplateFont, TemplateColor, TemplateAssets } from '../useEventShowcase'
 import { isImageKitEnabled } from '../useImageKitConfig'
+import { isResolvedMediaUrl } from '@/utils/mediaUrl'
 
 // Regex patterns defined at module level for better performance
 const MEDIA_PATH_REGEX = /\/media\/(.+)$/
@@ -55,11 +56,16 @@ export function useTemplateProcessor() {
   }
 
   /**
-   * Resolves media URLs to absolute paths
+   * Resolves media URLs to absolute paths.
+   *
+   * `blob:`/`data:` URLs are already complete and are returned as-is — the live
+   * template preview feeds unsaved uploads in as object URLs, and prefixing the
+   * API base onto one produced `.../media/blob:http://...`, i.e. a broken image
+   * everywhere a just-picked file was meant to appear.
    */
   const getMediaUrl = (url: string): string => {
     if (!url) return ''
-    if (url.startsWith('http://') || url.startsWith('https://')) {
+    if (isResolvedMediaUrl(url)) {
       return url
     }
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
@@ -100,6 +106,14 @@ export function useTemplateProcessor() {
     try {
       // First resolve to absolute URL
       let absoluteUrl = getMediaUrl(url)
+
+      // Local, not-yet-uploaded media (the template preview's object URLs).
+      // There is nothing on the CDN to transform, and a base64 `data:` payload
+      // can even contain a literal "/media/" that the path regex below would
+      // happily mistake for a media path.
+      if (absoluteUrl.startsWith('blob:') || absoluteUrl.startsWith('data:')) {
+        return absoluteUrl
+      }
 
       // Check if ImageKit is enabled
       if (!isImageKitEnabled()) {

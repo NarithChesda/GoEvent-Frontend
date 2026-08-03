@@ -33,11 +33,13 @@ Contracts and guides for backend endpoints and template-driven systems this fron
 Frontend-authored design requests for backend changes (the reverse direction of `backend-api/`).
 
 - [event-details-design.md](backend-api-requirements/event-details-design.md) / [host-info-design.md](backend-api-requirements/host-info-design.md) — per-template date/location and host-info block designs
+- [cover-free-placement.md](backend-api-requirements/cover-free-placement.md) — `layoutMode` + `coverElements` inside the existing `cover_stage_layout` blob, so cover blocks can be dragged/resized freely instead of stacking in fixed rows, plus optional per-block `fontType`/`colorSource`/`customColor` slot overrides (no schema change if the blob is stored verbatim — verify the serializer doesn't allow-list keys)
 - [showcase-template-version.md](backend-api-requirements/showcase-template-version.md) — per-template V1/V2 showcase selection (V2 "Storybook Romance"), currently gated by `VITE_SHOWCASE_TEMPLATE_VERSION` env var
 - [showcase-v2-theming.md](backend-api-requirements/showcase-v2-theming.md) — `v2-*` color names and font-type convention for template-driven V2 colors/fonts (informational, no schema change)
 - [showcase-v2-template-presets.md](backend-api-requirements/showcase-v2-template-presets.md) — 6 ready-to-enter color/font presets for V2 templates, plus per-slot admin-panel help text ("which color is used where")
 - [featured-photo-crop.md](backend-api-requirements/featured-photo-crop.md) — `crop_x`/`crop_y`/`crop_width`/`crop_height` on event photos so organizers can crop the transition stage's full-screen photo instead of always getting a centre crop
 - [public-template-assets-decorations.md](backend-api-requirements/public-template-assets-decorations.md) — decoration assets in the pre-payment public template payload for the live preview
+- [partner-template-asset-removal.md](backend-api-requirements/partner-template-asset-removal.md) — accept `''` on the template's file fields so a partner can remove a saved asset, not only replace it
 - [event-banner-image-sizing.md](backend-api-requirements/event-banner-image-sizing.md) — **on hold** (implemented then reverted with an SSR change) — raise the banner optimizer bound to 1920×1005 and derive a ≤300KB 1200×630 `og:image` variant so messaging-app link previews render the large card
 
 ## Feature plans & implementation records ([features/](features/))

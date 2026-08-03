@@ -1,5 +1,6 @@
 import type { EditIntent } from '../edit/editContext'
 import type { TemplateAssets } from '@/composables/useEventShowcase'
+import type { CoverElementBoxes, CoverElementId } from '@/services/api/types/template.types'
 
 /**
  * Typed same-origin postMessage protocol between the manage-page preview tab
@@ -28,7 +29,16 @@ import type { TemplateAssets } from '@/composables/useEventShowcase'
  *                    edit-hints-on/off (persistently outline the editable
  *                      parts — the only discoverable affordance on touch,
  *                      where the hover states these normally rely on can
- *                      never fire)
+ *                      never fire),
+ *                    cover-layout-edit-on/off (turn the direct-manipulation
+ *                      cover layout overlay on — see CoverLayoutEditor.vue)
+ *
+ * `cover-layout-change` and `cover-layout-select` travel in BOTH directions:
+ * dragging a block in the frame reports up, and the editor pane's numeric
+ * fields / block list push back down. Each side only ever receives the other's
+ * (a frame posts to `window.parent`, which never routes back to itself; the
+ * parent filters incoming messages by `event.source`), so one message type per
+ * concept is enough.
  */
 export const PREVIEW_BRIDGE_SOURCE = 'goevent-showcase-preview'
 
@@ -39,6 +49,8 @@ export type ParentToFrameType =
   | 'preview-template-commit'
   | 'edit-hints-on'
   | 'edit-hints-off'
+  | 'cover-layout-edit-on'
+  | 'cover-layout-edit-off'
 
 /** Just-saved event fields, in the shape the event serializer returns them. */
 export type EventFieldPatch = Record<string, unknown>
@@ -49,6 +61,25 @@ export type PreviewBridgeMessage =
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'preview-template'; templateData: TemplateAssets }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'patch-event'; fields: EventFieldPatch }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'frame-ready' }
+  | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'set-language'; language: string }
+  | {
+      source: typeof PREVIEW_BRIDGE_SOURCE
+      type: 'showcase-languages'
+      languages: string[]
+      currentLanguage: string
+    }
+  | {
+      source: typeof PREVIEW_BRIDGE_SOURCE
+      type: 'cover-layout-change'
+      elements: CoverElementBoxes
+      /** False for every frame of a drag, true on release. */
+      commit: boolean
+    }
+  | {
+      source: typeof PREVIEW_BRIDGE_SOURCE
+      type: 'cover-layout-select'
+      elementId: CoverElementId | null
+    }
 
 /**
  * Validates origin + shape and returns the typed message, or null for
@@ -80,6 +111,95 @@ export function postFrameReadyToParent(): void {
   if (window.parent === window) return
   window.parent.postMessage(
     { source: PREVIEW_BRIDGE_SOURCE, type: 'frame-ready' } satisfies PreviewBridgeMessage,
+    window.location.origin,
+  )
+}
+
+/**
+ * Frame side: publish which languages this event actually has, and which one is
+ * showing now.
+ *
+ * A parent can't work this out for itself. `available_languages` lives on the
+ * *showcase* response, not on the events list — so a parent that only has an
+ * event id (the partner template studio) has no way to know an event is
+ * English+Khmer until the frame that loaded it says so. Posted after the initial
+ * load and again after every `set-language`, so the parent's switcher and the
+ * frame can never disagree about what's on screen.
+ */
+export function postShowcaseLanguagesToParent(
+  languages: string[],
+  currentLanguage: string,
+): void {
+  if (window.parent === window) return
+  window.parent.postMessage(
+    {
+      source: PREVIEW_BRIDGE_SOURCE,
+      type: 'showcase-languages',
+      languages,
+      currentLanguage,
+    } satisfies PreviewBridgeMessage,
+    window.location.origin,
+  )
+}
+
+/**
+ * Parent side: switch the frame's language in place.
+ *
+ * Deliberately a bridge message rather than a new `?lang=` on the iframe's
+ * `src`: any change to `src`, however small, makes the browser navigate the
+ * frame — a full reload, a spinner, and every mount animation replayed, for
+ * what should be a content swap. The frame handles this with the showcase's own
+ * `updateLanguageContent`, which refetches just the localized content and
+ * merges it in place.
+ */
+export function postSetLanguageToFrame(
+  frameWindow: Window | null | undefined,
+  language: string,
+): void {
+  frameWindow?.postMessage(
+    { source: PREVIEW_BRIDGE_SOURCE, type: 'set-language', language } satisfies PreviewBridgeMessage,
+    window.location.origin,
+  )
+}
+
+/**
+ * Frame side: report cover blocks that were just dragged/resized.
+ *
+ * Posted on every pointer move (with `commit: false`) so the editor pane's
+ * numbers track the drag, and once more on release (`commit: true`) — the flag
+ * is what lets a parent treat one drag as a single undoable edit rather than
+ * fifty. The frame renders the move from its own local state meanwhile, so this
+ * never has to round-trip before the block visually moves.
+ */
+export function postCoverLayoutChangeToParent(
+  elements: CoverElementBoxes,
+  commit: boolean,
+): void {
+  if (window.parent === window) return
+  window.parent.postMessage(
+    {
+      source: PREVIEW_BRIDGE_SOURCE,
+      type: 'cover-layout-change',
+      // Same reason postTemplatePreviewToFrame unwraps: structured clone throws
+      // on a Vue reactive proxy, and these boxes come straight off a ref.
+      elements: JSON.parse(JSON.stringify(elements)) as CoverElementBoxes,
+      commit,
+    } satisfies PreviewBridgeMessage,
+    window.location.origin,
+  )
+}
+
+/** Either side: agree on which cover block is selected. */
+export function postCoverLayoutSelection(
+  target: Window | null | undefined,
+  elementId: CoverElementId | null,
+): void {
+  target?.postMessage(
+    {
+      source: PREVIEW_BRIDGE_SOURCE,
+      type: 'cover-layout-select',
+      elementId,
+    } satisfies PreviewBridgeMessage,
     window.location.origin,
   )
 }

@@ -1,14 +1,21 @@
 <template>
+  <!-- Two placement models share this markup. `rows` stacks the four blocks as
+       flex rows inside one absolutely-positioned container; `free` drops the
+       container's own box (inset-0) and gives each block its own centre-anchored
+       rectangle from cover_stage_layout.coverElements. Only the wrapper geometry
+       differs — every block's contents render identically either way, which is
+       what lets the template editor switch modes without a second component. -->
   <div
-    class="inner-container-rows flex flex-col w-full mx-auto absolute"
-    :style="containerStyle"
+    class="inner-container-rows absolute"
+    :class="isFree ? 'is-free' : 'flex flex-col w-full mx-auto'"
+    :style="isFree ? undefined : containerStyle"
   >
     <!-- Event Title Row (hidden when showCoverHeaderText is false) -->
     <div
       v-if="showCoverHeaderText"
       class="content-row-header flex items-center justify-center"
-      :class="{ 'animate-fadeIn': showAnimations }"
-      :style="rowStyles.eventTitle"
+      :class="[{ 'animate-fadeIn': showAnimations }, blockClass]"
+      :style="blockStyle('header')"
     >
       <div
         class="header-content-container flex items-center justify-center px-4 w-full"
@@ -31,8 +38,8 @@
     <!-- Event Logo Row (absorbs the event title row's height when the header is hidden) -->
     <div
       class="content-row-logo flex items-center justify-center"
-      :class="{ 'animate-fadeIn animation-delay-200': showAnimations }"
-      :style="rowStyles.logo"
+      :class="[{ 'animate-fadeIn animation-delay-200': showAnimations }, blockClass]"
+      :style="blockStyle('logo')"
     >
       <div class="flex items-center justify-center h-full w-full px-4 cover-logo-wrapper">
         <!-- Merged logo row: stack with a three-tier base (event logo → sample_logo_1 →
@@ -115,8 +122,8 @@
     <div
       v-if="guestName"
       class="content-row-invite flex items-center justify-center"
-      :class="{ 'animate-fadeIn animation-delay-400': showAnimations }"
-      :style="{ ...rowStyles.inviteText, overflow: 'visible' }"
+      :class="[{ 'animate-fadeIn animation-delay-400': showAnimations }, blockClass]"
+      :style="{ ...blockStyle('invite'), overflow: 'visible' }"
     >
       <div
         class="invite-content-container flex items-center justify-center px-4 w-full"
@@ -139,7 +146,8 @@
       v-if="guestName"
       ref="guestContainerRef"
       class="content-row-guest flex items-center justify-center"
-      :style="{ ...rowStyles.guestName, overflow: 'visible', zIndex: 100, position: 'relative' }"
+      :class="blockClass"
+      :style="{ ...blockStyle('guest'), overflow: 'visible', zIndex: 100 }"
     >
       <div class="guest-content-container flex items-center justify-center px-4 w-full">
         <GuestNameFrame
@@ -170,6 +178,7 @@ import GuestNameFrame from './GuestNameFrame.vue'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import type { EditIntent } from '@/components/showcase-preview/edit/editContext'
+import type { CoverElementId, CoverLayoutMode } from '@/services/api/types/template.types'
 import fallbackLogoSvg from '@/assets/temp-showcase-logo.svg?raw'
 
 interface RowStyles {
@@ -213,6 +222,10 @@ interface Props {
   currentLanguage?: string
   containerStyle: { top: string; height: string }
   rowStyles: RowStyles
+  /** `free` places each block from `elementStyles` instead of stacking rows. */
+  layoutMode?: CoverLayoutMode
+  /** Centre-anchored box per block, resolved by useCoverStageLayout. */
+  elementStyles?: Record<CoverElementId, Record<string, string>>
   getMediaUrl: (url: string) => string
   displayLiquidGlass?: boolean
   guestTitleFrameLeft?: string | null
@@ -229,7 +242,26 @@ const props = withDefaults(defineProps<Props>(), {
   displayLiquidGlass: true,
   guestNameMaxWidthPercent: 60,
   showCoverHeaderText: true,
+  layoutMode: 'rows',
 })
+
+const isFree = computed(() => props.layoutMode === 'free' && !!props.elementStyles)
+
+// One extra class, applied to all four blocks, carrying the absolute
+// centre-anchored positioning that free mode needs. Empty in rows mode so the
+// flex-column stacking is untouched.
+const blockClass = computed(() => (isFree.value ? 'cover-free-block' : ''))
+
+const ROW_STYLE_KEYS: Record<CoverElementId, keyof RowStyles> = {
+  header: 'eventTitle',
+  logo: 'logo',
+  invite: 'inviteText',
+  guest: 'guestName',
+}
+
+/** Wrapper geometry for one block, in whichever model is active. */
+const blockStyle = (id: CoverElementId): Record<string, string> =>
+  isFree.value ? props.elementStyles![id] : props.rowStyles[ROW_STYLE_KEYS[id]]
 
 // Render the merged logo row as a stack whenever it can carry the
 // sample_logo_2 overlay (or always when the cover header row is hidden,
@@ -374,10 +406,16 @@ const getTextContent = (textType: string, fallback = ''): string => {
   return fallback
 }
 
-// Cover header from event texts
-const coverHeader = computed(
-  () => props.eventTexts?.find((text) => text.text_type === 'cover_header')?.content,
-)
+// Cover header from event texts.
+//
+// The language filter is load-bearing. On a first load the showcase response
+// only carries the requested language's texts, so an unfiltered `find` happened
+// to be right — but a language switch MERGES the new language's texts over the
+// old ones (see updateLanguageContent), leaving every language in this array at
+// once, previous languages first. Without the filter the header then locks onto
+// whichever language was loaded first and lags a switch behind the invite text
+// below, which has always filtered.
+const coverHeader = computed(() => getTextContent('cover_header'))
 
 // Display title (cover header or event title)
 const displayTitle = computed(() => coverHeader.value || props.eventTitle)
@@ -385,17 +423,23 @@ const displayTitle = computed(() => coverHeader.value || props.eventTitle)
 // Invite text
 const displayInviteText = computed(() => getTextContent('invite_text', "You're Invited"))
 
-// Header text style
+// Header / invite text styles.
+//
+// `--cover-block-font` and `--cover-block-color` are set on the block's own
+// wrapper by coverElementStyle, but ONLY when that block picked a font or
+// colour slot in free placement. Writing each rule as `var(<slot>, <the value
+// this block has always used>)` is what makes the feature additive: rows mode
+// and every free block that didn't opt in never define the variable, so the
+// fallback — the original expression, unchanged — is what renders.
 const headerTextStyle = computed(() => ({
-  fontFamily: props.primaryFont || props.currentFont,
-  color: props.primaryColor,
+  fontFamily: `var(--cover-block-font, ${props.primaryFont || props.currentFont})`,
+  color: `var(--cover-block-color, ${props.primaryColor})`,
   whiteSpace: 'pre-line' as const,
 }))
 
-// Invite text style
 const inviteTextStyle = computed(() => ({
-  color: props.primaryColor || props.secondaryColor || 'rgba(255, 255, 255, 0.9)',
-  fontFamily: props.secondaryFont || props.currentFont,
+  color: `var(--cover-block-color, ${props.primaryColor || props.secondaryColor || 'rgba(255, 255, 255, 0.9)'})`,
+  fontFamily: `var(--cover-block-font, ${props.secondaryFont || props.currentFont})`,
   textShadow: 'none',
 }))
 
@@ -410,10 +454,15 @@ const fallbackLogoStyle = computed(() => ({
   filter: `drop-shadow(0 4px 20px ${props.primaryColor}40)`,
 }))
 
-// Compute pixel cap on guest name width from container width × configured percent
+// Compute pixel cap on guest name width from container width × configured percent.
+// In free mode the row IS the guest box — its width was already set by dragging
+// the block's own handles, so capping it a second time by
+// guestNameMaxWidthPercent would apply the same constraint twice.
 const updateGuestNameMaxWidth = () => {
   if (!guestContainerRef.value) return
-  const percent = Math.max(1, Math.min(100, props.guestNameMaxWidthPercent ?? 60))
+  const percent = isFree.value
+    ? 100
+    : Math.max(1, Math.min(100, props.guestNameMaxWidthPercent ?? 60))
   guestNameMaxWidthPx.value = guestContainerRef.value.offsetWidth * (percent / 100)
 }
 
@@ -436,7 +485,7 @@ onUnmounted(() => {
 })
 
 // Re-compute max-width when the configured percent changes
-watch(() => props.guestNameMaxWidthPercent, () => {
+watch(() => [props.guestNameMaxWidthPercent, isFree.value], () => {
   nextTick(updateGuestNameMaxWidth)
 })
 </script>
@@ -444,6 +493,48 @@ watch(() => props.guestNameMaxWidthPercent, () => {
 <style scoped>
 /* Import shared cover stage styles */
 @import '../cover-stage-styles.css';
+
+/* ---------------------------------------------------------------------------
+   Free placement. Each block becomes its own rectangle on the stage;
+   left/top/width/height come from cover_stage_layout.coverElements via the
+   inline style, so a template's numbers never have to encode "minus half my
+   own size" (see coverElementStyle).
+
+   `position: absolute; inset: 0` is spelled out here rather than left to the
+   `absolute inset-0` utility classes on the element: the imported
+   `.inner-container-rows` rule above sets `position: relative`, and inside a
+   scoped stylesheet that carries the scope attribute — which outranks a
+   single-class Tailwind utility. Left relative, the container stayed a
+   shrink-to-fit flex item of the centring wrapper, every child's percentage
+   width resolved against a column barely one glyph wide, and the whole cover
+   collapsed into a vertical string of characters.
+
+   Scoped to `.is-free` so the rows model can't be affected by an edit here. */
+.inner-container-rows.is-free {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+/* left/top already carry the centre-to-corner offset (see coverElementStyle) —
+   deliberately NOT a translate, which the fade-in keyframes would overwrite. */
+.inner-container-rows.is-free .cover-free-block {
+  position: absolute;
+}
+
+/* The row model set this inline alongside the row height; free mode replaces
+   that inline `position` with `absolute`, so rows mode needs it declared. */
+.inner-container-rows:not(.is-free) .content-row-guest {
+  position: relative;
+}
+
+/* GuestNameFrame keeps itself to 70% of the row it's centred in — sensible for
+   a full-bleed row, wrong for a block whose width was set by dragging its own
+   handles. Handed over as a variable (which inherits into the child component)
+   rather than a cross-component selector. */
+.inner-container-rows.is-free .content-row-guest {
+  --guest-frame-max-width: 100%;
+}
 
 /* Fallback Logo Styles */
 .fallback-logo-container {

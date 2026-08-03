@@ -76,6 +76,93 @@ export interface TemplateAssets {
 }
 
 /**
+ * The four cover-stage blocks a template can place freely.
+ *
+ * Deliberately NOT the swipe arrow: that one is navigation chrome with a fixed
+ * pixel size and its own responsive rules, and `swipeArrowBottom` already
+ * positions it in both layout modes.
+ */
+export type CoverElementId = 'header' | 'logo' | 'invite' | 'guest'
+
+/**
+ * Where one cover block's text takes its colour from.
+ *
+ * Named palette slots rather than a bare hex, for the same reason `fontType`
+ * names a font slot: the template's `template_colors` are the single source of
+ * the palette, so recolouring a template keeps propagating to every block that
+ * didn't deliberately opt out. `custom` + `customColor` is the escape hatch —
+ * the same pair `FallingEffectConfig` / `AmbientCreaturesConfig` already use.
+ */
+export type CoverElementColorSource =
+  | 'primary'
+  | 'secondary'
+  | 'accent'
+  | 'guestname'
+  | 'custom'
+
+/**
+ * One block's placement on the cover stage, in stage-relative percentages.
+ *
+ * The anchor is the block's CENTRE, not its top-left corner: the cover is a
+ * centred composition, so a centre anchor keeps a block optically in place when
+ * its width or height changes, and makes "put this on the middle axis" the
+ * single value `x: 50` rather than a width-dependent calculation.
+ *
+ * Percentages (not px, not vh+vw mixed) because the cover stage always fills the
+ * viewport: `x`/`width` are % of stage width, `y`/`height` are % of stage height
+ * — the latter being numerically identical to vh, which is what the row model
+ * already used.
+ */
+export interface CoverElementBox {
+  /** Centre X as % of the cover stage width. 0 = left edge, 50 = middle. */
+  x: number
+  /** Centre Y as % of the cover stage height (equivalently, vh). */
+  y: number
+  /** Box width as % of the cover stage width. */
+  width: number
+  /** Box height as % of the cover stage height. */
+  height: number
+  /**
+   * Multiplier on the block's own responsive font size. 1 (the default) is
+   * exactly what the row model rendered, so an unset value never changes a
+   * template's look. Ignored by `logo`, which has no text — that block's size
+   * is its box.
+   */
+  fontScale?: number
+  /**
+   * Which of the template's font slots this block renders in.
+   *
+   * A slot name, never a font family string: `template_fonts` declares fonts
+   * PER LANGUAGE (language + font_type), so a baked-in family would freeze the
+   * cover to one script and the showcase's language switch would stop changing
+   * the type. Naming the slot lets the existing per-language resolution in
+   * useTemplateProcessor keep doing its job.
+   *
+   * Unset means "whatever this block used before free placement existed" —
+   * primary for the header and guest name, secondary for the invite line.
+   */
+  fontType?: TemplateFontType
+  /** Which palette slot the block's text colour comes from. Unset = unchanged. */
+  colorSource?: CoverElementColorSource
+  /** Hex colour, read only when `colorSource` is `custom`. */
+  customColor?: string | null
+}
+
+/** Placement per block. Partial: any missing block falls back to the row model. */
+export type CoverElementBoxes = Partial<Record<CoverElementId, CoverElementBox>>
+
+/**
+ * How the cover blocks are positioned.
+ *
+ * - `rows` — the original stacked model: one absolutely-positioned container
+ *   (`contentTopPosition` + `innerContainerHeight`), inside which the four
+ *   blocks are flex rows with percentage heights.
+ * - `free` — each block is placed independently from `coverElements`. Blocks may
+ *   overlap, sit anywhere on the stage, and carry their own text scale.
+ */
+export type CoverLayoutMode = 'rows' | 'free'
+
+/**
  * Cover stage layout configuration
  * All values are optional with sensible defaults applied in components
  */
@@ -129,6 +216,18 @@ export interface CoverStageLayout {
   // Main-content liquid glass card width. 'wide' grows the card toward the
   // viewport edges and shrinks its inner horizontal padding for more content width.
   contentWidth?: 'standard' | 'wide'  // default: 'standard'
+
+  // How the four cover blocks are placed. Omitted (or 'rows') keeps every
+  // existing template rendering exactly as before — the free model is opt-in.
+  layoutMode?: CoverLayoutMode        // default: 'rows'
+
+  // Free placement per block. Only read when layoutMode is 'free'; a block
+  // missing from here falls back to the box the row model would have given it,
+  // so a partially-authored free layout is still a complete one.
+  //
+  // Kept even while layoutMode is 'rows' so switching back and forth in the
+  // template editor doesn't discard hand-placed positions.
+  coverElements?: CoverElementBoxes
 }
 
 /**
@@ -145,6 +244,16 @@ export interface CoverStageLayout {
 export type EventDetailsDesignType = 'panel' | 'calendar'
 
 /**
+ * Where the calendar design's event-day marker (the hand-drawn heart around the
+ * date, and the matching tint on the day number) takes its colour from.
+ *
+ * Mirrors `FallingEffectConfig.color_source`. Defaults to `accent` so the marker
+ * follows the template's own highlight colour instead of a fixed red that can
+ * disappear against a red background.
+ */
+export type EventDetailsMarkerColorSource = 'accent' | 'primary' | 'secondary' | 'custom'
+
+/**
  * Configuration for the event date + location block on the showcase.
  *
  * Mirrors the `FallingEffectConfig` pattern: a small JSON object sent inside
@@ -154,6 +263,13 @@ export type EventDetailsDesignType = 'panel' | 'calendar'
 export interface EventDetailsDesignConfig {
   /** Which date/location layout to render. Defaults to `panel`. */
   type: EventDetailsDesignType
+  /**
+   * Colour slot for the calendar design's event-day marker. Ignored by the
+   * `panel` design. Defaults to `accent`.
+   */
+  marker_color_source?: EventDetailsMarkerColorSource
+  /** Hex colour, read only when `marker_color_source` is `custom`. */
+  marker_custom_color?: string | null
 }
 
 /**
@@ -335,31 +451,39 @@ export interface PartnerTemplate {
   updated_at: string
 }
 
+/**
+ * A file field on the way to the server. `File` uploads, `''` deletes whatever
+ * is stored, and omitting the key leaves the stored file alone — the three
+ * states the template editor needs to distinguish (see TEMPLATE_FILE_FIELDS in
+ * templates.service.ts).
+ */
+type TemplateFileUpload = File | ''
+
 export interface PartnerTemplateCreatePayload {
   name: string
   package_plan_id?: number | null
-  preview_image?: File
+  preview_image?: TemplateFileUpload
   youtube_preview_url?: string
-  basic_background_photo?: File
-  basic_decoration_photo?: File
-  top_decoration?: File
-  bottom_decoration?: File
-  left_decoration?: File
-  right_decoration?: File
-  cover_top_decoration?: File
-  cover_bottom_decoration?: File
-  cover_left_decoration?: File
-  cover_right_decoration?: File
-  guest_title_frame_left?: File
-  guest_title_frame_mid?: File
-  guest_title_frame_right?: File
-  standard_cover_video?: File
-  standard_background_video?: File
-  sample_logo_1?: File
-  sample_logo_2?: File
-  header_text_image?: File
+  basic_background_photo?: TemplateFileUpload
+  basic_decoration_photo?: TemplateFileUpload
+  top_decoration?: TemplateFileUpload
+  bottom_decoration?: TemplateFileUpload
+  left_decoration?: TemplateFileUpload
+  right_decoration?: TemplateFileUpload
+  cover_top_decoration?: TemplateFileUpload
+  cover_bottom_decoration?: TemplateFileUpload
+  cover_left_decoration?: TemplateFileUpload
+  cover_right_decoration?: TemplateFileUpload
+  guest_title_frame_left?: TemplateFileUpload
+  guest_title_frame_mid?: TemplateFileUpload
+  guest_title_frame_right?: TemplateFileUpload
+  standard_cover_video?: TemplateFileUpload
+  standard_background_video?: TemplateFileUpload
+  sample_logo_1?: TemplateFileUpload
+  sample_logo_2?: TemplateFileUpload
+  header_text_image?: TemplateFileUpload
   display_liquid_glass_background?: boolean
-  open_envelope_button?: File
+  open_envelope_button?: TemplateFileUpload
   cover_stage_layout?: CoverStageLayout
   /** Falling particle effect config. Pass `null` to disable the effect. */
   falling_effect?: FallingEffectConfig | null

@@ -17,13 +17,36 @@ const IMAGEKIT_MEDIA_PREFIX = 'https://ik.imagekit.io/goevent/media/'
 const IMAGEKIT_URL_PATTERN = /(https:\/\/ik\.imagekit\.io\/[^/]+)(\/.*)/
 
 /**
+ * URLs that already resolve exactly as written and must never have an API base
+ * prefixed onto them: absolute http(s), plus the in-memory forms — `blob:`
+ * (URL.createObjectURL) and `data:` — that stand in for a file the user has
+ * picked but not uploaded yet.
+ *
+ * The blob/data cases are load-bearing for the live template preview, which
+ * previews unsaved uploads straight from object URLs (see
+ * partnerTemplateAssets.ts). Without this check a `blob:http://host/uuid`
+ * failed both `startsWith('http')` and `startsWith('/')` and came back as
+ * `http://api-host/media/blob:http://host/uuid` — a URL that 404s, which is why
+ * a just-uploaded background rendered as a broken image instead of the picture.
+ */
+export function isResolvedMediaUrl(url: string): boolean {
+  return (
+    url.startsWith('http://') ||
+    url.startsWith('https://') ||
+    url.startsWith('blob:') ||
+    url.startsWith('data:')
+  )
+}
+
+/**
  * Turn a media path from the API into an absolute URL. Absolute URLs (including
- * fallback images from other hosts) pass through untouched.
+ * fallback images from other hosts) and in-memory blob/data URLs pass through
+ * untouched.
  */
 export function resolveMediaUrl(path: string | null | undefined): string | undefined {
   if (!path) return undefined
 
-  if (path.startsWith('http://') || path.startsWith('https://')) {
+  if (isResolvedMediaUrl(path)) {
     return path
   }
 

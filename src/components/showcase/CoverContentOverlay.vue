@@ -1,6 +1,12 @@
 <template>
-  <!-- Wrapper for decorations and content -->
-  <div class="absolute inset-0">
+  <!-- Wrapper for decorations and content.
+       `slotVarStyle` publishes the template's four font families and four
+       palette entries as CSS variables here — the highest element that has all
+       of them and contains every cover block, including the two rendered inside
+       DoorPanel. Free-placed blocks reference these by name (see
+       coverElementStyle), which is what lets a partner point a block at a font
+       or colour slot without a prop being threaded down for it. -->
+  <div class="absolute inset-0" :style="slotVarStyle">
     <!-- DECORATION ANIMATION: Individual decoration images that slide out -->
     <CoverDecorations
       :left-url="coverLeftDecorationUrl"
@@ -15,6 +21,7 @@
     <!-- Ambient creature effect (butterflies hovering near decorations) — only when template has config -->
     <AmbientEffect
       v-if="ambientCreatures"
+      :key="ambientCreaturesKey"
       :config="ambientCreatures"
       :primary-color="primaryColor"
       :accent-color="accentColor"
@@ -52,6 +59,8 @@
         :current-language="currentLanguage"
         :container-style="containerStyle"
         :row-styles="rowStyles"
+        :layout-mode="layoutMode"
+        :element-styles="elementStyles"
         :get-media-url="getMediaUrl"
         :display-liquid-glass="displayLiquidGlass"
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
@@ -91,6 +100,8 @@
         :current-language="currentLanguage"
         :container-style="containerStyle"
         :row-styles="rowStyles"
+        :layout-mode="layoutMode"
+        :element-styles="elementStyles"
         :get-media-url="getMediaUrl"
         :display-liquid-glass="displayLiquidGlass"
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
@@ -146,6 +157,8 @@
         :current-language="currentLanguage"
         :container-style="containerStyle"
         :row-styles="rowStyles"
+        :layout-mode="layoutMode"
+        :element-styles="elementStyles"
         :get-media-url="getMediaUrl"
         :display-liquid-glass="displayLiquidGlass"
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
@@ -165,7 +178,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useOptimizedDecorations, useOptimizedBackgrounds } from '@/composables/showcase/useOptimizedDecorations'
-import { useCoverStageLayout } from '@/composables/showcase/useCoverStageLayout'
+import {
+  COVER_COLOR_SLOT_VARS,
+  COVER_FONT_SLOT_VARS,
+  useCoverStageLayout,
+} from '@/composables/showcase/useCoverStageLayout'
 import { useShowcaseAnimation, type ShowcaseAnimationType } from '@/composables/showcase/useShowcaseAnimation'
 import { useTouchGesture } from '@/composables/showcase/useTouchGesture'
 import type { CoverStageLayout, AmbientCreaturesConfig } from '@/services/api/types/template.types'
@@ -212,6 +229,9 @@ interface Props {
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
+  /** Only used to publish the font slot variables (see slotVarStyle). */
+  accentFont?: string
+  decorativeFont?: string
   eventTexts?: EventText[]
   currentLanguage?: string
   shouldShowButtonLoading: boolean
@@ -235,6 +255,28 @@ const emit = defineEmits<{
   openEnvelope: []
 }>()
 
+// AmbientEffect snapshots its config during setup exactly the way FallingEffect
+// does (useAmbientCreatures destructures its options into plain locals), so a
+// mounted instance can't see a changed creature list, count or speed. The `v-if`
+// only covers turning the effect on and off wholesale; everything else needs a
+// remount. Same rationale as MainContentStage's fallingEffectKey — no-op for
+// guests, required for the partner template studio's live preview. Colors stay
+// out of the key for the same reason: they resolve through a per-creature
+// callback that already picks up palette edits.
+const ambientCreaturesKey = computed(() => {
+  const config = props.ambientCreatures
+  if (!config) return 'none'
+  return [
+    config.creatures
+      .map((creature) => `${creature.type}:${creature.weight ?? 1}:${creature.min_size ?? ''}:${creature.max_size ?? ''}`)
+      .join(','),
+    config.count ?? 6,
+    config.speed ?? 'normal',
+    config.color_source ?? 'accent',
+    config.custom_color ?? '',
+  ].join('|')
+})
+
 // Optimized cover decoration image URLs
 const {
   leftDecorationUrl: coverLeftDecorationUrl,
@@ -253,12 +295,38 @@ const { optimizedDecorationPhotoUrl: doorBackgroundImageUrl } = useOptimizedBack
 const {
   containerStyle,
   rowStyles,
+  layoutMode,
+  elementStyles,
   decorationZIndexes,
   layout,
 } = useCoverStageLayout(
   computed(() => props.coverStageLayout),
   computed(() => props.contentTopPosition)
 )
+
+/**
+ * The template's font and colour slots, published as CSS variables for
+ * free-placed blocks to reference by name.
+ *
+ * Every entry falls back the way the showcase itself already falls back
+ * (accent → primary, decorative → accent, and so on), so a block pointed at a
+ * slot this template doesn't fill renders in something sensible rather than in
+ * the browser default.
+ */
+const slotVarStyle = computed<Record<string, string>>(() => {
+  const body = props.primaryFont || props.currentFont
+  const accentFont = props.accentFont || body
+  return {
+    [COVER_FONT_SLOT_VARS.primary]: body,
+    [COVER_FONT_SLOT_VARS.secondary]: props.secondaryFont || body,
+    [COVER_FONT_SLOT_VARS.accent]: accentFont,
+    [COVER_FONT_SLOT_VARS.decorative]: props.decorativeFont || accentFont,
+    [COVER_COLOR_SLOT_VARS.primary]: props.primaryColor,
+    [COVER_COLOR_SLOT_VARS.secondary]: props.secondaryColor || props.primaryColor,
+    [COVER_COLOR_SLOT_VARS.accent]: props.accentColor || props.primaryColor,
+    [COVER_COLOR_SLOT_VARS.guestname]: props.guestnameColor || props.primaryColor,
+  }
+})
 
 // Swipe arrow bottom position
 const swipeArrowBottom = computed(() => layout.value.swipeArrowBottom)

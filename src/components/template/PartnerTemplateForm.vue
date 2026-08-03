@@ -1,882 +1,1114 @@
 <template>
+  <!-- Desktop: the editor's identity and its commit actions take over the
+       modal's own header row rather than opening a second one under it.
+       Nothing else belongs there while you're editing, so there's no
+       competition for the space.
+
+       A root-level sibling of the slide transition below, not a child of it, so
+       that closing the editor pulls these out of the header at once. Nested
+       inside, they would outlive the close by the length of the leave
+       transition and briefly share the row with the Browse/Mine controls
+       reappearing behind them. -->
+  <Teleport v-if="isOpen && isDesktop && headerSlot" :to="headerSlot">
+      <button
+        type="button"
+        @click="emit('close')"
+        class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 active:scale-95 transition-all"
+        :aria-label="t('management.partnerTemplateForm.header.goBack')"
+      >
+        <ArrowLeft class="w-[18px] h-[18px]" />
+      </button>
+
+      <div class="min-w-0 flex-1">
+        <h3 class="text-base font-semibold tracking-tight text-slate-900 truncate leading-tight">
+          {{ isEditing ? t('management.partnerTemplateForm.header.edit') : t('management.partnerTemplateForm.header.create') }}
+        </h3>
+        <p class="text-xs text-slate-500 truncate leading-tight">
+          {{ form.name.trim() || t('management.partnerTemplateForm.header.untitled') }}
+        </p>
+      </div>
+
+      <!-- The blocking requirement reads next to the button it blocks, which
+           is where someone looks when that button won't work. -->
+      <p v-if="!canSave" class="flex items-center gap-1.5 text-xs text-amber-600 flex-shrink-0">
+        <AlertCircle class="w-3.5 h-3.5 flex-shrink-0" />
+        {{ t('management.partnerTemplateForm.footer.missingRequired') }}
+      </p>
+
+      <button
+        type="button"
+        @click="emit('close')"
+        class="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+      >
+        {{ t('management.partnerTemplateForm.footer.cancel') }}
+      </button>
+      <button
+        type="button"
+        @click="handleSave"
+        :disabled="saving || !canSave"
+        class="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white hover:from-[#27ae60] hover:to-[#1873cc] shadow-md shadow-sky-500/25 hover:shadow-sky-500/35 hover:-translate-y-px active:translate-y-0 disabled:opacity-60 disabled:shadow-none disabled:hover:translate-y-0 transition-all"
+      >
+        <Loader2 v-if="saving" class="w-4 h-4 animate-spin" />
+        {{ saving ? t('management.partnerTemplateForm.footer.saving') : (isEditing ? t('management.partnerTemplateForm.footer.saveChanges') : t('management.partnerTemplateForm.footer.createTemplate')) }}
+      </button>
+  </Teleport>
+
   <!-- Slide-over form panel -->
   <Transition name="slide">
-    <div v-if="isOpen" class="absolute inset-0 z-10 flex flex-col bg-white overflow-hidden">
-      <!-- Header -->
-      <div class="flex items-center gap-3 px-4 py-4 border-b border-slate-100 flex-shrink-0">
+    <!-- A three-column workspace: what to edit (rail), the editor, and the live
+         result. From `lg` that is the whole thing — one row, three columns,
+         with the header teleported into the modal's own bar above. Below `lg`
+         the same element stacks into header / rail / pane / footer rows, which
+         is why it is a grid rather than nested flex columns: one of the two
+         panes is `hidden` there and the rows still line up without a second
+         wrapper element. -->
+    <div
+      v-if="isOpen"
+      class="absolute inset-0 z-10 grid bg-slate-50 overflow-hidden grid-cols-1 grid-rows-[auto_auto_minmax(0,1fr)_auto] lg:grid-cols-[13rem_minmax(0,1fr)_minmax(20rem,24rem)] lg:grid-rows-[minmax(0,1fr)]"
+    >
+      <!-- Below `lg` the modal is a full-screen sheet with no room for a phone
+           frame beside the form, so the two swap places instead of sitting side
+           by side — and the header stays local, since the modal's own row has
+           no width to spare. -->
+      <div v-if="!isDesktop" class="col-span-full flex items-center gap-3 px-3 sm:px-4 py-3 bg-white border-b border-slate-200/70">
         <button
           type="button"
           @click="emit('close')"
-          class="w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 active:scale-95 transition-all"
+          class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 active:scale-95 transition-all"
           :aria-label="t('management.partnerTemplateForm.header.goBack')"
         >
           <ArrowLeft class="w-[18px] h-[18px]" />
         </button>
-        <h3 class="text-lg font-semibold tracking-tight text-slate-900">
+
+        <h3 class="min-w-0 flex-1 text-base font-semibold tracking-tight text-slate-900 truncate">
           {{ isEditing ? t('management.partnerTemplateForm.header.edit') : t('management.partnerTemplateForm.header.create') }}
         </h3>
+
+        <div
+          class="flex gap-0.5 p-1 bg-slate-100 rounded-full flex-shrink-0"
+          role="group"
+          :aria-label="t('management.partnerTemplateForm.header.paneSwitch')"
+        >
+          <button
+            v-for="pane in (['edit', 'preview'] as const)"
+            :key="pane"
+            type="button"
+            class="px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-300"
+            :class="mobilePane === pane ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md' : 'text-slate-600 hover:text-slate-800'"
+            @click="mobilePane = pane"
+          >
+            {{ t(`management.partnerTemplateForm.header.pane.${pane}`) }}
+          </button>
+        </div>
       </div>
 
-      <!-- Form Content (scrollable) -->
-      <div class="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
-        <!-- Error Banner -->
-        <div v-if="error" class="flex items-start gap-2 p-3 bg-red-50 ring-1 ring-red-200 rounded-xl text-sm text-red-700">
-          <AlertCircle class="w-4 h-4 flex-shrink-0 mt-0.5" />
-          <span>{{ error }}</span>
+      <!-- Section rail. One vertical list from `lg`; a horizontally scrolling
+           chip strip below that, where it stays visible in BOTH mobile panes —
+           in preview mode the chips are the stage switcher, since picking a
+           section is what drives which stage the frame shows. -->
+      <nav
+        class="lg:row-start-1 lg:col-start-1 bg-white lg:border-r border-b lg:border-b-0 border-slate-200/70 lg:overflow-y-auto custom-scrollbar"
+        :aria-label="t('management.partnerTemplateForm.sections.navLabel')"
+      >
+        <div class="flex lg:flex-col gap-1 p-2 lg:p-3 overflow-x-auto lg:overflow-x-visible scrollbar-hide">
+          <button
+            v-for="section in sections"
+            :key="section.id"
+            type="button"
+            :aria-current="activeSection === section.id ? 'true' : undefined"
+            class="group flex-shrink-0 lg:w-full flex items-center gap-2 lg:gap-2.5 px-3 py-2 rounded-xl text-left transition-all duration-200"
+            :class="
+              activeSection === section.id
+                ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 ring-1 ring-sky-200/80 text-slate-900'
+                : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
+            "
+            @click="selectSection(section.id)"
+          >
+            <component
+              :is="section.icon"
+              class="w-4 h-4 flex-shrink-0 transition-colors"
+              :class="activeSection === section.id ? 'text-[#1e90ff]' : 'text-slate-400 group-hover:text-slate-500'"
+            />
+            <span class="text-[13px] font-medium whitespace-nowrap lg:truncate">{{ section.label }}</span>
+            <span
+              v-if="section.badge"
+              class="ml-auto flex-shrink-0 min-w-[1.25rem] px-1.5 py-0.5 rounded-full text-[10px] font-semibold text-center"
+              :class="section.badgeWarn ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500 group-hover:bg-white'"
+            >{{ section.badge }}</span>
+          </button>
         </div>
+      </nav>
 
-        <!-- Two-column layout for basic info and preview -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <!-- Left column: Form fields (2/3 width) -->
-          <div class="space-y-4 lg:col-span-2">
-            <!-- Template Name -->
-            <div class="space-y-1.5">
-              <label class="block text-sm font-medium text-slate-700">
-                {{ t('management.partnerTemplateForm.fields.nameLabel') }} <span class="text-red-500">*</span>
-              </label>
-              <input
-                v-model="form.name"
-                type="text"
-                :placeholder="t('management.partnerTemplateForm.fields.namePlaceholder')"
-                maxlength="100"
-                class="w-full px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
-              />
+      <!-- Editor pane: one section at a time, so nine stacked accordions no
+           longer bury the option someone is actually looking for. -->
+      <div
+        class="lg:row-start-1 lg:col-start-2 overflow-y-auto custom-scrollbar"
+        :class="{ 'hidden lg:block': mobilePane === 'preview' }"
+      >
+        <div class="p-4 sm:p-5 space-y-5 max-w-3xl">
+          <!-- Error Banner -->
+          <div v-if="error" class="flex items-start gap-2 p-3 bg-red-50 ring-1 ring-red-200 rounded-xl text-sm text-red-700">
+            <AlertCircle class="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <span>{{ error }}</span>
+          </div>
+
+          <!-- Section heading -->
+          <div>
+            <h4 class="text-sm font-semibold text-slate-900">{{ activeSectionMeta.label }}</h4>
+            <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">{{ activeSectionMeta.description }}</p>
+          </div>
+
+          <!-- ============================ BASICS ============================ -->
+          <template v-if="activeSection === 'basics'">
+            <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_11rem] gap-5">
+              <div class="space-y-4">
+                <div class="space-y-1.5">
+                  <label :for="nameFieldId" class="block text-xs font-medium text-slate-600">
+                    {{ t('management.partnerTemplateForm.fields.nameLabel') }} <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    :id="nameFieldId"
+                    v-model="form.name"
+                    type="text"
+                    :placeholder="t('management.partnerTemplateForm.fields.namePlaceholder')"
+                    maxlength="100"
+                    class="w-full px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                  />
+                </div>
+
+                <div class="space-y-1.5">
+                  <label :for="previewUrlFieldId" class="block text-xs font-medium text-slate-600">
+                    {{ t('management.partnerTemplateForm.fields.previewUrlLabel') }}
+                  </label>
+                  <input
+                    :id="previewUrlFieldId"
+                    v-model="form.youtube_preview_url"
+                    type="url"
+                    placeholder="https://goevent.online/g/dPmdHn?lang=kh"
+                    class="w-full px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                  />
+                  <p class="text-[11px] leading-snug text-slate-400">{{ t('management.partnerTemplateForm.fields.previewUrlHint') }}</p>
+                </div>
+              </div>
+
+              <!-- Gallery thumbnail. Sits here, in Basics, rather than beside the
+                   live preview where two different "previews" competed for the
+                   same corner of the screen. -->
+              <div class="space-y-1.5">
+                <label class="block text-xs font-medium text-slate-600">
+                  {{ t('management.partnerTemplateForm.fields.previewImageLabel') }}
+                </label>
+                <div
+                  class="relative border-2 border-dashed rounded-xl overflow-hidden transition-colors"
+                  :class="hasPreviewImage ? 'border-slate-200' : 'border-slate-200 bg-white hover:border-sky-400 hover:bg-sky-50/40'"
+                >
+                  <div v-if="hasPreviewImage" class="relative aspect-[9/16] overflow-hidden">
+                    <img
+                      :src="previewImagePreview || existingTemplate?.preview_image || ''"
+                      :alt="t('management.partnerTemplateForm.fields.previewImageLabel')"
+                      class="w-full h-full object-cover"
+                    />
+                    <div class="absolute inset-0 bg-slate-950/25 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <label class="cursor-pointer px-2.5 py-1.5 bg-white/95 rounded-lg text-[11px] font-medium text-slate-700 shadow-sm">
+                        {{ t('management.partnerTemplateForm.fields.previewImageChange') }}
+                        <input type="file" accept="image/*" class="sr-only" @change="handleFileChange('preview_image', $event)" />
+                      </label>
+                      <button
+                        type="button"
+                        class="p-1.5 bg-white/95 rounded-lg text-slate-500 hover:text-red-600 shadow-sm transition-colors"
+                        :aria-label="t('management.partnerTemplateForm.fileField.remove')"
+                        :title="t('management.partnerTemplateForm.fileField.remove')"
+                        @click="clearAssetField('preview_image')"
+                      >
+                        <X class="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  <label v-else class="flex flex-col items-center justify-center aspect-[9/16] cursor-pointer">
+                    <Upload class="w-6 h-6 text-slate-400 mb-1.5" />
+                    <span class="text-xs font-medium text-slate-500 text-center px-2">{{ t('management.partnerTemplateForm.fields.previewImageUpload') }}</span>
+                    <span class="text-[10px] text-slate-400 mt-0.5 text-center">{{ t('management.partnerTemplateForm.fields.previewImageAspect') }}</span>
+                    <input type="file" accept="image/*" class="sr-only" @change="handleFileChange('preview_image', $event)" />
+                  </label>
+                </div>
+              </div>
             </div>
 
-            <!-- Package Plan Selection -->
-            <div class="space-y-1.5">
-              <label class="block text-sm font-medium text-slate-700">
+            <!-- Package plan. The single most consequential field in the form —
+                 it decides which asset slots even exist — so it gets cards with
+                 their prices rather than one collapsed <select> row. -->
+            <section class="space-y-2">
+              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 {{ t('management.partnerTemplateForm.fields.planLabel') }} <span class="text-red-500">*</span>
-              </label>
-              <select
-                v-model="form.package_plan_id"
-                class="w-full px-3 py-2 pr-8 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m4%206%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat"
-                :disabled="plansLoading"
-              >
-                <option :value="null" disabled>
-                  {{ plansLoading ? t('management.partnerTemplateForm.fields.planLoading') : t('management.partnerTemplateForm.fields.planSelect') }}
-                </option>
-                <option
+              </h5>
+              <div v-if="plansLoading" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div v-for="n in 2" :key="n" class="h-16 rounded-xl bg-slate-200 animate-pulse" />
+              </div>
+              <p v-else-if="availablePlans.length === 0" class="text-xs text-slate-500 p-3 bg-white ring-1 ring-slate-200 rounded-xl">
+                {{ t('management.partnerTemplateForm.fields.planEmpty') }}
+              </p>
+              <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-2" role="radiogroup" :aria-label="t('management.partnerTemplateForm.fields.planLabel')">
+                <button
                   v-for="plan in availablePlans"
                   :key="plan.id"
-                  :value="plan.id"
+                  type="button"
+                  role="radio"
+                  :aria-checked="form.package_plan_id === plan.id"
+                  class="flex items-start gap-2.5 p-3 rounded-xl text-left ring-1 transition-all duration-200"
+                  :class="
+                    form.package_plan_id === plan.id
+                      ? 'bg-gradient-to-br from-[#2ecc71]/10 to-[#1e90ff]/10 ring-sky-300 shadow-sm'
+                      : 'bg-white ring-slate-200 hover:ring-slate-300 hover:bg-slate-50'
+                  "
+                  @click="form.package_plan_id = plan.id"
                 >
-                  {{ plan.category ? `${plan.category.name} - ` : '' }}{{ plan.name }} — ${{ plan.price }}
-                </option>
-              </select>
-            </div>
-
-            <!-- Preview URL -->
-            <div class="space-y-1.5">
-              <label class="block text-sm font-medium text-slate-700">{{ t('management.partnerTemplateForm.fields.previewUrlLabel') }}</label>
-              <input
-                v-model="form.youtube_preview_url"
-                type="url"
-                placeholder="https://goevent.online/g/dPmdHn?lang=kh"
-                class="w-full px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
-              />
-            </div>
-
-            <!-- Template Colors -->
-            <details :open="detailsOpenState.colors" @toggle="(e) => detailsOpenState.colors = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
-              <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
-                <span>{{ t('management.partnerTemplateForm.colors.sectionTitle') }} ({{ pendingColors.length }})</span>
-                <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
-              </summary>
-              <div class="p-4 space-y-3 border-t border-slate-100">
-                <!-- Existing/Pending colors list -->
-                <div v-for="(color, index) in pendingColors" :key="isEditing ? (color as EventTemplateColor).id : index" class="flex items-center gap-2 py-1.5">
-                  <span
-                    class="w-6 h-6 rounded-full border border-slate-200 flex-shrink-0"
-                    :style="{ backgroundColor: color.hex_color_code }"
+                  <component
+                    :is="isPlanStandard(plan) ? Crown : Sparkles"
+                    class="w-4 h-4 mt-0.5 flex-shrink-0"
+                    :class="form.package_plan_id === plan.id ? 'text-[#1e90ff]' : 'text-slate-400'"
                   />
-                  <span class="text-sm text-slate-700 flex-1 truncate">
-                    {{ color.name }} <span class="text-slate-400">({{ color.hex_color_code }})</span>
+                  <span class="min-w-0 flex-1">
+                    <span v-if="plan.category" class="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 truncate">
+                      {{ plan.category.name }}
+                    </span>
+                    <span class="block text-[13px] font-medium text-slate-800 truncate">{{ plan.name }}</span>
+                    <span class="block text-[11px] text-slate-500">${{ plan.price }}</span>
+                  </span>
+                  <Check v-if="form.package_plan_id === plan.id" class="w-4 h-4 flex-shrink-0 text-[#1e90ff]" />
+                </button>
+              </div>
+            </section>
+          </template>
+
+          <!-- ======================= COLORS & FONTS ======================== -->
+          <template v-else-if="activeSection === 'brand'">
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
+              <div class="flex items-center justify-between gap-2">
+                <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  {{ t('management.partnerTemplateForm.colors.sectionTitle') }}
+                </h5>
+                <span class="text-[11px] text-slate-400">{{ pendingColors.length }}</span>
+              </div>
+
+              <p v-if="pendingColors.length === 0" class="text-xs text-slate-400">
+                {{ t('management.partnerTemplateForm.colors.empty') }}
+              </p>
+              <ul v-else class="divide-y divide-slate-100 -mx-1">
+                <li
+                  v-for="(color, index) in pendingColors"
+                  :key="isEditing ? (color as EventTemplateColor).id : index"
+                  class="flex items-center gap-2.5 px-1 py-2"
+                >
+                  <span
+                    class="w-7 h-7 rounded-lg ring-1 ring-slate-200 flex-shrink-0"
+                    :style="{ backgroundColor: color.hex_color_code }"
+                    aria-hidden="true"
+                  />
+                  <span class="min-w-0 flex-1">
+                    <span class="block text-[13px] font-medium text-slate-700 truncate">{{ color.name }}</span>
+                    <span class="block text-[11px] text-slate-400 uppercase tabular-nums">{{ color.hex_color_code }}</span>
                   </span>
                   <button
                     v-if="isEditing"
                     type="button"
                     @click="startEditColor(color as EventTemplateColor)"
-                    class="text-xs font-medium text-sky-600 px-2 py-1 rounded-md hover:bg-sky-50 transition-colors"
+                    class="p-1.5 rounded-lg text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 transition-colors"
+                    :aria-label="t('management.partnerTemplateForm.colors.editBtn')"
                   >
-                    {{ t('management.partnerTemplateForm.colors.editBtn') }}
+                    <Pencil class="w-3.5 h-3.5" />
                   </button>
                   <button
                     type="button"
                     @click="isEditing ? handleDeleteColor((color as EventTemplateColor).id) : removePendingColor(index)"
-                    class="text-xs font-medium text-red-500 px-2 py-1 rounded-md hover:bg-red-50 transition-colors"
+                    class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    :aria-label="t('management.partnerTemplateForm.colors.deleteBtn')"
                   >
-                    {{ t('management.partnerTemplateForm.colors.deleteBtn') }}
+                    <Trash2 class="w-3.5 h-3.5" />
                   </button>
+                </li>
+              </ul>
+
+              <!-- Add / edit color. The name field gets its own row: it's the
+                   wiring (the showcase looks colors up BY NAME, see
+                   templateSlots.ts) and its suggestion list expands in flow. -->
+              <div class="pt-3 border-t border-slate-100 space-y-2">
+                <div class="space-y-1">
+                  <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.colors.nameLabel') }}</label>
+                  <TemplateSlotField
+                    v-model="colorForm.name"
+                    :options="TEMPLATE_COLOR_SLOTS"
+                    :used-values="definedColorNames"
+                    allow-custom
+                    :maxlength="50"
+                    :placeholder="t('management.partnerTemplateForm.colors.namePlaceholder')"
+                  />
                 </div>
-                <!-- Add / Edit color form -->
                 <div class="flex items-end gap-2">
-                  <div class="space-y-1">
-                    <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.colors.colorLabel') }}</label>
-                    <input
-                      v-model="colorForm.hex_color_code"
-                      type="color"
-                      class="w-10 h-[34px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors"
-                    />
-                  </div>
-                  <div class="space-y-1 flex-1">
-                    <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.colors.hexLabel') }}</label>
-                    <input
-                      v-model="colorForm.hex_color_code"
-                      type="text"
-                      maxlength="7"
-                      :placeholder="t('management.partnerTemplateForm.colors.hexPlaceholder')"
-                      class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
-                    />
-                  </div>
-                  <div class="space-y-1 flex-1">
-                    <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.colors.nameLabel') }}</label>
-                    <input
-                      v-model="colorForm.name"
-                      type="text"
-                      maxlength="50"
-                      :placeholder="t('management.partnerTemplateForm.colors.namePlaceholder')"
-                      class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
-                    />
-                  </div>
+                  <input
+                    v-model="colorForm.hex_color_code"
+                    type="color"
+                    class="w-10 h-[38px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
+                    :aria-label="t('management.partnerTemplateForm.colors.colorLabel')"
+                  />
+                  <input
+                    v-model="colorForm.hex_color_code"
+                    type="text"
+                    maxlength="7"
+                    :placeholder="t('management.partnerTemplateForm.colors.hexPlaceholder')"
+                    :aria-label="t('management.partnerTemplateForm.colors.hexLabel')"
+                    class="flex-1 min-w-0 px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm uppercase tabular-nums transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                  />
                   <button
                     type="button"
                     @click="handleAddOrUpdateColor"
                     :disabled="colorSaving || !colorForm.hex_color_code || !colorForm.name"
-                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white shadow-sm shadow-sky-500/25 hover:bg-sky-600 disabled:opacity-50 disabled:shadow-none transition-all whitespace-nowrap"
+                    class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold bg-sky-500 text-white shadow-sm shadow-sky-500/25 hover:bg-sky-600 disabled:opacity-50 disabled:shadow-none transition-all whitespace-nowrap"
                   >
-                    <Loader2 v-if="colorSaving" class="w-3 h-3 animate-spin inline" />
+                    <Loader2 v-if="colorSaving" class="w-3.5 h-3.5 animate-spin" />
                     <template v-else>{{ editingColorId ? t('management.partnerTemplateForm.colors.updateBtn') : t('management.partnerTemplateForm.colors.addBtn') }}</template>
                   </button>
                   <button
                     v-if="editingColorId"
                     type="button"
                     @click="cancelEditColor"
-                    class="px-2 py-1.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
+                    class="px-2.5 py-2 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
                   >
                     {{ t('management.partnerTemplateForm.colors.cancelBtn') }}
                   </button>
                 </div>
               </div>
-            </details>
+            </section>
 
-            <!-- Template Fonts -->
-            <details :open="detailsOpenState.fonts" @toggle="(e) => detailsOpenState.fonts = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
-              <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
-                <span>{{ t('management.partnerTemplateForm.fonts.sectionTitle') }} ({{ pendingFonts.length }})</span>
-                <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
-              </summary>
-              <div class="p-4 space-y-3 border-t border-slate-100">
-                <!-- Existing/Pending fonts list -->
-                <div v-for="(f, index) in pendingFonts" :key="isEditing ? (f as EventTemplateLanguageFont).id : index" class="flex items-center gap-2 py-1.5">
-                  <span class="text-sm text-slate-700 flex-1 truncate">
-                    {{ getFontLanguageDisplay(f.language) }} &mdash; {{ getFontNameDisplay(isEditing ? (f as EventTemplateLanguageFont).font : f.font) }}
-                    <span class="text-slate-400">({{ getFontTypeDisplay(f.font_type) }})</span>
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
+              <div class="flex items-center justify-between gap-2">
+                <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  {{ t('management.partnerTemplateForm.fonts.sectionTitle') }}
+                </h5>
+                <span class="text-[11px] text-slate-400">{{ pendingFonts.length }}</span>
+              </div>
+
+              <p v-if="pendingFonts.length === 0" class="text-xs text-slate-400">
+                {{ t('management.partnerTemplateForm.fonts.empty') }}
+              </p>
+              <ul v-else class="divide-y divide-slate-100 -mx-1">
+                <li
+                  v-for="(f, index) in pendingFonts"
+                  :key="isEditing ? (f as EventTemplateLanguageFont).id : index"
+                  class="flex items-center gap-2.5 px-1 py-2"
+                >
+                  <span class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                    <Type class="w-3.5 h-3.5 text-slate-400" />
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block text-[13px] font-medium text-slate-700 truncate">
+                      {{ getFontNameDisplay(isEditing ? (f as EventTemplateLanguageFont).font : f.font) }}
+                    </span>
+                    <span class="block text-[11px] text-slate-400 truncate">
+                      {{ getFontLanguageDisplay(f.language) }} · {{ getFontTypeDisplay(f.font_type) }}
+                    </span>
                   </span>
                   <button
                     v-if="isEditing"
                     type="button"
                     @click="startEditFont(f as EventTemplateLanguageFont)"
-                    class="text-xs font-medium text-sky-600 px-2 py-1 rounded-md hover:bg-sky-50 transition-colors"
+                    class="p-1.5 rounded-lg text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 transition-colors"
+                    :aria-label="t('management.partnerTemplateForm.fonts.editBtn')"
                   >
-                    {{ t('management.partnerTemplateForm.fonts.editBtn') }}
+                    <Pencil class="w-3.5 h-3.5" />
                   </button>
                   <button
                     type="button"
                     @click="isEditing ? handleDeleteFont((f as EventTemplateLanguageFont).id) : removePendingFont(index)"
-                    class="text-xs font-medium text-red-500 px-2 py-1 rounded-md hover:bg-red-50 transition-colors"
+                    class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    :aria-label="t('management.partnerTemplateForm.fonts.deleteBtn')"
                   >
-                    {{ t('management.partnerTemplateForm.fonts.deleteBtn') }}
+                    <Trash2 class="w-3.5 h-3.5" />
                   </button>
+                </li>
+              </ul>
+
+              <div class="pt-3 border-t border-slate-100 space-y-2">
+                <div class="grid grid-cols-2 gap-2">
+                  <TemplateFormSelect
+                    v-model="fontLanguageModel"
+                    :label="t('management.partnerTemplateForm.fonts.languageLabel')"
+                    :options="languageOptions"
+                  />
+                  <TemplateFormSelect
+                    v-model="fontIdModel"
+                    :label="t('management.partnerTemplateForm.fonts.fontLabel')"
+                    :options="customFontOptions"
+                    :placeholder="availableCustomFonts.length ? t('management.partnerTemplateForm.fonts.fontSelect') : t('management.partnerTemplateForm.fonts.fontSelectLoading')"
+                  />
                 </div>
-                <!-- Add / Edit font form -->
-                <div class="flex items-end gap-2">
-                  <div class="space-y-1 flex-1">
-                    <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.fonts.languageLabel') }}</label>
-                    <select
-                      v-model="fontForm.language"
-                      :class="selectClass"
-                    >
-                      <option v-for="(label, code) in LANGUAGE_CODE_LABELS" :key="code" :value="code">
-                        {{ label }}
-                      </option>
-                    </select>
-                  </div>
-                  <div class="space-y-1 flex-1">
-                    <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.fonts.fontLabel') }}</label>
-                    <select
-                      v-model="fontForm.font"
-                      :class="selectClass"
-                    >
-                      <option :value="null" disabled>{{ availableCustomFonts.length ? t('management.partnerTemplateForm.fonts.fontSelect') : t('management.partnerTemplateForm.fonts.fontSelectLoading') }}</option>
-                      <option v-for="cf in availableCustomFonts" :key="cf.id" :value="cf.id">
-                        {{ cf.name }}
-                      </option>
-                    </select>
-                  </div>
-                  <div class="space-y-1 flex-1">
-                    <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.fonts.typeLabel') }}</label>
-                    <select
-                      v-model="fontForm.font_type"
-                      :class="selectClass"
-                    >
-                      <option v-for="(label, type) in FONT_TYPE_LABELS" :key="type" :value="type">
-                        {{ label }}
-                      </option>
-                    </select>
-                  </div>
+                <div class="space-y-1">
+                  <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.fonts.typeLabel') }}</label>
+                  <!-- Two of the four types are resolved but never rendered — the
+                       picker says so rather than letting a partner attach a font
+                       that silently does nothing. -->
+                  <TemplateSlotField
+                    v-model="fontTypeModel"
+                    :options="TEMPLATE_FONT_TYPE_SLOTS"
+                    :used-values="definedFontTypes"
+                  />
+                </div>
+                <div class="flex items-center gap-2">
                   <button
                     type="button"
                     @click="handleAddOrUpdateFont"
                     :disabled="fontSaving || !fontForm.font || !fontForm.language || !fontForm.font_type"
-                    class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-500 text-white shadow-sm shadow-sky-500/25 hover:bg-sky-600 disabled:opacity-50 disabled:shadow-none transition-all whitespace-nowrap"
+                    class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold bg-sky-500 text-white shadow-sm shadow-sky-500/25 hover:bg-sky-600 disabled:opacity-50 disabled:shadow-none transition-all"
                   >
-                    <Loader2 v-if="fontSaving" class="w-3 h-3 animate-spin inline" />
+                    <Loader2 v-if="fontSaving" class="w-3.5 h-3.5 animate-spin" />
                     <template v-else>{{ editingFontId ? t('management.partnerTemplateForm.fonts.updateBtn') : t('management.partnerTemplateForm.fonts.addBtn') }}</template>
                   </button>
                   <button
                     v-if="editingFontId"
                     type="button"
                     @click="cancelEditFont"
-                    class="px-2 py-1.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
+                    class="px-2.5 py-2 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
                   >
                     {{ t('management.partnerTemplateForm.fonts.cancelBtn') }}
                   </button>
                 </div>
               </div>
-            </details>
+            </section>
+          </template>
 
-            <!-- Liquid Glass Toggle -->
-            <button
-              type="button"
-              @click="form.display_liquid_glass_background = !form.display_liquid_glass_background"
-              role="switch"
-              :aria-checked="form.display_liquid_glass_background"
-              class="w-full flex items-center justify-between py-2 px-1 -mx-1 rounded-lg hover:bg-slate-50 transition-colors text-left"
-            >
-              <div>
-                <p class="text-sm font-medium text-slate-700">{{ t('management.partnerTemplateForm.fields.liquidGlass') }}</p>
-                <p class="text-xs text-slate-400">{{ t('management.partnerTemplateForm.fields.liquidGlassHint') }}</p>
-              </div>
-              <span
-                :class="[
-                  'relative w-10 h-6 rounded-full transition-colors flex-shrink-0',
-                  form.display_liquid_glass_background ? 'bg-sky-500' : 'bg-slate-300',
-                ]"
-                aria-hidden="true"
-              >
-                <span
-                  :class="[
-                    'absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform',
-                    form.display_liquid_glass_background ? 'left-5' : 'left-1',
-                  ]"
+          <!-- ==================== COVER STAGE & LAYOUT ===================== -->
+          <!-- Artwork first — what the cover is made of — then the geometry that
+               arranges it. They were two rail entries pointing at the same stage
+               and the same preview, so placing a block meant bouncing between
+               tabs to see which artwork it was moving. -->
+          <template v-else-if="activeSection === 'cover'">
+            <PlanRequiredNotice v-if="!form.package_plan_id" @pick="selectSection('basics')" />
+            <template v-else>
+              <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
+                <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  {{ t('management.partnerTemplateForm.coverDecorations.backdropGroup') }}
+                </h5>
+                <FileUploadField
+                  v-if="isBasicPlan"
+                  :label="t('management.partnerTemplateForm.coverDecorations.coverBackground')"
+                  accept="image/*"
+                  :file-name="form.basic_decoration_photo?.name"
+                  :has-existing-file="hasSavedAsset('basic_decoration_photo')"
+                  @change="handleFileChange('basic_decoration_photo', $event)"
+                  @clear="clearAssetField('basic_decoration_photo')"
                 />
-              </span>
-            </button>
-          </div>
-
-          <!-- Right column: Preview Image (1/3 width) -->
-          <div class="space-y-1.5 lg:col-span-1">
-            <label class="block text-sm font-medium text-slate-700">
-              {{ t('management.partnerTemplateForm.fields.previewImageLabel') }}
-            </label>
-            <div
-              class="relative border-2 border-dashed rounded-xl overflow-hidden transition-colors"
-              :class="previewImagePreview || existingTemplate?.preview_image ? 'border-slate-200' : 'border-slate-200 bg-slate-50/60 hover:border-sky-400 hover:bg-sky-50/40'"
-            >
-              <!-- Image preview -->
-              <div v-if="previewImagePreview || existingTemplate?.preview_image" class="relative aspect-[9/16] overflow-hidden">
-                <img
-                  :src="previewImagePreview || existingTemplate?.preview_image || ''"
-                  alt="Preview"
-                  class="w-full h-full object-cover"
+                <FileUploadField
+                  v-if="isStandardPlan"
+                  :label="t('management.partnerTemplateForm.coverDecorations.coverBackground')"
+                  accept="video/*"
+                  :file-name="form.standard_cover_video?.name"
+                  :has-existing-file="hasSavedAsset('standard_cover_video')"
+                  @change="handleFileChange('standard_cover_video', $event)"
+                  @clear="clearAssetField('standard_cover_video')"
                 />
-                <div class="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <label class="cursor-pointer px-2 py-1 bg-white/90 rounded text-[10px] font-medium text-slate-700">
-                    {{ t('management.partnerTemplateForm.fields.previewImageChange') }}
-                    <input type="file" accept="image/*" class="sr-only" @change="handleFileChange('preview_image', $event)" />
-                  </label>
+                <div v-if="isBasicPlan" class="grid grid-cols-2 gap-2.5">
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverTop')" accept="image/*" :file-name="form.cover_top_decoration?.name" :has-existing-file="hasSavedAsset('cover_top_decoration')" @change="handleFileChange('cover_top_decoration', $event)" @clear="clearAssetField('cover_top_decoration')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverBottom')" accept="image/*" :file-name="form.cover_bottom_decoration?.name" :has-existing-file="hasSavedAsset('cover_bottom_decoration')" @change="handleFileChange('cover_bottom_decoration', $event)" @clear="clearAssetField('cover_bottom_decoration')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverLeft')" accept="image/*" :file-name="form.cover_left_decoration?.name" :has-existing-file="hasSavedAsset('cover_left_decoration')" @change="handleFileChange('cover_left_decoration', $event)" @clear="clearAssetField('cover_left_decoration')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverRight')" accept="image/*" :file-name="form.cover_right_decoration?.name" :has-existing-file="hasSavedAsset('cover_right_decoration')" @change="handleFileChange('cover_right_decoration', $event)" @clear="clearAssetField('cover_right_decoration')" />
                 </div>
-              </div>
-              <!-- Upload placeholder -->
-              <label v-else class="flex flex-col items-center justify-center py-8 cursor-pointer">
-                <Upload class="w-6 h-6 text-slate-400 mb-1" />
-                <span class="text-xs font-medium text-slate-500 text-center">{{ t('management.partnerTemplateForm.fields.previewImageUpload') }}</span>
-                <span class="text-[10px] text-slate-400 mt-0.5 text-center">{{ t('management.partnerTemplateForm.fields.previewImageAspect') }}</span>
-                <input type="file" accept="image/*" class="sr-only" @change="handleFileChange('preview_image', $event)" />
-              </label>
-            </div>
-          </div>
-        </div>
+              </section>
 
-        <!-- Background Stage (collapsible) -->
-        <details v-if="form.package_plan_id" :open="detailsOpenState.backgroundStage" @toggle="(e) => detailsOpenState.backgroundStage = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
-          <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
-            <span>{{ t('management.partnerTemplateForm.backgroundStage.sectionTitle') }}</span>
-            <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
-          </summary>
-          <div class="p-4 space-y-3 border-t border-slate-100">
-            <!-- Basic: Background Photo -->
-            <FileUploadField
-              v-if="isBasicPlan"
-              :label="t('management.partnerTemplateForm.backgroundStage.backgroundPhoto')"
-              accept="image/*"
-              :file-name="form.basic_background_photo?.name"
-              :has-existing-file="!!existingTemplate?.basic_background_photo"
-              @change="handleFileChange('basic_background_photo', $event)"
-            />
-            <!-- Standard: Background Video -->
-            <FileUploadField
-              v-if="isStandardPlan"
-              :label="t('management.partnerTemplateForm.backgroundStage.backgroundVideo')"
-              accept="video/*"
-              :file-name="form.standard_background_video?.name"
-              :has-existing-file="!!existingTemplate?.standard_background_video"
-              @change="handleFileChange('standard_background_video', $event)"
-            />
-            <!-- Decorations (basic plan only) -->
-            <div v-if="isBasicPlan" class="grid grid-cols-2 gap-3">
-              <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.topDecoration')" accept="image/*" :file-name="form.top_decoration?.name" :has-existing-file="!!existingTemplate?.top_decoration" @change="handleFileChange('top_decoration', $event)" />
-              <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.bottomDecoration')" accept="image/*" :file-name="form.bottom_decoration?.name" :has-existing-file="!!existingTemplate?.bottom_decoration" @change="handleFileChange('bottom_decoration', $event)" />
-              <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.leftDecoration')" accept="image/*" :file-name="form.left_decoration?.name" :has-existing-file="!!existingTemplate?.left_decoration" @change="handleFileChange('left_decoration', $event)" />
-              <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.rightDecoration')" accept="image/*" :file-name="form.right_decoration?.name" :has-existing-file="!!existingTemplate?.right_decoration" @change="handleFileChange('right_decoration', $event)" />
-            </div>
-          </div>
-        </details>
-
-        <!-- Cover Stage Decorations (collapsible) -->
-        <details v-if="form.package_plan_id" :open="detailsOpenState.coverDecorations" @toggle="(e) => detailsOpenState.coverDecorations = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
-          <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
-            <span>{{ t('management.partnerTemplateForm.coverDecorations.sectionTitle') }}</span>
-            <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
-          </summary>
-          <div class="p-4 space-y-3 border-t border-slate-100">
-            <!-- Basic: Cover Background Photo -->
-            <FileUploadField
-              v-if="isBasicPlan"
-              :label="t('management.partnerTemplateForm.coverDecorations.coverBackground')"
-              accept="image/*"
-              :file-name="form.basic_decoration_photo?.name"
-              :has-existing-file="!!existingTemplate?.basic_decoration_photo"
-              @change="handleFileChange('basic_decoration_photo', $event)"
-            />
-            <!-- Standard: Cover Background Video -->
-            <FileUploadField
-              v-if="isStandardPlan"
-              :label="t('management.partnerTemplateForm.coverDecorations.coverBackground')"
-              accept="video/*"
-              :file-name="form.standard_cover_video?.name"
-              :has-existing-file="!!existingTemplate?.standard_cover_video"
-              @change="handleFileChange('standard_cover_video', $event)"
-            />
-            <div v-if="isBasicPlan" class="grid grid-cols-2 gap-3">
-              <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverTop')" accept="image/*" :file-name="form.cover_top_decoration?.name" :has-existing-file="!!existingTemplate?.cover_top_decoration" @change="handleFileChange('cover_top_decoration', $event)" />
-              <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverBottom')" accept="image/*" :file-name="form.cover_bottom_decoration?.name" :has-existing-file="!!existingTemplate?.cover_bottom_decoration" @change="handleFileChange('cover_bottom_decoration', $event)" />
-              <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverLeft')" accept="image/*" :file-name="form.cover_left_decoration?.name" :has-existing-file="!!existingTemplate?.cover_left_decoration" @change="handleFileChange('cover_left_decoration', $event)" />
-              <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverRight')" accept="image/*" :file-name="form.cover_right_decoration?.name" :has-existing-file="!!existingTemplate?.cover_right_decoration" @change="handleFileChange('cover_right_decoration', $event)" />
-            </div>
-            <div class="grid grid-cols-3 gap-3">
-              <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameLeft')" accept="image/*" :file-name="form.guest_title_frame_left?.name" :has-existing-file="!!existingTemplate?.guest_title_frame_left" @change="handleFileChange('guest_title_frame_left', $event)" />
-              <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameMid')" accept="image/*" :file-name="form.guest_title_frame_mid?.name" :has-existing-file="!!existingTemplate?.guest_title_frame_mid" @change="handleFileChange('guest_title_frame_mid', $event)" />
-              <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameRight')" accept="image/*" :file-name="form.guest_title_frame_right?.name" :has-existing-file="!!existingTemplate?.guest_title_frame_right" @change="handleFileChange('guest_title_frame_right', $event)" />
-            </div>
-            <div class="grid grid-cols-3 gap-3">
-              <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo1')" accept="image/png,image/svg+xml,image/*" :file-name="form.sample_logo_1?.name" :has-existing-file="!!existingTemplate?.sample_logo_1" @change="handleFileChange('sample_logo_1', $event)" />
-              <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo2')" accept="image/png,image/svg+xml,image/*" :file-name="form.sample_logo_2?.name" :has-existing-file="!!existingTemplate?.sample_logo_2" @change="handleFileChange('sample_logo_2', $event)" />
-              <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.headerTextImage')" accept="image/png,image/svg+xml,image/*" :file-name="form.header_text_image?.name" :has-existing-file="!!existingTemplate?.header_text_image" @change="handleFileChange('header_text_image', $event)" />
-            </div>
-          </div>
-        </details>
-
-        <!-- Cover Stage Layout (collapsible) -->
-        <details :open="detailsOpenState.coverLayout" @toggle="(e) => detailsOpenState.coverLayout = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
-          <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
-            <span>{{ t('management.partnerTemplateForm.coverLayout.sectionTitle') }}</span>
-            <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
-          </summary>
-          <div class="p-4 space-y-4 border-t border-slate-100">
-            <!-- Animation Type -->
-            <div class="space-y-1.5">
-              <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.coverLayout.animationType') }}</label>
-              <select
-                v-model="form.cover_stage_layout.showcaseAnimationType"
-                class="w-full px-3 py-2 pr-8 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m4%206%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat"
-              >
-                <option value="decoration">{{ t('management.partnerTemplateForm.coverLayout.animationDecoration') }}</option>
-                <option value="door">{{ t('management.partnerTemplateForm.coverLayout.animationDoor') }}</option>
-              </select>
-            </div>
-            <!-- Main Content Width -->
-            <div class="space-y-1.5">
-              <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.coverLayout.contentWidth') }}</label>
-              <select
-                v-model="form.cover_stage_layout.contentWidth"
-                class="w-full px-3 py-2 pr-8 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m4%206%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat"
-              >
-                <option value="standard">{{ t('management.partnerTemplateForm.coverLayout.contentWidthStandard') }}</option>
-                <option value="wide">{{ t('management.partnerTemplateForm.coverLayout.contentWidthWide') }}</option>
-              </select>
-            </div>
-            <!-- Container Positioning -->
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">{{ t('management.partnerTemplateForm.coverLayout.containerPositioning') }}</p>
-            <div class="grid grid-cols-2 gap-3">
-              <div class="space-y-1">
-                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.contentTop') }}</label>
-                <input v-model.number="form.cover_stage_layout.contentTopPosition" type="number" step="0.5" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-              </div>
-              <div class="space-y-1">
-                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.innerHeight') }}</label>
-                <input v-model.number="form.cover_stage_layout.innerContainerHeight" type="number" step="0.5" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-              </div>
-            </div>
-            <!-- Row Heights -->
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">{{ t('management.partnerTemplateForm.coverLayout.rowHeights') }}</p>
-            <div class="grid grid-cols-2 gap-3">
-              <div class="space-y-1">
-                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.eventTitle') }}</label>
-                <input v-model.number="form.cover_stage_layout.eventTitleHeight" type="number" step="0.25" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-              </div>
-              <div class="space-y-1">
-                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.logo') }}</label>
-                <input v-model.number="form.cover_stage_layout.logoHeight" type="number" step="0.25" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-              </div>
-              <div class="space-y-1">
-                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.inviteText') }}</label>
-                <input v-model.number="form.cover_stage_layout.inviteTextHeight" type="number" step="0.25" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-              </div>
-              <div class="space-y-1">
-                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.guestName') }}</label>
-                <input v-model.number="form.cover_stage_layout.guestNameHeight" type="number" step="0.25" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-              </div>
-            </div>
-            <!-- Guest Name Max Width -->
-            <div class="grid grid-cols-2 gap-3">
-              <div class="space-y-1">
-                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.guestNameMaxWidthPercent') }}</label>
-                <input v-model.number="form.cover_stage_layout.guestNameMaxWidthPercent" type="number" min="10" max="100" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-              </div>
-            </div>
-            <!-- Swipe Arrow -->
-            <div class="grid grid-cols-2 gap-3">
-              <div class="space-y-1">
-                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.swipeArrowBottom') }}</label>
-                <input v-model.number="form.cover_stage_layout.swipeArrowBottom" type="number" step="0.5" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-              </div>
-            </div>
-            <!-- Visibility Toggles -->
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">{{ t('management.partnerTemplateForm.coverLayout.visibilityToggles') }}</p>
-            <div class="space-y-1">
-              <button
-                type="button"
-                @click="form.cover_stage_layout.showWelcomeHeaderText = !form.cover_stage_layout.showWelcomeHeaderText"
-                role="switch"
-                :aria-checked="form.cover_stage_layout.showWelcomeHeaderText"
-                class="w-full flex items-center justify-between py-2 px-2 rounded-lg hover:bg-slate-50 transition-colors text-left"
-              >
-                <div class="min-w-0 pr-3">
-                  <p class="text-sm text-slate-700">{{ t('management.partnerTemplateForm.coverLayout.showWelcomeHeaderText') }}</p>
-                  <p class="text-xs text-slate-400">{{ t('management.partnerTemplateForm.coverLayout.showWelcomeHeaderTextHint') }}</p>
+              <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
+                <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  {{ t('management.partnerTemplateForm.coverDecorations.guestFrameGroup') }}
+                </h5>
+                <div class="grid grid-cols-3 gap-2.5">
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameLeft')" accept="image/*" :file-name="form.guest_title_frame_left?.name" :has-existing-file="hasSavedAsset('guest_title_frame_left')" @change="handleFileChange('guest_title_frame_left', $event)" @clear="clearAssetField('guest_title_frame_left')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameMid')" accept="image/*" :file-name="form.guest_title_frame_mid?.name" :has-existing-file="hasSavedAsset('guest_title_frame_mid')" @change="handleFileChange('guest_title_frame_mid', $event)" @clear="clearAssetField('guest_title_frame_mid')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameRight')" accept="image/*" :file-name="form.guest_title_frame_right?.name" :has-existing-file="hasSavedAsset('guest_title_frame_right')" @change="handleFileChange('guest_title_frame_right', $event)" @clear="clearAssetField('guest_title_frame_right')" />
                 </div>
-                <span
-                  :class="[
-                    'relative w-10 h-6 rounded-full transition-colors flex-shrink-0',
-                    form.cover_stage_layout.showWelcomeHeaderText ? 'bg-sky-500' : 'bg-slate-300',
-                  ]"
-                  aria-hidden="true"
-                >
-                  <span :class="['absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform', form.cover_stage_layout.showWelcomeHeaderText ? 'left-5' : 'left-1']" />
-                </span>
-              </button>
-              <button
-                type="button"
-                @click="form.cover_stage_layout.showCoverHeaderText = !form.cover_stage_layout.showCoverHeaderText"
-                role="switch"
-                :aria-checked="form.cover_stage_layout.showCoverHeaderText"
-                class="w-full flex items-center justify-between py-2 px-2 rounded-lg hover:bg-slate-50 transition-colors text-left"
-              >
-                <div class="min-w-0 pr-3">
-                  <p class="text-sm text-slate-700">{{ t('management.partnerTemplateForm.coverLayout.showCoverHeaderText') }}</p>
-                  <p class="text-xs text-slate-400">{{ t('management.partnerTemplateForm.coverLayout.showCoverHeaderTextHint') }}</p>
+              </section>
+
+              <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
+                <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  {{ t('management.partnerTemplateForm.coverDecorations.brandingGroup') }}
+                </h5>
+                <div class="grid grid-cols-3 gap-2.5">
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo1')" accept="image/png,image/svg+xml,image/*" :file-name="form.sample_logo_1?.name" :has-existing-file="hasSavedAsset('sample_logo_1')" @change="handleFileChange('sample_logo_1', $event)" @clear="clearAssetField('sample_logo_1')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo2')" accept="image/png,image/svg+xml,image/*" :file-name="form.sample_logo_2?.name" :has-existing-file="hasSavedAsset('sample_logo_2')" @change="handleFileChange('sample_logo_2', $event)" @clear="clearAssetField('sample_logo_2')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.headerTextImage')" accept="image/png,image/svg+xml,image/*" :file-name="form.header_text_image?.name" :has-existing-file="hasSavedAsset('header_text_image')" @change="handleFileChange('header_text_image', $event)" @clear="clearAssetField('header_text_image')" />
                 </div>
-                <span
-                  :class="[
-                    'relative w-10 h-6 rounded-full transition-colors flex-shrink-0',
-                    form.cover_stage_layout.showCoverHeaderText ? 'bg-sky-500' : 'bg-slate-300',
-                  ]"
-                  aria-hidden="true"
-                >
-                  <span :class="['absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform', form.cover_stage_layout.showCoverHeaderText ? 'left-5' : 'left-1']" />
-                </span>
-              </button>
-              <button
-                type="button"
-                @click="form.cover_stage_layout.showHostNameUnderLogo = !form.cover_stage_layout.showHostNameUnderLogo"
-                role="switch"
-                :aria-checked="form.cover_stage_layout.showHostNameUnderLogo"
-                class="w-full flex items-center justify-between py-2 px-2 rounded-lg hover:bg-slate-50 transition-colors text-left"
-              >
-                <div class="min-w-0 pr-3">
-                  <p class="text-sm text-slate-700">{{ t('management.partnerTemplateForm.coverLayout.showHostNameUnderLogo') }}</p>
-                  <p class="text-xs text-slate-400">{{ t('management.partnerTemplateForm.coverLayout.showHostNameUnderLogoHint') }}</p>
-                </div>
-                <span
-                  :class="[
-                    'relative w-10 h-6 rounded-full transition-colors flex-shrink-0',
-                    form.cover_stage_layout.showHostNameUnderLogo ? 'bg-sky-500' : 'bg-slate-300',
-                  ]"
-                  aria-hidden="true"
-                >
-                  <span :class="['absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform', form.cover_stage_layout.showHostNameUnderLogo ? 'left-5' : 'left-1']" />
-                </span>
-              </button>
-            </div>
-            <!-- Host Clip (host image positioning inside sample_logo_2) -->
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">{{ t('management.partnerTemplateForm.coverLayout.hostClip') }}</p>
-            <p class="text-[11px] text-slate-400 leading-tight -mt-2">{{ t('management.partnerTemplateForm.coverLayout.hostClipHint') }}</p>
-            <div class="grid grid-cols-3 gap-3">
-              <div class="space-y-1">
-                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.hostClipScale') }}</label>
-                <input v-model.number="form.cover_stage_layout.hostClipScale" type="number" min="0" max="100" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-              </div>
-              <div class="space-y-1">
-                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.hostClipOffsetX') }}</label>
-                <input v-model.number="form.cover_stage_layout.hostClipOffsetX" type="number" min="0" max="100" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-              </div>
-              <div class="space-y-1">
-                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.hostClipOffsetY') }}</label>
-                <input v-model.number="form.cover_stage_layout.hostClipOffsetY" type="number" min="0" max="100" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-              </div>
-            </div>
-            <!-- Z-Indexes -->
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">{{ t('management.partnerTemplateForm.coverLayout.zIndexes') }}</p>
-            <div class="grid grid-cols-2 gap-3">
-              <div class="space-y-1">
-                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.left') }}</label>
-                <input v-model.number="form.cover_stage_layout.leftDecorationZIndex" type="number" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-              </div>
-              <div class="space-y-1">
-                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.right') }}</label>
-                <input v-model.number="form.cover_stage_layout.rightDecorationZIndex" type="number" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-              </div>
-              <div class="space-y-1">
-                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.top') }}</label>
-                <input v-model.number="form.cover_stage_layout.topDecorationZIndex" type="number" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-              </div>
-              <div class="space-y-1">
-                <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.coverLayout.bottom') }}</label>
-                <input v-model.number="form.cover_stage_layout.bottomDecorationZIndex" type="number" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-              </div>
-            </div>
-          </div>
-        </details>
+              </section>
+            </template>
 
-        <!-- Falling Effect (collapsible) -->
-        <details :open="detailsOpenState.fallingEffect" @toggle="(e) => detailsOpenState.fallingEffect = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
-          <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
-            <span>{{ t('management.partnerTemplateForm.fallingEffect.sectionTitle') }} <span class="text-xs text-slate-400 font-normal">({{ form.falling_effect_enabled ? t('management.partnerTemplateForm.fallingEffect.enabled') : t('management.partnerTemplateForm.fallingEffect.disabled') }})</span></span>
-            <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
-          </summary>
-          <div class="p-4 space-y-4 border-t border-slate-100">
-            <!-- Enable toggle -->
-            <button
-              type="button"
-              @click="form.falling_effect_enabled = !form.falling_effect_enabled"
-              role="switch"
-              :aria-checked="form.falling_effect_enabled"
-              class="w-full flex items-center justify-between py-2 px-2 -mx-2 rounded-lg hover:bg-slate-50 transition-colors text-left"
-            >
-              <div class="min-w-0 pr-3">
-                <p class="text-sm font-medium text-slate-700">{{ t('management.partnerTemplateForm.fallingEffect.enableLabel') }}</p>
-                <p class="text-xs text-slate-400">{{ t('management.partnerTemplateForm.fallingEffect.enableHint') }}</p>
-              </div>
-              <span
-                :class="[
-                  'relative w-10 h-6 rounded-full transition-colors flex-shrink-0',
-                  form.falling_effect_enabled ? 'bg-sky-500' : 'bg-slate-300',
-                ]"
-                aria-hidden="true"
-              >
-                <span
-                  :class="[
-                    'absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform',
-                    form.falling_effect_enabled ? 'left-5' : 'left-1',
-                  ]"
-                />
-              </span>
-            </button>
+            <!-- Ambient creatures are a cover-stage effect — CoverStage hands
+                 them to CoverContentOverlay and nothing else renders them — so
+                 they belong here rather than in an effects tab of their own.
+                 Deliberately outside the plan gate above: unlike the decoration
+                 slots, they do not depend on which package plan is chosen. -->
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+              <TemplateFormSwitch
+                v-model="form.ambient_creatures_enabled"
+                :icon="Bird"
+                :label="t('management.partnerTemplateForm.ambientCreatures.enableLabel')"
+                :description="t('management.partnerTemplateForm.ambientCreatures.enableHint')"
+              />
 
-            <div v-if="form.falling_effect_enabled" class="space-y-3">
-              <!-- Particle Type -->
-              <div class="space-y-1.5">
-                <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.fallingEffect.particleType') }}</label>
-                <select v-model="form.falling_effect.type" :class="selectClass">
-                  <option v-for="(label, value) in fallingTypeLabels" :key="value" :value="value">{{ label }}</option>
-                </select>
-              </div>
+              <Transition name="collapse">
+                <div v-if="form.ambient_creatures_enabled" class="grid grid-rows-[1fr]">
+                  <div class="min-h-0 overflow-hidden">
+                    <div class="space-y-4 pt-1">
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                        <TemplateFormNumber
+                          v-model="form.ambient_creatures.count"
+                          :label="t('management.partnerTemplateForm.ambientCreatures.count')"
+                          :min="1"
+                          :max="15"
+                          :step="1"
+                        />
+                        <TemplateFormChoice
+                          v-model="creatureSpeedModel"
+                          :label="t('management.partnerTemplateForm.ambientCreatures.speed')"
+                          :options="speedOptions"
+                          :columns="3"
+                        />
+                      </div>
 
-              <!-- Intensity -->
-              <div class="space-y-1.5">
-                <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.fallingEffect.intensity') }}</label>
-                <select v-model="form.falling_effect.intensity" :class="selectClass">
-                  <option value="light">{{ t('management.partnerTemplateForm.fallingEffect.intensityLight') }}</option>
-                  <option value="normal">{{ t('management.partnerTemplateForm.fallingEffect.intensityNormal') }}</option>
-                  <option value="heavy">{{ t('management.partnerTemplateForm.fallingEffect.intensityHeavy') }}</option>
-                </select>
-              </div>
+                      <TemplateFormChoice
+                        v-model="creatureColorSourceModel"
+                        :label="t('management.partnerTemplateForm.ambientCreatures.colorSource')"
+                        :options="creatureColorSourceOptions"
+                        :columns="3"
+                      />
 
-              <!-- Color Source -->
-              <div class="space-y-1.5">
-                <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.fallingEffect.colorSource') }}</label>
-                <select v-model="form.falling_effect.color_source" :class="selectClass">
-                  <option value="primary">{{ t('management.partnerTemplateForm.fallingEffect.sourcePrimary') }}</option>
-                  <option value="accent">{{ t('management.partnerTemplateForm.fallingEffect.sourceAccent') }}</option>
-                  <option value="custom">{{ t('management.partnerTemplateForm.fallingEffect.sourceCustom') }}</option>
-                </select>
-              </div>
+                      <div v-if="form.ambient_creatures.color_source === 'custom'" class="flex items-end gap-2">
+                        <input
+                          v-model="form.ambient_creatures.custom_color"
+                          type="color"
+                          class="w-10 h-[38px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
+                          :aria-label="t('management.partnerTemplateForm.ambientCreatures.pickLabel')"
+                        />
+                        <input
+                          v-model="form.ambient_creatures.custom_color"
+                          type="text"
+                          maxlength="7"
+                          placeholder="#FFD700"
+                          :aria-label="t('management.partnerTemplateForm.ambientCreatures.hexLabel')"
+                          class="flex-1 min-w-0 px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm uppercase tabular-nums transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                        />
+                      </div>
 
-              <!-- Custom Color -->
-              <div v-if="form.falling_effect.color_source === 'custom'" class="flex items-end gap-2">
-                <div class="space-y-1">
-                  <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.fallingEffect.pickLabel') }}</label>
-                  <input
-                    v-model="form.falling_effect.custom_color"
-                    type="color"
-                    class="w-10 h-[34px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors"
-                  />
-                </div>
-                <div class="space-y-1 flex-1">
-                  <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.fallingEffect.hexLabel') }}</label>
-                  <input
-                    v-model="form.falling_effect.custom_color"
-                    type="text"
-                    maxlength="7"
-                    placeholder="#FFD700"
-                    class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
-                  />
-                </div>
-              </div>
+                      <div class="space-y-2">
+                        <div class="flex items-center justify-between gap-2">
+                          <span class="text-xs font-medium text-slate-600">
+                            {{ t('management.partnerTemplateForm.ambientCreatures.creaturesLabel') }}
+                            <span class="text-slate-400">· {{ form.ambient_creatures.creatures.length }}/4</span>
+                          </span>
+                          <button
+                            type="button"
+                            @click="addCreatureEntry"
+                            :disabled="form.ambient_creatures.creatures.length >= 4 || availableCreatureTypes.length === 0"
+                            class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-slate-300 disabled:hover:text-slate-600 disabled:hover:bg-transparent"
+                          >
+                            <Plus class="w-3.5 h-3.5" />
+                            {{ t('management.partnerTemplateForm.ambientCreatures.addCreature') }}
+                          </button>
+                        </div>
 
-              <!-- Custom Image -->
-              <div class="space-y-1.5">
-                <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.fallingEffect.customImage') }}</label>
-                <p class="text-[11px] text-slate-400 leading-tight">{{ t('management.partnerTemplateForm.fallingEffect.customImageHint') }}</p>
-                <div v-if="fallingEffectCustomImagePreview || (existingTemplate?.falling_effect?.custom_image && !form.clear_falling_effect_custom_image)" class="flex items-center gap-3 p-2 border border-slate-200 rounded-lg">
-                  <img
-                    :src="fallingEffectCustomImagePreview || existingTemplate?.falling_effect?.custom_image || ''"
-                    alt="Custom particle"
-                    class="w-12 h-12 object-contain bg-slate-100 rounded"
-                  />
-                  <div class="flex-1 text-xs text-slate-600 truncate">
-                    {{ form.falling_effect_custom_image?.name || t('management.partnerTemplateForm.fallingEffect.currentImage') }}
+                        <div
+                          v-for="(entry, index) in form.ambient_creatures.creatures"
+                          :key="index"
+                          class="p-3 ring-1 ring-slate-200 rounded-xl space-y-3 bg-slate-50/70"
+                        >
+                          <div class="flex items-center gap-2">
+                            <TemplateFormSelect
+                              class="flex-1 min-w-0"
+                              :model-value="entry.type"
+                              :options="creatureTypeOptionsFor(index)"
+                              :label="t('management.partnerTemplateForm.ambientCreatures.typeLabel')"
+                              @update:model-value="(value) => (entry.type = value as AmbientCreatureEffectType)"
+                            />
+                            <button
+                              v-if="form.ambient_creatures.creatures.length > 1"
+                              type="button"
+                              @click="removeCreatureEntry(index)"
+                              class="mt-5 p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors flex-shrink-0"
+                              :aria-label="t('management.partnerTemplateForm.ambientCreatures.removeBtn')"
+                            >
+                              <Trash2 class="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div class="grid grid-cols-3 gap-2">
+                            <div class="space-y-1">
+                              <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.weightLabel') }}</label>
+                              <input v-model.number="entry.weight" type="number" min="1" max="10" step="1" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
+                            </div>
+                            <div class="space-y-1">
+                              <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.minSize') }}</label>
+                              <input v-model.number="entry.min_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
+                            </div>
+                            <div class="space-y-1">
+                              <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.maxSize') }}</label>
+                              <input v-model.number="entry.max_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <label class="cursor-pointer text-xs font-medium text-sky-600 hover:text-sky-700">
-                    {{ t('management.partnerTemplateForm.fallingEffect.replace') }}
-                    <input type="file" accept="image/png,image/svg+xml" class="sr-only" @change="handleFileChange('falling_effect_custom_image', $event)" />
-                  </label>
-                  <button type="button" @click="clearFallingEffectCustomImage" class="text-xs font-medium text-red-500 px-2 py-1 -ml-2 rounded-md hover:bg-red-50 transition-colors">
-                    {{ t('management.partnerTemplateForm.fallingEffect.remove') }}
+                </div>
+              </Transition>
+            </section>
+
+            <!-- ------------------------ Cover layout ------------------------ -->
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                {{ t('management.partnerTemplateForm.coverLayout.presentationGroup') }}
+              </h5>
+              <TemplateFormChoice
+                v-model="animationTypeModel"
+                :label="t('management.partnerTemplateForm.coverLayout.animationType')"
+                :options="animationOptions"
+              />
+            </section>
+
+            <!-- Placement model. Rows is the original stacked layout; free hands
+                 each block its own rectangle, which is what the preview's drag
+                 handles write to. Switching to free seeds every block from the
+                 row geometry, so nothing on the cover moves until something is
+                 actually dragged. -->
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                {{ t('management.coverLayoutEditor.sectionTitle') }}
+              </h5>
+              <TemplateFormChoice v-model="layoutModeModel" :options="layoutModeOptions" />
+
+              <template v-if="isFreeCoverLayout">
+                <p class="flex items-start gap-1.5 text-[11px] leading-snug text-sky-700 bg-sky-50 ring-1 ring-sky-100 rounded-xl p-2.5">
+                  <Move class="w-3.5 h-3.5 flex-shrink-0 mt-px" />
+                  {{ t('management.coverLayoutEditor.dragHint') }}
+                </p>
+
+                <!-- Same selection the overlay uses: clicking a chip highlights
+                     the block in the preview, and clicking it there lights the
+                     chip. -->
+                <div class="flex flex-wrap gap-1.5" role="group" :aria-label="t('management.coverLayoutEditor.blockPicker')">
+                  <button
+                    v-for="block in coverBlockChips"
+                    :key="block.id"
+                    type="button"
+                    :disabled="!block.available"
+                    :aria-pressed="selectedCoverElement === block.id"
+                    class="px-3 py-1.5 rounded-full text-xs font-medium ring-1 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    :class="
+                      selectedCoverElement === block.id
+                        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white ring-transparent shadow-sm'
+                        : 'bg-white text-slate-600 ring-slate-200 hover:ring-slate-300 hover:bg-slate-50'
+                    "
+                    @click="selectCoverElement(block.id)"
+                  >
+                    {{ block.label }}
                   </button>
                 </div>
-                <label v-else class="flex items-center justify-center gap-2 py-3 cursor-pointer border-2 border-dashed border-slate-200 bg-slate-50/60 hover:border-sky-400 hover:bg-sky-50/40 rounded-xl transition-colors">
-                  <Upload class="w-4 h-4 text-slate-400" />
-                  <span class="text-xs font-medium text-slate-500">{{ t('management.partnerTemplateForm.fallingEffect.uploadCustom') }}</span>
-                  <input type="file" accept="image/png,image/svg+xml" class="sr-only" @change="handleFileChange('falling_effect_custom_image', $event)" />
-                </label>
-              </div>
-            </div>
-          </div>
-        </details>
 
-        <!-- Date & Location Design (collapsible) -->
-        <details :open="detailsOpenState.eventDetailsDesign" @toggle="(e) => detailsOpenState.eventDetailsDesign = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
-          <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
-            <span>{{ t('management.partnerTemplateForm.eventDetailsDesign.sectionTitle') }} <span class="text-xs text-slate-400 font-normal">({{ t(`management.partnerTemplateForm.eventDetailsDesign.types.${form.event_details_design_type}`) }})</span></span>
-            <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
-          </summary>
-          <div class="p-4 space-y-3 border-t border-slate-100">
-            <div class="space-y-1.5">
-              <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.eventDetailsDesign.designLabel') }}</label>
-              <select v-model="form.event_details_design_type" :class="selectClass">
-                <option value="panel">{{ t('management.partnerTemplateForm.eventDetailsDesign.types.panel') }}</option>
-                <option value="calendar">{{ t('management.partnerTemplateForm.eventDetailsDesign.types.calendar') }}</option>
-              </select>
-              <p class="text-[11px] text-slate-400 leading-tight">{{ t('management.partnerTemplateForm.eventDetailsDesign.designHint') }}</p>
-            </div>
-          </div>
-        </details>
+                <div v-if="selectedCoverBox" class="space-y-3">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                    <TemplateFormNumber v-model="coverBoxX" :label="t('management.coverLayoutEditor.fields.x')" :min="0" :max="100" :step="0.5" unit="%" />
+                    <TemplateFormNumber v-model="coverBoxY" :label="t('management.coverLayoutEditor.fields.y')" :min="0" :max="100" :step="0.5" unit="%" />
+                    <TemplateFormNumber v-model="coverBoxWidth" :label="t('management.coverLayoutEditor.fields.width')" :min="3" :max="100" :step="0.5" unit="%" />
+                    <TemplateFormNumber v-model="coverBoxHeight" :label="t('management.coverLayoutEditor.fields.height')" :min="2" :max="100" :step="0.5" unit="%" />
+                    <!-- The logo scales with its box; only the text blocks have
+                         a size that the box alone can't express. -->
+                    <TemplateFormNumber
+                      v-if="selectedCoverBlockHasText"
+                      v-model="coverBoxFontScale"
+                      :label="t('management.coverLayoutEditor.fields.fontScale')"
+                      :min="40"
+                      :max="250"
+                      :step="5"
+                      unit="%"
+                    />
+                  </div>
 
-        <!-- Host Info Design (collapsible) -->
-        <details :open="detailsOpenState.hostInfoDesign" @toggle="(e) => detailsOpenState.hostInfoDesign = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
-          <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
-            <span>{{ t('management.partnerTemplateForm.hostInfoDesign.sectionTitle') }} <span class="text-xs text-slate-400 font-normal">({{ t(`management.partnerTemplateForm.hostInfoDesign.types.${form.host_info_design_type}`) }})</span></span>
-            <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
-          </summary>
-          <div class="p-4 space-y-3 border-t border-slate-100">
-            <div class="space-y-1.5">
-              <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.hostInfoDesign.designLabel') }}</label>
-              <select v-model="form.host_info_design_type" :class="selectClass">
-                <option value="standard">{{ t('management.partnerTemplateForm.hostInfoDesign.types.standard') }}</option>
-                <option value="simple">{{ t('management.partnerTemplateForm.hostInfoDesign.types.simple') }}</option>
-              </select>
-              <p class="text-[11px] text-slate-400 leading-tight">{{ t('management.partnerTemplateForm.hostInfoDesign.designHint') }}</p>
-            </div>
-          </div>
-        </details>
+                  <!-- Type slots. Both name a slot from this template's own
+                       palette/fonts rather than a literal value: fonts are
+                       declared per language, so a baked-in family would freeze
+                       the cover to one script, and a baked-in hex would stop
+                       following the template's colours. -->
+                  <div v-if="selectedCoverBlockHasText" class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                    <TemplateFormSelect
+                      v-model="coverBoxFontType"
+                      :label="t('management.coverLayoutEditor.fields.fontType')"
+                      :options="coverFontTypeOptions"
+                    />
+                    <TemplateFormSelect
+                      v-model="coverBoxColorSource"
+                      :label="t('management.coverLayoutEditor.fields.colorSource')"
+                      :options="coverColorSourceOptions"
+                    />
+                  </div>
 
-        <!-- Ambient Creatures (collapsible) -->
-        <details :open="detailsOpenState.ambientCreatures" @toggle="(e) => detailsOpenState.ambientCreatures = (e.target as HTMLDetailsElement).open" class="border border-slate-200/80 rounded-xl overflow-hidden bg-white shadow-sm shadow-slate-900/[0.03]">
-          <summary class="px-4 py-3 text-sm font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 select-none flex items-center justify-between transition-colors">
-            <span>{{ t('management.partnerTemplateForm.ambientCreatures.sectionTitle') }} <span class="text-xs text-slate-400 font-normal">({{ form.ambient_creatures_enabled ? t('management.partnerTemplateForm.ambientCreatures.enabled') : t('management.partnerTemplateForm.ambientCreatures.disabled') }})</span></span>
-            <ChevronDown class="chevron-icon w-4 h-4 text-slate-400" />
-          </summary>
-          <div class="p-4 space-y-4 border-t border-slate-100">
-            <!-- Enable toggle -->
-            <button
-              type="button"
-              @click="form.ambient_creatures_enabled = !form.ambient_creatures_enabled"
-              role="switch"
-              :aria-checked="form.ambient_creatures_enabled"
-              class="w-full flex items-center justify-between py-2 px-2 -mx-2 rounded-lg hover:bg-slate-50 transition-colors text-left"
-            >
-              <div class="min-w-0 pr-3">
-                <p class="text-sm font-medium text-slate-700">{{ t('management.partnerTemplateForm.ambientCreatures.enableLabel') }}</p>
-                <p class="text-xs text-slate-400">{{ t('management.partnerTemplateForm.ambientCreatures.enableHint') }}</p>
-              </div>
-              <span
-                :class="[
-                  'relative w-10 h-6 rounded-full transition-colors flex-shrink-0',
-                  form.ambient_creatures_enabled ? 'bg-sky-500' : 'bg-slate-300',
-                ]"
-                aria-hidden="true"
-              >
-                <span
-                  :class="[
-                    'absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform',
-                    form.ambient_creatures_enabled ? 'left-5' : 'left-1',
-                  ]"
-                />
-              </span>
-            </button>
-
-            <div v-if="form.ambient_creatures_enabled" class="space-y-4">
-              <!-- Global controls -->
-              <div class="grid grid-cols-2 gap-3">
-                <div class="space-y-1">
-                  <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.count') }}</label>
-                  <input v-model.number="form.ambient_creatures.count" type="number" min="1" max="15" step="1" class="w-full px-3 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
+                  <div v-if="selectedCoverBlockHasText && selectedCoverBox.colorSource === 'custom'" class="flex items-end gap-2">
+                    <input
+                      v-model="coverBoxCustomColor"
+                      type="color"
+                      class="w-10 h-[38px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
+                      :aria-label="t('management.partnerTemplateForm.fallingEffect.pickLabel')"
+                    />
+                    <input
+                      v-model="coverBoxCustomColor"
+                      type="text"
+                      maxlength="7"
+                      placeholder="#FFFFFF"
+                      :aria-label="t('management.partnerTemplateForm.fallingEffect.hexLabel')"
+                      class="flex-1 min-w-0 px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm uppercase tabular-nums transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                    />
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      @click="resetSelectedCoverBlock"
+                      class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 transition-colors"
+                    >
+                      {{ t('management.coverLayoutEditor.resetBlock') }}
+                    </button>
+                    <button
+                      type="button"
+                      @click="resetAllCoverBlocks"
+                      class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      {{ t('management.coverLayoutEditor.resetAll') }}
+                    </button>
+                  </div>
                 </div>
-                <div class="space-y-1">
-                  <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.speed') }}</label>
-                  <select v-model="form.ambient_creatures.speed" :class="selectClass">
-                    <option value="slow">{{ t('management.partnerTemplateForm.ambientCreatures.speedSlow') }}</option>
-                    <option value="normal">{{ t('management.partnerTemplateForm.ambientCreatures.speedNormal') }}</option>
-                    <option value="fast">{{ t('management.partnerTemplateForm.ambientCreatures.speedFast') }}</option>
-                  </select>
-                </div>
-              </div>
+                <p v-else class="text-[11px] text-slate-400 leading-snug">
+                  {{ t('management.coverLayoutEditor.pickBlock') }}
+                </p>
+              </template>
+              <p v-else class="text-[11px] text-slate-400 leading-snug">
+                {{ t('management.coverLayoutEditor.rowsHint') }}
+              </p>
+            </section>
 
-              <!-- Color source -->
-              <div class="space-y-1.5">
-                <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.ambientCreatures.colorSource') }}</label>
-                <select v-model="form.ambient_creatures.color_source" :class="selectClass">
-                  <option value="primary">{{ t('management.partnerTemplateForm.ambientCreatures.sourcePrimary') }}</option>
-                  <option value="accent">{{ t('management.partnerTemplateForm.ambientCreatures.sourceAccent') }}</option>
-                  <option value="custom">{{ t('management.partnerTemplateForm.ambientCreatures.sourceCustom') }}</option>
-                </select>
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                {{ t('management.partnerTemplateForm.coverLayout.containerPositioning') }}
+              </h5>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                <!-- Free placement ignores the container box entirely; the swipe
+                     arrow is positioned the same way in both models. -->
+                <template v-if="!isFreeCoverLayout">
+                  <TemplateFormNumber v-model="form.cover_stage_layout.contentTopPosition" :label="t('management.partnerTemplateForm.coverLayout.contentTop')" :min="0" :max="60" :step="0.5" unit="vh" />
+                  <TemplateFormNumber v-model="form.cover_stage_layout.innerContainerHeight" :label="t('management.partnerTemplateForm.coverLayout.innerHeight')" :min="10" :max="90" :step="0.5" unit="vh" />
+                </template>
+                <TemplateFormNumber v-model="form.cover_stage_layout.swipeArrowBottom" :label="t('management.partnerTemplateForm.coverLayout.swipeArrowBottom')" :min="0" :max="20" :step="0.5" unit="vh" />
               </div>
+            </section>
 
-              <div v-if="form.ambient_creatures.color_source === 'custom'" class="flex items-end gap-2">
-                <div class="space-y-1">
-                  <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.pickLabel') }}</label>
-                  <input
-                    v-model="form.ambient_creatures.custom_color"
-                    type="color"
-                    class="w-10 h-[34px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors"
-                  />
-                </div>
-                <div class="space-y-1 flex-1">
-                  <label class="block text-xs text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.hexLabel') }}</label>
-                  <input
-                    v-model="form.ambient_creatures.custom_color"
-                    type="text"
-                    maxlength="7"
-                    placeholder="#FFD700"
-                    class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
-                  />
-                </div>
+            <section v-if="!isFreeCoverLayout" class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                {{ t('management.partnerTemplateForm.coverLayout.rowHeights') }}
+              </h5>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                <TemplateFormNumber v-model="form.cover_stage_layout.eventTitleHeight" :label="t('management.partnerTemplateForm.coverLayout.eventTitle')" :min="0" :max="50" :step="0.25" unit="%" />
+                <TemplateFormNumber v-model="form.cover_stage_layout.logoHeight" :label="t('management.partnerTemplateForm.coverLayout.logo')" :min="0" :max="80" :step="0.25" unit="%" />
+                <TemplateFormNumber v-model="form.cover_stage_layout.inviteTextHeight" :label="t('management.partnerTemplateForm.coverLayout.inviteText')" :min="0" :max="40" :step="0.25" unit="%" />
+                <TemplateFormNumber v-model="form.cover_stage_layout.guestNameHeight" :label="t('management.partnerTemplateForm.coverLayout.guestName')" :min="0" :max="50" :step="0.25" unit="%" />
+                <TemplateFormNumber v-model="form.cover_stage_layout.guestNameMaxWidthPercent" :label="t('management.partnerTemplateForm.coverLayout.guestNameMaxWidthPercent')" :min="10" :max="100" :step="1" unit="%" />
               </div>
+            </section>
 
-              <!-- Creature entries -->
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
+              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                {{ t('management.partnerTemplateForm.coverLayout.visibilityToggles') }}
+              </h5>
               <div class="space-y-2">
-                <div class="flex items-center justify-between">
-                  <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.ambientCreatures.creaturesLabel') }} ({{ form.ambient_creatures.creatures.length }}/4)</label>
-                  <button
-                    type="button"
-                    @click="addCreatureEntry"
-                    :disabled="form.ambient_creatures.creatures.length >= 4 || availableCreatureTypes.length === 0"
-                    class="text-xs font-semibold text-sky-600 px-2 py-1 rounded-md hover:bg-sky-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-                  >
-                    {{ t('management.partnerTemplateForm.ambientCreatures.addCreature') }}
-                  </button>
-                </div>
+                <TemplateFormSwitch
+                  v-model="form.cover_stage_layout.showWelcomeHeaderText"
+                  :label="t('management.partnerTemplateForm.coverLayout.showWelcomeHeaderText')"
+                  :description="t('management.partnerTemplateForm.coverLayout.showWelcomeHeaderTextHint')"
+                />
+                <TemplateFormSwitch
+                  v-model="form.cover_stage_layout.showCoverHeaderText"
+                  :label="t('management.partnerTemplateForm.coverLayout.showCoverHeaderText')"
+                  :description="t('management.partnerTemplateForm.coverLayout.showCoverHeaderTextHint')"
+                />
+                <TemplateFormSwitch
+                  v-model="form.cover_stage_layout.showHostNameUnderLogo"
+                  :label="t('management.partnerTemplateForm.coverLayout.showHostNameUnderLogo')"
+                  :description="t('management.partnerTemplateForm.coverLayout.showHostNameUnderLogoHint')"
+                />
+              </div>
+            </section>
 
-                <div
-                  v-for="(entry, index) in form.ambient_creatures.creatures"
-                  :key="index"
-                  class="p-3 border border-slate-200/80 rounded-xl space-y-2 bg-slate-50/60"
-                >
-                  <div class="grid grid-cols-2 gap-2">
-                    <div class="space-y-1">
-                      <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.typeLabel') }}</label>
-                      <select v-model="entry.type" :class="selectClass">
-                        <option v-for="ct in creatureTypeOptionsFor(index)" :key="ct" :value="ct">{{ creatureTypeLabels[ct] }}</option>
-                      </select>
-                    </div>
-                    <div class="space-y-1">
-                      <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.weightLabel') }}</label>
-                      <input v-model.number="entry.weight" type="number" min="1" max="10" step="1" class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-                    </div>
-                    <div class="space-y-1">
-                      <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.minSize') }}</label>
-                      <input v-model.number="entry.min_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
-                    </div>
-                    <div class="space-y-1">
-                      <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.maxSize') }}</label>
-                      <input v-model.number="entry.max_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" class="w-full px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+              <div>
+                <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  {{ t('management.partnerTemplateForm.coverLayout.hostClip') }}
+                </h5>
+                <p class="text-[11px] text-slate-400 leading-snug mt-1">{{ t('management.partnerTemplateForm.coverLayout.hostClipHint') }}</p>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                <TemplateFormNumber v-model="form.cover_stage_layout.hostClipScale" :label="t('management.partnerTemplateForm.coverLayout.hostClipScale')" :min="0" :max="100" :step="1" unit="%" />
+                <TemplateFormNumber v-model="form.cover_stage_layout.hostClipOffsetX" :label="t('management.partnerTemplateForm.coverLayout.hostClipOffsetX')" :min="0" :max="100" :step="1" unit="%" />
+                <TemplateFormNumber v-model="form.cover_stage_layout.hostClipOffsetY" :label="t('management.partnerTemplateForm.coverLayout.hostClipOffsetY')" :min="0" :max="100" :step="1" unit="%" />
+              </div>
+            </section>
+
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                {{ t('management.partnerTemplateForm.coverLayout.zIndexes') }}
+              </h5>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                <TemplateFormNumber v-model="form.cover_stage_layout.leftDecorationZIndex" :label="t('management.partnerTemplateForm.coverLayout.left')" :min="0" :max="60" :step="1" />
+                <TemplateFormNumber v-model="form.cover_stage_layout.rightDecorationZIndex" :label="t('management.partnerTemplateForm.coverLayout.right')" :min="0" :max="60" :step="1" />
+                <TemplateFormNumber v-model="form.cover_stage_layout.topDecorationZIndex" :label="t('management.partnerTemplateForm.coverLayout.top')" :min="0" :max="60" :step="1" />
+                <TemplateFormNumber v-model="form.cover_stage_layout.bottomDecorationZIndex" :label="t('management.partnerTemplateForm.coverLayout.bottom')" :min="0" :max="60" :step="1" />
+              </div>
+            </section>
+          </template>
+
+          <!-- ======================== MAIN CONTENT ========================= -->
+          <!-- Everything the main content stage is made of, in the order it
+               stacks on screen: the backdrop behind the card, then the card
+               itself, then the blocks inside it. The backdrop used to be its own
+               "Background" rail entry, which put the image and the thing it sits
+               behind two clicks apart even though both only ever show on this
+               one stage. -->
+          <template v-else-if="activeSection === 'content'">
+            <!-- Plan-gated on its own, unlike the rest of this section: which
+                 backdrop field even applies (photo vs video) is decided by the
+                 plan, while card width, glass and the block designs are not. -->
+            <PlanRequiredNotice v-if="!form.package_plan_id" @pick="selectSection('basics')" />
+            <section v-else class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
+              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                {{ t('management.partnerTemplateForm.backgroundStage.sectionTitle') }}
+              </h5>
+              <FileUploadField
+                v-if="isBasicPlan"
+                :label="t('management.partnerTemplateForm.backgroundStage.backgroundPhoto')"
+                accept="image/*"
+                :file-name="form.basic_background_photo?.name"
+                :has-existing-file="hasSavedAsset('basic_background_photo')"
+                @change="handleFileChange('basic_background_photo', $event)"
+                @clear="clearAssetField('basic_background_photo')"
+              />
+              <FileUploadField
+                v-if="isStandardPlan"
+                :label="t('management.partnerTemplateForm.backgroundStage.backgroundVideo')"
+                accept="video/*"
+                :file-name="form.standard_background_video?.name"
+                :has-existing-file="hasSavedAsset('standard_background_video')"
+                @change="handleFileChange('standard_background_video', $event)"
+                @clear="clearAssetField('standard_background_video')"
+              />
+              <div v-if="isBasicPlan" class="grid grid-cols-2 gap-2.5">
+                <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.topDecoration')" accept="image/*" :file-name="form.top_decoration?.name" :has-existing-file="hasSavedAsset('top_decoration')" @change="handleFileChange('top_decoration', $event)" @clear="clearAssetField('top_decoration')" />
+                <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.bottomDecoration')" accept="image/*" :file-name="form.bottom_decoration?.name" :has-existing-file="hasSavedAsset('bottom_decoration')" @change="handleFileChange('bottom_decoration', $event)" @clear="clearAssetField('bottom_decoration')" />
+                <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.leftDecoration')" accept="image/*" :file-name="form.left_decoration?.name" :has-existing-file="hasSavedAsset('left_decoration')" @change="handleFileChange('left_decoration', $event)" @clear="clearAssetField('left_decoration')" />
+                <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.rightDecoration')" accept="image/*" :file-name="form.right_decoration?.name" :has-existing-file="hasSavedAsset('right_decoration')" @change="handleFileChange('right_decoration', $event)" @clear="clearAssetField('right_decoration')" />
+              </div>
+            </section>
+
+            <!-- How the content card itself is presented: how wide it sits and
+                 whether it wears the glass treatment. Both were under Cover
+                 Layout because both are stored inside `cover_stage_layout`, but
+                 what they change is this stage. The glass switch does also govern
+                 the cover's own glass panels (see CoverContentOverlay's
+                 displayLiquidGlass); it is one switch for both stages. -->
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+              <TemplateFormChoice
+                v-model="contentWidthModel"
+                :label="t('management.partnerTemplateForm.coverLayout.contentWidth')"
+                :options="contentWidthOptions"
+              />
+              <TemplateFormSwitch
+                v-model="form.display_liquid_glass_background"
+                :icon="Droplets"
+                :label="t('management.partnerTemplateForm.fields.liquidGlass')"
+                :description="t('management.partnerTemplateForm.fields.liquidGlassHint')"
+              />
+            </section>
+
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
+              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                {{ t('management.partnerTemplateForm.eventDetailsDesign.sectionTitle') }}
+              </h5>
+              <TemplateFormChoice v-model="eventDetailsDesignModel" :options="eventDetailsDesignOptions" :columns="1" />
+              <p class="text-[11px] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.eventDetailsDesign.designHint') }}</p>
+
+              <!-- Marker colour only affects the calendar design's circled day. -->
+              <Transition name="collapse">
+                <div v-if="form.event_details_design_type === 'calendar'" class="grid grid-rows-[1fr]">
+                  <div class="min-h-0 overflow-hidden">
+                    <div class="space-y-3 pt-1">
+                      <TemplateFormChoice
+                        v-model="eventDetailsMarkerColorSourceModel"
+                        :label="t('management.partnerTemplateForm.eventDetailsDesign.markerColorSource')"
+                        :options="eventDetailsMarkerColorOptions"
+                        :columns="2"
+                      />
+                      <div v-if="form.event_details_marker_color_source === 'custom'" class="flex items-end gap-2">
+                        <input
+                          v-model="form.event_details_marker_custom_color"
+                          type="color"
+                          class="w-10 h-[38px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
+                          :aria-label="t('management.partnerTemplateForm.fallingEffect.pickLabel')"
+                        />
+                        <input
+                          v-model="form.event_details_marker_custom_color"
+                          type="text"
+                          maxlength="7"
+                          placeholder="#B3261E"
+                          :aria-label="t('management.partnerTemplateForm.fallingEffect.hexLabel')"
+                          class="flex-1 min-w-0 px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm uppercase tabular-nums transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                        />
+                      </div>
+                      <p class="text-[11px] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.eventDetailsDesign.markerColorHint') }}</p>
                     </div>
                   </div>
-                  <button
-                    v-if="form.ambient_creatures.creatures.length > 1"
-                    type="button"
-                    @click="removeCreatureEntry(index)"
-                    class="text-xs font-medium text-red-500 px-2 py-1 -ml-2 rounded-md hover:bg-red-50 transition-colors"
-                  >
-                    {{ t('management.partnerTemplateForm.ambientCreatures.removeBtn') }}
-                  </button>
                 </div>
-              </div>
-            </div>
-          </div>
-        </details>
+              </Transition>
+            </section>
+
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
+              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                {{ t('management.partnerTemplateForm.hostInfoDesign.sectionTitle') }}
+              </h5>
+              <TemplateFormChoice v-model="hostInfoDesignModel" :options="hostInfoDesignOptions" :columns="1" />
+              <p class="text-[11px] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.hostInfoDesign.designHint') }}</p>
+            </section>
+
+            <!-- Falling particles render inside the main content stage (see
+                 MainContentStage's FallingEffect), never over the cover, so the
+                 effect is configured on the stage that actually shows it. -->
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+              <TemplateFormSwitch
+                v-model="form.falling_effect_enabled"
+                :icon="Snowflake"
+                :label="t('management.partnerTemplateForm.fallingEffect.enableLabel')"
+                :description="t('management.partnerTemplateForm.fallingEffect.enableHint')"
+              />
+
+              <Transition name="collapse">
+                <div v-if="form.falling_effect_enabled" class="grid grid-rows-[1fr]">
+                  <div class="min-h-0 overflow-hidden">
+                    <div class="space-y-4 pt-1">
+                      <TemplateFormSelect
+                        v-model="fallingTypeModel"
+                        :label="t('management.partnerTemplateForm.fallingEffect.particleType')"
+                        :options="fallingTypeOptions"
+                      />
+                      <TemplateFormChoice
+                        v-model="fallingIntensityModel"
+                        :label="t('management.partnerTemplateForm.fallingEffect.intensity')"
+                        :options="intensityOptions"
+                        :columns="3"
+                      />
+                      <TemplateFormChoice
+                        v-model="fallingColorSourceModel"
+                        :label="t('management.partnerTemplateForm.fallingEffect.colorSource')"
+                        :options="fallingColorSourceOptions"
+                        :columns="3"
+                      />
+                      <div v-if="form.falling_effect.color_source === 'custom'" class="flex items-end gap-2">
+                        <input
+                          v-model="form.falling_effect.custom_color"
+                          type="color"
+                          class="w-10 h-[38px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
+                          :aria-label="t('management.partnerTemplateForm.fallingEffect.pickLabel')"
+                        />
+                        <input
+                          v-model="form.falling_effect.custom_color"
+                          type="text"
+                          maxlength="7"
+                          placeholder="#FFD700"
+                          :aria-label="t('management.partnerTemplateForm.fallingEffect.hexLabel')"
+                          class="flex-1 min-w-0 px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm uppercase tabular-nums transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                        />
+                      </div>
+
+                      <div class="space-y-1.5">
+                        <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.fallingEffect.customImage') }}</label>
+                        <p class="text-[11px] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.fallingEffect.customImageHint') }}</p>
+                        <div
+                          v-if="fallingEffectCustomImagePreview || (existingTemplate?.falling_effect?.custom_image && !form.clear_falling_effect_custom_image)"
+                          class="flex items-center gap-3 p-2 ring-1 ring-slate-200 rounded-xl"
+                        >
+                          <img
+                            :src="fallingEffectCustomImagePreview || existingTemplate?.falling_effect?.custom_image || ''"
+                            :alt="t('management.partnerTemplateForm.fallingEffect.customImage')"
+                            class="w-12 h-12 object-contain bg-slate-100 rounded-lg"
+                          />
+                          <div class="flex-1 min-w-0 text-xs text-slate-600 truncate">
+                            {{ form.falling_effect_custom_image?.name || t('management.partnerTemplateForm.fallingEffect.currentImage') }}
+                          </div>
+                          <label class="cursor-pointer px-2 py-1 rounded-lg text-xs font-medium text-[#1e90ff] hover:bg-sky-50 transition-colors">
+                            {{ t('management.partnerTemplateForm.fallingEffect.replace') }}
+                            <input type="file" accept="image/png,image/svg+xml" class="sr-only" @change="handleFileChange('falling_effect_custom_image', $event)" />
+                          </label>
+                          <button
+                            type="button"
+                            @click="clearFallingEffectCustomImage"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            :aria-label="t('management.partnerTemplateForm.fallingEffect.remove')"
+                          >
+                            <Trash2 class="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <label
+                          v-else
+                          class="flex items-center justify-center gap-2 py-3 cursor-pointer border-2 border-dashed border-slate-200 bg-slate-50/60 hover:border-sky-400 hover:bg-sky-50/40 rounded-xl transition-colors"
+                        >
+                          <Upload class="w-4 h-4 text-slate-400" />
+                          <span class="text-xs font-medium text-slate-500">{{ t('management.partnerTemplateForm.fallingEffect.uploadCustom') }}</span>
+                          <input type="file" accept="image/png,image/svg+xml" class="sr-only" @change="handleFileChange('falling_effect_custom_image', $event)" />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
+            </section>
+          </template>
+
+        </div>
       </div>
 
-      <!-- Footer Actions -->
-      <div class="flex-shrink-0 px-4 py-3 border-t border-slate-200/70 bg-white/90 backdrop-blur-md flex items-center gap-3">
-        <button
-          type="button"
-          @click="emit('close')"
-          class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-white text-slate-700 ring-1 ring-slate-200 shadow-sm hover:ring-slate-300 hover:bg-slate-50 transition-all"
-        >
-          {{ t('management.partnerTemplateForm.footer.cancel') }}
-        </button>
+      <!-- Live preview of the draft, fed over the same bridge the manage-page
+           studio uses to try templates on — so unsaved edits (files included)
+           show up without a save or a reload. Its stage follows the section
+           being edited, so the pane always shows the thing under the cursor. -->
+      <aside
+        class="lg:row-start-1 lg:col-start-3 flex-col border-l border-slate-200/70 bg-white p-3 overflow-hidden"
+        :class="mobilePane === 'preview' ? 'flex' : 'hidden lg:flex'"
+      >
+        <PartnerTemplatePreview
+          v-model:stage="previewStage"
+          v-model:selected-element="selectedCoverElement"
+          :draft="previewDraft"
+          :event-id="eventId"
+          :event-data="eventData"
+          :saved-template="existingTemplate"
+          :layout-editing="coverLayoutEditing"
+          @layout-change="onCoverLayoutChange"
+        />
+      </aside>
+
+      <!-- Footer, mobile only: the desktop actions live in the modal's header
+           row now, so keeping a bar down here just to restate the hint would be
+           the exact wasted row this redesign removed. -->
+      <div class="lg:hidden col-span-full px-3 sm:px-4 py-2.5 border-t border-slate-200/70 bg-white flex items-center gap-3">
+        <p class="flex-1 min-w-0 text-[11px] sm:text-xs truncate" :class="canSave ? 'text-slate-400' : 'text-amber-600'">
+          <span v-if="!canSave" class="inline-flex items-center gap-1">
+            <AlertCircle class="w-3.5 h-3.5 flex-shrink-0" />
+            {{ t('management.partnerTemplateForm.footer.missingRequired') }}
+          </span>
+          <span v-else>{{ t('management.partnerTemplateForm.footer.autosaveHint') }}</span>
+        </p>
         <button
           type="button"
           @click="handleSave"
-          :disabled="saving || !form.name.trim() || !form.package_plan_id"
-          class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white hover:from-[#27ae60] hover:to-[#1873cc] shadow-lg shadow-sky-500/25 hover:shadow-sky-500/35 hover:-translate-y-px active:translate-y-0 disabled:opacity-60 disabled:shadow-none disabled:hover:translate-y-0 transition-all"
+          :disabled="saving || !canSave"
+          class="flex items-center justify-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-sky-500/25 active:scale-95 disabled:opacity-60 disabled:shadow-none transition-all flex-shrink-0"
         >
           <Loader2 v-if="saving" class="w-4 h-4 animate-spin" />
-          {{ saving ? t('management.partnerTemplateForm.footer.saving') : (isEditing ? t('management.partnerTemplateForm.footer.saveChanges') : t('management.partnerTemplateForm.footer.createTemplate')) }}
+          {{ saving ? t('management.partnerTemplateForm.footer.saving') : (isEditing ? t('management.partnerTemplateForm.footer.saveChangesShort') : t('management.partnerTemplateForm.footer.createShort')) }}
         </button>
       </div>
     </div>
@@ -884,15 +1116,53 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed, onMounted } from 'vue'
+import { ref, reactive, watch, computed, inject, onMounted, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ArrowLeft, Upload, AlertCircle, Loader2, ChevronDown } from 'lucide-vue-next'
+import {
+  ArrowLeft,
+  Upload,
+  AlertCircle,
+  Loader2,
+  Info,
+  Palette,
+  Image as ImageIcon,
+  AlignLeft,
+  Check,
+  Crown,
+  Sparkles,
+  Pencil,
+  Trash2,
+  Type,
+  Plus,
+  X,
+  Droplets,
+  Snowflake,
+  Bird,
+  DoorOpen,
+  Maximize2,
+  Minimize2,
+  CalendarDays,
+  LayoutPanelTop,
+  Users,
+  UserRound,
+  Move,
+  Rows3,
+  type LucideIcon,
+} from 'lucide-vue-next'
 import { partnerTemplateService, packagePlanService, customFontsService, FONT_TYPE_LABELS, LANGUAGE_CODE_LABELS } from '../../services/api'
 import type {
+  // Aliased: this file's file-input handlers take the DOM `Event`, which an
+  // unaliased import would shadow.
+  Event as EventRecord,
   PartnerTemplate,
   PartnerTemplateCreatePayload,
   PackagePlan,
   CoverStageLayout,
+  CoverElementBox,
+  CoverElementBoxes,
+  CoverElementColorSource,
+  CoverElementId,
+  CoverLayoutMode,
   EventTemplateColor,
   EventTemplateLanguageFont,
   CustomFont,
@@ -901,27 +1171,60 @@ import type {
   FallingEffectConfig,
   FallingEffectType,
   EventDetailsDesignType,
+  EventDetailsDesignConfig,
+  EventDetailsMarkerColorSource,
   HostInfoDesignType,
   AmbientCreaturesConfig,
   AmbientCreatureEntry,
   AmbientCreatureEffectType,
 } from '../../services/api'
 import PartnerTemplateFileField from './PartnerTemplateFileField.vue'
+import PartnerTemplatePreview from './PartnerTemplatePreview.vue'
+import TemplateSlotField from './TemplateSlotField.vue'
+import TemplateFormSwitch from './TemplateFormSwitch.vue'
+import TemplateFormNumber from './TemplateFormNumber.vue'
+import TemplateFormChoice from './TemplateFormChoice.vue'
+import TemplateFormSelect, { type TemplateFormSelectOption } from './TemplateFormSelect.vue'
+import PlanRequiredNotice from './TemplateFormPlanNotice.vue'
+import { TEMPLATES_HEADER_SLOT } from './templatesHeaderSlot'
+import { useMediaQuery } from '../../composables/useMediaQuery'
+import {
+  COVER_ELEMENT_IDS,
+  resolveCoverElements,
+  rowsToCoverElements,
+  type ResolvedCoverElementBox,
+} from '../../composables/showcase/useCoverStageLayout'
+import { TEMPLATE_COLOR_SLOTS, TEMPLATE_FONT_TYPE_SLOTS } from './templateSlots'
+import {
+  PARTNER_TEMPLATE_ASSET_FIELDS,
+  type PartnerTemplateAssetField,
+  type PartnerTemplateDraft,
+} from './partnerTemplateAssets'
 
 const { t } = useI18n()
 
 // Alias for cleaner template usage
 const FileUploadField = PartnerTemplateFileField
 
-// Shared select styling matching the header selects (custom arrow, proper spacing)
-const selectClass = "w-full px-2 py-1.5 pr-8 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m4%206%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat"
+const nameFieldId = useId()
+const previewUrlFieldId = useId()
+
+// From `lg` up the editor's title and save actions take over the modal's own
+// header row instead of opening a second one beneath it. Below that they stay
+// local — the modal's row has no width to spare on a phone.
+const headerSlot = inject(TEMPLATES_HEADER_SLOT, ref(null))
+const isDesktop = useMediaQuery('(min-width: 1024px)')
 
 interface Props {
   isOpen: boolean
   existingTemplate?: PartnerTemplate | null
+  /** The event this form was opened from — the live preview's sample content. */
+  eventId: string
+  /** That event's record, for the preview's frame-list decisions. */
+  eventData?: EventRecord | null
 }
 
-const props = withDefaults(defineProps<Props>(), { existingTemplate: null })
+const props = withDefaults(defineProps<Props>(), { existingTemplate: null, eventData: null })
 
 const emit = defineEmits<{
   close: []
@@ -974,7 +1277,9 @@ async function fetchPlans(): Promise<void> {
 }
 
 // Cover stage layout defaults
-const defaultCoverStageLayout = (): CoverStageLayout => ({
+const defaultCoverStageLayout = (): Required<CoverStageLayout> => ({
+  layoutMode: 'rows',
+  coverElements: {},
   contentTopPosition: 23.5,
   innerContainerHeight: 53,
   eventTitleHeight: 18.75,
@@ -1036,7 +1341,7 @@ interface FormState {
   sample_logo_1: File | null
   sample_logo_2: File | null
   header_text_image: File | null
-  cover_stage_layout: CoverStageLayout
+  cover_stage_layout: Required<CoverStageLayout>
   falling_effect_enabled: boolean
   falling_effect: FallingEffectFormState
   falling_effect_custom_image: File | null
@@ -1045,6 +1350,10 @@ interface FormState {
   ambient_creatures: AmbientCreaturesFormState
   /** Date/location block design rendered in the showcase (panel | calendar). */
   event_details_design_type: EventDetailsDesignType
+  /** Colour slot for the calendar design's event-day marker (calendar only). */
+  event_details_marker_color_source: EventDetailsMarkerColorSource
+  /** Hex colour used when the marker colour source is 'custom'. */
+  event_details_marker_custom_color: string
   /** Host info block design rendered in the showcase (standard | simple). */
   host_info_design_type: HostInfoDesignType
 }
@@ -1096,6 +1405,8 @@ const defaultForm = (): FormState => ({
   ambient_creatures_enabled: false,
   ambient_creatures: defaultAmbientCreatures(),
   event_details_design_type: 'panel',
+  event_details_marker_color_source: 'accent',
+  event_details_marker_custom_color: '#B3261E',
   host_info_design_type: 'standard',
 })
 
@@ -1126,6 +1437,27 @@ const fallingEffectCustomImagePreview = ref<string | null>(null)
 const saving = ref(false)
 const error = ref<string | null>(null)
 
+/**
+ * Saved assets the partner has asked to remove. Held apart from `form` because
+ * these aren't values being edited — they're deletions staged against the
+ * server's copy, and they only reach it on Save (see handleSave, which sends
+ * `''` for each). Everything else the form holds is either a pending File or an
+ * untouched saved URL, neither of which can express "delete this".
+ */
+type ClearableAssetField = PartnerTemplateAssetField | 'preview_image'
+
+const clearedAssets = ref(new Set<ClearableAssetField>())
+
+/** Whether the server still has a file for this field, removals accounted for. */
+const hasSavedAsset = (field: ClearableAssetField): boolean =>
+  !!props.existingTemplate?.[field] && !clearedAssets.value.has(field)
+
+const hasPreviewImage = computed(
+  () => !!previewImagePreview.value || hasSavedAsset('preview_image'),
+)
+
+const canSave = computed(() => !!form.name.trim() && !!form.package_plan_id)
+
 // Which creature types are still selectable (duplicates rejected server-side)
 const availableCreatureTypes = computed<AmbientCreatureEffectType[]>(() => {
   const used = new Set(form.ambient_creatures.creatures.map((c: AmbientCreatureEntry) => c.type))
@@ -1144,11 +1476,342 @@ function removeCreatureEntry(index: number): void {
 }
 
 // Types usable by a specific creature entry (its current type stays available)
-function creatureTypeOptionsFor(index: number): AmbientCreatureEffectType[] {
+function creatureTypeOptionsFor(index: number): Array<{ value: string; label: string }> {
   const current = form.ambient_creatures.creatures[index]?.type
   const used = new Set(form.ambient_creatures.creatures.map((c: AmbientCreatureEntry) => c.type))
-  return CREATURE_TYPES.filter((t) => !used.has(t) || t === current)
+  return CREATURE_TYPES.filter((type) => !used.has(type) || type === current).map((type) => ({
+    value: type,
+    label: creatureTypeLabels.value[type],
+  }))
 }
+
+// ---------------------------------------------------------------------------
+// Option lists for the choice/select primitives. Building them here keeps the
+// template free of the repeated <option> blocks (and the inline base64 chevron
+// class) the form used to carry on every single select.
+// ---------------------------------------------------------------------------
+const animationOptions = computed(() => [
+  { value: 'decoration', label: t('management.partnerTemplateForm.coverLayout.animationDecoration'), icon: Sparkles },
+  { value: 'door', label: t('management.partnerTemplateForm.coverLayout.animationDoor'), icon: DoorOpen },
+])
+
+const contentWidthOptions = computed(() => [
+  { value: 'standard', label: t('management.partnerTemplateForm.coverLayout.contentWidthStandard'), icon: Minimize2 },
+  { value: 'wide', label: t('management.partnerTemplateForm.coverLayout.contentWidthWide'), icon: Maximize2 },
+])
+
+const eventDetailsDesignOptions = computed(() => [
+  { value: 'panel', label: t('management.partnerTemplateForm.eventDetailsDesign.types.panel'), icon: LayoutPanelTop },
+  { value: 'calendar', label: t('management.partnerTemplateForm.eventDetailsDesign.types.calendar'), icon: CalendarDays },
+])
+
+const eventDetailsMarkerColorOptions = computed(() => [
+  { value: 'accent', label: t('management.partnerTemplateForm.eventDetailsDesign.sourceAccent') },
+  { value: 'primary', label: t('management.partnerTemplateForm.eventDetailsDesign.sourcePrimary') },
+  { value: 'secondary', label: t('management.partnerTemplateForm.eventDetailsDesign.sourceSecondary') },
+  { value: 'custom', label: t('management.partnerTemplateForm.fallingEffect.sourceCustomShort') },
+])
+
+const hostInfoDesignOptions = computed(() => [
+  { value: 'standard', label: t('management.partnerTemplateForm.hostInfoDesign.types.standard'), icon: Users },
+  { value: 'simple', label: t('management.partnerTemplateForm.hostInfoDesign.types.simple'), icon: UserRound },
+])
+
+const intensityOptions = computed(() => [
+  { value: 'light', label: t('management.partnerTemplateForm.fallingEffect.intensityLight') },
+  { value: 'normal', label: t('management.partnerTemplateForm.fallingEffect.intensityNormal') },
+  { value: 'heavy', label: t('management.partnerTemplateForm.fallingEffect.intensityHeavy') },
+])
+
+const speedOptions = computed(() => [
+  { value: 'slow', label: t('management.partnerTemplateForm.ambientCreatures.speedSlow') },
+  { value: 'normal', label: t('management.partnerTemplateForm.ambientCreatures.speedNormal') },
+  { value: 'fast', label: t('management.partnerTemplateForm.ambientCreatures.speedFast') },
+])
+
+const fallingColorSourceOptions = computed(() => [
+  { value: 'primary', label: t('management.partnerTemplateForm.fallingEffect.sourcePrimaryShort') },
+  { value: 'accent', label: t('management.partnerTemplateForm.fallingEffect.sourceAccentShort') },
+  { value: 'custom', label: t('management.partnerTemplateForm.fallingEffect.sourceCustomShort') },
+])
+
+const creatureColorSourceOptions = computed(() => [
+  { value: 'primary', label: t('management.partnerTemplateForm.ambientCreatures.sourcePrimary') },
+  { value: 'accent', label: t('management.partnerTemplateForm.ambientCreatures.sourceAccent') },
+  { value: 'custom', label: t('management.partnerTemplateForm.fallingEffect.sourceCustomShort') },
+])
+
+const fallingTypeOptions = computed(() =>
+  (Object.entries(fallingTypeLabels.value) as Array<[FallingEffectType, string]>).map(([value, label]) => ({
+    value,
+    label,
+  })),
+)
+
+const languageOptions = computed(() =>
+  (Object.entries(LANGUAGE_CODE_LABELS) as Array<[TemplateLanguageCode, string]>).map(([value, label]) => ({
+    value,
+    label,
+  })),
+)
+
+const customFontOptions = computed(() =>
+  availableCustomFonts.value.map((font) => ({ value: font.id, label: font.name })),
+)
+
+/**
+ * The primitives speak plain strings (and one `string | number`); several of the
+ * form's fields are narrowed unions or nullable ids. Each proxy casts on the way
+ * in only — the values themselves always originate from the option list that
+ * field was handed, so the narrowing holds.
+ */
+const animationTypeModel = computed<string>({
+  get: () => form.cover_stage_layout.showcaseAnimationType,
+  set: (value) => { form.cover_stage_layout.showcaseAnimationType = value as 'decoration' | 'door' },
+})
+
+const contentWidthModel = computed<string>({
+  get: () => form.cover_stage_layout.contentWidth,
+  set: (value) => { form.cover_stage_layout.contentWidth = value as 'standard' | 'wide' },
+})
+
+// ---------------------------------------------------------------------------
+// Free placement of the cover blocks.
+//
+// The preview frame is the primary editor — drag a block there and it reports
+// the whole map back through `onCoverLayoutChange`. Everything below is the
+// numeric half of that: the same values, typed or nudged when a pointer can't
+// be precise enough at preview scale.
+// ---------------------------------------------------------------------------
+const selectedCoverElement = ref<CoverElementId | null>(null)
+
+const isFreeCoverLayout = computed(() => form.cover_stage_layout.layoutMode === 'free')
+
+/**
+ * Handles only appear while the section that owns them is open. Leaving the
+ * overlay armed after navigating to, say, Main Content would mean an invisible
+ * sheet sitting over a preview nobody is trying to drag.
+ */
+const coverLayoutEditing = computed(() => activeSection.value === 'cover' && isFreeCoverLayout.value)
+
+/**
+ * The boxes as they'd render right now: whatever the template specifies, over
+ * the geometry the row model would have produced. Same function the showcase
+ * resolves with, so the numbers here and the ones on screen can't diverge.
+ */
+const resolvedCoverElements = computed(() => resolveCoverElements(form.cover_stage_layout))
+
+const selectedCoverBox = computed<ResolvedCoverElementBox | null>(() =>
+  selectedCoverElement.value ? resolvedCoverElements.value[selectedCoverElement.value] : null,
+)
+
+const layoutModeOptions = computed(() => [
+  { value: 'rows', label: t('management.coverLayoutEditor.modes.rows'), icon: Rows3 },
+  { value: 'free', label: t('management.coverLayoutEditor.modes.free'), icon: Move },
+])
+
+const layoutModeModel = computed<string>({
+  get: () => form.cover_stage_layout.layoutMode,
+  set: (value) => {
+    const mode = value as CoverLayoutMode
+    // Seeding on the way in is what makes the switch non-destructive: free mode
+    // starts as a pixel-identical copy of the rows the partner already tuned,
+    // rather than a blank canvas they have to rebuild.
+    if (mode === 'free' && Object.keys(form.cover_stage_layout.coverElements ?? {}).length === 0) {
+      form.cover_stage_layout.coverElements = rowsToCoverElements(form.cover_stage_layout)
+    }
+    form.cover_stage_layout.layoutMode = mode
+    if (mode !== 'free') selectedCoverElement.value = null
+  },
+})
+
+const coverBlockChips = computed(() =>
+  COVER_ELEMENT_IDS.map((id) => ({
+    id,
+    label: t(`management.coverLayoutEditor.blocks.${id}`),
+    // A hidden header row isn't on the cover, so there's nothing to place.
+    available: id !== 'header' || form.cover_stage_layout.showCoverHeaderText,
+  })),
+)
+
+function selectCoverElement(id: CoverElementId): void {
+  selectedCoverElement.value = selectedCoverElement.value === id ? null : id
+}
+
+/**
+ * Writes one block and persists all four.
+ *
+ * Storing the complete map rather than just the edited block matters for what
+ * the template does later: a half-specified `coverElements` leaves the other
+ * blocks implicitly tied to the row numbers, so editing an unrelated row height
+ * months later would silently move them.
+ */
+function updateSelectedCoverBox(patch: Partial<CoverElementBox>): void {
+  const id = selectedCoverElement.value
+  if (!id) return
+  const next: CoverElementBoxes = {}
+  for (const key of COVER_ELEMENT_IDS) {
+    next[key] =
+      key === id
+        ? { ...resolvedCoverElements.value[key], ...patch }
+        : { ...resolvedCoverElements.value[key] }
+  }
+  form.cover_stage_layout.coverElements = next
+}
+
+function coverBoxModel(field: 'x' | 'y' | 'width' | 'height') {
+  return computed<number>({
+    get: () => selectedCoverBox.value?.[field] ?? 0,
+    set: (value) => updateSelectedCoverBox({ [field]: value }),
+  })
+}
+
+const coverBoxX = coverBoxModel('x')
+const coverBoxY = coverBoxModel('y')
+const coverBoxWidth = coverBoxModel('width')
+const coverBoxHeight = coverBoxModel('height')
+
+// Stored as a multiplier, edited as a percentage — "120%" reads as a size, "1.2"
+// reads as an implementation detail.
+const coverBoxFontScale = computed<number>({
+  get: () => Math.round((selectedCoverBox.value?.fontScale ?? 1) * 100),
+  set: (value) => updateSelectedCoverBox({ fontScale: Math.max(0.1, value / 100) }),
+})
+
+/** The logo block has no text, so none of the type controls apply to it. */
+const selectedCoverBlockHasText = computed(
+  () => !!selectedCoverBox.value && selectedCoverElement.value !== 'logo',
+)
+
+/**
+ * `auto` is the unset state, and it is not the same as picking the slot the
+ * block happens to use today: unset means "keep following whatever rule this
+ * block has always followed", which for the guest name includes the Great Vibes
+ * override for Latin names. Storing `undefined` keeps that rule intact;
+ * storing `primary` deliberately overrides it.
+ */
+const COVER_SLOT_AUTO = 'auto'
+
+const coverFontTypeOptions = computed<TemplateFormSelectOption[]>(() => [
+  { value: COVER_SLOT_AUTO, label: t('management.coverLayoutEditor.fontTypes.auto') },
+  ...(Object.keys(FONT_TYPE_LABELS) as TemplateFontType[]).map((slot) => ({
+    value: slot,
+    label: t(`management.coverLayoutEditor.fontTypes.${slot}`),
+  })),
+])
+
+const coverColorSourceOptions = computed<TemplateFormSelectOption[]>(() => [
+  { value: COVER_SLOT_AUTO, label: t('management.coverLayoutEditor.colorSources.auto') },
+  ...(['primary', 'secondary', 'accent', 'guestname', 'custom'] as CoverElementColorSource[]).map(
+    (source) => ({
+      value: source,
+      label: t(`management.coverLayoutEditor.colorSources.${source}`),
+    }),
+  ),
+])
+
+const coverBoxFontType = computed<string>({
+  get: () => selectedCoverBox.value?.fontType ?? COVER_SLOT_AUTO,
+  set: (value) =>
+    updateSelectedCoverBox({
+      fontType: value === COVER_SLOT_AUTO ? undefined : (value as TemplateFontType),
+    }),
+})
+
+const coverBoxColorSource = computed<string>({
+  get: () => selectedCoverBox.value?.colorSource ?? COVER_SLOT_AUTO,
+  set: (value) => {
+    const source = value === COVER_SLOT_AUTO ? undefined : (value as CoverElementColorSource)
+    updateSelectedCoverBox({
+      colorSource: source,
+      // Seed the picker with something visible rather than an empty swatch the
+      // partner has to notice is empty before the colour can change at all.
+      ...(source === 'custom' && !selectedCoverBox.value?.customColor
+        ? { customColor: '#FFFFFF' }
+        : {}),
+    })
+  },
+})
+
+const coverBoxCustomColor = computed<string>({
+  get: () => selectedCoverBox.value?.customColor ?? '#FFFFFF',
+  set: (value) => updateSelectedCoverBox({ customColor: value }),
+})
+
+/**
+ * Puts one block back where the row model would have put it.
+ *
+ * `updateSelectedCoverBox` merges the patch onto the block's *current* resolved
+ * values, so the type slots need to be named with an explicit `undefined`
+ * here — omitting the keys entirely (which is what the row model's own boxes
+ * do, since they never had a type slot to begin with) would leave the block's
+ * existing fontType/colorSource/customColor untouched instead of clearing them.
+ */
+function resetSelectedCoverBlock(): void {
+  const id = selectedCoverElement.value
+  if (!id) return
+  updateSelectedCoverBox({
+    ...rowsToCoverElements(form.cover_stage_layout)[id],
+    fontType: undefined,
+    colorSource: undefined,
+    customColor: undefined,
+  })
+}
+
+/**
+ * Drops every hand-placed box. The template then carries no `coverElements` at
+ * all, which is also what makes "reset" a real reset: the blocks go back to
+ * tracking the row numbers rather than to a frozen copy of them.
+ */
+function resetAllCoverBlocks(): void {
+  form.cover_stage_layout.coverElements = {}
+  selectedCoverElement.value = null
+}
+
+/** A block was dragged or resized in the preview frame. */
+function onCoverLayoutChange(elements: CoverElementBoxes): void {
+  form.cover_stage_layout.coverElements = elements
+}
+
+const eventDetailsDesignModel = computed<string>({
+  get: () => form.event_details_design_type,
+  set: (value) => { form.event_details_design_type = value as EventDetailsDesignType },
+})
+
+const eventDetailsMarkerColorSourceModel = computed<string>({
+  get: () => form.event_details_marker_color_source,
+  set: (value) => { form.event_details_marker_color_source = value as EventDetailsMarkerColorSource },
+})
+
+const hostInfoDesignModel = computed<string>({
+  get: () => form.host_info_design_type,
+  set: (value) => { form.host_info_design_type = value as HostInfoDesignType },
+})
+
+const fallingTypeModel = computed<string>({
+  get: () => form.falling_effect.type,
+  set: (value) => { form.falling_effect.type = value as FallingEffectType },
+})
+
+const fallingIntensityModel = computed<string>({
+  get: () => form.falling_effect.intensity,
+  set: (value) => { form.falling_effect.intensity = value as FallingEffectFormState['intensity'] },
+})
+
+const fallingColorSourceModel = computed<string>({
+  get: () => form.falling_effect.color_source,
+  set: (value) => { form.falling_effect.color_source = value as FallingEffectFormState['color_source'] },
+})
+
+const creatureSpeedModel = computed<string>({
+  get: () => form.ambient_creatures.speed,
+  set: (value) => { form.ambient_creatures.speed = value as AmbientCreaturesFormState['speed'] },
+})
+
+const creatureColorSourceModel = computed<string>({
+  get: () => form.ambient_creatures.color_source,
+  set: (value) => { form.ambient_creatures.color_source = value as AmbientCreaturesFormState['color_source'] },
+})
 
 // --- Colors CRUD state ---
 const colors = ref<EventTemplateColor[]>([])
@@ -1185,18 +1848,169 @@ const pendingFonts = computed(() => {
   return localFonts.value
 })
 
-// Track open state of details elements
-const detailsOpenState = reactive({
-  colors: false,
-  fonts: false,
-  backgroundStage: true,  // Open by default
-  coverDecorations: false,
-  coverLayout: false,
-  fallingEffect: false,
-  ambientCreatures: false,
-  eventDetailsDesign: false,
-  hostInfoDesign: false,
+// ---------------------------------------------------------------------------
+// Slot occupancy, for the name/type suggestion lists. Both the colors and the
+// fonts the showcase reads are looked up by name, and only the FIRST match
+// counts — so knowing which slots are already spoken for is the difference
+// between filling a gap and quietly shadowing an existing row.
+// ---------------------------------------------------------------------------
+const definedColorNames = computed(() => pendingColors.value.map((color) => color.name))
+
+// Scoped to the language being edited: font types are per-language, so
+// `primary` already existing for English says nothing about Khmer.
+const definedFontTypes = computed(() =>
+  pendingFonts.value
+    .filter((entry) => entry.language === fontForm.language)
+    .map((entry) => entry.font_type),
+)
+
+// TemplateSlotField speaks plain strings; font_type is a narrowed union. The
+// cast is safe because the field only ever emits one of the values it was
+// handed, and those come from TEMPLATE_FONT_TYPE_SLOTS (which mirrors
+// TemplateFontType) with free text disabled.
+const fontTypeModel = computed<string>({
+  get: () => fontForm.font_type,
+  set: (value) => {
+    fontForm.font_type = value as TemplateFontType
+  },
 })
+
+const fontLanguageModel = computed<string | number>({
+  get: () => fontForm.language,
+  set: (value) => { fontForm.language = value as TemplateLanguageCode },
+})
+
+const fontIdModel = computed<string | number | null>({
+  get: () => fontForm.font,
+  set: (value) => { fontForm.font = Number(value) },
+})
+
+// ---------------------------------------------------------------------------
+// Sections. The form used to be one long scroll of nine same-looking <details>
+// accordions; it's now one section at a time, chosen from a rail. Each section
+// also names the showcase stage it affects, so selecting it points the live
+// preview at the thing being edited instead of leaving that to the partner.
+// ---------------------------------------------------------------------------
+// One entry per *stage* of the showcase rather than per kind of setting, so
+// anything that only shows on one stage is edited from that stage's section with
+// the preview already pointing at it. Hence no 'background' entry (the main
+// content backdrop sits in 'content', beside the card it goes behind) and no
+// 'effects' entry: falling particles render in the main content stage while
+// ambient creatures only ever render over the cover, so a single Effects tab
+// could only point the preview at one of its two halves.
+// Cover artwork and cover layout are one entry, not two: both only ever change
+// the cover stage, and placing a block is done by looking at the artwork it
+// moves, so splitting them just meant switching tabs to see the effect.
+type SectionId = 'basics' | 'brand' | 'cover' | 'content'
+
+interface SectionDescriptor {
+  id: SectionId
+  icon: LucideIcon
+  /** Preview frame id (see resolvePreviewRenderer) this section's edits show up on. */
+  stage: string
+}
+
+const SECTION_DESCRIPTORS: SectionDescriptor[] = [
+  { id: 'basics', icon: Info, stage: 'cover' },
+  { id: 'brand', icon: Palette, stage: 'cover' },
+  { id: 'cover', icon: ImageIcon, stage: 'cover' },
+  { id: 'content', icon: AlignLeft, stage: 'main' },
+]
+
+const activeSection = ref<SectionId>('basics')
+
+const COVER_ASSET_FIELDS: PartnerTemplateAssetField[] = [
+  'basic_decoration_photo',
+  'standard_cover_video',
+  'cover_top_decoration',
+  'cover_bottom_decoration',
+  'cover_left_decoration',
+  'cover_right_decoration',
+  'guest_title_frame_left',
+  'guest_title_frame_mid',
+  'guest_title_frame_right',
+  'sample_logo_1',
+  'sample_logo_2',
+  'header_text_image',
+]
+
+const BACKGROUND_ASSET_FIELDS: PartnerTemplateAssetField[] = [
+  'basic_background_photo',
+  'standard_background_video',
+  'top_decoration',
+  'bottom_decoration',
+  'left_decoration',
+  'right_decoration',
+]
+
+/** An asset counts as present whether it was just picked or is already saved. */
+function countAssets(fields: PartnerTemplateAssetField[]): number {
+  return fields.filter((field) => form[field] instanceof File || !!props.existingTemplate?.[field]).length
+}
+
+const sections = computed(() =>
+  SECTION_DESCRIPTORS.map((section) => {
+    let badge = ''
+    let badgeWarn = false
+    switch (section.id) {
+      case 'basics':
+        if (!canSave.value) {
+          badge = '!'
+          badgeWarn = true
+        }
+        break
+      case 'brand': {
+        const count = pendingColors.value.length + pendingFonts.value.length
+        if (count) badge = String(count)
+        break
+      }
+      // Each stage's badge counts everything configured ON that stage, effects
+      // included — they moved into these two sections, so their toggles have to
+      // move with them or turning one on stops showing up anywhere in the rail.
+      case 'cover': {
+        const count = countAssets(COVER_ASSET_FIELDS) + Number(form.ambient_creatures_enabled)
+        if (count) badge = String(count)
+        break
+      }
+      case 'content': {
+        const count = countAssets(BACKGROUND_ASSET_FIELDS) + Number(form.falling_effect_enabled)
+        if (count) badge = String(count)
+        break
+      }
+    }
+    return {
+      ...section,
+      label: t(`management.partnerTemplateForm.sections.${section.id}.label`),
+      description: t(`management.partnerTemplateForm.sections.${section.id}.description`),
+      badge,
+      badgeWarn,
+    }
+  }),
+)
+
+const activeSectionMeta = computed(
+  () => sections.value.find((section) => section.id === activeSection.value) ?? sections.value[0],
+)
+
+/**
+ * Two-way with the preview: the section drives which stage is shown, but the
+ * preview's own stage tabs still work — clicking one writes back here, so a
+ * later section pick is what re-points it rather than the tab click being undone.
+ */
+const previewStage = ref<string>('cover')
+
+/**
+ * The only way to change section. Deliberately not a `watch(activeSection)`:
+ * picking a section has to re-point the preview even when that section is
+ * already open. Otherwise, after moving the preview to another stage with its
+ * own tabs, clicking the section you were already on — the obvious way to get
+ * back — did nothing at all, because `activeSection` never changed.
+ */
+function selectSection(id: SectionId): void {
+  activeSection.value = id
+  const descriptor = SECTION_DESCRIPTORS.find((entry) => entry.id === id)
+  if (descriptor) previewStage.value = descriptor.stage
+}
 
 // --- Colors handlers ---
 async function fetchColors(): Promise<void> {
@@ -1327,10 +2141,10 @@ function getFontLanguageDisplay(language: string | TemplateLanguageCode): string
 }
 
 function getFontNameDisplay(fontId: number | { id: number; name: string } | null): string {
-  if (!fontId) return 'Unknown font'
+  if (!fontId) return t('management.partnerTemplateForm.fonts.unknownFont')
   if (typeof fontId === 'object' && 'name' in fontId) return fontId.name
   const font = availableCustomFonts.value.find(f => f.id === fontId)
-  return font?.name || 'Unknown font'
+  return font?.name || t('management.partnerTemplateForm.fonts.unknownFont')
 }
 
 function getFontTypeDisplay(fontType: string | TemplateFontType): string {
@@ -1421,6 +2235,8 @@ watch(
     previewImagePreview.value = null
     bgPhotoPreview.value = null
     fallingEffectCustomImagePreview.value = null
+    // Staged removals belong to the template they were staged against.
+    clearedAssets.value = new Set()
     error.value = null
     if (template) {
       form.name = template.name
@@ -1441,8 +2257,12 @@ watch(
       } else {
         form.falling_effect_enabled = false
       }
-      // Hydrate event details design (panel | calendar)
+      // Hydrate event details design (panel | calendar) + calendar marker colour
       form.event_details_design_type = template.event_details_design?.type ?? 'panel'
+      form.event_details_marker_color_source =
+        template.event_details_design?.marker_color_source ?? 'accent'
+      form.event_details_marker_custom_color =
+        template.event_details_design?.marker_custom_color ?? '#B3261E'
       // Hydrate host info design (standard | simple)
       form.host_info_design_type = template.host_info_design?.type ?? 'standard'
       // Hydrate ambient creatures
@@ -1483,8 +2303,12 @@ watch(
   () => props.isOpen,
   (open) => {
     if (open) {
+      mobilePane.value = 'edit'
+      activeSection.value = 'basics'
+      previewStage.value = 'cover'
       fetchPlans()
       fetchCustomFonts()
+      clearedAssets.value = new Set()
       if (!props.existingTemplate) {
         Object.assign(form, defaultForm())
         previewImagePreview.value = null
@@ -1513,6 +2337,8 @@ function handleFileChange(field: keyof FormState, event: Event): void {
   const file = input.files?.[0]
   if (!file) return
   ;(form[field] as File | null) = file
+  // Picking again takes back a pending removal of the same field.
+  unmarkAssetCleared(field as ClearableAssetField)
   if (field === 'preview_image') {
     previewImagePreview.value = URL.createObjectURL(file)
   }
@@ -1523,6 +2349,45 @@ function handleFileChange(field: keyof FormState, event: Event): void {
     fallingEffectCustomImagePreview.value = URL.createObjectURL(file)
     form.clear_falling_effect_custom_image = false
   }
+}
+
+/**
+ * Undoing an upload, in the two senses a partner means by it.
+ *
+ * A pending pick is dropped first, which reveals whatever was saved underneath —
+ * that is what "I chose the wrong file" wants, and it costs nothing because the
+ * file never left the browser. Only when there is no pick left to undo does a
+ * click mark the SAVED asset for removal, which is a real change and therefore
+ * doesn't take effect until Save. Both states are reversible right up to that
+ * point: choosing a new file for the field takes the mark back off.
+ *
+ * The falling effect's particle image is deliberately not routed through here —
+ * it has its own preview thumbnail and its own clear flag on the payload
+ * (`falling_effect_custom_image: ''`), which predates this.
+ */
+function clearAssetField(field: ClearableAssetField): void {
+  if (form[field] instanceof File) {
+    ;(form[field] as File | null) = null
+    if (field === 'preview_image') {
+      if (previewImagePreview.value) URL.revokeObjectURL(previewImagePreview.value)
+      previewImagePreview.value = null
+    }
+    if (field === 'basic_background_photo') {
+      if (bgPhotoPreview.value) URL.revokeObjectURL(bgPhotoPreview.value)
+      bgPhotoPreview.value = null
+    }
+    return
+  }
+  if (props.existingTemplate?.[field]) {
+    clearedAssets.value = new Set(clearedAssets.value).add(field)
+  }
+}
+
+function unmarkAssetCleared(field: ClearableAssetField): void {
+  if (!clearedAssets.value.has(field)) return
+  const next = new Set(clearedAssets.value)
+  next.delete(field)
+  clearedAssets.value = next
 }
 
 function clearFallingEffectCustomImage(): void {
@@ -1540,6 +2405,19 @@ function buildFallingEffectPayload(): FallingEffectConfig | null {
   }
   if (form.falling_effect.color_source === 'custom') {
     cfg.custom_color = form.falling_effect.custom_color
+  }
+  return cfg
+}
+
+// The marker colour only drives the calendar design, so the panel design sends
+// just its type — nothing stale to interpret if the template switches back.
+function buildEventDetailsDesignPayload(): EventDetailsDesignConfig {
+  const cfg: EventDetailsDesignConfig = { type: form.event_details_design_type }
+  if (form.event_details_design_type !== 'calendar') return cfg
+
+  cfg.marker_color_source = form.event_details_marker_color_source
+  if (form.event_details_marker_color_source === 'custom') {
+    cfg.marker_custom_color = form.event_details_marker_custom_color
   }
   return cfg
 }
@@ -1565,7 +2443,7 @@ function buildAmbientCreaturesPayload(): AmbientCreaturesConfig | null {
 }
 
 async function handleSave(): Promise<void> {
-  if (!form.name.trim() || !form.package_plan_id) return
+  if (!canSave.value || !form.package_plan_id) return
   saving.value = true
   error.value = null
 
@@ -1578,23 +2456,26 @@ async function handleSave(): Promise<void> {
       cover_stage_layout: form.cover_stage_layout,
       falling_effect: buildFallingEffectPayload(),
       ambient_creatures: buildAmbientCreaturesPayload(),
-      event_details_design: { type: form.event_details_design_type },
+      event_details_design: buildEventDetailsDesignPayload(),
       host_info_design: { type: form.host_info_design_type },
     }
 
-    // Add file fields that have been set
-    const fileFields = [
-      'preview_image', 'basic_background_photo', 'basic_decoration_photo',
-      'standard_background_video', 'standard_cover_video',
-      'top_decoration', 'bottom_decoration', 'left_decoration', 'right_decoration',
-      'cover_top_decoration', 'cover_bottom_decoration', 'cover_left_decoration', 'cover_right_decoration',
-      'guest_title_frame_left', 'guest_title_frame_mid', 'guest_title_frame_right',
-      'sample_logo_1', 'sample_logo_2', 'header_text_image',
-    ] as const
+    // Add file fields that have been set. The asset list is shared with the
+    // live preview (see partnerTemplateAssets.ts) so the two can't drift;
+    // `preview_image` is the gallery thumbnail, which no stage renders and the
+    // preview therefore doesn't carry.
+    //
+    // An empty string is the delete instruction, matching the convention
+    // `falling_effect_custom_image` already used. Untouched fields are simply
+    // absent, which is what leaves the saved file alone — so "no file here" and
+    // "remove the file that is here" stay distinguishable on the wire.
+    const fileFields = ['preview_image', ...PARTNER_TEMPLATE_ASSET_FIELDS] as const
     for (const field of fileFields) {
       const file = form[field]
       if (file instanceof File) {
         ;(payload as unknown as Record<string, unknown>)[field] = file
+      } else if (clearedAssets.value.has(field)) {
+        ;(payload as unknown as Record<string, unknown>)[field] = ''
       }
     }
 
@@ -1680,6 +2561,73 @@ async function handleSave(): Promise<void> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Live preview. The draft is handed to PartnerTemplatePreview, which converts it
+// to the `TemplateAssets` shape the showcase frames already understand and
+// pushes it into a real frame over the preview bridge — the same mechanism the
+// manage-page studio uses to try a template on before applying it. Nothing here
+// touches the backend; unsaved Files preview from blob URLs.
+// ---------------------------------------------------------------------------
+
+/** Below `lg`, the form and the preview take turns (see the header switch). */
+const mobilePane = ref<'edit' | 'preview'>('edit')
+
+/**
+ * Fonts in the shape the showcase resolves them from. In edit mode the API
+ * already returns the font file with each entry; while creating, the selection
+ * is still just a custom-font id, so it's joined against the loaded custom-font
+ * list here — otherwise picking a font would show nothing until the first save.
+ */
+const previewFonts = computed<EventTemplateLanguageFont[]>(() => {
+  if (isEditing.value) return fonts.value
+  return localFonts.value.flatMap((entry, index) => {
+    const custom = availableCustomFonts.value.find((cf) => cf.id === entry.font)
+    if (!custom) return []
+    return [
+      {
+        // Negative ids keep these distinguishable from saved rows; nothing
+        // downstream persists them.
+        id: -(index + 1),
+        language: entry.language,
+        language_display: entry.language,
+        font: { id: custom.id, name: custom.name, font_file: custom.font_file },
+        font_type: entry.font_type,
+        font_type_display: entry.font_type,
+      },
+    ]
+  })
+})
+
+const previewDraft = computed<PartnerTemplateDraft>(() => {
+  const files: Partial<Record<PartnerTemplateAssetField, File | null>> = {}
+  for (const field of PARTNER_TEMPLATE_ASSET_FIELDS) {
+    files[field] = form[field]
+  }
+
+  return {
+    name: form.name,
+    display_liquid_glass_background: form.display_liquid_glass_background,
+    cover_stage_layout: form.cover_stage_layout,
+    // Reuses the exact builders the save path uses, so the preview can't drift
+    // from what actually gets persisted.
+    falling_effect: buildFallingEffectPayload(),
+    ambient_creatures: buildAmbientCreaturesPayload(),
+    event_details_design: buildEventDetailsDesignPayload(),
+    host_info_design: { type: form.host_info_design_type },
+    colors: pendingColors.value,
+    fonts: previewFonts.value,
+    files,
+    // A staged removal has to reach the preview too, or the frame keeps
+    // rendering the saved asset and the partner can't see what they just
+    // removed until after a save.
+    clearedFiles: PARTNER_TEMPLATE_ASSET_FIELDS.filter((field) =>
+      clearedAssets.value.has(field),
+    ),
+    fallingEffectCustomImage: form.falling_effect_custom_image,
+    clearFallingEffectCustomImage: form.clear_falling_effect_custom_image,
+  }
+})
+
 onMounted(() => {
   if (props.isOpen) {
     fetchPlans()
@@ -1700,16 +2648,17 @@ onMounted(() => {
   transform: translateX(100%);
 }
 
-details > summary::-webkit-details-marker {
-  display: none;
+/* §15 expand/collapse — grid-template-rows, never max-height */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
 }
-
-/* Rotate section chevrons when open */
-.chevron-icon {
-  transition: transform 0.2s ease;
-}
-details[open] > summary .chevron-icon {
-  transform: rotate(180deg);
+.collapse-enter-from,
+.collapse-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
 }
 
 /* Thin scrollbar so the modal's rounded corners stay clean */
@@ -1730,5 +2679,14 @@ details[open] > summary .chevron-icon {
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgb(148 163 184);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse-enter-active,
+  .collapse-leave-active,
+  .slide-enter-active,
+  .slide-leave-active {
+    transition: none;
+  }
 }
 </style>

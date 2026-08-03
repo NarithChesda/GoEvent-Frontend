@@ -25,10 +25,13 @@ import { useEventShowcase, type TemplateAssets } from '@/composables/useEventSho
 import { eventTemplateService } from '@/services/api'
 import { useShowcaseEditSaves } from '@/composables/showcase-preview/useShowcaseEditSaves'
 import { InlineEditKey, EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import { CoverLayoutEditKey } from '@/components/showcase-preview/edit/coverLayoutEditContext'
+import type { CoverElementBoxes, CoverElementId } from '@/services/api/types/template.types'
 import {
   parsePreviewBridgeMessage,
   postEditIntentToParent,
   postFrameReadyToParent,
+  postShowcaseLanguagesToParent,
 } from '@/components/showcase-preview/bridge/previewBridge'
 import { resolvePreviewRenderer } from '@/components/showcase-preview/renderers/resolvePreviewRenderer'
 import LoadingSpinner from '@/components/showcase/LoadingSpinner.vue'
@@ -60,6 +63,8 @@ const {
   currentLanguage,
   loadShowcase,
   refreshShowcaseData,
+  updateLanguageContent,
+  availableLanguages,
   applyEventFieldPatch,
   applyPreviewTemplateFallback,
   setStagedTemplatePreview,
@@ -120,17 +125,76 @@ const replayKey = ref(0)
 // frame.
 const editHintsOn = ref(route.query.hints === '1')
 
+// ---------------------------------------------------------------------------
+// Direct-manipulation cover layout. Turned on by the partner template editor
+// while its Cover Stage section is on free placement; off (and therefore
+// entirely absent) everywhere else, including the live showcase.
+//
+// `?layoutEdit=1` seeds it for the same reason `?hints=1` exists: a frame that
+// mounts already in this mode shouldn't depend on the parent's post landing
+// after the listener is attached.
+// ---------------------------------------------------------------------------
+const coverLayoutEditing = ref(route.query.layoutEdit === '1')
+const coverLayoutOverride = ref<CoverElementBoxes | null>(null)
+const coverLayoutSelected = ref<CoverElementId | null>(null)
+const coverLayoutDragging = ref(false)
+
+provide(CoverLayoutEditKey, {
+  active: coverLayoutEditing,
+  override: coverLayoutOverride,
+  selected: coverLayoutSelected,
+  dragging: coverLayoutDragging,
+})
+
+/**
+ * Tell the parent which languages this event has and which is showing. Only the
+ * frame knows: `available_languages` comes back on the showcase response, so a
+ * parent holding just an event id can't discover it (see
+ * postShowcaseLanguagesToParent).
+ */
+const publishLanguages = () => {
+  postShowcaseLanguagesToParent(
+    availableLanguages.value.map((lang) => lang.language),
+    currentLanguage.value,
+  )
+}
+
 const onFrameMessage = (msg: MessageEvent) => {
   const parsed = parsePreviewBridgeMessage(msg)
   if (!parsed) return
   if (parsed.type === 'replay') replayKey.value++
   if (parsed.type === 'refresh') refreshShowcaseData().then(loadPreviewTemplateFallback)
+  // In-place language swap — no navigation, no remount, no replayed animations.
+  // updateLanguageContent refetches only the localized content and merges it
+  // over the existing showcase data, then reloads that language's fonts.
+  //
+  // `finally` rather than `then`: updateLanguageContent early-returns when the
+  // language is already current, and reverts on error — the parent still needs
+  // to hear what actually ended up on screen either way, or its switcher would
+  // sit showing a language the frame never adopted.
+  if (parsed.type === 'set-language') {
+    void updateLanguageContent(parsed.language).finally(publishLanguages)
+  }
   if (parsed.type === 'patch-event') applyEventFieldPatch(parsed.fields)
-  if (parsed.type === 'preview-template') setStagedTemplatePreview(parsed.templateData)
+  if (parsed.type === 'preview-template') {
+    setStagedTemplatePreview(parsed.templateData)
+    // The push now carries whatever this frame last reported, so the local
+    // override has served its purpose — unless a drag is still running, in
+    // which case this is a stale echo of a position two frames old and
+    // adopting it would visibly snap the block backwards.
+    if (!coverLayoutDragging.value) coverLayoutOverride.value = null
+  }
   if (parsed.type === 'preview-template-clear') clearStagedTemplatePreview()
   if (parsed.type === 'preview-template-commit') commitStagedTemplatePreview()
   if (parsed.type === 'edit-hints-on') editHintsOn.value = true
   if (parsed.type === 'edit-hints-off') editHintsOn.value = false
+  if (parsed.type === 'cover-layout-edit-on') coverLayoutEditing.value = true
+  if (parsed.type === 'cover-layout-edit-off') {
+    coverLayoutEditing.value = false
+    coverLayoutOverride.value = null
+    coverLayoutSelected.value = null
+  }
+  if (parsed.type === 'cover-layout-select') coverLayoutSelected.value = parsed.elementId
 }
 
 // Preview-only fallback: ShowcasePreviewTab passes ?templateId=<id> whenever
@@ -177,7 +241,9 @@ onMounted(() => {
   // so announcing early costs nothing and closes the window in which the parent
   // has state to hand over but nothing here can hear it.
   postFrameReadyToParent()
-  loadShowcase().then(loadPreviewTemplateFallback)
+  // Languages are only knowable once the showcase response is in, so they're
+  // published after the load rather than as part of the ready handshake.
+  loadShowcase().then(loadPreviewTemplateFallback).then(publishLanguages)
 })
 
 onUnmounted(() => {

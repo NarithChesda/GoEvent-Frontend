@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router'
 // Imports - Services & API
 import { eventsService, type EventPaymentMethod } from '../services/api'
 import type {
+  AmbientCreaturesConfig,
   CoverStageLayout,
   FallingEffectConfig,
   EventDetailsDesignConfig,
@@ -143,6 +144,13 @@ export interface TemplateAssets {
     sample_logo_1?: string | null
     sample_logo_2?: string | null
     header_text_image?: string | null
+    // The guest-name title frame pieces live in here, NOT at the top level of
+    // TemplateAssets (where they're also declared, below, but never read) — the
+    // templateAssets computed spreads this sub-object and hands the result to
+    // CoverContentOverlay, which is what actually renders them.
+    guest_title_frame_left?: string | null
+    guest_title_frame_mid?: string | null
+    guest_title_frame_right?: string | null
   }
   colors?: TemplateColor[]
   fonts?: TemplateFont[]
@@ -152,6 +160,8 @@ export interface TemplateAssets {
   cover_stage_layout?: CoverStageLayout
   /** Falling particle effect configuration */
   falling_effect?: FallingEffectConfig | null
+  /** Ambient creature (butterfly/dove/firefly…) effect for the cover stage. */
+  ambient_creatures?: AmbientCreaturesConfig | null
   /**
    * Which showcase presentation layer this template renders: 'v1' (classic
    * cover/transition/main-content) or 'v2' ("Storybook Romance" scroll-story).

@@ -58,6 +58,29 @@ export const packagePlanService = {
   },
 }
 
+/**
+ * Every file field a partner template carries, in one place because create and
+ * update must agree on it — they didn't: `sample_logo_1`, `sample_logo_2` and
+ * `header_text_image` were declared on the payload type and set by the form,
+ * but missing from both loops, so those three uploads were silently dropped on
+ * the floor and never reached the server.
+ *
+ * A `File` uploads. An empty string is the explicit "delete what's stored"
+ * instruction (Django clears a FileField on a blank value). Anything absent is
+ * left untouched — which is what makes "I didn't edit this" different from
+ * "remove this".
+ */
+const TEMPLATE_FILE_FIELDS: Array<keyof PartnerTemplateCreatePayload> = [
+  'preview_image', 'basic_background_photo', 'basic_decoration_photo',
+  'top_decoration', 'bottom_decoration',
+  'left_decoration', 'right_decoration', 'cover_top_decoration',
+  'cover_bottom_decoration', 'cover_left_decoration', 'cover_right_decoration',
+  'guest_title_frame_left', 'guest_title_frame_mid', 'guest_title_frame_right',
+  'standard_cover_video', 'standard_background_video',
+  'sample_logo_1', 'sample_logo_2', 'header_text_image',
+  'open_envelope_button',
+]
+
 // Partner template service (requires is_partner=true)
 export const partnerTemplateService = {
   // List the authenticated partner's own templates
@@ -83,19 +106,13 @@ export const partnerTemplateService = {
     if (payload.youtube_preview_url) {
       formData.append('youtube_preview_url', payload.youtube_preview_url)
     }
-    const fileFields: Array<keyof PartnerTemplateCreatePayload> = [
-      'preview_image', 'basic_background_photo', 'basic_decoration_photo',
-      'top_decoration', 'bottom_decoration',
-      'left_decoration', 'right_decoration', 'cover_top_decoration',
-      'cover_bottom_decoration', 'cover_left_decoration', 'cover_right_decoration',
-      'guest_title_frame_left', 'guest_title_frame_mid', 'guest_title_frame_right',
-      'standard_cover_video', 'standard_background_video',
-      'open_envelope_button',
-    ]
-    for (const field of fileFields) {
+    for (const field of TEMPLATE_FILE_FIELDS) {
       const file = payload[field]
       if (file instanceof File) {
         formData.append(field, file)
+      } else if (file === '') {
+        // Explicit removal — see TEMPLATE_FILE_FIELDS.
+        formData.append(field, '')
       }
     }
     if (payload.cover_stage_layout) {
@@ -137,19 +154,13 @@ export const partnerTemplateService = {
     if (payload.youtube_preview_url !== undefined) {
       formData.append('youtube_preview_url', payload.youtube_preview_url)
     }
-    const fileFields: Array<keyof PartnerTemplateCreatePayload> = [
-      'preview_image', 'basic_background_photo', 'basic_decoration_photo',
-      'top_decoration', 'bottom_decoration',
-      'left_decoration', 'right_decoration', 'cover_top_decoration',
-      'cover_bottom_decoration', 'cover_left_decoration', 'cover_right_decoration',
-      'guest_title_frame_left', 'guest_title_frame_mid', 'guest_title_frame_right',
-      'standard_cover_video', 'standard_background_video',
-      'open_envelope_button',
-    ]
-    for (const field of fileFields) {
+    for (const field of TEMPLATE_FILE_FIELDS) {
       const file = payload[field]
       if (file instanceof File) {
         formData.append(field, file)
+      } else if (file === '') {
+        // Explicit removal — see TEMPLATE_FILE_FIELDS.
+        formData.append(field, '')
       }
     }
     if (payload.cover_stage_layout) {
