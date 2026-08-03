@@ -2888,11 +2888,7 @@
       },
       "cover": {
         "label": "Cover Stage",
-        "description": "Artwork for the invitation cover — backdrop, frames, logos and ambient creatures."
-      },
-      "layout": {
-        "label": "Cover Layout",
-        "description": "Where each row of the cover sits, and what it shows. Drag a slider to see it move."
+        "description": "The invitation cover — backdrop, frames, logos, ambient creatures, and where each block sits."
       },
       "content": {
         "label": "Main Content",

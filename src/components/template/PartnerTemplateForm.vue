@@ -475,7 +475,11 @@
             </section>
           </template>
 
-          <!-- ========================= COVER STAGE ========================= -->
+          <!-- ==================== COVER STAGE & LAYOUT ===================== -->
+          <!-- Artwork first — what the cover is made of — then the geometry that
+               arranges it. They were two rail entries pointing at the same stage
+               and the same preview, so placing a block meant bouncing between
+               tabs to see which artwork it was moving. -->
           <template v-else-if="activeSection === 'cover'">
             <PlanRequiredNotice v-if="!form.package_plan_id" @pick="selectSection('basics')" />
             <template v-else>
@@ -650,10 +654,8 @@
                 </div>
               </Transition>
             </section>
-          </template>
 
-          <!-- ======================== COVER LAYOUT ========================= -->
-          <template v-else-if="activeSection === 'layout'">
+            <!-- ------------------------ Cover layout ------------------------ -->
             <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
               <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 {{ t('management.partnerTemplateForm.coverLayout.presentationGroup') }}
@@ -1124,7 +1126,6 @@ import {
   Info,
   Palette,
   Image as ImageIcon,
-  SlidersHorizontal,
   AlignLeft,
   Check,
   Crown,
@@ -1588,10 +1589,10 @@ const isFreeCoverLayout = computed(() => form.cover_stage_layout.layoutMode === 
 
 /**
  * Handles only appear while the section that owns them is open. Leaving the
- * overlay armed after navigating to, say, Effects would mean an invisible sheet
- * sitting over a preview nobody is trying to drag.
+ * overlay armed after navigating to, say, Main Content would mean an invisible
+ * sheet sitting over a preview nobody is trying to drag.
  */
-const coverLayoutEditing = computed(() => activeSection.value === 'layout' && isFreeCoverLayout.value)
+const coverLayoutEditing = computed(() => activeSection.value === 'cover' && isFreeCoverLayout.value)
 
 /**
  * The boxes as they'd render right now: whatever the template specifies, over
@@ -1897,7 +1898,10 @@ const fontIdModel = computed<string | number | null>({
 // 'effects' entry: falling particles render in the main content stage while
 // ambient creatures only ever render over the cover, so a single Effects tab
 // could only point the preview at one of its two halves.
-type SectionId = 'basics' | 'brand' | 'cover' | 'layout' | 'content'
+// Cover artwork and cover layout are one entry, not two: both only ever change
+// the cover stage, and placing a block is done by looking at the artwork it
+// moves, so splitting them just meant switching tabs to see the effect.
+type SectionId = 'basics' | 'brand' | 'cover' | 'content'
 
 interface SectionDescriptor {
   id: SectionId
@@ -1910,7 +1914,6 @@ const SECTION_DESCRIPTORS: SectionDescriptor[] = [
   { id: 'basics', icon: Info, stage: 'cover' },
   { id: 'brand', icon: Palette, stage: 'cover' },
   { id: 'cover', icon: ImageIcon, stage: 'cover' },
-  { id: 'layout', icon: SlidersHorizontal, stage: 'cover' },
   { id: 'content', icon: AlignLeft, stage: 'main' },
 ]
 

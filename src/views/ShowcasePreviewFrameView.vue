@@ -127,7 +127,7 @@ const editHintsOn = ref(route.query.hints === '1')
 
 // ---------------------------------------------------------------------------
 // Direct-manipulation cover layout. Turned on by the partner template editor
-// while its Cover Layout section is on free placement; off (and therefore
+// while its Cover Stage section is on free placement; off (and therefore
 // entirely absent) everywhere else, including the live showcase.
 //
 // `?layoutEdit=1` seeds it for the same reason `?hints=1` exists: a frame that
