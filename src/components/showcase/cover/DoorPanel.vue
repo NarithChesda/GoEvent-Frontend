@@ -76,6 +76,7 @@
           :guest-title-frame-left="guestTitleFrameLeft"
           :guest-title-frame-mid="guestTitleFrameMid"
           :guest-title-frame-right="guestTitleFrameRight"
+          :guest-frame="guestFrame"
           :guest-name-max-width-percent="guestNameMaxWidthPercent"
           :show-animations="false"
         />
@@ -86,7 +87,11 @@
 
 <script setup lang="ts">
 import { useAssetProtection } from '@/composables/showcase/useAssetProtection'
-import type { CoverElementId, CoverLayoutMode } from '@/services/api/types/template.types'
+import type {
+  CoverElementId,
+  CoverLayoutMode,
+  GuestFrameConfig,
+} from '@/services/api/types/template.types'
 import CoverContentRows from './CoverContentRows.vue'
 
 interface RowStyles {
@@ -154,6 +159,8 @@ interface Props {
   guestTitleFrameLeft?: string | null
   guestTitleFrameMid?: string | null
   guestTitleFrameRight?: string | null
+  /** Which frame style wraps the guest name, and how. Unset = the 3-piece split frame. */
+  guestFrame?: GuestFrameConfig | null
   /** Guest name max width as % of row container (overrides default 60) */
   guestNameMaxWidthPercent?: number
   // Door background

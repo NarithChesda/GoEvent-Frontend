@@ -66,6 +66,7 @@
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
         :guest-title-frame-mid="templateAssets?.guest_title_frame_mid"
         :guest-title-frame-right="templateAssets?.guest_title_frame_right"
+        :guest-frame="guestFrame"
         :guest-name-max-width-percent="guestNameMaxWidthPercent"
         :background-color="backgroundColor"
         :background-image-url="doorBackgroundImageUrl"
@@ -107,6 +108,7 @@
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
         :guest-title-frame-mid="templateAssets?.guest_title_frame_mid"
         :guest-title-frame-right="templateAssets?.guest_title_frame_right"
+        :guest-frame="guestFrame"
         :guest-name-max-width-percent="guestNameMaxWidthPercent"
         :background-color="backgroundColor"
         :background-image-url="doorBackgroundImageUrl"
@@ -164,6 +166,7 @@
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
         :guest-title-frame-mid="templateAssets?.guest_title_frame_mid"
         :guest-title-frame-right="templateAssets?.guest_title_frame_right"
+        :guest-frame="guestFrame"
         :guest-name-max-width-percent="guestNameMaxWidthPercent"
         :show-animations="true"
       />
@@ -297,6 +300,7 @@ const {
   rowStyles,
   layoutMode,
   elementStyles,
+  guestFrame,
   decorationZIndexes,
   layout,
 } = useCoverStageLayout(

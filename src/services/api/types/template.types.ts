@@ -152,6 +152,75 @@ export interface CoverElementBox {
 export type CoverElementBoxes = Partial<Record<CoverElementId, CoverElementBox>>
 
 /**
+ * How the guest name's frame artwork is constructed.
+ *
+ * - `split`   — the original 3-piece frame: a fixed left cap, a middle that
+ *               repeats horizontally to whatever width the name needs, and a
+ *               fixed right cap. Suits art that tiles.
+ * - `single`  — one image IS the whole frame, scaled as a unit. Suits a closed
+ *               ornament (a flourish banner) that can't be cut into pieces.
+ * - `corners` — corner ornaments placed at the box's four corners, with nothing
+ *               drawn along the edges between them.
+ *
+ * The three styles read the SAME three upload slots rather than each having its
+ * own, so switching styles never needs a backend field: `split` uses all three,
+ * `single` uses `guest_title_frame_mid`, `corners` uses left + right. The
+ * template form relabels the slots per style so the reuse isn't confusing.
+ */
+export type GuestFrameStyle = 'split' | 'single' | 'corners'
+
+/**
+ * Which uploaded slot one corner position draws, or `none` to leave it empty.
+ *
+ * Only two sources exist because corner art is symmetric under reflection: a
+ * partner uploads a left-side and a right-side ornament and the flips below
+ * cover the bottom two positions, so a full four-corner frame costs one or two
+ * uploads rather than four.
+ */
+export type GuestFrameCornerSource = 'left' | 'right' | 'none'
+
+export type GuestFrameCornerId = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight'
+
+/** One corner position: what it draws, and how it's mirrored. */
+export interface GuestFrameCorner {
+  source: GuestFrameCornerSource
+  /** Mirror horizontally (`scaleX(-1)`). */
+  flipX?: boolean
+  /** Mirror vertically (`scaleY(-1)`). */
+  flipY?: boolean
+}
+
+export type GuestFrameCorners = Partial<Record<GuestFrameCornerId, GuestFrameCorner>>
+
+/**
+ * Configuration for the guest name's frame.
+ *
+ * Lives inside `cover_stage_layout` alongside `layoutMode`/`coverElements` (same
+ * JSON blob, same additive rules): a template carrying no `guestFrame` at all
+ * resolves to the `split` style with today's geometry, so existing templates are
+ * untouched.
+ */
+export interface GuestFrameConfig {
+  /** Which artwork style renders. Default `split`. */
+  style?: GuestFrameStyle
+  /**
+   * Multiplier on the frame artwork's size, independent of the text.
+   *
+   * Separate from `CoverElementBox.fontScale` (which scales the name AND, via
+   * `--cover-font-scale`, its frame together): this one re-balances the frame
+   * against the name it wraps, which every style needs since a partner's artwork
+   * has its own idea of how much margin it leaves around the text. Default 1.
+   */
+  scale?: number
+  /** Per-corner sources and flips. Read only when `style` is `corners`. */
+  corners?: GuestFrameCorners
+  /** Corner artwork width as % of the frame box width. Default 28. */
+  cornerSize?: number
+  /** How far each corner is pulled inward from the box edges, as % of box width. Default 0. */
+  cornerInset?: number
+}
+
+/**
  * How the cover blocks are positioned.
  *
  * - `rows` — the original stacked model: one absolutely-positioned container
@@ -228,6 +297,10 @@ export interface CoverStageLayout {
   // Kept even while layoutMode is 'rows' so switching back and forth in the
   // template editor doesn't discard hand-placed positions.
   coverElements?: CoverElementBoxes
+
+  // How the guest name's frame artwork is built. Omitted means the 3-piece
+  // split frame with its original geometry — i.e. every existing template.
+  guestFrame?: GuestFrameConfig
 }
 
 /**

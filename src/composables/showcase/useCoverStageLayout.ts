@@ -5,8 +5,42 @@ import type {
   CoverElementColorSource,
   CoverElementId,
   CoverStageLayout,
+  GuestFrameConfig,
+  GuestFrameCornerId,
+  GuestFrameCorners,
   TemplateFontType,
 } from '@/services/api/types/template.types'
+
+/** Corner positions in render order (also their DOM order). */
+export const GUEST_FRAME_CORNER_IDS: readonly GuestFrameCornerId[] = [
+  'topLeft',
+  'topRight',
+  'bottomLeft',
+  'bottomRight',
+]
+
+/**
+ * A closed four-corner frame built from two side-oriented uploads.
+ *
+ * Partners draw corner art already oriented for its side, so the top row uses
+ * both images unflipped and the bottom row is the same pair mirrored vertically.
+ * That gives a complete frame the moment two files are attached, and a partner
+ * who uploads only one can point every corner at it by flipping.
+ */
+export const GUEST_FRAME_CORNER_DEFAULTS: Required<GuestFrameCorners> = {
+  topLeft: { source: 'left' },
+  topRight: { source: 'right' },
+  bottomLeft: { source: 'left', flipY: true },
+  bottomRight: { source: 'right', flipY: true },
+}
+
+export const GUEST_FRAME_DEFAULTS: Required<GuestFrameConfig> = {
+  style: 'split',
+  scale: 1,
+  corners: GUEST_FRAME_CORNER_DEFAULTS,
+  cornerSize: 28,
+  cornerInset: 0,
+}
 
 /**
  * Default values matching current hard-coded values in CoverContentOverlay.vue
@@ -35,6 +69,7 @@ export const COVER_STAGE_LAYOUT_DEFAULTS: Required<CoverStageLayout> = {
   contentWidth: 'standard',
   layoutMode: 'rows',
   coverElements: {},
+  guestFrame: GUEST_FRAME_DEFAULTS,
 }
 
 /** Render order, which is also z-order: later blocks sit above earlier ones. */
@@ -185,6 +220,42 @@ export function resolveCoverElements(layout: Required<CoverStageLayout>): Resolv
   return seeded
 }
 
+/** Every guest-frame field populated — what the frame components render from. */
+export type ResolvedGuestFrame = Required<Omit<GuestFrameConfig, 'corners'>> & {
+  corners: Required<GuestFrameCorners>
+}
+
+/**
+ * The guest frame config with every field filled in.
+ *
+ * Resolved per-field and per-corner rather than "config or defaults", for the
+ * same reason `resolveCoverElements` is: a template that names only the style
+ * still needs sane corner sources, and one that overrides a single corner must
+ * keep the default frame around it instead of blanking the other three.
+ */
+export function resolveGuestFrame(layout: Required<CoverStageLayout>): ResolvedGuestFrame {
+  const config = layout.guestFrame ?? {}
+  const corners = {} as Required<GuestFrameCorners>
+
+  for (const id of GUEST_FRAME_CORNER_IDS) {
+    const override = config.corners?.[id]
+    const fallback = GUEST_FRAME_CORNER_DEFAULTS[id]
+    corners[id] = {
+      source: override?.source ?? fallback.source,
+      flipX: override?.flipX ?? fallback.flipX ?? false,
+      flipY: override?.flipY ?? fallback.flipY ?? false,
+    }
+  }
+
+  return {
+    style: config.style ?? GUEST_FRAME_DEFAULTS.style,
+    scale: config.scale ?? GUEST_FRAME_DEFAULTS.scale,
+    cornerSize: config.cornerSize ?? GUEST_FRAME_DEFAULTS.cornerSize,
+    cornerInset: config.cornerInset ?? GUEST_FRAME_DEFAULTS.cornerInset,
+    corners,
+  }
+}
+
 /**
  * The inline style that places one free block.
  *
@@ -280,8 +351,12 @@ export function useCoverStageLayout(
       contentWidth: config.contentWidth ?? COVER_STAGE_LAYOUT_DEFAULTS.contentWidth,
       layoutMode: config.layoutMode ?? COVER_STAGE_LAYOUT_DEFAULTS.layoutMode,
       coverElements: config.coverElements ?? COVER_STAGE_LAYOUT_DEFAULTS.coverElements,
+      guestFrame: config.guestFrame ?? COVER_STAGE_LAYOUT_DEFAULTS.guestFrame,
     }
   })
+
+  /** The guest name's frame artwork config, every field populated. */
+  const guestFrame = computed<ResolvedGuestFrame>(() => resolveGuestFrame(layout.value))
 
   /** `rows` unless the template explicitly opted into free placement. */
   const layoutMode = computed(() => layout.value.layoutMode)
@@ -353,6 +428,7 @@ export function useCoverStageLayout(
     isFreeLayout,
     elements,
     elementStyles,
+    guestFrame,
     containerStyle,
     rowStyles,
     swipeArrowStyle,

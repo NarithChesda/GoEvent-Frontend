@@ -517,11 +517,63 @@
                 <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   {{ t('management.partnerTemplateForm.coverDecorations.guestFrameGroup') }}
                 </h5>
-                <div class="grid grid-cols-3 gap-2.5">
+
+                <TemplateFormChoice
+                  v-model="guestFrameStyleModel"
+                  :options="guestFrameStyleOptions"
+                  :columns="3"
+                />
+                <p class="text-[11px] text-slate-400 leading-snug">
+                  {{ t(`management.partnerTemplateForm.guestFrame.hint.${form.cover_stage_layout.guestFrame.style}`) }}
+                </p>
+
+                <!-- The same three upload slots serve every style, relabelled to
+                     what the chosen style actually draws with them. Binding the
+                     fields to fixed asset fields (rather than swapping fields per
+                     style) is what lets a partner switch styles without losing
+                     artwork they already uploaded. -->
+                <div v-if="form.cover_stage_layout.guestFrame.style === 'split'" class="grid grid-cols-3 gap-2.5">
                   <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameLeft')" accept="image/*" :file-name="form.guest_title_frame_left?.name" :has-existing-file="hasSavedAsset('guest_title_frame_left')" @change="handleFileChange('guest_title_frame_left', $event)" @clear="clearAssetField('guest_title_frame_left')" />
                   <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameMid')" accept="image/*" :file-name="form.guest_title_frame_mid?.name" :has-existing-file="hasSavedAsset('guest_title_frame_mid')" @change="handleFileChange('guest_title_frame_mid', $event)" @clear="clearAssetField('guest_title_frame_mid')" />
                   <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameRight')" accept="image/*" :file-name="form.guest_title_frame_right?.name" :has-existing-file="hasSavedAsset('guest_title_frame_right')" @change="handleFileChange('guest_title_frame_right', $event)" @clear="clearAssetField('guest_title_frame_right')" />
                 </div>
+
+                <FileUploadField
+                  v-else-if="form.cover_stage_layout.guestFrame.style === 'single'"
+                  :label="t('management.partnerTemplateForm.guestFrame.singleImage')"
+                  accept="image/*"
+                  :file-name="form.guest_title_frame_mid?.name"
+                  :has-existing-file="hasSavedAsset('guest_title_frame_mid')"
+                  @change="handleFileChange('guest_title_frame_mid', $event)"
+                  @clear="clearAssetField('guest_title_frame_mid')"
+                />
+
+                <template v-else>
+                  <div class="grid grid-cols-2 gap-2.5">
+                    <FileUploadField :label="t('management.partnerTemplateForm.guestFrame.cornerAImage')" accept="image/*" :file-name="form.guest_title_frame_left?.name" :has-existing-file="hasSavedAsset('guest_title_frame_left')" @change="handleFileChange('guest_title_frame_left', $event)" @clear="clearAssetField('guest_title_frame_left')" />
+                    <FileUploadField :label="t('management.partnerTemplateForm.guestFrame.cornerBImage')" accept="image/*" :file-name="form.guest_title_frame_right?.name" :has-existing-file="hasSavedAsset('guest_title_frame_right')" @change="handleFileChange('guest_title_frame_right', $event)" @clear="clearAssetField('guest_title_frame_right')" />
+                  </div>
+
+                  <GuestFrameCornerGrid
+                    v-model="guestFrameCornersModel"
+                    :has-left="hasGuestFrameSlot('guest_title_frame_left')"
+                    :has-right="hasGuestFrameSlot('guest_title_frame_right')"
+                  />
+
+                  <div class="grid grid-cols-2 gap-2.5">
+                    <TemplateFormNumber v-model="form.cover_stage_layout.guestFrame.cornerSize" :label="t('management.partnerTemplateForm.guestFrame.cornerSize')" :min="5" :max="60" :step="1" unit="%" />
+                    <TemplateFormNumber v-model="form.cover_stage_layout.guestFrame.cornerInset" :label="t('management.partnerTemplateForm.guestFrame.cornerInset')" :min="-20" :max="30" :step="1" unit="%" />
+                  </div>
+                </template>
+
+                <TemplateFormNumber
+                  v-model="form.cover_stage_layout.guestFrame.scale"
+                  :label="t('management.partnerTemplateForm.guestFrame.scale')"
+                  :min="0.3"
+                  :max="2.5"
+                  :step="0.05"
+                  unit="x"
+                />
               </section>
 
               <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
@@ -1147,6 +1199,9 @@ import {
   UserRound,
   Move,
   Rows3,
+  Columns3,
+  RectangleHorizontal,
+  Frame,
   type LucideIcon,
 } from 'lucide-vue-next'
 import { partnerTemplateService, packagePlanService, customFontsService, FONT_TYPE_LABELS, LANGUAGE_CODE_LABELS } from '../../services/api'
@@ -1163,6 +1218,8 @@ import type {
   CoverElementColorSource,
   CoverElementId,
   CoverLayoutMode,
+  GuestFrameCorners,
+  GuestFrameStyle,
   EventTemplateColor,
   EventTemplateLanguageFont,
   CustomFont,
@@ -1188,11 +1245,14 @@ import TemplateFormSelect, { type TemplateFormSelectOption } from './TemplateFor
 import PlanRequiredNotice from './TemplateFormPlanNotice.vue'
 import { TEMPLATES_HEADER_SLOT } from './templatesHeaderSlot'
 import { useMediaQuery } from '../../composables/useMediaQuery'
+import GuestFrameCornerGrid from './GuestFrameCornerGrid.vue'
 import {
   COVER_ELEMENT_IDS,
   resolveCoverElements,
+  resolveGuestFrame,
   rowsToCoverElements,
   type ResolvedCoverElementBox,
+  type ResolvedGuestFrame,
 } from '../../composables/showcase/useCoverStageLayout'
 import { TEMPLATE_COLOR_SLOTS, TEMPLATE_FONT_TYPE_SLOTS } from './templateSlots'
 import {
@@ -1277,9 +1337,21 @@ async function fetchPlans(): Promise<void> {
 }
 
 // Cover stage layout defaults
-const defaultCoverStageLayout = (): Required<CoverStageLayout> => ({
+/**
+ * The form always holds a FULLY populated guest frame config.
+ *
+ * `Required<CoverStageLayout>` only guarantees the `guestFrame` key exists, not
+ * the fields inside it, but every control below binds straight to one of those
+ * fields with `v-model` — so the form's copy resolves them up front (the same
+ * way the showcase's `resolveGuestFrame` does) rather than making each control
+ * cope with `undefined`.
+ */
+type CoverStageLayoutFormState = Required<CoverStageLayout> & { guestFrame: ResolvedGuestFrame }
+
+const defaultCoverStageLayout = (): CoverStageLayoutFormState => ({
   layoutMode: 'rows',
   coverElements: {},
+  guestFrame: resolveGuestFrame({} as Required<CoverStageLayout>),
   contentTopPosition: 23.5,
   innerContainerHeight: 53,
   eventTitleHeight: 18.75,
@@ -1341,7 +1413,7 @@ interface FormState {
   sample_logo_1: File | null
   sample_logo_2: File | null
   header_text_image: File | null
-  cover_stage_layout: Required<CoverStageLayout>
+  cover_stage_layout: CoverStageLayoutFormState
   falling_effect_enabled: boolean
   falling_effect: FallingEffectFormState
   falling_effect_custom_image: File | null
@@ -1574,6 +1646,45 @@ const contentWidthModel = computed<string>({
   get: () => form.cover_stage_layout.contentWidth,
   set: (value) => { form.cover_stage_layout.contentWidth = value as 'standard' | 'wide' },
 })
+
+// ---------------------------------------------------------------------------
+// Guest name frame.
+//
+// Switching style never touches the uploads: all three styles read the same
+// three asset slots (relabelled per style in the markup above), so a partner can
+// try the one-piece look and go back to the 3-piece one with their artwork
+// intact. The corner board keeps its config for the same reason.
+// ---------------------------------------------------------------------------
+const guestFrameStyleModel = computed<string>({
+  get: () => form.cover_stage_layout.guestFrame.style,
+  set: (value) => { form.cover_stage_layout.guestFrame.style = value as GuestFrameStyle },
+})
+
+const guestFrameCornersModel = computed<GuestFrameCorners>({
+  get: () => form.cover_stage_layout.guestFrame.corners,
+  set: (value) => {
+    // The grid emits a partial map; re-resolving fills any corner it left out so
+    // the form's copy stays fully populated for the controls bound to it.
+    form.cover_stage_layout.guestFrame = resolveGuestFrame({
+      guestFrame: { ...form.cover_stage_layout.guestFrame, corners: value },
+    } as Required<CoverStageLayout>)
+  },
+})
+
+const guestFrameStyleOptions = computed(() => [
+  { value: 'split', label: t('management.partnerTemplateForm.guestFrame.styles.split'), icon: Columns3 },
+  { value: 'single', label: t('management.partnerTemplateForm.guestFrame.styles.single'), icon: RectangleHorizontal },
+  { value: 'corners', label: t('management.partnerTemplateForm.guestFrame.styles.corners'), icon: Frame },
+])
+
+/**
+ * Whether a guest-frame slot will actually have art at render time — a file
+ * picked in this session, or a saved one not staged for removal. The corner
+ * board greys out sources that would draw nothing.
+ */
+const hasGuestFrameSlot = (
+  field: 'guest_title_frame_left' | 'guest_title_frame_right',
+): boolean => !!form[field] || hasSavedAsset(field)
 
 // ---------------------------------------------------------------------------
 // Free placement of the cover blocks.
@@ -2246,6 +2357,13 @@ watch(
       // Merge existing cover_stage_layout with defaults
       if (template.cover_stage_layout) {
         Object.assign(form.cover_stage_layout, template.cover_stage_layout)
+        // Re-resolve after the assign: a stored `guestFrame` is free to carry
+        // only the keys the partner changed (and templates saved before this
+        // feature carry none at all), and Object.assign would drop the rest of
+        // the object wholesale rather than merging into it.
+        form.cover_stage_layout.guestFrame = resolveGuestFrame(
+          template.cover_stage_layout as Required<CoverStageLayout>,
+        )
       }
       // Hydrate falling effect
       if (template.falling_effect) {

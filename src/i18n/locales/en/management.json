@@ -2732,6 +2732,38 @@
       "guestFrameGroup": "Guest name frame",
       "brandingGroup": "Logos & header art"
     },
+    "guestFrame": {
+      "styles": {
+        "split": "3-Piece",
+        "single": "1-Piece",
+        "corners": "Corners"
+      },
+      "hint": {
+        "split": "Left and right end caps with a middle that repeats to fit the name. Best for art that tiles.",
+        "single": "One image is the whole frame. It keeps its aspect ratio and scales with the name.",
+        "corners": "Corner ornaments only, with nothing drawn between them. Two uploads fill all four corners."
+      },
+      "singleImage": "Frame Image",
+      "cornerAImage": "Corner A",
+      "cornerBImage": "Corner B",
+      "cornersLabel": "Corner placement",
+      "cornersHint": "Each corner draws Corner A, Corner B, or nothing. Use the flips to reuse one image on the opposite side.",
+      "cornerTopLeft": "Top left",
+      "cornerTopRight": "Top right",
+      "cornerBottomLeft": "Bottom left",
+      "cornerBottomRight": "Bottom right",
+      "cornerA": "A",
+      "cornerB": "B",
+      "cornerOff": "Off",
+      "sourceMissing": "No image uploaded for this slot yet",
+      "flipX": "Mirror horizontally",
+      "flipY": "Mirror vertically",
+      "flipXShort": "H",
+      "flipYShort": "V",
+      "cornerSize": "Corner Size",
+      "cornerInset": "Corner Inset",
+      "scale": "Frame Scale"
+    },
     "coverLayout": {
       "animationType": "Animation Type",
       "animationDecoration": "Decoration (slide out)",
