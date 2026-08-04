@@ -1,18 +1,15 @@
 <template>
   <div class="guest-name-container" :class="{ 'english-name': isEnglishGuestName }">
     <div class="premium-name-frame" :style="frameStyle">
-      <!-- 3-part split frame -->
-      <div class="split-frame-container" aria-hidden="true">
-        <img :src="leftFrameUrl" alt="" class="frame-left" v-bind="protectionAttrs" />
-        <div class="frame-middle-wrapper">
-          <div
-            class="frame-middle"
-            :style="{ backgroundImage: `url(${middleFrameUrl})` }"
-            v-bind="protectionAttrs"
-          ></div>
-        </div>
-        <img :src="rightFrameUrl" alt="" class="frame-right" v-bind="protectionAttrs" />
-      </div>
+      <!-- Frame artwork: whichever style the template picked. This component
+           knows nothing about what gets drawn — see guest-frames/index.ts. -->
+      <component
+        :is="frameComponent"
+        :left-url="leftFrameUrl"
+        :mid-url="middleFrameUrl"
+        :right-url="rightFrameUrl"
+        :config="resolvedGuestFrame"
+      />
       <!-- Guest name positioned over the frame -->
       <h2
         ref="guestNameElementRef"
@@ -53,7 +50,13 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { useAssetProtection } from '@/composables/showcase/useAssetProtection'
+import {
+  resolveGuestFrame,
+  GUEST_FRAME_DEFAULTS,
+  type ResolvedGuestFrame,
+} from '@/composables/showcase/useCoverStageLayout'
+import type { CoverStageLayout, GuestFrameConfig } from '@/services/api/types/template.types'
+import { GUEST_FRAME_COMPONENTS } from './guest-frames'
 
 // Default liquid glass frames
 import leftFramePng from '@/assets/left-frame.png'
@@ -75,6 +78,12 @@ interface Props {
   guestTitleFrameLeft?: string | null
   guestTitleFrameMid?: string | null
   guestTitleFrameRight?: string | null
+  /**
+   * Which frame style to draw and how. Omitted resolves to the 3-piece split
+   * frame with its original geometry, so a caller that never passes this — or a
+   * template that carries no `guestFrame` — renders exactly as before.
+   */
+  guestFrame?: GuestFrameConfig | null
   /** External scale value (optional, for controlled scaling) */
   scale?: number
   /** Pixel cap on the guest name width (derived from template percentage) */
@@ -85,9 +94,24 @@ const props = withDefaults(defineProps<Props>(), {
   displayLiquidGlass: true,
   scale: 1,
   maxWidthPx: null,
+  guestFrame: null,
 })
 
-const { protectionAttrs } = useAssetProtection()
+// resolveGuestFrame takes the whole layout, but only ever reads `guestFrame` —
+// passing a one-key object keeps the fill-in rules in one place instead of
+// duplicating the defaults here.
+const resolvedGuestFrame = computed<ResolvedGuestFrame>(() =>
+  resolveGuestFrame({ guestFrame: props.guestFrame ?? undefined } as Required<CoverStageLayout>),
+)
+
+const frameComponent = computed(
+  () =>
+    GUEST_FRAME_COMPONENTS[resolvedGuestFrame.value.style] ??
+    GUEST_FRAME_COMPONENTS[GUEST_FRAME_DEFAULTS.style],
+)
+
+/** The bundled fallback frames only make sense as 3-piece art. */
+const isSplitStyle = computed(() => resolvedGuestFrame.value.style === 'split')
 
 // Element refs for DOM measurement
 const guestNameElementRef = ref<HTMLElement | null>(null)
@@ -230,27 +254,34 @@ const frameStyle = computed(() => ({
   '--accent-glow': props.primaryColor,
 }))
 
-// Frame URLs with fallback logic
-const leftFrameUrl = computed(() => {
-  if (props.guestTitleFrameLeft) {
-    return props.getMediaUrl(props.guestTitleFrameLeft)
-  }
-  return props.displayLiquidGlass ? leftFramePng : leftFrameTranPng
-})
+// Frame URLs, resolved once here so every style receives the same three slots
+// already turned into real URLs.
+//
+// The bundled PNGs stand in ONLY for the split style: they are a 3-piece set, so
+// substituting them into a template that asked for a one-piece or corner frame
+// would draw art the partner never chose. Those styles simply render nothing for
+// a slot they have no upload in.
+const resolveSlot = (
+  url: string | null | undefined,
+  glassFallback: string,
+  transparentFallback: string,
+): string | null => {
+  if (url) return props.getMediaUrl(url)
+  if (!isSplitStyle.value) return null
+  return props.displayLiquidGlass ? glassFallback : transparentFallback
+}
 
-const middleFrameUrl = computed(() => {
-  if (props.guestTitleFrameMid) {
-    return props.getMediaUrl(props.guestTitleFrameMid)
-  }
-  return props.displayLiquidGlass ? middleFramePng : middleFrameTranPng
-})
+const leftFrameUrl = computed(() =>
+  resolveSlot(props.guestTitleFrameLeft, leftFramePng, leftFrameTranPng),
+)
 
-const rightFrameUrl = computed(() => {
-  if (props.guestTitleFrameRight) {
-    return props.getMediaUrl(props.guestTitleFrameRight)
-  }
-  return props.displayLiquidGlass ? rightFramePng : rightFrameTranPng
-})
+const middleFrameUrl = computed(() =>
+  resolveSlot(props.guestTitleFrameMid, middleFramePng, middleFrameTranPng),
+)
+
+const rightFrameUrl = computed(() =>
+  resolveSlot(props.guestTitleFrameRight, rightFramePng, rightFrameTranPng),
+)
 
 // Expose ref for parent scale calculation
 defineExpose({
@@ -280,84 +311,6 @@ defineExpose({
   justify-content: center;
   max-width: 100%;
   padding: 0.5rem 2.5rem;
-}
-
-/* 3-part split frame container */
-.split-frame-container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: calc(100% + 40px);
-  /* The frame graphic is the guest name's decoration, so it grows with the
-     name rather than staying a fixed 75px slab around scaled-up text. Every
-     px length here (and in the two media queries below) rides the same
-     --cover-font-scale the text does. */
-  min-width: calc(200px * var(--cover-font-scale, 1));
-  max-width: calc(500px * var(--cover-font-scale, 1));
-  height: calc(75px * var(--cover-font-scale, 1));
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0;
-  animation: frameEntrance 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-  animation-delay: 0.8s;
-}
-
-.frame-left {
-  flex-shrink: 0;
-  height: 100%;
-  width: auto;
-  display: block;
-  position: relative;
-  z-index: 2;
-  margin-right: -2px;
-}
-
-.frame-right {
-  flex-shrink: 0;
-  height: 100%;
-  width: auto;
-  display: block;
-  position: relative;
-  z-index: 2;
-  margin-left: -2px;
-}
-
-.frame-middle-wrapper {
-  flex: 1;
-  height: 100%;
-  overflow: hidden;
-  min-width: 20px;
-  z-index: 1;
-}
-
-.frame-middle {
-  width: 100%;
-  height: 100%;
-  background-repeat: repeat-x;
-  background-size: auto 100%;
-  background-position: center;
-}
-
-@keyframes frameEntrance {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scaleX(0.3) scaleY(0.8);
-  }
-  50% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scaleX(1.02) scaleY(1);
-  }
-  75% {
-    transform: translate(-50%, -50%) scaleX(0.98) scaleY(1);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scaleX(1) scaleY(1);
-  }
 }
 
 .guest-name-single-line {
@@ -469,14 +422,6 @@ defineExpose({
   }
 }
 
-/* Laptop only */
-@media (min-width: 1024px) and (max-width: 1535px) {
-  .split-frame-container {
-    max-width: calc(400px * var(--cover-font-scale, 1));
-    height: calc(50px * var(--cover-font-scale, 1));
-  }
-}
-
 /* Mobile */
 @media (max-width: 640px) {
   .scaled-guest-name {
@@ -494,10 +439,6 @@ defineExpose({
 
   .guest-name-container.english-name .premium-name-frame {
     padding: 0.5rem 2rem !important;
-  }
-
-  .split-frame-container {
-    height: calc(60px * var(--cover-font-scale, 1));
   }
 }
 </style>

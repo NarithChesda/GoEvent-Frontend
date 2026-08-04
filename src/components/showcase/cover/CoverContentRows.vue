@@ -162,6 +162,7 @@
           :guest-title-frame-left="guestTitleFrameLeft"
           :guest-title-frame-mid="guestTitleFrameMid"
           :guest-title-frame-right="guestTitleFrameRight"
+          :guest-frame="guestFrame"
           :max-width-px="guestNameMaxWidthPx"
         />
       </div>
@@ -178,7 +179,11 @@ import GuestNameFrame from './GuestNameFrame.vue'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import type { EditIntent } from '@/components/showcase-preview/edit/editContext'
-import type { CoverElementId, CoverLayoutMode } from '@/services/api/types/template.types'
+import type {
+  CoverElementId,
+  CoverLayoutMode,
+  GuestFrameConfig,
+} from '@/services/api/types/template.types'
 import fallbackLogoSvg from '@/assets/temp-showcase-logo.svg?raw'
 
 interface RowStyles {
@@ -231,6 +236,8 @@ interface Props {
   guestTitleFrameLeft?: string | null
   guestTitleFrameMid?: string | null
   guestTitleFrameRight?: string | null
+  /** Which frame style wraps the guest name, and how. Unset = the 3-piece split frame. */
+  guestFrame?: GuestFrameConfig | null
   /** Max width of the guest name as % of the row container (default: 60) */
   guestNameMaxWidthPercent?: number
   /** Show fade-in animations (for decoration mode) */
