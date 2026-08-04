@@ -2596,7 +2596,10 @@
   "partnerTemplatePreview": {
     "stageLabel": "Preview stage",
     "languageLabel": "Preview language",
-    "hint": "Nothing here is saved until you save the template."
+    "hint": "Nothing here is saved until you save the template.",
+    "enterFullscreen": "Full screen",
+    "exitFullscreen": "Exit full screen",
+    "escHint": "Esc to exit"
   },
   "coverLayoutEditor": {
     "sectionTitle": "Block Placement",

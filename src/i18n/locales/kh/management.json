@@ -2596,7 +2596,10 @@
   "partnerTemplatePreview": {
     "stageLabel": "ដំណាក់កាលមើលជាមុន",
     "languageLabel": "ភាសាមើលជាមុន",
-    "hint": "គ្មានអ្វីត្រូវបានរក្សាទុកទេ រហូតដល់អ្នករក្សាទុកគំរូ។"
+    "hint": "គ្មានអ្វីត្រូវបានរក្សាទុកទេ រហូតដល់អ្នករក្សាទុកគំរូ។",
+    "enterFullscreen": "ពេញអេក្រង់",
+    "exitFullscreen": "ចាកចេញពីពេញអេក្រង់",
+    "escHint": "ចុច Esc ដើម្បីចាកចេញ"
   },
   "coverLayoutEditor": {
     "sectionTitle": "ការដាក់ទីតាំងប្លុក",
