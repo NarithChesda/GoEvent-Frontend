@@ -29,7 +29,7 @@
             :class="option.value === modelValue ? 'text-[#1e90ff]' : 'text-slate-400'"
           />
           <span
-            class="text-[13px] font-medium truncate"
+            class="text-[0.8125rem] font-medium truncate"
             :class="option.value === modelValue ? 'text-slate-900' : 'text-slate-700'"
           >{{ option.label }}</span>
           <Check
@@ -38,7 +38,7 @@
             aria-hidden="true"
           />
         </span>
-        <span v-if="option.description" class="text-[11px] leading-snug text-slate-500">
+        <span v-if="option.description" class="text-[0.6875rem] leading-snug text-slate-500">
           {{ option.description }}
         </span>
       </button>

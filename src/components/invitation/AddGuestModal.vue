@@ -13,7 +13,7 @@
     <Transition name="slide-right">
       <div
         v-if="show"
-        class="fixed bottom-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[580px] lg:w-[640px] md:max-w-[calc(100vw-32px)] max-h-[85vh] md:max-h-none bg-white rounded-t-3xl md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
+        class="fixed bottom-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[36.25rem] lg:w-[40rem] md:max-w-[calc(100vw-32px)] max-h-[85vh] md:max-h-none bg-white rounded-t-3xl md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
         @click.stop
       >
         <!-- Header -->
@@ -199,7 +199,7 @@
                   <div class="flex items-center gap-2">
                     <FileSpreadsheet class="w-5 h-5 text-emerald-600" />
                     <div>
-                      <p class="text-sm font-medium text-slate-900 truncate max-w-[200px]">{{ filePreview.fileName }}</p>
+                      <p class="text-sm font-medium text-slate-900 truncate max-w-[12.5rem]">{{ filePreview.fileName }}</p>
                       <p class="text-xs text-slate-500">{{ t('management.guestGroupsView.addGuestModal.bulkImport.guestsFound', { count: filePreview.totalRows }) }}</p>
                     </div>
                   </div>
@@ -234,7 +234,7 @@
                   <div class="bg-slate-100 px-4 py-2.5 border-b border-slate-200">
                     <p class="text-xs font-semibold text-slate-700 uppercase tracking-wider">{{ t('management.guestGroupsView.addGuestModal.bulkImport.preview.title') }}</p>
                   </div>
-                  <div class="max-h-[250px] overflow-y-auto">
+                  <div class="max-h-[15.625rem] overflow-y-auto">
                     <table class="w-full">
                       <thead class="bg-slate-50 sticky top-0">
                         <tr>

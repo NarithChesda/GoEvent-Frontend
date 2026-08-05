@@ -24,7 +24,7 @@
         aria-hidden="true"
       />
     </div>
-    <p v-if="hint" class="text-[11px] leading-snug text-slate-400">{{ hint }}</p>
+    <p v-if="hint" class="text-[0.6875rem] leading-snug text-slate-400">{{ hint }}</p>
   </div>
 </template>
 

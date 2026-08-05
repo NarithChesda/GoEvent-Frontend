@@ -12,7 +12,7 @@
     <div
       v-if="show"
       @click.stop
-      class="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-10 min-w-[120px]"
+      class="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-10 min-w-[7.5rem]"
     >
       <button
         @click="emit('replace')"

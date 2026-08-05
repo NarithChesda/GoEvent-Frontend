@@ -42,7 +42,7 @@
           class="fixed z-[1001] bg-white"
           :class="isMobile
             ? 'inset-x-0 bottom-0 rounded-t-3xl shadow-2xl pb-[max(env(safe-area-inset-bottom),0.75rem)]'
-            : 'w-[320px] rounded-xl border border-slate-200 shadow-xl'"
+            : 'w-[20rem] rounded-xl border border-slate-200 shadow-xl'"
           :style="isMobile ? undefined : panelStyle"
           @click.stop
         >

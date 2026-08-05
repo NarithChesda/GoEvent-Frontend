@@ -16,7 +16,7 @@
         </span>
         <span
           v-if="hasExistingFile && !fileName"
-          class="text-[10px] px-1.5 py-0.5 rounded-full bg-white text-emerald-700 ring-1 ring-emerald-200 font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+          class="text-[0.625rem] px-1.5 py-0.5 rounded-full bg-white text-emerald-700 ring-1 ring-emerald-200 font-medium opacity-0 group-hover:opacity-100 transition-opacity"
         >
           {{ t('management.partnerTemplateForm.fileField.replace') }}
         </span>

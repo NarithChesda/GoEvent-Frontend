@@ -155,7 +155,7 @@
           </div>
           <div class="text-right flex-shrink-0 ml-3">
             <div class="font-semibold text-slate-900 text-sm sm:text-base">{{ donation.donation_display }}</div>
-            <div v-if="donation.message" class="text-xs text-slate-500 max-w-[100px] sm:max-w-[150px] truncate">
+            <div v-if="donation.message" class="text-xs text-slate-500 max-w-[6.25rem] sm:max-w-[9.375rem] truncate">
               "{{ donation.message }}"
             </div>
           </div>

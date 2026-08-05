@@ -13,7 +13,7 @@
     <Transition name="slide-right">
       <div
         v-if="open"
-        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[520px] laptop-sm:w-[560px] laptop-md:w-[620px] desktop:w-[680px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
+        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[32.5rem] laptop-sm:w-[35rem] laptop-md:w-[38.75rem] desktop:w-[42.5rem] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
         @click.stop
       >
         <!-- Header -->
@@ -28,7 +28,7 @@
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
               <div class="min-w-0">
-                <p v-if="templateName" class="text-[10px] uppercase tracking-wide text-white/80">
+                <p v-if="templateName" class="text-[0.625rem] uppercase tracking-wide text-white/80">
                   {{ templateName }}
                 </p>
                 <h2 class="text-base font-semibold text-white leading-tight">
@@ -50,7 +50,7 @@
                 <p class="text-xs sm:text-sm font-medium text-slate-700">
                   {{ t('management.templatePaymentTab.paymentDrawer.currentPayment') }}
                 </p>
-                <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5 truncate">
+                <p class="text-[0.6875rem] sm:text-xs text-slate-500 mt-0.5 truncate">
                   {{ currentPayment.plan_name }}
                 </p>
               </div>
@@ -68,19 +68,19 @@
                 <!-- Amount Display -->
                 <div class="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
                   <div>
-                    <p class="text-[10px] sm:text-[11px] text-slate-500 uppercase tracking-wide">
+                    <p class="text-[0.625rem] sm:text-[0.6875rem] text-slate-500 uppercase tracking-wide">
                       {{ templatePackage?.name || t('management.templatePaymentTab.paymentDrawer.total') }}
                     </p>
                     <div class="flex items-baseline gap-1">
                       <p class="text-base sm:text-xl font-bold text-slate-900">${{ finalAmount }}</p>
-                      <p v-if="promoDiscount" class="text-[10px] sm:text-xs text-slate-400 line-through">
+                      <p v-if="promoDiscount" class="text-[0.625rem] sm:text-xs text-slate-400 line-through">
                         ${{ promoDiscount.original }}
                       </p>
                     </div>
                   </div>
                   <div
                     v-if="promoDiscount"
-                    class="px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] sm:text-[11px] font-medium whitespace-nowrap"
+                    class="px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[0.625rem] sm:text-[0.6875rem] font-medium whitespace-nowrap"
                   >
                     -${{ promoDiscount.discount }}
                   </div>
@@ -99,7 +99,7 @@
                       <span class="text-xs sm:text-sm font-medium text-emerald-700 truncate">
                         {{ appliedPromoCode.code }}
                       </span>
-                      <span class="text-[10px] sm:text-[11px] text-emerald-600 flex-shrink-0">
+                      <span class="text-[0.625rem] sm:text-[0.6875rem] text-emerald-600 flex-shrink-0">
                         ({{
                           appliedPromoCode.discount_type === 'percentage'
                             ? `${appliedPromoCode.discount_value}%`
@@ -145,7 +145,7 @@
                         }}</span>
                       </button>
                     </div>
-                    <p v-if="promoCodeError" class="text-[10px] sm:text-[11px] text-red-600 pl-1">
+                    <p v-if="promoCodeError" class="text-[0.625rem] sm:text-[0.6875rem] text-red-600 pl-1">
                       {{ promoCodeError }}
                     </p>
                   </div>
@@ -158,7 +158,7 @@
                 <h3 class="text-sm sm:text-base font-semibold text-slate-800">
                   {{ t('management.templatePaymentTab.paymentDrawer.paymentMethod') }}
                 </h3>
-                <span v-if="selectedMethod" class="text-[11px] sm:text-xs text-slate-500">
+                <span v-if="selectedMethod" class="text-[0.6875rem] sm:text-xs text-slate-500">
                   {{ selectedMethod.payment_type_display }}
                 </span>
               </div>
@@ -201,7 +201,7 @@
                       <p class="text-sm sm:text-base font-medium text-slate-900 truncate">
                         {{ method.name }}
                       </p>
-                      <p class="text-[11px] sm:text-xs text-slate-500 truncate">
+                      <p class="text-[0.6875rem] sm:text-xs text-slate-500 truncate">
                         {{ method.payment_type_display }}
                       </p>
                     </div>
@@ -227,7 +227,7 @@
                   <h3 class="text-sm sm:text-base font-semibold text-slate-800">
                     {{ t('management.templatePaymentTab.paymentDrawer.howToPay') }}
                   </h3>
-                  <p class="text-[11px] text-slate-500">{{ selectedMethod.name }}</p>
+                  <p class="text-[0.6875rem] text-slate-500">{{ selectedMethod.name }}</p>
                 </div>
               </div>
 
@@ -396,7 +396,7 @@
                   <p class="text-sm font-medium text-slate-800 mb-1">
                     {{ t('management.templatePaymentTab.paymentDrawer.step3.title') }}
                   </p>
-                  <p class="text-[11px] text-slate-500 mb-2">
+                  <p class="text-[0.6875rem] text-slate-500 mb-2">
                     {{ t('management.templatePaymentTab.paymentDrawer.step3.hint') }}
                   </p>
                   <div class="relative">
@@ -434,7 +434,7 @@
                               : t('management.templatePaymentTab.paymentDrawer.step3.chooseFile')
                           }}
                         </p>
-                        <p class="text-[11px] text-slate-500">
+                        <p class="text-[0.6875rem] text-slate-500">
                           {{ t('management.templatePaymentTab.paymentDrawer.step3.fileTypes') }}
                         </p>
                       </div>

@@ -75,7 +75,7 @@
               class="w-2.5 h-2.5 rounded-full flex-shrink-0"
               :style="{ backgroundColor: selectedCategory?.color || '#3498db' }"
             ></span>
-            <span class="truncate max-w-[160px]">
+            <span class="truncate max-w-[10rem]">
               {{ activeFilter === 'all' ? t('management.expenseBudgets.filter.allCategories') : selectedCategory?.name || t('management.expenseBudgets.filter.select') }}
             </span>
             <ChevronDown
@@ -88,7 +88,7 @@
           <Transition name="dropdown">
             <div
               v-if="isFilterDropdownOpen && isDesktop"
-              class="hidden sm:block absolute top-full left-0 mt-2 w-[280px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100] max-h-[420px] overflow-y-auto"
+              class="hidden sm:block absolute top-full left-0 mt-2 w-[17.5rem] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100] max-h-[26.25rem] overflow-y-auto"
               @click.stop
             >
               <div class="p-1.5">
@@ -434,7 +434,7 @@
                         <span>{{ formatDate(expense.date) }}</span>
                         <template v-if="expense.paid_to">
                           <span aria-hidden="true">·</span>
-                          <span class="truncate max-w-[120px]">{{ expense.paid_to }}</span>
+                          <span class="truncate max-w-[7.5rem]">{{ expense.paid_to }}</span>
                         </template>
                         <template v-if="expense.receipt">
                           <span aria-hidden="true">·</span>

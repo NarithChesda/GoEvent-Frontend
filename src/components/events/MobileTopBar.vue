@@ -42,7 +42,7 @@
     <Transition name="dropdown">
       <div
         v-if="showLanguageMenu"
-        class="glass-dropdown absolute right-4 top-full mt-1 rounded-xl overflow-hidden min-w-[140px]"
+        class="glass-dropdown absolute right-4 top-full mt-1 rounded-xl overflow-hidden min-w-[8.75rem]"
       >
         <button
           v-for="lang in languages"

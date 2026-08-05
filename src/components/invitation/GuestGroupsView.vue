@@ -107,7 +107,7 @@
                   class="w-2.5 h-2.5 rounded-full flex-shrink-0"
                   :style="{ backgroundColor: groups.find(g => g.id.toString() === activeFilter)?.color || '#3498db' }"
                 ></span>
-                <span class="truncate max-w-[120px]">
+                <span class="truncate max-w-[7.5rem]">
                   {{ activeFilter === 'all' ? t('management.guestGroupsView.filterBar.allGroups') : groups.find(g => g.id.toString() === activeFilter)?.name || t('management.guestGroupsView.filterBar.select') }}
                 </span>
                 <!-- RSVP status reads as a second, independent axis, so it
@@ -127,7 +127,7 @@
               <Transition name="dropdown">
                 <div
                   v-if="isDropdownOpen && isDesktop"
-                  class="absolute top-full left-0 mt-2 w-[280px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100] max-h-[420px] overflow-y-auto"
+                  class="absolute top-full left-0 mt-2 w-[17.5rem] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100] max-h-[26.25rem] overflow-y-auto"
                   @click.stop
                 >
                   <div class="p-1.5">
@@ -495,7 +495,7 @@
         <div
           v-else-if="hasAnyGuests"
           ref="scrollContainerRef"
-          class="max-h-[600px] overflow-y-auto space-y-2 p-3 sm:p-4 custom-scrollbar"
+          class="max-h-[37.5rem] overflow-y-auto space-y-2 p-3 sm:p-4 custom-scrollbar"
         >
           <QuickAddGuestRow
             v-if="groups.length > 0"

@@ -19,7 +19,7 @@
     <Transition name="dropdown">
       <div
         v-if="isOpen"
-        class="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-[300px] overflow-y-auto"
+        class="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-[18.75rem] overflow-y-auto"
       >
         <div
           v-for="group in groups"

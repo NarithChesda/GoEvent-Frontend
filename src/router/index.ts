@@ -186,6 +186,27 @@ const router = createRouter({
 })
 
 /**
+ * Routes that must render at the browser's native scale, opting out of the
+ * 13"-15" laptop root-font scale-down in src/assets/main.css.
+ *
+ * The showcase is guest-facing and tuned around vh units and GSAP pixel
+ * measurements, and the preview frame deliberately renders at a fixed native
+ * resolution to be scaled from the outside by its host iframe — shrinking the
+ * root font under either would corrupt the layout it is measuring against.
+ */
+const NATIVE_SCALE_ROUTES = new Set([
+  'event-showcase',
+  'event-showcase-preview-frame',
+])
+
+const applyNativeScale = (routeName: unknown) => {
+  document.documentElement.classList.toggle(
+    'native-scale',
+    NATIVE_SCALE_ROUTES.has(routeName as string)
+  )
+}
+
+/**
  * Route guard for authentication
  *
  * IMPROVEMENTS:
@@ -254,6 +275,13 @@ router.beforeEach(async (to, from, next) => {
     console.warn('[Router] Allowing navigation despite route guard error')
     next()
   }
+})
+
+// afterEach, not beforeEach: the class must reflect the route that actually
+// resolved, so a cancelled or redirected navigation can't leave it stale.
+// This also fires for the initial navigation, covering a direct load/refresh.
+router.afterEach((to) => {
+  applyNativeScale(to.name)
 })
 
 export default router

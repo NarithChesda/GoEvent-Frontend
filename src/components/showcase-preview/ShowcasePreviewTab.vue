@@ -1017,6 +1017,21 @@ defineExpose({
 <style scoped>
 .showcase-studio {
   position: relative;
+
+  /* Single source of truth for the content panel's desktop width — the shell's
+     open width, the glass surface inside it, the room reserved for it by
+     .main.is-shrunk, and the edge handle's resting position all derive from
+     this. They must move together or the handle detaches from the panel edge
+     and the frames slide under it.
+
+     In `rem`, not `px`, so it follows the 13"-15" laptop root-font scale-down
+     in src/assets/main.css like the rest of the UI. As a hard 440px it stayed
+     put while everything around it shrank to 75%, so on a laptop it was
+     claiming ~33% more of the width than it does on a desktop — the opposite
+     of what a smaller screen needs. At 27.5rem it resolves to 440px at the
+     normal root size and ~330px on a laptop, i.e. exactly the same proportion
+     of the viewport on both, leaving the extra room to the live preview. */
+  --studio-panel-w: 27.5rem;
 }
 
 /* Content panel: a true extension of EventNavigationTabs.vue's own fixed
@@ -1032,10 +1047,10 @@ defineExpose({
    animation — it reads as the panel *extending out of* the sidebar rather
    than a card sliding in over it. This shell is just the clipping mask
    (`overflow: hidden`); the actual glass surface (background/blur/border)
-   lives on .panel-inner instead, sized to a constant 440px on desktop (see
-   the min-width:1024px block below) independent of the shell's own
-   animating width, so the reveal looks like a curtain opening rather than
-   text reflowing as the box narrows/widens. */
+   lives on .panel-inner instead, sized to a constant --studio-panel-w on
+   desktop (see the min-width:1024px block below) independent of the shell's
+   own animating width, so the reveal looks like a curtain opening rather
+   than text reflowing as the box narrows/widens. */
 .showcase-studio__panel-shell {
   position: fixed;
   top: 4rem;
@@ -1048,14 +1063,14 @@ defineExpose({
 }
 
 .showcase-studio__panel-shell.is-open {
-  width: 440px;
+  width: var(--studio-panel-w);
 }
 
 .showcase-studio__panel-inner {
   /* No explicit width here — defaults to auto (100% of the shell), which is
      exactly right on mobile (the shell already sits at its real, constant
-     width there; see the max-width:1023px block). Desktop pins this to a
-     literal 440px instead (min-width:1024px block below), decoupled from
+     width there; see the max-width:1023px block). Desktop pins this to
+     --studio-panel-w instead (min-width:1024px block below), decoupled from
      the shell's own animating width, so the reveal clips a fixed-size
      surface rather than reflowing its contents as the box grows. */
   height: 100%;
@@ -1195,7 +1210,7 @@ defineExpose({
 }
 
 .showcase-studio__panel-toggle.is-open {
-  left: calc(var(--panel-left) + 440px);
+  left: calc(var(--panel-left) + var(--studio-panel-w));
 }
 
 .showcase-studio__panel-toggle:hover {
@@ -1227,6 +1242,31 @@ defineExpose({
   font-size: 0.875rem;
   color: rgb(100 116 139);
   margin-top: 0.25rem;
+}
+
+/* Short viewports — 13"-15" laptops, and any short window on a bigger screen.
+   The header collapses to a single row so the frames the user actually came to
+   look at aren't pushed below the fold.
+
+   The subtitle is one-time orientation copy ("Edit your showcase and try
+   templates…"); on a short screen it costs an entire row plus the header's
+   bottom margin, every visit, forever. Dropping it leaves just the title, which
+   the toolbar has ample room to sit beside even with the content panel open.
+
+   `flex-wrap` stays `wrap` deliberately rather than being forced to `nowrap`:
+   with the subtitle gone the two children fit on one line at any realistic
+   width, so wrap never triggers — but it remains a safety valve that degrades
+   to two rows instead of overflowing if a long translation of the title or a
+   future toolbar control ever does run out of room. */
+@media (min-width: 1024px) and (max-height: 1100px) {
+  .showcase-preview-tab__header {
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .showcase-preview-tab__subtitle {
+    display: none;
+  }
 }
 
 /* Studio toolbar.
@@ -1615,7 +1655,7 @@ defineExpose({
   .showcase-studio__panel-inner {
     /* Fixed, independent of the shell's own animating width — see the
        comment on .panel-inner above. */
-    width: 440px;
+    width: var(--studio-panel-w);
   }
 
   .showcase-studio__main {
@@ -1631,7 +1671,7 @@ defineExpose({
   }
 
   .showcase-studio__main.is-shrunk {
-    margin-left: 440px;
+    margin-left: var(--studio-panel-w);
   }
 }
 

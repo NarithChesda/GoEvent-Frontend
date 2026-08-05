@@ -61,7 +61,7 @@
     </div>
 
     <!-- Content Area -->
-    <div v-else class="min-h-[400px]">
+    <div v-else class="min-h-[25rem]">
       <!-- Sub-navigation -->
       <div class="flex items-center gap-2 mb-6 border-b border-slate-200/70">
         <button

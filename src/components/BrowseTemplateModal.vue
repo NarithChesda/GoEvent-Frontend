@@ -24,7 +24,7 @@
             role="dialog"
             aria-modal="true"
             :aria-label="t('management.browseTemplateModal.title')"
-            class="relative bg-white lg:rounded-2xl shadow-2xl shadow-slate-950/40 lg:ring-1 lg:ring-white/10 overflow-hidden flex flex-col lg:flex-row w-full h-full lg:w-[95vw] lg:max-w-[1400px] lg:h-[90vh] lg:max-h-[900px]"
+            class="relative bg-white lg:rounded-2xl shadow-2xl shadow-slate-950/40 lg:ring-1 lg:ring-white/10 overflow-hidden flex flex-col lg:flex-row w-full h-full lg:w-[95vw] lg:max-w-[87.5rem] lg:h-[90vh] lg:max-h-[56.25rem]"
             @keydown.esc="handleEscapeKey"
           >
             <!-- Desktop Left Sidebar (hidden on mobile). Filters only, and only
@@ -41,7 +41,7 @@
               <nav class="w-56 h-full overflow-y-auto px-3 py-4 custom-scrollbar" :aria-label="t('management.browseTemplateModal.sidebar.filtersLabel')">
                 <!-- Package Filter -->
                 <div class="mb-5">
-                  <h3 class="px-3 mb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-widest">{{ t('management.browseTemplateModal.sidebar.packageLabel') }}</h3>
+                  <h3 class="px-3 mb-1.5 text-[0.6875rem] font-semibold text-slate-400 uppercase tracking-widest">{{ t('management.browseTemplateModal.sidebar.packageLabel') }}</h3>
                   <div class="flex flex-col gap-0.5">
                     <button
                       type="button"
@@ -75,7 +75,7 @@
 
                 <!-- Category Filter -->
                 <div>
-                  <h3 class="px-3 mb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-widest">{{ t('management.browseTemplateModal.sidebar.categoryLabel') }}</h3>
+                  <h3 class="px-3 mb-1.5 text-[0.6875rem] font-semibold text-slate-400 uppercase tracking-widest">{{ t('management.browseTemplateModal.sidebar.categoryLabel') }}</h3>
                   <div class="flex flex-col gap-0.5">
                     <!-- All Categories -->
                     <button
@@ -126,7 +126,7 @@
                       type="button"
                       @click="setActiveTab('browse')"
                       :class="[
-                        'relative flex-1 py-2 rounded-full text-[13px] font-semibold transition-colors duration-300',
+                        'relative flex-1 py-2 rounded-full text-[0.8125rem] font-semibold transition-colors duration-300',
                         activeTab === 'browse' ? 'text-white' : 'text-slate-600 active:text-slate-800',
                       ]"
                     >{{ t('management.browseTemplateModal.tabs.browseAll') }}</button>
@@ -134,7 +134,7 @@
                       type="button"
                       @click="setActiveTab('my-templates')"
                       :class="[
-                        'relative flex-1 py-2 rounded-full text-[13px] font-semibold transition-colors duration-300 flex items-center justify-center gap-1.5',
+                        'relative flex-1 py-2 rounded-full text-[0.8125rem] font-semibold transition-colors duration-300 flex items-center justify-center gap-1.5',
                         activeTab === 'my-templates' ? 'text-white' : 'text-slate-600 active:text-slate-800',
                       ]"
                     >
@@ -185,7 +185,7 @@
                           : 'bg-slate-100 text-slate-600 active:bg-slate-200'
                       "
                     >
-                      <component :is="currentPlanOption.icon" class="w-[18px] h-[18px]" />
+                      <component :is="currentPlanOption.icon" class="w-[1.125rem] h-[1.125rem]" />
                     </button>
 
                     <!-- Category Filter Icon Button (opens bottom sheet) -->
@@ -202,7 +202,7 @@
                           : 'bg-slate-100 text-slate-600 active:bg-slate-200'
                       "
                     >
-                      <component :is="currentCategoryIcon" class="w-[18px] h-[18px]" />
+                      <component :is="currentCategoryIcon" class="w-[1.125rem] h-[1.125rem]" />
                     </button>
 
                     <!-- Close button lives here only when there is no tab row above -->
@@ -318,7 +318,7 @@
                       >
                         <component
                           :is="option.icon"
-                          :class="['w-[18px] h-[18px]', selectedPlan === option.value ? 'text-[#2ecc71]' : 'text-slate-500']"
+                          :class="['w-[1.125rem] h-[1.125rem]', selectedPlan === option.value ? 'text-[#2ecc71]' : 'text-slate-500']"
                         />
                       </span>
                       <span

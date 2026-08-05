@@ -56,7 +56,7 @@
     </div>
 
     <!-- Content Area -->
-    <div v-else class="min-h-[400px] space-y-6">
+    <div v-else class="min-h-[25rem] space-y-6">
       <!-- Cash Gift Analytics Section -->
       <CashGiftAnalytics
         ref="cashGiftAnalyticsRef"

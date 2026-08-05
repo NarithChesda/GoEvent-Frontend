@@ -58,7 +58,7 @@
                 : statusButtonClass"
             >
               <Filter class="w-4 h-4 flex-shrink-0" :class="selectedStatus === '' ? 'text-slate-500' : ''" />
-              <span class="truncate max-w-[80px] sm:max-w-[120px]">
+              <span class="truncate max-w-[80px] sm:max-w-[7.5rem]">
                 {{ selectedStatus === '' ? t('settings.donations.filter.allStatus') : statusLabels[selectedStatus] }}
               </span>
               <ChevronDown
@@ -71,7 +71,7 @@
             <Transition name="dropdown">
               <div
                 v-if="isStatusDropdownOpen"
-                class="absolute top-full left-0 mt-2 min-w-[180px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100]"
+                class="absolute top-full left-0 mt-2 min-w-[11.25rem] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100]"
                 @click.stop
               >
                 <div class="p-1.5">

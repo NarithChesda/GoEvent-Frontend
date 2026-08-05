@@ -91,13 +91,13 @@
             >
               {{ getInitials(localizedItem.speaker) }}
             </div>
-            <span class="font-medium truncate max-w-[140px]" :title="localizedItem.speaker">{{ localizedItem.speaker }}</span>
+            <span class="font-medium truncate max-w-[8.75rem]" :title="localizedItem.speaker">{{ localizedItem.speaker }}</span>
           </div>
 
           <!-- Location -->
           <div v-if="item.location" class="flex items-center gap-1.5">
             <MapPin class="w-3 h-3 text-slate-400" />
-            <span class="truncate max-w-[140px]" :title="item.location">{{ item.location }}</span>
+            <span class="truncate max-w-[8.75rem]" :title="item.location">{{ item.location }}</span>
           </div>
 
           <!-- Virtual -->

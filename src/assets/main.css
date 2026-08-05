@@ -33,6 +33,40 @@ body {
   display: none; /* Chrome, Safari, modern Edge */
 }
 
+/* ---------------------------------------------------------------------------
+ * Laptop scale-down (13"-15")
+ *
+ * The app is designed at a single fixed scale from `sm:` upward — `3xl:`/`4xl:`
+ * are unused and `2xl:` covers only a handful of spots — so the same absolute
+ * sizes that read as airy on a 27" monitor eat the screen on a 1440px laptop.
+ * Shrinking the root font scales Tailwind's entire rem-based theme (spacing,
+ * fontSize, maxWidth, sizing, borderRadius) in one move.
+ *
+ * This is mathematically identical to a 75% browser zoom for every rem-based
+ * value: at 75% zoom a 1440px screen reports a 1920px viewport, so `max-w-5xl`
+ * (64rem = 1024 CSS px) paints 768 physical px — exactly what 64rem at a 12px
+ * root gives on the unzoomed 1440px viewport. `vh`/`vw` also land identically.
+ * Hard-coded `px` values are the only thing that does not follow.
+ *
+ * `75%` rather than `12px` so a user's own browser font-size preference is
+ * scaled proportionally instead of being overridden outright (a11y).
+ *
+ * Media-query breakpoints are unaffected — per Media Queries L4, `rem`/`em` in
+ * a media query resolve against the *initial* font size, and Tailwind's screens
+ * are px anyway. So the layout tier does not shift; only the scale changes.
+ *
+ * The max-height term keeps a merely *narrowed window* on a large monitor out;
+ * only genuinely short laptop viewports match.
+ *
+ * `.native-scale` opts a route out — see setNativeScaleRoutes() in
+ * src/router/index.ts.
+ * ------------------------------------------------------------------------ */
+@media (min-width: 1200px) and (max-width: 1599px) and (max-height: 1100px) {
+  html:not(.native-scale) {
+    font-size: 75%;
+  }
+}
+
 /* Multi-language font configuration */
 /* Figtree is primary font for English/Latin characters */
 /* Kantumruy Pro will automatically be used for Khmer characters (unicode fallback) */

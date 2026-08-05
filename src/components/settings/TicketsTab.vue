@@ -95,7 +95,7 @@
 
                 <div class="flex items-center justify-between gap-3">
                   <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 text-xs text-slate-500">
-                    <span class="font-mono text-slate-600 truncate max-w-[110px] sm:max-w-none">
+                    <span class="font-mono text-slate-600 truncate max-w-[6.875rem] sm:max-w-none">
                       {{ o.confirmation_code }}
                     </span>
                     <span class="text-slate-300">·</span>

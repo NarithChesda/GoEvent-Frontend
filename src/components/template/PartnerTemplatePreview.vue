@@ -72,7 +72,7 @@
           :title="fullscreenLabel"
           @click="setFullscreen(!fullscreen)"
         >
-          <component :is="fullscreen ? Minimize2 : Maximize2" class="w-[15px] h-[15px]" />
+          <component :is="fullscreen ? Minimize2 : Maximize2" class="w-[0.9375rem] h-[0.9375rem]" />
         </button>
       </div>
     </div>

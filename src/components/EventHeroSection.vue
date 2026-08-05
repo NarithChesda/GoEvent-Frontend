@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative min-h-[400px] md:min-h-[450px] lg:min-h-[500px] xl:min-h-[550px] overflow-hidden"
+    class="relative min-h-[25rem] md:min-h-[28.125rem] lg:min-h-[31.25rem] xl:min-h-[34.375rem] overflow-hidden"
   >
     <!-- Banner Image with Fallback -->
     <div class="absolute inset-0">

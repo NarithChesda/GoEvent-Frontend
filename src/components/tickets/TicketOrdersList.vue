@@ -36,7 +36,7 @@
                 class="w-4 h-4 flex-shrink-0"
                 :class="activeStatus === null ? 'text-slate-500' : 'text-white/80'"
               />
-              <span class="truncate max-w-[120px] sm:max-w-[180px]">
+              <span class="truncate max-w-[7.5rem] sm:max-w-[11.25rem]">
                 {{ activeFilterLabel }}
               </span>
               <ChevronDown
@@ -51,7 +51,7 @@
             <Transition name="dropdown">
               <div
                 v-if="isFilterDropdownOpen"
-                class="absolute top-full left-0 mt-2 min-w-[220px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100] max-h-[320px] overflow-y-auto"
+                class="absolute top-full left-0 mt-2 min-w-[13.75rem] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100] max-h-[20rem] overflow-y-auto"
                 @click.stop
               >
                 <div class="p-1.5">

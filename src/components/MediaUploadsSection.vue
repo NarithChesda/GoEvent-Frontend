@@ -122,7 +122,7 @@
               <div
                 v-if="dropdownManager.isOpen('music')"
                 @click.stop
-                class="absolute right-0 top-full mt-2 min-w-[220px] bg-white border border-slate-200 rounded-xl shadow-xl z-[100] py-1"
+                class="absolute right-0 top-full mt-2 min-w-[13.75rem] bg-white border border-slate-200 rounded-xl shadow-xl z-[100] py-1"
               >
                 <button
                   @click="showMusicModal = true; dropdownManager.closeAllDropdowns()"

@@ -16,7 +16,7 @@
         class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 active:scale-95 transition-all"
         :aria-label="t('management.partnerTemplateForm.header.goBack')"
       >
-        <ArrowLeft class="w-[18px] h-[18px]" />
+        <ArrowLeft class="w-[1.125rem] h-[1.125rem]" />
       </button>
 
       <div class="min-w-0 flex-1">
@@ -77,7 +77,7 @@
           class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 active:scale-95 transition-all"
           :aria-label="t('management.partnerTemplateForm.header.goBack')"
         >
-          <ArrowLeft class="w-[18px] h-[18px]" />
+          <ArrowLeft class="w-[1.125rem] h-[1.125rem]" />
         </button>
 
         <h3 class="min-w-0 flex-1 text-base font-semibold tracking-tight text-slate-900 truncate">
@@ -129,10 +129,10 @@
               class="w-4 h-4 flex-shrink-0 transition-colors"
               :class="activeSection === section.id ? 'text-[#1e90ff]' : 'text-slate-400 group-hover:text-slate-500'"
             />
-            <span class="text-[13px] font-medium whitespace-nowrap lg:truncate">{{ section.label }}</span>
+            <span class="text-[0.8125rem] font-medium whitespace-nowrap lg:truncate">{{ section.label }}</span>
             <span
               v-if="section.badge"
-              class="ml-auto flex-shrink-0 min-w-[1.25rem] px-1.5 py-0.5 rounded-full text-[10px] font-semibold text-center"
+              class="ml-auto flex-shrink-0 min-w-[1.25rem] px-1.5 py-0.5 rounded-full text-[0.625rem] font-semibold text-center"
               :class="section.badgeWarn ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500 group-hover:bg-white'"
             >{{ section.badge }}</span>
           </button>
@@ -187,7 +187,7 @@
                     placeholder="https://goevent.online/g/dPmdHn?lang=kh"
                     class="w-full px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
                   />
-                  <p class="text-[11px] leading-snug text-slate-400">{{ t('management.partnerTemplateForm.fields.previewUrlHint') }}</p>
+                  <p class="text-[0.6875rem] leading-snug text-slate-400">{{ t('management.partnerTemplateForm.fields.previewUrlHint') }}</p>
                 </div>
               </div>
 
@@ -209,7 +209,7 @@
                       class="w-full h-full object-cover"
                     />
                     <div class="absolute inset-0 bg-slate-950/25 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <label class="cursor-pointer px-2.5 py-1.5 bg-white/95 rounded-lg text-[11px] font-medium text-slate-700 shadow-sm">
+                      <label class="cursor-pointer px-2.5 py-1.5 bg-white/95 rounded-lg text-[0.6875rem] font-medium text-slate-700 shadow-sm">
                         {{ t('management.partnerTemplateForm.fields.previewImageChange') }}
                         <input type="file" accept="image/*" class="sr-only" @change="handleFileChange('preview_image', $event)" />
                       </label>
@@ -227,7 +227,7 @@
                   <label v-else class="flex flex-col items-center justify-center aspect-[9/16] cursor-pointer">
                     <Upload class="w-6 h-6 text-slate-400 mb-1.5" />
                     <span class="text-xs font-medium text-slate-500 text-center px-2">{{ t('management.partnerTemplateForm.fields.previewImageUpload') }}</span>
-                    <span class="text-[10px] text-slate-400 mt-0.5 text-center">{{ t('management.partnerTemplateForm.fields.previewImageAspect') }}</span>
+                    <span class="text-[0.625rem] text-slate-400 mt-0.5 text-center">{{ t('management.partnerTemplateForm.fields.previewImageAspect') }}</span>
                     <input type="file" accept="image/*" class="sr-only" @change="handleFileChange('preview_image', $event)" />
                   </label>
                 </div>
@@ -268,11 +268,11 @@
                     :class="form.package_plan_id === plan.id ? 'text-[#1e90ff]' : 'text-slate-400'"
                   />
                   <span class="min-w-0 flex-1">
-                    <span v-if="plan.category" class="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 truncate">
+                    <span v-if="plan.category" class="block text-[0.625rem] font-semibold uppercase tracking-wider text-slate-400 truncate">
                       {{ plan.category.name }}
                     </span>
-                    <span class="block text-[13px] font-medium text-slate-800 truncate">{{ plan.name }}</span>
-                    <span class="block text-[11px] text-slate-500">${{ plan.price }}</span>
+                    <span class="block text-[0.8125rem] font-medium text-slate-800 truncate">{{ plan.name }}</span>
+                    <span class="block text-[0.6875rem] text-slate-500">${{ plan.price }}</span>
                   </span>
                   <Check v-if="form.package_plan_id === plan.id" class="w-4 h-4 flex-shrink-0 text-[#1e90ff]" />
                 </button>
@@ -287,7 +287,7 @@
                 <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   {{ t('management.partnerTemplateForm.colors.sectionTitle') }}
                 </h5>
-                <span class="text-[11px] text-slate-400">{{ pendingColors.length }}</span>
+                <span class="text-[0.6875rem] text-slate-400">{{ pendingColors.length }}</span>
               </div>
 
               <p v-if="pendingColors.length === 0" class="text-xs text-slate-400">
@@ -305,8 +305,8 @@
                     aria-hidden="true"
                   />
                   <span class="min-w-0 flex-1">
-                    <span class="block text-[13px] font-medium text-slate-700 truncate">{{ color.name }}</span>
-                    <span class="block text-[11px] text-slate-400 uppercase tabular-nums">{{ color.hex_color_code }}</span>
+                    <span class="block text-[0.8125rem] font-medium text-slate-700 truncate">{{ color.name }}</span>
+                    <span class="block text-[0.6875rem] text-slate-400 uppercase tabular-nums">{{ color.hex_color_code }}</span>
                   </span>
                   <button
                     v-if="isEditing"
@@ -347,7 +347,7 @@
                   <input
                     v-model="colorForm.hex_color_code"
                     type="color"
-                    class="w-10 h-[38px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
+                    class="w-10 h-[2.375rem] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
                     :aria-label="t('management.partnerTemplateForm.colors.colorLabel')"
                   />
                   <input
@@ -384,7 +384,7 @@
                 <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   {{ t('management.partnerTemplateForm.fonts.sectionTitle') }}
                 </h5>
-                <span class="text-[11px] text-slate-400">{{ pendingFonts.length }}</span>
+                <span class="text-[0.6875rem] text-slate-400">{{ pendingFonts.length }}</span>
               </div>
 
               <p v-if="pendingFonts.length === 0" class="text-xs text-slate-400">
@@ -400,10 +400,10 @@
                     <Type class="w-3.5 h-3.5 text-slate-400" />
                   </span>
                   <span class="min-w-0 flex-1">
-                    <span class="block text-[13px] font-medium text-slate-700 truncate">
+                    <span class="block text-[0.8125rem] font-medium text-slate-700 truncate">
                       {{ getFontNameDisplay(isEditing ? (f as EventTemplateLanguageFont).font : f.font) }}
                     </span>
-                    <span class="block text-[11px] text-slate-400 truncate">
+                    <span class="block text-[0.6875rem] text-slate-400 truncate">
                       {{ getFontLanguageDisplay(f.language) }} · {{ getFontTypeDisplay(f.font_type) }}
                     </span>
                   </span>
@@ -523,7 +523,7 @@
                   :options="guestFrameStyleOptions"
                   :columns="3"
                 />
-                <p class="text-[11px] text-slate-400 leading-snug">
+                <p class="text-[0.6875rem] text-slate-400 leading-snug">
                   {{ t(`management.partnerTemplateForm.guestFrame.hint.${form.cover_stage_layout.guestFrame.style}`) }}
                 </p>
 
@@ -632,7 +632,7 @@
                         <input
                           v-model="form.ambient_creatures.custom_color"
                           type="color"
-                          class="w-10 h-[38px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
+                          class="w-10 h-[2.375rem] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
                           :aria-label="t('management.partnerTemplateForm.ambientCreatures.pickLabel')"
                         />
                         <input
@@ -687,15 +687,15 @@
                           </div>
                           <div class="grid grid-cols-3 gap-2">
                             <div class="space-y-1">
-                              <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.weightLabel') }}</label>
+                              <label class="block text-[0.6875rem] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.weightLabel') }}</label>
                               <input v-model.number="entry.weight" type="number" min="1" max="10" step="1" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
                             </div>
                             <div class="space-y-1">
-                              <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.minSize') }}</label>
+                              <label class="block text-[0.6875rem] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.minSize') }}</label>
                               <input v-model.number="entry.min_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
                             </div>
                             <div class="space-y-1">
-                              <label class="block text-[11px] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.maxSize') }}</label>
+                              <label class="block text-[0.6875rem] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.maxSize') }}</label>
                               <input v-model.number="entry.max_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
                             </div>
                           </div>
@@ -731,7 +731,7 @@
               <TemplateFormChoice v-model="layoutModeModel" :options="layoutModeOptions" />
 
               <template v-if="isFreeCoverLayout">
-                <p class="flex items-start gap-1.5 text-[11px] leading-snug text-sky-700 bg-sky-50 ring-1 ring-sky-100 rounded-xl p-2.5">
+                <p class="flex items-start gap-1.5 text-[0.6875rem] leading-snug text-sky-700 bg-sky-50 ring-1 ring-sky-100 rounded-xl p-2.5">
                   <Move class="w-3.5 h-3.5 flex-shrink-0 mt-px" />
                   {{ t('management.coverLayoutEditor.dragHint') }}
                 </p>
@@ -799,7 +799,7 @@
                     <input
                       v-model="coverBoxCustomColor"
                       type="color"
-                      class="w-10 h-[38px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
+                      class="w-10 h-[2.375rem] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
                       :aria-label="t('management.partnerTemplateForm.fallingEffect.pickLabel')"
                     />
                     <input
@@ -828,11 +828,11 @@
                     </button>
                   </div>
                 </div>
-                <p v-else class="text-[11px] text-slate-400 leading-snug">
+                <p v-else class="text-[0.6875rem] text-slate-400 leading-snug">
                   {{ t('management.coverLayoutEditor.pickBlock') }}
                 </p>
               </template>
-              <p v-else class="text-[11px] text-slate-400 leading-snug">
+              <p v-else class="text-[0.6875rem] text-slate-400 leading-snug">
                 {{ t('management.coverLayoutEditor.rowsHint') }}
               </p>
             </section>
@@ -893,7 +893,7 @@
                 <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   {{ t('management.partnerTemplateForm.coverLayout.hostClip') }}
                 </h5>
-                <p class="text-[11px] text-slate-400 leading-snug mt-1">{{ t('management.partnerTemplateForm.coverLayout.hostClipHint') }}</p>
+                <p class="text-[0.6875rem] text-slate-400 leading-snug mt-1">{{ t('management.partnerTemplateForm.coverLayout.hostClipHint') }}</p>
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
                 <TemplateFormNumber v-model="form.cover_stage_layout.hostClipScale" :label="t('management.partnerTemplateForm.coverLayout.hostClipScale')" :min="0" :max="100" :step="1" unit="%" />
@@ -982,7 +982,7 @@
                 {{ t('management.partnerTemplateForm.eventDetailsDesign.sectionTitle') }}
               </h5>
               <TemplateFormChoice v-model="eventDetailsDesignModel" :options="eventDetailsDesignOptions" :columns="1" />
-              <p class="text-[11px] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.eventDetailsDesign.designHint') }}</p>
+              <p class="text-[0.6875rem] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.eventDetailsDesign.designHint') }}</p>
 
               <!-- Marker colour only affects the calendar design's circled day. -->
               <Transition name="collapse">
@@ -999,7 +999,7 @@
                         <input
                           v-model="form.event_details_marker_custom_color"
                           type="color"
-                          class="w-10 h-[38px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
+                          class="w-10 h-[2.375rem] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
                           :aria-label="t('management.partnerTemplateForm.fallingEffect.pickLabel')"
                         />
                         <input
@@ -1011,7 +1011,7 @@
                           class="flex-1 min-w-0 px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm uppercase tabular-nums transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
                         />
                       </div>
-                      <p class="text-[11px] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.eventDetailsDesign.markerColorHint') }}</p>
+                      <p class="text-[0.6875rem] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.eventDetailsDesign.markerColorHint') }}</p>
                     </div>
                   </div>
                 </div>
@@ -1023,7 +1023,7 @@
                 {{ t('management.partnerTemplateForm.hostInfoDesign.sectionTitle') }}
               </h5>
               <TemplateFormChoice v-model="hostInfoDesignModel" :options="hostInfoDesignOptions" :columns="1" />
-              <p class="text-[11px] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.hostInfoDesign.designHint') }}</p>
+              <p class="text-[0.6875rem] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.hostInfoDesign.designHint') }}</p>
             </section>
 
             <!-- Falling particles render inside the main content stage (see
@@ -1062,7 +1062,7 @@
                         <input
                           v-model="form.falling_effect.custom_color"
                           type="color"
-                          class="w-10 h-[38px] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
+                          class="w-10 h-[2.375rem] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
                           :aria-label="t('management.partnerTemplateForm.fallingEffect.pickLabel')"
                         />
                         <input
@@ -1077,7 +1077,7 @@
 
                       <div class="space-y-1.5">
                         <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.fallingEffect.customImage') }}</label>
-                        <p class="text-[11px] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.fallingEffect.customImageHint') }}</p>
+                        <p class="text-[0.6875rem] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.fallingEffect.customImageHint') }}</p>
                         <div
                           v-if="fallingEffectCustomImagePreview || (existingTemplate?.falling_effect?.custom_image && !form.clear_falling_effect_custom_image)"
                           class="flex items-center gap-3 p-2 ring-1 ring-slate-200 rounded-xl"
@@ -1146,7 +1146,7 @@
            row now, so keeping a bar down here just to restate the hint would be
            the exact wasted row this redesign removed. -->
       <div class="lg:hidden col-span-full px-3 sm:px-4 py-2.5 border-t border-slate-200/70 bg-white flex items-center gap-3">
-        <p class="flex-1 min-w-0 text-[11px] sm:text-xs truncate" :class="canSave ? 'text-slate-400' : 'text-amber-600'">
+        <p class="flex-1 min-w-0 text-[0.6875rem] sm:text-xs truncate" :class="canSave ? 'text-slate-400' : 'text-amber-600'">
           <span v-if="!canSave" class="inline-flex items-center gap-1">
             <AlertCircle class="w-3.5 h-3.5 flex-shrink-0" />
             {{ t('management.partnerTemplateForm.footer.missingRequired') }}

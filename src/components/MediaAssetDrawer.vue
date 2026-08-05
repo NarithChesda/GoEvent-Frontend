@@ -13,7 +13,7 @@
     <Transition name="slide-right">
       <div
         v-if="modelValue"
-        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[520px] lg:w-[560px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
+        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[32.5rem] lg:w-[35rem] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
         @click.stop
       >
         <!-- Header -->
@@ -70,19 +70,19 @@
             <div v-if="mediaUrl" class="relative">
               <div
                 v-if="contentType === 'image'"
-                class="min-h-[200px] flex items-center justify-center bg-slate-50 rounded-2xl border border-slate-100 p-6"
+                class="min-h-[12.5rem] flex items-center justify-center bg-slate-50 rounded-2xl border border-slate-100 p-6"
               >
                 <img
                   :src="mediaUrl"
                   :alt="title"
-                  class="max-w-full max-h-[320px] object-contain"
+                  class="max-w-full max-h-[20rem] object-contain"
                 />
               </div>
               <video
                 v-else
                 :src="mediaUrl"
                 controls
-                class="w-full max-h-[320px] object-contain rounded-2xl bg-black"
+                class="w-full max-h-[20rem] object-contain rounded-2xl bg-black"
               >
                 {{ t('management.media.mediaUploads.drawer.videoUnsupported') }}
               </video>

@@ -25,7 +25,7 @@
           class="absolute -bottom-8 left-20 w-80 h-80 bg-gradient-to-br from-emerald-300/30 to-green-400/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-500"
         ></div>
         <div
-          class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-emerald-200/10 to-green-300/10 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-700"
+          class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[37.5rem] h-[37.5rem] bg-gradient-to-br from-emerald-200/10 to-green-300/10 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-700"
         ></div>
 
         <!-- Geometric patterns -->
@@ -248,10 +248,10 @@
       <!-- Background decoration -->
       <div class="absolute inset-0 pointer-events-none">
         <div
-          class="absolute top-0 left-0 w-[300px] sm:w-[400px] h-[300px] sm:h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
+          class="absolute top-0 left-0 w-[18.75rem] sm:w-[25rem] h-[18.75rem] sm:h-[25rem] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
         ></div>
         <div
-          class="absolute bottom-0 right-0 w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] bg-gradient-to-br from-sky-100/35 to-emerald-100/25 rounded-full blur-3xl"
+          class="absolute bottom-0 right-0 w-[21.875rem] sm:w-[31.25rem] h-[21.875rem] sm:h-[31.25rem] bg-gradient-to-br from-sky-100/35 to-emerald-100/25 rounded-full blur-3xl"
         ></div>
       </div>
 
@@ -677,10 +677,10 @@
       <div class="absolute inset-0 pointer-events-none">
         <!-- Subtle gradient orbs -->
         <div
-          class="absolute top-0 left-0 w-[300px] sm:w-[400px] h-[300px] sm:h-[400px] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
+          class="absolute top-0 left-0 w-[18.75rem] sm:w-[25rem] h-[18.75rem] sm:h-[25rem] bg-gradient-to-br from-emerald-100/40 to-sky-100/30 rounded-full blur-3xl"
         ></div>
         <div
-          class="absolute bottom-0 right-0 w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] bg-gradient-to-br from-sky-100/35 to-emerald-100/25 rounded-full blur-3xl"
+          class="absolute bottom-0 right-0 w-[21.875rem] sm:w-[31.25rem] h-[21.875rem] sm:h-[31.25rem] bg-gradient-to-br from-sky-100/35 to-emerald-100/25 rounded-full blur-3xl"
         ></div>
       </div>
 
