@@ -109,30 +109,33 @@ const telegramLink = computed(() => {
 })
 
 // FAB position - accounts for mobile tab bar
+// Offsets that stack on top of the primary FAB must be in rem, not px: the FAB
+// itself is rem-sized (h-14, bottom-4), so on the 75%-scaled laptop tier a px
+// offset would freeze while the FAB below it shrank, opening a visible gap.
 // Mobile: Tab bar is ~64px tall, so FAB needs to be above it: 64px + 16px gap = 80px (bottom-20)
 // Desktop: No tab bar, standard 16px from bottom (lg:bottom-4)
 // When a primary FAB is below (mobile FAB is the 40px mini size):
-//   Mobile: bottom-20 (80px for tab bar) + primary FAB h-14 (56px) + gap (12px) = 148px
-//   Desktop: bottom-4 (16px) + h-14 (56px) + gap (16px) = 88px
+//   Mobile: bottom-20 (5rem tab bar) + primary FAB h-14 (3.5rem) + gap (0.75rem) = 9.25rem
+//   Desktop: bottom-4 (1rem) + h-14 (3.5rem) + gap (1rem) = 5.5rem
 const fabPositionClass = computed(() => {
   if (props.hasFabBelow) {
-    return 'bottom-[148px] lg:bottom-[88px]'
+    return 'bottom-[9.25rem] lg:bottom-[5.5rem]'
   }
   return 'bottom-20 lg:bottom-4'
 })
 
-// Chat popup position (above the FAB; mobile FAB is 40px, desktop 56px)
-// Mobile: FAB bottom (80px or 148px) + h-10 (40px) + gap (12px)
-//   Without FAB below: 80 + 40 + 12 = 132px
-//   With FAB below: 148 + 40 + 12 = 200px
-// Desktop: FAB bottom (16px or 88px) + h-14 (56px) + gap (16px)
-//   Without FAB below: 16 + 56 + 16 = 88px
-//   With FAB below: 88 + 56 + 16 = 160px
+// Chat popup position (above the FAB; mobile FAB is h-10, desktop h-14)
+// Mobile: FAB bottom (5rem or 9.25rem) + h-10 (2.5rem) + gap (0.75rem)
+//   Without FAB below: 5 + 2.5 + 0.75 = 8.25rem
+//   With FAB below: 9.25 + 2.5 + 0.75 = 12.5rem
+// Desktop: FAB bottom (1rem or 5.5rem) + h-14 (3.5rem) + gap (1rem)
+//   Without FAB below: 1 + 3.5 + 1 = 5.5rem
+//   With FAB below: 5.5 + 3.5 + 1 = 10rem
 const chatPopupPositionClass = computed(() => {
   if (props.hasFabBelow) {
-    return 'bottom-[200px] lg:bottom-[160px]'
+    return 'bottom-[12.5rem] lg:bottom-[10rem]'
   }
-  return 'bottom-[132px] lg:bottom-[88px]'
+  return 'bottom-[8.25rem] lg:bottom-[5.5rem]'
 })
 
 // Check if popup should be shown (with 1-day expiry)
