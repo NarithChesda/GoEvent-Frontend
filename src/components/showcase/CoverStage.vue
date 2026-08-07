@@ -55,6 +55,7 @@
       :current-language="currentLanguage"
       :should-show-button-loading="videoState.shouldShowButtonLoading.value"
       :is-interaction-disabled="isEnvelopeInteractionDisabled"
+      :show-swipe-arrow="showSwipeArrow"
       :get-media-url="getMediaUrl"
       :content-top-position="contentTopPosition"
       :cover-stage-layout="coverStageLayout"
@@ -159,6 +160,10 @@ interface Props {
    *  the cover renders as a static "what it looks like" view instead of
    *  being interactive. Never set on the live showcase. */
   disableEnvelopeInteraction?: boolean
+  /** Force the swipe-up arrow on/off, independently of whether the envelope can
+   *  be opened. Unset follows the interaction state. Set to `true` by the
+   *  preview so `cover_stage_layout.swipeArrowBottom` stays visible there. */
+  showSwipeArrow?: boolean
 }
 
 const props = defineProps<Props>()

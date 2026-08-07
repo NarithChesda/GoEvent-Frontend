@@ -222,7 +222,7 @@
               class="h-1.5 w-1.5 flex-shrink-0 rounded-full"
               :class="pendingDotClass(guest.invitation_status)"
             />
-            <span class="max-w-[180px] truncate font-medium">
+            <span class="max-w-[11.25rem] truncate font-medium">
               {{ guest.name || t('management.rsvpAnalytics.chase.unnamedGuest') }}
             </span>
           </span>

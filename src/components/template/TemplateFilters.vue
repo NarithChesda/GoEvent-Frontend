@@ -2,7 +2,7 @@
   <div class="p-3 sm:p-4 lg:p-5 border-b border-slate-200/30 bg-white/60 backdrop-blur-sm">
     <div class="flex flex-col gap-2 sm:gap-3 lg:flex-row lg:items-center lg:gap-3">
       <!-- Search -->
-      <div class="relative flex-1 min-w-[220px]">
+      <div class="relative flex-1 min-w-[13.75rem]">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <input
           :value="searchQuery"
@@ -22,7 +22,7 @@
             id="template-category"
             :value="selectedCategory === null ? '' : String(selectedCategory)"
             @change="onCategoryChange"
-            class="w-full h-[42px] px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg bg-white/90 focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 appearance-none pr-10"
+            class="w-full h-[2.625rem] px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg bg-white/90 focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 appearance-none pr-10"
           >
             <option value="">All categories</option>
             <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
@@ -32,7 +32,7 @@
 
         <!-- Plan Segmented -->
         <div class="shrink-0">
-          <div class="inline-flex h-[42px] items-center justify-between gap-1 bg-white/90 border border-slate-300 rounded-lg p-1">
+          <div class="inline-flex h-[2.625rem] items-center justify-between gap-1 bg-white/90 border border-slate-300 rounded-lg p-1">
             <button
               type="button"
               :class="[

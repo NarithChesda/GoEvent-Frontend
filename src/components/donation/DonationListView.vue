@@ -14,7 +14,7 @@
                 : statusButtonClass"
             >
               <Filter class="w-4 h-4 flex-shrink-0" :class="selectedStatus === '' ? 'text-slate-500' : ''" />
-              <span class="truncate max-w-[80px] sm:max-w-[120px]">
+              <span class="truncate max-w-[80px] sm:max-w-[7.5rem]">
                 {{ selectedStatus === '' ? 'All Status' : statusLabels[selectedStatus as DonationStatus] }}
               </span>
               <ChevronDown
@@ -27,7 +27,7 @@
             <Transition name="dropdown">
               <div
                 v-if="isStatusDropdownOpen"
-                class="absolute top-full left-0 mt-2 min-w-[180px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100]"
+                class="absolute top-full left-0 mt-2 min-w-[11.25rem] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100]"
                 @click.stop
               >
                 <div class="p-1.5">
@@ -91,7 +91,7 @@
                 class="w-4 h-4 flex-shrink-0"
                 :class="selectedType === '' ? 'text-slate-500' : ''"
               />
-              <span class="truncate max-w-[80px] sm:max-w-[120px]">
+              <span class="truncate max-w-[80px] sm:max-w-[7.5rem]">
                 {{ selectedType === '' ? 'All Types' : typeLabels[selectedType as DonationType] }}
               </span>
               <ChevronDown
@@ -104,7 +104,7 @@
             <Transition name="dropdown">
               <div
                 v-if="isTypeDropdownOpen"
-                class="absolute top-full left-0 mt-2 min-w-[180px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100]"
+                class="absolute top-full left-0 mt-2 min-w-[11.25rem] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100]"
                 @click.stop
               >
                 <div class="p-1.5">
@@ -180,7 +180,7 @@
                 : 'bg-purple-500 text-white border-purple-500'"
             >
               <Package class="w-4 h-4 flex-shrink-0" :class="selectedCategory === '' ? 'text-slate-500' : ''" />
-              <span class="truncate max-w-[80px] sm:max-w-[120px]">
+              <span class="truncate max-w-[80px] sm:max-w-[7.5rem]">
                 {{ selectedCategoryName }}
               </span>
               <ChevronDown
@@ -193,7 +193,7 @@
             <Transition name="dropdown">
               <div
                 v-if="isCategoryDropdownOpen"
-                class="absolute top-full left-0 mt-2 min-w-[200px] max-h-[280px] overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100]"
+                class="absolute top-full left-0 mt-2 min-w-[12.5rem] max-h-[17.5rem] overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100]"
                 @click.stop
               >
                 <div class="p-1.5">
@@ -286,7 +286,7 @@
     <!-- Scrollable Donations List Container -->
     <div
       v-if="filteredDonations.length > 0"
-      class="max-h-[600px] overflow-y-auto space-y-2 pr-2 custom-scrollbar relative z-0"
+      class="max-h-[37.5rem] overflow-y-auto space-y-2 pr-2 custom-scrollbar relative z-0"
     >
       <div
         v-for="donation in filteredDonations"

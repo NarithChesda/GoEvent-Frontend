@@ -1,9 +1,9 @@
 <template>
   <!-- Hidden below lg: mobile uses the bottom tab bar as navigation, so the
        footer only renders alongside the desktop top nav -->
-  <footer class="hidden lg:block mt-16">
+  <footer class="hidden lg:block mt-[clamp(2rem,5vh,4rem)]">
     <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="border-t border-slate-200 pt-6 pb-6">
+      <div class="border-t border-slate-200 py-[clamp(1rem,2.5vh,1.5rem)]">
       <!-- Top Row: Logo and Social Icons -->
       <div class="flex items-center justify-between mb-4">
         <!-- Left: Logo -->

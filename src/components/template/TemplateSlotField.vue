@@ -55,13 +55,13 @@
 
                   <span
                     v-if="isUsed(option)"
-                    class="text-[10px] font-semibold px-1.5 py-0.5 rounded border uppercase bg-emerald-50 text-emerald-700 border-emerald-200"
+                    class="text-[0.625rem] font-semibold px-1.5 py-0.5 rounded border uppercase bg-emerald-50 text-emerald-700 border-emerald-200"
                   >
                     {{ t('management.templateSlots.field.alreadySet') }}
                   </span>
                   <span
                     v-else-if="option.unused"
-                    class="text-[10px] font-semibold px-1.5 py-0.5 rounded border uppercase bg-amber-50 text-amber-600 border-amber-200"
+                    class="text-[0.625rem] font-semibold px-1.5 py-0.5 rounded border uppercase bg-amber-50 text-amber-600 border-amber-200"
                   >
                     {{ t('management.templateSlots.field.notRendered') }}
                   </span>
@@ -70,7 +70,7 @@
                 </span>
 
                 <span class="block text-xs text-slate-500 mt-0.5">{{ t(`${option.i18nBase}.description`) }}</span>
-                <span v-if="hasFallback(option)" class="block text-[11px] text-slate-400 mt-0.5">
+                <span v-if="hasFallback(option)" class="block text-[0.6875rem] text-slate-400 mt-0.5">
                   {{ t('management.templateSlots.field.fallbackPrefix') }} {{ t(`${option.i18nBase}.fallback`) }}
                 </span>
               </button>

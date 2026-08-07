@@ -66,7 +66,7 @@
 
           <div
             class="overflow-y-auto overscroll-contain"
-            :class="isMobile ? 'py-1 max-h-[60vh]' : 'py-1 max-h-[320px]'"
+            :class="isMobile ? 'py-1 max-h-[60vh]' : 'py-1 max-h-[20rem]'"
           >
             <button
               v-for="option in displayOptions"

@@ -237,7 +237,7 @@ function onDragEnd() {
 const panelPositionClass = computed(() =>
   props.variant === 'mobile'
     ? 'fixed inset-x-0 bottom-0 z-[999] bg-white rounded-t-3xl shadow-2xl max-h-[85vh]'
-    : 'glass-dropdown absolute right-0 top-full mt-2 w-[380px] max-h-[70vh] rounded-2xl z-[100]',
+    : 'glass-dropdown absolute right-0 top-full mt-2 w-[23.75rem] max-h-[70vh] rounded-2xl z-[100]',
 )
 
 onMounted(() => {

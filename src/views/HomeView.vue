@@ -22,7 +22,7 @@
           class="absolute top-40 right-10 w-96 h-96 bg-gradient-to-br from-green-400/15 to-emerald-400/15 rounded-full mix-blend-multiply hero-blur-shape animate-float-delayed"
         ></div>
         <div
-          class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-br from-emerald-200/8 to-green-300/8 rounded-full mix-blend-multiply hero-blur-large"
+          class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[31.25rem] h-[31.25rem] bg-gradient-to-br from-emerald-200/8 to-green-300/8 rounded-full mix-blend-multiply hero-blur-large"
         ></div>
       </div>
 
@@ -392,9 +392,9 @@
             <Transition
               enter-active-class="transition-all duration-400 ease-out"
               enter-from-class="max-h-0 opacity-0"
-              enter-to-class="max-h-[500px] opacity-100"
+              enter-to-class="max-h-[31.25rem] opacity-100"
               leave-active-class="transition-all duration-300 ease-in"
-              leave-from-class="max-h-[500px] opacity-100"
+              leave-from-class="max-h-[31.25rem] opacity-100"
               leave-to-class="max-h-0 opacity-0"
             >
               <div v-show="openFaq === index" class="overflow-hidden">

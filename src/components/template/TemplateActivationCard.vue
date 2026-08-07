@@ -149,7 +149,7 @@
             <li
               v-for="feature in template.package_plan.features"
               :key="feature"
-              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 ring-1 ring-slate-200/70 text-xs sm:text-[13px] font-medium text-slate-700"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 ring-1 ring-slate-200/70 text-xs sm:text-[0.8125rem] font-medium text-slate-700"
             >
               <Check class="w-3 h-3 text-emerald-600 flex-shrink-0" />
               <span>{{ feature }}</span>

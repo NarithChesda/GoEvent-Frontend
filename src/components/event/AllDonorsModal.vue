@@ -9,7 +9,7 @@
         <Transition name="slide-up">
           <div
             v-if="show"
-            class="bg-white w-full md:w-[480px] md:max-w-[90vw] max-h-[85vh] md:max-h-[80vh] rounded-t-2xl md:rounded-2xl flex flex-col overflow-hidden shadow-2xl"
+            class="bg-white w-full md:w-[30rem] md:max-w-[90vw] max-h-[85vh] md:max-h-[80vh] rounded-t-2xl md:rounded-2xl flex flex-col overflow-hidden shadow-2xl"
             @click.stop
           >
             <!-- Header -->
@@ -156,7 +156,7 @@
                           {{ donation.item_quantity }} {{ donation.item_unit }}
                         </span>
                       </div>
-                      <p class="text-[10px] text-slate-400 mt-1 truncate max-w-[100px]">
+                      <p class="text-[10px] text-slate-400 mt-1 truncate max-w-[6.25rem]">
                         {{ getItemDisplayName(donation) }}
                       </p>
                     </div>

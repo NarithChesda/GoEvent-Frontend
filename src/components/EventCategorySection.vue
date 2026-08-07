@@ -41,7 +41,7 @@
         @click="handleEventClick(event)"
         @edit="handleEventEdit"
         @delete="handleEventDelete"
-        class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] sm:w-[calc(45vw-2rem)] md:w-[calc((100vw-8rem)/3-1.5rem)] lg:w-[calc((1280px-8rem)/3-1.5rem)] xl:w-[calc((1536px-8rem)/3-1.5rem)] max-w-[450px] min-w-[225px] snap-center mobile-card"
+        class="cursor-pointer flex-none w-[calc(75vw-2.25rem)] sm:w-[calc(45vw-2rem)] md:w-[calc((100vw-8rem)/3-1.5rem)] lg:w-[calc((1280px-8rem)/3-1.5rem)] xl:w-[calc((1536px-8rem)/3-1.5rem)] max-w-[28.125rem] min-w-[14.0625rem] snap-center mobile-card"
       />
     </div>
   </div>

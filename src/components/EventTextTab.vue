@@ -100,7 +100,7 @@
           <Transition name="dropdown">
             <div
               v-if="showLanguageMenu"
-              class="absolute top-full left-0 mt-2 min-w-[200px] bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-[320px] overflow-y-auto py-1"
+              class="absolute top-full left-0 mt-2 min-w-[12.5rem] bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-[20rem] overflow-y-auto py-1"
               role="menu"
               :aria-label="t('management.eventTextTab.languagesBar.menuAriaLabel')"
             >

@@ -171,9 +171,10 @@
         :show-animations="true"
       />
 
-      <!-- Swipe Up Arrow Indicator (hidden when the envelope can't actually
-           be opened, e.g. the manage-page preview) -->
-      <SwipeUpArrow v-if="!isInteractionDisabled" :color="primaryColor" :bottom="swipeArrowBottom" />
+      <!-- Swipe Up Arrow Indicator. Hidden by default when the envelope can't
+           actually be opened, but `showSwipeArrow` overrides that so a preview
+           can still show where `swipeArrowBottom` puts it. -->
+      <SwipeUpArrow v-if="shouldShowSwipeArrow" :color="primaryColor" :bottom="swipeArrowBottom" />
     </div>
   </div>
 </template>
@@ -239,6 +240,9 @@ interface Props {
   currentLanguage?: string
   shouldShowButtonLoading: boolean
   isInteractionDisabled?: boolean
+  /** Force the swipe arrow on/off. Unset means "show it whenever the envelope
+   *  is interactive" — the live showcase's behaviour. */
+  showSwipeArrow?: boolean
   getMediaUrl: (url: string) => string
   /** @deprecated Use coverStageLayout.contentTopPosition instead */
   contentTopPosition?: number
@@ -334,6 +338,13 @@ const slotVarStyle = computed<Record<string, string>>(() => {
 
 // Swipe arrow bottom position
 const swipeArrowBottom = computed(() => layout.value.swipeArrowBottom)
+
+// The arrow is an affordance for a gesture, so it goes away with the gesture —
+// unless a caller asks for it explicitly. The template studio does: without the
+// arrow on screen its `swipeArrowBottom` slider moves nothing.
+const shouldShowSwipeArrow = computed(
+  () => props.showSwipeArrow ?? !props.isInteractionDisabled
+)
 
 // Guest name max width (% of container width), configurable per template
 const guestNameMaxWidthPercent = computed(() => layout.value.guestNameMaxWidthPercent)

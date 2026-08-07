@@ -185,7 +185,7 @@
             <div
               v-if="userMenuOpen"
               :style="dropdownPosition"
-              class="fixed bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-[100] min-w-[200px]"
+              class="fixed bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-[100] min-w-[12.5rem]"
               role="menu"
               aria-orientation="vertical"
             >

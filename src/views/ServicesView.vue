@@ -7,10 +7,12 @@
       <MobileTopBar />
 
       <!-- Main Content -->
-      <section class="flex-1 py-4 sm:py-6 lg:py-8">
+      <section class="flex-1 py-4 sm:py-6 lg:py-[clamp(1.25rem,3vh,2rem)]">
         <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <!-- Header -->
-          <div class="flex items-center justify-between gap-2 mb-6 sm:mb-8 lg:mb-10">
+          <div
+            class="flex items-center justify-between gap-2 mb-6 sm:mb-8 lg:mb-[clamp(1.25rem,3.5vh,2.5rem)]"
+          >
             <h1
               class="flex-1 min-w-0 truncate text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900"
             >

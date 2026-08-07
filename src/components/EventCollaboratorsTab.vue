@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <!-- Team Panel: stats + organizer + collaborators unified -->
     <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
@@ -266,7 +266,7 @@
           <div class="flex items-center space-x-2 flex-shrink-0">
             <div class="text-center">
               <!-- Role Selection or Display -->
-              <div v-if="canUpdateRole && editingRole === collaborator.id" class="min-w-[80px] sm:min-w-[100px]">
+              <div v-if="canUpdateRole && editingRole === collaborator.id" class="min-w-[80px] sm:min-w-[6.25rem]">
                 <select
                   v-model="tempRole"
                   @change="saveRoleUpdate(collaborator)"
@@ -284,7 +284,7 @@
                   <option value="admin">Admin</option>
                 </select>
               </div>
-              <div v-else class="min-w-[80px] sm:min-w-[100px]">
+              <div v-else class="min-w-[80px] sm:min-w-[6.25rem]">
                 <button
                   v-if="canUpdateRole"
                   @click="startRoleEdit(collaborator)"

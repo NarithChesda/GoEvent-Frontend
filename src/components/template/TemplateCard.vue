@@ -45,7 +45,7 @@
       <div class="absolute top-2 right-2 z-10">
         <span
           :class="[
-            'inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold backdrop-blur-md',
+            'inline-flex items-center px-2.5 py-1 rounded-full text-[0.6875rem] font-semibold backdrop-blur-md',
             isFree
               ? 'bg-white/90 text-slate-600 ring-1 ring-black/10'
               : 'bg-black/55 text-white ring-1 ring-white/20',
@@ -60,14 +60,14 @@
         <div class="w-6 h-6 bg-[#1e90ff] rounded-full flex items-center justify-center shadow-lg ring-2 ring-white/90">
           <Check class="w-4 h-4 text-white" />
         </div>
-        <span v-if="isOwned" class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500 text-white shadow-lg">
+        <span v-if="isOwned" class="inline-flex items-center px-2 py-0.5 rounded-full text-[0.5625rem] font-bold bg-emerald-500 text-white shadow-lg">
           {{ t('management.browseTemplateModal.card.owned') }}
         </span>
       </div>
 
       <!-- Owned Badge (when not selected) -->
       <div v-else-if="isOwned" class="absolute top-2 left-2 z-10">
-        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-white shadow-lg">
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-bold bg-emerald-500 text-white shadow-lg">
           <Check class="w-3 h-3" />
           {{ t('management.browseTemplateModal.card.owned') }}
         </span>
@@ -85,7 +85,7 @@
         <!-- Title -->
         <h4
           :class="[
-            'font-semibold text-[11px] sm:text-xs mb-1 truncate',
+            'font-semibold text-[0.6875rem] sm:text-xs mb-1 truncate',
             hasImage ? 'text-white drop-shadow-sm' : 'text-slate-900',
           ]"
         >
@@ -94,7 +94,7 @@
         <!-- Plan -->
         <span
           :class="[
-            'text-[10px] sm:text-[11px] font-medium px-2 py-0.5 rounded-full inline-block',
+            'text-[0.625rem] sm:text-[0.6875rem] font-medium px-2 py-0.5 rounded-full inline-block',
             packageColorClass,
           ]"
         >

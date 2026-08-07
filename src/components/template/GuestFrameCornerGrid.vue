@@ -11,7 +11,7 @@
         :key="corner.id"
         class="rounded-xl ring-1 ring-slate-200 bg-white p-2.5 space-y-2"
       >
-        <p class="text-[11px] font-medium text-slate-500">{{ corner.label }}</p>
+        <p class="text-[0.6875rem] font-medium text-slate-500">{{ corner.label }}</p>
 
         <div class="flex gap-1" role="radiogroup" :aria-label="corner.label">
           <button
@@ -20,7 +20,7 @@
             type="button"
             role="radio"
             :aria-checked="option.value === corner.value.source"
-            class="flex-1 px-1.5 py-1 rounded-lg text-[11px] font-medium ring-1 transition-all duration-200"
+            class="flex-1 px-1.5 py-1 rounded-lg text-[0.6875rem] font-medium ring-1 transition-all duration-200"
             :class="sourceClasses(corner.value.source === option.value, option.missing)"
             :title="option.missing ? t('management.partnerTemplateForm.guestFrame.sourceMissing') : undefined"
             @click="setSource(corner.id, option.value)"
@@ -33,7 +33,7 @@
           <button
             type="button"
             :aria-pressed="corner.value.flipX"
-            class="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 rounded-lg text-[11px] font-medium ring-1 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+            class="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 rounded-lg text-[0.6875rem] font-medium ring-1 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
             :class="toggleClasses(!!corner.value.flipX)"
             :disabled="corner.value.source === 'none'"
             :title="t('management.partnerTemplateForm.guestFrame.flipX')"
@@ -45,7 +45,7 @@
           <button
             type="button"
             :aria-pressed="corner.value.flipY"
-            class="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 rounded-lg text-[11px] font-medium ring-1 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+            class="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 rounded-lg text-[0.6875rem] font-medium ring-1 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
             :class="toggleClasses(!!corner.value.flipY)"
             :disabled="corner.value.source === 'none'"
             :title="t('management.partnerTemplateForm.guestFrame.flipY')"
@@ -58,7 +58,7 @@
       </div>
     </div>
 
-    <p class="text-[11px] text-slate-400 leading-snug">
+    <p class="text-[0.6875rem] text-slate-400 leading-snug">
       {{ t('management.partnerTemplateForm.guestFrame.cornersHint') }}
     </p>
   </div>

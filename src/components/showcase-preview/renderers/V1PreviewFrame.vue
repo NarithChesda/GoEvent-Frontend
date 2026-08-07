@@ -45,6 +45,7 @@
     :use-transition-stage="isBasicWedding"
     :get-media-url="getMediaUrl"
     :disable-envelope-interaction="true"
+    :show-swipe-arrow="true"
   >
     <template #main-content>
       <MainContentStage

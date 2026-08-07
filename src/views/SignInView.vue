@@ -171,9 +171,9 @@
             <Transition
               enter-active-class="transition-all duration-200 ease-out"
               enter-from-class="opacity-0 max-h-0"
-              enter-to-class="opacity-100 max-h-[500px]"
+              enter-to-class="opacity-100 max-h-[31.25rem]"
               leave-active-class="transition-all duration-200 ease-in"
-              leave-from-class="opacity-100 max-h-[500px]"
+              leave-from-class="opacity-100 max-h-[31.25rem]"
               leave-to-class="opacity-0 max-h-0"
             >
               <div v-show="showLegacySignIn" class="overflow-hidden">

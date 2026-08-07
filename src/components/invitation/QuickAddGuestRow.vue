@@ -43,7 +43,7 @@
         <Transition name="dropdown">
           <div
             v-if="showGroupDropdown"
-            class="absolute top-full right-0 mt-1 min-w-[180px] bg-white border border-slate-200 rounded-xl shadow-lg z-[100] max-h-64 overflow-y-auto"
+            class="absolute top-full right-0 mt-1 min-w-[11.25rem] bg-white border border-slate-200 rounded-xl shadow-lg z-[100] max-h-64 overflow-y-auto"
           >
             <div class="p-1.5">
               <button

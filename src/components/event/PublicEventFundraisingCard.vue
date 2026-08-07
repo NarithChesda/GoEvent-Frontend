@@ -283,7 +283,7 @@
                   {{ donation.item_quantity }} {{ donation.item_unit }}
                 </span>
               </div>
-              <p class="text-[10px] text-slate-400 mt-0.5 truncate max-w-[100px]">
+              <p class="text-[10px] text-slate-400 mt-0.5 truncate max-w-[6.25rem]">
                 {{ getItemDisplayName(donation) }}
               </p>
             </div>

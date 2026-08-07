@@ -114,7 +114,7 @@
                         <span>{{ formatDate(result.date) }}</span>
                         <template v-if="result.location">
                           <MapPin class="w-3 h-3" />
-                          <span class="truncate max-w-[150px]">{{ result.location }}</span>
+                          <span class="truncate max-w-[9.375rem]">{{ result.location }}</span>
                         </template>
                         <span v-else-if="result.isVirtual" class="text-blue-500">{{ t('common.search.virtual') }}</span>
                       </div>

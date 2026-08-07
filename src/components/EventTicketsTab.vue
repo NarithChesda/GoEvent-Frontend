@@ -62,7 +62,7 @@
     </nav>
 
     <!-- Active sub-tab body -->
-    <div class="min-h-[400px]">
+    <div class="min-h-[25rem]">
       <TicketOrdersList
         v-if="activeSubTab === 'orders'"
         ref="ordersListRef"

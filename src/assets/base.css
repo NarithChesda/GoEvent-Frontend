@@ -79,7 +79,8 @@ body {
     'Droid Sans',
     'Helvetica Neue',
     sans-serif;
-  font-size: 15px;
+  /* rem, not px, so it follows the laptop root-font scale-down in main.css */
+  font-size: 0.9375rem; /* 15px at the default 16px root */
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

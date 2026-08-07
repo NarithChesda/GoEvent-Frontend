@@ -104,7 +104,7 @@
               : t('management.guestGroupsView.guestListItem.seatedAt', { table: guest.table_details.name })"
           >
             <Armchair class="w-3 h-3" />
-            <span class="truncate max-w-[100px]">{{ guest.table_details.name }}<template v-if="guest.seat_number"> · {{ guest.seat_number }}</template></span>
+            <span class="truncate max-w-[6.25rem]">{{ guest.table_details.name }}<template v-if="guest.seat_number"> · {{ guest.seat_number }}</template></span>
           </div>
         </div>
       </div>

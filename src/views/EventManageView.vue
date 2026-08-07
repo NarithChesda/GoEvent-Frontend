@@ -108,7 +108,7 @@
         :class="[
           'mx-auto py-6 md:py-8',
           activeTab === 'design-studio' && canViewShowcasePreview
-            ? 'max-w-[1600px]'
+            ? 'max-w-[100rem]'
             : 'px-4 sm:px-6 lg:px-8 max-w-3xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl',
         ]"
       >

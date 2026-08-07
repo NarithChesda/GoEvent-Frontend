@@ -44,12 +44,12 @@
         class="absolute inset-0 flex flex-col items-center justify-center text-slate-300 gap-2"
       >
         <ImageOff class="w-10 h-10" />
-        <span class="text-[10px] font-medium text-slate-400">{{ t('management.partnerTemplatesPanel.card.noPreview') }}</span>
+        <span class="text-[0.625rem] font-medium text-slate-400">{{ t('management.partnerTemplatesPanel.card.noPreview') }}</span>
       </div>
 
       <!-- Status Badge -->
       <div class="absolute top-2 left-2 z-10">
-        <span :class="['inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-lg', statusClass]">
+        <span :class="['inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-bold shadow-lg', statusClass]">
           <component :is="statusIcon" class="w-3 h-3" />
           {{ template.status_display }}
         </span>
@@ -76,7 +76,7 @@
       >
         <h4
           :class="[
-            'font-semibold text-[11px] sm:text-xs truncate',
+            'font-semibold text-[0.6875rem] sm:text-xs truncate',
             hasImage ? 'text-white drop-shadow-sm' : 'text-slate-900',
           ]"
         >
@@ -84,7 +84,7 @@
         </h4>
         <p
           v-if="template.package_plan"
-          :class="['text-[10px] mt-0.5', hasImage ? 'text-white/70' : 'text-slate-500']"
+          :class="['text-[0.625rem] mt-0.5', hasImage ? 'text-white/70' : 'text-slate-500']"
         >
           {{ template.package_plan.name }}
         </p>
@@ -127,7 +127,7 @@
 
     <!-- Admin notes for rejected -->
     <div v-if="template.status === 'rejected' && template.admin_notes" class="px-2 pb-2">
-      <p class="text-[10px] text-red-600 bg-red-50 ring-1 ring-red-100 rounded-lg px-2 py-1.5 leading-snug">
+      <p class="text-[0.625rem] text-red-600 bg-red-50 ring-1 ring-red-100 rounded-lg px-2 py-1.5 leading-snug">
         <span class="font-semibold">{{ t('management.partnerTemplatesPanel.card.adminNote') }} </span>{{ template.admin_notes }}
       </p>
     </div>

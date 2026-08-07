@@ -166,7 +166,7 @@
                     : 'border-slate-300 bg-slate-50 cursor-default'
                 ]"
               >
-                <div class="flex flex-col items-center justify-center min-h-[120px]">
+                <div class="flex flex-col items-center justify-center min-h-[7.5rem]">
                   <div :class="[
                     'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300',
                     canUpload ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'

@@ -13,7 +13,7 @@
     <Transition name="slide-right">
       <div
         v-if="isVisible"
-        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[580px] lg:w-[640px] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
+        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[36.25rem] lg:w-[40rem] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
         @click.stop
       >
         <!-- Header -->
@@ -172,7 +172,7 @@
                       ref="descriptionEditor"
                       @input="handleDescriptionInput"
                       @blur="handleDescriptionBlur"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white text-slate-800 min-h-[140px] max-h-[320px] overflow-y-auto"
+                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white text-slate-800 min-h-[8.75rem] max-h-[20rem] overflow-y-auto"
                       :data-placeholder="form.description ? '' : t('events.createDrawer.fields.descriptionPlaceholder')"
                     ></div>
                   </div>

@@ -36,7 +36,7 @@
             :style="filterButtonStyle"
           >
             <Filter class="w-4 h-4 flex-shrink-0" :class="statusFilter === '' ? 'text-slate-500' : 'text-white/80'" />
-            <span class="truncate max-w-[100px] sm:max-w-[160px]">
+            <span class="truncate max-w-[6.25rem] sm:max-w-[10rem]">
               {{ filterLabel }}
             </span>
             <ChevronDown class="w-4 h-4 transition-transform flex-shrink-0" :class="[{ 'rotate-180': isFilterDropdownOpen }, statusFilter === '' ? 'text-slate-400' : 'text-white/80']" />
@@ -46,7 +46,7 @@
           <Transition name="dropdown">
             <div
               v-if="isFilterDropdownOpen"
-              class="absolute top-full left-0 mt-2 min-w-[200px] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100]"
+              class="absolute top-full left-0 mt-2 min-w-[12.5rem] bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/50 z-[100]"
               @click.stop
             >
               <div class="p-1.5">

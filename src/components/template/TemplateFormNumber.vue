@@ -11,7 +11,7 @@
           class="w-16 px-2 py-1 text-right text-xs font-semibold text-slate-700 tabular-nums bg-slate-100 border border-transparent rounded-lg transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
           @input="onNumberInput"
         />
-        <span v-if="unit" class="w-6 text-[10px] font-medium text-slate-400">{{ unit }}</span>
+        <span v-if="unit" class="w-6 text-[0.625rem] font-medium text-slate-400">{{ unit }}</span>
       </div>
     </div>
     <!-- The slider is the point of this control: every value here feeds the live

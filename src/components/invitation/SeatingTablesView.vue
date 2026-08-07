@@ -111,7 +111,7 @@
           </button>
         </div>
 
-        <div class="p-3 space-y-1.5 max-h-[480px] overflow-y-auto scrollbar-thin">
+        <div class="p-3 space-y-1.5 max-h-[30rem] overflow-y-auto scrollbar-thin">
           <div v-if="loadingUnassigned && unassignedGuests.length === 0" class="flex justify-center py-8">
             <div class="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
           </div>

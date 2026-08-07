@@ -1,14 +1,20 @@
 <template>
-  <div class="text-center py-12 lg:py-16 px-4">
+  <!-- Vertical rhythm is clamped against viewport height (vh) rather than fixed:
+       on short laptop screens the block compresses so the page header, this state
+       and AppFooter all still fit without scrolling; on tall screens the clamp
+       maxima keep the original spacious sizing. -->
+  <div class="text-center px-4 py-[clamp(1.5rem,4vh,3rem)]">
     <div
-      class="w-24 h-24 lg:w-32 lg:h-32 mx-auto mb-4 lg:mb-6 bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 rounded-full flex items-center justify-center"
+      class="w-[clamp(4.5rem,10vh,8rem)] h-[clamp(4.5rem,10vh,8rem)] mx-auto mb-[clamp(0.75rem,2vh,1.5rem)] bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 rounded-full flex items-center justify-center"
     >
-      <CalendarDays class="w-12 h-12 lg:w-16 lg:h-16 text-[#2ecc71]" />
+      <CalendarDays class="w-1/2 h-1/2 text-[#2ecc71]" />
     </div>
     <h3 class="text-xl lg:text-2xl font-bold text-slate-900 mb-2 lg:mb-3">
       {{ title }}
     </h3>
-    <p class="text-sm lg:text-base text-slate-600 mb-5 lg:mb-6 max-w-md mx-auto">
+    <p
+      class="text-sm lg:text-base text-slate-600 mb-[clamp(1rem,2.5vh,1.5rem)] max-w-md mx-auto"
+    >
       {{ description }}
     </p>
     <button

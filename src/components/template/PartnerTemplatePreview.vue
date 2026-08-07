@@ -1,9 +1,26 @@
 <template>
-  <div class="tpl-preview">
+  <!-- Two modes, one DOM. Full screen is a class on this root, NOT a teleport
+       or a second component: moving an <iframe> to a different parent makes the
+       browser re-navigate it, which would reload the whole showcase (and drop
+       the draft pushed in over the bridge) on every toggle. Promoting this
+       element to `position: fixed` leaves the frame exactly where it is in the
+       tree, so the toggle costs nothing but a re-measure.
+
+       Safe because nothing between here and the viewport carries a transform,
+       filter or containment at rest — BrowseTemplateModal only transforms its
+       panel during the open/close transition. -->
+  <div
+    class="tpl-preview"
+    :class="{ 'is-fullscreen': fullscreen, 'is-idle': chromeIdle }"
+    @pointerdown="wakeChrome"
+    @focusin="wakeChrome"
+  >
     <!-- Controls: which stage of the template, and in which language. Kept
          above the frame (not floating over it) — the frame column is only
          ~340px wide inside the templates modal, so anything overlaying the
-         phone eats the very thing being judged.
+         phone eats the very thing being judged. In full screen the same row
+         becomes a floating bar instead, because there the frame is worth every
+         pixel of height and the bar can dim itself out of the way.
 
          There is deliberately no event picker. This form is only ever reached
          from inside an event's manage page (BrowseTemplateModal's single call
@@ -42,6 +59,21 @@
             {{ lang.toUpperCase() }}
           </button>
         </div>
+
+        <!-- Always present, even when there is only one stage and one language
+             to pick from — it is the control that answers "I can't see what I'm
+             doing", which is exactly the situation where the other two rows are
+             absent. -->
+        <button
+          type="button"
+          class="tpl-preview__expand"
+          :aria-pressed="fullscreen"
+          :aria-label="fullscreenLabel"
+          :title="fullscreenLabel"
+          @click="setFullscreen(!fullscreen)"
+        >
+          <component :is="fullscreen ? Minimize2 : Maximize2" class="w-[0.9375rem] h-[0.9375rem]" />
+        </button>
       </div>
     </div>
 
@@ -51,6 +83,8 @@
         ref="previewFrameRef"
         :label="t(activeFrame.labelKey)"
         :bottom-reserve="bottomReserve"
+        :max-width="frameMaxWidth"
+        :width-override="bodyWidth || undefined"
       >
         <InertIframe
           :key="frameKey"
@@ -76,17 +110,24 @@
       </Transition>
     </div>
 
+    <!-- In full screen this floats just above the control bar and dims with it,
+         so the way back out is always written down somewhere without costing
+         the frame any height. -->
     <p class="tpl-preview__hint">
       {{ layoutEditActive
         ? t('management.coverLayoutEditor.previewHint')
         : t('management.partnerTemplatePreview.hint') }}
+      <span v-if="fullscreen" class="tpl-preview__hint-esc">
+        {{ t('management.partnerTemplatePreview.escHint') }}
+      </span>
     </p>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Maximize2, Minimize2 } from 'lucide-vue-next'
 import type { Event, PartnerTemplate } from '@/services/api'
 import type { CoverElementBoxes, CoverElementId } from '@/services/api/types/template.types'
 import PreviewFrame from '../showcase-preview/PreviewFrame.vue'
@@ -376,13 +417,118 @@ const onFrameLanguages = (languages: string[], current: string) => {
 const bodyRef = ref<HTMLElement | null>(null)
 const bottomReserve = ref(40)
 
-const measureBottomReserve = () => {
+/**
+ * The width actually available to the frame, handed to PreviewFrame as
+ * `widthOverride` rather than left to its own ResizeObserver.
+ *
+ * Its self-measurement reads the frame wrapper's `clientWidth`, and that wrapper
+ * shrink-wraps to the phone mockup's *current* size — so the measurement is
+ * downstream of the scale it feeds. That loop is harmless while the scale is
+ * capped at 1 (the mockup can only ever be asked to get smaller), but full
+ * screen asks it to grow past 1 and a shrink-wrapped measurement can never
+ * report the room to do so: the frame would stay locked at whatever size it had
+ * in the column. This element is the real container, so measuring it directly
+ * breaks the loop.
+ */
+const bodyWidth = ref(0)
+
+const measureBody = () => {
   if (!bodyRef.value) return
-  const { bottom } = bodyRef.value.getBoundingClientRect()
+  const { bottom, width } = bodyRef.value.getBoundingClientRect()
   bottomReserve.value = Math.max(window.innerHeight - bottom, 0) + 8
+  bodyWidth.value = width
 }
 
 let bodyResizeObserver: ResizeObserver | null = null
+
+// ---------------------------------------------------------------------------
+// Full screen.
+//
+// The preview column is ~340px wide and the modal caps at 90vh, which on a
+// laptop leaves the phone rendering at about two thirds of its real size —
+// legible enough to judge a colour, not enough to place a block on the cover by
+// hand. Full screen hands the same frame the whole viewport, so it renders at
+// or above 1:1 and every drag target grows with it.
+// ---------------------------------------------------------------------------
+const fullscreen = ref(false)
+
+/**
+ * Native phone width (PreviewFrame's own default) times the most the mockup is
+ * allowed to be blown up past life size. Without a cap a tall display would
+ * scale it to something that is no longer recognisably a phone; with it, height
+ * governs on ordinary screens and this only ever bites on very tall ones.
+ */
+const FULLSCREEN_MAX_WIDTH = 390 * 1.5
+
+const frameMaxWidth = computed(() => (fullscreen.value ? FULLSCREEN_MAX_WIDTH : 390))
+
+const fullscreenLabel = computed(() =>
+  t(
+    fullscreen.value
+      ? 'management.partnerTemplatePreview.exitFullscreen'
+      : 'management.partnerTemplatePreview.enterFullscreen',
+  ),
+)
+
+/**
+ * The floating bar is the only way back out, so it can never disappear — but it
+ * also sits on top of the invitation it exists to show. So it dims after a few
+ * seconds and any press (or hover, via CSS) brings it straight back, same
+ * treatment the showcase's own mobile preview sheet gives its controls.
+ *
+ * Most of the work in full screen happens *inside* the iframe, which delivers no
+ * pointer events out here — so the bar correctly stays out of the way for as
+ * long as someone is dragging blocks around, and wakes the moment they reach for
+ * it.
+ */
+const IDLE_DELAY = 2800
+const chromeIdle = ref(false)
+let idleTimer: ReturnType<typeof setTimeout> | null = null
+
+const clearIdleTimer = () => {
+  if (idleTimer) clearTimeout(idleTimer)
+  idleTimer = null
+}
+
+const wakeChrome = () => {
+  chromeIdle.value = false
+  clearIdleTimer()
+  if (fullscreen.value) idleTimer = setTimeout(() => (chromeIdle.value = true), IDLE_DELAY)
+}
+
+/**
+ * Capture phase, and it stops the event: the templates modal closes itself on
+ * Escape, and leaving full screen should never also throw away the form behind
+ * it. (An Escape pressed while the *frame* has focus never reaches this document
+ * at all — the cover layout overlay handles that one as "deselect".)
+ */
+const onFullscreenKeydown = (event: KeyboardEvent) => {
+  if (event.key !== 'Escape') return
+  event.stopPropagation()
+  event.preventDefault()
+  void setFullscreen(false)
+}
+
+const setFullscreen = async (on: boolean): Promise<void> => {
+  if (fullscreen.value === on) return
+  fullscreen.value = on
+
+  if (on) {
+    window.addEventListener('keydown', onFullscreenKeydown, true)
+    wakeChrome()
+  } else {
+    window.removeEventListener('keydown', onFullscreenKeydown, true)
+    clearIdleTimer()
+    chromeIdle.value = false
+  }
+
+  // Both the room available and this body's distance from the viewport bottom
+  // change wholesale here. The observers would catch up on their own, but only
+  // after a frame of the phone at the wrong size.
+  await nextTick()
+  measureBody()
+  previewFrameRef.value?.measure()
+}
 
 // What genuinely requires a new document: a different forced stage. The event
 // never changes here, and language is deliberately absent — it's swapped in
@@ -426,7 +572,7 @@ const onFrameReady = () => {
   // only on change.
   syncLayoutEditMode()
   if (layoutEditActive.value) frameRef.value?.postCoverLayoutSelect(props.selectedElement)
-  measureBottomReserve()
+  measureBody()
   previewFrameRef.value?.measure()
 }
 
@@ -458,22 +604,26 @@ watch(
 )
 
 onMounted(() => {
-  measureBottomReserve()
+  measureBody()
   // The controls above the frame change height as stages/languages appear, and
   // the modal itself resizes with the window — both move this body's bottom
   // edge, and therefore how much room the frame actually has.
   if (bodyRef.value) {
-    bodyResizeObserver = new ResizeObserver(measureBottomReserve)
+    bodyResizeObserver = new ResizeObserver(measureBody)
     bodyResizeObserver.observe(bodyRef.value)
   }
-  window.addEventListener('resize', measureBottomReserve)
+  window.addEventListener('resize', measureBody)
 })
 
 onUnmounted(() => {
   if (pushTimer) clearTimeout(pushTimer)
   bodyResizeObserver?.disconnect()
   bodyResizeObserver = null
-  window.removeEventListener('resize', measureBottomReserve)
+  window.removeEventListener('resize', measureBody)
+  clearIdleTimer()
+  // Closing the form unmounts this mid-full-screen; the window listener would
+  // otherwise outlive it and swallow every later Escape in the app.
+  window.removeEventListener('keydown', onFullscreenKeydown, true)
 })
 </script>
 
@@ -545,6 +695,30 @@ onUnmounted(() => {
   cursor: not-allowed;
 }
 
+/* Sized to the segmented pills beside it (34px tall) rather than to the §17
+   touch floor, so the row reads as one strip of controls instead of one button
+   standing a head taller than the rest. */
+.tpl-preview__expand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.125rem;
+  height: 2.125rem;
+  color: rgb(71 85 105);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+}
+
+.tpl-preview__expand:hover {
+  color: rgb(30 41 59);
+  background: rgba(255, 255, 255, 0.9);
+}
+
 .tpl-preview__body {
   position: relative;
   flex: 1;
@@ -584,8 +758,121 @@ onUnmounted(() => {
   opacity: 0;
 }
 
+/* ------------------------------------------------------------------------- */
+/* Full screen                                                               */
+/*                                                                           */
+/* Same elements, repositioned: the frame takes the whole viewport and every  */
+/* control floats over it, because a stacked header and caption would spend   */
+/* ~90px of exactly the height this mode exists to hand the phone.            */
+/* ------------------------------------------------------------------------- */
+.tpl-preview.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  /* dvh, not vh: on mobile the URL bar makes 100vh taller than what is on
+     screen, which would push the control bar past the bottom edge. */
+  height: 100dvh;
+  /* Local to the templates modal's own z-100 stacking context — this only has
+     to clear the form and the modal's floating close button. */
+  z-index: 50;
+  padding: 0;
+  /* A media-viewer surface, not app chrome: the black gives the one stage that
+     doesn't paint a full-bleed background an edge rather than a seam. */
+  background: rgba(2, 6, 23, 0.97);
+}
+
+.tpl-preview.is-fullscreen .tpl-preview__body {
+  position: absolute;
+  inset: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom));
+}
+
+/* The stage is already named on the segmented control below, and the label
+   costs the frame its own height plus a gap. */
+.tpl-preview.is-fullscreen :deep(.preview-frame__label) {
+  display: none;
+}
+
+.tpl-preview.is-fullscreen .tpl-preview__controls {
+  position: absolute;
+  left: 50%;
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 2;
+  align-items: center;
+  max-width: calc(100vw - 1.5rem);
+  transition: opacity 0.3s ease;
+}
+
+.tpl-preview.is-fullscreen .tpl-preview__segments {
+  justify-content: center;
+}
+
+/* Dimmed, never hidden: still the way out, still clickable, just no longer
+   sitting on the artwork. */
+.tpl-preview.is-fullscreen.is-idle .tpl-preview__controls,
+.tpl-preview.is-fullscreen.is-idle .tpl-preview__hint {
+  opacity: 0.35;
+}
+
+.tpl-preview.is-fullscreen .tpl-preview__controls:hover,
+.tpl-preview.is-fullscreen .tpl-preview__controls:focus-within {
+  opacity: 1;
+}
+
+.tpl-preview.is-fullscreen .tpl-preview__seg-group,
+.tpl-preview.is-fullscreen .tpl-preview__expand {
+  background: rgba(15, 23, 42, 0.82);
+  border-color: rgba(148, 163, 184, 0.22);
+  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.55);
+}
+
+/* `:not(.is-active)` deliberately: these selectors outweigh the active pill's
+   own rule, and without it the selected stage would lose its white-on-gradient
+   label. */
+.tpl-preview.is-fullscreen .tpl-preview__seg:not(.is-active),
+.tpl-preview.is-fullscreen .tpl-preview__expand {
+  color: rgb(203 213 225);
+}
+
+.tpl-preview.is-fullscreen .tpl-preview__seg:not(.is-active):hover,
+.tpl-preview.is-fullscreen .tpl-preview__expand:hover {
+  color: #fff;
+  background: rgba(30, 41, 59, 0.95);
+}
+
+.tpl-preview.is-fullscreen .tpl-preview__hint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(4rem + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 2;
+  max-width: min(30rem, calc(100vw - 2rem));
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  color: rgb(203 213 225);
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.tpl-preview__hint-esc {
+  margin-left: 0.375rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid rgba(148, 163, 184, 0.35);
+  color: rgb(148 163 184);
+}
+
+.tpl-preview.is-fullscreen .tpl-preview__loading-veil {
+  background: rgba(2, 6, 23, 0.7);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tpl-preview__seg,
+  .tpl-preview__expand,
+  .tpl-preview.is-fullscreen .tpl-preview__controls,
+  .tpl-preview.is-fullscreen .tpl-preview__hint,
   .fade-enter-active,
   .fade-leave-active {
     transition: none;
