@@ -48,13 +48,16 @@
             />
           </div>
 
-          <!-- Over-exposure settling into a normal frame: a screen-blended warm
-               wash plus a hot spot where the light came through the opening.
-               Fading two overlays is far cheaper than animating `filter:
-               brightness()` on a full-bleed image. -->
+          <!-- Over-exposure settling into a normal frame, as three fading
+               overlays rather than an animated `filter:` on a full-bleed image.
+               Between them they carry the reference's whole settle — colour
+               floods back, the warm blow-out drains, and the hot spot where the
+               light came through the opening closes. Order matches the
+               reference's filter, which resolves before its overlays composite. -->
+          <div class="exposure-desat" aria-hidden="true" />
           <div class="exposure-wash" aria-hidden="true" />
           <div class="exposure-bloom" aria-hidden="true" />
-          <div class="photo-scrim" :style="scrimStyle" aria-hidden="true" />
+          <div class="photo-scrim" aria-hidden="true" />
         </div>
 
         <!-- Light spilling out of the seam as the doors break apart: a wide
@@ -79,6 +82,7 @@
       <span class="frame-corner frame-corner-tr" />
       <span class="frame-corner frame-corner-bl" />
       <span class="frame-corner frame-corner-br" />
+      <div class="frame-shade" />
       <div class="frame-sheen" />
       <div class="frame-sheen frame-sheen-slow" />
     </div>
@@ -231,21 +235,28 @@ const gold = computed(() => toHex6(props.accentColor || props.primaryColor, '#e0
 const goldLight = '#fff6de'
 
 /**
- * The colour every washed layer on this stage is made of: the plate behind the
- * photo, the printed mat the gold border sits on, and the scrim that carries
- * the cartouche. That's the template's `blur-effect` slot — the same one the
- * decoration stage's mist band uses — not its background/primary, which is the
- * cover's colour rather than the colour of overlays laid *over* imagery.
+ * The colour the stage's printed chrome is made of: the plate behind the photo
+ * and the mat the gold border sits on. That's the template's `blur-effect`
+ * slot — the same one the decoration stage's mist band uses — not its
+ * background/primary, which is the cover's colour rather than the colour of
+ * overlays laid *over* imagery.
+ *
+ * The photo scrim used to be made of it too and no longer is; see .photo-scrim
+ * for why a branded wash over a photograph is the wrong instrument.
  */
 const effectColor = computed(() =>
   toHex6(props.blurEffectColor || props.backgroundColor || props.primaryColor, '#1a1410'),
 )
 
 /**
- * Whether the washed layers came out light. `blur-effect` defaults to white
- * upstream, so most templates land here — and the cartouche's shadow stack has
- * to follow: the deep black glow that gives the lettering weight on a dark
- * plate turns into a grey smudge on a pale one.
+ * Whether the printed chrome came out light — `blur-effect` defaults to white
+ * upstream, so most templates land here. The frame's shading has to follow: the
+ * near-black red that multiplies to a rich shadow on a deep mat turns into a
+ * dirty stain on a pale one.
+ *
+ * Note this no longer governs the cartouche's shadow stack. That copy sits on
+ * the photo scrim, which is near-black on every template now, so its ground is
+ * fixed regardless of what this returns.
  */
 const isLightEffect = computed(() => {
   const hex = effectColor.value
@@ -259,21 +270,23 @@ const paletteStyle = computed<Record<string, string>>(() => ({
   '--dt-gold-glow': alpha(gold.value, '66'),
   '--dt-gold-light': goldLight,
   '--dt-effect': effectColor.value,
-  '--dt-copy-shadow': isLightEffect.value
-    ? 'drop-shadow(0 1px 1px rgba(92, 62, 20, 0.32)) drop-shadow(0 4px 12px rgba(120, 90, 40, 0.22))'
-    : 'drop-shadow(0 2px 0 rgba(60, 34, 8, 0.45)) drop-shadow(0 10px 26px rgba(0, 0, 0, 0.8))',
+  // Shadow half of the frame's lighting model (see .frame-shade). The
+  // reference's near-black red multiplies to a rich shadow on its maroon
+  // plate, but `blur-effect` defaults to white upstream — most templates land
+  // pale, where that same wash multiplies into a dirty red stain. The light
+  // branch trades it for a warm graphite at half the weight, the same split
+  // --dt-copy-shadow makes below.
+  '--dt-frame-shade': isLightEffect.value
+    ? 'linear-gradient(158deg, rgba(116, 92, 58, 0) 38%, rgba(104, 80, 46, 0.2) 100%)'
+    : 'linear-gradient(158deg, rgba(40, 6, 6, 0) 38%, rgba(38, 5, 5, 0.42) 100%)',
+  // Unconditional now that the cartouche's ground is the near-black photo
+  // scrim rather than the blur-effect plate. It used to soften on pale
+  // templates because the copy sat on a pale wash; on the scrim that branch
+  // would hand a near-black ground the shadow stack meant for a light one,
+  // costing the lettering the weight that reads as engraved.
+  '--dt-copy-shadow':
+    'drop-shadow(0 2px 0 rgba(60, 34, 8, 0.45)) drop-shadow(0 10px 26px rgba(0, 0, 0, 0.8))',
 }))
-
-const scrimStyle = computed(() => {
-  const c = effectColor.value
-  // The lower stops carry the cartouche and stay strong either way. The top one
-  // is depth only — at the weight a dark plate wants it, a pale one hazes over
-  // the subject's face instead.
-  const top = isLightEffect.value ? '40' : '8c'
-  return {
-    background: `linear-gradient(180deg, ${alpha(c, top)} 0%, ${alpha(c, '00')} 26%, ${alpha(c, '00')} 34%, ${alpha(c, 'b3')} 66%, ${alpha(c, 'f0')} 100%)`,
-  }
-})
 
 const eventDate = computed(() => {
   if (!props.eventStartDate) return null
@@ -482,6 +495,25 @@ const replay = async () => {
   min-height: 100%;
 }
 
+/* The reference's `saturate(1 - over * 0.5)`: its photo opens near-colourless
+   and floods back as the exposure settles. The warm wash below reproduces the
+   brightness lift and, by raising the blacks, the contrast drop — but a screen
+   blend can't drain colour, so without this the settle was missing a third of
+   itself. A grey plate blended on `saturation` takes its own saturation (zero)
+   with the backdrop's hue and luminosity, so fading it from 0.5 rides the same
+   curve the filter would, and stays off the compositor's slow path. */
+.exposure-desat {
+  position: absolute;
+  inset: 0;
+  background: #808080;
+  mix-blend-mode: saturation;
+  opacity: 0.5;
+}
+
+.revealing .exposure-desat {
+  animation: exposureSettle 2.35s cubic-bezier(0.4, 0, 0.3, 1) 0.25s forwards;
+}
+
 .exposure-wash {
   position: absolute;
   inset: 0;
@@ -516,9 +548,25 @@ const replay = async () => {
   animation: exposureSettle 2.1s ease-out 0.2s forwards;
 }
 
+/* The wash over the photograph, and the one layer on this stage that is NOT
+   made of the template's blur-effect colour — these are the reference's own
+   values. A scrim tints everything beneath it, so a branded one drains the
+   photograph's colour rather than seating it, and `blur-effect` defaults to
+   white upstream, which hazed the image over instead of lifting it. Near-black
+   leaves the photo its own colour and gives the gold cartouche below the
+   darkest ground to read against. Warm rather than neutral so the shadows stay
+   in the same family as the gold. */
 .photo-scrim {
   position: absolute;
   inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(50, 8, 8, 0.58) 0%,
+    rgba(0, 0, 0, 0) 24%,
+    rgba(0, 0, 0, 0) 30%,
+    rgba(38, 5, 5, 0.72) 64%,
+    rgba(24, 3, 3, 0.94) 100%
+  );
 }
 
 /* ---------- Seam light ---------- */
@@ -633,16 +681,13 @@ const replay = async () => {
   --dt-inset: calc(var(--dt-w) * 0.0278); /* 30 — mat band */
   --dt-inner: calc(var(--dt-w) * 0.0426); /* 46 — inner hairline */
   --dt-corner: calc(var(--dt-w) * 0.0185); /* 20 — corner diamonds */
-  /* The specular rides the band between these two. Only the INNER edge keeps
-     the gleam off the photograph — a ring reaching past the hairline at 46 puts
-     a moving highlight on the photo itself, which reads as a smear rather than
-     as light on a printed border. The outer edge has no such job, so it sits at
-     the stage's own edge: the mat band (0 → 30) is part of what the light falls
-     across, exactly as the reference's cover plate lights its full border band.
-     Held off the edge it lit the rules alone and left the mat flat behind them. */
-  /* 0px, not 0: the polygon feeds this to calc(100% - …), and a unitless zero
-     against a percentage is an invalid calc that voids the whole clip-path. */
-  --dt-ring-outer: 0px;
+  /* The lighting layers ride the band between these two and nothing beyond it,
+     at either end. Past the inner hairline (46) a moving highlight lands on the
+     photograph and reads as a smear; run out to the stage edge instead and it
+     lights the mat's outer margin, which spreads the gleam over dead space and
+     costs the frame its definition. Keeping both edges tight is what makes it
+     read as light on the frame itself. */
+  --dt-ring-outer: calc(var(--dt-w) * 0.0222); /* 24 */
   --dt-ring-inner: calc(var(--dt-w) * 0.0482); /* 52 */
 }
 
@@ -717,24 +762,14 @@ const replay = async () => {
   top: calc(100% - var(--dt-inset));
 }
 
-/* Travelling specular, clipped to the border ring so the highlight only ever
-   rides the metal — the same shape the reference uses. */
+/* The frame's two lighting layers, on one shared annulus so the shadow and the
+   highlight stay registered as light on a single surface. The clip is an outer
+   rectangle with a reversed inner rectangle punching the hole; the hole is what
+   keeps both of them off the photograph. */
+.frame-shade,
 .frame-sheen {
   position: absolute;
   inset: 0;
-  mix-blend-mode: screen;
-  background: linear-gradient(
-    118deg,
-    rgba(255, 236, 190, 0) 38%,
-    rgba(255, 238, 198, 0.26) 46%,
-    rgba(255, 253, 240, 0.92) 50%,
-    rgba(255, 238, 198, 0.26) 54%,
-    rgba(255, 236, 190, 0) 62%
-  );
-  background-size: 260% 100%;
-  background-position: 150% 0;
-  /* An annulus: the outer rectangle, then a reversed inner rectangle punching
-     the hole. The hole is what keeps the highlight off the photograph. */
   clip-path: polygon(
     var(--dt-ring-outer) var(--dt-ring-outer),
     calc(100% - var(--dt-ring-outer)) var(--dt-ring-outer),
@@ -747,6 +782,30 @@ const replay = async () => {
     calc(100% - var(--dt-ring-inner)) var(--dt-ring-inner),
     var(--dt-ring-inner) var(--dt-ring-inner)
   );
+}
+
+/* Fixed shadow raking down the lower-right of the band. This is what makes the
+   border read as a raised, lit surface instead of flat print — the specular
+   alone gives brightness with no side for the light to be coming from. Sits
+   under the sheen so the travelling highlight still blows through it. */
+.frame-shade {
+  mix-blend-mode: multiply;
+  background: var(--dt-frame-shade);
+}
+
+/* Travelling specular, riding the same band as the shade above. */
+.frame-sheen {
+  mix-blend-mode: screen;
+  background: linear-gradient(
+    118deg,
+    rgba(255, 236, 190, 0) 38%,
+    rgba(255, 238, 198, 0.26) 46%,
+    rgba(255, 253, 240, 0.92) 50%,
+    rgba(255, 238, 198, 0.26) 54%,
+    rgba(255, 236, 190, 0) 62%
+  );
+  background-size: 260% 100%;
+  background-position: 150% 0;
 }
 
 .frame-sheen-slow {
@@ -1132,6 +1191,9 @@ const replay = async () => {
     animation-duration: 0.6s;
   }
 
+  /* Shortened, never disabled: these resolve TO zero, so killing the animation
+     would strand the photo blown out and colourless. */
+  .revealing .exposure-desat,
   .revealing .exposure-wash,
   .revealing .exposure-bloom {
     animation-duration: 0.8s;

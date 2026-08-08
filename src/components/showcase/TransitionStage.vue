@@ -119,7 +119,7 @@
       <!-- Soft blur band, lighter than before so the photo stays present -->
       <div class="cloud-blur-layer" />
       <!-- Gradient mist for text legibility -->
-      <div class="cloud-mist-layer" :style="cloudMistStyle" />
+      <div class="cloud-mist-layer" />
     </div>
 
     <!-- The showcase-wide falling field lives inside CoverStage, and this stage
@@ -200,7 +200,6 @@ interface Props {
   secondaryColor?: string | null
   accentColor: string
   backgroundColor?: string
-  blurEffectColor?: string
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
@@ -255,13 +254,6 @@ const featureImageUrl = computed(() =>
 
 // Organizer-chosen crop, laid out in pixels against the live stage size.
 const { photoContainerRef, photoStyle, onPhotoLoad } = useFeaturedPhotoGeometry(featuredPhoto)
-
-const cloudMistStyle = computed(() => {
-  const c = props.blurEffectColor || '#ffffff'
-  return {
-    background: `linear-gradient(to bottom, transparent 0%, ${c}4d 35%, ${c}99 60%, ${c}cc 80%, ${c}e6 100%)`,
-  }
-})
 
 const flourishColor = computed(() => props.accentColor || props.primaryColor || '#b08d57')
 
@@ -481,11 +473,33 @@ const replay = async () => {
 
 /* Veil copy: pre-blurred and luminous, stacked on the sharp photo.
    Fading its opacity (cheap) reads as the photo sharpening (a blur()
-   transition on a fullscreen image would be far more expensive). */
+   transition on a fullscreen image would be far more expensive).
+
+   Masked so it lies thin over the upper frame and full over the lower. The
+   hosts' faces sit high in a portrait crop, and an even veil spent its whole
+   fade blurring exactly the part of the photo people are trying to read — the
+   faces only resolved once the entire veil had gone. Weighted this way they
+   are legible from the first frame and the reveal still runs, reading as mist
+   lifting off the bottom of the frame rather than a sheet coming off the lot.
+   The fade is shorter for the same reason: it used to finish at 3400ms against
+   a stage that starts dissolving at 5800ms, leaving the photo truly sharp for
+   2.4s of its 7s life. */
 .couple-photo-veil {
   filter: blur(16px) brightness(1.18) saturate(0.92);
   opacity: 1;
-  transition: opacity 2.4s ease-in-out;
+  transition: opacity 1.8s ease-in-out;
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.6) 42%,
+    #000 78%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.6) 42%,
+    #000 78%
+  );
 }
 
 .show .couple-photo-veil {
@@ -743,10 +757,27 @@ const replay = async () => {
   transform: translateZ(0);
 }
 
+/* Near-black warm, not the template's blur-effect slot. A scrim tints whatever
+   it covers, so a branded one drains the photograph instead of seating it —
+   and `blur-effect` defaults to white upstream, which hazed the image over.
+   Worse, templates commonly point `blur-effect` and `primary` at the same deep
+   colour, which left the save-the-date copy painting itself onto its own
+   backdrop. Darkening progressively toward the base (the reference's own
+   rgb(50,8,8) → rgb(38,5,5) → rgb(24,3,3)) gives the gold copy the darkest
+   ground where it actually sits. Density ramp is this stage's own, tuned to
+   the band's 38vh rather than the reference's full-height gradient. */
 .cloud-mist-layer {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(50, 8, 8, 0) 0%,
+    rgba(50, 8, 8, 0.3) 35%,
+    rgba(38, 5, 5, 0.6) 60%,
+    rgba(32, 4, 4, 0.8) 80%,
+    rgba(24, 3, 3, 0.94) 100%
+  );
 }
 
 .save-the-date-container {

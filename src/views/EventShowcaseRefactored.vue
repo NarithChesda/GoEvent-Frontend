@@ -203,7 +203,6 @@
         :secondary-color="secondaryColor"
         :accent-color="accentColor"
         :background-color="backgroundColor"
-        :blur-effect-color="blurEffectColor"
         :current-font="currentFont"
         :primary-font="primaryFont"
         :secondary-font="secondaryFont"
