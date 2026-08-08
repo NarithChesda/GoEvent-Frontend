@@ -68,6 +68,24 @@
       @open-envelope="handleOpenEnvelope"
     />
 
+    <!-- Falling particle field (petals, leaves, custom image, …). Deliberately
+         owned by CoverStage rather than by any one stage: CoverStage is mounted
+         for the whole showcase, so a single field drifts unbroken from cover
+         through the transition and on into the main content — the petals never
+         restart at a stage boundary. `fallingEffectZIndex` re-layers it instead:
+         above the cover artwork and the door panels while the cover is up, then
+         behind the main content card once that takes over, which is where this
+         effect has always sat. -->
+    <FallingEffect
+      :key="fallingEffectKey"
+      :config="fallingEffect"
+      :primary-color="primaryColor"
+      :accent-color="accentColor"
+      :get-media-url="getMediaUrl"
+      :z-index="fallingEffectZIndex"
+      :style="fallingEffectHandoffStyle"
+    />
+
     <!-- Main Content Overlay (Stage 3 - Background Video) -->
     <div
       v-if="shouldShowMainContent"
@@ -75,17 +93,31 @@
     >
       <slot name="main-content"></slot>
     </div>
+
+    <!-- Transition stage layer. Deliberately *inside* CoverStage rather than a
+         sibling of it: at z-25 it sits under the door panels (z-28) and over
+         the main content (z-20), so the doors genuinely part to reveal it
+         instead of it cross-fading on top of them. Empty (and inert) for
+         templates whose transition renders as a sibling instead. -->
+    <div class="absolute inset-0 z-[25] pointer-events-none">
+      <slot name="transition"></slot>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onUnmounted } from 'vue'
 import { useCoverStageVideo, type ShowcaseStage } from '@/composables/showcase/useCoverStageVideo'
-import { useDoorAnimation } from '@/composables/showcase/useDoorAnimation'
-import type { CoverStageLayout, AmbientCreaturesConfig } from '@/services/api/types/template.types'
+import { useDoorAnimation, DOOR_CLEARED_MS } from '@/composables/showcase/useDoorAnimation'
+import type {
+  CoverStageLayout,
+  AmbientCreaturesConfig,
+  FallingEffectConfig,
+} from '@/services/api/types/template.types'
 import type { ShowcaseAnimationType } from '@/composables/showcase/useShowcaseAnimation'
 import VideoContainer from './VideoContainer.vue'
 import CoverContentOverlay from './CoverContentOverlay.vue'
+import FallingEffect from './FallingEffect.vue'
 
 export type DisplayMode = 'basic' | 'standard'
 
@@ -154,6 +186,11 @@ interface Props {
   animationType?: ShowcaseAnimationType
   /** Ambient creature effect config from template_assets. Only renders when provided. */
   ambientCreatures?: AmbientCreaturesConfig | null
+  /** Falling particle effect config from template_assets. Spans every stage. */
+  fallingEffect?: FallingEffectConfig | null
+  /** True while a transition stage that runs its OWN falling field is on
+   *  screen, so this one yields to it instead of drawing over the top. */
+  transitionOwnsFallingField?: boolean
   /** When true, basic mode will only animate decorations out without transitioning to main content */
   useTransitionStage?: boolean
   /** Manage-page preview only: always block the open-envelope tap/swipe so
@@ -249,13 +286,64 @@ const shouldShowMainContent = computed(() => {
   // Always show main content when stage has already transitioned
   if (props.currentShowcaseStage === 'main_content') return true
   // When transition stage is responsible for revealing main content, don't render
-  // main content during the door animation — TransitionStage sits at z-35 above
-  // CoverStage (z-10) but starts transparent, so rendering main content here would
-  // show through it as the door opens.
+  // main content during the door animation. The decoration-mode TransitionStage
+  // sits at z-35 above CoverStage (z-10) but starts transparent, so main content
+  // would show through it as the door opens; the door-mode stage renders in the
+  // `transition` slot above, which likewise has nothing to reveal yet.
   if (props.useTransitionStage && isDoorAnimationInProgress.value) return false
   return videoState.currentVideoPhase.value === 'background'
     || props.shouldSkipToMainContent
     || isDoorAnimationInProgress.value
+})
+
+// Falling field layering. 31 clears everything the cover puts on screen — the
+// decorations (24/25), the ambient creatures (26), the door panels (28) and the
+// cover copy (30) — so petals keep drifting in front of the doors as they part.
+// It drops to 15 only once the cover is fully gone and main content has taken
+// over: there it sits above the background video but below the main stage's own
+// decorations and content card, exactly where the effect used to live.
+const fallingEffectZIndex = computed(() =>
+  shouldShowMainContent.value && !shouldShowCoverContent.value ? 15 : 31,
+)
+
+// Handoff to a transition stage that carries its own field (the door stage
+// does — small gold flecks that get drawn up into its bloom). That stage mounts
+// behind the closed doors, so its petals are hidden until the doors part: this
+// field fades out over exactly the swing so the two swap at the rate the doors
+// reveal, keeping one field's worth of petals on screen throughout. Left drawing
+// on top instead, it would double the density the moment the doors cleared and
+// then rain straight through the bloom, which its own field animates out of.
+// Inline rather than a class so it merges with FallingEffect's own :style.
+const fallingEffectHandoffStyle = computed(() => ({
+  opacity: props.transitionOwnsFallingField ? 0 : 1,
+  transition: `opacity ${DOOR_CLEARED_MS}ms ease-out`,
+}))
+
+// FallingEffect reads its config ONCE, during setup: useFallingParticles
+// destructures its options into plain locals and derives the motion profile,
+// intensity preset and cached custom image from them right there, so nothing
+// about a later config change can reach a mounted instance. Remounting on a
+// changed config is what makes it react.
+//
+// Inert on the public showcase — a guest's template can't change mid-session —
+// and load-bearing in the partner template studio, where editing this effect
+// and watching it is the entire point.
+//
+// Deliberately keyed on the effect's own config only, not on primaryColor /
+// accentColor: those are resolved through a `color()` callback the composable
+// invokes per spawned particle, so palette edits already reach new particles
+// (converging as the field recycles) without tearing the whole field down on
+// every drag of an unrelated color picker.
+const fallingEffectKey = computed(() => {
+  const config = props.fallingEffect
+  if (!config) return 'none'
+  return [
+    config.type,
+    config.intensity ?? 'normal',
+    config.color_source ?? 'primary',
+    config.custom_color ?? '',
+    config.custom_image ?? '',
+  ].join('|')
 })
 
 // Disable envelope interaction in standard mode until event video is ready

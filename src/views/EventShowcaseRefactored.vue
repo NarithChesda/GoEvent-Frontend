@@ -111,6 +111,8 @@
         :cover-right-decoration="event.template_assets?.assets?.cover_right_decoration"
         :animation-type="event.template_assets?.cover_stage_layout?.showcaseAnimationType"
         :ambient-creatures="event.template_assets?.ambient_creatures"
+        :falling-effect="event.template_assets?.falling_effect"
+        :transition-owns-falling-field="showTransitionStage && isDoorTransition"
         :use-transition-stage="isBasicWedding"
         :get-media-url="getMediaUrl"
         @open-envelope="openEnvelopeWithVideoSync"
@@ -152,7 +154,6 @@
             :right-decoration="event.template_assets?.assets?.right_decoration || event.right_decoration"
             :animation-type="event.template_assets?.cover_stage_layout?.showcaseAnimationType"
             :main-stage-layout="event.template_assets?.cover_stage_layout"
-            :falling-effect="event.template_assets?.falling_effect"
             :event-details-design="event.template_assets?.event_details_design"
             :host-info-design="event.template_assets?.host_info_design"
             @open-map="openGoogleMap"
@@ -166,11 +167,34 @@
             @video-state-change="handleVideoStateChange"
           />
         </template>
+
+        <!-- Door templates' transition stage. Rendered through CoverStage's
+             own slot so it sits under the door panels — the doors part to
+             reveal it. Its gold bloom is still on screen when it emits
+             `transitionComplete`; the leave transition dissolves it over the
+             main content that mounts behind it at that moment. -->
+        <template #transition>
+          <Transition name="door-transition-out">
+            <TransitionStageDoor
+              v-if="showTransitionStage && isDoorTransition"
+              :event-title="event.title"
+              :event-photos="eventPhotos"
+              :event-start-date="event.start_date"
+              :primary-color="primaryColor"
+              :accent-color="accentColor"
+              :background-color="backgroundColor"
+              :blur-effect-color="blurEffectColor"
+              :get-media-url="getMediaUrl"
+              @transition-complete="handleTransitionComplete"
+            />
+          </Transition>
+        </template>
       </CoverStage>
 
-      <!-- Transition Stage (basic wedding events only, requires a featured photo) -->
+      <!-- Decoration templates' transition stage (basic wedding events only,
+           requires a featured photo) -->
       <TransitionStage
-        v-if="isTransitionStage && isBasicWedding && hasFeaturedPhoto"
+        v-if="showTransitionStage && !isDoorTransition"
         :event-title="event.title"
         :event-logo="event.logo_one"
         :event-photos="eventPhotos"
@@ -179,12 +203,11 @@
         :secondary-color="secondaryColor"
         :accent-color="accentColor"
         :background-color="backgroundColor"
-        :blur-effect-color="blurEffectColor"
         :current-font="currentFont"
         :primary-font="primaryFont"
         :secondary-font="secondaryFont"
+        :falling-effect="event.template_assets?.falling_effect"
         :get-media-url="getMediaUrl"
-        :animation-type="event.template_assets?.cover_stage_layout?.showcaseAnimationType"
         @transition-complete="handleTransitionComplete"
       />
 
@@ -217,6 +240,7 @@ import { useRouter } from 'vue-router'
 import { useEventShowcase } from '../composables/useEventShowcase'
 import { useAuthStore } from '../stores/auth'
 import { useAssetProtection } from '../composables/showcase/useAssetProtection'
+import { DOOR_CLEARED_MS } from '../composables/showcase/useDoorAnimation'
 import { getPendingLogin } from '../composables/useTelegramBotLogin'
 
 // Meta tags utility
@@ -233,6 +257,7 @@ import ErrorDisplay from '../components/showcase/ErrorDisplay.vue'
 import LoadingSpinner from '../components/showcase/LoadingSpinner.vue'
 import MainContentStage from '../components/showcase/MainContentStage.vue'
 import TransitionStage from '../components/showcase/TransitionStage.vue'
+import TransitionStageDoor from '../components/showcase/TransitionStageDoor.vue'
 import PhotoModal from '../components/showcase/PhotoModal.vue'
 import AuthModal from '../components/AuthModal.vue'
 import { useAuthModal } from '../composables/useAuthModal'
@@ -370,6 +395,18 @@ const hasFeaturedPhoto = computed(() => {
   return eventPhotos.value?.some((p) => p.is_featured) ?? false
 })
 
+const showTransitionStage = computed(
+  () => isTransitionStage.value && isBasicWedding.value && hasFeaturedPhoto.value,
+)
+
+// Which of the two transition stages this template gets. Mirrors how CoverStage
+// resolves the animation type (template field only, defaulting to decoration) —
+// the door cover animation is paired with the curtain-and-cartouche transition,
+// everything else with the veil reveal.
+const isDoorTransition = computed(
+  () => event.value.template_assets?.cover_stage_layout?.showcaseAnimationType === 'door',
+)
+
 // V2 "Storybook Romance" template gate. Per-template selection
 // (event.template_assets.showcase_template_version) takes priority once the
 // backend sends it — see docs/backend-api-requirements/showcase-template-version.md.
@@ -419,13 +456,16 @@ const openEnvelopeWithVideoSync = async () => {
     await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined, {
       useTransitionStage: true,
     })
-    // No TransitionStage component renders (no featured photo).
-    // Door animation: trigger main content at 700ms so it renders behind the
-    // still-opening doors (z-20 behind door panels at z-28). The doors' CSS
-    // transition is 1.2s; isDoorAnimationInProgress keeps them visible until done.
+    // No TransitionStage component renders (no featured photo), so the cover
+    // animation is the whole reveal and main content follows it directly.
+    // Completing early doesn't buy anything: revealing main content clears
+    // isDoorAnimationInProgress, which unmounts the leaves — so a delay shorter
+    // than the swing cuts it off mid-flight. Handing off once they've cleared
+    // the frame rather than at the very end of the swing skips its tail, which
+    // is off screen anyway.
     // Decoration animation: wait for decorations to finish sliding out (~1.2s).
     const animationType = event.value.template_assets?.cover_stage_layout?.showcaseAnimationType
-    const delay = animationType === 'door' ? 700 : 1400
+    const delay = animationType === 'door' ? DOOR_CLEARED_MS : 1400
     setTimeout(() => {
       handleTransitionComplete()
     }, delay)
@@ -629,6 +669,23 @@ onUnmounted(() => {
   width: 100%;
   min-height: 100svh;
   background: #faf6f0;
+}
+
+/* Door transition hand-off: the stage emits `transitionComplete` while its gold
+   bloom is still at full strength, so the bloom dissolves over the main content
+   that mounts underneath at that same moment rather than cutting to it. */
+.door-transition-out-leave-active {
+  transition: opacity 0.8s ease-out;
+}
+
+.door-transition-out-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .door-transition-out-leave-active {
+    transition-duration: 0.3s;
+  }
 }
 
 /* Container Styles */

@@ -38,7 +38,7 @@
       v-if="featureImageUrl"
       ref="photoContainerRef"
       class="couple-photo-container"
-      :class="[{ 'show': isCouplePhotoVisible }, { 'door-mode': animationType === 'door' }]"
+      :class="{ 'show': isCouplePhotoVisible }"
     >
       <div class="kenburns-frame">
         <img
@@ -111,13 +111,45 @@
       />
     </div>
 
-    <!-- Footer scrim + save the date -->
-    <div class="cloud-footer" :class="{ 'show': isContentVisible }">
+    <!-- Footer scrim. Split out of .cloud-footer so the falling field can sit
+         between the two: the mist is blur-effect colour at up to 90% alpha, so
+         anything behind it is washed to that colour — which is exactly what
+         petals must not be. -->
+    <div class="cloud-scrim" :class="{ 'show': isContentVisible }" aria-hidden="true">
       <!-- Soft blur band, lighter than before so the photo stays present -->
       <div class="cloud-blur-layer" />
       <!-- Gradient mist for text legibility -->
-      <div class="cloud-mist-layer" :style="cloudMistStyle" />
+      <div class="cloud-mist-layer" />
+    </div>
 
+    <!-- The showcase-wide falling field lives inside CoverStage, and this stage
+         is a sibling rendering *above* CoverStage entirely (z-35), so nothing
+         in there can paint over this one — the shared field can't carry through
+         and this stage runs its own.
+
+         What keeps that from reading as two fields: this one rides exactly the
+         photo's opacity ramp. The photo is what occludes the shared field, so
+         as it fades in and takes the shared petals away, these fade in at the
+         same rate to replace them — and on the way out the reverse. Un-ramped,
+         both fields drew at full strength for the ~2.4s before the photo goes
+         opaque and the ~1.2s while it dissolves, at visibly doubled density.
+
+         Layered above the photo, the bokeh and the scrim so the petals keep
+         their template colour, below the save-the-date copy — the same order
+         the cover uses. -->
+    <FallingEffect
+      :key="fallingEffectKey"
+      class="transition-petals"
+      :class="{ show: isCouplePhotoVisible }"
+      :config="fallingEffect"
+      :primary-color="primaryColor"
+      :accent-color="accentColor"
+      :get-media-url="getMediaUrl"
+      :z-index="6"
+    />
+
+    <!-- Save the date -->
+    <div class="cloud-footer" :class="{ 'show': isContentVisible }">
       <div class="save-the-date-container">
         <!-- Fine line drawing outward from center -->
         <div class="reveal-line" :style="{ background: revealLineGradient }" />
@@ -149,13 +181,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick, inject, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, inject } from 'vue'
 import { RotateCcw, Crop } from 'lucide-vue-next'
 import type { EventPhoto } from '@/types/showcase'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
-import { cropToCoverGeometry, resolvePhotoCrop, type Size } from '@/utils/photoCrop'
+import { useFeaturedPhotoGeometry } from '@/composables/showcase/useFeaturedPhotoGeometry'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
+import FallingEffect from './FallingEffect.vue'
+import type { FallingEffectConfig } from '@/services/api/types/template.types'
 
 interface Props {
   eventTitle: string
@@ -166,13 +200,12 @@ interface Props {
   secondaryColor?: string | null
   accentColor: string
   backgroundColor?: string
-  blurEffectColor?: string
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
   getMediaUrl: (url: string) => string
-  /** Controls animation timing. Door mode starts photo immediately so it's visible as the door opens. */
-  animationType?: 'decoration' | 'door'
+  /** Falling particle effect config from template_assets. */
+  fallingEffect?: FallingEffectConfig | null
   /** Preview-only: hold at the fully-revealed state (photo sharp + "Save the
    *  Date" bloomed) instead of fading out and emitting transitionComplete.
    *  Never set on the live showcase. */
@@ -180,6 +213,20 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Remount on a config change — see the matching note in CoverStage.vue for why
+// the key covers the effect's own fields but deliberately not the palette.
+const fallingEffectKey = computed(() => {
+  const config = props.fallingEffect
+  if (!config) return 'none'
+  return [
+    config.type,
+    config.intensity ?? 'normal',
+    config.color_source ?? 'primary',
+    config.custom_color ?? '',
+    config.custom_image ?? '',
+  ].join('|')
+})
 
 const emit = defineEmits<{
   transitionComplete: []
@@ -205,59 +252,8 @@ const featureImageUrl = computed(() =>
   featuredPhoto.value ? props.getMediaUrl(featuredPhoto.value.image) : null,
 )
 
-// --- Organizer-chosen crop -------------------------------------------------
-// The stored rectangle is in percentages of the source image, so turning it
-// into pixels needs both the image's intrinsic size and the viewport's.
-
-const photoContainerRef = ref<HTMLElement | null>(null)
-const naturalSize = ref<Size | null>(null)
-const viewportSize = ref<Size | null>(null)
-
-const onPhotoLoad = (event: globalThis.Event) => {
-  const image = event.target as HTMLImageElement
-  if (!image.naturalWidth || !image.naturalHeight) return
-  naturalSize.value = { width: image.naturalWidth, height: image.naturalHeight }
-}
-
-const measureViewport = () => {
-  const container = photoContainerRef.value
-  if (!container) return
-  // Layout values rather than getBoundingClientRect: the manage-page preview
-  // renders this stage inside a CSS-scaled frame, and a scaled rect would
-  // shrink the computed geometry to match the scale.
-  viewportSize.value = { width: container.clientWidth, height: container.clientHeight }
-}
-
-let viewportObserver: ResizeObserver | null = null
-
-/** Plain centre `cover` — what the stage shows until both sizes are known. */
-const COVER_FALLBACK_STYLE = {
-  inset: '0',
-  width: '100%',
-  height: '100%',
-} as const
-
-const photoStyle = computed(() => {
-  const geometry = cropToCoverGeometry(
-    resolvePhotoCrop(featuredPhoto.value),
-    naturalSize.value,
-    viewportSize.value,
-  )
-  if (!geometry) return { ...COVER_FALLBACK_STYLE }
-  return {
-    left: `${geometry.left}px`,
-    top: `${geometry.top}px`,
-    width: `${geometry.width}px`,
-    height: `${geometry.height}px`,
-  }
-})
-
-const cloudMistStyle = computed(() => {
-  const c = props.blurEffectColor || '#ffffff'
-  return {
-    background: `linear-gradient(to bottom, transparent 0%, ${c}4d 35%, ${c}99 60%, ${c}cc 80%, ${c}e6 100%)`,
-  }
-})
+// Organizer-chosen crop, laid out in pixels against the live stage size.
+const { photoContainerRef, photoStyle, onPhotoLoad } = useFeaturedPhotoGeometry(featuredPhoto)
 
 const flourishColor = computed(() => props.accentColor || props.primaryColor || '#b08d57')
 
@@ -266,9 +262,13 @@ const revealLineGradient = computed(
     `linear-gradient(to right, transparent 0%, ${flourishColor.value} 25%, ${flourishColor.value} 75%, transparent 100%)`,
 )
 
-const saveDateTextColor = computed(() => props.primaryColor || '#333')
+// The save-the-date block reads as one unit with the flourish line above it, so
+// it takes the same accent slot. On primary it collided with the mist scrim
+// behind it — templates commonly point `primary` and `blur-effect` at the same
+// deep colour, which left the copy near-invisible against its own backdrop.
+const saveDateTextColor = flourishColor
 
-const dateTextColor = computed(() => props.primaryColor || '#333')
+const dateTextColor = flourishColor
 
 const saveTheDateChars = computed(() => 'Save the Date'.split(''))
 
@@ -325,22 +325,14 @@ const formattedDate = computed(() => {
   }
 })
 
-// Animation timelines:
-//
-// Decoration mode (default):
+// Animation timeline (this stage backs the `decoration` animation type; door
+// templates get TransitionStageDoor.vue instead):
 //   0ms    - TransitionStage mounts (cover decorations animating out)
 //   1000ms - Photo starts: veil-blurred + bright, sharpening over ~2.4s while Ken Burns drifts
 //   1800ms - Footer scrim rises; line draws; "Save the Date" blooms letter by letter; date tracks in
 //   ~3400ms- Light sweep passes across the sharpened photo
 //   5800ms - Everything starts fading out
 //   7000ms - Fully faded out → emit transitionComplete
-//
-// Door mode:
-//   0ms    - TransitionStage mounts simultaneously as door starts opening (1.2s)
-//   0ms    - Photo reveal starts immediately (visible as door swings open)
-//   1200ms - Footer scrim + text sequence begins (door fully open)
-//   5300ms - Everything starts fading out
-//   6500ms - Fully faded out → emit transitionComplete
 const clearTimers = () => {
   if (fadeInTimer) clearTimeout(fadeInTimer)
   if (couplePhotoTimer) clearTimeout(couplePhotoTimer)
@@ -353,20 +345,17 @@ const clearTimers = () => {
 }
 
 const runRevealSequence = () => {
-  const isDoor = props.animationType === 'door'
-
   generateBokeh()
 
-  // Photo appears first — immediately for door so it's revealed as the door opens,
-  // delayed for decoration so it appears after decorations have slid out
+  // Photo appears first, once the cover decorations have slid out
   couplePhotoTimer = setTimeout(() => {
     isCouplePhotoVisible.value = true
-  }, isDoor ? 0 : 1000)
+  }, 1000)
 
   // Footer scrim with text
   fadeInTimer = setTimeout(() => {
     isContentVisible.value = true
-  }, isDoor ? 1200 : 1800)
+  }, 1800)
 
   // Preview freeze: stop here — photo and text stay at full reveal
   if (props.freezeAtPeak) return
@@ -374,38 +363,17 @@ const runRevealSequence = () => {
   // Start fading out
   fadeOutTimer = setTimeout(() => {
     isStageFadingOut.value = true
-  }, isDoor ? 5300 : 5800)
+  }, 5800)
 
   // Emit completion after fade-out finishes
   completeTimer = setTimeout(() => {
     emit('transitionComplete')
-  }, isDoor ? 6500 : 7000)
+  }, 7000)
 }
 
 onMounted(runRevealSequence)
 
-// The crop's pixel geometry depends on the viewport, so it's measured live
-// rather than once. Keyed off the element appearing rather than off mount: the
-// photo container is v-if'd on there being a featured photo, so on a slower
-// load it doesn't exist yet when onMounted runs, and observing "whatever is
-// there at mount" would silently never measure anything — leaving every crop
-// stuck on the uncropped fallback.
-watch(photoContainerRef, (container) => {
-  viewportObserver?.disconnect()
-  viewportObserver = null
-  if (!container) return
-  measureViewport()
-  if (typeof ResizeObserver !== 'undefined') {
-    viewportObserver = new ResizeObserver(measureViewport)
-    viewportObserver.observe(container)
-  }
-})
-
-onUnmounted(() => {
-  clearTimers()
-  viewportObserver?.disconnect()
-  viewportObserver = null
-})
+onUnmounted(clearTimers)
 
 // Manage-page preview only: replay the reveal from the start. The frame's
 // inert click-shield normally sends a `replay` bridge command on any click
@@ -447,12 +415,6 @@ const replay = async () => {
 
 .couple-photo-container.show {
   opacity: 1;
-}
-
-/* Door mode: photo fades in over the door animation duration (1.2s),
-   so it's fully visible by the time the door completes */
-.couple-photo-container.door-mode {
-  transition: opacity 1.2s ease-in-out;
 }
 
 .stage-fade-out .couple-photo-container {
@@ -511,19 +473,37 @@ const replay = async () => {
 
 /* Veil copy: pre-blurred and luminous, stacked on the sharp photo.
    Fading its opacity (cheap) reads as the photo sharpening (a blur()
-   transition on a fullscreen image would be far more expensive). */
+   transition on a fullscreen image would be far more expensive).
+
+   Masked so it lies thin over the upper frame and full over the lower. The
+   hosts' faces sit high in a portrait crop, and an even veil spent its whole
+   fade blurring exactly the part of the photo people are trying to read — the
+   faces only resolved once the entire veil had gone. Weighted this way they
+   are legible from the first frame and the reveal still runs, reading as mist
+   lifting off the bottom of the frame rather than a sheet coming off the lot.
+   The fade is shorter for the same reason: it used to finish at 3400ms against
+   a stage that starts dissolving at 5800ms, leaving the photo truly sharp for
+   2.4s of its 7s life. */
 .couple-photo-veil {
   filter: blur(16px) brightness(1.18) saturate(0.92);
   opacity: 1;
-  transition: opacity 2.4s ease-in-out;
+  transition: opacity 1.8s ease-in-out;
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.6) 42%,
+    #000 78%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.6) 42%,
+    #000 78%
+  );
 }
 
 .show .couple-photo-veil {
   opacity: 0;
-}
-
-.door-mode .couple-photo-veil {
-  transition: opacity 2s ease-in-out;
 }
 
 /* One-time soft sheen sweeping diagonally across after the veil lifts */
@@ -704,31 +684,61 @@ const replay = async () => {
   }
 }
 
+/* Handoff ramp from the shared CoverStage field — deliberately the same
+   durations and easings as .couple-photo-container, since that photo is what
+   hides the shared field. Scoped styles reach this element because a child
+   component's root inherits the parent's scope id. */
+.transition-petals {
+  opacity: 0;
+  transition: opacity 1.4s ease-out;
+}
+
+.transition-petals.show {
+  opacity: 1;
+}
+
+.stage-fade-out .transition-petals {
+  opacity: 0;
+  transition: opacity 1.2s ease-out;
+}
+
 /* ---------- Footer scrim + text ---------- */
 
+/* Scrim band and copy share one box and one reveal, but sit either side of the
+   falling field: scrim below it (5), copy above it (7). */
+.cloud-scrim,
 .cloud-footer {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   height: 38vh;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  padding-bottom: 8vh;
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 1.6s ease-in-out, transform 1.6s ease-in-out;
   will-change: opacity, transform;
 }
 
+.cloud-scrim {
+  z-index: 5;
+}
+
+.cloud-footer {
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 8vh;
+}
+
+.cloud-scrim.show,
 .cloud-footer.show {
   opacity: 1;
   transform: translateY(0);
 }
 
+.stage-fade-out .cloud-scrim,
 .stage-fade-out .cloud-footer {
   opacity: 0;
   transform: translateY(6px);
@@ -747,10 +757,27 @@ const replay = async () => {
   transform: translateZ(0);
 }
 
+/* Near-black warm, not the template's blur-effect slot. A scrim tints whatever
+   it covers, so a branded one drains the photograph instead of seating it —
+   and `blur-effect` defaults to white upstream, which hazed the image over.
+   Worse, templates commonly point `blur-effect` and `primary` at the same deep
+   colour, which left the save-the-date copy painting itself onto its own
+   backdrop. Darkening progressively toward the base (the reference's own
+   rgb(50,8,8) → rgb(38,5,5) → rgb(24,3,3)) gives the gold copy the darkest
+   ground where it actually sits. Density ramp is this stage's own, tuned to
+   the band's 38vh rather than the reference's full-height gradient. */
 .cloud-mist-layer {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(50, 8, 8, 0) 0%,
+    rgba(50, 8, 8, 0.3) 35%,
+    rgba(38, 5, 5, 0.6) 60%,
+    rgba(32, 4, 4, 0.8) 80%,
+    rgba(24, 3, 3, 0.94) 100%
+  );
 }
 
 .save-the-date-container {

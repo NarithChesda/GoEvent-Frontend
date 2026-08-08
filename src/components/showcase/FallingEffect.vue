@@ -2,7 +2,7 @@
   <div
     ref="containerRef"
     class="absolute inset-0 overflow-hidden pointer-events-none"
-    style="z-index: 15"
+    :style="{ zIndex }"
   ></div>
 </template>
 
@@ -11,16 +11,26 @@ import { ref, computed } from 'vue'
 import { useFallingParticles } from '../../composables/showcase/useFallingParticles'
 import type { FallingEffectConfig } from '@/services/api/types/template.types'
 
-const props = defineProps<{
-  /** Falling effect configuration from the template */
-  config?: FallingEffectConfig | null
-  /** Primary color of the template (used when color_source is 'primary') */
-  primaryColor?: string
-  /** Accent color of the template (used when color_source is 'accent') */
-  accentColor?: string
-  /** Function to resolve media URLs (for custom_image) */
-  getMediaUrl?: (url: string) => string
-}>()
+const props = withDefaults(
+  defineProps<{
+    /** Falling effect configuration from the template */
+    config?: FallingEffectConfig | null
+    /** Primary color of the template (used when color_source is 'primary') */
+    primaryColor?: string
+    /** Accent color of the template (used when color_source is 'accent') */
+    accentColor?: string
+    /** Function to resolve media URLs (for custom_image) */
+    getMediaUrl?: (url: string) => string
+    /**
+     * Stacking position within the parent's context. Changing it re-layers the
+     * live field without touching the running animations, which is how one
+     * persistent field can sit above the cover artwork and then drop behind the
+     * main content card without the petals ever restarting.
+     */
+    zIndex?: number
+  }>(),
+  { zIndex: 15 },
+)
 
 const containerRef = ref<HTMLElement>()
 
