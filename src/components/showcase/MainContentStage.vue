@@ -10,11 +10,17 @@
 
     <!-- Decoration Images (optimized via ImageKit for viewport size) -->
     <!-- Z-indexes are dynamic via mainStageLayout prop (defaults: left/right=24, top/bottom=25) -->
+    <!-- `max-w-none` on the side pieces is load-bearing: Tailwind's preflight
+         applies `img { max-width: 100% }`, and on phones taller than 9:16 the
+         stage frame is flex-shrunk narrower than its 1080/1920 width, so that
+         clamp squeezed the width while `h-full` held the height — the artwork
+         rendered ~20% narrow. They now scale off height at their true ratio and
+         let the surplus width clip against the frame. -->
     <img
       v-if="leftDecorationUrl"
       :src="leftDecorationUrl"
       alt="Left decoration"
-      class="absolute top-0 bottom-0 left-0 w-auto h-full pointer-events-none"
+      class="absolute top-0 bottom-0 left-0 w-auto h-full max-w-none pointer-events-none"
       :class="decorationAnimationClasses.left"
       :style="{ zIndex: decorationZIndexes.left }"
       loading="eager"
@@ -24,7 +30,7 @@
       v-if="rightDecorationUrl"
       :src="rightDecorationUrl"
       alt="Right decoration"
-      class="absolute top-0 bottom-0 right-0 w-auto h-full pointer-events-none"
+      class="absolute top-0 bottom-0 right-0 w-auto h-full max-w-none pointer-events-none"
       :class="decorationAnimationClasses.right"
       :style="{ zIndex: decorationZIndexes.right }"
       loading="eager"
