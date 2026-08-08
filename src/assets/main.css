@@ -58,12 +58,49 @@ body {
  * The max-height term keeps a merely *narrowed window* on a large monitor out;
  * only genuinely short laptop viewports match.
  *
- * `.native-scale` opts a route out — see setNativeScaleRoutes() in
+ * `.native-scale` opts a route out — see applyRootScaleClasses() in
  * src/router/index.ts.
  * ------------------------------------------------------------------------ */
 @media (min-width: 1200px) and (max-width: 1599px) and (max-height: 1100px) {
   html:not(.native-scale) {
     font-size: 75%;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Narrow-phone scale-down (showcase routes only)
+ *
+ * The showcase's containers are viewport-relative — `.liquid-glass-card` is
+ * `85vw` — while every font size inside them is a fixed `rem` that only steps
+ * at the 640px breakpoint. So below `sm:` the type keeps its absolute size
+ * while the box around it shrinks with the viewport. On a 360px-wide phone
+ * (the most common Android CSS width) the calendar day numbers occupy 42% of
+ * a grid cell against the 36% they occupy on the 412px viewport the sizes were
+ * tuned at, and single-line text — the location line, RSVP labels — starts
+ * wrapping. It reads as bulky and unresponsive even though nothing moved.
+ *
+ * Because the showcase is `rem` + `vw` all the way down (there is not one `px`
+ * font-size in src/components/showcase), scaling the root font linearly with
+ * viewport width turns every narrower phone into a pure uniform scale of the
+ * 412px reference: rem type, Tailwind's rem spacing, and the vw containers all
+ * shrink by the same factor, so every proportion — including the deliberate
+ * cross-section size matches between RSVP, comments and payment — is preserved
+ * by construction instead of having to be re-tuned per component.
+ *
+ * 3.883vw = 16px ÷ 412px. Capped at 1em so viewports ≥412px render exactly as
+ * before (only narrower phones change at all) and floored at 0.75em so a
+ * ~280px folded phone stops shrinking. Expressed in `em`, not `px`, so a
+ * user's own browser font-size preference still scales the result (a11y) —
+ * same reasoning as the `75%` in the laptop block above.
+ *
+ * Scoped to `.showcase-scale` (showcase + preview-frame routes, see
+ * applyRootScaleClasses() in src/router/index.ts). The rest of the app lays
+ * out with breakpoint-stepped Tailwind classes rather than vw containers, so
+ * it does not have this mismatch.
+ * ------------------------------------------------------------------------ */
+@media (max-width: 639px) {
+  html.showcase-scale {
+    font-size: clamp(0.75em, 3.883vw, 1em);
   }
 }
 
