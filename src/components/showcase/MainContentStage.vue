@@ -3,14 +3,10 @@
     <!-- Background handled by CoverStage - transparent div maintains z-index stacking -->
     <div class="absolute inset-0 w-full h-full object-cover bg-transparent"></div>
 
-    <!-- Falling Particle Effect (petals, confetti, custom image, etc.) -->
-    <FallingEffect
-      :key="fallingEffectKey"
-      :config="fallingEffect"
-      :primary-color="primaryColor"
-      :accent-color="accentColor"
-      :get-media-url="getMediaUrl"
-    />
+    <!-- The falling particle field is owned by CoverStage, which outlives every
+         individual stage, so one continuous field spans cover → transition →
+         here. It re-layers itself to sit behind these decorations and the
+         content card once this stage takes over. -->
 
     <!-- Decoration Images (optimized via ImageKit for viewport size) -->
     <!-- Z-indexes are dynamic via mainStageLayout prop (defaults: left/right=24, top/bottom=25) -->
@@ -954,7 +950,6 @@ import { useAssetProtection } from '../../composables/showcase/useAssetProtectio
 import { useCoverStageLayout } from '../../composables/showcase/useCoverStageLayout'
 import type {
   CoverStageLayout,
-  FallingEffectConfig,
   EventDetailsDesignConfig,
   HostInfoDesignConfig,
 } from '../../services/api/types/template.types'
@@ -980,7 +975,6 @@ import CommentSection from './CommentSection.vue'
 import PaymentSection from './PaymentSection.vue'
 import FloatingActionMenu from './FloatingActionMenu.vue'
 import WeddingSectionDivider from './WeddingSectionDivider.vue'
-import FallingEffect from './FallingEffect.vue'
 
 // Asset imports
 import WhiteLogoSvg from '../../assets/white-kh-logo.svg'
@@ -1036,8 +1030,6 @@ interface Props {
   animationType?: 'decoration' | 'door'
   /** Main stage layout configuration for decoration z-indexes */
   mainStageLayout?: CoverStageLayout
-  /** Falling particle effect configuration from template */
-  fallingEffect?: FallingEffectConfig | null
   /** Date + location block design from template (panel | calendar) */
   eventDetailsDesign?: EventDetailsDesignConfig | null
   /** Host info block design from template (standard | simple) */
@@ -1045,33 +1037,6 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-
-// FallingEffect reads its config ONCE, during setup: useFallingParticles
-// destructures its options into plain locals and derives the motion profile,
-// intensity preset and cached custom image from them right there, so nothing
-// about a later config change can reach a mounted instance. Remounting on a
-// changed config is what makes it react.
-//
-// Inert on the public showcase — a guest's template can't change mid-session —
-// and load-bearing in the partner template studio, where editing this effect
-// and watching it is the entire point.
-//
-// Deliberately keyed on the effect's own config only, not on primaryColor /
-// accentColor: those are resolved through a `color()` callback the composable
-// invokes per spawned particle, so palette edits already reach new particles
-// (converging as the field recycles) without tearing the whole field down on
-// every drag of an unrelated color picker.
-const fallingEffectKey = computed(() => {
-  const config = props.fallingEffect
-  if (!config) return 'none'
-  return [
-    config.type,
-    config.intensity ?? 'normal',
-    config.color_source ?? 'primary',
-    config.custom_color ?? '',
-    config.custom_image ?? '',
-  ].join('|')
-})
 
 // Only provided by the editable manage-page preview frame — undefined on the
 // public showcase, so the empty-agenda add affordance can never leak there.

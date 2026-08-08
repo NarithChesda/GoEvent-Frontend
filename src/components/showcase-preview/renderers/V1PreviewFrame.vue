@@ -42,6 +42,7 @@
     :cover-right-decoration="event.template_assets?.assets?.cover_right_decoration"
     :animation-type="event.template_assets?.cover_stage_layout?.showcaseAnimationType"
     :ambient-creatures="event.template_assets?.ambient_creatures"
+    :falling-effect="event.template_assets?.falling_effect"
     :use-transition-stage="isBasicWedding"
     :get-media-url="getMediaUrl"
     :disable-envelope-interaction="true"
@@ -80,7 +81,6 @@
         :right-decoration="event.template_assets?.assets?.right_decoration || event.right_decoration"
         :animation-type="event.template_assets?.cover_stage_layout?.showcaseAnimationType"
         :main-stage-layout="event.template_assets?.cover_stage_layout"
-        :falling-effect="event.template_assets?.falling_effect"
         :event-details-design="event.template_assets?.event_details_design"
         :host-info-design="event.template_assets?.host_info_design"
         @open-map="openGoogleMap"
@@ -132,6 +132,7 @@
     :current-font="currentFont"
     :primary-font="primaryFont"
     :secondary-font="secondaryFont"
+    :falling-effect="event.template_assets?.falling_effect"
     :get-media-url="getMediaUrl"
   />
 

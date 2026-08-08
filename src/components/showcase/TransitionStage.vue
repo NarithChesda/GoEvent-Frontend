@@ -111,13 +111,45 @@
       />
     </div>
 
-    <!-- Footer scrim + save the date -->
-    <div class="cloud-footer" :class="{ 'show': isContentVisible }">
+    <!-- Footer scrim. Split out of .cloud-footer so the falling field can sit
+         between the two: the mist is blur-effect colour at up to 90% alpha, so
+         anything behind it is washed to that colour — which is exactly what
+         petals must not be. -->
+    <div class="cloud-scrim" :class="{ 'show': isContentVisible }" aria-hidden="true">
       <!-- Soft blur band, lighter than before so the photo stays present -->
       <div class="cloud-blur-layer" />
       <!-- Gradient mist for text legibility -->
       <div class="cloud-mist-layer" :style="cloudMistStyle" />
+    </div>
 
+    <!-- The showcase-wide falling field lives inside CoverStage, and this stage
+         is a sibling rendering *above* CoverStage entirely (z-35), so nothing
+         in there can paint over this one — the shared field can't carry through
+         and this stage runs its own.
+
+         What keeps that from reading as two fields: this one rides exactly the
+         photo's opacity ramp. The photo is what occludes the shared field, so
+         as it fades in and takes the shared petals away, these fade in at the
+         same rate to replace them — and on the way out the reverse. Un-ramped,
+         both fields drew at full strength for the ~2.4s before the photo goes
+         opaque and the ~1.2s while it dissolves, at visibly doubled density.
+
+         Layered above the photo, the bokeh and the scrim so the petals keep
+         their template colour, below the save-the-date copy — the same order
+         the cover uses. -->
+    <FallingEffect
+      :key="fallingEffectKey"
+      class="transition-petals"
+      :class="{ show: isCouplePhotoVisible }"
+      :config="fallingEffect"
+      :primary-color="primaryColor"
+      :accent-color="accentColor"
+      :get-media-url="getMediaUrl"
+      :z-index="6"
+    />
+
+    <!-- Save the date -->
+    <div class="cloud-footer" :class="{ 'show': isContentVisible }">
       <div class="save-the-date-container">
         <!-- Fine line drawing outward from center -->
         <div class="reveal-line" :style="{ background: revealLineGradient }" />
@@ -156,6 +188,8 @@ import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useFeaturedPhotoGeometry } from '@/composables/showcase/useFeaturedPhotoGeometry'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
+import FallingEffect from './FallingEffect.vue'
+import type { FallingEffectConfig } from '@/services/api/types/template.types'
 
 interface Props {
   eventTitle: string
@@ -171,6 +205,8 @@ interface Props {
   primaryFont?: string
   secondaryFont?: string
   getMediaUrl: (url: string) => string
+  /** Falling particle effect config from template_assets. */
+  fallingEffect?: FallingEffectConfig | null
   /** Preview-only: hold at the fully-revealed state (photo sharp + "Save the
    *  Date" bloomed) instead of fading out and emitting transitionComplete.
    *  Never set on the live showcase. */
@@ -178,6 +214,20 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Remount on a config change — see the matching note in CoverStage.vue for why
+// the key covers the effect's own fields but deliberately not the palette.
+const fallingEffectKey = computed(() => {
+  const config = props.fallingEffect
+  if (!config) return 'none'
+  return [
+    config.type,
+    config.intensity ?? 'normal',
+    config.color_source ?? 'primary',
+    config.custom_color ?? '',
+    config.custom_image ?? '',
+  ].join('|')
+})
 
 const emit = defineEmits<{
   transitionComplete: []
@@ -220,9 +270,13 @@ const revealLineGradient = computed(
     `linear-gradient(to right, transparent 0%, ${flourishColor.value} 25%, ${flourishColor.value} 75%, transparent 100%)`,
 )
 
-const saveDateTextColor = computed(() => props.primaryColor || '#333')
+// The save-the-date block reads as one unit with the flourish line above it, so
+// it takes the same accent slot. On primary it collided with the mist scrim
+// behind it — templates commonly point `primary` and `blur-effect` at the same
+// deep colour, which left the copy near-invisible against its own backdrop.
+const saveDateTextColor = flourishColor
 
-const dateTextColor = computed(() => props.primaryColor || '#333')
+const dateTextColor = flourishColor
 
 const saveTheDateChars = computed(() => 'Save the Date'.split(''))
 
@@ -616,31 +670,61 @@ const replay = async () => {
   }
 }
 
+/* Handoff ramp from the shared CoverStage field — deliberately the same
+   durations and easings as .couple-photo-container, since that photo is what
+   hides the shared field. Scoped styles reach this element because a child
+   component's root inherits the parent's scope id. */
+.transition-petals {
+  opacity: 0;
+  transition: opacity 1.4s ease-out;
+}
+
+.transition-petals.show {
+  opacity: 1;
+}
+
+.stage-fade-out .transition-petals {
+  opacity: 0;
+  transition: opacity 1.2s ease-out;
+}
+
 /* ---------- Footer scrim + text ---------- */
 
+/* Scrim band and copy share one box and one reveal, but sit either side of the
+   falling field: scrim below it (5), copy above it (7). */
+.cloud-scrim,
 .cloud-footer {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   height: 38vh;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  padding-bottom: 8vh;
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 1.6s ease-in-out, transform 1.6s ease-in-out;
   will-change: opacity, transform;
 }
 
+.cloud-scrim {
+  z-index: 5;
+}
+
+.cloud-footer {
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 8vh;
+}
+
+.cloud-scrim.show,
 .cloud-footer.show {
   opacity: 1;
   transform: translateY(0);
 }
 
+.stage-fade-out .cloud-scrim,
 .stage-fade-out .cloud-footer {
   opacity: 0;
   transform: translateY(6px);

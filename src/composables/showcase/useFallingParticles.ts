@@ -10,6 +10,8 @@ interface ParticleShape {
   viewBox: string
   /** Default opacity for this particle type */
   opacity?: number
+  /** Height ÷ width. Defaults to 1 (square box) — petals are taller than wide. */
+  aspect?: number
 }
 
 /**
@@ -33,15 +35,22 @@ interface MotionProfile {
   sizeScale: number
   /** Opacity pulse for sparkle (stars) */
   twinkle?: boolean
+  /** Slow opacity breathe over the fall — brightest at top and bottom, halved
+   *  mid-screen. Reads as the petal turning edge-on as it tumbles past. */
+  shimmer?: boolean
   /** Hue jitter range in degrees applied per particle */
   hueJitter: number
 }
 
 const PARTICLE_SHAPES: Record<Exclude<FallingEffectType, 'none'>, ParticleShape> = {
+  // Pointed leaf: the `border-radius: 58% 8% 58% 8%` silhouette traced as a
+  // path — round at top-left/bottom-right, tapering to a tip at the other two
+  // corners, on a 1:1.25 box.
   petals: {
-    path: 'M16 2C11 6 6 8 6 14c0 6 5 10 10 14 5-4 10-8 10-14 0-6-5-8-10-12z',
-    viewBox: '0 0 32 32',
-    opacity: 0.75,
+    path: 'M18.6 0H29.4A2.6 3.2 0 0 1 32 3.2V16.8A18.6 23.2 0 0 1 13.4 40H2.6A2.6 3.2 0 0 1 0 36.8V23.2A18.6 23.2 0 0 1 18.6 0Z',
+    viewBox: '0 0 32 40',
+    opacity: 0.8,
+    aspect: 1.25,
   },
   confetti: {
     path: 'M2 2h12v6H2z',
@@ -85,14 +94,17 @@ const CONFETTI_VARIANTS: ParticleShape[] = [
 ]
 
 const MOTION_PROFILES: Record<Exclude<FallingEffectType, 'none'>, MotionProfile> = {
+  // Flat 2D spin, no 3D tumble: the dimensionality comes from the shading
+  // gradient rotating with the petal, so the highlight sweeps across it.
   petals: {
-    sway: [40, 90],
-    swayCycles: [1.5, 3],
+    sway: [30, 120],
+    swayCycles: [1.6, 2.4],
     rotateMode: 'spin',
-    rotate: [180, 540],
-    tumble: 55,
+    rotate: [120, 500],
+    tumble: 0,
     fallSpeed: 1,
     sizeScale: 1,
+    shimmer: true,
     hueJitter: 10,
   },
   confetti: {
@@ -180,11 +192,16 @@ const DEPTH_LAYERS = [
   { size: 1.1, blur: 0, opacity: 1, speed: 1, weight: 0.3 },
 ] as const
 
-/** Intensity presets mapping to spawn interval (ms) and max particle count */
+/**
+ * Intensity presets mapping to spawn interval (ms) and max particle count.
+ * Tuned sparse — a calm drift of a dozen-odd petals reads as premium, where a
+ * dense field reads as a screensaver. `normal` sits at the density the effect
+ * was designed against; the caps govern, the intervals just refill them.
+ */
 const INTENSITY_PRESETS = {
-  light: { interval: 750, maxParticles: 16 },
-  normal: { interval: 450, maxParticles: 28 },
-  heavy: { interval: 280, maxParticles: 44 },
+  light: { interval: 1100, maxParticles: 10 },
+  normal: { interval: 700, maxParticles: 16 },
+  heavy: { interval: 420, maxParticles: 26 },
 } as const
 
 const rand = (min: number, max: number) => Math.random() * (max - min) + min
@@ -228,16 +245,28 @@ function hexToHsl(hex: string): { h: number; s: number; l: number } | null {
   return { h: h * 360, s, l }
 }
 
-/** Apply per-particle hue/lightness jitter so a swarm doesn't look flat */
-function jitterColor(base: string, hueJitter: number): string {
-  if (hueJitter <= 0) return base
+const hslCss = (h: number, s: number, l: number) =>
+  `hsl(${h.toFixed(1)}, ${(s * 100).toFixed(1)}%, ${(l * 100).toFixed(1)}%)`
+
+/**
+ * Per-particle shading pair. Hue/saturation/lightness jitter keeps a swarm from
+ * looking flat; the light/dark spread around the jittered base is what gives
+ * each particle a lit face and a shaded one once the gradient rotates with it.
+ */
+function shadeStops(base: string, hueJitter: number): { light: string; dark: string } | null {
   const hsl = hexToHsl(base)
-  if (!hsl) return base
+  if (!hsl) return null
   const h = (hsl.h + rand(-hueJitter, hueJitter) + 360) % 360
   const s = Math.min(1, Math.max(0, hsl.s + rand(-0.06, 0.1)))
   const l = Math.min(0.92, Math.max(0.15, hsl.l + rand(-0.08, 0.1)))
-  return `hsl(${h.toFixed(1)}, ${(s * 100).toFixed(1)}%, ${(l * 100).toFixed(1)}%)`
+  return {
+    light: hslCss(h, Math.min(1, s + 0.03), Math.min(0.95, l + 0.17)),
+    dark: hslCss(h, Math.max(0, s - 0.1), Math.max(0.12, l - 0.2)),
+  }
 }
+
+/** Document-unique ids for the per-particle gradient defs */
+let gradientSeq = 0
 
 export interface FallingParticlesOptions {
   /** Built-in shape type (ignored when customImage is provided) */
@@ -348,6 +377,7 @@ export function useFallingParticles(
         : 0
 
       let opacity = opts.baseOpacity
+      if (profile.shimmer) opacity *= 0.5 + 0.5 * Math.abs(Math.cos(p * Math.PI))
       if (p < 0.08) opacity *= p / 0.08
       else if (p > 0.85) opacity *= (1 - p) / 0.15
       if (profile.twinkle) {
@@ -387,7 +417,7 @@ export function useFallingParticles(
 
     const size = rand(minSize, maxSize) * profile.sizeScale * layer.size
     particle.style.width = size + 'px'
-    particle.style.height = size + 'px'
+    particle.style.height = size * (shape?.aspect ?? 1) + 'px'
     // Keep sway from carrying particles off-screen at the edges
     particle.style.left = rand(2, 98) + '%'
 
@@ -409,8 +439,39 @@ export function useFallingParticles(
       svg.style.overflow = 'visible'
 
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-      path.setAttribute('fill', jitterColor(color(), profile.hueJitter))
       path.setAttribute('d', shape.path)
+
+      // A two-stop gradient rather than a flat fill. Because it's painted in
+      // the particle's own coordinate space it rotates with the particle, so
+      // the highlight sweeps across the face as it spins — that's what reads
+      // as a real petal catching the light. Non-hex colors can't be split into
+      // stops, so those fall back to the flat fill.
+      const stops = shadeStops(color(), profile.hueJitter)
+      if (stops) {
+        const id = `fp-grad-${gradientSeq++}`
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
+        const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient')
+        grad.setAttribute('id', id)
+        // 140° in CSS terms — down and to the right.
+        grad.setAttribute('x1', '0.18')
+        grad.setAttribute('y1', '0.12')
+        grad.setAttribute('x2', '0.82')
+        grad.setAttribute('y2', '0.88')
+        for (const [offset, stopColor] of [
+          ['0', stops.light],
+          ['1', stops.dark],
+        ]) {
+          const stop = document.createElementNS('http://www.w3.org/2000/svg', 'stop')
+          stop.setAttribute('offset', offset)
+          stop.setAttribute('stop-color', stopColor)
+          grad.appendChild(stop)
+        }
+        defs.appendChild(grad)
+        svg.appendChild(defs)
+        path.setAttribute('fill', `url(#${id})`)
+      } else {
+        path.setAttribute('fill', color())
+      }
 
       svg.appendChild(path)
       particle.appendChild(svg)

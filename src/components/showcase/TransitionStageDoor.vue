@@ -633,11 +633,16 @@ const replay = async () => {
   --dt-inset: calc(var(--dt-w) * 0.0278); /* 30 — mat band */
   --dt-inner: calc(var(--dt-w) * 0.0426); /* 46 — inner hairline */
   --dt-corner: calc(var(--dt-w) * 0.0185); /* 20 — corner diamonds */
-  /* The specular rides the band between these two, and nothing beyond it. A
-     ring that reaches past the inner hairline puts a moving highlight on the
-     photograph itself, which is what made the gleam read as a smear rather
-     than as light on metal. */
-  --dt-ring-outer: calc(var(--dt-w) * 0.0222); /* 24 */
+  /* The specular rides the band between these two. Only the INNER edge keeps
+     the gleam off the photograph — a ring reaching past the hairline at 46 puts
+     a moving highlight on the photo itself, which reads as a smear rather than
+     as light on a printed border. The outer edge has no such job, so it sits at
+     the stage's own edge: the mat band (0 → 30) is part of what the light falls
+     across, exactly as the reference's cover plate lights its full border band.
+     Held off the edge it lit the rules alone and left the mat flat behind them. */
+  /* 0px, not 0: the polygon feeds this to calc(100% - …), and a unitless zero
+     against a percentage is an invalid calc that voids the whole clip-path. */
+  --dt-ring-outer: 0px;
   --dt-ring-inner: calc(var(--dt-w) * 0.0482); /* 52 */
 }
 
@@ -728,9 +733,8 @@ const replay = async () => {
   );
   background-size: 260% 100%;
   background-position: 150% 0;
-  /* An annulus: the outer rectangle is itself inset, then a reversed inner
-     rectangle punches the hole. Starting the outer edge at 0 (the stage's own
-     edge) is what let the highlight spill across the mat and onto the photo. */
+  /* An annulus: the outer rectangle, then a reversed inner rectangle punching
+     the hole. The hole is what keeps the highlight off the photograph. */
   clip-path: polygon(
     var(--dt-ring-outer) var(--dt-ring-outer),
     calc(100% - var(--dt-ring-outer)) var(--dt-ring-outer),
