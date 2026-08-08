@@ -186,24 +186,28 @@ const router = createRouter({
 })
 
 /**
- * Routes that must render at the browser's native scale, opting out of the
- * 13"-15" laptop root-font scale-down in src/assets/main.css.
+ * Showcase routes, which drive both root-font-scale classes in
+ * src/assets/main.css:
  *
- * The showcase is guest-facing and tuned around vh units and GSAP pixel
- * measurements, and the preview frame deliberately renders at a fixed native
- * resolution to be scaled from the outside by its host iframe — shrinking the
- * root font under either would corrupt the layout it is measuring against.
+ * - `native-scale` opts them *out* of the 13"-15" laptop scale-down. The
+ *   showcase is guest-facing and tuned around vh units and GSAP pixel
+ *   measurements, and the preview frame deliberately renders at a fixed native
+ *   resolution to be scaled from the outside by its host iframe — shrinking the
+ *   root font under either would corrupt the layout it is measuring against.
+ * - `showcase-scale` opts them *in* to the narrow-phone scale-down, which keeps
+ *   the showcase's fixed-rem typography in proportion with its vw-sized
+ *   containers below 640px.
  */
-const NATIVE_SCALE_ROUTES = new Set([
+const SHOWCASE_SCALE_ROUTES = new Set([
   'event-showcase',
   'event-showcase-preview-frame',
 ])
 
-const applyNativeScale = (routeName: unknown) => {
-  document.documentElement.classList.toggle(
-    'native-scale',
-    NATIVE_SCALE_ROUTES.has(routeName as string)
-  )
+const applyRootScaleClasses = (routeName: unknown) => {
+  const isShowcase = SHOWCASE_SCALE_ROUTES.has(routeName as string)
+  const root = document.documentElement
+  root.classList.toggle('native-scale', isShowcase)
+  root.classList.toggle('showcase-scale', isShowcase)
 }
 
 /**
@@ -281,7 +285,7 @@ router.beforeEach(async (to, from, next) => {
 // resolved, so a cancelled or redirected navigation can't leave it stale.
 // This also fires for the initial navigation, covering a direct load/refresh.
 router.afterEach((to) => {
-  applyNativeScale(to.name)
+  applyRootScaleClasses(to.name)
 })
 
 export default router
