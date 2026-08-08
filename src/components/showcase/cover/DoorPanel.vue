@@ -213,12 +213,6 @@ const doorBackgroundStyle = computed(() => {
   bottom: 0;
   overflow: hidden;
   backface-visibility: hidden;
-  transform-style: preserve-3d;
-  transition: transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              width 0s 0s,
-              left 0s 0s,
-              right 0s 0s,
-              opacity 0s 0s;
   will-change: transform;
   pointer-events: none;
 }
@@ -270,10 +264,29 @@ const doorBackgroundStyle = computed(() => {
   left: -100%;
 }
 
-/* OPEN STATE */
+/* OPEN STATE
+ *
+ * The reference artwork's curtain runs two curves off one 1.65s beat: the
+ * panels' outward travel on easeInOutQuart (full at 94% of the beat), and
+ * their swing on easeOutBack clamped at 1.06, so the leaf overshoots to ~87deg
+ * and settles back to 82. One element carries one timing function, so both
+ * curves are sampled into the stops below and played linearly — that ordering
+ * is the whole character: the door swings open first, *then* gathers away.
+ * A single shared easing collapses it into one flat simultaneous move.
+ *
+ * The swing is positive on the left leaf (hinged at its left edge), which
+ * turns its inner edge away from the viewer — the doors recede rather than
+ * lunging forward, and at 82deg with -62% of travel each leaf has left the
+ * frame entirely. Perspective comes from .door-perspective-container so both
+ * leaves share one 3D scene; a per-element perspective() would give each its
+ * own vanishing point.
+ *
+ * 1.65s is DOOR_OPEN_DURATION_MS in useDoorAnimation.ts — keep them in step,
+ * along with TransitionStageDoor.vue's beats, which are timed off this swing.
+ */
 .door-open-left {
   width: 50%;
-  transform: perspective(1500px) rotateY(-105deg);
+  animation: doorOpenLeft 1.65s linear forwards;
 }
 
 .door-open-left .door-full-content {
@@ -283,7 +296,35 @@ const doorBackgroundStyle = computed(() => {
 
 .door-open-right {
   opacity: 1;
-  transform: perspective(1500px) rotateY(105deg);
+  animation: doorOpenRight 1.65s linear forwards;
+}
+
+@keyframes doorOpenLeft {
+  0% { transform: translateX(0) rotateY(0deg); }
+  10% { transform: translateX(-0.1%) rotateY(33.5deg); }
+  20% { transform: translateX(-1%) rotateY(57.9deg); }
+  30% { transform: translateX(-5.2%) rotateY(74.4deg); }
+  40% { transform: translateX(-16.3%) rotateY(84.4deg); }
+  50% { transform: translateX(-38.3%) rotateY(86.9deg); }
+  60% { transform: translateX(-53.6%) rotateY(86.9deg); }
+  70% { transform: translateX(-59.9%) rotateY(86.9deg); }
+  80% { transform: translateX(-61.8%) rotateY(85.8deg); }
+  90% { transform: translateX(-62%) rotateY(83.2deg); }
+  100% { transform: translateX(-62%) rotateY(82deg); }
+}
+
+@keyframes doorOpenRight {
+  0% { transform: translateX(0) rotateY(0deg); }
+  10% { transform: translateX(0.1%) rotateY(-33.5deg); }
+  20% { transform: translateX(1%) rotateY(-57.9deg); }
+  30% { transform: translateX(5.2%) rotateY(-74.4deg); }
+  40% { transform: translateX(16.3%) rotateY(-84.4deg); }
+  50% { transform: translateX(38.3%) rotateY(-86.9deg); }
+  60% { transform: translateX(53.6%) rotateY(-86.9deg); }
+  70% { transform: translateX(59.9%) rotateY(-86.9deg); }
+  80% { transform: translateX(61.8%) rotateY(-85.8deg); }
+  90% { transform: translateX(62%) rotateY(-83.2deg); }
+  100% { transform: translateX(62%) rotateY(-82deg); }
 }
 
 /* Swing shading + rim light. Above the content layer (z-30) so they fall on
@@ -301,7 +342,6 @@ const doorBackgroundStyle = computed(() => {
   left: 0;
   right: 0;
   z-index: 40;
-  transition: opacity 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .door-panel-left .door-swing-shade {
@@ -322,14 +362,21 @@ const doorBackgroundStyle = computed(() => {
   );
 }
 
+/* Tracks the swing, not the travel: the face is turned away well before the
+   leaf has finished gathering off-frame. */
 .door-open-left .door-swing-shade,
 .door-open-right .door-swing-shade {
-  opacity: 1;
+  animation: doorSwingShade 1.65s linear forwards;
+}
+
+@keyframes doorSwingShade {
+  0% { opacity: 0; }
+  45% { opacity: 1; }
+  100% { opacity: 1; }
 }
 
 .door-rim-light {
-  width: 42%;
-  max-width: 190px;
+  width: 35%;
   z-index: 41;
   mix-blend-mode: screen;
 }
@@ -344,21 +391,23 @@ const doorBackgroundStyle = computed(() => {
   background: linear-gradient(270deg, rgba(255, 220, 150, 0), rgba(255, 232, 180, 0.75));
 }
 
+/* sin(travel * PI) * 0.95 — brightest when the leaf is half gathered and most
+   side-on to the light coming through the opening. */
 .door-open-left .door-rim-light,
 .door-open-right .door-rim-light {
-  animation: doorRimLight 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation: doorRimLight 1.65s linear forwards;
 }
 
 @keyframes doorRimLight {
-  0% {
-    opacity: 0;
-  }
-  45% {
-    opacity: 0.95;
-  }
-  100% {
-    opacity: 0;
-  }
+  0% { opacity: 0; }
+  20% { opacity: 0.05; }
+  30% { opacity: 0.25; }
+  40% { opacity: 0.72; }
+  47% { opacity: 0.95; }
+  60% { opacity: 0.62; }
+  70% { opacity: 0.31; }
+  85% { opacity: 0.06; }
+  100% { opacity: 0; }
 }
 
 /* Door edge shadow - creates depth illusion at the hinge side */
@@ -446,7 +495,8 @@ const doorBackgroundStyle = computed(() => {
   opacity: 1;
 }
 
-/* Reduced motion preference */
+/* Reduced motion preference — the leaves fade out where they stand rather
+   than swinging. */
 @media (prefers-reduced-motion: reduce) {
   .door-panel {
     transition: opacity 0.3s ease-out;
@@ -454,6 +504,7 @@ const doorBackgroundStyle = computed(() => {
 
   .door-open-left,
   .door-open-right {
+    animation: none;
     transform: none;
     opacity: 0;
   }

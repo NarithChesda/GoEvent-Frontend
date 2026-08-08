@@ -170,23 +170,26 @@ const editIntentCtx = inject(EditIntentKey, undefined)
 const { t: tApp } = useAppLanguage()
 
 // ---------------------------------------------------------------------------
-// Choreography. The doors ([cover/DoorPanel.vue]) swing over the first 1.2s;
-// this stage mounts with them, so everything below is measured from the moment
-// the seam breaks:
-//   0ms    - photo already there behind the doors, blown out; seam light breaks
-//   1200ms - doors are open, exposure has settled, camera is dollying in
-//   1300ms - gold frame draws in
-//   1500ms - cartouche wipes open rule → label → date → long date → rule
-//   2900ms - gold sheen travels across the lettering
-//   5300ms - the bloom gathers at the date and swallows the frame
-//   5800ms - the bloom has just covered everything: transitionComplete, and
+// Choreography. This stage mounts with the cover's leaves, which swing over
+// DOOR_OPEN_DURATION_MS (1.65s, cover/DoorPanel.vue) — every beat below is
+// timed against that swing, at the reference artwork's own intervals:
+//   0ms    - photo already there behind the leaves, blown out; the seam breaks
+//   250ms  - exposure begins settling, finishing at 2600ms
+//   1000ms - the top rule draws, while the leaves are still gathering away
+//   1250ms - gold frame draws in
+//   1500ms - cartouche wipes open: label → date → long date → bottom rule
+//   1650ms - the leaves are fully off-frame
+//   2700ms - gold sheen travels across the lettering
+//   5700ms - the bloom gathers at the date and swallows the frame
+//   6200ms - the bloom has just covered everything: transitionComplete, and
 //            the parent's leave transition dissolves it over the main content
 //            that mounts behind it at that moment
 // The CSS delays below are the source of truth for the beats in between; only
-// the two hand-off moments need to exist in JS.
+// the two hand-off moments need to exist in JS. Retiming the swing means
+// retiming all of them.
 // ---------------------------------------------------------------------------
-const BLOOM_START_MS = 5300
-const COMPLETE_MS = 5800
+const BLOOM_START_MS = 5700
+const COMPLETE_MS = 6200
 
 const isRevealing = ref(false)
 const isBlooming = ref(false)
@@ -381,13 +384,17 @@ const replay = async () => {
   z-index: 1;
 }
 
+/* Carries the camera's last leg, 1.3 → 1.62. Multiplies the dolly's own scale
+   rather than replacing it, which is why the factor here is 1.246 and not
+   1.62; the translate is likewise the residual that lands the composite where
+   the reference's single transform does. */
 .blooming .stage-rush {
-  animation: cameraRush 900ms ease-in forwards;
+  animation: cameraRush 550ms cubic-bezier(0.4, 0, 0.6, 1) forwards;
 }
 
 @keyframes cameraRush {
   to {
-    transform: scale(1.16) translateY(-2%);
+    transform: scale(1.246) translateY(-2.3%);
   }
 }
 
@@ -398,16 +405,27 @@ const replay = async () => {
   will-change: transform;
 }
 
+/* The reference's camera is a four-point push, not one long creep: hard into
+   the frame while the leaves are still swinging (1 → 1.18 by 1.7s), then a
+   slow continued travel to 1.3, then the rush into the bloom above. Each leg
+   eases in-out on its own — a single ease across the whole 5.7s flattens the
+   arrival, which is the beat that sells the photo "landing".
+   Percentages are the reference's px against its 1920 height. */
 .revealing .stage-camera {
-  animation: cameraDolly 6s cubic-bezier(0.33, 0, 0.15, 1) forwards;
+  animation: cameraDolly 5.7s linear forwards;
 }
 
 @keyframes cameraDolly {
-  from {
+  0% {
     transform: scale(1) translateY(0);
+    animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
   }
-  to {
-    transform: scale(1.12) translateY(-1.1%);
+  29.8% {
+    transform: scale(1.18) translateY(-0.73%);
+    animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+  100% {
+    transform: scale(1.3) translateY(-1.25%);
   }
 }
 
@@ -419,24 +437,30 @@ const replay = async () => {
   overflow: hidden;
 }
 
-/* Ken Burns runs on its own wrapper so it composes with the dolly above */
+/* Ken Burns runs on its own wrapper so it composes with the dolly above — and
+   deliberately counter-moves against it: the photo eases back and drifts left
+   (1.12 → 0.98, 2.2% → -2.2%, the reference's own figures) while the camera
+   pushes in. Two motions in opposite directions read as depth; matching them
+   would just look like one bigger zoom.
+   It dips below 1 late on, but the dolly is past 1.25 by then, so the
+   composite never lets the photo's edge inside the frame. */
 .kenburns-frame {
   position: absolute;
   inset: 0;
-  transform: scale(1.06) translateX(1.6%);
+  transform: scale(1.12) translateX(2.2%);
   will-change: transform;
 }
 
 .revealing .kenburns-frame {
-  animation: kenburnsDrift 8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  animation: kenburnsDrift 6.25s cubic-bezier(0.37, 0, 0.63, 1) forwards;
 }
 
 @keyframes kenburnsDrift {
   from {
-    transform: scale(1.06) translateX(1.6%);
+    transform: scale(1.12) translateX(2.2%);
   }
   to {
-    transform: scale(1) translateX(-1.6%);
+    transform: scale(0.98) translateX(-2.2%);
   }
 }
 
@@ -467,7 +491,7 @@ const replay = async () => {
 }
 
 .revealing .exposure-wash {
-  animation: exposureSettle 2.3s cubic-bezier(0.4, 0, 0.3, 1) 0.35s forwards;
+  animation: exposureSettle 2.35s cubic-bezier(0.4, 0, 0.3, 1) 0.25s forwards;
 }
 
 @keyframes exposureSettle {
@@ -489,7 +513,7 @@ const replay = async () => {
 }
 
 .revealing .exposure-bloom {
-  animation: exposureSettle 2s ease-out 0.3s forwards;
+  animation: exposureSettle 2.1s ease-out 0.2s forwards;
 }
 
 .photo-scrim {
@@ -534,11 +558,11 @@ const replay = async () => {
 }
 
 .revealing .seam-glow {
-  animation: seamBreakGlow 1.35s cubic-bezier(0.3, 0, 0.2, 1) forwards;
+  animation: seamBreakGlow 1.55s cubic-bezier(0.3, 0, 0.2, 1) forwards;
 }
 
 .revealing .seam-line {
-  animation: seamBreakLine 1.1s cubic-bezier(0.3, 0, 0.2, 1) forwards;
+  animation: seamBreakLine 1.35s cubic-bezier(0.3, 0, 0.2, 1) forwards;
 }
 
 @keyframes seamBreakGlow {
@@ -618,7 +642,7 @@ const replay = async () => {
 }
 
 .revealing .frame-layer {
-  animation: frameDrawIn 900ms cubic-bezier(0.22, 1, 0.36, 1) 1.3s forwards;
+  animation: frameDrawIn 1.05s cubic-bezier(0.22, 1, 0.36, 1) 1.25s forwards;
 }
 
 @keyframes frameDrawIn {
@@ -795,11 +819,11 @@ const replay = async () => {
 }
 
 .revealing .copy-rule-top {
-  animation: ruleDraw 750ms cubic-bezier(0.22, 1, 0.36, 1) 1.5s forwards;
+  animation: ruleDraw 700ms cubic-bezier(0.22, 1, 0.36, 1) 1s forwards;
 }
 
 .revealing .copy-rule-bottom {
-  animation: ruleDraw 750ms cubic-bezier(0.22, 1, 0.36, 1) 2.8s forwards;
+  animation: ruleDraw 800ms cubic-bezier(0.22, 1, 0.36, 1) 2.8s forwards;
 }
 
 @keyframes ruleDraw {
@@ -823,20 +847,20 @@ const replay = async () => {
 
 .revealing .copy-label {
   animation:
-    copyWipe 850ms cubic-bezier(0.33, 0, 0.15, 1) 1.8s forwards,
-    goldSheen 2.6s ease-in-out 2.9s forwards;
+    copyWipe 850ms cubic-bezier(0.33, 0, 0.15, 1) 1.5s forwards,
+    goldSheen 2.3s ease-in-out 2.7s forwards;
 }
 
 .revealing .copy-date {
   animation:
-    copyWipe 850ms cubic-bezier(0.33, 0, 0.15, 1) 2.3s forwards,
-    goldSheen 2.6s ease-in-out 2.9s forwards;
+    copyWipe 850ms cubic-bezier(0.33, 0, 0.15, 1) 2.05s forwards,
+    goldSheen 2.3s ease-in-out 2.7s forwards;
 }
 
 .revealing .copy-date-long {
   animation:
-    copyWipe 850ms cubic-bezier(0.33, 0, 0.15, 1) 2.7s forwards,
-    goldSheen 2.6s ease-in-out 2.9s forwards;
+    copyWipe 800ms cubic-bezier(0.33, 0, 0.15, 1) 2.5s forwards,
+    goldSheen 2.3s ease-in-out 2.7s forwards;
 }
 
 @keyframes copyWipe {

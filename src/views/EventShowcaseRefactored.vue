@@ -239,6 +239,7 @@ import { useRouter } from 'vue-router'
 import { useEventShowcase } from '../composables/useEventShowcase'
 import { useAuthStore } from '../stores/auth'
 import { useAssetProtection } from '../composables/showcase/useAssetProtection'
+import { DOOR_CLEARED_MS } from '../composables/showcase/useDoorAnimation'
 import { getPendingLogin } from '../composables/useTelegramBotLogin'
 
 // Meta tags utility
@@ -454,13 +455,16 @@ const openEnvelopeWithVideoSync = async () => {
     await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined, {
       useTransitionStage: true,
     })
-    // No TransitionStage component renders (no featured photo).
-    // Door animation: trigger main content at 700ms so it renders behind the
-    // still-opening doors (z-20 behind door panels at z-28). The doors' CSS
-    // transition is 1.2s; isDoorAnimationInProgress keeps them visible until done.
+    // No TransitionStage component renders (no featured photo), so the cover
+    // animation is the whole reveal and main content follows it directly.
+    // Completing early doesn't buy anything: revealing main content clears
+    // isDoorAnimationInProgress, which unmounts the leaves — so a delay shorter
+    // than the swing cuts it off mid-flight. Handing off once they've cleared
+    // the frame rather than at the very end of the swing skips its tail, which
+    // is off screen anyway.
     // Decoration animation: wait for decorations to finish sliding out (~1.2s).
     const animationType = event.value.template_assets?.cover_stage_layout?.showcaseAnimationType
-    const delay = animationType === 'door' ? 700 : 1400
+    const delay = animationType === 'door' ? DOOR_CLEARED_MS : 1400
     setTimeout(() => {
       handleTransitionComplete()
     }, delay)

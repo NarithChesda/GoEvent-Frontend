@@ -201,7 +201,9 @@ The cover → main-content transition is the app's signature animation. Files: [
 **Two animation types**, selected by `cover_stage_layout.showcaseAnimationType` (default `decoration`), exposed by `useShowcaseAnimation({ isContentHidden, animationType })` as computed class maps (`coverContainerClasses`, `leftDoorClasses`, `decorationClasses`, `mainContentClasses`). The cover animation is class-driven — a single `isContentHidden` boolean flips CSS classes, no JS tweening — and **each cover animation is paired with its own transition stage**; the two are one look, never mixed.
 
 - **decoration** → [TransitionStage.vue](src/components/showcase/TransitionStage.vue). The four cover decorations slide out directionally (`translateX/Y(±100%)` + fade), `0.8s ease-out` each, staggered by `transition-delay` 0.1/0.2/0.3/0.4s (left→right→top→bottom). The stage that follows is the **veil reveal**: photo sharpens out of a blurred bright copy under a Ken Burns drift, bokeh sparkles rise, a frosted footer scrim carries "Save the Date" blooming letter by letter.
-- **door** → [TransitionStageDoor.vue](src/components/showcase/TransitionStageDoor.vue). The cover splits into two panels that swing open in 3D — `perspective(1500px) rotateY(∓105deg)`, `transform-origin: left/right center`, `1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)`, `backface-visibility: hidden`, `transform-style: preserve-3d`. The left panel starts full-width covering the viewport; the right panel is a mirrored copy (`width: 200%`, offset content) revealed at open time. Each panel carries a swing shade on its face and a warm rim light on its inner edge that peaks mid-swing. The stage that follows is the **curtain-and-cartouche**: an over-exposed photo settling into exposure behind a printed gold frame, with a wiped-in Save-the-Date cartouche, resolving in a gold bloom.
+- **door** → [TransitionStageDoor.vue](src/components/showcase/TransitionStageDoor.vue). The cover splits into two leaves that swing open in 3D over `DOOR_OPEN_DURATION_MS` (1.65s, [useDoorAnimation.ts](src/composables/showcase/useDoorAnimation.ts) — the single source of truth; the CSS duration and every beat timed off it move together). `transform: translateX(∓62%) rotateY(±82deg)`, `transform-origin: left/right center`. The left leaf starts full-width covering the viewport; the right is a mirrored copy (`width: 200%`, offset content) revealed at open time. Each carries a swing shade on its face and a warm rim light on its inner edge peaking mid-swing. They clear the frame at `DOOR_CLEARED_MS` (1.2s), the swing settling its overshoot off screen after that. The stage that follows is the **curtain-and-cartouche**: an over-exposed photo settling into exposure behind a printed gold frame, with a wiped-in Save-the-Date cartouche, resolving in a gold bloom.
+  - **The swing direction is away from the viewer**, not toward: positive `rotateY` on the leaf hinged at its left edge turns its inner edge into the screen, so the cover recedes instead of lunging at the camera.
+  - **Perspective belongs to the shared container**, not to each leaf — [CoverContentOverlay.vue](src/components/showcase/CoverContentOverlay.vue)'s `.door-perspective-container` at `1.76 x` the stage width with origin `50% 44%`. A per-element `perspective()` gives each leaf its own vanishing point, and a fixed px value is ~3.3x the width of a phone-shaped stage, which flattens the swing into a horizontal squash.
 
 **Layering matters for door:** `TransitionStageDoor` renders through CoverStage's `#transition` slot at `z-25` — **under** the door panels (`z-28`) and over the main content (`z-20`) — so the doors genuinely part to reveal it. Cross-fading a photo on top of the doors instead reads as a dissolve, not a reveal. `TransitionStage` (decoration) stays a sibling of CoverStage at `z-35`.
 
@@ -209,12 +211,15 @@ The cover → main-content transition is the app's signature animation. Files: [
 
 | Beat | decoration (`TransitionStage`) | door (`TransitionStageDoor`) |
 |---|---|---|
-| Photo | fades in at 1000ms, veil lifts over 2.4s | already there at 0ms, over-exposure settles 350→2650ms |
-| Seam light | — | breaks at 0ms, peaks mid-swing, gone by 1350ms |
-| Frame / scrim | footer scrim at 1800ms | gold frame draws in at 1300ms |
-| Copy | letter-by-letter bloom from 1800ms | centre-out wipes at 1500/1800/2300/2700/2800ms |
-| Resolve begins | fade-out at 5800ms | gold bloom at 5300ms |
-| `transitionComplete` | 7000ms | 5800ms, then an 0.8s leave fade |
+| Cover animation | decorations slide out, staggered to ~1.2s | leaves swing 0→1650ms, clear the frame at 1200ms |
+| Photo | fades in at 1000ms, veil lifts over 2.4s | already there at 0ms, over-exposure settles 250→2600ms |
+| Seam light | — | breaks at 0ms, peaks mid-swing, gone by 1550ms |
+| Frame / scrim | footer scrim at 1800ms | gold frame draws in at 1250ms |
+| Copy | letter-by-letter bloom from 1800ms | centre-out wipes at 1000/1500/2050/2500/2800ms |
+| Resolve begins | fade-out at 5800ms | gold bloom at 5700ms |
+| `transitionComplete` | 7000ms | 6200ms, then an 0.8s leave fade |
+
+The door column's intervals are the reference artwork's own, measured against its curtain rather than restated as absolutes — retiming the swing means retiming all of them together.
 
 Signature techniques to reuse for similar effects:
 - **Reveal by uncovering, not by cross-fading**: when something on top moves away (doors, curtains, wipes), put the payload *behind* it at full opacity rather than fading the payload in on top — no timing or geometry has to be matched, and the motion reads as physical.
@@ -225,6 +230,7 @@ Signature techniques to reuse for similar effects:
 - **Gold lettering**: a gradient with a near-white hotspot, `background-clip: text` + `-webkit-text-fill-color: transparent`, swept by animating `background-position`. **Declare the wipe and the sheen in one `animation` shorthand** — two rules of equal specificity each setting `animation` silently drop the first, which here leaves the text clipped to zero width.
 - **Veil reveal**: instead of animating `filter: blur()` on a fullscreen image (expensive), stack a pre-blurred bright copy (`blur(16px) brightness(1.18)`, `scale(1.04)` to hide edge bleed) and fade its opacity out over ~2.4s — reads as the photo "sharpening".
 - **Ken Burns**: run the drift (`scale 1.14→1.02` + slight translateY, 9s `cubic-bezier(0.25,0.1,0.25,1)`) on a wrapper frame so it composes with the container's opacity fade.
+- **Camera and subject move against each other**: the door stage nests a dolly (`scale 1→1.18→1.3`, origin `50% 44%`) around a Ken Burns that eases *back* and drifts the other way (`scale 1.12→0.98`, `translateX 2.2%→-2.2%`). Opposed motions read as depth; matching them just reads as one bigger zoom. Two things follow — the dolly's early leg has to be a hard push (1→1.18 inside the first 1.7s, with a per-keyframe `animation-timing-function` so each leg eases on its own; one ease across the whole span flattens the arrival), and since the inner scale dips below 1, check the *composite* never drops under 1 or the photo's edge appears inside the frame.
 - **One-shot light sweep**: diagonal white gradient band translated `-100%→100%`, `2.6s ease-in-out` with a delay so it fires after the veil lifts.
 - **Letter-by-letter bloom**: split text into `<span>`s, each starting `opacity-0 blur(6px) translateY(8px)`, animating in with `cubic-bezier(0.22, 1, 0.36, 1)` and inline `animation-delay: i * 65ms`.
 - **Letter-spacing track-in**: date fades in while `letter-spacing` settles 0.42em → 0.18em.

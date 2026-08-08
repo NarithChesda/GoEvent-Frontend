@@ -392,12 +392,17 @@ const displayLiquidGlass = computed(() =>
 </script>
 
 <style scoped>
-/* Door perspective container */
+/* Door perspective container. Both leaves share this one 3D scene — they carry
+   no perspective() of their own, which would give each its own vanishing point.
+   1.76x the stage's width and an origin slightly above centre are the
+   reference artwork's (1900 against its 1080, at 50% 44%); a fixed 1500px was
+   ~3.3x the width of a phone-shaped stage, which flattened the swing almost
+   to a horizontal squash. */
 .door-perspective-container {
   position: absolute;
   inset: 0;
-  perspective: 1500px;
-  perspective-origin: center center;
+  perspective: calc(min(100vw, 56.25vh) * 1.76);
+  perspective-origin: 50% 44%;
   z-index: 28;
   overflow: hidden;
 }
