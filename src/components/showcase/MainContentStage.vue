@@ -106,17 +106,40 @@
       @comment="handleComment"
     />
 
+    <!-- Gives the document the scroll height the card would otherwise own, so the
+         browser sees a real page scroll and hides its chrome. Teleported to
+         <body> because this stage lives inside the `position: fixed` shell and
+         so contributes no document height itself. See useDocumentScrollProxy. -->
+    <Teleport to="body">
+      <div
+        v-if="scrollProxyHeight > 0"
+        class="showcase-scroll-proxy"
+        :style="{ height: `${scrollProxyHeight}px` }"
+        aria-hidden="true"
+      ></div>
+    </Teleport>
+
     <!-- Liquid Glass Floating Box Container -->
     <div class="absolute inset-0 overflow-hidden z-20">
-      <div class="absolute inset-0 overflow-y-auto custom-scrollbar z-20">
+      <div
+        class="absolute inset-0 custom-scrollbar z-20"
+        :class="isScrollProxyActive ? 'overflow-hidden' : 'overflow-y-auto'"
+      >
         <div :class="containerClasses">
           <!-- Liquid Glass Card -->
           <div class="liquid-glass-card" :class="[cardAnimationClass, cardWidthClass]">
             <!-- Glass Background Effects -->
             <div v-if="showLiquidGlass" class="glass-background"></div>
 
-            <!-- Content Container with Scroll -->
-            <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
+            <!-- Content Container with Scroll.
+                 `overflow: hidden` when the proxy is driving: the swipe has to
+                 fall through to the document instead of being eaten here. The
+                 element still scrolls — the proxy sets scrollTop directly. -->
+            <div
+              ref="cardScrollRef"
+              class="relative z-10 h-full custom-scrollbar"
+              :class="isScrollProxyActive ? 'overflow-hidden' : 'overflow-y-auto'"
+            >
               <div :class="contentPaddingClasses">
                 <!-- Host Information (now includes welcome header) -->
                 <div ref="hostInfoRef" class="animate-reveal">
@@ -459,7 +482,7 @@
                      view instead of showing both at once -->
                 <div
                   ref="footerSectionRef"
-                  class="mt-8 min-h-[85vh] flex flex-col items-center justify-center animate-reveal"
+                  class="mt-8 min-h-[85dvh] flex flex-col items-center justify-center animate-reveal"
                   :class="footerMarginClasses"
                 >
                   <!-- Footer Card with Conditional Styling -->
@@ -953,6 +976,7 @@ import { useScrollDrivenAnimations } from '../../composables/useAdvancedAnimatio
 import { translateRSVP } from '../../utils/translations'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
+import { useDocumentScrollProxy } from '../../composables/showcase/useDocumentScrollProxy'
 import { useCoverStageLayout } from '../../composables/showcase/useCoverStageLayout'
 import type {
   CoverStageLayout,
@@ -1179,6 +1203,16 @@ const revealObserver = ref<IntersectionObserver | null>(null)
 // Track observed elements for proper cleanup
 const observedElements = ref<Set<Element>>(new Set())
 
+// The card's scroll container. On touch devices the document scrolls in its
+// place (so the browser hides its chrome) and this element is driven from it;
+// on desktop it keeps scrolling itself and the proxy stays inert.
+const cardScrollRef = ref<HTMLElement | null>(null)
+const {
+  proxyHeight: scrollProxyHeight,
+  isActive: isScrollProxyActive,
+  scrollElementIntoView,
+} = useDocumentScrollProxy(cardScrollRef)
+
 // Simplified mounting - no video management needed
 onMounted(async () => {
   await nextTick()
@@ -1188,13 +1222,13 @@ onMounted(async () => {
     videoResourceManager.value = injectedVideoResourceManager
   }
 
-  // The liquid-glass-card is always 85vh with an inner overflow-y-auto scroll container.
-  // All scrolling happens inside that inner container on every screen size, so we always
-  // use it as the IntersectionObserver root. Using root:null (viewport) would cause every
-  // section to appear intersecting at mount and fire all at once instead of on scroll.
-  const scrollContainer = document.querySelector(
-    '.liquid-glass-card .custom-scrollbar',
-  ) as Element | null
+  // The liquid-glass-card is always 85dvh with an inner scroll container. All
+  // content scrolling happens inside it on every screen size, so we always use it
+  // as the IntersectionObserver root. Using root:null (viewport) would cause every
+  // section to appear intersecting at mount and fire all at once instead of on
+  // scroll. Still correct under the document-scroll proxy: that only changes what
+  // *drives* this element's scrollTop, not the fact that it scrolls.
+  const scrollContainer = cardScrollRef.value
 
   const observerConfig: IntersectionObserverInit = {
     threshold: 0.1,
@@ -1467,12 +1501,17 @@ const contentLoadingStyle = computed(() => ({
 }))
 
 /**
- * Smooth scroll to section by ID
+ * Smooth scroll to section by ID.
+ *
+ * Goes through the scroll proxy rather than calling `scrollIntoView` directly:
+ * on touch devices the card's own scroller is `overflow: hidden` and mirrors the
+ * document, so scrolling it directly would be undone on the next scroll event.
+ * The proxy falls back to `scrollIntoView` wherever it isn't driving.
  */
 const scrollToSection = (sectionId: string) => {
   const element = document.getElementById(sectionId)
   if (element) {
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    scrollElementIntoView(element, 'center')
   }
 }
 
@@ -1496,7 +1535,7 @@ const handleLocation = () => {
   // Scroll to event info section since map is now embedded there
   const element = eventInfoRef.value
   if (element) {
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    scrollElementIntoView(element, 'center')
   }
 }
 const handleGallery = () => {
@@ -1506,7 +1545,7 @@ const handleGallery = () => {
     // Trigger the visibility class immediately to show the photo
     firstPhoto.classList.add('photo-visible')
     // Scroll with more offset to ensure photo is fully visible
-    firstPhoto.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    scrollElementIntoView(firstPhoto, 'start')
   } else {
     // Fallback to section if no photos are available
     scrollToSection('gallery-section')
@@ -1782,15 +1821,29 @@ onUnmounted(() => {
   opacity: 0;
 }
 
+/* Document-scroll proxy spacer (teleported to <body>). Contributes nothing but
+   height: the showcase shell above it is `position: fixed`, so this is what the
+   browser actually scrolls — and therefore what makes it hide its own chrome. */
+.showcase-scroll-proxy {
+  width: 100%;
+  pointer-events: none;
+  visibility: hidden;
+}
+
 /* Liquid Glass Card - Consolidated styles */
+/* `dvh` (with a `vh` fallback) so the card is 85% of the *visible* height rather
+   than 85% of the chrome-hidden height — the latter pushed its lower edge, and
+   the last section of content with it, below the fold on mobile. */
 .liquid-glass-card {
   position: relative;
   border-radius: 1.5rem;
   overflow: hidden;
   width: 85vw;
   height: 85vh;
+  height: 85dvh;
   max-width: 85vw;
   max-height: 85vh;
+  max-height: 85dvh;
   will-change: transform;
   transition: transform 0.3s ease-out;
 }

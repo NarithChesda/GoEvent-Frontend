@@ -240,6 +240,7 @@ import { useRouter } from 'vue-router'
 import { useEventShowcase } from '../composables/useEventShowcase'
 import { useAuthStore } from '../stores/auth'
 import { useAssetProtection } from '../composables/showcase/useAssetProtection'
+import { useImmersiveViewport } from '../composables/showcase/useImmersiveViewport'
 import { DOOR_CLEARED_MS } from '../composables/showcase/useDoorAnimation'
 import { getPendingLogin } from '../composables/useTelegramBotLogin'
 
@@ -430,8 +431,14 @@ const useV2Showcase = computed(() => {
   return categoryName === 'wedding'
 })
 
+// Opening the invitation is the guest's first (and only guaranteed) tap, so it
+// is the one moment a fullscreen request can be granted. See the composable for
+// what each platform actually does with it.
+const { requestImmersiveViewport } = useImmersiveViewport()
+
 // V2 cover opened: align stage/redirect state with V1 and start the music
 const handleV2Opened = () => {
+  requestImmersiveViewport()
   setStage('main_content')
   markMainContentSeen()
   if (eventMusicUrl.value) {
@@ -442,6 +449,10 @@ const handleV2Opened = () => {
 
 // Override the openEnvelope function to include video synchronization
 const openEnvelopeWithVideoSync = async () => {
+  // Fires first and synchronously: every path below awaits, and an await here
+  // would spend the user activation that the fullscreen request depends on.
+  requestImmersiveViewport()
+
   // For basic wedding events with a featured photo, use the transition stage
   if (isBasicWedding.value && hasFeaturedPhoto.value) {
     await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined, {
@@ -689,9 +700,26 @@ onUnmounted(() => {
 }
 
 /* Container Styles */
+/* Heights are `dvh`, not `vh`: on mobile `100vh` resolves to the *large*
+   viewport (the height the page would have if the browser chrome were hidden),
+   so with the URL bar showing the stage was ~50-110px taller than the visible
+   area and its bottom edge was cut off. `dvh` tracks whatever is actually
+   visible, so the frame fits both before and after the chrome collapses.
+   The plain `vh` line above each is the fallback for pre-2022 browsers. */
+/* `fixed` rather than a 100dvh block in normal flow: useDocumentScrollProxy
+   gives the document its scrollable height through a spacer teleported to
+   <body>, and that only maps 1:1 onto the card's overflow if the showcase shell
+   itself contributes no document height. Pinning it also keeps the stage still
+   while the page scrolls underneath, which is what makes the swap invisible.
+   Explicit `height` rather than `inset: 0` — a fixed box resolves `bottom: 0`
+   against the layout viewport, which on mobile is the chrome-hidden height. */
 .showcase-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -702,6 +730,7 @@ onUnmounted(() => {
 .showcase-container {
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   position: relative;
   overflow: hidden;
   margin: 0 auto;
@@ -716,10 +745,14 @@ onUnmounted(() => {
 }
 
 /* All other devices - consistent desktop sizing with 100% height priority */
+/* Width is derived from the same visible height so the frame keeps its 1080/1920
+   ratio; TransitionStageDoor's `--dt-w` mirrors this formula and must match. */
 @media (min-width: 481px), (min-height: 801px) {
   .showcase-container {
     width: calc(100vh * (1080 / 1920));
+    width: calc(100dvh * (1080 / 1920));
     max-width: calc(100vh * (1080 / 1920));
+    max-width: calc(100dvh * (1080 / 1920));
   }
 }
 </style>
