@@ -166,11 +166,34 @@
             @video-state-change="handleVideoStateChange"
           />
         </template>
+
+        <!-- Door templates' transition stage. Rendered through CoverStage's
+             own slot so it sits under the door panels — the doors part to
+             reveal it. Its gold bloom is still on screen when it emits
+             `transitionComplete`; the leave transition dissolves it over the
+             main content that mounts behind it at that moment. -->
+        <template #transition>
+          <Transition name="door-transition-out">
+            <TransitionStageDoor
+              v-if="showTransitionStage && isDoorTransition"
+              :event-title="event.title"
+              :event-photos="eventPhotos"
+              :event-start-date="event.start_date"
+              :primary-color="primaryColor"
+              :accent-color="accentColor"
+              :background-color="backgroundColor"
+              :blur-effect-color="blurEffectColor"
+              :get-media-url="getMediaUrl"
+              @transition-complete="handleTransitionComplete"
+            />
+          </Transition>
+        </template>
       </CoverStage>
 
-      <!-- Transition Stage (basic wedding events only, requires a featured photo) -->
+      <!-- Decoration templates' transition stage (basic wedding events only,
+           requires a featured photo) -->
       <TransitionStage
-        v-if="isTransitionStage && isBasicWedding && hasFeaturedPhoto"
+        v-if="showTransitionStage && !isDoorTransition"
         :event-title="event.title"
         :event-logo="event.logo_one"
         :event-photos="eventPhotos"
@@ -184,7 +207,6 @@
         :primary-font="primaryFont"
         :secondary-font="secondaryFont"
         :get-media-url="getMediaUrl"
-        :animation-type="event.template_assets?.cover_stage_layout?.showcaseAnimationType"
         @transition-complete="handleTransitionComplete"
       />
 
@@ -233,6 +255,7 @@ import ErrorDisplay from '../components/showcase/ErrorDisplay.vue'
 import LoadingSpinner from '../components/showcase/LoadingSpinner.vue'
 import MainContentStage from '../components/showcase/MainContentStage.vue'
 import TransitionStage from '../components/showcase/TransitionStage.vue'
+import TransitionStageDoor from '../components/showcase/TransitionStageDoor.vue'
 import PhotoModal from '../components/showcase/PhotoModal.vue'
 import AuthModal from '../components/AuthModal.vue'
 import { useAuthModal } from '../composables/useAuthModal'
@@ -369,6 +392,18 @@ const isBasicWedding = computed(() => {
 const hasFeaturedPhoto = computed(() => {
   return eventPhotos.value?.some((p) => p.is_featured) ?? false
 })
+
+const showTransitionStage = computed(
+  () => isTransitionStage.value && isBasicWedding.value && hasFeaturedPhoto.value,
+)
+
+// Which of the two transition stages this template gets. Mirrors how CoverStage
+// resolves the animation type (template field only, defaulting to decoration) —
+// the door cover animation is paired with the curtain-and-cartouche transition,
+// everything else with the veil reveal.
+const isDoorTransition = computed(
+  () => event.value.template_assets?.cover_stage_layout?.showcaseAnimationType === 'door',
+)
 
 // V2 "Storybook Romance" template gate. Per-template selection
 // (event.template_assets.showcase_template_version) takes priority once the
@@ -629,6 +664,23 @@ onUnmounted(() => {
   width: 100%;
   min-height: 100svh;
   background: #faf6f0;
+}
+
+/* Door transition hand-off: the stage emits `transitionComplete` while its gold
+   bloom is still at full strength, so the bloom dissolves over the main content
+   that mounts underneath at that same moment rather than cutting to it. */
+.door-transition-out-leave-active {
+  transition: opacity 0.8s ease-out;
+}
+
+.door-transition-out-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .door-transition-out-leave-active {
+    transition-duration: 0.3s;
+  }
 }
 
 /* Container Styles */

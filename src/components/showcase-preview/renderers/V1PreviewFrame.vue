@@ -100,6 +100,22 @@
     :replay-key="replayKey"
   />
 
+  <!-- Whichever transition the template's cover animation is paired with, same
+       as the live showcase picks it (see EventShowcaseRefactored.vue). -->
+  <TransitionStageDoor
+    v-else-if="stage === 'transition' && isDoorTransition"
+    :key="replayKey"
+    :freeze-at-peak="true"
+    :event-title="event.title"
+    :event-photos="eventPhotos"
+    :event-start-date="event.start_date"
+    :primary-color="primaryColor"
+    :accent-color="accentColor"
+    :background-color="backgroundColor"
+    :blur-effect-color="blurEffectColor"
+    :get-media-url="getMediaUrl"
+  />
+
   <TransitionStage
     v-else-if="stage === 'transition'"
     :key="replayKey"
@@ -117,7 +133,6 @@
     :primary-font="primaryFont"
     :secondary-font="secondaryFont"
     :get-media-url="getMediaUrl"
-    :animation-type="event.template_assets?.cover_stage_layout?.showcaseAnimationType"
   />
 
   <!-- Direct-manipulation cover layout. A sibling of CoverStage rather than
@@ -167,6 +182,7 @@ import CoverStage from '@/components/showcase/CoverStage.vue'
 import CoverLayoutEditor from '@/components/showcase-preview/edit/CoverLayoutEditor.vue'
 import V1EventVideoStage from './V1EventVideoStage.vue'
 import TransitionStage from '@/components/showcase/TransitionStage.vue'
+import TransitionStageDoor from '@/components/showcase/TransitionStageDoor.vue'
 import MainContentStage from '@/components/showcase/MainContentStage.vue'
 import PhotoModal from '@/components/showcase/PhotoModal.vue'
 
@@ -317,6 +333,12 @@ const onCoverLayoutSelect = (id: CoverElementId | null): void => {
 const onCoverLayoutDragging = (value: boolean): void => {
   if (coverLayoutEdit) coverLayoutEdit.dragging.value = value
 }
+
+// Which transition stage this template's cover animation is paired with —
+// resolved exactly as the live showcase resolves it.
+const isDoorTransition = computed(
+  () => event.value?.template_assets?.cover_stage_layout?.showcaseAnimationType === 'door',
+)
 
 // Same template-capability check EventShowcaseRefactored.vue uses — tells
 // CoverStage whether the basic-mode decoration background should persist.

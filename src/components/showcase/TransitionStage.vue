@@ -38,7 +38,7 @@
       v-if="featureImageUrl"
       ref="photoContainerRef"
       class="couple-photo-container"
-      :class="[{ 'show': isCouplePhotoVisible }, { 'door-mode': animationType === 'door' }]"
+      :class="{ 'show': isCouplePhotoVisible }"
     >
       <div class="kenburns-frame">
         <img
@@ -149,11 +149,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick, inject, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, inject } from 'vue'
 import { RotateCcw, Crop } from 'lucide-vue-next'
 import type { EventPhoto } from '@/types/showcase'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
-import { cropToCoverGeometry, resolvePhotoCrop, type Size } from '@/utils/photoCrop'
+import { useFeaturedPhotoGeometry } from '@/composables/showcase/useFeaturedPhotoGeometry'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 
@@ -171,8 +171,6 @@ interface Props {
   primaryFont?: string
   secondaryFont?: string
   getMediaUrl: (url: string) => string
-  /** Controls animation timing. Door mode starts photo immediately so it's visible as the door opens. */
-  animationType?: 'decoration' | 'door'
   /** Preview-only: hold at the fully-revealed state (photo sharp + "Save the
    *  Date" bloomed) instead of fading out and emitting transitionComplete.
    *  Never set on the live showcase. */
@@ -205,52 +203,8 @@ const featureImageUrl = computed(() =>
   featuredPhoto.value ? props.getMediaUrl(featuredPhoto.value.image) : null,
 )
 
-// --- Organizer-chosen crop -------------------------------------------------
-// The stored rectangle is in percentages of the source image, so turning it
-// into pixels needs both the image's intrinsic size and the viewport's.
-
-const photoContainerRef = ref<HTMLElement | null>(null)
-const naturalSize = ref<Size | null>(null)
-const viewportSize = ref<Size | null>(null)
-
-const onPhotoLoad = (event: globalThis.Event) => {
-  const image = event.target as HTMLImageElement
-  if (!image.naturalWidth || !image.naturalHeight) return
-  naturalSize.value = { width: image.naturalWidth, height: image.naturalHeight }
-}
-
-const measureViewport = () => {
-  const container = photoContainerRef.value
-  if (!container) return
-  // Layout values rather than getBoundingClientRect: the manage-page preview
-  // renders this stage inside a CSS-scaled frame, and a scaled rect would
-  // shrink the computed geometry to match the scale.
-  viewportSize.value = { width: container.clientWidth, height: container.clientHeight }
-}
-
-let viewportObserver: ResizeObserver | null = null
-
-/** Plain centre `cover` — what the stage shows until both sizes are known. */
-const COVER_FALLBACK_STYLE = {
-  inset: '0',
-  width: '100%',
-  height: '100%',
-} as const
-
-const photoStyle = computed(() => {
-  const geometry = cropToCoverGeometry(
-    resolvePhotoCrop(featuredPhoto.value),
-    naturalSize.value,
-    viewportSize.value,
-  )
-  if (!geometry) return { ...COVER_FALLBACK_STYLE }
-  return {
-    left: `${geometry.left}px`,
-    top: `${geometry.top}px`,
-    width: `${geometry.width}px`,
-    height: `${geometry.height}px`,
-  }
-})
+// Organizer-chosen crop, laid out in pixels against the live stage size.
+const { photoContainerRef, photoStyle, onPhotoLoad } = useFeaturedPhotoGeometry(featuredPhoto)
 
 const cloudMistStyle = computed(() => {
   const c = props.blurEffectColor || '#ffffff'
@@ -325,22 +279,14 @@ const formattedDate = computed(() => {
   }
 })
 
-// Animation timelines:
-//
-// Decoration mode (default):
+// Animation timeline (this stage backs the `decoration` animation type; door
+// templates get TransitionStageDoor.vue instead):
 //   0ms    - TransitionStage mounts (cover decorations animating out)
 //   1000ms - Photo starts: veil-blurred + bright, sharpening over ~2.4s while Ken Burns drifts
 //   1800ms - Footer scrim rises; line draws; "Save the Date" blooms letter by letter; date tracks in
 //   ~3400ms- Light sweep passes across the sharpened photo
 //   5800ms - Everything starts fading out
 //   7000ms - Fully faded out → emit transitionComplete
-//
-// Door mode:
-//   0ms    - TransitionStage mounts simultaneously as door starts opening (1.2s)
-//   0ms    - Photo reveal starts immediately (visible as door swings open)
-//   1200ms - Footer scrim + text sequence begins (door fully open)
-//   5300ms - Everything starts fading out
-//   6500ms - Fully faded out → emit transitionComplete
 const clearTimers = () => {
   if (fadeInTimer) clearTimeout(fadeInTimer)
   if (couplePhotoTimer) clearTimeout(couplePhotoTimer)
@@ -353,20 +299,17 @@ const clearTimers = () => {
 }
 
 const runRevealSequence = () => {
-  const isDoor = props.animationType === 'door'
-
   generateBokeh()
 
-  // Photo appears first — immediately for door so it's revealed as the door opens,
-  // delayed for decoration so it appears after decorations have slid out
+  // Photo appears first, once the cover decorations have slid out
   couplePhotoTimer = setTimeout(() => {
     isCouplePhotoVisible.value = true
-  }, isDoor ? 0 : 1000)
+  }, 1000)
 
   // Footer scrim with text
   fadeInTimer = setTimeout(() => {
     isContentVisible.value = true
-  }, isDoor ? 1200 : 1800)
+  }, 1800)
 
   // Preview freeze: stop here — photo and text stay at full reveal
   if (props.freezeAtPeak) return
@@ -374,38 +317,17 @@ const runRevealSequence = () => {
   // Start fading out
   fadeOutTimer = setTimeout(() => {
     isStageFadingOut.value = true
-  }, isDoor ? 5300 : 5800)
+  }, 5800)
 
   // Emit completion after fade-out finishes
   completeTimer = setTimeout(() => {
     emit('transitionComplete')
-  }, isDoor ? 6500 : 7000)
+  }, 7000)
 }
 
 onMounted(runRevealSequence)
 
-// The crop's pixel geometry depends on the viewport, so it's measured live
-// rather than once. Keyed off the element appearing rather than off mount: the
-// photo container is v-if'd on there being a featured photo, so on a slower
-// load it doesn't exist yet when onMounted runs, and observing "whatever is
-// there at mount" would silently never measure anything — leaving every crop
-// stuck on the uncropped fallback.
-watch(photoContainerRef, (container) => {
-  viewportObserver?.disconnect()
-  viewportObserver = null
-  if (!container) return
-  measureViewport()
-  if (typeof ResizeObserver !== 'undefined') {
-    viewportObserver = new ResizeObserver(measureViewport)
-    viewportObserver.observe(container)
-  }
-})
-
-onUnmounted(() => {
-  clearTimers()
-  viewportObserver?.disconnect()
-  viewportObserver = null
-})
+onUnmounted(clearTimers)
 
 // Manage-page preview only: replay the reveal from the start. The frame's
 // inert click-shield normally sends a `replay` bridge command on any click
@@ -447,12 +369,6 @@ const replay = async () => {
 
 .couple-photo-container.show {
   opacity: 1;
-}
-
-/* Door mode: photo fades in over the door animation duration (1.2s),
-   so it's fully visible by the time the door completes */
-.couple-photo-container.door-mode {
-  transition: opacity 1.2s ease-in-out;
 }
 
 .stage-fade-out .couple-photo-container {
@@ -520,10 +436,6 @@ const replay = async () => {
 
 .show .couple-photo-veil {
   opacity: 0;
-}
-
-.door-mode .couple-photo-veil {
-  transition: opacity 2s ease-in-out;
 }
 
 /* One-time soft sheen sweeping diagonally across after the veil lifts */

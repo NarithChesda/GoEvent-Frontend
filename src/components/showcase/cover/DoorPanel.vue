@@ -82,6 +82,17 @@
         />
       </div>
     </div>
+
+    <!-- Siblings of .door-full-content, not children: the content is 200% wide
+         and overflows the panel, so an inner-edge overlay anchored inside it
+         would land off-panel. These are pure light rather than a palette
+         colour, so they read correctly whatever the template's colours are.
+
+         The face turning away from the light as it swings… -->
+    <div class="door-swing-shade" aria-hidden="true" />
+    <!-- …and the light through the opening catching the inner edge, brightest
+         mid-swing when the edge is most side-on to it. -->
+    <div class="door-rim-light" aria-hidden="true" />
   </div>
 </template>
 
@@ -275,6 +286,81 @@ const doorBackgroundStyle = computed(() => {
   transform: perspective(1500px) rotateY(105deg);
 }
 
+/* Swing shading + rim light. Above the content layer (z-30) so they fall on
+   the whole face, below the hinge/gap shadows (z-100/101). */
+.door-swing-shade,
+.door-rim-light {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.door-swing-shade {
+  left: 0;
+  right: 0;
+  z-index: 40;
+  transition: opacity 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.door-panel-left .door-swing-shade {
+  background: linear-gradient(
+    90deg,
+    rgba(12, 10, 14, 0.62) 0%,
+    rgba(20, 16, 20, 0.3) 55%,
+    rgba(40, 30, 20, 0) 100%
+  );
+}
+
+.door-panel-right .door-swing-shade {
+  background: linear-gradient(
+    270deg,
+    rgba(12, 10, 14, 0.62) 0%,
+    rgba(20, 16, 20, 0.3) 55%,
+    rgba(40, 30, 20, 0) 100%
+  );
+}
+
+.door-open-left .door-swing-shade,
+.door-open-right .door-swing-shade {
+  opacity: 1;
+}
+
+.door-rim-light {
+  width: 42%;
+  max-width: 190px;
+  z-index: 41;
+  mix-blend-mode: screen;
+}
+
+.door-panel-left .door-rim-light {
+  right: 0;
+  background: linear-gradient(90deg, rgba(255, 220, 150, 0), rgba(255, 232, 180, 0.75));
+}
+
+.door-panel-right .door-rim-light {
+  left: 0;
+  background: linear-gradient(270deg, rgba(255, 220, 150, 0), rgba(255, 232, 180, 0.75));
+}
+
+.door-open-left .door-rim-light,
+.door-open-right .door-rim-light {
+  animation: doorRimLight 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes doorRimLight {
+  0% {
+    opacity: 0;
+  }
+  45% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 /* Door edge shadow - creates depth illusion at the hinge side */
 .door-panel::before {
   content: '';
@@ -370,6 +456,11 @@ const doorBackgroundStyle = computed(() => {
   .door-open-right {
     transform: none;
     opacity: 0;
+  }
+
+  .door-swing-shade,
+  .door-rim-light {
+    display: none;
   }
 }
 </style>

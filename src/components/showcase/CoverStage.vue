@@ -75,6 +75,15 @@
     >
       <slot name="main-content"></slot>
     </div>
+
+    <!-- Transition stage layer. Deliberately *inside* CoverStage rather than a
+         sibling of it: at z-25 it sits under the door panels (z-28) and over
+         the main content (z-20), so the doors genuinely part to reveal it
+         instead of it cross-fading on top of them. Empty (and inert) for
+         templates whose transition renders as a sibling instead. -->
+    <div class="absolute inset-0 z-[25] pointer-events-none">
+      <slot name="transition"></slot>
+    </div>
   </div>
 </template>
 
@@ -249,9 +258,10 @@ const shouldShowMainContent = computed(() => {
   // Always show main content when stage has already transitioned
   if (props.currentShowcaseStage === 'main_content') return true
   // When transition stage is responsible for revealing main content, don't render
-  // main content during the door animation — TransitionStage sits at z-35 above
-  // CoverStage (z-10) but starts transparent, so rendering main content here would
-  // show through it as the door opens.
+  // main content during the door animation. The decoration-mode TransitionStage
+  // sits at z-35 above CoverStage (z-10) but starts transparent, so main content
+  // would show through it as the door opens; the door-mode stage renders in the
+  // `transition` slot above, which likewise has nothing to reveal yet.
   if (props.useTransitionStage && isDoorAnimationInProgress.value) return false
   return videoState.currentVideoPhase.value === 'background'
     || props.shouldSkipToMainContent
