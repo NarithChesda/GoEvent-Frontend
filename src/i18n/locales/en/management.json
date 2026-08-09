@@ -2880,6 +2880,28 @@
         "hummingbird": "Hummingbird"
       }
     },
+    "coverGilding": {
+      "enableLabel": "Gilded Cover Border",
+      "enableHint": "Lights the edge of the cover artwork: a raised bevel, two travelling highlights, corner glints and drifting sparks. Best on artwork that already has a printed border to catch the light.",
+      "intensity": "Intensity",
+      "intensitySubtle": "Subtle",
+      "intensityNormal": "Normal",
+      "intensityBright": "Bright",
+      "relief": "Decoration Depth",
+      "reliefNone": "Flat",
+      "reliefSoft": "Soft",
+      "reliefRaised": "Raised",
+      "reliefHint": "Casts a shadow under the four cover decorations so they sit above the artwork. The shadow follows each image's shape, so transparent PNGs work best. Raised is strong — check it over a pale cover before shipping.",
+      "bandOuter": "Band outer edge",
+      "bandInner": "Band inner edge",
+      "bandWarning": "The inner edge must sit further in than the outer edge, or there is no band to light. The default band is used until it does.",
+      "sparkCount": "Sparks (0 = off)",
+      "sparkHint": "Sparks drift across the whole showcase, not just the cover — one field carries on into the main content stage without restarting.",
+      "cornerFlares": "Corner glints",
+      "cornerFlaresHint": "Pulsing light on the border's four corners.",
+      "colorSource": "Tint Source",
+      "sourceSecondary": "Secondary"
+    },
     "eventDetailsDesign": {
       "sectionTitle": "Date & Location Design",
       "designHint": "Controls how the event date and location are displayed in the showcase.",

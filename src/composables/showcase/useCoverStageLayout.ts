@@ -1,9 +1,11 @@
 import { computed, type ComputedRef } from 'vue'
 import type {
+  CoverDecorationRelief,
   CoverElementBox,
   CoverElementBoxes,
   CoverElementColorSource,
   CoverElementId,
+  CoverGildingConfig,
   CoverStageLayout,
   GuestFrameConfig,
   GuestFrameCornerId,
@@ -43,6 +45,68 @@ export const GUEST_FRAME_DEFAULTS: Required<GuestFrameConfig> = {
 }
 
 /**
+ * Cover gilding off, but with every knob already carrying the reference
+ * artwork's own value — so enabling it is a single boolean rather than a setup
+ * exercise. The band edges are that artwork's 24px/74px on its 1080-wide plate.
+ */
+export const COVER_GILDING_DEFAULTS: Required<CoverGildingConfig> = {
+  enabled: false,
+  bandOuter: 2.2,
+  bandInner: 6.9,
+  intensity: 'normal',
+  decorationRelief: 'soft',
+  cornerFlares: true,
+  sparkCount: 18,
+  colorSource: 'accent',
+  customColor: null,
+}
+
+/** Hard ceiling on sparks — past this the field reads as noise and costs frames. */
+export const COVER_GILDING_MAX_SPARKS = 40
+
+/**
+ * The `filter` value that lifts a cover decoration off the plate behind it, per
+ * relief level. Two `drop-shadow` passes, in the order the reference artwork
+ * stacks them: a zero-blur offset that reads as the ornament's own thickness,
+ * then a far blurred one that reads as height above the surface.
+ *
+ * Offsets are fractions of the STAGE WIDTH, not fixed pixels, for the reason
+ * every other showcase measurement is: the stage is `min(100vw, 56.25vh)`, so a
+ * px value tuned on a desktop-sized stage lands roughly twice as heavy on a
+ * phone. Written out rather than read from a custom property so the value is
+ * self-contained — it lands on images inside two different components, neither
+ * of which would otherwise need the stage width. The source pixel on the
+ * reference's 1080-wide plate is in each comment.
+ *
+ * The shadow falls straight down rather than down-and-right. The band's own
+ * bevel puts the light 22 degrees off vertical (its 158deg gradient), which is
+ * near enough to overhead that a horizontal offset would read as an error
+ * against artwork whose left and right pieces are usually mirror images.
+ */
+const STAGE_W = 'min(100vw, 56.25vh)'
+
+/**
+ * The custom property the resolved relief filter is published under, on the
+ * cover overlay's root — the nearest ancestor shared by the two components that
+ * render decoration artwork (CoverDecorations and DoorPanel).
+ */
+export const COVER_DECORATION_RELIEF_VAR = '--cover-decoration-relief'
+
+export const COVER_DECORATION_RELIEF_FILTERS: Record<CoverDecorationRelief, string> = {
+  none: 'none',
+  // Half the reference's weight, and warm-grey rather than near-black: `soft` is
+  // the level that has to survive being laid over a pale cover as well as a dark
+  // one, where the full stack turns into a bruise under every ornament.
+  soft:
+    `drop-shadow(0 calc(${STAGE_W} * 0.0028) 0 rgba(74, 52, 26, 0.42))` + // 3px
+    ` drop-shadow(0 calc(${STAGE_W} * 0.0056) calc(${STAGE_W} * 0.0158) rgba(0, 0, 0, 0.38))`, // 6px / 17px
+  // The reference's own values.
+  raised:
+    `drop-shadow(0 calc(${STAGE_W} * 0.0028) 0 rgba(74, 32, 8, 0.5))` + // 3px
+    ` drop-shadow(0 calc(${STAGE_W} * 0.0093) calc(${STAGE_W} * 0.0278) rgba(0, 0, 0, 0.72))`, // 10px / 30px
+}
+
+/**
  * Default values matching current hard-coded values in CoverContentOverlay.vue
  * These serve as fallbacks when backend doesn't provide values
  */
@@ -66,6 +130,7 @@ export const COVER_STAGE_LAYOUT_DEFAULTS: Required<CoverStageLayout> = {
   topDecorationZIndex: 25,
   bottomDecorationZIndex: 25,
   showcaseAnimationType: 'decoration',
+  coverGilding: COVER_GILDING_DEFAULTS,
   contentWidth: 'standard',
   layoutMode: 'rows',
   coverElements: {},
@@ -256,6 +321,44 @@ export function resolveGuestFrame(layout: Required<CoverStageLayout>): ResolvedG
   }
 }
 
+/** Every gilding field populated — what CoverGilding.vue renders from. */
+export type ResolvedCoverGilding = Required<CoverGildingConfig>
+
+/**
+ * The gilding config with every field filled in, and the two geometry fields
+ * sanity-checked against each other.
+ *
+ * The band is an annulus, so `bandInner` larger than `bandOuter` isn't a
+ * stylistic choice, it's an inverted ring — the clip path would light the
+ * artwork's middle and leave its border flat, which is the opposite of the
+ * effect. A pair that doesn't describe a ring falls back to the default pair
+ * rather than rendering the inversion.
+ */
+export function resolveCoverGilding(layout: Required<CoverStageLayout>): ResolvedCoverGilding {
+  const config = layout.coverGilding ?? {}
+
+  const outer = config.bandOuter ?? COVER_GILDING_DEFAULTS.bandOuter
+  const inner = config.bandInner ?? COVER_GILDING_DEFAULTS.bandInner
+  const validBand = Number.isFinite(outer) && Number.isFinite(inner) && inner > outer && outer >= 0
+
+  return {
+    enabled: config.enabled ?? COVER_GILDING_DEFAULTS.enabled,
+    bandOuter: validBand ? outer : COVER_GILDING_DEFAULTS.bandOuter,
+    bandInner: validBand ? inner : COVER_GILDING_DEFAULTS.bandInner,
+    intensity: config.intensity ?? COVER_GILDING_DEFAULTS.intensity,
+    decorationRelief: config.decorationRelief ?? COVER_GILDING_DEFAULTS.decorationRelief,
+    cornerFlares: config.cornerFlares ?? COVER_GILDING_DEFAULTS.cornerFlares,
+    sparkCount: clampSparkCount(config.sparkCount),
+    colorSource: config.colorSource ?? COVER_GILDING_DEFAULTS.colorSource,
+    customColor: config.customColor ?? COVER_GILDING_DEFAULTS.customColor,
+  }
+}
+
+function clampSparkCount(value: number | undefined): number {
+  if (value == null || !Number.isFinite(value)) return COVER_GILDING_DEFAULTS.sparkCount
+  return Math.max(0, Math.min(COVER_GILDING_MAX_SPARKS, Math.round(value)))
+}
+
 /**
  * The inline style that places one free block.
  *
@@ -348,6 +451,7 @@ export function useCoverStageLayout(
         config.bottomDecorationZIndex ?? COVER_STAGE_LAYOUT_DEFAULTS.bottomDecorationZIndex,
       showcaseAnimationType:
         config.showcaseAnimationType ?? COVER_STAGE_LAYOUT_DEFAULTS.showcaseAnimationType,
+      coverGilding: config.coverGilding ?? COVER_STAGE_LAYOUT_DEFAULTS.coverGilding,
       contentWidth: config.contentWidth ?? COVER_STAGE_LAYOUT_DEFAULTS.contentWidth,
       layoutMode: config.layoutMode ?? COVER_STAGE_LAYOUT_DEFAULTS.layoutMode,
       coverElements: config.coverElements ?? COVER_STAGE_LAYOUT_DEFAULTS.coverElements,
@@ -357,6 +461,9 @@ export function useCoverStageLayout(
 
   /** The guest name's frame artwork config, every field populated. */
   const guestFrame = computed<ResolvedGuestFrame>(() => resolveGuestFrame(layout.value))
+
+  /** The cover's printed-gold lighting, every field populated. */
+  const coverGilding = computed<ResolvedCoverGilding>(() => resolveCoverGilding(layout.value))
 
   /** `rows` unless the template explicitly opted into free placement. */
   const layoutMode = computed(() => layout.value.layoutMode)
@@ -429,6 +536,7 @@ export function useCoverStageLayout(
     elements,
     elementStyles,
     guestFrame,
+    coverGilding,
     containerStyle,
     rowStyles,
     swipeArrowStyle,

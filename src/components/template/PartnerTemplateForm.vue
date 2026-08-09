@@ -717,6 +717,117 @@
                 :label="t('management.partnerTemplateForm.coverLayout.animationType')"
                 :options="animationOptions"
               />
+
+              <!-- Lighting for the cover artwork's border. Lives with the
+                   animation type because both describe how the cover behaves
+                   rather than what it contains, and both are stored inside
+                   cover_stage_layout. -->
+              <TemplateFormSwitch
+                v-model="form.cover_stage_layout.coverGilding.enabled"
+                :icon="Sparkles"
+                :label="t('management.partnerTemplateForm.coverGilding.enableLabel')"
+                :description="t('management.partnerTemplateForm.coverGilding.enableHint')"
+              />
+
+              <Transition name="collapse">
+                <div v-if="form.cover_stage_layout.coverGilding.enabled" class="grid grid-rows-[1fr]">
+                  <div class="min-h-0 overflow-hidden">
+                    <div class="space-y-4 pt-1">
+                      <TemplateFormChoice
+                        v-model="gildingIntensityModel"
+                        :label="t('management.partnerTemplateForm.coverGilding.intensity')"
+                        :options="gildingIntensityOptions"
+                        :columns="3"
+                      />
+
+                      <!-- Acts on the four decoration PNGs rather than on the
+                           band, so it is the one control here that does
+                           something for a cover made of edge pieces. -->
+                      <TemplateFormChoice
+                        v-model="gildingReliefModel"
+                        :label="t('management.partnerTemplateForm.coverGilding.relief')"
+                        :options="gildingReliefOptions"
+                        :columns="3"
+                      />
+                      <p class="text-[0.6875rem] leading-snug text-slate-500">
+                        {{ t('management.partnerTemplateForm.coverGilding.reliefHint') }}
+                      </p>
+
+                      <!-- Band edges, both as % of the stage width so the border
+                           keeps a uniform thickness all the way round. -->
+                      <div class="grid grid-cols-2 gap-2.5">
+                        <TemplateFormNumber
+                          v-model="form.cover_stage_layout.coverGilding.bandOuter"
+                          :label="t('management.partnerTemplateForm.coverGilding.bandOuter')"
+                          :min="0"
+                          :max="20"
+                          :step="0.1"
+                          unit="%"
+                        />
+                        <TemplateFormNumber
+                          v-model="form.cover_stage_layout.coverGilding.bandInner"
+                          :label="t('management.partnerTemplateForm.coverGilding.bandInner')"
+                          :min="0.5"
+                          :max="30"
+                          :step="0.1"
+                          unit="%"
+                        />
+                      </div>
+                      <p
+                        v-if="form.cover_stage_layout.coverGilding.bandInner <= form.cover_stage_layout.coverGilding.bandOuter"
+                        class="text-[0.6875rem] leading-snug text-amber-700 bg-amber-50 ring-1 ring-amber-100 rounded-xl p-2.5"
+                      >
+                        {{ t('management.partnerTemplateForm.coverGilding.bandWarning') }}
+                      </p>
+
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                        <TemplateFormNumber
+                          v-model="form.cover_stage_layout.coverGilding.sparkCount"
+                          :label="t('management.partnerTemplateForm.coverGilding.sparkCount')"
+                          :min="0"
+                          :max="COVER_GILDING_MAX_SPARKS"
+                          :step="1"
+                        />
+                        <TemplateFormSwitch
+                          v-model="form.cover_stage_layout.coverGilding.cornerFlares"
+                          :icon="Sparkles"
+                          :label="t('management.partnerTemplateForm.coverGilding.cornerFlares')"
+                          :description="t('management.partnerTemplateForm.coverGilding.cornerFlaresHint')"
+                        />
+                      </div>
+                      <!-- Worth calling out: it is the one setting in this
+                           section that isn't confined to the cover. -->
+                      <p class="text-[0.6875rem] leading-snug text-slate-500">
+                        {{ t('management.partnerTemplateForm.coverGilding.sparkHint') }}
+                      </p>
+
+                      <TemplateFormChoice
+                        v-model="gildingColorSourceModel"
+                        :label="t('management.partnerTemplateForm.coverGilding.colorSource')"
+                        :options="gildingColorSourceOptions"
+                        :columns="2"
+                      />
+
+                      <div v-if="form.cover_stage_layout.coverGilding.colorSource === 'custom'" class="flex items-end gap-2">
+                        <input
+                          v-model="form.cover_stage_layout.coverGilding.customColor"
+                          type="color"
+                          class="w-10 h-[2.375rem] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
+                          :aria-label="t('management.partnerTemplateForm.ambientCreatures.pickLabel')"
+                        />
+                        <input
+                          v-model="form.cover_stage_layout.coverGilding.customColor"
+                          type="text"
+                          maxlength="7"
+                          placeholder="#E0B269"
+                          :aria-label="t('management.partnerTemplateForm.ambientCreatures.hexLabel')"
+                          class="flex-1 min-w-0 px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm uppercase tabular-nums transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
             </section>
 
             <!-- Placement model. Rows is the original stacked layout; free hands
@@ -1248,10 +1359,13 @@ import { useMediaQuery } from '../../composables/useMediaQuery'
 import GuestFrameCornerGrid from './GuestFrameCornerGrid.vue'
 import {
   COVER_ELEMENT_IDS,
+  COVER_GILDING_MAX_SPARKS,
   resolveCoverElements,
+  resolveCoverGilding,
   resolveGuestFrame,
   rowsToCoverElements,
   type ResolvedCoverElementBox,
+  type ResolvedCoverGilding,
   type ResolvedGuestFrame,
 } from '../../composables/showcase/useCoverStageLayout'
 import { TEMPLATE_COLOR_SLOTS, TEMPLATE_FONT_TYPE_SLOTS } from './templateSlots'
@@ -1346,12 +1460,16 @@ async function fetchPlans(): Promise<void> {
  * way the showcase's `resolveGuestFrame` does) rather than making each control
  * cope with `undefined`.
  */
-type CoverStageLayoutFormState = Required<CoverStageLayout> & { guestFrame: ResolvedGuestFrame }
+type CoverStageLayoutFormState = Required<CoverStageLayout> & {
+  guestFrame: ResolvedGuestFrame
+  coverGilding: ResolvedCoverGilding
+}
 
 const defaultCoverStageLayout = (): CoverStageLayoutFormState => ({
   layoutMode: 'rows',
   coverElements: {},
   guestFrame: resolveGuestFrame({} as Required<CoverStageLayout>),
+  coverGilding: resolveCoverGilding({} as Required<CoverStageLayout>),
   contentTopPosition: 23.5,
   innerContainerHeight: 53,
   eventTitleHeight: 18.75,
@@ -1645,6 +1763,53 @@ const animationTypeModel = computed<string>({
 const contentWidthModel = computed<string>({
   get: () => form.cover_stage_layout.contentWidth,
   set: (value) => { form.cover_stage_layout.contentWidth = value as 'standard' | 'wide' },
+})
+
+// ---------------------------------------------------------------------------
+// Cover gilding. Stored inside cover_stage_layout alongside the animation type
+// it belongs with, so it needs no field of its own on the template model.
+// ---------------------------------------------------------------------------
+const gildingIntensityOptions = computed(() => [
+  { value: 'subtle', label: t('management.partnerTemplateForm.coverGilding.intensitySubtle') },
+  { value: 'normal', label: t('management.partnerTemplateForm.coverGilding.intensityNormal') },
+  { value: 'bright', label: t('management.partnerTemplateForm.coverGilding.intensityBright') },
+])
+
+const gildingReliefOptions = computed(() => [
+  { value: 'none', label: t('management.partnerTemplateForm.coverGilding.reliefNone') },
+  { value: 'soft', label: t('management.partnerTemplateForm.coverGilding.reliefSoft') },
+  { value: 'raised', label: t('management.partnerTemplateForm.coverGilding.reliefRaised') },
+])
+
+const gildingReliefModel = computed<string>({
+  get: () => form.cover_stage_layout.coverGilding.decorationRelief,
+  set: (value) => {
+    form.cover_stage_layout.coverGilding.decorationRelief =
+      value as ResolvedCoverGilding['decorationRelief']
+  },
+})
+
+const gildingColorSourceOptions = computed(() => [
+  { value: 'primary', label: t('management.partnerTemplateForm.ambientCreatures.sourcePrimary') },
+  { value: 'secondary', label: t('management.partnerTemplateForm.coverGilding.sourceSecondary') },
+  { value: 'accent', label: t('management.partnerTemplateForm.ambientCreatures.sourceAccent') },
+  { value: 'custom', label: t('management.partnerTemplateForm.fallingEffect.sourceCustomShort') },
+])
+
+const gildingIntensityModel = computed<string>({
+  get: () => form.cover_stage_layout.coverGilding.intensity,
+  set: (value) => {
+    form.cover_stage_layout.coverGilding.intensity =
+      value as ResolvedCoverGilding['intensity']
+  },
+})
+
+const gildingColorSourceModel = computed<string>({
+  get: () => form.cover_stage_layout.coverGilding.colorSource,
+  set: (value) => {
+    form.cover_stage_layout.coverGilding.colorSource =
+      value as ResolvedCoverGilding['colorSource']
+  },
 })
 
 // ---------------------------------------------------------------------------
@@ -2362,6 +2527,11 @@ watch(
         // feature carry none at all), and Object.assign would drop the rest of
         // the object wholesale rather than merging into it.
         form.cover_stage_layout.guestFrame = resolveGuestFrame(
+          template.cover_stage_layout as Required<CoverStageLayout>,
+        )
+        // Same reason as guestFrame above: a stored `coverGilding` may name only
+        // `enabled`, and every control below binds straight to a resolved field.
+        form.cover_stage_layout.coverGilding = resolveCoverGilding(
           template.cover_stage_layout as Required<CoverStageLayout>,
         )
       }

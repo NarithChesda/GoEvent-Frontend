@@ -12,10 +12,18 @@
 > it is invisible until you save and reload, since the editor and live preview
 > both work off local form state.
 >
-> **Still unverified:** [cover-free-placement.md](cover-free-placement.md) ships
-> `layoutMode`/`coverElements` into the same blob under the same additive design
-> and has never been confirmed to round-trip. It was plausibly broken by the same
-> serializer. Worth one save-and-reload test.
+> **Still unverified, same blob, same additive design — test these together:**
+>
+> - [cover-free-placement.md](cover-free-placement.md) — `layoutMode` /
+>   `coverElements`. Never confirmed to round-trip; plausibly broken by the same
+>   serializer.
+> - [cover-gilding.md](cover-gilding.md) — `coverGilding`. Shipped after the
+>   2026-08-04 fix, so whether it survives depends on whether that fix was
+>   general or added `guestFrame` to a list.
+>
+> Three additive keys in one blob is enough to stop patching per key: if the
+> serializer still allow-lists, storing `cover_stage_layout` verbatim ends this
+> whole class of bug.
 
 ## Overview
 

@@ -232,6 +232,100 @@ export interface GuestFrameConfig {
 export type CoverLayoutMode = 'rows' | 'free'
 
 /**
+ * Where the cover gilding's warm tint (its sparks, and the glow on its corner
+ * flares) is sourced from. The travelling highlight itself is deliberately NOT
+ * on this list: a polished surface's specular is near-white whatever the metal's
+ * base hue, so tinting it to the palette would read as a coloured wash rather
+ * than as light.
+ */
+export type CoverGildingColorSource = 'primary' | 'secondary' | 'accent' | 'custom'
+
+/**
+ * Overall strength of the cover's lighting. Scales the sweeps, the bevel shadow,
+ * the corner flares and the sparks together, so a template picks one word rather
+ * than balancing four numbers.
+ */
+export type CoverGildingIntensity = 'subtle' | 'normal' | 'bright'
+
+/**
+ * How far the four cover decorations sit off the plate behind them.
+ *
+ * Rendered as a two-pass `drop-shadow` on the decoration artwork — a zero-blur
+ * offset that reads as the ornament's own thickness, then a far blurred one that
+ * reads as height above the surface. Because it is `drop-shadow` and not
+ * `box-shadow`, the shadow follows the PNG's alpha, so an ornament casts a
+ * shadow of its own shape rather than of its bounding box.
+ *
+ * - `none`   — flat, exactly as decorations have always rendered.
+ * - `soft`   — a restrained lift; the safe default over artwork of any brightness.
+ * - `raised` — the reference artwork's own numbers: a pronounced extrude and a
+ *              deep cast shadow. Reads well on a dark plate, heavy on a pale one.
+ */
+export type CoverDecorationRelief = 'none' | 'soft' | 'raised'
+
+/**
+ * Printed-gold lighting for the cover artwork — the effect that makes a flat
+ * decoration photo read as an ornate border catching the light.
+ *
+ * Four layers on the same annulus around the artwork's edge (see
+ * CoverGilding.vue): a fixed bevel shadow raking the band, two travelling
+ * speculars at different speeds and angles, and pulsing flares on the four
+ * corners. It is the same lighting model `TransitionStageDoor`'s frame already
+ * uses, moved onto the cover so the two stages read as one lit surface rather
+ * than as a flat cover handing off to a lit one.
+ *
+ * A fifth layer, the drifting sparks (CoverSparks.vue), is configured here but
+ * deliberately does NOT live on the band: it is mounted by CoverStage and spans
+ * every stage. See `sparkCount`.
+ *
+ * Opt-in per template (`enabled` defaults to false): it is lighting for artwork
+ * that has a border to catch it, and a photo with no such border just gets a
+ * diagonal sheen sliding over it.
+ */
+export interface CoverGildingConfig {
+  /** Master switch. Default false — every existing template renders unchanged. */
+  enabled?: boolean
+  /**
+   * Outer edge of the lit band, as % of the STAGE WIDTH (not of each side's own
+   * axis, so the band stays a uniform width all the way round). Default 2.2.
+   */
+  bandOuter?: number
+  /**
+   * Inner edge of the lit band, same units. Everything between this and
+   * `bandOuter` is lit; everything inside it is left alone. Default 6.9 — the
+   * reference artwork's 74px on a 1080-wide plate. Ignored if it isn't larger
+   * than `bandOuter`, which would invert the ring.
+   */
+  bandInner?: number
+  /** Strength of every layer at once. Default `normal`. */
+  intensity?: CoverGildingIntensity
+  /**
+   * Depth the four cover decorations sit at, lit from the same direction as the
+   * band. Default `soft`.
+   *
+   * Applies to the decoration PNGs rather than to the band, so it is the one
+   * part of this config that does something on a cover whose artwork is edge
+   * pieces instead of a printed border.
+   */
+  decorationRelief?: CoverDecorationRelief
+  /** Pulsing radial flares at the band's four corners. Default true. */
+  cornerFlares?: boolean
+  /**
+   * Drifting motes. 0 turns them off. Default 18, max 40.
+   *
+   * Unlike every other field here, this one is not confined to the cover: the
+   * field is mounted for the life of the showcase and carries on into the main
+   * content stage, so the two read as one lit space rather than as a lit cover
+   * handing off to a plain page.
+   */
+  sparkCount?: number
+  /** Palette slot the sparks and corner glow take their tint from. Default `accent`. */
+  colorSource?: CoverGildingColorSource
+  /** Hex colour, read only when `colorSource` is `custom`. */
+  customColor?: string | null
+}
+
+/**
  * Cover stage layout configuration
  * All values are optional with sensible defaults applied in components
  */
@@ -281,6 +375,10 @@ export interface CoverStageLayout {
 
   // Animation settings
   showcaseAnimationType?: 'decoration' | 'door'  // default: 'decoration'
+
+  // Printed-gold lighting over the cover artwork. Omitted = off, so every
+  // existing template's cover renders exactly as before.
+  coverGilding?: CoverGildingConfig
 
   // Main-content liquid glass card width. 'wide' grows the card toward the
   // viewport edges and shrinks its inner horizontal padding for more content width.

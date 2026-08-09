@@ -86,6 +86,21 @@
       :style="fallingEffectHandoffStyle"
     />
 
+    <!-- The gilding's drifting motes, owned here for exactly the reason the
+         falling field above is: one field mounted for the life of the showcase
+         drifts unbroken from the cover into the main content, where a second
+         field spawned by MainContentStage would visibly restart at the boundary
+         and double the density across it. The band lighting it came from stays
+         in CoverGilding — that is light on a surface, so it travels with the
+         surface (and in door mode, off-screen with the leaf). -->
+    <CoverSparks
+      :config="coverGilding"
+      :primary-color="primaryColor"
+      :secondary-color="secondaryColor"
+      :accent-color="accentColor"
+      :z-index="sparkFieldZIndex"
+    />
+
     <!-- Main Content Overlay (Stage 3 - Background Video) -->
     <div
       v-if="shouldShowMainContent"
@@ -116,9 +131,11 @@ import type {
   FallingEffectConfig,
 } from '@/services/api/types/template.types'
 import type { ShowcaseAnimationType } from '@/composables/showcase/useShowcaseAnimation'
+import { useCoverStageLayout } from '@/composables/showcase/useCoverStageLayout'
 import VideoContainer from './VideoContainer.vue'
 import CoverContentOverlay from './CoverContentOverlay.vue'
 import FallingEffect from './FallingEffect.vue'
+import CoverSparks from './cover/CoverSparks.vue'
 
 export type DisplayMode = 'basic' | 'standard'
 
@@ -304,6 +321,22 @@ const shouldShowMainContent = computed(() => {
 // over: there it sits above the background video but below the main stage's own
 // decorations and content card, exactly where the effect used to live.
 const fallingEffectZIndex = computed(() =>
+  shouldShowMainContent.value && !shouldShowCoverContent.value ? 15 : 31,
+)
+
+// The gilding config, resolved here as well as in CoverContentOverlay: the spark
+// field outlives the cover overlay, so it can't take the config through it.
+const { coverGilding } = useCoverStageLayout(
+  computed(() => props.coverStageLayout),
+  computed(() => props.contentTopPosition),
+)
+
+// The spark field rides the same ladder as the falling field, and for the same
+// reasons: 31 clears the door panels (28) and the cover copy (30) so the motes
+// stay visible while the leaves part, then 15 drops them behind the main content
+// card once the cover is gone. Deliberately NOT faded out with the cover — the
+// whole point of hoisting this field out of CoverGilding is that it carries on.
+const sparkFieldZIndex = computed(() =>
   shouldShowMainContent.value && !shouldShowCoverContent.value ? 15 : 31,
 )
 
