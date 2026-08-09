@@ -1,5 +1,35 @@
 import { ref, onMounted, onUnmounted, type Ref } from 'vue'
-import type { FallingEffectType } from '@/services/api/types/template.types'
+import type { FallingEffectConfig, FallingEffectType } from '@/services/api/types/template.types'
+
+/**
+ * Remount key for a `<FallingEffect>` instance.
+ *
+ * `useFallingParticles` reads its options ONCE, during setup: it destructures
+ * them into plain locals and derives the motion profile, intensity preset and
+ * cached custom image right there, so nothing about a later config change can
+ * reach a mounted instance. Keying on this and letting Vue remount is what
+ * makes the field react.
+ *
+ * Inert on the public showcase — a guest's template can't change mid-session —
+ * and load-bearing in the partner template studio, where editing this effect
+ * and watching it is the entire point.
+ *
+ * Deliberately covers the effect's own config only, not primaryColor /
+ * accentColor: those are resolved through a `color()` callback the composable
+ * invokes per spawned particle, so palette edits already reach new particles
+ * (converging as the field recycles) without tearing the whole field down on
+ * every drag of an unrelated color picker.
+ */
+export function fallingEffectKeyOf(config: FallingEffectConfig | null | undefined): string {
+  if (!config) return 'none'
+  return [
+    config.type,
+    config.intensity ?? 'normal',
+    config.color_source ?? 'primary',
+    config.custom_color ?? '',
+    config.custom_image ?? '',
+  ].join('|')
+}
 
 /**
  * Built-in particle shape definitions.

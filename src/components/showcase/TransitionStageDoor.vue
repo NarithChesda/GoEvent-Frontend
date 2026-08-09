@@ -69,8 +69,24 @@
       </div>
     </div>
 
-    <!-- Drifting petals in the template's accent -->
-    <div ref="petalFieldRef" class="petal-field" aria-hidden="true" />
+    <!-- The template's falling effect, drifting through the stage. Its own
+         instance rather than the shared one CoverStage owns: this stage's
+         photo covers the screen and would occlude that field, so CoverStage
+         fades it out over the door swing (transitionOwnsFallingField) and
+         this one takes over. Same template config, so the shape/colour never
+         changes across the hand-off — whatever the organizer chose on the
+         cover keeps falling here. -->
+    <FallingEffect
+      :key="fallingEffectKey"
+      class="particle-field"
+      :config="fallingEffect"
+      :primary-color="primaryColor"
+      :accent-color="accentColor"
+      :get-media-url="getMediaUrl"
+      :z-index="3"
+      :min-size="9"
+      :max-size="20"
+    />
 
     <!-- Printed border: mat, bevelled double rule, corner diamonds, and the
          travelling specular that gives the metal its depth. -->
@@ -139,9 +155,11 @@ import { RotateCcw, Crop } from 'lucide-vue-next'
 import type { EventPhoto } from '@/types/showcase'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useFeaturedPhotoGeometry } from '@/composables/showcase/useFeaturedPhotoGeometry'
-import { useFallingParticles } from '@/composables/showcase/useFallingParticles'
+import { fallingEffectKeyOf } from '@/composables/showcase/useFallingParticles'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
+import FallingEffect from './FallingEffect.vue'
+import type { FallingEffectConfig } from '@/services/api/types/template.types'
 import OrnamentRule from './transition/OrnamentRule.vue'
 
 interface Props {
@@ -155,6 +173,8 @@ interface Props {
    *  (plate, printed mat, cartouche scrim) is made of it. See effectColor.
    *  There are deliberately no font props — see --dt-display. */
   blurEffectColor?: string
+  /** Falling particle effect config from template_assets. */
+  fallingEffect?: FallingEffectConfig | null
   getMediaUrl: (url: string) => string
   /** Preview-only: hold at the fully-revealed state (frame drawn + cartouche
    *  wiped in) instead of blooming out and emitting transitionComplete.
@@ -313,21 +333,13 @@ const formattedDate = computed(() => {
   })
 })
 
-// Petals drifting through the stage, in the template's accent. Sized from the
-// reference's own 16–36 against a 1080-wide composition, i.e. 1.5–3.3% of the
-// stage — as flecks catching the light, not as objects competing with the
-// photograph. (The composable takes plain px and snapshots them, so these are
-// fixed for a ~450px-wide stage rather than tracking --dt-w.)
-// Pre-divided by the petal profile's own 0.75 sizeScale so the rendered flecks
-// land back on that tuned 7–16px, independent of the shared size band.
-const petalFieldRef = ref<HTMLElement>()
-useFallingParticles(petalFieldRef, {
-  type: 'petals',
-  intensity: 'light',
-  minSize: 9,
-  maxSize: 21,
-  color: () => gold.value,
-})
+// The 9–20px handed to <FallingEffect> above. Sized from the reference's own
+// 16–36 against a 1080-wide composition, i.e. 1.5–3.3% of the stage — the
+// effect belongs here as flecks catching the light, not as objects competing
+// with the photograph. Each type's own sizeScale (~0.65–0.85) then lands them
+// around 6–17px rendered. (The composable takes plain px and snapshots them,
+// so these are fixed for a ~450px-wide stage rather than tracking --dt-w.)
+const fallingEffectKey = computed(() => fallingEffectKeyOf(props.fallingEffect))
 
 const clearTimers = () => {
   if (bloomTimer) clearTimeout(bloomTimer)
@@ -649,23 +661,21 @@ const replay = async () => {
   }
 }
 
-/* ---------- Petals ---------- */
+/* ---------- Falling particles ---------- */
 
-.petal-field {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  overflow: hidden;
-  pointer-events: none;
+/* Position/overflow/pointer-events come from FallingEffect's own root classes;
+   the stacking order comes from its :z-index prop, which it applies inline and
+   would win over anything set here. */
+.particle-field {
   opacity: 0.7;
 }
 
 /* Drawn up into the light as the bloom gathers */
-.blooming .petal-field {
-  animation: petalLift 900ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.blooming .particle-field {
+  animation: particleLift 900ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-@keyframes petalLift {
+@keyframes particleLift {
   to {
     transform: translateY(-22%) scale(1.14);
     opacity: 0;
@@ -1176,7 +1186,7 @@ const replay = async () => {
   .revealing .frame-sheen,
   .revealing .frame-sheen-slow,
   .blooming .stage-rush,
-  .blooming .petal-field {
+  .blooming .particle-field {
     animation: none;
   }
 
@@ -1184,7 +1194,7 @@ const replay = async () => {
     transform: scale(1);
   }
 
-  .petal-field {
+  .particle-field {
     display: none;
   }
 

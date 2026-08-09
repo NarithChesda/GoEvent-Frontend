@@ -113,6 +113,7 @@
     :accent-color="accentColor"
     :background-color="backgroundColor"
     :blur-effect-color="blurEffectColor"
+    :falling-effect="event.template_assets?.falling_effect"
     :get-media-url="getMediaUrl"
   />
 
