@@ -438,7 +438,8 @@ const { requestImmersiveViewport } = useImmersiveViewport()
 
 // V2 cover opened: align stage/redirect state with V1 and start the music
 const handleV2Opened = () => {
-  requestImmersiveViewport()
+  // V2 has no door swing to protect, so it doesn't wait for the resize.
+  void requestImmersiveViewport()
   setStage('main_content')
   markMainContentSeen()
   if (eventMusicUrl.value) {
@@ -449,9 +450,13 @@ const handleV2Opened = () => {
 
 // Override the openEnvelope function to include video synchronization
 const openEnvelopeWithVideoSync = async () => {
-  // Fires first and synchronously: every path below awaits, and an await here
-  // would spend the user activation that the fullscreen request depends on.
-  requestImmersiveViewport()
+  // Called synchronously — an await before this would spend the user activation
+  // the fullscreen request depends on. Awaiting its result then holds the reveal
+  // until the viewport has finished growing: entering fullscreen re-resolves
+  // every viewport unit on the page, and the door animation ran straight through
+  // that, so the panels stuttered and stalled mid-swing. On platforms that don't
+  // grant fullscreen this resolves immediately and nothing is delayed.
+  await requestImmersiveViewport()
 
   // For basic wedding events with a featured photo, use the transition stage
   if (isBasicWedding.value && hasFeaturedPhoto.value) {
@@ -700,29 +705,37 @@ onUnmounted(() => {
 }
 
 /* Container Styles */
-/* Heights are `dvh`, not `vh`: on mobile `100vh` resolves to the *large*
-   viewport (the height the page would have if the browser chrome were hidden),
-   so with the URL bar showing the stage was ~50-110px taller than the visible
-   area and its bottom edge was cut off. `dvh` tracks whatever is actually
-   visible, so the frame fits both before and after the chrome collapses.
-   The plain `vh` line above each is the fallback for pre-2022 browsers. */
-/* `fixed` rather than a 100dvh block in normal flow: useDocumentScrollProxy
-   gives the document its scrollable height through a spacer teleported to
-   <body>, and that only maps 1:1 onto the card's overflow if the showcase shell
-   itself contributes no document height. Pinning it also keeps the stage still
-   while the page scrolls underneath, which is what makes the swap invisible.
-   Explicit `height` rather than `inset: 0` — a fixed box resolves `bottom: 0`
-   against the layout viewport, which on mobile is the chrome-hidden height. */
+/* Viewport units are `svh`, and the choice matters in both directions:
+   - `vh` on mobile is the *large* viewport (the height the page would have with
+     the browser chrome hidden), so with the URL bar up the stage overflowed the
+     visible area and its bottom edge was cut off.
+   - `dvh` fixed the clipping but tracks the viewport *continuously*, so every
+     pixel of chrome collapsing and re-expanding during a scroll reflowed the
+     whole invitation — correctly sized, but unpleasant to read.
+   `svh` is the static smallest-viewport height: resolved once, to the
+   chrome-visible height, and unmoved when the chrome comes and goes. The stage
+   is therefore always fully visible and never reflows mid-scroll.
+   The plain `vh` line above each is the fallback for pre-2022 browsers.
+
+   `fixed` rather than a block in normal flow: useDocumentScrollProxy gives the
+   document its scrollable height through a spacer teleported to <body>, and that
+   only maps 1:1 onto the card's overflow if the showcase shell itself
+   contributes no document height. Pinning it also keeps the stage still while
+   the page scrolls underneath, which is what makes the swap invisible.
+
+   The wrapper alone stays at full `vh`: it is only a background, and sizing it
+   to the larger viewport means no blank band appears below the stage once the
+   chrome collapses. `flex-start` then anchors the svh-tall stage to the visible
+   top of that taller box instead of centring it inside. */
 .showcase-wrapper {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  height: 100dvh;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   background: #000; /* Fallback */
   overflow: hidden;
 }
@@ -730,7 +743,7 @@ onUnmounted(() => {
 .showcase-container {
   width: 100%;
   height: 100vh;
-  height: 100dvh;
+  height: 100svh;
   position: relative;
   overflow: hidden;
   margin: 0 auto;
@@ -750,9 +763,9 @@ onUnmounted(() => {
 @media (min-width: 481px), (min-height: 801px) {
   .showcase-container {
     width: calc(100vh * (1080 / 1920));
-    width: calc(100dvh * (1080 / 1920));
+    width: calc(100svh * (1080 / 1920));
     max-width: calc(100vh * (1080 / 1920));
-    max-width: calc(100dvh * (1080 / 1920));
+    max-width: calc(100svh * (1080 / 1920));
   }
 }
 </style>

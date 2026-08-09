@@ -6,7 +6,7 @@ import { isTouchPrimaryDevice } from '@/utils/browserDetection'
  * collapse their own chrome (URL bar / in-app-browser header) on the first swipe.
  *
  * The problem: browsers only hide that chrome in response to a scroll of the root
- * scroller. The V1 showcase is a fixed 100dvh stage whose content scrolls inside
+ * scroller. The V1 showcase is a fixed 100svh stage whose content scrolls inside
  * the glass card, so the document's scroll height always equalled the viewport —
  * there was nothing to scroll, and the header stayed up no matter how the guest
  * swiped. (Hence having to find a dead spot on the page and drag it away by hand.)
