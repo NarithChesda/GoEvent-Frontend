@@ -385,9 +385,6 @@ const replay = async () => {
      large against the width — which is most of why the chrome reads heavy and
      crowds the photo. */
   --dt-w: min(100vw, 56.25vh);
-  /* `svh` for the same reason `.showcase-container` uses it: `vh` is the
-     chrome-hidden height, so with the URL bar up this over-measured the stage. */
-  --dt-w: min(100vw, 56.25svh);
 }
 
 /* ---------- Camera ---------- */

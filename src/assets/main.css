@@ -22,15 +22,6 @@ body {
   min-height: 100vh;
 }
 
-/* Set by useDocumentScrollProxy while the showcase hands page scrolling to the
- * document (so mobile browsers collapse their own chrome). The showcase shell is
- * `position: fixed`, so the only intended source of document height is the
- * proxy's spacer — #app's viewport-height floor would add one screen on top and
- * break the 1:1 mapping between page scroll and the invitation card's scroll. */
-html.showcase-scroll-proxy-active #app {
-  min-height: 0;
-}
-
 /* Utility: hide native scrollbars while preserving scroll behaviour.
  * Used by horizontally-scrollable tab bars and similar overflow rows
  * across the app (settings, event-management tabs, guest groups, etc). */
