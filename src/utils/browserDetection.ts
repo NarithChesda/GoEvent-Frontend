@@ -90,8 +90,8 @@ export function isDesktopDevice(): boolean {
  * Preferred over `isMobileDevice()` for behaviour that should key off *how the
  * device is operated* rather than what it claims to be: it is a capability
  * check, so it does not depend on a user-agent string that in-app browsers
- * routinely rewrite. Used by the showcase to decide whether to take over page
- * scrolling and request fullscreen — both of which exist purely to reclaim the
+ * routinely rewrite. Used by the showcase to decide whether to request
+ * fullscreen when the invitation opens — which exists purely to reclaim the
  * browser chrome that only mobile browsers impose.
  */
 export function isTouchPrimaryDevice(): boolean {

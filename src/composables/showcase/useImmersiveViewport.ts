@@ -4,10 +4,12 @@
  *
  * Why this needs a gesture: no API dismisses browser chrome on demand. Browsers
  * only collapse it in response to a *document-level* scroll, and the V1 showcase
- * deliberately keeps scrolling inside its own container (the stage is a fixed
- * 100svh frame), so that signal never fires. The Fullscreen API is the one
- * escape hatch, and it is only granted while a user activation is live — hence
- * this is called from the cover's tap/swipe-to-open handler, synchronously.
+ * keeps scrolling inside its own container (the stage is a fixed 100vh frame),
+ * so that signal never fires — which is why a guest otherwise has to find a
+ * non-scrolling spot on the page and drag the header away by hand. The
+ * Fullscreen API is the one escape hatch, and it is only granted while a user
+ * activation is live — hence this is called from the cover's tap/swipe-to-open
+ * handler, synchronously.
  *
  * Platform reality:
  *   - Android Chrome/Firefox, and Android in-app WebViews that implement
