@@ -77,17 +77,97 @@
                       {{ t('management.media.uploadModal.dropHint') }}
                     </p>
                     <p class="text-[10px] sm:text-xs text-slate-500 mt-1">
-                      {{ t('management.media.uploadModal.formatHint') }}
+                      {{ t('management.media.uploadModal.formatHint', { size: sizeLimitLabel }) }}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <!-- Compressing Indicator -->
-              <div v-if="compressing" class="flex items-center gap-2 p-3 bg-sky-50 border border-sky-200 rounded-xl">
-                <Loader2 class="w-4 h-4 text-sky-600 animate-spin" />
-                <p class="text-sm text-sky-700 font-medium">{{ t('management.media.uploadModal.optimizing') }}</p>
-              </div>
+              <!-- Optimize Toggle -->
+              <button
+                type="button"
+                role="switch"
+                :aria-checked="optimizeImages"
+                :disabled="uploading || compressing"
+                @click="toggleOptimizeImages"
+                class="w-full flex items-center justify-between gap-3 p-3 bg-slate-50 rounded-lg text-left hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span class="flex items-center gap-3 min-w-0">
+                  <span class="p-2 bg-white rounded-lg shadow-sm flex-shrink-0">
+                    <ImageDown class="w-4 h-4 text-sky-500" aria-hidden="true" />
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block text-sm font-medium text-slate-700">
+                      {{ t('management.media.uploadModal.optimize.label') }}
+                    </span>
+                    <span class="block text-xs text-slate-500">
+                      {{ t('management.media.uploadModal.optimize.hint') }}
+                    </span>
+                  </span>
+                </span>
+                <span
+                  :class="[
+                    'relative inline-block h-6 w-11 rounded-full flex-shrink-0 transition-colors duration-200',
+                    optimizeImages ? 'bg-sky-500' : 'bg-slate-200',
+                  ]"
+                >
+                  <span
+                    class="absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200"
+                    :style="{ transform: optimizeImages ? 'translateX(20px)' : 'translateX(0)' }"
+                  />
+                </span>
+              </button>
+
+              <!-- Over-limit Warning -->
+              <Transition name="slide-fade">
+                <div
+                  v-if="oversizedFiles.length > 0"
+                  class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2.5"
+                >
+                  <div class="flex items-start gap-2">
+                    <TriangleAlert class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-amber-800">
+                        {{
+                          oversizedFiles.length === 1
+                            ? t('management.media.uploadModal.oversized.titleOne', { size: sizeLimitLabel })
+                            : t('management.media.uploadModal.oversized.titleMany', {
+                                count: oversizedFiles.length,
+                                size: sizeLimitLabel,
+                              })
+                        }}
+                      </p>
+                      <p class="text-sm text-amber-700 mt-0.5">
+                        {{
+                          canShrinkOversized
+                            ? t('management.media.uploadModal.oversized.description')
+                            : t('management.media.uploadModal.oversized.descriptionUnshrinkable')
+                        }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 pl-7">
+                    <button
+                      v-if="canShrinkOversized"
+                      type="button"
+                      @click="optimizeOversized"
+                      :disabled="compressing"
+                      class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Minimize2 class="w-3.5 h-3.5" aria-hidden="true" />
+                      {{ t('management.media.uploadModal.oversized.optimizeAll') }}
+                    </button>
+                    <button
+                      type="button"
+                      @click="removeOversized"
+                      :disabled="compressing"
+                      class="px-3 py-1.5 text-amber-700 hover:bg-amber-100 text-xs font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {{ t('management.media.uploadModal.oversized.removeAll') }}
+                    </button>
+                  </div>
+                </div>
+              </Transition>
 
               <!-- Selected Files Preview -->
               <div v-if="selectedFiles.length > 0" class="space-y-3">
@@ -96,16 +176,21 @@
                 </p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div
-                    v-for="(file, index) in selectedFiles"
-                    :key="index"
-                    class="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl"
+                    v-for="item in selectedFiles"
+                    :key="item.id"
+                    :class="[
+                      'flex items-center gap-3 p-3 rounded-xl border',
+                      isOversized(item)
+                        ? 'bg-amber-50/60 border-amber-200'
+                        : 'bg-slate-50 border-transparent',
+                    ]"
                   >
                     <!-- Preview Thumbnail -->
                     <div class="w-12 h-12 bg-slate-200 rounded-lg overflow-hidden shrink-0">
                       <img
-                        v-if="file.preview"
-                        :src="file.preview"
-                        :alt="file.file.name"
+                        v-if="item.preview"
+                        :src="item.preview"
+                        :alt="item.original.name"
                         class="w-full h-full object-cover"
                       />
                       <div v-else class="w-full h-full flex items-center justify-center">
@@ -116,19 +201,52 @@
                     <!-- File Info -->
                     <div class="flex-1 min-w-0">
                       <p class="text-sm font-medium text-slate-900 truncate">
-                        {{ file.file.name }}
+                        {{ item.original.name }}
                       </p>
-                      <p class="text-xs text-slate-500">{{ formatFileSize(file.file.size) }}</p>
+                      <p
+                        v-if="item.optimizing"
+                        class="flex items-center gap-1 text-xs font-medium text-sky-600"
+                      >
+                        <Loader2 class="w-3 h-3 animate-spin" aria-hidden="true" />
+                        {{ t('management.media.uploadModal.optimizing') }}
+                      </p>
+                      <p v-else-if="isOversized(item)" class="text-xs font-medium text-amber-700 truncate">
+                        {{ formatFileSize(activeFile(item).size) }} ·
+                        {{
+                          isUnshrinkable(item)
+                            ? t('management.media.uploadModal.optimize.stillOverLimit')
+                            : t('management.media.uploadModal.optimize.overLimit')
+                        }}
+                      </p>
+                      <p v-else-if="isOptimized(item)" class="text-xs text-emerald-600 truncate">
+                        <span class="text-slate-400 line-through">{{ formatFileSize(item.original.size) }}</span>
+                        → {{ formatFileSize(activeFile(item).size) }}
+                      </p>
+                      <p v-else class="text-xs text-slate-500">{{ formatFileSize(item.original.size) }}</p>
                     </div>
 
-                    <!-- Remove Button -->
-                    <button
-                      type="button"
-                      @click="removeFile(index)"
-                      class="p-1 text-slate-400 hover:text-red-500 transition-colors duration-200"
-                    >
-                      <X class="w-4 h-4" />
-                    </button>
+                    <!-- Row Actions -->
+                    <div class="flex items-center gap-0.5 flex-shrink-0">
+                      <button
+                        v-if="isOversized(item) && !isUnshrinkable(item) && !item.optimizing"
+                        type="button"
+                        @click="optimizeFiles([item], true)"
+                        :title="t('management.media.uploadModal.optimize.optimizeOne')"
+                        :aria-label="t('management.media.uploadModal.optimize.optimizeOne')"
+                        class="p-1 text-amber-600 hover:text-amber-800 transition-colors duration-200"
+                      >
+                        <Minimize2 class="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        @click="removeFile(item.id)"
+                        :title="t('management.media.uploadModal.removeFile')"
+                        :aria-label="t('management.media.uploadModal.removeFile')"
+                        class="p-1 text-slate-400 hover:text-red-500 transition-colors duration-200"
+                      >
+                        <X class="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -206,7 +324,7 @@
             <button
               type="submit"
               form="upload-media-form"
-              :disabled="selectedFiles.length === 0 || uploading || compressing"
+              :disabled="selectedFiles.length === 0 || uploading || compressing || oversizedFiles.length > 0"
               class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span
@@ -241,10 +359,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { ArrowRight, Upload, X, ImageIcon, AlertCircle, ImagePlus, Loader2 } from 'lucide-vue-next'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import {
+  ArrowRight,
+  Upload,
+  X,
+  ImageIcon,
+  AlertCircle,
+  ImagePlus,
+  Loader2,
+  ImageDown,
+  Minimize2,
+  TriangleAlert,
+} from 'lucide-vue-next'
 import { mediaService, type EventPhoto } from '../services/api'
 import { compressImage } from '@/utils/imageCompression'
+import { FILE_SIZE_LIMITS } from '@/constants/media'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
@@ -256,9 +386,20 @@ interface Emits {
   uploaded: [media: EventPhoto]
 }
 
-interface FileWithPreview {
-  file: File
-  preview: string | null
+/**
+ * A picked image. The original is always kept so optimization stays reversible,
+ * and the optimized copy is computed at most once and cached — flipping the
+ * "optimize" toggle then only swaps which one gets uploaded.
+ */
+interface SelectedImage {
+  id: number
+  original: File
+  optimizedFile: File | null
+  useOptimized: boolean
+  /** Optimized by an explicit per-file/bulk action, so the toggle won't revert it. */
+  pinned: boolean
+  optimizing: boolean
+  preview: string
 }
 
 const props = defineProps<Props>()
@@ -267,7 +408,8 @@ const emit = defineEmits<Emits>()
 const { t } = useAppLanguage()
 
 // State
-const selectedFiles = ref<FileWithPreview[]>([])
+const selectedFiles = ref<SelectedImage[]>([])
+const optimizeImages = ref(true)
 const defaultCaption = ref('')
 const markAsFeatured = ref(false)
 const uploading = ref(false)
@@ -276,7 +418,40 @@ const currentUpload = ref(0)
 const error = ref<string | null>(null)
 const isDragging = ref(false)
 const fileInput = ref<HTMLInputElement>()
-const compressing = ref(false)
+let nextFileId = 0
+let errorTimer: ReturnType<typeof setTimeout> | undefined
+
+const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+/** The file that will actually be uploaded for this entry. */
+const activeFile = (item: SelectedImage): File =>
+  item.useOptimized && item.optimizedFile ? item.optimizedFile : item.original
+
+const isOptimized = (item: SelectedImage): boolean => activeFile(item) !== item.original
+
+const isOversized = (item: SelectedImage): boolean =>
+  activeFile(item).size > FILE_SIZE_LIMITS.IMAGE
+
+/** Already optimized as far as we can, and still too big — only removing helps. */
+const isUnshrinkable = (item: SelectedImage): boolean =>
+  item.optimizedFile !== null && item.optimizedFile.size > FILE_SIZE_LIMITS.IMAGE
+
+const compressing = computed(() => selectedFiles.value.some((item) => item.optimizing))
+const oversizedFiles = computed(() => selectedFiles.value.filter(isOversized))
+const canShrinkOversized = computed(() => oversizedFiles.value.some((item) => !isUnshrinkable(item)))
+const sizeLimitLabel = computed(() => formatFileSize(FILE_SIZE_LIMITS.IMAGE))
+
+const flashError = (message: string) => {
+  error.value = message
+  clearTimeout(errorTimer)
+  errorTimer = setTimeout(() => (error.value = null), 4000)
+}
 
 // Methods
 const handleClose = () => {
@@ -289,6 +464,8 @@ const handleFileSelect = (event: Event) => {
   if (input.files) {
     addFiles(Array.from(input.files))
   }
+  // Allow re-picking the same file after it was removed from the list
+  input.value = ''
 }
 
 const handleDrop = (event: DragEvent) => {
@@ -309,55 +486,97 @@ const handleDragLeave = (event: DragEvent) => {
   }
 }
 
-const addFiles = async (files: File[]) => {
+const addFiles = (files: File[]) => {
   const imageFiles = files.filter((file) => file.type.startsWith('image/'))
 
   if (imageFiles.length !== files.length) {
-    error.value = t('management.media.uploadModal.error.onlyImages')
-    setTimeout(() => (error.value = null), 3000)
+    flashError(t('management.media.uploadModal.error.onlyImages'))
   }
 
   if (imageFiles.length === 0) return
 
-  compressing.value = true
-  try {
-    const compressed = await Promise.all(imageFiles.map((file) => compressImage(file)))
+  const entries: SelectedImage[] = imageFiles.map((file) => ({
+    id: nextFileId++,
+    original: file,
+    optimizedFile: null,
+    useOptimized: false,
+    pinned: false,
+    optimizing: false,
+    preview: URL.createObjectURL(file),
+  }))
+  selectedFiles.value.push(...entries)
 
-    for (const file of compressed) {
-      const preview = await readAsDataURL(file)
-      selectedFiles.value.push({ file, preview })
-    }
-  } catch {
-    error.value = t('management.media.uploadModal.error.processFailed')
-    setTimeout(() => (error.value = null), 3000)
-  } finally {
-    compressing.value = false
+  if (optimizeImages.value) {
+    // Read the entries back out of the ref: optimizeFiles mutates them from an
+    // async callback, and writes to the raw objects would bypass the reactive
+    // proxy — the per-row spinner would then never clear on its own.
+    void optimizeFiles(selectedFiles.value.slice(-entries.length), false)
   }
 }
 
-const readAsDataURL = (file: File): Promise<string | null> => {
-  return new Promise((resolve) => {
-    const reader = new FileReader()
-    reader.onload = (e) => resolve(e.target?.result as string ?? null)
-    reader.onerror = () => resolve(null)
-    reader.readAsDataURL(file)
-  })
+/** Compute (once) and cache the optimized copy of an entry. */
+const ensureOptimizedFile = async (item: SelectedImage) => {
+  if (item.optimizedFile || item.optimizing) return
+  item.optimizing = true
+  try {
+    item.optimizedFile = await compressImage(item.original)
+  } catch {
+    flashError(t('management.media.uploadModal.error.processFailed'))
+  } finally {
+    item.optimizing = false
+  }
 }
 
-const removeFile = (index: number) => {
+const optimizeFiles = async (items: SelectedImage[], pin: boolean) => {
+  const targets = items.filter((item) => !item.useOptimized || !item.optimizedFile)
+  if (targets.length === 0) return
+
+  for (const item of targets) {
+    item.useOptimized = true
+    if (pin) item.pinned = true
+  }
+
+  await Promise.all(targets.map(ensureOptimizedFile))
+}
+
+const optimizeOversized = () => {
+  void optimizeFiles(
+    oversizedFiles.value.filter((item) => !isUnshrinkable(item)),
+    true,
+  )
+}
+
+const removeOversized = () => {
+  for (const item of oversizedFiles.value) {
+    URL.revokeObjectURL(item.preview)
+  }
+  selectedFiles.value = selectedFiles.value.filter((item) => !isOversized(item))
+}
+
+const toggleOptimizeImages = () => {
+  optimizeImages.value = !optimizeImages.value
+
+  if (optimizeImages.value) {
+    void optimizeFiles(selectedFiles.value, false)
+    return
+  }
+
+  // Back to the originals, except where the user optimized a file on purpose
+  for (const item of selectedFiles.value) {
+    if (!item.pinned) item.useOptimized = false
+  }
+}
+
+const removeFile = (id: number) => {
+  const index = selectedFiles.value.findIndex((item) => item.id === id)
+  if (index === -1) return
+  URL.revokeObjectURL(selectedFiles.value[index].preview)
   selectedFiles.value.splice(index, 1)
-}
-
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes'
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
 const uploadFiles = async () => {
   if (selectedFiles.value.length === 0) return
+  if (compressing.value || oversizedFiles.value.length > 0) return
 
   uploading.value = true
   uploadProgress.value = 0
@@ -365,7 +584,7 @@ const uploadFiles = async () => {
   error.value = null
 
   try {
-    const files = selectedFiles.value.map((f) => f.file)
+    const files = selectedFiles.value.map(activeFile)
     const totalFiles = files.length
 
     // Prepare captions array if default caption is provided
@@ -433,6 +652,10 @@ onUnmounted(() => {
   document.body.style.overflow = ''
   document.body.style.paddingRight = ''
   document.removeEventListener('keydown', handleKeydown)
+  clearTimeout(errorTimer)
+  for (const item of selectedFiles.value) {
+    URL.revokeObjectURL(item.preview)
+  }
 })
 </script>
 

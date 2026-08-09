@@ -698,9 +698,25 @@
       "dropActive": "Drop your images here",
       "dropIdle": "Upload your images",
       "dropHint": "Drag and drop images here, or click to browse",
-      "formatHint": "Supports: JPG, PNG, WebP — images auto-optimized for upload",
-      "optimizing": "Optimizing images...",
+      "formatHint": "Supports: JPG, PNG, WebP — up to {size} per photo",
+      "optimizing": "Optimizing...",
       "selectedFiles": "Selected Files ({count})",
+      "removeFile": "Remove photo",
+      "optimize": {
+        "label": "Optimize photos before upload",
+        "hint": "Shrinks large photos. Turn off to upload your originals as they are.",
+        "optimizeOne": "Optimize this photo",
+        "overLimit": "over the limit",
+        "stillOverLimit": "still over the limit"
+      },
+      "oversized": {
+        "titleOne": "1 photo is over the {size} limit",
+        "titleMany": "{count} photos are over the {size} limit",
+        "description": "Optimize them or remove them to continue.",
+        "descriptionUnshrinkable": "They can't be shrunk any further — remove them to continue.",
+        "optimizeAll": "Optimize them",
+        "removeAll": "Remove them"
+      },
       "options": {
         "title": "Upload Options",
         "captionLabel": "Default Caption (Optional)",
