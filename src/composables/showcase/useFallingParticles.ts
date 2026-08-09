@@ -31,7 +31,12 @@ interface MotionProfile {
   tumble: number
   /** Fall duration multiplier (>1 = floats slower, <1 = drops faster) */
   fallSpeed: number
-  /** Size multiplier relative to the configured min/max size */
+  /**
+   * Size multiplier relative to the configured min/max size. Keep every type
+   * inside a narrow band (roughly 0.65–0.85) so no shape reads as noticeably
+   * bigger than its neighbours — remember the petal box is 1.25× taller than
+   * wide, so its scale has to sit lower than the square shapes' to match.
+   */
   sizeScale: number
   /** Opacity pulse for sparkle (stars) */
   twinkle?: boolean
@@ -103,7 +108,9 @@ const MOTION_PROFILES: Record<Exclude<FallingEffectType, 'none'>, MotionProfile>
     rotate: [120, 500],
     tumble: 0,
     fallSpeed: 1,
-    sizeScale: 1,
+    // Tallest silhouette of the set (1.25 aspect), so it needs the deepest trim
+    // to sit in the same size band as everything else.
+    sizeScale: 0.75,
     shimmer: true,
     hueJitter: 10,
   },
@@ -145,7 +152,7 @@ const MOTION_PROFILES: Record<Exclude<FallingEffectType, 'none'>, MotionProfile>
     rotate: [240, 600],
     tumble: 65,
     fallSpeed: 1.1,
-    sizeScale: 1.1,
+    sizeScale: 0.83,
     hueJitter: 14,
   },
   maple: {
@@ -155,7 +162,7 @@ const MOTION_PROFILES: Record<Exclude<FallingEffectType, 'none'>, MotionProfile>
     rotate: [200, 560],
     tumble: 60,
     fallSpeed: 1.05,
-    sizeScale: 1.05,
+    sizeScale: 0.79,
     hueJitter: 12,
   },
   hearts: {
@@ -165,7 +172,7 @@ const MOTION_PROFILES: Record<Exclude<FallingEffectType, 'none'>, MotionProfile>
     rotate: [15, 35],
     tumble: 0,
     fallSpeed: 1.05,
-    sizeScale: 0.95,
+    sizeScale: 0.8,
     hueJitter: 8,
   },
 }
@@ -178,7 +185,7 @@ const CUSTOM_IMAGE_PROFILE: MotionProfile = {
   rotate: [120, 420],
   tumble: 0,
   fallSpeed: 1,
-  sizeScale: 1,
+  sizeScale: 0.85,
   hueJitter: 0,
 }
 
