@@ -318,12 +318,14 @@ const formattedDate = computed(() => {
 // stage — as flecks catching the light, not as objects competing with the
 // photograph. (The composable takes plain px and snapshots them, so these are
 // fixed for a ~450px-wide stage rather than tracking --dt-w.)
+// Pre-divided by the petal profile's own 0.75 sizeScale so the rendered flecks
+// land back on that tuned 7–16px, independent of the shared size band.
 const petalFieldRef = ref<HTMLElement>()
 useFallingParticles(petalFieldRef, {
   type: 'petals',
   intensity: 'light',
-  minSize: 7,
-  maxSize: 16,
+  minSize: 9,
+  maxSize: 21,
   color: () => gold.value,
 })
 
