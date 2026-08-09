@@ -186,6 +186,7 @@ import { RotateCcw, Crop } from 'lucide-vue-next'
 import type { EventPhoto } from '@/types/showcase'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useFeaturedPhotoGeometry } from '@/composables/showcase/useFeaturedPhotoGeometry'
+import { fallingEffectKeyOf } from '@/composables/showcase/useFallingParticles'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import FallingEffect from './FallingEffect.vue'
@@ -214,19 +215,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Remount on a config change — see the matching note in CoverStage.vue for why
-// the key covers the effect's own fields but deliberately not the palette.
-const fallingEffectKey = computed(() => {
-  const config = props.fallingEffect
-  if (!config) return 'none'
-  return [
-    config.type,
-    config.intensity ?? 'normal',
-    config.color_source ?? 'primary',
-    config.custom_color ?? '',
-    config.custom_image ?? '',
-  ].join('|')
-})
+// Remount on a config change — see fallingEffectKeyOf for why the key covers
+// the effect's own fields but deliberately not the palette.
+const fallingEffectKey = computed(() => fallingEffectKeyOf(props.fallingEffect))
 
 const emit = defineEmits<{
   transitionComplete: []

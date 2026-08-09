@@ -3,6 +3,7 @@
     ref="containerRef"
     class="absolute inset-0 overflow-hidden pointer-events-none"
     :style="{ zIndex }"
+    aria-hidden="true"
   ></div>
 </template>
 
@@ -28,6 +29,14 @@ const props = withDefaults(
      * main content card without the petals ever restarting.
      */
     zIndex?: number
+    /**
+     * Particle size range in px, before the per-type size scale and depth
+     * layer are applied. Left unset the composable's own full-screen defaults
+     * apply; a stage that wants the effect as background flecks rather than as
+     * objects passes a smaller range (see TransitionStageDoor).
+     */
+    minSize?: number
+    maxSize?: number
   }>(),
   { zIndex: 15 },
 )
@@ -61,5 +70,8 @@ useFallingParticles(containerRef, {
   customImage: resolvedCustomImage.value,
   color: particleColor,
   intensity: props.config?.intensity || 'normal',
+  // Undefined when unset, which the composable's destructured defaults absorb.
+  minSize: props.minSize,
+  maxSize: props.maxSize,
 })
 </script>
