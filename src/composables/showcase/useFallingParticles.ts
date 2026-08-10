@@ -28,7 +28,28 @@ export function fallingEffectKeyOf(config: FallingEffectConfig | null | undefine
     config.color_source ?? 'primary',
     config.custom_color ?? '',
     config.custom_image ?? '',
+    config.speed ?? FALLING_SPEED_RANGE.default,
   ].join('|')
+}
+
+/**
+ * Bounds for `FallingEffectConfig.speed`, the fall-speed multiplier.
+ *
+ * `default: 1` is the speed the effect shipped with, so a template that never
+ * sets the field renders exactly as before. The floor is where petals stop
+ * reading as falling and start reading as hanging; the ceiling is where they
+ * cross the stage fast enough to register as streaks rather than objects, which
+ * no template should want and a slider shouldn't offer.
+ *
+ * Exported for the partner template studio's slider, so the control and the
+ * renderer can't drift apart on what a legal speed is.
+ */
+export const FALLING_SPEED_RANGE = { min: 0.25, max: 3, default: 1, step: 0.05 } as const
+
+/** Clamp an author-supplied speed into the range above; absent/junk → default. */
+export function resolveFallingSpeed(speed: number | null | undefined): number {
+  if (typeof speed !== 'number' || !Number.isFinite(speed)) return FALLING_SPEED_RANGE.default
+  return Math.min(FALLING_SPEED_RANGE.max, Math.max(FALLING_SPEED_RANGE.min, speed))
 }
 
 /**
@@ -322,6 +343,12 @@ export interface FallingParticlesOptions {
   minDuration?: number
   /** Maximum fall duration in ms (default: 17000) */
   maxDuration?: number
+  /**
+   * Fall-speed multiplier: 1 = the tuned default, >1 faster, <1 slower.
+   * Divides the duration and the spawn interval alike, so the field keeps the
+   * density its `intensity` asked for at any speed.
+   */
+  speed?: number
 }
 
 /**
@@ -348,6 +375,7 @@ export function useFallingParticles(
     maxSize = 26,
     minDuration = 10000,
     maxDuration = 17000,
+    speed,
   } = options
 
   // Don't set up anything for 'none' type (unless custom image is provided)
@@ -355,7 +383,16 @@ export function useFallingParticles(
     return { isActive: ref(false), start: () => {}, stop: () => {}, cleanup: () => {} }
   }
 
-  const preset = INTENSITY_PRESETS[intensity]
+  const speedFactor = resolveFallingSpeed(speed)
+  const basePreset = INTENSITY_PRESETS[intensity]
+  // Density is `intensity`'s job, so the spawn interval tracks the speed: at 2x
+  // each particle clears the stage in half the time, and refilling at the
+  // original rate would leave half as many on screen. Rounded up off a 60ms
+  // floor so a fast setting can't degenerate into a per-frame spawn loop.
+  const preset = {
+    maxParticles: basePreset.maxParticles,
+    interval: Math.max(60, Math.round(basePreset.interval / speedFactor)),
+  }
   const profile: MotionProfile =
     customImage || type === 'none' ? CUSTOM_IMAGE_PROFILE : MOTION_PROFILES[type]
   let spawnTimer: ReturnType<typeof setInterval> | null = null
@@ -517,7 +554,8 @@ export function useFallingParticles(
     container.appendChild(particle)
 
     const baseOpacity = (shape?.opacity ?? 0.75) * layer.opacity
-    const duration = rand(minDuration, maxDuration) * profile.fallSpeed * layer.speed
+    const duration =
+      (rand(minDuration, maxDuration) * profile.fallSpeed * layer.speed) / speedFactor
     const containerHeight = container.offsetHeight
 
     const frames = buildKeyframes({

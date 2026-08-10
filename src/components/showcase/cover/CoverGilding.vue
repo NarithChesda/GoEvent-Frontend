@@ -50,9 +50,9 @@ interface Props {
   /**
    * Stacking position within the parent. Every layer takes the SAME value and
    * relies on DOM order for the rest, since they are siblings rather than a
-   * stack inside a wrapper. The cover puts them above the decoration artwork and
-   * the ambient creatures but below the cover copy; a door leaf puts them below
-   * its own content layer.
+   * stack inside a wrapper. The cover puts them above the decoration artwork
+   * but below the cover copy (and below the ambient creatures, which fly in
+   * front of the plate); a door leaf puts them below its own content layer.
    */
   zIndex?: number
 }

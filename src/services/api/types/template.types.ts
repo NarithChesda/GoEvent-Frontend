@@ -507,6 +507,18 @@ export interface FallingEffectConfig {
   custom_color?: string | null
   /** Controls spawn rate and max particles on screen */
   intensity?: 'light' | 'normal' | 'heavy'
+  /**
+   * Fall-speed multiplier. `1` (the default when omitted) is the speed the
+   * effect has always run at, so every existing template keeps its exact look.
+   * Above 1 the particles fall faster, below 1 they float. Clamped to
+   * FALLING_SPEED_RANGE on read — see useFallingParticles.
+   *
+   * Deliberately independent of `intensity`: intensity is how MANY particles
+   * are on screen, speed is how fast each one crosses it. The composable
+   * rescales the spawn interval by the same factor so changing speed alone
+   * doesn't thin out or crowd the field.
+   */
+  speed?: number | null
 }
 
 /**

@@ -1163,6 +1163,19 @@
                         :options="intensityOptions"
                         :columns="3"
                       />
+                      <!-- Speed is separate from intensity on purpose: intensity
+                           is how many particles are on screen, this is how fast
+                           each one crosses it. The renderer rescales the spawn
+                           rate to match, so moving this slider doesn't quietly
+                           thin out or crowd the field the partner just set. -->
+                      <TemplateFormNumber
+                        v-model="form.falling_effect.speed"
+                        :label="t('management.partnerTemplateForm.fallingEffect.speed')"
+                        :min="FALLING_SPEED_RANGE.min"
+                        :max="FALLING_SPEED_RANGE.max"
+                        :step="FALLING_SPEED_RANGE.step"
+                        unit="×"
+                      />
                       <TemplateFormChoice
                         v-model="fallingColorSourceModel"
                         :label="t('management.partnerTemplateForm.fallingEffect.colorSource')"
@@ -1368,6 +1381,10 @@ import {
   type ResolvedCoverGilding,
   type ResolvedGuestFrame,
 } from '../../composables/showcase/useCoverStageLayout'
+import {
+  FALLING_SPEED_RANGE,
+  resolveFallingSpeed,
+} from '../../composables/showcase/useFallingParticles'
 import { TEMPLATE_COLOR_SLOTS, TEMPLATE_FONT_TYPE_SLOTS } from './templateSlots'
 import {
   PARTNER_TEMPLATE_ASSET_FIELDS,
@@ -1497,6 +1514,8 @@ interface FallingEffectFormState {
   color_source: 'primary' | 'accent' | 'custom'
   custom_color: string
   intensity: 'light' | 'normal' | 'heavy'
+  /** Fall-speed multiplier; FALLING_SPEED_RANGE.default is the original speed. */
+  speed: number
 }
 
 interface AmbientCreaturesFormState {
@@ -1553,6 +1572,7 @@ const defaultFallingEffect = (): FallingEffectFormState => ({
   color_source: 'primary',
   custom_color: '#FFD700',
   intensity: 'normal',
+  speed: FALLING_SPEED_RANGE.default,
 })
 
 const defaultAmbientCreatures = (): AmbientCreaturesFormState => ({
@@ -2542,6 +2562,10 @@ watch(
         form.falling_effect.color_source = template.falling_effect.color_source ?? 'primary'
         form.falling_effect.custom_color = template.falling_effect.custom_color ?? '#FFD700'
         form.falling_effect.intensity = template.falling_effect.intensity ?? 'normal'
+        // Absent on every template saved before the field existed, which
+        // resolves to the original speed — so loading one and saving it back
+        // can't silently retime its effect.
+        form.falling_effect.speed = resolveFallingSpeed(template.falling_effect.speed)
       } else {
         form.falling_effect_enabled = false
       }
@@ -2690,6 +2714,7 @@ function buildFallingEffectPayload(): FallingEffectConfig | null {
     type: form.falling_effect.type,
     color_source: form.falling_effect.color_source,
     intensity: form.falling_effect.intensity,
+    speed: resolveFallingSpeed(form.falling_effect.speed),
   }
   if (form.falling_effect.color_source === 'custom') {
     cfg.custom_color = form.falling_effect.custom_color

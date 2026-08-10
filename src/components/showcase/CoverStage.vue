@@ -315,7 +315,7 @@ const shouldShowMainContent = computed(() => {
 })
 
 // Falling field layering. 31 clears everything the cover puts on screen — the
-// decorations (24/25), the ambient creatures (26), the door panels (28) and the
+// decorations (24/25), the door panels (28), the ambient creatures (29) and the
 // cover copy (30) — so petals keep drifting in front of the doors as they part.
 // It drops to 15 only once the cover is fully gone and main content has taken
 // over: there it sits above the background video but below the main stage's own

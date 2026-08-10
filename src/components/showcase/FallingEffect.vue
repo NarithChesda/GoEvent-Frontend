@@ -70,6 +70,7 @@ useFallingParticles(containerRef, {
   customImage: resolvedCustomImage.value,
   color: particleColor,
   intensity: props.config?.intensity || 'normal',
+  speed: props.config?.speed ?? undefined,
   // Undefined when unset, which the composable's destructured defaults absorb.
   minSize: props.minSize,
   maxSize: props.maxSize,

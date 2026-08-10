@@ -23,9 +23,9 @@
          copy (see DoorPanel) so the light travels with the leaf that's holding
          it, exactly as the reference artwork's cover plate does. One instance
          here would keep lighting a border that has already swung away.
-         z-27 puts it above the decorations (24/25) and the ambient creatures
-         (26) but under the cover copy (30), so the band is lit and the lettering
-         over it is not. -->
+         z-27 puts it above the decorations (24/25) but under the cover copy
+         (30), so the band is lit and the lettering over it is not. The ambient
+         creatures pass over it at 29 — they fly in front of the plate. -->
     <CoverGilding
       v-if="isDecorationAnimation"
       :config="coverGilding"
@@ -36,7 +36,22 @@
       :z-index="27"
     />
 
-    <!-- Ambient creature effect (butterflies hovering near decorations) — only when template has config -->
+    <!-- Ambient creature effect (butterflies hovering near decorations) — only
+         when template has config.
+
+         z-29 for the same reason the sparks and the falling petals sit above
+         the cover: a creature is life in the air IN FRONT of the plate, not
+         something printed on it, so it clears the door panels (28) the way they
+         do. At 26 — under the doors — a door-animation template painted an
+         opaque leaf (its background photo, or the flat background colour) over
+         the whole field for the entire time the cover was up, and by the time
+         the leaves parted this overlay had unmounted and taken the creatures
+         with it: the effect was configurable, billed for, and never once
+         visible. It still stays under the cover copy (30) so a butterfly can't
+         wander across the guest's name and sit there — unlike a petal, which
+         passes through in a second. The tie with the transparent gesture layer
+         below (also 29) is harmless: that one is a hit target with no paint,
+         and this one is pointer-events-none. -->
     <AmbientEffect
       v-if="ambientCreatures"
       :key="ambientCreaturesKey"
@@ -44,6 +59,7 @@
       :primary-color="primaryColor"
       :accent-color="accentColor"
       :hidden="isContentHidden"
+      :z-index="29"
     />
 
     <!-- DOOR ANIMATION: 3D perspective container for door panels -->
