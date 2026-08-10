@@ -459,7 +459,7 @@
                      view instead of showing both at once -->
                 <div
                   ref="footerSectionRef"
-                  class="mt-8 min-h-[85vh] flex flex-col items-center justify-center animate-reveal"
+                  class="mt-8 min-h-[85dvh] flex flex-col items-center justify-center animate-reveal"
                   :class="footerMarginClasses"
                 >
                   <!-- Footer Card with Conditional Styling -->
@@ -1188,7 +1188,7 @@ onMounted(async () => {
     videoResourceManager.value = injectedVideoResourceManager
   }
 
-  // The liquid-glass-card is always 85vh with an inner overflow-y-auto scroll container.
+  // The liquid-glass-card is always 85dvh with an inner overflow-y-auto scroll container.
   // All scrolling happens inside that inner container on every screen size, so we always
   // use it as the IntersectionObserver root. Using root:null (viewport) would cause every
   // section to appear intersecting at mount and fire all at once instead of on scroll.
@@ -1783,14 +1783,19 @@ onUnmounted(() => {
 }
 
 /* Liquid Glass Card - Consolidated styles */
+/* `dvh` (with a `vh` fallback) so the card is 85% of the *visible* height rather
+   than 85% of the chrome-hidden height — the latter pushed its lower edge, and
+   the last section of content with it, below the fold on mobile. */
 .liquid-glass-card {
   position: relative;
   border-radius: 1.5rem;
   overflow: hidden;
   width: 85vw;
   height: 85vh;
+  height: 85dvh;
   max-width: 85vw;
   max-height: 85vh;
+  max-height: 85dvh;
   will-change: transform;
   transition: transform 0.3s ease-out;
 }

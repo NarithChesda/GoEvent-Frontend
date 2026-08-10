@@ -85,24 +85,6 @@ export function isDesktopDevice(): boolean {
 }
 
 /**
- * True when the primary input is a finger rather than a mouse.
- *
- * Preferred over `isMobileDevice()` for behaviour that should key off *how the
- * device is operated* rather than what it claims to be: it is a capability
- * check, so it does not depend on a user-agent string that in-app browsers
- * routinely rewrite. Used by the showcase to decide whether to request
- * fullscreen when the invitation opens — which exists purely to reclaim the
- * browser chrome that only mobile browsers impose.
- */
-export function isTouchPrimaryDevice(): boolean {
-  return (
-    typeof window !== 'undefined' &&
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(hover: none) and (pointer: coarse)').matches
-  )
-}
-
-/**
  * Gets the browser type for debugging purposes
  */
 export function getBrowserType(): string {
