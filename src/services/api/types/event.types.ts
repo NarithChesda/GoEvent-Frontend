@@ -17,24 +17,31 @@ export interface EventCategory {
 /**
  * Which showcase stage the background music starts on.
  *
- * The showcase can never start music before the guest opens the envelope — the
- * browser's autoplay policy needs a user gesture, and that tap is the only one
- * available — so these are the three moments *at or after* the tap, not three
- * arbitrary points on a timeline:
- *
- * - `cover`        — the instant the envelope is tapped, so the music underscores
- *                    the cover animating away and the transition that follows.
  * - `transition`   — when the transition stage takes the screen (the featured
  *                    photo / door reveal), after the cover has gone.
  * - `main_content` — when the invitation itself is revealed.
  *
  * A stage that a given template's flow never reaches falls through to the next
- * one it does, so every value is meaningful for every template.
+ * one it does, so both values are meaningful for every template.
  *
  * `null`/absent keeps each flow's original timing — see MUSIC_STAGE_FALLBACK in
  * useShowcaseStages.ts for what that resolves to per flow.
+ *
+ * **There is deliberately no `cover` option.** Starting the track on the cover
+ * means starting it inside the envelope tap, and how much latitude that gesture
+ * buys varies by platform — an in-app webview or a stricter mobile autoplay
+ * policy can refuse the play() outright, and a cover that is silent for some
+ * guests and scored for others is worse than one that is reliably silent. The
+ * cover stays quiet; the earliest offered cue is the transition.
  */
-export type MusicStartStage = 'cover' | 'transition' | 'main_content'
+export type MusicStartStage = 'transition' | 'main_content'
+
+/**
+ * What the column may actually hold. `cover` was offered briefly and is still
+ * stored on any event set during that window, so every read normalizes through
+ * `normalizeMusicStartStage` rather than trusting the narrower type above.
+ */
+export type StoredMusicStartStage = MusicStartStage | 'cover'
 
 export interface Event {
   id: string
@@ -86,7 +93,7 @@ export interface Event {
   selected_music_details?: BackgroundMusic | null
   music_start_time?: number | null
   music_end_time?: number | null
-  music_start_stage?: MusicStartStage | null
+  music_start_stage?: StoredMusicStartStage | null
   google_map_embed_link?: string | null
   youtube_embed_link?: string | null
   event_template?: number | null

@@ -1,7 +1,35 @@
 # Backend API Requirements: Music Start Stage (`music_start_stage`)
 
-> **Status: PENDING.** One new nullable field on the Event model. No new
-> endpoint, no change to any existing field.
+> **Status: DONE (2026-08-10).** `music_start_stage` is on the Event model,
+> `null=True` with no default and no data migration, and is readable/writable on
+> the list, detail, create/update and **showcase** serializers. One behaviour
+> worth knowing: an empty string is normalised to `NULL` on save, because
+> `multipart/form-data` cannot carry a JSON null and a blank choice in the Django
+> admin would otherwise store `''`. So clearing the control round-trips as `null`
+> whichever content type you use.
+>
+> ### Follow-up (2026-08-10): `cover` was withdrawn — two choices, not three
+>
+> The frontend no longer offers `cover`. Starting the track on the cover means
+> starting it inside the envelope tap, and how much latitude that gesture buys
+> varies by platform — an in-app webview or a stricter mobile autoplay policy can
+> refuse the `play()` outright. A cover that is scored for some guests and silent
+> for others is worse than one that is reliably silent, so the cover stays quiet
+> and `transition` is now the earliest cue on offer.
+>
+> **Nothing is required of you, and nothing is urgent.** The frontend normalizes
+> a stored `cover` to `transition` on read (`normalizeMusicStartStage`), so any
+> row already carrying it behaves correctly today. When convenient:
+>
+> 1. Drop `cover` from the field's `choices` so the admin and the API stop
+>    offering it. Keep accepting it on write for a release if that is easier —
+>    the frontend never sends it any more.
+> 2. Optionally `UPDATE … SET music_start_stage='transition' WHERE
+>    music_start_stage='cover'`. Cosmetic: it only aligns what is stored with
+>    what is rendered.
+>
+> The rest of this document describes the original three-value design and is kept
+> for the reasoning behind `NULL`, which is unchanged and still load-bearing.
 
 ## The ask, in one line
 

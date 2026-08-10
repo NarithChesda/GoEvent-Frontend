@@ -1,21 +1,46 @@
 import { ref, computed, nextTick, onUnmounted } from 'vue'
 import { useVideoResourceManager } from './useVideoResourceManager'
-import type { MusicStartStage } from '@/services/api/types/event.types'
+import type { MusicStartStage, StoredMusicStartStage } from '@/services/api/types/event.types'
 
 export type ShowcaseStage = 'cover' | 'transition' | 'event_video' | 'main_content'
 
 /**
- * Cue points the music gate understands, in the order the showcase reaches them.
+ * Moments the gate can fire on. Wider than `MusicStartStage`, which is only what
+ * an organizer may *choose*: `cover` is still needed internally because it is
+ * where a video template's music has always started, and dropping it from the
+ * vocabulary would retime every one of those events.
+ */
+type MusicCuePoint = 'cover' | MusicStartStage
+
+/**
+ * Cue points in the order the showcase reaches them.
  *
  * Only three of the four stages are cue points: `event_video` is deliberately
  * absent. Music is paused for the duration of that video anyway (the view swaps
  * it out and restores it after), so a cue there would start a track that is
  * silenced in the same breath.
  */
-const MUSIC_CUE_ORDER: Record<MusicStartStage, number> = {
+const MUSIC_CUE_ORDER: Record<MusicCuePoint, number> = {
   cover: 0,
   transition: 1,
   main_content: 2,
+}
+
+/**
+ * Narrow whatever the column holds to something an organizer can currently pick.
+ *
+ * `cover` was briefly offered and is still stored on any event set during that
+ * window; it resolves to `transition` — the earliest cue still on the menu —
+ * rather than being honoured, so no event keeps playing music on a cover that
+ * the product no longer scores. Anything unrecognised resolves to `null`, i.e.
+ * the template flow's own timing.
+ */
+export function normalizeMusicStartStage(
+  value: StoredMusicStartStage | null | undefined,
+): MusicStartStage | null {
+  if (value === 'cover' || value === 'transition') return 'transition'
+  if (value === 'main_content') return 'main_content'
+  return null
 }
 
 /**
@@ -34,7 +59,7 @@ const MUSIC_STAGE_FALLBACK = {
   transition: 'main_content',
   video: 'cover',
   direct: 'main_content',
-} as const satisfies Record<string, MusicStartStage>
+} as const satisfies Record<string, MusicCuePoint>
 
 /**
  * Showcase Stages Composable
@@ -195,7 +220,7 @@ export function useShowcaseStages() {
   /** The track and its loop window, held from envelope-open until its cue lands. */
   const musicCue = ref<{ url?: string; loopStart?: number; loopEnd?: number } | null>(null)
   /** The stage the cue is waiting for, resolved once at envelope-open. */
-  const musicCueStage = ref<MusicStartStage>('main_content')
+  const musicCueStage = ref<MusicCuePoint>('main_content')
   /** Latched so a track can only ever be started once per session by the gate. */
   const musicCueFired = ref(false)
 
@@ -208,7 +233,7 @@ export function useShowcaseStages() {
     musicUrl: string | undefined,
     loopStart: number | undefined,
     loopEnd: number | undefined,
-    stage: MusicStartStage,
+    stage: MusicCuePoint,
   ): void => {
     musicCue.value = { url: musicUrl, loopStart, loopEnd }
     musicCueStage.value = stage
@@ -223,7 +248,7 @@ export function useShowcaseStages() {
    * requested stage (no transition stage, say) still gets its music at the next
    * stage it does reach, instead of silently never playing.
    */
-  const cueMusic = (stage: MusicStartStage): void => {
+  const cueMusic = (stage: MusicCuePoint): void => {
     if (musicCueFired.value) return
     if (MUSIC_CUE_ORDER[stage] < MUSIC_CUE_ORDER[musicCueStage.value]) return
 
@@ -262,7 +287,12 @@ export function useShowcaseStages() {
         options?.musicStartStage ?? MUSIC_STAGE_FALLBACK.transition,
       )
       currentShowcaseStage.value = 'transition'
-      cueMusic('transition')
+      // Deliberately NOT cued here. This flips the stage on the tap, but the
+      // cover is still on screen for the length of its exit — the doors are
+      // mid-swing, the decorations mid-slide — so firing now would put music
+      // over the cover, which is the one thing `transition` exists to avoid.
+      // The caller cues it once the cover has actually cleared, since only it
+      // knows which exit animation is running and how long it takes.
       return
     }
 

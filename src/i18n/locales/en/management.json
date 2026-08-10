@@ -645,14 +645,14 @@
         "startStage": {
           "title": "Start Music At",
           "default": "Default",
-          "cover": "Cover",
           "transition": "Transition",
           "mainContent": "Invitation",
           "saving": "Saving…",
           "hintDefault": "Uses the template's own timing. Most templates start the music with the invitation.",
-          "hintCover": "Starts the moment the guest opens the envelope, playing under the cover animation.",
           "hintTransition": "Starts as the transition scene appears, after the cover has animated away.",
-          "hintMainContent": "Starts when the invitation itself is revealed."
+          "hintMainContent": "Starts when the invitation itself is revealed.",
+          "saveFailed": "Couldn't save the music start point. Check your connection and try again.",
+          "unsupported": "The server accepted the change but didn't store it — this feature needs a server update before it will take effect."
         },
         "trim": {
           "open": "Set Loop Points",

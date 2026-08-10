@@ -11,13 +11,13 @@ import type {
   EventDetailsDesignConfig,
   HostInfoDesignConfig,
 } from '../services/api/types/template.types'
-import type { MusicStartStage } from '../services/api/types/event.types'
+import type { StoredMusicStartStage } from '../services/api/types/event.types'
 
 // Imports - Composables
 import { usePerformance, ResourceManager } from '../utils/performance'
 import { useFontManager } from './showcase/useFontManager'
 import { useVideoResourceManager } from './showcase/useVideoResourceManager'
-import { useShowcaseStages } from './showcase/useShowcaseStages'
+import { useShowcaseStages, normalizeMusicStartStage } from './showcase/useShowcaseStages'
 import { useShowcaseRedirect } from './showcase/useShowcaseRedirect'
 import { useTemplateProcessor } from './showcase/useTemplateProcessor'
 
@@ -257,7 +257,7 @@ export interface EventData {
   music?: string
   music_start_time?: number | null
   music_end_time?: number | null
-  music_start_stage?: MusicStartStage | null
+  music_start_stage?: StoredMusicStartStage | null
   google_map_embed_link?: string
   youtube_embed_link?: string
   registration_required?: boolean
@@ -633,8 +633,9 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
   const musicStartTime = computed(() => event.value?.music_start_time || 0)
   const musicEndTime = computed(() => event.value?.music_end_time ?? undefined)
   /** Null/absent is meaningful — the stage gate reads it as "keep the old
-   *  per-flow timing", so it is passed through rather than defaulted here. */
-  const musicStartStage = computed(() => event.value?.music_start_stage ?? null)
+   *  per-flow timing", so it is passed through rather than defaulted here.
+   *  Normalized because the column may still hold the withdrawn `cover`. */
+  const musicStartStage = computed(() => normalizeMusicStartStage(event.value?.music_start_stage))
 
   const isEnvelopeButtonReady = computed(() => true)
 

@@ -266,23 +266,27 @@
                 {{ t('management.media.mediaUploads.music.startStage.saving') }}
               </span>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div class="grid grid-cols-3 gap-2">
               <button
                 v-for="option in musicStartStageOptions"
                 :key="option.value ?? 'default'"
                 type="button"
                 @click="saveMusicStartStage(option.value)"
                 :disabled="savingStartStage"
-                :aria-pressed="(eventData?.music_start_stage ?? null) === option.value"
+                :aria-pressed="selectedStartStage === option.value"
                 class="px-2.5 py-2 rounded-xl text-xs font-medium border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100"
-                :class="(eventData?.music_start_stage ?? null) === option.value
+                :class="selectedStartStage === option.value
                   ? 'bg-sky-50 border-sky-300 text-sky-700 ring-1 ring-sky-200'
                   : 'bg-white border-slate-200 text-slate-600 hover:border-sky-300 hover:bg-slate-50'"
               >
                 {{ option.label }}
               </button>
             </div>
-            <p class="text-xs text-slate-400 mt-2 leading-snug">
+            <p v-if="startStageError" class="text-xs text-rose-600 mt-2 leading-snug flex items-start gap-1.5">
+              <AlertCircle class="w-3.5 h-3.5 flex-shrink-0 mt-px" aria-hidden="true" />
+              <span>{{ startStageError }}</span>
+            </p>
+            <p v-else class="text-xs text-slate-400 mt-2 leading-snug">
               {{ musicStartStageHint }}
             </p>
           </div>
@@ -515,6 +519,7 @@ import { useAppLanguage } from '@/composables/useAppLanguage'
 import { AlertCircle, ChevronDown, ChevronRight, ImageIcon, Library, MoreHorizontal, Music, Pause, Play, Scissors, Upload, Video, X } from 'lucide-vue-next'
 import type { Event, BackgroundMusic } from '@/services/api'
 import type { MusicStartStage } from '@/services/api/types/event.types'
+import { normalizeMusicStartStage } from '@/composables/showcase/useShowcaseStages'
 import { eventsService } from '@/services/api'
 import { useMediaUpload, type MediaFieldName, type MediaType } from '@/composables/useMediaUpload'
 import { useDropdownManager } from '@/composables/useDropdownManager'
@@ -913,31 +918,67 @@ const savingStartStage = ref(false)
 
 const musicStartStageOptions = computed<{ value: MusicStartStage | null; label: string }[]>(() => [
   { value: null, label: t('management.media.mediaUploads.music.startStage.default') },
-  { value: 'cover', label: t('management.media.mediaUploads.music.startStage.cover') },
   { value: 'transition', label: t('management.media.mediaUploads.music.startStage.transition') },
   { value: 'main_content', label: t('management.media.mediaUploads.music.startStage.mainContent') },
 ])
 
+/**
+ * Normalized, so an event still holding the withdrawn `cover` shows as
+ * `transition` — which is what the showcase will actually do with it — rather
+ * than as no selection at all.
+ */
+const selectedStartStage = computed(() =>
+  normalizeMusicStartStage(props.eventData?.music_start_stage),
+)
+
 const musicStartStageHint = computed(() => {
-  const key = props.eventData?.music_start_stage ?? null
+  const key = selectedStartStage.value
   if (key === null) return t('management.media.mediaUploads.music.startStage.hintDefault')
-  if (key === 'cover') return t('management.media.mediaUploads.music.startStage.hintCover')
   if (key === 'transition') return t('management.media.mediaUploads.music.startStage.hintTransition')
   return t('management.media.mediaUploads.music.startStage.hintMainContent')
 })
 
+/**
+ * Why this reports instead of failing quietly: the selected button is driven by
+ * `eventData`, so a save that doesn't stick shows up only as a button that won't
+ * light — indistinguishable from a dead click. Two ways that happens, and both
+ * are worth naming rather than swallowing:
+ *
+ *  - the request fails outright (offline, 400, permissions);
+ *  - the request succeeds but the field is missing from the response, which is
+ *    what a backend that hasn't deployed `music_start_stage` yet does — DRF
+ *    drops unknown keys silently and still returns `200`. The setting then
+ *    appears to do nothing on the showcase, which is a long way from the real
+ *    cause. `in` on the response is a reliable probe: a serializer that knows
+ *    the field always emits it, even as `null`.
+ */
+const startStageError = ref<string | null>(null)
+
 const saveMusicStartStage = async (stage: MusicStartStage | null) => {
   if (!props.eventData?.id) return
-  if ((props.eventData.music_start_stage ?? null) === stage) return
+  if (selectedStartStage.value === stage) return
 
   savingStartStage.value = true
+  startStageError.value = null
   try {
     const response = await eventsService.patchEvent(props.eventData.id, {
       music_start_stage: stage,
     })
-    if (response.success && response.data) {
-      emit('updated', response.data)
+
+    if (!response.success || !response.data) {
+      startStageError.value =
+        response.message || t('management.media.mediaUploads.music.startStage.saveFailed')
+      return
     }
+
+    if (!('music_start_stage' in response.data)) {
+      startStageError.value = t('management.media.mediaUploads.music.startStage.unsupported')
+      return
+    }
+
+    emit('updated', response.data)
+  } catch {
+    startStageError.value = t('management.media.mediaUploads.music.startStage.saveFailed')
   } finally {
     savingStartStage.value = false
   }
