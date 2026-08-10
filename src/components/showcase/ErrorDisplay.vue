@@ -35,10 +35,13 @@ defineEmits<{
 </script>
 
 <style scoped>
+/* `dvh` alongside each `vh` fallback — see LoadingSpinner.vue / the stage's
+   `.showcase-container`; `100vh` is the chrome-hidden height on mobile. */
 .showcase-container {
   width: 100%;
   max-width: 1080px;
   height: 100vh;
+  height: 100dvh;
   max-height: 1920px;
   position: relative;
   overflow: hidden;
@@ -50,7 +53,9 @@ defineEmits<{
 @media (min-aspect-ratio: 1080/1920) {
   .showcase-container {
     width: calc(100vh * 1080 / 1920);
+    width: calc(100dvh * 1080 / 1920);
     height: 100vh;
+    height: 100dvh;
   }
 }
 </style>

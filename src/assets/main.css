@@ -22,6 +22,24 @@ body {
   min-height: 100vh;
 }
 
+/* Set by the V1 event showcase while it is mounted (see EventShowcaseRefactored
+ * .vue). The stage sizes itself in `dvh`, which tracks the viewport — so it must
+ * not be allowed to change. The only thing that could change it is the browser
+ * collapsing its own chrome, and the only scroll range the showcase leaves for
+ * that gesture is the one `#app`'s viewport-height floor adds: on mobile `100vh`
+ * is the *large*, chrome-hidden viewport, so it overshoots the visible area by
+ * exactly the header's height. Zeroing it — and sealing the root scrollers
+ * behind it — pins the viewport, so `dvh` resolves once and holds.
+ * The V2 showcase never sets this: the window is its scroller. */
+html.showcase-viewport-locked,
+html.showcase-viewport-locked body {
+  overflow: hidden;
+}
+
+html.showcase-viewport-locked #app {
+  min-height: 0;
+}
+
 /* Utility: hide native scrollbars while preserving scroll behaviour.
  * Used by horizontally-scrollable tab bars and similar overflow rows
  * across the app (settings, event-management tabs, guest groups, etc). */

@@ -284,11 +284,15 @@ defineExpose({
 }
 
 /* Responsive video sizing */
+/* `dvh` fallback pairs throughout: the cover video has to fill the same visible
+   box as `.showcase-container`, and `100vh` on mobile is the taller
+   chrome-hidden height, which pushed the bottom of the frame off screen. */
 .desktop-video-sizing {
   position: absolute;
   top: 0;
   left: 0;
   height: 100vh;
+  height: 100dvh;
   object-position: center;
 }
 
@@ -297,6 +301,7 @@ defineExpose({
   .desktop-video-sizing {
     width: 100% !important;
     height: 100vh !important;
+    height: 100dvh !important;
     object-fit: cover !important;
     object-position: center center !important;
     position: absolute !important;
@@ -311,6 +316,7 @@ defineExpose({
   .desktop-video-sizing {
     width: 100% !important;
     height: 100vh !important;
+    height: 100dvh !important;
     object-fit: cover !important;
     object-position: center center !important;
     position: absolute !important;
