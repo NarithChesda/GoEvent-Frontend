@@ -409,6 +409,33 @@ const isDoorTransition = computed(
   () => event.value.template_assets?.cover_stage_layout?.showcaseAnimationType === 'door',
 )
 
+/**
+ * Fetch and decode the transition stage's featured photo while the guest is
+ * still looking at the cover.
+ *
+ * That stage mounts on the tap, in the very frame the cover starts animating
+ * away, and its full-bleed photo has never been requested before that moment.
+ * Doing the fetch, the decode and the resulting geometry measurement there
+ * competes with the frame the cover's exit has to land on — on a desktop that
+ * is absorbed invisibly, on a phone it is the difference between the doors
+ * gliding and the opening of the swing stuttering. Warmed here, the tap gets a
+ * cache hit on an already-decoded bitmap.
+ *
+ * Fire-and-forget by design: if it fails, the stage simply loads the photo the
+ * way it always did.
+ */
+watch(
+  () => (isBasicWedding.value ? (eventPhotos.value?.find((p) => p.is_featured)?.image ?? null) : null),
+  (image) => {
+    if (!image) return
+    const warm = new Image()
+    warm.decoding = 'async'
+    warm.src = getMediaUrl(image)
+    void warm.decode?.().catch(() => {})
+  },
+  { immediate: true },
+)
+
 // V2 "Storybook Romance" template gate. Per-template selection
 // (event.template_assets.showcase_template_version) takes priority once the
 // backend sends it — see docs/backend-api-requirements/showcase-template-version.md.

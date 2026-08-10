@@ -241,6 +241,12 @@ const doorBackgroundStyle = computed(() => {
   bottom: 0;
   overflow: hidden;
   backface-visibility: hidden;
+  /* Promoted while the cover is just sitting there rather than at the tap. A
+     leaf carries the entire cover — four full-bleed ornaments, the gilding and
+     the copy — and a phone cannot rasterize that inside the first frame of the
+     swing. The compositor animates the layer on time regardless and draws
+     whatever tiles exist, which is where the blank / half-painted leaves came
+     from. Warming both textures up front takes that cost off the animation. */
   will-change: transform;
   pointer-events: none;
 }
@@ -251,8 +257,14 @@ const doorBackgroundStyle = computed(() => {
   top: 0;
   bottom: 0;
   height: 100%;
-  transform-style: preserve-3d;
-  transition: width 0s 0s, left 0s 0s;
+  /* Was `transform-style: preserve-3d`, which bought nothing — no descendant
+     here carries a 3D transform, the swing lives on .door-panel above — and
+     cost the leaf its cacheability: preserve-3d keeps a subtree unflattened, so
+     each frame of the rotation recomposited the whole cover instead of
+     re-projecting one texture. `isolation` keeps the one thing preserve-3d was
+     silently providing: the stacking context CoverGilding's blend layers expect
+     to blend against (see the comment at the top of CoverGilding). */
+  isolation: isolate;
 }
 
 /* Cast shadow lifting each ornament off the leaf behind it — see the matching
@@ -274,26 +286,45 @@ const doorBackgroundStyle = computed(() => {
   z-index: 30;
 }
 
-/* Left door - CLOSED: covers full viewport */
+/* GEOMETRY — the same closed and open
+ *
+ * The leaves always sit side by side, each clipping its own half of one
+ * full-stage-wide copy of the cover: closed they butt together and read as the
+ * single uncut cover, open they simply swing apart. Nothing about their layout
+ * changes when the tap lands, so the swing is a pure transform from its first
+ * frame.
+ *
+ * They used to be arranged the other way — left leaf at full width with the
+ * right one stacked behind it at opacity 0 — which meant the tap had to resize
+ * both (panel 100%→50%, content 100%→200%) and reveal a leaf that, being fully
+ * transparent, had never been painted at all. That handed the compositor two
+ * freshly invalidated full-screen layers to animate. A desktop GPU rasterizes
+ * them inside a frame and nothing shows; a phone does not, and the opening
+ * third of the swing played against blank or half-drawn leaves.
+ */
 .door-panel-left {
   left: 0;
-  width: 100%;
+  /* A pixel of lap across the seam. Two independently composited layers meeting
+     at a fractional device pixel leave a hairline of whatever is behind them;
+     this leaf covers it instead (it is the upper of the two). The content rule
+     below hands the 2px straight back, so the artwork is still exactly one
+     stage wide on both leaves — stretching one half would only move the seam
+     into the artwork itself. */
+  width: calc(50% + 1px);
   z-index: 2;
   transform-origin: left center;
 }
 
 .door-panel-left .door-full-content {
-  width: 100%;
+  width: calc(200% - 2px);
   left: 0;
 }
 
-/* Right door - CLOSED: hidden behind left panel */
 .door-panel-right {
   right: 0;
   width: 50%;
   z-index: 1;
   transform-origin: right center;
-  opacity: 0;
 }
 
 .door-panel-right .door-full-content {
@@ -322,18 +353,28 @@ const doorBackgroundStyle = computed(() => {
  * along with TransitionStageDoor.vue's beats, which are timed off this swing.
  */
 .door-open-left {
-  width: 50%;
   animation: doorOpenLeft 1.65s linear forwards;
 }
 
-.door-open-left .door-full-content {
-  width: 200%;
-  left: 0;
+.door-open-right {
+  animation: doorOpenRight 1.65s linear forwards;
 }
 
-.door-open-right {
-  opacity: 1;
-  animation: doorOpenRight 1.65s linear forwards;
+/* For the length of the swing a leaf is a photograph of the cover being moved,
+   not a surface still being lit. The gilding's travelling speculars and corner
+   glints animate paint (`background-position`, and a blended opacity/scale),
+   and animated paint inside a blended group is the one thing that stops the
+   compositor caching the leaf — it redraws the whole cover every frame, on both
+   leaves, for the entire 1.65s. Freezing them where they stand, on artwork that
+   is turning edge-on and leaving the screen, is not perceivable; it is what
+   lets a phone re-project a texture instead of repainting the cover sixty times
+   a second. The band's fixed bevel and catch-light are untouched, so nothing
+   pops at the moment the swing starts. */
+.door-open-left :deep(.gild-sweep),
+.door-open-right :deep(.gild-sweep),
+.door-open-left :deep(.gild-flare),
+.door-open-right :deep(.gild-flare) {
+  animation-play-state: paused;
 }
 
 @keyframes doorOpenLeft {

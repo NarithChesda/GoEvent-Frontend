@@ -589,7 +589,13 @@ const replay = async () => {
 /* ---------- Seam light ---------- */
 
 /* A fixed-width band scaled horizontally rather than an animated `width`, so
-   the whole break stays on the compositor. */
+   the whole break stays on the compositor.
+   `will-change` matters more here than the usual hint: both of these carry a
+   `filter: blur()`, and a blurred element whose transform animates is
+   re-rasterized at each new scale unless it is promoted — a full-screen 26px
+   blur redrawn every frame, over the same second and a half the cover's doors
+   are swinging. Promoted, the blur is rastered once and the compositor scales
+   the result. */
 .seam-glow,
 .seam-line {
   position: absolute;
@@ -599,6 +605,7 @@ const replay = async () => {
   opacity: 0;
   mix-blend-mode: screen;
   pointer-events: none;
+  will-change: transform, opacity;
 }
 
 .seam-glow {
