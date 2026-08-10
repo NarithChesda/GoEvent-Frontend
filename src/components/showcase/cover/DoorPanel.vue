@@ -19,7 +19,7 @@
         v-if="leftDecorationUrl"
         :src="leftDecorationUrl"
         alt="Left decoration"
-        class="absolute top-0 bottom-0 left-0 w-auto h-full max-w-none pointer-events-none"
+        class="absolute top-0 bottom-0 left-0 w-auto h-full max-w-none pointer-events-none door-decoration"
         :style="{ zIndex: decorationZIndexes.left }"
         loading="eager"
         v-bind="protectionAttrs"
@@ -28,7 +28,7 @@
         v-if="rightDecorationUrl"
         :src="rightDecorationUrl"
         alt="Right decoration"
-        class="absolute top-0 bottom-0 right-0 w-auto h-full max-w-none pointer-events-none"
+        class="absolute top-0 bottom-0 right-0 w-auto h-full max-w-none pointer-events-none door-decoration"
         :style="{ zIndex: decorationZIndexes.right }"
         loading="eager"
         v-bind="protectionAttrs"
@@ -37,7 +37,7 @@
         v-if="topDecorationUrl"
         :src="topDecorationUrl"
         alt="Top decoration"
-        class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none"
+        class="absolute top-0 left-0 right-0 w-full h-auto pointer-events-none door-decoration"
         :style="{ zIndex: decorationZIndexes.top }"
         loading="eager"
         v-bind="protectionAttrs"
@@ -46,10 +46,26 @@
         v-if="bottomDecorationUrl"
         :src="bottomDecorationUrl"
         alt="Bottom decoration"
-        class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none"
+        class="absolute bottom-0 left-0 right-0 w-full h-auto pointer-events-none door-decoration"
         :style="{ zIndex: decorationZIndexes.bottom }"
         loading="eager"
         v-bind="protectionAttrs"
+      />
+
+      <!-- Printed-gold lighting, inside .door-full-content rather than beside
+           it. That element is always the full stage (200% of a half-width open
+           leaf, offset), so the band drawn here is one whole cover-sized frame
+           per leaf, clipped by the panel — which is exactly how the reference
+           artwork builds its doors: each is the complete lit cover plate, seen
+           through half a panel. Sits under .door-content-layer (z-30) so the
+           lettering stays unlit. -->
+      <CoverGilding
+        v-if="coverGilding"
+        :config="coverGilding"
+        :primary-color="primaryColor"
+        :secondary-color="secondaryColor"
+        :accent-color="accentColor"
+        :z-index="27"
       />
 
       <!-- Content layer -->
@@ -104,12 +120,14 @@
 
 <script setup lang="ts">
 import { useAssetProtection } from '@/composables/showcase/useAssetProtection'
+import type { ResolvedCoverGilding } from '@/composables/showcase/useCoverStageLayout'
 import type {
   CoverElementId,
   CoverLayoutMode,
   GuestFrameConfig,
 } from '@/services/api/types/template.types'
 import CoverContentRows from './CoverContentRows.vue'
+import CoverGilding from './CoverGilding.vue'
 
 interface RowStyles {
   eventTitle: { height: string }
@@ -160,6 +178,8 @@ interface Props {
   guestName?: string | null
   primaryColor: string
   secondaryColor?: string | null
+  /** Only used to tint the leaf's gilding; the cover copy has its own slots. */
+  accentColor?: string
   guestnameColor?: string | null
   currentFont: string
   primaryFont?: string
@@ -183,6 +203,8 @@ interface Props {
   // Door background
   backgroundColor?: string
   backgroundImageUrl?: string | null
+  /** Resolved gilding config. Rendered only when the template turned it on. */
+  coverGilding?: ResolvedCoverGilding | null
 }
 
 import { computed } from 'vue'
@@ -231,6 +253,15 @@ const doorBackgroundStyle = computed(() => {
   height: 100%;
   transform-style: preserve-3d;
   transition: width 0s 0s, left 0s 0s;
+}
+
+/* Cast shadow lifting each ornament off the leaf behind it — see the matching
+   rule in CoverDecorations.vue for why this is drop-shadow rather than
+   box-shadow. The variable comes from CoverContentOverlay, which is an ancestor
+   of both leaves; it is `none` unless the template switched the cover gilding
+   on, so this costs every other template nothing. */
+.door-decoration {
+  filter: var(--cover-decoration-relief, none);
 }
 
 /* Door content layer */

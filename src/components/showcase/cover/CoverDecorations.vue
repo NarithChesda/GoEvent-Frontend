@@ -92,6 +92,18 @@ const { protectionAttrs } = useAssetProtection()
 .cover-decoration-top,
 .cover-decoration-bottom {
   transition: transform 0.8s ease-out, opacity 0.8s ease-out;
+
+  /* Cast shadow lifting the ornament off the plate. `drop-shadow`, not
+     `box-shadow`: these are transparent PNGs, and box-shadow would trace the
+     image's rectangle — a hard-edged slab behind artwork that is mostly empty.
+     drop-shadow follows the alpha, so each ornament casts a shadow of its own
+     shape.
+
+     The variable is published by CoverContentOverlay and resolves to `none` for
+     every template that hasn't switched the cover gilding on, so this rule costs
+     those nothing. The fallback covers the door-panel preview mounting a
+     decoration outside that overlay. */
+  filter: var(--cover-decoration-relief, none);
 }
 
 /* Slide-out animation classes - applied directly on the same element */

@@ -3,7 +3,7 @@
     ref="containerRef"
     class="absolute inset-0 overflow-hidden pointer-events-none transition-opacity duration-700"
     :class="{ 'opacity-0': hidden }"
-    style="z-index: 26"
+    :style="{ zIndex }"
   ></div>
 </template>
 
@@ -22,10 +22,16 @@ const props = withDefaults(
     accentColor?: string
     /** When true, fades out the effect (e.g. during cover stage exit) */
     hidden?: boolean
+    /**
+     * Stacking position within the parent's context. Defaults above the door
+     * panels — see the ladder comment where CoverContentOverlay mounts this.
+     */
+    zIndex?: number
   }>(),
   {
     primaryColor: '#e91e63',
     hidden: false,
+    zIndex: 29,
   },
 )
 

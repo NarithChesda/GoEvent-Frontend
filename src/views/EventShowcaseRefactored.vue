@@ -320,9 +320,10 @@ const {
   eventMusicUrl,
   musicStartTime,
   musicEndTime,
+  musicStartStage,
   availableLanguages,
-  initializeAudio,
-  playMusic,
+  armMusic,
+  cueMusic,
   // Methods
   loadShowcase,
   openEnvelope,
@@ -443,10 +444,29 @@ const handleV2Opened = () => {
   void requestImmersiveViewport()
   setStage('main_content')
   markMainContentSeen()
-  if (eventMusicUrl.value) {
-    initializeAudio(eventMusicUrl.value, musicStartTime.value, musicEndTime.value)
-    playMusic()
-  }
+  // V2 is one scrolling page behind an envelope gate — opening it *is* reaching
+  // the main content, so whichever stage was chosen resolves to this single
+  // moment. Routed through the gate anyway so `music_start_stage` can't make a
+  // V2 event silent, and so the play bookkeeping matches V1's.
+  armMusic(
+    eventMusicUrl.value || undefined,
+    musicStartTime.value,
+    musicEndTime.value,
+    musicStartStage.value ?? 'main_content',
+  )
+  cueMusic('main_content')
+}
+
+/**
+ * How long the cover takes to get off the screen after the tap — the doors to
+ * swing clear, or the decorations to slide out. Both the hand-off to main
+ * content and the `transition` music cue hang off this, so they can't drift
+ * apart: it is the single answer to "when has the guest stopped looking at the
+ * cover?"
+ */
+const coverExitDurationMs = (): number => {
+  const animationType = event.value.template_assets?.cover_stage_layout?.showcaseAnimationType
+  return animationType === 'door' ? DOOR_CLEARED_MS : 1400
 }
 
 // Override the openEnvelope function to include video synchronization
@@ -463,7 +483,15 @@ const openEnvelopeWithVideoSync = async () => {
   if (isBasicWedding.value && hasFeaturedPhoto.value) {
     await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined, {
       useTransitionStage: true,
+      musicLoopStart: musicStartTime.value,
+      musicLoopEnd: musicEndTime.value,
+      musicStartStage: musicStartStage.value,
     })
+    // The stage flipped on the tap, but the transition scene is behind the cover
+    // until its exit finishes — so the music cue waits for the same moment the
+    // guest first sees that scene. A no-op unless this event asked for
+    // `transition`; `main_content` still waits for the stage to complete.
+    setTimeout(() => cueMusic('transition'), coverExitDurationMs())
     return
   }
 
@@ -472,6 +500,9 @@ const openEnvelopeWithVideoSync = async () => {
   if (isBasicWedding.value) {
     await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined, {
       useTransitionStage: true,
+      musicLoopStart: musicStartTime.value,
+      musicLoopEnd: musicEndTime.value,
+      musicStartStage: musicStartStage.value,
     })
     // No TransitionStage component renders (no featured photo), so the cover
     // animation is the whole reveal and main content follows it directly.
@@ -481,11 +512,9 @@ const openEnvelopeWithVideoSync = async () => {
     // the frame rather than at the very end of the swing skips its tail, which
     // is off screen anyway.
     // Decoration animation: wait for decorations to finish sliding out (~1.2s).
-    const animationType = event.value.template_assets?.cover_stage_layout?.showcaseAnimationType
-    const delay = animationType === 'door' ? DOOR_CLEARED_MS : 1400
     setTimeout(() => {
       handleTransitionComplete()
-    }, delay)
+    }, coverExitDurationMs())
     return
   }
 
@@ -494,6 +523,7 @@ const openEnvelopeWithVideoSync = async () => {
   await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined, {
     musicLoopStart: musicStartTime.value,
     musicLoopEnd: musicEndTime.value,
+    musicStartStage: musicStartStage.value,
   })
 
   // Determine display mode: basic mode has basic_decoration_photo, standard mode doesn't

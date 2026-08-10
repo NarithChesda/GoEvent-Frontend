@@ -18,7 +18,40 @@
       :is-decoration-animation="isDecorationAnimation"
     />
 
-    <!-- Ambient creature effect (butterflies hovering near decorations) — only when template has config -->
+    <!-- Printed-gold lighting on the cover artwork's border. Rendered here only
+         for the decoration animation: in door mode each leaf carries its own
+         copy (see DoorPanel) so the light travels with the leaf that's holding
+         it, exactly as the reference artwork's cover plate does. One instance
+         here would keep lighting a border that has already swung away.
+         z-27 puts it above the decorations (24/25) but under the cover copy
+         (30), so the band is lit and the lettering over it is not. The ambient
+         creatures pass over it at 29 — they fly in front of the plate. -->
+    <CoverGilding
+      v-if="isDecorationAnimation"
+      :config="coverGilding"
+      :primary-color="primaryColor"
+      :secondary-color="secondaryColor"
+      :accent-color="accentColor"
+      :hidden="isContentHidden"
+      :z-index="27"
+    />
+
+    <!-- Ambient creature effect (butterflies hovering near decorations) — only
+         when template has config.
+
+         z-29 for the same reason the sparks and the falling petals sit above
+         the cover: a creature is life in the air IN FRONT of the plate, not
+         something printed on it, so it clears the door panels (28) the way they
+         do. At 26 — under the doors — a door-animation template painted an
+         opaque leaf (its background photo, or the flat background colour) over
+         the whole field for the entire time the cover was up, and by the time
+         the leaves parted this overlay had unmounted and taken the creatures
+         with it: the effect was configurable, billed for, and never once
+         visible. It still stays under the cover copy (30) so a butterfly can't
+         wander across the guest's name and sit there — unlike a petal, which
+         passes through in a second. The tie with the transparent gesture layer
+         below (also 29) is harmless: that one is a hit target with no paint,
+         and this one is pointer-events-none. -->
     <AmbientEffect
       v-if="ambientCreatures"
       :key="ambientCreaturesKey"
@@ -26,6 +59,7 @@
       :primary-color="primaryColor"
       :accent-color="accentColor"
       :hidden="isContentHidden"
+      :z-index="29"
     />
 
     <!-- DOOR ANIMATION: 3D perspective container for door panels -->
@@ -70,6 +104,8 @@
         :guest-name-max-width-percent="guestNameMaxWidthPercent"
         :background-color="backgroundColor"
         :background-image-url="doorBackgroundImageUrl"
+        :cover-gilding="coverGilding"
+        :accent-color="accentColor"
       />
 
       <!-- Right Door Panel -->
@@ -112,6 +148,8 @@
         :guest-name-max-width-percent="guestNameMaxWidthPercent"
         :background-color="backgroundColor"
         :background-image-url="doorBackgroundImageUrl"
+        :cover-gilding="coverGilding"
+        :accent-color="accentColor"
       />
     </div>
 
@@ -184,13 +222,15 @@ import { computed } from 'vue'
 import { useOptimizedDecorations, useOptimizedBackgrounds } from '@/composables/showcase/useOptimizedDecorations'
 import {
   COVER_COLOR_SLOT_VARS,
+  COVER_DECORATION_RELIEF_FILTERS,
+  COVER_DECORATION_RELIEF_VAR,
   COVER_FONT_SLOT_VARS,
   useCoverStageLayout,
 } from '@/composables/showcase/useCoverStageLayout'
 import { useShowcaseAnimation, type ShowcaseAnimationType } from '@/composables/showcase/useShowcaseAnimation'
 import { useTouchGesture } from '@/composables/showcase/useTouchGesture'
 import type { CoverStageLayout, AmbientCreaturesConfig } from '@/services/api/types/template.types'
-import { CoverDecorations, CoverContentRows, DoorPanel, SwipeUpArrow } from './cover'
+import { CoverDecorations, CoverContentRows, CoverGilding, DoorPanel, SwipeUpArrow } from './cover'
 import AmbientEffect from './AmbientEffect.vue'
 
 // Local interface for template assets (component-specific subset)
@@ -305,11 +345,27 @@ const {
   layoutMode,
   elementStyles,
   guestFrame,
+  coverGilding,
   decorationZIndexes,
   layout,
 } = useCoverStageLayout(
   computed(() => props.coverStageLayout),
   computed(() => props.contentTopPosition)
+)
+
+/**
+ * The decorations' cast shadow, gated on the gilding being on.
+ *
+ * It lives inside `coverGilding` because it is the same lighting model — the
+ * band's bevel and this shadow have to agree about where the light is — but it
+ * is the one part of that config that acts on the decoration artwork rather than
+ * on the band, so it is also the part that does something for a template whose
+ * cover is edge pieces instead of a printed border.
+ */
+const decorationReliefFilter = computed(() =>
+  coverGilding.value.enabled
+    ? COVER_DECORATION_RELIEF_FILTERS[coverGilding.value.decorationRelief]
+    : COVER_DECORATION_RELIEF_FILTERS.none,
 )
 
 /**
@@ -325,6 +381,12 @@ const slotVarStyle = computed<Record<string, string>>(() => {
   const body = props.primaryFont || props.currentFont
   const accentFont = props.accentFont || body
   return {
+    // Published here rather than passed as a prop because it lands on images in
+    // two components — CoverDecorations and DoorPanel — and this root is the
+    // nearest ancestor of both. Same trick, and the same reason, as the font and
+    // colour slots below. Inert at `none`, which is every template that hasn't
+    // switched the gilding on.
+    [COVER_DECORATION_RELIEF_VAR]: decorationReliefFilter.value,
     [COVER_FONT_SLOT_VARS.primary]: body,
     [COVER_FONT_SLOT_VARS.secondary]: props.secondaryFont || body,
     [COVER_FONT_SLOT_VARS.accent]: accentFont,
