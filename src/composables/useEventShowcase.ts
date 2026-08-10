@@ -11,6 +11,7 @@ import type {
   EventDetailsDesignConfig,
   HostInfoDesignConfig,
 } from '../services/api/types/template.types'
+import type { MusicStartStage } from '../services/api/types/event.types'
 
 // Imports - Composables
 import { usePerformance, ResourceManager } from '../utils/performance'
@@ -256,6 +257,7 @@ export interface EventData {
   music?: string
   music_start_time?: number | null
   music_end_time?: number | null
+  music_start_stage?: MusicStartStage | null
   google_map_embed_link?: string
   youtube_embed_link?: string
   registration_required?: boolean
@@ -630,6 +632,9 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
 
   const musicStartTime = computed(() => event.value?.music_start_time || 0)
   const musicEndTime = computed(() => event.value?.music_end_time ?? undefined)
+  /** Null/absent is meaningful — the stage gate reads it as "keep the old
+   *  per-flow timing", so it is passed through rather than defaulted here. */
+  const musicStartStage = computed(() => event.value?.music_start_stage ?? null)
 
   const isEnvelopeButtonReady = computed(() => true)
 
@@ -1441,6 +1446,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     eventMusicUrl,
     musicStartTime,
     musicEndTime,
+    musicStartStage,
     availableLanguages,
     isEnvelopeButtonReady,
 
@@ -1470,6 +1476,8 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     playMusic: stageManager.playMusic,
     pauseMusic: stageManager.pauseMusic,
     toggleMusic: stageManager.toggleMusic,
+    armMusic: stageManager.armMusic,
+    cueMusic: stageManager.cueMusic,
     handleCoverStageReady: stageManager.handleCoverStageReady,
     setStage: stageManager.setStage,
 

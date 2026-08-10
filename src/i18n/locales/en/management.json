@@ -642,6 +642,18 @@
         },
         "empty": "No music added",
         "emptySub": "Background music not configured",
+        "startStage": {
+          "title": "Start Music At",
+          "default": "Default",
+          "cover": "Cover",
+          "transition": "Transition",
+          "mainContent": "Invitation",
+          "saving": "Saving…",
+          "hintDefault": "Uses the template's own timing. Most templates start the music with the invitation.",
+          "hintCover": "Starts the moment the guest opens the envelope, playing under the cover animation.",
+          "hintTransition": "Starts as the transition scene appears, after the cover has animated away.",
+          "hintMainContent": "Starts when the invitation itself is revealed."
+        },
         "trim": {
           "open": "Set Loop Points",
           "title": "Loop Points",

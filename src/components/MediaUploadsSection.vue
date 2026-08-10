@@ -251,6 +251,42 @@
             </div>
           </div>
 
+          <!-- Where in the showcase the track starts. Separate from the trim
+               editor on purpose: trimming is about the audio file, this is about
+               the invitation's pacing, and an organizer reaches for them at
+               different times. "Default" is a real value (null), not a synonym
+               for one of the three — it leaves each template's original timing
+               alone, which is what every existing event is still running. -->
+          <div v-if="canEdit" class="mt-4 pt-4 border-t border-slate-100">
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <p class="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                {{ t('management.media.mediaUploads.music.startStage.title') }}
+              </p>
+              <span v-if="savingStartStage" class="text-xs text-slate-400">
+                {{ t('management.media.mediaUploads.music.startStage.saving') }}
+              </span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button
+                v-for="option in musicStartStageOptions"
+                :key="option.value ?? 'default'"
+                type="button"
+                @click="saveMusicStartStage(option.value)"
+                :disabled="savingStartStage"
+                :aria-pressed="(eventData?.music_start_stage ?? null) === option.value"
+                class="px-2.5 py-2 rounded-xl text-xs font-medium border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100"
+                :class="(eventData?.music_start_stage ?? null) === option.value
+                  ? 'bg-sky-50 border-sky-300 text-sky-700 ring-1 ring-sky-200'
+                  : 'bg-white border-slate-200 text-slate-600 hover:border-sky-300 hover:bg-slate-50'"
+              >
+                {{ option.label }}
+              </button>
+            </div>
+            <p class="text-xs text-slate-400 mt-2 leading-snug">
+              {{ musicStartStageHint }}
+            </p>
+          </div>
+
           <!-- Loop trim editor -->
           <div v-if="showTrimEditor" class="mt-4 pt-4 border-t border-slate-100">
             <div class="flex items-center justify-between gap-2 mb-3">
@@ -478,6 +514,7 @@ import { ref, toRef, watch, computed, reactive, onUnmounted } from 'vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { AlertCircle, ChevronDown, ChevronRight, ImageIcon, Library, MoreHorizontal, Music, Pause, Play, Scissors, Upload, Video, X } from 'lucide-vue-next'
 import type { Event, BackgroundMusic } from '@/services/api'
+import type { MusicStartStage } from '@/services/api/types/event.types'
 import { eventsService } from '@/services/api'
 import { useMediaUpload, type MediaFieldName, type MediaType } from '@/composables/useMediaUpload'
 import { useDropdownManager } from '@/composables/useDropdownManager'
@@ -868,6 +905,42 @@ const resetTrimPoints = () => {
   pendingStart.value = 0
   pendingEnd.value = null
   saveTrimPoints()
+}
+
+// ---- Music start stage (music_start_stage) ----
+
+const savingStartStage = ref(false)
+
+const musicStartStageOptions = computed<{ value: MusicStartStage | null; label: string }[]>(() => [
+  { value: null, label: t('management.media.mediaUploads.music.startStage.default') },
+  { value: 'cover', label: t('management.media.mediaUploads.music.startStage.cover') },
+  { value: 'transition', label: t('management.media.mediaUploads.music.startStage.transition') },
+  { value: 'main_content', label: t('management.media.mediaUploads.music.startStage.mainContent') },
+])
+
+const musicStartStageHint = computed(() => {
+  const key = props.eventData?.music_start_stage ?? null
+  if (key === null) return t('management.media.mediaUploads.music.startStage.hintDefault')
+  if (key === 'cover') return t('management.media.mediaUploads.music.startStage.hintCover')
+  if (key === 'transition') return t('management.media.mediaUploads.music.startStage.hintTransition')
+  return t('management.media.mediaUploads.music.startStage.hintMainContent')
+})
+
+const saveMusicStartStage = async (stage: MusicStartStage | null) => {
+  if (!props.eventData?.id) return
+  if ((props.eventData.music_start_stage ?? null) === stage) return
+
+  savingStartStage.value = true
+  try {
+    const response = await eventsService.patchEvent(props.eventData.id, {
+      music_start_stage: stage,
+    })
+    if (response.success && response.data) {
+      emit('updated', response.data)
+    }
+  } finally {
+    savingStartStage.value = false
+  }
 }
 
 /**

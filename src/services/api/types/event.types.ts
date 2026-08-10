@@ -14,6 +14,28 @@ export interface EventCategory {
   is_active: boolean
 }
 
+/**
+ * Which showcase stage the background music starts on.
+ *
+ * The showcase can never start music before the guest opens the envelope — the
+ * browser's autoplay policy needs a user gesture, and that tap is the only one
+ * available — so these are the three moments *at or after* the tap, not three
+ * arbitrary points on a timeline:
+ *
+ * - `cover`        — the instant the envelope is tapped, so the music underscores
+ *                    the cover animating away and the transition that follows.
+ * - `transition`   — when the transition stage takes the screen (the featured
+ *                    photo / door reveal), after the cover has gone.
+ * - `main_content` — when the invitation itself is revealed.
+ *
+ * A stage that a given template's flow never reaches falls through to the next
+ * one it does, so every value is meaningful for every template.
+ *
+ * `null`/absent keeps each flow's original timing — see MUSIC_STAGE_FALLBACK in
+ * useShowcaseStages.ts for what that resolves to per flow.
+ */
+export type MusicStartStage = 'cover' | 'transition' | 'main_content'
+
 export interface Event {
   id: string
   title: string
@@ -64,6 +86,7 @@ export interface Event {
   selected_music_details?: BackgroundMusic | null
   music_start_time?: number | null
   music_end_time?: number | null
+  music_start_stage?: MusicStartStage | null
   google_map_embed_link?: string | null
   youtube_embed_link?: string | null
   event_template?: number | null

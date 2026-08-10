@@ -1,7 +1,40 @@
 import { ref, computed, nextTick, onUnmounted } from 'vue'
 import { useVideoResourceManager } from './useVideoResourceManager'
+import type { MusicStartStage } from '@/services/api/types/event.types'
 
 export type ShowcaseStage = 'cover' | 'transition' | 'event_video' | 'main_content'
+
+/**
+ * Cue points the music gate understands, in the order the showcase reaches them.
+ *
+ * Only three of the four stages are cue points: `event_video` is deliberately
+ * absent. Music is paused for the duration of that video anyway (the view swaps
+ * it out and restores it after), so a cue there would start a track that is
+ * silenced in the same breath.
+ */
+const MUSIC_CUE_ORDER: Record<MusicStartStage, number> = {
+  cover: 0,
+  transition: 1,
+  main_content: 2,
+}
+
+/**
+ * What an unset `music_start_stage` means, per flow — i.e. exactly where each
+ * flow started its music before the field existed. Keyed by the branch of
+ * `openEnvelope` that runs, so an event with no setting is untouched by this
+ * feature:
+ *
+ * - `transition` flow (basic wedding, cover → transition → main content):
+ *   music began in `onTransitionComplete`, with the invitation.
+ * - `video` flow: music began on the tap, under the event video's opening.
+ * - `direct` flow (no video, no transition stage): music began with the main
+ *   content a second after the tap.
+ */
+const MUSIC_STAGE_FALLBACK = {
+  transition: 'main_content',
+  video: 'cover',
+  direct: 'main_content',
+} as const satisfies Record<string, MusicStartStage>
 
 /**
  * Showcase Stages Composable
@@ -152,6 +185,56 @@ export function useShowcaseStages() {
     }
   }
 
+  // ── Music start gate ──────────────────────────────────────────────
+  //
+  // One place decides when the track begins, so `music_start_stage` is honoured
+  // identically across all three flows and the "unset" case can be proven to
+  // reproduce the old per-flow timing (see MUSIC_STAGE_FALLBACK). Every call
+  // site cues a stage; the gate decides whether that cue is the one to fire on.
+
+  /** The track and its loop window, held from envelope-open until its cue lands. */
+  const musicCue = ref<{ url?: string; loopStart?: number; loopEnd?: number } | null>(null)
+  /** The stage the cue is waiting for, resolved once at envelope-open. */
+  const musicCueStage = ref<MusicStartStage>('main_content')
+  /** Latched so a track can only ever be started once per session by the gate. */
+  const musicCueFired = ref(false)
+
+  /**
+   * Arm the gate for this session. Called from `openEnvelope`, whose tap is the
+   * user gesture the autoplay policy requires — every later cue rides on that
+   * same interaction, which is why nothing can start music before it.
+   */
+  const armMusic = (
+    musicUrl: string | undefined,
+    loopStart: number | undefined,
+    loopEnd: number | undefined,
+    stage: MusicStartStage,
+  ): void => {
+    musicCue.value = { url: musicUrl, loopStart, loopEnd }
+    musicCueStage.value = stage
+    musicCueFired.value = false
+    // The tap itself is the `cover` cue.
+    cueMusic('cover')
+  }
+
+  /**
+   * Announce that the showcase has reached `stage`. Fires the armed cue if this
+   * is the requested stage *or any later one* — a template whose flow skips the
+   * requested stage (no transition stage, say) still gets its music at the next
+   * stage it does reach, instead of silently never playing.
+   */
+  const cueMusic = (stage: MusicStartStage): void => {
+    if (musicCueFired.value) return
+    if (MUSIC_CUE_ORDER[stage] < MUSIC_CUE_ORDER[musicCueStage.value]) return
+
+    const cue = musicCue.value
+    if (!cue?.url) return
+
+    musicCueFired.value = true
+    initializeAudio(cue.url, cue.loopStart, cue.loopEnd)
+    void playMusic()
+  }
+
   /**
    * Advanced Showcase Stage Flow Controller
    *
@@ -160,14 +243,26 @@ export function useShowcaseStages() {
   const openEnvelope = async (
     eventVideoUrl?: string,
     eventMusicUrl?: string,
-    options?: { useTransitionStage?: boolean; musicLoopStart?: number; musicLoopEnd?: number },
+    options?: {
+      useTransitionStage?: boolean
+      musicLoopStart?: number
+      musicLoopEnd?: number
+      /** Organizer's `music_start_stage`; unset falls back per flow. */
+      musicStartStage?: MusicStartStage | null
+    },
   ): Promise<void> => {
     isEnvelopeOpened.value = true
 
-    // For transition stage flow (basic wedding events):
-    // Go directly to transition stage, defer music to after transition completes
+    // For transition stage flow (basic wedding events)
     if (options?.useTransitionStage) {
+      armMusic(
+        eventMusicUrl,
+        options?.musicLoopStart,
+        options?.musicLoopEnd,
+        options?.musicStartStage ?? MUSIC_STAGE_FALLBACK.transition,
+      )
       currentShowcaseStage.value = 'transition'
+      cueMusic('transition')
       return
     }
 
@@ -177,10 +272,12 @@ export function useShowcaseStages() {
     if (eventVideoUrl) {
       isPlayingEventVideo.value = true
 
-      initializeAudio(eventMusicUrl, options?.musicLoopStart, options?.musicLoopEnd)
-      if (eventMusicUrl) {
-        await playMusic()
-      }
+      armMusic(
+        eventMusicUrl,
+        options?.musicLoopStart,
+        options?.musicLoopEnd,
+        options?.musicStartStage ?? MUSIC_STAGE_FALLBACK.video,
+      )
 
       await nextTick()
       if (eventVideoRef.value) {
@@ -202,14 +299,16 @@ export function useShowcaseStages() {
       }
     } else {
       // No event video, skip directly to main content
+      armMusic(
+        eventMusicUrl,
+        options?.musicLoopStart,
+        options?.musicLoopEnd,
+        options?.musicStartStage ?? MUSIC_STAGE_FALLBACK.direct,
+      )
       setTimeout(() => {
         isPlayingEventVideo.value = false
         currentShowcaseStage.value = 'main_content'
-
-        initializeAudio(eventMusicUrl, options?.musicLoopStart, options?.musicLoopEnd)
-        if (eventMusicUrl) {
-          playMusic()
-        }
+        cueMusic('main_content')
       }, 1000)
     }
   }
@@ -229,6 +328,10 @@ export function useShowcaseStages() {
     isPlayingEventVideo.value = false
     // Transition to main content stage when event video ends
     currentShowcaseStage.value = 'main_content'
+    // Only does anything for an event that asked to hold its music until the
+    // invitation; a `cover` event's track has been playing since the tap (and
+    // was merely paused for the video's own audio).
+    cueMusic('main_content')
   }
 
   /**
@@ -242,10 +345,12 @@ export function useShowcaseStages() {
     // On video error, skip to main content gracefully
     currentShowcaseStage.value = 'main_content'
 
-    // Ensure audio is still available as fallback
+    // The video was the reason the guest is here and it just failed — start the
+    // music whatever stage was asked for, rather than leaving them in silence.
+    // Re-arms rather than cueing, since the gate may never have been armed (the
+    // error can precede openEnvelope's own arming on a broken source).
     if (!audioRef.value && eventMusicUrl) {
-      initializeAudio(eventMusicUrl, musicLoopStart, musicLoopEnd)
-      playMusic()
+      armMusic(eventMusicUrl, musicLoopStart, musicLoopEnd, 'cover')
     }
   }
 
@@ -256,11 +361,13 @@ export function useShowcaseStages() {
   const onTransitionComplete = (eventMusicUrl?: string, musicLoopStart?: number, musicLoopEnd?: number): void => {
     currentShowcaseStage.value = 'main_content'
 
-    // Start music if not already playing
-    if (!audioRef.value && eventMusicUrl) {
-      initializeAudio(eventMusicUrl, musicLoopStart, musicLoopEnd)
-      playMusic()
+    // Normally a no-op beyond the cue: openEnvelope armed the gate on the tap.
+    // The re-arm covers the redirect path, where a returning guest is dropped
+    // straight onto main content and openEnvelope never ran.
+    if (!musicCue.value && eventMusicUrl) {
+      armMusic(eventMusicUrl, musicLoopStart, musicLoopEnd, 'main_content')
     }
+    cueMusic('main_content')
   }
 
   /**
@@ -287,6 +394,10 @@ export function useShowcaseStages() {
     videoLoading.value = false
     coverStageReady.value = false
     isMusicPlaying.value = false
+    // Disarm too, or a re-opened envelope would find the gate already fired and
+    // stay silent for the rest of the session.
+    musicCue.value = null
+    musicCueFired.value = false
   }
 
   /**
@@ -391,6 +502,8 @@ export function useShowcaseStages() {
     playMusic,
     pauseMusic,
     toggleMusic,
+    armMusic,
+    cueMusic,
 
     // Stage flow methods
     openEnvelope,

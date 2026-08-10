@@ -38,6 +38,7 @@ export const PREVIEW_INERT_FIELDS = new Set([
   'selected_music_details',
   'music_start_time',
   'music_end_time',
+  'music_start_stage',
   'updated_at',
 ])
 

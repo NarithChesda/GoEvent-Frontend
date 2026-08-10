@@ -320,9 +320,10 @@ const {
   eventMusicUrl,
   musicStartTime,
   musicEndTime,
+  musicStartStage,
   availableLanguages,
-  initializeAudio,
-  playMusic,
+  armMusic,
+  cueMusic,
   // Methods
   loadShowcase,
   openEnvelope,
@@ -443,10 +444,17 @@ const handleV2Opened = () => {
   void requestImmersiveViewport()
   setStage('main_content')
   markMainContentSeen()
-  if (eventMusicUrl.value) {
-    initializeAudio(eventMusicUrl.value, musicStartTime.value, musicEndTime.value)
-    playMusic()
-  }
+  // V2 is one scrolling page behind an envelope gate — opening it *is* reaching
+  // the main content, so both cues land on this single moment. Routed through
+  // the gate anyway so `music_start_stage` can't make a V2 event silent, and so
+  // the play bookkeeping matches V1's.
+  armMusic(
+    eventMusicUrl.value || undefined,
+    musicStartTime.value,
+    musicEndTime.value,
+    musicStartStage.value ?? 'cover',
+  )
+  cueMusic('main_content')
 }
 
 // Override the openEnvelope function to include video synchronization
@@ -463,6 +471,9 @@ const openEnvelopeWithVideoSync = async () => {
   if (isBasicWedding.value && hasFeaturedPhoto.value) {
     await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined, {
       useTransitionStage: true,
+      musicLoopStart: musicStartTime.value,
+      musicLoopEnd: musicEndTime.value,
+      musicStartStage: musicStartStage.value,
     })
     return
   }
@@ -472,6 +483,9 @@ const openEnvelopeWithVideoSync = async () => {
   if (isBasicWedding.value) {
     await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined, {
       useTransitionStage: true,
+      musicLoopStart: musicStartTime.value,
+      musicLoopEnd: musicEndTime.value,
+      musicStartStage: musicStartStage.value,
     })
     // No TransitionStage component renders (no featured photo), so the cover
     // animation is the whole reveal and main content follows it directly.
@@ -494,6 +508,7 @@ const openEnvelopeWithVideoSync = async () => {
   await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined, {
     musicLoopStart: musicStartTime.value,
     musicLoopEnd: musicEndTime.value,
+    musicStartStage: musicStartStage.value,
   })
 
   // Determine display mode: basic mode has basic_decoration_photo, standard mode doesn't
