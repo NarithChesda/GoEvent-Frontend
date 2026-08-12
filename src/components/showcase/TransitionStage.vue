@@ -1,5 +1,9 @@
 <template>
-  <div class="transition-stage" :class="{ 'stage-fade-out': isStageFadingOut }">
+  <div
+    class="transition-stage"
+    :class="{ 'stage-fade-out': isStageFadingOut }"
+    :style="paletteStyle"
+  >
     <!-- Manage-page preview controls: replay the reveal, and re-aim the
          featured photo's crop. Replay has to be a real button because the
          featured-photo edit region below drops the frame's normal
@@ -112,14 +116,14 @@
     </div>
 
     <!-- Footer scrim. Split out of .cloud-footer so the falling field can sit
-         between the two: the mist is blur-effect colour at up to 90% alpha, so
+         between the two: the mist is blur-effect colour at up to 94% alpha, so
          anything behind it is washed to that colour — which is exactly what
          petals must not be. -->
     <div class="cloud-scrim" :class="{ 'show': isContentVisible }" aria-hidden="true">
       <!-- Soft blur band, lighter than before so the photo stays present -->
       <div class="cloud-blur-layer" />
       <!-- Gradient mist for text legibility -->
-      <div class="cloud-mist-layer" />
+      <div class="cloud-mist-layer" :style="{ background: mistGradient }" />
     </div>
 
     <!-- The showcase-wide falling field lives inside CoverStage, and this stage
@@ -201,6 +205,10 @@ interface Props {
   secondaryColor?: string | null
   accentColor: string
   backgroundColor?: string
+  /** The template's `blur-effect` colour — the footer mist band is made of it,
+   *  the same slot the door transition's printed chrome uses. Defaults to white
+   *  upstream, which is the intended look for the band. */
+  blurEffectColor?: string
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
@@ -246,20 +254,83 @@ const featureImageUrl = computed(() =>
 // Organizer-chosen crop, laid out in pixels against the live stage size.
 const { photoContainerRef, photoStyle, onPhotoLoad } = useFeaturedPhotoGeometry(featuredPhoto)
 
-const flourishColor = computed(() => props.accentColor || props.primaryColor || '#b08d57')
+// --- Palette ---------------------------------------------------------------
+
+/**
+ * Force a template colour to `#rrggbb` so the `+ alpha` concatenation below is
+ * always valid. Without this a non-hex value would silently make the mist's
+ * *transparent* stops opaque and bury the photo behind a solid block.
+ */
+const toHex6 = (color: string | null | undefined, fallback: string): string => {
+  const value = (color ?? '').trim()
+  if (/^#[0-9a-f]{6}$/i.test(value)) return value
+  const short = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(value)
+  if (short) return `#${short[1]}${short[1]}${short[2]}${short[2]}${short[3]}${short[3]}`
+  return fallback
+}
+
+const relativeLuminance = (hex6: string) => {
+  const channel = (at: number) => parseInt(hex6.slice(at, at + 2), 16) / 255
+  return 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5)
+}
+
+// The cartouche — flourish line, "Save the Date", and the date — is the
+// template's primary colour, and reads as one unit in it.
+const flourishColor = computed(() =>
+  toHex6(props.primaryColor || props.accentColor, '#b08d57'),
+)
 
 const revealLineGradient = computed(
   () =>
     `linear-gradient(to right, transparent 0%, ${flourishColor.value} 25%, ${flourishColor.value} 75%, transparent 100%)`,
 )
 
-// The save-the-date block reads as one unit with the flourish line above it, so
-// it takes the same accent slot. On primary it collided with the mist scrim
-// behind it — templates commonly point `primary` and `blur-effect` at the same
-// deep colour, which left the copy near-invisible against its own backdrop.
 const saveDateTextColor = flourishColor
 
 const dateTextColor = flourishColor
+
+/**
+ * The colour the footer band is made of: the template's `blur-effect` slot, the
+ * same one the door transition's printed chrome uses — not background/primary,
+ * which is the cover's colour rather than the colour of a wash laid *over*
+ * imagery. Defaults to white upstream (useTemplateProcessor), so a template
+ * that doesn't define the slot gets a white vellum band.
+ */
+const mistColor = computed(() => toHex6(props.blurEffectColor, '#ffffff'))
+
+/** Density ramp across the band's 38vh; alphas are hex pairs so they can be
+ *  concatenated onto the 6-digit colour, the showcase's convention. */
+const MIST_STOPS: ReadonlyArray<readonly [alpha: string, position: string]> = [
+  ['00', '0%'],
+  ['4d', '35%'],
+  ['99', '60%'],
+  ['cc', '80%'],
+  ['f0', '100%'],
+]
+
+const mistGradient = computed(
+  () =>
+    `linear-gradient(to bottom, ${MIST_STOPS.map(
+      ([a, position]) => `${mistColor.value}${a} ${position}`,
+    ).join(', ')})`,
+)
+
+/**
+ * Legibility guard, not decoration. The copy is the template's primary colour
+ * and the band is its `blur-effect` colour, and nothing stops a template from
+ * pointing both slots at the same hue — so the halo always leans away from the
+ * band: barely-there on the usual light/white band (where it just crisps the
+ * script's hairlines), a soft light glow if a template makes the band dark.
+ */
+const copyHalo = computed(() =>
+  relativeLuminance(mistColor.value) > 0.6
+    ? '0 1px 2px rgba(0, 0, 0, 0.18)'
+    : '0 0 10px rgba(255, 255, 255, 0.45)',
+)
+
+const paletteStyle = computed<Record<string, string>>(() => ({
+  '--ts-copy-halo': copyHalo.value,
+}))
 
 const saveTheDateChars = computed(() => 'Save the Date'.split(''))
 
@@ -748,27 +819,15 @@ const replay = async () => {
   transform: translateZ(0);
 }
 
-/* Near-black warm, not the template's blur-effect slot. A scrim tints whatever
-   it covers, so a branded one drains the photograph instead of seating it —
-   and `blur-effect` defaults to white upstream, which hazed the image over.
-   Worse, templates commonly point `blur-effect` and `primary` at the same deep
-   colour, which left the save-the-date copy painting itself onto its own
-   backdrop. Darkening progressively toward the base (the reference's own
-   rgb(50,8,8) → rgb(38,5,5) → rgb(24,3,3)) gives the gold copy the darkest
-   ground where it actually sits. Density ramp is this stage's own, tuned to
-   the band's 38vh rather than the reference's full-height gradient. */
+/* The template's blur-effect colour, white by default — one instrument with the
+   frosted layer beneath it, so the band reads as the photograph misting over
+   rather than as a separate dark plate dropped on top of it. The gradient is
+   supplied inline (mistGradient); the density ramp is tuned to this band's
+   38vh rather than a full-height one. */
 .cloud-mist-layer {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(
-    to bottom,
-    rgba(50, 8, 8, 0) 0%,
-    rgba(50, 8, 8, 0.3) 35%,
-    rgba(38, 5, 5, 0.6) 60%,
-    rgba(32, 4, 4, 0.8) 80%,
-    rgba(24, 3, 3, 0.94) 100%
-  );
 }
 
 .save-the-date-container {
@@ -812,6 +871,7 @@ const replay = async () => {
   margin: 0;
   font-weight: 400;
   white-space: nowrap;
+  text-shadow: var(--ts-copy-halo);
 }
 
 .std-char {
@@ -842,6 +902,7 @@ const replay = async () => {
   margin: 0;
   font-weight: 500;
   opacity: 0;
+  text-shadow: var(--ts-copy-halo);
 }
 
 .show .event-date {
