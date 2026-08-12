@@ -32,20 +32,11 @@
     <!-- Banner Image - shared 1.91:1 banner ratio (see tailwind.config.js) -->
     <div class="relative w-full aspect-banner overflow-hidden">
       <img
-        v-if="!fallbackImageError"
         :src="getCurrentImageSrc()"
         :alt="event.title"
         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         @error="handleImageError"
       />
-      <!-- Fallback when both primary and fallback images fail to load -->
-      <div
-        v-else
-        class="w-full h-full bg-gradient-to-br from-[#2ecc71]/10 to-[#1e90ff]/10 flex flex-col items-center justify-center"
-      >
-        <Calendar class="w-12 h-12 text-[#2ecc71]/40 mb-2" />
-        <span class="text-sm text-slate-400">{{ event.category_name ? translateEventCategory(event.category_name) : 'Event' }}</span>
-      </div>
 
       <!-- Category Badge (Top Right) -->
       <div v-if="event.category_name" class="absolute top-3 right-3">
@@ -237,22 +228,17 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-// Track image load errors - two stages: primary image, then fallback image
+// A failed banner falls back to generated cover art, which is an inline data
+// URI and so cannot itself fail to load — one stage is all this needs.
 const primaryImageError = ref(false)
-const fallbackImageError = ref(false)
 
-// Get fallback image URL based on event category
+// Get generated cover art for this event's category
 const getFallbackImageUrl = () => {
   return getEventFallbackImage(props.event)
 }
 
-// Handle image load error - try fallback first, then show placeholder
 const handleImageError = () => {
-  if (!primaryImageError.value) {
-    primaryImageError.value = true
-  } else {
-    fallbackImageError.value = true
-  }
+  primaryImageError.value = true
 }
 
 // Current image source - primary first, then fallback
