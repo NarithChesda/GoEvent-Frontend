@@ -88,18 +88,11 @@
           class="w-20 h-20 rounded-xl overflow-hidden bg-slate-100"
         >
           <img
-            v-if="!fallbackImageError"
             :src="currentImageSrc"
             :alt="event.title"
             class="w-full h-full object-cover"
             @error="handleImageError"
           />
-          <div
-            v-else
-            class="w-full h-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center"
-          >
-            <CalendarDays class="w-6 h-6 text-[#2ecc71]/60" />
-          </div>
         </div>
 
         <!-- Like Button (Mobile) -->
@@ -227,18 +220,11 @@
           class="w-44 h-28 rounded-xl overflow-hidden bg-slate-100"
         >
           <img
-            v-if="!fallbackImageError"
             :src="currentImageSrc"
             :alt="event.title"
             class="w-full h-full object-cover"
             @error="handleImageError"
           />
-          <div
-            v-else
-            class="w-full h-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center"
-          >
-            <CalendarDays class="w-8 h-8 text-[#2ecc71]/60" />
-          </div>
         </div>
 
         <!-- Like Button (Desktop) -->
@@ -275,7 +261,6 @@ import {
   Users,
   ArrowRight,
   AlertTriangle,
-  CalendarDays,
   Heart,
 } from 'lucide-vue-next'
 import type { Event } from '@/services/api'
@@ -344,17 +329,12 @@ const handleLikeClick = async (e: MouseEvent) => {
   await toggleLike()
 }
 
-// Track image load errors - two stages: primary image, then fallback image
+// A failed banner falls back to generated cover art, which is an inline data
+// URI and so cannot itself fail to load — one stage is all this needs.
 const primaryImageError = ref(false)
-const fallbackImageError = ref(false)
 
-// Handle image load error - try fallback first, then show placeholder
 const handleImageError = () => {
-  if (!primaryImageError.value) {
-    primaryImageError.value = true
-  } else {
-    fallbackImageError.value = true
-  }
+  primaryImageError.value = true
 }
 
 // Use optimized thumbnails based on variant (mobile uses square crop, desktop uses landscape)

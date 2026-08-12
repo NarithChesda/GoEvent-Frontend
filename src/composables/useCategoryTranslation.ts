@@ -19,21 +19,9 @@
  */
 
 import { useI18n } from 'vue-i18n'
+import { normalizeCategoryKey } from '@/utils/categoryKey'
 
 type CategoryKind = 'event' | 'service'
-
-/**
- * Normalize a category name into a key used by the locale files.
- * "Wedding & Social" → "wedding_social", "Music / DJ" → "music_dj", etc.
- * We keep it simple: lowercase, strip non-alphanumeric, collapse spaces.
- */
-function normalizeCategoryKey(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '')
-}
 
 export function useCategoryTranslation() {
   const { t, te } = useI18n()
