@@ -6,7 +6,18 @@
     "guestCount": "{count} guest | {count} guests",
     "hostOthers": "& {count} other | & {count} others",
     "today": "Today",
-    "fromPrice": "From {price}"
+    "fromPrice": "From {price}",
+    "going": "{count} going | {count} going",
+    "interested": "{count} interested | {count} interested",
+    "virtual": "Virtual",
+    "when": {
+      "live": "Happening now",
+      "soon": "Starting soon",
+      "inHours": "In {count}h | In {count}h",
+      "tomorrow": "Tomorrow",
+      "inDays": "In {count} day | In {count} days",
+      "ended": "Ended"
+    }
   },
   "createEvent": "Create Event",
   "createFirstEvent": "Create Your First Event",
@@ -274,5 +285,23 @@
       "loadMore": "Load more",
       "loadingMore": "Loading…"
     }
+  },
+  "drawer": {
+    "close": "Close",
+    "previous": "Previous event",
+    "next": "Next event",
+    "addToCalendar": "Add to calendar",
+    "share": "Share",
+    "like": "Like",
+    "unlike": "Remove like",
+    "directions": "Directions",
+    "about": "About",
+    "agenda": "Agenda",
+    "location": "Location",
+    "hostedBy": "Hosted by",
+    "campaignOrganizer": "Campaign organizer",
+    "moreIn": "More in {category}",
+    "moreEvents": "More events",
+    "noDescription": "No description provided"
   }
 }

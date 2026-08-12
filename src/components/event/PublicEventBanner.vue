@@ -20,8 +20,14 @@
         <span class="text-sm text-slate-400">{{ categoryName || 'Event' }}</span>
       </div>
 
-      <!-- Gradient overlay -->
-      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+      <!-- Gradient overlay. The previous stops (black/70 → black/20) were tuned
+           for photographs; a two-line title climbs into the weak band, which
+           left white text sitting on pale generated cover art. Deeper and
+           carried higher, with a text shadow behind the title, so the headline
+           holds on both a bright photo and a light-toned cover. -->
+      <div
+        class="absolute inset-0 bg-gradient-to-t from-[rgba(10,4,26,0.86)] via-[rgba(10,4,26,0.42)] to-[rgba(10,4,26,0.06)]"
+      ></div>
 
       <!-- Category/Fundraiser Badge (Top Left) -->
       <div class="absolute top-4 left-4">
@@ -34,9 +40,9 @@
         </span>
         <span
           v-else-if="categoryName"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-full text-xs font-semibold text-slate-700 shadow-lg"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.16] backdrop-blur-md border border-white/25 rounded-full text-xs font-semibold text-white"
         >
-          <span class="text-slate-400">#</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-white/70 flex-shrink-0"></span>
           {{ categoryName }}
         </span>
       </div>
@@ -46,7 +52,7 @@
         class="absolute bottom-0 left-0 right-0 p-5"
         :class="isFundraising ? 'pb-8' : 'pb-5'"
       >
-        <h1 class="text-2xl md:text-3xl font-bold text-white leading-tight mb-2 drop-shadow-lg">
+        <h1 class="text-2xl md:text-3xl font-bold text-white leading-tight mb-2 banner-title">
           {{ title }}
         </h1>
         <div class="flex items-center gap-2 text-white/90 text-sm">
@@ -87,3 +93,10 @@ const { getInitials } = useEventDateFormatters()
 
 const organizerInitials = computed(() => getInitials(props.organizerName))
 </script>
+
+<style scoped>
+/* Carries the headline over the brightest part of any banner the scrim leaves. */
+.banner-title {
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
+}
+</style>

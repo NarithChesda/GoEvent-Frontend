@@ -23,7 +23,7 @@
       </div>
 
       <!-- Main Navigation (aligned with page content) -->
-      <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
+      <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center gap-2">
         <nav class="flex items-center">
           <RouterLink
             v-for="(item, index) in navigationItems"
@@ -45,6 +45,14 @@
             <span>{{ item.label }}</span>
           </RouterLink>
         </nav>
+
+        <!-- Page-level controls (list filters) teleport in here while the
+             page's own header is scrolled out of view, so the nav absorbs them
+             instead of a second bar appearing beneath it. Sits next to the nav
+             links rather than at the container's right edge: the right-hand
+             utility cluster is absolutely positioned and would collide with it
+             on narrower desktops. -->
+        <div id="nav-page-controls" class="flex items-center gap-1.5"></div>
       </div>
 
       <!-- Right Section: Time, Actions, Profile (absolute right) -->

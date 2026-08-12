@@ -38,6 +38,17 @@
             </div>
           </div>
 
+          <!-- Once the header scrolls away the top nav absorbs compact copies
+               of these filters, so they stay reachable (see
+               PinnedListControls). -->
+          <PinnedListControls
+            v-if="authStore.isAuthenticated"
+            v-model:time-filter="timeFilter"
+            :time-options="timeFilterOptions"
+            v-model:category="categoryFilter"
+            :categories="categories"
+          />
+
           <!-- Loading State -->
           <EventsLoadingSkeleton v-if="loading" />
 
@@ -125,6 +136,8 @@
         @navigate-next="handleDrawerNext"
         @registered="handleEventRegistered"
         @login-required="handleLoginRequired"
+        @like-changed="handleDrawerLikeChanged"
+        @open-event="handleOpenRelatedEvent"
       />
     </div>
   </MainLayout>
@@ -144,6 +157,7 @@ import {
   EventTimeline,
   TimeFilterToggle,
   CategoryFilter,
+  PinnedListControls,
   EventsEmptyState,
   EventsLoadingSkeleton,
 } from '@/components/events'
@@ -319,6 +333,28 @@ const handleDrawerNext = () => {
     selectedEventIndex.value++
     selectedEventId.value = filteredEvents.value[selectedEventIndex.value].id
   }
+}
+
+/** Keep the list card's heart in step with a like made inside the drawer. */
+const handleDrawerLikeChanged = (
+  eventId: string,
+  isLiked: boolean,
+  likesCount: number
+) => {
+  const index = events.value.findIndex((e) => e.id === eventId)
+  if (index !== -1) {
+    events.value[index] = { ...events.value[index], is_liked: isLiked, likes_count: likesCount }
+  }
+}
+
+/**
+ * Follow a "More in {category}" link from inside the drawer. The target is
+ * usually outside this list, so the index only syncs when it is present —
+ * prev/next then falls idle instead of paging from a stale position.
+ */
+const handleOpenRelatedEvent = (eventId: string) => {
+  selectedEventId.value = eventId
+  selectedEventIndex.value = filteredEvents.value.findIndex((e) => e.id === eventId)
 }
 
 const handleEventRegistered = () => {

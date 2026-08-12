@@ -1,20 +1,34 @@
 <template>
   <!-- Desktop Dropdown -->
   <div class="relative category-filter-container hidden sm:block">
+    <!-- Compact drops the label for a single icon button, for tight chrome
+         such as the top nav; the dropdown it opens is unchanged. -->
     <button
       @click.stop="toggleMenu"
-      class="glass-button flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
-      :class="
-        modelValue
-          ? 'bg-gradient-to-r from-[#2ecc71]/15 to-[#1e90ff]/15 text-slate-800 border-[#2ecc71]/30'
-          : 'text-slate-700'
-      "
+      :aria-label="t('categories.filterByCategory')"
+      :title="compact ? activeLabel : undefined"
+      class="flex items-center transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
+      :class="[
+        compact
+          ? 'justify-center w-9 h-9 rounded-lg'
+          : 'glass-button gap-2 px-4 py-2 rounded-full text-sm font-medium',
+        compact
+          ? modelValue
+            ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-sm shadow-[#2ecc71]/20'
+            : 'text-slate-500 hover:text-slate-700 hover:bg-white/60'
+          : modelValue
+            ? 'bg-gradient-to-r from-[#2ecc71]/15 to-[#1e90ff]/15 text-slate-800 border-[#2ecc71]/30'
+            : 'text-slate-700',
+      ]"
     >
-      <span>{{ modelValue ? translateEventCategory(modelValue) : t('categories.allCategories') }}</span>
-      <ChevronDown
-        class="w-4 h-4 transition-transform duration-200"
-        :class="showMenu ? 'rotate-180' : ''"
-      />
+      <ListFilter v-if="compact" class="w-[18px] h-[18px]" />
+      <template v-else>
+        <span>{{ activeLabel }}</span>
+        <ChevronDown
+          class="w-4 h-4 transition-transform duration-200"
+          :class="showMenu ? 'rotate-180' : ''"
+        />
+      </template>
     </button>
 
     <!-- Dropdown Menu -->
@@ -58,14 +72,17 @@
     aria-haspopup="dialog"
     :aria-expanded="showSheet"
     :aria-label="t('categories.filterByCategory')"
-    class="sm:hidden flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
-    :class="
+    class="sm:hidden flex items-center justify-center transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
+    :class="[
+      compact ? 'w-9 h-9 rounded-lg' : 'w-10 h-10 rounded-full',
       modelValue
         ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
-        : 'glass-button text-slate-600'
-    "
+        : compact
+          ? 'text-slate-500 hover:text-slate-700 hover:bg-white/60'
+          : 'glass-button text-slate-600',
+    ]"
   >
-    <ListFilter class="w-5 h-5" />
+    <ListFilter :class="compact ? 'w-[18px] h-[18px]' : 'w-5 h-5'" />
   </button>
 
   <!-- Mobile Category Bottom Sheet -->
@@ -141,7 +158,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { ChevronDown, ListFilter, Check } from 'lucide-vue-next'
 import type { EventCategory } from '@/services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -150,10 +167,20 @@ import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
 const { t } = useAppLanguage()
 const { translateEventCategory } = useCategoryTranslation()
 
-defineProps<{
-  modelValue: string
-  categories: EventCategory[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    modelValue: string
+    categories: EventCategory[]
+    /** Render as a single icon button, for tight chrome. */
+    compact?: boolean
+  }>(),
+  { compact: false }
+)
+
+/** Label for the trigger, and the compact button's tooltip. */
+const activeLabel = computed(() =>
+  props.modelValue ? translateEventCategory(props.modelValue) : t('categories.allCategories')
+)
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]

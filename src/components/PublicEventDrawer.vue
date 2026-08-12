@@ -16,27 +16,31 @@
         class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[32.5rem] lg:w-[36.25rem] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden will-change-transform"
         @click.stop
       >
-        <!-- Header -->
+        <!-- Header. Was three bare chevrons and no event name — the drawer gave
+             no sign of what it had opened, and the leading `>` read as "next"
+             rather than "close". -->
         <div class="flex-shrink-0 sticky top-0 bg-white border-b border-slate-100 z-10">
-          <div class="flex items-center justify-between px-4 py-3">
-            <!-- Left Actions -->
-            <div class="flex items-center gap-2">
-              <button
-                @click="closeDrawer"
-                class="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                title="Close"
-              >
-                <ChevronDown class="w-5 h-5 text-slate-600 md:hidden" />
-                <ChevronRight class="w-5 h-5 text-slate-600 hidden md:block" />
-              </button>
-            </div>
+          <div class="flex items-center gap-2 px-3 py-2.5">
+            <button
+              @click="closeDrawer"
+              class="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex-shrink-0"
+              :title="t('events.drawer.close')"
+              :aria-label="t('events.drawer.close')"
+            >
+              <X class="w-4 h-4 text-slate-600" />
+            </button>
 
-            <!-- Right Actions -->
-            <div class="flex items-center gap-1">
+            <p class="flex-1 min-w-0 truncate text-sm font-semibold text-slate-900">
+              {{ event?.title || '' }}
+            </p>
+
+            <div class="flex items-center gap-1 flex-shrink-0">
               <button
                 @click="navigatePrev"
                 :disabled="!hasPrev"
                 class="p-2 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                :title="t('events.drawer.previous')"
+                :aria-label="t('events.drawer.previous')"
               >
                 <ChevronUp class="w-5 h-5 text-slate-600" />
               </button>
@@ -44,6 +48,8 @@
                 @click="navigateNext"
                 :disabled="!hasNext"
                 class="p-2 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                :title="t('events.drawer.next')"
+                :aria-label="t('events.drawer.next')"
               >
                 <ChevronDown class="w-5 h-5 text-slate-600" />
               </button>
@@ -52,7 +58,7 @@
         </div>
 
         <!-- Content -->
-        <div class="flex-1 overflow-y-auto overscroll-contain">
+        <div ref="contentRef" class="flex-1 overflow-y-auto overscroll-contain">
           <!-- Donation Form (Inline) -->
           <div v-if="showDonationForm && event" class="p-4">
             <PublicDonationForm
@@ -121,13 +127,89 @@
             />
 
             <!-- Event Info -->
-            <div class="px-4 space-y-4" :class="isFundraisingEnabled ? 'pt-0' : 'pt-5'">
+            <div class="px-4 space-y-5" :class="isFundraisingEnabled ? 'pt-0' : 'pt-5'">
+              <!-- Action row. The drawer's heaviest element used to be a dark
+                   "Share" block at the very bottom, and on a display-only event
+                   it was the only thing to do — the hierarchy was inverted.
+                   Calendar leads here, and becomes the gradient primary only
+                   when nothing else on the page owns that role. -->
+              <div class="space-y-2">
+                <div class="flex items-stretch gap-2">
+                  <button
+                    @click="showQuickCalendar = !showQuickCalendar"
+                    class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200"
+                    :class="
+                      hasOwnPrimaryAction
+                        ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                        : 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md hover:opacity-90'
+                    "
+                    :aria-expanded="showQuickCalendar"
+                  >
+                    <CalendarPlus class="w-4 h-4" />
+                    {{ t('events.drawer.addToCalendar') }}
+                  </button>
+
+                  <button
+                    v-if="event.privacy === 'public'"
+                    @click="toggleLike"
+                    :disabled="isLikeLoading"
+                    class="w-11 flex items-center justify-center rounded-xl border transition-colors"
+                    :class="
+                      isLiked
+                        ? 'bg-rose-50 border-rose-200 text-rose-600'
+                        : 'bg-white border-slate-200 text-slate-600 hover:text-rose-500 hover:border-rose-200'
+                    "
+                    :aria-label="isLiked ? t('events.drawer.unlike') : t('events.drawer.like')"
+                  >
+                    <Heart class="w-4 h-4" :class="{ 'fill-current': isLiked }" />
+                  </button>
+
+                  <button
+                    @click="sharing.shareEvent()"
+                    class="w-11 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors"
+                    :aria-label="t('events.drawer.share')"
+                  >
+                    <Share2 class="w-4 h-4" />
+                  </button>
+                </div>
+
+                <Transition name="collapse">
+                  <div v-if="showQuickCalendar" class="grid grid-rows-[1fr]">
+                    <div class="min-h-0 overflow-hidden">
+                      <div class="flex gap-2 pt-1">
+                        <button
+                          @click="calendar.addToGoogleCalendar()"
+                          class="flex-1 px-3 py-2 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors"
+                        >
+                          Google
+                        </button>
+                        <button
+                          @click="calendar.addToOutlookCalendar()"
+                          class="flex-1 px-3 py-2 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors"
+                        >
+                          Outlook
+                        </button>
+                        <button
+                          @click="calendar.downloadICSFile()"
+                          class="flex-1 px-3 py-2 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors"
+                        >
+                          .ics
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </Transition>
+              </div>
+
               <!-- Date & Location -->
               <PublicEventInfo
                 :start-date="event.start_date"
                 :end-date="event.end_date"
                 :location="event.location"
                 :is-virtual="event.is_virtual"
+                :accent="accent"
+                :relative-label="relativeWhen?.label ?? null"
+                :is-live="relativeWhen?.isLive ?? false"
                 @open-map="sharing.openMap(event.location)"
               />
 
@@ -175,10 +257,13 @@
                 @login-to-register="handleLoginToRegister"
               />
 
-              <!-- About Event -->
-              <div class="border-t border-slate-100 pt-4">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-                  About Event
+              <!-- About Event. Section rules were 1px near-white hairlines that
+                   read as nothing; spacing plus a short accent tick separates
+                   them and carries the category colour down the panel. -->
+              <div>
+                <h3 class="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                  <span class="w-3 h-0.5 rounded-full" :style="{ backgroundColor: accent }"></span>
+                  {{ t('events.drawer.about') }}
                 </h3>
                 <div
                   v-if="event.description"
@@ -188,18 +273,24 @@
                 <p v-else-if="event.short_description" class="text-sm text-slate-700 leading-relaxed">
                   {{ event.short_description }}
                 </p>
-                <p v-else class="text-sm text-slate-500">No description provided</p>
+                <p v-else class="text-sm text-slate-500">{{ t('events.drawer.noDescription') }}</p>
               </div>
 
               <!-- Agenda -->
-              <div v-if="event.agenda_items && event.agenda_items.length > 0" class="border-t border-slate-100 pt-4">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Agenda</h3>
+              <div v-if="event.agenda_items && event.agenda_items.length > 0">
+                <h3 class="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                  <span class="w-3 h-0.5 rounded-full" :style="{ backgroundColor: accent }"></span>
+                  {{ t('events.drawer.agenda') }}
+                </h3>
                 <PublicEventAgenda :items="event.agenda_items" :event-start-date="event.start_date" />
               </div>
 
               <!-- Location Map -->
-              <div v-if="googleMapEmbedUrl" class="border-t border-slate-100 pt-4">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Location</h3>
+              <div v-if="googleMapEmbedUrl">
+                <h3 class="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                  <span class="w-3 h-0.5 rounded-full" :style="{ backgroundColor: accent }"></span>
+                  {{ t('events.drawer.location') }}
+                </h3>
                 <div class="rounded-xl overflow-hidden border border-slate-200">
                   <iframe
                     :src="googleMapEmbedUrl"
@@ -215,9 +306,10 @@
               </div>
 
               <!-- Hosts -->
-              <div v-if="event.hosts && event.hosts.length > 0" class="border-t border-slate-100 pt-4">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-                  {{ isFundraisingEnabled ? 'Campaign Organizer' : 'Hosted By' }}
+              <div v-if="event.hosts && event.hosts.length > 0">
+                <h3 class="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                  <span class="w-3 h-0.5 rounded-full" :style="{ backgroundColor: accent }"></span>
+                  {{ isFundraisingEnabled ? t('events.drawer.campaignOrganizer') : t('events.drawer.hostedBy') }}
                 </h3>
                 <div class="bg-white border border-slate-200 rounded-xl p-4">
                   <div class="flex items-center gap-3">
@@ -263,22 +355,43 @@
                 :expenses="publicExpenses"
               />
 
-              <!-- Share Banner -->
-              <div class="border-t border-slate-100 pt-4">
-                <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-5 text-white">
-                  <div class="flex items-center justify-between gap-4">
-                    <div class="flex-1 min-w-0">
-                      <h4 class="text-sm font-semibold mb-1">Help spread the word</h4>
-                      <p class="text-sm text-slate-400">{{ isFundraisingEnabled ? 'Share this campaign' : 'Share this event' }}</p>
+              <!-- More like this. A display-only listing with no agenda, map,
+                   hosts or registration is a dead end — banner, two info rows
+                   and three sentences. On scraped listings that is most of
+                   them, so the tail is where the drawer stops being a stub.
+                   Loaded only for that case, so it costs nothing elsewhere. -->
+              <div v-if="relatedEvents.length > 0">
+                <h3 class="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                  <span class="w-3 h-0.5 rounded-full" :style="{ backgroundColor: accent }"></span>
+                  {{
+                    event.category_details?.name
+                      ? t('events.drawer.moreIn', { category: translateEventCategory(event.category_details.name) })
+                      : t('events.drawer.moreEvents')
+                  }}
+                </h3>
+                <div class="space-y-2">
+                  <button
+                    v-for="related in relatedEvents"
+                    :key="related.id"
+                    @click="openRelatedEvent(related)"
+                    class="w-full flex items-center gap-3 p-2 border border-slate-200 rounded-xl text-left hover:bg-slate-50 active:bg-slate-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+                  >
+                    <div class="w-14 h-10 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
+                      <img
+                        :src="getEventThumbnail(related)"
+                        :alt="related.title"
+                        class="w-full h-full object-cover"
+                      />
                     </div>
-                    <button
-                      @click="sharing.shareEvent()"
-                      class="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-900 rounded-xl text-sm font-semibold transition-colors flex-shrink-0"
-                    >
-                      <Share2 class="w-4 h-4" />
-                      Share
-                    </button>
-                  </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-slate-900 truncate">{{ related.title }}</p>
+                      <p class="text-xs text-slate-500 truncate">
+                        {{ formatRelatedDate(related.start_date) }}
+                        <template v-if="related.location"> · {{ related.location }}</template>
+                      </p>
+                    </div>
+                    <ChevronRight class="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -319,6 +432,9 @@ import {
   ChevronUp,
   AlertCircle,
   Share2,
+  Heart,
+  CalendarPlus,
+  X,
 } from 'lucide-vue-next'
 import { extractGoogleMapsEmbedUrl } from '@/utils/embedExtractor'
 import PublicDonationForm from './PublicDonationForm.vue'
@@ -332,7 +448,7 @@ import AllDonorsModal from './event/AllDonorsModal.vue'
 import TopDonorsSection from './event/TopDonorsSection.vue'
 import PublicEventExpenseSection from './event/PublicEventExpenseSection.vue'
 import TicketTierList from './tickets/public/TicketTierList.vue'
-import { ticketTypesService, type TicketType } from '@/services/api'
+import { eventsService, ticketTypesService, type Event, type TicketType } from '@/services/api'
 
 // Composables
 import {
@@ -343,6 +459,14 @@ import {
   useEventSharing,
   useEventDateFormatters,
 } from '@/composables/event'
+import {
+  formatRelativeWhen,
+  getEventAccent,
+  getEventThumbnail,
+} from '@/composables/useEventFormatters'
+import { useEventLike } from '@/composables/useEventLike'
+import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
   modelValue: boolean
@@ -357,6 +481,8 @@ interface Emits {
   (e: 'navigate-next'): void
   (e: 'registered'): void
   (e: 'login-required'): void
+  (e: 'like-changed', eventId: string, isLiked: boolean, likesCount: number): void
+  (e: 'open-event', eventId: string): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -367,11 +493,17 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 const router = useRouter()
 
+const { t } = useAppLanguage()
+const { translateEventCategory } = useCategoryTranslation()
+
 // Local state
 const showDonationForm = ref(false)
 const showQRModal = ref(false)
 const showAllDonorsModal = ref(false)
 const allDonorsInitialTab = ref<'cash' | 'item'>('cash')
+const showQuickCalendar = ref(false)
+const relatedEvents = ref<Event[]>([])
+const contentRef = ref<HTMLElement | null>(null)
 
 // Composables
 const eventData = usePublicEventData()
@@ -458,6 +590,95 @@ const hasTicketedSales = computed(() => {
   return ticketTiers.value.length > 0
 })
 
+/** The category's identity colour — same map the cover art is drawn from. */
+const accent = computed(() => (event.value ? getEventAccent(event.value) : '#475569'))
+
+/** "In 9 days" / "Happening now", or null once the event is far enough out. */
+const relativeWhen = computed(() => (event.value ? formatRelativeWhen(event.value) : null))
+
+/**
+ * Whether some section further down already owns the page's primary action.
+ *
+ * When one does, the action row's calendar button stays a quiet outline so the
+ * drawer never shows two competing gradient CTAs; when nothing does — the
+ * display-only case that had no action at all — calendar becomes the primary.
+ */
+const hasOwnPrimaryAction = computed(
+  () =>
+    hasTicketedSales.value ||
+    Boolean(event.value?.registration_required) ||
+    isFundraisingEnabled.value
+)
+
+/**
+ * An event with nothing below the fold: no tickets, no registration, no agenda,
+ * no map, no hosts. The drawer bottoms out after three sentences, which is when
+ * the related-events tail earns its extra request.
+ */
+const isThinEvent = computed(() => {
+  const current = event.value
+  if (!current) return false
+  if (hasOwnPrimaryAction.value) return false
+  if (current.agenda_items && current.agenda_items.length > 0) return false
+  if (current.hosts && current.hosts.length > 0) return false
+  if (googleMapEmbedUrl.value) return false
+  return true
+})
+
+// Like state. The id is passed as a getter because prev/next swaps the event
+// under this component without remounting it.
+const {
+  isLiked,
+  isLoading: isLikeLoading,
+  toggleLike,
+  updateState: updateLikeState,
+} = useEventLike(() => event.value?.id ?? '', false, 0, {
+  onLoginRequired: () => {
+    emit('login-required')
+    closeDrawer()
+  },
+  onSuccess: (liked, count) => {
+    if (event.value) emit('like-changed', event.value.id, liked, count)
+  },
+})
+
+const loadRelatedEvents = async () => {
+  const current = event.value
+  if (!current?.category) {
+    relatedEvents.value = []
+    return
+  }
+
+  try {
+    const response = await eventsService.getEvents({
+      category: current.category,
+      privacy: 'public',
+      status: 'published',
+      ordering: '-start_date',
+    })
+    relatedEvents.value =
+      response.success && response.data
+        ? response.data.results.filter((item) => item.id !== current.id).slice(0, 3)
+        : []
+  } catch {
+    relatedEvents.value = []
+  }
+}
+
+const formatRelatedDate = (dateStr: string): string => {
+  const date = new Date(dateStr)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+const openRelatedEvent = (related: Event) => {
+  emit('open-event', related.id)
+}
+
 // Methods
 const closeDrawer = () => {
   emit('update:modelValue', false)
@@ -527,11 +748,37 @@ const getScrollbarWidth = (): number => {
 watch(
   () => props.eventId,
   (newId) => {
+    // Reset per-event UI so a drawer opened on one event doesn't hand its
+    // scroll position or expanded calendar to the next one.
+    showQuickCalendar.value = false
+    relatedEvents.value = []
+    if (contentRef.value) contentRef.value.scrollTop = 0
+
     if (newId && props.modelValue) {
       loadTicketTiers(newId)
       loadEvent(newId)
     } else {
       ticketTiers.value = []
+    }
+  },
+  { immediate: true }
+)
+
+// Keep the like button in step with whichever event is loaded.
+watch(event, (current) => {
+  updateLikeState(current?.is_liked ?? false, current?.likes_count ?? 0)
+})
+
+// `isThinEvent` depends on the ticket tiers, which land on their own request,
+// so this keys off both the event and the resolved thinness rather than the
+// event alone — otherwise the tail could be decided before the tiers arrive.
+watch(
+  [() => event.value?.id, isThinEvent],
+  () => {
+    if (isThinEvent.value) {
+      loadRelatedEvents()
+    } else {
+      relatedEvents.value = []
     }
   },
   { immediate: true }
@@ -603,6 +850,28 @@ onBeforeUnmount(() => {
   .slide-right-enter-from,
   .slide-right-leave-to {
     transform: translateX(100%) translateZ(0);
+  }
+}
+
+/* Expand/collapse for the calendar targets. Grid-rows rather than max-height,
+   so both directions ease evenly (design system §15). */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse-enter-active,
+  .collapse-leave-active {
+    transition: none;
   }
 }
 

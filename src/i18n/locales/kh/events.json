@@ -6,7 +6,18 @@
     "guestCount": "{count} ភ្ញៀវ",
     "hostOthers": "& {count} នាក់ផ្សេងទៀត",
     "today": "ថ្ងៃនេះ",
-    "fromPrice": "ចាប់ពី {price}"
+    "fromPrice": "ចាប់ពី {price}",
+    "going": "{count} នាក់ចូលរួម",
+    "interested": "{count} នាក់ចាប់អារម្មណ៍",
+    "virtual": "អនឡាញ",
+    "when": {
+      "live": "កំពុងប្រព្រឹត្ត",
+      "soon": "ជិតចាប់ផ្តើម",
+      "inHours": "ក្នុងរយៈពេល {count} ម៉ោង",
+      "tomorrow": "ថ្ងៃស្អែក",
+      "inDays": "ក្នុងរយៈពេល {count} ថ្ងៃ",
+      "ended": "បានបញ្ចប់"
+    }
   },
   "createEvent": "បង្កើតព្រឹត្តិការណ៍",
   "createFirstEvent": "បង្កើតព្រឹត្តិការណ៍ដំបូងរបស់អ្នក",
@@ -274,5 +285,23 @@
       "loadMore": "ផ្ទុកបន្ថែម",
       "loadingMore": "កំពុងផ្ទុក…"
     }
+  },
+  "drawer": {
+    "close": "បិទ",
+    "previous": "ព្រឹត្តិការណ៍មុន",
+    "next": "ព្រឹត្តិការណ៍បន្ទាប់",
+    "addToCalendar": "បញ្ចូលទៅប្រតិទិន",
+    "share": "ចែករំលែក",
+    "like": "ចូលចិត្ត",
+    "unlike": "ដកការចូលចិត្ត",
+    "directions": "ទិសដៅ",
+    "about": "អំពី",
+    "agenda": "កម្មវិធី",
+    "location": "ទីតាំង",
+    "hostedBy": "រៀបចំដោយ",
+    "campaignOrganizer": "អ្នករៀបចំយុទ្ធនាការ",
+    "moreIn": "បន្ថែមក្នុង {category}",
+    "moreEvents": "ព្រឹត្តិការណ៍ផ្សេងទៀត",
+    "noDescription": "មិនមានការពិពណ៌នា"
   }
 }
