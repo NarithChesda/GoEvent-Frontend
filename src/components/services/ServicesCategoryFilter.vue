@@ -257,5 +257,25 @@ onUnmounted(() => {
   box-shadow:
     0 8px 32px rgba(46, 204, 113, 0.1),
     0 4px 12px rgba(30, 144, 255, 0.08);
+  /* Scrolls past `max-h-[60vh]`; keep the bar off the glass. Design standard §10. */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.glass-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.glass-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.glass-dropdown::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.glass-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 </style>
