@@ -21,28 +21,17 @@
               {{ t('discover.title') }}
             </h1>
 
-            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-              <!-- Date Range Toggle -->
-              <TimeFilterToggle
-                v-model="dateFilter"
-                :options="dateFilterOptions"
-              />
-
-              <!-- Category Filter: desktop dropdown / mobile chip + bottom sheet -->
-              <CategoryFilter v-model="categoryFilter" :categories="categories" />
-            </div>
+            <!-- Date range toggle + category filter. The filters used to leave
+                 with the header — changing one meant scrolling the whole list
+                 back to the top. PinnedListControls keeps them by handing them
+                 to the top bar as the header scrolls under it. -->
+            <PinnedListControls
+              v-model:time-filter="dateFilter"
+              :time-options="dateFilterOptions"
+              v-model:category="categoryFilter"
+              :categories="categories"
+            />
           </div>
-
-          <!-- The filters used to leave with the header — changing one meant
-               scrolling the whole list back to the top. Once the header is
-               gone, compact copies slide into the top nav; they share these
-               v-models, so nothing has to be kept in sync by hand. -->
-          <PinnedListControls
-            v-model:time-filter="dateFilter"
-            :time-options="dateFilterOptions"
-            v-model:category="categoryFilter"
-            :categories="categories"
-          />
 
           <!-- Loading State -->
           <EventsLoadingSkeleton v-if="isLoading" />
@@ -123,8 +112,6 @@ import AppFooter from '@/components/AppFooter.vue'
 import {
   MobileTopBar,
   EventTimeline,
-  TimeFilterToggle,
-  CategoryFilter,
   PinnedListControls,
   EventsEmptyState,
   EventsLoadingSkeleton,

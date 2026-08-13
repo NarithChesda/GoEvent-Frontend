@@ -48,31 +48,45 @@
 
         <!-- Page-level controls (list filters) teleport in here while the
              page's own header is scrolled out of view, so the nav absorbs them
-             instead of a second bar appearing beneath it. Sits next to the nav
-             links rather than at the container's right edge: the right-hand
-             utility cluster is absolutely positioned and would collide with it
-             on narrower desktops. -->
-        <div id="nav-page-controls" class="flex items-center gap-1.5"></div>
+             instead of a second bar appearing beneath it. This container is
+             the page content column, so the slot right-aligns onto the exact
+             spot the page header held them (see the width note in the style
+             block for why that only holds above a certain width). -->
+        <div id="nav-page-controls" class="nav-page-controls flex items-center"></div>
       </div>
 
       <!-- Right Section: Time, Actions, Profile (absolute right) -->
       <div class="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-3">
-        <!-- Current Time -->
-        <div class="text-sm text-slate-500 font-medium tabular-nums">
-          {{ currentTime }}
-        </div>
+        <!-- The clock and the Create Event shortcut step aside while the bar is
+             holding a page's filters: they are the two widest things here that
+             nothing depends on mid-scroll, and the room they free is what lets
+             the absorbed controls keep the page header's position. Both come
+             straight back when the header scrolls into view again. -->
+        <Transition name="nav-yield">
+          <div v-if="!pageControlsAbsorbed" class="flex items-center gap-3">
+            <!-- Current Time -->
+            <div class="text-sm text-slate-500 font-medium tabular-nums whitespace-nowrap">
+              {{ currentTime }}
+            </div>
 
-        <!-- Divider -->
-        <div class="h-4 w-px bg-slate-200"></div>
+            <!-- Divider -->
+            <div class="h-4 w-px bg-slate-200"></div>
+          </div>
+        </Transition>
 
-        <!-- Create Event Button (authenticated only) -->
-        <RouterLink
-          v-if="authStore.isAuthenticated"
-          to="/events?createEvent=true"
-          class="px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-white/60 rounded-lg transition-all duration-200"
-        >
-          {{ t('common.nav.createEvent') }}
-        </RouterLink>
+        <!-- Create Event Button (authenticated only). The wrapper carries the
+             collapse: the link's own `transition-all` would otherwise override
+             it and leave the width snapping. -->
+        <Transition name="nav-yield">
+          <div v-if="authStore.isAuthenticated && !pageControlsAbsorbed">
+            <RouterLink
+              to="/events?createEvent=true"
+              class="block px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-white/60 rounded-lg transition-all duration-200 whitespace-nowrap"
+            >
+              {{ t('common.nav.createEvent') }}
+            </RouterLink>
+          </div>
+        </Transition>
 
         <!-- Icon Button Group -->
         <div class="flex items-center gap-0.5">
@@ -269,6 +283,7 @@ import NotificationBell from './notifications/NotificationBell.vue'
 import { useGlobalSearch } from '@/composables/useGlobalSearch'
 import { useVendorProfile } from '@/composables/settings/useVendorProfile'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useNavPageControls } from '@/composables/useNavPageControls'
 import type { AppLocale } from '@/i18n'
 
 const router = useRouter()
@@ -281,6 +296,9 @@ const isVerifiedVendor = computed(() => vendorState.value === 'verified')
 
 // Global search
 const { open: openSearch } = useGlobalSearch()
+
+// True while a list page has handed its filters up to this bar
+const { absorbed: pageControlsAbsorbed } = useNavPageControls()
 
 const userMenuOpen = ref(false)
 const userMenuRef = ref<HTMLElement>()
@@ -436,6 +454,53 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/*
+  Absorbed page controls sit at the right edge of the content column — the exact
+  spot the page header had them — so the hand-off reads as the bar taking the
+  control in rather than swapping it for something else.
+
+  That only works where the column's right edge clears the absolutely
+  positioned utility cluster. Below roughly 1400px it doesn't: at the `lg`
+  switch the column is the whole viewport, leaving nothing to its right. There
+  the controls stay beside the nav links, keeping their size and shape — the
+  part that matters — and giving up only the column alignment.
+*/
+@media (min-width: 1400px) {
+  .nav-page-controls {
+    margin-left: auto;
+  }
+}
+
+/*
+  Collapse rather than fade in place: these live in a right-anchored flex row,
+  so a plain fade would hold their width until the last frame and then snap
+  everything sideways. The negative margin cancels the row's own gap-3 as the
+  width goes to zero.
+*/
+.nav-yield-enter-active,
+.nav-yield-leave-active {
+  overflow: hidden;
+  max-width: 14rem;
+  transition:
+    opacity 0.18s ease,
+    max-width 0.28s cubic-bezier(0.32, 0.72, 0, 1),
+    margin-right 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.nav-yield-enter-from,
+.nav-yield-leave-to {
+  opacity: 0;
+  max-width: 0;
+  margin-right: -0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-yield-enter-active,
+  .nav-yield-leave-active {
+    transition: opacity 0.12s ease;
+  }
+}
+
 /* Dropdown animation */
 .dropdown-enter-active,
 .dropdown-leave-active {

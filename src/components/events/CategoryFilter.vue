@@ -1,25 +1,16 @@
 <template>
   <!-- Desktop Dropdown -->
   <div class="relative category-filter-container hidden sm:block">
-    <!-- Compact drops the label for a single icon button, for tight chrome
-         such as the top nav; the dropdown it opens is unchanged. -->
+    <!-- `tone` only repaints the trigger: the desktop nav absorbs it at full
+         size once the page header scrolls away, and it has to land on the same
+         pixels it left. Compact drops the label for a single icon button, and
+         is only for the mobile bar, which has no room for the labelled pill. -->
     <button
       @click.stop="toggleMenu"
       :aria-label="t('categories.filterByCategory')"
       :title="compact ? activeLabel : undefined"
-      class="flex items-center transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
-      :class="[
-        compact
-          ? 'justify-center w-9 h-9 rounded-lg'
-          : 'glass-button gap-2 px-4 py-2 rounded-full text-sm font-medium',
-        compact
-          ? modelValue
-            ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-sm shadow-[#2ecc71]/20'
-            : 'text-slate-500 hover:text-slate-700 hover:bg-white/60'
-          : modelValue
-            ? 'bg-gradient-to-r from-[#2ecc71]/15 to-[#1e90ff]/15 text-slate-800 border-[#2ecc71]/30'
-            : 'text-slate-700',
-      ]"
+      class="flex items-center border transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
+      :class="triggerClass"
     >
       <ListFilter v-if="compact" class="w-[18px] h-[18px]" />
       <template v-else>
@@ -65,24 +56,24 @@
     </Transition>
   </div>
 
-  <!-- Mobile Filter Chip (opens bottom sheet) -->
+  <!-- Mobile Filter Chip (opens bottom sheet). Same size and shape in the page
+       header and in the mobile bar that absorbs it — only the fill changes. -->
   <button
     type="button"
     @click="showSheet = true"
     aria-haspopup="dialog"
     :aria-expanded="showSheet"
     :aria-label="t('categories.filterByCategory')"
-    class="sm:hidden flex items-center justify-center transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
-    :class="[
-      compact ? 'w-9 h-9 rounded-lg' : 'w-10 h-10 rounded-full',
+    class="sm:hidden flex items-center justify-center w-10 h-10 rounded-full border transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
+    :class="
       modelValue
-        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
-        : compact
-          ? 'text-slate-500 hover:text-slate-700 hover:bg-white/60'
-          : 'glass-button text-slate-600',
-    ]"
+        ? 'border-transparent bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
+        : tone === 'nav'
+          ? 'border-transparent text-slate-600 hover:bg-slate-100'
+          : 'glass-button border-white/50 text-slate-600'
+    "
   >
-    <ListFilter :class="compact ? 'w-[18px] h-[18px]' : 'w-5 h-5'" />
+    <ListFilter class="w-5 h-5" />
   </button>
 
   <!-- Mobile Category Bottom Sheet -->
@@ -173,14 +164,51 @@ const props = withDefaults(
     categories: EventCategory[]
     /** Render as a single icon button, for tight chrome. */
     compact?: boolean
+    /**
+     * Palette only — never geometry. `nav` drops the glass card for surfaces
+     * that belong to the top bar, so the absorbed control reads as part of the
+     * chrome instead of a card floating on it.
+     */
+    tone?: 'page' | 'nav'
   }>(),
-  { compact: false }
+  { compact: false, tone: 'page' }
 )
 
 /** Label for the trigger, and the compact button's tooltip. */
 const activeLabel = computed(() =>
   props.modelValue ? translateEventCategory(props.modelValue) : t('categories.allCategories')
 )
+
+const triggerClass = computed(() => {
+  if (props.compact) {
+    return [
+      'justify-center w-9 h-9 rounded-lg border-transparent',
+      props.modelValue
+        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-sm shadow-[#2ecc71]/20'
+        : 'text-slate-500 hover:text-slate-700 hover:bg-white/60',
+    ]
+  }
+
+  const shape = 'gap-2 px-4 py-2 rounded-full text-sm font-medium'
+
+  if (props.tone === 'nav') {
+    return [
+      shape,
+      'border-transparent',
+      props.modelValue
+        ? 'bg-gradient-to-r from-[#2ecc71]/15 to-[#1e90ff]/15 text-slate-800'
+        : 'bg-slate-900/[0.04] text-slate-600 hover:text-slate-900 hover:bg-slate-900/[0.06]',
+    ]
+  }
+
+  return [
+    shape,
+    'glass-button',
+    props.modelValue
+      ? 'bg-gradient-to-r from-[#2ecc71]/15 to-[#1e90ff]/15 text-slate-800 border-[#2ecc71]/30'
+      : 'border-white/50 text-slate-700',
+  ]
+})
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
@@ -277,12 +305,13 @@ onUnmounted(() => {
   }
 }
 
-/* Glass effect styles */
+/* Glass effect styles. The border lives in the class list, not here, so both
+   tones carry the same 1px and the control keeps its exact width when the nav
+   absorbs it. */
 .glass-button {
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .glass-button:hover {

@@ -21,33 +21,18 @@
               {{ t('events.title') }}
             </h1>
 
-            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-              <!-- Upcoming/Past/Recent Toggle (authenticated only) -->
-              <TimeFilterToggle
-                v-if="authStore.isAuthenticated"
-                v-model="timeFilter"
-                :options="timeFilterOptions"
-              />
-
-              <!-- Category Filter: desktop dropdown / mobile chip + bottom sheet (authenticated only) -->
-              <CategoryFilter
-                v-if="authStore.isAuthenticated"
-                v-model="categoryFilter"
-                :categories="categories"
-              />
-            </div>
+            <!-- Upcoming/Past/Recent toggle + category filter (authenticated
+                 only). As the header scrolls under the top bar,
+                 PinnedListControls hands them to it at the same size and
+                 column position, so they stay reachable. -->
+            <PinnedListControls
+              v-if="authStore.isAuthenticated"
+              v-model:time-filter="timeFilter"
+              :time-options="timeFilterOptions"
+              v-model:category="categoryFilter"
+              :categories="categories"
+            />
           </div>
-
-          <!-- Once the header scrolls away the top nav absorbs compact copies
-               of these filters, so they stay reachable (see
-               PinnedListControls). -->
-          <PinnedListControls
-            v-if="authStore.isAuthenticated"
-            v-model:time-filter="timeFilter"
-            :time-options="timeFilterOptions"
-            v-model:category="categoryFilter"
-            :categories="categories"
-          />
 
           <!-- Loading State -->
           <EventsLoadingSkeleton v-if="loading" />
@@ -155,8 +140,6 @@ import AppFooter from '@/components/AppFooter.vue'
 import {
   MobileTopBar,
   EventTimeline,
-  TimeFilterToggle,
-  CategoryFilter,
   PinnedListControls,
   EventsEmptyState,
   EventsLoadingSkeleton,
