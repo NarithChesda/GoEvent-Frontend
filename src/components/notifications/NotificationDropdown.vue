@@ -283,4 +283,28 @@ async function handleMarkAllRead() {
     0 12px 40px rgba(15, 23, 42, 0.12),
     0 4px 12px rgba(30, 144, 255, 0.08);
 }
+
+/* The list scrolls, and the platform scrollbar is far heavier than this panel's
+   chrome. Thin 6px style, design standard §10 — same as the filter menus. */
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
 </style>
