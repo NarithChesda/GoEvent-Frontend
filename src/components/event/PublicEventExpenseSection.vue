@@ -1,24 +1,29 @@
 <template>
-  <div v-if="expenses.length > 0" class="border-t border-slate-100 pt-4">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-3">
-      <div class="flex items-center gap-2">
-        <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-          Spending Transparency
-        </h3>
-        <div class="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 rounded-full">
-          <ShieldCheck class="w-3 h-3 text-emerald-600" />
-          <span class="text-[10px] font-medium text-emerald-700">Verified</span>
-        </div>
-      </div>
+  <PublicEventSection
+    v-if="expenses.length > 0"
+    :title="t('events.drawer.fundraising.spendingTransparency')"
+  >
+    <template #trailing>
+      <span
+        class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 rounded-full normal-case tracking-normal flex-shrink-0"
+      >
+        <ShieldCheck class="w-3 h-3 text-emerald-600" />
+        <span class="text-[10px] font-medium text-emerald-700">
+          {{ t('events.drawer.fundraising.verified') }}
+        </span>
+      </span>
       <button
         v-if="expenses.length > maxVisibleItems"
         @click="showAllExpenses = !showAllExpenses"
-        class="text-xs font-medium text-blue-600 hover:text-blue-700"
+        class="ml-auto text-xs font-medium normal-case tracking-normal text-[var(--evt-accent)] hover:underline flex-shrink-0"
       >
-        {{ showAllExpenses ? 'Show Less' : 'See All' }}
+        {{
+          showAllExpenses
+            ? t('events.drawer.fundraising.showLess')
+            : t('events.drawer.fundraising.seeAll')
+        }}
       </button>
-    </div>
+    </template>
 
     <!-- Total Spent Card -->
     <div class="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-4 mb-4 text-white">
@@ -139,7 +144,7 @@
         All expenses are publicly disclosed for full transparency
       </p>
     </div>
-  </div>
+  </PublicEventSection>
 </template>
 
 <script setup lang="ts">
@@ -171,7 +176,10 @@ import {
 } from 'lucide-vue-next'
 import type { PublicExpenseRecord } from '@/services/api/types/expense.types'
 import { useMediaUrl } from '@/composables/useMediaUrl'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+import PublicEventSection from './PublicEventSection.vue'
 
+const { t } = useAppLanguage()
 const { getMediaUrl } = useMediaUrl()
 
 interface Props {

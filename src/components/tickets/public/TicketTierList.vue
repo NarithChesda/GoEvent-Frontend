@@ -1,16 +1,13 @@
 <template>
-  <section class="bg-white/80 border border-slate-200/60 rounded-2xl overflow-hidden shadow-sm">
-    <!-- Header -->
-    <div class="px-4 py-3 border-b border-slate-100 flex items-center gap-2">
-      <Ticket class="w-4 h-4 text-emerald-600" />
-      <h3 class="text-sm font-semibold text-slate-900">
-        {{ t('events.tickets.public.title') }}
-      </h3>
-    </div>
-
+  <!-- Section heading is supplied by the parent's `PublicEventSection`, so this
+       renders only the tiers — one chrome for every section in the drawer. -->
+  <section class="bg-white border rounded-2xl overflow-hidden" :style="{ borderColor: 'var(--evt-ring)' }">
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-8">
-      <div class="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div
+        class="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+        :style="{ borderColor: 'var(--evt-accent)', borderTopColor: 'transparent' }"
+      />
     </div>
 
     <!-- Empty / error -->
@@ -77,7 +74,12 @@
               </span>
               <button
                 type="button"
-                class="w-9 h-9 sm:w-8 sm:h-8 rounded-full border border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+                class="w-9 h-9 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 hover:brightness-95"
+                :style="{
+                  borderColor: 'var(--evt-ring)',
+                  backgroundColor: 'var(--evt-tint)',
+                  color: 'var(--evt-accent)',
+                }"
                 :disabled="!canIncrement(tier)"
                 :aria-label="t('events.tickets.public.increase')"
                 @click="increment(tier)"
@@ -96,52 +98,22 @@
       </li>
     </ul>
 
-    <!-- Footer: cart summary + CTA -->
-    <div
-      v-if="tiers.length > 0"
-      class="px-4 py-3 bg-slate-50/80 border-t border-slate-100"
+    <!-- Only the mixed-currency warning stays here, next to the steppers that
+         cause it. The subtotal and the checkout button moved to the drawer's
+         pinned action bar so they stay on screen while these tiers scroll. -->
+    <p
+      v-if="tiers.length > 0 && store.hasMixedCurrency"
+      class="px-4 py-3 text-xs text-rose-600 border-t border-slate-100"
     >
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-xs text-slate-500">
-          {{ t('events.tickets.public.subtotalLabel') }}
-        </span>
-        <span class="text-base font-semibold text-slate-900 tabular-nums">
-          {{ subtotalDisplay }}
-        </span>
-      </div>
-      <p
-        v-if="store.hasMixedCurrency"
-        class="text-xs text-rose-600 mb-2"
-      >
-        {{ t('events.tickets.public.mixedCurrencyError') }}
-      </p>
-      <button
-        v-if="!isAuthenticated"
-        type="button"
-        class="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold py-2.5 px-4 rounded-xl transition-colors"
-        @click="$emit('login-required')"
-      >
-        {{ t('events.tickets.public.loginToBuy') }}
-      </button>
-      <button
-        v-else
-        type="button"
-        class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:opacity-90 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white text-sm font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm"
-        :disabled="!canCheckout"
-        @click="goToCheckout"
-      >
-        {{ checkoutCta }}
-      </button>
-    </div>
+      {{ t('events.tickets.public.mixedCurrencyError') }}
+    </p>
   </section>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { Ticket, Plus, Minus } from 'lucide-vue-next'
+import { Plus, Minus } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { useAuthStore } from '@/stores/auth'
 import { useTicketCheckoutStore } from '@/stores/ticketCheckout'
 import { ticketTypesService, type TicketType } from '@/services/api'
 import { formatCurrency, type CurrencyCode } from '@/utils/currency'
@@ -160,14 +132,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   tiers: undefined,
 })
-const emit = defineEmits<{
-  'login-required': []
-}>()
-void emit
-
 const { t } = useAppLanguage()
-const router = useRouter()
-const authStore = useAuthStore()
 const store = useTicketCheckoutStore()
 
 const fetchedTiers = ref<TicketType[]>([])
@@ -178,8 +143,6 @@ const loading = ref(false)
 // shared `tiers` ref) means parent updates are always reflected without
 // fighting our local state.
 const tiers = computed<TicketType[]>(() => props.tiers ?? fetchedTiers.value)
-
-const isAuthenticated = computed(() => authStore.isAuthenticated)
 
 const loadTiers = async (eventId: string) => {
   loading.value = true
@@ -262,29 +225,4 @@ const decrement = (tier: TicketType) => {
   store.setQuantity(tier, next)
 }
 
-const subtotalDisplay = computed(() => {
-  const currency = store.cartCurrency
-  if (!currency) return formatCurrency('0', 'USD')
-  return formatCurrency(store.subtotal, currency as CurrencyCode)
-})
-
-const canCheckout = computed(() => {
-  return (
-    store.eventId === props.eventId &&
-    store.totalQuantity > 0 &&
-    !store.hasMixedCurrency
-  )
-})
-
-const checkoutCta = computed(() => {
-  if (store.totalQuantity === 0) {
-    return t('events.tickets.public.selectTickets')
-  }
-  return t('events.tickets.public.proceedToCheckout', { count: store.totalQuantity })
-})
-
-const goToCheckout = () => {
-  if (!canCheckout.value) return
-  router.push({ name: 'event-checkout', params: { id: props.eventId } })
-}
 </script>

@@ -6,7 +6,18 @@
     "guestCount": "{count} ភ្ញៀវ",
     "hostOthers": "& {count} នាក់ផ្សេងទៀត",
     "today": "ថ្ងៃនេះ",
-    "fromPrice": "ចាប់ពី {price}"
+    "fromPrice": "ចាប់ពី {price}",
+    "going": "{count} នាក់ចូលរួម",
+    "interested": "{count} នាក់ចាប់អារម្មណ៍",
+    "virtual": "អនឡាញ",
+    "when": {
+      "live": "កំពុងប្រព្រឹត្ត",
+      "soon": "ជិតចាប់ផ្តើម",
+      "inHours": "ក្នុងរយៈពេល {count} ម៉ោង",
+      "tomorrow": "ថ្ងៃស្អែក",
+      "inDays": "ក្នុងរយៈពេល {count} ថ្ងៃ",
+      "ended": "បានបញ្ចប់"
+    }
   },
   "createEvent": "បង្កើតព្រឹត្តិការណ៍",
   "createFirstEvent": "បង្កើតព្រឹត្តិការណ៍ដំបូងរបស់អ្នក",
@@ -273,6 +284,74 @@
       "refresh": "ផ្ទុកឡើងវិញ",
       "loadMore": "ផ្ទុកបន្ថែម",
       "loadingMore": "កំពុងផ្ទុក…"
+    }
+  },
+  "drawer": {
+    "close": "បិទ",
+    "previous": "ព្រឹត្តិការណ៍មុន",
+    "next": "ព្រឹត្តិការណ៍បន្ទាប់",
+    "addToCalendar": "បញ្ចូលទៅប្រតិទិន",
+    "share": "ចែករំលែក",
+    "like": "ចូលចិត្ត",
+    "unlike": "ដកការចូលចិត្ត",
+    "directions": "ទិសដៅ",
+    "about": "អំពី",
+    "agenda": "កម្មវិធី",
+    "location": "ទីតាំង",
+    "hostedBy": "រៀបចំដោយ",
+    "campaignOrganizer": "អ្នករៀបចំយុទ្ធនាការ",
+    "moreIn": "បន្ថែមក្នុង {category}",
+    "moreEvents": "ព្រឹត្តិការណ៍ផ្សេងទៀត",
+    "noDescription": "មិនមានការពិពណ៌នា",
+    "byOrganizer": "ដោយ {name}",
+    "fundraiser": "ការរៃអង្គាសមូលនិធិ",
+    "virtualEvent": "ព្រឹត្តិការណ៍អនឡាញ",
+    "eventOrganizer": "អ្នករៀបចំព្រឹត្តិការណ៍",
+    "moreOptions": "ជម្រើសបន្ថែម",
+    "calendarOptions": {
+      "google": "Google",
+      "outlook": "Outlook",
+      "ics": "ទាញយក .ics"
+    },
+    "error": {
+      "title": "មិនអាចផ្ទុកព្រឹត្តិការណ៍នេះបានទេ",
+      "retry": "ព្យាយាមម្ដងទៀត"
+    },
+    "agendaItems": "{count} ធាតុ",
+    "registration": {
+      "heading": "ការចុះឈ្មោះ",
+      "registered": "អ្នកនឹងចូលរួម",
+      "admission": "សំបុត្រចូលរួម",
+      "confirmationLabel": "លេខបញ្ជាក់",
+      "confirmed": "បានបញ្ជាក់ការចុះឈ្មោះ",
+      "showQr": "បង្ហាញកូដ QR",
+      "cancel": "មិនអាចចូលរួមបានទេ? បោះបង់",
+      "cancelling": "កំពុងបោះបង់…",
+      "joinLinkPending": "តំណចូលរួមនឹងបង្ហាញនៅពេលព្រឹត្តិការណ៍ចាប់ផ្ដើម",
+      "live": "កំពុងផ្សាយ"
+    },
+    "action": {
+      "register": "ចុះឈ្មោះ",
+      "registering": "កំពុងចុះឈ្មោះ…",
+      "signInToRegister": "ចូលគណនីដើម្បីចុះឈ្មោះ",
+      "buyTickets": "ទិញសំបុត្រ",
+      "donate": "បរិច្ចាគ",
+      "viewTicket": "មើលសំបុត្រ",
+      "soldOut": "អស់សំបុត្រ",
+      "registrationClosed": "បិទការចុះឈ្មោះ",
+      "eventEnded": "ព្រឹត្តិការណ៍បានបញ្ចប់",
+      "unavailable": "មិនអាចប្រើបាន",
+      "free": "ឥតគិតថ្លៃ",
+      "freeEntry": "ចូលរួមឥតគិតថ្លៃ",
+      "registeredStatus": "អ្នកបានចុះឈ្មោះរួចរាល់"
+    },
+    "fundraising": {
+      "topSupporters": "អ្នកឧបត្ថម្ភកំពូល",
+      "seeAll": "មើលទាំងអស់",
+      "showLess": "បង្ហាញតិច",
+      "anonymous": "អនាមិក",
+      "spendingTransparency": "តម្លាភាពនៃការចំណាយ",
+      "verified": "បានផ្ទៀងផ្ទាត់"
     }
   }
 }

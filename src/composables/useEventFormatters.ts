@@ -10,11 +10,34 @@
 import { apiService, type Event } from '@/services/api'
 import { i18n } from '@/i18n'
 import { imagekitUrl, toImageKitProxy } from '@/utils/mediaUrl'
-import { buildEventCoverDataUri } from '@/utils/eventCoverPlaceholder'
+import { buildEventCoverDataUri, categoryAccent } from '@/utils/eventCoverPlaceholder'
+import { formatCurrency, type CurrencyCode } from '@/utils/currency'
 
 export interface EventHost {
   name: string
   image: string | null
+}
+
+/**
+ * The event's identity colour, resolved from its category.
+ *
+ * Single lookup shared by the card's accent rail, the category chip and the
+ * drawer's info tiles, so a category's colour can never disagree with the cover
+ * art drawn from the same map.
+ */
+export function getEventAccent(event: Event): string {
+  return categoryAccent(getEventCategory(event))
+}
+
+/**
+ * Compose a hex colour with an alpha suffix — the codebase's convention for
+ * tinting a dynamic entity colour (see the design system's §1).
+ *
+ * @param hex - Six-digit hex, e.g. `#6d28d9`
+ * @param alpha - Two-digit hex alpha, e.g. `14` for ~8%
+ */
+export function withAlpha(hex: string, alpha: string): string {
+  return `${hex}${alpha}`
 }
 
 /**
@@ -49,6 +72,159 @@ export function formatEventTime(dateStr: string): string {
     minute: '2-digit',
     hour12: true,
   })
+}
+
+/**
+ * Format an event's clock range, e.g. "7:30 PM – 9:30 PM".
+ *
+ * The end time is dropped when it isn't useful: when the event runs past
+ * midnight the second half of the range would describe a different day, and
+ * when start and end coincide there is nothing to show.
+ */
+export function formatEventTimeRange(startStr: string, endStr: string | undefined): string {
+  const start = formatEventTime(startStr)
+  if (!endStr) return start
+
+  const startDate = new Date(startStr)
+  const endDate = new Date(endStr)
+  if (Number.isNaN(endDate.getTime())) return start
+
+  const sameDay = startDate.toDateString() === endDate.toDateString()
+  if (!sameDay || endDate.getTime() <= startDate.getTime()) return start
+
+  return `${start} – ${formatEventTime(endStr)}`
+}
+
+export interface RelativeWhen {
+  label: string
+  /** Drives the live treatment — pulsing dot, emerald chip. */
+  isLive: boolean
+}
+
+/** Beyond this horizon the date rail already answers "when" well enough. */
+const RELATIVE_HORIZON_DAYS = 60
+
+/**
+ * How soon the event is, in words — "Happening now", "In 3 days", "Tomorrow".
+ *
+ * This is the single biggest thing the list was missing: a column of dates
+ * reads as a spreadsheet, while a column of *distances* reads as things that
+ * are about to happen. Returns null past the horizon (and for anything already
+ * over on a past-events list) so the chip stays meaningful where it appears.
+ */
+export function formatRelativeWhen(event: Event): RelativeWhen | null {
+  const t = i18n.global.t
+
+  if (event.is_ongoing) {
+    return { label: t('events.card.when.live'), isLive: true }
+  }
+  if (event.is_past) {
+    return { label: t('events.card.when.ended'), isLive: false }
+  }
+
+  const start = new Date(event.start_date)
+  if (Number.isNaN(start.getTime())) return null
+
+  const now = new Date()
+  const minutesAway = (start.getTime() - now.getTime()) / 60000
+  if (minutesAway <= 0) return null
+
+  if (minutesAway < 60) {
+    return { label: t('events.card.when.soon'), isLive: false }
+  }
+
+  // Compare calendar days, not elapsed hours: an event at 9am tomorrow is
+  // "Tomorrow" even though it is only 14 hours away.
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const startOfEventDay = new Date(start.getFullYear(), start.getMonth(), start.getDate())
+  const daysAway = Math.round(
+    (startOfEventDay.getTime() - startOfToday.getTime()) / 86400000
+  )
+
+  if (daysAway <= 0) {
+    const hours = Math.round(minutesAway / 60)
+    return { label: t('events.card.when.inHours', { count: hours }, hours), isLive: false }
+  }
+  if (daysAway === 1) {
+    return { label: t('events.card.when.tomorrow'), isLive: false }
+  }
+  if (daysAway <= RELATIVE_HORIZON_DAYS) {
+    return { label: t('events.card.when.inDays', { count: daysAway }, daysAway), isLive: false }
+  }
+
+  return null
+}
+
+/**
+ * Who is coming, in words — falling back through the signals an event actually
+ * has rather than rendering an empty slot.
+ *
+ * The old card showed a guest count only when it was non-zero and nothing
+ * otherwise, which is how the right two-thirds of every row ended up blank on
+ * the listings that have no registrations. Registrations first, then likes as a
+ * softer signal of interest, then nothing — the caller's byline covers that case.
+ */
+export function getAttendanceLabel(event: Event): string | null {
+  const t = i18n.global.t
+
+  const going = event.registrations_count || 0
+  if (going > 0) return t('events.card.going', { count: going }, going)
+
+  const interested = event.likes_count || 0
+  if (interested > 0) return t('events.card.interested', { count: interested }, interested)
+
+  return null
+}
+
+export interface EntryChip {
+  label: string
+  tone: 'price' | 'virtual'
+}
+
+/**
+ * The entry condition, when the event states one.
+ *
+ * Deliberately says nothing when there are no ticket tiers. "No tiers" is not
+ * the same as "free" — an organiser may collect payment off-platform — and a
+ * wrong "Free entry" chip is worse on a discovery surface than no chip at all.
+ * A real free/paid flag from the backend would let this branch grow.
+ */
+export function getEntryChip(event: Event): EntryChip | null {
+  const t = i18n.global.t
+
+  if (event.has_ticketed_sales && event.min_ticket_price && event.min_ticket_currency) {
+    return {
+      label: t('events.card.fromPrice', {
+        price: formatCurrency(event.min_ticket_price, event.min_ticket_currency as CurrencyCode),
+      }),
+      tone: 'price',
+    }
+  }
+
+  if (event.is_virtual) {
+    return { label: t('events.card.virtual'), tone: 'virtual' }
+  }
+
+  return null
+}
+
+/**
+ * "By {names}" — the event's hosts, or the organiser when no hosts are listed.
+ *
+ * The organiser fallback is what guarantees the presence row is never empty:
+ * scraped listings carry an organiser name but no host records.
+ */
+export function getBylineLabel(event: Event): string | null {
+  const t = i18n.global.t
+
+  const hostNames = formatHostNames(event)
+  if (hostNames) return t('events.card.hostedBy', { names: hostNames })
+
+  if (event.organizer_name) {
+    return t('events.card.hostedBy', { names: event.organizer_name })
+  }
+
+  return null
 }
 
 /**
@@ -120,13 +296,13 @@ export function getEventImageWithFallback(event: Event): string {
 
 /**
  * Get event thumbnail image URL (optimized for event cards)
- * Display size is 176x112 (w-44 h-28), using 3x for retina = 528x336
+ * Display size is 208x128 (w-52 h-32), using 3x for retina = 624x384
  * Always returns an image URL (with fallback if no actual image exists)
  */
 export function getEventThumbnail(event: Event): string {
   const imageUrl = getEventImageWithFallback(event)
   // Apply ImageKit transform if it's an ImageKit URL, otherwise return as-is
-  return applyImageKitTransform(imageUrl, 528, 336) || imageUrl
+  return applyImageKitTransform(imageUrl, 624, 384) || imageUrl
 }
 
 /**
@@ -297,6 +473,13 @@ export function groupEventsByDate(
 export function useEventFormatters() {
   return {
     formatEventTime,
+    formatEventTimeRange,
+    formatRelativeWhen,
+    getAttendanceLabel,
+    getEntryChip,
+    getBylineLabel,
+    getEventAccent,
+    withAlpha,
     getGuestCount,
     getEventImage,
     getEventImageWithFallback,

@@ -1,7 +1,8 @@
 /**
  * eventCoverPlaceholder.ts
  *
- * Default cover art for events that have no banner image.
+ * Default cover art for events that have no banner image, and the single source
+ * of truth for each category's accent colour.
  *
  * This replaces a map of hotlinked Unsplash photos that matched category names
  * by substring and fell back to a random pick from a five-photo pool. Seven of
@@ -13,6 +14,15 @@
  * A generated cover cannot be semantically wrong. It is also resolution
  * independent, costs no network request, and carries no licensing question.
  *
+ * The art is a *duotone poster*, not a pale wash. The first version of this
+ * generator drew a pastel gradient with the icon at 50% opacity, which was safe
+ * to the point of invisibility: on a list where most events have no banner, that
+ * tile is the visual design, and a column of them read as blank. Deep ground and
+ * a large cropped mark give each category a face — and give white overlay text
+ * (the drawer banner) a ground it can actually sit on. Values are held in a
+ * narrow mid-dark band across all sixteen categories so hue varies down a list
+ * while weight does not.
+ *
  * Output is an `image/svg+xml` data URI so every existing `<img :src>` call site
  * keeps working untouched — including the ImageKit sizing helpers, which pass
  * `data:` URIs through unchanged (see `imagekitUrl` in utils/mediaUrl.ts).
@@ -20,7 +30,7 @@
 
 import { normalizeCategoryKey } from './categoryKey'
 
-/** Authoring canvas. 16:10, so an 80x80 `object-cover` crop keeps the icon. */
+/** Authoring canvas. 16:10, so an 80x80 `object-cover` crop keeps the mark. */
 const CANVAS_W = 800
 const CANVAS_H = 500
 
@@ -64,16 +74,22 @@ const ICONS = {
 } as const
 
 interface CoverTheme {
-  /** Gradient stops. Deliberately pale — a list is a wall of these. */
+  /**
+   * The category's identity colour, used for UI accents — card rail, category
+   * chip, drawer info tiles. Chosen dark enough to read as text on a white or
+   * lightly-tinted surface, which is why it is not simply the cover's top stop.
+   */
+  accent: string
+  /** Cover gradient stops, light-to-dark. Held in a narrow mid-dark band. */
   from: string
+  via: string
   to: string
-  /** Icon and tint-blob colour. */
-  ink: string
   /** lucide icon body from ICONS. */
   icon: string
   /**
-   * Suppresses the bright highlight and softens the icon. Used for categories
-   * where a cheerful placeholder would be tasteless.
+   * Drops chroma, hatch and mark opacity. Used for categories where a bold
+   * placeholder would be tasteless — the art still has structure, at half the
+   * volume.
    */
   quiet?: boolean
 }
@@ -82,31 +98,41 @@ interface CoverTheme {
  * One theme per canonical event category (see i18n/locales/en/categories.json).
  * Keys are slugs from `normalizeCategoryKey`, so they match the translation
  * keys exactly rather than by coincidence.
+ *
+ * Hues are spread around the wheel rather than assigned by association alone —
+ * what matters on a list is that adjacent rows differ, so near-neighbours in
+ * meaning (business/sports/community all reading "blue") are pushed apart into
+ * navy, sky and cyan.
  */
 const CATEGORY_THEMES: Record<string, CoverTheme> = {
-  arts_culture: { from: '#f3e8ff', to: '#e0e7ff', ink: '#7c3aed', icon: ICONS.palette },
-  birthday: { from: '#fce7f3', to: '#ffedd5', ink: '#db2777', icon: ICONS.cake },
-  business_tech: { from: '#dcfce7', to: '#dbeafe', ink: '#1e90ff', icon: ICONS.briefcase },
-  community_social: { from: '#cffafe', to: '#dbeafe', ink: '#0284c7', icon: ICONS.users },
-  education_learning: { from: '#e0e7ff', to: '#dbeafe', ink: '#4f46e5', icon: ICONS.graduationCap },
-  family_kids: { from: '#ffedd5', to: '#fef9c3', ink: '#ea580c', icon: ICONS.ferrisWheel },
-  film_media: { from: '#e2e8f0', to: '#cbd5e1', ink: '#475569', icon: ICONS.clapperboard },
-  food_drink: { from: '#fef3c7', to: '#ffe4e6', ink: '#d97706', icon: ICONS.utensilsCrossed },
-  funeral: { from: '#f1f5f9', to: '#e2e8f0', ink: '#64748b', icon: ICONS.flower, quiet: true },
-  health_wellness: { from: '#ccfbf1', to: '#d1fae5', ink: '#0d9488', icon: ICONS.heartPulse },
-  housewarming_party: { from: '#fef3c7', to: '#d1fae5', ink: '#ca8a04', icon: ICONS.house },
-  lifestyle_wellness: { from: '#d1fae5', to: '#ecfccb', ink: '#059669', icon: ICONS.leaf },
-  music: { from: '#ede9fe', to: '#fae8ff', ink: '#7c3aed', icon: ICONS.music },
-  seasonal_holiday: { from: '#fee2e2', to: '#d1fae5', ink: '#dc2626', icon: ICONS.gift },
-  sports_fitness: { from: '#dbeafe', to: '#cffafe', ink: '#2563eb', icon: ICONS.trophy },
-  wedding: { from: '#ffe4e6', to: '#fef3c7', ink: '#e11d48', icon: ICONS.heart },
+  arts_culture: { accent: '#a21caf', from: '#a21caf', via: '#701a75', to: '#4a044e', icon: ICONS.palette },
+  birthday: { accent: '#be185d', from: '#db2777', via: '#9d174d', to: '#701a3a', icon: ICONS.cake },
+  business_tech: { accent: '#1e40af', from: '#1e40af', via: '#1e3a8a', to: '#172554', icon: ICONS.briefcase },
+  community_social: { accent: '#0e7490', from: '#06b6d4', via: '#155e75', to: '#083344', icon: ICONS.users },
+  education_learning: { accent: '#4338ca', from: '#4f46e5', via: '#3730a3', to: '#1e1b4b', icon: ICONS.graduationCap },
+  family_kids: { accent: '#c2410c', from: '#f97316', via: '#c2410c', to: '#7c2d12', icon: ICONS.ferrisWheel },
+  film_media: { accent: '#334155', from: '#475569', via: '#334155', to: '#0f172a', icon: ICONS.clapperboard },
+  food_drink: { accent: '#b45309', from: '#d97706', via: '#92400e', to: '#451a03', icon: ICONS.utensilsCrossed },
+  funeral: { accent: '#64748b', from: '#94a3b8', via: '#7c8b9c', to: '#64748b', icon: ICONS.flower, quiet: true },
+  health_wellness: { accent: '#0f766e', from: '#0d9488', via: '#115e59', to: '#042f2e', icon: ICONS.heartPulse },
+  housewarming_party: { accent: '#4d7c0f', from: '#65a30d', via: '#3f6212', to: '#1a2e05', icon: ICONS.house },
+  lifestyle_wellness: { accent: '#047857', from: '#059669', via: '#065f46', to: '#022c22', icon: ICONS.leaf },
+  music: { accent: '#6d28d9', from: '#6d28d9', via: '#4c1d95', to: '#2e1065', icon: ICONS.music },
+  seasonal_holiday: { accent: '#b91c1c', from: '#dc2626', via: '#991b1b', to: '#450a0a', icon: ICONS.gift },
+  sports_fitness: { accent: '#0284c7', from: '#0ea5e9', via: '#0369a1', to: '#082f49', icon: ICONS.trophy },
+  wedding: { accent: '#be123c', from: '#e11d48', via: '#9f1239', to: '#4c0519', icon: ICONS.heart },
 }
 
-/** Neutral brand cover for categories we don't recognise. */
+/**
+ * Cover for categories we don't recognise. Runs the brand gradient deepened to
+ * the same value band — an unknown category still reads as a GoEvent event
+ * rather than as a broken one.
+ */
 const DEFAULT_THEME: CoverTheme = {
-  from: '#f1f5f9',
-  to: '#e2e8f0',
-  ink: '#2ecc71',
+  accent: '#1e6f4f',
+  from: '#1a9e57',
+  via: '#1a6fbf',
+  to: '#124a7a',
   icon: ICONS.calendarDays,
 }
 
@@ -114,7 +140,7 @@ const DEFAULT_THEME: CoverTheme = {
  * Keyword net for categories the backend renames or adds without a theme entry.
  * Checked in order against the slug, so `funeral` is first and nothing that
  * follows can claim it. Unlike the map this replaced, a miss here is harmless —
- * it lands on a neutral calendar cover rather than a random photograph.
+ * it lands on a neutral brand cover rather than a random photograph.
  */
 const KEYWORD_ALIASES: Array<[token: string, slug: string]> = [
   ['funeral', 'funeral'],
@@ -159,47 +185,50 @@ const KEYWORD_ALIASES: Array<[token: string, slug: string]> = [
   ['celebration', 'seasonal_holiday'],
 ]
 
-/** Gradient directions, so same-category events aren't identical tiles. */
-const GRADIENT_ANGLES = [
-  { x1: 0, y1: 0, x2: 1, y2: 1 },
-  { x1: 1, y1: 0, x2: 0, y2: 1 },
-  { x1: 0, y1: 0.2, x2: 1, y2: 0.8 },
-  { x1: 0.1, y1: 1, x2: 0.9, y2: 0 },
-]
+/**
+ * Composition variants, so same-category events aren't identical tiles.
+ *
+ * Gradient direction, highlight and mark placement move together as one layout
+ * rather than being picked independently — that guarantees the highlight never
+ * lands on top of the mark, which an independent pick could not.
+ *
+ * Every layout keeps a substantial piece of the mark inside x∈[150,650], the
+ * region an 80x80 `object-cover` square crop shows on mobile cards.
+ */
+const ICON_SCALE = 14
+const ICON_SIZE = 24 * ICON_SCALE // 336
+const OVERHANG = 40
 
-/** Soft shape placements, kept clear of the centred icon. */
-const BLOB_LAYOUTS = [
-  [
-    { cx: 110, cy: 90, r: 190 },
-    { cx: 690, cy: 430, r: 230 },
-  ],
-  [
-    { cx: 700, cy: 80, r: 210 },
-    { cx: 120, cy: 440, r: 180 },
-  ],
-  [
-    { cx: 640, cy: 120, r: 170 },
-    { cx: 180, cy: 400, r: 240 },
-  ],
-  [
-    { cx: 90, cy: 420, r: 200 },
-    { cx: 720, cy: 150, r: 190 },
-  ],
+const LAYOUTS = [
+  {
+    angle: { x1: 0, y1: 0, x2: 1, y2: 1 },
+    glow: { cx: 90, cy: 40, r: 260 },
+    icon: { x: CANVAS_W - ICON_SIZE + OVERHANG, y: CANVAS_H - ICON_SIZE + OVERHANG },
+  },
+  {
+    angle: { x1: 1, y1: 0, x2: 0, y2: 1 },
+    glow: { cx: 720, cy: 50, r: 250 },
+    icon: { x: -OVERHANG, y: CANVAS_H - ICON_SIZE + OVERHANG },
+  },
+  {
+    angle: { x1: 0, y1: 0.2, x2: 1, y2: 0.8 },
+    glow: { cx: 100, cy: 470, r: 260 },
+    icon: { x: CANVAS_W - ICON_SIZE + OVERHANG, y: -OVERHANG },
+  },
+  {
+    angle: { x1: 0.1, y1: 1, x2: 0.9, y2: 0 },
+    glow: { cx: 700, cy: 460, r: 250 },
+    icon: { x: -OVERHANG, y: -OVERHANG },
+  },
 ]
-
-/** Icon drawn at 168px on the 800x500 canvas, centred. */
-const ICON_SCALE = 7
-const ICON_OFFSET_X = CANVAS_W / 2 - (24 * ICON_SCALE) / 2
-const ICON_OFFSET_Y = CANVAS_H / 2 - (24 * ICON_SCALE) / 2
 
 /**
  * FNV-1a with a MurmurHash3 finalizer.
  *
- * The avalanche step is load-bearing, not ceremony: the variant indices below
- * are taken from this value's low bits, and the plain djb2 hash this replaced
- * moved those bits in lockstep for similar short seeds — "a1", "b2" and "c3"
- * all landed on the same gradient *and* the same shape layout. Mixing first
- * means neighbouring ids scatter.
+ * The avalanche step is load-bearing, not ceremony: the variant index below is
+ * taken from this value's low bits, and the plain djb2 hash this replaced moved
+ * those bits in lockstep for similar short seeds — "a1", "b2" and "c3" all
+ * landed on the same layout. Mixing first means neighbouring ids scatter.
  */
 function hashString(input: string): number {
   let hash = 2166136261
@@ -232,6 +261,68 @@ export function resolveCoverTheme(categoryName: string | null | undefined): Cove
   return DEFAULT_THEME
 }
 
+/**
+ * The category's accent colour, for UI that needs to agree with the cover art.
+ *
+ * Exported so the card rail, the category chip and the drawer's info tiles all
+ * resolve identity from the same map the artwork does. Before this existed the
+ * chip was a fixed brand-green wash for every category while the cover carried
+ * a real per-category hue — two systems disagreeing, with the informative one
+ * invisible.
+ *
+ * @param categoryName - Backend category display name, e.g. "Business & Tech"
+ * @returns A hex colour dark enough to use as text on white or a light tint
+ */
+export function categoryAccent(categoryName: string | null | undefined): string {
+  return resolveCoverTheme(categoryName).accent
+}
+
+/**
+ * The category's full theme record, for surfaces that want more than the accent.
+ *
+ * The public event drawer paints its hero scrim from `to`/`via` and suppresses
+ * its own festive treatments on `quiet` categories, so it needs the whole
+ * record rather than a single colour. Exported as a readonly view because this
+ * map is the single source of truth for category identity — callers derive from
+ * it, they never edit it.
+ */
+export type CategoryTheme = Readonly<CoverTheme>
+
+/** @see resolveCoverTheme — same lookup, named for consumers outside cover art. */
+export function categoryTheme(categoryName: string | null | undefined): CategoryTheme {
+  return resolveCoverTheme(categoryName)
+}
+
+/** Motifs are per-category and reused across every drawer open. */
+const motifCache = new Map<string, string>()
+
+/**
+ * The category's mark alone, as an `image/svg+xml` data URI.
+ *
+ * Drawn white on transparent so a caller tints it by opacity over its own
+ * ground rather than by baking a colour in — the drawer watermarks it at a few
+ * percent over the hero scrim, where any baked hue would fight the photo.
+ *
+ * Exists because lucide closes over its icon node arrays inside
+ * `createLucideIcon` and never exposes them (see the ICONS comment above), so
+ * the inlined bodies here are the only way to get this mark as markup.
+ */
+export function categoryMotifDataUri(categoryName: string | null | undefined): string {
+  const theme = resolveCoverTheme(categoryName)
+
+  const cached = motifCache.get(theme.icon)
+  if (cached) return cached
+
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" ` +
+    `fill="none" stroke="#ffffff" color="#ffffff" stroke-width="1.5" ` +
+    `stroke-linecap="round" stroke-linejoin="round">${theme.icon}</svg>`
+
+  const dataUri = `data:image/svg+xml,${encodeURIComponent(svg)}`
+  motifCache.set(theme.icon, dataUri)
+  return dataUri
+}
+
 /** Generated covers are few and stable, so build each one once. */
 const coverCache = new Map<string, string>()
 
@@ -240,8 +331,8 @@ const coverCache = new Map<string, string>()
  *
  * @param categoryName - Backend category display name, e.g. "Business & Tech"
  * @param seed - Stable per-event string (id, falling back to title) that picks
- *   the gradient direction and shape layout, so a column of same-category cards
- *   varies while any one event always looks the same.
+ *   the composition variant, so a column of same-category cards varies while
+ *   any one event always looks the same.
  */
 export function buildEventCoverDataUri(
   categoryName: string | null | undefined,
@@ -250,27 +341,39 @@ export function buildEventCoverDataUri(
   const theme = resolveCoverTheme(categoryName)
   const hash = hashString(seed || categoryName || 'goevent')
 
-  const angleIndex = hash % GRADIENT_ANGLES.length
-  const blobIndex = (hash >>> 8) % BLOB_LAYOUTS.length
-  const cacheKey = `${theme.icon.length}:${theme.ink}:${angleIndex}:${blobIndex}`
+  const variant = hash % LAYOUTS.length
+  const cacheKey = `${theme.accent}:${variant}`
 
   const cached = coverCache.get(cacheKey)
   if (cached) return cached
 
-  const angle = GRADIENT_ANGLES[angleIndex]
-  const [highlight, tint] = BLOB_LAYOUTS[blobIndex]
-  const highlightOpacity = theme.quiet ? 0.22 : 0.4
-  const iconOpacity = theme.quiet ? 0.4 : 0.5
+  const { angle, glow, icon } = LAYOUTS[variant]
+  const hatchOpacity = theme.quiet ? 0.035 : 0.075
+  const glowOpacity = theme.quiet ? 0.16 : 0.34
+  const markOpacity = theme.quiet ? 0.13 : 0.19
 
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_W} ${CANVAS_H}" width="${CANVAS_W}" height="${CANVAS_H}">` +
-    `<defs><linearGradient id="g" x1="${angle.x1}" y1="${angle.y1}" x2="${angle.x2}" y2="${angle.y2}">` +
-    `<stop offset="0" stop-color="${theme.from}"/><stop offset="1" stop-color="${theme.to}"/>` +
-    `</linearGradient></defs>` +
+    `<defs>` +
+    `<linearGradient id="g" x1="${angle.x1}" y1="${angle.y1}" x2="${angle.x2}" y2="${angle.y2}">` +
+    `<stop offset="0" stop-color="${theme.from}"/>` +
+    `<stop offset="0.55" stop-color="${theme.via}"/>` +
+    `<stop offset="1" stop-color="${theme.to}"/>` +
+    `</linearGradient>` +
+    // Fine diagonal hatch. Gives the flat ground a texture that survives being
+    // scaled down to an 80px thumbnail, where a larger pattern would alias.
+    `<pattern id="h" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(58)">` +
+    `<line x1="0" y1="0" x2="0" y2="10" stroke="#ffffff" stroke-width="1" opacity="${hatchOpacity}"/>` +
+    `</pattern>` +
+    `<radialGradient id="s">` +
+    `<stop offset="0" stop-color="#ffffff" stop-opacity="${glowOpacity}"/>` +
+    `<stop offset="1" stop-color="#ffffff" stop-opacity="0"/>` +
+    `</radialGradient>` +
+    `</defs>` +
     `<rect width="${CANVAS_W}" height="${CANVAS_H}" fill="url(#g)"/>` +
-    `<circle cx="${highlight.cx}" cy="${highlight.cy}" r="${highlight.r}" fill="#ffffff" opacity="${highlightOpacity}"/>` +
-    `<circle cx="${tint.cx}" cy="${tint.cy}" r="${tint.r}" fill="${theme.ink}" opacity="0.07"/>` +
-    `<g transform="translate(${ICON_OFFSET_X} ${ICON_OFFSET_Y}) scale(${ICON_SCALE})" fill="none" stroke="${theme.ink}" color="${theme.ink}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="${iconOpacity}">` +
+    `<rect width="${CANVAS_W}" height="${CANVAS_H}" fill="url(#h)"/>` +
+    `<circle cx="${glow.cx}" cy="${glow.cy}" r="${glow.r}" fill="url(#s)"/>` +
+    `<g transform="translate(${icon.x} ${icon.y}) scale(${ICON_SCALE})" fill="none" stroke="#ffffff" color="#ffffff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" opacity="${markOpacity}">` +
     `${theme.icon}</g></svg>`
 
   const dataUri = `data:image/svg+xml,${encodeURIComponent(svg)}`

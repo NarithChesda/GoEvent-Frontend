@@ -34,7 +34,7 @@ export function useEventSharing(event: Ref<Event | null>) {
     }
   }
 
-  const openMap = (location: string | undefined) => {
+  const openMap = (location: string | null | undefined) => {
     if (!location) return
     const encoded = encodeURIComponent(location)
     window.open(`https://www.google.com/maps/search/?api=1&query=${encoded}`, '_blank')

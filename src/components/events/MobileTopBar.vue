@@ -15,6 +15,10 @@
 
       <!-- Right Actions -->
       <div class="flex items-center gap-1">
+        <!-- Page-level controls (list filters) teleport in here while the
+             page's own header is scrolled out of view. -->
+        <div id="nav-page-controls-mobile" class="flex items-center gap-1"></div>
+
         <!-- Search Button -->
         <button
           @click="$emit('search')"

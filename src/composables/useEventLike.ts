@@ -10,14 +10,19 @@ interface UseEventLikeOptions {
 
 /**
  * Composable for managing event like functionality with optimistic updates
+ *
+ * `eventId` accepts a getter as well as a plain string, for callers whose event
+ * changes in place — the drawer swaps events under prev/next navigation, and a
+ * captured string would keep liking whichever event opened it first.
  */
 export function useEventLike(
-  eventId: string,
+  eventId: string | (() => string),
   initialIsLiked: boolean = false,
   initialLikesCount: number = 0,
   options: UseEventLikeOptions = {}
 ) {
   const authStore = useAuthStore()
+  const resolveEventId = () => (typeof eventId === 'function' ? eventId() : eventId)
 
   const isLiked = ref(initialIsLiked)
   const likesCount = ref(initialLikesCount)
@@ -45,7 +50,7 @@ export function useEventLike(
     likesCount.value = isLiked.value ? likesCount.value + 1 : likesCount.value - 1
 
     try {
-      const response = await eventsService.toggleLike(eventId)
+      const response = await eventsService.toggleLike(resolveEventId())
 
       if (response.success && response.data) {
         // Update with actual server values

@@ -6,7 +6,18 @@
     "guestCount": "{count} guest | {count} guests",
     "hostOthers": "& {count} other | & {count} others",
     "today": "Today",
-    "fromPrice": "From {price}"
+    "fromPrice": "From {price}",
+    "going": "{count} going | {count} going",
+    "interested": "{count} interested | {count} interested",
+    "virtual": "Virtual",
+    "when": {
+      "live": "Happening now",
+      "soon": "Starting soon",
+      "inHours": "In {count}h | In {count}h",
+      "tomorrow": "Tomorrow",
+      "inDays": "In {count} day | In {count} days",
+      "ended": "Ended"
+    }
   },
   "createEvent": "Create Event",
   "createFirstEvent": "Create Your First Event",
@@ -273,6 +284,74 @@
       "refresh": "Refresh",
       "loadMore": "Load more",
       "loadingMore": "Loading…"
+    }
+  },
+  "drawer": {
+    "close": "Close",
+    "previous": "Previous event",
+    "next": "Next event",
+    "addToCalendar": "Add to calendar",
+    "share": "Share",
+    "like": "Like",
+    "unlike": "Remove like",
+    "directions": "Directions",
+    "about": "About",
+    "agenda": "Agenda",
+    "location": "Location",
+    "hostedBy": "Hosted by",
+    "campaignOrganizer": "Campaign organizer",
+    "moreIn": "More in {category}",
+    "moreEvents": "More events",
+    "noDescription": "No description provided",
+    "byOrganizer": "by {name}",
+    "fundraiser": "Fundraiser",
+    "virtualEvent": "Virtual event",
+    "eventOrganizer": "Event organizer",
+    "moreOptions": "More options",
+    "calendarOptions": {
+      "google": "Google",
+      "outlook": "Outlook",
+      "ics": "Download .ics"
+    },
+    "error": {
+      "title": "Couldn't load this event",
+      "retry": "Try again"
+    },
+    "agendaItems": "{count} item | {count} items",
+    "registration": {
+      "heading": "Registration",
+      "registered": "You're going",
+      "admission": "Admission",
+      "confirmationLabel": "Confirmation",
+      "confirmed": "Registration confirmed",
+      "showQr": "Show QR code",
+      "cancel": "Can't attend? Cancel",
+      "cancelling": "Cancelling…",
+      "joinLinkPending": "Join link available when the event starts",
+      "live": "Live"
+    },
+    "action": {
+      "register": "Register",
+      "registering": "Registering…",
+      "signInToRegister": "Sign in to register",
+      "buyTickets": "Buy tickets",
+      "donate": "Donate",
+      "viewTicket": "View ticket",
+      "soldOut": "Sold out",
+      "registrationClosed": "Registration closed",
+      "eventEnded": "Event has ended",
+      "unavailable": "Unavailable",
+      "free": "Free",
+      "freeEntry": "Free entry",
+      "registeredStatus": "You're registered"
+    },
+    "fundraising": {
+      "topSupporters": "Top supporters",
+      "seeAll": "See all",
+      "showLess": "Show less",
+      "anonymous": "Anonymous",
+      "spendingTransparency": "Spending transparency",
+      "verified": "Verified"
     }
   }
 }

@@ -21,20 +21,16 @@
               {{ t('discover.title') }}
             </h1>
 
-            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-              <!-- Date Range Toggle -->
-              <TimeFilterToggle
-                v-model="dateFilter"
-                :options="dateFilterOptions"
-              />
-
-              <!-- Category Filter: desktop dropdown / mobile chip + bottom sheet -->
-              <CategoryFilter
-                v-model="categoryFilter"
-                :categories="categories"
-                @update:model-value="handleCategoryChange"
-              />
-            </div>
+            <!-- Date range toggle + category filter. The filters used to leave
+                 with the header — changing one meant scrolling the whole list
+                 back to the top. PinnedListControls keeps them by handing them
+                 to the top bar as the header scrolls under it. -->
+            <PinnedListControls
+              v-model:time-filter="dateFilter"
+              :time-options="dateFilterOptions"
+              v-model:category="categoryFilter"
+              :categories="categories"
+            />
           </div>
 
           <!-- Loading State -->
@@ -99,6 +95,8 @@
         @navigate-next="handleDrawerNext"
         @registered="handleEventRegistered"
         @login-required="handleLoginRequired"
+        @like-changed="handleLikeChanged"
+        @open-event="handleOpenRelatedEvent"
       />
     </div>
   </MainLayout>
@@ -114,8 +112,7 @@ import AppFooter from '@/components/AppFooter.vue'
 import {
   MobileTopBar,
   EventTimeline,
-  TimeFilterToggle,
-  CategoryFilter,
+  PinnedListControls,
   EventsEmptyState,
   EventsLoadingSkeleton,
 } from '@/components/events'
@@ -278,6 +275,18 @@ const handleDrawerNext = () => {
   }
 }
 
+/**
+ * Follow a "More in {category}" link from inside the drawer.
+ *
+ * The target usually isn't in the loaded page of results, so the index is only
+ * synced when we can find it — otherwise prev/next simply falls idle rather
+ * than paging from a stale position.
+ */
+const handleOpenRelatedEvent = (eventId: string) => {
+  selectedEventId.value = eventId
+  selectedEventIndex.value = events.value.findIndex((e) => e.id === eventId)
+}
+
 const handleEventRegistered = () => {
   showMessage('success', t('events.messages.registerSuccess'))
   loadEvents('all', filters.value)
@@ -336,13 +345,16 @@ const showMessage = (type: 'success' | 'error', text: string) => {
   showToast(type, text)
 }
 
-// Filter handlers
-const handleCategoryChange = () => {
+// Filter handlers. Driven by a watcher rather than each control's change
+// event: the category filter is now rendered in two places (the page header
+// and the copy the nav absorbs on scroll), and watching the shared ref keeps
+// one code path instead of wiring every instance.
+watch(categoryFilter, () => {
   filters.value = {
     ...filters.value,
     category: categoryFilter.value || undefined,
   }
-}
+})
 
 // Intersection Observer for infinite scroll
 let observer: IntersectionObserver | null = null

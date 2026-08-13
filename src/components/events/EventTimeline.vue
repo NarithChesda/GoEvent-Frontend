@@ -9,14 +9,14 @@
       <div class="sm:hidden relative">
         <!-- Timeline line (always visible) -->
         <div
-          class="absolute left-[3.5px] top-7 bottom-0 w-px bg-gradient-to-b from-[#2ecc71]/30 to-[#1e90ff]/30"
+          class="absolute left-[3px] top-7 bottom-0 w-0.5 rounded-full bg-gradient-to-b from-[#2ecc71]/55 to-[#1e90ff]/40"
         ></div>
 
         <!-- Date Header with Dot (becomes pill when sticky) -->
         <div
           class="sticky top-[64px] z-10 mb-3 date-header-sticky inline-flex items-center gap-2"
         >
-          <div class="w-2 h-2 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] flex-shrink-0"></div>
+          <div class="w-2 h-2 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] flex-shrink-0 ring-2 ring-white"></div>
           <div class="inline-flex items-baseline gap-2">
             <span class="text-slate-800 font-semibold text-lg">{{
               dateGroup.monthDay
@@ -55,20 +55,36 @@
           </div>
         </div>
 
-        <!-- Middle: Timeline -->
+        <!-- Middle: Timeline. The spine used to be a 1px hairline at 30% alpha
+             with a flat dot, which read as an accident rather than structure. -->
         <div class="flex flex-col items-center flex-shrink-0 relative">
-          <!-- Timeline dot (Sticky) -->
+          <!-- Timeline bead (Sticky) -->
           <div class="sticky top-20 lg:top-24 z-10">
-            <div class="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] mt-2 shadow-sm shadow-[#2ecc71]/30"></div>
+            <div
+              class="w-2.5 h-2.5 rounded-full bg-white mt-2 ring-[3px] ring-[#2ecc71] shadow-sm shadow-[#2ecc71]/30"
+            ></div>
           </div>
           <!-- Timeline line: always show for all date groups -->
           <div
-            class="absolute top-4 bottom-0 w-px bg-gradient-to-b from-[#2ecc71]/30 to-[#1e90ff]/30"
+            class="absolute top-4 bottom-0 w-0.5 rounded-full bg-gradient-to-b from-[#2ecc71]/55 to-[#1e90ff]/40"
           ></div>
         </div>
 
-        <!-- Right: Event Cards (Desktop) -->
-        <div class="flex-1 space-y-4 pb-2">
+        <!-- Right: Event Cards (Desktop).
+             `min-w-0` is load-bearing, not tidiness. `flex-1` leaves
+             `min-width: auto`, so this column's minimum size is its
+             *min-content* width — and a card's min-content includes the
+             location line at full length, because `truncate` sets
+             `white-space: nowrap`, which leaves the string no break
+             opportunities. `min-w-0` on the card's body lets it shrink during
+             layout but does not remove that string from this column's
+             intrinsic size. The result was that one event with a long venue
+             string ("The Lane Ground and Conference Hall, One Park, No. 58
+             Street R8, …") pushed its whole date group ~47px wider than every
+             other group, which is exactly how much that line overshot the
+             available width. Capping the floor here makes the column take its
+             flex share, and the ellipsis finally does its job. -->
+        <div class="flex-1 min-w-0 space-y-4 pb-2">
           <EventCard
             v-for="event in dateGroup.events"
             :key="event.id"

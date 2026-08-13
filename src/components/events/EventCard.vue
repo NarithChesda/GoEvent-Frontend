@@ -2,91 +2,90 @@
   <!-- Mobile Card -->
   <div
     v-if="variant === 'mobile'"
-    class="glass-card rounded-2xl overflow-hidden cursor-pointer"
+    class="event-card rounded-2xl overflow-hidden cursor-pointer"
+    :style="{ '--accent': accent }"
+    role="article"
+    :aria-label="event.title"
     @click="$emit('click')"
   >
-    <div class="p-4 flex gap-3">
+    <div class="py-3.5 pr-3.5 pl-4 flex gap-3">
       <!-- Event Details -->
-      <div class="flex-1 min-w-0">
-        <!-- Time + Ticket/RSVP badge -->
-        <div class="flex items-center gap-2 text-sm mb-1">
-          <span class="text-slate-400">{{ formatEventTime(event.start_date) }}</span>
+      <div class="flex-1 min-w-0 flex flex-col gap-1">
+        <!-- Time + category -->
+        <div class="flex items-center flex-wrap gap-x-2 gap-y-1">
+          <span class="text-[13px] font-semibold text-slate-900 tabular-nums tracking-tight">
+            {{ formatEventTime(event.start_date) }}
+          </span>
           <span
-            v-if="ticketBadge"
-            class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700"
+            v-if="category"
+            class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10.5px] font-semibold"
+            :style="{ backgroundColor: withAlpha(accent, '14'), color: accent }"
           >
-            {{ ticketBadge }}
+            <span class="w-1 h-1 rounded-full bg-current flex-shrink-0"></span>
+            {{ translateEventCategory(category) }}
           </span>
         </div>
 
         <!-- Title -->
-        <h3 class="text-base font-semibold text-slate-900 mb-2 line-clamp-2">
+        <h3 class="text-[15.5px] font-semibold text-slate-900 leading-snug tracking-tight line-clamp-2">
           {{ event.title }}
         </h3>
 
-        <!-- Hosts (if available) -->
-        <div
-          v-if="hosts.length > 0"
-          class="flex items-center gap-1.5 text-sm text-slate-500 mb-1.5"
-        >
-          <div class="flex -space-x-1">
-            <div
-              v-for="(host, idx) in hosts.slice(0, 2)"
-              :key="idx"
-              class="w-4 h-4 rounded-full border border-white overflow-hidden bg-slate-200"
-            >
-              <img
-                v-if="host.image"
-                :src="host.image"
-                :alt="host.name"
-                class="w-full h-full object-cover"
-              />
-              <div
-                v-else
-                class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white text-[8px] font-medium"
-              >
-                {{ host.name.charAt(0).toUpperCase() }}
-              </div>
-            </div>
-          </div>
-          <span class="truncate">{{ t('events.card.hostedBy', { names: hostNames }) }}</span>
-        </div>
-
         <!-- Location -->
-        <div class="flex items-center gap-1.5 text-sm mb-1.5">
+        <div v-if="event.location || showMissingLocation" class="flex items-center gap-1.5 text-[12.5px] min-w-0">
           <template v-if="event.location">
             <MapPin class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-            <span class="text-slate-500 truncate">{{ event.location }}</span>
+            <span class="text-slate-600 truncate">{{ event.location }}</span>
           </template>
-          <template v-else-if="showMissingLocation">
+          <template v-else>
             <AlertTriangle class="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
             <span class="text-amber-600">{{ t('events.card.locationMissing') }}</span>
           </template>
         </div>
 
-        <!-- Guest Count -->
-        <div v-if="guestCount" class="flex items-center gap-1.5 text-sm text-slate-400">
-          <Users class="w-3.5 h-3.5" />
-          <span>{{ guestCount }}</span>
+        <!-- Presence: how soon, who's coming, what it costs -->
+        <div class="flex items-center flex-wrap gap-x-2 gap-y-1 mt-0.5">
+          <span
+            v-if="relativeWhen"
+            class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10.5px] font-semibold"
+            :class="relativeWhen.isLive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'"
+          >
+            <span
+              v-if="relativeWhen.isLive"
+              class="w-1.5 h-1.5 rounded-full bg-emerald-500 live-pulse"
+            ></span>
+            {{ relativeWhen.label }}
+          </span>
+          <span v-if="attendance" class="text-[11.5px] text-slate-600">{{ attendance }}</span>
+          <span
+            v-if="entryChip"
+            class="inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-semibold"
+            :class="entryChipClass"
+          >
+            {{ entryChip.label }}
+          </span>
+          <span
+            v-if="!attendance && !entryChip && byline"
+            class="text-[11.5px] text-slate-500 truncate"
+            >{{ byline }}</span
+          >
         </div>
 
         <!-- Manage Button (only for events user can edit) -->
         <button
           v-if="showManageButton"
           @click.stop="$emit('manage')"
-          class="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors"
+          class="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors self-start"
         >
           {{ t('events.manageEvent') }}
           <ArrowRight class="w-3.5 h-3.5" />
         </button>
       </div>
 
-      <!-- Right Column: Image + Like Button -->
+      <!-- Right Column: Cover + Like Button -->
       <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
-        <!-- Event Image (square on mobile) -->
-        <div
-          class="w-20 h-20 rounded-xl overflow-hidden bg-slate-100"
-        >
+        <!-- Event cover (square on mobile) -->
+        <div class="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 cover-frame">
           <img
             :src="currentImageSrc"
             :alt="event.title"
@@ -95,18 +94,19 @@
           />
         </div>
 
-        <!-- Like Button (Mobile) -->
+        <!-- Like Button (Mobile) — stays below the cover; an 80px tile can't
+             host a 40px touch target without swallowing the art. -->
         <button
           v-if="showLikeButton && event.privacy === 'public'"
           @click.stop="handleLikeClick"
           :disabled="isLikeLoading"
-          class="flex items-center gap-1 px-2 py-0.5 rounded-full transition-all duration-200"
+          class="flex items-center gap-1 px-2 py-1 rounded-full transition-all duration-200"
           :class="[
             isLiked
-              ? 'text-red-500 bg-red-50'
-              : 'text-slate-400 hover:text-red-400 hover:bg-red-50/50'
+              ? 'text-rose-600 bg-rose-50'
+              : 'text-slate-400 hover:text-rose-500 hover:bg-rose-50/60'
           ]"
-          :aria-label="isLiked ? 'Unlike event' : 'Like event'"
+          :aria-label="isLiked ? t('events.drawer.unlike') : t('events.drawer.like')"
         >
           <Heart
             class="w-3.5 h-3.5 transition-transform duration-200"
@@ -115,7 +115,7 @@
               isLikeLoading ? 'animate-pulse' : ''
             ]"
           />
-          <span v-if="likesCount > 0" class="text-xs font-medium">{{ likesCount }}</span>
+          <span v-if="likesCount > 0" class="text-[11.5px] font-semibold">{{ likesCount }}</span>
         </button>
       </div>
     </div>
@@ -124,48 +124,69 @@
   <!-- Desktop Card -->
   <div
     v-else
-    class="glass-card rounded-2xl hover:shadow-lg hover:shadow-[#2ecc71]/10 transition-all duration-300 overflow-hidden cursor-pointer group"
+    class="event-card rounded-2xl overflow-hidden cursor-pointer group"
+    :style="{ '--accent': accent }"
+    role="article"
+    :aria-label="event.title"
     @click="$emit('click')"
   >
-    <div class="p-5 flex gap-4">
+    <div class="py-4 pr-4 pl-5 sm:py-[18px] sm:pr-[18px] sm:pl-[21px] flex gap-4 sm:gap-[18px]">
       <!-- Event Details -->
-      <div class="flex-1 min-w-0">
-        <!-- Time and Category + Ticket/RSVP badge -->
-        <div class="flex items-center flex-wrap gap-2 text-sm mb-1">
-          <span class="text-slate-400">{{
-            formatEventTime(event.start_date)
-          }}</span>
+      <div class="flex-1 min-w-0 flex flex-col gap-[7px]">
+        <!-- Time, category and how soon -->
+        <div class="flex items-center flex-wrap gap-x-2.5 gap-y-1.5">
+          <span class="text-sm font-semibold text-slate-900 tabular-nums tracking-tight">
+            {{ formatEventTime(event.start_date) }}
+            <span v-if="timeRangeSuffix" class="font-normal text-slate-500">{{ timeRangeSuffix }}</span>
+          </span>
           <span
             v-if="category"
-            class="px-2 py-0.5 bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 text-[#2ecc71] rounded-full text-xs font-medium"
+            class="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[11.5px] font-semibold"
+            :style="{ backgroundColor: withAlpha(accent, '14'), color: accent }"
           >
+            <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
             {{ translateEventCategory(category) }}
           </span>
           <span
-            v-if="ticketBadge"
-            class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700"
+            v-if="relativeWhen"
+            class="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[11.5px] font-semibold"
+            :class="relativeWhen.isLive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'"
           >
-            {{ ticketBadge }}
+            <span
+              v-if="relativeWhen.isLive"
+              class="w-1.5 h-1.5 rounded-full bg-emerald-500 live-pulse"
+            ></span>
+            <Clock v-else class="w-3 h-3" />
+            {{ relativeWhen.label }}
           </span>
         </div>
 
         <!-- Title -->
-        <h3
-          class="text-lg font-semibold text-slate-900 mb-2 group-hover:text-[#2ecc71] transition-colors"
-        >
+        <h3 class="text-[18.5px] font-semibold text-slate-900 leading-snug tracking-tight line-clamp-2">
           {{ event.title }}
         </h3>
 
-        <!-- Hosts -->
-        <div
-          v-if="hosts.length > 0"
-          class="flex items-center gap-2 text-sm mb-2"
-        >
-          <div class="flex -space-x-1">
-            <div
+        <!-- Location -->
+        <div v-if="event.location || showMissingLocation" class="flex items-center gap-[7px] text-[13.5px] min-w-0">
+          <template v-if="event.location">
+            <MapPin class="w-[15px] h-[15px] text-slate-500 flex-shrink-0" />
+            <span class="text-slate-600 truncate">{{ event.location }}</span>
+          </template>
+          <template v-else>
+            <AlertTriangle class="w-4 h-4 text-amber-500 flex-shrink-0" />
+            <span class="text-amber-600">{{ t('events.card.locationMissing') }}</span>
+          </template>
+        </div>
+
+        <!-- Presence row. Falls through hosts → organiser → attendance → entry,
+             so it renders something on every event instead of leaving the
+             bottom half of the card blank. -->
+        <div v-if="hasPresence" class="flex items-center flex-wrap gap-x-2 gap-y-1 text-[13px] text-slate-600 mt-px">
+          <span v-if="hosts.length > 0" class="flex -space-x-1.5 flex-shrink-0">
+            <span
               v-for="(host, idx) in hosts.slice(0, 3)"
               :key="idx"
-              class="w-5 h-5 rounded-full border border-white overflow-hidden bg-slate-200"
+              class="w-[22px] h-[22px] rounded-full border-2 border-white overflow-hidden bg-slate-200 flex items-center justify-center"
             >
               <img
                 v-if="host.image"
@@ -173,52 +194,44 @@
                 :alt="host.name"
                 class="w-full h-full object-cover"
               />
-              <div
+              <span
                 v-else
-                class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white text-xs font-medium"
+                class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white text-[9.5px] font-bold"
               >
                 {{ host.name.charAt(0).toUpperCase() }}
-              </div>
-            </div>
-          </div>
-          <span class="text-slate-600">{{ t('events.card.hostedBy', { names: hostNames }) }}</span>
-        </div>
-
-        <!-- Location -->
-        <div class="flex items-center gap-2 text-sm mb-2">
-          <template v-if="event.location">
-            <MapPin class="w-4 h-4 text-slate-400" />
-            <span class="text-slate-600">{{ event.location }}</span>
+              </span>
+            </span>
+          </span>
+          <span v-if="byline" class="truncate">{{ byline }}</span>
+          <template v-if="attendance">
+            <span v-if="byline" class="text-slate-300" aria-hidden="true">·</span>
+            <span>{{ attendance }}</span>
           </template>
-          <template v-else-if="showMissingLocation">
-            <AlertTriangle class="w-4 h-4 text-amber-500" />
-            <span class="text-amber-600">{{ t('events.card.locationMissing') }}</span>
+          <template v-if="entryChip">
+            <span v-if="byline || attendance" class="text-slate-300" aria-hidden="true">·</span>
+            <span
+              class="inline-flex items-center px-2 py-0.5 rounded-md text-[11.5px] font-semibold border"
+              :class="entryChipClass"
+            >
+              {{ entryChip.label }}
+            </span>
           </template>
-        </div>
-
-        <!-- Guest Count -->
-        <div v-if="guestCount" class="flex items-center gap-2 text-sm text-slate-500">
-          <Users class="w-4 h-4" />
-          <span>{{ guestCount }}</span>
         </div>
 
         <!-- Manage Button (only for events user can edit) -->
         <button
           v-if="showManageButton"
           @click.stop="$emit('manage')"
-          class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors"
+          class="mt-2 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors self-start"
         >
           {{ t('events.manageEvent') }}
           <ArrowRight class="w-4 h-4" />
         </button>
       </div>
 
-      <!-- Right Column: Image + Like Button -->
-      <div class="flex flex-col items-end gap-2 flex-shrink-0">
-        <!-- Event Image (landscape) -->
-        <div
-          class="w-44 h-28 rounded-xl overflow-hidden bg-slate-100"
-        >
+      <!-- Right Column: Cover with the like chip riding on it -->
+      <div class="relative flex-shrink-0">
+        <div class="w-52 h-32 rounded-xl overflow-hidden bg-slate-100 cover-frame">
           <img
             :src="currentImageSrc"
             :alt="event.title"
@@ -232,22 +245,18 @@
           v-if="showLikeButton && event.privacy === 'public'"
           @click.stop="handleLikeClick"
           :disabled="isLikeLoading"
-          class="flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all duration-200"
-          :class="[
-            isLiked
-              ? 'text-red-500 bg-red-50 hover:bg-red-100'
-              : 'text-slate-400 hover:text-red-400 hover:bg-red-50/50'
-          ]"
-          :aria-label="isLiked ? 'Unlike event' : 'Like event'"
+          class="absolute top-2 right-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-md transition-all duration-200 hover:bg-white"
+          :class="isLiked ? 'text-rose-600' : 'text-slate-500 hover:text-rose-500'"
+          :aria-label="isLiked ? t('events.drawer.unlike') : t('events.drawer.like')"
         >
           <Heart
-            class="w-4 h-4 transition-transform duration-200"
+            class="w-3.5 h-3.5 transition-transform duration-200"
             :class="[
               isLiked ? 'fill-current scale-110' : '',
               isLikeLoading ? 'animate-pulse' : ''
             ]"
           />
-          <span v-if="likesCount > 0" class="text-sm font-medium">{{ likesCount }}</span>
+          <span v-if="likesCount > 0" class="text-xs font-semibold">{{ likesCount }}</span>
         </button>
       </div>
     </div>
@@ -258,26 +267,30 @@
 import { computed, ref, watch } from 'vue'
 import {
   MapPin,
-  Users,
   ArrowRight,
   AlertTriangle,
   Heart,
+  Clock,
 } from 'lucide-vue-next'
 import type { Event } from '@/services/api'
 import {
   formatEventTime,
-  getGuestCount,
+  formatEventTimeRange,
+  formatRelativeWhen,
+  getAttendanceLabel,
+  getBylineLabel,
+  getEntryChip,
+  getEventAccent,
   getEventThumbnail,
   getEventThumbnailMobile,
   getEventHosts,
-  formatHostNames,
   getEventCategory,
   getEventFallbackImage,
+  withAlpha,
 } from '@/composables/useEventFormatters'
 import { useEventLike } from '@/composables/useEventLike'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { formatCurrency, type CurrencyCode } from '@/utils/currency'
 
 const { translateEventCategory } = useCategoryTranslation()
 const { t } = useAppLanguage()
@@ -344,7 +357,7 @@ const imageUrl = computed(() =>
     : getEventThumbnail(props.event)
 )
 
-// Fallback image URL (Unsplash)
+// Fallback image URL (generated category cover art)
 const fallbackImageUrl = computed(() => getEventFallbackImage(props.event))
 
 // Current image source - primary first, then fallback
@@ -356,38 +369,91 @@ const currentImageSrc = computed(() => {
 })
 
 const hosts = computed(() => getEventHosts(props.event))
-const hostNames = computed(() => formatHostNames(props.event))
-const guestCount = computed(() => getGuestCount(props.event))
 const category = computed(() => getEventCategory(props.event))
 
-// Ticket price badge — single source of truth used by both card variants.
-// Backend returns `has_ticketed_sales` + `min_ticket_price` + `min_ticket_currency`
-// on every list row (see TICKETS_FRONTEND_GUIDE.md). Free events show no badge.
-const ticketBadge = computed<string | null>(() => {
-  const event = props.event
-  if (event.has_ticketed_sales && event.min_ticket_price && event.min_ticket_currency) {
-    return t('events.card.fromPrice', {
-      price: formatCurrency(event.min_ticket_price, event.min_ticket_currency as CurrencyCode),
-    })
-  }
-  return null
+/** The category's identity colour — drives the rail and the category chip. */
+const accent = computed(() => getEventAccent(props.event))
+
+const relativeWhen = computed(() => formatRelativeWhen(props.event))
+const attendance = computed(() => getAttendanceLabel(props.event))
+const entryChip = computed(() => getEntryChip(props.event))
+const byline = computed(() => getBylineLabel(props.event))
+const hasPresence = computed(
+  () => Boolean(byline.value || attendance.value || entryChip.value) || hosts.value.length > 0
+)
+
+const entryChipClass = computed(() =>
+  entryChip.value?.tone === 'price'
+    ? 'bg-amber-50 text-amber-700 border-amber-200'
+    : 'bg-sky-50 text-sky-700 border-sky-200'
+)
+
+/** Only the trailing half of the range — the start time is rendered separately. */
+const timeRangeSuffix = computed(() => {
+  const range = formatEventTimeRange(props.event.start_date, props.event.end_date)
+  const start = formatEventTime(props.event.start_date)
+  return range === start ? '' : range.slice(start.length)
 })
 </script>
 
 <style scoped>
-.glass-card {
-  background: rgba(255, 255, 255, 0.7);
+/*
+ * The card was a near-invisible glass panel: white/70 on a near-white page with
+ * a 5%-alpha shadow, which left a list of them reading as floating text. It now
+ * carries a real edge, and the category accent rides its left side as a rail —
+ * the cheapest way to give a column of cards colour rhythm.
+ */
+.event-card {
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(226, 232, 240, 0.9);
   box-shadow:
-    0 4px 6px -1px rgba(46, 204, 113, 0.05),
-    0 2px 4px -1px rgba(30, 144, 255, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    inset 3px 0 0 0 var(--accent),
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 6px 16px -10px rgba(15, 23, 42, 0.25);
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease,
+    background-color 0.3s ease;
 }
 
-.glass-card:hover {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(46, 204, 113, 0.3);
+.event-card:hover {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(203, 213, 225, 0.95);
+  box-shadow:
+    inset 3px 0 0 0 var(--accent),
+    0 2px 4px rgba(15, 23, 42, 0.05),
+    0 14px 28px -14px rgba(15, 23, 42, 0.32);
+}
+
+/* Keeps pale user-uploaded banners from bleeding into the card surface. */
+.cover-frame {
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.07);
+}
+
+.live-pulse {
+  animation: live-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-pulse {
+    animation: none;
+  }
+  .event-card {
+    transition: none;
+  }
 }
 </style>

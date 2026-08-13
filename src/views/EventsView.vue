@@ -21,21 +21,17 @@
               {{ t('events.title') }}
             </h1>
 
-            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-              <!-- Upcoming/Past/Recent Toggle (authenticated only) -->
-              <TimeFilterToggle
-                v-if="authStore.isAuthenticated"
-                v-model="timeFilter"
-                :options="timeFilterOptions"
-              />
-
-              <!-- Category Filter: desktop dropdown / mobile chip + bottom sheet (authenticated only) -->
-              <CategoryFilter
-                v-if="authStore.isAuthenticated"
-                v-model="categoryFilter"
-                :categories="categories"
-              />
-            </div>
+            <!-- Upcoming/Past/Recent toggle + category filter (authenticated
+                 only). As the header scrolls under the top bar,
+                 PinnedListControls hands them to it at the same size and
+                 column position, so they stay reachable. -->
+            <PinnedListControls
+              v-if="authStore.isAuthenticated"
+              v-model:time-filter="timeFilter"
+              :time-options="timeFilterOptions"
+              v-model:category="categoryFilter"
+              :categories="categories"
+            />
           </div>
 
           <!-- Loading State -->
@@ -125,6 +121,8 @@
         @navigate-next="handleDrawerNext"
         @registered="handleEventRegistered"
         @login-required="handleLoginRequired"
+        @like-changed="handleDrawerLikeChanged"
+        @open-event="handleOpenRelatedEvent"
       />
     </div>
   </MainLayout>
@@ -142,8 +140,7 @@ import AppFooter from '@/components/AppFooter.vue'
 import {
   MobileTopBar,
   EventTimeline,
-  TimeFilterToggle,
-  CategoryFilter,
+  PinnedListControls,
   EventsEmptyState,
   EventsLoadingSkeleton,
 } from '@/components/events'
@@ -319,6 +316,28 @@ const handleDrawerNext = () => {
     selectedEventIndex.value++
     selectedEventId.value = filteredEvents.value[selectedEventIndex.value].id
   }
+}
+
+/** Keep the list card's heart in step with a like made inside the drawer. */
+const handleDrawerLikeChanged = (
+  eventId: string,
+  isLiked: boolean,
+  likesCount: number
+) => {
+  const index = events.value.findIndex((e) => e.id === eventId)
+  if (index !== -1) {
+    events.value[index] = { ...events.value[index], is_liked: isLiked, likes_count: likesCount }
+  }
+}
+
+/**
+ * Follow a "More in {category}" link from inside the drawer. The target is
+ * usually outside this list, so the index only syncs when it is present —
+ * prev/next then falls idle instead of paging from a stale position.
+ */
+const handleOpenRelatedEvent = (eventId: string) => {
+  selectedEventId.value = eventId
+  selectedEventIndex.value = filteredEvents.value.findIndex((e) => e.id === eventId)
 }
 
 const handleEventRegistered = () => {
