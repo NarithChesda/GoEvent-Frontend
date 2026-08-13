@@ -18,8 +18,18 @@
          bottom edge meets first, which is the frame the swap has to happen on. -->
     <div ref="sentinel" aria-hidden="true" class="absolute inset-x-0 top-0 h-px"></div>
 
+    <!--
+      `relative z-30` is what keeps the open dropdowns above the list, and it is
+      this wrapper's own doing: the drift-up needs a transform, and *any*
+      transform — including `translate-y-0` — opens a stacking context, which
+      caps the `z-[100]` on the menus inside at this element's level. With
+      z-index auto that level is the same one the event cards paint at, and they
+      come later in the document, so each card drew straight over the open menu.
+      Stay under the bars (mobile z-40, desktop z-50) so this still scrolls
+      beneath them rather than across them.
+    -->
     <div
-      class="flex items-center gap-1.5 sm:gap-2 transition-all duration-200 ease-out"
+      class="relative z-30 flex items-center gap-1.5 sm:gap-2 transition-all duration-200 ease-out"
       :class="isPinned ? 'invisible opacity-0 -translate-y-2' : 'visible opacity-100 translate-y-0'"
       :aria-hidden="isPinned"
     >
