@@ -1,17 +1,17 @@
 <template>
-  <div v-if="topDonors.length > 0" class="border-t border-slate-100 pt-4">
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-        Top Supporters
-      </h3>
+  <PublicEventSection
+    v-if="topDonors.length > 0"
+    :title="t('events.drawer.fundraising.topSupporters')"
+  >
+    <template #trailing>
       <button
         v-if="showSeeAll"
         @click="emit('see-all')"
-        class="text-xs font-medium text-emerald-600 hover:text-emerald-700"
+        class="ml-auto text-xs font-medium normal-case tracking-normal text-[var(--evt-accent)] hover:underline"
       >
-        See All
+        {{ t('events.drawer.fundraising.seeAll') }}
       </button>
-    </div>
+    </template>
 
     <!-- Top 3 Podium Style -->
     <div v-if="topDonors.length >= 3" class="flex items-end justify-center gap-2 mb-4">
@@ -26,7 +26,7 @@
           2
         </div>
         <p class="text-xs font-medium text-slate-900 truncate max-w-full text-center mt-1">
-          {{ topDonors[1].display_name || 'Anonymous' }}
+          {{ topDonors[1].display_name || t('events.drawer.fundraising.anonymous') }}
         </p>
         <p class="text-xs font-semibold text-emerald-600">
           {{ formatCurrency(parseFloat(topDonors[1].amount || '0'), currency) }}
@@ -47,7 +47,7 @@
           1
         </div>
         <p class="text-sm font-medium text-slate-900 truncate max-w-full text-center mt-1">
-          {{ topDonors[0].display_name || 'Anonymous' }}
+          {{ topDonors[0].display_name || t('events.drawer.fundraising.anonymous') }}
         </p>
         <p class="text-sm font-bold text-emerald-600">
           {{ formatCurrency(parseFloat(topDonors[0].amount || '0'), currency) }}
@@ -65,7 +65,7 @@
           3
         </div>
         <p class="text-xs font-medium text-slate-900 truncate max-w-full text-center mt-1">
-          {{ topDonors[2].display_name || 'Anonymous' }}
+          {{ topDonors[2].display_name || t('events.drawer.fundraising.anonymous') }}
         </p>
         <p class="text-xs font-semibold text-emerald-600">
           {{ formatCurrency(parseFloat(topDonors[2].amount || '0'), currency) }}
@@ -88,7 +88,7 @@
         </div>
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium text-slate-900 truncate">
-            {{ donor.display_name || 'Anonymous' }}
+            {{ donor.display_name || t('events.drawer.fundraising.anonymous') }}
           </p>
         </div>
         <span class="text-sm font-semibold text-slate-700">
@@ -119,7 +119,7 @@
         </div>
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium text-slate-900 truncate">
-            {{ donor.display_name || 'Anonymous' }}
+            {{ donor.display_name || t('events.drawer.fundraising.anonymous') }}
           </p>
         </div>
         <span class="text-sm font-semibold" :class="index === 0 ? 'text-amber-700' : 'text-slate-700'">
@@ -127,12 +127,14 @@
         </span>
       </div>
     </div>
-  </div>
+  </PublicEventSection>
 </template>
 
 <script setup lang="ts">
 import { Trophy } from 'lucide-vue-next'
 import { useEventDateFormatters } from '@/composables/event'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+import PublicEventSection from './PublicEventSection.vue'
 
 interface TopDonor {
   id: number | string
@@ -156,6 +158,7 @@ withDefaults(defineProps<Props>(), {
 })
 const emit = defineEmits<Emits>()
 
+const { t } = useAppLanguage()
 const { getInitials } = useEventDateFormatters()
 
 const formatCurrency = (amount: number, currency: string): string => {

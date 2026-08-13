@@ -302,6 +302,56 @@
     "campaignOrganizer": "អ្នករៀបចំយុទ្ធនាការ",
     "moreIn": "បន្ថែមក្នុង {category}",
     "moreEvents": "ព្រឹត្តិការណ៍ផ្សេងទៀត",
-    "noDescription": "មិនមានការពិពណ៌នា"
+    "noDescription": "មិនមានការពិពណ៌នា",
+    "byOrganizer": "ដោយ {name}",
+    "fundraiser": "ការរៃអង្គាសមូលនិធិ",
+    "virtualEvent": "ព្រឹត្តិការណ៍អនឡាញ",
+    "eventOrganizer": "អ្នករៀបចំព្រឹត្តិការណ៍",
+    "moreOptions": "ជម្រើសបន្ថែម",
+    "calendarOptions": {
+      "google": "Google",
+      "outlook": "Outlook",
+      "ics": "ទាញយក .ics"
+    },
+    "error": {
+      "title": "មិនអាចផ្ទុកព្រឹត្តិការណ៍នេះបានទេ",
+      "retry": "ព្យាយាមម្ដងទៀត"
+    },
+    "agendaItems": "{count} ធាតុ",
+    "registration": {
+      "heading": "ការចុះឈ្មោះ",
+      "registered": "អ្នកនឹងចូលរួម",
+      "admission": "សំបុត្រចូលរួម",
+      "confirmationLabel": "លេខបញ្ជាក់",
+      "confirmed": "បានបញ្ជាក់ការចុះឈ្មោះ",
+      "showQr": "បង្ហាញកូដ QR",
+      "cancel": "មិនអាចចូលរួមបានទេ? បោះបង់",
+      "cancelling": "កំពុងបោះបង់…",
+      "joinLinkPending": "តំណចូលរួមនឹងបង្ហាញនៅពេលព្រឹត្តិការណ៍ចាប់ផ្ដើម",
+      "live": "កំពុងផ្សាយ"
+    },
+    "action": {
+      "register": "ចុះឈ្មោះ",
+      "registering": "កំពុងចុះឈ្មោះ…",
+      "signInToRegister": "ចូលគណនីដើម្បីចុះឈ្មោះ",
+      "buyTickets": "ទិញសំបុត្រ",
+      "donate": "បរិច្ចាគ",
+      "viewTicket": "មើលសំបុត្រ",
+      "soldOut": "អស់សំបុត្រ",
+      "registrationClosed": "បិទការចុះឈ្មោះ",
+      "eventEnded": "ព្រឹត្តិការណ៍បានបញ្ចប់",
+      "unavailable": "មិនអាចប្រើបាន",
+      "free": "ឥតគិតថ្លៃ",
+      "freeEntry": "ចូលរួមឥតគិតថ្លៃ",
+      "registeredStatus": "អ្នកបានចុះឈ្មោះរួចរាល់"
+    },
+    "fundraising": {
+      "topSupporters": "អ្នកឧបត្ថម្ភកំពូល",
+      "seeAll": "មើលទាំងអស់",
+      "showLess": "បង្ហាញតិច",
+      "anonymous": "អនាមិក",
+      "spendingTransparency": "តម្លាភាពនៃការចំណាយ",
+      "verified": "បានផ្ទៀងផ្ទាត់"
+    }
   }
 }

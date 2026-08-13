@@ -277,6 +277,52 @@ export function categoryAccent(categoryName: string | null | undefined): string 
   return resolveCoverTheme(categoryName).accent
 }
 
+/**
+ * The category's full theme record, for surfaces that want more than the accent.
+ *
+ * The public event drawer paints its hero scrim from `to`/`via` and suppresses
+ * its own festive treatments on `quiet` categories, so it needs the whole
+ * record rather than a single colour. Exported as a readonly view because this
+ * map is the single source of truth for category identity — callers derive from
+ * it, they never edit it.
+ */
+export type CategoryTheme = Readonly<CoverTheme>
+
+/** @see resolveCoverTheme — same lookup, named for consumers outside cover art. */
+export function categoryTheme(categoryName: string | null | undefined): CategoryTheme {
+  return resolveCoverTheme(categoryName)
+}
+
+/** Motifs are per-category and reused across every drawer open. */
+const motifCache = new Map<string, string>()
+
+/**
+ * The category's mark alone, as an `image/svg+xml` data URI.
+ *
+ * Drawn white on transparent so a caller tints it by opacity over its own
+ * ground rather than by baking a colour in — the drawer watermarks it at a few
+ * percent over the hero scrim, where any baked hue would fight the photo.
+ *
+ * Exists because lucide closes over its icon node arrays inside
+ * `createLucideIcon` and never exposes them (see the ICONS comment above), so
+ * the inlined bodies here are the only way to get this mark as markup.
+ */
+export function categoryMotifDataUri(categoryName: string | null | undefined): string {
+  const theme = resolveCoverTheme(categoryName)
+
+  const cached = motifCache.get(theme.icon)
+  if (cached) return cached
+
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" ` +
+    `fill="none" stroke="#ffffff" color="#ffffff" stroke-width="1.5" ` +
+    `stroke-linecap="round" stroke-linejoin="round">${theme.icon}</svg>`
+
+  const dataUri = `data:image/svg+xml,${encodeURIComponent(svg)}`
+  motifCache.set(theme.icon, dataUri)
+  return dataUri
+}
+
 /** Generated covers are few and stable, so build each one once. */
 const coverCache = new Map<string, string>()
 
