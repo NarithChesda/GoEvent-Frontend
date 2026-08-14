@@ -35,9 +35,14 @@
     "noEventsTitle": "No events created yet",
     "noUpcomingDescription": "Start organizing amazing events and bring people together.",
     "noPastDescription": "Your past events will appear here.",
-    "noEventsDescription": "Events you create will appear here, sorted by creation date.",
-    "signInTitle": "Ready to Create Your Event?",
-    "signInDescription": "Start organizing amazing events and bring people together. Sign in to get started."
+    "noEventsDescription": "Events you create will appear here, sorted by creation date."
+  },
+  "landing": {
+    "headline": "Unforgettable events",
+    "headlineAccent": "start here",
+    "subtitle": "From weddings and birthdays to conferences and concerts, GoEvent makes every invitation feel effortless.",
+    "primaryCta": "Create Your First Event",
+    "secondaryCta": "Discover Events"
   },
   "messages": {
     "createSuccess": "Event created successfully!",
