@@ -104,12 +104,23 @@ export function usePublicEventData() {
     }
   })
 
+  /**
+   * Whether `currentBannerSrc` is the generated category cover rather than a
+   * photo the host uploaded.
+   *
+   * The generated art already draws the category mark full-bleed, so anything
+   * that watermarks the same mark over the banner has to know to sit this one
+   * out — see the drawer hero's motif.
+   */
+  const usingGeneratedCover = computed(
+    () => !event.value?.banner_image || primaryBannerError.value
+  )
+
   const currentBannerSrc = computed(() => {
-    if (!event.value) return ''
-    if (!primaryBannerError.value && event.value.banner_image) {
-      return getBannerUrl(event.value.banner_image)
-    }
-    return getEventFallbackImage(event.value)
+    const current = event.value
+    if (!current) return ''
+    const photo = usingGeneratedCover.value ? null : current.banner_image
+    return photo ? getBannerUrl(photo) : getEventFallbackImage(current)
   })
 
   const timeUntilEvent = computed(() => {
@@ -342,6 +353,7 @@ export function usePublicEventData() {
     registrationStatusLabel,
     registrationStatusBadgeClass,
     currentBannerSrc,
+    usingGeneratedCover,
     timeUntilEvent,
 
     // Methods

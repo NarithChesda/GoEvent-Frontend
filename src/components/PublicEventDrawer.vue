@@ -35,10 +35,16 @@
             aria-hidden="true"
           ></div>
 
-          <div class="relative flex items-center gap-2 px-3 py-2.5">
+          <!-- Controls are a full 40px on touch and shrink on desktop, per the
+               design system's target rule; the row is also the reason the hero's
+               copy carries `pt-16`. -->
+          <div
+            class="relative flex items-center gap-1.5 sm:gap-2 px-3 py-2.5"
+            style="padding-top: max(env(safe-area-inset-top), 0.625rem)"
+          >
             <button
               @click="closeDrawer"
-              class="w-9 h-9 flex items-center justify-center rounded-lg transition-colors flex-shrink-0"
+              class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors flex-shrink-0"
               :class="
                 isHeaderSolid
                   ? 'bg-slate-100 hover:bg-slate-200 text-slate-600'
@@ -60,12 +66,12 @@
               {{ event?.title || '' }}
             </p>
 
-            <div class="flex items-center gap-1 flex-shrink-0">
+            <div class="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
               <button
                 v-if="event?.privacy === 'public'"
                 @click="toggleLike"
                 :disabled="isLikeLoading"
-                class="w-9 h-9 flex items-center justify-center rounded-lg transition-colors"
+                class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors"
                 :class="headerIconClass(isLiked)"
                 :aria-label="isLiked ? t('events.drawer.unlike') : t('events.drawer.like')"
                 :title="isLiked ? t('events.drawer.unlike') : t('events.drawer.like')"
@@ -75,7 +81,7 @@
 
               <button
                 @click="sharing.shareEvent()"
-                class="w-9 h-9 flex items-center justify-center rounded-lg transition-colors"
+                class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors"
                 :class="headerIconClass(false)"
                 :aria-label="t('events.drawer.share')"
                 :title="t('events.drawer.share')"
@@ -83,12 +89,17 @@
                 <Share2 class="w-4 h-4" />
               </button>
 
-              <div class="w-px h-5 mx-0.5" :class="isHeaderSolid ? 'bg-slate-200' : 'bg-white/30'"></div>
+              <!-- Six 40px controls plus the title do not fit a 360px phone; the
+                   divider is the one piece that carries no function. -->
+              <div
+                class="hidden sm:block w-px h-5 mx-0.5"
+                :class="isHeaderSolid ? 'bg-slate-200' : 'bg-white/30'"
+              ></div>
 
               <button
                 @click="navigatePrev"
                 :disabled="!hasPrev"
-                class="w-9 h-9 flex items-center justify-center rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 :class="headerIconClass(false)"
                 :title="t('events.drawer.previous')"
                 :aria-label="t('events.drawer.previous')"
@@ -98,7 +109,7 @@
               <button
                 @click="navigateNext"
                 :disabled="!hasNext"
-                class="w-9 h-9 flex items-center justify-center rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 :class="headerIconClass(false)"
                 :title="t('events.drawer.next')"
                 :aria-label="t('events.drawer.next')"
@@ -122,7 +133,7 @@
         <div
           ref="contentRef"
           class="flex-1 overflow-y-auto overscroll-contain drawer-scroll"
-          :class="{ 'pt-14': !hasHero }"
+          :class="{ 'pt-16 sm:pt-14': !hasHero }"
           @scroll.passive="handleScroll"
         >
           <!-- Donation Form (Inline) -->
@@ -184,22 +195,21 @@
           <!-- Event Content -->
           <div v-else-if="!showDonationForm && event" class="pb-8">
             <!-- Hero -->
-            <div>
-              <PublicEventBanner
-                :banner-src="currentBannerSrc"
-                :fallback-error="fallbackBannerError"
-                :title="event.title"
-                :category-name="translatedCategoryName"
-                :is-fundraising="isFundraisingEnabled"
-                :organizer-name="organizerName"
-                :organizer-image="organizerImage"
-                :motif="motif"
-                :is-quiet="isQuiet"
-                :relative-label="relativeWhen?.label ?? null"
-                :is-live="relativeWhen?.isLive ?? false"
-                @banner-error="handleBannerImageError"
-              />
-            </div>
+            <PublicEventBanner
+              :banner-src="currentBannerSrc"
+              :fallback-error="fallbackBannerError"
+              :title="event.title"
+              :category-name="translatedCategoryName"
+              :is-fundraising="isFundraisingEnabled"
+              :organizer-name="organizerName"
+              :organizer-image="organizerImage"
+              :motif="motif"
+              :has-generated-cover="usingGeneratedCover"
+              :is-quiet="isQuiet"
+              :relative-label="relativeWhen?.label ?? null"
+              :is-live="relativeWhen?.isLive ?? false"
+              @banner-error="handleBannerImageError"
+            />
 
             <!-- Date, venue and social proof, lifted onto the hero's edge -->
             <PublicEventQuickFacts
@@ -470,7 +480,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import DOMPurify from 'dompurify'
 import {
   ChevronRight,
@@ -541,6 +551,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 const router = useRouter()
+const route = useRoute()
 
 const { t } = useAppLanguage()
 const { translateEventCategory } = useCategoryTranslation()
@@ -576,6 +587,7 @@ const {
   registrationStatusLabel,
   registrationStatusBadgeClass,
   currentBannerSrc,
+  usingGeneratedCover,
   timeUntilEvent,
   fallbackBannerError,
   loadEvent,
@@ -716,6 +728,9 @@ const {
 } = useEventLike(() => event.value?.id ?? '', false, 0, {
   onLoginRequired: () => {
     emit('login-required')
+    // ExploreView answers this by routing to /signin, so the entry has to be
+    // handed over rather than popped — see `releaseHistoryEntry`.
+    releaseHistoryEntry()
     closeDrawer()
   },
   onSuccess: (liked, count) => {
@@ -807,6 +822,82 @@ const openRelatedEvent = (related: Event) => {
   emit('open-event', related.id)
 }
 
+/**
+ * Browser/system Back closes the drawer instead of leaving the page.
+ *
+ * On a phone the drawer is a full-screen sheet, so the back gesture is the
+ * natural way out of it — before this, it walked off the events list entirely
+ * and the reader lost their place in a list they had scrolled a long way into.
+ *
+ * Opening pushes one entry carrying the router's own state (`back`/`forward`/
+ * `position`/`scroll`), so vue-router's bookkeeping and scroll restoration stay
+ * intact across the pop; the URL is unchanged, so the pop resolves to the same
+ * route and costs nothing beyond re-running guards. Closing any other way — X,
+ * Escape, the backdrop — pops that entry back off, so we never leave a dead
+ * forward step behind.
+ */
+const ownsHistoryEntry = ref(false)
+
+const pushHistoryEntry = () => {
+  if (ownsHistoryEntry.value) return
+  ownsHistoryEntry.value = true
+  window.history.pushState({ ...window.history.state, publicEventDrawer: true }, '')
+}
+
+const popHistoryEntry = () => {
+  if (!ownsHistoryEntry.value) return
+  ownsHistoryEntry.value = false
+  window.history.back()
+}
+
+/**
+ * Give up the entry without popping it. Callers that close the drawer *and*
+ * navigate in the same breath must use this: `router.push` and a queued
+ * `history.back()` race, and the traversal lands after the push — which walks
+ * the reader straight back off the page they were being sent to.
+ */
+const releaseHistoryEntry = () => {
+  ownsHistoryEntry.value = false
+}
+
+const handlePopState = () => {
+  // The entry is already off the stack by the time this fires, so drop the claim
+  // before closing — otherwise the close would try to pop it a second time.
+  ownsHistoryEntry.value = false
+  if (!props.modelValue) return
+
+  // Back dismisses the topmost layer, the way Escape does, and re-claims an
+  // entry so the next press still has the drawer itself to close rather than
+  // dropping the reader out of the page.
+  if (showQRModal.value || showAllDonorsModal.value) {
+    showQRModal.value = false
+    showAllDonorsModal.value = false
+    pushHistoryEntry()
+    return
+  }
+
+  if (showDonationForm.value) {
+    showDonationForm.value = false
+    pushHistoryEntry()
+    return
+  }
+
+  closeDrawer()
+}
+
+/**
+ * A real navigation (checkout, sign-in) has already moved past our entry, so
+ * hand it over rather than racing the router with a `back()` it would fight.
+ * Query-only changes are excluded: ExploreView clears its `?event=` param right
+ * after opening the drawer, which is not a navigation away from it.
+ */
+watch(
+  () => route.path,
+  () => {
+    ownsHistoryEntry.value = false
+  }
+)
+
 // Methods
 const closeDrawer = () => {
   emit('update:modelValue', false)
@@ -837,6 +928,7 @@ const handleRegister = async () => {
 
 const handleLoginToRegister = () => {
   emit('login-required')
+  releaseHistoryEntry()
   closeDrawer()
   router.push(`/signin?redirect=${encodeURIComponent(`/events/${props.eventId}`)}`)
 }
@@ -960,6 +1052,8 @@ watch(
         loadEvent(props.eventId)
       }
       document.addEventListener('keydown', handleKeydown)
+      window.addEventListener('popstate', handlePopState)
+      pushHistoryEntry()
 
       const scrollbarWidth = getScrollbarWidth()
       document.body.style.overflow = 'hidden'
@@ -968,6 +1062,8 @@ watch(
       }
     } else {
       document.removeEventListener('keydown', handleKeydown)
+      window.removeEventListener('popstate', handlePopState)
+      popHistoryEntry()
       setTimeout(() => {
         document.body.style.overflow = ''
         document.body.style.paddingRight = ''
@@ -979,6 +1075,8 @@ watch(
 onMounted(() => {
   if (props.modelValue) {
     document.addEventListener('keydown', handleKeydown)
+    window.addEventListener('popstate', handlePopState)
+    pushHistoryEntry()
     if (props.eventId) {
       loadTicketTiers(props.eventId)
       loadEvent(props.eventId)
@@ -988,6 +1086,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleKeydown)
+  window.removeEventListener('popstate', handlePopState)
   document.body.style.overflow = ''
   document.body.style.paddingRight = ''
 })
