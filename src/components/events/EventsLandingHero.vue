@@ -8,14 +8,16 @@
          hero rather than on a bar of its own. No mark up here: the wordmark is
          already the first thing in the hero, a few hundred pixels below. -->
     <header
-      class="absolute inset-x-0 top-0 z-20 flex items-center justify-end px-4 sm:px-6 py-3 sm:py-4"
+      class="absolute inset-x-0 top-0 z-20 flex items-center justify-end px-4 sm:px-6 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 sm:pt-4 sm:pb-4"
     >
+      <!-- A real touch target on a phone (40px), back to the compact desktop
+           pill from `lg` — the same button, not a second style. -->
       <RouterLink
         to="/signin?redirect=%2Fevents"
-        class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-medium hover:shadow-md hover:shadow-[#2ecc71]/20 transition-all duration-200"
+        class="flex items-center gap-1.5 px-4 py-2 min-h-[40px] lg:px-3.5 lg:py-1.5 lg:min-h-0 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-medium shadow-md shadow-[#2ecc71]/20 lg:shadow-none hover:shadow-md hover:shadow-[#2ecc71]/20 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
         :aria-label="t('common.nav.signIn')"
       >
-        <User class="w-3.5 h-3.5" />
+        <User class="w-4 h-4 lg:w-3.5 lg:h-3.5" />
         <span>{{ t('common.nav.signIn') }}</span>
       </RouterLink>
     </header>
@@ -52,20 +54,28 @@
 
     <!-- Hero copy -->
     <div
-      class="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-4 sm:px-6 py-[clamp(1.5rem,5vh,3.5rem)]"
+      class="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-6 py-[clamp(1.5rem,5vh,3.5rem)] pb-[clamp(4rem,16vh,8rem)] lg:pb-[clamp(1.5rem,5vh,3.5rem)] pointer-events-none lg:pointer-events-auto"
     >
+      <!-- 40px tall: the mark carries a wordmark inside it, which turns to mush
+           below that on a phone screen. -->
       <img
         :src="LogoPng"
         alt="GoEvent"
-        class="hero-item h-8 sm:h-9 lg:h-10 w-auto mb-[clamp(0.875rem,3vh,1.75rem)]"
+        class="hero-item h-10 w-auto mb-[clamp(0.875rem,3vh,1.75rem)]"
         style="animation-delay: 0ms"
       />
 
       <!-- Measured in `ch`, so the column scales with the type and the headline
-           breaks into two lines (three with the accent) at every size — and the
-           tile field always has a margin to live in (see DESKTOP_TILES). -->
+           always stacks three lines — "Unforgettable / events / start here" —
+           which is what makes it read as a centred column rather than a
+           paragraph. It also leaves the tile field a margin to live in on
+           desktop (see DESKTOP_TILES).
+           On a phone the type is driven by `vw` instead of pinned to the clamp
+           floor, so the headline fills the screen it was given: the measure and
+           the size are tuned together, such that the longest word sets the
+           column width and the second word has to fall to its own line. -->
       <h1
-        class="hero-item text-[clamp(1.75rem,4.4vw,3.5rem)] font-bold leading-[1.18] tracking-tight text-slate-900 max-w-[13ch]"
+        class="hero-item text-[clamp(2.125rem,11.5vw,3rem)] font-bold leading-[1.1] tracking-tight text-slate-900 max-w-[13ch] lg:text-[clamp(1.75rem,4.4vw,3.5rem)] lg:leading-[1.18]"
         style="animation-delay: 80ms"
       >
         {{ t('events.landing.headline') }}
@@ -76,8 +86,10 @@
         </span>
       </h1>
 
+      <!-- A measure narrower than the headline block, so the copy reads as a
+           column rather than running edge to edge on a phone. -->
       <p
-        class="hero-item mt-[clamp(0.75rem,2.5vh,1.5rem)] max-w-md text-sm sm:text-base text-slate-600 leading-relaxed"
+        class="hero-item mt-[clamp(0.75rem,2.5vh,1.5rem)] max-w-[36ch] lg:max-w-md text-sm sm:text-base text-slate-600 leading-relaxed"
         style="animation-delay: 160ms"
       >
         {{ t('events.landing.subtitle') }}
@@ -85,7 +97,7 @@
 
       <button
         type="button"
-        class="hero-item mt-[clamp(1.125rem,3vh,2rem)] inline-flex items-center px-5 py-2.5 sm:px-6 sm:py-3 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white text-sm font-semibold rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-[1.03] active:scale-95"
+        class="hero-item pointer-events-auto mt-[clamp(1.125rem,3vh,2rem)] inline-flex items-center justify-center px-6 py-3 min-h-[48px] lg:min-h-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white text-sm font-semibold rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-[1.03] active:scale-95"
         style="animation-delay: 240ms"
         @click="$emit('create')"
       >
@@ -94,7 +106,7 @@
 
       <RouterLink
         to="/explore"
-        class="hero-item group mt-[clamp(0.75rem,2vh,1.25rem)] inline-flex items-center gap-1.5 px-3 py-2 min-h-[40px] text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+        class="hero-item group pointer-events-auto mt-[clamp(0.75rem,2vh,1.25rem)] inline-flex items-center gap-1.5 px-3 py-2 min-h-[40px] text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
         style="animation-delay: 300ms"
       >
         {{ t('events.landing.secondaryCta') }}
@@ -102,34 +114,44 @@
       </RouterLink>
     </div>
 
-    <!-- Mobile/tablet tile cluster: the same wall, stacked under the copy and
-         cropped on three sides so it reads as a fragment of something larger. -->
+    <!-- Mobile/tablet: the wall closes into a carousel. The tiles are mounted on
+         a tilted ring turning under the copy — it drifts on its own and takes a
+         swipe, so the wall is something you can push around rather than a
+         picture of one. Nothing is painted behind it: the tiles float on the
+         page's own background, which is what keeps it from reading as a band
+         stuck to the bottom of the screen. -->
     <div
       v-if="artReady"
-      class="tile-field tile-field-mobile lg:hidden relative w-full h-[clamp(11rem,32vh,19rem)] flex-shrink-0 overflow-hidden pointer-events-none select-none"
+      class="arc-stage lg:hidden"
       aria-hidden="true"
+      @pointerdown="onArcPointerDown"
+      @pointermove="onArcPointerMove"
+      @pointerup="onArcPointerUp"
+      @pointercancel="onArcPointerUp"
     >
-      <div
-        v-for="(tile, i) in MOBILE_TILES"
-        :key="`m-${i}`"
-        class="tile-slot"
-        :style="slotStyle(tile, i)"
-      >
-        <div class="tile" :style="{ animationDuration: floatDuration(i) }">
-          <div class="tile-art">
-            <img
-              :src="artAt(i)"
-              alt=""
-              class="w-full h-full object-cover"
-              loading="lazy"
-              decoding="async"
-              @error="handleArtError(i)"
-            />
+      <div class="arc-scene">
+        <div class="arc-tilt">
+          <div ref="arcRing" class="arc-ring">
+            <div v-for="(seat, i) in ARC_SEATS" :key="`m-${i}`" class="arc-slot" :style="seat">
+              <div class="arc-enter" :style="{ animationDelay: `${i * 55}ms` }">
+                <div class="tile">
+                  <div class="tile-art">
+                    <img
+                      :src="artAt(i)"
+                      alt=""
+                      class="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      draggable="false"
+                      @error="handleArtError(i)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
-      <div class="field-haze field-haze-mobile" aria-hidden="true"></div>
     </div>
   </section>
 </template>
@@ -252,19 +274,39 @@ const DESKTOP_TILES: TilePlacement[] = [
 ]
 
 /**
- * Two staggered rows bleeding past both edges and the bottom — a fragment of
- * the same wall, under the same no-overlap rule. Ordered by prominence for the
- * same reason as DESKTOP_TILES.
+ * The mobile ring. A phone has no room for a wall, so the tiles are mounted on
+ * a carousel instead — a full cylinder, not an arc of visible ones: the seats
+ * are swept out mechanically, and the half facing away is hidden by
+ * `backface-visibility` rather than left out of the markup. That is what lets
+ * it turn indefinitely without a seam.
+ *
+ * Ten is set by the geometry, not picked: at this count the chord between
+ * neighbouring seats (`2 * R * sin(180°/n)`) runs a little wider than a tile,
+ * so the cards ride the rim with daylight between them. Papered edge to edge
+ * — which is what a higher count gives — the ring stops reading as cards on a
+ * circle and starts reading as a folding screen; the gaps are what say these
+ * are separate objects going round.
+ *
+ * The radius is then set so both of the ring's edge-on points land just inside
+ * the viewport. That is the whole trick: across the front of a circle, a
+ * circle is indistinguishable from a straight line, and a drum wider than the
+ * screen shows nothing else. Fitting the full width in means the tiles visibly
+ * climb away to either side and turn out of sight.
  */
-const MOBILE_TILES: TilePlacement[] = [
-  { top: '55%', left: '4%', m: 1.15 },
-  { top: '53%', left: '70%', m: 1.1 },
-  { top: '2%', left: '52%', m: 0.95 },
-  { top: '-6%', left: '20%', m: 1.1 },
-  { top: '62%', left: '38%', m: 1 },
-  { top: '-8%', left: '82%', m: 1.05 },
-  { top: '4%', left: '-8%', m: 1 },
-]
+const ARC_TILE_COUNT = 10
+
+/**
+ * Every seat is the same size and the same distance out — perspective alone
+ * decides which of them reads as near and large. `translate(-50%, -50%)` leads
+ * so a tile is centred on its seat, then it swings out to the rim and stays
+ * tangent to it, which is what turns the near seats face-on and the ones at
+ * the sides edge-on.
+ */
+const ARC_SEATS = Array.from({ length: ARC_TILE_COUNT }, (_, i) => ({
+  width: 'var(--tile)',
+  height: 'var(--tile)',
+  transform: `translate(-50%, -50%) rotateY(${(i * 360) / ARC_TILE_COUNT}deg) translateZ(var(--arc-r))`,
+}))
 
 /**
  * Cover art for the tiles the API can't fill. These are the generated category
@@ -304,7 +346,7 @@ const artReady = ref(false)
  * yields distinct art.
  */
 const placeholderArt = Array.from(
-  { length: Math.max(DESKTOP_TILES.length, MOBILE_TILES.length) },
+  { length: Math.max(DESKTOP_TILES.length, ARC_TILE_COUNT) },
   (_, i) =>
     buildEventCoverDataUri(
       PLACEHOLDER_CATEGORIES[i % PLACEHOLDER_CATEGORIES.length],
@@ -361,6 +403,89 @@ const slotStyle = (tile: TilePlacement, index: number) => {
 /** Varied float periods keep the field from breathing in unison. */
 const floatDuration = (index: number): string => `${7 + (index % 4) * 1.3}s`
 
+/* ── The ring's motion ────────────────────────────────────────────────────────
+ *
+ * Driven frame by frame rather than by a CSS animation, because the ring has to
+ * do two things a keyframe cannot: take a swipe mid-turn, and carry the throw
+ * off that swipe back down into its resting drift. One angle, one velocity, one
+ * `requestAnimationFrame` — the DOM write is a single `rotateY` on the ring, so
+ * however many tiles are mounted, the browser composites one transform.
+ */
+
+/** Degrees per second the ring turns unattended. Negative: tiles drift left. */
+const ARC_DRIFT_DEG_S = -6.5
+/** How far a pixel of drag turns the ring. */
+const ARC_DRAG_DEG_PX = 0.32
+/** Ceiling on a throw, so a hard flick spins fast without smearing. */
+const ARC_MAX_DEG_S = 640
+/** Seconds for a thrown ring to settle back into the drift (exponential). */
+const ARC_SETTLE_S = 1.1
+/** A frame longer than this is a stall (backgrounded tab); don't integrate it. */
+const ARC_MAX_FRAME_S = 0.05
+
+const arcRing = ref<HTMLElement | null>(null)
+
+let arcAngle = 0
+let arcVelocity = ARC_DRIFT_DEG_S
+let arcFrame: number | undefined
+let arcPrevTs = 0
+/** The pointer currently turning the ring, if any. */
+let arcPointerId: number | null = null
+let arcPrevX = 0
+let arcPrevMoveTs = 0
+/** Under reduced motion the ring holds still and only moves under a finger. */
+let arcDrift = ARC_DRIFT_DEG_S
+
+const paintArc = () => {
+  if (arcRing.value) arcRing.value.style.transform = `rotateY(${arcAngle}deg)`
+}
+
+const stepArc = (ts: number) => {
+  const dt = arcPrevTs ? Math.min((ts - arcPrevTs) / 1000, ARC_MAX_FRAME_S) : 0
+  arcPrevTs = ts
+
+  // While a finger is down the move handler owns the angle; this loop only
+  // takes over once it lifts.
+  if (arcPointerId === null && dt > 0) {
+    arcVelocity += (arcDrift - arcVelocity) * (1 - Math.exp(-dt / ARC_SETTLE_S))
+    arcAngle += arcVelocity * dt
+    paintArc()
+  }
+
+  arcFrame = requestAnimationFrame(stepArc)
+}
+
+const onArcPointerDown = (event: PointerEvent) => {
+  arcPointerId = event.pointerId
+  arcPrevX = event.clientX
+  arcPrevMoveTs = event.timeStamp
+  arcVelocity = 0
+  // Capture, so a drag that wanders off the stage (or over the copy above it)
+  // keeps turning the ring instead of dropping halfway through.
+  ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
+}
+
+const onArcPointerMove = (event: PointerEvent) => {
+  if (arcPointerId !== event.pointerId) return
+
+  const step = (event.clientX - arcPrevX) * ARC_DRAG_DEG_PX
+  // Floored, because two moves can share a timestamp — and dividing by zero
+  // here would hand the release an infinite throw.
+  const dt = Math.max((event.timeStamp - arcPrevMoveTs) / 1000, 1 / 240)
+
+  arcPrevX = event.clientX
+  arcPrevMoveTs = event.timeStamp
+  arcAngle += step
+  arcVelocity = Math.max(-ARC_MAX_DEG_S, Math.min(ARC_MAX_DEG_S, step / dt))
+  paintArc()
+}
+
+const onArcPointerUp = (event: PointerEvent) => {
+  if (arcPointerId !== event.pointerId) return
+  // Whatever the last move measured is the throw; stepArc decays it from here.
+  arcPointerId = null
+}
+
 /**
  * Waiting for the request keeps the common case pop-free — tiles animate in
  * already carrying real art. But the API client allows 30s before it times
@@ -375,6 +500,17 @@ onMounted(async () => {
   revealTimer = setTimeout(() => {
     artReady.value = true
   }, ART_WAIT_CAP_MS)
+
+  // A ring that turns on its own is exactly the kind of ambient motion this
+  // setting asks us to drop. It still takes a swipe — that motion is the
+  // reader's own — so the loop is simply never started and the move handler
+  // paints directly.
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    arcDrift = 0
+    arcVelocity = 0
+  } else {
+    arcFrame = requestAnimationFrame(stepArc)
+  }
 
   try {
     const response = await eventsService.getEvents({
@@ -397,7 +533,10 @@ onMounted(async () => {
   }
 })
 
-onUnmounted(() => clearTimeout(revealTimer))
+onUnmounted(() => {
+  clearTimeout(revealTimer)
+  if (arcFrame !== undefined) cancelAnimationFrame(arcFrame)
+})
 </script>
 
 <style scoped>
@@ -412,12 +551,120 @@ onUnmounted(() => clearTimeout(revealTimer))
   z-index: 0;
 }
 
-/* Three tiles to a row here rather than the desktop field's five or six, so the
-   base is a much larger share of the width. Sized so the gaps between them stay
-   about a quarter of a tile — the same ratio the desktop field keeps — instead
-   of closing to a hairline on a 320px phone. */
-.tile-field-mobile {
-  --tile: clamp(72px, 22vw, 132px);
+/*
+ * The mobile carousel. Pinned to the foot of the section rather than stacked
+ * under the copy as a flex row: in flow, the stage's empty upper half opened a
+ * band of dead space between the last button and the first tile that no amount
+ * of tuning inside the stage could close. Out of flow, the copy centres in the
+ * whole screen and the ring turns underneath it.
+ *
+ * Deliberately has no background of its own — no wash, no glow, no haze. The
+ * page's gradient runs straight through, and the tiles read as objects on it
+ * rather than as a panel stuck to the bottom of the screen. Anything painted
+ * here also has to be clipped by `overflow`, and a clipped gradient leaves a
+ * hard seam across the page exactly where it is meant to disappear.
+ *
+ * One perspective for the whole stage — a per-tile `perspective()` would give
+ * each its own vanishing point and the twelve would stop belonging to one
+ * object. The origin sits above the ring's centre, so the camera looks down on
+ * it: near seats project lower and larger, far ones lift toward the vanishing
+ * point, and the row becomes an ellipse without any of it being drawn by hand.
+ */
+.arc-stage {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 0;
+  /* Tall enough on a portrait tablet to hold the leaned ring, which grows on
+     the tile/radius clamps faster than 36vh does. */
+  height: clamp(15rem, 36vh, 24rem);
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  /* Vertical gestures still belong to the page; horizontal ones turn the ring. */
+  touch-action: pan-y;
+  cursor: grab;
+  --tile: clamp(84px, 25vw, 128px);
+  --arc-r: clamp(144px, 44vw, 225px);
+}
+
+/*
+ * The camera, kept one level below the clip on purpose. `overflow: hidden` and
+ * `perspective` on the same element do not reliably clip a `preserve-3d`
+ * subtree in Chromium — on a portrait tablet the far side of the ring escaped
+ * and painted across the top of the page. Split apart, this element flattens
+ * the 3D scene into its own plane (its `transform-style` stays `flat`) and the
+ * stage above clips that flattened result, which it can always do.
+ *
+ * Short enough to be a real lens: at ~3x the ring's radius the front tile is
+ * half again the size of the ones at the sides. A long perspective flattens
+ * the cylinder into a row of shrinking rectangles.
+ */
+.arc-scene {
+  position: absolute;
+  inset: 0;
+  perspective: clamp(520px, 135vw, 780px);
+  perspective-origin: 50% 40%;
+}
+
+.arc-stage:active {
+  cursor: grabbing;
+}
+
+/* The turntable's lean, kept on its own element so the spin underneath it is a
+   clean `rotateY` — one animated property, no matrix to rebuild per frame. */
+.arc-tilt {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  /* The lean is what makes it read as a ring rather than a row: it drops the
+     near seats and lifts the ones at the sides, so the visible half of the
+     drum bows into a U instead of running flat across the screen. Shallow
+     angles don't do it — a circle is nearly a straight line across its front,
+     and it takes a real look *down* onto the turntable before the eye reads
+     the tiles as standing on one. */
+  transform: rotateX(-30deg);
+}
+
+/* The shared 3D space. Nothing here may take `overflow`, `filter`, `opacity`
+   or a mask — any one of them flattens `preserve-3d` and drops the twelve
+   tiles back onto a plane. The clipping is the stage's job, two levels up. */
+.arc-ring {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* `top` seats the ring in the stage — measured against the *projected* front
+   tile, which the lean and the perspective make both wider and taller than the
+   `--tile` it started from, so it clears the bottom of the screen with its
+   shadow rather than being sliced by it.
+   `backface-visibility` retires each tile as it turns past edge-on — at that
+   instant it is exactly zero pixels wide, so it vanishes without a pop, and
+   the half of the drum facing away never shows the reverse of a photo. */
+.arc-slot {
+  position: absolute;
+  left: 50%;
+  top: 33%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.arc-enter {
+  width: 100%;
+  height: 100%;
+  animation: tile-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* The ring's own rotation is the motion here. A second, independent bob per
+   tile reads as jitter against it — and costs twelve more animated layers. */
+.arc-slot .tile {
+  animation: none;
+}
+
+.arc-slot img {
+  -webkit-user-drag: none;
 }
 
 .tile-slot {
@@ -452,16 +699,6 @@ onUnmounted(() => clearTimeout(revealTimer))
   position: absolute;
   inset: 0;
   background: linear-gradient(to top, rgba(249, 252, 254, 0.92), rgba(249, 252, 254, 0));
-}
-
-/* The mobile cluster is not its own stacking context — the haze shares one with
-   the tile slots, whose z-indexes climb with their order — so it has to clear
-   the highest of them rather than sit at the desktop field's z-1. */
-.field-haze-mobile {
-  height: 32%;
-  z-index: 20;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
 }
 
 /*
@@ -555,6 +792,7 @@ onUnmounted(() => clearTimeout(revealTimer))
 
 @media (prefers-reduced-motion: reduce) {
   .tile-slot,
+  .arc-enter,
   .tile,
   .hero-item {
     animation: none;
