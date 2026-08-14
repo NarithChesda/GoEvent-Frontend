@@ -60,6 +60,7 @@ Living documentation for large multi-phase features:
 Deployment, workflow, and subsystem how-tos:
 
 - [CLOUDFLARE_DEPLOYMENT_GUIDE.md](guides/CLOUDFLARE_DEPLOYMENT_GUIDE.md) / [FRONTEND_DEPLOYMENT_GUIDE.md](guides/FRONTEND_DEPLOYMENT_GUIDE.md) / [LOCAL_WORKFLOW_GUIDE.md](guides/LOCAL_WORKFLOW_GUIDE.md) — deployment & dev workflow
+- [PLAYWRIGHT.md](guides/PLAYWRIGHT.md) — E2E testing setup, fixtures, and why `npx playwright install` must never be run
 - [API_SERVICE_TECHNICAL_REFERENCE.md](guides/API_SERVICE_TECHNICAL_REFERENCE.md) — API core internals (SecureLogger, type guards)
 - [VIDEO_MEMORY_MANAGEMENT.md](guides/VIDEO_MEMORY_MANAGEMENT.md) — showcase video memory system
 - [REDIRECT_SYSTEM_IMPLEMENTATION.md](guides/REDIRECT_SYSTEM_IMPLEMENTATION.md) — showcase redirect state

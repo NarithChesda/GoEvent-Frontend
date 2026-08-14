@@ -289,8 +289,26 @@ Field-specific errors come as: `{ "field_name": ["Error message"] }`
 
 ### Testing
 - Unit tests use Vitest with Vue Test Utils
-- E2E tests use Playwright
-- Test files co-located with components (`.spec.ts` or `.test.ts`)
+- E2E tests use Playwright — see **[docs/guides/PLAYWRIGHT.md](docs/guides/PLAYWRIGHT.md)**
+- Test files co-located with components (`.spec.ts` or `.test.ts`); E2E specs live in [e2e/](e2e/)
+
+**Playwright: browsers are already installed — never run `npx playwright install`.** That command
+hangs on this machine: it finishes the download, then deadlocks before extracting, leaving a
+0-byte `chrome.dll` and no `INSTALLATION_COMPLETE` marker. Playwright then treats the install as
+broken and demands a reinstall on every later run — which hangs again. Just run `npm run test:e2e`.
+If browsers genuinely need repair, use `npm run test:e2e:install`
+([scripts/install-playwright-browsers.ps1](scripts/install-playwright-browsers.ps1), idempotent,
+downloads + extracts in seconds).
+
+Other things worth knowing before writing E2E tests:
+- Import `test`/`expect` from [e2e/fixtures.ts](e2e/fixtures.ts), which adds `consoleErrors`
+  capture, a backend `stubApi`, and `waitForAppMount`
+- **Never scope an API stub with a path glob like `**/api/**`** — under Vite dev it matches the
+  app's own module URLs (`/src/services/api/core/ApiClient.ts`) and answers its JavaScript with
+  JSON, so the app never mounts. Scope stubs to the backend *origin*
+- Chromium only (desktop + Pixel 7 projects); headless by default, `HEADED=1` to watch
+- The HTML reporter is set to `open: 'never'` because the default auto-opens a blocking report
+  server; read reports with `npm run test:e2e:report`
 
 ### Build Optimization
 - Vite config optimized for Cloudflare Pages deployment

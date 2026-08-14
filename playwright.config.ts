@@ -2,109 +2,86 @@ import process from 'node:process'
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
+ * Playwright configuration for GoEvent.
+ *
+ * Tuned to be agent-friendly: headless by default, never spawns a blocking
+ * report server, and always reuses an already-running dev server.
+ * See docs/guides/PLAYWRIGHT.md before changing anything here.
+ *
+ * Browsers: Chromium only (desktop + mobile viewport). Firefox/WebKit are
+ * deliberately not installed - adding them means `npx playwright install
+ * firefox webkit` on every machine, and a broken/partial download there is
+ * what silently breaks every subsequent run.
  */
-// require('dotenv').config();
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
+const CI = !!process.env.CI
+/** Opt into a visible browser window: `HEADED=1 npm run test:e2e` */
+const HEADED = process.env.HEADED === '1' || process.env.HEADED === 'true'
+const PORT = CI ? 4173 : 5173
+
 export default defineConfig({
   testDir: './e2e',
-  /* Maximum time one test can run for. */
-  timeout: 30 * 1000,
+
+  /* Per-test budget. The showcase pulls fonts, video and GSAP, so 30s is tight. */
+  timeout: 45 * 1000,
   expect: {
-    /**
-     * Maximum time expect() should wait for the condition to be met.
-     * For example in `await expect(locator).toHaveText();`
-     */
-    timeout: 5000,
+    timeout: 10 * 1000,
   },
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+
+  /* Fail the build on CI if a test.only was left in the source. */
+  forbidOnly: CI,
+  retries: CI ? 2 : 0,
+  workers: CI ? 1 : undefined,
+
+  /*
+   * `list` streams progress to stdout; the HTML report is written but never
+   * served. Plain `reporter: 'html'` auto-opens a report web server on failure,
+   * which hangs any non-interactive terminal until it is killed.
+   */
+  reporter: CI
+    ? [['github'], ['html', { open: 'never' }]]
+    : [['list'], ['html', { open: 'never' }]],
+
+  outputDir: 'test-results/',
+
   use: {
-    /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
-    actionTimeout: 0,
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env.CI ? 'http://localhost:4173' : 'http://localhost:5173',
+    actionTimeout: 15 * 1000,
+    navigationTimeout: 30 * 1000,
+    baseURL: `http://localhost:${PORT}`,
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    /* Diagnostics kept only for failures, so passing runs stay cheap. */
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
 
-    /* Only on CI systems run the tests headless */
-    headless: !!process.env.CI,
+    /* Headless unless explicitly asked otherwise - agents have no display. */
+    headless: !HEADED,
   },
 
-  /* Configure projects for major browsers */
   projects: [
     {
       name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-      },
+      use: { ...devices['Desktop Chrome'] },
     },
     {
-      name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-      },
+      /* The showcase is mobile-first; this catches dvh/touch/safe-area regressions. */
+      name: 'mobile-chrome',
+      use: { ...devices['Pixel 7'] },
     },
-    {
-      name: 'webkit',
-      use: {
-        ...devices['Desktop Safari'],
-      },
-    },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: {
-    //     ...devices['Pixel 5'],
-    //   },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: {
-    //     ...devices['iPhone 12'],
-    //   },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: {
-    //     channel: 'msedge',
-    //   },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: {
-    //     channel: 'chrome',
-    //   },
-    // },
   ],
 
-  /* Folder for test artifacts such as screenshots, videos, traces, etc. */
-  // outputDir: 'test-results/',
-
-  /* Run your local dev server before starting the tests */
+  /*
+   * Dev server for local feedback, preview build on CI.
+   * `reuseExistingServer` is on locally so a dev server you (or another agent)
+   * already started is reused instead of racing for port 5173.
+   */
   webServer: {
-    /**
-     * Use the dev server by default for faster feedback loop.
-     * Use the preview server on CI for more realistic testing.
-     * Playwright will re-use the local server if there is already a dev-server running.
-     */
-    command: process.env.CI ? 'npm run preview' : 'npm run dev',
-    port: process.env.CI ? 4173 : 5173,
-    reuseExistingServer: !process.env.CI,
+    command: CI ? 'npm run preview' : 'npm run dev',
+    port: PORT,
+    reuseExistingServer: !CI,
+    /* Cold Vite start with this dependency tree can exceed the 60s default. */
+    timeout: 120 * 1000,
+    stdout: 'ignore',
+    stderr: 'pipe',
   },
 })
