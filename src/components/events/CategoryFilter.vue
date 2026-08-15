@@ -3,9 +3,9 @@
   <div class="relative category-filter-container hidden sm:block">
     <!-- `tone` only repaints the trigger: the desktop nav absorbs it at full
          size once the page header scrolls away, and it has to land on the same
-         pixels it left. Icon-only at every size — `compact` only tightens it
-         further for the mobile bar. The current category is carried by the fill
-         and the tooltip, so the label never has to be on screen. -->
+         pixels it left. Icon-only at every size — the current category is
+         carried by the fill and the tooltip, so the label never has to be on
+         screen. -->
     <button
       @click.stop="toggleMenu"
       aria-haspopup="menu"
@@ -15,7 +15,7 @@
       class="flex items-center justify-center border transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
       :class="triggerClass"
     >
-      <ListFilter :class="compact ? 'w-[18px] h-[18px]' : 'w-5 h-5'" />
+      <ListFilter class="w-5 h-5" />
     </button>
 
     <!-- Dropdown Menu -->
@@ -52,8 +52,8 @@
     </Transition>
   </div>
 
-  <!-- Mobile Filter Chip (opens bottom sheet). Same size and shape in the page
-       header and in the mobile bar that absorbs it — only the fill changes. -->
+  <!-- Mobile Filter Chip (opens bottom sheet). Same size and shape wherever the
+       page header lands — only the fill changes. -->
   <button
     type="button"
     @click="showSheet = true"
@@ -64,7 +64,7 @@
     :class="
       modelValue
         ? 'border-transparent bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
-        : tone === 'nav'
+        : resolvedTone === 'nav'
           ? 'border-transparent text-slate-600 hover:bg-slate-100'
           : 'glass-button border-white/50 text-slate-600'
     "
@@ -150,25 +150,24 @@ import { ListFilter, Check } from 'lucide-vue-next'
 import type { EventCategory } from '@/services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
+import { useHeaderTone } from '@/composables/useNavPageControls'
 
 const { t } = useAppLanguage()
 const { translateEventCategory } = useCategoryTranslation()
 
-const props = withDefaults(
-  defineProps<{
-    modelValue: string
-    categories: EventCategory[]
-    /** Render as a single icon button, for tight chrome. */
-    compact?: boolean
-    /**
-     * Palette only — never geometry. `nav` drops the glass card for surfaces
-     * that belong to the top bar, so the absorbed control reads as part of the
-     * chrome instead of a card floating on it.
-     */
-    tone?: 'page' | 'nav'
-  }>(),
-  { compact: false, tone: 'page' }
-)
+const props = defineProps<{
+  modelValue: string
+  categories: EventCategory[]
+  /**
+   * Palette only — never geometry. `nav` drops the glass card for surfaces that
+   * belong to a bar, so the control reads as part of the chrome instead of a
+   * card floating on it. Left unset it follows where the page header currently
+   * lives — see useHeaderTone.
+   */
+  tone?: 'page' | 'nav'
+}>()
+
+const resolvedTone = useHeaderTone(() => props.tone)
 
 /** The trigger carries no label, so this is its tooltip. */
 const activeLabel = computed(() =>
@@ -176,15 +175,6 @@ const activeLabel = computed(() =>
 )
 
 const triggerClass = computed(() => {
-  if (props.compact) {
-    return [
-      'w-9 h-9 rounded-lg border-transparent',
-      props.modelValue
-        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-sm shadow-[#2ecc71]/20'
-        : 'text-slate-500 hover:text-slate-700 hover:bg-white/60',
-    ]
-  }
-
   // TimeFilterToggle's outer height, rebuilt from the same terms: a 2.25rem
   // segment (`text-sm`'s 1.25rem line box + `py-2`) inside its `p-1`, plus the
   // 1px border top and bottom. Matching it exactly is the whole point of the
@@ -198,7 +188,7 @@ const triggerClass = computed(() => {
   // thing in this row that doesn't scale with it.
   const shape = 'w-[calc(2.75rem_+_2px)] h-[calc(2.75rem_+_2px)] rounded-full'
 
-  if (props.tone === 'nav') {
+  if (resolvedTone.value === 'nav') {
     return [
       shape,
       'border-transparent',

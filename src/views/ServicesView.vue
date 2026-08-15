@@ -9,24 +9,17 @@
       <!-- Main Content -->
       <section class="flex-1 py-4 sm:py-6 lg:py-[clamp(1.25rem,3vh,2rem)]">
         <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <!-- Header -->
-          <div
-            class="flex items-center justify-between gap-2 mb-6 sm:mb-8 lg:mb-[clamp(1.25rem,3.5vh,2.5rem)]"
-          >
-            <h1
-              class="flex-1 min-w-0 truncate text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900"
-            >
-              {{ t('services.title') }}
-            </h1>
-
-            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-              <!-- Category Filter: desktop dropdown / mobile chip + bottom sheet -->
-              <ServicesCategoryFilter
-                v-model="selectedCategory"
-                :categories="serviceCategories"
-              />
-            </div>
-          </div>
+          <!-- Page header. On mobile this is also the top bar's expanded state,
+               which is why the title lives here rather than in the bar. The
+               category filter is not handed up to the bar the way the event
+               lists' filters are — it simply scrolls away with the header. -->
+          <PageHeaderRow :title="t('services.title')">
+            <!-- Category Filter: desktop dropdown / mobile chip + bottom sheet -->
+            <ServicesCategoryFilter
+              v-model="selectedCategory"
+              :categories="serviceCategories"
+            />
+          </PageHeaderRow>
 
           <!-- Featured Vendors Section -->
           <FeaturedVendors
@@ -126,7 +119,7 @@ import { Plus } from 'lucide-vue-next'
 import { useToast } from '@/composables/useToast'
 import MainLayout from '@/components/MainLayout.vue'
 import AppFooter from '@/components/AppFooter.vue'
-import { MobileTopBar } from '@/components/events'
+import { MobileTopBar, PageHeaderRow } from '@/components/events'
 import {
   FeaturedVendors,
   ServiceListingsGrid,

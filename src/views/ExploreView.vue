@@ -6,21 +6,14 @@
       class="flex flex-col min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-4rem)] bg-gradient-to-r from-[#2ecc71]/[0.02] via-white/0 to-[#1e90ff]/[0.02]"
     >
       <!-- Mobile Top Bar -->
-      <MobileTopBar @search="openSearch" />
+      <MobileTopBar />
 
       <!-- Main Content -->
       <section class="flex-1 flex flex-col py-4 sm:py-6 lg:py-[clamp(1.25rem,3vh,2rem)]">
         <div class="flex-1 flex flex-col w-full max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <!-- Header with Toggle -->
-          <div
-            class="flex items-center justify-between gap-2 mb-6 sm:mb-8 lg:mb-[clamp(1.25rem,3.5vh,2.5rem)]"
-          >
-            <h1
-              class="flex-1 min-w-0 truncate text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900"
-            >
-              {{ t('discover.title') }}
-            </h1>
-
+          <!-- Page header. On mobile this is also the top bar's expanded state,
+               which is why the title lives here rather than in the bar. -->
+          <PageHeaderRow :title="t('discover.title')">
             <!-- Date range toggle + category filter. The filters used to leave
                  with the header — changing one meant scrolling the whole list
                  back to the top. PinnedListControls keeps them by handing them
@@ -31,7 +24,7 @@
               v-model:category="categoryFilter"
               :categories="categories"
             />
-          </div>
+          </PageHeaderRow>
 
           <!-- Loading State -->
           <EventsLoadingSkeleton v-if="isLoading" />
@@ -111,12 +104,12 @@ import PublicEventDrawer from '@/components/PublicEventDrawer.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import {
   MobileTopBar,
+  PageHeaderRow,
   EventTimeline,
   PinnedListControls,
   EventsEmptyState,
   EventsLoadingSkeleton,
 } from '@/components/events'
-import { useGlobalSearch } from '@/composables/useGlobalSearch'
 import { useCategoryFilter } from '@/composables/useCategoryFilter'
 import { useStickyDateHeaders } from '@/composables/useStickyDateHeaders'
 import { groupEventsByDate } from '@/composables/useEventFormatters'
@@ -129,9 +122,6 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const { t } = useAppLanguage()
-
-// Global search
-const { open: openSearch } = useGlobalSearch()
 
 // Category filter
 const { categories, categoryFilter, loadCategories } = useCategoryFilter()

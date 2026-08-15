@@ -11,7 +11,7 @@
     <div class="py-3.5 pr-3.5 pl-4 flex gap-3">
       <!-- Event Details -->
       <div class="flex-1 min-w-0 flex flex-col gap-1">
-        <!-- Time + category -->
+        <!-- Time, category and how soon — same row as desktop -->
         <div class="flex items-center flex-wrap gap-x-2 gap-y-1">
           <span class="text-[13px] font-semibold text-slate-900 tabular-nums tracking-tight">
             {{ formatEventTime(event.start_date) }}
@@ -23,6 +23,18 @@
           >
             <span class="w-1 h-1 rounded-full bg-current flex-shrink-0"></span>
             {{ translateEventCategory(category) }}
+          </span>
+          <span
+            v-if="relativeWhen"
+            class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10.5px] font-semibold"
+            :class="relativeWhen.isLive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'"
+          >
+            <span
+              v-if="relativeWhen.isLive"
+              class="w-1.5 h-1.5 rounded-full bg-emerald-500 live-pulse"
+            ></span>
+            <Clock v-else class="w-2.5 h-2.5" />
+            {{ relativeWhen.label }}
           </span>
         </div>
 
@@ -43,19 +55,12 @@
           </template>
         </div>
 
-        <!-- Presence: how soon, who's coming, what it costs -->
-        <div class="flex items-center flex-wrap gap-x-2 gap-y-1 mt-0.5">
-          <span
-            v-if="relativeWhen"
-            class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10.5px] font-semibold"
-            :class="relativeWhen.isLive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'"
-          >
-            <span
-              v-if="relativeWhen.isLive"
-              class="w-1.5 h-1.5 rounded-full bg-emerald-500 live-pulse"
-            ></span>
-            {{ relativeWhen.label }}
-          </span>
+        <!-- Presence: who's coming, what it costs. "How soon" now rides in the
+             header row with the category, matching desktop. -->
+        <div
+          v-if="attendance || entryChip || byline"
+          class="flex items-center flex-wrap gap-x-2 gap-y-1 mt-0.5"
+        >
           <span v-if="attendance" class="text-[11.5px] text-slate-600">{{ attendance }}</span>
           <span
             v-if="entryChip"

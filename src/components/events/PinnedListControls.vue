@@ -1,49 +1,28 @@
 <template>
   <!--
-    Owns *both* copies of the list filters — the pair that sits in the page
-    header and the pair the top bar takes over — because the hand-off only
-    reads as absorption if the two are swapped on the same frame. Drop this
-    straight into the page's title row in place of the controls themselves.
+    The list filters, and — on desktop only — the copy the nav takes over.
 
-    The header copy leaves the moment the bar's bottom edge reaches its top
-    edge, drifting up as it goes, while the bar's copy rises into place. An
-    earlier version watched a sentinel placed after the whole header block, so
-    the swap landed a header-margin late — the controls scrolled all the way
-    under the bar and only then reappeared inside it, which reads as a second
-    control showing up rather than this one being taken in.
+    Below the nav breakpoint there is one copy and it never moves: PageHeaderRow
+    has already put this whole row inside the mobile top bar, so the filters are
+    in the chrome from the start and there is nothing to absorb. `isPinned` is
+    only ever true on desktop, which is why this wrapper's hide and the teleport
+    below are effectively desktop-only without saying so twice.
   -->
-  <div class="relative flex-shrink-0">
-    <!-- Sentinel pinned to the group's top edge, and kept out of the fading
-         wrapper so its geometry is never in question. It is what the top bar's
-         bottom edge meets first, which is the frame the swap has to happen on. -->
-    <div ref="sentinel" aria-hidden="true" class="absolute inset-x-0 top-0 h-px"></div>
-
-    <!--
-      `relative z-30` is what keeps the open dropdowns above the list, and it is
-      this wrapper's own doing: the drift-up needs a transform, and *any*
-      transform — including `translate-y-0` — opens a stacking context, which
-      caps the `z-[100]` on the menus inside at this element's level. With
-      z-index auto that level is the same one the event cards paint at, and they
-      come later in the document, so each card drew straight over the open menu.
-      Stay under the bars (mobile z-40, desktop z-50) so this still scrolls
-      beneath them rather than across them.
-    -->
-    <div
-      class="relative z-30 flex items-center gap-1.5 sm:gap-2 transition-all duration-200 ease-out"
-      :class="isPinned ? 'invisible opacity-0 -translate-y-2' : 'visible opacity-100 translate-y-0'"
-      :aria-hidden="isPinned"
-    >
-      <TimeFilterToggle
-        :model-value="timeFilter"
-        :options="timeOptions"
-        @update:model-value="emit('update:timeFilter', $event)"
-      />
-      <CategoryFilter
-        :model-value="category"
-        :categories="categories"
-        @update:model-value="emit('update:category', $event)"
-      />
-    </div>
+  <div
+    class="flex-shrink-0 flex items-center gap-1.5 sm:gap-2 transition-all duration-200 ease-out"
+    :class="isPinned ? 'invisible opacity-0 -translate-y-2' : 'visible opacity-100 translate-y-0'"
+    :aria-hidden="isPinned"
+  >
+    <TimeFilterToggle
+      :model-value="timeFilter"
+      :options="timeOptions"
+      @update:model-value="emit('update:timeFilter', $event)"
+    />
+    <CategoryFilter
+      :model-value="category"
+      :categories="categories"
+      @update:model-value="emit('update:category', $event)"
+    />
   </div>
 
   <!--
@@ -80,35 +59,10 @@
     </Transition>
   </Teleport>
 
-  <!--
-    The mobile bar is 56px tall and already carries search, notifications and
-    language, so the labelled pills genuinely do not fit there; below `sm` the
-    page header shows the same round chips anyway, so only the fill changes.
-  -->
-  <Teleport defer to="#nav-page-controls-mobile">
-    <Transition name="absorb">
-      <div v-if="isPinned" class="flex items-center gap-1">
-        <TimeFilterToggle
-          compact
-          tone="nav"
-          :model-value="timeFilter"
-          :options="timeOptions"
-          @update:model-value="emit('update:timeFilter', $event)"
-        />
-        <CategoryFilter
-          compact
-          tone="nav"
-          :model-value="category"
-          :categories="categories"
-          @update:model-value="emit('update:category', $event)"
-        />
-      </div>
-    </Transition>
-  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { watch, onUnmounted } from 'vue'
 import type { EventCategory } from '@/services/api'
 import TimeFilterToggle, { type FilterOption } from './TimeFilterToggle.vue'
 import CategoryFilter from './CategoryFilter.vue'
@@ -126,51 +80,15 @@ const emit = defineEmits<{
   'update:category': [value: string]
 }>()
 
-const sentinel = ref<HTMLElement | null>(null)
-const isPinned = ref(false)
-
-// Tells the nav to yield room for what it is about to hold — see
-// useNavPageControls.
-const { setAbsorbed } = useNavPageControls()
-watch(isPinned, setAbsorbed)
-
-let observer: IntersectionObserver | null = null
-
-// Mobile top bar is 56px (h-14), desktop nav is 64px (h-16). The sentinel has
-// to be judged against whichever is about to cover it, or the swap lands early
-// on one breakpoint and late on the other.
-const desktopNav = window.matchMedia('(min-width: 1024px)')
-
-const observeSentinel = () => {
-  observer?.disconnect()
-  if (!sentinel.value) return
-
-  const navHeight = desktopNav.matches ? 64 : 56
-
-  observer = new IntersectionObserver(
-    ([entry]) => {
-      // The root is shrunk by the bar's height, so the sentinel leaves it on
-      // the exact frame the controls' top edge passes under the bar's bottom
-      // edge. Only pin when it has gone *above* the viewport — scrolling back
-      // down past the list's end must not re-trigger it.
-      isPinned.value = !entry.isIntersecting && entry.boundingClientRect.top < navHeight
-    },
-    { rootMargin: `-${navHeight}px 0px 0px 0px`, threshold: 0 }
-  )
-
-  observer.observe(sentinel.value)
-}
-
-const handleBreakpointChange = () => observeSentinel()
-
-onMounted(() => {
-  observeSentinel()
-  desktopNav.addEventListener('change', handleBreakpointChange)
-})
+// PageHeaderRow owns the sentinel; this component only decides what to do about
+// it. `absorbed` is the narrower signal that tells the desktop nav to yield
+// room for what it is about to hold, and it is set here rather than alongside
+// `pinned` because a page can pin a header without having any filters to hand
+// up — see useNavPageControls.
+const { pinned: isPinned, setAbsorbed } = useNavPageControls()
+watch(isPinned, setAbsorbed, { immediate: true })
 
 onUnmounted(() => {
-  observer?.disconnect()
-  desktopNav.removeEventListener('change', handleBreakpointChange)
   // Leaving the page must give the nav its clock and shortcuts back.
   setAbsorbed(false)
 })

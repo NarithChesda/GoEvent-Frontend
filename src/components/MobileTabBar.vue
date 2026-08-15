@@ -48,47 +48,62 @@
             <RouterLink
               v-if="isVerifiedVendor"
               to="/settings?tab=listings"
-              @click="userMenuOpen = false"
+              @click="closeUserMenu"
               class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
               role="menuitem"
             >
-              <span class="text-sm font-medium">My Listings</span>
+              <span class="text-sm font-medium">{{ t('common.nav.myListings') }}</span>
             </RouterLink>
 
             <RouterLink
               to="/settings"
-              @click="userMenuOpen = false"
+              @click="closeUserMenu"
               class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
               role="menuitem"
             >
-              <span class="text-sm font-medium">Settings</span>
+              <span class="text-sm font-medium">{{ t('common.nav.settings') }}</span>
             </RouterLink>
 
             <RouterLink
               to="/settings?tab=tickets"
-              @click="userMenuOpen = false"
+              @click="closeUserMenu"
               class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
               role="menuitem"
             >
-              <span class="text-sm font-medium">My Tickets</span>
+              <span class="text-sm font-medium">{{ t('common.nav.myTickets') }}</span>
             </RouterLink>
 
             <RouterLink
               v-if="authStore.user?.is_partner"
               to="/commission"
-              @click="userMenuOpen = false"
+              @click="closeUserMenu"
               class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
               role="menuitem"
             >
-              <span class="text-sm font-medium">Commission</span>
+              <span class="text-sm font-medium">{{ t('common.nav.commission') }}</span>
             </RouterLink>
+
+            <!-- Language — a straight toggle, not a submenu, same as the
+                 desktop profile menu. The menu stays open so the label flips
+                 in place and confirms the switch. -->
+            <button
+              @click="toggleLanguage"
+              class="flex items-center justify-between gap-3 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200 w-full text-left"
+              role="menuitem"
+              :aria-label="`${t('common.language.label')}: ${currentLocaleOption.name}`"
+            >
+              <span class="text-sm font-medium">
+                {{ t('common.language.label') }}: {{ locale.toUpperCase() }}
+              </span>
+              <ArrowLeftRight class="w-4 h-4 text-slate-400 flex-shrink-0" aria-hidden="true" />
+            </button>
 
             <button
               @click="handleLogout"
               class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200 w-full text-left"
               role="menuitem"
             >
-              <span class="text-sm font-medium">Sign Out</span>
+              <span class="text-sm font-medium">{{ t('common.nav.signOut') }}</span>
             </button>
           </div>
         </div>
@@ -115,6 +130,17 @@
           <span class="text-xs font-medium truncate">{{ item.label }}</span>
         </RouterLink>
 
+        <!-- Notifications Tab (authenticated only) — the bell used to sit in
+             MobileTopBar; on phones it belongs with the rest of the navigation.
+             The wrapper owns the tab slot so it lines up with its siblings; the
+             bell owns the trigger and its bottom sheet. -->
+        <div
+          v-if="authStore.isAuthenticated"
+          class="flex flex-col items-center space-y-0.5 p-2 rounded-xl transition-all duration-300 min-w-0 flex-1"
+        >
+          <NotificationBell variant="mobile" class="w-full min-w-0" />
+        </div>
+
         <!-- Profile Tab -->
         <div class="flex flex-col items-center space-y-0.5 p-2 rounded-xl transition-all duration-300 min-w-0 flex-1">
           <template v-if="!authStore.isAuthenticated">
@@ -124,12 +150,12 @@
               aria-label="Sign in to your account"
             >
               <User class="w-5 h-5 flex-shrink-0 group-hover:gradient-text" aria-hidden="true" />
-              <span class="text-xs font-medium truncate">Sign In</span>
+              <span class="text-xs font-medium truncate">{{ t('common.nav.signIn') }}</span>
             </RouterLink>
           </template>
           <template v-else>
             <button
-              @click.stop="userMenuOpen = !userMenuOpen"
+              @click.stop="toggleUserMenu"
               class="flex flex-col items-center space-y-0.5 w-full rounded-xl p-1 group"
               :class="userMenuOpen ? 'gradient-text font-semibold' : 'text-slate-600 hover:gradient-text'"
               :aria-expanded="userMenuOpen"
@@ -153,7 +179,7 @@
                   {{ authStore.userInitials }}
                 </div>
               </div>
-              <span class="text-xs font-medium truncate">Profile</span>
+              <span class="text-xs font-medium truncate">{{ t('common.nav.profile') }}</span>
             </button>
           </template>
         </div>
@@ -165,28 +191,51 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { Ticket, Compass, Sparkles, User } from 'lucide-vue-next'
+import { Ticket, Compass, Sparkles, User, ArrowLeftRight } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 import { sanitizePlainText } from '@/utils/sanitize'
+import NotificationBell from './notifications/NotificationBell.vue'
 import { useVendorProfile } from '@/composables/settings/useVendorProfile'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useExclusiveMenu } from '@/composables/useExclusiveMenu'
 
-const userMenuOpen = ref(false)
+// Shares the app-wide "one open menu" slot with the notification sheet next
+// door, so opening either closes the other.
+const {
+  isOpen: userMenuOpen,
+  close: closeUserMenu,
+  toggle: toggleUserMenu,
+} = useExclusiveMenu()
+
 const userMenuRef = ref<HTMLElement>()
 const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
+
+// Language state — backed by the i18n store
+const { t, locale, setLocale, availableLocales, currentLocaleOption } = useAppLanguage()
 
 // Vendor profile for showing listings link
 const { vendorState } = useVendorProfile({ autoLoad: true })
 const isVerifiedVendor = computed(() => vendorState.value === 'verified')
 
 // Navigation items configuration (matching top nav)
-const navigationItems = [
-  { path: '/events', label: 'Events', icon: Ticket },
-  { path: '/explore', label: 'Discover', icon: Compass },
-  { path: '/services', label: 'Services', icon: Sparkles }
-]
+const navigationItems = computed(() => [
+  { path: '/events', label: t('common.nav.events'), icon: Ticket },
+  { path: '/explore', label: t('common.nav.discover'), icon: Compass },
+  { path: '/services', label: t('common.nav.services'), icon: Sparkles }
+])
+
+// Step to the next locale — the profile menu's one-click toggle, same as
+// TopNavBar's. Cycles rather than flipping a pair so a third locale needs no
+// change here.
+const toggleLanguage = () => {
+  const options = availableLocales.value
+  if (options.length < 2) return
+  const currentIndex = options.findIndex((opt) => opt.code === locale.value)
+  setLocale(options[(currentIndex + 1) % options.length].code)
+}
 
 // Check if route is active
 const isActiveRoute = (path: string) => {
@@ -225,14 +274,14 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 
   if (userMenuRef.value && !userMenuRef.value.contains(event.target)) {
-    userMenuOpen.value = false
+    closeUserMenu()
   }
 }
 
 // Close menu when pressing Escape key
 const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'Escape' && userMenuOpen.value) {
-    userMenuOpen.value = false
+    closeUserMenu()
   }
 }
 
@@ -240,11 +289,11 @@ const handleKeyDown = (event: KeyboardEvent) => {
 const handleLogout = async () => {
   try {
     await authStore.logout()
-    userMenuOpen.value = false
+    closeUserMenu()
     router.push('/events')
   } catch (error) {
     console.error('Logout failed:', error)
-    userMenuOpen.value = false
+    closeUserMenu()
     alert('Logout failed. Please try again or contact support if the issue persists.')
   }
 }

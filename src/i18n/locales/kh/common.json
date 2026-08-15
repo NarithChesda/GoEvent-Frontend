@@ -7,6 +7,7 @@
     "commission": "កម្រៃជើងសារ",
     "myListings": "បញ្ជីរបស់ខ្ញុំ",
     "myTickets": "សំបុត្ររបស់ខ្ញុំ",
+    "profile": "គណនី",
     "signIn": "ចូលគណនី",
     "signOut": "ចាកចេញ",
     "createEvent": "បង្កើតព្រឹត្តិការណ៍"
@@ -139,6 +140,7 @@
   },
   "notifications": {
     "title": "ការជូនដំណឹង",
+    "tabLabel": "ជូនដំណឹង",
     "actions": {
       "markAllRead": "សម្គាល់ថាបានអានទាំងអស់",
       "delete": "លុបការជូនដំណឹង",
