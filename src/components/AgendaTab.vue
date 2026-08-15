@@ -73,26 +73,6 @@
       </div>
     </div>
 
-    <!-- Reordering Overlay -->
-    <Transition name="fade">
-      <div
-        v-if="isReordering"
-        class="fixed inset-0 bg-black/10 z-40 flex items-center justify-center pointer-events-none"
-      >
-        <div
-          class="bg-white rounded-xl shadow-2xl p-5 flex items-center space-x-3 border-2 border-blue-400"
-        >
-          <div
-            class="animate-spin w-6 h-6 border-3 border-blue-500 border-t-transparent rounded-full"
-          ></div>
-          <div class="flex flex-col">
-            <span class="text-base font-semibold text-slate-900">Reordering agenda...</span>
-            <span class="text-xs text-slate-600">Please wait</span>
-          </div>
-        </div>
-      </div>
-    </Transition>
-
     <!-- Agenda Items -->
     <div v-else class="space-y-4">
       <!-- Grouped by Date Cards -->
@@ -203,6 +183,28 @@
         </div>
       </div>
     </div>
+
+    <!-- Reordering Overlay (kept outside the loading/error/empty/items v-if chain
+         so it does not break the chain; it is fixed-position, so sibling order is
+         irrelevant to how it renders) -->
+    <Transition name="fade">
+      <div
+        v-if="isReordering"
+        class="fixed inset-0 bg-black/10 z-40 flex items-center justify-center pointer-events-none"
+      >
+        <div
+          class="bg-white rounded-xl shadow-2xl p-5 flex items-center space-x-3 border-2 border-blue-400"
+        >
+          <div
+            class="animate-spin w-6 h-6 border-3 border-blue-500 border-t-transparent rounded-full"
+          ></div>
+          <div class="flex flex-col">
+            <span class="text-base font-semibold text-slate-900">Reordering agenda...</span>
+            <span class="text-xs text-slate-600">Please wait</span>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
     <!-- Unified Agenda Drawer (for both create and edit) -->
     <EditAgendaDrawer
