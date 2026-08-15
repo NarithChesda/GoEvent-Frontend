@@ -1,14 +1,23 @@
 <template>
   <!-- Desktop Top Navigation Bar -->
   <header
-    class="hidden lg:flex fixed top-0 left-0 right-0 h-16 glass-nav border-b transition-colors duration-200 z-50"
-    :class="isScrolled ? 'border-white/30 shadow-lg shadow-[#2ecc71]/5' : 'border-transparent'"
+    class="fixed top-0 left-0 right-0 h-16 border-b transition-colors duration-200 z-50"
+    :class="[
+      // The minimal bar is the only chrome signed-out pages get, so it stays on phones too
+      isMinimal ? 'glass-nav-minimal flex' : 'glass-nav hidden lg:flex',
+      isMinimal && isScrolled ? 'is-scrolled' : '',
+      isScrolled
+        ? isMinimal
+          ? 'border-white/50 shadow-lg shadow-slate-900/5'
+          : 'border-white/30 shadow-lg shadow-[#2ecc71]/5'
+        : 'border-transparent',
+    ]"
     role="navigation"
     aria-label="Main navigation"
   >
     <div class="w-full h-full relative">
       <!-- Logo (absolute left) -->
-      <div class="absolute left-6 top-1/2 -translate-y-1/2">
+      <div class="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2">
         <button
           @click="handleLogoClick"
           class="flex items-center group"
@@ -23,7 +32,10 @@
       </div>
 
       <!-- Main Navigation (aligned with page content) -->
-      <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center gap-2">
+      <div
+        v-if="!isMinimal"
+        class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center gap-2"
+      >
         <nav class="flex items-center">
           <RouterLink
             v-for="(item, index) in navigationItems"
@@ -56,14 +68,19 @@
       </div>
 
       <!-- Right Section: Time, Actions, Profile (absolute right) -->
-      <div class="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-3">
+      <div class="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 flex items-center gap-3">
         <!-- The clock and the Create Event shortcut step aside while the bar is
              holding a page's filters: they are the two widest things here that
              nothing depends on mid-scroll, and the room they free is what lets
              the absorbed controls keep the page header's position. Both come
              straight back when the header scrolls into view again. -->
         <Transition name="nav-yield">
-          <div v-if="!pageControlsAbsorbed" class="flex items-center gap-3">
+          <!-- The clock is desktop-only on the minimal bar; a phone has one of its own -->
+          <div
+            v-if="!pageControlsAbsorbed"
+            class="items-center gap-3"
+            :class="isMinimal ? 'hidden lg:flex' : 'flex'"
+          >
             <!-- Current Time -->
             <div class="text-sm text-slate-500 font-medium tabular-nums whitespace-nowrap">
               {{ currentTime }}
@@ -74,11 +91,26 @@
           </div>
         </Transition>
 
+        <!-- The same Discover nav item as the full bar, just moved to the right -->
+        <RouterLink
+          v-if="isMinimal && discoverItem"
+          :to="discoverItem.path"
+          class="flex items-center space-x-2 px-3 py-2 rounded-lg text-base font-medium transition-all duration-200"
+          :class="
+            isActiveRoute(discoverItem.path)
+              ? 'text-slate-900'
+              : 'text-slate-400 hover:text-slate-700'
+          "
+        >
+          <component :is="discoverItem.icon" class="w-4 h-4" aria-hidden="true" />
+          <span>{{ discoverItem.label }}</span>
+        </RouterLink>
+
         <!-- Create Event Button (authenticated only). The wrapper carries the
              collapse: the link's own `transition-all` would otherwise override
              it and leave the width snapping. -->
         <Transition name="nav-yield">
-          <div v-if="authStore.isAuthenticated && !pageControlsAbsorbed">
+          <div v-if="authStore.isAuthenticated && !pageControlsAbsorbed && !isMinimal">
             <RouterLink
               to="/events?createEvent=true"
               class="block px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-white/60 rounded-lg transition-all duration-200 whitespace-nowrap"
@@ -89,7 +121,7 @@
         </Transition>
 
         <!-- Icon Button Group -->
-        <div class="flex items-center gap-0.5">
+        <div v-if="!isMinimal" class="flex items-center gap-0.5">
           <!-- Search Button (authenticated only) -->
           <button
             v-if="authStore.isAuthenticated"
@@ -135,10 +167,10 @@
         </div>
 
         <!-- Divider before Profile -->
-        <div class="h-4 w-px bg-slate-200"></div>
+        <div v-if="!isMinimal" class="h-4 w-px bg-slate-200"></div>
 
         <!-- Profile Button -->
-        <div ref="userMenuRef" class="relative">
+        <div v-if="!isMinimal" ref="userMenuRef" class="relative">
           <button
             v-if="authStore.isAuthenticated"
             @click.stop="userMenuOpen = !userMenuOpen"
@@ -260,7 +292,7 @@
   </header>
 
   <!-- Global Search Modal -->
-  <GlobalSearchModal />
+  <GlobalSearchModal v-if="!isMinimal" />
 </template>
 
 <script setup lang="ts">
@@ -285,6 +317,19 @@ import { useVendorProfile } from '@/composables/settings/useVendorProfile'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useNavPageControls } from '@/composables/useNavPageControls'
 import type { AppLocale } from '@/i18n'
+
+interface Props {
+  /**
+   * `full` is the app bar. `minimal` is the signed-out variant used by
+   * [SignInView.vue](src/views/SignInView.vue): logo, clock (desktop only) and
+   * Discover, nothing else — and unlike the full bar it stays visible on phones,
+   * since signed-out pages have no MobileTabBar under them.
+   */
+  variant?: 'full' | 'minimal'
+}
+
+const props = withDefaults(defineProps<Props>(), { variant: 'full' })
+const isMinimal = computed(() => props.variant === 'minimal')
 
 const router = useRouter()
 const route = useRoute()
@@ -315,6 +360,11 @@ const navigationItems = computed(() => [
   { path: '/explore', label: t('common.nav.discover'), icon: Compass },
   { path: '/services', label: t('common.nav.services'), icon: Sparkles }
 ])
+
+// The minimal bar shows this one item, right-aligned, rather than the full row
+const discoverItem = computed(() =>
+  navigationItems.value.find((item) => item.path === '/explore'),
+)
 
 // Check if route is active
 const isActiveRoute = (path: string) => {
@@ -511,6 +561,25 @@ onUnmounted(() => {
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/*
+  Minimal bar: transparent while the page is at rest, glass once something
+  scrolls under it. Any fixed fill — even white at low alpha — sits lighter than
+  the page's own wash and reads as a band with a hard bottom edge, and an opaque
+  match is impossible against a gradient. The blur stays on permanently: over a
+  smooth gradient it changes nothing, so leaving it there lets the background
+  colour fade in under `transition-colors` instead of popping mid-scroll.
+  (`.glass-nav` below is a fixed tint because it is matched to `premium-bg`.)
+*/
+.glass-nav-minimal {
+  background: rgba(255, 255, 255, 0);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.glass-nav-minimal.is-scrolled {
+  background: rgba(255, 255, 255, 0.6);
 }
 
 /* Glass navigation bar - blends with brand gradient background */
