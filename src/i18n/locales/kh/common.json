@@ -140,7 +140,6 @@
   },
   "notifications": {
     "title": "ការជូនដំណឹង",
-    "tabLabel": "ជូនដំណឹង",
     "actions": {
       "markAllRead": "សម្គាល់ថាបានអានទាំងអស់",
       "delete": "លុបការជូនដំណឹង",

@@ -140,7 +140,6 @@
   },
   "notifications": {
     "title": "Notifications",
-    "tabLabel": "Alerts",
     "actions": {
       "markAllRead": "Mark all read",
       "delete": "Delete notification",
