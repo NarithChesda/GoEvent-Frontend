@@ -280,12 +280,14 @@ const DESKTOP_TILES: TilePlacement[] = [
  * `backface-visibility` rather than left out of the markup. That is what lets
  * it turn indefinitely without a seam.
  *
- * Ten is set by the geometry, not picked: at this count the chord between
- * neighbouring seats (`2 * R * sin(180°/n)`) runs a little wider than a tile,
- * so the cards ride the rim with daylight between them. Papered edge to edge
- * — which is what a higher count gives — the ring stops reading as cards on a
- * circle and starts reading as a folding screen; the gaps are what say these
- * are separate objects going round.
+ * The count is set by the geometry, not picked: the chord between neighbouring
+ * seats (`2 * R * sin(180°/n)`) has to run a little wider than a tile, so the
+ * cards ride the rim with daylight between them. Papered edge to edge — which
+ * is what a higher count gives — the ring stops reading as cards on a circle
+ * and starts reading as a folding screen; the gaps are what say these are
+ * separate objects going round. Nine is what the current tile (29vw) and
+ * radius (46vw) allow: the chord comes out at 31.5vw, so ~2.5vw of rim shows
+ * between neighbours. Grow the tile again and a seat has to come out.
  *
  * The radius is then set so both of the ring's edge-on points land just inside
  * the viewport. That is the whole trick: across the front of a circle, a
@@ -293,7 +295,7 @@ const DESKTOP_TILES: TilePlacement[] = [
  * screen shows nothing else. Fitting the full width in means the tiles visibly
  * climb away to either side and turn out of sight.
  */
-const ARC_TILE_COUNT = 10
+const ARC_TILE_COUNT = 9
 
 /**
  * Every seat is the same size and the same distance out — perspective alone
@@ -565,10 +567,11 @@ onUnmounted(() => {
  * hard seam across the page exactly where it is meant to disappear.
  *
  * One perspective for the whole stage — a per-tile `perspective()` would give
- * each its own vanishing point and the twelve would stop belonging to one
- * object. The origin sits above the ring's centre, so the camera looks down on
- * it: near seats project lower and larger, far ones lift toward the vanishing
- * point, and the row becomes an ellipse without any of it being drawn by hand.
+ * each its own vanishing point and the tiles would stop belonging to one
+ * object. The origin sits level with the ring's centre, so the camera looks at
+ * the drum head-on rather than down onto it: the near seats come at the viewer
+ * square, and it is the lean below plus the depth falloff — not a raised eye —
+ * that bows the row into an ellipse.
  */
 .arc-stage {
   position: absolute;
@@ -584,8 +587,8 @@ onUnmounted(() => {
   /* Vertical gestures still belong to the page; horizontal ones turn the ring. */
   touch-action: pan-y;
   cursor: grab;
-  --tile: clamp(84px, 25vw, 128px);
-  --arc-r: clamp(144px, 44vw, 225px);
+  --tile: clamp(96px, 29vw, 148px);
+  --arc-r: clamp(150px, 46vw, 235px);
 }
 
 /*
@@ -604,7 +607,10 @@ onUnmounted(() => {
   position: absolute;
   inset: 0;
   perspective: clamp(520px, 135vw, 780px);
-  perspective-origin: 50% 40%;
+  /* Level with `.arc-slot`'s `top`, so the two stay in step: an origin above
+     the ring's centre is a camera looking down, which tips the front tiles
+     away and shows their top edges. */
+  perspective-origin: 50% 44%;
 }
 
 .arc-stage:active {
@@ -619,11 +625,13 @@ onUnmounted(() => {
   transform-style: preserve-3d;
   /* The lean is what makes it read as a ring rather than a row: it drops the
      near seats and lifts the ones at the sides, so the visible half of the
-     drum bows into a U instead of running flat across the screen. Shallow
-     angles don't do it — a circle is nearly a straight line across its front,
-     and it takes a real look *down* onto the turntable before the eye reads
-     the tiles as standing on one. */
-  transform: rotateX(-30deg);
+     drum bows into a U instead of running flat across the screen.
+     Kept shallow on purpose. The lean is doing two jobs at once — it bows the
+     row, but it also tips every tile's face back by the same angle, and past
+     ~20° the front card is showing the viewer its top edge instead of its art.
+     At 14° the bow is still worth ~0.24 of the radius (a clear arc across a
+     drum this wide) while the near tiles read as square-on. */
+  transform: rotateX(-14deg);
 }
 
 /* The shared 3D space. Nothing here may take `overflow`, `filter`, `opacity`
@@ -639,14 +647,18 @@ onUnmounted(() => {
 /* `top` seats the ring in the stage — measured against the *projected* front
    tile, which the lean and the perspective make both wider and taller than the
    `--tile` it started from, so it clears the bottom of the screen with its
-   shadow rather than being sliced by it.
+   shadow rather than being sliced by it. It tracks the lean: a shallow one
+   drops the near seats less far below the ring's centre (`R · sin θ`), so the
+   centre itself has to sit lower in the stage to put the front tile in the
+   same place. Move `rotateX` and this moves with it — as does the scene's
+   `perspective-origin`, which stays level with it.
    `backface-visibility` retires each tile as it turns past edge-on — at that
    instant it is exactly zero pixels wide, so it vanishes without a pop, and
    the half of the drum facing away never shows the reverse of a photo. */
 .arc-slot {
   position: absolute;
   left: 50%;
-  top: 33%;
+  top: 44%;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
