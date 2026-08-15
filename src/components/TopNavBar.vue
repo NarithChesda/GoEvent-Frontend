@@ -61,11 +61,16 @@
 
         <!-- Page-level controls (list filters) teleport in here while the
              page's own header is scrolled out of view, so the nav absorbs them
-             instead of a second bar appearing beneath it. This container is
-             the page content column, so the slot right-aligns onto the exact
-             spot the page header held them (see the width note in the style
-             block for why that only holds above a certain width). -->
-        <div id="nav-page-controls" class="nav-page-controls flex items-center"></div>
+             instead of a second bar appearing beneath it. It renders here, in
+             the content column, but is pinned to that column's right edge from
+             the style block rather than laid out by this row — the edge it has
+             to land on is a property of the viewport, not of the nav links
+             beside it. -->
+        <div
+          id="nav-page-controls"
+          class="nav-page-controls flex items-center"
+          :style="navUtilityWidth ? { '--nav-utility-width': `${navUtilityWidth}px` } : undefined"
+        ></div>
       </div>
 
       <!-- Right Section: Time, Actions, Profile (absolute right) -->
@@ -121,217 +126,229 @@
           </div>
         </Transition>
 
-        <!-- Icon Button Group -->
-        <div v-if="!isMinimal" class="flex items-center gap-0.5">
-          <!-- Search Button (authenticated only) -->
-          <button
-            v-if="authStore.isAuthenticated"
-            @click="toggleSearch"
-            class="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all duration-200"
-            aria-label="Search"
-          >
-            <Search class="w-[18px] h-[18px]" />
-          </button>
-
-          <!-- Notifications Bell (authenticated only) -->
-          <NotificationBell v-if="authStore.isAuthenticated" variant="desktop" />
-
-          <!-- Language Button — signed-out only. Signed-in users switch from
-               inside the profile menu, which they don't have out here. -->
-          <div v-if="!authStore.isAuthenticated" class="relative">
+        <!--
+          The fixed furniture, wrapped so it can be measured as one thing.
+          Everything above yields while the bar is holding a page's filters;
+          from here down is what stays on screen at every width, so it is what
+          those filters have to stop short of. Its width is not a constant —
+          signed out it is a Globe and a Sign In pill, signed in a search
+          button, the bell and an avatar, and the pill's label is a different
+          length in every locale — so it is measured rather than assumed, and
+          the measurement is what the style block's floor is built from.
+        -->
+        <div v-if="!isMinimal" ref="navUtilityRef" class="flex items-center gap-3">
+          <!-- Icon Button Group -->
+          <div class="flex items-center gap-0.5">
+            <!-- Search Button (authenticated only) -->
             <button
-              @click.stop="toggleLanguageMenu"
+              v-if="authStore.isAuthenticated"
+              @click="toggleSearch"
               class="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all duration-200"
-              aria-label="Change language"
+              aria-label="Search"
             >
-              <Globe class="w-[18px] h-[18px]" />
+              <Search class="w-[18px] h-[18px]" />
             </button>
 
-            <!-- Language Dropdown -->
+            <!-- Notifications Bell (authenticated only) -->
+            <NotificationBell v-if="authStore.isAuthenticated" variant="desktop" />
+
+            <!-- Language Button — signed-out only. Signed-in users switch from
+                 inside the profile menu, which they don't have out here. -->
+            <div v-if="!authStore.isAuthenticated" class="relative">
+              <button
+                @click.stop="toggleLanguageMenu"
+                class="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all duration-200"
+                aria-label="Change language"
+              >
+                <Globe class="w-[18px] h-[18px]" />
+              </button>
+
+              <!-- Language Dropdown -->
+              <Transition name="dropdown">
+                <div
+                  v-if="showLanguageMenu"
+                  class="glass-dropdown absolute right-0 top-full mt-2 rounded-xl overflow-hidden min-w-[8.75rem] z-[100]"
+                >
+                  <button
+                    v-for="lang in availableLocales"
+                    :key="lang.code"
+                    @click="selectLanguage(lang.code)"
+                    class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors flex items-center gap-2"
+                    :class="locale === lang.code ? 'text-[#2ecc71] font-medium bg-[#2ecc71]/5' : 'text-slate-700'"
+                  >
+                    <span>{{ lang.flag }}</span>
+                    <span>{{ lang.name }}</span>
+                  </button>
+                </div>
+              </Transition>
+            </div>
+          </div>
+
+          <!-- Divider before Profile -->
+          <div class="h-4 w-px bg-slate-200"></div>
+
+          <!-- Profile Button -->
+          <div ref="userMenuRef" class="relative">
+            <button
+              v-if="authStore.isAuthenticated"
+              @click.stop="toggleUserMenu"
+              class="flex items-center justify-center w-8 h-8 rounded-full overflow-hidden ring-2 ring-white/80 hover:ring-[#2ecc71]/50 transition-all duration-200"
+              :aria-expanded="userMenuOpen"
+              aria-label="User menu"
+            >
+              <img
+                v-if="profilePictureUrl && !profilePictureError"
+                :src="profilePictureUrl"
+                :alt="sanitizedUserName"
+                class="w-full h-full object-cover"
+                @error="handleProfilePictureError"
+              />
+              <div
+                v-else
+                class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-sm"
+                :aria-label="`${sanitizedUserName} avatar`"
+              >
+                {{ authStore.userInitials }}
+              </div>
+            </button>
+            <RouterLink
+              v-else
+              :to="signinLink"
+              class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-medium hover:shadow-md hover:shadow-[#2ecc71]/20 transition-all duration-200"
+              :aria-label="t('common.nav.signIn')"
+            >
+              <User class="w-3.5 h-3.5" />
+              <span>{{ t('common.nav.signIn') }}</span>
+            </RouterLink>
+
+            <!-- User Dropdown Menu -->
             <Transition name="dropdown">
               <div
-                v-if="showLanguageMenu"
-                class="glass-dropdown absolute right-0 top-full mt-2 rounded-xl overflow-hidden min-w-[8.75rem] z-[100]"
+                v-if="userMenuOpen && authStore.isAuthenticated"
+                class="glass-dropdown absolute right-0 top-full mt-2 rounded-2xl overflow-hidden z-[100] w-72"
+                role="menu"
+                aria-orientation="vertical"
               >
+                <!--
+                  User Info Header — the whole header copies the email. The
+                  address is truncated here and there is nowhere else in the app
+                  to read it off, so the header itself is the affordance and the
+                  corner icon only signals it: a button nested inside a button
+                  isn't valid markup, and one large target beats a 28px one.
+                -->
                 <button
-                  v-for="lang in availableLocales"
-                  :key="lang.code"
-                  @click="selectLanguage(lang.code)"
-                  class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors flex items-center gap-2"
-                  :class="locale === lang.code ? 'text-[#2ecc71] font-medium bg-[#2ecc71]/5' : 'text-slate-700'"
+                  type="button"
+                  @click="copy(sanitizedUserEmail)"
+                  class="group w-full flex items-center gap-3 px-5 py-4 border-b border-slate-100 text-left transition-colors duration-200 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset"
+                  :aria-label="
+                    copied
+                      ? t('common.nav.emailCopied')
+                      : `${t('common.nav.copyEmail')}: ${sanitizedUserEmail}`
+                  "
                 >
-                  <span>{{ lang.flag }}</span>
-                  <span>{{ lang.name }}</span>
+                  <!-- Large Avatar -->
+                  <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                    <img
+                      v-if="profilePictureUrl && !profilePictureError"
+                      :src="profilePictureUrl"
+                      :alt="sanitizedUserName"
+                      class="w-full h-full object-cover"
+                      @error="handleProfilePictureError"
+                    />
+                    <div
+                      v-else
+                      class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-lg"
+                    >
+                      {{ authStore.userInitials }}
+                    </div>
+                  </div>
+                  <!-- Name and Email -->
+                  <div class="min-w-0 flex-1">
+                    <div class="font-semibold text-lg text-slate-900 truncate">
+                      {{ sanitizedUserName }}
+                    </div>
+                    <!-- The email line doubles as the confirmation: it is the
+                         thing that was copied, so the acknowledgement lands where
+                         the eye already is. -->
+                    <div
+                      class="text-sm truncate transition-colors duration-200"
+                      :class="copied ? 'text-emerald-600 font-medium' : 'text-slate-400'"
+                    >
+                      {{ copied ? t('common.nav.emailCopied') : sanitizedUserEmail }}
+                    </div>
+                  </div>
+                  <span
+                    class="self-start -mt-1 -mr-1.5 flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-lg transition-colors duration-200"
+                    :class="
+                      copied
+                        ? 'text-emerald-600'
+                        : 'text-slate-400 group-hover:bg-slate-100 group-hover:text-slate-600'
+                    "
+                    aria-hidden="true"
+                  >
+                    <Check v-if="copied" class="w-4 h-4" />
+                    <Copy v-else class="w-4 h-4" />
+                  </span>
                 </button>
+
+                <!-- Menu Items -->
+                <div class="py-1">
+                  <RouterLink
+                    v-if="isVerifiedVendor"
+                    to="/settings?tab=listings"
+                    @click="closeUserMenu"
+                    class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                    role="menuitem"
+                  >
+                    {{ t('common.nav.myListings') }}
+                  </RouterLink>
+                  <RouterLink
+                    to="/settings"
+                    @click="closeUserMenu"
+                    class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                    role="menuitem"
+                  >
+                    {{ t('common.nav.settings') }}
+                  </RouterLink>
+                  <RouterLink
+                    to="/settings?tab=tickets"
+                    @click="closeUserMenu"
+                    class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                    role="menuitem"
+                  >
+                    {{ t('common.nav.myTickets') }}
+                  </RouterLink>
+                  <RouterLink
+                    v-if="authStore.user?.is_partner"
+                    to="/commission"
+                    @click="closeUserMenu"
+                    class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                    role="menuitem"
+                  >
+                    {{ t('common.nav.commission') }}
+                  </RouterLink>
+                  <!-- Language — a straight toggle, not a submenu. The menu stays
+                       open so the label flips in place and confirms the switch. -->
+                  <button
+                    @click="toggleLanguage"
+                    class="w-full flex items-center justify-between gap-3 px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                    role="menuitem"
+                    :aria-label="`${t('common.language.label')}: ${currentLocaleOption.name}`"
+                  >
+                    <span>{{ t('common.language.label') }}: {{ locale.toUpperCase() }}</span>
+                    <ArrowLeftRight class="w-4 h-4 text-slate-400" aria-hidden="true" />
+                  </button>
+                  <button
+                    @click="handleLogout"
+                    class="w-full text-left px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                    role="menuitem"
+                  >
+                    {{ t('common.nav.signOut') }}
+                  </button>
+                </div>
               </div>
             </Transition>
           </div>
-        </div>
-
-        <!-- Divider before Profile -->
-        <div v-if="!isMinimal" class="h-4 w-px bg-slate-200"></div>
-
-        <!-- Profile Button -->
-        <div v-if="!isMinimal" ref="userMenuRef" class="relative">
-          <button
-            v-if="authStore.isAuthenticated"
-            @click.stop="toggleUserMenu"
-            class="flex items-center justify-center w-8 h-8 rounded-full overflow-hidden ring-2 ring-white/80 hover:ring-[#2ecc71]/50 transition-all duration-200"
-            :aria-expanded="userMenuOpen"
-            aria-label="User menu"
-          >
-            <img
-              v-if="profilePictureUrl && !profilePictureError"
-              :src="profilePictureUrl"
-              :alt="sanitizedUserName"
-              class="w-full h-full object-cover"
-              @error="handleProfilePictureError"
-            />
-            <div
-              v-else
-              class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-sm"
-              :aria-label="`${sanitizedUserName} avatar`"
-            >
-              {{ authStore.userInitials }}
-            </div>
-          </button>
-          <RouterLink
-            v-else
-            :to="signinLink"
-            class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-medium hover:shadow-md hover:shadow-[#2ecc71]/20 transition-all duration-200"
-            :aria-label="t('common.nav.signIn')"
-          >
-            <User class="w-3.5 h-3.5" />
-            <span>{{ t('common.nav.signIn') }}</span>
-          </RouterLink>
-
-          <!-- User Dropdown Menu -->
-          <Transition name="dropdown">
-            <div
-              v-if="userMenuOpen && authStore.isAuthenticated"
-              class="glass-dropdown absolute right-0 top-full mt-2 rounded-2xl overflow-hidden z-[100] w-72"
-              role="menu"
-              aria-orientation="vertical"
-            >
-              <!--
-                User Info Header — the whole header copies the email. The
-                address is truncated here and there is nowhere else in the app
-                to read it off, so the header itself is the affordance and the
-                corner icon only signals it: a button nested inside a button
-                isn't valid markup, and one large target beats a 28px one.
-              -->
-              <button
-                type="button"
-                @click="copy(sanitizedUserEmail)"
-                class="group w-full flex items-center gap-3 px-5 py-4 border-b border-slate-100 text-left transition-colors duration-200 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset"
-                :aria-label="
-                  copied
-                    ? t('common.nav.emailCopied')
-                    : `${t('common.nav.copyEmail')}: ${sanitizedUserEmail}`
-                "
-              >
-                <!-- Large Avatar -->
-                <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                  <img
-                    v-if="profilePictureUrl && !profilePictureError"
-                    :src="profilePictureUrl"
-                    :alt="sanitizedUserName"
-                    class="w-full h-full object-cover"
-                    @error="handleProfilePictureError"
-                  />
-                  <div
-                    v-else
-                    class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-lg"
-                  >
-                    {{ authStore.userInitials }}
-                  </div>
-                </div>
-                <!-- Name and Email -->
-                <div class="min-w-0 flex-1">
-                  <div class="font-semibold text-lg text-slate-900 truncate">
-                    {{ sanitizedUserName }}
-                  </div>
-                  <!-- The email line doubles as the confirmation: it is the
-                       thing that was copied, so the acknowledgement lands where
-                       the eye already is. -->
-                  <div
-                    class="text-sm truncate transition-colors duration-200"
-                    :class="copied ? 'text-emerald-600 font-medium' : 'text-slate-400'"
-                  >
-                    {{ copied ? t('common.nav.emailCopied') : sanitizedUserEmail }}
-                  </div>
-                </div>
-                <span
-                  class="self-start -mt-1 -mr-1.5 flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-lg transition-colors duration-200"
-                  :class="
-                    copied
-                      ? 'text-emerald-600'
-                      : 'text-slate-400 group-hover:bg-slate-100 group-hover:text-slate-600'
-                  "
-                  aria-hidden="true"
-                >
-                  <Check v-if="copied" class="w-4 h-4" />
-                  <Copy v-else class="w-4 h-4" />
-                </span>
-              </button>
-
-              <!-- Menu Items -->
-              <div class="py-1">
-                <RouterLink
-                  v-if="isVerifiedVendor"
-                  to="/settings?tab=listings"
-                  @click="closeUserMenu"
-                  class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-                  role="menuitem"
-                >
-                  {{ t('common.nav.myListings') }}
-                </RouterLink>
-                <RouterLink
-                  to="/settings"
-                  @click="closeUserMenu"
-                  class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-                  role="menuitem"
-                >
-                  {{ t('common.nav.settings') }}
-                </RouterLink>
-                <RouterLink
-                  to="/settings?tab=tickets"
-                  @click="closeUserMenu"
-                  class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-                  role="menuitem"
-                >
-                  {{ t('common.nav.myTickets') }}
-                </RouterLink>
-                <RouterLink
-                  v-if="authStore.user?.is_partner"
-                  to="/commission"
-                  @click="closeUserMenu"
-                  class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-                  role="menuitem"
-                >
-                  {{ t('common.nav.commission') }}
-                </RouterLink>
-                <!-- Language — a straight toggle, not a submenu. The menu stays
-                     open so the label flips in place and confirms the switch. -->
-                <button
-                  @click="toggleLanguage"
-                  class="w-full flex items-center justify-between gap-3 px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-                  role="menuitem"
-                  :aria-label="`${t('common.language.label')}: ${currentLocaleOption.name}`"
-                >
-                  <span>{{ t('common.language.label') }}: {{ locale.toUpperCase() }}</span>
-                  <ArrowLeftRight class="w-4 h-4 text-slate-400" aria-hidden="true" />
-                </button>
-                <button
-                  @click="handleLogout"
-                  class="w-full text-left px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-                  role="menuitem"
-                >
-                  {{ t('common.nav.signOut') }}
-                </button>
-              </div>
-            </div>
-          </Transition>
         </div>
       </div>
     </div>
@@ -415,6 +432,15 @@ const {
 const userMenuRef = ref<HTMLElement>()
 const currentTime = ref('')
 const isScrolled = ref(false)
+
+// How much of the right edge the bar's fixed furniture occupies, in px, fed to
+// the style block as `--nav-utility-width`. Absorbed page controls stop short of
+// it (see the block for the geometry). Observed rather than derived from the
+// class list: it changes with sign-in state, with the locale the Sign In pill is
+// labelled in, and — silently, later — with any button added to that group.
+const navUtilityRef = ref<HTMLElement>()
+const navUtilityWidth = ref(0)
+let utilityObserver: ResizeObserver | null = null
 
 // Language state — backed by the i18n store
 const { t, locale, setLocale, availableLocales, currentLocaleOption } = useAppLanguage()
@@ -558,6 +584,16 @@ onMounted(() => {
   document.addEventListener('keydown', handleKeyDown)
   window.addEventListener('scroll', handleScroll)
   handleScroll() // Check initial scroll position
+
+  // A ResizeObserver rather than a one-off measurement: the group is still
+  // laying out with fallback fonts on the first frame, and the Khmer sign-in
+  // label lands a good deal wider once Kantumruy Pro arrives.
+  if (navUtilityRef.value && typeof ResizeObserver !== 'undefined') {
+    utilityObserver = new ResizeObserver(([entry]) => {
+      navUtilityWidth.value = entry.contentRect.width
+    })
+    utilityObserver.observe(navUtilityRef.value)
+  }
 })
 
 onUnmounted(() => {
@@ -565,6 +601,7 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleKeyDown)
   window.removeEventListener('scroll', handleScroll)
+  utilityObserver?.disconnect()
 })
 </script>
 
@@ -574,15 +611,40 @@ onUnmounted(() => {
   spot the page header had them — so the hand-off reads as the bar taking the
   control in rather than swapping it for something else.
 
-  That only works where the column's right edge clears the absolutely
-  positioned utility cluster. Below roughly 1400px it doesn't: at the `lg`
-  switch the column is the whole viewport, leaving nothing to its right. There
-  the controls stay beside the nav links, keeping their size and shape — the
-  part that matters — and giving up only the column alignment.
+  Pinned to that edge directly instead of being right-aligned inside the nav's
+  flex row, because the edge is measured from the viewport: `50%` is half the
+  fixed header, and `30rem` is the column's own half-width less its `px-8`
+  gutter (`max-w-5xl` 64rem ÷ 2 − 2rem). So the first term *is* the page
+  header's inner right edge, whatever the window width.
+
+  The second term is the floor: the measured width of the bar's fixed furniture
+  (`--nav-utility-width`, set from the script) plus its own 1.5rem inset from
+  the edge and a 1.5rem gap. The controls stop there rather than sliding under
+  the search button and the avatar. Only narrow windows ever reach the floor,
+  and there the controls give up alignment by the few dozen pixels it takes to
+  clear that group, staying about where the eye left them. The fallback covers
+  the frame before the observer has reported and any environment without one.
+
+  What is *not* here is a px breakpoint, and that is the point: the 13"–15"
+  laptop scale-down in src/assets/main.css drops the root font to 75%, shrinking
+  the column and the furniture together, and both terms above follow it for free
+  — one in `rem`, the other measured. A breakpoint cannot see it. The previous
+  `min-width: 1400px` guard sat *above* the scale-down's own 1200–1599px band,
+  so every laptop in that band was denied an alignment it had ample room for (at
+  a 12px root the column's edge clears the furniture from ~1000px up) and left
+  the controls stranded beside the nav links.
 */
-@media (min-width: 1400px) {
+.nav-page-controls {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: max(calc(50% - 30rem), calc(var(--nav-utility-width, 11rem) + 3rem));
+}
+
+/* Same rule against the wider `2xl:max-w-6xl` column: 72rem ÷ 2 − 2rem. */
+@media (min-width: 1536px) {
   .nav-page-controls {
-    margin-left: auto;
+    right: max(calc(50% - 34rem), calc(var(--nav-utility-width, 11rem) + 3rem));
   }
 }
 
