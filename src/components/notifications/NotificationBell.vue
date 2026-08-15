@@ -54,6 +54,7 @@ import { Bell } from 'lucide-vue-next'
 import NotificationDropdown from './NotificationDropdown.vue'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useExclusiveMenu } from '@/composables/useExclusiveMenu'
 
 const props = withDefaults(
   defineProps<{
@@ -62,24 +63,23 @@ const props = withDefaults(
   { variant: 'desktop' },
 )
 
-const open = ref(false)
+// Shared slot with the top bar's profile/language menus — opening this one
+// closes those, and vice versa.
+const { isOpen: open, close, toggle: toggleMenu } = useExclusiveMenu()
+
 const rootRef = ref<HTMLElement | null>(null)
 const store = useNotificationsStore()
 const { t } = useAppLanguage()
 const route = useRoute()
 
 function toggle() {
-  open.value = !open.value
+  toggleMenu()
   if (open.value) {
     // Refresh count when opening — keeps badge accurate even if poll is stale.
     store.fetchUnreadCount().catch(() => {
       /* swallow */
     })
   }
-}
-
-function close() {
-  open.value = false
 }
 
 function handleClickOutside(event: MouseEvent) {
@@ -89,13 +89,13 @@ function handleClickOutside(event: MouseEvent) {
   const target = event.target
   if (!(target instanceof Node)) return
   if (rootRef.value && !rootRef.value.contains(target)) {
-    open.value = false
+    close()
   }
 }
 
 function handleKeyDown(event: KeyboardEvent) {
   if (event.key === 'Escape' && open.value) {
-    open.value = false
+    close()
   }
 }
 
@@ -103,7 +103,7 @@ function handleKeyDown(event: KeyboardEvent) {
 watch(
   () => route.fullPath,
   () => {
-    open.value = false
+    close()
   },
 )
 
@@ -122,22 +122,55 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleKeyDown)
-  if (props.variant === 'mobile' && open.value) {
+  // Unconditional: useExclusiveMenu's own unmount hook runs first and has
+  // already released `open`, so checking it here would never restore scroll.
+  if (props.variant === 'mobile') {
     document.body.style.overflow = ''
   }
 })
 </script>
 
 <style scoped>
+/*
+  Desktop dropdown. `transition: all` also animated the panel's backdrop blur,
+  border and shadow — repainting a 24px blur every frame is what made the open
+  read as sluggish. Transform + opacity only, and the panel unfolds from the
+  bell it is anchored to rather than sliding in flat.
+*/
+.dropdown-enter-active {
+  transition:
+    opacity 0.16s ease-out,
+    transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.dropdown-leave-active {
+  transition:
+    opacity 0.14s ease-in,
+    transform 0.18s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
 .dropdown-enter-active,
 .dropdown-leave-active {
-  transition: all 0.2s ease;
+  transform-origin: top right;
+  will-change: transform, opacity;
 }
 
 .dropdown-enter-from,
 .dropdown-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-8px) scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-enter-active,
+  .dropdown-leave-active {
+    transition: opacity 0.12s ease;
+  }
+
+  .dropdown-enter-from,
+  .dropdown-leave-to {
+    transform: none;
+  }
 }
 
 /* Mobile bottom sheet: backdrop fade + panel slide-up */

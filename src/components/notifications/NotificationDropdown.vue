@@ -68,13 +68,31 @@
 
     <!-- Body -->
     <div class="flex-1 overflow-y-auto overscroll-contain" role="list">
-      <!-- Initial loading -->
+      <!-- Initial loading — skeleton rows, not a centred spinner: the panel
+           opens at roughly its loaded height, so the list arriving swaps
+           content in place instead of snapping the panel taller mid-animation. -->
       <div
         v-if="store.loadingList && store.items.length === 0"
-        class="flex flex-col items-center justify-center py-12 px-4 text-slate-400"
+        class="divide-y divide-slate-100"
+        role="status"
+        :aria-label="t('common.actions.loading')"
       >
-        <Loader2 class="w-6 h-6 animate-spin mb-2" />
-        <span class="text-sm">{{ t('common.actions.loading') }}</span>
+        <div
+          v-for="n in 3"
+          :key="n"
+          class="flex items-start gap-3 px-4 py-3.5 animate-pulse"
+          aria-hidden="true"
+        >
+          <div class="flex-shrink-0 w-9 h-9 rounded-full bg-slate-200"></div>
+          <div class="min-w-0 flex-1 space-y-2 pt-0.5">
+            <div class="h-3.5 bg-slate-200 rounded w-2/5"></div>
+            <div class="h-3 bg-slate-200 rounded w-4/5"></div>
+            <div class="h-2.5 bg-slate-200 rounded w-1/4"></div>
+          </div>
+          <div class="flex-shrink-0 w-6 flex justify-center pt-2">
+            <span class="w-2 h-2 rounded-full bg-slate-200"></span>
+          </div>
+        </div>
       </div>
 
       <!-- Error state -->

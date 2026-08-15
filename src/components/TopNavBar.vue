@@ -135,8 +135,9 @@
           <!-- Notifications Bell (authenticated only) -->
           <NotificationBell v-if="authStore.isAuthenticated" variant="desktop" />
 
-          <!-- Language Button -->
-          <div class="relative">
+          <!-- Language Button — signed-out only. Signed-in users switch from
+               inside the profile menu, which they don't have out here. -->
+          <div v-if="!authStore.isAuthenticated" class="relative">
             <button
               @click.stop="toggleLanguageMenu"
               class="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all duration-200"
@@ -173,7 +174,7 @@
         <div v-if="!isMinimal" ref="userMenuRef" class="relative">
           <button
             v-if="authStore.isAuthenticated"
-            @click.stop="userMenuOpen = !userMenuOpen"
+            @click.stop="toggleUserMenu"
             class="flex items-center justify-center w-8 h-8 rounded-full overflow-hidden ring-2 ring-white/80 hover:ring-[#2ecc71]/50 transition-all duration-200"
             :aria-expanded="userMenuOpen"
             aria-label="User menu"
@@ -245,7 +246,7 @@
                 <RouterLink
                   v-if="isVerifiedVendor"
                   to="/settings?tab=listings"
-                  @click="userMenuOpen = false"
+                  @click="closeUserMenu"
                   class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                   role="menuitem"
                 >
@@ -253,7 +254,7 @@
                 </RouterLink>
                 <RouterLink
                   to="/settings"
-                  @click="userMenuOpen = false"
+                  @click="closeUserMenu"
                   class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                   role="menuitem"
                 >
@@ -261,7 +262,7 @@
                 </RouterLink>
                 <RouterLink
                   to="/settings?tab=tickets"
-                  @click="userMenuOpen = false"
+                  @click="closeUserMenu"
                   class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                   role="menuitem"
                 >
@@ -270,12 +271,23 @@
                 <RouterLink
                   v-if="authStore.user?.is_partner"
                   to="/commission"
-                  @click="userMenuOpen = false"
+                  @click="closeUserMenu"
                   class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                   role="menuitem"
                 >
                   {{ t('common.nav.commission') }}
                 </RouterLink>
+                <!-- Language — a straight toggle, not a submenu. The menu stays
+                     open so the label flips in place and confirms the switch. -->
+                <button
+                  @click="toggleLanguage"
+                  class="w-full flex items-center justify-between gap-3 px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                  role="menuitem"
+                  :aria-label="`${t('common.language.label')}: ${currentLocaleOption.name}`"
+                >
+                  <span>{{ t('common.language.label') }}: {{ locale.toUpperCase() }}</span>
+                  <ArrowLeftRight class="w-4 h-4 text-slate-400" aria-hidden="true" />
+                </button>
                 <button
                   @click="handleLogout"
                   class="w-full text-left px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
@@ -304,7 +316,8 @@ import {
   Sparkles,
   Search,
   User,
-  Globe
+  Globe,
+  ArrowLeftRight
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
@@ -315,6 +328,7 @@ import NotificationBell from './notifications/NotificationBell.vue'
 import { useGlobalSearch } from '@/composables/useGlobalSearch'
 import { useVendorProfile } from '@/composables/settings/useVendorProfile'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useExclusiveMenu } from '@/composables/useExclusiveMenu'
 import { useNavPageControls } from '@/composables/useNavPageControls'
 import type { AppLocale } from '@/i18n'
 
@@ -345,14 +359,25 @@ const { open: openSearch } = useGlobalSearch()
 // True while a list page has handed its filters up to this bar
 const { absorbed: pageControlsAbsorbed } = useNavPageControls()
 
-const userMenuOpen = ref(false)
+// Menus share one app-wide "open" slot with the notification bell, so opening
+// any one of them closes the others.
+const {
+  isOpen: userMenuOpen,
+  close: closeUserMenu,
+  toggle: toggleUserMenu,
+} = useExclusiveMenu()
+const {
+  isOpen: showLanguageMenu,
+  close: closeLanguageMenu,
+  toggle: toggleLanguageMenu,
+} = useExclusiveMenu()
+
 const userMenuRef = ref<HTMLElement>()
 const currentTime = ref('')
 const isScrolled = ref(false)
 
 // Language state — backed by the i18n store
-const { t, locale, setLocale, availableLocales } = useAppLanguage()
-const showLanguageMenu = ref(false)
+const { t, locale, setLocale, availableLocales, currentLocaleOption } = useAppLanguage()
 
 // Navigation items — labels come from common.nav.* translations
 const navigationItems = computed(() => [
@@ -427,30 +452,30 @@ const toggleSearch = () => {
   openSearch()
 }
 
-// Toggle language menu
-const toggleLanguageMenu = () => {
-  showLanguageMenu.value = !showLanguageMenu.value
-  // Close user menu if open
-  if (showLanguageMenu.value) {
-    userMenuOpen.value = false
-  }
-}
-
-// Select language
+// Select language (signed-out dropdown)
 const selectLanguage = (code: AppLocale) => {
   setLocale(code)
-  showLanguageMenu.value = false
+  closeLanguageMenu()
+}
+
+// Step to the next locale — used by the profile menu's one-click toggle.
+// Cycles rather than flipping a pair so a third locale needs no change here.
+const toggleLanguage = () => {
+  const options = availableLocales.value
+  if (options.length < 2) return
+  const currentIndex = options.findIndex((opt) => opt.code === locale.value)
+  setLocale(options[(currentIndex + 1) % options.length].code)
 }
 
 // Handle logout
 const handleLogout = async () => {
   try {
     await authStore.logout()
-    userMenuOpen.value = false
+    closeUserMenu()
     router.push('/events')
   } catch (error) {
     console.error('Logout failed:', error)
-    userMenuOpen.value = false
+    closeUserMenu()
     alert('Logout failed. Please try again.')
   }
 }
@@ -461,20 +486,20 @@ const handleClickOutside = (event: MouseEvent) => {
     return
   }
   if (userMenuRef.value && !userMenuRef.value.contains(event.target)) {
-    userMenuOpen.value = false
+    closeUserMenu()
   }
   // Close language menu if clicking outside
   const target = event.target as HTMLElement
   if (showLanguageMenu.value && !target.closest('[aria-label="Change language"]')) {
-    showLanguageMenu.value = false
+    closeLanguageMenu()
   }
 }
 
 // Close menu on Escape
 const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'Escape') {
-    userMenuOpen.value = false
-    showLanguageMenu.value = false
+    closeUserMenu()
+    closeLanguageMenu()
   }
 }
 
@@ -551,16 +576,46 @@ onUnmounted(() => {
   }
 }
 
-/* Dropdown animation */
+/*
+  Dropdown animation — kept identical to the notification bell's so every
+  top-bar menu opens the same way. Transform + opacity only: `all` dragged the
+  glass panel's backdrop blur and shadow into the transition, which is what
+  made these feel heavy on open.
+*/
+.dropdown-enter-active {
+  transition:
+    opacity 0.16s ease-out,
+    transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.dropdown-leave-active {
+  transition:
+    opacity 0.14s ease-in,
+    transform 0.18s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
 .dropdown-enter-active,
 .dropdown-leave-active {
-  transition: all 0.2s ease;
+  transform-origin: top right;
+  will-change: transform, opacity;
 }
 
 .dropdown-enter-from,
 .dropdown-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-8px) scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-enter-active,
+  .dropdown-leave-active {
+    transition: opacity 0.12s ease;
+  }
+
+  .dropdown-enter-from,
+  .dropdown-leave-to {
+    transform: none;
+  }
 }
 
 /*
