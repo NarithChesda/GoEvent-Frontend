@@ -3,13 +3,13 @@
     <div
       v-for="dateGroup in dateGroups"
       :key="dateGroup.date"
-      class="relative"
+      class="date-group relative"
     >
       <!-- Mobile: Timeline with Date Header and Cards -->
       <div class="sm:hidden relative">
         <!-- Timeline line (always visible) -->
         <div
-          class="absolute left-[3px] top-7 bottom-0 w-0.5 rounded-full bg-gradient-to-b from-[#2ecc71]/55 to-[#1e90ff]/40"
+          class="timeline-spine absolute left-[3px] w-0.5 bg-gradient-to-b from-[#2ecc71]/55 to-[#1e90ff]/40"
         ></div>
 
         <!-- Date Header with Dot (becomes pill when sticky) -->
@@ -66,7 +66,7 @@
           </div>
           <!-- Timeline line: always show for all date groups -->
           <div
-            class="absolute top-4 bottom-0 w-0.5 rounded-full bg-gradient-to-b from-[#2ecc71]/55 to-[#1e90ff]/40"
+            class="timeline-spine absolute w-0.5 bg-gradient-to-b from-[#2ecc71]/55 to-[#1e90ff]/40"
           ></div>
         </div>
 
@@ -143,6 +143,53 @@ const canManageEvent = (event: Event): boolean => {
 </script>
 
 <style scoped>
+/* Timeline spine.
+   Dashes are cut out of the brand gradient with a mask rather than drawn with
+   `border-style: dashed`, which would force the line down to a single flat
+   color. The spine also overshoots its own date group by exactly the stack gap
+   (`space-y-6` / `sm:space-y-8`) so the thread runs unbroken from one date to
+   the next instead of restarting under every header. */
+.timeline-spine {
+  top: 0;
+  bottom: -1.5rem;
+  -webkit-mask-image: repeating-linear-gradient(
+    to bottom,
+    #000 0 0.375rem,
+    transparent 0.375rem 0.6875rem
+  );
+  mask-image: repeating-linear-gradient(
+    to bottom,
+    #000 0 0.375rem,
+    transparent 0.375rem 0.6875rem
+  );
+}
+
+@media (min-width: 640px) {
+  .timeline-spine {
+    bottom: -2rem;
+  }
+}
+
+/* Ends are anchored to the beads: start at the first one and stop at the last
+   card instead of dangling into empty space. Both offsets are that bead's
+   center — half the date header's 1.75rem line box on mobile, `mt-2` plus half
+   of `h-2.5` on desktop — in rem rather than px, because the root font drops to
+   75% on laptop viewports (see the root-scale block in src/assets/main.css) and
+   the beads move with it. Same reason the dash pattern above is in rem. */
+.date-group:first-child .timeline-spine {
+  top: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .date-group:first-child .timeline-spine {
+    top: 0.8125rem;
+  }
+}
+
+.date-group:last-child .timeline-spine {
+  bottom: 0;
+}
+
 /* Date header sticky pill effect - covers bullet and text */
 @media (max-width: 639px) {
   .date-header-sticky {

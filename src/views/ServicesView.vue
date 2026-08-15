@@ -2,7 +2,7 @@
   <MainLayout>
     <!-- min-height offsets MainLayout's pb-20 (mobile tab bar) / lg:pt-16 (desktop nav)
          so the sticky footer lands at the viewport bottom without a phantom scrollbar -->
-    <div class="flex flex-col min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-4rem)] bg-gradient-to-r from-[#2ecc71]/[0.02] via-white to-[#1e90ff]/[0.02]">
+    <div class="flex flex-col min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-4rem)] bg-gradient-to-r from-[#2ecc71]/[0.02] via-white/0 to-[#1e90ff]/[0.02]">
       <!-- Mobile Top Bar -->
       <MobileTopBar />
 

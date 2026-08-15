@@ -1,14 +1,24 @@
 <template>
   <!-- Desktop Top Navigation Bar -->
   <header
-    class="hidden lg:flex fixed top-0 left-0 right-0 h-16 glass-nav border-b transition-colors duration-200 z-50"
-    :class="isScrolled ? 'border-white/30 shadow-lg shadow-[#2ecc71]/5' : 'border-transparent'"
+    class="fixed top-0 left-0 right-0 h-16 border-b z-50"
+    :class="[
+      'glass-nav',
+      // The minimal bar is the only chrome signed-out pages get, so it stays on phones too
+      isMinimal ? 'flex' : 'hidden lg:flex',
+      isScrolled ? 'is-scrolled' : '',
+      isScrolled
+        ? isMinimal
+          ? 'border-white/50 shadow-lg shadow-slate-900/5'
+          : 'border-white/30 shadow-lg shadow-[#2ecc71]/5'
+        : 'border-transparent',
+    ]"
     role="navigation"
     aria-label="Main navigation"
   >
     <div class="w-full h-full relative">
       <!-- Logo (absolute left) -->
-      <div class="absolute left-6 top-1/2 -translate-y-1/2">
+      <div class="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2">
         <button
           @click="handleLogoClick"
           class="flex items-center group"
@@ -23,7 +33,10 @@
       </div>
 
       <!-- Main Navigation (aligned with page content) -->
-      <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center gap-2">
+      <div
+        v-if="!isMinimal"
+        class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center gap-2"
+      >
         <nav class="flex items-center">
           <RouterLink
             v-for="(item, index) in navigationItems"
@@ -56,14 +69,19 @@
       </div>
 
       <!-- Right Section: Time, Actions, Profile (absolute right) -->
-      <div class="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-3">
+      <div class="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 flex items-center gap-3">
         <!-- The clock and the Create Event shortcut step aside while the bar is
              holding a page's filters: they are the two widest things here that
              nothing depends on mid-scroll, and the room they free is what lets
              the absorbed controls keep the page header's position. Both come
              straight back when the header scrolls into view again. -->
         <Transition name="nav-yield">
-          <div v-if="!pageControlsAbsorbed" class="flex items-center gap-3">
+          <!-- The clock is desktop-only on the minimal bar; a phone has one of its own -->
+          <div
+            v-if="!pageControlsAbsorbed"
+            class="items-center gap-3"
+            :class="isMinimal ? 'hidden lg:flex' : 'flex'"
+          >
             <!-- Current Time -->
             <div class="text-sm text-slate-500 font-medium tabular-nums whitespace-nowrap">
               {{ currentTime }}
@@ -74,11 +92,26 @@
           </div>
         </Transition>
 
+        <!-- The same Discover nav item as the full bar, just moved to the right -->
+        <RouterLink
+          v-if="isMinimal && discoverItem"
+          :to="discoverItem.path"
+          class="flex items-center space-x-2 px-3 py-2 rounded-lg text-base font-medium transition-all duration-200"
+          :class="
+            isActiveRoute(discoverItem.path)
+              ? 'text-slate-900'
+              : 'text-slate-400 hover:text-slate-700'
+          "
+        >
+          <component :is="discoverItem.icon" class="w-4 h-4" aria-hidden="true" />
+          <span>{{ discoverItem.label }}</span>
+        </RouterLink>
+
         <!-- Create Event Button (authenticated only). The wrapper carries the
              collapse: the link's own `transition-all` would otherwise override
              it and leave the width snapping. -->
         <Transition name="nav-yield">
-          <div v-if="authStore.isAuthenticated && !pageControlsAbsorbed">
+          <div v-if="authStore.isAuthenticated && !pageControlsAbsorbed && !isMinimal">
             <RouterLink
               to="/events?createEvent=true"
               class="block px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-white/60 rounded-lg transition-all duration-200 whitespace-nowrap"
@@ -89,7 +122,7 @@
         </Transition>
 
         <!-- Icon Button Group -->
-        <div class="flex items-center gap-0.5">
+        <div v-if="!isMinimal" class="flex items-center gap-0.5">
           <!-- Search Button (authenticated only) -->
           <button
             v-if="authStore.isAuthenticated"
@@ -103,8 +136,9 @@
           <!-- Notifications Bell (authenticated only) -->
           <NotificationBell v-if="authStore.isAuthenticated" variant="desktop" />
 
-          <!-- Language Button -->
-          <div class="relative">
+          <!-- Language Button — signed-out only. Signed-in users switch from
+               inside the profile menu, which they don't have out here. -->
+          <div v-if="!authStore.isAuthenticated" class="relative">
             <button
               @click.stop="toggleLanguageMenu"
               class="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all duration-200"
@@ -135,13 +169,13 @@
         </div>
 
         <!-- Divider before Profile -->
-        <div class="h-4 w-px bg-slate-200"></div>
+        <div v-if="!isMinimal" class="h-4 w-px bg-slate-200"></div>
 
         <!-- Profile Button -->
-        <div ref="userMenuRef" class="relative">
+        <div v-if="!isMinimal" ref="userMenuRef" class="relative">
           <button
             v-if="authStore.isAuthenticated"
-            @click.stop="userMenuOpen = !userMenuOpen"
+            @click.stop="toggleUserMenu"
             class="flex items-center justify-center w-8 h-8 rounded-full overflow-hidden ring-2 ring-white/80 hover:ring-[#2ecc71]/50 transition-all duration-200"
             :aria-expanded="userMenuOpen"
             aria-label="User menu"
@@ -213,7 +247,7 @@
                 <RouterLink
                   v-if="isVerifiedVendor"
                   to="/settings?tab=listings"
-                  @click="userMenuOpen = false"
+                  @click="closeUserMenu"
                   class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                   role="menuitem"
                 >
@@ -221,7 +255,7 @@
                 </RouterLink>
                 <RouterLink
                   to="/settings"
-                  @click="userMenuOpen = false"
+                  @click="closeUserMenu"
                   class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                   role="menuitem"
                 >
@@ -229,7 +263,7 @@
                 </RouterLink>
                 <RouterLink
                   to="/settings?tab=tickets"
-                  @click="userMenuOpen = false"
+                  @click="closeUserMenu"
                   class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                   role="menuitem"
                 >
@@ -238,12 +272,23 @@
                 <RouterLink
                   v-if="authStore.user?.is_partner"
                   to="/commission"
-                  @click="userMenuOpen = false"
+                  @click="closeUserMenu"
                   class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                   role="menuitem"
                 >
                   {{ t('common.nav.commission') }}
                 </RouterLink>
+                <!-- Language — a straight toggle, not a submenu. The menu stays
+                     open so the label flips in place and confirms the switch. -->
+                <button
+                  @click="toggleLanguage"
+                  class="w-full flex items-center justify-between gap-3 px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                  role="menuitem"
+                  :aria-label="`${t('common.language.label')}: ${currentLocaleOption.name}`"
+                >
+                  <span>{{ t('common.language.label') }}: {{ locale.toUpperCase() }}</span>
+                  <ArrowLeftRight class="w-4 h-4 text-slate-400" aria-hidden="true" />
+                </button>
                 <button
                   @click="handleLogout"
                   class="w-full text-left px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
@@ -260,7 +305,7 @@
   </header>
 
   <!-- Global Search Modal -->
-  <GlobalSearchModal />
+  <GlobalSearchModal v-if="!isMinimal" />
 </template>
 
 <script setup lang="ts">
@@ -272,7 +317,8 @@ import {
   Sparkles,
   Search,
   User,
-  Globe
+  Globe,
+  ArrowLeftRight
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
@@ -283,8 +329,22 @@ import NotificationBell from './notifications/NotificationBell.vue'
 import { useGlobalSearch } from '@/composables/useGlobalSearch'
 import { useVendorProfile } from '@/composables/settings/useVendorProfile'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useExclusiveMenu } from '@/composables/useExclusiveMenu'
 import { useNavPageControls } from '@/composables/useNavPageControls'
 import type { AppLocale } from '@/i18n'
+
+interface Props {
+  /**
+   * `full` is the app bar. `minimal` is the signed-out variant used by
+   * [SignInView.vue](src/views/SignInView.vue): logo, clock (desktop only) and
+   * Discover, nothing else — and unlike the full bar it stays visible on phones,
+   * since signed-out pages have no MobileTabBar under them.
+   */
+  variant?: 'full' | 'minimal'
+}
+
+const props = withDefaults(defineProps<Props>(), { variant: 'full' })
+const isMinimal = computed(() => props.variant === 'minimal')
 
 const router = useRouter()
 const route = useRoute()
@@ -300,14 +360,25 @@ const { open: openSearch } = useGlobalSearch()
 // True while a list page has handed its filters up to this bar
 const { absorbed: pageControlsAbsorbed } = useNavPageControls()
 
-const userMenuOpen = ref(false)
+// Menus share one app-wide "open" slot with the notification bell, so opening
+// any one of them closes the others.
+const {
+  isOpen: userMenuOpen,
+  close: closeUserMenu,
+  toggle: toggleUserMenu,
+} = useExclusiveMenu()
+const {
+  isOpen: showLanguageMenu,
+  close: closeLanguageMenu,
+  toggle: toggleLanguageMenu,
+} = useExclusiveMenu()
+
 const userMenuRef = ref<HTMLElement>()
 const currentTime = ref('')
 const isScrolled = ref(false)
 
 // Language state — backed by the i18n store
-const { t, locale, setLocale, availableLocales } = useAppLanguage()
-const showLanguageMenu = ref(false)
+const { t, locale, setLocale, availableLocales, currentLocaleOption } = useAppLanguage()
 
 // Navigation items — labels come from common.nav.* translations
 const navigationItems = computed(() => [
@@ -315,6 +386,11 @@ const navigationItems = computed(() => [
   { path: '/explore', label: t('common.nav.discover'), icon: Compass },
   { path: '/services', label: t('common.nav.services'), icon: Sparkles }
 ])
+
+// The minimal bar shows this one item, right-aligned, rather than the full row
+const discoverItem = computed(() =>
+  navigationItems.value.find((item) => item.path === '/explore'),
+)
 
 // Check if route is active
 const isActiveRoute = (path: string) => {
@@ -377,30 +453,30 @@ const toggleSearch = () => {
   openSearch()
 }
 
-// Toggle language menu
-const toggleLanguageMenu = () => {
-  showLanguageMenu.value = !showLanguageMenu.value
-  // Close user menu if open
-  if (showLanguageMenu.value) {
-    userMenuOpen.value = false
-  }
-}
-
-// Select language
+// Select language (signed-out dropdown)
 const selectLanguage = (code: AppLocale) => {
   setLocale(code)
-  showLanguageMenu.value = false
+  closeLanguageMenu()
+}
+
+// Step to the next locale — used by the profile menu's one-click toggle.
+// Cycles rather than flipping a pair so a third locale needs no change here.
+const toggleLanguage = () => {
+  const options = availableLocales.value
+  if (options.length < 2) return
+  const currentIndex = options.findIndex((opt) => opt.code === locale.value)
+  setLocale(options[(currentIndex + 1) % options.length].code)
 }
 
 // Handle logout
 const handleLogout = async () => {
   try {
     await authStore.logout()
-    userMenuOpen.value = false
+    closeUserMenu()
     router.push('/events')
   } catch (error) {
     console.error('Logout failed:', error)
-    userMenuOpen.value = false
+    closeUserMenu()
     alert('Logout failed. Please try again.')
   }
 }
@@ -411,20 +487,20 @@ const handleClickOutside = (event: MouseEvent) => {
     return
   }
   if (userMenuRef.value && !userMenuRef.value.contains(event.target)) {
-    userMenuOpen.value = false
+    closeUserMenu()
   }
   // Close language menu if clicking outside
   const target = event.target as HTMLElement
   if (showLanguageMenu.value && !target.closest('[aria-label="Change language"]')) {
-    showLanguageMenu.value = false
+    closeLanguageMenu()
   }
 }
 
 // Close menu on Escape
 const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'Escape') {
-    userMenuOpen.value = false
-    showLanguageMenu.value = false
+    closeUserMenu()
+    closeLanguageMenu()
   }
 }
 
@@ -501,28 +577,106 @@ onUnmounted(() => {
   }
 }
 
-/* Dropdown animation */
+/*
+  Dropdown animation — kept identical to the notification bell's so every
+  top-bar menu opens the same way. Transform + opacity only: `all` dragged the
+  glass panel's backdrop blur and shadow into the transition, which is what
+  made these feel heavy on open.
+*/
+.dropdown-enter-active {
+  transition:
+    opacity 0.16s ease-out,
+    transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.dropdown-leave-active {
+  transition:
+    opacity 0.14s ease-in,
+    transform 0.18s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
 .dropdown-enter-active,
 .dropdown-leave-active {
-  transition: all 0.2s ease;
+  transform-origin: top right;
+  will-change: transform, opacity;
 }
 
 .dropdown-enter-from,
 .dropdown-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-8px) scale(0.97);
 }
 
-/* Glass navigation bar - blends with brand gradient background */
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-enter-active,
+  .dropdown-leave-active {
+    transition: opacity 0.12s ease;
+  }
+
+  .dropdown-enter-from,
+  .dropdown-leave-to {
+    transform: none;
+  }
+}
+
+/*
+  Transparent while the page is at rest, liquid glass once something scrolls
+  under it. Any fixed *opaque* fill sits lighter than the page's own wash and
+  reads as a band with a hard bottom edge, and an exact match is impossible
+  against a gradient: `premium-bg` now carries a brand bloom across its top
+  edge, which is exactly the strip the bar covers. So the scrolled state stays
+  translucent and lets the backdrop supply the colour — `saturate` pushes the
+  wash and bloom back up to strength after the blur has averaged them out,
+  which is what keeps the bar tinted with the page instead of flat white.
+
+  The blur stays on permanently — over a smooth gradient it changes nothing at
+  rest, so leaving it there avoids a mid-scroll pop. The saturation cannot: it
+  filters the backdrop even under a fully transparent bar, so a permanent boost
+  would leave the top strip visibly greener than the page a pixel below it and
+  draw the very edge described above. It rides in on `is-scrolled` instead,
+  from an identity 100%, which is also why the transition is spelled out here
+  rather than left to Tailwind's `transition-colors`.
+
+  The highlight is a gradient, and `background-image` cannot be transitioned,
+  so it lives on a `::before` sheet whose opacity fades instead.
+
+  (MobileTopBar's `.glass-header` is the same treatment.)
+*/
 .glass-nav {
+  background: rgba(255, 255, 255, 0);
+  backdrop-filter: blur(20px) saturate(100%);
+  -webkit-backdrop-filter: blur(20px) saturate(100%);
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    backdrop-filter 200ms ease,
+    -webkit-backdrop-filter 200ms ease;
+}
+
+.glass-nav.is-scrolled {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* Light catching the top face of the slab, thinning through the middle and
+   picking up again at the bottom lip. */
+.glass-nav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms ease;
   background: linear-gradient(
-    135deg,
-    rgba(248, 255, 254, 0.85) 0%,
-    rgba(240, 253, 249, 0.85) 50%,
-    rgba(240, 249, 255, 0.85) 100%
+    to bottom,
+    rgba(255, 255, 255, 0.42) 0%,
+    rgba(255, 255, 255, 0.2) 55%,
+    rgba(255, 255, 255, 0.28) 100%
   );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+}
+
+.glass-nav.is-scrolled::before {
+  opacity: 1;
 }
 
 /* Glass dropdown effect */
