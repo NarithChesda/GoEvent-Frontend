@@ -7,6 +7,7 @@
     "commission": "Commission",
     "myListings": "My Listings",
     "myTickets": "My Tickets",
+    "profile": "Profile",
     "signIn": "Sign In",
     "signOut": "Sign Out",
     "createEvent": "Create Event"
@@ -139,6 +140,7 @@
   },
   "notifications": {
     "title": "Notifications",
+    "tabLabel": "Alerts",
     "actions": {
       "markAllRead": "Mark all read",
       "delete": "Delete notification",

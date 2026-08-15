@@ -1,6 +1,8 @@
 <template>
   <div ref="rootRef" class="relative">
+    <!-- Desktop: an icon button in the top bar's utility cluster -->
     <button
+      v-if="variant === 'desktop'"
       type="button"
       class="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all duration-200 relative"
       :aria-label="t('common.notifications.title')"
@@ -15,6 +17,34 @@
         aria-live="polite"
       >
         {{ store.badgeLabel }}
+      </span>
+    </button>
+
+    <!-- Mobile: a tab in the bottom tab bar — icon over label, styled like its
+         siblings there, with the badge riding the icon rather than the whole
+         tab so it doesn't drift over the label. -->
+    <button
+      v-else
+      type="button"
+      class="flex flex-col items-center space-y-0.5 w-full rounded-xl p-1 transition-colors duration-300"
+      :class="open ? 'text-[#2ecc71] font-semibold' : 'text-slate-600'"
+      :aria-label="t('common.notifications.title')"
+      :aria-expanded="open"
+      :aria-haspopup="true"
+      @click.stop="toggle"
+    >
+      <span class="relative flex-shrink-0">
+        <Bell class="w-5 h-5" aria-hidden="true" />
+        <span
+          v-if="store.hasUnread"
+          class="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center leading-none"
+          aria-live="polite"
+        >
+          {{ store.badgeLabel }}
+        </span>
+      </span>
+      <span class="text-xs font-medium truncate">
+        {{ t('common.notifications.tabLabel') }}
       </span>
     </button>
 
@@ -58,6 +88,10 @@ import { useExclusiveMenu } from '@/composables/useExclusiveMenu'
 
 const props = withDefaults(
   defineProps<{
+    /**
+     * `desktop` — icon button in TopNavBar, anchored dropdown.
+     * `mobile` — a tab in MobileTabBar, bottom sheet.
+     */
     variant?: 'desktop' | 'mobile'
   }>(),
   { variant: 'desktop' },
