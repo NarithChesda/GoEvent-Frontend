@@ -26,11 +26,13 @@
           </p>
         </button>
 
-        <!-- Add, Lock, Info & Toggle Buttons -->
+        <!-- Add, Lock, Info & Toggle Buttons. Everything but the chevron only
+             exists while the section is open — a collapsed card shows nothing
+             but its chevron. -->
         <div class="flex items-center gap-2 flex-shrink-0">
           <!-- Add Pill -->
           <button
-            v-if="canEditPayments && paymentMethods.length > 0"
+            v-if="isExpanded && canEditPayments && paymentMethods.length > 0"
             @click="showAddModal = true"
             class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
             :title="t('management.paymentMethods.header.add')"
@@ -41,7 +43,7 @@
 
           <!-- Info Button -->
           <button
-            v-if="canEdit"
+            v-if="isExpanded && canEdit"
             @click="showLockHelpModal = true"
             class="p-2 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
             :title="t('management.paymentMethods.header.lockHelpTitle')"
@@ -51,7 +53,7 @@
 
           <!-- Lock/Unlock Button -->
           <button
-            v-if="canEdit"
+            v-if="isExpanded && canEdit"
             @click="showLockConfirmModal = true"
             :disabled="isToggling"
             :class="[

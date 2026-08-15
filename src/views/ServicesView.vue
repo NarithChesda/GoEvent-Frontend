@@ -1,8 +1,9 @@
 <template>
   <MainLayout>
-    <!-- min-height offsets MainLayout's pb-20 (mobile tab bar) / lg:pt-16 (desktop nav)
-         so the sticky footer lands at the viewport bottom without a phantom scrollbar -->
-    <div class="flex flex-col min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-4rem)] bg-gradient-to-r from-[#2ecc71]/[0.02] via-white/0 to-[#1e90ff]/[0.02]">
+    <!-- min-height offsets MainLayout's bottom pad (--nav-inset, the floating
+         tab bar) / lg:pt-16 (desktop nav) so the sticky footer lands at the
+         viewport bottom without a phantom scrollbar -->
+    <div class="flex flex-col min-h-[calc(100vh_-_var(--nav-inset))] lg:min-h-[calc(100vh-4rem)] bg-gradient-to-r from-[#2ecc71]/[0.02] via-white/0 to-[#1e90ff]/[0.02]">
       <!-- Mobile Top Bar -->
       <MobileTopBar />
 
@@ -13,7 +14,7 @@
                which is why the title lives here rather than in the bar. The
                category filter is not handed up to the bar the way the event
                lists' filters are — it simply scrolls away with the header. -->
-          <PageHeaderRow :title="t('services.title')">
+          <PageHeaderRow :title="t('services.title')" :icon="Sparkles">
             <!-- Category Filter: desktop dropdown / mobile chip + bottom sheet -->
             <ServicesCategoryFilter
               v-model="selectedCategory"
@@ -84,16 +85,17 @@
       <!-- Footer -->
       <AppFooter />
 
-      <!-- Create Listing FAB - Only visible for verified vendors -->
+      <!-- Create Listing FAB - Only visible for verified vendors. Sized and
+           anchored as the primary floating action; see EventsView's. -->
       <button
         v-if="isVerifiedVendor"
         @click="handleListService"
-        class="fixed bottom-20 lg:bottom-4 right-4 lg:right-6 w-14 h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 flex items-center justify-center z-[60] group"
+        class="fixed bottom-[var(--fab-bottom)] right-4 lg:right-6 w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center z-[60] group"
         :aria-label="t('services.listYourService')"
       >
         <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
         <div
-          class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
+          class="hidden lg:block absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
         >
           {{ t('services.listYourService') }}
         </div>
@@ -115,7 +117,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { Plus } from 'lucide-vue-next'
+// Sparkles is this page's tab icon in MobileTabBar; the mobile header reuses it.
+import { Plus, Sparkles } from 'lucide-vue-next'
 import { useToast } from '@/composables/useToast'
 import MainLayout from '@/components/MainLayout.vue'
 import AppFooter from '@/components/AppFooter.vue'

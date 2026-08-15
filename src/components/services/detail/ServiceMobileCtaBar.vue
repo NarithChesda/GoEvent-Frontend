@@ -1,6 +1,12 @@
 <template>
+  <!--
+    Sits directly on top of the band the floating tab bar occupies, so the two
+    stack flush. `bottom-20` used to be a guess at the old full-width bar's
+    height and now leaves a strip of live page content showing through between
+    this bar and the pill.
+  -->
   <div
-    class="lg:hidden fixed bottom-20 inset-x-0 z-[60] bg-white/95 backdrop-blur-sm border-t border-slate-200 px-4 py-3"
+    class="lg:hidden fixed bottom-[var(--nav-inset)] inset-x-0 z-[60] bg-white/95 backdrop-blur-sm border-t border-slate-200 px-4 py-3"
   >
     <div class="flex items-center gap-3">
       <!-- Price -->

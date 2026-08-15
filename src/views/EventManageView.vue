@@ -39,7 +39,9 @@
     />
 
     <!-- Loading Top Bar Skeleton (only show when loading and no event data) -->
-    <div v-if="loading && !event" class="fixed top-0 left-0 right-0 z-50 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/50 shadow-sm">
+    <!-- Matches EventManageTopBar's own resting surface: opaque below `lg`,
+         transparent from `lg` so the page background runs through it. -->
+    <div v-if="loading && !event" class="fixed top-0 left-0 right-0 z-50 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/50 shadow-sm lg:bg-transparent lg:border-transparent lg:shadow-none">
       <div class="flex items-center justify-between h-full px-4 sm:px-6">
         <div class="flex items-center gap-3 animate-pulse">
           <div class="w-10 h-10 lg:w-12 lg:h-12 bg-slate-200 rounded-xl"></div>
@@ -114,7 +116,9 @@
       >
         <div class="flex flex-col">
           <!-- Main Content Area -->
-          <div class="flex-1 min-w-0 pb-20 lg:pb-0">
+          <!-- No bottom pad of its own: MainLayout already holds --nav-inset
+               open below the slot, and a second copy here doubled it. -->
+          <div class="flex-1 min-w-0">
             <!-- Overview Tab -->
             <EventAboutSection
               v-if="activeTab === 'overview'"

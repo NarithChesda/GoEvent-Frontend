@@ -36,11 +36,26 @@
       <div ref="sentinel" aria-hidden="true" class="absolute inset-x-0 top-0 h-px"></div>
 
       <!-- Bar-sized in the bar, page-sized in the page. One heading either way,
-           so the page keeps exactly one `h1`. -->
+           so the page keeps exactly one `h1`.
+
+           The icon is the page's own tab icon, and it is `lg:hidden` because
+           it only earns its place in the bar: there the title is one line of
+           `text-base` doing the work of a page header, and the mark gives it
+           something to read as. Beside a `text-4xl` page title it would just
+           be decoration. Purely that — the title says the same thing — so it
+           is `aria-hidden` and the heading text is unchanged. It carries no
+           colour of its own so it inherits the heading's, reading as part of
+           the title rather than as a separate accent beside it. -->
       <h1
-        class="flex-1 min-w-0 truncate text-base font-semibold text-slate-900 lg:text-4xl lg:font-bold"
+        class="flex-1 min-w-0 flex items-center gap-2 text-base font-semibold text-slate-900 lg:text-4xl lg:font-bold"
       >
-        {{ title }}
+        <component
+          :is="icon"
+          v-if="icon"
+          class="lg:hidden w-5 h-5 flex-shrink-0"
+          aria-hidden="true"
+        />
+        <span class="truncate">{{ title }}</span>
       </h1>
 
       <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
@@ -54,12 +69,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted, type Component } from 'vue'
 import MobileHeaderActions from './MobileHeaderActions.vue'
 import { useNavPageControls } from '@/composables/useNavPageControls'
 
 defineProps<{
   title: string
+  /** The page's tab icon, shown before the title in the mobile bar only. */
+  icon?: Component
 }>()
 
 const sentinel = ref<HTMLElement | null>(null)

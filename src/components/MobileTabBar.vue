@@ -1,167 +1,57 @@
 <template>
-  <!-- Mobile Tab Bar (fixed at bottom) -->
+  <!--
+    A floating pill rather than a bar welded to the bottom edge: the page runs
+    to the bottom of the screen behind it and the navigation reads as an object
+    on top of the content, not as a border around it.
+
+    That shape only has room for five labels if it spans the full width, which
+    would put the bar back — so only the tab you are on carries its label, and
+    it opens to make room for it. The other four are icons, which is also what
+    lets the pill hug its content and leave real air at both edges.
+
+    The wrapper is click-through; only the pill and the open menu take taps.
+
+    The band this occupies — the pill's height plus the gap below it — is
+    published as `--nav-inset` in MainLayout, and everything else fixed to the
+    bottom of the screen positions off that. Changing the row height, the
+    padding or the border below means changing the 3.375rem there to match —
+    all three are in it.
+  -->
   <div
-    class="lg:hidden fixed bottom-0 left-0 right-0 z-[70]"
+    class="lg:hidden fixed inset-x-0 bottom-0 z-[70] pointer-events-none"
     role="navigation"
     aria-label="Mobile navigation"
   >
-    <!-- Mobile User Menu (positioned above tab bar) -->
-    <Transition name="slideUp">
-      <div
-        v-if="userMenuOpen && authStore.isAuthenticated"
-        ref="userMenuRef"
-        class="absolute bottom-full left-0 right-0 glass-menu border-t border-white/30 z-[70]"
-        role="menu"
-        aria-orientation="vertical"
-      >
-        <div class="px-4 py-4 space-y-3">
-          <!-- User Info -->
-          <div class="flex items-center space-x-3 px-3 py-2 bg-[#E6F4FF] rounded-xl">
-            <div class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
-              <img
-                v-if="profilePictureUrl && !profilePictureError"
-                :src="profilePictureUrl"
-                :alt="sanitizedUserName"
-                class="w-full h-full object-cover"
-                loading="lazy"
-                decoding="async"
-                @error="handleProfilePictureError"
-              />
-              <div
-                v-else
-                class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-sm"
-                :aria-label="`${sanitizedUserName} avatar`"
-              >
-                {{ authStore.userInitials }}
-              </div>
-            </div>
-            <div>
-              <div class="font-semibold text-slate-900 text-sm">
-                {{ sanitizedUserName }}
-              </div>
-              <div class="text-xs text-slate-500">{{ sanitizedUserEmail }}</div>
-            </div>
-          </div>
-
-          <!-- Menu Items -->
-          <div class="space-y-2">
-            <RouterLink
-              v-if="isVerifiedVendor"
-              to="/settings?tab=listings"
-              @click="closeUserMenu"
-              class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
-              role="menuitem"
-            >
-              <span class="text-sm font-medium">{{ t('common.nav.myListings') }}</span>
-            </RouterLink>
-
-            <RouterLink
-              to="/settings"
-              @click="closeUserMenu"
-              class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
-              role="menuitem"
-            >
-              <span class="text-sm font-medium">{{ t('common.nav.settings') }}</span>
-            </RouterLink>
-
-            <RouterLink
-              to="/settings?tab=tickets"
-              @click="closeUserMenu"
-              class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
-              role="menuitem"
-            >
-              <span class="text-sm font-medium">{{ t('common.nav.myTickets') }}</span>
-            </RouterLink>
-
-            <RouterLink
-              v-if="authStore.user?.is_partner"
-              to="/commission"
-              @click="closeUserMenu"
-              class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
-              role="menuitem"
-            >
-              <span class="text-sm font-medium">{{ t('common.nav.commission') }}</span>
-            </RouterLink>
-
-            <!-- Language — a straight toggle, not a submenu, same as the
-                 desktop profile menu. The menu stays open so the label flips
-                 in place and confirms the switch. -->
-            <button
-              @click="toggleLanguage"
-              class="flex items-center justify-between gap-3 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200 w-full text-left"
-              role="menuitem"
-              :aria-label="`${t('common.language.label')}: ${currentLocaleOption.name}`"
-            >
-              <span class="text-sm font-medium">
-                {{ t('common.language.label') }}: {{ locale.toUpperCase() }}
-              </span>
-              <ArrowLeftRight class="w-4 h-4 text-slate-400 flex-shrink-0" aria-hidden="true" />
-            </button>
-
-            <button
-              @click="handleLogout"
-              class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200 w-full text-left"
-              role="menuitem"
-            >
-              <span class="text-sm font-medium">{{ t('common.nav.signOut') }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </Transition>
-
-    <div class="glass-tab-bar border-t border-white/30">
-      <div class="flex items-center justify-around px-2 py-1">
-        <!-- Navigation items -->
-        <RouterLink
-          v-for="item in navigationItems"
-          :key="item.path"
-          :to="item.path"
-          class="flex flex-col items-center space-y-0.5 p-2 rounded-xl transition-all duration-300 min-w-0 flex-1 group"
-          :class="isActiveRoute(item.path) ? 'text-[#2ecc71] font-semibold' : 'text-slate-600 hover:text-[#2ecc71]'"
-          :aria-current="isActiveRoute(item.path) ? 'page' : undefined"
-        >
-          <component
-            :is="item.icon"
-            class="w-5 h-5 flex-shrink-0"
-            :class="isActiveRoute(item.path) ? 'text-[#2ecc71]' : 'group-hover:text-[#2ecc71]'"
-            aria-hidden="true"
-          />
-          <span class="text-xs font-medium truncate">{{ item.label }}</span>
-        </RouterLink>
-
-        <!-- Notifications Tab (authenticated only) — the bell used to sit in
-             MobileTopBar; on phones it belongs with the rest of the navigation.
-             The wrapper owns the tab slot so it lines up with its siblings; the
-             bell owns the trigger and its bottom sheet. -->
+    <div class="relative pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <!-- Mobile User Menu (a card above the pill, inset to match it) -->
+      <Transition name="slideUp">
         <div
-          v-if="authStore.isAuthenticated"
-          class="flex flex-col items-center space-y-0.5 p-2 rounded-xl transition-all duration-300 min-w-0 flex-1"
+          v-if="userMenuOpen && authStore.isAuthenticated"
+          ref="userMenuRef"
+          class="pointer-events-auto absolute bottom-full left-3 right-3 mb-3 glass-menu border border-white/40 rounded-3xl overflow-hidden"
+          role="menu"
+          aria-orientation="vertical"
         >
-          <NotificationBell variant="mobile" class="w-full min-w-0" />
-        </div>
-
-        <!-- Profile Tab -->
-        <div class="flex flex-col items-center space-y-0.5 p-2 rounded-xl transition-all duration-300 min-w-0 flex-1">
-          <template v-if="!authStore.isAuthenticated">
-            <RouterLink
-              to="/signin"
-              class="flex flex-col items-center space-y-0.5 text-slate-600 hover:gradient-text w-full rounded-xl p-1 group"
-              aria-label="Sign in to your account"
-            >
-              <User class="w-5 h-5 flex-shrink-0 group-hover:gradient-text" aria-hidden="true" />
-              <span class="text-xs font-medium truncate">{{ t('common.nav.signIn') }}</span>
-            </RouterLink>
-          </template>
-          <template v-else>
+          <div class="px-4 py-4 space-y-3">
+            <!--
+              User Info — the whole card copies the email. The address is
+              truncated and unselectable inside a menu that closes on the next
+              tap outside it, so tapping the card is the only practical way to
+              get at it. The corner icon is the affordance, not a second target:
+              a button inside a button isn't valid markup, and one large tap
+              area is easier to hit than a 28px one.
+            -->
             <button
-              @click.stop="toggleUserMenu"
-              class="flex flex-col items-center space-y-0.5 w-full rounded-xl p-1 group"
-              :class="userMenuOpen ? 'gradient-text font-semibold' : 'text-slate-600 hover:gradient-text'"
-              :aria-expanded="userMenuOpen"
-              aria-label="User menu"
+              type="button"
+              @click="copy(sanitizedUserEmail)"
+              class="group w-full flex items-center gap-3 px-3 py-2 bg-[#E6F4FF] rounded-xl text-left transition-colors duration-200 hover:bg-[#d9edff] active:bg-[#cfe7ff] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+              :aria-label="
+                copied
+                  ? t('common.nav.emailCopied')
+                  : `${t('common.nav.copyEmail')}: ${sanitizedUserEmail}`
+              "
             >
-              <div class="w-5 h-5 rounded-full overflow-hidden ring-1 ring-slate-300 flex-shrink-0">
+              <div class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white flex-shrink-0">
                 <img
                   v-if="profilePictureUrl && !profilePictureError"
                   :src="profilePictureUrl"
@@ -173,25 +63,246 @@
                 />
                 <div
                   v-else
-                  class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-xs"
+                  class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-sm"
                   :aria-label="`${sanitizedUserName} avatar`"
                 >
                   {{ authStore.userInitials }}
                 </div>
               </div>
-              <span class="text-xs font-medium truncate">{{ t('common.nav.profile') }}</span>
+              <div class="min-w-0 flex-1">
+                <div class="font-semibold text-slate-900 text-sm truncate">
+                  {{ sanitizedUserName }}
+                </div>
+                <!-- The email line doubles as the confirmation: it is the thing
+                     that was copied, so the acknowledgement lands where the eye
+                     already is. -->
+                <div
+                  class="text-xs truncate transition-colors duration-200"
+                  :class="copied ? 'text-emerald-600 font-medium' : 'text-slate-500'"
+                >
+                  {{ copied ? t('common.nav.emailCopied') : sanitizedUserEmail }}
+                </div>
+              </div>
+              <span
+                class="self-start -mt-0.5 -mr-1 flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-lg transition-colors duration-200"
+                :class="
+                  copied
+                    ? 'text-emerald-600'
+                    : 'text-slate-400 group-hover:bg-white/70 group-hover:text-slate-600 group-active:bg-white'
+                "
+                aria-hidden="true"
+              >
+                <Check v-if="copied" class="w-4 h-4" />
+                <Copy v-else class="w-4 h-4" />
+              </span>
             </button>
-          </template>
+
+            <!-- Menu Items -->
+            <div class="space-y-2">
+              <RouterLink
+                v-if="isVerifiedVendor"
+                to="/settings?tab=listings"
+                @click="closeUserMenu"
+                class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
+                role="menuitem"
+              >
+                <span class="text-sm font-medium">{{ t('common.nav.myListings') }}</span>
+              </RouterLink>
+
+              <RouterLink
+                to="/settings"
+                @click="closeUserMenu"
+                class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
+                role="menuitem"
+              >
+                <span class="text-sm font-medium">{{ t('common.nav.settings') }}</span>
+              </RouterLink>
+
+              <RouterLink
+                to="/settings?tab=tickets"
+                @click="closeUserMenu"
+                class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
+                role="menuitem"
+              >
+                <span class="text-sm font-medium">{{ t('common.nav.myTickets') }}</span>
+              </RouterLink>
+
+              <RouterLink
+                v-if="authStore.user?.is_partner"
+                to="/commission"
+                @click="closeUserMenu"
+                class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
+                role="menuitem"
+              >
+                <span class="text-sm font-medium">{{ t('common.nav.commission') }}</span>
+              </RouterLink>
+
+              <!-- Language — a straight toggle, not a submenu, same as the
+                   desktop profile menu. The menu stays open so the label flips
+                   in place and confirms the switch. -->
+              <button
+                @click="toggleLanguage"
+                class="flex items-center justify-between gap-3 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200 w-full text-left"
+                role="menuitem"
+                :aria-label="`${t('common.language.label')}: ${currentLocaleOption.name}`"
+              >
+                <span class="text-sm font-medium">
+                  {{ t('common.language.label') }}: {{ locale.toUpperCase() }}
+                </span>
+                <ArrowLeftRight class="w-4 h-4 text-slate-400 flex-shrink-0" aria-hidden="true" />
+              </button>
+
+              <button
+                @click="handleLogout"
+                class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200 w-full text-left"
+                role="menuitem"
+              >
+                <span class="text-sm font-medium">{{ t('common.nav.signOut') }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- The pill. `w-fit` so it hugs whatever is in it — the width changes
+           with the active tab's label, and a fixed width would leave the
+           shorter ones padded out and off-centre. -->
+      <div
+        class="pointer-events-auto mx-auto w-fit max-w-[calc(100vw-1.5rem)] glass-pill rounded-full border border-white/50 p-1.5"
+      >
+        <!-- The row carries no padding of its own so a tab's offset within it
+             is also the indicator's offset — no constant to keep in step. -->
+        <div ref="rowRef" class="relative flex items-center gap-0.5">
+          <!--
+            One gradient pill that travels, rather than each tab painting and
+            un-painting its own. A background-image can't be interpolated, so
+            the per-tab version could only pop the fill on and then slide the
+            width out from under it; moving a single element means the fill is
+            never redrawn at all, just relocated.
+
+            Its geometry is measured, not declared — the width depends on the
+            active label, which depends on the locale and the loaded webfont.
+            See `glide` for how it tracks a target that is itself still moving.
+          -->
+          <span
+            v-show="indicator.visible"
+            class="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] shadow-md shadow-[#2ecc71]/25 pointer-events-none will-change-transform"
+            :style="{ width: `${indicator.w}px`, transform: `translateX(${indicator.x}px)` }"
+            aria-hidden="true"
+          ></span>
+
+          <!-- Navigation items. The active one carries its label; the rest are
+               icons. Width opens through a grid column rather than max-width so
+               the open and close ease identically. -->
+          <RouterLink
+            v-for="item in navigationItems"
+            :key="item.path"
+            :to="item.path"
+            class="relative flex items-center h-10 rounded-full transition-[color,padding] duration-[380ms] ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95"
+            :class="
+              isActiveRoute(item.path)
+                ? 'text-white pl-3 pr-3.5'
+                : 'px-2.5 text-slate-500 hover:text-slate-700'
+            "
+            :aria-current="isActiveRoute(item.path) ? 'page' : undefined"
+            :aria-label="item.label"
+          >
+            <component :is="item.icon" class="w-5 h-5 flex-shrink-0" aria-hidden="true" />
+            <span
+              class="grid transition-[grid-template-columns,margin] duration-[380ms] ease-[cubic-bezier(0.32,0.72,0,1)]"
+              :class="isActiveRoute(item.path) ? 'grid-cols-[1fr] ml-1.5' : 'grid-cols-[0fr] ml-0'"
+            >
+              <!--
+                Held back until the pill is most of the way here. The travelling
+                pill can only lag the layout it is chasing, so a label that
+                appeared with the layout would spend the first half of the move
+                sitting outside it. Leaving is quicker and undelayed for the
+                same reason from the other side: the outgoing text has to be
+                gone before the pill arrives over it, or it reads as being
+                painted out rather than having left.
+
+                Clipped rather than ellipsised — the column opens from zero, so
+                an ellipsis would show through most of the reveal. The cap is
+                what keeps a long label (Khmer runs longer than English) from
+                pushing the pill into its `max-w`.
+              -->
+              <span
+                class="overflow-hidden whitespace-nowrap max-w-[7rem] text-sm font-semibold transition-opacity"
+                :class="
+                  isActiveRoute(item.path)
+                    ? 'opacity-100 duration-200 delay-200'
+                    : 'opacity-0 duration-100 delay-0'
+                "
+              >{{ item.label }}</span>
+            </span>
+          </RouterLink>
+
+          <!-- Notifications (authenticated only) — the bell used to sit in
+               MobileTopBar; on phones it belongs with the rest of the
+               navigation. It owns its own trigger and bottom sheet. -->
+          <NotificationBell v-if="authStore.isAuthenticated" variant="mobile" />
+
+          <!-- Profile -->
+          <RouterLink
+            v-if="!authStore.isAuthenticated"
+            to="/signin"
+            class="relative flex items-center gap-1.5 h-10 px-3.5 rounded-full text-slate-600 hover:text-slate-800 transition-colors duration-200 active:scale-95"
+          >
+            <User class="w-5 h-5 flex-shrink-0" aria-hidden="true" />
+            <span class="text-sm font-semibold whitespace-nowrap">{{ t('common.nav.signIn') }}</span>
+          </RouterLink>
+          <button
+            v-else
+            type="button"
+            @click.stop="toggleUserMenu"
+            class="relative flex items-center justify-center w-10 h-10 rounded-full transition-colors duration-300 active:scale-95"
+            :class="userMenuOpen ? 'bg-slate-900/[0.06]' : ''"
+            :aria-expanded="userMenuOpen"
+            :aria-label="t('common.nav.profile')"
+          >
+            <span
+              class="w-7 h-7 rounded-full overflow-hidden ring-2 transition-colors duration-300"
+              :class="userMenuOpen ? 'ring-[#2ecc71]' : 'ring-white/80'"
+            >
+              <img
+                v-if="profilePictureUrl && !profilePictureError"
+                :src="profilePictureUrl"
+                :alt="sanitizedUserName"
+                class="w-full h-full object-cover"
+                loading="lazy"
+                decoding="async"
+                @error="handleProfilePictureError"
+              />
+              <span
+                v-else
+                class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-xs"
+              >
+                {{ authStore.userInitials }}
+              </span>
+            </span>
+          </button>
         </div>
       </div>
     </div>
   </div>
 </template>
 
+<script lang="ts">
+/**
+ * The tab this bar last showed as active, remembered across instances.
+ *
+ * Has to live out here, not in `<script setup>` — that compiles to a `setup()`
+ * body and is re-run for every instance, and a value that resets with the
+ * component is exactly the thing this can't be. See the note on `activePath`
+ * for why the bar is a new instance on every navigation.
+ */
+let lastActivePath: string | null = null
+</script>
+
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { Ticket, Compass, Sparkles, User, ArrowLeftRight } from 'lucide-vue-next'
+import { Ticket, Compass, Sparkles, User, ArrowLeftRight, Copy, Check } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 import { sanitizePlainText } from '@/utils/sanitize'
@@ -199,6 +310,10 @@ import NotificationBell from './notifications/NotificationBell.vue'
 import { useVendorProfile } from '@/composables/settings/useVendorProfile'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useExclusiveMenu } from '@/composables/useExclusiveMenu'
+import { useCopyToClipboard } from '@/composables/useCopyToClipboard'
+
+// Copying the signed-in email out of the profile card.
+const { copied, copy } = useCopyToClipboard()
 
 // Shares the app-wide "one open menu" slot with the notification sheet next
 // door, so opening either closes the other.
@@ -237,10 +352,147 @@ const toggleLanguage = () => {
   setLocale(options[(currentIndex + 1) % options.length].code)
 }
 
-// Check if route is active
+/* ------------------------------------------------------------------ *
+ * Which tab reads as active
+ *
+ * Deliberately not `route.path` directly. Every view renders its own
+ * MainLayout, so this bar is torn down and rebuilt on each navigation —
+ * the instance that would play the transition is gone before it could,
+ * and a freshly mounted bar has nothing to animate *from*: it comes up
+ * already showing the destination.
+ *
+ * So the destination is held back by a frame. `lastActivePath` (module
+ * scope, above) outlives the component, the new bar paints once as the
+ * page you came from, and only then switches — which is an ordinary
+ * class change, and the tabs' own CSS transitions and the indicator's
+ * glide run off it normally.
+ *
+ * (The honest fix is for the nav chrome to be a persistent instance
+ * above the router view rather than per-page furniture. That is a wider
+ * change than this file.)
+ * ------------------------------------------------------------------ */
+
+const activePath = ref(lastActivePath ?? route.path)
+// `immediate` matters: on a cold load nothing ever changes this, and without a
+// first write the next bar would come up with no memory of where it came from.
+watch(activePath, (path) => {
+  lastActivePath = path
+}, { immediate: true })
+
 const isActiveRoute = (path: string) => {
-  return route.path === path || route.path.startsWith(path + '/')
+  const current = activePath.value
+  return current === path || current.startsWith(path + '/')
 }
+
+/* ------------------------------------------------------------------ *
+ * The travelling indicator
+ *
+ * The pill's geometry can't be declared: its width is the active tab's
+ * width, which depends on the label, the locale and whether the webfont
+ * has loaded yet. So it is measured off the tab that carries
+ * `aria-current="page"` — an attribute the template already sets, so
+ * there is no second source of truth about which tab is active.
+ * ------------------------------------------------------------------ */
+
+const rowRef = ref<HTMLElement | null>(null)
+const indicator = ref({ x: 0, w: 0, visible: false })
+
+// Matches the tabs' own CSS transition. The two have to agree: the glide
+// finishes by reading the layout the tabs have just finished settling into,
+// and if it ended first it would stop short of the final width.
+const GLIDE_MS = 380
+
+const reducedMotion =
+  typeof window !== 'undefined' && window.matchMedia
+    ? window.matchMedia('(prefers-reduced-motion: reduce)')
+    : null
+
+let frame = 0
+
+/** Where the indicator should be *right now*, or null if no tab is active. */
+const measure = () => {
+  const row = rowRef.value
+  const tab = row?.querySelector<HTMLElement>('[aria-current="page"]')
+  if (!row || !tab) return null
+  const rowBox = row.getBoundingClientRect()
+  const tabBox = tab.getBoundingClientRect()
+  return { x: tabBox.left - rowBox.left, w: tabBox.width }
+}
+
+const cancelGlide = () => {
+  if (frame) cancelAnimationFrame(frame)
+  frame = 0
+}
+
+/** Jump straight to the current geometry — mount, resize, locale change. */
+const settle = () => {
+  cancelGlide()
+  const target = measure()
+  if (!target) {
+    indicator.value = { ...indicator.value, visible: false }
+    return
+  }
+  indicator.value = { ...target, visible: true }
+}
+
+/**
+ * Travel to the newly active tab.
+ *
+ * The destination is still moving while we go: the tabs are mid-transition,
+ * the old one giving up its label and the new one taking one, so every tab to
+ * the right of the change is sliding too. Measuring once at the start would
+ * aim at the *old* layout — the new tab hasn't grown yet — and land short.
+ * So the target is re-read every frame and the eased fraction is applied to
+ * wherever it has got to, which converges on the settled layout exactly as
+ * the tabs' own transition ends.
+ */
+const glide = () => {
+  const from = indicator.value.visible ? { x: indicator.value.x, w: indicator.value.w } : null
+  if (!from || reducedMotion?.matches) {
+    settle()
+    return
+  }
+  if (!measure()) {
+    cancelGlide()
+    indicator.value = { ...indicator.value, visible: false }
+    return
+  }
+
+  cancelGlide()
+  const start = performance.now()
+  const step = (now: number) => {
+    const progress = Math.min(1, (now - start) / GLIDE_MS)
+    const eased = 1 - Math.pow(1 - progress, 3)
+    const target = measure()
+    if (!target) {
+      settle()
+      return
+    }
+    indicator.value = {
+      x: from.x + (target.x - from.x) * eased,
+      w: from.w + (target.w - from.w) * eased,
+      visible: true,
+    }
+    if (progress < 1) frame = requestAnimationFrame(step)
+    else settle() // land on the measured value, not the interpolated one
+  }
+  frame = requestAnimationFrame(step)
+}
+
+/** Move to a new tab, animating unless there is nothing to animate from. */
+const goTo = (path: string) => {
+  if (activePath.value === path) return
+  activePath.value = path
+  nextTick(glide)
+}
+
+// A route change is the only thing that should animate. Everything else that
+// moves the tabs — a locale swap relabelling them, the viewport resizing,
+// signing in adding two more — just repositions.
+watch(() => route.path, goTo)
+watch(locale, () => nextTick(settle))
+
+let resizeObserver: ResizeObserver | null = null
 
 // Profile picture computed property
 const profilePictureError = ref(false)
@@ -302,11 +554,35 @@ const handleLogout = async () => {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleKeyDown)
+
+  // Place the indicator on the tab we arrived from, then hand over to the real
+  // route. Two frames: the first commits the starting style, and a class change
+  // in the same frame as the first paint would transition from nothing.
+  settle()
+  requestAnimationFrame(() => requestAnimationFrame(() => goTo(route.path)))
+
+  // The label's width is the webfont's, and on a cold load the first measure
+  // happens against the fallback face.
+  document.fonts?.ready.then(() => {
+    if (!frame) settle()
+  })
+
+  if (rowRef.value && typeof ResizeObserver !== 'undefined') {
+    // Catches the rest: the viewport changing, and tabs appearing or leaving
+    // when the user signs in or out.
+    resizeObserver = new ResizeObserver(() => {
+      if (!frame) settle()
+    })
+    resizeObserver.observe(rowRef.value)
+  }
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleKeyDown)
+  cancelGlide()
+  resizeObserver?.disconnect()
+  resizeObserver = null
 })
 </script>
 
@@ -327,40 +603,31 @@ onUnmounted(() => {
   transform: translateY(20px);
 }
 
-/* Custom gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, #2ecc71 0%, #1e90ff 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* For SVG icons - use blend color from gradient that matches visually */
-.gradient-text :deep(svg) {
-  color: #26ae88;
-  stroke: currentColor;
-}
-
-/* Ensure lucide icons keep their structure intact */
-.gradient-text :deep(svg) {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-/* Glass tab bar effect - blends with brand gradient background */
-.glass-tab-bar {
+/* The floating pill. Same brand-tinted glass the bar used, but lit as an
+   object rather than an edge: the shadow falls on all sides instead of only
+   upwards, and an inset highlight along the top gives the surface a lip. It
+   also sits over live content rather than over a page margin, so the fill is
+   opaque enough that a card scrolling underneath never shows through as
+   texture. */
+.glass-pill {
   background: linear-gradient(
     135deg,
-    rgba(248, 255, 254, 0.9) 0%,
-    rgba(240, 253, 249, 0.9) 50%,
-    rgba(240, 249, 255, 0.9) 100%
+    rgba(248, 255, 254, 0.92) 0%,
+    rgba(240, 253, 249, 0.92) 50%,
+    rgba(240, 249, 255, 0.92) 100%
   );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    0 12px 32px rgba(15, 23, 42, 0.12),
+    0 4px 12px rgba(30, 144, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-pill * {
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Glass menu effect */

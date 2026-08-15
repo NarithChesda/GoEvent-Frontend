@@ -20,14 +20,15 @@
       </span>
     </button>
 
-    <!-- Mobile: a tab in the bottom tab bar — icon over label, styled like its
-         siblings there, with the badge riding the icon rather than the whole
-         tab so it doesn't drift over the label. -->
+    <!-- Mobile: an icon in the floating tab pill, sized and shaped like the
+         other collapsed tabs there. Only the tab you are *on* carries a label
+         in that pill, and this one opens a sheet rather than navigating, so it
+         stays an icon and shows its state through the fill instead. -->
     <button
       v-else
       type="button"
-      class="flex flex-col items-center space-y-0.5 w-full rounded-xl p-1 transition-colors duration-300"
-      :class="open ? 'text-[#2ecc71] font-semibold' : 'text-slate-600'"
+      class="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 active:scale-95"
+      :class="open ? 'bg-slate-900/[0.06] text-[#2ecc71]' : 'text-slate-500 hover:text-slate-700'"
       :aria-label="t('common.notifications.title')"
       :aria-expanded="open"
       :aria-haspopup="true"
@@ -42,9 +43,6 @@
         >
           {{ store.badgeLabel }}
         </span>
-      </span>
-      <span class="text-xs font-medium truncate">
-        {{ t('common.notifications.tabLabel') }}
       </span>
     </button>
 

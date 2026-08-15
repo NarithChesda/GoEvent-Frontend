@@ -1,6 +1,6 @@
 <template>
   <!-- Smart Floating Action Button -->
-  <div v-if="shouldShowFab" class="fixed bottom-20 lg:bottom-4 right-6 z-[60]" @click.stop>
+  <div v-if="shouldShowFab" class="fixed bottom-[var(--fab-bottom)] right-6 z-[60]" @click.stop>
     <!-- Main FAB Button -->
     <button
       @click="handleFabClick"

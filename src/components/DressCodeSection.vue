@@ -21,9 +21,10 @@
       </button>
 
       <div class="flex items-center gap-1 flex-shrink-0">
-        <!-- Add pill -->
+        <!-- Add pill — only while the section is open; a collapsed card shows
+             nothing but its chevron. -->
         <button
-          v-if="canEdit && dressCodes.length > 0"
+          v-if="isExpanded && canEdit && dressCodes.length > 0"
           @click="openAddDrawer"
           class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
           :title="t('management.dressCode.section.addCard.label')"

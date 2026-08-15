@@ -8,6 +8,8 @@
     "myListings": "My Listings",
     "myTickets": "My Tickets",
     "profile": "Profile",
+    "copyEmail": "Copy email",
+    "emailCopied": "Email copied",
     "signIn": "Sign In",
     "signOut": "Sign Out",
     "createEvent": "Create Event"
@@ -140,7 +142,6 @@
   },
   "notifications": {
     "title": "Notifications",
-    "tabLabel": "Alerts",
     "actions": {
       "markAllRead": "Mark all read",
       "delete": "Delete notification",

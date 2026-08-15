@@ -176,15 +176,13 @@ nav {
   scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
 }
 
-/* Glass sidebar effect - blends with brand gradient background */
+/* No fill of its own — the page's `premium-bg` (MainLayout) shows straight
+   through, so the rail, the header above it and the Design Studio beside it are
+   one continuous background rather than three near-white panels that can never
+   quite match a gradient. Safe to be transparent because nothing ever scrolls
+   behind this rail: EventManageView reserves its 88px with the content's
+   `margin-left`. The hairline border is all that marks the edge. */
 .glass-manage-sidebar {
-  background: linear-gradient(
-    180deg,
-    rgba(248, 255, 254, 0.88) 0%,
-    rgba(240, 253, 249, 0.88) 50%,
-    rgba(240, 249, 255, 0.88) 100%
-  );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: transparent;
 }
 </style>

@@ -181,12 +181,12 @@
 
         <!-- The mobile studio's primary action, and deliberately NOT a FAB:
              the bottom-right corner on mobile is already a coordinated stack
-             (MobileTabBar at bottom-0/z-70, the primary FAB slot at bottom-20,
-             ContactUsFAB above that via its own hasFabBelow prop), so a fourth
-             floating button there would either hide under the tab bar or force
-             this tab to negotiate that stack from the inside. It also belongs
-             here on the merits — it's a view control, next to the other view
-             control. -->
+             (MobileTabBar's floating pill at z-70, the primary FAB slot at
+             --fab-bottom, ContactUsFAB in --fab-stack-2 above it via its own
+             hasFabBelow prop), so a fourth floating button there would either
+             hide under the tab bar or force this tab to negotiate that stack
+             from the inside. It also belongs here on the merits — it's a view
+             control, next to the other view control. -->
         <button
           v-if="canViewLivePreview && event?.id && !loading"
           type="button"
@@ -1075,14 +1075,14 @@ defineExpose({
      surface rather than reflowing its contents as the box grows. */
   height: 100%;
   border-right: 1px solid rgba(148, 163, 184, 0.3);
-  background: linear-gradient(
-    180deg,
-    rgba(248, 255, 254, 0.92) 0%,
-    rgba(240, 253, 249, 0.92) 50%,
-    rgba(240, 249, 255, 0.92) 100%
-  );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  /* No fill of its own — same reasoning as EventNavigationTabs' rail, which
+     this panel docks onto: the page's `premium-bg` runs through the header, the
+     rail, this panel and the frames beside it as one background, instead of
+     each surface painting a near-white gradient that can't match the page's.
+     Nothing scrolls behind it either — .showcase-studio__main reserves the
+     panel's width with margin-left — so its own form cards are the only thing
+     over the wash. The border is what marks the edge. */
+  background: transparent;
   display: flex;
   flex-direction: column;
 }
