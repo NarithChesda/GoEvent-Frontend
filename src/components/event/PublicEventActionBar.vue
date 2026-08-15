@@ -20,7 +20,7 @@
     </Transition>
 
     <div
-      class="flex items-center gap-3 px-4 py-3"
+      class="flex items-center gap-2 sm:gap-3 px-4 py-3"
       style="padding-bottom: max(env(safe-area-inset-bottom), 0.75rem)"
     >
       <!-- Status. Answers "what does this cost / where do I stand" next to the
@@ -50,15 +50,17 @@
       <!-- Primary CTA. Exactly one, always reachable. -->
       <div
         v-if="cta.kind === 'unavailable'"
-        class="min-w-[9rem] px-4 py-2.5 rounded-xl bg-slate-100 text-slate-500 text-sm font-medium text-center flex-shrink-0"
+        class="min-w-[8rem] sm:min-w-[9rem] px-4 py-2.5 rounded-xl bg-slate-100 text-slate-500 text-sm font-medium text-center flex-shrink-0"
       >
         {{ cta.label }}
       </div>
+      <!-- The floor relaxes on a phone: a Khmer label, a status line and the
+           calendar toggle together overflow a 360px row at 9rem. -->
       <button
         v-else
         @click="handleCta"
         :disabled="cta.busy || cta.disabled"
-        class="min-w-[9rem] px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+        class="min-w-[8rem] sm:min-w-[9rem] px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
         :class="ctaClass"
       >
         <span

@@ -1,15 +1,28 @@
 <template>
-  <MainLayout :contact-fab-has-fab-below="showCreateFab">
+  <!-- The signed-out landing owns the whole viewport: app nav, tab bar, contact
+       FAB and footer all step aside so the hero is the only thing on screen,
+       with its own minimal bar (mark + Sign In) floating over it. -->
+  <MainLayout
+    :contact-fab-has-fab-below="showCreateFab"
+    :hide-top-nav="showLanding"
+    :hide-mobile-tab-bar="showLanding"
+    :hide-contact-fab="showLanding"
+  >
     <!-- min-height offsets MainLayout's pb-20 (mobile tab bar) / lg:pt-16 (desktop nav)
          so the sticky footer lands at the viewport bottom without a phantom scrollbar -->
     <div
-      class="flex flex-col min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-4rem)] bg-gradient-to-r from-[#2ecc71]/[0.02] via-white to-[#1e90ff]/[0.02]"
+      class="flex flex-col bg-gradient-to-r from-[#2ecc71]/[0.02] via-white to-[#1e90ff]/[0.02]"
+      :class="showLanding ? '' : 'min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-4rem)]'"
     >
       <!-- Mobile Top Bar -->
-      <MobileTopBar @search="openSearch" />
+      <MobileTopBar v-if="!showLanding" @search="openSearch" />
+
+      <!-- Signed-out landing: full-bleed, so the tile field can run to the
+           edges. It replaces the page header and the sign-in empty state. -->
+      <EventsLandingHero v-if="showLanding" @create="handleCreateEventClick" />
 
       <!-- Main Content -->
-      <section class="flex-1 flex flex-col py-4 sm:py-6 lg:py-[clamp(1.25rem,3vh,2rem)]">
+      <section v-else class="flex-1 flex flex-col py-4 sm:py-6 lg:py-[clamp(1.25rem,3vh,2rem)]">
         <div class="flex-1 flex flex-col w-full max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <!-- Header with Toggle -->
           <div
@@ -21,12 +34,10 @@
               {{ t('events.title') }}
             </h1>
 
-            <!-- Upcoming/Past/Recent toggle + category filter (authenticated
-                 only). As the header scrolls under the top bar,
-                 PinnedListControls hands them to it at the same size and
-                 column position, so they stay reachable. -->
+            <!-- Upcoming/Past/Recent toggle + category filter. As the header
+                 scrolls under the top bar, PinnedListControls hands them to it
+                 at the same size and column position, so they stay reachable. -->
             <PinnedListControls
-              v-if="authStore.isAuthenticated"
               v-model:time-filter="timeFilter"
               :time-options="timeFilterOptions"
               v-model:category="categoryFilter"
@@ -48,19 +59,8 @@
             @event-manage="manageEvent"
           />
 
-          <!-- Login Required State (my-auto centers it in the leftover column
-               height; the slight lift optically balances the bottom tab bar) -->
-          <EventsEmptyState
-            v-else-if="!authStore.isAuthenticated"
-            class="my-auto -translate-y-6"
-            :title="t('events.emptyState.signInTitle')"
-            :description="t('events.emptyState.signInDescription')"
-            :action-label="t('events.createEvent')"
-            :show-action="true"
-            @action="handleCreateEventClick"
-          />
-
-          <!-- Empty State -->
+          <!-- Empty State (my-auto centers it in the leftover column height;
+               the slight lift optically balances the bottom tab bar) -->
           <EventsEmptyState
             v-else-if="isEmpty"
             class="my-auto -translate-y-6"
@@ -74,7 +74,7 @@
       </section>
 
       <!-- Footer -->
-      <AppFooter />
+      <AppFooter v-if="!showLanding" />
 
       <!-- Create Event FAB -->
       <button
@@ -142,6 +142,7 @@ import {
   EventTimeline,
   PinnedListControls,
   EventsEmptyState,
+  EventsLandingHero,
   EventsLoadingSkeleton,
 } from '@/components/events'
 import { useAuthStore } from '@/stores/auth'
@@ -253,6 +254,12 @@ const isEmpty = computed(
     authStore.isAuthenticated &&
     filteredEvents.value.length === 0
 )
+
+/**
+ * Signed out, /events is a landing page rather than a list: the marketing hero
+ * replaces the page header, the empty state, and all of the app chrome.
+ */
+const showLanding = computed(() => !authStore.isAuthenticated)
 
 // The FAB is redundant while an empty state with its own Create Event button
 // is shown; keep it for the 'past' filter, whose empty state has no action.

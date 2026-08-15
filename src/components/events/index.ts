@@ -11,6 +11,7 @@ export { default as TimeFilterToggle } from './TimeFilterToggle.vue'
 export { default as CategoryFilter } from './CategoryFilter.vue'
 export { default as PinnedListControls } from './PinnedListControls.vue'
 export { default as EventsEmptyState } from './EventsEmptyState.vue'
+export { default as EventsLandingHero } from './EventsLandingHero.vue'
 export { default as EventsLoadingSkeleton } from './EventsLoadingSkeleton.vue'
 
 // Re-export filter option type

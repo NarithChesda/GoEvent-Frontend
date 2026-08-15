@@ -38,13 +38,15 @@
           <p class="text-sm font-semibold text-slate-900">
             {{ isVirtual ? t('events.drawer.virtualEvent') : location }}
           </p>
+          <!-- A 24px-tall chip is a hard tap on a phone; the design system's
+               40px floor applies here too, and relaxes back on pointer devices. -->
           <button
             v-if="!isVirtual && location"
             @click="emit('open-map')"
-            class="mt-1.5 inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-semibold transition-colors hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+            class="mt-1.5 inline-flex items-center gap-1.5 px-3 py-2 min-h-[40px] sm:px-2 sm:py-1 sm:min-h-0 rounded-lg sm:rounded-md text-xs sm:text-[11px] font-semibold transition-colors hover:brightness-95 active:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
             :style="{ backgroundColor: 'var(--evt-tint)', color: 'var(--evt-accent)' }"
           >
-            <ExternalLink class="w-3 h-3" />
+            <ExternalLink class="w-3.5 h-3.5 sm:w-3 sm:h-3" />
             {{ t('events.drawer.directions') }}
           </button>
         </div>
