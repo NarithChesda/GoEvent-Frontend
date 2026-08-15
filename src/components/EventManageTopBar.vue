@@ -1,10 +1,14 @@
 <template>
   <!-- Top Navigation Bar for Event Detail -->
   <header
-    class="fixed top-0 left-0 right-0 z-50 h-16 glass-manage-header md:border-b md:border-slate-200/30 transition-all duration-300"
+    class="fixed top-0 left-0 right-0 z-50 h-16 glass-manage-header md:border-b md:border-slate-200/30"
+    :class="{ 'is-scrolled': isScrolled }"
     :style="{ marginLeft: headerMarginLeft }"
   >
-    <div class="flex items-center justify-between h-full px-4 sm:px-6">
+    <!-- `relative` keeps this row above the glass highlight sheet the header
+         paints on `::before` (a positioned pseudo would otherwise stack over
+         non-positioned in-flow content and wash out the title). -->
+    <div class="relative flex items-center justify-between h-full px-4 sm:px-6">
       <!-- Left Section: Back Button + Host Avatar + Event Title -->
       <div class="flex items-center gap-3 min-w-0 flex-1">
         <!-- Back Button: returns to wherever this page was opened from, and
@@ -165,12 +169,23 @@ const updateWindowWidth = () => {
   windowWidth.value = window.innerWidth
 }
 
+// Drives the desktop glass treatment: the bar is transparent while the page is
+// at rest and turns to glass once anything scrolls under it (same rule as
+// TopNavBar on every other page).
+const isScrolled = ref(false)
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 0
+}
+
 onMounted(() => {
   window.addEventListener('resize', updateWindowWidth)
+  window.addEventListener('scroll', handleScroll, { passive: true })
+  handleScroll() // Check initial scroll position
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateWindowWidth)
+  window.removeEventListener('scroll', handleScroll)
 })
 
 // Calculate header margin based on home sidebar state (only on desktop lg+)
@@ -270,15 +285,27 @@ const goBack = () => {
 </script>
 
 <style scoped>
-/* Glass header effect - blends with brand gradient background */
-/* Opaque, matching EventManageMobileTabBar's own surface — these two plus the
-   Design Studio's sticky toolbar are meant to read as one continuous header
-   (hence the 1px overlap hack below), so they have to agree on transparency.
-   At 0.9 alpha the page content scrolling behind this bar competed with the
-   event title on top of it; blur(20px) blurred that content without stopping
-   it. The gradient itself is unchanged. */
+/* Below `lg`: opaque, matching EventManageMobileTabBar's own surface — that
+   bar and the Design Studio's sticky toolbar sit directly under this one and
+   are meant to read as one continuous header (hence the 1px overlap hack
+   below), so they have to agree on transparency. At 0.9 alpha the page content
+   scrolling behind this bar competed with the event title on top of it;
+   blur(20px) blurred that content without stopping it.
+
+   From `lg` there is no tab bar under it — the header, the icon rail and the
+   Design Studio panel are the only chrome, and each used to paint its own
+   near-white fill over `premium-bg`, whose brand bloom covers exactly this
+   strip. Three fills that can't match a gradient read as three mismatched
+   panels, so from `lg` all three go transparent and the page's own background
+   is the only one on screen (see the min-width:1024px block). */
 .glass-manage-header {
   background: linear-gradient(135deg, #f8fffe 0%, #f0fdf9 50%, #f0f9ff 100%);
+  transition:
+    margin-left 300ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    backdrop-filter 200ms ease,
+    -webkit-backdrop-filter 200ms ease;
 }
 
 /* On mobile, add 1px overlap to prevent sub-pixel gap with tab bar */
@@ -286,6 +313,54 @@ const goBack = () => {
   .glass-manage-header {
     padding-bottom: 1px;
     margin-bottom: -1px;
+  }
+}
+
+/*
+  Desktop: the same liquid-glass treatment TopNavBar uses on every other page
+  (.glass-nav) — transparent at rest so the page's wash and bloom run straight
+  through the bar, turning to glass once content scrolls under it. The blur
+  stays on permanently (over a smooth gradient it changes nothing at rest, so
+  leaving it avoids a mid-scroll pop); the saturation cannot, because it filters
+  the backdrop even under a fully transparent bar and would leave the top strip
+  visibly greener than the page a pixel below it. It rides in on `is-scrolled`
+  from an identity 100% instead.
+*/
+@media (min-width: 1024px) {
+  .glass-manage-header {
+    background: rgba(255, 255, 255, 0);
+    border-bottom-color: transparent;
+    backdrop-filter: blur(20px) saturate(100%);
+    -webkit-backdrop-filter: blur(20px) saturate(100%);
+  }
+
+  .glass-manage-header.is-scrolled {
+    border-bottom-color: rgba(226, 232, 240, 0.5);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 10px 15px -3px rgba(46, 204, 113, 0.05);
+  }
+
+  /* Light catching the top face of the slab, thinning through the middle and
+     picking up again at the bottom lip. A gradient can't be transitioned, so it
+     lives on this sheet and its opacity fades instead. */
+  .glass-manage-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 200ms ease;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.42) 0%,
+      rgba(255, 255, 255, 0.2) 55%,
+      rgba(255, 255, 255, 0.28) 100%
+    );
+  }
+
+  .glass-manage-header.is-scrolled::before {
+    opacity: 1;
   }
 }
 

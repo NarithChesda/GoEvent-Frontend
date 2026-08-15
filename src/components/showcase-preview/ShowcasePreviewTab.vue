@@ -1075,14 +1075,14 @@ defineExpose({
      surface rather than reflowing its contents as the box grows. */
   height: 100%;
   border-right: 1px solid rgba(148, 163, 184, 0.3);
-  background: linear-gradient(
-    180deg,
-    rgba(248, 255, 254, 0.92) 0%,
-    rgba(240, 253, 249, 0.92) 50%,
-    rgba(240, 249, 255, 0.92) 100%
-  );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  /* No fill of its own — same reasoning as EventNavigationTabs' rail, which
+     this panel docks onto: the page's `premium-bg` runs through the header, the
+     rail, this panel and the frames beside it as one background, instead of
+     each surface painting a near-white gradient that can't match the page's.
+     Nothing scrolls behind it either — .showcase-studio__main reserves the
+     panel's width with margin-left — so its own form cards are the only thing
+     over the wash. The border is what marks the edge. */
+  background: transparent;
   display: flex;
   flex-direction: column;
 }
