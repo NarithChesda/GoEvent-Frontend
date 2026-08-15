@@ -489,16 +489,23 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Premium minimal gradient background (matching MainLayout) */
+/* Premium minimal gradient background + top brand bloom (matching MainLayout) */
 .premium-bg {
-  background: linear-gradient(
-    135deg,
-    #f8fffe 0%,
-    #f0fdf9 25%,
-    #f5fbff 50%,
-    #f0f9ff 75%,
-    #f8fffe 100%
-  );
+  background:
+    radial-gradient(
+      120% 26rem at 50% -4rem,
+      rgba(46, 204, 113, 0.28) 0%,
+      rgba(46, 204, 113, 0.1) 45%,
+      rgba(46, 204, 113, 0) 75%
+    ),
+    linear-gradient(
+      135deg,
+      #f8fffe 0%,
+      #f0fdf9 25%,
+      #f5fbff 50%,
+      #f0f9ff 75%,
+      #f8fffe 100%
+    );
 }
 
 /* Glass card effect */

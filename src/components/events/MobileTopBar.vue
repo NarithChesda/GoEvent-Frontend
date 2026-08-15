@@ -1,9 +1,12 @@
 <template>
   <header
     class="lg:hidden fixed top-0 left-0 right-0 h-14 glass-header border-b z-40 gpu-layer"
-    :class="isScrolled ? 'border-white/30 shadow-sm' : 'border-transparent'"
+    :class="isScrolled ? 'is-scrolled border-white/30 shadow-sm' : 'border-transparent'"
   >
-    <div class="h-full px-4 flex items-center justify-between">
+    <!-- `relative` keeps this row above the glass sheet `.glass-header::before`
+         lays over the bar — an absolutely-positioned pseudo paints on top of
+         non-positioned in-flow siblings. -->
+    <div class="relative h-full px-4 flex items-center justify-between">
       <!-- Logo -->
       <button
         @click="handleLogoClick"
@@ -116,16 +119,41 @@ const {
   -webkit-perspective: 1000px;
 }
 
-/* Glass header effect - blends with brand gradient background */
+/* Transparent at rest, liquid glass once the page scrolls under it — the same
+   treatment as TopNavBar's `.glass-nav`, where the reasoning is written out. */
 .glass-header {
+  background: rgba(255, 255, 255, 0);
+  backdrop-filter: blur(20px) saturate(100%);
+  -webkit-backdrop-filter: blur(20px) saturate(100%);
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    backdrop-filter 200ms ease,
+    -webkit-backdrop-filter 200ms ease;
+}
+
+.glass-header.is-scrolled {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.glass-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms ease;
   background: linear-gradient(
-    135deg,
-    rgba(248, 255, 254, 0.85) 0%,
-    rgba(240, 253, 249, 0.85) 50%,
-    rgba(240, 249, 255, 0.85) 100%
+    to bottom,
+    rgba(255, 255, 255, 0.42) 0%,
+    rgba(255, 255, 255, 0.2) 55%,
+    rgba(255, 255, 255, 0.28) 100%
   );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+}
+
+.glass-header.is-scrolled::before {
+  opacity: 1;
 }
 
 /* Glass dropdown effect */

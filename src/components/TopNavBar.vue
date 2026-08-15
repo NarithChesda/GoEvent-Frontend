@@ -1,11 +1,12 @@
 <template>
   <!-- Desktop Top Navigation Bar -->
   <header
-    class="fixed top-0 left-0 right-0 h-16 border-b transition-colors duration-200 z-50"
+    class="fixed top-0 left-0 right-0 h-16 border-b z-50"
     :class="[
+      'glass-nav',
       // The minimal bar is the only chrome signed-out pages get, so it stays on phones too
-      isMinimal ? 'glass-nav-minimal flex' : 'glass-nav hidden lg:flex',
-      isMinimal && isScrolled ? 'is-scrolled' : '',
+      isMinimal ? 'flex' : 'hidden lg:flex',
+      isScrolled ? 'is-scrolled' : '',
       isScrolled
         ? isMinimal
           ? 'border-white/50 shadow-lg shadow-slate-900/5'
@@ -619,34 +620,63 @@ onUnmounted(() => {
 }
 
 /*
-  Minimal bar: transparent while the page is at rest, glass once something
-  scrolls under it. Any fixed fill — even white at low alpha — sits lighter than
-  the page's own wash and reads as a band with a hard bottom edge, and an opaque
-  match is impossible against a gradient. The blur stays on permanently: over a
-  smooth gradient it changes nothing, so leaving it there lets the background
-  colour fade in under `transition-colors` instead of popping mid-scroll.
-  (`.glass-nav` below is a fixed tint because it is matched to `premium-bg`.)
+  Transparent while the page is at rest, liquid glass once something scrolls
+  under it. Any fixed *opaque* fill sits lighter than the page's own wash and
+  reads as a band with a hard bottom edge, and an exact match is impossible
+  against a gradient: `premium-bg` now carries a brand bloom across its top
+  edge, which is exactly the strip the bar covers. So the scrolled state stays
+  translucent and lets the backdrop supply the colour — `saturate` pushes the
+  wash and bloom back up to strength after the blur has averaged them out,
+  which is what keeps the bar tinted with the page instead of flat white.
+
+  The blur stays on permanently — over a smooth gradient it changes nothing at
+  rest, so leaving it there avoids a mid-scroll pop. The saturation cannot: it
+  filters the backdrop even under a fully transparent bar, so a permanent boost
+  would leave the top strip visibly greener than the page a pixel below it and
+  draw the very edge described above. It rides in on `is-scrolled` instead,
+  from an identity 100%, which is also why the transition is spelled out here
+  rather than left to Tailwind's `transition-colors`.
+
+  The highlight is a gradient, and `background-image` cannot be transitioned,
+  so it lives on a `::before` sheet whose opacity fades instead.
+
+  (MobileTopBar's `.glass-header` is the same treatment.)
 */
-.glass-nav-minimal {
-  background: rgba(255, 255, 255, 0);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-
-.glass-nav-minimal.is-scrolled {
-  background: rgba(255, 255, 255, 0.6);
-}
-
-/* Glass navigation bar - blends with brand gradient background */
 .glass-nav {
+  background: rgba(255, 255, 255, 0);
+  backdrop-filter: blur(20px) saturate(100%);
+  -webkit-backdrop-filter: blur(20px) saturate(100%);
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    backdrop-filter 200ms ease,
+    -webkit-backdrop-filter 200ms ease;
+}
+
+.glass-nav.is-scrolled {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* Light catching the top face of the slab, thinning through the middle and
+   picking up again at the bottom lip. */
+.glass-nav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms ease;
   background: linear-gradient(
-    135deg,
-    rgba(248, 255, 254, 0.85) 0%,
-    rgba(240, 253, 249, 0.85) 50%,
-    rgba(240, 249, 255, 0.85) 100%
+    to bottom,
+    rgba(255, 255, 255, 0.42) 0%,
+    rgba(255, 255, 255, 0.2) 55%,
+    rgba(255, 255, 255, 0.28) 100%
   );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+}
+
+.glass-nav.is-scrolled::before {
+  opacity: 1;
 }
 
 /* Glass dropdown effect */
