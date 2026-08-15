@@ -43,14 +43,16 @@
            `text-base` doing the work of a page header, and the mark gives it
            something to read as. Beside a `text-4xl` page title it would just
            be decoration. Purely that — the title says the same thing — so it
-           is `aria-hidden` and the heading text is unchanged. -->
+           is `aria-hidden` and the heading text is unchanged. It carries no
+           colour of its own so it inherits the heading's, reading as part of
+           the title rather than as a separate accent beside it. -->
       <h1
         class="flex-1 min-w-0 flex items-center gap-2 text-base font-semibold text-slate-900 lg:text-4xl lg:font-bold"
       >
         <component
           :is="icon"
           v-if="icon"
-          class="lg:hidden w-5 h-5 flex-shrink-0 text-[#2ecc71]"
+          class="lg:hidden w-5 h-5 flex-shrink-0"
           aria-hidden="true"
         />
         <span class="truncate">{{ title }}</span>
