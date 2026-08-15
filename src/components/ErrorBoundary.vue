@@ -72,9 +72,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onErrorCaptured, provide, inject, computed, nextTick } from 'vue'
+import { ref, onErrorCaptured, provide, computed, nextTick } from 'vue'
 import { AlertCircle, RotateCcw, RefreshCw, Bug } from 'lucide-vue-next'
-import type { ErrorBoundaryState, ErrorInfo } from '../types/showcase'
+import type { ErrorInfo } from '../types/showcase'
 
 interface Props {
   title?: string

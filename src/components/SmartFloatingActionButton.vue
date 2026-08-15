@@ -34,7 +34,6 @@ import {
   ImageIcon,
   FileText,
   Pencil,
-  UserCheck,
   CreditCard,
   Users,
   Palette,

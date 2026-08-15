@@ -199,7 +199,7 @@ export function useLoadingStateManager() {
   /**
    * Creates a dependency-aware loading operation
    */
-  const createDependencyAwareLoader = <T>(context: string, dependencies: string[] = []) => {
+  const createDependencyAwareLoader = <T>(context: string, _dependencies: string[] = []) => {
     return createRaceConditionSafeState<T | null>(null)
   }
 

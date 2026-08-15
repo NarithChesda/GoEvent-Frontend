@@ -59,7 +59,7 @@ class TokenManager {
       }
 
       return token
-    } catch (error) {
+    } catch {
       return null
     }
   }
@@ -77,7 +77,7 @@ class TokenManager {
       }
 
       return token
-    } catch (error) {
+    } catch {
       return null
     }
   }
@@ -148,7 +148,7 @@ class TokenManager {
 
       const willExpireSoon = jwtUtils.willExpireSoon(accessToken, minutesBeforeExpiry)
       return willExpireSoon
-    } catch (error) {
+    } catch {
       return true // Assume refresh needed on error
     }
   }
@@ -285,7 +285,7 @@ class TokenManager {
           lastValidationTime = now
           lastValidationResult = isStillValid
           return isStillValid
-        } catch (verifyError) {
+        } catch {
           lastValidationTime = now
           lastValidationResult = false
           return false
@@ -296,7 +296,7 @@ class TokenManager {
       lastValidationTime = now
       lastValidationResult = true
       return true
-    } catch (error) {
+    } catch {
       lastValidationTime = Date.now()
       lastValidationResult = false
       return false

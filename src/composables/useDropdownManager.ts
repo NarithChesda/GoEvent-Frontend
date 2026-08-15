@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted, type Ref } from 'vue'
+import { ref, type Ref } from 'vue'
 
 /**
  * Composable for managing dropdown state with click-outside handling

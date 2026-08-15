@@ -114,7 +114,6 @@ import {
   ChevronRight,
   Check,
 } from 'lucide-vue-next'
-import { apiClient } from '@/services/api'
 import type { EventPaymentMethod } from '@/services/api/types/payment.types'
 
 interface Props {

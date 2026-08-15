@@ -4,7 +4,7 @@ import {
   isNavigationFailure,
   useRouter,
 } from 'vue-router'
-import type { Router, NavigationFailure } from 'vue-router'
+import type { Router } from 'vue-router'
 
 const wait = (ms: number) =>
   new Promise<void>((resolve) => {

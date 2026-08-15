@@ -1,4 +1,4 @@
-import { ref, computed, onUnmounted, nextTick, watch, readonly, type Ref } from 'vue'
+import { ref, computed, onUnmounted, nextTick, watch, readonly } from 'vue'
 import { useVideoResourceManager } from './useVideoResourceManager'
 
 export type VideoPhase = 'none' | 'event' | 'background'
@@ -139,7 +139,7 @@ export function useCoverStageVideo(
         videoElements.map(video => videoManager.cleanup(video))
       )
 
-    } catch (error) {
+    } catch {
       // Ensure state is cleared even if cleanup fails
       videoDownloadPromises.clear()
       preloadedVideos.clear()
@@ -201,7 +201,7 @@ export function useCoverStageVideo(
           if (videoSizeInMB > maxSize) {
             return null
           }
-        } catch (error) {
+        } catch {
           // Continue with download if HEAD request fails
         }
       }
@@ -229,7 +229,7 @@ export function useCoverStageVideo(
       videoDownloadPromises.delete(videoUrl)
 
       return result
-    } catch (error) {
+    } catch {
       videoDownloadPromises.delete(videoUrl)
       return null
     }
@@ -309,7 +309,7 @@ export function useCoverStageVideo(
             registerVideoForCleanup(eventVideo, 'event-video-preloader')
             eventVideo.src = eventBlobUrl
           }
-        } catch (error) {
+        } catch {
           // Event video loading failed
         }
       })()
@@ -324,7 +324,7 @@ export function useCoverStageVideo(
           const delay = isMobile ? 500 : 100
           await new Promise(resolve => setTimeout(resolve, delay))
           await loadBackgroundVideo()
-        } catch (error) {
+        } catch {
           // Background video loading failed
         }
       })()
@@ -442,12 +442,12 @@ export function useCoverStageVideo(
           setTimeout(() => {
             try {
               videoToUse.muted = false
-            } catch (error) {
+            } catch {
               // Could not unmute video
             }
           }, 500)
         }
-      } catch (error) {
+      } catch {
         // If video fails to play, still hide content to show fallback
         clearTimeout(fallbackTimeout)
         videoToUse.removeEventListener('timeupdate', onVideoTimeUpdate)
@@ -528,7 +528,7 @@ export function useCoverStageVideo(
             // No delay needed since video frames are designed to connect seamlessly
             hideEventVideos()
           })
-          .catch((error) => {
+          .catch((_error) => {
             // More aggressive retry strategy for problematic browsers
             const retryDelay = isMobile ? 1500 : 1000
             setTimeout(() => {
@@ -605,7 +605,7 @@ export function useCoverStageVideo(
         videoManager.setVisibility(videoRefs.sequentialVideoContainer(), false)
       },
 
-      handleError: (e: Event) => {
+      handleError: (_e: Event) => {
         playbackManager.clearDebugInterval()
       },
 
@@ -856,7 +856,7 @@ export function useCoverStageVideo(
             videoManager.setupForPlayback(coverVideo, true, true) // Muted and looped
           }
           await coverVideo.play()
-        } catch (error) {
+        } catch {
           // Cover video play failed
         }
       } else {

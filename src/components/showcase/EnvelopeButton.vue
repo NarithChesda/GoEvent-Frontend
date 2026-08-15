@@ -79,11 +79,6 @@ const fallbackButtonStyle = computed(() => ({
   backdropFilter: 'blur(10px)',
 }))
 
-const fallbackButtonStyleAnimated = computed(() => ({
-  background: `linear-gradient(135deg, ${props.primaryColor}, ${props.secondaryColor || props.accentColor})`,
-  backdropFilter: 'blur(10px)',
-  backgroundSize: '200% 200%',
-}))
 
 const buttonText = computed(() => {
   const lang = (props.currentLanguage as SupportedLanguage) || 'en'

@@ -32,7 +32,6 @@ export function useErrorHandler() {
   })
 
   const maxRecentErrors = 50
-  const maxRetries = 3
 
   /**
    * Creates a standardized error info object

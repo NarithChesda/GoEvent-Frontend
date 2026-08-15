@@ -398,19 +398,7 @@ import { useAppLanguage } from '../composables/useAppLanguage'
 import { useToast } from '../composables/useToast'
 import {
   Lock,
-  Pencil,
   AlertTriangle,
-  Calendar,
-  FileText,
-  Users,
-  UserPlus,
-  ImageIcon,
-  Monitor,
-  CreditCard,
-  Mail,
-  Share2,
-  Wallet,
-  BarChart,
 } from 'lucide-vue-next'
 import MainLayout from '../components/MainLayout.vue'
 import EventAboutSection from '../components/EventAboutSection.vue'
@@ -497,7 +485,6 @@ const landingTab = activeTab.value
 let tabEntryPushed = false
 const activeSubTab = ref<string>('')
 const guestManagementSubTab = ref<string>('guests')
-const expenseTrackingSubTab = ref<string>('summary')
 const showEditDrawer = ref(false)
 
 // Interval IDs for polling
@@ -661,11 +648,6 @@ const canViewTickets = computed(() => {
   return canViewRestrictedTabs.value && event.value?.privacy === 'public'
 })
 
-const canDeleteEvent = computed(() => {
-  if (!event.value || !authStore.isAuthenticated) return false
-  // Only the organizer (event creator) can delete the event
-  return event.value.organizer === authStore.user?.id
-})
 
 // Top bar computed properties
 const computedEventStatus = computed((): 'upcoming' | 'ongoing' | 'past' | 'draft' | null => {
@@ -685,31 +667,7 @@ const computedEventStatus = computed((): 'upcoming' | 'ongoing' | 'past' | 'draf
   return null
 })
 
-// Mobile context header computed properties
-const currentTabLabel = computed(() => {
-  const tab = navigationTabs.value.find((t) => t.id === activeTab.value)
-  return tab ? tab.mobileLabel || tab.label : 'Event Details'
-})
 
-const currentTabIcon = computed(() => {
-  const tab = navigationTabs.value.find((t) => t.id === activeTab.value)
-  if (!tab) return FileText
-
-  const iconMap = {
-    calendar: Calendar,
-    'file-text': FileText,
-    users: Users,
-    'user-plus': UserPlus,
-    image: ImageIcon,
-    monitor: Monitor,
-    'credit-card': CreditCard,
-    'bar-chart': BarChart,
-    wallet: Wallet,
-    mail: Mail,
-    'share-2': Share2,
-  } as const
-  return iconMap[tab.icon as keyof typeof iconMap] || FileText
-})
 
 // Removed unused daysUntilEvent computed property
 
@@ -738,7 +696,7 @@ const loadEvent = async () => {
     } else {
       error.value = response.message || 'Event not found'
     }
-  } catch (err) {
+  } catch {
     error.value = 'Failed to load event details'
   } finally {
     loading.value = false
@@ -828,41 +786,7 @@ const joinVirtualEvent = () => {
   }
 }
 
-const getBannerImageUrl = (bannerImage: string | null): string | undefined => {
-  if (!bannerImage) return undefined
 
-  // If it's already a full URL, return as is
-  if (bannerImage.startsWith('http://') || bannerImage.startsWith('https://')) {
-    return bannerImage
-  }
-
-  // If it's a relative URL, prepend the API base URL
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-  if (bannerImage.startsWith('/')) {
-    return `${API_BASE_URL}${bannerImage}`
-  }
-
-  // If it doesn't start with /, assume it needs /media/ prefix
-  return `${API_BASE_URL}/media/${bannerImage}`
-}
-
-const getMediaUrl = (mediaUrl: string | null): string | undefined => {
-  if (!mediaUrl) return undefined
-
-  // If it's already a full URL, return as is
-  if (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://')) {
-    return mediaUrl
-  }
-
-  // If it's a relative URL, prepend the API base URL
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-  if (mediaUrl.startsWith('/')) {
-    return `${API_BASE_URL}${mediaUrl}`
-  }
-
-  // If it doesn't start with /, assume it needs /media/ prefix
-  return `${API_BASE_URL}/media/${mediaUrl}`
-}
 
 const getOrganizerAvatarUrl = (profilePicture: string | null | undefined): string => {
   if (!profilePicture) return ''
@@ -957,24 +881,7 @@ const showMessage = (type: 'success' | 'error', text: string) => {
   showToast(type, text)
 }
 
-// Date formatting utilities (still used in About section)
-const formatEventDate = (dateString: string): string => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString([], {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
 
-const formatEventTime = (dateString: string): string => {
-  const date = new Date(dateString)
-  return date.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 // Watch for tab changes and reset sub-tab
 watch(

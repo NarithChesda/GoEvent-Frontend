@@ -432,7 +432,7 @@ interface Props {
 const props = defineProps<Props>()
 
 // Emits
-const emit = defineEmits<{
+defineEmits<{
   'create-category': []
   'create-expense': []
 }>()

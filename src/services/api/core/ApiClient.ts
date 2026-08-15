@@ -8,7 +8,7 @@ import { isResolvedMediaUrl } from '@/utils/mediaUrl'
 import { tokenManager, type TokenRefreshResponse } from '@/services/tokenManager'
 import { networkManager } from './NetworkManager'
 import { SecureLogger } from './SecureLogger'
-import type { ApiResponse, QueryParams, RequestOptions, ErrorData } from '../types/api.types'
+import type { ApiResponse, QueryParams, RequestOptions } from '../types/api.types'
 import { isErrorData, hasFieldErrors } from '../types/api.types'
 
 // API Base Configuration

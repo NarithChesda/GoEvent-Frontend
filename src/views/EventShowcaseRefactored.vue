@@ -327,7 +327,6 @@ const {
   // Methods
   loadShowcase,
   openEnvelope,
-  onVideoCanPlay,
   onEventVideoEnded,
   onTransitionComplete,
   isTransitionStage,
@@ -346,8 +345,6 @@ const {
   handleLoginRedirectWithStage,
   // Video State Preservation
   videoStatePreserved,
-  preserveVideoState,
-  clearVideoStatePreservation,
   // Video Resource Manager
   videoResourceManager,
 } = useEventShowcase()

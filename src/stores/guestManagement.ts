@@ -19,10 +19,8 @@ import {
   type EventGuest,
   type GuestGroup,
   type GuestStats,
-  type CreateGuestRequest,
   type UpdateGuestRequest,
   type CreateGuestGroupRequest,
-  type PaginatedResponse,
 } from '../services/api'
 
 // Constants

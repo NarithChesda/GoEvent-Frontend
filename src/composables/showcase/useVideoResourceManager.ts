@@ -218,7 +218,7 @@ export function useVideoResourceManager() {
             listeners.forEach(({ event, handler }) => {
               try {
                 video.removeEventListener(event, handler)
-              } catch (error) {
+              } catch {
                 // Silently handle listener removal errors
               }
             })
@@ -232,7 +232,7 @@ export function useVideoResourceManager() {
               // Longer delay for mobile browsers to settle play promises
               const pauseDelay = isMobile ? VIDEO_CONFIG.PAUSE_DELAY * 2 : VIDEO_CONFIG.PAUSE_DELAY
               await new Promise((resolve) => setTimeout(resolve, pauseDelay))
-            } catch (pauseError) {
+            } catch {
               // Mobile browsers often throw errors on pause, continue cleanup anyway
             }
           }
@@ -248,7 +248,7 @@ export function useVideoResourceManager() {
                   try {
                     URL.revokeObjectURL(blobData.url)
                     activeBlobUrls.value.delete(key)
-                  } catch (error) {
+                  } catch {
                     // Ignore revocation errors but still remove from tracking
                     activeBlobUrls.value.delete(key)
                   }
@@ -273,7 +273,7 @@ export function useVideoResourceManager() {
               // Clear any cached data
               video.preload = 'none'
             }
-          } catch (error) {
+          } catch {
             // Continue cleanup even if source clearing fails
           }
 
@@ -356,7 +356,7 @@ export function useVideoResourceManager() {
       if (now - blobData.createdAt > staleThreshold) {
         try {
           URL.revokeObjectURL(blobData.url)
-        } catch (error) {
+        } catch {
           // Ignore revocation errors
         }
         activeBlobUrls.value.delete(key)
@@ -372,7 +372,7 @@ export function useVideoResourceManager() {
           if ('gc' in window) {
             (window as any).gc()
           }
-        } catch (error) {
+        } catch {
           // Ignore GC errors
         }
       })
@@ -419,7 +419,7 @@ export function useVideoResourceManager() {
           try {
             callback()
             resolve()
-          } catch (error) {
+          } catch {
             // Silently handle callback errors but still resolve
             resolve()
           }
@@ -436,7 +436,7 @@ export function useVideoResourceManager() {
       activeBlobUrls.value.forEach((blobData, key) => {
         try {
           URL.revokeObjectURL(blobData.url)
-        } catch (error) {
+        } catch {
           // Ignore revocation errors
         }
         activeBlobUrls.value.delete(key)

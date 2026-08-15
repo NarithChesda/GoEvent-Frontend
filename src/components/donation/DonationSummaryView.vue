@@ -176,7 +176,7 @@ interface Props {
   pendingDonationsCount: number
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 const formatCurrency = (amount: string | null, currency: DonationCurrency): string => {
   if (!amount) return '$0.00'

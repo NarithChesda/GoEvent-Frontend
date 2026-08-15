@@ -995,9 +995,6 @@ const hasAnyGuests = computed(() => {
   return allFilteredGuests.value.length > 0
 })
 
-const hasGuestsInFilteredGroups = computed(() => {
-  return filteredGroups.value.some(group => group.guest_count > 0)
-})
 
 const isAnyGroupLoading = computed(() => {
   if (activeFilter.value === 'all') {

@@ -102,9 +102,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, reactive, watch, nextTick } from 'vue'
+import { onMounted, onUnmounted, ref, reactive, watch, nextTick } from 'vue'
 import type { EventPhoto } from '../../composables/useEventShowcase'
-import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 import { useTemplateProcessor } from '../../composables/showcase/useTemplateProcessor'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
 
@@ -300,33 +299,7 @@ const handleImageError = (photoId: string) => {
   }
 }
 
-const getTextContent = (textType: string, fallback = ''): string => {
-  if (props.eventTexts && props.currentLanguage) {
-    const text = props.eventTexts.find(
-      (text) => text.text_type === textType && text.language === props.currentLanguage,
-    )
-    if (text?.content) {
-      return text.content
-    }
-  }
 
-  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
-  const keyMap: Record<
-    string,
-    keyof typeof import('../../utils/translations').rsvpTranslations.en
-  > = {
-    gallery_header: 'gallery_header',
-  }
-
-  const translationKey = keyMap[textType]
-  if (translationKey) {
-    return translateRSVP(translationKey, currentLang)
-  }
-
-  return fallback
-}
-
-const galleryHeaderText = computed(() => getTextContent('gallery_header', 'Photo Gallery'))
 
 const handlePhotoClick = (photo: EventPhoto) => {
   emit('openPhoto', photo)

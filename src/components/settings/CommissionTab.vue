@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { onMounted, watch } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { formatDate, formatCurrency } from '../../utils/commissionHelpers'
 import type { Commission } from '../../services/commission'
@@ -129,7 +129,6 @@ const {
   filteredCommissions,
   statusFilters,
   fetchStats,
-  fetchCommissions,
   refreshData,
   selectStatus,
 } = useCommissionData()
@@ -163,8 +162,6 @@ const {
   isClaimingCommission,
   isBulkActioning,
   openRequestClaimModal,
-  openClaimModal,
-  openBulkClaimModal,
   requestClaim: baseRequestClaim,
   claimCommission: baseClaimCommission,
   bulkClaimCommissions: baseBulkClaimCommissions,
@@ -175,7 +172,7 @@ const {
   closeBulkClaimModal,
 } = useCommissionActions()
 
-const { info, success, error } = useNotifications()
+const { success, error } = useNotifications()
 
 // Enhanced functions that refresh data after success
 async function requestClaim() {
@@ -264,7 +261,7 @@ function handleExportData() {
     const csvData = generateCommissionCSV(filteredCommissions.value)
     downloadCSV(csvData, `commissions-${new Date().toISOString().split('T')[0]}.csv`)
     success('Export Complete', 'Your commission data has been downloaded')
-  } catch (err) {
+  } catch {
     // Using the error notification function from useNotifications
     error('Export Failed', 'Unable to export commission data')
   }

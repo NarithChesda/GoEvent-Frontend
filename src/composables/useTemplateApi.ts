@@ -159,7 +159,7 @@ export function useTemplateApi() {
       } else {
         templates.value = getMockTemplates()
       }
-    } catch (error) {
+    } catch {
       templates.value = getMockTemplates()
     } finally {
       loading.value = false

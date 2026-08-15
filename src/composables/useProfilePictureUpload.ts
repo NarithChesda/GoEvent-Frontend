@@ -106,7 +106,7 @@ export function useProfilePictureUpload(initialImageUrl?: string, enableCropping
     imageRemoved.value = true // Explicit tracking
   }
 
-  const resetProfilePicture = (initialImage?: string) => {
+  const resetProfilePicture = (_initialImage?: string) => {
     profilePicturePreview.value = null
     selectedProfileImageFile.value = null
     imageRemoved.value = false

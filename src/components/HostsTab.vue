@@ -118,7 +118,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue'
-import { Plus, Users, AlertCircle, Trash2 } from 'lucide-vue-next'
+import { Plus, Users, AlertCircle } from 'lucide-vue-next'
 import { hostsService, type EventHost } from '../services/api'
 import HostCard from './HostCard.vue'
 import EditHostDrawer from './EditHostDrawer.vue'
@@ -167,7 +167,7 @@ const fetchHosts = async () => {
       error.value = response.message || 'Failed to load hosts'
       hosts.value = []
     }
-  } catch (err) {
+  } catch {
     error.value = 'Network error while loading hosts'
     hosts.value = []
   } finally {
@@ -203,7 +203,7 @@ const confirmDelete = async () => {
     } else {
       error.value = response.message || 'Failed to delete host'
     }
-  } catch (err) {
+  } catch {
     error.value = 'Network error while deleting host'
   } finally {
     deleting.value = false
@@ -293,7 +293,7 @@ const handleDragEnd = async (targetHost: EventHost | null) => {
         await fetchHosts()
       }, 100)
     }
-  } catch (err) {
+  } catch {
     // Rollback on failure
     await fetchHosts()
     error.value = 'Network error while reordering hosts'

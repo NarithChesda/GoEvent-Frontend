@@ -45,12 +45,12 @@ export function useGuestGroups(eventId: string) {
   }
 
   // Deprecated methods (maintained for backward compatibility)
-  const incrementGroupGuestCount = (groupId: number, delta: number = 1) => {
+  const incrementGroupGuestCount = (groupId: number, _delta: number = 1) => {
     console.warn('incrementGroupGuestCount is deprecated - counts are now managed automatically by the store')
     // No-op: store handles this internally
   }
 
-  const decrementGroupGuestCount = (groupId: number) => {
+  const decrementGroupGuestCount = (_groupId: number) => {
     console.warn('decrementGroupGuestCount is deprecated - counts are now managed automatically by the store')
     // No-op: store handles this internally
   }

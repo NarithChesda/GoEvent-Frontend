@@ -109,7 +109,7 @@ class AuthService {
             }
           }
         }
-      } catch (processingError) {
+      } catch {
         return {
           success: false,
           message: 'Failed to process login response',
@@ -137,7 +137,7 @@ class AuthService {
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
           },
           body: JSON.stringify({ refresh: refreshToken }),
-        }).catch((error) => {
+        }).catch((_error) => {
           // Silent error handling
         })
       }
@@ -150,7 +150,7 @@ class AuthService {
         success: true,
         data: { message: 'Successfully logged out' },
       }
-    } catch (error) {
+    } catch {
       // Even on error, clear local data
       this.clearTokens()
       this.clearUser()
@@ -182,7 +182,7 @@ class AuthService {
             }
           }
         }
-      } catch (processingError) {
+      } catch {
         return {
           success: false,
           message: 'Failed to process Google login response',
@@ -214,7 +214,7 @@ class AuthService {
             }
           }
         }
-      } catch (processingError) {
+      } catch {
         return {
           success: false,
           message: 'Failed to process Telegram login response',
@@ -254,7 +254,7 @@ class AuthService {
       // Sanitize user data before storing
       const sanitizedUser = this.sanitizeUserData(user)
       secureStorage.setItem('user', JSON.stringify(sanitizedUser))
-    } catch (error) {
+    } catch {
       // Silent error handling
     }
   }
@@ -312,7 +312,7 @@ class AuthService {
       }
 
       return user
-    } catch (error) {
+    } catch {
       this.clearUser()
       return null
     }
@@ -363,7 +363,7 @@ class AuthService {
           throw new Error('Token refresh failed')
         }
       )
-    } catch (error) {
+    } catch {
       return false
     }
   }

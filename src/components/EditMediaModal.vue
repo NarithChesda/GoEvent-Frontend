@@ -201,12 +201,6 @@ const formData = ref({
 const updating = ref(false)
 const error = ref<string | null>(null)
 
-// Methods
-const handleBackdropClick = (event: MouseEvent) => {
-  if (event.target === event.currentTarget) {
-    emit('close')
-  }
-}
 
 // Computed
 const hasChanges = computed(() => {
