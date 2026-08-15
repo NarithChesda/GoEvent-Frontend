@@ -3,23 +3,19 @@
   <div class="relative category-filter-container hidden sm:block">
     <!-- `tone` only repaints the trigger: the desktop nav absorbs it at full
          size once the page header scrolls away, and it has to land on the same
-         pixels it left. Compact drops the label for a single icon button, and
-         is only for the mobile bar, which has no room for the labelled pill. -->
+         pixels it left. Icon-only at every size — `compact` only tightens it
+         further for the mobile bar. The current category is carried by the fill
+         and the tooltip, so the label never has to be on screen. -->
     <button
       @click.stop="toggleMenu"
+      aria-haspopup="menu"
+      :aria-expanded="showMenu"
       :aria-label="t('categories.filterByCategory')"
-      :title="compact ? activeLabel : undefined"
-      class="flex items-center border transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
+      :title="activeLabel"
+      class="flex items-center justify-center border transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
       :class="triggerClass"
     >
-      <ListFilter v-if="compact" class="w-[18px] h-[18px]" />
-      <template v-else>
-        <span>{{ activeLabel }}</span>
-        <ChevronDown
-          class="w-4 h-4 transition-transform duration-200"
-          :class="showMenu ? 'rotate-180' : ''"
-        />
-      </template>
+      <ListFilter :class="compact ? 'w-[18px] h-[18px]' : 'w-5 h-5'" />
     </button>
 
     <!-- Dropdown Menu -->
@@ -150,7 +146,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { ChevronDown, ListFilter, Check } from 'lucide-vue-next'
+import { ListFilter, Check } from 'lucide-vue-next'
 import type { EventCategory } from '@/services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
@@ -174,7 +170,7 @@ const props = withDefaults(
   { compact: false, tone: 'page' }
 )
 
-/** Label for the trigger, and the compact button's tooltip. */
+/** The trigger carries no label, so this is its tooltip. */
 const activeLabel = computed(() =>
   props.modelValue ? translateEventCategory(props.modelValue) : t('categories.allCategories')
 )
@@ -182,31 +178,43 @@ const activeLabel = computed(() =>
 const triggerClass = computed(() => {
   if (props.compact) {
     return [
-      'justify-center w-9 h-9 rounded-lg border-transparent',
+      'w-9 h-9 rounded-lg border-transparent',
       props.modelValue
         ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-sm shadow-[#2ecc71]/20'
         : 'text-slate-500 hover:text-slate-700 hover:bg-white/60',
     ]
   }
 
-  const shape = 'gap-2 px-4 py-2 rounded-full text-sm font-medium'
+  // TimeFilterToggle's outer height, rebuilt from the same terms: a 2.25rem
+  // segment (`text-sm`'s 1.25rem line box + `py-2`) inside its `p-1`, plus the
+  // 1px border top and bottom. Matching it exactly is the whole point of the
+  // square — the two sit side by side, and a shorter pill beside a taller one
+  // reads as a mistake rather than a pair. A labelled pill can't reach that
+  // height without padding that looks slack, so the label goes and the selected
+  // category is carried by the fill instead.
+  //
+  // In rem, not px: the root font drops to 75% on laptop viewports (see the
+  // root-scale block in src/assets/main.css), and a px size would be the one
+  // thing in this row that doesn't scale with it.
+  const shape = 'w-[calc(2.75rem_+_2px)] h-[calc(2.75rem_+_2px)] rounded-full'
 
   if (props.tone === 'nav') {
     return [
       shape,
       'border-transparent',
       props.modelValue
-        ? 'bg-gradient-to-r from-[#2ecc71]/15 to-[#1e90ff]/15 text-slate-800'
+        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-sm shadow-[#2ecc71]/20'
         : 'bg-slate-900/[0.04] text-slate-600 hover:text-slate-900 hover:bg-slate-900/[0.06]',
     ]
   }
 
+  // The gradient can't be combined with `glass-button`: its `background`
+  // shorthand wins on specificity and blanks the gradient's background-image.
   return [
     shape,
-    'glass-button',
     props.modelValue
-      ? 'bg-gradient-to-r from-[#2ecc71]/15 to-[#1e90ff]/15 text-slate-800 border-[#2ecc71]/30'
-      : 'border-white/50 text-slate-700',
+      ? 'border-transparent bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
+      : 'glass-button border-white/50 text-slate-600',
   ]
 })
 
