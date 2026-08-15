@@ -10,6 +10,12 @@
     lets the pill hug its content and leave real air at both edges.
 
     The wrapper is click-through; only the pill and the open menu take taps.
+
+    The band this occupies — the pill's height plus the gap below it — is
+    published as `--nav-inset` in MainLayout, and everything else fixed to the
+    bottom of the screen positions off that. Changing the row height, the
+    padding or the border below means changing the 3.375rem there to match —
+    all three are in it.
   -->
   <div
     class="lg:hidden fixed inset-x-0 bottom-0 z-[70] pointer-events-none"

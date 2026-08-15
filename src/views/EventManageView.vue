@@ -114,7 +114,9 @@
       >
         <div class="flex flex-col">
           <!-- Main Content Area -->
-          <div class="flex-1 min-w-0 pb-20 lg:pb-0">
+          <!-- No bottom pad of its own: MainLayout already holds --nav-inset
+               open below the slot, and a second copy here doubled it. -->
+          <div class="flex-1 min-w-0">
             <!-- Overview Tab -->
             <EventAboutSection
               v-if="activeTab === 'overview'"

@@ -181,12 +181,12 @@
 
         <!-- The mobile studio's primary action, and deliberately NOT a FAB:
              the bottom-right corner on mobile is already a coordinated stack
-             (MobileTabBar at bottom-0/z-70, the primary FAB slot at bottom-20,
-             ContactUsFAB above that via its own hasFabBelow prop), so a fourth
-             floating button there would either hide under the tab bar or force
-             this tab to negotiate that stack from the inside. It also belongs
-             here on the merits — it's a view control, next to the other view
-             control. -->
+             (MobileTabBar's floating pill at z-70, the primary FAB slot at
+             --fab-bottom, ContactUsFAB in --fab-stack-2 above it via its own
+             hasFabBelow prop), so a fourth floating button there would either
+             hide under the tab bar or force this tab to negotiate that stack
+             from the inside. It also belongs here on the merits — it's a view
+             control, next to the other view control. -->
         <button
           v-if="canViewLivePreview && event?.id && !loading"
           type="button"

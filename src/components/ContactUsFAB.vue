@@ -1,14 +1,30 @@
 <template>
-  <div>
+  <!--
+    One positioned column holding the button and the popup that belongs to it,
+    rather than two independently-fixed elements. The popup used to restate the
+    button's offset plus its own height in a comment block of arithmetic that
+    had to be redone for every size or breakpoint; anchoring it to `bottom-full`
+    of the shared wrapper means it simply sits above whatever the button is and
+    wherever the button has landed.
+
+    The wrapper's own bottom edge comes from the shared FAB slots — `--fab-bottom`
+    when this is the only floating action on the page, the slot above it when a
+    page-level FAB is already there. Both are defined in MainLayout and track
+    the floating tab bar's real footprint.
+  -->
+  <div
+    class="fixed right-4 lg:right-6 z-[55]"
+    :class="hasFabBelow ? 'bottom-[var(--fab-stack-2)]' : 'bottom-[var(--fab-bottom)]'"
+  >
     <!-- Help Chat Popup -->
     <Transition name="chat-popup">
       <div
         v-if="showChatPopup"
-        :class="chatPopupPositionClass"
-        class="fixed right-4 lg:right-6 z-[59] bg-white rounded-2xl shadow-2xl p-4 w-72 border border-slate-100"
+        class="absolute bottom-full right-0 mb-3 bg-white rounded-2xl shadow-2xl p-4 w-72 border border-slate-100"
       >
-        <!-- Arrow pointing to FAB -->
-        <div class="absolute -bottom-2 right-4 lg:right-6 w-4 h-4 bg-white border-r border-b border-slate-100 transform rotate-45"></div>
+        <!-- Arrow, centred on the button below it (half of w-10 / lg:w-14,
+             less half the arrow's own 1rem). -->
+        <div class="absolute -bottom-2 right-3 lg:right-5 w-4 h-4 bg-white border-r border-b border-slate-100 transform rotate-45"></div>
 
         <!-- Close button -->
         <button
@@ -45,19 +61,23 @@
       </div>
     </Transition>
 
-    <!-- Contact Us FAB - Telegram Link (mini chip on mobile, full FAB on desktop) -->
+    <!-- Contact Us FAB - Telegram Link. Deliberately a size down from the
+         page's own FAB on mobile (mini chip; full size on desktop, where
+         there is room): support is the secondary action of any page it
+         appears on, and the descending sizes going up the column are what
+         keep the stack from reading as two peers. Tooltip is desktop-only —
+         on touch there is no hover to reveal it. -->
     <a
       :href="telegramLink"
       target="_blank"
       rel="noopener noreferrer"
-      :class="[fabPositionClass, hasFabBelow ? 'right-6' : 'right-4 lg:right-6']"
-      class="fixed z-[55] bg-gradient-to-r from-[#0088cc] to-[#229ED9] hover:from-[#006ca8] hover:to-[#1c7fb5] text-white rounded-full shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 flex items-center justify-center w-10 h-10 lg:w-14 lg:h-14 hover:scale-110 active:scale-95 group"
+      class="relative bg-gradient-to-r from-[#0088cc] to-[#229ED9] hover:from-[#006ca8] hover:to-[#1c7fb5] text-white rounded-full shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 flex items-center justify-center w-10 h-10 lg:w-14 lg:h-14 hover:scale-110 active:scale-95 group"
       aria-label="Contact support"
       @click="dismissPopup"
     >
       <Send class="w-5 h-5 lg:w-6 lg:h-6 transition-transform duration-300 group-hover:rotate-12" />
       <div
-        class="absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
+        class="hidden lg:block absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
       >
         Contact Us
       </div>
@@ -106,36 +126,6 @@ const isOwnEventPage = computed(() => {
 // Create Telegram link
 const telegramLink = computed(() => {
   return `https://t.me/goeventkh`
-})
-
-// FAB position - accounts for mobile tab bar
-// Offsets that stack on top of the primary FAB must be in rem, not px: the FAB
-// itself is rem-sized (h-14, bottom-4), so on the 75%-scaled laptop tier a px
-// offset would freeze while the FAB below it shrank, opening a visible gap.
-// Mobile: Tab bar is ~64px tall, so FAB needs to be above it: 64px + 16px gap = 80px (bottom-20)
-// Desktop: No tab bar, standard 16px from bottom (lg:bottom-4)
-// When a primary FAB is below (mobile FAB is the 40px mini size):
-//   Mobile: bottom-20 (5rem tab bar) + primary FAB h-14 (3.5rem) + gap (0.75rem) = 9.25rem
-//   Desktop: bottom-4 (1rem) + h-14 (3.5rem) + gap (1rem) = 5.5rem
-const fabPositionClass = computed(() => {
-  if (props.hasFabBelow) {
-    return 'bottom-[9.25rem] lg:bottom-[5.5rem]'
-  }
-  return 'bottom-20 lg:bottom-4'
-})
-
-// Chat popup position (above the FAB; mobile FAB is h-10, desktop h-14)
-// Mobile: FAB bottom (5rem or 9.25rem) + h-10 (2.5rem) + gap (0.75rem)
-//   Without FAB below: 5 + 2.5 + 0.75 = 8.25rem
-//   With FAB below: 9.25 + 2.5 + 0.75 = 12.5rem
-// Desktop: FAB bottom (1rem or 5.5rem) + h-14 (3.5rem) + gap (1rem)
-//   Without FAB below: 1 + 3.5 + 1 = 5.5rem
-//   With FAB below: 5.5 + 3.5 + 1 = 10rem
-const chatPopupPositionClass = computed(() => {
-  if (props.hasFabBelow) {
-    return 'bottom-[12.5rem] lg:bottom-[10rem]'
-  }
-  return 'bottom-[8.25rem] lg:bottom-[5.5rem]'
 })
 
 // Check if popup should be shown (with 1-day expiry)

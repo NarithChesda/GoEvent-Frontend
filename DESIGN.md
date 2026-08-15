@@ -193,7 +193,7 @@ Mobile-first, always. Base classes target phones; scale up with `sm:` (640) → 
 - Top-level list pages (Events, Discover, Services) paint the page wrapper with the subtle brand tint: `bg-gradient-to-r from-[#2ecc71]/[0.02] via-white to-[#1e90ff]/[0.02]`.
 - Vertical rhythm: sibling sections `space-y-5` or `space-y-6 sm:space-y-8`; within a group `space-y-3`; grids `gap-3` (forms) to `gap-6` (card grids).
 - Top bar height is `4rem`; fixed sub-navigation sits at `top-16`.
-- **Any fixed bottom element uses `bottom-20 lg:bottom-4`** to clear the mobile tab bar.
+- **Anything fixed to the bottom positions off the shared inset vars, never a hardcoded offset.** The mobile tab bar is a floating pill, so the space it occupies is its own height *plus* the safe-area gap it floats above the edge by — 66px on Android, ~88px on a notched iPhone. `MainLayout` publishes `--nav-inset` (the band the pill occupies, and the pad a scrolling page needs to clear it), `--fab-bottom` (the primary floating action's bottom edge) and `--fab-stack-2` (the slot above it); all three are 0/edge-relative on desktop and on pages rendered without a tab bar. Use `bottom-[var(--fab-bottom)]`, `pb-[var(--nav-inset)]`, `min-h-[calc(100vh-var(--nav-inset))]`.
 
 ### 5.3 Cross-device rules
 
