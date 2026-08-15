@@ -16,11 +16,38 @@ export default defineConfigWithVueTs(
     files: ['**/*.{ts,mts,tsx,vue}'],
   },
 
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
+  // Generated output — `playwright-report/` and `test-results/` are produced by
+  // `npm run test:e2e`; without these, a lint run after any E2E run reports
+  // thousands of errors from the bundled report viewer.
+  globalIgnores([
+    '**/dist/**',
+    '**/dist-ssr/**',
+    '**/coverage/**',
+    '**/playwright-report/**',
+    '**/test-results/**',
+  ]),
 
   pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
-  
+
+  {
+    name: 'app/unused-vars',
+    rules: {
+      // Honour the `_`-prefix convention already used across the codebase for
+      // deliberately unused bindings (positional params that must stay in the
+      // signature, caught errors that are intentionally swallowed, etc.).
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
+        },
+      ],
+    },
+  },
+
   {
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/*'],
