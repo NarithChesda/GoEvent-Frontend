@@ -27,9 +27,25 @@
           aria-orientation="vertical"
         >
           <div class="px-4 py-4 space-y-3">
-            <!-- User Info -->
-            <div class="flex items-center space-x-3 px-3 py-2 bg-[#E6F4FF] rounded-xl">
-              <div class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
+            <!--
+              User Info — the whole card copies the email. The address is
+              truncated and unselectable inside a menu that closes on the next
+              tap outside it, so tapping the card is the only practical way to
+              get at it. The corner icon is the affordance, not a second target:
+              a button inside a button isn't valid markup, and one large tap
+              area is easier to hit than a 28px one.
+            -->
+            <button
+              type="button"
+              @click="copy(sanitizedUserEmail)"
+              class="group w-full flex items-center gap-3 px-3 py-2 bg-[#E6F4FF] rounded-xl text-left transition-colors duration-200 hover:bg-[#d9edff] active:bg-[#cfe7ff] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+              :aria-label="
+                copied
+                  ? t('common.nav.emailCopied')
+                  : `${t('common.nav.copyEmail')}: ${sanitizedUserEmail}`
+              "
+            >
+              <div class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white flex-shrink-0">
                 <img
                   v-if="profilePictureUrl && !profilePictureError"
                   :src="profilePictureUrl"
@@ -47,13 +63,33 @@
                   {{ authStore.userInitials }}
                 </div>
               </div>
-              <div class="min-w-0">
+              <div class="min-w-0 flex-1">
                 <div class="font-semibold text-slate-900 text-sm truncate">
                   {{ sanitizedUserName }}
                 </div>
-                <div class="text-xs text-slate-500 truncate">{{ sanitizedUserEmail }}</div>
+                <!-- The email line doubles as the confirmation: it is the thing
+                     that was copied, so the acknowledgement lands where the eye
+                     already is. -->
+                <div
+                  class="text-xs truncate transition-colors duration-200"
+                  :class="copied ? 'text-emerald-600 font-medium' : 'text-slate-500'"
+                >
+                  {{ copied ? t('common.nav.emailCopied') : sanitizedUserEmail }}
+                </div>
               </div>
-            </div>
+              <span
+                class="self-start -mt-0.5 -mr-1 flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-lg transition-colors duration-200"
+                :class="
+                  copied
+                    ? 'text-emerald-600'
+                    : 'text-slate-400 group-hover:bg-white/70 group-hover:text-slate-600 group-active:bg-white'
+                "
+                aria-hidden="true"
+              >
+                <Check v-if="copied" class="w-4 h-4" />
+                <Copy v-else class="w-4 h-4" />
+              </span>
+            </button>
 
             <!-- Menu Items -->
             <div class="space-y-2">
@@ -260,7 +296,7 @@ let lastActivePath: string | null = null
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { Ticket, Compass, Sparkles, User, ArrowLeftRight } from 'lucide-vue-next'
+import { Ticket, Compass, Sparkles, User, ArrowLeftRight, Copy, Check } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
 import { sanitizePlainText } from '@/utils/sanitize'
@@ -268,6 +304,10 @@ import NotificationBell from './notifications/NotificationBell.vue'
 import { useVendorProfile } from '@/composables/settings/useVendorProfile'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useExclusiveMenu } from '@/composables/useExclusiveMenu'
+import { useCopyToClipboard } from '@/composables/useCopyToClipboard'
+
+// Copying the signed-in email out of the profile card.
+const { copied, copy } = useCopyToClipboard()
 
 // Shares the app-wide "one open menu" slot with the notification sheet next
 // door, so opening either closes the other.

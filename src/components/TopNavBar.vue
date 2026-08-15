@@ -209,38 +209,71 @@
           <Transition name="dropdown">
             <div
               v-if="userMenuOpen && authStore.isAuthenticated"
-              class="glass-dropdown absolute right-0 top-full mt-2 rounded-2xl overflow-hidden z-[100] w-64"
+              class="glass-dropdown absolute right-0 top-full mt-2 rounded-2xl overflow-hidden z-[100] w-72"
               role="menu"
               aria-orientation="vertical"
             >
-              <!-- User Info Header with Avatar -->
-              <div class="px-5 py-4 border-b border-slate-100">
-                <div class="flex items-center space-x-3">
-                  <!-- Large Avatar -->
-                  <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                    <img
-                      v-if="profilePictureUrl && !profilePictureError"
-                      :src="profilePictureUrl"
-                      :alt="sanitizedUserName"
-                      class="w-full h-full object-cover"
-                      @error="handleProfilePictureError"
-                    />
-                    <div
-                      v-else
-                      class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-lg"
-                    >
-                      {{ authStore.userInitials }}
-                    </div>
-                  </div>
-                  <!-- Name and Email -->
-                  <div class="min-w-0">
-                    <div class="font-semibold text-lg text-slate-900 truncate">
-                      {{ sanitizedUserName }}
-                    </div>
-                    <div class="text-sm text-slate-400 truncate">{{ sanitizedUserEmail }}</div>
+              <!--
+                User Info Header — the whole header copies the email. The
+                address is truncated here and there is nowhere else in the app
+                to read it off, so the header itself is the affordance and the
+                corner icon only signals it: a button nested inside a button
+                isn't valid markup, and one large target beats a 28px one.
+              -->
+              <button
+                type="button"
+                @click="copy(sanitizedUserEmail)"
+                class="group w-full flex items-center gap-3 px-5 py-4 border-b border-slate-100 text-left transition-colors duration-200 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset"
+                :aria-label="
+                  copied
+                    ? t('common.nav.emailCopied')
+                    : `${t('common.nav.copyEmail')}: ${sanitizedUserEmail}`
+                "
+              >
+                <!-- Large Avatar -->
+                <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                  <img
+                    v-if="profilePictureUrl && !profilePictureError"
+                    :src="profilePictureUrl"
+                    :alt="sanitizedUserName"
+                    class="w-full h-full object-cover"
+                    @error="handleProfilePictureError"
+                  />
+                  <div
+                    v-else
+                    class="w-full h-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white font-bold text-lg"
+                  >
+                    {{ authStore.userInitials }}
                   </div>
                 </div>
-              </div>
+                <!-- Name and Email -->
+                <div class="min-w-0 flex-1">
+                  <div class="font-semibold text-lg text-slate-900 truncate">
+                    {{ sanitizedUserName }}
+                  </div>
+                  <!-- The email line doubles as the confirmation: it is the
+                       thing that was copied, so the acknowledgement lands where
+                       the eye already is. -->
+                  <div
+                    class="text-sm truncate transition-colors duration-200"
+                    :class="copied ? 'text-emerald-600 font-medium' : 'text-slate-400'"
+                  >
+                    {{ copied ? t('common.nav.emailCopied') : sanitizedUserEmail }}
+                  </div>
+                </div>
+                <span
+                  class="self-start -mt-1 -mr-1.5 flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-lg transition-colors duration-200"
+                  :class="
+                    copied
+                      ? 'text-emerald-600'
+                      : 'text-slate-400 group-hover:bg-slate-100 group-hover:text-slate-600'
+                  "
+                  aria-hidden="true"
+                >
+                  <Check v-if="copied" class="w-4 h-4" />
+                  <Copy v-else class="w-4 h-4" />
+                </span>
+              </button>
 
               <!-- Menu Items -->
               <div class="py-1">
@@ -318,7 +351,9 @@ import {
   Search,
   User,
   Globe,
-  ArrowLeftRight
+  ArrowLeftRight,
+  Copy,
+  Check
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
@@ -331,6 +366,7 @@ import { useVendorProfile } from '@/composables/settings/useVendorProfile'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useExclusiveMenu } from '@/composables/useExclusiveMenu'
 import { useNavPageControls } from '@/composables/useNavPageControls'
+import { useCopyToClipboard } from '@/composables/useCopyToClipboard'
 import type { AppLocale } from '@/i18n'
 
 interface Props {
@@ -359,6 +395,9 @@ const { open: openSearch } = useGlobalSearch()
 
 // True while a list page has handed its filters up to this bar
 const { absorbed: pageControlsAbsorbed } = useNavPageControls()
+
+// Copying the signed-in email out of the profile menu header.
+const { copied, copy } = useCopyToClipboard()
 
 // Menus share one app-wide "open" slot with the notification bell, so opening
 // any one of them closes the others.
