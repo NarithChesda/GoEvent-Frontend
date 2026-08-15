@@ -105,8 +105,9 @@
         </button>
 
         <div class="flex items-center gap-1 flex-shrink-0">
-          <!-- Options button when content exists -->
-          <div v-if="canEdit && musicSource !== 'none'" class="relative">
+          <!-- Options button when content exists — only while the section is
+               open; a collapsed card shows nothing but its chevron. -->
+          <div v-if="isMusicExpanded && canEdit && musicSource !== 'none'" class="relative">
             <button
               @click.stop="dropdownManager.toggleDropdown('music')"
               :disabled="mediaUpload.isUploading.value('music') || savingMusicSelection"

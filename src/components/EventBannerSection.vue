@@ -13,8 +13,10 @@
         <p class="text-sm text-slate-600">{{ t('management.media.eventBanner.subtitle') }}</p>
       </button>
       <div class="flex items-center gap-1 flex-shrink-0">
+        <!-- Action pills only exist while the section is open — a collapsed
+             card shows nothing but its chevron. -->
         <button
-          v-if="canEdit"
+          v-if="isExpanded && canEdit"
           type="button"
           @click="pickFile"
           :disabled="isBusy"

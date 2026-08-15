@@ -115,8 +115,10 @@
         </button>
 
         <div class="flex items-center gap-1 flex-shrink-0">
-          <!-- Help Button -->
+          <!-- Help Button — only while the section is open; a collapsed card
+               shows nothing but its chevron. -->
           <button
+            v-if="isYoutubeExpanded"
             @click="showYouTubeHelpModal = true"
             class="p-2 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
             :title="t('management.embeds.youtube.helpButtonTitle')"

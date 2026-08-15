@@ -100,8 +100,10 @@
               <p class="text-sm text-slate-600">{{ t('management.media.photos.description') }}</p>
             </button>
             <div class="flex items-center gap-1 flex-shrink-0">
+              <!-- Action pills only exist while the section is open — a
+                   collapsed card shows nothing but its chevron. -->
               <button
-                v-if="canUpload"
+                v-if="isPhotosExpanded && canUpload"
                 type="button"
                 @click="openUploadModal"
                 class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
