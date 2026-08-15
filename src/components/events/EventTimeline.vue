@@ -12,9 +12,11 @@
           class="timeline-spine absolute left-[3px] w-0.5 bg-gradient-to-b from-[#2ecc71]/55 to-[#1e90ff]/40"
         ></div>
 
-        <!-- Date Header with Dot (becomes pill when sticky) -->
+        <!-- Date Header with Dot (becomes pill when sticky). Rests 8px below
+             the mobile top bar, which grows by the status-bar inset when the
+             app is installed. -->
         <div
-          class="sticky top-[64px] z-10 mb-3 date-header-sticky inline-flex items-center gap-2"
+          class="sticky top-[calc(env(safe-area-inset-top,0px)+64px)] z-10 mb-3 date-header-sticky inline-flex items-center gap-2"
         >
           <div class="w-2 h-2 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] flex-shrink-0 ring-2 ring-white"></div>
           <div class="inline-flex items-baseline gap-2">

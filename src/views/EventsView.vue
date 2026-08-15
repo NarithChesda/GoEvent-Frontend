@@ -15,7 +15,7 @@
       :class="showLanding ? '' : 'min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-4rem)]'"
     >
       <!-- Mobile Top Bar -->
-      <MobileTopBar v-if="!showLanding" @search="openSearch" />
+      <MobileTopBar v-if="!showLanding" />
 
       <!-- Signed-out landing: full-bleed, so the tile field can run to the
            edges. It replaces the page header and the sign-in empty state. -->
@@ -24,16 +24,9 @@
       <!-- Main Content -->
       <section v-else class="flex-1 flex flex-col py-4 sm:py-6 lg:py-[clamp(1.25rem,3vh,2rem)]">
         <div class="flex-1 flex flex-col w-full max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <!-- Header with Toggle -->
-          <div
-            class="flex items-center justify-between gap-2 mb-6 sm:mb-8 lg:mb-[clamp(1.25rem,3.5vh,2.5rem)]"
-          >
-            <h1
-              class="flex-1 min-w-0 truncate text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900"
-            >
-              {{ t('events.title') }}
-            </h1>
-
+          <!-- Page header. On mobile this is also the top bar's expanded state,
+               which is why the title lives here rather than in the bar. -->
+          <PageHeaderRow :title="t('events.title')">
             <!-- Upcoming/Past/Recent toggle + category filter. As the header
                  scrolls under the top bar, PinnedListControls hands them to it
                  at the same size and column position, so they stay reachable. -->
@@ -43,7 +36,7 @@
               v-model:category="categoryFilter"
               :categories="categories"
             />
-          </div>
+          </PageHeaderRow>
 
           <!-- Loading State -->
           <EventsLoadingSkeleton v-if="loading" />
@@ -139,6 +132,7 @@ import PublicEventDrawer from '@/components/PublicEventDrawer.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import {
   MobileTopBar,
+  PageHeaderRow,
   EventTimeline,
   PinnedListControls,
   EventsEmptyState,
@@ -146,7 +140,6 @@ import {
   EventsLoadingSkeleton,
 } from '@/components/events'
 import { useAuthStore } from '@/stores/auth'
-import { useGlobalSearch } from '@/composables/useGlobalSearch'
 import { useCategoryFilter } from '@/composables/useCategoryFilter'
 import { useStickyDateHeaders } from '@/composables/useStickyDateHeaders'
 import { groupEventsByDate } from '@/composables/useEventFormatters'
@@ -160,9 +153,6 @@ const route = useRoute()
 const authStore = useAuthStore()
 const { t } = useAppLanguage()
 const { showToast } = useToast()
-
-// Global search
-const { open: openSearch } = useGlobalSearch()
 
 // Category filter
 const { categories, categoryFilter, loadCategories } = useCategoryFilter()

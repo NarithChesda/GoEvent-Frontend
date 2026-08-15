@@ -5,6 +5,8 @@
  */
 
 export { default as MobileTopBar } from './MobileTopBar.vue'
+export { default as MobileHeaderActions } from './MobileHeaderActions.vue'
+export { default as PageHeaderRow } from './PageHeaderRow.vue'
 export { default as EventCard } from './EventCard.vue'
 export { default as EventTimeline } from './EventTimeline.vue'
 export { default as TimeFilterToggle } from './TimeFilterToggle.vue'

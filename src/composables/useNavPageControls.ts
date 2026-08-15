@@ -1,24 +1,79 @@
-import { readonly, ref } from 'vue'
+import { computed, readonly, ref } from 'vue'
 
 /**
- * Shared flag between a list page's `PinnedListControls` and the top nav: true
- * while the page has handed its filters up to the bar.
+ * The channel between a list page's header row and the app's fixed bars.
  *
- * The nav reads it to yield space — the clock and the Create Event shortcut
- * step aside while the filters are up there. That room is what lets the
- * absorbed controls keep their full size and sit at the content column's right
- * edge, the exact spot the page header had them; without it they would run
- * into the right-hand utility cluster on anything but a very wide desktop.
+ * `isDesktopNav` — which navigation the page is dressing for, and with it where
+ * the header row physically lives. Below 1024px `PageHeaderRow` teleports
+ * itself into the mobile top bar and *is* the bar's contents; at and above it
+ * the row sits in the page and the desktop nav absorbs only its controls on
+ * scroll. Anything that has to look right in both places reads this rather than
+ * carrying a prop down from the view.
+ *
+ * `pinned` — the page header row has scrolled under the desktop nav. Only ever
+ * true on desktop: on mobile the row is already in the bar, so there is nothing
+ * to hand up and nothing to observe.
+ *
+ * `absorbed` — narrower than `pinned`: true only while the page has handed
+ * *filters* up to the nav. The nav reads it to yield space — the clock and the
+ * Create Event shortcut step aside while the filters are up there. That room is
+ * what lets the absorbed controls keep their full size and sit at the content
+ * column's right edge, the exact spot the page header had them; without it they
+ * would run into the right-hand utility cluster on anything but a very wide
+ * desktop. Kept separate because a page can pin a header that has no filters
+ * (Services) — the nav must keep its shortcuts for that one.
  */
+const DESKTOP_NAV_QUERY = '(min-width: 1024px)'
+
+const pinned = ref(false)
 const absorbed = ref(false)
+// Defaults to the desktop layout so that an environment without matchMedia
+// (unit tests under jsdom) renders the header in the page rather than into a
+// teleport target that isn't there.
+const isDesktopNav = ref(true)
+
+let desktopQuery: MediaQueryList | null = null
+
+/**
+ * One listener for the whole app, attached on first use and never removed —
+ * the breakpoint outlives every page that reads it.
+ */
+const watchBreakpoint = () => {
+  if (desktopQuery || typeof window === 'undefined' || !window.matchMedia) return
+  desktopQuery = window.matchMedia(DESKTOP_NAV_QUERY)
+  isDesktopNav.value = desktopQuery.matches
+  desktopQuery.addEventListener('change', (event) => {
+    isDesktopNav.value = event.matches
+  })
+}
 
 export function useNavPageControls() {
+  watchBreakpoint()
+
+  const setPinned = (value: boolean) => {
+    pinned.value = value
+  }
+
   const setAbsorbed = (value: boolean) => {
     absorbed.value = value
   }
 
   return {
+    isDesktopNav: readonly(isDesktopNav),
+    pinned: readonly(pinned),
     absorbed: readonly(absorbed),
+    setPinned,
     setAbsorbed,
   }
+}
+
+/**
+ * The palette a header control should wear where it currently sits. Below the
+ * nav breakpoint the page header row is inside the top bar, so a control that
+ * asks for no particular tone still has to drop its glass card — otherwise it
+ * reads as a card floating on the bar instead of part of the chrome.
+ */
+export function useHeaderTone(explicit?: () => 'page' | 'nav' | undefined) {
+  watchBreakpoint()
+  return computed<'page' | 'nav'>(() => explicit?.() ?? (isDesktopNav.value ? 'page' : 'nav'))
 }

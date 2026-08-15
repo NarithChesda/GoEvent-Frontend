@@ -51,7 +51,9 @@
     :class="
       isFiltered
         ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
-        : 'glass-button text-slate-600'
+        : resolvedTone === 'nav'
+          ? 'text-slate-600 hover:bg-slate-100'
+          : 'glass-button text-slate-600'
     "
   >
     <ListFilter class="w-5 h-5" />
@@ -121,6 +123,7 @@ import { ChevronDown, ListFilter, Check } from 'lucide-vue-next'
 import type { ServiceCategory } from './types'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
+import { useHeaderTone } from '@/composables/useNavPageControls'
 
 const { t } = useAppLanguage()
 const { translateServiceCategory } = useCategoryTranslation()
@@ -128,7 +131,15 @@ const { translateServiceCategory } = useCategoryTranslation()
 const props = defineProps<{
   modelValue: string
   categories: ServiceCategory[]
+  /**
+   * Palette only — never geometry, same contract as the event list's filters.
+   * Left unset it follows where the page header currently lives, which below
+   * the nav breakpoint is inside the mobile top bar — see useHeaderTone.
+   */
+  tone?: 'page' | 'nav'
 }>()
+
+const resolvedTone = useHeaderTone(() => props.tone)
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
