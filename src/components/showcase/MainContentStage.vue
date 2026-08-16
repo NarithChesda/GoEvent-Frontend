@@ -5,8 +5,10 @@
 
     <!-- The falling particle field is owned by CoverStage, which outlives every
          individual stage, so one continuous field spans cover → transition →
-         here. It re-layers itself to sit behind these decorations and the
-         content card once this stage takes over. -->
+         here. It draws in FRONT of this whole stage — decorations, content card
+         and floating menu alike — because CoverStage renders this stage inside a
+         `z-20` stacking context, leaving no z-index that sits between these
+         layers. See `fallingEffectZIndex` in CoverStage.vue. -->
 
     <!-- Decoration Images (optimized via ImageKit for viewport size) -->
     <!-- Z-indexes are dynamic via mainStageLayout prop (defaults: left/right=24, top/bottom=25) -->

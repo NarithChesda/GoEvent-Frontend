@@ -314,15 +314,21 @@ const shouldShowMainContent = computed(() => {
     || isDoorAnimationInProgress.value
 })
 
-// Falling field layering. 31 clears everything the cover puts on screen — the
-// decorations (24/25), the door panels (28), the ambient creatures (29) and the
-// cover copy (30) — so petals keep drifting in front of the doors as they part.
-// It drops to 15 only once the cover is fully gone and main content has taken
-// over: there it sits above the background video but below the main stage's own
-// decorations and content card, exactly where the effect used to live.
-const fallingEffectZIndex = computed(() =>
-  shouldShowMainContent.value && !shouldShowCoverContent.value ? 15 : 31,
-)
+// Falling field layering: a single 31 for every stage. It clears everything the
+// cover puts on screen — the decorations (24/25), the door panels (28), the
+// ambient creatures (29) and the cover copy (30) — so petals keep drifting in
+// front of the doors as they part, and it stays there once main content takes
+// over so they drift in front of the main stage's decorations too.
+//
+// There is no value that lands *between* the main stage's own layers: its whole
+// subtree renders inside the `z-20` slot wrapper below, which is a stacking
+// context, so anything ≤20 is behind all of it and anything >20 is in front of
+// all of it. In front therefore also means in front of the glass content card
+// and the floating menu — unavoidable, and consistent with the main stage's own
+// order, where the decorations (24/25) already paint over that card (20). Safe
+// because FallingEffect's root and every particle are `pointer-events: none`,
+// so nothing it covers stops being tappable or scrollable.
+const fallingEffectZIndex = 31
 
 // The gilding config, resolved here as well as in CoverContentOverlay: the spark
 // field outlives the cover overlay, so it can't take the config through it.
