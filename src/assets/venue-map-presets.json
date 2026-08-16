@@ -1,0 +1,29 @@
+{
+  "_comment": "Curated Google Maps embed presets offered to users as an alternative to pasting their own embed code. To add a venue: open Google Maps, find the place, Share > Embed a map, copy the iframe, and paste ONLY the src=\"...\" URL into embedUrl. The ?pb= URL is static, needs no API key, and never expires — but it is an undocumented Google format, so if a preset ever stops rendering just re-copy it. Keep ids stable and kebab-case; they are not stored on the event (only embedUrl is), so renaming an id is safe.",
+  "presets": [
+    {
+      "id": "sofitel-phnom-penh-phokeethra",
+      "name": "Sofitel Phnom Penh Phokeethra",
+      "nameKh": "សូហ្វីតែល ភ្នំពេញ ភូគីត្រា",
+      "city": "Phnom Penh",
+      "cityKh": "ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.7568!2d104.9282!3d11.5564!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3109513dc76a6be3%3A0x9c010ee85ab525bb!2sSofitel%20Phnom%20Penh%20Phokeethra!5e0!3m2!1sen!2skh!4v1700000000000"
+    },
+    {
+      "id": "raffles-hotel-le-royal",
+      "name": "Raffles Hotel Le Royal",
+      "nameKh": "សណ្ឋាគារ រ៉ាហ្វល ឡឺរ៉ូយ៉ាល់",
+      "city": "Phnom Penh",
+      "cityKh": "ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.6!2d104.9186!3d11.5726!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310951f0f0b0b0b1%3A0x0!2sRaffles%20Hotel%20Le%20Royal!5e0!3m2!1sen!2skh!4v1700000000000"
+    },
+    {
+      "id": "nagaworld-phnom-penh",
+      "name": "NagaWorld",
+      "nameKh": "ណាហ្គាវើលដ៍",
+      "city": "Phnom Penh",
+      "cityKh": "ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.9!2d104.9294!3d11.5563!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3109513e1e1e1e1e%3A0x0!2sNagaWorld!5e0!3m2!1sen!2skh!4v1700000000000"
+    }
+  ]
+}

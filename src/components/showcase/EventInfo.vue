@@ -267,7 +267,7 @@
               class="edit-region-control add-map-placeholder aspect-video"
               @click.stop.prevent="editIntentCtx.requestEdit({ kind: 'gmapEmbed' })"
             >
-              + Add Google Map
+              {{ tApp('management.showcasePreview.editors.addMap') }}
             </button>
           </div>
 

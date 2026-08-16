@@ -4,14 +4,18 @@
     <button
       ref="triggerRef"
       type="button"
+      :disabled="disabled"
       @click="openPicker"
       :aria-label="title || placeholder"
       aria-haspopup="dialog"
       :aria-expanded="isOpen"
-      class="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm border rounded-lg bg-white text-left focus:outline-none focus:ring-2 transition-colors"
-      :class="error
-        ? 'border-red-300 focus:ring-red-200 focus:border-red-400'
-        : 'border-slate-300 focus:ring-sky-200 focus:border-sky-400'"
+      class="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm border rounded-lg text-left focus:outline-none focus:ring-2 transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed"
+      :class="[
+        error
+          ? 'border-red-300 focus:ring-red-200 focus:border-red-400'
+          : 'border-slate-300 focus:ring-sky-200 focus:border-sky-400',
+        disabled ? '' : 'bg-white',
+      ]"
     >
       <span
         v-if="selectedOption?.color"
@@ -64,10 +68,34 @@
             {{ title }}
           </h3>
 
+          <!-- Search: opt-in, for lists long enough that scanning them is work -->
+          <div v-if="searchable" class="px-3 pt-3 pb-2 border-b border-slate-100">
+            <div class="relative">
+              <Search
+                class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                aria-hidden="true"
+              />
+              <input
+                ref="searchRef"
+                v-model="query"
+                type="text"
+                :placeholder="searchPlaceholder"
+                class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                @click.stop
+              />
+            </div>
+          </div>
+
           <div
             class="overflow-y-auto overscroll-contain"
             :class="isMobile ? 'py-1 max-h-[60vh]' : 'py-1 max-h-[20rem]'"
           >
+            <p
+              v-if="searchable && displayOptions.length === 0"
+              class="px-4 py-6 text-sm text-slate-500 text-center"
+            >
+              {{ noResultsText }}
+            </p>
             <button
               v-for="option in displayOptions"
               :key="String(option.value)"
@@ -83,11 +111,16 @@
                 :style="{ backgroundColor: option.color }"
                 aria-hidden="true"
               />
-              <span
-                class="flex-1 min-w-0 text-left text-sm truncate"
-                :class="isSelected(option) ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'"
-              >
-                {{ option.label }}
+              <span class="flex-1 min-w-0 text-left">
+                <span
+                  class="block text-sm truncate"
+                  :class="isSelected(option) ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'"
+                >
+                  {{ option.label }}
+                </span>
+                <span v-if="option.description" class="block text-xs text-slate-500 truncate">
+                  {{ option.description }}
+                </span>
               </span>
               <Check v-if="isSelected(option)" class="w-5 h-5 text-[#2ecc71] flex-shrink-0" aria-hidden="true" />
             </button>
@@ -99,14 +132,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onUnmounted } from 'vue'
-import { ChevronDown, Check } from 'lucide-vue-next'
+import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
+import { ChevronDown, Check, Search } from 'lucide-vue-next'
 
 export interface SelectFieldOption {
   value: string | number
   label: string
   /** Optional leading color dot (e.g. category color) */
   color?: string
+  /** Optional secondary line under the label (e.g. a city) */
+  description?: string
+  /** Extra text matched by search but not displayed (e.g. a romanized name) */
+  keywords?: string
 }
 
 interface Props {
@@ -119,6 +156,11 @@ interface Props {
   allowEmpty?: boolean
   /** Render error styling on the trigger */
   error?: boolean
+  disabled?: boolean
+  /** Show a filter box above the options — for lists too long to scan */
+  searchable?: boolean
+  searchPlaceholder?: string
+  noResultsText?: string
 }
 
 interface Emits {
@@ -130,16 +172,28 @@ const emit = defineEmits<Emits>()
 
 const triggerRef = ref<HTMLButtonElement>()
 const panelRef = ref<HTMLElement>()
+const searchRef = ref<HTMLInputElement>()
 const isOpen = ref(false)
 const isMobile = ref(false)
 const panelStyle = ref<Record<string, string>>({})
+const query = ref('')
 
 // Loose equality on purpose: form values may arrive as "3" while options carry 3
 const sameValue = (a: string | number | null, b: string | number) => String(a ?? '') === String(b)
 
-const displayOptions = computed<SelectFieldOption[]>(() =>
-  props.allowEmpty ? [{ value: '', label: props.placeholder }, ...props.options] : props.options,
-)
+const matchesQuery = (option: SelectFieldOption, needle: string) =>
+  `${option.label} ${option.description ?? ''} ${option.keywords ?? ''}`
+    .toLowerCase()
+    .includes(needle)
+
+const displayOptions = computed<SelectFieldOption[]>(() => {
+  const needle = props.searchable ? query.value.trim().toLowerCase() : ''
+  const matched = needle
+    ? props.options.filter((option) => matchesQuery(option, needle))
+    : props.options
+  // The "none" row is an action, not a result — never filter it away.
+  return props.allowEmpty ? [{ value: '', label: props.placeholder }, ...matched] : matched
+})
 
 const selectedOption = computed(() => {
   if (props.modelValue === null || props.modelValue === '') return null
@@ -148,6 +202,12 @@ const selectedOption = computed(() => {
 
 const isSelected = (option: SelectFieldOption) =>
   option.value === '' ? !selectedOption.value : sameValue(props.modelValue, option.value)
+
+// Filtering resizes the panel, so a popover anchored above the trigger would
+// drift off its anchor (or off-screen) as results narrow.
+watch(query, () => {
+  if (isOpen.value && !isMobile.value) positionPanel()
+})
 
 const selectOption = (option: SelectFieldOption) => {
   emit('update:modelValue', option.value)
@@ -179,11 +239,17 @@ const positionPanel = async () => {
   panelStyle.value = { width: `${width}px`, top: `${top}px`, left: `${left}px` }
 }
 
-const openPicker = () => {
+const openPicker = async () => {
+  if (props.disabled) return
   isMobile.value = window.matchMedia('(max-width: 639px)').matches
+  query.value = ''
   isOpen.value = true
   document.addEventListener('keydown', handleKeydown, true)
-  if (!isMobile.value) positionPanel()
+  if (!isMobile.value) {
+    await positionPanel()
+    // Desktop only: autofocusing on mobile throws up the keyboard over the sheet.
+    if (props.searchable) searchRef.value?.focus()
+  }
 }
 
 const closePicker = () => {

@@ -420,6 +420,7 @@
     "editors": {
       "replaceLogo": "Replace logo",
       "editMap": "Edit map",
+      "addMap": "Add Google Map",
       "changeHostPhoto": "Change photo",
       "addHostPhoto": "Add photo",
       "managePhotos": "Manage photos",
@@ -792,8 +793,20 @@
       "empty": "No map embedded",
       "inputPlaceholder": "Paste Google Maps embed code or URL here",
       "hint": "Paste the embed code or URL from Google Maps' Share > Embed a map option",
+      "invalidUrl": "Enter a Google Maps embed link (Share > Embed a map)",
+      "presets": {
+        "label": "Venue",
+        "placeholder": "Choose a venue",
+        "searchPlaceholder": "Search venues...",
+        "noResults": "No venues match your search"
+      },
+      "manual": {
+        "toggle": "Venue not listed? Paste an embed link"
+      },
       "saving": "Saving...",
       "saveBtn": "Save Changes",
+      "openEditor": "Open editor",
+      "removeBtn": "Remove map",
       "successMessage": "Map link updated successfully!",
       "deleteModal": {
         "title": "Remove Map",
