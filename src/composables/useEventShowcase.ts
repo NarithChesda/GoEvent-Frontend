@@ -10,6 +10,7 @@ import type {
   FallingEffectConfig,
   EventDetailsDesignConfig,
   HostInfoDesignConfig,
+  SparkFieldConfig,
 } from '../services/api/types/template.types'
 import type { StoredMusicStartStage } from '../services/api/types/event.types'
 
@@ -163,6 +164,11 @@ export interface TemplateAssets {
   falling_effect?: FallingEffectConfig | null
   /** Ambient creature (butterfly/dove/firefly…) effect for the cover stage. */
   ambient_creatures?: AmbientCreaturesConfig | null
+  /**
+   * Drifting spark field, spanning every stage. Absent falls back to the legacy
+   * `cover_stage_layout.coverGilding` spark fields — see resolveSparkField.
+   */
+  sparks?: SparkFieldConfig | null
   /**
    * Which showcase presentation layer this template renders: 'v1' (classic
    * cover/transition/main-content) or 'v2' ("Storybook Romance" scroll-story).

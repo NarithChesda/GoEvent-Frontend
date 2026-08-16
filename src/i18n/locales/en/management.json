@@ -2895,7 +2895,7 @@
     },
     "coverGilding": {
       "enableLabel": "Gilded Cover Border",
-      "enableHint": "Lights the edge of the cover artwork: a raised bevel, two travelling highlights, corner glints and drifting sparks. Best on artwork that already has a printed border to catch the light.",
+      "enableHint": "Lights the edge of the cover artwork: a raised bevel, two travelling highlights and corner glints. Best on artwork that already has a printed border to catch the light.",
       "intensity": "Intensity",
       "intensitySubtle": "Subtle",
       "intensityNormal": "Normal",
@@ -2908,12 +2908,34 @@
       "bandOuter": "Band outer edge",
       "bandInner": "Band inner edge",
       "bandWarning": "The inner edge must sit further in than the outer edge, or there is no band to light. The default band is used until it does.",
-      "sparkCount": "Sparks (0 = off)",
-      "sparkHint": "Sparks drift across the whole showcase, not just the cover — one field carries on into the main content stage without restarting.",
+      "sparkMovedHint": "Drifting sparks are configured in their own section below — they span the whole showcase, so they are no longer part of this border lighting.",
       "cornerFlares": "Corner glints",
       "cornerFlaresHint": "Pulsing light on the border's four corners.",
       "colorSource": "Tint Source",
       "sourceSecondary": "Secondary"
+    },
+    "sparks": {
+      "enableLabel": "Drifting Sparks",
+      "enableHint": "Blinking motes of light that drift across the whole showcase — the cover, the transition and the main content, as one unbroken field.",
+      "count": "Spark count (0 = off)",
+      "blinkSpeed": "Blink speed",
+      "minSize": "Min size",
+      "maxSize": "Max size",
+      "sizeHint": "Sizes are a percentage of the stage width, so sparks keep their proportions on any screen. Each spark picks a random size in this range.",
+      "shape": "Spark shape",
+      "intensity": "Brightness",
+      "colorSource": "Tint Source",
+      "customImage": "Custom spark image",
+      "customImageHint": "Transparent PNG or SVG, 64×64 to 128×128, under 20 KB. Replaces the built-in shape and is drawn as-is, so the tint setting no longer applies.",
+      "uploadCustom": "Upload custom spark",
+      "shapes": {
+        "glow": "Soft glow (default)",
+        "sparkle": "Sparkle (four-point)",
+        "star": "Star (five-point)",
+        "diamond": "Diamond",
+        "cross": "Glint (thin cross)",
+        "dot": "Dot"
+      }
     },
     "eventDetailsDesign": {
       "sectionTitle": "Date & Location Design",

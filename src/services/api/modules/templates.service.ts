@@ -124,6 +124,9 @@ export const partnerTemplateService = {
     if (payload.ambient_creatures !== undefined) {
       formData.append('ambient_creatures', JSON.stringify(payload.ambient_creatures))
     }
+    if (payload.sparks !== undefined) {
+      formData.append('sparks', JSON.stringify(payload.sparks))
+    }
     if (payload.event_details_design !== undefined) {
       formData.append('event_details_design', JSON.stringify(payload.event_details_design))
     }
@@ -134,6 +137,11 @@ export const partnerTemplateService = {
       formData.append('falling_effect_custom_image', payload.falling_effect_custom_image)
     } else if (payload.falling_effect_custom_image === '') {
       formData.append('falling_effect_custom_image', '')
+    }
+    if (payload.spark_custom_image instanceof File) {
+      formData.append('spark_custom_image', payload.spark_custom_image)
+    } else if (payload.spark_custom_image === '') {
+      formData.append('spark_custom_image', '')
     }
     return apiClient.postFormData<PartnerTemplate>('/api/core-data/partner-templates/', formData)
   },
@@ -172,6 +180,9 @@ export const partnerTemplateService = {
     if (payload.ambient_creatures !== undefined) {
       formData.append('ambient_creatures', JSON.stringify(payload.ambient_creatures))
     }
+    if (payload.sparks !== undefined) {
+      formData.append('sparks', JSON.stringify(payload.sparks))
+    }
     if (payload.event_details_design !== undefined) {
       formData.append('event_details_design', JSON.stringify(payload.event_details_design))
     }
@@ -182,6 +193,11 @@ export const partnerTemplateService = {
       formData.append('falling_effect_custom_image', payload.falling_effect_custom_image)
     } else if (payload.falling_effect_custom_image === '') {
       formData.append('falling_effect_custom_image', '')
+    }
+    if (payload.spark_custom_image instanceof File) {
+      formData.append('spark_custom_image', payload.spark_custom_image)
+    } else if (payload.spark_custom_image === '') {
+      formData.append('spark_custom_image', '')
     }
     return apiClient.patchFormData<PartnerTemplate>(
       `/api/core-data/partner-templates/${templateId}/`,

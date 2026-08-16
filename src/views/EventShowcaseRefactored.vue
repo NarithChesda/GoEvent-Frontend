@@ -112,6 +112,7 @@
         :animation-type="event.template_assets?.cover_stage_layout?.showcaseAnimationType"
         :ambient-creatures="event.template_assets?.ambient_creatures"
         :falling-effect="event.template_assets?.falling_effect"
+        :sparks="event.template_assets?.sparks"
         :transition-owns-falling-field="showTransitionStage && isDoorTransition"
         :use-transition-stage="isBasicWedding"
         :get-media-url="getMediaUrl"
