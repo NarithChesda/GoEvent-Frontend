@@ -1,7 +1,9 @@
 <template>
-  <!-- The shared Google Maps editor body: preset picker (primary) + manual
-       paste (fallback) + live preview. Rendered both inline in the media tab
-       and inside GmapEmbedModal so the two surfaces can't drift apart. -->
+  <!-- The Google Maps editor body: preset picker (primary) + manual paste
+       (fallback) + live preview. Lives inside GmapEmbedModal, which is the one
+       editing surface for the map — both the showcase preview's map region and
+       the media tab's Google Maps card open it, so there is only ever one place
+       to learn. -->
   <div class="space-y-3">
     <VenueMapPresetPicker
       :current-link="previewUrl"
@@ -57,15 +59,20 @@
       </Transition>
     </div>
 
-    <div v-if="previewUrl" class="rounded-xl overflow-hidden border border-slate-200">
-      <iframe
-        :src="previewUrl"
-        class="w-full h-44"
-        style="border: 0"
-        loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade"
-        :title="t('management.embeds.map.title')"
-      ></iframe>
+    <!-- Framed the way the showcase itself frames the map, so what you approve
+         here is the shape guests get. -->
+    <div v-if="previewUrl" class="rounded-2xl border border-slate-200 overflow-hidden">
+      <div class="aspect-video">
+        <iframe
+          :src="previewUrl"
+          width="100%"
+          height="100%"
+          style="border: 0"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          :title="t('management.embeds.map.title')"
+        ></iframe>
+      </div>
     </div>
   </div>
 </template>

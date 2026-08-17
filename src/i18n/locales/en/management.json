@@ -791,6 +791,7 @@
       "title": "Google Maps",
       "description": "Embed a map to help guests find your venue",
       "empty": "No map embedded",
+      "emptyHint": "Pick your venue, or paste a Google Maps embed link.",
       "inputPlaceholder": "Paste Google Maps embed code or URL here",
       "hint": "Paste the embed code or URL from Google Maps' Share > Embed a map option",
       "invalidUrl": "Enter a Google Maps embed link (Share > Embed a map)",
@@ -803,9 +804,12 @@
       "manual": {
         "toggle": "Venue not listed? Paste an embed link"
       },
-      "saving": "Saving...",
-      "saveBtn": "Save Changes",
-      "openEditor": "Open editor",
+      "source": {
+        "preset": "From the venue list",
+        "custom": "Custom map link",
+        "customHint": "Pasted Google Maps embed link"
+      },
+      "changeBtn": "Change",
       "removeBtn": "Remove map",
       "successMessage": "Map link updated successfully!",
       "deleteModal": {
