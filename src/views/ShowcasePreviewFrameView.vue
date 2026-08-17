@@ -34,6 +34,7 @@ import {
   postShowcaseLanguagesToParent,
 } from '@/components/showcase-preview/bridge/previewBridge'
 import { resolvePreviewRenderer } from '@/components/showcase-preview/renderers/resolvePreviewRenderer'
+import { warmV1StageChunks } from '@/components/showcase-preview/renderers/v1StageComponents'
 import LoadingSpinner from '@/components/showcase/LoadingSpinner.vue'
 import ErrorDisplay from '@/components/showcase/ErrorDisplay.vue'
 
@@ -234,6 +235,13 @@ const loadPreviewTemplateFallback = async () => {
 }
 
 onMounted(() => {
+  // Kicked off before the data fetch below, not after the renderer resolves:
+  // the stage components are lazily loaded (see v1StageComponents.ts) and the
+  // renderer only mounts once `event.id` exists, so without this the chunk
+  // download would wait for the showcase response instead of riding alongside
+  // it. Fire-and-forget — nothing here blocks on it.
+  warmV1StageChunks(stage.value)
+
   window.addEventListener('message', onFrameMessage)
   // Strictly after the listener above, and deliberately before loadShowcase:
   // a `preview-template` that beats the data is held by the composable and

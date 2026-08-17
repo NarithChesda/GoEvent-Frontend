@@ -153,7 +153,13 @@
     @dragging="onCoverLayoutDragging"
   />
 
+  <!-- Only rendered once a photo has actually been opened, so its chunk is not
+       part of any frame's initial load. Visually identical to rendering it
+       always: the component's own root is `v-if="isOpen"`, with no enter
+       transition to lose. It stays mounted afterwards so reopening is
+       instant. -->
   <PhotoModal
+    v-if="photoModalEverOpened"
     :is-open="isPhotoModalOpen"
     :photos="eventPhotos"
     :current-photo="currentModalPhoto"
@@ -164,7 +170,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 import type { useEventShowcase } from '@/composables/useEventShowcase'
 import { isBasicWeddingShowcase } from './resolvePreviewRenderer'
 import {
@@ -181,13 +187,17 @@ import type {
   CoverElementId,
   CoverStageLayout,
 } from '@/services/api/types/template.types'
-import CoverStage from '@/components/showcase/CoverStage.vue'
-import CoverLayoutEditor from '@/components/showcase-preview/edit/CoverLayoutEditor.vue'
-import V1EventVideoStage from './V1EventVideoStage.vue'
-import TransitionStage from '@/components/showcase/TransitionStage.vue'
-import TransitionStageDoor from '@/components/showcase/TransitionStageDoor.vue'
-import MainContentStage from '@/components/showcase/MainContentStage.vue'
-import PhotoModal from '@/components/showcase/PhotoModal.vue'
+// Every stage is a separate lazily loaded chunk — a frame renders one of them,
+// so it should download one of them. See v1StageComponents.ts.
+import {
+  CoverStage,
+  CoverLayoutEditor,
+  V1EventVideoStage,
+  TransitionStage,
+  TransitionStageDoor,
+  MainContentStage,
+  PhotoModal,
+} from './v1StageComponents'
 
 interface Props {
   /** The frame shell's loaded showcase state — shared, not refetched here. */
@@ -243,6 +253,14 @@ const {
   changeLanguage,
   toggleMusic,
 } = props.showcase
+
+// Latches on the first photo-modal open and never resets — that's what keeps
+// the modal's chunk (and the modal itself) out of the frame's initial load
+// while still letting it stay mounted once the user has used it.
+const photoModalEverOpened = ref(false)
+watch(isPhotoModalOpen, (open) => {
+  if (open) photoModalEverOpened.value = true
+})
 
 // useCoverStageVideo takes a one-off SNAPSHOT of its video URLs at CoverStage's
 // setup and never re-reads them (the object CoverStage hands it is built from

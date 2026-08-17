@@ -8,35 +8,38 @@
  *
  * How to add a new locale:
  *   1. Create src/i18n/locales/<code>/*.json (mirror existing namespaces)
- *   2. Import them below and add to `messages`
- *   3. Add the locale code to `SUPPORTED_LOCALES`
+ *   2. Create src/i18n/messages/<code>.ts re-exporting them as one bundle
+ *   3. Add it to LAZY_LOCALE_LOADERS below
+ *   4. Add the locale code to `SUPPORTED_LOCALES`
  *
  * How to add a new namespace (e.g. "expenses.json"):
  *   1. Create src/i18n/locales/en/expenses.json + kh/expenses.json
- *   2. Import both and merge into the messages object below
+ *   2. Add it to BOTH bundles in src/i18n/messages/
+ *
+ * ---------------------------------------------------------------------------
+ * Why only the fallback locale is bundled eagerly
+ * ---------------------------------------------------------------------------
+ * The message JSON is large — ~476kB raw across both locales, of which
+ * management.json alone is ~366kB — and it used to sit, in full, in the app
+ * ENTRY chunk. That is paid on every boot, and the Design Studio boots the app
+ * four times over (the page plus one per preview iframe, each its own browsing
+ * context with its own parse). Only one locale is ever displayed at a time, so
+ * bundling both meant every one of those boots parsed ~320kB of Khmer it would
+ * never render.
+ *
+ * English stays eager because it is FALLBACK_LOCALE: vue-i18n needs it present
+ * to resolve any key the active locale is missing, so deferring it would make
+ * every gap in a translation render as a raw key path. Every other locale is
+ * fetched on demand and merged in via `ensureLocaleMessages` — awaited before
+ * mount in main.ts when it is the startup locale, and awaited by the language
+ * store before it flips `locale`, so no component ever renders against messages
+ * that have not arrived. If the fetch fails, vue-i18n simply falls back to
+ * English rather than showing key paths.
  */
 
 import { createI18n } from 'vue-i18n'
 
-// English namespaces
-import enCommon from './locales/en/common.json'
-import enAuth from './locales/en/auth.json'
-import enEvents from './locales/en/events.json'
-import enDiscover from './locales/en/discover.json'
-import enManagement from './locales/en/management.json'
-import enSettings from './locales/en/settings.json'
-import enCategories from './locales/en/categories.json'
-import enServices from './locales/en/services.json'
-
-// Khmer namespaces
-import khCommon from './locales/kh/common.json'
-import khAuth from './locales/kh/auth.json'
-import khEvents from './locales/kh/events.json'
-import khDiscover from './locales/kh/discover.json'
-import khManagement from './locales/kh/management.json'
-import khSettings from './locales/kh/settings.json'
-import khCategories from './locales/kh/categories.json'
-import khServices from './locales/kh/services.json'
+import enMessages from './messages/en'
 
 export const SUPPORTED_LOCALES = ['en', 'kh'] as const
 export type AppLocale = (typeof SUPPORTED_LOCALES)[number]
@@ -44,32 +47,36 @@ export type AppLocale = (typeof SUPPORTED_LOCALES)[number]
 export const DEFAULT_LOCALE: AppLocale = 'en'
 export const FALLBACK_LOCALE: AppLocale = 'en'
 
+type LocaleMessages = typeof enMessages
+
+/**
+ * Every locale except the bundled fallback.
+ *
+ * 'en' is spelled literally rather than as `typeof FALLBACK_LOCALE`: that
+ * constant is annotated `AppLocale`, so its type is the whole union and the
+ * Exclude would collapse to `never`.
+ */
+type LazyLocale = Exclude<AppLocale, 'en'>
+
+/**
+ * Locales fetched on demand. Keyed so adding one is a single line here plus its
+ * bundle module — and so a missing entry is a type error rather than a locale
+ * that silently never loads.
+ */
+const LAZY_LOCALE_LOADERS: Record<LazyLocale, () => Promise<{ default: LocaleMessages }>> = {
+  kh: () => import('./messages/kh'),
+}
+
 /**
  * Flat message object keyed by locale. Each namespace becomes a
  * top-level key so usage is `t('events.title')`, `t('common.actions.save')`.
+ *
+ * Only the fallback locale is present at boot; the rest are merged in at
+ * runtime by `ensureLocaleMessages`. Typed across all locales so vue-i18n
+ * infers `locale` as AppLocale rather than narrowing it to the one key that
+ * happens to be here statically.
  */
-const messages = {
-  en: {
-    common: enCommon,
-    auth: enAuth,
-    events: enEvents,
-    discover: enDiscover,
-    management: enManagement,
-    settings: enSettings,
-    categories: enCategories,
-    services: enServices,
-  },
-  kh: {
-    common: khCommon,
-    auth: khAuth,
-    events: khEvents,
-    discover: khDiscover,
-    management: khManagement,
-    settings: khSettings,
-    categories: khCategories,
-    services: khServices,
-  },
-}
+const messages = { en: enMessages } as Record<AppLocale, LocaleMessages>
 
 /**
  * Read persisted locale from localStorage (if any). We read here rather
@@ -101,10 +108,56 @@ export const i18n = createI18n({
   silentFallbackWarn: !import.meta.env.DEV,
 })
 
+/** Locales whose messages are in the runtime already. */
+const loadedLocales = new Set<AppLocale>([FALLBACK_LOCALE])
+
+/** In-flight loads, so N concurrent callers share one fetch. */
+const localeLoads = new Map<AppLocale, Promise<void>>()
+
+/**
+ * Make sure `locale`'s messages are present in the vue-i18n runtime.
+ *
+ * Resolves immediately for anything already loaded (always the case for the
+ * fallback locale, which is bundled). Resolving is the signal that it is safe
+ * to switch to `locale` — call it BEFORE setI18nLocale, never after, or the
+ * first render lands on empty messages.
+ *
+ * Never rejects: a failed locale chunk leaves the runtime on the fallback
+ * locale's messages, which is a degraded but readable UI, and lets a later
+ * attempt retry from scratch.
+ */
+export async function ensureLocaleMessages(locale: AppLocale): Promise<void> {
+  if (loadedLocales.has(locale)) return
+
+  const loader = LAZY_LOCALE_LOADERS[locale as LazyLocale]
+  if (!loader) return
+
+  let pending = localeLoads.get(locale)
+  if (!pending) {
+    pending = loader()
+      .then((module) => {
+        i18n.global.setLocaleMessage(locale, module.default)
+        loadedLocales.add(locale)
+      })
+      .catch(() => {
+        // Left unloaded on purpose: vue-i18n falls back to English, and a
+        // later switch can try the chunk again.
+      })
+      .finally(() => {
+        localeLoads.delete(locale)
+      })
+    localeLoads.set(locale, pending)
+  }
+
+  await pending
+}
+
 /**
  * Imperative locale setter. Prefer using the Pinia store or the
  * `useAppLanguage` composable in components; this is exported for
  * non-component code (e.g. router guards, API error handlers).
+ *
+ * Assumes `locale`'s messages are already loaded — see ensureLocaleMessages.
  */
 export function setI18nLocale(locale: AppLocale): void {
   i18n.global.locale.value = locale
