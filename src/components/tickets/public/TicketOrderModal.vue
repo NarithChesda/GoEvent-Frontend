@@ -28,9 +28,10 @@
               <!--
                 A slim head above the tear: on a phone it reads as a sheet grab
                 bar, on desktop as a title bar. It deliberately holds no copy —
-                the order's own header card is the first thing in the body, and
-                repeating the title above it made the panel look doubled.
-                Its height is fixed because the notch mask is cut against it.
+                the sheet below names its own event, states its own status and
+                prints its own code, and every one of those repeated up here read
+                as a doubling rather than a hierarchy. Its height is fixed
+                because the notch mask is cut against it.
               -->
               <header
                 class="relative flex-shrink-0 flex items-center justify-end h-12 sm:h-14 px-3 sm:px-4"
@@ -39,11 +40,6 @@
                   class="sm:hidden absolute left-1/2 top-3 -translate-x-1/2 w-10 h-1 rounded-full bg-slate-200"
                   aria-hidden="true"
                 />
-                <p
-                  class="hidden sm:block absolute left-5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 truncate max-w-[70%]"
-                >
-                  {{ title || code }}
-                </p>
                 <button
                   type="button"
                   class="flex-shrink-0 w-9 h-9 inline-flex items-center justify-center rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
@@ -57,10 +53,17 @@
               <!-- The tear, sitting exactly where the notches are cut -->
               <div class="ticket-modal-tear flex-shrink-0" aria-hidden="true" />
 
+              <!--
+                No padding of its own: the panel draws a single edge-to-edge
+                ticket sheet, which is what lets its status band and its footer
+                run the full width of the phone instead of floating as cards.
+                The slate ground shows only in the home-indicator gutter, where
+                it continues the sheet's own footer tone.
+              -->
               <div
-                class="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-5 pt-4 pb-5 bg-slate-50/60"
+                class="flex-1 overflow-y-auto overscroll-contain bg-slate-50/70 pb-[env(safe-area-inset-bottom)]"
               >
-                <TicketOrderDetailPanel :code="code" embedded />
+                <TicketOrderDetailPanel :code="code" :fallback-title="title" embedded />
               </div>
             </div>
           </div>
@@ -80,7 +83,7 @@ const props = defineProps<{
   show: boolean
   /** Confirmation code of the order to load. */
   code: string
-  /** Known event title, so the head reads right before the fetch resolves. */
+  /** Known event title, so the sheet names its event before the fetch resolves. */
   title?: string
 }>()
 

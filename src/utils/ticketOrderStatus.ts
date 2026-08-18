@@ -70,6 +70,19 @@ export const TICKET_ORDER_TONE_ICON: Record<TicketOrderTone, string> = {
   slate: 'bg-slate-100 text-slate-500',
 }
 
+/**
+ * The tinted band a status leads the buyer's order detail with. Same tones as
+ * the pill, but as a full-bleed surface: it carries a sentence of copy, so the
+ * text is set for reading rather than for a two-word label.
+ */
+export const TICKET_ORDER_TONE_BAND: Record<TicketOrderTone, string> = {
+  amber: 'bg-amber-50 text-amber-900',
+  sky: 'bg-sky-50 text-sky-900',
+  emerald: 'bg-emerald-50 text-emerald-900',
+  rose: 'bg-rose-50 text-rose-900',
+  slate: 'bg-slate-50 text-slate-700',
+}
+
 /** A plain colour, for dots in filter menus. */
 export const TICKET_ORDER_TONE_DOT: Record<TicketOrderTone, string> = {
   amber: 'bg-amber-500',
@@ -87,6 +100,9 @@ export const ticketOrderIconClasses = (status: TicketOrderStatus): string =>
 
 export const ticketOrderDotClasses = (status: TicketOrderStatus): string =>
   TICKET_ORDER_TONE_DOT[ticketOrderStatusMeta(status).tone]
+
+export const ticketOrderBandClasses = (status: TicketOrderStatus): string =>
+  TICKET_ORDER_TONE_BAND[ticketOrderStatusMeta(status).tone]
 
 /** Every status, in the order a buyer's own list should offer them as filters. */
 export const TICKET_ORDER_STATUS_ORDER: TicketOrderStatus[] = [
