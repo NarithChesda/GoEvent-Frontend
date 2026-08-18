@@ -25,8 +25,9 @@ type GoEventFixtures = {
   /**
    * Stubs every call to the Django backend with a 200 + empty paginated body,
    * so tests are not coupled to a running API on 127.0.0.1:8000.
-   * Register a more specific `page.route` BEFORE calling this for tests that
-   * need real payloads - Playwright matches the most recently added route first.
+   * Call this FIRST and register more specific `page.route`s after it -
+   * Playwright matches the most recently added route first, so a specific route
+   * registered before this catch-all never gets a chance to answer.
    */
   stubApi: (page: Page) => Promise<void>
 }

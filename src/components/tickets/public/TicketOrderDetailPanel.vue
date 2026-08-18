@@ -5,7 +5,9 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-20">
-      <div class="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div
+        class="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"
+      />
     </div>
 
     <!-- Error / empty -->
@@ -22,62 +24,77 @@
     </div>
 
     <div v-else class="space-y-5">
-      <!-- Header card: white surface with thin gradient accent + subtle
-           gradient code chip. Less saturated, easier on small screens. -->
-      <header class="relative bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+      <!--
+        Header card: the code, and immediately under it the one sentence about
+        where the order stands. The status used to be a second card floating
+        below this one, which on a phone left the code sitting alone in a tall
+        box with nothing beside it. Status is *about* the code, so it lives in
+        the same card, tinted, as a strip along its bottom.
+      -->
+      <header
+        class="relative bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden"
+      >
         <div aria-hidden="true" class="h-1.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]" />
-        <div class="px-5 py-5 sm:px-6 sm:py-6">
-          <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div class="px-4 py-4 sm:px-6 sm:py-5">
+          <div class="flex items-start justify-between gap-3">
             <div class="min-w-0 flex-1">
-              <p class="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5">
+              <p
+                class="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-1"
+              >
                 {{ t('events.tickets.order.confirmationCodeLabel') }}
               </p>
-              <p class="font-mono text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] break-all leading-tight">
+              <p
+                class="font-mono text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] break-all leading-tight"
+              >
                 {{ order.confirmation_code }}
               </p>
-              <p v-if="eventTitle" class="mt-2 text-sm sm:text-base font-medium text-slate-900 break-words">
+              <!-- Skipped when embedded: the modal's own head already names the
+                   event, and two copies of it a centimetre apart read as an
+                   accident rather than a hierarchy. -->
+              <p
+                v-if="eventTitle && !embedded"
+                class="mt-2 text-sm sm:text-base font-medium text-slate-900 break-words"
+              >
                 {{ eventTitle }}
               </p>
             </div>
             <!-- Single intentional status badge (comp shown beside it only when relevant) -->
-            <div class="flex items-center gap-1.5 flex-shrink-0">
-              <span
-                v-if="order.is_comp"
-                class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-sky-50 text-sky-700"
-              >
-                {{ t('events.tickets.list.compBadge') }}
-              </span>
+            <div class="flex flex-col items-end gap-1 flex-shrink-0">
               <span
                 :class="[
-                  'inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide',
+                  'inline-flex items-center px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap',
                   statusBadgeClass,
                 ]"
               >
                 {{ statusLabel }}
               </span>
+              <span
+                v-if="order.is_comp"
+                class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide bg-sky-50 text-sky-700"
+              >
+                {{ t('events.tickets.list.compBadge') }}
+              </span>
             </div>
           </div>
         </div>
+
+        <!-- Status strip -->
+        <div :class="['px-4 py-3 sm:px-6 sm:py-3.5 border-t', bannerClass]">
+          <p class="text-sm font-medium leading-snug">{{ statusLine }}</p>
+          <p v-if="statusHelp" class="mt-1 text-xs leading-relaxed opacity-90">{{ statusHelp }}</p>
+          <p
+            v-if="refundCountdown"
+            class="mt-2 inline-block px-2.5 py-1 rounded-full bg-white/70 text-[11px] font-semibold uppercase tracking-wide"
+          >
+            {{ refundCountdown }}
+          </p>
+        </div>
       </header>
 
-      <!-- Status banner -->
-      <div
-        :class="[
-          'rounded-2xl p-4 border',
-          bannerClass,
-        ]"
-      >
-        <p class="text-sm font-medium leading-snug">{{ statusLine }}</p>
-        <p v-if="statusHelp" class="mt-1 text-xs leading-relaxed opacity-90">{{ statusHelp }}</p>
-        <p
-          v-if="refundCountdown"
-          class="mt-2.5 inline-block px-2.5 py-1 rounded-full bg-white/70 text-[11px] font-semibold uppercase tracking-wide"
-        >
-          {{ refundCountdown }}
-        </p>
-      </div>
-
-      <!-- Items: receipt-style — items section flows into totals, big bold total line -->
+      <!-- Items: a receipt. One line per ticket type, one line for what it came
+           to — the subtotal row only appears when a discount makes it differ
+           from the total, since repeating the same figure twice under a rule
+           reads as an error rather than a breakdown. -->
       <section>
         <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
           {{ t('events.tickets.order.itemsHeader') }}
@@ -87,12 +104,15 @@
             <li
               v-for="(item, idx) in order.items"
               :key="idx"
-              class="px-4 sm:px-5 py-3.5 flex items-center justify-between gap-3"
+              class="px-4 sm:px-5 py-3 flex items-start justify-between gap-3"
             >
               <div class="min-w-0">
-                <p class="text-sm font-medium text-slate-900 truncate">{{ item.ticket_type.name }}</p>
+                <p class="text-sm font-medium text-slate-900 truncate">
+                  {{ item.ticket_type.name }}
+                </p>
                 <p class="text-xs text-slate-500 tabular-nums mt-0.5">
-                  {{ item.quantity }} × {{ formatCurrency(item.unit_price, order.currency as CurrencyCode) }}
+                  {{ item.quantity }} ×
+                  {{ formatCurrency(item.unit_price, order.currency as CurrencyCode) }}
                 </p>
               </div>
               <p class="text-sm font-semibold text-slate-900 tabular-nums flex-shrink-0">
@@ -100,29 +120,35 @@
               </p>
             </li>
           </ul>
-          <!-- Totals — receipt block with dashed separator into bold total -->
-          <div class="px-4 sm:px-5 py-4 bg-slate-50/70 border-t border-slate-200 space-y-1.5 text-sm">
-            <div class="flex items-center justify-between">
-              <span class="text-slate-500">{{ t('events.tickets.order.subtotalLabel') }}</span>
-              <span class="text-slate-700 tabular-nums">
-                {{ formatCurrency(order.subtotal, order.currency as CurrencyCode) }}
-              </span>
-            </div>
+          <div class="px-4 sm:px-5 py-3 bg-slate-50/70 border-t border-slate-200 text-sm">
+            <template v-if="showSubtotal">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">{{ t('events.tickets.order.subtotalLabel') }}</span>
+                <span class="text-slate-700 tabular-nums">
+                  {{ formatCurrency(order.subtotal, order.currency as CurrencyCode) }}
+                </span>
+              </div>
+              <div v-if="order.promo_code" class="flex items-center justify-between mt-1.5">
+                <span class="text-slate-500 min-w-0 truncate">
+                  {{ t('events.tickets.order.discountLabel') }}
+                  <span
+                    class="font-mono text-[11px] ml-1 px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700"
+                    >{{ order.promo_code }}</span
+                  >
+                </span>
+                <span class="text-emerald-700 font-medium tabular-nums flex-shrink-0">
+                  − {{ formatCurrency(order.promo_discount, order.currency as CurrencyCode) }}
+                </span>
+              </div>
+            </template>
             <div
-              v-if="order.promo_code"
-              class="flex items-center justify-between"
+              class="flex items-baseline justify-between gap-3"
+              :class="showSubtotal ? 'pt-2.5 mt-2.5 border-t border-dashed border-slate-300' : ''"
             >
-              <span class="text-slate-500">
-                {{ t('events.tickets.order.discountLabel') }}
-                <span class="font-mono text-[11px] ml-1 px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">{{ order.promo_code }}</span>
-              </span>
-              <span class="text-emerald-700 font-medium tabular-nums">
-                − {{ formatCurrency(order.promo_discount, order.currency as CurrencyCode) }}
-              </span>
-            </div>
-            <div class="flex items-center justify-between pt-3 mt-1.5 border-t border-dashed border-slate-300">
-              <span class="text-sm font-semibold text-slate-500 uppercase tracking-wide">{{ t('events.tickets.order.totalLabel') }}</span>
-              <span class="text-xl sm:text-2xl font-bold text-slate-900 tabular-nums">
+              <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">{{
+                t('events.tickets.order.totalLabel')
+              }}</span>
+              <span class="text-lg sm:text-xl font-bold text-slate-900 tabular-nums">
                 {{ formatCurrency(order.total, order.currency as CurrencyCode) }}
               </span>
             </div>
@@ -146,12 +172,10 @@
         <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
           {{ t('events.tickets.order.ticketsHeader') }}
         </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <TicketCard
-            v-for="ticket in order.tickets"
-            :key="ticket.id"
-            :ticket="ticket"
-          />
+        <!-- auto-fit rather than a fixed two-up: inside the modal a lone ticket
+             would otherwise sit in the left half with dead space beside it. -->
+        <div class="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))]">
+          <TicketCard v-for="ticket in order.tickets" :key="ticket.id" :ticket="ticket" />
         </div>
       </section>
 
@@ -162,22 +186,36 @@
         </h2>
         <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm space-y-2">
           <div class="flex items-baseline gap-2">
-            <span class="text-[11px] font-semibold uppercase tracking-wide text-rose-600 flex-shrink-0">{{ t('events.tickets.order.refund.statusLabel') }}</span>
-            <span class="text-rose-900 font-medium">{{ t(`events.tickets.order.refund.statuses.${order.refund.status}`) }}</span>
+            <span
+              class="text-[11px] font-semibold uppercase tracking-wide text-rose-600 flex-shrink-0"
+              >{{ t('events.tickets.order.refund.statusLabel') }}</span
+            >
+            <span class="text-rose-900 font-medium">{{
+              t(`events.tickets.order.refund.statuses.${order.refund.status}`)
+            }}</span>
           </div>
           <div v-if="order.refund.reason" class="flex items-baseline gap-2 flex-wrap">
-            <span class="text-[11px] font-semibold uppercase tracking-wide text-rose-600 flex-shrink-0">{{ t('events.tickets.order.refund.reasonLabel') }}</span>
+            <span
+              class="text-[11px] font-semibold uppercase tracking-wide text-rose-600 flex-shrink-0"
+              >{{ t('events.tickets.order.refund.reasonLabel') }}</span
+            >
             <span class="text-rose-900 leading-relaxed">{{ order.refund.reason }}</span>
           </div>
           <div v-if="order.refund.admin_notes" class="flex items-baseline gap-2 flex-wrap">
-            <span class="text-[11px] font-semibold uppercase tracking-wide text-rose-600 flex-shrink-0">{{ t('events.tickets.order.refund.adminNotesLabel') }}</span>
+            <span
+              class="text-[11px] font-semibold uppercase tracking-wide text-rose-600 flex-shrink-0"
+              >{{ t('events.tickets.order.refund.adminNotesLabel') }}</span
+            >
             <span class="text-rose-900 leading-relaxed">{{ order.refund.admin_notes }}</span>
           </div>
         </div>
       </section>
 
       <!-- Actions — full-width on mobile, comfortable touch targets -->
-      <div v-if="canCancel || canRequestRefund" class="flex flex-col sm:flex-row sm:flex-wrap gap-2 pt-1">
+      <div
+        v-if="canCancel || canRequestRefund"
+        class="flex flex-col sm:flex-row sm:flex-wrap gap-2 pt-1"
+      >
         <button
           v-if="canCancel"
           type="button"
@@ -189,7 +227,9 @@
             v-if="isCancelling"
             class="w-4 h-4 animate-spin border-2 border-slate-400 border-t-transparent rounded-full"
           />
-          {{ isCancelling ? t('events.tickets.order.cancelling') : t('events.tickets.order.cancel') }}
+          {{
+            isCancelling ? t('events.tickets.order.cancelling') : t('events.tickets.order.cancel')
+          }}
         </button>
         <button
           v-if="canRequestRefund"
@@ -210,7 +250,6 @@
       @close="showRefundModal = false"
       @submit="submitRefund"
     />
-
   </div>
 </template>
 
@@ -224,9 +263,12 @@ import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useToast } from '@/composables/useToast'
 import { ticketOrdersService, type TicketOrderDetail } from '@/services/api'
 import { formatCurrency, type CurrencyCode } from '@/utils/currency'
+import { ticketOrderBadgeClasses } from '@/utils/ticketOrderStatus'
 
 const props = defineProps<{
   code: string
+  /** Rendered inside a surface that already names the order (TicketOrderModal). */
+  embedded?: boolean
 }>()
 
 const { t } = useAppLanguage()
@@ -316,24 +358,18 @@ const statusLabel = computed(() => {
 
 // Badge sits on the white header card — use the same tinted chips as the
 // list view so paid/awaiting_review/etc. read at a glance.
-const statusBadgeClass = computed(() => {
-  switch (order.value?.status) {
-    case 'paid':
-      return 'bg-emerald-50 text-emerald-700'
-    case 'awaiting_review':
-      return 'bg-amber-50 text-amber-700'
-    case 'pending':
-      return 'bg-slate-100 text-slate-700'
-    case 'refund_requested':
-      return 'bg-sky-50 text-sky-700'
-    case 'refunded':
-      return 'bg-rose-50 text-rose-700'
-    case 'cancelled':
-    case 'expired':
-      return 'bg-slate-100 text-slate-600'
-    default:
-      return 'bg-slate-100 text-slate-700'
-  }
+// Shared with the list this panel opens from, so a status can't be amber on one
+// screen and slate on the next. See utils/ticketOrderStatus.ts.
+const statusBadgeClass = computed(() =>
+  order.value ? ticketOrderBadgeClasses(order.value.status) : 'bg-slate-100 text-slate-600',
+)
+
+// The breakdown earns its space only when something was taken off; otherwise
+// subtotal and total are the same number printed twice.
+const showSubtotal = computed(() => {
+  if (!order.value) return false
+  if (order.value.promo_code) return true
+  return parseFloat(order.value.subtotal) !== parseFloat(order.value.total)
 })
 
 const statusLine = computed(() => {
@@ -351,11 +387,13 @@ const statusHelp = computed(() => {
 
 const bannerClass = computed(() => {
   switch (order.value?.status) {
+    // Amber is reserved for "we're waiting on you". Once the proof is in, the
+    // ball is in the organizer's court and the banner cools to sky.
     case 'pending':
-    case 'awaiting_review':
       return 'bg-amber-50 border-amber-200 text-amber-900'
     case 'paid':
       return 'bg-emerald-50 border-emerald-200 text-emerald-900'
+    case 'awaiting_review':
     case 'refund_requested':
       return 'bg-sky-50 border-sky-200 text-sky-900'
     case 'refunded':
@@ -427,10 +465,9 @@ const submitRefund = async (reason: string) => {
   if (!order.value) return
   isRequestingRefund.value = true
   try {
-    const response = await ticketOrdersService.requestRefund(
-      order.value.confirmation_code,
-      { reason },
-    )
+    const response = await ticketOrdersService.requestRefund(order.value.confirmation_code, {
+      reason,
+    })
     if (response.success) {
       showRefundModal.value = false
       handleMessage('success', t('events.tickets.order.refund.successMessage'))
@@ -446,4 +483,3 @@ const submitRefund = async (reason: string) => {
   }
 }
 </script>
-
