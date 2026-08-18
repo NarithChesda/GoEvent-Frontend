@@ -307,63 +307,63 @@
       </section>
 
       <!--
-        The save bar. It is the last thing in the form, so it settles into place
-        at the end of the page, but it is `sticky` — on a phone, where the form
-        runs several screens long, it rides along above the tab bar instead of
-        making you scroll to the bottom to commit an edit made at the top.
+        The save bar, which exists only when there is something to save.
+
+        It used to render permanently, so most of the time it was a floating bar
+        whose whole message was that nothing had happened — chrome reporting its
+        own idleness, parked above the tab pill. Gated on `isDirty` it becomes a
+        response to an edit instead: the bottom of the screen is clear until you
+        change something, and the bar arriving *is* the notice that you have.
+        `isSubmitting` holds it open across the request, since the store only
+        clears the dirty flag once the save lands.
+
+        It is made of `.glass-pill` — the same surface as the tab bar below it —
+        and sized `w-fit` and centred to match. It was previously built from the
+        toast recipe (§12), which meant a `rounded-2xl` card in one glass sitting
+        12px above a `rounded-full` pill in another: two dialects of the same
+        material touching, which is what read as unfinished.
+
         `--fab-bottom` is the shared slot for anything floating at the bottom
-        edge: 0-relative on desktop, clearing the floating pill on touch.
-
-        That slot is also where ContactUsFAB sits, so below `xl` the bar's
-        contents stop short of the FAB's lane (its `right-4` inset plus its
-        `w-10`, plus a gap) instead of running under it — the save button was
-        landing behind the FAB and losing both its label and its tap target.
-        From `xl` the page's own gutter is wider than the FAB, so the padding
-        goes back to normal.
+        edge: 0-relative on desktop, clearing the floating pill on touch. The
+        settings page hides ContactUsFAB, which used to share this exact lane and
+        forced the bar to pad its right side out of the way to stay tappable.
       -->
-      <div class="sticky bottom-[var(--fab-bottom)] z-20 pt-1">
-        <div
-          class="flex items-center gap-2 sm:gap-3 rounded-2xl border border-white/70 bg-white/85 backdrop-blur-xl pl-3 pr-[4.5rem] xl:pr-3 py-2.5 shadow-lg shadow-slate-900/10 ring-1 ring-slate-900/5"
-        >
-          <p class="flex min-w-0 flex-1 items-center gap-2 text-xs sm:text-sm" aria-live="polite">
-            <span
-              class="w-1.5 h-1.5 flex-shrink-0 rounded-full transition-colors duration-200"
-              :class="isDirty ? 'bg-amber-400' : 'bg-emerald-400'"
-              aria-hidden="true"
-            ></span>
+      <Transition name="save-bar">
+        <div v-if="isDirty || isSubmitting" class="sticky bottom-[var(--fab-bottom)] z-20 pt-1">
+          <div
+            class="glass-pill mx-auto flex w-fit max-w-full items-center gap-1.5 rounded-full border border-white/50 p-1.5 pl-1.5 sm:pl-4"
+          >
             <!-- Below `sm` the row only has width for the two controls, so the
-                 wording drops to the dot and stays available to a screen
-                 reader rather than truncating to a single letter. -->
-            <span
-              class="truncate sr-only sm:not-sr-only"
-              :class="isDirty ? 'text-slate-600' : 'text-slate-400'"
+                 wording stays available to a screen reader rather than
+                 truncating to a single word. -->
+            <p
+              class="sr-only sm:not-sr-only sm:min-w-0 sm:truncate sm:text-sm sm:text-slate-600"
+              aria-live="polite"
             >
-              {{ isDirty ? t('settings.account.unsavedChanges') : t('settings.account.allSaved') }}
-            </span>
-          </p>
+              {{ t('settings.account.unsavedChanges') }}
+            </p>
 
-          <Transition name="fade">
             <button
-              v-if="isDirty && !isSubmitting"
+              v-if="!isSubmitting"
               type="button"
-              class="flex-shrink-0 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg transition-colors duration-200 hover:bg-slate-100 active:bg-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+              class="h-10 flex-shrink-0 rounded-full px-3.5 text-sm font-medium text-slate-600 transition-colors duration-200 hover:bg-slate-900/[0.06] active:bg-slate-900/[0.1] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
               @click="syncFormWithStore"
             >
               {{ t('settings.account.discard') }}
             </button>
-          </Transition>
 
-          <button
-            type="submit"
-            :disabled="!canSave"
-            class="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg shadow-md shadow-[#2ecc71]/20 transition-all duration-200 hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed disabled:active:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-          >
-            <Loader2 v-if="isSubmitting" class="w-4 h-4 animate-spin" aria-hidden="true" />
-            <Check v-else class="w-4 h-4" aria-hidden="true" />
-            {{ isSubmitting ? t('settings.account.saving') : t('settings.account.saveChanges') }}
-          </button>
+            <button
+              type="submit"
+              :disabled="!canSave"
+              class="inline-flex h-10 flex-shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 text-sm font-semibold text-white shadow-md shadow-[#2ecc71]/20 transition-all duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:active:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+            >
+              <Loader2 v-if="isSubmitting" class="w-4 h-4 animate-spin" aria-hidden="true" />
+              <Check v-else class="w-4 h-4" aria-hidden="true" />
+              {{ isSubmitting ? t('settings.account.saving') : t('settings.account.saveChanges') }}
+            </button>
+          </div>
         </div>
-      </div>
+      </Transition>
     </form>
   </div>
 </template>
@@ -515,13 +515,36 @@ const onSubmit = () => {
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
+/* The bar rises out of the bottom edge rather than fading in place — it belongs
+   to the same family of floating chrome as the tab pill, and that chrome
+   arrives from off-screen. */
+.save-bar-enter-active {
+  transition:
+    transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.2s ease;
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.save-bar-leave-active {
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.6, 1),
+    opacity 0.15s ease;
+}
+
+.save-bar-enter-from,
+.save-bar-leave-to {
   opacity: 0;
+  transform: translateY(0.75rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .save-bar-enter-active,
+  .save-bar-leave-active {
+    transition: opacity 0.15s ease;
+  }
+
+  .save-bar-enter-from,
+  .save-bar-leave-to {
+    transform: none;
+  }
 }
 </style>

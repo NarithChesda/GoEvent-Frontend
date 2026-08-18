@@ -40,6 +40,34 @@ html.showcase-viewport-locked #app {
   min-height: 0;
 }
 
+/* Surface: the app's floating bottom chrome.
+ *
+ * Brand-tinted glass lit as an *object* rather than an edge — the shadow falls
+ * on all sides instead of only upwards, and an inset highlight along the top
+ * gives the surface a lip. Opaque enough that a card scrolling underneath never
+ * shows through as texture.
+ *
+ * Shared rather than scoped because anything that floats above the mobile tab
+ * pill has to be made of the same material: MobileTabBar's pill and the account
+ * form's save bar used to be a glass pill and a toast-surface card stacked a
+ * few pixels apart, which read as two unrelated widgets rather than as one
+ * stack of chrome. Pair it with `rounded-full border border-white/50 p-1.5`.
+ */
+.glass-pill {
+  background: linear-gradient(
+    135deg,
+    rgba(248, 255, 254, 0.92) 0%,
+    rgba(240, 253, 249, 0.92) 50%,
+    rgba(240, 249, 255, 0.92) 100%
+  );
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    0 12px 32px rgba(15, 23, 42, 0.12),
+    0 4px 12px rgba(30, 144, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
 /* Utility: hide native scrollbars while preserving scroll behaviour.
  * Used by horizontally-scrollable tab bars and similar overflow rows
  * across the app (settings, event-management tabs, guest groups, etc). */
@@ -169,8 +197,12 @@ body,
   margin-bottom: 0.2em;
 
   /* Safari-specific: Ensure proper font feature rendering */
-  -webkit-font-feature-settings: "liga" 1, "calt" 1;
-  font-feature-settings: "liga" 1, "calt" 1;
+  -webkit-font-feature-settings:
+    'liga' 1,
+    'calt' 1;
+  font-feature-settings:
+    'liga' 1,
+    'calt' 1;
 
   /* DO NOT override font-family here - let inline styles from template fonts work */
   /* The font-family should be set via inline styles in the components */
