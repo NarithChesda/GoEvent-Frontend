@@ -122,7 +122,7 @@
         :has-next="hasDrawerNext"
         @navigate-prev="handleDrawerPrev"
         @navigate-next="handleDrawerNext"
-        @registered="handleEventRegistered"
+        @registration-changed="handleRegistrationChanged"
         @login-required="handleLoginRequired"
         @like-changed="handleDrawerLikeChanged"
         @open-event="handleOpenRelatedEvent"
@@ -348,9 +348,25 @@ const handleOpenRelatedEvent = (eventId: string) => {
   selectedEventIndex.value = filteredEvents.value.findIndex((e) => e.id === eventId)
 }
 
-const handleEventRegistered = () => {
-  showMessage('success', t('events.messages.registerSuccess'))
-  loadEvents('my', {})
+/**
+ * Reflect a registration made inside the drawer on the card behind it, rather
+ * than re-fetching the whole list to move one counter.
+ */
+const handleRegistrationChanged = (
+  eventId: string,
+  isRegistered: boolean,
+  registrationsCount: number
+) => {
+  if (isRegistered) showMessage('success', t('events.messages.registerSuccess'))
+
+  const eventIndex = events.value.findIndex((e) => e.id === eventId)
+  if (eventIndex !== -1) {
+    events.value[eventIndex] = {
+      ...events.value[eventIndex],
+      is_registered: isRegistered,
+      registrations_count: registrationsCount,
+    }
+  }
 }
 
 const handleLoginRequired = () => {

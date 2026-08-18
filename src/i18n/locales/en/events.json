@@ -308,6 +308,9 @@
     "moreIn": "More in {category}",
     "moreEvents": "More events",
     "noDescription": "No description provided",
+    "readMore": "Read more",
+    "readLess": "Show less",
+    "likeError": "Couldn't update that just now",
     "byOrganizer": "by {name}",
     "fundraiser": "Fundraiser",
     "virtualEvent": "Virtual event",
@@ -316,13 +319,19 @@
     "calendarOptions": {
       "google": "Google",
       "outlook": "Outlook",
-      "ics": "Download .ics"
+      "ics": ".ics file"
     },
     "error": {
       "title": "Couldn't load this event",
       "retry": "Try again"
     },
     "agendaItems": "{count} item | {count} items",
+    "stats": {
+      "days": "day | days",
+      "sessions": "session | sessions",
+      "hosts": "host | hosts",
+      "spotsLeft": "spot left | spots left"
+    },
     "registration": {
       "heading": "Registration",
       "registered": "You're going",
@@ -333,7 +342,10 @@
       "cancel": "Can't attend? Cancel",
       "cancelling": "Cancelling…",
       "joinLinkPending": "Join link available when the event starts",
-      "live": "Live"
+      "live": "Live",
+      "cancelled": "Registration cancelled",
+      "registerError": "Couldn't complete your registration",
+      "cancelError": "Couldn't cancel your registration"
     },
     "action": {
       "register": "Register",
@@ -348,6 +360,7 @@
       "unavailable": "Unavailable",
       "free": "Free",
       "freeEntry": "Free entry",
+      "registrationRequired": "Registration required",
       "registeredStatus": "You're registered"
     },
     "fundraising": {

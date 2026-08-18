@@ -161,14 +161,33 @@ export function usePublicEventData() {
     fallbackBannerError.value = false
   }
 
-  const loadEvent = async (eventId: string | null) => {
+  /**
+   * Re-fetch the event in place, without tearing the panel down.
+   *
+   * A silent load skips everything that exists to reset the view for a
+   * *different* event: the skeleton, the cleared registration state, the reset
+   * banner-error flags. It is for reconciling with the server after an action
+   * the reader just took — registering, cancelling — where blanking the panel
+   * they are reading, and dropping their scroll position with it, is the wrong
+   * answer. A silent load that fails leaves the current data alone rather than
+   * replacing a working panel with an error screen.
+   */
+  interface LoadEventOptions {
+    silent?: boolean
+  }
+
+  const loadEvent = async (eventId: string | null, options: LoadEventOptions = {}) => {
     if (!eventId) return
 
-    loading.value = true
-    error.value = null
-    resetBannerErrors()
-    userRegistration.value = null
-    registrationChecked.value = false
+    const silent = options.silent === true
+
+    if (!silent) {
+      loading.value = true
+      error.value = null
+      resetBannerErrors()
+      userRegistration.value = null
+      registrationChecked.value = false
+    }
 
     try {
       // Fetch event data and user's registration status in parallel
@@ -190,9 +209,15 @@ export function usePublicEventData() {
           registrationChecked.value = true
         }
 
-        // Store the full registration data if user is registered
-        if (registrationResponse && registrationResponse.success && registrationResponse.data) {
-          userRegistration.value = registrationResponse.data
+        // Store the full registration data if user is registered.
+        //
+        // On a silent refresh this has to be authoritative in both directions:
+        // a successful lookup that comes back empty means the reader is no
+        // longer registered (they just cancelled), and leaving the stale
+        // registration in place would keep showing them a ticket they gave up.
+        // A *failed* lookup says nothing, so it changes nothing.
+        if (registrationResponse?.success) {
+          userRegistration.value = registrationResponse.data ?? null
         }
 
         // Load fundraising progress and item categories if fundraising is enabled
@@ -251,13 +276,13 @@ export function usePublicEventData() {
             console.warn('Could not load fundraising data:', err)
           }
         }
-      } else {
+      } else if (!silent) {
         error.value = eventResponse.message || 'Event not found'
       }
     } catch {
-      error.value = 'Failed to load event details'
+      if (!silent) error.value = 'Failed to load event details'
     } finally {
-      loading.value = false
+      if (!silent) loading.value = false
     }
   }
 

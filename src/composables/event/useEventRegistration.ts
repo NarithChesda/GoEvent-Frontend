@@ -20,6 +20,17 @@ interface UseEventRegistrationOptions {
   registrationChecked: Ref<boolean>
 }
 
+/**
+ * The outcome of a registration action, for the caller to surface.
+ *
+ * `message` carries the API layer's user-friendly text when there is one; the
+ * caller falls back to its own copy when there isn't.
+ */
+export interface RegistrationResult {
+  ok: boolean
+  message?: string
+}
+
 
 export function useEventRegistration(options: UseEventRegistrationOptions) {
   const authStore = useAuthStore()
@@ -43,8 +54,31 @@ export function useEventRegistration(options: UseEventRegistrationOptions) {
     return 'Welcome! To join the event, please register below.'
   })
 
-  const handleRegister = async (onSuccess?: () => void) => {
-    if (!options.event.value || !authStore.isAuthenticated) return
+  /**
+   * Move the attendee count by one, locally.
+   *
+   * The count feeds the hero's "312 going", the stats strip's spots-left and
+   * `isEventFull`, so leaving it stale after the reader registers means the
+   * panel contradicts itself until something re-fetches. Applied optimistically
+   * and then reconciled by the caller's silent refresh.
+   */
+  const nudgeAttendance = (delta: number) => {
+    const current = options.event.value
+    if (!current) return
+    current.registrations_count = Math.max((current.registrations_count || 0) + delta, 0)
+  }
+
+  /**
+   * Register, and reflect it locally straight away.
+   *
+   * Returns the outcome rather than swallowing it: a failed registration used
+   * to reach the console and nowhere else, so the reader saw the spinner stop
+   * and nothing else change, with no way to tell a rejection from a no-op.
+   */
+  const handleRegister = async (): Promise<RegistrationResult> => {
+    if (!options.event.value || !authStore.isAuthenticated) {
+      return { ok: false }
+    }
 
     isRegistering.value = true
 
@@ -55,51 +89,50 @@ export function useEventRegistration(options: UseEventRegistrationOptions) {
       })
 
       if (response.success && response.data) {
-        // Update local registration state with the returned registration data
         options.userRegistration.value = response.data
-        if (onSuccess) onSuccess()
+        options.registrationChecked.value = true
+        nudgeAttendance(1)
+        return { ok: true }
       }
+
+      return { ok: false, message: response.message }
     } catch (err) {
-      console.error('Registration failed:', err)
+      return { ok: false, message: err instanceof Error ? err.message : undefined }
     } finally {
       isRegistering.value = false
     }
   }
 
-  const handleCancelRegistration = async () => {
-    if (!options.event.value || !authStore.isAuthenticated) return
+  const handleCancelRegistration = async (): Promise<RegistrationResult> => {
+    if (!options.event.value || !authStore.isAuthenticated) {
+      return { ok: false }
+    }
 
+    const wasRegistered = options.isUserRegistered.value
     isCancelling.value = true
 
     try {
       const response = await eventsService.unregisterFromEvent(options.event.value.id)
 
-      console.log('Unregister response:', response)
-
       if (response.success) {
-        // Handle the response - backend may return updated registration or nothing
-        if (response.data) {
-          // Backend returns wrapped response { registration } or direct registration object
-          const registrationData =
-            (response.data as { registration?: EventRegistration }).registration || response.data
+        // The backend either returns the updated registration — wrapped as
+        // `{ registration }` or bare — or nothing at all when the row is
+        // deleted outright.
+        options.userRegistration.value = response.data
+          ? (response.data as { registration?: EventRegistration }).registration || response.data
+          : null
 
-          console.log('Registration data after cancel:', registrationData)
-          console.log('Registration status:', registrationData.status)
-
-          // Store the updated registration data
-          options.userRegistration.value = registrationData
-        } else {
-          console.log('No registration data returned - registration deleted')
-          // No registration data returned - registration was deleted
-          options.userRegistration.value = null
-        }
-
-        // Ensure registrationChecked is true so isUserRegistered uses our updated state
+        // So `isUserRegistered` trusts the state we just set rather than
+        // falling back to the event payload's stale `is_registered`.
         options.registrationChecked.value = true
-        console.log('isUserRegistered after cancel:', options.isUserRegistered.value)
+
+        if (wasRegistered && !options.isUserRegistered.value) nudgeAttendance(-1)
+        return { ok: true }
       }
+
+      return { ok: false, message: response.message }
     } catch (err) {
-      console.error('Cancel registration failed:', err)
+      return { ok: false, message: err instanceof Error ? err.message : undefined }
     } finally {
       isCancelling.value = false
     }

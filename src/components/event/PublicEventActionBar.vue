@@ -1,83 +1,81 @@
 <template>
-  <div class="flex-shrink-0 border-t border-slate-200 bg-white/90 backdrop-blur-sm">
-    <!-- Calendar targets. Collapse per design system §15 (grid-rows, not
-         max-height) so both directions ease evenly. -->
-    <Transition name="collapse">
-      <div v-if="showCalendar" class="grid grid-rows-[1fr]">
-        <div class="min-h-0 overflow-hidden">
-          <div class="flex gap-2 px-4 pt-3">
-            <button
-              v-for="target in calendarTargets"
-              :key="target.key"
-              @click="target.run"
-              class="flex-1 px-3 py-2 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+  <!-- Floats over the content rather than closing the panel off with a bar: the
+       scroll runs to the bottom edge behind it, the way the app's own tab pill
+       lets the page run under it. Click-through everywhere except the pill. -->
+  <div
+    class="pointer-events-none absolute inset-x-0 bottom-0 z-30 px-3 sm:px-4"
+    style="padding-bottom: max(env(safe-area-inset-bottom), 0.75rem)"
+  >
+    <div class="pointer-events-auto relative mx-auto w-full max-w-[32rem]">
+      <!-- Calendar targets, above the pill. Collapse per design system §15
+           (grid-rows, not max-height) so both directions ease evenly. -->
+      <Transition name="collapse">
+        <div v-if="showCalendar" class="grid grid-rows-[1fr] absolute bottom-full inset-x-0 mb-2">
+          <div class="min-h-0 overflow-hidden">
+            <div
+              class="flex gap-2 rounded-2xl border border-white/70 bg-white/85 backdrop-blur-xl p-2 shadow-lg shadow-slate-900/10 ring-1 ring-slate-900/5"
             >
-              {{ target.label }}
-            </button>
+              <button
+                v-for="target in calendarTargets"
+                :key="target.key"
+                @click="target.run"
+                class="flex-1 min-w-0 px-3 py-2 text-xs font-medium text-slate-700 bg-white/70 hover:bg-white border border-slate-200 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+              >
+                <span class="block truncate">{{ target.label }}</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </Transition>
+      </Transition>
 
-    <div
-      class="flex items-center gap-2 sm:gap-3 px-4 py-3"
-      style="padding-bottom: max(env(safe-area-inset-bottom), 0.75rem)"
-    >
-      <!-- Status. Answers "what does this cost / where do I stand" next to the
-           button that acts on it, rather than three screens up the scroll. -->
-      <div class="flex-1 min-w-0">
-        <p v-if="statusLine" class="text-sm font-semibold text-slate-900 truncate">
-          {{ statusLine }}
-        </p>
-        <p v-if="attendanceLabel" class="text-xs text-slate-500 truncate">
-          {{ attendanceLabel }}
-        </p>
-      </div>
-
-      <!-- Secondary calendar toggle. Hidden when the primary CTA is itself the
-           calendar, which is the display-only case. -->
-      <button
-        v-if="cta.kind !== 'calendar'"
-        @click="showCalendar = !showCalendar"
-        class="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-        :aria-expanded="showCalendar"
-        :title="t('events.drawer.addToCalendar')"
-        :aria-label="t('events.drawer.addToCalendar')"
-      >
-        <CalendarPlus class="w-4 h-4" />
-      </button>
-
-      <!-- Primary CTA. Exactly one, always reachable. -->
       <div
-        v-if="cta.kind === 'unavailable'"
-        class="min-w-[8rem] sm:min-w-[9rem] px-4 py-2.5 rounded-xl bg-slate-100 text-slate-500 text-sm font-medium text-center flex-shrink-0"
+        class="flex items-center gap-2 rounded-full border border-white/70 bg-white/85 backdrop-blur-xl p-1.5 shadow-lg shadow-slate-900/10 ring-1 ring-slate-900/5"
       >
-        {{ cta.label }}
+        <!-- Status. Answers "what does this cost / where do I stand" next to the
+             button that acts on it, rather than three screens up the scroll. -->
+        <div v-if="statusLine || subLabel" class="flex-1 min-w-0 pl-3.5 pr-1">
+          <p v-if="statusLine" class="text-sm font-semibold text-slate-900 truncate">
+            {{ statusLine }}
+          </p>
+          <p v-if="subLabel" class="text-[11px] leading-tight text-slate-500 truncate">
+            {{ subLabel }}
+          </p>
+        </div>
+
+        <!-- Primary CTA. Exactly one, always reachable. With nothing to say on
+             the left it takes the whole pill rather than leaving dead glass. -->
+        <div
+          v-if="cta.kind === 'unavailable'"
+          class="min-w-[8rem] sm:min-w-[9rem] px-5 py-3 rounded-full bg-slate-100 text-slate-500 text-sm font-medium text-center flex-shrink-0"
+          :class="{ 'flex-1': !statusLine && !subLabel }"
+        >
+          {{ cta.label }}
+        </div>
+        <!-- The floor relaxes on a phone: a Khmer label alongside a status line
+             overflows a 360px row at 9rem. -->
+        <button
+          v-else
+          @click="handleCta"
+          :disabled="cta.busy || cta.disabled"
+          class="min-w-[8rem] sm:min-w-[9rem] px-5 py-3 rounded-full text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2"
+          :class="[ctaClass, { 'flex-1': !statusLine && !subLabel }]"
+        >
+          <span
+            v-if="cta.busy"
+            class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin flex-shrink-0"
+            aria-hidden="true"
+          ></span>
+          <component
+            :is="cta.icon"
+            v-else-if="cta.icon"
+            class="w-4 h-4 flex-shrink-0"
+            aria-hidden="true"
+          />
+          <!-- Allowed to shrink and truncate: Khmer labels run considerably longer
+               than their English equivalents and would otherwise push the row wide. -->
+          <span class="truncate">{{ cta.label }}</span>
+        </button>
       </div>
-      <!-- The floor relaxes on a phone: a Khmer label, a status line and the
-           calendar toggle together overflow a 360px row at 9rem. -->
-      <button
-        v-else
-        @click="handleCta"
-        :disabled="cta.busy || cta.disabled"
-        class="min-w-[8rem] sm:min-w-[9rem] px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-        :class="ctaClass"
-      >
-        <span
-          v-if="cta.busy"
-          class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin flex-shrink-0"
-          aria-hidden="true"
-        ></span>
-        <component
-          :is="cta.icon"
-          v-else-if="cta.icon"
-          class="w-4 h-4 flex-shrink-0"
-          aria-hidden="true"
-        />
-        <!-- Allowed to shrink and truncate: Khmer labels run considerably longer
-             than their English equivalents and would otherwise push the row wide. -->
-        <span class="truncate">{{ cta.label }}</span>
-      </button>
     </div>
   </div>
 </template>
@@ -95,6 +93,12 @@
  * keeps it on screen. Ticketed events read the checkout cart directly from the
  * store (the tier list no longer carries its own footer), so the subtotal stays
  * visible while the reader scrolls the tiers.
+ *
+ * It floats as a pill over the scroll rather than sitting in the panel's flex
+ * column as a footer — the content runs to the bottom edge behind it, so the
+ * panel reads as one continuous surface with an action riding on top of it.
+ * The caller is responsible for the matching bottom padding on its scroll
+ * container; there is no longer a laid-out box reserving that space.
  */
 
 import { computed, ref, watch, type Component } from 'vue'
@@ -298,6 +302,18 @@ const statusLine = computed(() => {
   }
 
   return props.priceLabel
+})
+
+/**
+ * The line under the status. The condition of entry outranks the crowd size —
+ * "Registration required" is what changes what the reader has to do next, and
+ * the attendance count already rides the hero's byline.
+ */
+const subLabel = computed(() => {
+  if (props.registrationRequired && !props.isRegistered && !props.hasTicketedSales) {
+    return t('events.drawer.action.registrationRequired')
+  }
+  return props.attendanceLabel
 })
 
 const handleCta = () => {

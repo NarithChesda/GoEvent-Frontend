@@ -23,7 +23,41 @@
           <p class="text-sm font-semibold text-slate-900">{{ formattedDate }}</p>
           <p class="text-sm text-slate-600">{{ timeRange }}</p>
         </div>
+
+        <!-- Keeping the date is a date-row action, so it sits on the date row.
+             It used to be a second icon button in the pinned footer, competing
+             with the one CTA that bar exists to carry. -->
+        <button
+          @click="showCalendar = !showCalendar"
+          class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-[filter,background-color] hover:brightness-95 active:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+          :style="{ backgroundColor: 'var(--evt-tint)', color: 'var(--evt-accent)' }"
+          :aria-expanded="showCalendar"
+          :title="t('events.drawer.addToCalendar')"
+          :aria-label="t('events.drawer.addToCalendar')"
+        >
+          <CalendarPlus class="w-[18px] h-[18px]" />
+        </button>
       </div>
+
+      <!-- Calendar targets. Collapse per design system §15 (grid-rows, not
+           max-height) so both directions ease evenly. -->
+      <Transition name="collapse">
+        <div v-if="showCalendar" class="grid grid-rows-[1fr]">
+          <div class="min-h-0 overflow-hidden">
+            <div class="flex gap-2 px-4 py-3">
+              <button
+                v-for="target in calendarTargets"
+                :key="target.key"
+                @click="target.run"
+                class="flex-1 min-w-0 px-2 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-full hover:bg-slate-50 active:bg-slate-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+                :title="target.label"
+              >
+                <span class="block truncate">{{ target.label }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
 
       <!-- Location -->
       <div v-if="location || isVirtual" class="flex items-start gap-3 p-4">
@@ -43,34 +77,21 @@
           <button
             v-if="!isVirtual && location"
             @click="emit('open-map')"
-            class="mt-1.5 inline-flex items-center gap-1.5 px-3 py-2 min-h-[40px] sm:px-2 sm:py-1 sm:min-h-0 rounded-lg sm:rounded-md text-xs sm:text-[11px] font-semibold transition-colors hover:brightness-95 active:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-            :style="{ backgroundColor: 'var(--evt-tint)', color: 'var(--evt-accent)' }"
+            class="mt-2 inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[40px] sm:py-1.5 sm:min-h-0 bg-white border rounded-full text-xs font-semibold shadow-sm transition-colors hover:bg-slate-50 active:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+            :style="{ borderColor: 'var(--evt-ring)', color: 'var(--evt-accent)' }"
           >
-            <ExternalLink class="w-3.5 h-3.5 sm:w-3 sm:h-3" />
             {{ t('events.drawer.directions') }}
+            <ArrowUpRight class="w-3.5 h-3.5" />
           </button>
         </div>
-      </div>
-
-      <!-- Social proof. `registrations_count` and `likes_count` were already on
-           the payload and shown on the list card, but the drawer — the surface
-           where "is anyone else going?" actually matters — never surfaced them. -->
-      <div v-if="attendanceLabel" class="flex items-center gap-3 px-4 py-3">
-        <div
-          class="w-12 flex items-center justify-center flex-shrink-0"
-          :style="{ color: 'var(--evt-accent)' }"
-        >
-          <Users class="w-5 h-5" />
-        </div>
-        <p class="text-sm font-medium text-slate-700 min-w-0 truncate">{{ attendanceLabel }}</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { MapPin, Video, ExternalLink, Users } from 'lucide-vue-next'
+import { computed, ref, watch } from 'vue'
+import { MapPin, Video, ArrowUpRight, CalendarPlus } from 'lucide-vue-next'
 import { useEventDateFormatters } from '@/composables/event'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 
@@ -79,17 +100,16 @@ interface Props {
   endDate: string
   location: string | null | undefined
   isVirtual: boolean
-  /** "240 going" / "12 interested", or null when the event has neither. */
-  attendanceLabel?: string | null
 }
 
 interface Emits {
   (e: 'open-map'): void
+  (e: 'add-to-google'): void
+  (e: 'add-to-outlook'): void
+  (e: 'download-ics'): void
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  attendanceLabel: null,
-})
+const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const { t } = useAppLanguage()
@@ -99,4 +119,63 @@ const monthAbbr = computed(() => getMonthAbbr(props.startDate))
 const day = computed(() => getDayOfMonth(props.startDate))
 const formattedDate = computed(() => getFormattedDate(props.startDate))
 const timeRange = computed(() => getTimeRange(props.startDate, props.endDate))
+
+const showCalendar = ref(false)
+
+// Prev/next swaps the event under this component without remounting it.
+watch(
+  () => props.startDate,
+  () => {
+    showCalendar.value = false
+  }
+)
+
+const calendarTargets = computed(() => [
+  {
+    key: 'google',
+    label: t('events.drawer.calendarOptions.google'),
+    run: () => {
+      emit('add-to-google')
+      showCalendar.value = false
+    },
+  },
+  {
+    key: 'outlook',
+    label: t('events.drawer.calendarOptions.outlook'),
+    run: () => {
+      emit('add-to-outlook')
+      showCalendar.value = false
+    },
+  },
+  {
+    key: 'ics',
+    label: t('events.drawer.calendarOptions.ics'),
+    run: () => {
+      emit('download-ics')
+      showCalendar.value = false
+    },
+  },
+])
 </script>
+
+<style scoped>
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse-enter-active,
+  .collapse-leave-active {
+    transition: none;
+  }
+}
+</style>
