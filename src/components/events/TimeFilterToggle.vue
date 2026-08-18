@@ -6,7 +6,11 @@
   <div
     class="hidden sm:flex items-center rounded-full border p-1"
     :class="
-      resolvedTone === 'nav' ? 'border-transparent bg-slate-900/[0.04]' : 'glass-toggle border-white/50'
+      isAbsorbed
+        ? 'nav-surface border-transparent'
+        : resolvedTone === 'nav'
+          ? 'border-transparent bg-slate-900/[0.04]'
+          : 'glass-toggle border-white/50'
     "
   >
     <button
@@ -19,7 +23,7 @@
           ? resolvedTone === 'nav'
             ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-sm shadow-[#2ecc71]/20'
             : 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
-          : resolvedTone === 'nav'
+          : resolvedTone === 'nav' && !isAbsorbed
             ? 'text-slate-500 hover:text-slate-700'
             : 'text-slate-600 hover:text-slate-800',
       ]"
@@ -101,7 +105,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { CalendarClock, Check } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { useHeaderTone } from '@/composables/useNavPageControls'
+import { useHeaderTone, useNavPageControls } from '@/composables/useNavPageControls'
 
 export interface FilterOption {
   value: string
@@ -123,6 +127,13 @@ const props = defineProps<{
 }>()
 
 const resolvedTone = useHeaderTone(() => props.tone)
+
+// Wearing the bar's palette *and* sitting on the desktop nav — which is the one
+// place the control is a guest on someone else's glass, with page content
+// scrolling underneath it. Below the nav breakpoint the tone is the same but the
+// header row *is* the bar's contents, so it keeps the flat chrome look.
+const { isDesktopNav } = useNavPageControls()
+const isAbsorbed = computed(() => resolvedTone.value === 'nav' && isDesktopNav.value)
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
@@ -163,6 +174,26 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/*
+  The surface for the desktop nav's copy, and only that one. That bar is liquid
+  glass with the page running under it, so anything translucent laid on it takes
+  its contrast from whatever happens to be scrolling past — an event card with a
+  dark banner passing below swallowed the unselected labels outright. The 4%
+  slate tint the mobile bar still uses was exactly that: a wash with no ground of
+  its own. It stays there because the mobile header row is the bar's own
+  contents rather than a guest on it.
+
+  So the absorbed fill is opaque instead. The hairline ring is what keeps its
+  edge over the pale page wash, where a white pill on a white-ish bar would
+  otherwise dissolve — and it is a ring rather than a border because the
+  geometry may not move: the control has to land on the pixels it left in the
+  page header.
+*/
+.nav-surface {
+  background-color: rgba(255, 255, 255, 0.94);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+}
+
 /* Borders live in the class list, not here, so both tones carry the same 1px
    and the control keeps its exact width when the nav absorbs it. */
 .glass-toggle {
