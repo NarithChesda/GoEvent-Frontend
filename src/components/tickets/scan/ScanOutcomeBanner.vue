@@ -56,6 +56,12 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable vue/return-in-computed-property --
+   The computeds below switch exhaustively over the ScanOutcome discriminated
+   union (all 7 `kind`s are handled), which this rule cannot verify because it
+   is not type-aware. Adding a filler trailing `return` would satisfy the rule
+   but remove the real safety net: `iconComponent` is typed `computed<Component>`,
+   so forgetting a case in a future `kind` is a compile error today. */
 import { computed, type Component } from 'vue'
 import {
   AlertCircle,

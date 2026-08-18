@@ -3,7 +3,7 @@
  * Handles multi-language translation management for entities (hosts, agenda items, etc.)
  */
 
-import { ref, reactive, computed, type Ref } from 'vue'
+import { ref, computed, type Ref } from 'vue'
 
 // Available languages (matching API documentation)
 export const AVAILABLE_LANGUAGES = [

@@ -22,9 +22,14 @@
         <div class="showcase-studio__panel-body">
           <!-- EventMediaTab reused wholesale — its own 10 section cards are
                coordinated into a single-open accordion (see
-               useAccordionGroup.ts). -->
+               useAccordionGroup.ts). Held back until the leading preview frame
+               is up (see panelContentReady) so its ~10 section fetches don't
+               race the frames the user is waiting to see. -->
+          <div v-if="panelMode === 'content' && !panelContentReady" class="showcase-studio__panel-skeleton">
+            <div v-for="n in 4" :key="n" class="showcase-studio__panel-skeleton-card" />
+          </div>
           <EventMediaTab
-            v-if="panelMode === 'content'"
+            v-else-if="panelMode === 'content'"
             :event-id="eventId"
             :can-edit="canEdit"
             :initial-media="eventData?.photos || []"
@@ -188,7 +193,7 @@
              from the inside. It also belongs here on the merits — it's a view
              control, next to the other view control. -->
         <button
-          v-if="canViewLivePreview && event?.id && !loading"
+          v-if="canViewLivePreview && eventData?.id && templateResolved"
           type="button"
           class="studio-preview-btn"
           @click="openMobilePreview"
@@ -230,14 +235,14 @@
         </p>
       </template>
 
-      <div v-else-if="loading" class="showcase-preview-tab__loading">
+      <div v-else-if="!templateResolved" class="showcase-preview-tab__loading">
         <div class="showcase-preview-tab__spinner" />
         <span>{{ t('management.media.loading') }}</span>
       </div>
 
       <div v-else-if="error" class="showcase-preview-tab__error">{{ error }}</div>
 
-      <div v-else-if="event?.id && canViewLivePreview" class="showcase-preview-tab__viewer">
+      <div v-else-if="canViewLivePreview" class="showcase-preview-tab__viewer">
         <!-- Row: side controls (frame picker) beside the frames, as real flex
              siblings rather than floated inside whichever frame is "leading"
              — that used to position them with a small negative offset off a
@@ -300,13 +305,23 @@
                 :label="t(frame.labelKey)"
                 :width-override="viewMode === 'multiple' ? sharedColumnWidth : undefined"
               >
+                <!-- Mounted one at a time rather than all at once — see the
+                     progressive-mounting block in <script>. Until its turn
+                     comes a frame shows the phone shape with a spinner in it,
+                     so the row reads as "loading in order" instead of three
+                     black rectangles. -->
                 <InertIframe
+                  v-if="isFrameMounted(frame.id)"
                   :ref="(el) => setFrameRef(frame.id, el)"
                   :src="frameUrl(frame)"
                   :interactive="frame.editable && canEdit"
                   :click-message="frame.clickMessage"
                   @ready="onFrameReady(frame.id)"
+                  @languages="onFrameLanguages"
                 />
+                <div v-else class="showcase-preview-tab__frame-pending">
+                  <div class="showcase-preview-tab__spinner" />
+                </div>
               </PreviewFrame>
               <!-- Multiple mode: skip entirely rather than rendering this note —
                    it's a direct sibling of the PreviewFrames inside the grid, so
@@ -326,7 +341,11 @@
         </div>
       </div>
 
-      <p v-else-if="event?.id" class="showcase-preview-tab__no-preview">
+      <!-- Deliberately `v-else`, not another `v-else-if`: the desktop branch of
+           this chain used to end on a condition, so any state satisfying none
+           of them rendered an entirely empty studio with no way to tell a
+           genuinely preview-less category from something having gone wrong. -->
+      <p v-else class="showcase-preview-tab__no-preview">
         {{ t('management.showcasePreview.noLivePreview') }}
       </p>
     </div>
@@ -335,7 +354,7 @@
          keeps 2–3 showcase iframes (each with its own videos) mounted for the
          whole session just to sit off-screen. -->
     <MobilePreviewSheet
-      v-if="isMobileStudio && canViewLivePreview && event?.id"
+      v-if="isMobileStudio && canViewLivePreview && eventData?.id"
       :open="mobilePreviewOpen"
       :frames="visibleFrames"
       :frame-url="frameUrl"
@@ -347,6 +366,7 @@
       :register-frame="setFrameRef"
       @close="closeMobilePreview"
       @cycle-language="cycleLanguage"
+      @languages="onFrameLanguages"
       @activate="showPaymentDrawer = true"
       @active-frame-changed="onMobileActiveFrameChanged"
     />
@@ -355,7 +375,7 @@
          replace, gmap embed, host image, photo uploads) — full-size here in
          the manage page, reusing the forms tab's own components. -->
     <PreviewEditorHost
-      v-if="canEdit && event?.id"
+      v-if="canEdit && eventData?.id"
       :event-id="eventId"
       :event-data="eventData"
       @saved="onEditorSaved"
@@ -391,12 +411,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed, ref, nextTick, watch, inject, type Ref } from 'vue'
+import { onMounted, onBeforeUnmount, computed, ref, nextTick, watch, inject, type Ref } from 'vue'
 import { Smartphone, LayoutGrid, ChevronLeft, ChevronRight, Palette, Languages, Eye } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useHistoryOverlay } from '@/composables/useHistoryOverlay'
-import { useEventShowcase, type TemplateAssets } from '@/composables/useEventShowcase'
+import type { TemplateAssets } from '@/composables/useEventShowcase'
 import type { Event, EventPhoto, EventTemplate } from '@/services/api'
 import { eventTemplateService } from '@/services/api'
 import { useTemplateActivation } from '@/composables/useTemplateActivation'
@@ -488,48 +508,75 @@ const ownedTemplateNames = computed(() => {
   return names
 })
 
-// Only used here to resolve the renderer/frame visibility and drive the
-// language switcher/loading/error chrome — the actual stage rendering happens
-// inside each <iframe>'s own ShowcasePreviewFrameView instance (each with a
-// genuine mobile-viewport browsing context, since the showcase components
-// rely on real vh/vw units that a plain scaled-down div can't satisfy).
-const {
-  loading,
-  error,
-  event,
-  templateAssets,
-  eventPhotos,
-  availableLanguages,
-  currentLanguage,
-  loadShowcase,
-  refreshShowcaseData,
-  applyPreviewTemplateFallback,
-} = useEventShowcase({ eventId: props.eventId, skipMetaTags: true })
+// ---------------------------------------------------------------------------
+// What this tab needs to know, and where it comes from.
+//
+// This used to run a full `useEventShowcase` instance of its own — a fourth
+// showcase fetch alongside the three the iframes each make, plus that
+// composable's font loading, video resource manager, stage manager and
+// redirect manager, none of which render anything here. Everything the tab
+// actually reads is available far more cheaply:
+//
+//   the event          `eventData`, the manage page's own copy (already loaded
+//                      before this tab renders, and kept fresh by the
+//                      event-updated / media-updated round trip)
+//   template assets    the public template-assets endpoint, which the tab was
+//                      already calling as an unpaid-template fallback. Now it
+//                      is the only source, called for paid templates too: its
+//                      payload matches the paid showcase endpoint's
+//                      field-for-field (see the frame view's own note), and the
+//                      one field the frame LIST keys off is standard_cover_video.
+//   languages          the frames themselves, over the bridge. Only they know —
+//                      `available_languages` arrives on the showcase response —
+//                      and they already publish it (postShowcaseLanguagesToParent);
+//                      the partner template editor has consumed it that way all
+//                      along. See onFrameLanguages.
+//
+// The actual stage rendering happens inside each <iframe>'s own
+// ShowcasePreviewFrameView instance (each with a genuine mobile-viewport
+// browsing context, since the showcase components rely on real vh/vw units
+// that a plain scaled-down div can't satisfy).
+// ---------------------------------------------------------------------------
 
-// Preview-only fallback (mirrors ShowcasePreviewFrameView.vue's own): the
-// showcase endpoint nulls `template_assets` until payment is confirmed, so a
-// selected-but-unpaid template leaves THIS tab's `templateAssets` null — which
-// gates the frame list (whether the Transition frame even shows for a basic
-// wedding, see isBasicWeddingShowcase). The iframes each backfill this
-// themselves, but the tab runs its own useEventShowcase instance, so without
-// this the Transition frame silently vanishes for an unpaid basic-wedding
-// template even though the frame's own iframe (and the paid guest showcase)
-// render it. No-op once real (paid) assets are present. Keyed by the selected
-// template id, same as frameUrl's templateId param.
-const loadPreviewTemplateFallback = async () => {
-  const templateId = props.eventData?.event_template
-  if (!templateId || event.value?.template_assets) return
+/** Just enough of the applied template to resolve which frames exist. */
+const templateAssets = ref<{ standard_cover_video?: string | null } | null>(null)
+
+/** False until the fetch above settles, so the frame list is never rendered
+ *  from a half-known template (which would flash a Transition frame in or out). */
+const templateResolved = ref(false)
+
+const error = ref<string | null>(null)
+
+const toStageAssets = (templateData: TemplateAssets) => ({
+  standard_cover_video: templateData.assets?.standard_cover_video ?? null,
+})
+
+/**
+ * Resolve the applied template's stage-relevant assets.
+ *
+ * `templateId` is passed explicitly when applying a template, because
+ * `eventData.event_template` only updates once the parent has handled the
+ * `template-applied` emit — a tick later than this needs to run.
+ */
+const loadTemplateAssets = async (templateId?: number | string | null) => {
+  const id = templateId ?? props.eventData?.event_template
+  if (!id) {
+    templateAssets.value = null
+    templateResolved.value = true
+    return
+  }
   try {
-    const response = await eventTemplateService.getPublicTemplateAssets(Number(templateId))
+    const response = await eventTemplateService.getPublicTemplateAssets(Number(id))
     // Wire shape is `{ template_data: {...} }`, not the flat TemplateAssets the
     // service's type declares (same unwrap the frame view uses).
     const templateData = (response.data as unknown as { template_data?: TemplateAssets } | null)
       ?.template_data
-    if (response.success && templateData) {
-      applyPreviewTemplateFallback(templateData)
-    }
+    templateAssets.value = response.success && templateData ? toStageAssets(templateData) : null
   } catch {
-    // Non-fatal — the frame list just reflects the paid-only stage layout.
+    // Non-fatal — the frame list just falls back to the always-present stages.
+    templateAssets.value = null
+  } finally {
+    templateResolved.value = true
   }
 }
 
@@ -548,11 +595,15 @@ const stagedTemplateData = ref<TemplateAssets | null>(null)
 // real template happens to be standard-mode (has a cover video), even though
 // every frame's own iframe content already updated via postTemplatePreview.
 const rendererContext = computed(() => ({
-  event: event.value,
+  event: {
+    category_details: props.eventData?.category_details,
+    category_name: props.eventData?.category_name,
+    event_video: props.eventData?.event_video,
+  },
   templateAssets: stagedTemplateData.value
-    ? { standard_cover_video: stagedTemplateData.value.assets?.standard_cover_video ?? null }
+    ? toStageAssets(stagedTemplateData.value)
     : templateAssets.value,
-  hasFeaturedPhoto: eventPhotos.value?.some((p) => p.is_featured) ?? false,
+  hasFeaturedPhoto: props.eventData?.photos?.some((p) => p.is_featured) ?? false,
   canEdit: props.canEdit,
 }))
 
@@ -571,14 +622,43 @@ const shouldShowHiddenNote = (frame: PreviewFrameDescriptor) =>
   !!frame.hiddenNoteKey &&
   (frame.isApplicable ? frame.isApplicable(rendererContext.value) : true)
 
-// Language switch: a single button (see the leading-slot controls in the
-// template) that steps through availableLanguages in order, wrapping around.
+// ---------------------------------------------------------------------------
+// Preview language.
+//
+// Reported BY the frames rather than resolved here (see the data-sources note
+// above), and switched by posting into them — not by rewriting their `src`.
+// The old approach put `lang` in the iframe URL, so every language toggle
+// changed `src` and the browser re-navigated all 2-3 frames: three complete
+// app boots, several MB of JavaScript re-parsed, and every mount animation
+// replayed, to change some text. The frame's `set-language` handler refetches
+// only the localized content and merges it in place — no navigation, no
+// remount — and the bridge for it already existed, unused from here.
+// ---------------------------------------------------------------------------
+const availableLanguages = ref<string[]>([])
+const currentLanguage = ref('')
+
+/**
+ * A frame published its language list (after its initial load, and after every
+ * switch it performs).
+ *
+ * `current` is adopted only until this tab has a language of its own: from
+ * then on the tab is authoritative — it is the thing driving the switches —
+ * and a slower frame's echo of the previous language must not roll the
+ * switcher backwards.
+ */
+const onFrameLanguages = (languages: string[], current: string) => {
+  if (languages.length) availableLanguages.value = languages
+  if (!currentLanguage.value && current) currentLanguage.value = current
+}
+
+/** Steps through availableLanguages in order, wrapping around. */
 const cycleLanguage = () => {
   const langs = availableLanguages.value
   if (langs.length < 2) return
-  const currentIndex = langs.findIndex((lang) => lang.language === currentLanguage.value)
-  const nextIndex = (currentIndex + 1) % langs.length
-  currentLanguage.value = langs[nextIndex].language
+  const currentIndex = langs.indexOf(currentLanguage.value)
+  const next = langs[(currentIndex + 1) % langs.length]
+  currentLanguage.value = next
+  for (const frame of frameRefs.values()) frame.postSetLanguage(next)
 }
 
 // ---------------------------------------------------------------------------
@@ -644,6 +724,56 @@ const panelLeft = computed(() => `calc(${sidebarLeftPosition.value} + 88px)`)
 // nothing else to fall back to — so the point is moot there anyway.
 // ---------------------------------------------------------------------------
 const panelMode = ref<'content' | null>('content')
+
+// ---------------------------------------------------------------------------
+// When the panel's forms are allowed to mount.
+//
+// EventMediaTab is ~10 section cards with their own chunks and their own
+// on-mount fetches (agenda, hosts, dress codes, payment methods, texts,
+// media). Mounting it in the same tick as the preview frames put all of that
+// in direct competition with them for the network, and the preview — the half
+// of this tab the frames exist for — lost.
+//
+// So on desktop it waits for the leading frame's handshake, or for the main
+// thread to go idle, whichever comes first. Mobile is the opposite case: there
+// are no frames on the page at all there (the preview is a sheet), the forms
+// ARE the page, so there is nothing to yield to and it mounts immediately.
+// Same when this event's category has no live preview.
+// ---------------------------------------------------------------------------
+const panelContentReady = ref(false)
+
+/** Upper bound on the wait — a frame that never hands shakes must not keep the
+ *  forms off screen. Comfortably longer than a healthy frame boot. */
+const PANEL_CONTENT_MAX_DELAY_MS = 2000
+
+let panelContentTimer: ReturnType<typeof setTimeout> | null = null
+
+const releasePanelContent = () => {
+  if (panelContentTimer !== null) {
+    clearTimeout(panelContentTimer)
+    panelContentTimer = null
+  }
+  panelContentReady.value = true
+}
+
+const schedulePanelContent = () => {
+  if (panelContentReady.value) return
+  if (isMobileStudio.value || !props.canViewLivePreview) {
+    releasePanelContent()
+    return
+  }
+  panelContentTimer = setTimeout(releasePanelContent, PANEL_CONTENT_MAX_DELAY_MS)
+}
+
+// Rotating a tablet into the mobile layout mid-load makes the forms the page,
+// so they can't stay deferred behind frames that no longer exist.
+watch(isMobileStudio, (mobile) => {
+  if (mobile) releasePanelContent()
+})
+
+onBeforeUnmount(() => {
+  if (panelContentTimer !== null) clearTimeout(panelContentTimer)
+})
 
 const togglePanel = () => {
   if (panelMode.value === 'content') {
@@ -745,8 +875,12 @@ const sharedColumnWidth = computed(() => {
 })
 
 // Remembers the src last computed for each frame id, keyed by the parts that
-// legitimately should force a real reload of an ALREADY-mounted frame
-// (language, edit mode). `event_template` is deliberately NOT part of that
+// legitimately should force a real reload of an ALREADY-mounted frame (edit
+// mode, and nothing else). Language used to be in this key, which is exactly
+// what made switching it reload every frame; it now travels over the bridge
+// instead (see cycleLanguage), so the frames pick their own starting language
+// from their showcase data and report it back.
+// `event_template` is deliberately NOT part of that
 // key: applying a template now updates already-mounted frames live over the
 // bridge (see handleTemplateAppliedFromModal) instead of by changing `src` —
 // and changing an <iframe>'s `src` at all, even by one query param, always
@@ -761,11 +895,11 @@ const sharedColumnWidth = computed(() => {
 const frameSrcCache = new Map<string, { key: string; url: string }>()
 
 const frameUrl = (frame: PreviewFrameDescriptor) => {
-  const reactiveKey = `${currentLanguage.value}|${props.canEdit && frame.editable ? '1' : '0'}`
+  const reactiveKey = props.canEdit && frame.editable ? '1' : '0'
   const cached = frameSrcCache.get(frame.id)
   if (cached && cached.key === reactiveKey) return cached.url
 
-  const params = new URLSearchParams({ stage: frame.id, lang: currentLanguage.value })
+  const params = new URLSearchParams({ stage: frame.id })
   if (props.canEdit && frame.editable) params.set('editable', '1')
   // Always pass the selected template id when one exists — `event_template_enabled`
   // isn't a reliable predictor of whether the showcase endpoint will actually
@@ -779,6 +913,78 @@ const frameUrl = (frame: PreviewFrameDescriptor) => {
   frameSrcCache.set(frame.id, { key: reactiveKey, url })
   return url
 }
+
+// ---------------------------------------------------------------------------
+// Progressive frame mounting.
+//
+// Every frame is a full, independent boot of the app (its own document, its own
+// parse of the entry bundle, its own showcase fetch). Mounting 2-3 of them in
+// the same tick meant three of those racing each other for the network and the
+// main thread, so NONE of them appeared for several seconds and the tab looked
+// blank — the worst possible ordering, since the user is looking at one frame
+// at a time anyway.
+//
+// So they come up one at a time instead: the frame the user is actually looking
+// at first, then the rest in the background, each one starting when the
+// previous has finished its bridge handshake. The first frame appears far
+// sooner, and the later ones are cheaper for having followed it (warm HTTP
+// cache, warm JIT). Once mounted a frame stays mounted, so switching between
+// them is still instant.
+// ---------------------------------------------------------------------------
+
+/** Frames whose <iframe> exists. Replaced (not mutated) so the template reacts. */
+const mountedFrameIds = ref(new Set<string>())
+
+/**
+ * How long to wait for a frame's handshake before starting the next one
+ * anyway. Only a safety valve — a frame that errors out before its bridge
+ * announcement must not stall the queue forever.
+ */
+const FRAME_HANDSHAKE_TIMEOUT_MS = 4000
+
+let frameMountTimer: ReturnType<typeof setTimeout> | null = null
+
+const cancelFrameMountTimer = () => {
+  if (frameMountTimer === null) return
+  clearTimeout(frameMountTimer)
+  frameMountTimer = null
+}
+
+const isFrameMounted = (id: string) => mountedFrameIds.value.has(id)
+
+/**
+ * Bring up the next frame in the queue — the focused one if it is still
+ * waiting, otherwise the first unmounted visible frame.
+ */
+const mountNextFrame = () => {
+  cancelFrameMountTimer()
+  const pending = visibleFrames.value.filter((frame) => !mountedFrameIds.value.has(frame.id))
+  if (!pending.length) return
+
+  const next = pending.find((frame) => frame.id === activeFrameId.value) ?? pending[0]
+  mountedFrameIds.value = new Set(mountedFrameIds.value).add(next.id)
+  frameMountTimer = setTimeout(mountNextFrame, FRAME_HANDSHAKE_TIMEOUT_MS)
+}
+
+// Focusing a frame that hasn't been reached yet jumps it to the front — the
+// user asked for it, so it shouldn't wait behind the background queue.
+watch(activeFrameId, (id) => {
+  if (id && !mountedFrameIds.value.has(id)) mountNextFrame()
+})
+
+// The queue can't start until the frame list is known: `visibleFrames` depends
+// on the template's stage layout, and starting early would mount a frame the
+// template turns out not to have.
+watch(
+  [templateResolved, visibleFrames],
+  ([resolved, frames]) => {
+    if (!resolved || !frames.length) return
+    if (!mountedFrameIds.value.size) mountNextFrame()
+  },
+  { immediate: true },
+)
+
+onBeforeUnmount(cancelFrameMountTimer)
 
 // ---------------------------------------------------------------------------
 // Frame refs + post-save refresh: when a parent-side editor saves, every
@@ -880,8 +1086,23 @@ const handleTemplateStaged = (templateData: TemplateAssets) => {
 // early to be heard (see postFrameReadyToParent). Harmless for frames that were
 // already up: the frame side just re-applies the same staged data over itself.
 const onFrameReady = (id: string) => {
-  if (!stagedTemplateData.value) return
-  frameRefs.get(id)?.postTemplatePreview(stagedTemplateData.value)
+  const frame = frameRefs.get(id)
+  if (stagedTemplateData.value) frame?.postTemplatePreview(stagedTemplateData.value)
+
+  // A frame that came up after the user had already switched language starts on
+  // the event's default one — it has no `lang` in its URL any more (see
+  // frameUrl). Bring it into line here. No-op when it is already showing that
+  // language: updateLanguageContent early-returns on the frame side.
+  if (currentLanguage.value) frame?.postSetLanguage(currentLanguage.value)
+
+  // The queue waits on this handshake rather than the iframe's `load` event,
+  // which fires while the frame's route chunk is still being fetched — far too
+  // early to mean "done" (see postFrameReadyToParent).
+  mountNextFrame()
+
+  // The panel's forms have been holding back so this frame could have the
+  // network and the main thread to itself; it's up now, so let them in.
+  releasePanelContent()
 }
 
 // Only the frame(s) actually on screen right now need the real data back
@@ -947,8 +1168,9 @@ const handleTemplateAppliedFromModal = async (template: EventTemplate) => {
   showTemplatesModal.value = false
   suppressNextStageClear = true
   emit('template-applied', template)
-  await refreshShowcaseData()
-  await loadPreviewTemplateFallback()
+  // Explicit id: `eventData.event_template` is only updated by the parent's
+  // handling of the emit above, which hasn't run yet.
+  await loadTemplateAssets(template.id)
   stagedTemplateData.value = null
   for (const frame of frameRefs.values()) frame.post('preview-template-commit')
   // A different template means a different plan/price and (almost always) an
@@ -983,26 +1205,24 @@ const onEditorSaved = (updated?: Event) => {
     for (const frame of frameRefs.values()) frame.postEventPatch(scope.fields)
   } else if (scope.kind === 'refresh') {
     refreshVisibleFrames()
-    // Silent refresh: this tab's `loading` flag gates the whole frames block,
-    // so a full loadShowcase() here would unmount and reload every iframe —
-    // exactly the "page refresh" jank the silent path exists to avoid. Re-apply
-    // the unpaid-template fallback afterward, since refreshShowcaseData re-fetches
-    // real (payment-gated, possibly null) template_assets and would otherwise
-    // drop the Transition frame again for a selected-but-unpaid template.
-    refreshShowcaseData().then(loadPreviewTemplateFallback)
   }
 
+  // No refetch of this tab's own state here any more: everything it derives
+  // (which frames exist, the hidden-note gate) now comes from `eventData`,
+  // which the parent updates from these same emits, and from the applied
+  // template's assets, which a content save cannot change.
   if (updated) emit('event-updated', updated)
 }
 
 onMounted(() => {
-  loadShowcase().then(loadPreviewTemplateFallback)
+  loadTemplateAssets()
   // The activation state gates the header pill and the frame watermark, so it
   // has to be real before the frames are worth looking at. (Explicit rather
   // than automatic: usePaymentTemplateIntegration only self-refreshes when the
   // selected template *changes*, and by the time it's constructed here the
   // event's template id is already in place.)
   loadActivationPayments()
+  schedulePanelContent()
 })
 
 // Lets the activation tab hand template-swapping back to the one place that can
@@ -1011,6 +1231,15 @@ defineExpose({
   openTemplates: () => {
     showTemplatesModal.value = true
   },
+  /**
+   * Re-fit every frame to its column.
+   *
+   * The manage page keeps this tab in the DOM once visited and hides it with
+   * `v-show` (so the frames aren't re-booted on every tab switch), and a frame
+   * measured while `display: none` reads a zero-width column. It has to be told
+   * when it is on screen again — nothing observable from in here fires.
+   */
+  remeasureFrames: remeasurePreviewFrames,
 })
 </script>
 
@@ -1622,6 +1851,57 @@ defineExpose({
 @keyframes showcase-preview-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* A frame waiting its turn in the mount queue. Fills the phone shape its
+   PreviewFrame parent has already reserved (that parent paints the black
+   scaler background), so the row's geometry is final from the first paint and
+   nothing shifts as each frame arrives. */
+.showcase-preview-tab__frame-pending {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* Placeholder for the content panel's forms while they hold back for the
+   leading preview frame (see panelContentReady). Card-shaped rather than a
+   spinner: it is standing in for a stack of section cards, and a spinner in a
+   440px column reads as "something is wrong" rather than "nearly there". */
+.showcase-studio__panel-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.showcase-studio__panel-skeleton-card {
+  height: 5.5rem;
+  border-radius: 1.5rem;
+  background: rgba(148, 163, 184, 0.12);
+  animation: showcase-preview-pulse 1.6s ease-in-out infinite;
+}
+
+.showcase-studio__panel-skeleton-card:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.showcase-studio__panel-skeleton-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.showcase-studio__panel-skeleton-card:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+@keyframes showcase-preview-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
   }
 }
 

@@ -514,13 +514,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, onUnmounted, watch, type ComponentPublicInstance } from 'vue'
 import { MessageCircle, Edit, Trash2, MoreVertical } from 'lucide-vue-next'
-import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import { commentsService, type EventComment, apiService } from '../../services/api'
 import DeleteConfirmModal from '../DeleteConfirmModal.vue'
 import AuthModal from '../AuthModal.vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
-import { useStaggerAnimation, useEntranceAnimation } from '../../composables/useAdvancedAnimations'
+import { useStaggerAnimation } from '../../composables/useAdvancedAnimations'
 import { ANIMATION_CONSTANTS } from '../../composables/useScrollAnimations'
 import { useAuthModal } from '../../composables/useAuthModal'
 import {
@@ -574,13 +573,6 @@ const { observeStaggerElement } = useStaggerAnimation({
   staggerDelay: 100,
   easing: ANIMATION_CONSTANTS.EASING.EXPO,
   threshold: 0.2,
-})
-
-// Entrance animation for form interactions
-const { triggerEntrance } = useEntranceAnimation({
-  type: 'elastic',
-  duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
-  easing: ANIMATION_CONSTANTS.EASING.ELASTIC,
 })
 
 // Enhanced translation function that combines database content with frontend translations
@@ -658,9 +650,6 @@ const commentLoadingText = computed(() => getTextContent('comment_loading', 'Loa
 const commentAlreadyCommentedText = computed(() =>
   getTextContent('comment_already_commented', 'You have already left a comment for this event'),
 )
-const commentOnePerUserText = computed(() =>
-  getTextContent('comment_one_per_user', 'Each user can only comment once per event'),
-)
 const commentYouBadgeText = computed(() => getTextContent('comment_you_badge', 'You'))
 const commentInviteOnlyPromptText = computed(() =>
   getTextContent(
@@ -672,9 +661,6 @@ const commentCommentingAsText = computed(() =>
   getTextContent('comment_commenting_as', 'Commenting as'),
 )
 
-// Router and Auth
-const router = useRouter()
-const route = useRoute()
 const authStore = useAuthStore()
 
 // Comment form state
@@ -685,7 +671,6 @@ const newComment = ref({
 
 // Input validation state
 const commentValidation = ref<ValidationResult>({ isValid: true, sanitized: '', errors: [] })
-const isValidatingComment = ref(false)
 
 // Comments state
 const comments = ref<EventComment[]>([])
@@ -726,7 +711,6 @@ const {
   openAuthModal,
   onAuthModalClose,
   onUserAuthenticated: handleUserAuthenticated,
-  withAuth,
 } = useAuthModal({
   onAuthenticated: () => {
     // User successfully authenticated via modal
@@ -1128,7 +1112,7 @@ const formatCommentDate = (dateString: string): string => {
         return date.toLocaleDateString()
       }
     }
-  } catch (error) {
+  } catch {
     return 'Recently'
   }
 }
@@ -1379,7 +1363,7 @@ const checkForCommentRedirect = () => {
 }
 
 // Setup comment animation for staggered reveals
-const setupCommentAnimation = (el: any, id: string, index: number) => {
+const setupCommentAnimation = (el: any, id: string, _index: number) => {
   if (el && typeof el === 'object' && 'tagName' in el) {
     nextTick(() => {
       observeStaggerElement(el, id, 'comments')

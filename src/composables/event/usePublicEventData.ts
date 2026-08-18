@@ -254,7 +254,7 @@ export function usePublicEventData() {
       } else {
         error.value = eventResponse.message || 'Event not found'
       }
-    } catch (err) {
+    } catch {
       error.value = 'Failed to load event details'
     } finally {
       loading.value = false

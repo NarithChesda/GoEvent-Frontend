@@ -29,70 +29,80 @@
       <Transition name="collapse">
       <div v-if="isMapExpanded" class="grid grid-rows-[1fr]">
       <div class="min-h-0 overflow-hidden">
-      <div class="space-y-3 sm:space-y-4 pt-6">
-        <!-- Map Preview -->
-        <div v-if="formData.google_map_embed_link" class="relative">
-          <iframe
-            :src="formData.google_map_embed_link"
-            class="w-full h-48 sm:h-56 md:h-64 rounded-xl sm:rounded-2xl"
-            style="border: 0"
-            allowfullscreen
-            loading="lazy"
-          ></iframe>
-          <button
-            v-if="canEdit && eventData"
-            @click="confirmRemoveMap"
-            class="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur-sm rounded-lg border border-slate-200 text-slate-600 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors duration-200"
-            :aria-label="t('management.embeds.map.deleteModal.title')"
-          >
-            <X class="w-4 h-4" />
-          </button>
+      <div class="pt-6">
+        <!-- Set: the map itself, in the same 16:9 rounded frame the showcase
+             gives it, with the actions that change it attached underneath.
+             The embed URL never appears — it's plumbing, and the identity line
+             says what's pinned in words the organizer recognises. -->
+        <div v-if="mapPreviewUrl" class="rounded-2xl border border-slate-200 overflow-hidden bg-white">
+          <div class="aspect-video">
+            <iframe
+              :src="mapPreviewUrl"
+              width="100%"
+              height="100%"
+              style="border: 0"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              :title="t('management.embeds.map.title')"
+            ></iframe>
+          </div>
+
+          <div class="flex items-center gap-2 px-3 py-2.5 border-t border-slate-100">
+            <MapPin class="w-4 h-4 text-slate-400 flex-shrink-0" aria-hidden="true" />
+            <span class="flex-1 min-w-0">
+              <span class="block text-sm font-medium text-slate-900 truncate">{{ mapSourceLabel }}</span>
+              <span class="block text-xs text-slate-500 truncate">{{ mapSourceHint }}</span>
+            </span>
+
+            <template v-if="canEdit && eventData">
+              <button
+                type="button"
+                @click="gmapModalOpen = true"
+                class="inline-flex items-center gap-1.5 flex-shrink-0 px-2.5 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+              >
+                <Pencil class="w-3.5 h-3.5" aria-hidden="true" />
+                <span>{{ t('management.embeds.map.changeBtn') }}</span>
+              </button>
+              <button
+                type="button"
+                @click="confirmRemoveMap"
+                class="p-2 flex-shrink-0 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+                :title="t('management.embeds.map.removeBtn')"
+                :aria-label="t('management.embeds.map.removeBtn')"
+              >
+                <Trash2 class="w-4 h-4" aria-hidden="true" />
+              </button>
+            </template>
+          </div>
         </div>
 
+        <!-- Not set: the same add-a-map affordance the live preview shows on the
+             invitation, opening the same editor, so the two entry points behave
+             identically. -->
         <button
           v-else
           type="button"
           :disabled="!canEdit"
-          @click="focusMapUrlInput"
+          @click="gmapModalOpen = true"
           :class="[
-            'w-full border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center transition-all duration-300',
+            'w-full aspect-video flex flex-col items-center justify-center gap-1.5 px-4 border-2 border-dashed rounded-2xl text-center transition-all duration-300',
             canEdit
               ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200'
               : 'border-slate-300 bg-slate-50 cursor-default'
           ]"
         >
-          <Map class="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 mx-auto mb-1.5 sm:mb-2 transition-colors group-hover:text-emerald-600" />
-          <p class="text-xs sm:text-sm text-slate-600">{{ t('management.embeds.map.empty') }}</p>
-        </button>
-
-        <div>
-          <input
-            ref="mapUrlInputRef"
-            v-model="formData.google_map_embed_link"
-            type="text"
-            :disabled="!canEdit"
-            :placeholder="t('management.embeds.map.inputPlaceholder')"
-            @paste="handleMapsPaste"
-            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white transition-colors duration-200 disabled:bg-slate-100 disabled:cursor-not-allowed"
+          <Map
+            class="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 transition-colors"
+            :class="canEdit ? 'group-hover:text-emerald-600' : ''"
+            aria-hidden="true"
           />
-          <p class="text-xs sm:text-sm text-slate-500 mt-1">{{ t('management.embeds.map.hint') }}</p>
-        </div>
-
-        <!-- Save Button -->
-        <div v-if="canEdit && eventData && hasMapChanges" class="flex justify-end">
-          <button
-            @click="saveMapChanges"
-            :disabled="savingMap"
-            class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <div
-              v-if="savingMap"
-              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
-            ></div>
-            <Save v-else class="w-4 h-4" />
-            <span>{{ savingMap ? t('management.embeds.map.saving') : t('management.embeds.map.saveBtn') }}</span>
-          </button>
-        </div>
+          <span class="text-sm font-semibold text-slate-700">
+            {{ canEdit ? t('management.showcasePreview.editors.addMap') : t('management.embeds.map.empty') }}
+          </span>
+          <span v-if="canEdit" class="text-xs sm:text-sm text-slate-500">
+            {{ t('management.embeds.map.emptyHint') }}
+          </span>
+        </button>
       </div>
       </div>
       </div>
@@ -214,6 +224,16 @@
       </div>
       </Transition>
     </div>
+
+    <!-- The one map editor — the same component the showcase preview opens, so
+         both entry points behave identically. It saves straight to the API. -->
+    <GmapEmbedModal
+      v-if="eventData"
+      v-model="gmapModalOpen"
+      :event-id="eventData.id"
+      :current-link="formData.google_map_embed_link"
+      @saved="handleGmapModalSaved"
+    />
 
     <!-- Toast Feedback -->
     <!-- Delete Confirmation Modal -->
@@ -345,10 +365,12 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { Youtube, Map, X, Save, ChevronDown, Info } from 'lucide-vue-next'
+import { Youtube, Map, MapPin, Pencil, Trash2, X, Save, ChevronDown, Info } from 'lucide-vue-next'
 import { eventsService, type Event } from '../services/api'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
-import { extractYouTubeEmbedUrl, extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
+import GmapEmbedModal from './showcase-preview/editors/GmapEmbedModal.vue'
+import { extractYouTubeEmbedUrl, isGoogleMapsEmbedUrl } from '../utils/embedExtractor'
+import { useVenueMapPresets } from '@/composables/useVenueMapPresets'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useToast } from '../composables/useToast'
 import { useCollapsibleSection } from '@/composables/useCollapsibleSection'
@@ -377,7 +399,6 @@ const formData = ref({
 })
 
 const savingYoutube = ref(false)
-const savingMap = ref(false)
 const showDeleteModal = ref(false)
 const deleting = ref(false)
 const deleteModalData = ref({
@@ -387,7 +408,8 @@ const deleteModalData = ref({
 })
 const showYouTubeHelpModal = ref(false)
 const urlInputRef = ref<HTMLInputElement | null>(null)
-const mapUrlInputRef = ref<HTMLInputElement | null>(null)
+/** The map editor, the same one the showcase preview opens. */
+const gmapModalOpen = ref(false)
 
 // Computed
 const hasYoutubeChanges = computed(() => {
@@ -396,23 +418,45 @@ const hasYoutubeChanges = computed(() => {
   return formData.value.youtube_embed_link !== (props.eventData.youtube_embed_link || '')
 })
 
-const hasMapChanges = computed(() => {
-  if (!props.eventData) return false
-
-  return formData.value.google_map_embed_link !== (props.eventData.google_map_embed_link || '')
-})
-
 const urlError = computed(() => {
   const url = formData.value.youtube_embed_link
   return url && !validateYouTubeUrl(url) ? t('management.embeds.errors.invalidUrl') : null
 })
 
-const focusUrlInput = () => {
-  if (props.canEdit) urlInputRef.value?.focus()
+// Only preview a link we've validated — the map link lands in a live iframe
+// src, so never feed it anything but a Google Maps embed URL.
+const mapPreviewUrl = computed(() => {
+  const url = formData.value.google_map_embed_link.trim()
+  return url && isGoogleMapsEmbedUrl(url) ? url : ''
+})
+
+const { presets, activePresetId } = useVenueMapPresets(mapPreviewUrl)
+
+const activeMapPreset = computed(
+  () => presets.value.find((preset) => preset.id === activePresetId.value) ?? null,
+)
+
+// Name the map in words the organizer recognises. The `?pb=…` embed URL is
+// machine plumbing — it only ever appears in the field you paste it into.
+const mapSourceLabel = computed(
+  () => activeMapPreset.value?.displayName ?? t('management.embeds.map.source.custom'),
+)
+
+const mapSourceHint = computed(() =>
+  activeMapPreset.value
+    ? activeMapPreset.value.displayCity || t('management.embeds.map.source.preset')
+    : t('management.embeds.map.source.customHint'),
+)
+
+// The modal saves to the API itself, so adopt its result as the new baseline.
+const handleGmapModalSaved = (updated: Event) => {
+  formData.value.google_map_embed_link = updated.google_map_embed_link || ''
+  emit('updated', updated)
+  showSuccess(t('management.embeds.map.successMessage'))
 }
 
-const focusMapUrlInput = () => {
-  if (props.canEdit) mapUrlInputRef.value?.focus()
+const focusUrlInput = () => {
+  if (props.canEdit) urlInputRef.value?.focus()
 }
 
 // Watch for prop changes
@@ -453,32 +497,6 @@ const saveYoutubeChanges = async () => {
     showError(t('management.embeds.errors.updateNetworkError'))
   } finally {
     savingYoutube.value = false
-  }
-}
-
-const saveMapChanges = async () => {
-  if (!props.eventData) return
-
-  savingMap.value = true
-
-  try {
-    // Prepare data - convert empty strings to null for removal
-    const updateData = {
-      google_map_embed_link: formData.value.google_map_embed_link.trim() || null,
-    }
-
-    const response = await eventsService.patchEvent(props.eventData.id, updateData)
-
-    if (response.success && response.data) {
-      emit('updated', response.data)
-      showSuccess(t('management.embeds.map.successMessage'))
-    } else {
-      showError(response.message || t('management.embeds.errors.updateFailed'))
-    }
-  } catch {
-    showError(t('management.embeds.errors.updateNetworkError'))
-  } finally {
-    savingMap.value = false
   }
 }
 
@@ -561,19 +579,7 @@ const handleYouTubePaste = (event: ClipboardEvent) => {
   }
 }
 
-// Handle paste events for Google Maps iframe
-const handleMapsPaste = (event: ClipboardEvent) => {
-  const pastedText = event.clipboardData?.getData('text')
-  if (!pastedText) return
-
-  // Try to extract Google Maps URL from iframe code
-  const extractedUrl = extractGoogleMapsEmbedUrl(pastedText)
-
-  if (extractedUrl) {
-    event.preventDefault()
-    formData.value.google_map_embed_link = extractedUrl
-  }
-}
+// The map editor handles its own iframe-paste extraction (GmapEmbedFields).
 </script>
 
 <style scoped>

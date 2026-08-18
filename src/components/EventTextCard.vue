@@ -118,8 +118,8 @@ interface Emits {
   delete: [textId: number]
 }
 
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+defineProps<Props>()
+defineEmits<Emits>()
 
 // State
 const showFullContent = ref(false)

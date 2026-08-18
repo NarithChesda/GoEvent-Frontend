@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useThrottleFn } from '../utils/performance'
 
 // Animation constants for consistent timing
@@ -251,7 +251,7 @@ export function useParallaxScroll() {
   const updateParallax = useThrottleFn(() => {
     scrollY.value = window.scrollY
 
-    parallaxElements.value.forEach((element, id) => {
+    parallaxElements.value.forEach((element, _id) => {
       const speed = parseFloat(element.getAttribute('data-parallax-speed') || '0.5')
       const direction = element.getAttribute('data-parallax-direction') || 'up'
       const offset = scrollY.value * speed

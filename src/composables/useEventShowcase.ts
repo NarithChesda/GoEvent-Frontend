@@ -10,6 +10,7 @@ import type {
   FallingEffectConfig,
   EventDetailsDesignConfig,
   HostInfoDesignConfig,
+  SparkFieldConfig,
 } from '../services/api/types/template.types'
 import type { StoredMusicStartStage } from '../services/api/types/event.types'
 
@@ -163,6 +164,11 @@ export interface TemplateAssets {
   falling_effect?: FallingEffectConfig | null
   /** Ambient creature (butterfly/dove/firefly…) effect for the cover stage. */
   ambient_creatures?: AmbientCreaturesConfig | null
+  /**
+   * Drifting spark field, spanning every stage. Absent falls back to the legacy
+   * `cover_stage_layout.coverGilding` spark fields — see resolveSparkField.
+   */
+  sparks?: SparkFieldConfig | null
   /**
    * Which showcase presentation layer this template renders: 'v1' (classic
    * cover/transition/main-content) or 'v2' ("Storybook Romance" scroll-story).
@@ -355,7 +361,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
   // External Composables
   // ============================
 
-  const { deduplicateRequest, addCleanup, cleanup: cleanupPerformance } = usePerformance()
+  const { deduplicateRequest, cleanup: cleanupPerformance } = usePerformance()
 
   const resourceManager = new ResourceManager()
 
@@ -550,8 +556,6 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     return accentFont.value
   })
 
-  // Deprecated: Use primaryFont instead
-  const currentFont = computed(() => primaryFont.value)
 
   const eventTexts = computed(() => event.value?.event_texts || [])
   const hosts = computed(() => event.value?.hosts || [])
@@ -652,31 +656,6 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
   //   return id.replace(/[<>"'&\\]/g, '').replace(/[^a-zA-Z0-9\-_]/g, '').substring(0, 50)
   // }
 
-  const validateVideoElement = (element: HTMLVideoElement): boolean => {
-    if (!element || !(element instanceof HTMLVideoElement)) return false
-
-    // Check if element is attached to document
-    if (!document.contains(element)) return false
-
-    // Validate src attribute is from trusted domain
-    const src = element.src || element.getAttribute('src') || ''
-    if (!src) return true // Allow empty src for cleanup
-
-    try {
-      const url = new URL(src)
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-      const allowedOrigins = [new URL(API_BASE_URL).origin, window.location.origin]
-
-      // Allow data URLs for embedded content
-      if (url.protocol === 'data:') {
-        return url.href.startsWith('data:video/')
-      }
-
-      return allowedOrigins.includes(url.origin)
-    } catch {
-      return false
-    }
-  }
 
   // Helper function for creating safe video queries (reserved for future use)
   // const createSafeVideoQuery = (videoType: 'cover' | 'event' | 'background', eventId?: string): string => {

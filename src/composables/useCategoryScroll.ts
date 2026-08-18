@@ -7,7 +7,7 @@
  * @module composables/useCategoryScroll
  */
 
-import { ref, onUnmounted, type Ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 
 /**
  * Composable for category scroll management

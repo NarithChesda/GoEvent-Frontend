@@ -621,6 +621,12 @@ onMounted(async () => {
     // to the next chapter in the direction of travel — landing exactly where
     // the progress dots would (centered when the chapter fits the viewport) —
     // so only the destination chapter's entrance plays out, during the glide.
+    // Must stay `let` declared ahead of the assignment below: snapToChapter
+    // closes over this and is handed to ScrollTrigger.create() as `snapTo` in
+    // the same statement that assigns it. As `let` an early callback reads
+    // `undefined` (handled via `?.`/`?? 0`); as `const` it would throw a TDZ
+    // ReferenceError and take out the chapter snapping.
+    // eslint-disable-next-line prefer-const
     let snapTrigger: InstanceType<typeof ScrollTrigger> | undefined
 
     const snapToChapter = (value: number): number => {

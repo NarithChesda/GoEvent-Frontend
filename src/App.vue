@@ -5,11 +5,31 @@ import { useAuthStore } from './stores/auth'
 import { useNotificationsStore } from './stores/notifications'
 import { resetVendorProfileCache } from './composables/settings'
 import { secureStorage } from './utils/secureStorage'
+import { isPreviewFrameDocument } from './utils/previewFrameContext'
 import ToastHost from './components/ToastHost.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const notificationsStore = useNotificationsStore()
+
+/**
+ * The Design Studio's preview iframes each run this component (see
+ * previewFrameContext.ts). None of the session bootstrapping below serves
+ * them — a preview frame renders one showcase stage, shows no notification
+ * bell, and never handles an invitation redirect — while all of it costs real
+ * requests, multiplied by however many frames are mounted:
+ *
+ *   - initializeAuth() → a profile GET per frame
+ *   - the isAuthenticated watcher → startPolling(), i.e. an immediate
+ *     unread-count GET per frame plus a 30s interval per frame, for as long as
+ *     the Studio tab stays open
+ *
+ * Skipping it does NOT log the frame out: API calls read their bearer token
+ * straight from tokenManager (see ApiClient.getAuthHeaders), which is backed by
+ * storage, not by this store — so the frame's inline-edit saves still
+ * authenticate, and ApiClient still refreshes on a 401 by itself.
+ */
+const isPreviewFrame = isPreviewFrameDocument()
 
 /**
  * Handle pending collaborator invitation after authentication
@@ -31,18 +51,20 @@ async function handlePendingInvitation() {
 }
 
 // Watch for authentication changes to handle pending invitations + notifications polling
-watch(
-  () => authStore.isAuthenticated,
-  async (isAuthenticated) => {
-    if (isAuthenticated) {
-      notificationsStore.startPolling()
-      await handlePendingInvitation()
-    } else {
-      notificationsStore.reset()
-      resetVendorProfileCache()
+if (!isPreviewFrame) {
+  watch(
+    () => authStore.isAuthenticated,
+    async (isAuthenticated) => {
+      if (isAuthenticated) {
+        notificationsStore.startPolling()
+        await handlePendingInvitation()
+      } else {
+        notificationsStore.reset()
+        resetVendorProfileCache()
+      }
     }
-  }
-)
+  )
+}
 
 onUnmounted(() => {
   notificationsStore.stopPolling()
@@ -57,6 +79,8 @@ onUnmounted(() => {
  * - Better error handling
  */
 onMounted(async () => {
+  if (isPreviewFrame) return
+
   try {
     // Migrate legacy storage explicitly on app startup
     // This only happens once, ensuring clean migration from v2 encrypted format

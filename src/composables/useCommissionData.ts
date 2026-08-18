@@ -2,7 +2,6 @@ import { ref, computed } from 'vue'
 import {
   commissionService,
   type Commission,
-  type CommissionDetail,
   type CommissionStats,
   type CommissionFilters,
 } from '../services/commission'

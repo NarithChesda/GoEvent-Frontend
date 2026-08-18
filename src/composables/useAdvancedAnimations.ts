@@ -70,7 +70,7 @@ export function useStaggerAnimation(options: StaggerAnimationOptions = {}) {
         })
 
         // Animate each group with staggered timing
-        containerGroups.forEach((elements, containerId) => {
+        containerGroups.forEach((elements, _containerId) => {
           elements.forEach((element, index) => {
             const elementId = element.getAttribute('data-stagger-id')!
             animatedElements.value.add(elementId)

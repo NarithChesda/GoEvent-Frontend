@@ -1,4 +1,4 @@
-import { apiService, type ApiResponse } from './api'
+import { type ApiResponse } from './api'
 import { secureStorage } from '../utils/secureStorage'
 import type { User } from './auth'
 
@@ -105,7 +105,7 @@ class UploadService {
           success: true,
           data,
         }
-      } catch (error) {
+      } catch {
         return {
           success: false,
           message: 'Invalid server response format',

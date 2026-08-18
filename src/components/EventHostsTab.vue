@@ -429,8 +429,6 @@ const userChangedViewMode = ref(false)
 // Host roles configuration
 // Removed hostRoles array since we're no longer categorizing by roles
 
-// Computed
-const totalHosts = computed(() => hosts.value.length)
 const filteredHosts = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
   if (!q) return hosts.value
@@ -457,17 +455,7 @@ const visibleHostsCount = computed(() => sortedHosts.value.length)
 
 // Removed speakersCount since we removed the speakers section
 
-const moderatorsCount = computed(
-  () =>
-    // Placeholder - no role field available yet
-    0,
-)
 
-const featuredCount = computed(
-  () =>
-    // Placeholder - no is_featured field available yet
-    0,
-)
 
 const loadHosts = async () => {
   loading.value = true
@@ -491,13 +479,6 @@ const editHost = (host: EventHost) => {
   showEditModal.value = true
 }
 
-const closeEditModal = () => {
-  showEditModal.value = false
-  // Clear selectedHost after a short delay to allow drawer close animation
-  setTimeout(() => {
-    selectedHost.value = null
-  }, 300)
-}
 
 const confirmDeleteHost = (host: EventHost) => {
   hostToDelete.value = host
@@ -683,7 +664,7 @@ const handleDragEnd = async (targetHost: EventHost | null) => {
         await loadHosts()
       }, 100)
     }
-  } catch (err) {
+  } catch {
     // Rollback on failure
     await loadHosts()
     showMessage('error', t('management.hosts.toast.reorderFailed'))
@@ -707,7 +688,9 @@ onMounted(() => {
     if ('addEventListener' in mql) {
       mql.addEventListener('change', mqListener)
     } else if ('addListener' in mql) {
-      // @ts-ignore - Safari
+      // Safari < 14 fallback. TS narrows this branch to `never` (every modern
+      // MediaQueryList has addEventListener), but old Safari really does land here.
+      // @ts-expect-error - legacy MediaQueryList API
       mql.addListener(mqListener)
     }
   }
@@ -721,7 +704,8 @@ onUnmounted(() => {
       if ('removeEventListener' in mql) {
         mql.removeEventListener('change', mqListener)
       } else if ('removeListener' in mql) {
-        // @ts-ignore - Safari
+        // Safari < 14 fallback (see the matching @ts-expect-error in onMounted)
+        // @ts-expect-error - legacy MediaQueryList API
         mql.removeListener(mqListener)
       }
     }

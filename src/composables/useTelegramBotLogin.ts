@@ -83,7 +83,7 @@ function getPendingLogin(): TelegramPendingLoginState | null {
     }
 
     return state
-  } catch (e) {
+  } catch {
     clearPendingLogin()
     return null
   }
@@ -92,7 +92,7 @@ function getPendingLogin(): TelegramPendingLoginState | null {
 function clearPendingLogin(): void {
   try {
     localStorage.removeItem(TELEGRAM_LOGIN_STORAGE_KEY)
-  } catch (e) {
+  } catch {
     // Silent fail
   }
 }
@@ -182,7 +182,7 @@ export function useTelegramBotLogin() {
       }
 
       return await response.json()
-    } catch (err) {
+    } catch {
       return null
     }
   }

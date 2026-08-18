@@ -207,11 +207,6 @@ interface Props {
   eventType?: string
 }
 
-interface Language {
-  code: string
-  name: string
-  flag: string
-}
 
 const props = withDefaults(defineProps<Props>(), {
   primaryColor: '#3B82F6',

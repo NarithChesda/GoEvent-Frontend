@@ -160,9 +160,7 @@ export function useLRUCache<T = any>(maxSize: number = 50, maxMemoryMB: number =
   /**
    * Force eviction of old items based on age
    */
-  const evictOldItems = (maxAge: number = 300000) => {
-    // 5 minutes default
-    const now = Date.now()
+  const evictOldItems = (_maxAge: number = 300000) => {
     const keysToEvict: string[] = []
 
     // This would require tracking creation time, which we can add if needed

@@ -75,4 +75,81 @@ describe('SelectField', () => {
     expect(optionButton('Wedding')!.getAttribute('aria-pressed')).toBe('true')
     expect(optionButton('Conference')!.getAttribute('aria-pressed')).toBe('false')
   })
+
+  it('does not open while disabled', async () => {
+    wrapper = mountField({ disabled: true })
+    await wrapper.find('button').trigger('click')
+
+    expect(panel()).toBeFalsy()
+  })
+
+  it('shows no search box unless searchable', async () => {
+    wrapper = mountField()
+    await wrapper.find('button').trigger('click')
+
+    expect(panel()!.querySelector('input')).toBeFalsy()
+  })
+
+  describe('searchable', () => {
+    const searchInput = () => panel()!.querySelector('input') as HTMLInputElement
+
+    const typeQuery = async (value: string) => {
+      const input = searchInput()
+      input.value = value
+      input.dispatchEvent(new Event('input'))
+      await wrapper!.vm.$nextTick()
+    }
+
+    it('filters options by label', async () => {
+      wrapper = mountField({ searchable: true })
+      await wrapper.find('button').trigger('click')
+      await typeQuery('conf')
+
+      expect(optionButton('Conference')).toBeTruthy()
+      expect(optionButton('Wedding')).toBeFalsy()
+    })
+
+    it('matches description and hidden keywords too', async () => {
+      wrapper = mountField({
+        searchable: true,
+        options: [{ value: 9, label: 'Sofitel', description: 'Phnom Penh', keywords: 'phokeethra' }],
+      })
+      await wrapper.find('button').trigger('click')
+
+      await typeQuery('phnom')
+      expect(optionButton('Sofitel')).toBeTruthy()
+
+      await typeQuery('phokeethra')
+      expect(optionButton('Sofitel')).toBeTruthy()
+    })
+
+    it('shows the no-results message when nothing matches', async () => {
+      wrapper = mountField({ searchable: true, noResultsText: 'Nothing found' })
+      await wrapper.find('button').trigger('click')
+      await typeQuery('zzzz')
+
+      expect(panel()!.textContent).toContain('Nothing found')
+    })
+
+    it('keeps the none option visible while filtering', async () => {
+      wrapper = mountField({ searchable: true, allowEmpty: true })
+      await wrapper.find('button').trigger('click')
+      await typeQuery('zzzz')
+
+      expect(optionButton('Select a category')).toBeTruthy()
+    })
+
+    it('clears the query between openings', async () => {
+      wrapper = mountField({ searchable: true })
+      await wrapper.find('button').trigger('click')
+      await typeQuery('conf')
+      expect(optionButton('Wedding')).toBeFalsy()
+
+      optionButton('Conference')!.click()
+      await wrapper.vm.$nextTick()
+
+      await wrapper.find('button').trigger('click')
+      expect(optionButton('Wedding')).toBeTruthy()
+    })
+  })
 })

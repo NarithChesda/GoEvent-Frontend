@@ -780,25 +780,17 @@
                         {{ t('management.partnerTemplateForm.coverGilding.bandWarning') }}
                       </p>
 
-                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
-                        <TemplateFormNumber
-                          v-model="form.cover_stage_layout.coverGilding.sparkCount"
-                          :label="t('management.partnerTemplateForm.coverGilding.sparkCount')"
-                          :min="0"
-                          :max="COVER_GILDING_MAX_SPARKS"
-                          :step="1"
-                        />
-                        <TemplateFormSwitch
-                          v-model="form.cover_stage_layout.coverGilding.cornerFlares"
-                          :icon="Sparkles"
-                          :label="t('management.partnerTemplateForm.coverGilding.cornerFlares')"
-                          :description="t('management.partnerTemplateForm.coverGilding.cornerFlaresHint')"
-                        />
-                      </div>
-                      <!-- Worth calling out: it is the one setting in this
-                           section that isn't confined to the cover. -->
+                      <TemplateFormSwitch
+                        v-model="form.cover_stage_layout.coverGilding.cornerFlares"
+                        :icon="Sparkles"
+                        :label="t('management.partnerTemplateForm.coverGilding.cornerFlares')"
+                        :description="t('management.partnerTemplateForm.coverGilding.cornerFlaresHint')"
+                      />
+                      <!-- The drifting motes used to be configured here. They
+                           span every stage rather than sitting on the band, so
+                           they now have their own section below. -->
                       <p class="text-[0.6875rem] leading-snug text-slate-500">
-                        {{ t('management.partnerTemplateForm.coverGilding.sparkHint') }}
+                        {{ t('management.partnerTemplateForm.coverGilding.sparkMovedHint') }}
                       </p>
 
                       <TemplateFormChoice
@@ -1241,6 +1233,151 @@
                 </div>
               </Transition>
             </section>
+
+            <!-- Drifting sparks. Its own section rather than part of the cover
+                 gilding it used to live in: the field is mounted for the life of
+                 the showcase and drifts on through the transition into the main
+                 content, so it is an independent decoration like the falling
+                 particles above, not a layer of the band lighting. -->
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+              <TemplateFormSwitch
+                v-model="form.sparks_enabled"
+                :icon="Sparkles"
+                :label="t('management.partnerTemplateForm.sparks.enableLabel')"
+                :description="t('management.partnerTemplateForm.sparks.enableHint')"
+              />
+
+              <Transition name="collapse">
+                <div v-if="form.sparks_enabled" class="grid grid-rows-[1fr]">
+                  <div class="min-h-0 overflow-hidden">
+                    <div class="space-y-4 pt-1">
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                        <TemplateFormNumber
+                          v-model="form.sparks.count"
+                          :label="t('management.partnerTemplateForm.sparks.count')"
+                          :min="0"
+                          :max="SPARK_MAX_COUNT"
+                          :step="1"
+                        />
+                        <!-- How fast each mote pulses, independent of how many
+                             there are — the same split the falling effect draws
+                             between intensity and speed. -->
+                        <TemplateFormNumber
+                          v-model="form.sparks.blink_speed"
+                          :label="t('management.partnerTemplateForm.sparks.blinkSpeed')"
+                          :min="SPARK_BLINK_SPEED_RANGE.min"
+                          :max="SPARK_BLINK_SPEED_RANGE.max"
+                          :step="SPARK_BLINK_SPEED_RANGE.step"
+                          unit="×"
+                        />
+                      </div>
+
+                      <!-- Sizes are a % of the stage width, not px: the stage is
+                           min(100vw, 56.25vh), so a pixel size tuned on a desktop
+                           lands twice as heavy on a phone. Each mote picks a
+                           random size in this range. -->
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                        <TemplateFormNumber
+                          v-model="form.sparks.min_size"
+                          :label="t('management.partnerTemplateForm.sparks.minSize')"
+                          :min="SPARK_SIZE_RANGE.min"
+                          :max="SPARK_SIZE_RANGE.max"
+                          :step="SPARK_SIZE_RANGE.step"
+                          unit="%"
+                        />
+                        <TemplateFormNumber
+                          v-model="form.sparks.max_size"
+                          :label="t('management.partnerTemplateForm.sparks.maxSize')"
+                          :min="SPARK_SIZE_RANGE.min"
+                          :max="SPARK_SIZE_RANGE.max"
+                          :step="SPARK_SIZE_RANGE.step"
+                          unit="%"
+                        />
+                      </div>
+                      <p class="text-[0.6875rem] leading-snug text-slate-400">
+                        {{ t('management.partnerTemplateForm.sparks.sizeHint') }}
+                      </p>
+
+                      <TemplateFormSelect
+                        v-if="!sparkUsesCustomImage"
+                        v-model="sparkShapeModel"
+                        :label="t('management.partnerTemplateForm.sparks.shape')"
+                        :options="sparkShapeOptions"
+                      />
+
+                      <TemplateFormChoice
+                        v-model="sparkIntensityModel"
+                        :label="t('management.partnerTemplateForm.sparks.intensity')"
+                        :options="sparkIntensityOptions"
+                        :columns="3"
+                      />
+
+                      <TemplateFormChoice
+                        v-model="sparkColorSourceModel"
+                        :label="t('management.partnerTemplateForm.sparks.colorSource')"
+                        :options="sparkColorSourceOptions"
+                        :columns="2"
+                      />
+
+                      <div v-if="form.sparks.color_source === 'custom'" class="flex items-end gap-2">
+                        <input
+                          v-model="form.sparks.custom_color"
+                          type="color"
+                          class="w-10 h-[2.375rem] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
+                          :aria-label="t('management.partnerTemplateForm.fallingEffect.pickLabel')"
+                        />
+                        <input
+                          v-model="form.sparks.custom_color"
+                          type="text"
+                          maxlength="7"
+                          placeholder="#E0B269"
+                          :aria-label="t('management.partnerTemplateForm.fallingEffect.hexLabel')"
+                          class="flex-1 min-w-0 px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm uppercase tabular-nums transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                        />
+                      </div>
+
+                      <div class="space-y-1.5">
+                        <label class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.sparks.customImage') }}</label>
+                        <p class="text-[0.6875rem] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.sparks.customImageHint') }}</p>
+                        <div
+                          v-if="sparkCustomImagePreview || (existingTemplate?.spark_custom_image && !form.clear_spark_custom_image)"
+                          class="flex items-center gap-3 p-2 ring-1 ring-slate-200 rounded-xl"
+                        >
+                          <img
+                            :src="sparkCustomImagePreview || existingTemplate?.spark_custom_image || ''"
+                            :alt="t('management.partnerTemplateForm.sparks.customImage')"
+                            class="w-12 h-12 object-contain bg-slate-100 rounded-lg"
+                          />
+                          <div class="flex-1 min-w-0 text-xs text-slate-600 truncate">
+                            {{ form.spark_custom_image?.name || t('management.partnerTemplateForm.fallingEffect.currentImage') }}
+                          </div>
+                          <label class="cursor-pointer px-2 py-1 rounded-lg text-xs font-medium text-[#1e90ff] hover:bg-sky-50 transition-colors">
+                            {{ t('management.partnerTemplateForm.fallingEffect.replace') }}
+                            <input type="file" accept="image/png,image/svg+xml" class="sr-only" @change="handleFileChange('spark_custom_image', $event)" />
+                          </label>
+                          <button
+                            type="button"
+                            @click="clearSparkCustomImage"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            :aria-label="t('management.partnerTemplateForm.fallingEffect.remove')"
+                          >
+                            <Trash2 class="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <label
+                          v-else
+                          class="flex items-center justify-center gap-2 py-3 cursor-pointer border-2 border-dashed border-slate-200 bg-slate-50/60 hover:border-sky-400 hover:bg-sky-50/40 rounded-xl transition-colors"
+                        >
+                          <Upload class="w-4 h-4 text-slate-400" />
+                          <span class="text-xs font-medium text-slate-500">{{ t('management.partnerTemplateForm.sparks.uploadCustom') }}</span>
+                          <input type="file" accept="image/png,image/svg+xml" class="sr-only" @change="handleFileChange('spark_custom_image', $event)" />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
+            </section>
           </template>
 
         </div>
@@ -1358,6 +1495,9 @@ import type {
   AmbientCreaturesConfig,
   AmbientCreatureEntry,
   AmbientCreatureEffectType,
+  SparkFieldConfig,
+  SparkShape,
+  SparkColorSource,
 } from '../../services/api'
 import PartnerTemplateFileField from './PartnerTemplateFileField.vue'
 import PartnerTemplatePreview from './PartnerTemplatePreview.vue'
@@ -1372,7 +1512,6 @@ import { useMediaQuery } from '../../composables/useMediaQuery'
 import GuestFrameCornerGrid from './GuestFrameCornerGrid.vue'
 import {
   COVER_ELEMENT_IDS,
-  COVER_GILDING_MAX_SPARKS,
   resolveCoverElements,
   resolveCoverGilding,
   resolveGuestFrame,
@@ -1385,6 +1524,14 @@ import {
   FALLING_SPEED_RANGE,
   resolveFallingSpeed,
 } from '../../composables/showcase/useFallingParticles'
+import {
+  SPARK_BLINK_SPEED_RANGE,
+  SPARK_FIELD_DEFAULTS,
+  SPARK_MAX_COUNT,
+  SPARK_SIZE_DEFAULTS,
+  SPARK_SIZE_RANGE,
+  resolveSparkBlinkSpeed,
+} from '../../composables/showcase/useSparkField'
 import { TEMPLATE_COLOR_SLOTS, TEMPLATE_FONT_TYPE_SLOTS } from './templateSlots'
 import {
   PARTNER_TEMPLATE_ASSET_FIELDS,
@@ -1526,6 +1673,19 @@ interface AmbientCreaturesFormState {
   custom_color: string
 }
 
+interface SparkFieldFormState {
+  count: number
+  /** Blink-rate multiplier; SPARK_BLINK_SPEED_RANGE.default is the original rate. */
+  blink_speed: number
+  /** Mote size range as a % of the stage width. */
+  min_size: number
+  max_size: number
+  shape: SparkShape
+  color_source: SparkColorSource
+  custom_color: string
+  intensity: 'subtle' | 'normal' | 'bright'
+}
+
 interface FormState {
   name: string
   package_plan_id: number | null
@@ -1557,6 +1717,10 @@ interface FormState {
   clear_falling_effect_custom_image: boolean
   ambient_creatures_enabled: boolean
   ambient_creatures: AmbientCreaturesFormState
+  sparks_enabled: boolean
+  sparks: SparkFieldFormState
+  spark_custom_image: File | null
+  clear_spark_custom_image: boolean
   /** Date/location block design rendered in the showcase (panel | calendar). */
   event_details_design_type: EventDetailsDesignType
   /** Colour slot for the calendar design's event-day marker (calendar only). */
@@ -1581,6 +1745,17 @@ const defaultAmbientCreatures = (): AmbientCreaturesFormState => ({
   speed: 'normal',
   color_source: 'accent',
   custom_color: '#FFD700',
+})
+
+const defaultSparkField = (): SparkFieldFormState => ({
+  count: SPARK_FIELD_DEFAULTS.count,
+  blink_speed: SPARK_BLINK_SPEED_RANGE.default,
+  min_size: SPARK_SIZE_DEFAULTS.min,
+  max_size: SPARK_SIZE_DEFAULTS.max,
+  shape: 'glow',
+  color_source: 'accent',
+  custom_color: '#E0B269',
+  intensity: 'normal',
 })
 
 const defaultForm = (): FormState => ({
@@ -1614,6 +1789,10 @@ const defaultForm = (): FormState => ({
   clear_falling_effect_custom_image: false,
   ambient_creatures_enabled: false,
   ambient_creatures: defaultAmbientCreatures(),
+  sparks_enabled: false,
+  sparks: defaultSparkField(),
+  spark_custom_image: null,
+  clear_spark_custom_image: false,
   event_details_design_type: 'panel',
   event_details_marker_color_source: 'accent',
   event_details_marker_custom_color: '#B3261E',
@@ -1644,6 +1823,7 @@ const form = reactive<FormState>(defaultForm())
 const previewImagePreview = ref<string | null>(null)
 const bgPhotoPreview = ref<string | null>(null)
 const fallingEffectCustomImagePreview = ref<string | null>(null)
+const sparkCustomImagePreview = ref<string | null>(null)
 const saving = ref(false)
 const error = ref<string | null>(null)
 
@@ -1831,6 +2011,63 @@ const gildingColorSourceModel = computed<string>({
       value as ResolvedCoverGilding['colorSource']
   },
 })
+
+// ---------------------------------------------------------------------------
+// Spark field. Its own section rather than part of the gilding above: the motes
+// span every stage and are an independent decoration, so they get the same
+// standalone treatment the falling particles and ambient creatures have.
+// ---------------------------------------------------------------------------
+const sparkShapeLabels = computed<Record<SparkShape, string>>(() => ({
+  glow: t('management.partnerTemplateForm.sparks.shapes.glow'),
+  sparkle: t('management.partnerTemplateForm.sparks.shapes.sparkle'),
+  star: t('management.partnerTemplateForm.sparks.shapes.star'),
+  diamond: t('management.partnerTemplateForm.sparks.shapes.diamond'),
+  cross: t('management.partnerTemplateForm.sparks.shapes.cross'),
+  dot: t('management.partnerTemplateForm.sparks.shapes.dot'),
+}))
+
+const sparkShapeOptions = computed(() =>
+  (Object.entries(sparkShapeLabels.value) as Array<[SparkShape, string]>).map(
+    ([value, label]) => ({ value, label }),
+  ),
+)
+
+const sparkShapeModel = computed<string>({
+  get: () => form.sparks.shape,
+  set: (value) => { form.sparks.shape = value as SparkShape },
+})
+
+// Same four slots the gilding offers, so a template that switches from the
+// legacy fallback to a standalone config keeps the tint it already had.
+const sparkColorSourceOptions = computed(() => [
+  { value: 'primary', label: t('management.partnerTemplateForm.ambientCreatures.sourcePrimary') },
+  { value: 'secondary', label: t('management.partnerTemplateForm.coverGilding.sourceSecondary') },
+  { value: 'accent', label: t('management.partnerTemplateForm.ambientCreatures.sourceAccent') },
+  { value: 'custom', label: t('management.partnerTemplateForm.fallingEffect.sourceCustomShort') },
+])
+
+const sparkColorSourceModel = computed<string>({
+  get: () => form.sparks.color_source,
+  set: (value) => { form.sparks.color_source = value as SparkColorSource },
+})
+
+const sparkIntensityOptions = computed(() => [
+  { value: 'subtle', label: t('management.partnerTemplateForm.coverGilding.intensitySubtle') },
+  { value: 'normal', label: t('management.partnerTemplateForm.coverGilding.intensityNormal') },
+  { value: 'bright', label: t('management.partnerTemplateForm.coverGilding.intensityBright') },
+])
+
+const sparkIntensityModel = computed<string>({
+  get: () => form.sparks.intensity,
+  set: (value) => { form.sparks.intensity = value as SparkFieldFormState['intensity'] },
+})
+
+/** A custom upload replaces the built-in shape, so the shape picker goes quiet. */
+const sparkUsesCustomImage = computed(
+  () =>
+    !!form.spark_custom_image ||
+    (!!props.existingTemplate?.spark_custom_image && !form.clear_spark_custom_image),
+)
 
 // ---------------------------------------------------------------------------
 // Guest name frame.
@@ -2531,6 +2768,7 @@ watch(
     previewImagePreview.value = null
     bgPhotoPreview.value = null
     fallingEffectCustomImagePreview.value = null
+    sparkCustomImagePreview.value = null
     // Staged removals belong to the template they were staged against.
     clearedAssets.value = new Set()
     error.value = null
@@ -2595,6 +2833,30 @@ watch(
         form.ambient_creatures.custom_color = ac.custom_color ?? '#FFD700'
       } else {
         form.ambient_creatures_enabled = false
+      }
+      // Hydrate the spark field. A template saved before sparks were split out
+      // of the gilding has no `sparks` block, so it's seeded from the legacy
+      // gilding fields instead — the same fallback the renderer applies. That
+      // way opening such a template shows what it actually renders, and saving
+      // it writes those values forward rather than silently resetting them.
+      if (template.sparks) {
+        const sp = template.sparks
+        form.sparks_enabled = sp.enabled ?? true
+        form.sparks.count = sp.count ?? SPARK_FIELD_DEFAULTS.count
+        form.sparks.blink_speed = resolveSparkBlinkSpeed(sp.blink_speed)
+        form.sparks.min_size = sp.min_size ?? SPARK_SIZE_DEFAULTS.min
+        form.sparks.max_size = sp.max_size ?? SPARK_SIZE_DEFAULTS.max
+        form.sparks.shape = sp.shape ?? 'glow'
+        form.sparks.color_source = sp.color_source ?? 'accent'
+        form.sparks.custom_color = sp.custom_color ?? '#E0B269'
+        form.sparks.intensity = sp.intensity ?? 'normal'
+      } else {
+        const gilding = form.cover_stage_layout.coverGilding
+        form.sparks_enabled = gilding.enabled && gilding.sparkCount > 0
+        form.sparks.count = gilding.sparkCount
+        form.sparks.color_source = gilding.colorSource
+        form.sparks.custom_color = gilding.customColor ?? '#E0B269'
+        form.sparks.intensity = gilding.intensity
       }
       // Load colors and fonts from existing template
       colors.value = template.template_colors ?? []
@@ -2661,6 +2923,10 @@ function handleFileChange(field: keyof FormState, event: Event): void {
     fallingEffectCustomImagePreview.value = URL.createObjectURL(file)
     form.clear_falling_effect_custom_image = false
   }
+  if (field === 'spark_custom_image') {
+    sparkCustomImagePreview.value = URL.createObjectURL(file)
+    form.clear_spark_custom_image = false
+  }
 }
 
 /**
@@ -2722,6 +2988,49 @@ function buildFallingEffectPayload(): FallingEffectConfig | null {
   return cfg
 }
 
+function clearSparkCustomImage(): void {
+  form.spark_custom_image = null
+  sparkCustomImagePreview.value = null
+  form.clear_spark_custom_image = true
+}
+
+/**
+ * Always sends a block — including a disabled one, as `{ enabled: false }`
+ * rather than `null`.
+ *
+ * `null` would mean "no standalone config", which the renderer reads as the
+ * legacy instruction to fall back to the gilding's spark fields. For a template
+ * that already has band lighting on, that would turn the sparks the partner just
+ * switched off straight back on. An explicit `enabled: false` is the only way to
+ * say off and be believed. The rest of the settings ride along so toggling the
+ * effect back on restores what was there rather than a fresh default.
+ */
+function buildSparksPayload(): SparkFieldConfig {
+  const size = normalizedSparkSizes()
+  return {
+    enabled: form.sparks_enabled,
+    count: form.sparks.count,
+    blink_speed: resolveSparkBlinkSpeed(form.sparks.blink_speed),
+    min_size: size.min,
+    max_size: size.max,
+    shape: form.sparks.shape,
+    color_source: form.sparks.color_source,
+    custom_color: form.sparks.color_source === 'custom' ? form.sparks.custom_color : null,
+    intensity: form.sparks.intensity,
+  }
+}
+
+/**
+ * Min/max the right way round. The two are separate number inputs, so a partner
+ * mid-edit can legitimately have them inverted for a keystroke; swapping beats
+ * both rejecting the save and storing a range the renderer will discard.
+ */
+function normalizedSparkSizes(): { min: number; max: number } {
+  const a = form.sparks.min_size
+  const b = form.sparks.max_size
+  return a <= b ? { min: a, max: b } : { min: b, max: a }
+}
+
 // The marker colour only drives the calendar design, so the panel design sends
 // just its type — nothing stale to interpret if the template switches back.
 function buildEventDetailsDesignPayload(): EventDetailsDesignConfig {
@@ -2769,6 +3078,7 @@ async function handleSave(): Promise<void> {
       cover_stage_layout: form.cover_stage_layout,
       falling_effect: buildFallingEffectPayload(),
       ambient_creatures: buildAmbientCreaturesPayload(),
+      sparks: buildSparksPayload(),
       event_details_design: buildEventDetailsDesignPayload(),
       host_info_design: { type: form.host_info_design_type },
     }
@@ -2797,6 +3107,13 @@ async function handleSave(): Promise<void> {
       payload.falling_effect_custom_image = form.falling_effect_custom_image
     } else if (form.clear_falling_effect_custom_image) {
       payload.falling_effect_custom_image = ''
+    }
+
+    // Custom spark image: same three states as the falling effect's.
+    if (form.spark_custom_image instanceof File) {
+      payload.spark_custom_image = form.spark_custom_image
+    } else if (form.clear_spark_custom_image) {
+      payload.spark_custom_image = ''
     }
 
     let response
@@ -2925,6 +3242,7 @@ const previewDraft = computed<PartnerTemplateDraft>(() => {
     // from what actually gets persisted.
     falling_effect: buildFallingEffectPayload(),
     ambient_creatures: buildAmbientCreaturesPayload(),
+    sparks: buildSparksPayload(),
     event_details_design: buildEventDetailsDesignPayload(),
     host_info_design: { type: form.host_info_design_type },
     colors: pendingColors.value,
@@ -2938,6 +3256,8 @@ const previewDraft = computed<PartnerTemplateDraft>(() => {
     ),
     fallingEffectCustomImage: form.falling_effect_custom_image,
     clearFallingEffectCustomImage: form.clear_falling_effect_custom_image,
+    sparkCustomImage: form.spark_custom_image,
+    clearSparkCustomImage: form.clear_spark_custom_image,
   }
 })
 

@@ -2,14 +2,12 @@
  * Secure logging utility that sanitizes sensitive data in development mode
  */
 
-// Development mode flag
-const IS_DEV_MODE = import.meta.env.DEV
 
 export class SecureLogger {
   /**
    * Log debug information (only in development mode)
    */
-  static debug(context: string, data: Record<string, unknown>): void {
+  static debug(_context: string, _data: Record<string, unknown>): void {
     // Debug logging disabled
     return
   }
@@ -17,7 +15,7 @@ export class SecureLogger {
   /**
    * Log errors with context
    */
-  static error(context: string, error: unknown, data?: Record<string, unknown>): void {
+  static error(_context: string, _error: unknown, _data?: Record<string, unknown>): void {
     // Error logging disabled
     return
   }
@@ -25,7 +23,7 @@ export class SecureLogger {
   /**
    * Log warnings
    */
-  static warn(context: string, message: string, data?: Record<string, unknown>): void {
+  static warn(_context: string, _message: string, _data?: Record<string, unknown>): void {
     // Warning logging disabled
     return
   }

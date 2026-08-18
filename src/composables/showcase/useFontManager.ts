@@ -1,4 +1,4 @@
-import { ref, computed, nextTick } from 'vue'
+import { ref, nextTick } from 'vue'
 import type {
   TemplateFont,
   FontLoadConfig,
@@ -419,8 +419,10 @@ export function useFontManager() {
     // Add to DOM to trigger font download
     fontLoader.appendChild(fontSpan)
 
-    // Force browser to compute styles (triggers font download)
-    window.getComputedStyle(fontSpan).fontFamily
+    // Force browser to compute styles (triggers font download). The read itself
+    // is the point — `void` keeps the deliberate side effect while making it
+    // explicit that the value is discarded.
+    void window.getComputedStyle(fontSpan).fontFamily
 
     // Clean up after a delay (font should be loaded by then)
     setTimeout(() => {

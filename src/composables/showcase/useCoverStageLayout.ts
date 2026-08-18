@@ -61,7 +61,15 @@ export const COVER_GILDING_DEFAULTS: Required<CoverGildingConfig> = {
   customColor: null,
 }
 
-/** Hard ceiling on sparks — past this the field reads as noise and costs frames. */
+/**
+ * Hard ceiling on the LEGACY gilding spark count.
+ *
+ * Sparks are configured standalone now (`template_assets.sparks`, see
+ * useSparkField) and carry their own SPARK_MAX_COUNT. This one only still
+ * governs the value templates saved before that split, which the renderer reads
+ * as its fallback — so it stays at the number those templates were authored
+ * against rather than tracking the new ceiling.
+ */
 export const COVER_GILDING_MAX_SPARKS = 40
 
 /**

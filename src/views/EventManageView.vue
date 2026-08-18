@@ -178,7 +178,17 @@
                  plain content tab it was before the studio existed — same
                  EventMediaTab, just not wrapped in the studio's split-pane
                  preview chrome, since there's no live preview to show. -->
-            <div v-if="activeTab === 'design-studio'">
+            <!-- Rendered once visited and then kept in the DOM, hidden with
+                 `v-show` rather than torn down (see studioEverOpened).
+                 The studio's 2-3 preview iframes are each a full app boot
+                 costing hundreds of kB of parse plus their own showcase fetch,
+                 and `v-if` meant paying all of that again on every single
+                 return to this tab. `v-show` is what makes them survive:
+                 `<KeepAlive>` would not, because it deactivates by moving the
+                 subtree into a detached container, and detaching an <iframe>
+                 destroys its browsing context — every frame would reload on
+                 reactivation, which is the very thing being avoided. -->
+            <div v-if="studioEverOpened" v-show="activeTab === 'design-studio'">
               <div v-if="!canViewMedia" class="text-center py-12">
                 <div
                   class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
@@ -391,26 +401,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick, inject, defineAsyncComponent, type Ref } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick, inject, type Ref } from 'vue'
+import { defineResilientAsyncComponent } from '@/utils/asyncComponent'
 import { useRoute, useRouter } from 'vue-router'
 import { useSidebar } from '../composables/useSidebar'
 import { useAppLanguage } from '../composables/useAppLanguage'
 import { useToast } from '../composables/useToast'
 import {
   Lock,
-  Pencil,
   AlertTriangle,
-  Calendar,
-  FileText,
-  Users,
-  UserPlus,
-  ImageIcon,
-  Monitor,
-  CreditCard,
-  Mail,
-  Share2,
-  Wallet,
-  BarChart,
 } from 'lucide-vue-next'
 import MainLayout from '../components/MainLayout.vue'
 import EventAboutSection from '../components/EventAboutSection.vue'
@@ -422,21 +421,26 @@ import { eventsService, apiClient, type Event, type EventPhoto } from '../servic
 import EventEditDrawer from '../components/EventEditDrawer.vue'
 import type { TabConfig } from '../components/EventNavigationTabs.vue'
 
-// Lazy load heavy tab components for better code splitting
-const EventAgendaTab = defineAsyncComponent(() => import('../components/EventAgendaTab.vue'))
-const EventHostsTab = defineAsyncComponent(() => import('../components/EventHostsTab.vue'))
-const ShowcasePreviewTab = defineAsyncComponent(() => import('../components/showcase-preview/ShowcasePreviewTab.vue'))
+// Lazy load heavy tab components for better code splitting.
+// Resilient rather than plain: a tab whose chunk request fails renders nothing
+// at all under defineAsyncComponent — an empty page with no error and no way
+// back — and these are the biggest chunks in the app, requested at the exact
+// moment the Design Studio is also saturating the connection with its preview
+// frames. See defineResilientAsyncComponent.
+const EventAgendaTab = defineResilientAsyncComponent(() => import('../components/EventAgendaTab.vue'))
+const EventHostsTab = defineResilientAsyncComponent(() => import('../components/EventHostsTab.vue'))
+const ShowcasePreviewTab = defineResilientAsyncComponent(() => import('../components/showcase-preview/ShowcasePreviewTab.vue'))
 // Non-showcase categories (business, music, other) get the plain content tab
 // (no live-preview studio chrome) — same component ShowcasePreviewTab embeds
 // in its own content panel for showcase categories, just rendered directly.
-const EventMediaTab = defineAsyncComponent(() => import('../components/EventMediaTab.vue'))
-const EventRegistrationTab = defineAsyncComponent(() => import('../components/EventRegistrationTab.vue'))
-const EventTemplatePaymentTab = defineAsyncComponent(() => import('../components/EventTemplatePaymentTab.vue'))
-const EventGuestManagementTab = defineAsyncComponent(() => import('../components/EventGuestManagementTab.vue'))
-const EventAnalyticsTab = defineAsyncComponent(() => import('../components/EventAnalyticsTab.vue'))
-const EventExpenseTab = defineAsyncComponent(() => import('../components/EventExpenseTab.vue'))
-const EventDonationTab = defineAsyncComponent(() => import('../components/EventDonationTab.vue'))
-const EventTicketsTab = defineAsyncComponent(() => import('../components/EventTicketsTab.vue'))
+const EventMediaTab = defineResilientAsyncComponent(() => import('../components/EventMediaTab.vue'))
+const EventRegistrationTab = defineResilientAsyncComponent(() => import('../components/EventRegistrationTab.vue'))
+const EventTemplatePaymentTab = defineResilientAsyncComponent(() => import('../components/EventTemplatePaymentTab.vue'))
+const EventGuestManagementTab = defineResilientAsyncComponent(() => import('../components/EventGuestManagementTab.vue'))
+const EventAnalyticsTab = defineResilientAsyncComponent(() => import('../components/EventAnalyticsTab.vue'))
+const EventExpenseTab = defineResilientAsyncComponent(() => import('../components/EventExpenseTab.vue'))
+const EventDonationTab = defineResilientAsyncComponent(() => import('../components/EventDonationTab.vue'))
+const EventTicketsTab = defineResilientAsyncComponent(() => import('../components/EventTicketsTab.vue'))
 
 const route = useRoute()
 const router = useRouter()
@@ -495,9 +499,19 @@ const activeTab = ref((route.query.tab as string) || 'overview')
 // returns to before leaving the page (see the activeTab watcher below).
 const landingTab = activeTab.value
 let tabEntryPushed = false
+
+/**
+ * Latches the first time the Design Studio is opened, and never resets.
+ *
+ * The studio is the one tab that is expensive to *build* rather than expensive
+ * to fetch — its 2-3 preview iframes are each a complete app boot — so once
+ * it exists it is kept in the DOM and merely hidden (see its `v-show` in the
+ * template). The latch is what keeps that from costing anything for the
+ * majority of visits that never open it at all.
+ */
+const studioEverOpened = ref(activeTab.value === 'design-studio')
 const activeSubTab = ref<string>('')
 const guestManagementSubTab = ref<string>('guests')
-const expenseTrackingSubTab = ref<string>('summary')
 const showEditDrawer = ref(false)
 
 // Interval IDs for polling
@@ -661,11 +675,6 @@ const canViewTickets = computed(() => {
   return canViewRestrictedTabs.value && event.value?.privacy === 'public'
 })
 
-const canDeleteEvent = computed(() => {
-  if (!event.value || !authStore.isAuthenticated) return false
-  // Only the organizer (event creator) can delete the event
-  return event.value.organizer === authStore.user?.id
-})
 
 // Top bar computed properties
 const computedEventStatus = computed((): 'upcoming' | 'ongoing' | 'past' | 'draft' | null => {
@@ -685,31 +694,7 @@ const computedEventStatus = computed((): 'upcoming' | 'ongoing' | 'past' | 'draf
   return null
 })
 
-// Mobile context header computed properties
-const currentTabLabel = computed(() => {
-  const tab = navigationTabs.value.find((t) => t.id === activeTab.value)
-  return tab ? tab.mobileLabel || tab.label : 'Event Details'
-})
 
-const currentTabIcon = computed(() => {
-  const tab = navigationTabs.value.find((t) => t.id === activeTab.value)
-  if (!tab) return FileText
-
-  const iconMap = {
-    calendar: Calendar,
-    'file-text': FileText,
-    users: Users,
-    'user-plus': UserPlus,
-    image: ImageIcon,
-    monitor: Monitor,
-    'credit-card': CreditCard,
-    'bar-chart': BarChart,
-    wallet: Wallet,
-    mail: Mail,
-    'share-2': Share2,
-  } as const
-  return iconMap[tab.icon as keyof typeof iconMap] || FileText
-})
 
 // Removed unused daysUntilEvent computed property
 
@@ -738,7 +723,7 @@ const loadEvent = async () => {
     } else {
       error.value = response.message || 'Event not found'
     }
-  } catch (err) {
+  } catch {
     error.value = 'Failed to load event details'
   } finally {
     loading.value = false
@@ -828,41 +813,7 @@ const joinVirtualEvent = () => {
   }
 }
 
-const getBannerImageUrl = (bannerImage: string | null): string | undefined => {
-  if (!bannerImage) return undefined
 
-  // If it's already a full URL, return as is
-  if (bannerImage.startsWith('http://') || bannerImage.startsWith('https://')) {
-    return bannerImage
-  }
-
-  // If it's a relative URL, prepend the API base URL
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-  if (bannerImage.startsWith('/')) {
-    return `${API_BASE_URL}${bannerImage}`
-  }
-
-  // If it doesn't start with /, assume it needs /media/ prefix
-  return `${API_BASE_URL}/media/${bannerImage}`
-}
-
-const getMediaUrl = (mediaUrl: string | null): string | undefined => {
-  if (!mediaUrl) return undefined
-
-  // If it's already a full URL, return as is
-  if (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://')) {
-    return mediaUrl
-  }
-
-  // If it's a relative URL, prepend the API base URL
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-  if (mediaUrl.startsWith('/')) {
-    return `${API_BASE_URL}${mediaUrl}`
-  }
-
-  // If it doesn't start with /, assume it needs /media/ prefix
-  return `${API_BASE_URL}/media/${mediaUrl}`
-}
 
 const getOrganizerAvatarUrl = (profilePicture: string | null | undefined): string => {
   if (!profilePicture) return ''
@@ -957,31 +908,27 @@ const showMessage = (type: 'success' | 'error', text: string) => {
   showToast(type, text)
 }
 
-// Date formatting utilities (still used in About section)
-const formatEventDate = (dateString: string): string => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString([], {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
 
-const formatEventTime = (dateString: string): string => {
-  const date = new Date(dateString)
-  return date.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 // Watch for tab changes and reset sub-tab
 watch(
   () => activeTab.value,
-  () => {
+  (tab) => {
     // Reset sub-tab when main tab changes
     activeSubTab.value = ''
+
+    if (tab === 'design-studio') {
+      if (!studioEverOpened.value) {
+        studioEverOpened.value = true
+      } else {
+        // Coming back to a studio that has been kept in the DOM (hidden). Its
+        // preview frames measure themselves against their column width, and
+        // everything reads zero while `display: none`, so they have to be told
+        // they are on screen again — there is no resize or intersection for
+        // them to observe.
+        nextTick(() => showcasePreviewTabRef.value?.remeasureFrames?.())
+      }
+    }
     // Update guest management subtab when switching to guest-management tab
     if (activeTab.value === 'guest-management') {
       // Use nextTick to ensure component is mounted

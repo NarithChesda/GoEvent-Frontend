@@ -5,8 +5,10 @@
 
     <!-- The falling particle field is owned by CoverStage, which outlives every
          individual stage, so one continuous field spans cover → transition →
-         here. It re-layers itself to sit behind these decorations and the
-         content card once this stage takes over. -->
+         here. It draws in FRONT of this whole stage — decorations, content card
+         and floating menu alike — because CoverStage renders this stage inside a
+         `z-20` stacking context, leaving no z-index that sits between these
+         layers. See `fallingEffectZIndex` in CoverStage.vue. -->
 
     <!-- Decoration Images (optimized via ImageKit for viewport size) -->
     <!-- Z-indexes are dynamic via mainStageLayout prop (defaults: left/right=24, top/bottom=25) -->
@@ -948,9 +950,8 @@ import type {
 } from '../../composables/useEventShowcase'
 import type { EventComment, DressCode } from '../../types/showcase'
 import type { EventPaymentMethod } from '../../services/api'
-import type { SupportedLanguage } from '../../utils/translations'
+import type { } from '../../utils/translations'
 import { useScrollDrivenAnimations } from '../../composables/useAdvancedAnimations'
-import { translateRSVP } from '../../utils/translations'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
 import { useCoverStageLayout } from '../../composables/showcase/useCoverStageLayout'
@@ -981,9 +982,6 @@ import CommentSection from './CommentSection.vue'
 import PaymentSection from './PaymentSection.vue'
 import FloatingActionMenu from './FloatingActionMenu.vue'
 import WeddingSectionDivider from './WeddingSectionDivider.vue'
-
-// Asset imports
-import WhiteLogoSvg from '../../assets/white-kh-logo.svg'
 
 // Types
 interface TemplateAssets {
@@ -1349,43 +1347,7 @@ const initializeScrollAnimations = () => {
   }
 }
 
-// Translation key mapping for consistent lookups
-const TRANSLATION_KEY_MAP: Record<
-  string,
-  keyof typeof import('../../utils/translations').rsvpTranslations.en
-> = {
-  location_header: 'location_header',
-  video_header: 'video_header',
-  gallery_header: 'gallery_header',
-  comment_header: 'comment_header',
-  comment_placeholder: 'comment_placeholder',
-  comment_signin_prompt: 'comment_signin_prompt',
-  comment_signin_button: 'comment_signin_button',
-  comment_post_button: 'comment_post_button',
-  comment_posting_button: 'comment_posting_button',
-  comment_no_comments: 'comment_no_comments',
-  comment_loading: 'comment_loading',
-  comment_already_commented: 'comment_already_commented',
-  comment_one_per_user: 'comment_one_per_user',
-  comment_you_badge: 'comment_you_badge',
-  payment_wedding_gift: 'payment_wedding_gift',
-  payment_birthday_gift: 'payment_birthday_gift',
-  footer_thank_you: 'footer_thank_you',
-  footer_create_invitations: 'footer_create_invitations',
-} as const
 
-// Memoized text lookup map for better performance
-const textLookupMap = computed(() => {
-  const map = new Map<string, string>()
-  if (props.eventTexts?.length && props.currentLanguage) {
-    props.eventTexts.forEach((text) => {
-      if (text.language === props.currentLanguage) {
-        map.set(text.text_type, text.content)
-      }
-    })
-  }
-  return map
-})
 
 // Memoized event text object lookup map for O(1) access
 const eventTextMap = computed(() => {
@@ -1400,25 +1362,6 @@ const eventTextMap = computed(() => {
   return map
 })
 
-/**
- * Get text content from database or frontend translations
- * @param textType - The type of text to retrieve
- * @param fallback - Fallback text if no translation found
- * @returns Translated text content
- */
-const getTextContent = (textType: string, fallback = ''): string => {
-  // First, try to get content from memoized lookup map
-  const content = textLookupMap.value.get(textType)
-  if (content) {
-    return content
-  }
-
-  // Fallback to frontend translation system
-  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
-  const translationKey = TRANSLATION_KEY_MAP[textType]
-
-  return translationKey ? translateRSVP(translationKey, currentLang) : fallback
-}
 
 /**
  * Find event text by type - optimized with O(1) map lookup
@@ -1436,10 +1379,6 @@ const getDescriptionText = (): string | undefined => findEventText('description'
 const getDescriptionTitle = (): string | undefined => findEventText('description')?.title
 const getInstructionText = (): string | undefined => findEventText('instructions')?.content
 
-// Computed property for footer text with fallback
-const footerThankYouText = computed(() =>
-  getTextContent('footer_thank_you', 'Thank you for celebrating with us'),
-)
 
 // Computed property to check if host message section should be displayed
 // Checks for messages in ANY language to ensure section shows with fallback content

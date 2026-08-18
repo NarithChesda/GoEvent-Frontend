@@ -1,0 +1,114 @@
+{
+  "_comment": "Curated Google Maps embed presets offered as an alternative to pasting an embed code. Each embedUrl is a ?pb= embed built from the venue's real coordinates (geocoded via OpenStreetMap) with the feature-ID slot NULLED (!1s0x0%3A0x0). That slot only accepts a genuine Google feature ID, and an invented one makes Google discard the coordinates and render an unrelated part of the city — which is exactly what the first three presets in this file used to do. Nulled, the coordinates drive the view. The trade-off is that this form cannot carry a marker pin, so !1d is tuned per venue (977 normally, 488 where the venue needs a tighter frame) until Google draws its own label for the place; that label is what tells the organizer they picked the right venue. Every preset here was checked in a browser at its committed zoom. To add one: either copy Google Maps > Share > Embed a map (gives a real pin, best option) or reuse the shape here with new !2d<lng>!3d<lat> — then LOAD IT AND LOOK AT IT before committing; a venue whose label never appears is not verifiable and should not be added. Keep ids stable and kebab-case; they are not stored on the event (only embedUrl is), so renaming an id is safe.",
+  "presets": [
+    {
+      "id": "sofitel-phnom-penh-phokeethra",
+      "name": "Sofitel Phnom Penh Phokeethra",
+      "nameKh": "សូហ្វីតែលភ្នំពេញភូគីត្រា",
+      "city": "Koh Pich, Phnom Penh",
+      "cityKh": "កោះពេជ្រ, ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d977!2d104.9334649!3d11.5462128!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sSofitel%20Phnom%20Penh%20Phokeethra!5e0!3m2!1sen!2skh!4v1700000000000"
+    },
+    {
+      "id": "raffles-hotel-le-royal",
+      "name": "Raffles Hotel Le Royal",
+      "city": "Doun Penh, Phnom Penh",
+      "cityKh": "ដូនពេញ, ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d977!2d104.918362!3d11.5762676!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sRaffles%20Hotel%20Le%20Royal!5e0!3m2!1sen!2skh!4v1700000000000"
+    },
+    {
+      "id": "rosewood-phnom-penh",
+      "name": "Rosewood Phnom Penh",
+      "city": "Doun Penh, Phnom Penh",
+      "cityKh": "ដូនពេញ, ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d488!2d104.9192306!3d11.5733665!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sRosewood%20Phnom%20Penh!5e0!3m2!1sen!2skh!4v1700000000000"
+    },
+    {
+      "id": "shangri-la-phnom-penh",
+      "name": "Shangri-La Phnom Penh",
+      "city": "Koh Pich, Phnom Penh",
+      "cityKh": "កោះពេជ្រ, ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d977!2d104.9383251!3d11.5523361!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sShangri-La%20Phnom%20Penh!5e0!3m2!1sen!2skh!4v1700000000000"
+    },
+    {
+      "id": "sokha-phnom-penh",
+      "name": "Sokha Phnom Penh Hotel & Residence",
+      "city": "Chroy Changvar, Phnom Penh",
+      "cityKh": "ជ្រោយចង្វារ, ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d977!2d104.937745!3d11.5689623!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sSokha%20Phnom%20Penh%20Hotel%20%26%20Residence!5e0!3m2!1sen!2skh!4v1700000000000"
+    },
+    {
+      "id": "hyatt-regency-phnom-penh",
+      "name": "Hyatt Regency Phnom Penh",
+      "city": "Doun Penh, Phnom Penh",
+      "cityKh": "ដូនពេញ, ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d488!2d104.9280954!3d11.5663783!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sHyatt%20Regency%20Phnom%20Penh!5e0!3m2!1sen!2skh!4v1700000000000"
+    },
+    {
+      "id": "nagaworld-phnom-penh",
+      "name": "NagaWorld",
+      "nameKh": "ណាហ្គាវើលដ៍",
+      "city": "Tonle Bassac, Phnom Penh",
+      "cityKh": "ទន្លេបាសាក់, ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d977!2d104.9372314!3d11.5556255!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sNagaWorld!5e0!3m2!1sen!2skh!4v1700000000000"
+    },
+    {
+      "id": "hotel-cambodiana",
+      "name": "Hotel Cambodiana",
+      "city": "Doun Penh, Phnom Penh",
+      "cityKh": "ដូនពេញ, ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d977!2d104.9365314!3d11.5597902!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sHotel%20Cambodiana!5e0!3m2!1sen!2skh!4v1700000000000"
+    },
+    {
+      "id": "chaktomuk-conference-hall",
+      "name": "Chaktomuk Conference Hall",
+      "nameKh": "សាលសន្និសីទចតុមុខ",
+      "city": "Doun Penh, Phnom Penh",
+      "cityKh": "ដូនពេញ, ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d977!2d104.9348903!3d11.5626785!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sChaktomuk%20Conference%20Hall!5e0!3m2!1sen!2skh!4v1700000000000"
+    },
+    {
+      "id": "sunway-hotel-phnom-penh",
+      "name": "Sunway Hotel Phnom Penh",
+      "nameKh": "សណ្ឋាគារសាន់វ៉េ",
+      "city": "Doun Penh, Phnom Penh",
+      "cityKh": "ដូនពេញ, ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d488!2d104.9214504!3d11.5765221!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sSunway%20Hotel%20Phnom%20Penh!5e0!3m2!1sen!2skh!4v1700000000000"
+    },
+    {
+      "id": "novotel-phnom-penh-bkk1",
+      "name": "Novotel Phnom Penh BKK1",
+      "city": "Boeung Keng Kang, Phnom Penh",
+      "cityKh": "បឹងកេងកង, ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d977!2d104.926338!3d11.5535297!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sNovotel%20Phnom%20Penh%20BKK1!5e0!3m2!1sen!2skh!4v1700000000000"
+    },
+    {
+      "id": "baitong-hotel-resort",
+      "name": "Baitong Hotel & Resort",
+      "city": "Boeung Keng Kang, Phnom Penh",
+      "cityKh": "បឹងកេងកង, ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d977!2d104.92428!3d11.5544559!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sBaitong%20Hotel%20%26%20Resort!5e0!3m2!1sen!2skh!4v1700000000000"
+    },
+    {
+      "id": "diamond-island-convention-center",
+      "name": "Diamond Island Convention & Exhibition Center",
+      "city": "Koh Pich, Phnom Penh",
+      "cityKh": "កោះពេជ្រ, ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d977!2d104.9411725!3d11.5524124!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sDiamond%20Island%20Convention%20%26%20Exhibition%20Center!5e0!3m2!1sen!2skh!4v1700000000000"
+    },
+    {
+      "id": "phnom-penh-hotel",
+      "name": "Phnom Penh Hotel",
+      "city": "Doun Penh, Phnom Penh",
+      "cityKh": "ដូនពេញ, ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d977!2d104.9163187!3d11.5789219!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sPhnom%20Penh%20Hotel!5e0!3m2!1sen!2skh!4v1700000000000"
+    },
+    {
+      "id": "aquarius-hotel-urban-resort",
+      "name": "Aquarius Hotel & Urban Resort",
+      "city": "Boeung Keng Kang, Phnom Penh",
+      "cityKh": "បឹងកេងកង, ភ្នំពេញ",
+      "embedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d977!2d104.9264786!3d11.5594717!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sAquarius%20Hotel%20%26%20Urban%20Resort!5e0!3m2!1sen!2skh!4v1700000000000"
+    }
+  ]
+}

@@ -30,6 +30,7 @@
               :interactive="frame.editable && canEdit"
               :click-message="frame.clickMessage"
               @ready="onFrameReady(frame.id)"
+              @languages="(languages, current) => emit('languages', languages, current)"
             />
           </div>
         </div>
@@ -179,10 +180,11 @@ interface Props {
   open: boolean
   /** Already filtered to the frames this event actually has. */
   frames: PreviewFrameDescriptor[]
-  /** Builds each frame's iframe src (stage/lang/editable/templateId params). */
+  /** Builds each frame's iframe src (stage/editable/templateId params). */
   frameUrl: (frame: PreviewFrameDescriptor) => string
   canEdit: boolean
-  languages: { language: string }[]
+  /** Language codes the event has, as reported by the frames themselves. */
+  languages: string[]
   currentLanguage: string
   /** Drives the preview-only notice; undefined until the payment rows resolve. */
   activationState?: ActivationState
@@ -199,6 +201,10 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   close: []
   'cycle-language': []
+  /** Pass-through of a frame's language report. Only the frames know which
+   *  languages an event has (see postShowcaseLanguagesToParent), and on mobile
+   *  the frames live in here, so the host tab hears it through this. */
+  languages: [languages: string[], currentLanguage: string]
   /** Open checkout — the sheet has no drawer of its own. */
   activate: []
   /** Which stage is on screen right now — the sheet shows exactly one frame

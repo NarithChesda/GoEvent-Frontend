@@ -141,7 +141,7 @@ export function usePerformanceOptimizations() {
   }
 
   // Debounced scroll handler
-  const createOptimizedScrollHandler = (callback: () => void, delay: number = 16) => {
+  const createOptimizedScrollHandler = (callback: () => void, _delay: number = 16) => {
     let ticking = false
 
     return () => {

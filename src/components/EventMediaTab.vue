@@ -269,8 +269,12 @@
       @uploaded="handleMediaUploaded"
     />
 
-    <!-- Delete Confirmation Modal -->
+    <!-- Delete Confirmation Modal. `v-if` as well as its own `show` prop, so
+         the chunk is only fetched once a delete is actually attempted — the
+         component's own root is already gated on `show`, so this changes
+         nothing visually. -->
     <DeleteConfirmModal
+      v-if="showDeleteModal || deleting"
       :show="showDeleteModal"
       :loading="deleting"
       :title="t('management.media.deleteModal.title')"
@@ -290,19 +294,37 @@ import { useToast } from '../composables/useToast'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCollapsibleSection } from '@/composables/useCollapsibleSection'
 import { provideAccordionGroup } from '@/composables/useAccordionGroup'
+import { defineResilientAsyncComponent } from '@/utils/asyncComponent'
 import MediaCard from './MediaCard.vue'
-import UploadMediaDrawer from './UploadMediaDrawer.vue'
-import DeleteConfirmModal from './DeleteConfirmModal.vue'
-import MediaUploadsSection from './MediaUploadsSection.vue'
-import EventBannerSection from './EventBannerSection.vue'
-import DressCodeSection from './DressCodeSection.vue'
-import EventAgendaTab from './EventAgendaTab.vue'
-import EventHostsTab from './EventHostsTab.vue'
-import EmbedsSection from './EmbedsSection.vue'
-import PaymentMethodsSection from './PaymentMethodsSection.vue'
-import DisplaySettingsSection from './DisplaySettingsSection.vue'
-import EventTextTab from './EventTextTab.vue'
-import PopulateFromTemplateCard from './PopulateFromTemplateCard.vue'
+
+// ---------------------------------------------------------------------------
+// Section cards and overlays, code-split.
+//
+// This component is the whole content surface — ~10 section cards, several of
+// which (hosts, agenda, texts) are full tabs in their own right. Importing them
+// statically made one ~224kB chunk that had to arrive before ANY of it could
+// render, and in the Design Studio that chunk is requested at the same moment
+// the preview frames are booting. Split, each card streams in on its own and
+// the first ones paint without waiting for the heaviest.
+//
+// The two overlays are the clearest win of all: both are `v-if`-gated on user
+// intent, so their code is now genuinely never fetched unless someone uploads
+// or deletes something.
+// ---------------------------------------------------------------------------
+const UploadMediaDrawer = defineResilientAsyncComponent(() => import('./UploadMediaDrawer.vue'))
+const DeleteConfirmModal = defineResilientAsyncComponent(() => import('./DeleteConfirmModal.vue'))
+const MediaUploadsSection = defineResilientAsyncComponent(() => import('./MediaUploadsSection.vue'))
+const EventBannerSection = defineResilientAsyncComponent(() => import('./EventBannerSection.vue'))
+const DressCodeSection = defineResilientAsyncComponent(() => import('./DressCodeSection.vue'))
+const EventAgendaTab = defineResilientAsyncComponent(() => import('./EventAgendaTab.vue'))
+const EventHostsTab = defineResilientAsyncComponent(() => import('./EventHostsTab.vue'))
+const EmbedsSection = defineResilientAsyncComponent(() => import('./EmbedsSection.vue'))
+const PaymentMethodsSection = defineResilientAsyncComponent(() => import('./PaymentMethodsSection.vue'))
+const DisplaySettingsSection = defineResilientAsyncComponent(() => import('./DisplaySettingsSection.vue'))
+const EventTextTab = defineResilientAsyncComponent(() => import('./EventTextTab.vue'))
+const PopulateFromTemplateCard = defineResilientAsyncComponent(
+  () => import('./PopulateFromTemplateCard.vue'),
+)
 
 interface Props {
   eventId?: string

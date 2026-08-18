@@ -276,29 +276,6 @@ const passwordStrengthColor = computed(() => {
   return colors[passwordStrength.value] || 'bg-slate-200'
 })
 
-const passwordValidation = computed(() => {
-  const form = passwordForm.value
-  if (!form.new_password && !form.new_password_confirm) {
-    return { isValid: true, errors: {} }
-  }
-
-  const validation = inputValidator.validateForm(form, {
-    new_password: { ...validationRules.newPassword, required: false },
-    new_password_confirm: { ...validationRules.confirmPassword, required: false },
-  })
-
-  // Add custom validation for password confirmation
-  if (
-    form.new_password &&
-    form.new_password_confirm &&
-    form.new_password !== form.new_password_confirm
-  ) {
-    validation.errors.new_password_confirm = ['Passwords do not match']
-    validation.isValid = false
-  }
-
-  return validation
-})
 
 const passwordsMatch = computed(() => {
   return passwordForm.value.new_password === passwordForm.value.new_password_confirm
@@ -391,7 +368,7 @@ const handlePasswordChange = async () => {
     } else {
       passwordErrorMessage.value = response.message || 'Failed to change password'
     }
-  } catch (error) {
+  } catch {
     passwordErrorMessage.value = 'An unexpected error occurred'
   }
 }

@@ -558,7 +558,6 @@ import {
   ExternalLink,
   MapPin,
   Video,
-  Calendar,
   AlertCircle,
   Clock,
   CalendarPlus,
@@ -822,7 +821,7 @@ const loadEvent = async () => {
     } else {
       error.value = eventResponse.message || 'Event not found'
     }
-  } catch (err) {
+  } catch {
     error.value = 'Failed to load event details'
   } finally {
     loading.value = false
@@ -862,7 +861,7 @@ const handleRegister = async () => {
     } else {
       showMessage('error', response.message || 'Failed to register')
     }
-  } catch (err) {
+  } catch {
     showMessage('error', 'An error occurred while registering')
   } finally {
     isRegistering.value = false
@@ -889,7 +888,7 @@ const handleCancelRegistration = async () => {
     } else {
       showMessage('error', response.message || 'Failed to cancel registration')
     }
-  } catch (err) {
+  } catch {
     showMessage('error', 'An error occurred while cancelling')
   } finally {
     isCancelling.value = false

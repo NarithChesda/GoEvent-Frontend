@@ -20,8 +20,6 @@ interface UseEventRegistrationOptions {
   registrationChecked: Ref<boolean>
 }
 
-// Statuses that mean user is NOT actively registered/attending (lowercase for comparison)
-const NON_ATTENDING_STATUSES = ['not_coming', 'declined', 'cancelled', 'withdrawn', 'no']
 
 export function useEventRegistration(options: UseEventRegistrationOptions) {
   const authStore = useAuthStore()

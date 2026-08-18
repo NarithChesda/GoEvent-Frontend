@@ -3,7 +3,7 @@
  * Handles form state, validation, and submission for host creation/editing
  */
 
-import { ref, reactive, computed, type Ref } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { hostsService, type EventHost, type CreateHostRequest } from '@/services/api'
 import { sanitizePlainText, sanitizeRichContent } from '@/utils/sanitize'
 import { inputValidator } from '@/utils/inputValidation'

@@ -33,6 +33,23 @@ export function extractYouTubeEmbedUrl(input: string): string {
 }
 
 /**
+ * Matches Google Maps embed URLs on any Google host users realistically copy
+ * from — `www.google.com`, regional domains (`google.com.kh`), and
+ * `maps.google.com` — covering both the `/maps/embed?pb=` share links and the
+ * documented Maps Embed API (`/maps/embed/v1/place?...`).
+ */
+const MAPS_EMBED_PATTERN =
+  /^https:\/\/(?:www\.|maps\.)?google\.(?:com?)(?:\.[a-z]{2})?\/maps\/embed(?:\/v1\/(?:place|view|directions|streetview|search))?(?:\?.*)?$/i
+
+/**
+ * Whether a string is a Google Maps embed URL safe to place in an iframe src.
+ */
+export function isGoogleMapsEmbedUrl(input: string): boolean {
+  if (!input || typeof input !== 'string') return false
+  return MAPS_EMBED_PATTERN.test(input.trim())
+}
+
+/**
  * Extract Google Maps embed URL from iframe HTML or direct URL
  * @param input - Can be full iframe HTML or a URL
  * @returns Extracted Google Maps embed URL or empty string if invalid
@@ -43,8 +60,7 @@ export function extractGoogleMapsEmbedUrl(input: string): string {
   const trimmedInput = input.trim()
 
   // Check if input is already a valid Google Maps embed URL
-  const mapsEmbedPattern = /^https:\/\/www\.google\.com\/maps\/embed(\?.*)?$/
-  if (mapsEmbedPattern.test(trimmedInput)) {
+  if (isGoogleMapsEmbedUrl(trimmedInput)) {
     return trimmedInput
   }
 
@@ -54,7 +70,7 @@ export function extractGoogleMapsEmbedUrl(input: string): string {
     const extractedUrl = srcMatch[1]
 
     // Validate it's a Google Maps embed URL
-    if (mapsEmbedPattern.test(extractedUrl)) {
+    if (isGoogleMapsEmbedUrl(extractedUrl)) {
       return extractedUrl
     }
   }

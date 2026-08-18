@@ -86,18 +86,28 @@
       :style="fallingEffectHandoffStyle"
     />
 
-    <!-- The gilding's drifting motes, owned here for exactly the reason the
-         falling field above is: one field mounted for the life of the showcase
-         drifts unbroken from the cover into the main content, where a second
-         field spawned by MainContentStage would visibly restart at the boundary
-         and double the density across it. The band lighting it came from stays
-         in CoverGilding — that is light on a surface, so it travels with the
-         surface (and in door mode, off-screen with the leaf). -->
+    <!-- The drifting spark field, owned here for exactly the reason the falling
+         field above is: one field mounted for the life of the showcase drifts
+         unbroken from the cover into the main content, where a second field
+         spawned by MainContentStage would visibly restart at the boundary and
+         double the density across it.
+
+         Configured standalone via `template_assets.sparks` — it is an
+         independent decoration, not a gilding layer. The gilding is still handed
+         down as the legacy fallback for templates saved before that split, and
+         for its band inset, which is the framing the motes have always used. The
+         band lighting itself stays in CoverGilding — that is light on a surface,
+         so it travels with the surface (and in door mode, off-screen with the
+         leaf). -->
     <CoverSparks
-      :config="coverGilding"
+      :key="sparkFieldKey"
+      :config="sparks"
+      :gilding="coverGilding"
       :primary-color="primaryColor"
       :secondary-color="secondaryColor"
       :accent-color="accentColor"
+      :get-media-url="getMediaUrl"
+      :inset="coverGilding.bandInner"
       :z-index="sparkFieldZIndex"
     />
 
@@ -129,7 +139,9 @@ import type {
   CoverStageLayout,
   AmbientCreaturesConfig,
   FallingEffectConfig,
+  SparkFieldConfig,
 } from '@/services/api/types/template.types'
+import { sparkFieldKeyOf } from '@/composables/showcase/useSparkField'
 import type { ShowcaseAnimationType } from '@/composables/showcase/useShowcaseAnimation'
 import { useCoverStageLayout } from '@/composables/showcase/useCoverStageLayout'
 import VideoContainer from './VideoContainer.vue'
@@ -206,6 +218,9 @@ interface Props {
   ambientCreatures?: AmbientCreaturesConfig | null
   /** Falling particle effect config from template_assets. Spans every stage. */
   fallingEffect?: FallingEffectConfig | null
+  /** Drifting spark field config from template_assets. Spans every stage.
+   *  Absent = fall back to the legacy cover-gilding spark fields. */
+  sparks?: SparkFieldConfig | null
   /** True while a transition stage that runs its OWN falling field is on
    *  screen, so this one yields to it instead of drawing over the top. */
   transitionOwnsFallingField?: boolean
@@ -314,15 +329,21 @@ const shouldShowMainContent = computed(() => {
     || isDoorAnimationInProgress.value
 })
 
-// Falling field layering. 31 clears everything the cover puts on screen — the
-// decorations (24/25), the door panels (28), the ambient creatures (29) and the
-// cover copy (30) — so petals keep drifting in front of the doors as they part.
-// It drops to 15 only once the cover is fully gone and main content has taken
-// over: there it sits above the background video but below the main stage's own
-// decorations and content card, exactly where the effect used to live.
-const fallingEffectZIndex = computed(() =>
-  shouldShowMainContent.value && !shouldShowCoverContent.value ? 15 : 31,
-)
+// Falling field layering: a single 31 for every stage. It clears everything the
+// cover puts on screen — the decorations (24/25), the door panels (28), the
+// ambient creatures (29) and the cover copy (30) — so petals keep drifting in
+// front of the doors as they part, and it stays there once main content takes
+// over so they drift in front of the main stage's decorations too.
+//
+// There is no value that lands *between* the main stage's own layers: its whole
+// subtree renders inside the `z-20` slot wrapper below, which is a stacking
+// context, so anything ≤20 is behind all of it and anything >20 is in front of
+// all of it. In front therefore also means in front of the glass content card
+// and the floating menu — unavoidable, and consistent with the main stage's own
+// order, where the decorations (24/25) already paint over that card (20). Safe
+// because FallingEffect's root and every particle are `pointer-events: none`,
+// so nothing it covers stops being tappable or scrollable.
+const fallingEffectZIndex = 31
 
 // The gilding config, resolved here as well as in CoverContentOverlay: the spark
 // field outlives the cover overlay, so it can't take the config through it.
@@ -356,6 +377,11 @@ const fallingEffectHandoffStyle = computed(() => ({
 // Remount on a config change — see fallingEffectKeyOf for why a mounted field
 // can't react on its own, and why the key deliberately excludes the palette.
 const fallingEffectKey = computed(() => fallingEffectKeyOf(props.fallingEffect))
+
+// The spark field mostly reacts on its own (it renders from computeds), but a
+// swapped custom image would leave mid-blink motes showing the old asset — see
+// sparkFieldKeyOf. Excludes the palette for the same reason the falling key does.
+const sparkFieldKey = computed(() => sparkFieldKeyOf(props.sparks))
 
 // Disable envelope interaction in standard mode until event video is ready
 // (or unconditionally, when the manage-page preview just wants to show what

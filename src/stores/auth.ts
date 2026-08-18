@@ -62,7 +62,7 @@ export const useAuthStore = defineStore('auth', () => {
         setError(errorMsg)
         return { success: false, error: errorMsg }
       }
-    } catch (err) {
+    } catch {
       const errorMsg = 'Network error during login'
       setError(errorMsg)
       return { success: false, error: errorMsg }
@@ -97,7 +97,7 @@ export const useAuthStore = defineStore('auth', () => {
         setError(errorMsg)
         return { success: false, error: errorMsg, errors: response.errors }
       }
-    } catch (err) {
+    } catch {
       const errorMsg = 'Network error during registration'
       setError(errorMsg)
       return { success: false, error: errorMsg }
@@ -110,7 +110,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       setLoading(true)
       await authService.logout()
-    } catch (err) {
+    } catch {
       // Silent error handling
     } finally {
       setUser(null)
@@ -132,7 +132,7 @@ export const useAuthStore = defineStore('auth', () => {
         setError(errorMsg)
         return { success: false, error: errorMsg }
       }
-    } catch (err) {
+    } catch {
       const errorMsg = 'Network error while fetching profile'
       setError(errorMsg)
       return { success: false, error: errorMsg }
@@ -163,7 +163,7 @@ export const useAuthStore = defineStore('auth', () => {
         setError(errorMsg)
         return { success: false, error: errorMsg }
       }
-    } catch (err) {
+    } catch {
       const errorMsg = 'Network error while updating profile'
       setError(errorMsg)
       return { success: false, error: errorMsg }
@@ -186,7 +186,7 @@ export const useAuthStore = defineStore('auth', () => {
       try {
         storedUser = authService.getUser()
         hasValidAuth = authService.isAuthenticated()
-      } catch (storageError) {
+      } catch {
         // In development, we can continue without stored auth
         if (isDevelopment) {
           return
@@ -195,7 +195,7 @@ export const useAuthStore = defineStore('auth', () => {
         try {
           authService.clearTokens()
           authService.clearUser()
-        } catch (clearError) {
+        } catch {
           // Silent error handling
         }
         return
@@ -212,21 +212,21 @@ export const useAuthStore = defineStore('auth', () => {
           if (isValid) {
             // Optionally try to fetch fresh profile data in the background
             // Don't await this to speed up app initialization
-            fetchProfile().catch((profileError) => {
+            fetchProfile().catch((_profileError) => {
               // Silently continue with cached user data
             })
           } else {
             // Token is definitively invalid (not just a network error)
             await logout()
           }
-        } catch (networkError) {
+        } catch {
           // Network error during validation - don't logout
           // The user can continue with cached data
           // In production, we're more lenient with network errors
           // Users can still use the app with cached data if they just lost connection temporarily
         }
       }
-    } catch (err) {
+    } catch {
       // Don't logout on unexpected errors - this could be a transient issue
       // Let the user continue with cached data if available
     }
@@ -248,7 +248,7 @@ export const useAuthStore = defineStore('auth', () => {
         setError(errorMsg)
         return { success: false, error: errorMsg }
       }
-    } catch (err) {
+    } catch {
       const errorMsg = 'Network error during Google login'
       setError(errorMsg)
       return { success: false, error: errorMsg }
@@ -273,7 +273,7 @@ export const useAuthStore = defineStore('auth', () => {
         setError(errorMsg)
         return { success: false, error: errorMsg }
       }
-    } catch (err) {
+    } catch {
       const errorMsg = 'Network error during Telegram login'
       setError(errorMsg)
       return { success: false, error: errorMsg }
@@ -338,7 +338,7 @@ export const useAuthStore = defineStore('auth', () => {
       })
 
       return { success: true }
-    } catch (err) {
+    } catch {
       const errorMsg = 'Failed to complete Telegram bot login'
       setError(errorMsg)
       return { success: false, error: errorMsg }

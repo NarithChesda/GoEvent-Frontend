@@ -153,7 +153,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const emit = defineEmits<{
+defineEmits<{
   'add-category': []
   'edit-category': [category: DonationItemCategory]
   'delete-category': [category: DonationItemCategory]

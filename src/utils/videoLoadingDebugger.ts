@@ -62,7 +62,7 @@ export class VideoLoadingDebugger {
   getVideoStatus() {
     const status: Record<string, any> = {}
 
-    this.videos.forEach((info, video) => {
+    this.videos.forEach((info, _video) => {
       status[info.type] = {
         src: info.src ? info.src.substring(info.src.lastIndexOf('/') + 1) : 'none',
         networkState: this.getNetworkStateText(info.networkState),

@@ -95,9 +95,6 @@ const handleSearchInput = (event: Event): void => {
   emit('update:searchQuery', target.value)
 }
 
-const handleCategorySelect = (categoryId: number | null): void => {
-  emit('update:selectedCategory', categoryId)
-}
 
 const handlePlanSelect = (plan: null | 'basic' | 'standard'): void => {
   emit('update:selectedPlan', plan)

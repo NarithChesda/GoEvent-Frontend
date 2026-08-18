@@ -9,13 +9,6 @@
 import { ref, type Ref } from 'vue'
 import { eventsService, type EventCollaborator } from '@/services/api'
 
-/**
- * Message object for user feedback
- */
-interface Message {
-  type: 'success' | 'error'
-  text: string
-}
 
 /**
  * Options for role management composable

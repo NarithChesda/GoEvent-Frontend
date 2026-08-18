@@ -72,6 +72,8 @@ export interface TemplateAssets {
   /** Header text rendered as an image (transparency). */
   header_text_image?: string | null
   ambient_creatures?: AmbientCreaturesConfig | null
+  /** Drifting spark field. Absent = fall back to the legacy gilding fields. */
+  sparks?: SparkFieldConfig | null
   [key: string]: unknown
 }
 
@@ -311,15 +313,20 @@ export interface CoverGildingConfig {
   /** Pulsing radial flares at the band's four corners. Default true. */
   cornerFlares?: boolean
   /**
-   * Drifting motes. 0 turns them off. Default 18, max 40.
+   * @deprecated Superseded by `template_assets.sparks.count`.
    *
-   * Unlike every other field here, this one is not confined to the cover: the
-   * field is mounted for the life of the showcase and carries on into the main
-   * content stage, so the two read as one lit space rather than as a lit cover
-   * handing off to a plain page.
+   * The spark field is its own decoration now (see `SparkFieldConfig`) rather
+   * than a fifth gilding layer — it was never confined to the cover, and gating
+   * it on `enabled` forced band lighting onto templates that only wanted
+   * sparkle. Still read as the fallback for templates saved before the split,
+   * so their covers render unchanged; new templates write `sparks` instead.
    */
   sparkCount?: number
-  /** Palette slot the sparks and corner glow take their tint from. Default `accent`. */
+  /**
+   * Palette slot the corner glow takes its tint from. Default `accent`.
+   *
+   * Also the legacy fallback for the spark field's tint — see `sparkCount`.
+   */
   colorSource?: CoverGildingColorSource
   /** Hex colour, read only when `colorSource` is `custom`. */
   customColor?: string | null
@@ -522,6 +529,69 @@ export interface FallingEffectConfig {
 }
 
 /**
+ * Built-in spark shapes.
+ *
+ * `glow` is the original mote — a soft radial gradient with no edge, which is
+ * what the field has always drawn — so a template that names no shape keeps
+ * rendering exactly as before. The rest are drawn shapes with real geometry,
+ * for covers that want a sharper glint than a blur can give.
+ */
+export type SparkShape = 'glow' | 'star' | 'sparkle' | 'diamond' | 'cross' | 'dot'
+
+/**
+ * Where the spark field takes its tint from. Same slot names as
+ * `CoverGildingColorSource`, because the sparks used to read the gilding's
+ * value and a template's stored choice has to keep meaning what it meant.
+ */
+export type SparkColorSource = 'primary' | 'secondary' | 'accent' | 'custom'
+
+/**
+ * The drifting, blinking motes that span every showcase stage.
+ *
+ * Previously configured inside `CoverGildingConfig` (as `sparkCount` /
+ * `colorSource` / `customColor`), which tied the field to a cover-band lighting
+ * effect it never actually belonged to: sparks are mounted by CoverStage for the
+ * life of the showcase and drift on through the transition into the main
+ * content, so gating them on `coverGilding.enabled` meant a template that wanted
+ * ambient sparkle had to switch on band lighting it may have had no border to
+ * catch. This is the same standalone shape `falling_effect` and
+ * `ambient_creatures` already have.
+ *
+ * Legacy templates keep working: when `template_assets.sparks` is absent the
+ * showcase falls back to the gilding fields, so nothing that renders today
+ * changes. See `resolveSparkField`.
+ */
+export interface SparkFieldConfig {
+  /** Master switch. When omitted the legacy gilding fallback decides. */
+  enabled?: boolean
+  /** How many motes. 0 turns the field off. Default 18, max 60. */
+  count?: number
+  /**
+   * Blink rate multiplier. `1` is the original 12-second pulse cycle; above 1
+   * blinks faster, below 1 slower. Clamped to SPARK_BLINK_SPEED_RANGE.
+   */
+  blink_speed?: number | null
+  /**
+   * Mote size range, as a % of the stage width — the same units the rest of the
+   * cover geometry uses, so a spark keeps its proportions on any screen rather
+   * than being a fixed pixel size tuned for one. Defaults 0.46 / 1.94, the
+   * reference artwork's 5px–21px on its 1080-wide plate.
+   */
+  min_size?: number | null
+  max_size?: number | null
+  /** Which built-in shape to draw (ignored when `custom_image` is set). */
+  shape?: SparkShape
+  /** URL of a custom mote image — overrides the built-in shape. */
+  custom_image?: string | null
+  /** Palette slot the motes take their tint from. Default `accent`. */
+  color_source?: SparkColorSource
+  /** Hex colour, read only when `color_source` is `custom`. */
+  custom_color?: string | null
+  /** Overall brightness. Default `normal`. */
+  intensity?: 'subtle' | 'normal' | 'bright'
+}
+
+/**
  * Ambient creature types available for the cover stage effect.
  * Each maps to a pure SVG creature with animated wings/glow.
  */
@@ -610,6 +680,9 @@ export interface PartnerTemplate {
   event_details_design: EventDetailsDesignConfig | null
   host_info_design: HostInfoDesignConfig | null
   ambient_creatures: AmbientCreaturesConfig | null
+  sparks: SparkFieldConfig | null
+  /** Custom spark image, when the field uses one instead of a built-in shape. */
+  spark_custom_image: string | null
   display_liquid_glass_background: boolean
   open_envelope_button: string | null
   basic_decoration_photo: string | null
@@ -678,6 +751,10 @@ export interface PartnerTemplateCreatePayload {
   host_info_design?: HostInfoDesignConfig | null
   /** Ambient creature effect config. Pass `null` to disable the effect. */
   ambient_creatures?: AmbientCreaturesConfig | null
+  /** Drifting spark field config. Pass `null` to disable the effect. */
+  sparks?: SparkFieldConfig | null
+  /** Custom spark image. Pass a File to upload, or `''` to clear an existing one. */
+  spark_custom_image?: File | ''
 }
 
 // Custom fonts (available via core-data endpoint)

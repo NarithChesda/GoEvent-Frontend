@@ -367,7 +367,7 @@ const loadCurrentRegistration = async () => {
       savedGuestCount.value = 0
       hasUnsavedGuestChanges.value = false
     }
-  } catch (error) {
+  } catch {
     // Error loading registration - treat as not attending
     currentRegistration.value = null
     rsvpStatus.value = 'not_coming'
@@ -466,7 +466,7 @@ const submitRSVP = async (status: 'coming' | 'not_coming') => {
         rsvpStatus.value = 'not_coming'
       }
     }
-  } catch (error) {
+  } catch {
     errorMessage.value = 'An unexpected error occurred. Please try again.'
     // Revert to previous state on error
     if (currentRegistration.value) {

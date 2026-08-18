@@ -3,7 +3,7 @@
  * Handles image cropping logic and state management
  */
 
-import { ref, type Ref } from 'vue'
+import { ref } from 'vue'
 
 export interface CropperOptions {
   aspectRatio?: number

@@ -106,6 +106,9 @@ export type {
   AmbientCreatureEffectType,
   AmbientCreatureEntry,
   AmbientCreaturesConfig,
+  SparkShape,
+  SparkColorSource,
+  SparkFieldConfig,
 } from './api/types/template.types'
 
 export {

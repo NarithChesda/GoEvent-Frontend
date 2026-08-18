@@ -160,7 +160,7 @@ export function useShowcaseStages() {
           if (musicUrl.startsWith('blob:')) {
             try {
               URL.revokeObjectURL(musicUrl)
-            } catch (error) {
+            } catch {
               // Ignore revocation errors
             }
           }
@@ -453,7 +453,7 @@ export function useShowcaseStages() {
       if (audioSrc && audioSrc.startsWith('blob:')) {
         try {
           URL.revokeObjectURL(audioSrc)
-        } catch (error) {
+        } catch {
           // Ignore revocation errors
         }
       }

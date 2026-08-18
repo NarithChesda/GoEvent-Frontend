@@ -8,6 +8,7 @@ import type {
   FallingEffectConfig,
   HostInfoDesignConfig,
   PartnerTemplate,
+  SparkFieldConfig,
 } from '@/services/api'
 
 /**
@@ -71,6 +72,11 @@ export interface PartnerTemplateDraft {
   fallingEffectCustomImage: File | null
   /** The partner removed the saved custom particle image. */
   clearFallingEffectCustomImage: boolean
+  sparks: SparkFieldConfig | null
+  /** Unsaved replacement for the spark field's custom mote image. */
+  sparkCustomImage: File | null
+  /** The partner removed the saved custom mote image. */
+  clearSparkCustomImage: boolean
 }
 
 /**
@@ -113,6 +119,27 @@ function resolveFallingEffect(
     config.custom_image = null
   } else {
     config.custom_image = saved?.falling_effect?.custom_image ?? null
+  }
+  return config
+}
+
+/**
+ * The spark field's custom mote image, on the same pending/saved/cleared rules
+ * the falling effect's particle image follows above.
+ */
+function resolveSparks(
+  draft: PartnerTemplateDraft,
+  saved: PartnerTemplate | null,
+  resolveFileUrl: (file: File) => string,
+): SparkFieldConfig | null {
+  if (!draft.sparks) return null
+  const config: SparkFieldConfig = { ...draft.sparks }
+  if (draft.sparkCustomImage instanceof File) {
+    config.custom_image = resolveFileUrl(draft.sparkCustomImage)
+  } else if (draft.clearSparkCustomImage) {
+    config.custom_image = null
+  } else {
+    config.custom_image = saved?.spark_custom_image ?? null
   }
   return config
 }
@@ -194,6 +221,7 @@ export function partnerTemplateDraftToAssets(
     cover_stage_layout: draft.cover_stage_layout,
     falling_effect: resolveFallingEffect(draft, saved, resolveFileUrl),
     ambient_creatures: draft.ambient_creatures,
+    sparks: resolveSparks(draft, saved, resolveFileUrl),
     event_details_design: draft.event_details_design,
     host_info_design: draft.host_info_design,
     display_liquid_glass_background: draft.display_liquid_glass_background,
