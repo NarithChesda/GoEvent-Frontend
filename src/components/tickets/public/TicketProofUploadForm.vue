@@ -1,5 +1,10 @@
 <template>
-  <section class="bg-white/80 border border-slate-200/60 rounded-2xl p-4 sm:p-5 space-y-4">
+  <!--
+    No card chrome of its own: this renders inside the order sheet's own padded
+    section, and a bordered box nested one gutter inside another bordered box
+    reads as a mistake rather than as a grouping.
+  -->
+  <section class="space-y-4">
     <div>
       <h2 class="text-sm font-semibold text-slate-900">
         {{ t('events.tickets.order.proof.header') }}

@@ -128,9 +128,22 @@
   "account": {
     "title": "Your Profile",
     "subtitle": "Choose how you are displayed as a host or guest.",
-    "profilePictureLabel": "Profile Picture",
+    "sections": {
+      "identity": "Profile",
+      "identityHint": "Your photo and how your name appears to guests.",
+      "personal": "Personal details",
+      "personalHint": "Your name, handle, and a short introduction.",
+      "contact": "Contact",
+      "contactHint": "How guests and organisers reach you."
+    },
+    "partnerBadge": "Partner",
     "partnerLogoLabel": "Partner Logo",
-    "noLogo": "No Logo",
+    "photoHint": "JPG, PNG or WebP · up to 3 MB.",
+    "logoHint": "Square artwork on a clear background works best.",
+    "changePhoto": "Change photo",
+    "addPhoto": "Add photo",
+    "uploadLogo": "Upload",
+    "replaceLogo": "Replace",
     "firstName": "First Name",
     "lastName": "Last Name",
     "emailAddress": "Email address",
@@ -149,10 +162,15 @@
     "paymentPlaceholder": "your-payment-platform.com/username",
     "saveChanges": "Save Changes",
     "saving": "Saving...",
+    "unsavedChanges": "Unsaved changes",
+    "allSaved": "All changes saved",
+    "discard": "Discard",
     "messages": {
       "updateSuccess": "Profile updated successfully!",
       "updateFailed": "Failed to update profile",
-      "unexpectedError": "An unexpected error occurred"
+      "unexpectedError": "An unexpected error occurred",
+      "photoUpdated": "Profile photo updated",
+      "logoUpdated": "Logo updated"
     }
   },
   "vendor": {

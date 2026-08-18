@@ -109,7 +109,10 @@
       >
         {{ title }}
       </h1>
-      <div class="flex items-center gap-2 text-white/90 text-sm">
+      <!-- Byline. Attendance rides here rather than in the quick-facts card:
+           "who's behind it" and "is anyone else going" are one question, and
+           the card's third row was carrying a 48px icon column for four words. -->
+      <div class="flex items-center gap-2 text-white/90 text-sm min-w-0">
         <!-- Real avatar when the organizer has one. This always drew initials
              before, even for organizers whose picture was already loaded. -->
         <div
@@ -125,6 +128,10 @@
           <span v-else class="text-xs font-medium">{{ organizerInitials }}</span>
         </div>
         <span class="truncate">{{ t('events.drawer.byOrganizer', { name: organizerName }) }}</span>
+        <template v-if="attendanceLabel">
+          <span class="text-white/50 flex-shrink-0" aria-hidden="true">·</span>
+          <span class="flex-shrink-0 font-medium">{{ attendanceLabel }}</span>
+        </template>
       </div>
     </div>
   </div>
@@ -154,6 +161,8 @@ interface Props {
   /** "In 9 days" / "Happening now", or null past the horizon. */
   relativeLabel?: string | null
   isLive?: boolean
+  /** "240 going" / "12 interested", or null when the event has neither. */
+  attendanceLabel?: string | null
 }
 
 interface Emits {
@@ -166,6 +175,7 @@ const props = withDefaults(defineProps<Props>(), {
   isQuiet: false,
   relativeLabel: null,
   isLive: false,
+  attendanceLabel: null,
 })
 const emit = defineEmits<Emits>()
 

@@ -233,7 +233,8 @@
                     ? 'opacity-100 duration-200 delay-200'
                     : 'opacity-0 duration-100 delay-0'
                 "
-              >{{ item.label }}</span>
+                >{{ item.label }}</span
+              >
             </span>
           </RouterLink>
 
@@ -249,7 +250,9 @@
             class="relative flex items-center gap-1.5 h-10 px-3.5 rounded-full text-slate-600 hover:text-slate-800 transition-colors duration-200 active:scale-95"
           >
             <User class="w-5 h-5 flex-shrink-0" aria-hidden="true" />
-            <span class="text-sm font-semibold whitespace-nowrap">{{ t('common.nav.signIn') }}</span>
+            <span class="text-sm font-semibold whitespace-nowrap">{{
+              t('common.nav.signIn')
+            }}</span>
           </RouterLink>
           <button
             v-else
@@ -317,11 +320,7 @@ const { copied, copy } = useCopyToClipboard()
 
 // Shares the app-wide "one open menu" slot with the notification sheet next
 // door, so opening either closes the other.
-const {
-  isOpen: userMenuOpen,
-  close: closeUserMenu,
-  toggle: toggleUserMenu,
-} = useExclusiveMenu()
+const { isOpen: userMenuOpen, close: closeUserMenu, toggle: toggleUserMenu } = useExclusiveMenu()
 
 const userMenuRef = ref<HTMLElement>()
 const authStore = useAuthStore()
@@ -339,7 +338,7 @@ const isVerifiedVendor = computed(() => vendorState.value === 'verified')
 const navigationItems = computed(() => [
   { path: '/events', label: t('common.nav.events'), icon: Ticket },
   { path: '/explore', label: t('common.nav.discover'), icon: Compass },
-  { path: '/services', label: t('common.nav.services'), icon: Sparkles }
+  { path: '/services', label: t('common.nav.services'), icon: Sparkles },
 ])
 
 // Step to the next locale — the profile menu's one-click toggle, same as
@@ -375,9 +374,13 @@ const toggleLanguage = () => {
 const activePath = ref(lastActivePath ?? route.path)
 // `immediate` matters: on a cold load nothing ever changes this, and without a
 // first write the next bar would come up with no memory of where it came from.
-watch(activePath, (path) => {
-  lastActivePath = path
-}, { immediate: true })
+watch(
+  activePath,
+  (path) => {
+    lastActivePath = path
+  },
+  { immediate: true },
+)
 
 const isActiveRoute = (path: string) => {
   const current = activePath.value
@@ -603,26 +606,9 @@ onUnmounted(() => {
   transform: translateY(20px);
 }
 
-/* The floating pill. Same brand-tinted glass the bar used, but lit as an
-   object rather than an edge: the shadow falls on all sides instead of only
-   upwards, and an inset highlight along the top gives the surface a lip. It
-   also sits over live content rather than over a page margin, so the fill is
-   opaque enough that a card scrolling underneath never shows through as
-   texture. */
-.glass-pill {
-  background: linear-gradient(
-    135deg,
-    rgba(248, 255, 254, 0.92) 0%,
-    rgba(240, 253, 249, 0.92) 50%,
-    rgba(240, 249, 255, 0.92) 100%
-  );
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  box-shadow:
-    0 12px 32px rgba(15, 23, 42, 0.12),
-    0 4px 12px rgba(30, 144, 255, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-}
+/* The floating pill's surface now lives in main.css as `.glass-pill`, so the
+   save bar that rides above it is made of the same material. Only the pill's
+   own children are tuned here. */
 
 @media (prefers-reduced-motion: reduce) {
   .glass-pill * {

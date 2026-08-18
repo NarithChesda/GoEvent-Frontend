@@ -128,9 +128,22 @@
   "account": {
     "title": "ប្រវត្តិរូបរបស់អ្នក",
     "subtitle": "ជ្រើសរើសរបៀបបង្ហាញខ្លួនជាម្ចាស់ផ្ទះ ឬភ្ញៀវ។",
-    "profilePictureLabel": "រូបភាពប្រវត្តិរូប",
+    "sections": {
+      "identity": "ប្រវត្តិរូប",
+      "identityHint": "រូបភាព និងរបៀបបង្ហាញឈ្មោះរបស់អ្នកទៅភ្ញៀវ។",
+      "personal": "ព័ត៌មានផ្ទាល់ខ្លួន",
+      "personalHint": "ឈ្មោះ ឈ្មោះអ្នកប្រើ និងការណែនាំខ្លីៗ។",
+      "contact": "ទំនាក់ទំនង",
+      "contactHint": "របៀបដែលភ្ញៀវ និងអ្នករៀបចំអាចទាក់ទងអ្នក។"
+    },
+    "partnerBadge": "ដៃគូ",
     "partnerLogoLabel": "និមិត្តសញ្ញាដៃគូ",
-    "noLogo": "គ្មានរូបសញ្ញា",
+    "photoHint": "JPG, PNG ឬ WebP · មិនលើសពី 3 MB។",
+    "logoHint": "រូបភាពការ៉េលើផ្ទៃថ្លាគឺល្អបំផុត។",
+    "changePhoto": "ប្តូររូបភាព",
+    "addPhoto": "បន្ថែមរូបភាព",
+    "uploadLogo": "ផ្ទុកឡើង",
+    "replaceLogo": "ជំនួស",
     "firstName": "នាមខ្លួន",
     "lastName": "នាមត្រកូល",
     "emailAddress": "អាសយដ្ឋានអ៊ីមែល",
@@ -149,10 +162,15 @@
     "paymentPlaceholder": "your-payment-platform.com/username",
     "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ",
     "saving": "កំពុងរក្សាទុក...",
+    "unsavedChanges": "មានការផ្លាស់ប្តូរមិនទាន់រក្សាទុក",
+    "allSaved": "បានរក្សាទុកទាំងអស់",
+    "discard": "បោះបង់",
     "messages": {
       "updateSuccess": "បានធ្វើបច្ចុប្បន្នភាពប្រវត្តិរូបដោយជោគជ័យ!",
       "updateFailed": "បរាជ័យក្នុងការធ្វើបច្ចុប្បន្នភាពប្រវត្តិរូប",
-      "unexpectedError": "មានកំហុសដែលមិននឹកស្មានដល់"
+      "unexpectedError": "មានកំហុសដែលមិននឹកស្មានដល់",
+      "photoUpdated": "បានធ្វើបច្ចុប្បន្នភាពរូបភាពប្រវត្តិរូប",
+      "logoUpdated": "បានធ្វើបច្ចុប្បន្នភាពនិមិត្តសញ្ញា"
     }
   },
   "vendor": {

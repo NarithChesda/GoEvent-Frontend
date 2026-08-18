@@ -87,7 +87,7 @@
         :has-next="hasDrawerNext"
         @navigate-prev="handleDrawerPrev"
         @navigate-next="handleDrawerNext"
-        @registered="handleEventRegistered"
+        @registration-changed="handleRegistrationChanged"
         @login-required="handleLoginRequired"
         @like-changed="handleLikeChanged"
         @open-event="handleOpenRelatedEvent"
@@ -280,9 +280,28 @@ const handleOpenRelatedEvent = (eventId: string) => {
   selectedEventIndex.value = events.value.findIndex((e) => e.id === eventId)
 }
 
-const handleEventRegistered = () => {
-  showMessage('success', t('events.messages.registerSuccess'))
-  loadEvents('all', filters.value)
+/**
+ * Reflect a registration made inside the drawer on the card behind it.
+ *
+ * This used to re-fetch the whole list, which threw away the reader's position
+ * in it to update one card's counter — and did it while the drawer was still
+ * open over the top, so the cost was invisible until they closed it.
+ */
+const handleRegistrationChanged = (
+  eventId: string,
+  isRegistered: boolean,
+  registrationsCount: number
+) => {
+  if (isRegistered) showMessage('success', t('events.messages.registerSuccess'))
+
+  const eventIndex = events.value.findIndex((e) => e.id === eventId)
+  if (eventIndex !== -1) {
+    events.value[eventIndex] = {
+      ...events.value[eventIndex],
+      is_registered: isRegistered,
+      registrations_count: registrationsCount,
+    }
+  }
 }
 
 const handleLoginRequired = () => {

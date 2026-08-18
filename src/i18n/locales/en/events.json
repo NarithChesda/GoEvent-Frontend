@@ -157,11 +157,17 @@
       "notFound": "We couldn't find that order.",
       "loadFailed": "Couldn't load this order. Please try again.",
       "confirmationCodeLabel": "Order code",
+      "copyCode": "Copy order code",
+      "codeCopied": "Order code copied",
+      "whenLabel": "When",
+      "whereLabel": "Where",
       "itemsHeader": "Items",
       "subtotalLabel": "Subtotal",
       "discountLabel": "Discount",
       "totalLabel": "Total",
+      "amountDueLabel": "Amount due",
       "ticketsHeader": "Your tickets",
+      "ticketPosition": "Ticket {current} of {total}",
       "ticketType": "Ticket type",
       "attendeeLabel": "Attendee",
       "checkInCodeLabel": "Check-in code",
@@ -284,7 +290,27 @@
         "description": "Once you buy tickets they'll appear here so you can show them at the door.",
         "exploreLink": "Browse events"
       },
+      "emptyFiltered": {
+        "title": "Nothing here",
+        "description": "No orders match this status.",
+        "clear": "Show all orders"
+      },
+      "error": {
+        "title": "Couldn't load your tickets",
+        "retry": "Try again"
+      },
+      "filter": {
+        "label": "Filter by status",
+        "all": "All orders"
+      },
+      "actions": {
+        "viewTickets": "View tickets",
+        "completePayment": "Complete payment",
+        "viewOrder": "View order"
+      },
       "ticketCount": "{count} ticket | {count} tickets",
+      "orderCount": "{count} order | {count} orders",
+      "orderedOn": "Ordered {date}",
       "compBadge": "Comp",
       "refresh": "Refresh",
       "loadMore": "Load more",
@@ -308,6 +334,9 @@
     "moreIn": "More in {category}",
     "moreEvents": "More events",
     "noDescription": "No description provided",
+    "readMore": "Read more",
+    "readLess": "Show less",
+    "likeError": "Couldn't update that just now",
     "byOrganizer": "by {name}",
     "fundraiser": "Fundraiser",
     "virtualEvent": "Virtual event",
@@ -316,13 +345,19 @@
     "calendarOptions": {
       "google": "Google",
       "outlook": "Outlook",
-      "ics": "Download .ics"
+      "ics": ".ics file"
     },
     "error": {
       "title": "Couldn't load this event",
       "retry": "Try again"
     },
     "agendaItems": "{count} item | {count} items",
+    "stats": {
+      "days": "day | days",
+      "sessions": "session | sessions",
+      "hosts": "host | hosts",
+      "spotsLeft": "spot left | spots left"
+    },
     "registration": {
       "heading": "Registration",
       "registered": "You're going",
@@ -333,7 +368,10 @@
       "cancel": "Can't attend? Cancel",
       "cancelling": "Cancelling…",
       "joinLinkPending": "Join link available when the event starts",
-      "live": "Live"
+      "live": "Live",
+      "cancelled": "Registration cancelled",
+      "registerError": "Couldn't complete your registration",
+      "cancelError": "Couldn't cancel your registration"
     },
     "action": {
       "register": "Register",
@@ -348,6 +386,7 @@
       "unavailable": "Unavailable",
       "free": "Free",
       "freeEntry": "Free entry",
+      "registrationRequired": "Registration required",
       "registeredStatus": "You're registered"
     },
     "fundraising": {

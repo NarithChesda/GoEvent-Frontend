@@ -150,7 +150,7 @@ import { ListFilter, Check } from 'lucide-vue-next'
 import type { EventCategory } from '@/services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
-import { useHeaderTone } from '@/composables/useNavPageControls'
+import { useHeaderTone, useNavPageControls } from '@/composables/useNavPageControls'
 
 const { t } = useAppLanguage()
 const { translateEventCategory } = useCategoryTranslation()
@@ -168,6 +168,12 @@ const props = defineProps<{
 }>()
 
 const resolvedTone = useHeaderTone(() => props.tone)
+
+// Absorbed by the desktop nav — the one place this control is a guest on
+// someone else's glass, with page content scrolling under it. See the
+// `.nav-surface` note in TimeFilterToggle, whose fill this matches.
+const { isDesktopNav } = useNavPageControls()
+const isAbsorbed = computed(() => resolvedTone.value === 'nav' && isDesktopNav.value)
 
 /** The trigger carries no label, so this is its tooltip. */
 const activeLabel = computed(() =>
@@ -194,7 +200,9 @@ const triggerClass = computed(() => {
       'border-transparent',
       props.modelValue
         ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-sm shadow-[#2ecc71]/20'
-        : 'bg-slate-900/[0.04] text-slate-600 hover:text-slate-900 hover:bg-slate-900/[0.06]',
+        : isAbsorbed.value
+          ? 'nav-surface text-slate-600 hover:text-slate-900 hover:bg-white'
+          : 'bg-slate-900/[0.04] text-slate-600 hover:text-slate-900 hover:bg-slate-900/[0.06]',
     ]
   }
 
@@ -301,6 +309,15 @@ onUnmounted(() => {
   .fade-leave-active {
     transition: none;
   }
+}
+
+/* The absorbed surface — kept identical to TimeFilterToggle's, since the two
+   sit side by side and any difference in fill would read as a mistake. The
+   reasoning for an opaque fill over the desktop nav's glass is written out
+   there. */
+.nav-surface {
+  background-color: rgba(255, 255, 255, 0.94);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
 }
 
 /* Glass effect styles. The border lives in the class list, not here, so both

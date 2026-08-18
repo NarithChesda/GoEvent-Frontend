@@ -1,9 +1,11 @@
 <template>
   <Teleport to="body">
     <Transition name="fade">
+      <!-- Above the modal ladder (z-1000), not on the drawer rung: this opens
+           from inside TicketOrderModal, which is itself a z-1000 modal. -->
       <div
         v-if="show"
-        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[1010]"
         @click="handleClose"
       />
     </Transition>
@@ -11,7 +13,8 @@
     <Transition name="slide-up">
       <div
         v-if="show"
-        class="fixed inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center w-full md:w-auto z-[999]"
+        data-refund-modal
+        class="fixed inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center w-full md:w-auto z-[1011]"
         @click.self="handleClose"
       >
         <div

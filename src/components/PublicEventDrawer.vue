@@ -37,23 +37,26 @@
 
           <!-- Controls are a full 40px on touch and shrink on desktop, per the
                design system's target rule; the row is also the reason the hero's
-               copy carries `pt-16`. -->
+               copy carries `pt-16`. Circles rather than squares: they read as
+               floating objects over the artwork instead of as a chrome bar that
+               happens to have lost its background. -->
           <div
             class="relative flex items-center gap-1.5 sm:gap-2 px-3 py-2.5"
             style="padding-top: max(env(safe-area-inset-top), 0.625rem)"
           >
             <button
               @click="closeDrawer"
-              class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors flex-shrink-0"
-              :class="
-                isHeaderSolid
-                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-600'
-                  : 'bg-black/25 hover:bg-black/40 backdrop-blur-sm text-white'
-              "
+              class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-full transition-colors flex-shrink-0"
+              :class="controlClass(false)"
               :title="t('events.drawer.close')"
               :aria-label="t('events.drawer.close')"
             >
-              <X class="w-4 h-4" />
+              <!-- On a phone the drawer is a full-screen sheet that owns a
+                   history entry, so the system Back gesture and this button do
+                   the same thing and a back chevron is the honest icon. On
+                   desktop it is a panel beside the list, which you dismiss. -->
+              <ChevronLeft class="w-5 h-5 md:hidden" />
+              <X class="w-4 h-4 hidden md:block" />
             </button>
 
             <!-- The title only belongs here once the hero's copy is gone. Faded
@@ -66,13 +69,47 @@
               {{ event?.title || '' }}
             </p>
 
-            <div class="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
+            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+              <!-- Prev/next share one pill. As two separate circles they cost
+                   the width of a third control on a 360px phone, and they are
+                   one affordance — moving through the list — not two. -->
+              <div
+                class="flex items-center rounded-full overflow-hidden transition-colors"
+                :class="controlGroupClass"
+              >
+                <button
+                  @click="navigatePrev"
+                  :disabled="!hasPrev"
+                  class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                  :class="isHeaderSolid ? 'hover:bg-slate-200' : 'hover:bg-white/15'"
+                  :title="t('events.drawer.previous')"
+                  :aria-label="t('events.drawer.previous')"
+                >
+                  <ChevronUp class="w-5 h-5" />
+                </button>
+                <div
+                  class="w-px h-5 flex-shrink-0"
+                  :class="isHeaderSolid ? 'bg-slate-300' : 'bg-white/30'"
+                  aria-hidden="true"
+                ></div>
+                <button
+                  @click="navigateNext"
+                  :disabled="!hasNext"
+                  class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                  :class="isHeaderSolid ? 'hover:bg-slate-200' : 'hover:bg-white/15'"
+                  :title="t('events.drawer.next')"
+                  :aria-label="t('events.drawer.next')"
+                >
+                  <ChevronDown class="w-5 h-5" />
+                </button>
+              </div>
+
               <button
                 v-if="event?.privacy === 'public'"
                 @click="toggleLike"
                 :disabled="isLikeLoading"
-                class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors"
-                :class="headerIconClass(isLiked)"
+                class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-full transition-colors"
+                :class="controlClass(isLiked)"
                 :aria-label="isLiked ? t('events.drawer.unlike') : t('events.drawer.like')"
                 :title="isLiked ? t('events.drawer.unlike') : t('events.drawer.like')"
               >
@@ -81,40 +118,12 @@
 
               <button
                 @click="sharing.shareEvent()"
-                class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors"
-                :class="headerIconClass(false)"
+                class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-full transition-colors"
+                :class="controlClass(false)"
                 :aria-label="t('events.drawer.share')"
                 :title="t('events.drawer.share')"
               >
                 <Share2 class="w-4 h-4" />
-              </button>
-
-              <!-- Six 40px controls plus the title do not fit a 360px phone; the
-                   divider is the one piece that carries no function. -->
-              <div
-                class="hidden sm:block w-px h-5 mx-0.5"
-                :class="isHeaderSolid ? 'bg-slate-200' : 'bg-white/30'"
-              ></div>
-
-              <button
-                @click="navigatePrev"
-                :disabled="!hasPrev"
-                class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                :class="headerIconClass(false)"
-                :title="t('events.drawer.previous')"
-                :aria-label="t('events.drawer.previous')"
-              >
-                <ChevronUp class="w-5 h-5" />
-              </button>
-              <button
-                @click="navigateNext"
-                :disabled="!hasNext"
-                class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                :class="headerIconClass(false)"
-                :title="t('events.drawer.next')"
-                :aria-label="t('events.drawer.next')"
-              >
-                <ChevronDown class="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -185,15 +194,19 @@
             </h3>
             <p class="text-slate-600 mb-4">{{ error }}</p>
             <button
-              @click="loadEventData"
+              @click="loadEventData({ force: true })"
               class="px-5 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors text-sm font-semibold"
             >
               {{ t('events.drawer.error.retry') }}
             </button>
           </div>
 
-          <!-- Event Content -->
-          <div v-else-if="!showDonationForm && event" class="pb-8">
+          <!-- Event Content. The bottom pad clears the floating action pill,
+               which no longer reserves space in the panel's flex column. -->
+          <div
+            v-else-if="!showDonationForm && event"
+            class="pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))]"
+          >
             <!-- Hero -->
             <PublicEventBanner
               :banner-src="currentBannerSrc"
@@ -208,17 +221,30 @@
               :is-quiet="isQuiet"
               :relative-label="relativeWhen?.label ?? null"
               :is-live="relativeWhen?.isLive ?? false"
+              :attendance-label="attendanceLabel"
               @banner-error="handleBannerImageError"
             />
 
-            <!-- Date, venue and social proof, lifted onto the hero's edge -->
+            <!-- Date and venue, lifted onto the hero's edge -->
             <PublicEventQuickFacts
               :start-date="event.start_date"
               :end-date="event.end_date"
               :location="event.location"
               :is-virtual="event.is_virtual"
-              :attendance-label="attendanceLabel"
               @open-map="sharing.openMap(event.location)"
+              @add-to-google="calendar.addToGoogleCalendar()"
+              @add-to-outlook="calendar.addToOutlookCalendar()"
+              @download-ics="calendar.downloadICSFile()"
+            />
+
+            <!-- Scale of the event, where there is enough of it to be worth a row -->
+            <PublicEventStats
+              :start-date="event.start_date"
+              :end-date="event.end_date"
+              :agenda-count="event.agenda_items?.length ?? 0"
+              :host-count="event.hosts?.length ?? 0"
+              :max-attendees="event.max_attendees"
+              :registrations-count="event.registrations_count ?? 0"
             />
 
             <div class="px-4 pt-6 space-y-6">
@@ -271,21 +297,17 @@
                   :registration-message="registration.registrationMessage.value"
                   :current-user="currentUser"
                   @show-qr="showQRModal = true"
-                  @cancel-registration="registration.handleCancelRegistration()"
+                  @cancel-registration="handleCancelRegistration"
                 />
               </PublicEventSection>
 
               <!-- About -->
               <PublicEventSection :title="t('events.drawer.about')">
-                <div
-                  v-if="event.description"
-                  class="prose prose-sm max-w-none text-slate-700"
-                  v-html="sanitizedDescription"
+                <PublicEventAbout
+                  :html="sanitizedDescription"
+                  :text="event.short_description"
+                  :empty-label="t('events.drawer.noDescription')"
                 />
-                <p v-else-if="event.short_description" class="text-sm text-slate-700 leading-relaxed">
-                  {{ event.short_description }}
-                </p>
-                <p v-else class="text-sm text-slate-500">{{ t('events.drawer.noDescription') }}</p>
               </PublicEventSection>
 
               <!-- Agenda -->
@@ -484,6 +506,7 @@ import { useRouter, useRoute } from 'vue-router'
 import DOMPurify from 'dompurify'
 import {
   ChevronRight,
+  ChevronLeft,
   ChevronDown,
   ChevronUp,
   AlertCircle,
@@ -495,6 +518,8 @@ import { extractGoogleMapsEmbedUrl } from '@/utils/embedExtractor'
 import PublicDonationForm from './PublicDonationForm.vue'
 import PublicEventBanner from './event/PublicEventBanner.vue'
 import PublicEventQuickFacts from './event/PublicEventQuickFacts.vue'
+import PublicEventStats from './event/PublicEventStats.vue'
+import PublicEventAbout from './event/PublicEventAbout.vue'
 import PublicEventSection from './event/PublicEventSection.vue'
 import PublicEventActionBar from './event/PublicEventActionBar.vue'
 import PublicEventFundraisingCard from './event/PublicEventFundraisingCard.vue'
@@ -524,6 +549,7 @@ import {
   getEventThumbnail,
 } from '@/composables/useEventFormatters'
 import { useEventLike } from '@/composables/useEventLike'
+import { useToast } from '@/composables/useToast'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 
@@ -538,7 +564,16 @@ interface Emits {
   (e: 'update:modelValue', value: boolean): void
   (e: 'navigate-prev'): void
   (e: 'navigate-next'): void
-  (e: 'registered'): void
+  /**
+   * The reader registered or cancelled. Carries the resolved state so the list
+   * behind the drawer can patch its own card rather than re-fetching a page.
+   */
+  (
+    e: 'registration-changed',
+    eventId: string,
+    isRegistered: boolean,
+    registrationsCount: number
+  ): void
   (e: 'login-required'): void
   (e: 'like-changed', eventId: string, isLiked: boolean, likesCount: number): void
   (e: 'open-event', eventId: string): void
@@ -555,6 +590,7 @@ const route = useRoute()
 
 const { t } = useAppLanguage()
 const { translateEventCategory } = useCategoryTranslation()
+const { showSuccess, showError } = useToast()
 
 // Local state
 const showDonationForm = ref(false)
@@ -736,13 +772,16 @@ const {
   onSuccess: (liked, count) => {
     if (event.value) emit('like-changed', event.value.id, liked, count)
   },
+  // The composable rolls the optimistic toggle back on failure, which on its
+  // own just looks like the tap didn't land.
+  onError: (message) => showError(message || t('events.drawer.likeError')),
 })
 
 /**
  * Header controls invert over the hero artwork and revert once the bar solidifies.
  * @param active - Whether the control is in its "on" state (a filled like).
  */
-const headerIconClass = (active: boolean): string => {
+const controlClass = (active: boolean): string => {
   if (!isHeaderSolid.value) {
     return active
       ? 'bg-rose-500/90 backdrop-blur-sm text-white'
@@ -750,8 +789,19 @@ const headerIconClass = (active: boolean): string => {
   }
   return active
     ? 'bg-rose-50 text-rose-600'
-    : 'text-slate-600 hover:bg-slate-100'
+    : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
 }
+
+/**
+ * The prev/next pill's ground. The hover state lives on the two buttons inside
+ * it, so this carries only the fill — otherwise hovering either half would
+ * light up the whole pill.
+ */
+const controlGroupClass = computed(() =>
+  isHeaderSolid.value
+    ? 'bg-slate-100 text-slate-600'
+    : 'bg-black/25 backdrop-blur-sm text-white'
+)
 
 /** Whether there is hero artwork behind the header on this state. */
 const hasHero = computed(
@@ -911,19 +961,79 @@ const navigateNext = () => {
   emit('navigate-next')
 }
 
-const loadEventData = () => {
-  if (props.eventId) {
-    // Fire the tier fetch in parallel with the event detail — independent calls.
-    loadTicketTiers(props.eventId)
-  }
-  loadEvent(props.eventId)
+/**
+ * The id we have already asked for, so the two watchers that both fire on open
+ * (`eventId` and `modelValue`) don't each kick off their own fetch. Cleared on
+ * close, so re-opening the same event still gets fresh data.
+ */
+const requestedEventId = ref<string | null>(null)
+
+interface LoadOptions {
+  /** Re-fetch even if this id was already requested — the error state's retry. */
+  force?: boolean
+  /** Reconcile in place: no skeleton, no lost scroll position. */
+  silent?: boolean
 }
 
+const loadEventData = (options: LoadOptions = {}) => {
+  const id = props.eventId
+  if (!id) return
+  if (!options.force && !options.silent && requestedEventId.value === id) return
+
+  requestedEventId.value = id
+  // Fire the tier fetch in parallel with the event detail — independent calls.
+  loadTicketTiers(id)
+  return loadEvent(id, { silent: options.silent })
+}
+
+/**
+ * Registering updates the panel in place.
+ *
+ * This used to hand `loadEvent` straight back as the success callback, which
+ * flipped `loading` — so the hero, the whole document and the action bar were
+ * replaced by the skeleton and rebuilt, dropping the reader's scroll position
+ * on the way. Everything the reader needs is already in hand by then: the
+ * registration (and its confirmation code) comes back on the register response,
+ * and the attendee count is nudged locally. The refresh still runs, silently
+ * and unawaited, purely to reconcile with the server.
+ */
 const handleRegister = async () => {
-  await registration.handleRegister(async () => {
-    emit('registered')
-    await loadEvent(props.eventId)
-  })
+  const result = await registration.handleRegister()
+
+  if (!result.ok) {
+    showError(result.message || t('events.drawer.registration.registerError'))
+    return
+  }
+
+  emitRegistrationChange()
+  void loadEventData({ silent: true })
+}
+
+const handleCancelRegistration = async () => {
+  const result = await registration.handleCancelRegistration()
+
+  if (!result.ok) {
+    showError(result.message || t('events.drawer.registration.cancelError'))
+    return
+  }
+
+  showSuccess(t('events.drawer.registration.cancelled'))
+  emitRegistrationChange()
+  void loadEventData({ silent: true })
+}
+
+/**
+ * Hand the list behind the drawer the new state, so it can patch the one card
+ * it owns instead of re-fetching the page the reader is scrolled into.
+ */
+const emitRegistrationChange = () => {
+  if (!event.value) return
+  emit(
+    'registration-changed',
+    event.value.id,
+    isUserRegistered.value,
+    event.value.registrations_count ?? 0
+  )
 }
 
 const handleLoginToRegister = () => {
@@ -1013,8 +1123,7 @@ watch(
     if (contentRef.value) contentRef.value.scrollTop = 0
 
     if (newId && props.modelValue) {
-      loadTicketTiers(newId)
-      loadEvent(newId)
+      loadEventData()
     } else {
       ticketTiers.value = []
     }
@@ -1047,10 +1156,7 @@ watch(
   (isOpen) => {
     if (isOpen) {
       scrolledPastHero.value = false
-      if (props.eventId) {
-        loadTicketTiers(props.eventId)
-        loadEvent(props.eventId)
-      }
+      loadEventData()
       document.addEventListener('keydown', handleKeydown)
       window.addEventListener('popstate', handlePopState)
       pushHistoryEntry()
@@ -1061,6 +1167,9 @@ watch(
         document.body.style.paddingRight = `${scrollbarWidth}px`
       }
     } else {
+      // Dropped so re-opening the same event fetches fresh data rather than
+      // showing whatever was true when it was last closed.
+      requestedEventId.value = null
       document.removeEventListener('keydown', handleKeydown)
       window.removeEventListener('popstate', handlePopState)
       popHistoryEntry()
@@ -1077,10 +1186,7 @@ onMounted(() => {
     document.addEventListener('keydown', handleKeydown)
     window.addEventListener('popstate', handlePopState)
     pushHistoryEntry()
-    if (props.eventId) {
-      loadTicketTiers(props.eventId)
-      loadEvent(props.eventId)
-    }
+    loadEventData()
   }
 })
 
@@ -1137,27 +1243,5 @@ onBeforeUnmount(() => {
 
 .drawer-scroll::-webkit-scrollbar-thumb:hover {
   background-color: #94a3b8;
-}
-
-/* Prose styling for description */
-.prose :deep(p) {
-  @apply mb-3 leading-relaxed;
-}
-
-.prose :deep(strong) {
-  @apply font-semibold text-slate-900;
-}
-
-.prose :deep(a) {
-  @apply text-blue-600 hover:text-blue-700 underline;
-}
-
-.prose :deep(ul),
-.prose :deep(ol) {
-  @apply ml-4 mb-3 space-y-1;
-}
-
-.prose :deep(li) {
-  @apply leading-relaxed;
 }
 </style>

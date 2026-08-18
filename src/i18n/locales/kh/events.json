@@ -157,11 +157,17 @@
       "notFound": "យើងរកមិនឃើញការបញ្ជាទិញនេះទេ។",
       "loadFailed": "មិនអាចផ្ទុកការបញ្ជាទិញនេះទេ។ សូមសាកល្បងម្ដងទៀត។",
       "confirmationCodeLabel": "កូដការបញ្ជាទិញ",
+      "copyCode": "ចម្លងកូដការបញ្ជាទិញ",
+      "codeCopied": "បានចម្លងកូដការបញ្ជាទិញ",
+      "whenLabel": "ពេលវេលា",
+      "whereLabel": "ទីតាំង",
       "itemsHeader": "ទំនិញ",
       "subtotalLabel": "សរុបរង",
       "discountLabel": "បញ្ចុះតម្លៃ",
       "totalLabel": "សរុប",
+      "amountDueLabel": "ចំនួនត្រូវបង់",
       "ticketsHeader": "សំបុត្ររបស់អ្នក",
+      "ticketPosition": "សំបុត្រទី {current} ក្នុងចំណោម {total}",
       "ticketType": "ប្រភេទសំបុត្រ",
       "attendeeLabel": "អ្នកចូលរួម",
       "checkInCodeLabel": "កូដចូល",
@@ -284,7 +290,27 @@
         "description": "នៅពេលអ្នកទិញសំបុត្រ ពួកវានឹងបង្ហាញនៅទីនេះ ដើម្បីបង្ហាញនៅទ្វារ។",
         "exploreLink": "រកមើលព្រឹត្តិការណ៍"
       },
+      "emptyFiltered": {
+        "title": "គ្មានលទ្ធផល",
+        "description": "គ្មានការបញ្ជាទិញត្រូវនឹងស្ថានភាពនេះទេ។",
+        "clear": "បង្ហាញការបញ្ជាទិញទាំងអស់"
+      },
+      "error": {
+        "title": "មិនអាចផ្ទុកសំបុត្ររបស់អ្នកបានទេ",
+        "retry": "សាកល្បងម្ដងទៀត"
+      },
+      "filter": {
+        "label": "ត្រងតាមស្ថានភាព",
+        "all": "ការបញ្ជាទិញទាំងអស់"
+      },
+      "actions": {
+        "viewTickets": "មើលសំបុត្រ",
+        "completePayment": "បញ្ចប់ការទូទាត់",
+        "viewOrder": "មើលការបញ្ជាទិញ"
+      },
       "ticketCount": "សំបុត្រ {count}",
+      "orderCount": "ការបញ្ជាទិញ {count}",
+      "orderedOn": "បញ្ជាទិញនៅ {date}",
       "compBadge": "ឥតគិតថ្លៃ",
       "refresh": "ផ្ទុកឡើងវិញ",
       "loadMore": "ផ្ទុកបន្ថែម",
@@ -308,6 +334,9 @@
     "moreIn": "បន្ថែមក្នុង {category}",
     "moreEvents": "ព្រឹត្តិការណ៍ផ្សេងទៀត",
     "noDescription": "មិនមានការពិពណ៌នា",
+    "readMore": "អានបន្ថែម",
+    "readLess": "បង្ហាញតិច",
+    "likeError": "មិនអាចធ្វើបច្ចុប្បន្នភាពបានទេ",
     "byOrganizer": "ដោយ {name}",
     "fundraiser": "ការរៃអង្គាសមូលនិធិ",
     "virtualEvent": "ព្រឹត្តិការណ៍អនឡាញ",
@@ -316,13 +345,19 @@
     "calendarOptions": {
       "google": "Google",
       "outlook": "Outlook",
-      "ics": "ទាញយក .ics"
+      "ics": "ឯកសារ .ics"
     },
     "error": {
       "title": "មិនអាចផ្ទុកព្រឹត្តិការណ៍នេះបានទេ",
       "retry": "ព្យាយាមម្ដងទៀត"
     },
     "agendaItems": "{count} ធាតុ",
+    "stats": {
+      "days": "ថ្ងៃ",
+      "sessions": "វគ្គ",
+      "hosts": "អ្នករៀបចំ",
+      "spotsLeft": "កន្លែងនៅសល់"
+    },
     "registration": {
       "heading": "ការចុះឈ្មោះ",
       "registered": "អ្នកនឹងចូលរួម",
@@ -333,7 +368,10 @@
       "cancel": "មិនអាចចូលរួមបានទេ? បោះបង់",
       "cancelling": "កំពុងបោះបង់…",
       "joinLinkPending": "តំណចូលរួមនឹងបង្ហាញនៅពេលព្រឹត្តិការណ៍ចាប់ផ្ដើម",
-      "live": "កំពុងផ្សាយ"
+      "live": "កំពុងផ្សាយ",
+      "cancelled": "បានបោះបង់ការចុះឈ្មោះ",
+      "registerError": "មិនអាចបញ្ចប់ការចុះឈ្មោះបានទេ",
+      "cancelError": "មិនអាចបោះបង់ការចុះឈ្មោះបានទេ"
     },
     "action": {
       "register": "ចុះឈ្មោះ",
@@ -348,6 +386,7 @@
       "unavailable": "មិនអាចប្រើបាន",
       "free": "ឥតគិតថ្លៃ",
       "freeEntry": "ចូលរួមឥតគិតថ្លៃ",
+      "registrationRequired": "ត្រូវការចុះឈ្មោះ",
       "registeredStatus": "អ្នកបានចុះឈ្មោះរួចរាល់"
     },
     "fundraising": {
