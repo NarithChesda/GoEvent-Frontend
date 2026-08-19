@@ -66,12 +66,12 @@
                 </div>
                 <div>
                   <button
-                    v-for="(result, index) in results.myEvents"
+                    v-for="result in results.myEvents"
                     :key="result.id"
                     @click="navigateToResult(result)"
-                    @mouseenter="setSelectedIndex(index)"
+                    @mouseenter="setSelectedIndex(resultIndex(result))"
                     class="w-full px-5 py-3 flex items-center gap-4 text-left transition-all duration-200"
-                    :class="selectedIndex === index ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10' : 'hover:bg-white/40'"
+                    :class="selectedIndex === resultIndex(result) ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10' : 'hover:bg-white/40'"
                   >
                     <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center flex-shrink-0">
                       <CalendarDays class="w-5 h-5 text-[#2ecc71]" />
@@ -98,12 +98,12 @@
                 </div>
                 <div>
                   <button
-                    v-for="(result, index) in results.discover"
+                    v-for="result in results.discover"
                     :key="result.id"
                     @click="navigateToResult(result)"
-                    @mouseenter="setSelectedIndex(getDiscoverIndex(index))"
+                    @mouseenter="setSelectedIndex(resultIndex(result))"
                     class="w-full px-5 py-3 flex items-center gap-4 text-left transition-all duration-200"
-                    :class="selectedIndex === getDiscoverIndex(index) ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10' : 'hover:bg-white/40'"
+                    :class="selectedIndex === resultIndex(result) ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10' : 'hover:bg-white/40'"
                   >
                     <div class="w-10 h-10 rounded-lg bg-white/40 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-slate-200/50">
                       <Globe class="w-5 h-5 text-slate-500" />
@@ -124,17 +124,84 @@
                 </div>
               </div>
 
-              <!-- Services Section (only show when in services context or other) -->
-              <div v-if="showServicesSection" class="mb-4">
+              <!-- Services Section. Only ever populated from the Services tab —
+                   see useGlobalSearch — so there is no context test here beyond
+                   having something to show. -->
+              <div v-if="results.services.length > 0" class="mb-4">
                 <div class="px-5 py-2 flex items-center gap-2">
                   <Briefcase class="w-4 h-4 text-slate-400" />
                   <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ t('common.search.sections.services') }}</span>
                 </div>
-                <div class="px-5 py-4 text-center">
-                  <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/40 backdrop-blur-sm rounded-lg text-sm text-slate-500 border border-slate-200/50">
-                    <Sparkles class="w-4 h-4" />
-                    <span>{{ t('common.search.serviceComingSoon') }}</span>
-                  </div>
+                <div>
+                  <button
+                    v-for="result in results.services"
+                    :key="result.id"
+                    @click="navigateToResult(result)"
+                    @mouseenter="setSelectedIndex(resultIndex(result))"
+                    class="w-full px-5 py-3 flex items-center gap-4 text-left transition-all duration-200"
+                    :class="selectedIndex === resultIndex(result) ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10' : 'hover:bg-white/40'"
+                  >
+                    <!-- The listing's own cover, which is how it is recognised in
+                         the grid; the icon is only the fallback for one without. -->
+                    <img
+                      v-if="result.imageUrl"
+                      :src="result.imageUrl"
+                      alt=""
+                      class="w-10 h-10 rounded-lg object-cover flex-shrink-0 bg-slate-100"
+                      loading="lazy"
+                    />
+                    <div v-else class="w-10 h-10 rounded-lg bg-white/40 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-slate-200/50">
+                      <Briefcase class="w-5 h-5 text-slate-500" />
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="font-medium text-slate-900 truncate">{{ result.title }}</div>
+                      <div class="flex items-center gap-2 text-sm text-slate-500">
+                        <span v-if="result.subtitle" class="truncate">{{ result.subtitle }}</span>
+                        <span v-if="result.category" class="px-1.5 py-0.5 bg-slate-100 rounded text-xs flex-shrink-0">{{ result.category }}</span>
+                      </div>
+                    </div>
+                    <ArrowRight class="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  </button>
+                </div>
+              </div>
+
+              <!-- Vendors Section — the businesses behind those listings -->
+              <div v-if="results.vendors.length > 0" class="mb-4">
+                <div class="px-5 py-2 flex items-center gap-2">
+                  <Store class="w-4 h-4 text-slate-400" />
+                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">{{ t('common.search.sections.vendors') }}</span>
+                </div>
+                <div>
+                  <button
+                    v-for="result in results.vendors"
+                    :key="result.id"
+                    @click="navigateToResult(result)"
+                    @mouseenter="setSelectedIndex(resultIndex(result))"
+                    class="w-full px-5 py-3 flex items-center gap-4 text-left transition-all duration-200"
+                    :class="selectedIndex === resultIndex(result) ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10' : 'hover:bg-white/40'"
+                  >
+                    <img
+                      v-if="result.imageUrl"
+                      :src="result.imageUrl"
+                      alt=""
+                      class="w-10 h-10 rounded-full object-cover flex-shrink-0 bg-slate-100"
+                      loading="lazy"
+                    />
+                    <div v-else class="w-10 h-10 rounded-full bg-white/40 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-slate-200/50">
+                      <Store class="w-5 h-5 text-slate-500" />
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="font-medium text-slate-900 truncate">{{ result.title }}</div>
+                      <div class="flex items-center gap-2 text-sm text-slate-500">
+                        <template v-if="result.location">
+                          <MapPin class="w-3 h-3 flex-shrink-0" />
+                          <span class="truncate">{{ result.location }}</span>
+                        </template>
+                        <span v-else-if="result.subtitle" class="truncate">{{ result.subtitle }}</span>
+                      </div>
+                    </div>
+                    <ArrowRight class="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  </button>
                 </div>
               </div>
 
@@ -248,11 +315,11 @@ import {
   Globe,
   MapPin,
   ArrowRight,
-  Sparkles,
+  Store,
   SearchX,
   PlayCircle
 } from 'lucide-vue-next'
-import { useGlobalSearch } from '@/composables/useGlobalSearch'
+import { useGlobalSearch, type SearchResult } from '@/composables/useGlobalSearch'
 import { VIDEO_GUIDES } from '@/constants/videoGuides'
 
 const { t } = useI18n()
@@ -264,6 +331,7 @@ const {
   results,
   selectedIndex,
   isAuthenticated,
+  allResults,
   hasResults,
   hasQuery,
   currentContext,
@@ -290,10 +358,6 @@ const showMyEventsSection = computed(() => {
 
 const showDiscoverSection = computed(() => {
   return currentContext.value === 'explore' || currentContext.value === 'other'
-})
-
-const showServicesSection = computed(() => {
-  return currentContext.value === 'services' || currentContext.value === 'other'
 })
 
 const searchPlaceholder = computed(() => {
@@ -358,22 +422,21 @@ watch(isOpen, async (open) => {
   }
 })
 
-// Calculate index for discover section (offset by myEvents length when both are shown)
-const getDiscoverIndex = (localIndex: number): number => {
-  if (currentContext.value === 'explore') {
-    // In explore context, discover is the only section
-    return localIndex
-  }
-  // In other contexts, offset by myEvents length
-  return results.value.myEvents.length + localIndex
-}
+// Where a row sits in the keyboard order. Read off the flat list the arrow keys
+// walk rather than recomputed per section from the lengths of the ones above it:
+// which sections are on screen depends on the context, and every section added
+// made that arithmetic wrong somewhere. Identity works because both views hold
+// the same result objects.
+const resultIndex = (result: SearchResult): number => allResults.value.indexOf(result)
 
 const setSelectedIndex = (index: number) => {
   selectedIndex.value = index
 }
 
-// Format date for display
-const formatDate = (dateStr: string) => {
+// Format date for display. Optional because services and vendors carry no date;
+// only the two event sections above ever call it.
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return ''
   const date = new Date(dateStr)
   return date.toLocaleDateString('en-US', {
     month: 'short',
