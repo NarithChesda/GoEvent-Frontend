@@ -82,11 +82,16 @@
              section label above the hero any more, this pill is the only thing
              telling the visitor these are vendors GoEvent recommends, and it
              also has to distinguish itself from the "Featured" pills on the
-             listing cards further down the page. -->
+             listing cards further down the page.
+
+             It is a label, not a control, so on a phone it steps down a size:
+             at full size it carried the same visual weight as the vendor's own
+             name three lines below, in a band barely 13rem tall. Same colour
+             and wording — only the scale changes. -->
         <span
-          class="absolute top-3 left-3 sm:top-4 sm:left-4 inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-medium rounded-lg shadow-md"
+          class="absolute top-3 left-3 sm:top-4 sm:left-4 inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] sm:text-xs font-medium rounded-md sm:rounded-lg shadow-md"
         >
-          <Sparkles class="w-3 h-3" />
+          <Sparkles class="w-2.5 h-2.5 sm:w-3 sm:h-3" />
           {{ t('services.vendors.spotlight.badge') }}
         </span>
 
@@ -175,16 +180,28 @@
       </button>
     </div>
 
-    <!-- Arrows. Permanently visible on touch and hover-revealed from sm up:
-         there is no hover on a phone, so the desktop treatment left the band
-         with no visible control at all and swipe as its only affordance.
-         Sat high rather than centred on mobile: the band centre is directly
-         above the white "View vendor" pill, and two right-pointing circles
-         stacked in one corner do not read as two different actions. -->
+    <!--
+      Arrows, hover-revealed, and from `sm` up only.
+
+      They used to sit permanently visible on phones, on the reasoning that a
+      touch screen has no hover and so would otherwise get no visible control at
+      all. What that produced was three circles in a 13rem band, two of them
+      pointing right: a prev and a next floating over the artwork, and the white
+      "View vendor" pill in the corner below them — so the control that leaves
+      the page looked like a third way to page the carousel. And it was never
+      even consistent, since any touch device from 640px up (every tablet) has
+      always fallen into the hover-only branch.
+
+      A phone is not left without an affordance: the progress bars top right are
+      tappable jump targets with a 40px hit area, they are the one control that
+      also says where you are in the rotation, and the band takes a horizontal
+      swipe. So touch gets the dots and the swipe, and the pointer that can
+      actually reveal them gets the arrows.
+    -->
     <template v-if="slides.length > 1">
       <button
         type="button"
-        class="flex absolute left-2 top-[32%] sm:top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-9 sm:h-9 items-center justify-center rounded-full bg-white/20 sm:bg-white/15 backdrop-blur-sm text-white ring-1 ring-white/25 opacity-100 sm:opacity-0 sm:group-hover/spotlight:opacity-100 focus:opacity-100 hover:bg-white/25 active:scale-95 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        class="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm text-white ring-1 ring-white/25 opacity-0 group-hover/spotlight:opacity-100 focus:opacity-100 hover:bg-white/25 active:scale-95 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
         :aria-label="t('services.vendors.spotlight.previous')"
         @click="step(-1)"
       >
@@ -192,7 +209,7 @@
       </button>
       <button
         type="button"
-        class="flex absolute right-2 top-[32%] sm:top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-9 sm:h-9 items-center justify-center rounded-full bg-white/20 sm:bg-white/15 backdrop-blur-sm text-white ring-1 ring-white/25 opacity-100 sm:opacity-0 sm:group-hover/spotlight:opacity-100 focus:opacity-100 hover:bg-white/25 active:scale-95 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        class="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm text-white ring-1 ring-white/25 opacity-0 group-hover/spotlight:opacity-100 focus:opacity-100 hover:bg-white/25 active:scale-95 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
         :aria-label="t('services.vendors.spotlight.next')"
         @click="step(1)"
       >
