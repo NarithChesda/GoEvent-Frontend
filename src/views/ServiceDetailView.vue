@@ -1,10 +1,22 @@
 <template>
-  <MainLayout>
+  <!--
+    No tab bar here: a listing's bottom edge belongs to the vendor's contact
+    actions, and the flat CTA bar stacked on the floating pill read as two
+    competing bars. `has-custom-bottom-bar` keeps the inset vars at full
+    height, since ServiceMobileCtaBar occupies exactly the band the pill would
+    have — so the page pad still clears it.
+
+    The support FAB goes too: it is a Telegram button in Telegram blue, which
+    on this page sits a thumb's width above the vendor's own Telegram button in
+    the same blue. (It was never actually visible here — the old opaque CTA bar
+    covered it — so this only makes that state deliberate.)
+  -->
+  <MainLayout hide-mobile-tab-bar has-custom-bottom-bar hide-contact-fab>
     <div
       class="min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-4rem)] bg-gradient-to-r from-[#2ecc71]/[0.02] via-white/0 to-[#1e90ff]/[0.02]"
     >
       <div
-        class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto sm:px-6 lg:px-8 lg:py-8 pb-24 lg:pb-8"
+        class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto sm:px-6 lg:px-8 lg:py-8 pb-6 lg:pb-8"
       >
         <!-- Loading skeleton -->
         <div v-if="isLoading" class="animate-pulse">

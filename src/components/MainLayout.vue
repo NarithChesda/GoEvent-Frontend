@@ -1,8 +1,14 @@
 <template>
   <!-- `nav-inset-none` zeroes the bottom-chrome vars for the pages that run
        without a tab bar, so anything anchored to `--fab-bottom` sits on the
-       viewport edge there instead of hovering over a bar that isn't rendered. -->
-  <div class="relative min-h-screen" :class="{ 'nav-inset-none': hideMobileTabBar }">
+       viewport edge there instead of hovering over a bar that isn't rendered.
+       A page that swaps the tab bar for bottom chrome of its own (the service
+       detail CTA pill) keeps the inset: the band is still occupied, so the
+       FABs and the page's own bottom pad still have to clear it. -->
+  <div
+    class="relative min-h-screen"
+    :class="{ 'nav-inset-none': hideMobileTabBar && !hasCustomBottomBar }"
+  >
     <!-- Clean Minimal Gradient Background -->
     <div class="fixed inset-0 -z-10 premium-bg"></div>
 
@@ -41,6 +47,13 @@ import ContactUsFAB from './ContactUsFAB.vue'
 interface Props {
   hideTopNav?: boolean
   hideMobileTabBar?: boolean
+  /**
+   * The page renders its own bottom chrome in the band the tab pill would
+   * occupy. Only meaningful alongside `hideMobileTabBar` — it keeps
+   * `--nav-inset` (and the FAB slots above it) at full height so the page's
+   * own bar is not something every other fixed element has to know about.
+   */
+  hasCustomBottomBar?: boolean
   hideContactFab?: boolean
   contactFabHasFabBelow?: boolean
   contactFabCanEdit?: boolean
@@ -49,6 +62,7 @@ interface Props {
 withDefaults(defineProps<Props>(), {
   hideTopNav: false,
   hideMobileTabBar: false,
+  hasCustomBottomBar: false,
   hideContactFab: false,
   contactFabHasFabBelow: false,
   contactFabCanEdit: false
