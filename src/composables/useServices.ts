@@ -45,11 +45,18 @@ const getFullImageUrl = (imageUrl: string | null | undefined, fallback?: string)
 }
 
 /**
- * Get cover image URL with category-based fallback
+ * Get cover image URL, or '' when the listing has none.
+ *
+ * Deliberately does NOT substitute the category stock photo here. Doing that
+ * upstream left every consumer unable to tell a vendor's own photo from a
+ * borrowed Unsplash frame, which is a distinction the card has to draw — it
+ * shows branded category art for a photo-less listing rather than passing off
+ * stock imagery as the vendor's work. Consumers that still want the stock
+ * fallback (the detail hero) apply `getCategoryFallbackImage` themselves.
  */
-const getCoverImageUrl = (imageUrl: string | null | undefined, categoryName: string): string => {
+const getCoverImageUrl = (imageUrl: string | null | undefined): string => {
   if (!imageUrl) {
-    return getCategoryFallbackImage(categoryName)
+    return ''
   }
   return apiClient.getProfilePictureUrl(imageUrl) || imageUrl
 }
@@ -112,7 +119,7 @@ const mapBriefToListing = (brief: ServiceListingBrief): Listing => {
     title: brief.title,
     tagline: brief.short_tagline,
     description: '', // Not available in brief, will be filled when fetching full listing
-    coverImage: getCoverImageUrl(brief.cover_image_url, brief.category_name),
+    coverImage: getCoverImageUrl(brief.cover_image_url),
     category: brief.category_name,
     ...mapPriceFields(brief.price_min, brief.price_max, brief.currency),
     priceDisplay: brief.price_display_text || `$${brief.price_min} - $${brief.price_max}`,
@@ -141,7 +148,7 @@ const mapFullToListing = (listing: ServiceListing): Listing => {
     title: listing.title,
     tagline: listing.short_tagline,
     description: listing.description,
-    coverImage: getCoverImageUrl(listing.cover_image_url, listing.category_details.name),
+    coverImage: getCoverImageUrl(listing.cover_image_url),
     category: listing.category_details.name,
     ...mapPriceFields(listing.price_min, listing.price_max, listing.currency),
     priceDisplay: listing.price_display_text || `$${listing.price_min} - $${listing.price_max}`,

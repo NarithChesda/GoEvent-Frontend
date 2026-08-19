@@ -2,7 +2,7 @@
   <!-- Just the grid. The heading and the category/sort controls live in
        ServiceListControls, which the page renders above every list state. -->
   <div class="mb-6">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
       <ServiceCard
         v-for="listing in listings"
         :key="listing.id"
