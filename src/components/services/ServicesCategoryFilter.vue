@@ -113,16 +113,26 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { Shapes, Check } from 'lucide-vue-next'
 import type { ServiceCategory } from './types'
+import { listControlTriggerClass, type ListControlTone } from './listControlTrigger'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
 
 const { t } = useAppLanguage()
 const { translateServiceCategory } = useCategoryTranslation()
 
-const props = defineProps<{
-  modelValue: string
-  categories: ServiceCategory[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    modelValue: string
+    categories: ServiceCategory[]
+    /**
+     * Palette only — never geometry. `nav` repaints the trigger for the desktop
+     * top bar, which absorbs this control at full size once the listings heading
+     * scrolls under it. See listControlTrigger.
+     */
+    tone?: ListControlTone
+  }>(),
+  { tone: 'page' },
+)
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
@@ -134,18 +144,12 @@ const showSheet = ref(false)
 const isFiltered = computed(() => props.modelValue !== 'all')
 
 /**
- * Shared by both triggers so the control looks the same whichever surface it
- * opens. Matched to the sort button it sits beside: a short ghost button with no
- * resting background, tinted brand green when a category is actually filtering.
+ * Shared by this component's own two triggers — the desktop menu's and the
+ * mobile sheet's — so the control looks the same whichever surface it opens,
+ * and shared with the sort button beside it via listControlTriggerClass. The
+ * recipe keeps the 40px touch target (design standard §17) in every tone.
  */
-const triggerClass = computed(() => [
-  // min-h keeps the touch target at 40px (design standard §17) now that this is
-  // a compact ghost button rather than the 40x40 chip it used to be in the header.
-  'flex items-center gap-2 px-3 py-2 min-h-[40px] rounded-lg text-sm transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200',
-  isFiltered.value
-    ? 'text-[#2ecc71] font-medium hover:bg-[#2ecc71]/10'
-    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
-])
+const triggerClass = computed(() => listControlTriggerClass(props.tone, isFiltered.value))
 
 const categoryLabel = (category: ServiceCategory) =>
   category.id === 'all' ? t('categories.allCategories') : translateServiceCategory(category.name)

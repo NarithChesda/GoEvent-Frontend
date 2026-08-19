@@ -52,6 +52,11 @@
     slot to the content column's right edge, the exact pixels they left from —
     so the hand-off reads as the bar taking this control in.
 
+    Only the palette changes with the surface (`tone="nav"`): up there the
+    control's neighbours are the Events / Discover / Services links, so it wears
+    their text size and weight at one flat legible tone, instead of the page
+    row's ghost button. Same geometry either way — see listControlTrigger.
+
     Below the nav breakpoint the mobile bar is the one that absorbs them, and it
     holds the page's global actions too; ServicesView renders that copy so the
     two land in the bar in the right order. `pinned` is the shared signal both
@@ -65,6 +70,7 @@
     <Transition name="absorb">
       <ServiceListFilters
         v-if="isPinned && isDesktopNav"
+        tone="nav"
         :categories="categories"
         :selected-category="selectedCategory"
         :sort-by="sortBy"

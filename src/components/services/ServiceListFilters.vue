@@ -8,15 +8,16 @@
   -->
   <div class="flex items-center gap-1">
     <ServicesCategoryFilter
+      :tone="tone"
       :model-value="selectedCategory"
       :categories="categories"
       @update:model-value="emit('category-change', $event)"
     />
 
     <div ref="sortRoot" class="relative">
-      <!-- Same short ghost button as the category trigger, tinted the same brand
-           green once it is actually doing something — the two read as one pair
-           of list controls rather than a filter chip and a menu. -->
+      <!-- Same button as the category trigger, from the same recipe — the two
+           read as one pair of list controls rather than a filter chip and a
+           menu, on whichever surface they are currently sitting. -->
       <button
         type="button"
         :class="triggerClass"
@@ -60,6 +61,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ArrowUpDown } from 'lucide-vue-next'
 import ServicesCategoryFilter from './ServicesCategoryFilter.vue'
 import type { ServiceCategory, SortOption } from './types'
+import { listControlTriggerClass, type ListControlTone } from './listControlTrigger'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 
 const { t } = useAppLanguage()
@@ -67,12 +69,21 @@ const { t } = useAppLanguage()
 /** What the list falls back to, and so what the trigger reads as "not sorted yet". */
 const DEFAULT_SORT = 'featured'
 
-const props = defineProps<{
-  categories: ServiceCategory[]
-  selectedCategory: string
-  sortBy: string
-  sortOptions: SortOption[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    categories: ServiceCategory[]
+    selectedCategory: string
+    sortBy: string
+    sortOptions: SortOption[]
+    /**
+     * Which surface this copy of the pair is on — passed straight through to
+     * both triggers. `nav` is the copy the desktop top bar absorbs; see
+     * listControlTrigger.
+     */
+    tone?: ListControlTone
+  }>(),
+  { tone: 'page' },
+)
 
 const emit = defineEmits<{
   'category-change': [categoryId: string]
@@ -95,14 +106,7 @@ const currentSortLabel = computed(() =>
     : t('services.sort.button'),
 )
 
-const triggerClass = computed(() => [
-  // min-h keeps the touch target at 40px (design standard §17); matched to the
-  // category trigger term for term so the pair stays one shape.
-  'flex items-center gap-2 px-3 py-2 min-h-[40px] rounded-lg text-sm transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200',
-  isSorted.value
-    ? 'text-[#2ecc71] font-medium hover:bg-[#2ecc71]/10'
-    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
-])
+const triggerClass = computed(() => listControlTriggerClass(props.tone, isSorted.value))
 
 const selectSort = (value: string) => {
   emit('sort-change', value)
