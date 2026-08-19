@@ -25,9 +25,9 @@
           aria-label="Go to home page"
         >
           <img
-            :src="IconSvg"
+            :src="GLogoPng"
             alt="GoEvent Logo"
-            class="h-6 w-auto transition-all duration-300 group-hover:scale-110"
+            class="h-7 w-auto max-w-none transition-all duration-300 group-hover:scale-110"
           />
         </button>
       </div>
@@ -374,7 +374,7 @@ import {
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { apiService } from '../services/api'
-import IconSvg from '@/assets/icon.svg'
+import GLogoPng from '@/assets/g-logo.png'
 import { sanitizePlainText } from '@/utils/sanitize'
 import GlobalSearchModal from './GlobalSearchModal.vue'
 import NotificationBell from './notifications/NotificationBell.vue'
