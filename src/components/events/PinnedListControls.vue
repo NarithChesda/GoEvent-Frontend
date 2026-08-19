@@ -39,6 +39,10 @@
     `defer` lets the target resolve after this render pass — the nav mounts
     first today, but that ordering isn't something this component should have
     to depend on.
+
+    The `absorb` motion itself is shared, in src/assets/main.css: the services
+    list hands its controls up the same way, and a hand-off that eased
+    differently there would read as a different interaction.
   -->
   <Teleport defer to="#nav-page-controls">
     <Transition name="absorb">
@@ -93,32 +97,3 @@ onUnmounted(() => {
   setAbsorbed(false)
 })
 </script>
-
-<style scoped>
-/*
-  Rise into the bar from the edge the header copy is leaving through, rather
-  than dropping in from above it — the two are ~50px apart and cross-fade over
-  the same fifth of a second, so the pair reads as one control being drawn up
-  into the chrome.
-*/
-.absorb-enter-active,
-.absorb-leave-active {
-  transition:
-    opacity 0.2s ease,
-    transform 0.26s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.absorb-enter-from,
-.absorb-leave-to {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .absorb-enter-active,
-  .absorb-leave-active {
-    transition: opacity 0.15s ease;
-    transform: none;
-  }
-}
-</style>

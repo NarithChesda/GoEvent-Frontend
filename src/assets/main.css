@@ -222,3 +222,37 @@ body,
     will-change: transform;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Motion: a page's list controls being drawn up into the fixed bar.
+ *
+ * Rise into the bar from the edge the page copy is leaving through, rather than
+ * dropping in from above it — the two are ~50px apart and cross-fade over the
+ * same fifth of a second, so the pair reads as one control being drawn up into
+ * the chrome instead of two controls swapping.
+ *
+ * Shared rather than scoped because three surfaces hand controls up this way
+ * now — the events/discover header row, the services list heading, and the
+ * services mobile bar — and a hand-off that eases differently on one page reads
+ * as a different interaction rather than the same one.
+ * ------------------------------------------------------------------------- */
+.absorb-enter-active,
+.absorb-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.26s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.absorb-enter-from,
+.absorb-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .absorb-enter-active,
+  .absorb-leave-active {
+    transition: opacity 0.15s ease;
+    transform: none;
+  }
+}

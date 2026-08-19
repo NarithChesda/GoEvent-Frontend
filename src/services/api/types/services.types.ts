@@ -60,6 +60,14 @@ export interface VendorProfileBrief {
   slug: string
   short_tagline: string
   logo: string | null
+  /**
+   * Vendor-uploaded banner, the first choice of backdrop wherever a vendor is
+   * shown large. Optional because the brief serializer does not return it yet
+   * (see docs/backend-api-requirements/vendor-cover-image.md) — until it does
+   * the spotlight falls back to the vendor's own listing covers, and this
+   * lights up on its own the moment the backend ships it.
+   */
+  cover_image?: string | null
   city: string
   country: string
   phone?: string

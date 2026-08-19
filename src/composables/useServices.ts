@@ -45,11 +45,18 @@ const getFullImageUrl = (imageUrl: string | null | undefined, fallback?: string)
 }
 
 /**
- * Get cover image URL with category-based fallback
+ * Get cover image URL, or '' when the listing has none.
+ *
+ * Deliberately does NOT substitute the category stock photo here. Doing that
+ * upstream left every consumer unable to tell a vendor's own photo from a
+ * borrowed Unsplash frame, which is a distinction the card has to draw — it
+ * shows branded category art for a photo-less listing rather than passing off
+ * stock imagery as the vendor's work. Consumers that still want the stock
+ * fallback (the detail hero) apply `getCategoryFallbackImage` themselves.
  */
-const getCoverImageUrl = (imageUrl: string | null | undefined, categoryName: string): string => {
+const getCoverImageUrl = (imageUrl: string | null | undefined): string => {
   if (!imageUrl) {
-    return getCategoryFallbackImage(categoryName)
+    return ''
   }
   return apiClient.getProfilePictureUrl(imageUrl) || imageUrl
 }
@@ -62,6 +69,19 @@ const getVendorLogoUrl = (logoUrl: string | null | undefined): string => {
     return getVendorLogoFallback()
   }
   return apiClient.getProfilePictureUrl(logoUrl) || logoUrl
+}
+
+/**
+ * Get a vendor's banner URL, or undefined when they have not uploaded one.
+ *
+ * Deliberately not routed through getFullImageUrl: that substitutes a category
+ * fallback for a missing image, which would hand every vendor a banner they
+ * never chose. "No banner" has to stay distinguishable so callers can fall
+ * back to the vendor's own photos instead.
+ */
+const getVendorCoverUrl = (coverUrl: string | null | undefined): string | undefined => {
+  if (!coverUrl) return undefined
+  return apiClient.getProfilePictureUrl(coverUrl) || coverUrl
 }
 
 /**
@@ -99,7 +119,7 @@ const mapBriefToListing = (brief: ServiceListingBrief): Listing => {
     title: brief.title,
     tagline: brief.short_tagline,
     description: '', // Not available in brief, will be filled when fetching full listing
-    coverImage: getCoverImageUrl(brief.cover_image_url, brief.category_name),
+    coverImage: getCoverImageUrl(brief.cover_image_url),
     category: brief.category_name,
     ...mapPriceFields(brief.price_min, brief.price_max, brief.currency),
     priceDisplay: brief.price_display_text || `$${brief.price_min} - $${brief.price_max}`,
@@ -128,7 +148,7 @@ const mapFullToListing = (listing: ServiceListing): Listing => {
     title: listing.title,
     tagline: listing.short_tagline,
     description: listing.description,
-    coverImage: getCoverImageUrl(listing.cover_image_url, listing.category_details.name),
+    coverImage: getCoverImageUrl(listing.cover_image_url),
     category: listing.category_details.name,
     ...mapPriceFields(listing.price_min, listing.price_max, listing.currency),
     priceDisplay: listing.price_display_text || `$${listing.price_min} - $${listing.price_max}`,
@@ -166,6 +186,7 @@ const mapBriefToVendor = (vendor: VendorProfileBrief): Vendor => {
     website: '', // Not in brief
     telegramUsername: vendor.telegram_username,
     listingsCount: vendor.listings_count,
+    coverImage: getVendorCoverUrl(vendor.cover_image),
   }
 }
 
@@ -186,8 +207,15 @@ const mapFullToVendor = (vendor: VendorProfile): Vendor => {
     website: vendor.website,
     telegramUsername: vendor.telegram_username,
     listingsCount: vendor.listings_count,
+    coverImage: getVendorCoverUrl(vendor.cover_image),
   }
 }
+
+/** How many featured vendors get a photo-backed spotlight slide */
+const SPOTLIGHT_VENDOR_LIMIT = 6
+
+/** Backdrops pulled per spotlight vendor — enough to cross-fade, few enough to stay cheap */
+const SPOTLIGHT_IMAGES_PER_VENDOR = 4
 
 /**
  * Composable for managing services data
@@ -209,11 +237,6 @@ export function useServices() {
   const featuredVendors = ref<Vendor[]>([])
   const isLoadingVendors = ref(false)
 
-  // State - All Vendors
-  const allVendors = ref<Vendor[]>([])
-  const isLoadingAllVendors = ref(false)
-  const allVendorsPage = ref(1)
-  const hasMoreVendors = ref(false)
 
   // State - Selected items
   const selectedListing = ref<Listing | null>(null)
@@ -339,6 +362,48 @@ export function useServices() {
   }
 
   /**
+   * Fill in spotlight backdrops for the featured vendors.
+   *
+   * A vendor who uploaded a banner has already said how they want to be shown,
+   * so that image is the slide and no lookup happens at all — which is also
+   * what keeps this cheap, since the alternative costs one request per vendor.
+   * Only vendors without one fall back to borrowing their own listing covers.
+   *
+   * Deliberately fire-and-forget: the spotlight renders immediately on its
+   * brand-gradient fallback and any borrowed photos fade in behind it, so a
+   * slow (or failed) image lookup never holds up the page.
+   */
+  const hydrateSpotlightImages = (vendors: Vendor[]): void => {
+    vendors.slice(0, SPOTLIGHT_VENDOR_LIMIT).forEach(async (vendor) => {
+      if (vendor.coverImage) {
+        vendor.heroImages = [vendor.coverImage]
+        return
+      }
+
+      try {
+        const response: ApiResponse<PaginatedResponse<ServiceListingBrief>> =
+          await serviceListingsService.browseListings({
+            vendor: vendor.id,
+            page_size: SPOTLIGHT_IMAGES_PER_VENDOR,
+          })
+
+        if (!response.success || !response.data) return
+
+        const images = response.data.results
+          .map((brief) => brief.cover_image_url)
+          .filter((url): url is string => !!url)
+          .map((url) => getFullImageUrl(url))
+
+        if (images.length > 0) {
+          vendor.heroImages = images
+        }
+      } catch {
+        // Leave heroImages empty — the spotlight keeps its brand-art backdrop
+      }
+    })
+  }
+
+  /**
    * Fetch featured vendors (only vendors with is_featured = true)
    */
   const fetchFeaturedVendors = async (): Promise<void> => {
@@ -354,6 +419,7 @@ export function useServices() {
 
       if (response.success && response.data) {
         featuredVendors.value = response.data.results.map(mapBriefToVendor)
+        hydrateSpotlightImages(featuredVendors.value)
       } else {
         if (import.meta.env.DEV) {
           console.error('Failed to fetch vendors:', response.message)
@@ -370,65 +436,6 @@ export function useServices() {
     }
   }
 
-  /**
-   * Fetch all vendors (paginated, includes both featured and non-featured)
-   */
-  const fetchAllVendors = async (reset = true): Promise<void> => {
-    isLoadingAllVendors.value = true
-
-    if (reset) {
-      allVendorsPage.value = 1
-      allVendors.value = []
-    }
-
-    try {
-      const response: ApiResponse<PaginatedResponse<VendorProfileBrief>> =
-        await vendorService.listVendors({
-          page: allVendorsPage.value,
-          page_size: 12,
-        })
-
-      if (response.success && response.data) {
-        const mappedVendors = response.data.results.map(mapBriefToVendor)
-
-        if (reset) {
-          allVendors.value = mappedVendors
-        } else {
-          allVendors.value = [...allVendors.value, ...mappedVendors]
-        }
-
-        hasMoreVendors.value = !!response.data.next
-      } else {
-        if (import.meta.env.DEV) {
-          console.error('Failed to fetch all vendors:', response.message)
-        }
-        if (reset) {
-          allVendors.value = []
-        }
-      }
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Error fetching all vendors:', error)
-      }
-      if (reset) {
-        allVendors.value = []
-      }
-    } finally {
-      isLoadingAllVendors.value = false
-    }
-  }
-
-  /**
-   * Load more vendors (pagination)
-   */
-  const loadMoreVendors = async (): Promise<void> => {
-    if (!hasMoreVendors.value || isLoadingAllVendors.value) {
-      return
-    }
-
-    allVendorsPage.value++
-    await fetchAllVendors(false)
-  }
 
   /**
    * Fetch full listing detail
@@ -671,9 +678,6 @@ export function useServices() {
     // State - Vendors
     featuredVendors,
     isLoadingVendors,
-    allVendors,
-    isLoadingAllVendors,
-    hasMoreVendors,
 
     // State - Selected items
     selectedListing,
@@ -690,8 +694,6 @@ export function useServices() {
     fetchCategories,
     fetchListings,
     fetchFeaturedVendors,
-    fetchAllVendors,
-    loadMoreVendors,
     fetchListingDetail,
     fetchVendorDetail,
     fetchVendorListings,

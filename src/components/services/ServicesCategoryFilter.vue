@@ -1,27 +1,26 @@
 <template>
   <!-- Desktop Dropdown -->
   <div class="relative services-category-filter-container hidden sm:block">
+    <!-- Not `@click.stop`: the sort control beside this one closes its own menu
+         from a document listener, and swallowing the click here left both menus
+         open at once. Nothing needs the stop — this button sits inside the
+         container our own click-outside check exempts. -->
     <button
-      @click.stop="toggleMenu"
-      class="glass-button flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
-      :class="
-        isFiltered
-          ? 'bg-gradient-to-r from-[#2ecc71]/15 to-[#1e90ff]/15 text-slate-800 border-[#2ecc71]/30'
-          : 'text-slate-700'
-      "
+      @click="toggleMenu"
+      :class="triggerClass"
+      :aria-label="t('categories.filterByCategory')"
     >
-      <span>{{ selectedLabel }}</span>
-      <ChevronDown
-        class="w-4 h-4 transition-transform duration-200"
-        :class="showMenu ? 'rotate-180' : ''"
-      />
+      <Shapes class="w-4 h-4 flex-shrink-0" />
+      <span class="hidden sm:inline">{{ selectedLabel }}</span>
     </button>
 
-    <!-- Dropdown Menu -->
+    <!-- Dropdown Menu. Solid white to match the sort menu it sits beside —
+         two adjacent list-control menus in different materials read as an
+         accident rather than a pair. -->
     <Transition name="dropdown">
       <div
         v-if="showMenu"
-        class="glass-dropdown absolute right-0 top-full mt-2 rounded-xl overflow-hidden overflow-y-auto min-w-[11.25rem] max-h-[60vh] z-[100]"
+        class="category-menu absolute right-0 top-full mt-2 min-w-[11.25rem] max-h-[60vh] overflow-y-auto rounded-xl border border-slate-200 bg-white py-2 shadow-lg z-[100]"
       >
         <button
           v-for="category in categories"
@@ -40,23 +39,18 @@
     </Transition>
   </div>
 
-  <!-- Mobile Filter Chip (opens bottom sheet) -->
+  <!-- Mobile trigger (opens the bottom sheet) — same button, sheet instead of
+       menu. The label is hidden at this width, matching the sort control; which
+       category is active still reads off the list heading beside it. -->
   <button
     type="button"
     @click="showSheet = true"
     aria-haspopup="dialog"
     :aria-expanded="showSheet"
     :aria-label="t('categories.filterByCategory')"
-    class="sm:hidden flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
-    :class="
-      isFiltered
-        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
-        : resolvedTone === 'nav'
-          ? 'text-slate-600 hover:bg-slate-100'
-          : 'glass-button text-slate-600'
-    "
+    :class="['sm:hidden active:scale-95', triggerClass]"
   >
-    <ListFilter class="w-5 h-5" />
+    <Shapes class="w-4 h-4 flex-shrink-0" />
   </button>
 
   <!-- Mobile Category Bottom Sheet -->
@@ -105,11 +99,9 @@
                   ? 'font-semibold text-slate-900'
                   : 'font-medium text-slate-700',
               ]"
-            >{{ categoryLabel(category) }}</span>
-            <Check
-              v-if="modelValue === category.id"
-              class="w-5 h-5 text-[#2ecc71] flex-shrink-0"
-            />
+              >{{ categoryLabel(category) }}</span
+            >
+            <Check v-if="modelValue === category.id" class="w-5 h-5 text-[#2ecc71] flex-shrink-0" />
           </button>
         </div>
       </div>
@@ -119,27 +111,28 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { ChevronDown, ListFilter, Check } from 'lucide-vue-next'
+import { Shapes, Check } from 'lucide-vue-next'
 import type { ServiceCategory } from './types'
+import { listControlTriggerClass, type ListControlTone } from './listControlTrigger'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
-import { useHeaderTone } from '@/composables/useNavPageControls'
 
 const { t } = useAppLanguage()
 const { translateServiceCategory } = useCategoryTranslation()
 
-const props = defineProps<{
-  modelValue: string
-  categories: ServiceCategory[]
-  /**
-   * Palette only — never geometry, same contract as the event list's filters.
-   * Left unset it follows where the page header currently lives, which below
-   * the nav breakpoint is inside the mobile top bar — see useHeaderTone.
-   */
-  tone?: 'page' | 'nav'
-}>()
-
-const resolvedTone = useHeaderTone(() => props.tone)
+const props = withDefaults(
+  defineProps<{
+    modelValue: string
+    categories: ServiceCategory[]
+    /**
+     * Palette only — never geometry. `nav` repaints the trigger for the desktop
+     * top bar, which absorbs this control at full size once the listings heading
+     * scrolls under it. See listControlTrigger.
+     */
+    tone?: ListControlTone
+  }>(),
+  { tone: 'page' },
+)
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
@@ -150,14 +143,26 @@ const showSheet = ref(false)
 
 const isFiltered = computed(() => props.modelValue !== 'all')
 
-const categoryLabel = (category: ServiceCategory) =>
-  category.id === 'all'
-    ? t('categories.allCategories')
-    : translateServiceCategory(category.name)
+/**
+ * Shared by this component's own two triggers — the desktop menu's and the
+ * mobile sheet's — so the control looks the same whichever surface it opens,
+ * and shared with the sort button beside it via listControlTriggerClass. The
+ * recipe keeps the 40px touch target (design standard §17) in every tone.
+ */
+const triggerClass = computed(() => listControlTriggerClass(props.tone, isFiltered.value))
 
+const categoryLabel = (category: ServiceCategory) =>
+  category.id === 'all' ? t('categories.allCategories') : translateServiceCategory(category.name)
+
+/**
+ * At rest the trigger names what it does — "Category" — rather than announcing
+ * "All Categories", which read as a filter someone had already applied. It only
+ * carries a value once there is one to carry, and tints brand green with it.
+ */
 const selectedLabel = computed(() => {
+  if (!isFiltered.value) return t('categories.category')
   const selected = props.categories.find((c) => c.id === props.modelValue)
-  return selected ? categoryLabel(selected) : t('categories.allCategories')
+  return selected ? categoryLabel(selected) : t('categories.category')
 })
 
 const toggleMenu = () => {
@@ -248,45 +253,26 @@ onUnmounted(() => {
   }
 }
 
-/* Glass effect styles */
-.glass-button {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-}
-
-.glass-button:hover {
-  background: rgba(255, 255, 255, 0.75);
-}
-
-.glass-dropdown {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow:
-    0 8px 32px rgba(46, 204, 113, 0.1),
-    0 4px 12px rgba(30, 144, 255, 0.08);
-  /* Scrolls past `max-h-[60vh]`; keep the bar off the glass. Design standard §10. */
+/* A long category list scrolls inside the menu; thin bar per design standard §10. */
+.category-menu {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
 
-.glass-dropdown::-webkit-scrollbar {
+.category-menu::-webkit-scrollbar {
   width: 6px;
 }
 
-.glass-dropdown::-webkit-scrollbar-track {
+.category-menu::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.glass-dropdown::-webkit-scrollbar-thumb {
+.category-menu::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 3px;
 }
 
-.glass-dropdown::-webkit-scrollbar-thumb:hover {
+.category-menu::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 </style>

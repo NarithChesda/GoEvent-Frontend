@@ -79,7 +79,7 @@
     "placeholder": {
       "events": "Search your events...",
       "explore": "Search public events...",
-      "services": "Search services...",
+      "services": "Search services and vendors...",
       "default": "Search events..."
     },
     "sections": {
@@ -88,9 +88,9 @@
       "publicEvents": "Public Events",
       "discover": "Discover",
       "services": "Services",
+      "vendors": "Vendors",
       "videoGuides": "Video Guides"
     },
-    "serviceComingSoon": "Service search coming soon",
     "virtual": "Virtual",
     "noResults": "No results found",
     "noResultsHint": "Try a different search term",

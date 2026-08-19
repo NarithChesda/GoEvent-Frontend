@@ -5,8 +5,12 @@
  */
 
 export { default as ServiceCard } from './ServiceCard.vue'
+export { default as ServiceListControls } from './ServiceListControls.vue'
+export { default as ServiceListFilters } from './ServiceListFilters.vue'
 export { default as ServiceListingsGrid } from './ServiceListingsGrid.vue'
-export { default as FeaturedVendors } from './FeaturedVendors.vue'
+export { default as VendorSpotlight } from './VendorSpotlight.vue'
+export { default as VendorCoverArt } from './VendorCoverArt.vue'
+export { default as ServiceThumbArt } from './ServiceThumbArt.vue'
 export { default as VendorCTA } from './VendorCTA.vue'
 export { default as ListingFormDrawer } from './ListingFormDrawer.vue'
 export { default as ServicesCategoryFilter } from './ServicesCategoryFilter.vue'
