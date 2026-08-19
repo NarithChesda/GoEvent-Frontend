@@ -15,6 +15,7 @@
     "retry": "Try Again"
   },
   "sort": {
+    "label": "Sort by",
     "featured": "Featured First",
     "newest": "Newest First",
     "priceLow": "Price: Low to High",
@@ -32,12 +33,16 @@
   },
   "vendors": {
     "featuredTitle": "Featured Vendors",
-    "allTitle": "All Vendors",
-    "viewAll": "View All",
-    "showFeatured": "Show Featured",
     "verified": "Verified",
-    "loadMore": "Load More",
-    "listingsCount": "{count} service | {count} services"
+    "listingsCount": "{count} service | {count} services",
+    "spotlight": {
+      "badge": "Featured Vendor",
+      "cta": "View vendor",
+      "viewVendor": "View {name}",
+      "goTo": "Show {name}",
+      "previous": "Previous featured vendor",
+      "next": "Next featured vendor"
+    }
   },
   "detail": {
     "back": "Back to Services",

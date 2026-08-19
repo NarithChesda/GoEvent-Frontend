@@ -17,6 +17,13 @@ export interface Vendor {
   website: string
   telegramUsername: string
   listingsCount: number
+  /**
+   * Backdrop photos for the featured-vendor spotlight. Not part of the vendor
+   * payload — the browse endpoint returns no cover image for a vendor — so it
+   * is filled in afterwards from the vendor's own listing covers, and stays
+   * empty for vendors with no photos (the spotlight falls back to brand art).
+   */
+  heroImages?: string[]
 }
 
 export type PriceType = 'fixed' | 'range' | 'quote'

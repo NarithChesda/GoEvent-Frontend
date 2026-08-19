@@ -3,41 +3,56 @@
     <!-- min-height offsets MainLayout's bottom pad (--nav-inset, the floating
          tab bar) / lg:pt-16 (desktop nav) so the sticky footer lands at the
          viewport bottom without a phantom scrollbar -->
-    <div class="flex flex-col min-h-[calc(100vh_-_var(--nav-inset))] lg:min-h-[calc(100vh-4rem)] bg-gradient-to-r from-[#2ecc71]/[0.02] via-white/0 to-[#1e90ff]/[0.02]">
+    <div
+      class="flex flex-col min-h-[calc(100vh_-_var(--nav-inset))] lg:min-h-[calc(100vh-4rem)] bg-gradient-to-r from-[#2ecc71]/[0.02] via-white/0 to-[#1e90ff]/[0.02]"
+    >
       <!-- Mobile Top Bar -->
       <MobileTopBar />
 
-      <!-- Main Content -->
-      <section class="flex-1 py-4 sm:py-6 lg:py-[clamp(1.25rem,3vh,2rem)]">
-        <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <!-- Page header. On mobile this is also the top bar's expanded state,
-               which is why the title lives here rather than in the bar. The
-               category filter is not handed up to the bar the way the event
-               lists' filters are — it simply scrolls away with the header. -->
-          <PageHeaderRow :title="t('services.title')" :icon="Sparkles">
-            <!-- Category Filter: desktop dropdown / mobile chip + bottom sheet -->
-            <ServicesCategoryFilter
-              v-model="selectedCategory"
-              :categories="serviceCategories"
-            />
-          </PageHeaderRow>
+      <!--
+        This page carries no title row. The featured-vendor hero is its header,
+        and the bottom tab bar already names the page — a "Services" heading
+        above the hero only pushed the thing the visitor came to look at further
+        down. So instead of PageHeaderRow, the mobile bar gets just the two
+        global actions that row used to bring with it; the category and sort
+        controls now live with the list they act on.
+      -->
+      <Teleport defer to="#mobile-page-header">
+        <div class="lg:hidden flex w-full items-center justify-end">
+          <MobileHeaderActions />
+        </div>
+      </Teleport>
 
-          <!-- Featured Vendors Section -->
-          <FeaturedVendors
-            v-if="!isLoadingDisplayedVendors && displayedVendors.length > 0 || showAllVendors"
-            :vendors="displayedVendors"
-            :show-all="showAllVendors"
-            :loading="isLoadingDisplayedVendors"
-            :has-more="hasMoreVendors"
-            @vendor-click="openVendorProfile"
-            @toggle-view="handleToggleVendorView"
-            @load-more="handleLoadMoreVendors"
+      <!-- Main Content -->
+      <section class="flex-1 pt-3 pb-4 sm:pt-4 sm:pb-6 lg:pt-6 lg:pb-[clamp(1.25rem,3vh,2rem)]">
+        <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <!-- The page still needs one heading; the hero says it visually. -->
+          <h1 class="sr-only">{{ t('services.title') }}</h1>
+
+          <!-- Featured vendor hero — the page's header section -->
+          <div v-if="isLoadingVendors || featuredVendors.length > 0" class="mb-6 sm:mb-8">
+            <div
+              v-if="isLoadingVendors && featuredVendors.length === 0"
+              class="h-52 sm:h-60 lg:h-64 rounded-3xl bg-slate-200 animate-pulse"
+            ></div>
+            <VendorSpotlight v-else :vendors="featuredVendors" @vendor-click="openVendorProfile" />
+          </div>
+
+          <!-- Heading + category/sort controls. Outside the state branches below
+               on purpose: filtering into a category with no listings must still
+               leave the filter on screen to get back out of. -->
+          <ServiceListControls
+            :count="listingsCount"
+            :categories="serviceCategories"
+            :selected-category="selectedCategory"
+            :sort-by="sortBy"
+            :sort-options="sortOptions"
+            @category-change="selectedCategory = $event"
+            @sort-change="sortBy = $event"
           />
 
           <!-- Loading State for Listings -->
-          <ServicesLoadingSkeleton
-            v-if="isLoadingListings && filteredListings.length === 0"
-          />
+          <ServicesLoadingSkeleton v-if="isLoadingListings && filteredListings.length === 0" />
 
           <!-- Error State -->
           <ServicesEmptyState
@@ -61,24 +76,19 @@
           <ServiceListingsGrid
             v-else
             :listings="filteredListings"
-            :categories="serviceCategories"
-            :selected-category="selectedCategory"
-            :sort-by="sortBy"
-            :sort-options="sortOptions"
             :has-more="hasMore"
             @listing-click="openListingDetail"
             @load-more="loadMore"
-            @category-change="selectedCategory = $event"
-            @sort-change="sortBy = $event"
           />
 
           <!-- Loading More State -->
           <div v-if="isLoadingListings && filteredListings.length > 0" class="py-6">
             <div class="flex justify-center">
-              <div class="w-8 h-8 border-2 border-[#2ecc71] border-t-transparent rounded-full animate-spin"></div>
+              <div
+                class="w-8 h-8 border-2 border-[#2ecc71] border-t-transparent rounded-full animate-spin"
+              ></div>
             </div>
           </div>
-
         </div>
       </section>
 
@@ -117,21 +127,20 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-// Sparkles is this page's tab icon in MobileTabBar; the mobile header reuses it.
-import { Plus, Sparkles } from 'lucide-vue-next'
+import { Plus } from 'lucide-vue-next'
 import { useToast } from '@/composables/useToast'
 import MainLayout from '@/components/MainLayout.vue'
 import AppFooter from '@/components/AppFooter.vue'
-import { MobileTopBar, PageHeaderRow } from '@/components/events'
+import { MobileTopBar, MobileHeaderActions } from '@/components/events'
 import {
-  FeaturedVendors,
+  VendorSpotlight,
+  ServiceListControls,
   ServiceListingsGrid,
   ListingFormDrawer,
-  ServicesCategoryFilter,
   ServicesLoadingSkeleton,
   ServicesEmptyState,
   type Vendor,
-  type Listing
+  type Listing,
 } from '@/components/services'
 import { useServices } from '@/composables/useServices'
 import { useVendorProfile } from '@/composables/settings'
@@ -144,22 +153,17 @@ const router = useRouter()
 const {
   // State
   featuredVendors,
-  allVendors,
   selectedCategory,
   sortBy,
   isLoadingListings,
   listingsError,
   isLoadingVendors,
-  isLoadingAllVendors,
   hasMore,
-  hasMoreVendors,
 
   // Methods
   fetchCategories,
   fetchListings,
   fetchFeaturedVendors,
-  fetchAllVendors,
-  loadMoreVendors,
   loadMore: composableLoadMore,
 
   // Computed
@@ -174,7 +178,6 @@ const isVerifiedVendor = computed(() => vendorState.value === 'verified')
 // UI State
 const showListingFormDrawer = ref(false)
 const editingListing = ref<Listing | null>(null)
-const showAllVendors = ref(false)
 
 // Message state
 const { showToast } = useToast()
@@ -182,12 +185,11 @@ const { showToast } = useToast()
 // Service categories from composable
 const serviceCategories = computed(() => serviceCategoriesForUI.value)
 
-// Vendors to display (featured or all based on toggle)
-const displayedVendors = computed(() =>
-  showAllVendors.value ? allVendors.value : featuredVendors.value
-)
-const isLoadingDisplayedVendors = computed(() =>
-  showAllVendors.value ? isLoadingAllVendors.value : isLoadingVendors.value
+// Null while the first page is still loading, so the heading doesn't flash "(0)"
+const listingsCount = computed(() =>
+  isLoadingListings.value && filteredListings.value.length === 0
+    ? null
+    : filteredListings.value.length,
 )
 
 // Sort options
@@ -256,26 +258,7 @@ const handleListingDeleted = () => {
   fetchListings()
 }
 
-// Toggle between featured and all vendors
-const handleToggleVendorView = async () => {
-  // Prevent rapid toggling during fetch
-  if (isLoadingAllVendors.value) return
-
-  const willShowAll = !showAllVendors.value
-  if (willShowAll && allVendors.value.length === 0) {
-    // Fetch data first, then toggle view
-    await fetchAllVendors()
-  }
-  showAllVendors.value = willShowAll
-}
-
-// Load more vendors when showing all
-const handleLoadMoreVendors = async () => {
-  await loadMoreVendors()
-}
-
 const loadMore = async () => {
   await composableLoadMore()
 }
 </script>
-

@@ -189,6 +189,12 @@ const mapFullToVendor = (vendor: VendorProfile): Vendor => {
   }
 }
 
+/** How many featured vendors get a photo-backed spotlight slide */
+const SPOTLIGHT_VENDOR_LIMIT = 6
+
+/** Backdrops pulled per spotlight vendor — enough to cross-fade, few enough to stay cheap */
+const SPOTLIGHT_IMAGES_PER_VENDOR = 4
+
 /**
  * Composable for managing services data
  */
@@ -209,11 +215,6 @@ export function useServices() {
   const featuredVendors = ref<Vendor[]>([])
   const isLoadingVendors = ref(false)
 
-  // State - All Vendors
-  const allVendors = ref<Vendor[]>([])
-  const isLoadingAllVendors = ref(false)
-  const allVendorsPage = ref(1)
-  const hasMoreVendors = ref(false)
 
   // State - Selected items
   const selectedListing = ref<Listing | null>(null)
@@ -339,6 +340,39 @@ export function useServices() {
   }
 
   /**
+   * Fill in spotlight backdrops for the featured vendors.
+   *
+   * VendorProfileBrief carries no cover image, so each vendor's own listing
+   * covers stand in. Deliberately fire-and-forget: the spotlight renders
+   * immediately on its brand-gradient fallback and the photos fade in behind
+   * it, so a slow (or failed) image lookup never holds up the page.
+   */
+  const hydrateSpotlightImages = (vendors: Vendor[]): void => {
+    vendors.slice(0, SPOTLIGHT_VENDOR_LIMIT).forEach(async (vendor) => {
+      try {
+        const response: ApiResponse<PaginatedResponse<ServiceListingBrief>> =
+          await serviceListingsService.browseListings({
+            vendor: vendor.id,
+            page_size: SPOTLIGHT_IMAGES_PER_VENDOR,
+          })
+
+        if (!response.success || !response.data) return
+
+        const images = response.data.results
+          .map((brief) => brief.cover_image_url)
+          .filter((url): url is string => !!url)
+          .map((url) => getFullImageUrl(url))
+
+        if (images.length > 0) {
+          vendor.heroImages = images
+        }
+      } catch {
+        // Leave heroImages empty — the spotlight keeps its brand-art backdrop
+      }
+    })
+  }
+
+  /**
    * Fetch featured vendors (only vendors with is_featured = true)
    */
   const fetchFeaturedVendors = async (): Promise<void> => {
@@ -354,6 +388,7 @@ export function useServices() {
 
       if (response.success && response.data) {
         featuredVendors.value = response.data.results.map(mapBriefToVendor)
+        hydrateSpotlightImages(featuredVendors.value)
       } else {
         if (import.meta.env.DEV) {
           console.error('Failed to fetch vendors:', response.message)
@@ -370,65 +405,6 @@ export function useServices() {
     }
   }
 
-  /**
-   * Fetch all vendors (paginated, includes both featured and non-featured)
-   */
-  const fetchAllVendors = async (reset = true): Promise<void> => {
-    isLoadingAllVendors.value = true
-
-    if (reset) {
-      allVendorsPage.value = 1
-      allVendors.value = []
-    }
-
-    try {
-      const response: ApiResponse<PaginatedResponse<VendorProfileBrief>> =
-        await vendorService.listVendors({
-          page: allVendorsPage.value,
-          page_size: 12,
-        })
-
-      if (response.success && response.data) {
-        const mappedVendors = response.data.results.map(mapBriefToVendor)
-
-        if (reset) {
-          allVendors.value = mappedVendors
-        } else {
-          allVendors.value = [...allVendors.value, ...mappedVendors]
-        }
-
-        hasMoreVendors.value = !!response.data.next
-      } else {
-        if (import.meta.env.DEV) {
-          console.error('Failed to fetch all vendors:', response.message)
-        }
-        if (reset) {
-          allVendors.value = []
-        }
-      }
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Error fetching all vendors:', error)
-      }
-      if (reset) {
-        allVendors.value = []
-      }
-    } finally {
-      isLoadingAllVendors.value = false
-    }
-  }
-
-  /**
-   * Load more vendors (pagination)
-   */
-  const loadMoreVendors = async (): Promise<void> => {
-    if (!hasMoreVendors.value || isLoadingAllVendors.value) {
-      return
-    }
-
-    allVendorsPage.value++
-    await fetchAllVendors(false)
-  }
 
   /**
    * Fetch full listing detail
@@ -671,9 +647,6 @@ export function useServices() {
     // State - Vendors
     featuredVendors,
     isLoadingVendors,
-    allVendors,
-    isLoadingAllVendors,
-    hasMoreVendors,
 
     // State - Selected items
     selectedListing,
@@ -690,8 +663,6 @@ export function useServices() {
     fetchCategories,
     fetchListings,
     fetchFeaturedVendors,
-    fetchAllVendors,
-    loadMoreVendors,
     fetchListingDetail,
     fetchVendorDetail,
     fetchVendorListings,
