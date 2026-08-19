@@ -10,44 +10,63 @@
       <MobileTopBar />
 
       <!--
-        This page carries no title row. The featured-vendor hero is its header,
-        and the bottom tab bar already names the page — a "Services" heading
-        above the hero only pushed the thing the visitor came to look at further
-        down. So instead of PageHeaderRow, the mobile bar gets just the two
-        global actions that row used to bring with it; the category and sort
-        controls now live with the list they act on — and are handed back up to
-        this bar on scroll, where the hero would otherwise have taken them off
-        screen with it.
+        The page carries no title row *in the page* — the featured-vendor hero is
+        its header, and a "Services" heading above it only pushed the thing the
+        visitor came to look at further down. So this isn't PageHeaderRow; it is
+        the half of it that earns its place, assembled straight into the mobile
+        bar: the page's mark and name, the global actions, and the list's own
+        controls once they are handed up. Same contents in the same order as the
+        Events and Discover bars, so the three tabs' bars read as one bar whose
+        title changes.
       -->
       <Teleport defer to="#mobile-page-header">
-        <div class="lg:hidden flex w-full items-center justify-end gap-1">
-          <!-- ...plus the list's own controls, once its heading has scrolled
-               under this bar. The mobile bar is what absorbs them below the nav
-               breakpoint (the desktop nav takes them above it — see
-               ServiceListControls), and they land here rather than in a second
-               teleport of their own so that they sit *before* the global
-               actions, the same order the events tab's bar puts them in. -->
-          <Transition name="absorb">
-            <ServiceListFilters
-              v-if="controlsPinned && !isDesktopNav"
-              :categories="serviceCategories"
-              :selected-category="selectedCategory"
-              :sort-by="sortBy"
-              :sort-options="sortOptions"
-              @category-change="selectedCategory = $event"
-              @sort-change="sortBy = $event"
-            />
-          </Transition>
+        <div class="lg:hidden flex w-full items-center justify-between gap-3">
+          <!-- The bar's heading, and below `lg` the page's only one — the
+               in-page copy goes screen-reader-only there so the document keeps
+               exactly one `h1`. The mark is the page's own tab icon, decorative
+               beside a title that already says "Services" (hence
+               `aria-hidden`), and colourless so it inherits the heading's tone
+               and reads as part of it. -->
+          <h1
+            class="flex-1 min-w-0 flex items-center gap-2 text-base font-semibold text-slate-900"
+          >
+            <Sparkles class="w-5 h-5 flex-shrink-0" aria-hidden="true" />
+            <span class="truncate">{{ t('services.title') }}</span>
+          </h1>
 
-          <MobileHeaderActions />
+          <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            <!-- The list's own controls, once its heading has scrolled under
+                 this bar. The mobile bar is what absorbs them below the nav
+                 breakpoint (the desktop nav takes them above it — see
+                 ServiceListControls), and they land here rather than in a second
+                 teleport of their own so that they sit *before* the global
+                 actions, the same order the events tab's bar puts them in. -->
+            <Transition name="absorb">
+              <ServiceListFilters
+                v-if="controlsPinned && !isDesktopNav"
+                :categories="serviceCategories"
+                :selected-category="selectedCategory"
+                :sort-by="sortBy"
+                :sort-options="sortOptions"
+                @category-change="selectedCategory = $event"
+                @sort-change="sortBy = $event"
+              />
+            </Transition>
+
+            <MobileHeaderActions />
+          </div>
         </div>
       </Teleport>
 
       <!-- Main Content -->
       <section class="flex-1 pt-3 pb-4 sm:pt-4 sm:pb-6 lg:pt-6 lg:pb-[clamp(1.25rem,3vh,2rem)]">
         <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <!-- The page still needs one heading; the hero says it visually. -->
-          <h1 class="sr-only">{{ t('services.title') }}</h1>
+          <!-- Desktop's heading: the hero says it visually, so this only has to
+               say it to a screen reader. Below `lg` the mobile bar carries a
+               real one, and this one is dropped outright rather than doubling
+               it — `hidden` wins over `sr-only`, which sets no display of its
+               own. -->
+          <h1 class="hidden lg:block sr-only">{{ t('services.title') }}</h1>
 
           <!-- Featured vendor hero — the page's header section -->
           <div v-if="isLoadingVendors || featuredVendors.length > 0" class="mb-6 sm:mb-8">
@@ -147,7 +166,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { Plus } from 'lucide-vue-next'
+import { Plus, Sparkles } from 'lucide-vue-next'
 import { useToast } from '@/composables/useToast'
 import MainLayout from '@/components/MainLayout.vue'
 import AppFooter from '@/components/AppFooter.vue'
