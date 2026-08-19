@@ -3,7 +3,7 @@
        Deliberately short — it is a header the visitor takes in at a glance and
        scrolls past on the way to the listings below. -->
   <div
-    class="group/spotlight relative h-52 sm:h-60 lg:h-64 rounded-3xl overflow-hidden bg-slate-900 shadow-lg shadow-slate-900/10"
+    class="group/spotlight spotlight-band relative h-52 sm:h-60 lg:h-64 rounded-3xl overflow-hidden bg-slate-900 shadow-lg shadow-slate-900/10"
     :style="{ '--spotlight-dwell': `${slideInterval}ms` }"
     role="group"
     aria-roledescription="carousel"
@@ -13,6 +13,7 @@
     @focusin="isFocused = true"
     @focusout="isFocused = false"
     @pointerdown="onPointerDown"
+    @pointermove="onPointerMove"
     @pointerup="onPointerUp"
     @pointercancel="onPointerCancel"
   >
@@ -24,31 +25,36 @@
       :class="index === activeIndex ? 'opacity-100' : 'opacity-0 pointer-events-none'"
       :aria-hidden="index === activeIndex ? undefined : 'true'"
     >
-      <!-- Backdrop: one of the vendor's own listing photos when they have one… -->
+      <!-- Backdrop: the vendor's own banner, or a photo borrowed from one of
+           their listings, or — sharing the ladder and the artwork with the
+           storefront banner — the designed brand cover.
+
+           The two are cross-faded rather than swapped. Borrowed photos arrive
+           from a lookup that lands after first paint, and a hard cut from a
+           saturated cover to a photograph reads as a glitch; letting the photo
+           resolve over the cover reads as it loading. The cover stays light on
+           purpose: the scrims below already carry the text, and a dark wash
+           here as well turns the gradient into flat navy. -->
+      <Transition name="backdrop">
+        <VendorCoverArt
+          v-if="!isBackdropShown(vendor)"
+          :name="vendor.name"
+          :logo="vendorLogoOrNone(vendor)"
+        />
+      </Transition>
       <img
         v-if="backdropFor(vendor)"
         :src="backdropFor(vendor)!"
         alt=""
         aria-hidden="true"
-        class="absolute inset-0 w-full h-full object-cover"
-        :class="{ 'spotlight-kenburns': index === activeIndex }"
+        class="spotlight-backdrop absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-out"
+        :class="[
+          isBackdropShown(vendor) ? 'opacity-100' : 'opacity-0',
+          { 'spotlight-kenburns': index === activeIndex },
+        ]"
+        @load="onBackdropLoad(vendor)"
         @error="onBackdropError(vendor)"
       />
-      <!-- …otherwise brand art tinted by their own logo, blown up and blurred -->
-      <div
-        v-else
-        class="absolute inset-0 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff]"
-        aria-hidden="true"
-      >
-        <!-- Kept light: the scrims below already carry the text, and stacking a
-             dark wash here as well turns the brand gradient into flat navy. -->
-        <img
-          :src="vendor.logo"
-          alt=""
-          class="absolute -left-10 -top-16 w-3/5 max-w-none opacity-30 blur-3xl scale-150"
-          @error="onLogoError"
-        />
-      </div>
 
       <!-- Legibility scrims, both anchored to the edge they serve rather than
            laid over the whole frame: two full-bleed washes stack in the corner
@@ -146,7 +152,7 @@
         v-for="(vendor, index) in slides"
         :key="`step-${vendor.id}`"
         type="button"
-        class="group/step py-2 px-1 focus:outline-none"
+        class="group/step py-[18px] -my-3 px-2 sm:py-2 sm:my-0 sm:px-1 focus:outline-none"
         :aria-label="t('services.vendors.spotlight.goTo', { name: vendor.name })"
         :aria-current="index === activeIndex ? 'true' : undefined"
         @click="goTo(index)"
@@ -169,11 +175,16 @@
       </button>
     </div>
 
-    <!-- Arrows from sm up: revealed on hover, always reachable by keyboard -->
+    <!-- Arrows. Permanently visible on touch and hover-revealed from sm up:
+         there is no hover on a phone, so the desktop treatment left the band
+         with no visible control at all and swipe as its only affordance.
+         Sat high rather than centred on mobile: the band centre is directly
+         above the white "View vendor" pill, and two right-pointing circles
+         stacked in one corner do not read as two different actions. -->
     <template v-if="slides.length > 1">
       <button
         type="button"
-        class="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm text-white ring-1 ring-white/25 opacity-0 group-hover/spotlight:opacity-100 focus:opacity-100 hover:bg-white/25 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        class="flex absolute left-2 top-[32%] sm:top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-9 sm:h-9 items-center justify-center rounded-full bg-white/20 sm:bg-white/15 backdrop-blur-sm text-white ring-1 ring-white/25 opacity-100 sm:opacity-0 sm:group-hover/spotlight:opacity-100 focus:opacity-100 hover:bg-white/25 active:scale-95 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
         :aria-label="t('services.vendors.spotlight.previous')"
         @click="step(-1)"
       >
@@ -181,7 +192,7 @@
       </button>
       <button
         type="button"
-        class="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm text-white ring-1 ring-white/25 opacity-0 group-hover/spotlight:opacity-100 focus:opacity-100 hover:bg-white/25 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        class="flex absolute right-2 top-[32%] sm:top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-9 sm:h-9 items-center justify-center rounded-full bg-white/20 sm:bg-white/15 backdrop-blur-sm text-white ring-1 ring-white/25 opacity-100 sm:opacity-0 sm:group-hover/spotlight:opacity-100 focus:opacity-100 hover:bg-white/25 active:scale-95 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
         :aria-label="t('services.vendors.spotlight.next')"
         @click="step(1)"
       >
@@ -202,6 +213,7 @@ import {
   Sparkles,
 } from 'lucide-vue-next'
 import type { Vendor } from './types'
+import VendorCoverArt from './VendorCoverArt.vue'
 import { getVendorLogoFallback } from '@/utils/serviceFallbackImages'
 import { imagekitUrl } from '@/utils/mediaUrl'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -237,19 +249,51 @@ const progressKey = ref(0)
 const prefersReducedMotion = ref(false)
 let motionQuery: MediaQueryList | null = null
 
+/**
+ * The vendor's logo, but only when it is genuinely theirs. Vendors without one
+ * carry a shared grey stand-in, and blooming that across the cover art turns
+ * every logo-less vendor's banner to the same mud.
+ */
+const vendorLogoOrNone = (vendor: Vendor): string | undefined =>
+  vendor.logo && vendor.logo !== getVendorLogoFallback() ? vendor.logo : undefined
+
 /** Backdrops that failed to load — those slides fall back to their brand art */
 const failedBackdrops = reactive(new Set<string>())
 
+/** Backdrops the browser has actually decoded, so the fade never reveals a blank */
+const loadedBackdrops = reactive(new Set<string>())
+
+/** The first candidate that has not already failed, in its raw form — the key both sets use */
+const usableBackdrop = (vendor: Vendor): string | null =>
+  vendor.heroImages?.find((url) => !failedBackdrops.has(url)) ?? null
+
 const backdropFor = (vendor: Vendor): string | null => {
-  const usable = vendor.heroImages?.find((url) => !failedBackdrops.has(url))
+  const usable = usableBackdrop(vendor)
   if (!usable) return null
-  // Width-only transform: constraining both dimensions would re-crop the frame
-  // the vendor chose for their listing cover.
+  // Width-only transform. Both sources are already framed by the vendor — a
+  // banner they cropped for this shape, or the cover they chose for a listing —
+  // so constraining the height as well would only re-crop their decision.
   return imagekitUrl(usable, 'w-1200') ?? usable
 }
 
+/**
+ * Whether the photo is on screen for real. Gates on decode, not on the URL
+ * existing: borrowed photos are looked up after first paint, so flipping the
+ * layers when the src is merely assigned would uncover the container for as
+ * long as the download takes.
+ */
+const isBackdropShown = (vendor: Vendor): boolean => {
+  const usable = usableBackdrop(vendor)
+  return !!usable && loadedBackdrops.has(usable)
+}
+
+const onBackdropLoad = (vendor: Vendor) => {
+  const current = usableBackdrop(vendor)
+  if (current) loadedBackdrops.add(current)
+}
+
 const onBackdropError = (vendor: Vendor) => {
-  const current = vendor.heroImages?.find((url) => !failedBackdrops.has(url))
+  const current = usableBackdrop(vendor)
   if (current) failedBackdrops.add(current)
 }
 
@@ -299,24 +343,46 @@ const step = (delta: number) => {
 }
 
 let pointerStartX: number | null = null
+/** Furthest horizontal travel seen so far, kept so a cancelled gesture can still commit */
+let pointerDeltaX = 0
 let didSwipe = false
+
+const commitSwipe = (delta: number) => {
+  if (Math.abs(delta) < SWIPE_THRESHOLD || slides.value.length < 2) return
+  didSwipe = true
+  step(delta < 0 ? 1 : -1)
+}
 
 const onPointerDown = (event: PointerEvent) => {
   pointerStartX = event.clientX
+  pointerDeltaX = 0
   didSwipe = false
+}
+
+const onPointerMove = (event: PointerEvent) => {
+  if (pointerStartX === null) return
+  const delta = event.clientX - pointerStartX
+  if (Math.abs(delta) > Math.abs(pointerDeltaX)) pointerDeltaX = delta
 }
 
 const onPointerUp = (event: PointerEvent) => {
   if (pointerStartX === null) return
   const delta = event.clientX - pointerStartX
   pointerStartX = null
-  if (Math.abs(delta) < SWIPE_THRESHOLD || slides.value.length < 2) return
-  didSwipe = true
-  step(delta < 0 ? 1 : -1)
+  commitSwipe(delta)
 }
 
+/**
+ * The gesture was taken away mid-swipe — a system edge-swipe, a second finger,
+ * or the browser deciding it owns the pan. `touch-action: pan-y` stops that
+ * happening for ordinary horizontal drags, but when it does happen the travel
+ * already recorded is a real swipe and is honoured rather than dropped; the
+ * alternative is an interaction that silently does nothing.
+ */
 const onPointerCancel = () => {
+  if (pointerStartX === null) return
   pointerStartX = null
+  commitSwipe(pointerDeltaX)
 }
 
 const onSlideClick = (vendor: Vendor) => {
@@ -362,6 +428,26 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* Horizontal drags belong to the carousel, vertical ones to the page. Without
+   this the browser claims the gesture after the first move and cancels the
+   pointer stream, so a swipe never reaches pointerup and the band is stranded
+   on its first slide for the whole of a touch session. */
+.spotlight-band {
+  touch-action: pan-y;
+}
+
+/* Photo over cover, not photo instead of cover. The cover holds at full
+   opacity for the length of the photo's fade-in and only then drops, by which
+   point it is completely covered — so the two never blend to something lighter
+   than either, and no gap opens between them. */
+.backdrop-leave-active {
+  transition: opacity 0.25s ease-out 0.7s;
+}
+
+.backdrop-leave-to {
+  opacity: 0;
+}
+
 /* Slow drift on the active backdrop, running longer than the dwell so the
    motion carries through the cross-fade instead of stopping under it. */
 .spotlight-kenburns {
@@ -395,6 +481,13 @@ onUnmounted(() => {
   .spotlight-kenburns,
   .spotlight-progress {
     animation: none;
+  }
+
+  /* Both halves go instant together: killing only the cover's exit would drop
+     it while the photo was still fading up, opening the gap this avoids. */
+  .backdrop-leave-active,
+  .spotlight-backdrop {
+    transition: none;
   }
 }
 </style>

@@ -45,6 +45,7 @@ Frontend-authored design requests for backend changes (the reverse direction of 
 - [public-template-assets-decorations.md](backend-api-requirements/public-template-assets-decorations.md) — decoration assets in the pre-payment public template payload for the live preview
 - [partner-template-asset-removal.md](backend-api-requirements/partner-template-asset-removal.md) — accept `''` on the template's file fields so a partner can remove a saved asset, not only replace it
 - [event-banner-image-sizing.md](backend-api-requirements/event-banner-image-sizing.md) — **on hold** (implemented then reverted with an SSR change) — raise the banner optimizer bound to 1920×1005 and derive a ≤300KB 1200×630 `og:image` variant so messaging-app link previews render the large card
+- [vendor-cover-image.md](backend-api-requirements/vendor-cover-image.md) — **delivered** — exposes the `cover_image` field in the vendor **brief** serializer so the featured-vendor spotlight can use a vendor's own banner instead of borrowing (and mis-cropping) a listing photo; also removes up to six extra requests per services-page load
 
 ## Feature plans & implementation records ([features/](features/))
 

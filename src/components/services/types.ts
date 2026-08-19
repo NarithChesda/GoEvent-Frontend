@@ -18,10 +18,17 @@ export interface Vendor {
   telegramUsername: string
   listingsCount: number
   /**
-   * Backdrop photos for the featured-vendor spotlight. Not part of the vendor
-   * payload — the browse endpoint returns no cover image for a vendor — so it
-   * is filled in afterwards from the vendor's own listing covers, and stays
-   * empty for vendors with no photos (the spotlight falls back to brand art).
+   * The vendor's own uploaded banner. Set whenever they have one, and it wins
+   * over every other backdrop: it is the one image they deliberately framed to
+   * represent themselves, rather than a service photo pressed into service.
+   */
+  coverImage?: string
+  /**
+   * Ordered backdrop candidates for the featured-vendor spotlight — the cover
+   * image when there is one, otherwise stand-ins pulled from the vendor's own
+   * listing covers after the fact (the browse payload carries no photos of its
+   * own). Stays empty for vendors with neither, and the spotlight falls back
+   * to brand art.
    */
   heroImages?: string[]
 }

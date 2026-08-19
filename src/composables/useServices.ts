@@ -65,6 +65,19 @@ const getVendorLogoUrl = (logoUrl: string | null | undefined): string => {
 }
 
 /**
+ * Get a vendor's banner URL, or undefined when they have not uploaded one.
+ *
+ * Deliberately not routed through getFullImageUrl: that substitutes a category
+ * fallback for a missing image, which would hand every vendor a banner they
+ * never chose. "No banner" has to stay distinguishable so callers can fall
+ * back to the vendor's own photos instead.
+ */
+const getVendorCoverUrl = (coverUrl: string | null | undefined): string | undefined => {
+  if (!coverUrl) return undefined
+  return apiClient.getProfilePictureUrl(coverUrl) || coverUrl
+}
+
+/**
  * Derive raw price fields from API decimal strings.
  * priceType is inferred: 0/0 = quote, equal = fixed, otherwise range.
  */
@@ -166,6 +179,7 @@ const mapBriefToVendor = (vendor: VendorProfileBrief): Vendor => {
     website: '', // Not in brief
     telegramUsername: vendor.telegram_username,
     listingsCount: vendor.listings_count,
+    coverImage: getVendorCoverUrl(vendor.cover_image),
   }
 }
 
@@ -186,6 +200,7 @@ const mapFullToVendor = (vendor: VendorProfile): Vendor => {
     website: vendor.website,
     telegramUsername: vendor.telegram_username,
     listingsCount: vendor.listings_count,
+    coverImage: getVendorCoverUrl(vendor.cover_image),
   }
 }
 
@@ -342,13 +357,22 @@ export function useServices() {
   /**
    * Fill in spotlight backdrops for the featured vendors.
    *
-   * VendorProfileBrief carries no cover image, so each vendor's own listing
-   * covers stand in. Deliberately fire-and-forget: the spotlight renders
-   * immediately on its brand-gradient fallback and the photos fade in behind
-   * it, so a slow (or failed) image lookup never holds up the page.
+   * A vendor who uploaded a banner has already said how they want to be shown,
+   * so that image is the slide and no lookup happens at all — which is also
+   * what keeps this cheap, since the alternative costs one request per vendor.
+   * Only vendors without one fall back to borrowing their own listing covers.
+   *
+   * Deliberately fire-and-forget: the spotlight renders immediately on its
+   * brand-gradient fallback and any borrowed photos fade in behind it, so a
+   * slow (or failed) image lookup never holds up the page.
    */
   const hydrateSpotlightImages = (vendors: Vendor[]): void => {
     vendors.slice(0, SPOTLIGHT_VENDOR_LIMIT).forEach(async (vendor) => {
+      if (vendor.coverImage) {
+        vendor.heroImages = [vendor.coverImage]
+        return
+      }
+
       try {
         const response: ApiResponse<PaginatedResponse<ServiceListingBrief>> =
           await serviceListingsService.browseListings({

@@ -6,7 +6,8 @@
       <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto sm:px-6 lg:px-8 lg:py-8 pb-12">
         <!-- Loading skeleton -->
         <div v-if="isLoading" class="animate-pulse">
-          <div class="h-36 sm:h-48 bg-slate-200 lg:rounded-3xl"></div>
+          <!-- Matches the tall banner: with cover images in play that is now the common case -->
+          <div class="h-48 sm:h-64 lg:h-72 bg-slate-200 lg:rounded-3xl"></div>
           <div class="px-4 sm:px-0">
             <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-slate-300 border-4 border-white -mt-12 sm:-mt-14"></div>
             <div class="h-6 bg-slate-200 rounded w-1/3 mt-4"></div>
@@ -40,12 +41,15 @@
 
         <!-- Content -->
         <template v-else-if="vendor">
-          <!-- Banner: portfolio slideshow when the vendor has photos, brand gradient otherwise -->
-          <div
-            class="relative lg:rounded-3xl overflow-hidden bg-gradient-to-r from-[#2ecc71]/25 via-[#2ecc71]/10 to-[#1e90ff]/25"
-            :class="portfolio.length > 0 ? 'h-48 sm:h-64 lg:h-72' : 'h-36 sm:h-48'"
-          >
-            <VendorHeroSlideshow v-if="portfolio.length > 0" :images="portfolio" />
+          <!-- Banner: the vendor's own cover image, else a slideshow of photos
+               from their services, else the designed brand cover. Same ladder
+               and same height at every rung — a vendor with nothing uploaded
+               still gets a storefront header, not a stub. -->
+          <div class="relative h-48 sm:h-64 lg:h-72 lg:rounded-3xl overflow-hidden bg-slate-100">
+            <VendorHeroSlideshow v-if="bannerImages.length > 0" :images="bannerImages" />
+            <Transition name="fade">
+              <VendorCoverArt v-if="showCoverArt" :name="vendor.name" :logo="realLogo" />
+            </Transition>
 
             <button
               @click="goBack"
@@ -208,6 +212,7 @@ import {
 } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
 import { ServiceCard, ServicesEmptyState, type Listing } from '@/components/services'
+import VendorCoverArt from '@/components/services/VendorCoverArt.vue'
 import VendorHeroSlideshow from '@/components/services/detail/VendorHeroSlideshow.vue'
 import ServiceShowcaseCarousel from '@/components/services/detail/ServiceShowcaseCarousel.vue'
 import { useServices } from '@/composables/useServices'
@@ -237,7 +242,40 @@ const vendor = computed(() => selectedVendor.value)
 const listings = computed(() => vendorListings.value)
 const portfolio = computed(() => vendorPortfolio.value)
 
+/**
+ * What fills the banner. A vendor who uploaded a cover gets exactly that and
+ * nothing else — it is their chosen introduction, and rotating other photos
+ * through it would undercut the one frame they picked. Vendors without one
+ * keep borrowing their portfolio, which still rotates because no single
+ * service photo was ever meant to stand for the whole business.
+ */
+const bannerImages = computed(() =>
+  vendor.value?.coverImage ? [vendor.value.coverImage] : portfolio.value,
+)
+
+/** True while the borrowed-photo lookup is still out */
+const isPortfolioResolving = ref(false)
+
+/**
+ * The brand cover waits until we actually know there is nothing to show. It is
+ * a saturated, full-bleed surface, so painting it during the lookup and then
+ * swapping to photos a moment later reads as a glitch on the largest element
+ * on the page. Vendors with an uploaded cover never wait — that arrives with
+ * the vendor itself.
+ */
+const showCoverArt = computed(() => bannerImages.value.length === 0 && !isPortfolioResolving.value)
+
 const vendorLogoSrc = ref(getVendorLogoFallback())
+
+/**
+ * The logo only when it is genuinely the vendor's. The cover art uses it as a
+ * colour cast, and the shared stand-in is grey — blooming that over the
+ * gradient washes the whole banner out.
+ */
+const realLogo = computed(() => {
+  const logo = vendor.value?.logo
+  return logo && logo !== getVendorLogoFallback() ? logo : undefined
+})
 
 const sanitizedPhone = computed(() => (vendor.value?.phone || '').replace(/[\s\-()]/g, ''))
 
@@ -261,7 +299,10 @@ const load = async (id: string) => {
   }
 
   // Non-blocking: portfolio images fade in via the slideshow once loaded
-  fetchVendorPortfolio(id)
+  isPortfolioResolving.value = true
+  fetchVendorPortfolio(id).finally(() => {
+    isPortfolioResolving.value = false
+  })
 
   vendorLogoSrc.value = selectedVendor.value.logo || getVendorLogoFallback()
   isLoading.value = false
@@ -269,7 +310,8 @@ const load = async (id: string) => {
   updateMetaTags({
     title: `${selectedVendor.value.name} - GoEvent Services`,
     description: selectedVendor.value.tagline || selectedVendor.value.description.slice(0, 157),
-    image: selectedVendor.value.logo,
+    // The banner is built to be seen wide; a round logo crops badly in a share card
+    image: selectedVendor.value.coverImage || selectedVendor.value.logo,
     url: window.location.href,
     type: 'website',
   })
@@ -338,3 +380,20 @@ onUnmounted(() => {
 })
 </script>
 
+
+<style scoped>
+/* The brand cover resolves in rather than snapping on once the lookup lands */
+.fade-enter-active {
+  transition: opacity 0.4s ease-out;
+}
+
+.fade-enter-from {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-enter-active {
+    transition: none;
+  }
+}
+</style>
