@@ -150,9 +150,15 @@ const triggerClass = computed(() => [
 const categoryLabel = (category: ServiceCategory) =>
   category.id === 'all' ? t('categories.allCategories') : translateServiceCategory(category.name)
 
+/**
+ * At rest the trigger names what it does — "Category" — rather than announcing
+ * "All Categories", which read as a filter someone had already applied. It only
+ * carries a value once there is one to carry, and tints brand green with it.
+ */
 const selectedLabel = computed(() => {
+  if (!isFiltered.value) return t('categories.category')
   const selected = props.categories.find((c) => c.id === props.modelValue)
-  return selected ? categoryLabel(selected) : t('categories.allCategories')
+  return selected ? categoryLabel(selected) : t('categories.category')
 })
 
 const toggleMenu = () => {

@@ -15,10 +15,30 @@
         above the hero only pushed the thing the visitor came to look at further
         down. So instead of PageHeaderRow, the mobile bar gets just the two
         global actions that row used to bring with it; the category and sort
-        controls now live with the list they act on.
+        controls now live with the list they act on — and are handed back up to
+        this bar on scroll, where the hero would otherwise have taken them off
+        screen with it.
       -->
       <Teleport defer to="#mobile-page-header">
-        <div class="lg:hidden flex w-full items-center justify-end">
+        <div class="lg:hidden flex w-full items-center justify-end gap-1">
+          <!-- ...plus the list's own controls, once its heading has scrolled
+               under this bar. The mobile bar is what absorbs them below the nav
+               breakpoint (the desktop nav takes them above it — see
+               ServiceListControls), and they land here rather than in a second
+               teleport of their own so that they sit *before* the global
+               actions, the same order the events tab's bar puts them in. -->
+          <Transition name="absorb">
+            <ServiceListFilters
+              v-if="controlsPinned && !isDesktopNav"
+              :categories="serviceCategories"
+              :selected-category="selectedCategory"
+              :sort-by="sortBy"
+              :sort-options="sortOptions"
+              @category-change="selectedCategory = $event"
+              @sort-change="sortBy = $event"
+            />
+          </Transition>
+
           <MobileHeaderActions />
         </div>
       </Teleport>
@@ -135,6 +155,7 @@ import { MobileTopBar, MobileHeaderActions } from '@/components/events'
 import {
   VendorSpotlight,
   ServiceListControls,
+  ServiceListFilters,
   ServiceListingsGrid,
   ListingFormDrawer,
   ServicesLoadingSkeleton,
@@ -143,6 +164,7 @@ import {
   type Listing,
 } from '@/components/services'
 import { useServices } from '@/composables/useServices'
+import { useNavPageControls } from '@/composables/useNavPageControls'
 import { useVendorProfile } from '@/composables/settings'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 
@@ -170,6 +192,11 @@ const {
   filteredListings,
   serviceCategoriesForUI,
 } = useServices()
+
+// Whether the list heading has scrolled under the top bar. ServiceListControls
+// owns the sentinel that decides it; the view reads it because the mobile bar's
+// contents are the view's to lay out.
+const { pinned: controlsPinned, isDesktopNav } = useNavPageControls()
 
 // Vendor profile for checking verification status
 const { vendorState, loadProfile: loadVendorProfile } = useVendorProfile()

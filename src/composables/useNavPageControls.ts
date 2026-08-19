@@ -10,18 +10,24 @@ import { computed, readonly, ref } from 'vue'
  * scroll. Anything that has to look right in both places reads this rather than
  * carrying a prop down from the view.
  *
- * `pinned` — the page header row has scrolled under the desktop nav. Only ever
- * true on desktop: on mobile the row is already in the bar, so there is nothing
- * to hand up and nothing to observe.
+ * `pinned` — the page's own header row has scrolled under the bar overhead. On
+ * pages built from `PageHeaderRow` (Events, Discover) this is only ever true on
+ * desktop: below the nav breakpoint that row is already inside the mobile bar,
+ * so there is nothing to hand up and nothing to observe. Services has no such
+ * row — the featured-vendor hero is its header — so its list heading sits in
+ * the page at every width and raises this on mobile too, where the mobile top
+ * bar is the one that absorbs the controls.
  *
- * `absorbed` — narrower than `pinned`: true only while the page has handed
- * *filters* up to the nav. The nav reads it to yield space — the clock and the
+ * `absorbed` — narrower than `pinned`: true only while the *desktop nav* is
+ * holding a page's filters. The nav reads it to yield space — the clock and the
  * Create Event shortcut step aside while the filters are up there. That room is
  * what lets the absorbed controls keep their full size and sit at the content
  * column's right edge, the exact spot the page header had them; without it they
  * would run into the right-hand utility cluster on anything but a very wide
- * desktop. Kept separate because a page can pin a header that has no filters
- * (Services) — the nav must keep its shortcuts for that one.
+ * desktop. Kept separate because `pinned` is also raised for a hand-off to the
+ * mobile bar, which the desktop nav has no stake in, and because a page can pin
+ * a header that has no filters to hand up at all — the nav must keep its
+ * shortcuts for that one.
  */
 const DESKTOP_NAV_QUERY = '(min-width: 1024px)'
 

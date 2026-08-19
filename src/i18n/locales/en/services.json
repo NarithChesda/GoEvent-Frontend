@@ -16,6 +16,7 @@
   },
   "sort": {
     "label": "Sort by",
+    "button": "Sort",
     "featured": "Featured First",
     "newest": "Newest First",
     "priceLow": "Price: Low to High",
