@@ -14,47 +14,18 @@
         aria-hidden="true"
       ></div>
 
-      <!--
-        Top actions, built as PublicEventDrawer's header row: dark glass that
-        inverts over the artwork rather than white pucks sitting on it, under
-        a short scrim that guarantees the icons read on a pale or busy cover.
-        Full 40px targets on touch, a size down on desktop, per §17.
-      -->
-      <div class="absolute inset-x-0 top-0 z-10">
-        <div
-          class="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/45 to-transparent pointer-events-none"
-          aria-hidden="true"
-        ></div>
-
-        <div
-          class="relative flex items-center justify-between gap-1.5 sm:gap-2 px-3 py-2.5"
-          style="padding-top: max(env(safe-area-inset-top), 0.625rem)"
-        >
-          <button
-            @click="$emit('back')"
-            class="w-10 h-10 sm:w-9 sm:h-9 flex-shrink-0 flex items-center justify-center rounded-full bg-black/25 hover:bg-black/40 backdrop-blur-sm text-white transition-colors"
-            :title="t('services.detail.back')"
-            :aria-label="t('services.detail.back')"
-          >
-            <ArrowLeft class="w-5 h-5" />
-          </button>
-          <button
-            @click="$emit('share')"
-            class="w-10 h-10 sm:w-9 sm:h-9 flex-shrink-0 flex items-center justify-center rounded-full bg-black/25 hover:bg-black/40 backdrop-blur-sm text-white transition-colors"
-            :title="t('services.detail.share')"
-            :aria-label="t('services.detail.share')"
-          >
-            <Share2 class="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+      <ServiceHeroActions @back="$emit('back')" @share="$emit('share')" />
 
       <!-- Overlaid content -->
       <div class="absolute bottom-0 inset-x-0 p-4 sm:p-6 lg:p-8">
         <div class="flex flex-wrap items-center gap-2 mb-2 sm:mb-3">
+          <!-- "Featured" is a GoEvent endorsement, so it carries the brand
+               gradient rather than the amber/orange one it used to invent.
+               DESIGN.md §1.3 defines exactly one UI gradient, and this badge is
+               the only gradient object in the hero. -->
           <span
             v-if="listing.isFeatured"
-            class="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-medium rounded-lg shadow-md"
+            class="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-xs font-medium rounded-lg shadow-md"
           >
             <Sparkles class="w-3 h-3" />
             {{ t('services.card.featured') }}
@@ -70,23 +41,28 @@
           {{ listing.title }}
         </h1>
 
-        <!-- Vendor chip -->
+        <!-- Who is selling. The price used to sit opposite this chip and no
+             longer does: on phones it leads the contact pill fixed to the
+             bottom of the screen, and on desktop it heads the sticky contact
+             card — both always in view, neither needing the hero to repeat
+             them. Here it was a third copy of one figure, set against the
+             title it was competing with. -->
         <component
           :is="vendorLink ? 'router-link' : 'div'"
           v-bind="vendorLink ? { to: vendorLink } : {}"
-          class="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full pl-1 pr-3 py-1 shadow-md"
+          class="inline-flex max-w-full min-w-0 items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full pl-1 pr-3 py-1 shadow-md"
           :class="vendorLink ? 'hover:bg-white transition-colors' : ''"
         >
           <img
             :src="vendorLogoSrc"
             :alt="listing.vendorName"
-            class="w-6 h-6 rounded-full object-cover border border-slate-200"
+            class="w-6 h-6 flex-shrink-0 rounded-full object-cover border border-slate-200"
             @error="handleVendorLogoError"
           />
-          <span class="text-sm font-medium text-slate-900">{{ listing.vendorName }}</span>
+          <span class="truncate text-sm font-medium text-slate-900">{{ listing.vendorName }}</span>
           <BadgeCheck
             v-if="listing.vendorVerified"
-            class="w-4 h-4 text-[#2ecc71]"
+            class="w-4 h-4 flex-shrink-0 text-[#2ecc71]"
             :aria-label="t('services.vendors.verified')"
           />
         </component>
@@ -97,8 +73,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { ArrowLeft, Share2, Sparkles, BadgeCheck } from 'lucide-vue-next'
+import { Sparkles, BadgeCheck } from 'lucide-vue-next'
 import type { Listing } from '../types'
+import ServiceHeroActions from './ServiceHeroActions.vue'
 import {
   getCategoryFallbackImage,
   getVendorLogoFallback,

@@ -58,15 +58,11 @@
     <!-- What was chosen, what it costs, how far activation has got. -->
     <TemplateActivationCard
       v-else
-      :event-id="event.id"
       :state="activationState"
       :resolved="activationResolved"
       :template="templateForCard"
-      :template-id="event.event_template ?? null"
-      :can-preview="canPreview"
       :can-edit="canEdit"
       @activate="handleStartPayment"
-      @open-studio="emit('open-studio')"
       @preview-video="openYoutubePreview"
     />
 
@@ -239,17 +235,12 @@ import type { Payment, UpdateFormData } from '../types/payment'
 interface Props {
   event: Event
   canEdit: boolean
-  /** Whether this event's category renders the showcase preview frames — drives
-   *  whether the card shows the live cover screen or the template's artwork. */
-  canPreview?: boolean
 }
 
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'event-updated': [event: Event]
-  /** Go to the Design Studio (keep designing). */
-  'open-studio': []
   /** Go to the Design Studio and open its template browser. */
   'change-template': []
 }>()

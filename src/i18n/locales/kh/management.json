@@ -247,8 +247,6 @@
     "back": "ត្រលប់ក្រោយ",
     "organizedBy": "ដោយ {name}",
     "eventDetailsFallback": "ព័ត៌មានព្រឹត្តិការណ៍",
-    "switchToKhmer": "ប្តូរទៅភាសាខ្មែរ",
-    "switchToEnglish": "ប្តូរទៅភាសាអង់គ្លេស",
     "publishBtn": "ផ្សព្វផ្សាយ",
     "publishTitle": "ផ្សព្វផ្សាយព្រឹត្តិការណ៍",
     "editBtn": "កែប្រែ",
@@ -1524,8 +1522,6 @@
       }
     },
     "card": {
-      "openStudio": "បើកនៅ Design Studio",
-      "openStudioShort": "Studio",
       "untitledTemplate": "គំរូដែលបានជ្រើសរើស",
       "badgeLive": "ផ្សាយបន្តផ្ទាល់",
       "badgePending": "កំពុងពិនិត្យ",

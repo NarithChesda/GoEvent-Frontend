@@ -64,63 +64,73 @@
           <div class="px-4 sm:px-0 mt-6 sm:mt-8 lg:grid lg:grid-cols-[1fr_360px] lg:gap-8 lg:items-start">
             <!-- Main column -->
             <div class="space-y-6 sm:space-y-8 min-w-0">
-              <!-- About -->
+              <!-- Description. The hero's h1 already titled this page, so an
+                   "About This Service" eyebrow above the only prose here
+                   separated nothing — the heading is kept for screen readers
+                   and dropped visually. Hierarchy comes from the type and
+                   slate scales instead: the tagline reads as a lead, the
+                   description as body.
+
+                   Tags and service area fold in below as inline metadata.
+                   Both are single facts, not chapters, and giving each its own
+                   heading was what flattened this column into one texture. -->
               <section>
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-                  {{ t('services.detail.about') }}
-                </h3>
-                <p v-if="listing.tagline" class="text-base font-medium text-slate-700 mb-2">
+                <h2 class="sr-only">{{ t('services.detail.about') }}</h2>
+                <p v-if="listing.tagline" class="text-base sm:text-lg font-medium text-slate-800 leading-snug mb-2.5">
                   {{ listing.tagline }}
                 </p>
                 <p class="text-sm sm:text-base text-slate-600 leading-relaxed whitespace-pre-line">
                   {{ listing.description }}
                 </p>
-              </section>
 
-              <!-- Showcase: 3D coverflow of the service's work photos -->
-              <section v-if="galleryImages.length > 0">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                  {{ t('services.detail.showcase') }}
-                  <span class="text-slate-400 normal-case tracking-normal">· {{ galleryImages.length }}</span>
-                </h3>
-                <div class="-mx-4 sm:mx-0">
-                  <ServiceShowcaseCarousel :images="galleryImages" />
-                </div>
-              </section>
-
-              <!-- Tags -->
-              <section v-if="listing.tags.length > 0">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-                  {{ t('services.detail.tags') }}
-                </h3>
-                <div class="flex flex-wrap gap-2">
+                <div
+                  v-if="listing.serviceArea || listing.tags.length > 0"
+                  class="mt-5 flex flex-wrap items-center gap-x-2.5 gap-y-2"
+                >
+                  <span
+                    v-if="listing.serviceArea"
+                    class="inline-flex min-w-0 items-center gap-1.5 text-sm text-slate-600"
+                  >
+                    <MapPin class="w-4 h-4 flex-shrink-0 text-slate-400" aria-hidden="true" />
+                    <span class="truncate">{{ listing.serviceArea }}</span>
+                  </span>
+                  <span
+                    v-if="listing.serviceArea && listing.tags.length > 0"
+                    class="text-slate-300"
+                    aria-hidden="true"
+                    >·</span
+                  >
                   <span
                     v-for="tag in listing.tags"
                     :key="tag"
-                    class="px-3 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-full"
+                    class="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-full"
                   >
                     {{ tag }}
                   </span>
                 </div>
               </section>
 
-              <!-- Service Area -->
-              <section v-if="listing.serviceArea" class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <MapPin class="w-4 h-4 text-slate-600" />
-                </div>
-                <div class="min-w-0">
-                  <p class="font-medium text-slate-900 text-sm sm:text-base">{{ listing.serviceArea }}</p>
-                  <p class="text-xs sm:text-sm text-slate-500">{{ t('services.detail.serviceArea') }}</p>
+              <!-- The work. No label: a wall of the vendor's own photos
+                   announces itself, and this is the most persuasive thing on
+                   the page. It stays inside the grid column on desktop — the
+                   sticky contact sidebar sits alongside it — and keeps its
+                   edge-to-edge bleed on phones, where there is no sidebar. -->
+              <section v-if="galleryImages.length > 0">
+                <h2 class="sr-only">{{ t('services.detail.showcase') }}</h2>
+                <div class="-mx-4 sm:mx-0">
+                  <ServiceShowcaseCarousel :images="galleryImages" />
                 </div>
               </section>
 
               <!-- More from this vendor -->
               <section v-if="moreFromVendor.length > 0" class="border-t border-slate-100 pt-6">
                 <div class="flex items-center justify-between gap-2 mb-4">
-                  <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+                  <!-- The one heading left visible in this column, and a plain
+                       one rather than a fourth uppercase eyebrow — it carries
+                       real information (whose other work this is). -->
+                  <h2 class="truncate text-sm font-semibold text-slate-900">
                     {{ t('services.detail.moreFromVendor', { vendor: listing.vendorName }) }}
-                  </h3>
+                  </h2>
                   <router-link
                     v-if="listing.vendorId"
                     :to="{ name: 'vendor-detail', params: { id: listing.vendorId } }"

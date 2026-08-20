@@ -332,9 +332,7 @@
                 ref="templatePaymentTabRef"
                 :event="event"
                 :can-edit="event.can_edit || false"
-                :can-preview="!!canViewShowcasePreview"
                 @event-updated="handleEventUpdated"
-                @open-studio="activeTab = 'design-studio'"
                 @change-template="goToStudioTemplates"
               />
             </div>

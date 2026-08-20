@@ -72,16 +72,6 @@
 
       <!-- Right Section: Actions -->
       <div class="flex items-center gap-2 flex-shrink-0">
-        <!-- Language Toggle -->
-        <button
-          @click="toggleLanguage"
-          class="topbar-outline-btn flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 rounded-lg transition-all duration-200"
-          :title="locale === 'en' ? t('management.topBar.switchToKhmer') : t('management.topBar.switchToEnglish')"
-        >
-          <Languages class="w-4 h-4" />
-          <span class="hidden md:inline">{{ locale === 'en' ? 'EN' : 'KH' }}</span>
-        </button>
-
         <!-- Publish Button (for public draft events) -->
         <button
           v-if="canEdit && eventId && eventPrivacy === 'public' && actualEventStatus === 'draft'"
@@ -113,7 +103,7 @@
 <script setup lang="ts">
 import { ref, computed, inject, onMounted, onUnmounted, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Pencil, ArrowLeft, Globe, Languages } from 'lucide-vue-next'
+import { Pencil, ArrowLeft, Globe } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
@@ -128,11 +118,7 @@ interface Props {
   organizerAvatar?: string
 }
 
-const { locale, t, setLocale } = useAppLanguage()
-
-const toggleLanguage = () => {
-  setLocale(locale.value === 'en' ? 'kh' : 'en')
-}
+const { t } = useAppLanguage()
 
 const props = withDefaults(defineProps<Props>(), {
   eventId: '',

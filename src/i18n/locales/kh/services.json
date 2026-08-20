@@ -70,10 +70,11 @@
   },
   "vendorDetail": {
     "about": "អំពី",
-    "portfolio": "ស្នាដៃ",
     "servicesTitle": "សេវាកម្ម",
     "location": "ទីតាំង",
     "email": "អ៊ីមែល",
+    "viewsLabel": "ការមើល | ការមើល",
+    "inquiriesLabel": "ការសាកសួរ | ការសាកសួរ",
     "notFound": {
       "title": "រកមិនឃើញអ្នកផ្តល់សេវាកម្ម",
       "description": "អ្នកផ្តល់សេវាកម្មនេះប្រហែលជាត្រូវបានលុប ឬលែងមានទៀតហើយ។",

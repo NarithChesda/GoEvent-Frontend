@@ -89,7 +89,7 @@
              name three lines below, in a band barely 13rem tall. Same colour
              and wording — only the scale changes. -->
         <span
-          class="absolute top-3 left-3 sm:top-4 sm:left-4 inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] sm:text-xs font-medium rounded-md sm:rounded-lg shadow-md"
+          class="absolute top-3 left-3 sm:top-4 sm:left-4 inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-[10px] sm:text-xs font-medium rounded-md sm:rounded-lg shadow-md"
         >
           <Sparkles class="w-2.5 h-2.5 sm:w-3 sm:h-3" />
           {{ t('services.vendors.spotlight.badge') }}
@@ -97,11 +97,11 @@
 
         <!-- Vendor block -->
         <div class="absolute inset-x-0 bottom-0 flex items-end gap-3 sm:gap-4 p-4 sm:p-5 lg:p-6">
-          <img
-            :src="vendor.logo"
-            :alt="vendor.name"
-            class="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover bg-white ring-2 ring-white/70 shadow-lg flex-shrink-0 transition-transform duration-500 group-hover/spotlight:scale-105"
-            @error="onLogoError"
+          <VendorAvatar
+            :name="vendor.name"
+            :logo="vendor.logo"
+            size-class="w-12 h-12 sm:w-14 sm:h-14"
+            class="ring-2 ring-white/70 shadow-lg flex-shrink-0 transition-transform duration-500 group-hover/spotlight:scale-105"
           />
 
           <div class="min-w-0 flex-1">
@@ -231,6 +231,7 @@ import {
 } from 'lucide-vue-next'
 import type { Vendor } from './types'
 import VendorCoverArt from './VendorCoverArt.vue'
+import VendorAvatar from './VendorAvatar.vue'
 import { getVendorLogoFallback } from '@/utils/serviceFallbackImages'
 import { imagekitUrl } from '@/utils/mediaUrl'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -312,12 +313,6 @@ const onBackdropLoad = (vendor: Vendor) => {
 const onBackdropError = (vendor: Vendor) => {
   const current = usableBackdrop(vendor)
   if (current) failedBackdrops.add(current)
-}
-
-const onLogoError = (event: Event) => {
-  const target = event.target as HTMLImageElement
-  const fallback = getVendorLogoFallback()
-  if (target.src !== fallback) target.src = fallback
 }
 
 /** Autoplay runs only when there is somewhere to go and nobody is engaged */

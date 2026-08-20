@@ -70,10 +70,11 @@
   },
   "vendorDetail": {
     "about": "About",
-    "portfolio": "Portfolio",
     "servicesTitle": "Services",
     "location": "Location",
     "email": "Email",
+    "viewsLabel": "view | views",
+    "inquiriesLabel": "inquiry | inquiries",
     "notFound": {
       "title": "Vendor not found",
       "description": "This vendor may have been removed or is no longer available.",

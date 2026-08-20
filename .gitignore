@@ -45,6 +45,9 @@ DESIGN_GUIDE/
 !.claude/skills/
 !.claude/skills/**
 
+# Impeccable design detector: share rule config, keep local overrides private
+.impeccable/config.local.json
+
 # Environment Variables - Security Critical (exclude ALL .env files)
 .env
 .env.*
