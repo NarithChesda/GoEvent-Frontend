@@ -58,11 +58,9 @@
     <!-- What was chosen, what it costs, how far activation has got. -->
     <TemplateActivationCard
       v-else
-      :event-id="event.id"
       :state="activationState"
       :resolved="activationResolved"
       :template="templateForCard"
-      :template-id="event.event_template ?? null"
       :can-preview="canPreview"
       :can-edit="canEdit"
       @activate="handleStartPayment"
@@ -239,8 +237,8 @@ import type { Payment, UpdateFormData } from '../types/payment'
 interface Props {
   event: Event
   canEdit: boolean
-  /** Whether this event's category renders the showcase preview frames — drives
-   *  whether the card shows the live cover screen or the template's artwork. */
+  /** Whether this event's category has a Design Studio — drives whether the
+   *  card offers a link to it under the template artwork. */
   canPreview?: boolean
 }
 
