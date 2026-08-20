@@ -61,10 +61,8 @@
       :state="activationState"
       :resolved="activationResolved"
       :template="templateForCard"
-      :can-preview="canPreview"
       :can-edit="canEdit"
       @activate="handleStartPayment"
-      @open-studio="emit('open-studio')"
       @preview-video="openYoutubePreview"
     />
 
@@ -237,17 +235,12 @@ import type { Payment, UpdateFormData } from '../types/payment'
 interface Props {
   event: Event
   canEdit: boolean
-  /** Whether this event's category has a Design Studio — drives whether the
-   *  card offers a link to it under the template artwork. */
-  canPreview?: boolean
 }
 
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'event-updated': [event: Event]
-  /** Go to the Design Studio (keep designing). */
-  'open-studio': []
   /** Go to the Design Studio and open its template browser. */
   'change-template': []
 }>()

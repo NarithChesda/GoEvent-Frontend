@@ -14,9 +14,8 @@
          the identity *on* the artwork rather than under it is what buys the
          room for two columns on a 390px screen.
 
-         From `lg`: the line-item shape instead — poster on the left, then name
-         (studio link at the right end of its row), features, and the action, in
-         a left-aligned column beside it. -->
+         From `lg`: the line-item shape instead — poster on the left, then
+         name, features and the action in a left-aligned column beside it. -->
     <div
       class="grid grid-cols-[38%_minmax(0,1fr)] gap-x-3 gap-y-4 p-4 sm:gap-x-4 sm:p-6 lg:grid-cols-[auto_minmax(0,1fr)] lg:gap-x-6"
     >
@@ -35,9 +34,9 @@
           />
           <!-- No artwork, or a URL that would not load: a broken-image glyph
                with the template's name as alt text is worse than saying
-               nothing. -->
-          <!-- Centred in the tile's clear part, not the whole tile: on phones
-               the identity scrim covers the bottom third and would swallow it. -->
+               nothing. Centred in the tile's clear part rather than the whole
+               tile — on phones the identity scrim covers the bottom third and
+               would swallow it. -->
           <div
             v-else
             class="absolute inset-x-0 top-0 bottom-1/3 flex items-center justify-center lg:bottom-0"
@@ -107,16 +106,14 @@
         </div>
       </div>
 
-      <!-- Identity, wide shape: its own column, with the studio link at the
-           right end of the title's row. -->
-      <div
-        class="hidden lg:grid lg:col-start-2 lg:row-start-1 lg:self-start min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-3"
-      >
-        <h3 class="col-start-1 min-w-0 text-2xl font-bold text-slate-900 break-words leading-snug">
+      <!-- Identity, wide shape: its own column, left-aligned, where there is
+           room for the full type scale. -->
+      <div class="hidden lg:block lg:col-start-2 lg:row-start-1 lg:self-start min-w-0">
+        <h3 class="min-w-0 text-2xl font-bold text-slate-900 break-words leading-snug">
           {{ template?.name || t('management.activation.card.untitledTemplate') }}
         </h3>
 
-        <div v-if="badges.length" class="col-start-1 mt-2 flex items-center flex-wrap gap-1.5">
+        <div v-if="badges.length" class="mt-2 flex items-center flex-wrap gap-1.5">
           <span
             v-for="badge in badges"
             :key="badge.key"
@@ -135,7 +132,7 @@
           </span>
         </div>
 
-        <p v-if="showPrice" class="col-start-1 mt-2.5 flex items-baseline flex-wrap gap-1.5">
+        <p v-if="showPrice" class="mt-2.5 flex items-baseline flex-wrap gap-1.5">
           <span class="text-3xl font-bold text-slate-900">
             {{ formatCurrency(template!.package_plan!.price, 'USD') }}
           </span>
@@ -143,55 +140,28 @@
             {{ t('management.templateDisplayCard.oneTime') }}
           </span>
         </p>
-
-        <button
-          v-if="canPreview"
-          type="button"
-          class="activation-card__studio-link col-start-2 row-start-1 justify-self-end"
-          @click="emit('open-studio')"
-        >
-          <Wand2 class="w-3.5 h-3.5 flex-shrink-0" />
-          {{ t('management.activation.card.openStudio') }}
-        </button>
       </div>
 
       <!-- What the plan includes — the poster's neighbour on phones, and the
-           middle of the column at `lg`. The studio link opens it on phones,
-           where the identity it normally sits with has moved onto the poster. -->
+           middle of the column at `lg`. -->
       <div
-        v-if="canPreview || template?.package_plan?.features?.length"
+        v-if="template?.package_plan?.features?.length"
         class="col-start-2 min-w-0 lg:row-start-2"
       >
-        <!-- Its own row rather than sharing one with the heading below: the
-             heading and this pill together are wider than this column, so
-             side by side one of them wraps. -->
-        <div v-if="canPreview" class="flex justify-end mb-3 lg:hidden">
-          <button
-            type="button"
-            class="activation-card__studio-link"
-            @click="emit('open-studio')"
+        <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+          {{ t('management.templateDisplayCard.features') }}
+          <span class="text-slate-400">· {{ template.package_plan.features.length }}</span>
+        </h4>
+        <ul class="flex flex-col gap-1.5 lg:flex-row lg:flex-wrap lg:gap-2">
+          <li
+            v-for="feature in template.package_plan.features"
+            :key="feature"
+            class="flex items-start gap-1.5 text-xs text-slate-700 leading-snug lg:inline-flex lg:items-center lg:px-2.5 lg:py-1 lg:rounded-full lg:bg-slate-50 lg:ring-1 lg:ring-slate-200/70 lg:text-[0.8125rem] lg:font-medium"
           >
-            <Wand2 class="w-3.5 h-3.5 flex-shrink-0" />
-            {{ t('management.activation.card.openStudioShort') }}
-          </button>
-        </div>
-
-        <template v-if="template?.package_plan?.features?.length">
-          <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-            {{ t('management.templateDisplayCard.features') }}
-            <span class="text-slate-400">· {{ template.package_plan.features.length }}</span>
-          </h4>
-          <ul class="flex flex-col gap-1.5 lg:flex-row lg:flex-wrap lg:gap-2">
-            <li
-              v-for="feature in template.package_plan.features"
-              :key="feature"
-              class="flex items-start gap-1.5 text-xs text-slate-700 leading-snug lg:inline-flex lg:items-center lg:px-2.5 lg:py-1 lg:rounded-full lg:bg-slate-50 lg:ring-1 lg:ring-slate-200/70 lg:text-[0.8125rem] lg:font-medium"
-            >
-              <Check class="w-3 h-3 text-emerald-600 flex-shrink-0" />
-              <span>{{ feature }}</span>
-            </li>
-          </ul>
-        </template>
+            <Check class="w-3 h-3 text-emerald-600 flex-shrink-0" />
+            <span>{{ feature }}</span>
+          </li>
+        </ul>
       </div>
 
       <!-- The single primary action. Full width on phones — it is the one thing
@@ -255,7 +225,6 @@ import {
   Palette,
   PlayCircle,
   Sparkles,
-  Wand2,
 } from 'lucide-vue-next'
 import { formatCurrency } from '../../utils/currency'
 import ActivationStepper from './ActivationStepper.vue'
@@ -269,9 +238,6 @@ interface Props {
    *  briefly asserting "preview only" about an already-live showcase. */
   resolved?: boolean
   template?: EventTemplate | null
-  /** Whether the Design Studio is available for this event's category — gates
-   *  the link to it. */
-  canPreview?: boolean
   canEdit?: boolean
 }
 
@@ -280,8 +246,6 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   /** Open the payment checkout. */
   activate: []
-  /** Take the organizer to the Design Studio to keep editing/swapping. */
-  'open-studio': []
   /** Open the template's video preview. */
   'preview-video': [url: string]
 }>()
@@ -379,42 +343,3 @@ const badges = computed<IdentityBadge[]>(() => {
   return list
 })
 </script>
-
-<style scoped>
-/* Top-right of the feature column on phones, right end of the title row from
-   `lg`. Either way it must never grow into what it sits beside. */
-.activation-card__studio-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  gap: 0.375rem;
-  /* Roomier vertically on phones — the wide layout's 28px pill is an easy
-     thing to miss with a thumb. */
-  padding: 0.5rem 0.75rem;
-  max-width: 100%;
-  white-space: nowrap;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: rgb(71 85 105);
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 9999px;
-  transition:
-    color 0.2s ease,
-    background-color 0.2s ease,
-    border-color 0.2s ease;
-}
-
-@media (min-width: 1024px) {
-  .activation-card__studio-link {
-    padding: 0.375rem 0.75rem;
-  }
-}
-
-.activation-card__studio-link:hover {
-  color: rgb(15 23 42);
-  border-color: rgba(46, 204, 113, 0.4);
-  background: white;
-}
-</style>

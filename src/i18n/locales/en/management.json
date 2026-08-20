@@ -1522,8 +1522,6 @@
       }
     },
     "card": {
-      "openStudio": "Open in Design Studio",
-      "openStudioShort": "Studio",
       "untitledTemplate": "Selected template",
       "badgeLive": "Live",
       "badgePending": "Under review",
