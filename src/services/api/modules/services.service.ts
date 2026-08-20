@@ -89,7 +89,9 @@ export const vendorService = {
   /**
    * List all verified vendor profiles (public endpoint)
    */
-  async listVendors(filters?: VendorFilters): Promise<ApiResponse<PaginatedResponse<VendorProfileBrief>>> {
+  async listVendors(
+    filters?: VendorFilters,
+  ): Promise<ApiResponse<PaginatedResponse<VendorProfileBrief>>> {
     return apiClient.getPublic<PaginatedResponse<VendorProfileBrief>>(
       '/api/services/vendor-profiles/',
       filters,
@@ -127,7 +129,9 @@ export const serviceListingsService = {
    * List own service listings (authenticated)
    * Returns full listing details for the current vendor
    */
-  async getMyListings(filters?: ListingFilters): Promise<ApiResponse<PaginatedResponse<ServiceListing>>> {
+  async getMyListings(
+    filters?: ListingFilters,
+  ): Promise<ApiResponse<PaginatedResponse<ServiceListing>>> {
     return apiClient.get<PaginatedResponse<ServiceListing>>('/api/services/listings/', filters)
   },
 
@@ -142,7 +146,9 @@ export const serviceListingsService = {
    * Browse approved service listings (public endpoint)
    * Returns brief listing details for public browsing
    */
-  async browseListings(filters?: ListingFilters): Promise<ApiResponse<PaginatedResponse<ServiceListingBrief>>> {
+  async browseListings(
+    filters?: ListingFilters,
+  ): Promise<ApiResponse<PaginatedResponse<ServiceListingBrief>>> {
     return apiClient.getPublic<PaginatedResponse<ServiceListingBrief>>(
       '/api/services/listings/browse/',
       filters,
@@ -178,12 +184,25 @@ export const serviceListingsService = {
   /**
    * Submit a listing for review
    * Changes status from draft to pending_review
+   *
+   * The endpoint answers `{ message, listing }` — the listing is nested, not the
+   * body (SERVICES_API_DOCS.md "Submit for Review"). This used to be typed as a
+   * bare `ServiceListing` and handed the wrapper to callers, so the settings tab
+   * wrote `{ message, listing }` into its list and the card went blank: no
+   * title, no status, no cover, until a reload replaced it. Unwrapped here so
+   * every caller gets the listing the type promises. The flat shape is still
+   * accepted, in case the endpoint is ever normalised.
    */
   async submitForReview(listingId: string): Promise<ApiResponse<ServiceListing>> {
-    return apiClient.post<ServiceListing>(
-      `/api/services/listings/${listingId}/submit-for-review/`,
-      {},
-    )
+    const response = await apiClient.post<
+      ServiceListing | { message?: string; listing: ServiceListing }
+    >(`/api/services/listings/${listingId}/submit-for-review/`, {})
+
+    if (response.success && response.data && 'listing' in response.data) {
+      return { ...response, data: response.data.listing }
+    }
+
+    return response as ApiResponse<ServiceListing>
   },
 
   // Media Management Methods
@@ -249,15 +268,11 @@ export const serviceListingsService = {
       status: string
       count: number
       media: ServiceMedia[]
-    }>(
-      `/api/services/listings/${listingId}/media/bulk-upload/`,
-      files,
-      {
-        fieldName: 'images', // Backend expects 'images' field
-        additionalFields,
-        onProgress: options?.onProgress,
-      },
-    )
+    }>(`/api/services/listings/${listingId}/media/bulk-upload/`, files, {
+      fieldName: 'images', // Backend expects 'images' field
+      additionalFields,
+      onProgress: options?.onProgress,
+    })
 
     // Convert relative image URLs to full URLs
     if (result.success && result.data?.media) {
@@ -287,10 +302,7 @@ export const serviceListingsService = {
   /**
    * Set a media item as the cover image
    */
-  async setCoverImage(
-    listingId: string,
-    mediaId: number,
-  ): Promise<ApiResponse<ServiceMedia>> {
+  async setCoverImage(listingId: string, mediaId: number): Promise<ApiResponse<ServiceMedia>> {
     return apiClient.post<ServiceMedia>(
       `/api/services/listings/${listingId}/media/${mediaId}/set-cover/`,
       {},
@@ -310,7 +322,10 @@ export const serviceListingsService = {
    * Track a view on a listing (public endpoint)
    * Records analytics data for listing views
    */
-  async trackView(listingId: string, data: TrackViewData): Promise<ApiResponse<{ status: string }>> {
+  async trackView(
+    listingId: string,
+    data: TrackViewData,
+  ): Promise<ApiResponse<{ status: string }>> {
     return apiClient.post<{ status: string }>(
       `/api/services/listings/${listingId}/track-view/`,
       data,

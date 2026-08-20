@@ -341,7 +341,8 @@
       "currentStatus": "Current status:",
       "pendingReview": "Pending Review",
       "notVendor": "Not a Vendor",
-      "unverified": "Unverified"
+      "unverified": "Unverified",
+      "goToProfile": "Go to vendor profile"
     },
     "title": "My Listings",
     "subtitle": "Manage your service listings and track their performance",
@@ -353,8 +354,7 @@
     },
     "empty": {
       "title": "No listings yet",
-      "subtitle": "Create your first service listing to start reaching potential clients.",
-      "createFirst": "Create Your First Listing"
+      "subtitle": "Create your first service listing to start reaching potential clients."
     },
     "status": {
       "active": "Active",
@@ -390,6 +390,13 @@
       "unexpectedError": "An unexpected error occurred",
       "submitSuccess": "Listing submitted for review",
       "submitFailed": "Failed to submit for review"
+    },
+    "summary": {
+      "count": "{count} listings",
+      "live": "{count} live",
+      "inReview": "{count} in review",
+      "draft": "{count} draft",
+      "needsAttention": "{count} need attention"
     }
   },
   "messages": {
