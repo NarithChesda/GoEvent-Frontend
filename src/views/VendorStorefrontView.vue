@@ -51,20 +51,7 @@
               <VendorCoverArt v-if="showCoverArt" :name="vendor.name" :logo="realLogo" />
             </Transition>
 
-            <button
-              @click="goBack"
-              class="absolute top-4 left-4 z-10 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center text-slate-700 hover:bg-white transition-colors"
-              :aria-label="t('services.detail.back')"
-            >
-              <ArrowLeft class="w-5 h-5" />
-            </button>
-            <button
-              @click="shareVendor"
-              class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center text-slate-700 hover:bg-white transition-colors"
-              :aria-label="t('services.detail.share')"
-            >
-              <Share2 class="w-5 h-5" />
-            </button>
+            <ServiceHeroActions @back="goBack" @share="shareVendor" />
           </div>
 
           <!-- Profile header -->
@@ -201,7 +188,6 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeft,
-  Share2,
   BadgeCheck,
   MapPin,
   Store,
@@ -214,6 +200,7 @@ import MainLayout from '@/components/MainLayout.vue'
 import { ServiceCard, ServicesEmptyState, type Listing } from '@/components/services'
 import VendorCoverArt from '@/components/services/VendorCoverArt.vue'
 import VendorHeroSlideshow from '@/components/services/detail/VendorHeroSlideshow.vue'
+import ServiceHeroActions from '@/components/services/detail/ServiceHeroActions.vue'
 import ServiceShowcaseCarousel from '@/components/services/detail/ServiceShowcaseCarousel.vue'
 import { useServices } from '@/composables/useServices'
 import { useAppLanguage } from '@/composables/useAppLanguage'

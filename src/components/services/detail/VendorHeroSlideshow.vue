@@ -16,11 +16,9 @@
       />
     </div>
 
-    <!-- Legibility scrims: top for the floating buttons, bottom for the avatar overlap -->
-    <div
-      class="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-slate-900/40 to-transparent pointer-events-none"
-      aria-hidden="true"
-    ></div>
+    <!-- Legibility scrim for the avatar that overlaps the bottom edge. The top
+         edge has none: ServiceHeroActions carries its own scrim, so a second
+         one here only stacked with it and took the photo to near-black. -->
     <div
       class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-900/30 to-transparent pointer-events-none"
       aria-hidden="true"
