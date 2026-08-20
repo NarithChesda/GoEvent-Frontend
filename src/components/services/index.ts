@@ -18,4 +18,10 @@ export { default as ServicesLoadingSkeleton } from './ServicesLoadingSkeleton.vu
 export { default as ServicesEmptyState } from './ServicesEmptyState.vue'
 
 // Re-export types
-export type { Vendor, Listing, ServiceCategory, SortOption } from './types'
+export type {
+  Vendor,
+  Listing,
+  ServiceCategory,
+  SortOption,
+  ContactChannel,
+} from './types'

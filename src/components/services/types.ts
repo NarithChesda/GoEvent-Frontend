@@ -4,6 +4,8 @@
  * Type definitions for the services module.
  */
 
+import type { Component } from 'vue'
+
 export interface Vendor {
   id: string
   name: string
@@ -87,4 +89,24 @@ export interface ServiceCategory {
 export interface SortOption {
   value: string
   label: string
+}
+
+/**
+ * One way to reach a vendor, resolved into everything a button needs.
+ *
+ * Shared because the same channels are offered in four places — the listing's
+ * sidebar card and mobile pill, and the storefront's inline row and mobile
+ * pill — and the ordering rule ("most important first; the first one carries
+ * the label, the rest are icons") only holds if they agree on the shape.
+ */
+export interface ContactChannel {
+  /** Analytics key, also the Vue list key: 'telegram' | 'phone' | … */
+  key: string
+  href: string
+  /** Opens in a new tab, and so needs `rel="noopener noreferrer"` */
+  external: boolean
+  label: string
+  icon: Component
+  /** Background/text classes — Telegram blue, slate-900, or a quiet fill */
+  classes: string
 }

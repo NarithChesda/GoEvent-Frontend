@@ -131,8 +131,19 @@ const centeredScrollLeft = (slide: HTMLElement): number => {
 }
 
 /**
- * Coverflow transforms driven by scroll position: each slide tilts away and
- * scales down proportionally to its distance from the viewport center.
+ * Depth transforms driven by scroll position: each slide recedes and dims in
+ * proportion to its distance from the viewport centre.
+ *
+ * This used to rotate the off-centre slides by up to 24°, which is the
+ * literal iTunes-coverflow move and now reads as a decade-old jQuery plugin —
+ * on a page whose whole job is to make a vendor's work look expensive. Worse,
+ * a hard Y-rotation foreshortens the photograph itself: the further a piece of
+ * work sits from centre, the more distorted the thing we are trying to sell.
+ *
+ * A gallery signals depth without deforming its contents. The rotation is
+ * dropped to a residual 4° — enough to keep the strip from reading as a flat
+ * filmstrip — and the work is carried by scale and opacity instead, both of
+ * which leave the image rectangular.
  */
 const updateTransforms = () => {
   const el = scroller.value
@@ -154,9 +165,9 @@ const updateTransforms = () => {
     if (reducedMotion) {
       slide.style.transform = ''
     } else {
-      slide.style.transform = `perspective(1200px) rotateY(${(-ratio * 24).toFixed(2)}deg) scale(${(1 - abs * 0.12).toFixed(3)})`
+      slide.style.transform = `perspective(1600px) rotateY(${(-ratio * 4).toFixed(2)}deg) scale(${(1 - abs * 0.08).toFixed(3)})`
     }
-    slide.style.opacity = (1 - abs * 0.22).toFixed(3)
+    slide.style.opacity = (1 - abs * 0.35).toFixed(3)
     slide.style.zIndex = String(20 - Math.round(abs * 10))
 
     if (Math.abs(ratio) < nearestDist) {

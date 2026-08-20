@@ -1,6 +1,13 @@
 <template>
+  <!--
+    A cross-fading backdrop for the storefront hero, nothing more. It carries
+    no scrim and no dots of its own: the hero lays the same scrim over every
+    rung of its artwork ladder, and its overlaid name block occupies the corner
+    the dots used to sit in. These photos are borrowed from the vendor's own
+    listing cards further down the page, so there was never anything here to
+    page through deliberately.
+  -->
   <div class="absolute inset-0 overflow-hidden">
-    <!-- Cross-fading image stack with Ken Burns drift -->
     <div
       v-for="(image, index) in images"
       :key="image"
@@ -14,29 +21,6 @@
         class="w-full h-full object-cover"
         :class="{ 'kenburns': index === currentIndex && images.length > 1 }"
       />
-    </div>
-
-    <!-- Legibility scrim for the avatar that overlaps the bottom edge. The top
-         edge has none: ServiceHeroActions carries its own scrim, so a second
-         one here only stacked with it and took the photo to near-black. -->
-    <div
-      class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-900/30 to-transparent pointer-events-none"
-      aria-hidden="true"
-    ></div>
-
-    <!-- Dots indicator -->
-    <div
-      v-if="images.length > 1"
-      class="absolute bottom-3 right-4 flex items-center gap-1.5"
-    >
-      <button
-        v-for="(image, index) in images"
-        :key="`dot-${index}`"
-        @click="goTo(index)"
-        class="rounded-full transition-all duration-300"
-        :class="index === currentIndex ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/75'"
-        :aria-label="`${index + 1} / ${images.length}`"
-      ></button>
     </div>
   </div>
 </template>
@@ -66,11 +50,6 @@ const stopTimer = () => {
     clearInterval(timer)
     timer = null
   }
-}
-
-const goTo = (index: number) => {
-  currentIndex.value = index
-  startTimer() // reset the cadence after a manual jump
 }
 
 onMounted(startTimer)

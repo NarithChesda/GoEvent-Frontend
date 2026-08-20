@@ -134,7 +134,7 @@
 
         <!-- Featured Badge -->
         <div v-if="listing.isFeatured" class="absolute top-2.5 left-2.5">
-          <div class="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-medium rounded-lg shadow-md">
+          <div class="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-xs font-medium rounded-lg shadow-md">
             <Sparkles class="w-3 h-3" />
             {{ t('services.card.featured') }}
           </div>

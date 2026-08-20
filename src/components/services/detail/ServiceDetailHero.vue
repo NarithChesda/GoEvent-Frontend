@@ -19,9 +19,13 @@
       <!-- Overlaid content -->
       <div class="absolute bottom-0 inset-x-0 p-4 sm:p-6 lg:p-8">
         <div class="flex flex-wrap items-center gap-2 mb-2 sm:mb-3">
+          <!-- "Featured" is a GoEvent endorsement, so it carries the brand
+               gradient rather than the amber/orange one it used to invent.
+               DESIGN.md §1.3 defines exactly one UI gradient, and this badge is
+               the only gradient object in the hero. -->
           <span
             v-if="listing.isFeatured"
-            class="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-medium rounded-lg shadow-md"
+            class="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-xs font-medium rounded-lg shadow-md"
           >
             <Sparkles class="w-3 h-3" />
             {{ t('services.card.featured') }}
@@ -37,23 +41,28 @@
           {{ listing.title }}
         </h1>
 
-        <!-- Vendor chip -->
+        <!-- Who is selling. The price used to sit opposite this chip and no
+             longer does: on phones it leads the contact pill fixed to the
+             bottom of the screen, and on desktop it heads the sticky contact
+             card — both always in view, neither needing the hero to repeat
+             them. Here it was a third copy of one figure, set against the
+             title it was competing with. -->
         <component
           :is="vendorLink ? 'router-link' : 'div'"
           v-bind="vendorLink ? { to: vendorLink } : {}"
-          class="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full pl-1 pr-3 py-1 shadow-md"
+          class="inline-flex max-w-full min-w-0 items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full pl-1 pr-3 py-1 shadow-md"
           :class="vendorLink ? 'hover:bg-white transition-colors' : ''"
         >
           <img
             :src="vendorLogoSrc"
             :alt="listing.vendorName"
-            class="w-6 h-6 rounded-full object-cover border border-slate-200"
+            class="w-6 h-6 flex-shrink-0 rounded-full object-cover border border-slate-200"
             @error="handleVendorLogoError"
           />
-          <span class="text-sm font-medium text-slate-900">{{ listing.vendorName }}</span>
+          <span class="truncate text-sm font-medium text-slate-900">{{ listing.vendorName }}</span>
           <BadgeCheck
             v-if="listing.vendorVerified"
-            class="w-4 h-4 text-[#2ecc71]"
+            class="w-4 h-4 flex-shrink-0 text-[#2ecc71]"
             :aria-label="t('services.vendors.verified')"
           />
         </component>
