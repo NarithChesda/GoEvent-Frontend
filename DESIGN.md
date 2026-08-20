@@ -211,7 +211,7 @@ Sub-nav/sidebars `z-40` → contact FAB `z-[55]` → primary FAB `z-[60]` → mo
 
 ## 6. Components
 
-Full class-by-class recipes live in the [design skill](.claude/skills/goevent-design/SKILL.md). The binding principles:
+Full class-by-class recipes live in the [design skill](.claude/skills/goevent-design/SKILL.md). Judgment calls the token scales cannot make for you — whether an element is earned, how many is too many, how much emphasis it deserves — live in the [taste skill](.claude/skills/goevent-taste/SKILL.md); it operates strictly inside the scales below and never overrides them. The binding principles:
 
 - **Buttons**: primary = UI brand gradient + white `font-semibold`; secondary = `bg-slate-100`; ghost = `hover:bg-slate-100`; destructive = `bg-red-600`; empty-state CTAs = dark solid `bg-slate-900`. All buttons declare `disabled:opacity-50 disabled:cursor-not-allowed` and show a spinner + progressive label ("Create" → "Creating…") while loading.
 - **Cards**: white `rounded-2xl` with `border-slate-200/60`, lift on hover via border + `shadow-lg` (never scale). Banners are `aspect-[1.9/1]` with a two-stage image fallback ending in a gradient placeholder. Images route through ImageKit with explicit `tr:w-,h-` transforms.
