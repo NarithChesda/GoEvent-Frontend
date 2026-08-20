@@ -231,7 +231,21 @@
       "websitePlaceholder": "https://yourbusiness.com",
       "addressPlaceholder": "Street address",
       "cityPlaceholder": "City",
-      "countryPlaceholder": "Country"
+      "countryPlaceholder": "Country",
+      "sections": {
+        "brand": "Brand",
+        "brandHint": "Your logo and cover art, and how your business is listed.",
+        "business": "Business",
+        "businessHint": "What you are called and what you offer.",
+        "contactHint": "How organisers reach you about a booking.",
+        "locationHint": "Where you are based, so nearby organisers can find you."
+      },
+      "uploadLogo": "Upload",
+      "replaceLogo": "Replace",
+      "uploadCover": "Upload",
+      "replaceCover": "Replace",
+      "unsavedChanges": "Unsaved changes",
+      "discard": "Discard"
     },
     "messages": {
       "loadFailed": "Failed to load vendor profile",

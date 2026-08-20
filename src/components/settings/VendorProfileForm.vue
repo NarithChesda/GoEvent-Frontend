@@ -1,371 +1,442 @@
 <template>
-  <div class="space-y-6">
-    <div class="flex items-start justify-between gap-4">
-      <div class="flex-1">
-        <div class="flex items-center gap-3 flex-wrap">
-          <h2 class="text-xl font-semibold text-slate-900">
-            {{ mode === 'create' ? t('settings.vendor.form.createTitle') : t('settings.vendor.form.editTitle') }}
-          </h2>
-          <!-- Verification Status Badge -->
-          <span
-            v-if="mode === 'edit' && verificationStatus"
-            :class="[
-              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
-              verificationStatus === 'verified'
-                ? 'bg-emerald-100 text-emerald-700'
-                : verificationStatus === 'pending'
-                  ? 'bg-amber-100 text-amber-700'
-                  : 'bg-slate-100 text-slate-600'
-            ]"
-          >
-            <!-- Verified Icon -->
-            <svg v-if="verificationStatus === 'verified'" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-            <!-- Pending Icon -->
-            <svg v-else-if="verificationStatus === 'pending'" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <!-- Unverified Icon -->
-            <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            {{ verificationStatus === 'verified' ? t('settings.vendor.form.verified') : verificationStatus === 'pending' ? t('settings.vendor.form.pending') : t('settings.vendor.form.unverified') }}
-          </span>
-          <!-- Featured Badge -->
-          <span
-            v-if="mode === 'edit' && vendorProfile?.is_featured"
-            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700"
-            :title="featuredUntilText"
-          >
-            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-            {{ t('settings.vendor.form.featured') }}
-          </span>
-        </div>
-        <p class="text-sm text-slate-500 mt-1">
-          {{ mode === 'create' ? t('settings.vendor.form.createSubtitle') : t('settings.vendor.form.editSubtitle') }}
-        </p>
-        <!-- Listings Count (minimalist stat) -->
-        <p v-if="mode === 'edit' && vendorProfile?.listings_count" class="text-xs text-slate-400 mt-1">
-          {{ t('settings.vendor.form.listingCount', { n: vendorProfile.listings_count }, vendorProfile.listings_count) }}
-        </p>
-      </div>
-      <button
-        v-if="mode === 'create'"
-        @click="$emit('cancel')"
-        class="text-slate-500 hover:text-slate-700 transition-colors flex-shrink-0"
-      >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
+  <div>
+    <h2 class="text-xl font-semibold text-slate-900 mb-2">
+      {{
+        mode === 'create'
+          ? t('settings.vendor.form.createTitle')
+          : t('settings.vendor.form.editTitle')
+      }}
+    </h2>
+    <p class="text-sm text-slate-500 mb-6">
+      {{
+        mode === 'create'
+          ? t('settings.vendor.form.createSubtitle')
+          : t('settings.vendor.form.editSubtitle')
+      }}
+    </p>
 
-    <!-- Success/Error Messages -->
-    <div v-if="successMessage" class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg flex items-center gap-2">
-      <div class="w-5 h-5 bg-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
-        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-        </svg>
-      </div>
-      <span class="font-medium">{{ successMessage }}</span>
-    </div>
-    <div v-if="error" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center gap-2">
-      <div class="w-5 h-5 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
-        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </div>
-      <span class="font-medium">{{ error }}</span>
-    </div>
+    <!--
+      The same settings form the profile tab is built from: one card per group,
+      split into a label rail and a field column, with the chrome imported rather
+      than restated (see settingsFormChrome.ts).
 
-    <form @submit.prevent="handleSubmit" class="space-y-6">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Left Column - Form Fields (2/3 width) -->
-        <div class="lg:col-span-2 space-y-6">
-          <!-- Business Name -->
+      What this replaced was a two-column *page* layout — fields at 2/3 width, a
+      sticky image column at 1/3 — used inside a tab that is already one column
+      of a page, and it broke down twice: the image column vanished entirely in
+      create mode, leaving the fields stranded at two-thirds of the width for no
+      visible reason, and on a phone the images stacked below every field, so the
+      first thing you would think to set about a business was the last thing you
+      could reach.
+    -->
+    <form class="space-y-4 sm:space-y-5" @submit.prevent="onSubmit">
+      <!-- Brand ----------------------------------------------------------- -->
+      <!-- Edit mode only: both uploads PATCH an existing profile, so there is
+           nothing to attach them to until the profile exists. -->
+      <section v-if="mode === 'edit'" :class="sectionCardClass">
+        <div :class="paneClass">
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">
-              {{ t('settings.vendor.form.businessName') }} <span class="text-red-500">*</span>
-            </label>
-            <input
-              v-model="localForm.business_name"
-              type="text"
-              required
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-              :placeholder="t('settings.vendor.form.businessNamePlaceholder')"
-            />
+            <h3 :class="paneTitleClass">{{ t('settings.vendor.form.sections.brand') }}</h3>
+            <p :class="paneHintClass">{{ t('settings.vendor.form.sections.brandHint') }}</p>
           </div>
 
-          <!-- Short Tagline -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.tagline') }}</label>
-            <input
-              v-model="localForm.short_tagline"
-              type="text"
-              maxlength="100"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-              :placeholder="t('settings.vendor.form.taglinePlaceholder')"
-            />
-            <p class="mt-1 text-xs text-slate-500">{{ t('settings.vendor.form.taglineCount', { count: localForm.short_tagline?.length || 0 }) }}</p>
-          </div>
-
-          <!-- Description -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.description') }}</label>
-            <textarea
-              v-model="localForm.description"
-              rows="4"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none bg-white"
-              :placeholder="t('settings.vendor.form.descriptionPlaceholder')"
-            ></textarea>
-          </div>
-
-          <!-- Contact Information Section -->
-          <div class="border-t border-slate-200 pt-6">
-            <h3 class="text-lg font-medium text-slate-900 mb-4">{{ t('settings.vendor.form.contactSection') }}</h3>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <!-- Email -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.businessEmail') }}</label>
-                <input
-                  v-model="localForm.email"
-                  type="email"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-                  :placeholder="t('settings.vendor.form.emailPlaceholder')"
-                />
-              </div>
-
-              <!-- Phone -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.phone') }}</label>
-                <input
-                  v-model="localForm.phone"
-                  type="tel"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-                  :placeholder="t('settings.vendor.form.phonePlaceholder')"
-                />
-              </div>
-
-              <!-- Telegram Username -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.telegramUsername') }}</label>
-                <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">@</span>
-                  <input
-                    v-model="localForm.telegram_username"
-                    type="text"
-                    class="w-full pl-8 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-                    :placeholder="t('settings.vendor.form.telegramPlaceholder')"
-                  />
-                </div>
-              </div>
-
-              <!-- Website -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.website') }}</label>
-                <input
-                  v-model="localForm.website"
-                  type="url"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-                  :placeholder="t('settings.vendor.form.websitePlaceholder')"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Location Section -->
-          <div class="border-t border-slate-200 pt-6">
-            <h3 class="text-lg font-medium text-slate-900 mb-4">{{ t('settings.vendor.form.locationSection') }}</h3>
-
-            <div class="space-y-4">
-              <!-- Address -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.address') }}</label>
-                <input
-                  v-model="localForm.address"
-                  type="text"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-                  :placeholder="t('settings.vendor.form.addressPlaceholder')"
-                />
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- City -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.city') }}</label>
-                  <input
-                    v-model="localForm.city"
-                    type="text"
-                    class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-                    :placeholder="t('settings.vendor.form.cityPlaceholder')"
-                  />
-                </div>
-
-                <!-- Country -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('settings.vendor.form.country') }}</label>
-                  <input
-                    v-model="localForm.country"
-                    type="text"
-                    class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white"
-                    :placeholder="t('settings.vendor.form.countryPlaceholder')"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right Column - Images (1/3 width) -->
-        <div class="lg:col-span-1" v-if="mode === 'edit'">
-          <div class="sticky top-8 space-y-8">
-            <!-- Logo Upload -->
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-3 text-center">{{ t('settings.vendor.form.businessLogo') }}</label>
-              <div class="relative w-32 h-32 mx-auto mb-4">
+            <!-- Logo, in the row grammar the profile tab gives an avatar: the
+                 mark, then who it belongs to, then the labelled action. The name
+                 and badges are a read-out of the form below, not a second place
+                 to edit them — which is why the heading keeps up as you type in
+                 the Business card. -->
+            <div class="flex items-center gap-4 sm:gap-5">
+              <div class="relative flex-shrink-0">
                 <div
-                  v-if="logoUrl"
-                  class="w-32 h-32 rounded-xl overflow-hidden bg-slate-100 border-2 border-slate-300 shadow-lg"
+                  class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border border-slate-200 bg-slate-50"
+                  :class="showLogo ? '' : imagePlaceholderClass"
                 >
                   <img
-                    :src="logoUrl"
-                    alt="Business Logo"
+                    v-if="showLogo"
+                    :key="logoUrl!"
+                    :src="logoUrl!"
+                    alt=""
                     class="w-full h-full object-contain p-2"
-                    @error="handleLogoError"
+                    @error="logoBroken = true"
                   />
-                </div>
-                <div
-                  v-else
-                  class="w-32 h-32 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center text-slate-400 border-2 border-dashed border-slate-300"
-                >
-                  <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+                  <ImageIcon v-else class="w-7 h-7" aria-hidden="true" />
                 </div>
 
-                <!-- Upload button overlay -->
                 <button
                   type="button"
+                  :disabled="isUploading"
+                  :class="[imageActionDiscClass, 'absolute -bottom-1 -right-1']"
+                  :aria-label="logoActionLabel"
+                  :title="logoActionLabel"
                   @click="triggerLogoUpload"
-                  :disabled="isSaving"
-                  class="absolute bottom-0 right-0 w-10 h-10 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 rounded-full flex items-center justify-center text-white shadow-lg transition-colors"
                 >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-                  </svg>
+                  <Loader2 v-if="isUploading" class="w-4 h-4 animate-spin" />
+                  <Upload v-else class="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
-              <p class="text-xs text-slate-500 text-center">{{ t('settings.vendor.form.logoHint') }}</p>
 
-              <input
-                ref="logoInputRef"
-                type="file"
-                accept="image/*"
-                @change="handleLogoSelect"
-                class="hidden"
-              />
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
+                  <p class="truncate text-base sm:text-lg font-semibold text-slate-900">
+                    {{ localForm.business_name?.trim() || '—' }}
+                  </p>
+
+                  <span v-if="verificationStatus" :class="[badgeClass, verificationBadgeTone]">
+                    <component :is="verificationIcon" class="w-3 h-3" aria-hidden="true" />
+                    {{ verificationLabel }}
+                  </span>
+
+                  <!-- Featured is a distinction, not a status, so it wears the
+                       brand as a tint rather than as a filled pill — the save bar
+                       is the one full-strength gradient on this screen. -->
+                  <span
+                    v-if="vendorProfile?.is_featured"
+                    :class="[
+                      badgeClass,
+                      'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 text-slate-700 border-[#2ecc71]/20',
+                    ]"
+                    :title="featuredUntilText"
+                  >
+                    <Star class="w-3 h-3 text-[#2ecc71]" aria-hidden="true" />
+                    {{ t('settings.vendor.form.featured') }}
+                  </span>
+                </div>
+
+                <p class="truncate text-sm text-slate-500 mt-0.5">
+                  {{ t('settings.vendor.form.listingCount', { n: listingCount }, listingCount) }}
+                </p>
+                <p class="text-xs text-slate-400 mt-1.5">
+                  {{ t('settings.vendor.form.logoHint') }}
+                </p>
+              </div>
+
+              <!-- The labelled twin of the disc. On a wide row the disc alone
+                   leaves the right half of the card empty and makes the only way
+                   to change a logo a 36px target; on a phone the disc is the
+                   whole affordance and this drops out. -->
+              <button
+                type="button"
+                :disabled="isUploading"
+                :class="[imageActionClass, 'hidden sm:inline-flex']"
+                @click="triggerLogoUpload"
+              >
+                <Loader2 v-if="isUploading" class="w-4 h-4 animate-spin" aria-hidden="true" />
+                <Upload v-else class="w-4 h-4" aria-hidden="true" />
+                {{ logoActionLabel }}
+              </button>
             </div>
 
-            <!-- Cover Image Upload -->
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-3 text-center">{{ t('settings.vendor.form.coverImage') }}</label>
-              <div class="relative w-full aspect-video mx-auto mb-4">
-                <div
-                  v-if="coverImageUrl"
-                  class="w-full h-full rounded-xl overflow-hidden bg-slate-100 border-2 border-slate-300 shadow-lg"
-                >
-                  <img
-                    :src="coverImageUrl"
-                    alt="Cover Image"
-                    class="w-full h-full object-cover"
-                    @error="handleCoverError"
-                  />
-                </div>
-                <div
-                  v-else
-                  class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center text-slate-400 border-2 border-dashed border-slate-300"
-                >
-                  <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+            <input
+              ref="logoInputRef"
+              type="file"
+              accept="image/*"
+              class="hidden"
+              @change="handleLogoSelect"
+            />
+
+            <!-- Cover. Wide artwork, so it gets a row of its own rather than a
+                 thumbnail too small to judge a crop by. -->
+            <div class="mt-5 pt-5 border-t border-slate-100">
+              <div class="flex items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-medium text-slate-900">
+                    {{ t('settings.vendor.form.coverImage') }}
+                  </p>
+                  <p class="text-xs text-slate-500 mt-0.5">
+                    {{ t('settings.vendor.form.coverHint') }}
+                  </p>
                 </div>
 
-                <!-- Upload button overlay -->
                 <button
                   type="button"
+                  :disabled="isUploading"
+                  :class="imageActionClass"
+                  :aria-label="coverActionLabel"
+                  :title="coverActionLabel"
                   @click="triggerCoverUpload"
-                  :disabled="isSaving"
-                  class="absolute bottom-2 right-2 w-10 h-10 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 rounded-full flex items-center justify-center text-white shadow-lg transition-colors"
                 >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-                  </svg>
+                  <Loader2 v-if="isUploading" class="w-4 h-4 animate-spin" aria-hidden="true" />
+                  <Upload v-else class="w-4 h-4" aria-hidden="true" />
+                  <span class="hidden sm:inline">{{ coverActionLabel }}</span>
                 </button>
               </div>
-              <p class="text-xs text-slate-500 text-center">{{ t('settings.vendor.form.coverHint') }}</p>
+
+              <div
+                class="mt-3 aspect-[3/1] w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
+                :class="showCover ? '' : imagePlaceholderClass"
+              >
+                <img
+                  v-if="showCover"
+                  :key="coverImageUrl!"
+                  :src="coverImageUrl!"
+                  alt=""
+                  class="w-full h-full object-cover"
+                  @error="coverBroken = true"
+                />
+                <ImageIcon v-else class="w-8 h-8" aria-hidden="true" />
+              </div>
 
               <input
                 ref="coverInputRef"
                 type="file"
                 accept="image/*"
-                @change="handleCoverSelect"
                 class="hidden"
+                @change="handleCoverSelect"
               />
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Submit Buttons -->
-      <div :class="[
-        'flex items-center pt-6 border-t border-slate-200',
-        mode === 'create' ? 'justify-between' : 'justify-start'
-      ]">
-        <button
-          type="submit"
-          :disabled="isSaving || !isFormValid"
-          class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow flex items-center gap-2"
-        >
-          <svg v-if="isSaving" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-          </svg>
-          {{ isSaving ? t('settings.vendor.form.saving') : (mode === 'create' ? t('settings.vendor.form.createProfile') : t('settings.vendor.form.saveChanges')) }}
-        </button>
+      <!-- Business -------------------------------------------------------- -->
+      <section :class="sectionCardClass">
+        <div :class="paneClass">
+          <div>
+            <h3 :class="paneTitleClass">{{ t('settings.vendor.form.sections.business') }}</h3>
+            <p :class="paneHintClass">{{ t('settings.vendor.form.sections.businessHint') }}</p>
+          </div>
 
-        <button
-          v-if="mode === 'create'"
-          type="button"
-          @click="$emit('cancel')"
-          class="px-4 py-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
-        >
-          {{ t('settings.vendor.form.cancel') }}
-        </button>
-      </div>
+          <div class="space-y-3 sm:space-y-4">
+            <div>
+              <label :class="labelClass" for="vendor-business-name">
+                {{ t('settings.vendor.form.businessName') }}
+                <span class="text-red-500" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="vendor-business-name"
+                v-model="localForm.business_name"
+                type="text"
+                required
+                autocomplete="organization"
+                :class="fieldClass"
+                :placeholder="t('settings.vendor.form.businessNamePlaceholder')"
+              />
+            </div>
+
+            <div>
+              <label :class="labelClass" for="vendor-tagline">
+                {{ t('settings.vendor.form.tagline') }}
+              </label>
+              <input
+                id="vendor-tagline"
+                v-model="localForm.short_tagline"
+                type="text"
+                maxlength="100"
+                :class="fieldClass"
+                :placeholder="t('settings.vendor.form.taglinePlaceholder')"
+                aria-describedby="vendor-tagline-count"
+              />
+              <p id="vendor-tagline-count" :class="fieldHintClass">
+                {{
+                  t('settings.vendor.form.taglineCount', {
+                    count: localForm.short_tagline?.length || 0,
+                  })
+                }}
+              </p>
+            </div>
+
+            <div>
+              <label :class="labelClass" for="vendor-description">
+                {{ t('settings.vendor.form.description') }}
+              </label>
+              <textarea
+                id="vendor-description"
+                v-model="localForm.description"
+                rows="4"
+                :class="[fieldClass, 'resize-none']"
+                :placeholder="t('settings.vendor.form.descriptionPlaceholder')"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact --------------------------------------------------------- -->
+      <section :class="sectionCardClass">
+        <div :class="paneClass">
+          <div>
+            <h3 :class="paneTitleClass">{{ t('settings.vendor.form.contactSection') }}</h3>
+            <p :class="paneHintClass">{{ t('settings.vendor.form.sections.contactHint') }}</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div>
+              <label :class="labelClass" for="vendor-email">
+                {{ t('settings.vendor.form.businessEmail') }}
+              </label>
+              <input
+                id="vendor-email"
+                v-model="localForm.email"
+                type="email"
+                inputmode="email"
+                autocomplete="email"
+                spellcheck="false"
+                :class="fieldClass"
+                :placeholder="t('settings.vendor.form.emailPlaceholder')"
+              />
+            </div>
+
+            <div>
+              <label :class="labelClass" for="vendor-phone">
+                {{ t('settings.vendor.form.phone') }}
+              </label>
+              <input
+                id="vendor-phone"
+                v-model="localForm.phone"
+                type="tel"
+                inputmode="tel"
+                autocomplete="tel"
+                :class="fieldClass"
+                :placeholder="t('settings.vendor.form.phonePlaceholder')"
+              />
+            </div>
+
+            <div>
+              <label :class="labelClass" for="vendor-telegram">
+                {{ t('settings.vendor.form.telegramUsername') }}
+              </label>
+              <div class="relative">
+                <span
+                  class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400"
+                  aria-hidden="true"
+                  >{{ '@' }}</span
+                >
+                <input
+                  id="vendor-telegram"
+                  v-model="localForm.telegram_username"
+                  type="text"
+                  spellcheck="false"
+                  :class="prefixedFieldClass"
+                  :placeholder="t('settings.vendor.form.telegramPlaceholder')"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label :class="labelClass" for="vendor-website">
+                {{ t('settings.vendor.form.website') }}
+              </label>
+              <input
+                id="vendor-website"
+                v-model="localForm.website"
+                type="url"
+                inputmode="url"
+                spellcheck="false"
+                :class="fieldClass"
+                :placeholder="t('settings.vendor.form.websitePlaceholder')"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Location -------------------------------------------------------- -->
+      <section :class="sectionCardClass">
+        <div :class="paneClass">
+          <div>
+            <h3 :class="paneTitleClass">{{ t('settings.vendor.form.locationSection') }}</h3>
+            <p :class="paneHintClass">{{ t('settings.vendor.form.sections.locationHint') }}</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div class="sm:col-span-2">
+              <label :class="labelClass" for="vendor-address">
+                {{ t('settings.vendor.form.address') }}
+              </label>
+              <input
+                id="vendor-address"
+                v-model="localForm.address"
+                type="text"
+                autocomplete="street-address"
+                :class="fieldClass"
+                :placeholder="t('settings.vendor.form.addressPlaceholder')"
+              />
+            </div>
+
+            <div>
+              <label :class="labelClass" for="vendor-city">
+                {{ t('settings.vendor.form.city') }}
+              </label>
+              <input
+                id="vendor-city"
+                v-model="localForm.city"
+                type="text"
+                autocomplete="address-level2"
+                :class="fieldClass"
+                :placeholder="t('settings.vendor.form.cityPlaceholder')"
+              />
+            </div>
+
+            <div>
+              <label :class="labelClass" for="vendor-country">
+                {{ t('settings.vendor.form.country') }}
+              </label>
+              <input
+                id="vendor-country"
+                v-model="localForm.country"
+                type="text"
+                autocomplete="country-name"
+                :class="fieldClass"
+                :placeholder="t('settings.vendor.form.countryPlaceholder')"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Editing answers to a dirty flag, the way the profile tab's bar does. A
+           create flow keeps its bar out permanently: the way out of a form you
+           opted into belongs beside the way through it, not as a stray × in the
+           heading — that is drawer vocabulary, and this is not a drawer. -->
+      <SettingsSaveBar
+        :visible="mode === 'create' || isDirty || isSaving"
+        :busy="isSaving"
+        :can-save="canSave"
+        :save-label="
+          mode === 'create'
+            ? t('settings.vendor.form.createProfile')
+            : t('settings.vendor.form.saveChanges')
+        "
+        :busy-label="t('settings.vendor.form.saving')"
+        :secondary-label="
+          mode === 'create' ? t('settings.vendor.form.cancel') : t('settings.vendor.form.discard')
+        "
+        :message="mode === 'edit' ? t('settings.vendor.form.unsavedChanges') : undefined"
+        @secondary="onSecondary"
+      />
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { AlertTriangle, BadgeCheck, Clock, ImageIcon, Loader2, Star, Upload } from 'lucide-vue-next'
 import type { VendorProfile } from '@/services/api/types'
 import type { VendorFormData } from '@/composables/settings/useVendorProfile'
+import SettingsSaveBar from './SettingsSaveBar.vue'
+import {
+  fieldClass,
+  fieldHintClass,
+  imageActionClass,
+  imageActionDiscClass,
+  imagePlaceholderClass,
+  labelClass,
+  paneClass,
+  paneHintClass,
+  paneTitleClass,
+  prefixedFieldClass,
+  sectionCardClass,
+} from './settingsFormChrome'
 
 interface Props {
   mode: 'create' | 'edit'
   formData: VendorFormData
   vendorProfile?: VendorProfile | null
+  /** A form save is in flight. */
   isSaving: boolean
-  error: string | null
-  successMessage: string | null
+  /** Artwork is uploading — a separate thing, and only the image row shows it. */
+  isUploading?: boolean
   logoUrl?: string | null
   coverImageUrl?: string | null
   verificationStatus?: 'unverified' | 'pending' | 'verified' | null
@@ -373,48 +444,78 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { t } = useI18n()
-
 const emit = defineEmits<{
-  submit: []
+  submit: [payload: VendorFormData]
   cancel: []
   'upload-logo': [file: File]
   'upload-cover': [file: File]
 }>()
 
-// Local form state (synced with parent)
-const localForm = ref<VendorFormData>({ ...props.formData })
+const { t } = useI18n()
 
-// Watch for external form data changes
+// `formData` is the *saved* profile, in form shape — the parent rebuilds it from
+// the server's response after every successful write. Editing happens in a copy
+// of it, which flows one way: prop in, payload out on submit.
+//
+// It used to be a local ref that two deep watchers kept in step with the prop in
+// both directions, a loop whose only job was to arrive back where it started. It
+// also made "discard" impossible to express — resetting either side was
+// immediately overwritten by the other — and it left no baseline to compare
+// against, so the form could not tell whether anything had been typed at all.
+// One-way, the prop *is* the baseline: dirtiness is a diff, and discarding is a
+// re-copy.
+const localForm = ref<VendorFormData>({ ...props.formData })
 watch(
   () => props.formData,
-  (newData) => {
-    localForm.value = { ...newData }
-  },
-  { deep: true }
+  (saved) => (localForm.value = { ...saved }),
 )
 
-// Sync local changes back to parent form
-watch(
-  localForm,
-  (newForm) => {
-    Object.assign(props.formData, newForm)
-  },
-  { deep: true }
-)
-
-// File inputs
 const logoInputRef = ref<HTMLInputElement | null>(null)
 const coverInputRef = ref<HTMLInputElement | null>(null)
 
-// Image error states
-const logoError = ref(false)
-const coverError = ref(false)
+// Artwork the browser can't fetch falls back to the same empty frame as having
+// none — a broken image element renders its alt text inside the box, which reads
+// as a defect rather than as an upload that hasn't happened yet.
+const logoBroken = ref(false)
+const coverBroken = ref(false)
+watch(
+  () => props.logoUrl,
+  () => (logoBroken.value = false),
+)
+watch(
+  () => props.coverImageUrl,
+  () => (coverBroken.value = false),
+)
 
-// Computed
-const isFormValid = computed(() => {
-  return localForm.value.business_name?.trim().length > 0
-})
+const showLogo = computed(() => !!props.logoUrl && !logoBroken.value)
+const showCover = computed(() => !!props.coverImageUrl && !coverBroken.value)
+
+const badgeClass =
+  'inline-flex flex-shrink-0 items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-semibold uppercase tracking-wide'
+
+const VERIFICATION_TONES = {
+  verified: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  pending: 'bg-amber-50 text-amber-700 border-amber-200',
+  unverified: 'bg-slate-100 text-slate-500 border-slate-200',
+} as const
+
+const VERIFICATION_ICONS = {
+  verified: BadgeCheck,
+  pending: Clock,
+  unverified: AlertTriangle,
+} as const
+
+const verificationBadgeTone = computed(
+  () => VERIFICATION_TONES[props.verificationStatus ?? 'unverified'],
+)
+const verificationIcon = computed(
+  () => VERIFICATION_ICONS[props.verificationStatus ?? 'unverified'],
+)
+const verificationLabel = computed(() =>
+  t(`settings.vendor.form.${props.verificationStatus ?? 'unverified'}`),
+)
+
+const listingCount = computed(() => props.vendorProfile?.listings_count ?? 0)
 
 const featuredUntilText = computed(() => {
   if (!props.vendorProfile?.featured_until) return t('settings.vendor.form.featuredVendor')
@@ -422,46 +523,78 @@ const featuredUntilText = computed(() => {
   return t('settings.vendor.form.featuredUntil', { date: date.toLocaleDateString() })
 })
 
-// Methods
-const triggerLogoUpload = () => {
-  logoInputRef.value?.click()
-}
+const logoActionLabel = computed(() =>
+  props.logoUrl ? t('settings.vendor.form.replaceLogo') : t('settings.vendor.form.uploadLogo'),
+)
+const coverActionLabel = computed(() =>
+  props.coverImageUrl
+    ? t('settings.vendor.form.replaceCover')
+    : t('settings.vendor.form.uploadCover'),
+)
 
-const triggerCoverUpload = () => {
-  coverInputRef.value?.click()
+const TRACKED_FIELDS: (keyof VendorFormData)[] = [
+  'business_name',
+  'description',
+  'short_tagline',
+  'phone',
+  'email',
+  'website',
+  'telegram_username',
+  'address',
+  'city',
+  'country',
+]
+
+// Compared against the saved profile rather than a snapshot taken on mount: the
+// profile is what a successful save writes to, so the bar drops back to "saved"
+// on its own and there is no second copy of the truth to keep in step.
+const isDirty = computed(() =>
+  TRACKED_FIELDS.some(
+    (field) => (localForm.value[field] ?? '').trim() !== (props.formData[field] ?? '').trim(),
+  ),
+)
+
+const isFormValid = computed(() => (localForm.value.business_name ?? '').trim().length > 0)
+
+const canSave = computed(
+  () =>
+    isFormValid.value &&
+    !props.isSaving &&
+    !props.isUploading &&
+    (props.mode === 'create' || isDirty.value),
+)
+
+const triggerLogoUpload = () => logoInputRef.value?.click()
+const triggerCoverUpload = () => coverInputRef.value?.click()
+
+const takeFile = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  // Reset the input so re-picking the same file still fires a change event.
+  target.value = ''
+  return file
 }
 
 const handleLogoSelect = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (file) {
-    emit('upload-logo', file)
-    // Reset input so same file can be selected again
-    target.value = ''
-  }
+  const file = takeFile(event)
+  if (file) emit('upload-logo', file)
 }
 
 const handleCoverSelect = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (file) {
-    emit('upload-cover', file)
-    // Reset input so same file can be selected again
-    target.value = ''
-  }
+  const file = takeFile(event)
+  if (file) emit('upload-cover', file)
 }
 
-const handleLogoError = () => {
-  logoError.value = true
+// One control, two intents: in a create flow it leaves the form, in an edit flow
+// it throws the edit away. Discarding never needs the parent — the baseline is
+// already here as a prop.
+const onSecondary = () => {
+  if (props.mode === 'create') emit('cancel')
+  else localForm.value = { ...props.formData }
 }
 
-const handleCoverError = () => {
-  coverError.value = true
-}
-
-const handleSubmit = () => {
-  if (isFormValid.value) {
-    emit('submit')
-  }
+const onSubmit = () => {
+  if (!canSave.value) return
+  emit('submit', { ...localForm.value })
 }
 </script>

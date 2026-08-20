@@ -231,7 +231,21 @@
       "websitePlaceholder": "https://yourbusiness.com",
       "addressPlaceholder": "អាសយដ្ឋានផ្លូវ",
       "cityPlaceholder": "ក្រុង",
-      "countryPlaceholder": "ប្រទេស"
+      "countryPlaceholder": "ប្រទេស",
+      "sections": {
+        "brand": "ម៉ាក",
+        "brandHint": "និមិត្តសញ្ញា និងរូបភាពគម្រប ព្រមទាំងរបៀបដែលអាជីវកម្មរបស់អ្នកបង្ហាញ។",
+        "business": "អាជីវកម្ម",
+        "businessHint": "ឈ្មោះរបស់អ្នក និងអ្វីដែលអ្នកផ្តល់ជូន។",
+        "contactHint": "របៀបដែលអ្នករៀបចំកម្មវិធីទាក់ទងអ្នកអំពីការកក់។",
+        "locationHint": "ទីតាំងរបស់អ្នក ដើម្បីឱ្យអ្នករៀបចំកម្មវិធីក្បែរនោះរកឃើញអ្នក។"
+      },
+      "uploadLogo": "ផ្ទុកឡើង",
+      "replaceLogo": "ជំនួស",
+      "uploadCover": "ផ្ទុកឡើង",
+      "replaceCover": "ជំនួស",
+      "unsavedChanges": "មានការផ្លាស់ប្តូរមិនទាន់រក្សាទុក",
+      "discard": "បោះបង់"
     },
     "messages": {
       "loadFailed": "បរាជ័យក្នុងការផ្ទុកប្រវត្តិរូបអ្នកលក់",
