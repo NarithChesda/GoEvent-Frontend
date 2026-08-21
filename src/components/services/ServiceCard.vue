@@ -59,12 +59,18 @@
     still come in under that.
   -->
   <div
-    @click="$emit('click', listing)"
-    @keydown.enter="$emit('click', listing)"
-    tabindex="0"
-    role="article"
-    :aria-label="listing.title"
-    class="group relative bg-white rounded-2xl border border-slate-200/60 hover:border-slate-300/80 transition-[border-color,box-shadow] duration-300 hover:shadow-lg hover:shadow-slate-200/40 cursor-pointer overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+    v-bind="rootAttrs"
+    class="group relative overflow-hidden"
+    :class="[
+      embedded
+        ? 'flex-1'
+        : 'bg-white rounded-2xl border border-slate-200/60 hover:border-slate-300/80 transition-[border-color,box-shadow] duration-300 hover:shadow-lg hover:shadow-slate-200/40',
+      preview
+        ? 'select-none'
+        : embedded
+          ? 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset'
+          : 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200',
+    ]"
   >
     <!-- ============================ MOBILE ROW ============================ -->
     <div
@@ -72,8 +78,12 @@
     >
       <!-- Thumbnail. Square rather than the poster's 1.9:1: at this size a wide
            crop leaves a letterbox beside a two-line title, and a square is what
-           lets the row stay as short as its content. -->
-      <div class="relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100">
+           lets the row stay as short as its content. `hideRowCover` drops it
+           entirely — see the prop. -->
+      <div
+        v-if="!hideRowCover"
+        class="relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100"
+      >
         <img
           v-if="hasCover"
           :src="thumbSrc"
@@ -113,15 +123,23 @@
           <span class="truncate font-medium text-slate-600">
             {{ translateServiceCategory(listing.category) }}
           </span>
-          <span aria-hidden="true">·</span>
-          <span
-            class="inline-flex items-center gap-0.5 flex-shrink-0"
-            role="img"
-            :aria-label="t('services.detail.views', { count: listing.views })"
-          >
-            <Eye class="w-3 h-3" aria-hidden="true" />
-            {{ listing.views }}
-          </span>
+          <template v-if="!hideRowViews">
+            <span aria-hidden="true">·</span>
+            <span
+              class="inline-flex items-center gap-0.5 flex-shrink-0"
+              role="img"
+              :aria-label="t('services.detail.views', { count: listing.views })"
+            >
+              <Eye class="w-3 h-3" aria-hidden="true" />
+              {{ listing.views }}
+            </span>
+          </template>
+
+          <!-- Anything the host has to state about this listing at the row's top
+               edge — the vendor's own grid puts the listing's state here. Empty
+               in the catalogue, and display-only wherever it is filled: the row
+               is one control, so a real button may not live inside it. -->
+          <slot name="rowBadge" />
         </div>
 
         <h3 class="mt-0.5 text-[15px] font-semibold text-slate-900 leading-snug line-clamp-2">
@@ -153,7 +171,7 @@
           {{ listing.priceDisplay }}
         </p>
 
-        <div class="flex items-center gap-1 min-w-0 mt-1.5">
+        <div v-if="!hideVendor" class="flex items-center gap-1 min-w-0 mt-1.5">
           <span class="text-xs text-slate-500 truncate">{{ listing.vendorName }}</span>
           <BadgeCheck
             v-if="listing.vendorVerified"
@@ -242,7 +260,10 @@
 
         <!-- Who sells it, closing the card. `mt-auto` so every card in a row
              closes on the same line however tall its title ran. -->
-        <div class="flex items-center gap-2 min-w-0 mt-auto pt-3 sm:pt-4 border-t border-slate-100">
+        <div
+          v-if="!hideVendor"
+          class="flex items-center gap-2 min-w-0 mt-auto pt-3 sm:pt-4 border-t border-slate-100"
+        >
           <img
             :src="vendorLogoSrc"
             :alt="listing.vendorName"
@@ -278,11 +299,80 @@ const { translateServiceCategory } = useCategoryTranslation()
 
 const props = defineProps<{
   listing: Listing
+  /**
+   * The host owns the card's chrome. Drops this component's own ground, border,
+   * radius and hover lift so it can sit inside a surrounding card without
+   * becoming a card-in-card — the vendor's own listings grid does exactly that,
+   * hanging a management footer off the bottom of the same object.
+   *
+   * It also hands over the semantics: an embedded card is one control inside a
+   * larger object rather than the object itself, so it announces as the button
+   * it has always behaved like instead of nesting an `article` role inside the
+   * host's real `<article>`.
+   */
+  embedded?: boolean
+  /**
+   * Drop the "who sells it" line. On the catalogue it is the point; in a
+   * vendor's own management grid it is their own name on every card.
+   */
+  hideVendor?: boolean
+  /**
+   * Drop the phone row's thumbnail, leaving the text column to be inset by the
+   * host. For a host that has its own reason to draw the cover — the vendor's
+   * management card centres a larger one against the whole card, chrome this
+   * component is only part of — and would otherwise be layering a second image
+   * over this one. Desktop is unaffected: the poster's cover is this card's own.
+   */
+  hideRowCover?: boolean
+  /**
+   * Drop the view count from the phone caption line. For a host that needs that
+   * line's right end for a mark of its own — the vendor's management card
+   * states the listing's status there — and has somewhere better to put the
+   * count: its own action row, in the corner this card has none of. Desktop is
+   * unaffected; its caption is not the one under pressure.
+   */
+  hideRowViews?: boolean
+  /**
+   * Render the card as an image of itself: no click, no focus stop, nothing
+   * announced. The listing form draws one of these above its fields so a vendor
+   * is assembling a card they can see rather than answering a questionnaire —
+   * and a preview that could be tabbed to or activated would be a control that
+   * does nothing.
+   *
+   * It is hidden from assistive tech on purpose: every value in it is already
+   * announced by the field that produced it, one line away.
+   */
+  preview?: boolean
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   click: [listing: Listing]
 }>()
+
+/**
+ * Identity, focus and activation in one binding — the three of them move
+ * together between the card's modes, and spelling each out as its own bound
+ * attribute made four conditionals that could drift apart.
+ */
+const rootAttrs = computed(() => {
+  if (props.preview) return { 'aria-hidden': 'true' as const }
+
+  const activate = () => emit('click', props.listing)
+
+  return {
+    tabindex: 0,
+    role: props.embedded ? 'button' : 'article',
+    'aria-label': props.listing.title,
+    onClick: activate,
+    onKeydown: (event: KeyboardEvent) => {
+      // Space as well as Enter: embedded, this announces as a button, and a
+      // button that ignores Space is a button only for mouse users.
+      if (event.key !== 'Enter' && event.key !== ' ') return
+      event.preventDefault()
+      activate()
+    },
+  }
+})
 
 /**
  * Whether the mobile row shows a photo at all. A listing with no cover of its

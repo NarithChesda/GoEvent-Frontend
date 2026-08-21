@@ -231,7 +231,21 @@
       "websitePlaceholder": "https://yourbusiness.com",
       "addressPlaceholder": "អាសយដ្ឋានផ្លូវ",
       "cityPlaceholder": "ក្រុង",
-      "countryPlaceholder": "ប្រទេស"
+      "countryPlaceholder": "ប្រទេស",
+      "sections": {
+        "brand": "ម៉ាក",
+        "brandHint": "និមិត្តសញ្ញា និងរូបភាពគម្រប ព្រមទាំងរបៀបដែលអាជីវកម្មរបស់អ្នកបង្ហាញ។",
+        "business": "អាជីវកម្ម",
+        "businessHint": "ឈ្មោះរបស់អ្នក និងអ្វីដែលអ្នកផ្តល់ជូន។",
+        "contactHint": "របៀបដែលអ្នករៀបចំកម្មវិធីទាក់ទងអ្នកអំពីការកក់។",
+        "locationHint": "ទីតាំងរបស់អ្នក ដើម្បីឱ្យអ្នករៀបចំកម្មវិធីក្បែរនោះរកឃើញអ្នក។"
+      },
+      "uploadLogo": "ផ្ទុកឡើង",
+      "replaceLogo": "ជំនួស",
+      "uploadCover": "ផ្ទុកឡើង",
+      "replaceCover": "ជំនួស",
+      "unsavedChanges": "មានការផ្លាស់ប្តូរមិនទាន់រក្សាទុក",
+      "discard": "បោះបង់"
     },
     "messages": {
       "loadFailed": "បរាជ័យក្នុងការផ្ទុកប្រវត្តិរូបអ្នកលក់",
@@ -327,7 +341,8 @@
       "currentStatus": "ស្ថានភាពបច្ចុប្បន្ន:",
       "pendingReview": "កំពុងរង់ចាំពិនិត្យ",
       "notVendor": "មិនមែនជាអ្នកលក់",
-      "unverified": "មិនទាន់ផ្ទៀងផ្ទាត់"
+      "unverified": "មិនទាន់ផ្ទៀងផ្ទាត់",
+      "goToProfile": "ទៅកាន់ប្រវត្តិរូបអ្នកលក់"
     },
     "title": "បញ្ជីរបស់ខ្ញុំ",
     "subtitle": "គ្រប់គ្រងបញ្ជីសេវាកម្មរបស់អ្នកនិងតាមដានដំណើរការ",
@@ -339,12 +354,18 @@
     },
     "empty": {
       "title": "មិនទាន់មានបញ្ជី",
-      "subtitle": "បង្កើតបញ្ជីសេវាកម្មដំបូងរបស់អ្នកដើម្បីចាប់ផ្តើមទៅដល់អតិថិជនដែលមានសក្តានុពល។",
-      "createFirst": "បង្កើតបញ្ជីដំបូងរបស់អ្នក"
+      "subtitle": "បង្កើតបញ្ជីសេវាកម្មដំបូងរបស់អ្នកដើម្បីចាប់ផ្តើមទៅដល់អតិថិជនដែលមានសក្តានុពល។"
     },
     "status": {
       "active": "សកម្ម",
       "pendingReview": "កំពុងរង់ចាំពិនិត្យ",
+      "draft": "ព្រាង",
+      "rejected": "បដិសេធ",
+      "suspended": "ផ្អាក"
+    },
+    "statusShort": {
+      "active": "សកម្ម",
+      "pendingReview": "រង់ចាំ",
       "draft": "ព្រាង",
       "rejected": "បដិសេធ",
       "suspended": "ផ្អាក"
@@ -376,6 +397,13 @@
       "unexpectedError": "មានកំហុសដែលមិននឹកស្មានដល់",
       "submitSuccess": "បានដាក់ស្នើបញ្ជីសម្រាប់ពិនិត្យ",
       "submitFailed": "បរាជ័យក្នុងការដាក់ស្នើសម្រាប់ពិនិត្យ"
+    },
+    "summary": {
+      "count": "បញ្ជី {count}",
+      "live": "ផ្សាយ {count}",
+      "inReview": "កំពុងពិនិត្យ {count}",
+      "draft": "ព្រាង {count}",
+      "needsAttention": "ត្រូវការកែ {count}"
     }
   },
   "messages": {

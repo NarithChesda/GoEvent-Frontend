@@ -62,7 +62,19 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
   const vendorProfile = ref<VendorProfile | null>(null)
   const isLoading = ref(false)
   const isSaving = ref(false)
+  // Uploading artwork is not saving the form. They shared one flag, so picking a
+  // logo spun the save button and popped the unsaved-changes bar, while saving a
+  // typed change spun both image buttons - each telling the user that something
+  // they had not touched was in progress.
+  const isUploading = ref(false)
   const error = ref<string | null>(null)
+  // Failing to *fetch* the profile and failing to *write* one are different
+  // situations and only the first is a state the whole tab should collapse into.
+  // They shared one ref, so a rejected create - a validation message about one
+  // field - flipped `vendorState` to 'error' (the profile is still null, after
+  // all), unmounting the form the user had just filled in and replacing it with
+  // 'Failed to load vendor profile' and a Try Again button that reloaded nothing.
+  const loadError = ref<string | null>(null)
   const successMessage = ref<string | null>(null)
 
   // Form state
@@ -82,7 +94,7 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
   // Computed
   const vendorState = computed<VendorState>(() => {
     if (isLoading.value) return 'loading'
-    if (error.value && !vendorProfile.value) return 'error'
+    if (loadError.value && !vendorProfile.value) return 'error'
     if (!vendorProfile.value) return 'not_vendor'
 
     const status = vendorProfile.value.verification_status
@@ -156,7 +168,7 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
     if (!authStore.isAuthenticated) {
       resetVendorProfileCache()
       vendorProfile.value = null
-      error.value = null
+      loadError.value = null
       isLoading.value = false
       resetForm()
       return
@@ -178,14 +190,14 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
         isLoading.value = false
       }
       vendorProfile.value = sharedVendorProfile.value
-      error.value = sharedError.value
+      loadError.value = sharedError.value
       if (vendorProfile.value) syncFormFromProfile()
       else resetForm()
       return
     }
 
     isLoading.value = true
-    error.value = null
+    loadError.value = null
 
     inFlightLoad = (async () => {
       try {
@@ -222,7 +234,7 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
     inFlightLoad = null
 
     vendorProfile.value = sharedVendorProfile.value
-    error.value = sharedError.value
+    loadError.value = sharedError.value
     if (vendorProfile.value) syncFormFromProfile()
     else resetForm()
     isLoading.value = false
@@ -318,7 +330,7 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
    * Upload logo
    */
   const uploadLogo = async (file: File) => {
-    isSaving.value = true
+    isUploading.value = true
     error.value = null
 
     try {
@@ -340,7 +352,7 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
       error.value = err?.message || t('settings.vendor.messages.unexpectedError')
       return { success: false, error: error.value }
     } finally {
-      isSaving.value = false
+      isUploading.value = false
     }
   }
 
@@ -348,7 +360,7 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
    * Upload cover image
    */
   const uploadCoverImage = async (file: File) => {
-    isSaving.value = true
+    isUploading.value = true
     error.value = null
 
     try {
@@ -370,7 +382,7 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
       error.value = err?.message || t('settings.vendor.messages.unexpectedError')
       return { success: false, error: error.value }
     } finally {
-      isSaving.value = false
+      isUploading.value = false
     }
   }
 
@@ -379,6 +391,7 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
    */
   const clearMessages = () => {
     error.value = null
+    loadError.value = null
     successMessage.value = null
   }
 
@@ -405,7 +418,9 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
     vendorForm,
     isLoading,
     isSaving,
+    isUploading,
     error,
+    loadError,
     successMessage,
 
     // Computed

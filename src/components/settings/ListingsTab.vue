@@ -1,324 +1,246 @@
 <template>
-  <div class="space-y-6">
-    <!-- Loading State -->
-    <div v-if="isLoading && listings.length === 0" class="flex items-center justify-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600"></div>
+  <div>
+    <!--
+      A vendor's own listings.
+
+      The grid is the catalogue's grid — same component, same three-up columns,
+      same phone row — because the thing a vendor is managing *is* what a client
+      sees, and showing it to them in a second, private layout meant they were
+      editing one object and looking at another. What is added here is only what
+      an owner can see: state, the reviewer's note, and the two things to do
+      about them. See ManagedListingCard for how that rides along without
+      turning into a second card.
+    -->
+
+    <!-- Loading. The vendor profile decides which of the states below applies,
+         so the tab holds this shape until it lands: heading, then the grid the
+         listings will fill. -->
+    <div v-if="isBootstrapping" aria-hidden="true">
+      <div class="animate-pulse">
+        <div class="h-6 w-40 rounded bg-slate-200"></div>
+        <div class="mt-2.5 h-4 w-56 max-w-full rounded bg-slate-100"></div>
+      </div>
+      <div class="mt-5 grid animate-pulse grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+        <div
+          v-for="n in 3"
+          :key="n"
+          class="relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white"
+        >
+          <!-- The phone card's cover square, centred against the whole card —
+               see ManagedListingCard. Everything beside it is inset to clear
+               it. -->
+          <div
+            class="absolute left-3 top-1/2 h-28 w-28 -translate-y-1/2 rounded-xl bg-slate-200 sm:hidden"
+          ></div>
+          <div class="min-h-[4.75rem] p-3 pl-[8.5rem] sm:hidden">
+            <div class="flex items-center gap-2">
+              <div class="h-3 w-1/3 rounded bg-slate-200"></div>
+              <div class="ml-auto h-3 w-16 rounded bg-slate-200"></div>
+            </div>
+            <div class="mt-1.5 h-4 w-11/12 rounded bg-slate-200"></div>
+            <div class="mt-2 h-3.5 w-24 rounded bg-slate-200"></div>
+          </div>
+          <div class="hidden sm:block">
+            <div class="aspect-[1.9/1] bg-slate-200"></div>
+            <div class="p-4 sm:p-5">
+              <div class="mb-2 h-3 w-2/5 rounded bg-slate-200"></div>
+              <div class="mb-2 h-5 w-3/4 rounded bg-slate-200"></div>
+              <div class="h-3 w-2/3 rounded bg-slate-200"></div>
+            </div>
+          </div>
+          <div class="pl-[8.5rem] sm:pl-0">
+            <div
+              class="flex items-center gap-2 border-t border-slate-100 px-3 py-2.5 sm:px-4 sm:py-3"
+            >
+              <div class="h-3 w-8 rounded bg-slate-200 sm:hidden"></div>
+              <div class="hidden h-3 w-16 rounded bg-slate-200 sm:block"></div>
+              <div class="ml-auto h-10 w-24 rounded-lg bg-slate-100 sm:h-8"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Error State -->
-    <div v-else-if="error" class="text-center py-12">
-      <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
+    <!-- Load failure, of either fetch. The profile decides which state this tab
+         is in, so a profile that never arrived has to fail *here* rather than
+         fall through to the block below — an unreachable server is not the same
+         answer as "you are not verified", and telling a verified vendor to go
+         get verified sends them to a tab that will say they already are. -->
+    <div v-else-if="loadFailure" class="px-4 py-12 text-center lg:py-16">
+      <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+        <AlertTriangle class="h-8 w-8 text-red-600" aria-hidden="true" />
       </div>
-      <h3 class="text-lg font-medium text-slate-900 mb-2">{{ t('settings.listings.errorTitle') }}</h3>
-      <p class="text-slate-500 mb-4">{{ error }}</p>
+      <h3 class="mb-2 text-lg font-semibold text-slate-900">
+        {{ t('settings.listings.errorTitle') }}
+      </h3>
+      <p class="mx-auto mb-6 max-w-md text-sm text-slate-500">{{ loadFailure }}</p>
       <button
-        @click="loadListings"
-        class="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors"
+        type="button"
+        class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+        @click="retry"
       >
+        <RefreshCw class="h-4 w-4" aria-hidden="true" />
         {{ t('settings.listings.tryAgain') }}
       </button>
     </div>
 
-    <!-- Not Verified State -->
-    <div v-else-if="!isVerifiedVendor">
-      <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 rounded-xl p-6 sm:p-8">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div class="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <ShieldAlert class="w-7 h-7 text-amber-600" />
-          </div>
-          <div class="flex-1">
-            <h2 class="text-xl font-semibold text-slate-900 mb-2">{{ t('settings.listings.verification.title') }}</h2>
-            <p class="text-slate-600">
-              {{ t('settings.listings.verification.subtitle') }}
-            </p>
-            <div class="flex items-center gap-2 text-sm mt-3">
-              <span class="text-slate-500">{{ t('settings.listings.verification.currentStatus') }}</span>
-              <span
-                :class="[
-                  'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
-                  vendorState === 'pending' ? 'bg-amber-100 text-amber-700' :
-                  vendorState === 'unverified' ? 'bg-slate-100 text-slate-600' :
-                  'bg-red-100 text-red-700'
-                ]"
-              >
-                {{ vendorState === 'pending' ? t('settings.listings.verification.pendingReview') : vendorState === 'not_vendor' ? t('settings.listings.verification.notVendor') : t('settings.listings.verification.unverified') }}
-              </span>
-            </div>
-          </div>
-        </div>
+    <!--
+      Not cleared to list yet.
+
+      This used to be an amber-to-orange panel that named the problem and then
+      stopped — a third palette in a slate-and-brand app, and a dead end: the
+      thing standing between the vendor and this tab lives one tab over, and
+      nothing here said so or went there. Now it is the same centred blocked
+      state the rest of the app uses, and it ends on the way forward.
+    -->
+    <div v-else-if="!isVerifiedVendor" class="px-4 py-12 text-center lg:py-16">
+      <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-50">
+        <ShieldAlert class="h-8 w-8 text-amber-500" aria-hidden="true" />
+      </div>
+      <h3 class="mb-2 text-lg font-semibold text-slate-900">
+        {{ t('settings.listings.verification.title') }}
+      </h3>
+      <p class="mx-auto max-w-md text-sm leading-relaxed text-slate-500">
+        {{ t('settings.listings.verification.subtitle') }}
+      </p>
+
+      <!-- Where they stand, in the same dot-and-word the cards use, so the two
+           kinds of "state" on this tab read as one vocabulary. -->
+      <p class="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-slate-600">
+        <span
+          class="h-1.5 w-1.5 flex-shrink-0 rounded-full"
+          :class="vendorState === 'pending' ? 'bg-amber-400' : 'bg-slate-300'"
+          aria-hidden="true"
+        />
+        {{ vendorStatusLabel }}
+      </p>
+
+      <div class="mt-6">
+        <button
+          type="button"
+          class="group inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+          @click="goToVendorTab"
+        >
+          {{ t('settings.listings.verification.goToProfile') }}
+          <ArrowRight
+            class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
+            aria-hidden="true"
+          />
+        </button>
       </div>
     </div>
 
-    <!-- Listings Content -->
-    <div v-else class="space-y-6">
-      <!-- Header -->
-      <div class="flex items-start justify-between gap-4">
-        <div class="flex-1">
-          <h2 class="text-xl font-semibold text-slate-900">{{ t('settings.listings.title') }}</h2>
-          <p class="text-sm text-slate-500 mt-1">
-            {{ t('settings.listings.subtitle') }}
-          </p>
-        </div>
-        <button
-          @click="openCreateDrawer"
-          class="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow"
+    <!-- Cleared, with or without listings -------------------------------- -->
+    <template v-else>
+      <!--
+        Heading, and everything the old header used to spend a second row on.
+
+        The three counts were their own line of coloured numbers under the
+        title — an emerald 4, an amber 1, a slate 2 — which made the loudest
+        marks on the page a tally nobody acts on. They are the subtitle now,
+        the way the tickets tab states what its list contains: one quiet line
+        that answers "what is in here" before you look.
+
+        The breakdown only appears once every page is loaded. Counted over a
+        partial list it would be a confident sentence about the wrong number.
+
+        Nothing sits beside it: the tab's one primary action is the floating
+        disc at the bottom of the screen, in the slot every list page in the app
+        puts it. See it below the grid.
+      -->
+      <header class="mb-5 min-w-0">
+        <h2 class="text-xl font-semibold text-slate-900">
+          {{ t('settings.listings.title') }}
+        </h2>
+        <p class="mt-1 text-sm text-slate-500">{{ headerLine }}</p>
+      </header>
+
+      <!-- Nothing listed yet. Centred, one object on screen, and the CTA is the
+           only thing on it that can be pressed. -->
+      <div v-if="listings.length === 0 && !isLoading" class="px-4 py-12 text-center lg:py-16">
+        <div
+          class="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 lg:mb-6 lg:h-32 lg:w-32"
         >
-          <Plus class="w-5 h-5" />
-          <span>{{ t('settings.listings.newListing') }}</span>
+          <LayoutList class="h-12 w-12 text-[#2ecc71] lg:h-16 lg:w-16" aria-hidden="true" />
+        </div>
+        <h3 class="mb-2 text-xl font-bold text-slate-900 lg:mb-3 lg:text-2xl">
+          {{ t('settings.listings.empty.title') }}
+        </h3>
+        <p class="mx-auto mb-5 max-w-md text-sm text-slate-600 lg:mb-6 lg:text-base">
+          {{ t('settings.listings.empty.subtitle') }}
+        </p>
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 lg:px-6 lg:py-3 lg:text-base"
+          @click="openCreateDrawer"
+        >
+          <Plus class="h-5 w-5" aria-hidden="true" />
+          {{ t('settings.listings.newListing') }}
         </button>
       </div>
 
-      <!-- Quick Stats (inline) -->
-      <div v-if="listings.length > 0" class="flex items-center gap-6 text-sm">
-        <span class="text-slate-500">
-          <span class="font-medium text-emerald-600">{{ activeCount }}</span> {{ t('settings.listings.stats.active') }}
-        </span>
-        <span class="text-slate-500">
-          <span class="font-medium text-amber-600">{{ pendingCount }}</span> {{ t('settings.listings.stats.pending') }}
-        </span>
-        <span class="text-slate-500">
-          <span class="font-medium text-slate-600">{{ draftCount }}</span> {{ t('settings.listings.stats.draft') }}
-        </span>
-      </div>
-
-      <!-- Empty State -->
-      <div v-if="listings.length === 0 && !isLoading" class="bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-100 rounded-xl p-6 sm:p-8">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div class="w-14 h-14 bg-sky-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Package class="w-7 h-7 text-sky-600" />
-          </div>
-          <div class="flex-1">
-            <h3 class="text-xl font-semibold text-slate-900 mb-2">{{ t('settings.listings.empty.title') }}</h3>
-            <p class="text-slate-600">
-              {{ t('settings.listings.empty.subtitle') }}
-            </p>
-          </div>
+      <!-- The grid. Columns and gaps kept in step with ServiceListingsGrid: the
+           settings column and the services page share the same max widths, so
+           three-up lands on the same card width in both places. -->
+      <div v-else class="pb-16">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+          <ManagedListingCard
+            v-for="listing in listings"
+            :key="listing.id"
+            :listing="listing"
+            :category-name="getCategoryName(listing)"
+            :submitting="isSubmitting === listing.id"
+            @edit="editListing"
+            @submit="submitForReview"
+            @analytics="openAnalytics"
+          />
         </div>
-        <div class="mt-8">
+
+        <div v-if="hasMore" class="mt-6 flex justify-center">
           <button
-            @click="openCreateDrawer"
-            class="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow"
-          >
-            <Plus class="w-5 h-5" />
-            <span>{{ t('settings.listings.empty.createFirst') }}</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Listings List -->
-      <div v-else class="space-y-4">
-        <div
-          v-for="listing in listings"
-          :key="listing.id"
-          class="bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-slate-300 transition-colors"
-        >
-          <!-- Mobile Layout -->
-          <div class="sm:hidden p-4">
-            <div class="flex gap-3">
-              <!-- Content -->
-              <div class="flex-1 min-w-0">
-                <!-- Status Badge -->
-                <div class="flex items-center gap-2 mb-2">
-                  <span
-                    :class="[
-                      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
-                      getStatusClass(listing.status)
-                    ]"
-                  >
-                    {{ getStatusLabel(listing.status) }}
-                  </span>
-                  <span
-                    v-if="listing.is_featured"
-                    class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium"
-                  >
-                    {{ t('settings.listings.featured') }}
-                  </span>
-                </div>
-
-                <!-- Title -->
-                <h3 class="text-base font-medium text-slate-900 mb-1 line-clamp-2">
-                  {{ listing.title }}
-                </h3>
-
-                <!-- Price -->
-                <p class="text-sm font-medium text-sky-600 mb-1">
-                  {{ listing.price_display_text || t('settings.listings.contactForPrice') }}
-                </p>
-
-                <!-- Category -->
-                <div class="flex items-center gap-1.5 text-sm text-slate-500 mb-2">
-                  <Tag class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                  <span class="truncate">{{ getCategoryName(listing) }}</span>
-                </div>
-
-                <!-- Stats -->
-                <div class="flex items-center gap-3 text-xs text-slate-400">
-                  <span class="flex items-center gap-1">
-                    <Eye class="w-3.5 h-3.5" />
-                    {{ listing.views_count || 0 }}
-                  </span>
-                  <span class="flex items-center gap-1">
-                    <MousePointerClick class="w-3.5 h-3.5" />
-                    {{ listing.contact_clicks_count || 0 }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Cover Image -->
-              <div class="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100">
-                <img
-                  v-if="listing.cover_image_url"
-                  :src="getImageUrl(listing.cover_image_url)"
-                  :alt="listing.title"
-                  class="w-full h-full object-cover"
-                />
-                <div
-                  v-else
-                  class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center"
-                >
-                  <ImageIcon class="w-6 h-6 text-slate-400" />
-                </div>
-              </div>
-            </div>
-
-            <!-- Mobile Actions -->
-            <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
-              <button
-                @click="editListing(listing)"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors"
-              >
-                <Pencil class="w-3.5 h-3.5" />
-                {{ t('settings.listings.edit') }}
-              </button>
-              <button
-                v-if="listing.status === 'draft'"
-                @click="submitForReview(listing)"
-                :disabled="isSubmitting === listing.id"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-sky-700 border border-sky-300 hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-50"
-              >
-                <Send class="w-3.5 h-3.5" />
-                {{ isSubmitting === listing.id ? '...' : t('settings.listings.submit') }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Desktop Layout -->
-          <div class="hidden sm:block p-5">
-            <div class="flex gap-5">
-              <!-- Content -->
-              <div class="flex-1 min-w-0">
-                <!-- Status and Category -->
-                <div class="flex items-center gap-2 mb-2">
-                  <span
-                    :class="[
-                      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
-                      getStatusClass(listing.status)
-                    ]"
-                  >
-                    {{ getStatusLabel(listing.status) }}
-                  </span>
-                  <span
-                    v-if="listing.is_featured"
-                    class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium"
-                  >
-                    {{ t('settings.listings.featured') }}
-                  </span>
-                  <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
-                    {{ getCategoryName(listing) }}
-                  </span>
-                </div>
-
-                <!-- Title -->
-                <h3 class="text-lg font-medium text-slate-900 mb-1">
-                  {{ listing.title }}
-                </h3>
-
-                <!-- Description -->
-                <p class="text-sm text-slate-500 mb-2 line-clamp-1">
-                  {{ listing.short_tagline || listing.description }}
-                </p>
-
-                <!-- Price -->
-                <p class="text-sm font-medium text-sky-600 mb-3">
-                  {{ listing.price_display_text || t('settings.listings.contactForPrice') }}
-                </p>
-
-                <!-- Stats -->
-                <div class="flex items-center gap-4 text-sm text-slate-500">
-                  <span class="flex items-center gap-1.5">
-                    <Eye class="w-4 h-4" />
-                    {{ listing.views_count || 0 }} {{ t('settings.listings.views') }}
-                  </span>
-                  <span class="flex items-center gap-1.5">
-                    <MousePointerClick class="w-4 h-4" />
-                    {{ listing.contact_clicks_count || 0 }} {{ t('settings.listings.clicks') }}
-                  </span>
-                </div>
-
-                <!-- Actions -->
-                <div class="flex items-center gap-2 mt-4 pt-4 border-t border-slate-100">
-                  <button
-                    @click="editListing(listing)"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors"
-                  >
-                    <Pencil class="w-4 h-4" />
-                    {{ t('settings.listings.edit') }}
-                  </button>
-                  <button
-                    v-if="listing.status === 'draft'"
-                    @click="submitForReview(listing)"
-                    :disabled="isSubmitting === listing.id"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-sky-700 border border-sky-300 hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-50"
-                  >
-                    <Send class="w-4 h-4" />
-                    {{ isSubmitting === listing.id ? t('settings.listings.submitting') : t('settings.listings.submitForReview') }}
-                  </button>
-                  <button
-                    @click="viewAnalytics(listing)"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors"
-                  >
-                    <BarChart3 class="w-4 h-4" />
-                    {{ t('settings.listings.analyticsBtn') }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Cover Image -->
-              <div class="w-40 h-28 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100">
-                <img
-                  v-if="listing.cover_image_url"
-                  :src="getImageUrl(listing.cover_image_url)"
-                  :alt="listing.title"
-                  class="w-full h-full object-cover"
-                />
-                <div
-                  v-else
-                  class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center"
-                >
-                  <ImageIcon class="w-8 h-8 text-slate-400" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Load More -->
-        <div v-if="hasMore" class="text-center pt-4">
-          <button
-            @click="loadMore"
+            type="button"
             :disabled="isLoading"
-            class="px-6 py-2.5 text-slate-700 hover:text-slate-900 font-medium transition-colors disabled:opacity-50"
+            class="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-6 py-3 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+            @click="loadMore"
           >
+            <Loader2 v-if="isLoading" class="h-4 w-4 animate-spin" aria-hidden="true" />
+            <ChevronDown v-else class="h-4 w-4" aria-hidden="true" />
             {{ isLoading ? t('settings.listings.loading') : t('settings.listings.loadMore') }}
           </button>
         </div>
       </div>
-    </div>
 
-    <!-- Listing Form Drawer -->
+      <!--
+        The tab's one primary action, and so the one gradient object on screen —
+        which is why the empty state above drops it rather than offering the
+        same thing twice at two weights.
+
+        It used to be a small gradient button in the heading row, which on a
+        phone was an unlabelled icon square wedged against the title. Here it is
+        the same disc, size, gradient and press as Create Event on /events and
+        List a Service on /services: the app has one shape for "make a new one",
+        anchored to the shared FAB slot above the tab pill, and this is the
+        third list in it. Hidden while the list is empty, where the empty state
+        already offers the same thing once.
+      -->
+      <button
+        v-if="listings.length > 0"
+        type="button"
+        class="fixed bottom-[var(--fab-bottom)] right-4 lg:right-6 w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center z-[60] group"
+        :aria-label="t('settings.listings.newListing')"
+        @click="openCreateDrawer"
+      >
+        <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
+        <!-- Desktop only: on touch there is no hover to reveal it, only a press
+             that would leave it stuck on screen. -->
+        <div
+          class="hidden lg:block absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
+        >
+          {{ t('settings.listings.newListing') }}
+        </div>
+      </button>
+    </template>
+
     <ListingFormDrawer
       v-model="showFormDrawer"
       :listing-id="editingListingId"
@@ -327,196 +249,161 @@
       @deleted="handleListingDeleted"
     />
 
-    <!-- Analytics Modal -->
-    <Teleport to="body">
-      <Transition name="fade">
-        <div
-          v-if="showAnalyticsModal && selectedListingForAnalytics"
-          class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[1000] flex items-center justify-center p-4"
-          @click.self="showAnalyticsModal = false"
-        >
-          <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-              <h3 class="text-lg font-semibold text-slate-900">{{ t('settings.listings.analyticsModal.title') }}</h3>
-              <button
-                @click="showAnalyticsModal = false"
-                class="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-              >
-                <X class="w-5 h-5 text-slate-500" />
-              </button>
-            </div>
-            <div class="p-6">
-              <h4 class="font-medium text-slate-900 mb-4">{{ selectedListingForAnalytics.title }}</h4>
-
-              <div v-if="isLoadingAnalytics" class="py-8 text-center">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600 mx-auto"></div>
-                <p class="text-sm text-slate-500 mt-2">{{ t('settings.listings.analyticsModal.loadingAnalytics') }}</p>
-              </div>
-
-              <div v-else-if="analytics" class="space-y-6">
-                <!-- Summary Stats -->
-                <div class="grid grid-cols-2 gap-4">
-                  <div class="bg-sky-50 rounded-lg p-4 text-center">
-                    <p class="text-3xl font-bold text-sky-700">{{ analytics.total_views }}</p>
-                    <p class="text-sm text-sky-600">{{ t('settings.listings.analyticsModal.totalViews') }}</p>
-                  </div>
-                  <div class="bg-emerald-50 rounded-lg p-4 text-center">
-                    <p class="text-3xl font-bold text-emerald-700">{{ analytics.total_contact_clicks }}</p>
-                    <p class="text-sm text-emerald-600">{{ t('settings.listings.analyticsModal.contactClicks') }}</p>
-                  </div>
-                </div>
-
-                <!-- Conversion Rate -->
-                <div class="bg-slate-50 rounded-lg p-4">
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm text-slate-600">{{ t('settings.listings.analyticsModal.conversionRate') }}</span>
-                    <span class="text-lg font-semibold text-slate-900">
-                      {{ (analytics.conversion_rate * 100).toFixed(1) }}%
-                    </span>
-                  </div>
-                  <div class="mt-2 h-2 bg-slate-200 rounded-full overflow-hidden">
-                    <div
-                      class="h-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] rounded-full transition-all duration-500"
-                      :style="{ width: `${Math.min(analytics.conversion_rate * 100, 100)}%` }"
-                    ></div>
-                  </div>
-                </div>
-
-                <!-- Trends -->
-                <div v-if="analytics.trends" class="bg-slate-50 rounded-lg p-4">
-                  <p class="text-sm text-slate-600 mb-2">{{ t('settings.listings.analyticsModal.viewTrend', { days: analytics.trends.period_days }) }}</p>
-                  <div class="flex items-center gap-2">
-                    <TrendingUp
-                      v-if="analytics.trends.view_change_percent >= 0"
-                      class="w-5 h-5 text-emerald-600"
-                    />
-                    <TrendingDown
-                      v-else
-                      class="w-5 h-5 text-red-600"
-                    />
-                    <span
-                      :class="[
-                        'text-lg font-semibold',
-                        analytics.trends.view_change_percent >= 0 ? 'text-emerald-700' : 'text-red-700'
-                      ]"
-                    >
-                      {{ analytics.trends.view_change_percent >= 0 ? '+' : '' }}{{ analytics.trends.view_change_percent.toFixed(1) }}%
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Contact Types Breakdown -->
-                <div v-if="analytics.contact_clicks_by_type && Object.keys(analytics.contact_clicks_by_type).length > 0">
-                  <p class="text-sm font-medium text-slate-700 mb-3">{{ t('settings.listings.analyticsModal.contactBreakdown') }}</p>
-                  <div class="space-y-2">
-                    <div
-                      v-for="(count, type) in analytics.contact_clicks_by_type"
-                      :key="type"
-                      class="flex items-center justify-between py-2 px-3 bg-slate-50 rounded-lg"
-                    >
-                      <span class="text-sm text-slate-600 capitalize">{{ type }}</span>
-                      <span class="font-medium text-slate-900">{{ count }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div v-else class="py-8 text-center text-slate-500">
-                {{ t('settings.listings.analyticsModal.noData') }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
-
+    <ListingAnalyticsModal
+      :show="showAnalyticsModal"
+      :listing="selectedListingForAnalytics"
+      @close="showAnalyticsModal = false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import {
+  AlertTriangle,
+  ArrowRight,
+  ChevronDown,
+  LayoutList,
+  Loader2,
   Plus,
-  Pencil,
-  Eye,
-  Tag,
-  BarChart3,
-  Package,
+  RefreshCw,
   ShieldAlert,
-  Send,
-  X,
-  TrendingUp,
-  TrendingDown,
-  MousePointerClick,
-  Image as ImageIcon,
 } from 'lucide-vue-next'
 import { ListingFormDrawer } from '@/components/services'
-import { serviceListingsService, serviceCategoriesService, apiClient } from '@/services/api'
+import ManagedListingCard from './listings/ManagedListingCard.vue'
+import ListingAnalyticsModal from './listings/ListingAnalyticsModal.vue'
+import { serviceCategoriesService, serviceListingsService } from '@/services/api'
 import { useVendorProfile } from '@/composables/settings/useVendorProfile'
 import { useToast } from '@/composables/useToast'
-import type { ServiceListing, ServiceListingAnalytics, ServiceCategory } from '@/services/api/types'
+import type { ServiceCategory, ServiceListing } from '@/services/api/types'
 
 const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
+const { showSuccess, showError } = useToast()
 
-// Vendor profile state
-const { vendorState, loadProfile } = useVendorProfile({ autoLoad: false })
+const { vendorState, loadError, loadProfile } = useVendorProfile({ autoLoad: false })
 const isVerifiedVendor = computed(() => vendorState.value === 'verified')
 
-// Categories for lookup
 const categories = ref<ServiceCategory[]>([])
 
-// Listings state
 const listings = ref<ServiceListing[]>([])
+const totalCount = ref(0)
 const isLoading = ref(false)
+const hasLoadedOnce = ref(false)
 const error = ref<string | null>(null)
 const hasMore = ref(false)
 const currentPage = ref(1)
 
-// UI state
 const showFormDrawer = ref(false)
 const editingListingId = ref<string | null>(null)
 const isSubmitting = ref<string | null>(null)
 
-// Analytics state
 const showAnalyticsModal = ref(false)
 const selectedListingForAnalytics = ref<ServiceListing | null>(null)
-const analytics = ref<ServiceListingAnalytics | null>(null)
-const isLoadingAnalytics = ref(false)
 
-// Toast state
-const { showToast } = useToast()
+/**
+ * 24 rather than 20: the grid is three-up from `lg`, so a page that divides by
+ * three ends on a full row instead of leaving two cards and a hole above the
+ * load-more button.
+ */
+const PAGE_SIZE = 24
 
-// Computed stats
-const activeCount = computed(() => listings.value.filter(l => l.status === 'approved').length)
-const pendingCount = computed(() => listings.value.filter(l => l.status === 'pending_review').length)
-const draftCount = computed(() => listings.value.filter(l => l.status === 'draft').length)
+/**
+ * The profile decides which state this tab is in, so nothing else can render
+ * until it lands — and a verified vendor's first page of listings is part of
+ * the same arrival, or the grid would pop in under a finished heading.
+ */
+const isBootstrapping = computed(
+  () => vendorState.value === 'loading' || (isVerifiedVendor.value && !hasLoadedOnce.value),
+)
 
-// Methods
-const getImageUrl = (url: string | null): string => {
-  if (!url) return ''
-  return apiClient.getProfilePictureUrl(url) || url
+/**
+ * Whichever fetch failed, in the order the tab depends on them: without the
+ * profile there is no way to know which state to render at all, so its failure
+ * outranks a listings failure and is the one the retry re-attempts.
+ */
+const loadFailure = computed(() => {
+  if (vendorState.value === 'error') return loadError.value
+  if (error.value && listings.value.length === 0) return error.value
+  return null
+})
+
+const retry = async () => {
+  if (vendorState.value === 'error') {
+    await loadProfile(true)
+    if (isVerifiedVendor.value) {
+      await Promise.all([loadCategories(), loadListings()])
+    }
+    return
+  }
+  await loadListings()
 }
 
+const activeCount = computed(() => listings.value.filter((l) => l.status === 'approved').length)
+const pendingCount = computed(
+  () => listings.value.filter((l) => l.status === 'pending_review').length,
+)
+const draftCount = computed(() => listings.value.filter((l) => l.status === 'draft').length)
+const attentionCount = computed(
+  () => listings.value.filter((l) => l.status === 'rejected' || l.status === 'suspended').length,
+)
+
+/**
+ * What is in this tab, in one line. Empty until there is something to count —
+ * with no listings the generic subtitle is the only thing that can be said, and
+ * the empty state below repeats none of it.
+ */
+const headerLine = computed(() => {
+  if (listings.value.length === 0) return t('settings.listings.subtitle')
+
+  const parts = [t('settings.listings.summary.count', { count: totalCount.value })]
+
+  // Only once the whole list is in hand — see the header's comment.
+  if (!hasMore.value) {
+    if (activeCount.value > 0)
+      parts.push(t('settings.listings.summary.live', { count: activeCount.value }))
+    if (pendingCount.value > 0)
+      parts.push(t('settings.listings.summary.inReview', { count: pendingCount.value }))
+    if (draftCount.value > 0)
+      parts.push(t('settings.listings.summary.draft', { count: draftCount.value }))
+    if (attentionCount.value > 0)
+      parts.push(t('settings.listings.summary.needsAttention', { count: attentionCount.value }))
+  }
+
+  return parts.join(' · ')
+})
+
+const vendorStatusLabel = computed(() => {
+  if (vendorState.value === 'pending') return t('settings.listings.verification.pendingReview')
+  if (vendorState.value === 'not_vendor') return t('settings.listings.verification.notVendor')
+  return t('settings.listings.verification.unverified')
+})
+
+const goToVendorTab = () => {
+  router.replace({ query: { ...route.query, tab: 'vendor' } })
+}
+
+/**
+ * The listing's category name, however the endpoint chose to send it. The full
+ * serializer nests `category_details`, the brief one flattens `category_name`,
+ * and a payload that carries only the numeric id is resolved from the category
+ * list fetched alongside.
+ */
 const getCategoryName = (listing: ServiceListing): string => {
-  // First try category_details from the listing (full response)
-  if (listing.category_details?.name) {
-    return listing.category_details.name
-  }
-  // Try category_name field (brief response format - API may return this instead)
-  const listingWithCategoryName = listing as ServiceListing & { category_name?: string }
-  if (listingWithCategoryName.category_name) {
-    return listingWithCategoryName.category_name
-  }
-  // Fallback: look up from categories list using category ID
-  // Compare as strings to handle potential type mismatches from API
+  if (listing.category_details?.name) return listing.category_details.name
+
+  const flattened = listing as ServiceListing & { category_name?: string }
+  if (flattened.category_name) return flattened.category_name
+
   if (listing.category != null && categories.value.length > 0) {
-    const listingCategoryId = String(listing.category)
-    const category = categories.value.find(c => String(c.id) === listingCategoryId)
-    if (category) {
-      return category.name
-    }
+    const id = String(listing.category)
+    const match = categories.value.find((c) => String(c.id) === id)
+    if (match) return match.name
   }
+
   return t('settings.listings.uncategorized')
 }
 
@@ -524,56 +411,58 @@ const loadCategories = async () => {
   try {
     const response = await serviceCategoriesService.listCategories()
     if (response.success && response.data) {
-      // Flatten categories to include subcategories for lookup
-      const flattenCategories = (cats: ServiceCategory[]): ServiceCategory[] => {
+      const flatten = (cats: ServiceCategory[]): ServiceCategory[] => {
         const result: ServiceCategory[] = []
         for (const cat of cats) {
           result.push(cat)
-          if (cat.subcategories && cat.subcategories.length > 0) {
-            result.push(...flattenCategories(cat.subcategories))
-          }
+          if (cat.subcategories?.length) result.push(...flatten(cat.subcategories))
         }
         return result
       }
-      categories.value = flattenCategories(response.data.results)
+      categories.value = flatten(response.data.results)
     }
   } catch (err) {
-    console.error('Error loading categories:', err)
+    console.error('Error loading service categories:', err)
   }
 }
 
-const getStatusClass = (status: string): string => {
-  switch (status) {
-    case 'approved':
-      return 'bg-emerald-100 text-emerald-700'
-    case 'pending_review':
-      return 'bg-amber-100 text-amber-700'
-    case 'draft':
-      return 'bg-slate-100 text-slate-700'
-    case 'rejected':
-      return 'bg-red-100 text-red-700'
-    case 'suspended':
-      return 'bg-red-100 text-red-700'
-    default:
-      return 'bg-slate-100 text-slate-700'
-  }
-}
+/**
+ * Fill in listings the list endpoint answered with the *brief* serializer.
+ *
+ * `GET /api/services/listings/` is typed here as returning full listings, but
+ * it can answer with the browse shape — which carries no `status`, no
+ * `admin_notes` and no `contact_clicks_count`. A management grid cannot work
+ * without those: with `status` undefined every card reads as "not a draft", so
+ * a freshly created listing showed its Submit button until the first reload and
+ * never again, and a rejected listing could never show why.
+ *
+ * So anything that came back without a status is re-read in full. This is a
+ * shim, not a design — it costs one request per listing on the page, and it
+ * stops running by itself the moment the endpoint includes the field. See
+ * docs/backend-api-requirements/listing-owner-list-status.md.
+ */
+const hydrateBriefListings = async (page: ServiceListing[]): Promise<ServiceListing[]> => {
+  const brief = page.filter((listing) => listing.status === undefined)
+  if (brief.length === 0) return page
 
-const getStatusLabel = (status: string): string => {
-  switch (status) {
-    case 'approved':
-      return t('settings.listings.status.active')
-    case 'pending_review':
-      return t('settings.listings.status.pendingReview')
-    case 'draft':
-      return t('settings.listings.status.draft')
-    case 'rejected':
-      return t('settings.listings.status.rejected')
-    case 'suspended':
-      return t('settings.listings.status.suspended')
-    default:
-      return status
-  }
+  const details = await Promise.all(
+    brief.map(async (listing) => {
+      try {
+        const response = await serviceListingsService.getListing(listing.id)
+        return response.success && response.data ? response.data : null
+      } catch {
+        return null
+      }
+    }),
+  )
+
+  const byId = new Map(details.filter((d): d is ServiceListing => !!d).map((d) => [d.id, d]))
+  // Merged rather than swapped: the list row is the one that carried
+  // `category_name`, which the detail payload spells differently.
+  return page.map((listing) => {
+    const full = byId.get(listing.id)
+    return full ? { ...listing, ...full } : listing
+  })
 }
 
 const loadListings = async (page = 1) => {
@@ -581,31 +470,28 @@ const loadListings = async (page = 1) => {
   error.value = null
 
   try {
-    const response = await serviceListingsService.getMyListings({ page, page_size: 20 })
+    const response = await serviceListingsService.getMyListings({ page, page_size: PAGE_SIZE })
 
     if (response.success && response.data) {
-      if (page === 1) {
-        listings.value = response.data.results
-      } else {
-        listings.value = [...listings.value, ...response.data.results]
-      }
+      const results = await hydrateBriefListings(response.data.results)
+      listings.value = page === 1 ? results : [...listings.value, ...results]
+      totalCount.value = response.data.count ?? listings.value.length
       hasMore.value = !!response.data.next
       currentPage.value = page
     } else {
       error.value = response.message || t('settings.listings.messages.loadFailed')
     }
-  } catch (err: any) {
-    error.value = err?.message || t('settings.listings.messages.unexpectedError')
+  } catch (err) {
+    error.value = (err as Error)?.message || t('settings.listings.messages.unexpectedError')
     console.error('Error loading listings:', err)
   } finally {
     isLoading.value = false
+    hasLoadedOnce.value = true
   }
 }
 
 const loadMore = () => {
-  if (hasMore.value && !isLoading.value) {
-    loadListings(currentPage.value + 1)
-  }
+  if (hasMore.value && !isLoading.value) loadListings(currentPage.value + 1)
 }
 
 const openCreateDrawer = () => {
@@ -618,100 +504,56 @@ const editListing = (listing: ServiceListing) => {
   showFormDrawer.value = true
 }
 
+const openAnalytics = (listing: ServiceListing) => {
+  selectedListingForAnalytics.value = listing
+  showAnalyticsModal.value = true
+}
+
 const submitForReview = async (listing: ServiceListing) => {
   isSubmitting.value = listing.id
   try {
     const response = await serviceListingsService.submitForReview(listing.id)
 
     if (response.success && response.data) {
-      // Update the listing in the list
-      const index = listings.value.findIndex(l => l.id === listing.id)
-      if (index !== -1) {
-        listings.value[index] = response.data
-      }
-      showToast('success', t('settings.listings.messages.submitSuccess'))
+      const index = listings.value.findIndex((l) => l.id === listing.id)
+      // Merged over the row we already have rather than swapped for it: the
+      // endpoint's payload is the one the card is rebuilt from, and anything it
+      // leaves out — a field only the list carries, a field only the detail
+      // serializer carries — would otherwise blank out on screen.
+      if (index !== -1) listings.value[index] = { ...listings.value[index], ...response.data }
+      showSuccess(t('settings.listings.messages.submitSuccess'))
     } else {
-      showToast('error', response.message || t('settings.listings.messages.submitFailed'))
+      showError(response.message || t('settings.listings.messages.submitFailed'))
     }
-  } catch (err: any) {
-    showToast('error', err?.message || t('settings.listings.messages.submitFailed'))
+  } catch (err) {
+    showError((err as Error)?.message || t('settings.listings.messages.submitFailed'))
   } finally {
     isSubmitting.value = null
   }
 }
 
-const viewAnalytics = async (listing: ServiceListing) => {
-  selectedListingForAnalytics.value = listing
-  showAnalyticsModal.value = true
-  analytics.value = null
-  isLoadingAnalytics.value = true
-
-  try {
-    const response = await serviceListingsService.getAnalytics(listing.id, { period: 'daily', days: 30 })
-
-    if (response.success && response.data) {
-      analytics.value = response.data
-    }
-  } catch (err) {
-    console.error('Error loading analytics:', err)
-  } finally {
-    isLoadingAnalytics.value = false
-  }
-}
-
+// The drawer raises its own save confirmation — see its note on why the message
+// belongs next to the button that produced it.
 const handleListingCreated = (listing: ServiceListing) => {
   listings.value.unshift(listing)
-  // Note: ListingFormDrawer already shows success message
+  totalCount.value += 1
 }
 
 const handleListingUpdated = (listing: ServiceListing) => {
-  const index = listings.value.findIndex(l => l.id === listing.id)
-  if (index !== -1) {
-    listings.value[index] = listing
-  }
-  // Note: ListingFormDrawer already shows success message
+  const index = listings.value.findIndex((l) => l.id === listing.id)
+  // Merged for the same reason `submitForReview` is — see the note there.
+  if (index !== -1) listings.value[index] = { ...listings.value[index], ...listing }
 }
 
 const handleListingDeleted = (listingId: string) => {
-  listings.value = listings.value.filter(l => l.id !== listingId)
-  // Note: ListingFormDrawer already shows success message
+  listings.value = listings.value.filter((l) => l.id !== listingId)
+  totalCount.value = Math.max(0, totalCount.value - 1)
 }
 
-// Initialize
 onMounted(async () => {
   await loadProfile()
   if (isVerifiedVendor.value) {
-    // Load categories and listings in parallel
-    await Promise.all([
-      loadCategories(),
-      loadListings(),
-    ])
+    await Promise.all([loadCategories(), loadListings()])
   }
 })
 </script>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-</style>

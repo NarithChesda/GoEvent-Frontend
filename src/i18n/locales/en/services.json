@@ -85,5 +85,86 @@
     "close": "Close",
     "previous": "Previous photo",
     "next": "Next photo"
+  },
+  "listingForm": {
+    "createTitle": "New listing",
+    "editTitle": "Edit listing",
+    "close": "Close",
+    "delete": "Delete listing",
+    "sections": {
+      "basics": "Basics",
+      "pricing": "Pricing",
+      "photos": "Photos"
+    },
+    "reviewNoteTitle": "What the reviewer asked for",
+    "fields": {
+      "title": "Service title",
+      "titlePlaceholder": "e.g. Full-day wedding photography",
+      "tagline": "Tagline",
+      "taglinePlaceholder": "One line that sells it",
+      "taglineCount": "{count}/150",
+      "description": "Description",
+      "descriptionPlaceholder": "What is included, how you work, what makes it yours",
+      "category": "Category",
+      "categoryPlaceholder": "Select a category",
+      "priceType": "How you price this",
+      "price": "Price",
+      "minPrice": "From",
+      "maxPrice": "Up to",
+      "currency": "Currency",
+      "serviceArea": "Areas you serve",
+      "serviceAreaPlaceholder": "e.g. Phnom Penh, or nationwide",
+      "tags": "Tags",
+      "tagsPlaceholder": "Add a tag",
+      "tagsHint": "Press Enter to add. Tags are how clients find you in search.",
+      "addTag": "Add",
+      "removeTag": "Remove {tag}"
+    },
+    "priceTypes": {
+      "fixed": "Fixed",
+      "range": "Range",
+      "quote": "On request"
+    },
+    "quoteHint": "Clients will see “Contact for quote” instead of a figure.",
+    "gallery": {
+      "add": "Add photo",
+      "hint": "Up to 10 photos. The starred one is your cover.",
+      "cover": "Cover",
+      "setCover": "Set as cover",
+      "remove": "Remove photo"
+    },
+    "actions": {
+      "create": "Create listing",
+      "creating": "Creating…",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "title": "Give this listing a title.",
+      "description": "Add a description so clients know what they are getting.",
+      "category": "Choose a category.",
+      "price": "Enter a price.",
+      "minPrice": "Enter a starting price.",
+      "maxPrice": "Enter an upper price.",
+      "rangeOrder": "The upper price must be higher than the starting price.",
+      "loadFailed": "Could not load this listing.",
+      "saveFailed": "Could not save this listing.",
+      "deleteFailed": "Could not delete this listing.",
+      "mediaFailed": "Listing saved, but some photos did not upload.",
+      "mediaPartial": "Some photos did not upload. Open the listing and add them again."
+    },
+    "messages": {
+      "created": "Listing created",
+      "updated": "Listing updated",
+      "deleted": "Listing deleted"
+    },
+    "moreDetails": "More details (optional)",
+    "preview": {
+      "caption": "How clients will see it",
+      "untitled": "Untitled listing",
+      "noCategory": "Pick a category",
+      "noPrice": "Add a price"
+    }
   }
 }
