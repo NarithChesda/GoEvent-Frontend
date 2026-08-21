@@ -153,7 +153,6 @@
       <!-- Listing Form Drawer (Create/Edit) -->
       <ListingFormDrawer
         v-model="showListingFormDrawer"
-        :listing="editingListing"
         :listing-id="editingListing?.id"
         @created="handleListingCreated"
         @updated="handleListingUpdated"
