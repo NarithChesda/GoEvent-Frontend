@@ -115,13 +115,15 @@
       :form-data="vendorForm"
       :vendor-profile="vendorProfile"
       :is-saving="isSaving"
-      :is-uploading="isUploading"
+      :is-artwork-busy="isArtworkBusy"
       :logo-url="logoUrl"
       :cover-image-url="coverImageUrl"
       :verification-status="verificationStatus"
       @submit="handleUpdateProfile"
       @upload-logo="handleLogoUpload"
       @upload-cover="handleCoverUpload"
+      @remove-logo="removeLogo"
+      @remove-cover="removeCoverImage"
     />
   </div>
 </template>
@@ -144,7 +146,7 @@ const {
   vendorState,
   verificationStatus,
   isSaving,
-  isUploading,
+  isArtworkBusy,
   error,
   loadError,
   successMessage,
@@ -154,7 +156,9 @@ const {
   createProfile,
   updateProfile,
   uploadLogo,
+  removeLogo,
   uploadCoverImage,
+  removeCoverImage,
 } = useVendorProfile()
 
 const showForm = ref(false)

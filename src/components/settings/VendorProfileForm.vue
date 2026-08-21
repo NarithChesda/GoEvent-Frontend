@@ -64,13 +64,13 @@
 
                 <button
                   type="button"
-                  :disabled="isUploading"
+                  :disabled="isArtworkBusy"
                   :class="[imageActionDiscClass, 'absolute -bottom-1 -right-1']"
                   :aria-label="logoActionLabel"
                   :title="logoActionLabel"
                   @click="triggerLogoUpload"
                 >
-                  <Loader2 v-if="isUploading" class="w-4 h-4 animate-spin" />
+                  <Loader2 v-if="isArtworkBusy" class="w-4 h-4 animate-spin" />
                   <Upload v-else class="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
@@ -113,17 +113,40 @@
               <!-- The labelled twin of the disc. On a wide row the disc alone
                    leaves the right half of the card empty and makes the only way
                    to change a logo a 36px target; on a phone the disc is the
-                   whole affordance and this drops out. -->
-              <button
-                type="button"
-                :disabled="isUploading"
-                :class="[imageActionClass, 'hidden sm:inline-flex']"
-                @click="triggerLogoUpload"
-              >
-                <Loader2 v-if="isUploading" class="w-4 h-4 animate-spin" aria-hidden="true" />
-                <Upload v-else class="w-4 h-4" aria-hidden="true" />
-                {{ logoActionLabel }}
-              </button>
+                   whole affordance and this drops out.
+
+                   Remove keeps its label off at every width — a word next to
+                   "Replace" would read as the other half of a pair of equals,
+                   and clearing your brand mark is not the peer of changing it.
+                   It stays on the phone, where Replace does not, because the
+                   disc has no removing twin. Its condition is the *stored*
+                   artwork rather than the rendered one: an image the browser
+                   can't fetch still exists on the profile, and is exactly the
+                   one you would want to clear. -->
+              <div class="flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
+                <button
+                  type="button"
+                  :disabled="isArtworkBusy"
+                  :class="[imageActionClass, 'hidden sm:inline-flex']"
+                  @click="triggerLogoUpload"
+                >
+                  <Loader2 v-if="isArtworkBusy" class="w-4 h-4 animate-spin" aria-hidden="true" />
+                  <Upload v-else class="w-4 h-4" aria-hidden="true" />
+                  {{ logoActionLabel }}
+                </button>
+
+                <button
+                  v-if="logoUrl"
+                  type="button"
+                  :disabled="isArtworkBusy"
+                  :class="imageRemoveClass"
+                  :aria-label="t('settings.vendor.form.removeLogo')"
+                  :title="t('settings.vendor.form.removeLogo')"
+                  @click="pendingRemoval = 'logo'"
+                >
+                  <Trash2 class="w-4 h-4" aria-hidden="true" />
+                </button>
+              </div>
             </div>
 
             <input
@@ -147,18 +170,32 @@
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  :disabled="isUploading"
-                  :class="imageActionClass"
-                  :aria-label="coverActionLabel"
-                  :title="coverActionLabel"
-                  @click="triggerCoverUpload"
-                >
-                  <Loader2 v-if="isUploading" class="w-4 h-4 animate-spin" aria-hidden="true" />
-                  <Upload v-else class="w-4 h-4" aria-hidden="true" />
-                  <span class="hidden sm:inline">{{ coverActionLabel }}</span>
-                </button>
+                <div class="flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
+                  <button
+                    type="button"
+                    :disabled="isArtworkBusy"
+                    :class="imageActionClass"
+                    :aria-label="coverActionLabel"
+                    :title="coverActionLabel"
+                    @click="triggerCoverUpload"
+                  >
+                    <Loader2 v-if="isArtworkBusy" class="w-4 h-4 animate-spin" aria-hidden="true" />
+                    <Upload v-else class="w-4 h-4" aria-hidden="true" />
+                    <span class="hidden sm:inline">{{ coverActionLabel }}</span>
+                  </button>
+
+                  <button
+                    v-if="coverImageUrl"
+                    type="button"
+                    :disabled="isArtworkBusy"
+                    :class="imageRemoveClass"
+                    :aria-label="t('settings.vendor.form.removeCover')"
+                    :title="t('settings.vendor.form.removeCover')"
+                    @click="pendingRemoval = 'cover'"
+                  >
+                    <Trash2 class="w-4 h-4" aria-hidden="true" />
+                  </button>
+                </div>
               </div>
 
               <div
@@ -405,15 +442,38 @@
         @secondary="onSecondary"
       />
     </form>
+
+    <!-- Removing artwork is the one thing on this screen that writes to the
+         server without a save bar in front of it and cannot be undone from the
+         form: the backend deletes the file, so Discard has nothing to restore.
+         The upload path needs no such gate — it replaces rather than destroys,
+         and the file you picked is still on your device. -->
+    <DeleteConfirmModal
+      :show="pendingRemoval !== null"
+      :title="removalPrompt.title"
+      :message="removalPrompt.message"
+      @confirm="confirmRemoval"
+      @cancel="pendingRemoval = null"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { AlertTriangle, BadgeCheck, Clock, ImageIcon, Loader2, Star, Upload } from 'lucide-vue-next'
+import {
+  AlertTriangle,
+  BadgeCheck,
+  Clock,
+  ImageIcon,
+  Loader2,
+  Star,
+  Trash2,
+  Upload,
+} from 'lucide-vue-next'
 import type { VendorProfile } from '@/services/api/types'
 import type { VendorFormData } from '@/composables/settings/useVendorProfile'
+import DeleteConfirmModal from '../DeleteConfirmModal.vue'
 import SettingsSaveBar from './SettingsSaveBar.vue'
 import {
   fieldClass,
@@ -421,6 +481,7 @@ import {
   imageActionClass,
   imageActionDiscClass,
   imagePlaceholderClass,
+  imageRemoveClass,
   labelClass,
   paneClass,
   paneHintClass,
@@ -435,8 +496,8 @@ interface Props {
   vendorProfile?: VendorProfile | null
   /** A form save is in flight. */
   isSaving: boolean
-  /** Artwork is uploading — a separate thing, and only the image row shows it. */
-  isUploading?: boolean
+  /** Artwork is being written — a separate thing, and only the image rows show it. */
+  isArtworkBusy?: boolean
   logoUrl?: string | null
   coverImageUrl?: string | null
   verificationStatus?: 'unverified' | 'pending' | 'verified' | null
@@ -449,6 +510,8 @@ const emit = defineEmits<{
   cancel: []
   'upload-logo': [file: File]
   'upload-cover': [file: File]
+  'remove-logo': []
+  'remove-cover': []
 }>()
 
 const { t } = useI18n()
@@ -560,7 +623,7 @@ const canSave = computed(
   () =>
     isFormValid.value &&
     !props.isSaving &&
-    !props.isUploading &&
+    !props.isArtworkBusy &&
     (props.mode === 'create' || isDirty.value),
 )
 
@@ -583,6 +646,31 @@ const handleLogoSelect = (event: Event) => {
 const handleCoverSelect = (event: Event) => {
   const file = takeFile(event)
   if (file) emit('upload-cover', file)
+}
+
+// Which artwork the confirm modal is currently asking about — one piece of
+// state for both rows, since only one question can be on screen at a time.
+const pendingRemoval = ref<'logo' | 'cover' | null>(null)
+
+const removalPrompt = computed(() =>
+  pendingRemoval.value === 'cover'
+    ? {
+        title: t('settings.vendor.form.removeCoverTitle'),
+        message: t('settings.vendor.form.removeCoverMessage'),
+      }
+    : {
+        title: t('settings.vendor.form.removeLogoTitle'),
+        message: t('settings.vendor.form.removeLogoMessage'),
+      },
+)
+
+// The modal closes on confirm rather than holding a spinner of its own: the row
+// it came from already shows the write in progress, and the toast reports how
+// it went — the same shape the upload path has.
+const confirmRemoval = () => {
+  if (pendingRemoval.value === 'logo') emit('remove-logo')
+  else if (pendingRemoval.value === 'cover') emit('remove-cover')
+  pendingRemoval.value = null
 }
 
 // One control, two intents: in a create flow it leaves the form, in an edit flow

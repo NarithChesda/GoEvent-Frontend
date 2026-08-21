@@ -253,6 +253,12 @@
       "replaceLogo": "Replace",
       "uploadCover": "Upload",
       "replaceCover": "Replace",
+      "removeLogo": "Remove logo",
+      "removeCover": "Remove cover image",
+      "removeLogoTitle": "Remove logo?",
+      "removeLogoMessage": "Your logo will be deleted from your vendor profile.",
+      "removeCoverTitle": "Remove cover image?",
+      "removeCoverMessage": "Your cover image will be deleted from your vendor profile.",
       "unsavedChanges": "Unsaved changes",
       "discard": "Discard"
     },
@@ -266,6 +272,10 @@
       "logoFailed": "Failed to upload logo",
       "coverSuccess": "Cover image uploaded successfully!",
       "coverFailed": "Failed to upload cover image",
+      "logoRemoved": "Logo removed successfully!",
+      "logoRemoveFailed": "Failed to remove logo",
+      "coverRemoved": "Cover image removed successfully!",
+      "coverRemoveFailed": "Failed to remove cover image",
       "unexpectedError": "An unexpected error occurred"
     }
   },
