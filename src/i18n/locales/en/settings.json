@@ -28,12 +28,20 @@
   "security": {
     "title": "Change Password",
     "subtitle": "Update your password to keep your account secure.",
+    "sections": {
+      "current": "Confirm it's you",
+      "currentHint": "Enter the password you sign in with today.",
+      "new": "Choose a new one",
+      "newHint": "Use something you don't use anywhere else. It has to reach Good before you can save."
+    },
     "currentPassword": "Current Password",
     "currentPasswordPlaceholder": "Enter your current password",
     "newPassword": "New Password",
     "newPasswordPlaceholder": "Enter your new password",
     "confirmNewPassword": "Confirm New Password",
     "confirmNewPasswordPlaceholder": "Confirm your new password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "strengthLabel": {
       "veryWeak": "Very Weak",
       "weak": "Weak",
@@ -48,6 +56,7 @@
     "securityNoticeText": "Password must be at least \"Good\" strength (3/5) for account security.",
     "changePassword": "Change Password",
     "changingPassword": "Changing Password...",
+    "clear": "Clear",
     "messages": {
       "rateLimitExceeded": "Too many password change attempts. Please try again in 1 hour.",
       "passwordsDoNotMatch": "Passwords do not match",

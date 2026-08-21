@@ -25,12 +25,26 @@ export const paneTitleClass = 'text-sm font-semibold text-slate-900'
 export const paneHintClass = 'mt-1 text-xs text-slate-500 leading-relaxed'
 
 const FIELD_BASE =
-  'w-full pr-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 bg-white border border-slate-300 rounded-lg transition-colors duration-200 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400'
+  'w-full py-2.5 text-sm text-slate-900 placeholder:text-slate-400 bg-white border border-slate-300 rounded-lg transition-colors duration-200 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400'
 
 /** Text/email/tel/url inputs and textareas. */
-export const fieldClass = `${FIELD_BASE} pl-3.5`
+export const fieldClass = `${FIELD_BASE} pl-3.5 pr-3.5`
 /** Same field with room for a leading affordance (the `@` on a username). */
-export const prefixedFieldClass = `${FIELD_BASE} pl-8`
+export const prefixedFieldClass = `${FIELD_BASE} pl-8 pr-3.5`
+/**
+ * Same field with room for a trailing control inside it — the eye that reveals
+ * a password. The gutter is sized for a 40px tap target (`w-10`) plus the
+ * inset it is nudged off the border by, so the button never sits on the text.
+ */
+export const trailingActionFieldClass = `${FIELD_BASE} pl-3.5 pr-11`
+
+/**
+ * Added to a field class when that field failed validation, and the line that
+ * says why. `goevent-design` §8: the border reddens and the ring follows it, so
+ * a focused invalid field still reads as invalid rather than reverting to sky.
+ */
+export const fieldErrorClass = 'border-red-300 focus:ring-red-200 focus:border-red-400'
+export const fieldErrorTextClass = 'mt-1.5 text-xs text-red-600'
 
 /** Labels go above the input, always — never a placeholder standing in for one. */
 export const labelClass = 'block text-sm font-medium text-slate-700 mb-1.5'
