@@ -1,11 +1,13 @@
 <template>
   <div ref="rootRef" class="relative">
+    <label v-if="label" :for="fieldId" class="block mb-1 text-xs font-medium text-slate-600">{{ label }}</label>
     <div class="flex items-stretch gap-1">
       <!-- Colors accept any name (extras still count toward the positional
            fallbacks), so that variant stays a real text input. Font types are a
            closed backend enum, so that one is a picker with no free text. -->
       <input
         v-if="allowCustom"
+        :id="fieldId"
         :value="modelValue"
         type="text"
         :maxlength="maxlength"
@@ -17,6 +19,7 @@
       />
       <button
         v-else
+        :id="fieldId"
         type="button"
         class="flex-1 min-w-0 flex items-center px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm text-left transition-colors hover:bg-slate-200/70 focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
         @click="open = !open"
@@ -89,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Check, ChevronDown } from 'lucide-vue-next'
 import type { TemplateSlotOption } from './templateSlots'
@@ -103,6 +106,8 @@ interface Props {
   usedValues?: string[]
   placeholder?: string
   maxlength?: number
+  /** Visible label, rendered above the field and associated with it. */
+  label?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -116,6 +121,7 @@ const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 
 const { t, te } = useI18n()
 
+const fieldId = useId()
 const open = ref(false)
 const rootRef = ref<HTMLElement | null>(null)
 

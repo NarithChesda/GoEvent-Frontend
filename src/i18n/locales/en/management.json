@@ -2846,7 +2846,7 @@
     },
     "fallingEffect": {
       "enableLabel": "Enable Falling Particles",
-      "enableHint": "Animated petals, confetti, snowflakes, etc.",
+      "enableHint": "Animated petals, confetti, snowflakes, etc. Shown on the main content stage.",
       "particleType": "Particle Type",
       "intensity": "Intensity",
       "intensityLight": "Light",
@@ -2878,7 +2878,7 @@
     },
     "ambientCreatures": {
       "enableLabel": "Enable Ambient Creatures",
-      "enableHint": "Butterflies, doves, fireflies, dragonflies, balloons, hummingbirds drifting across the page.",
+      "enableHint": "Butterflies, doves, fireflies, dragonflies, balloons, hummingbirds drifting across the cover stage.",
       "count": "Count (1–15)",
       "speed": "Speed",
       "speedSlow": "Slow",
@@ -2921,7 +2921,7 @@
       "bandOuter": "Band outer edge",
       "bandInner": "Band inner edge",
       "bandWarning": "The inner edge must sit further in than the outer edge, or there is no band to light. The default band is used until it does.",
-      "sparkMovedHint": "Drifting sparks are configured in their own section below — they span the whole showcase, so they are no longer part of this border lighting.",
+      "sparkMovedHint": "Drifting sparks are configured in the Effects tab — they span the whole showcase, so they are no longer part of this border lighting.",
       "cornerFlares": "Corner glints",
       "cornerFlaresHint": "Pulsing light on the border's four corners.",
       "colorSource": "Tint Source",
@@ -3009,16 +3009,33 @@
       },
       "cover": {
         "label": "Cover Stage",
-        "description": "The invitation cover — backdrop, frames, logos, ambient creatures, and where each block sits."
+        "description": "The invitation cover — backdrop, frames, logos, and where each block sits."
       },
       "content": {
         "label": "Main Content",
-        "description": "The backdrop, the content card, the blocks laid out on it, and falling particles."
+        "description": "The backdrop, the content card, and the blocks laid out on it."
+      },
+      "effects": {
+        "label": "Effects",
+        "description": "Ambient creatures, falling particles and drifting sparks — the decoration layered over both stages."
       }
     },
     "planRequired": {
       "title": "Pick a package plan first",
       "action": "The available slots depend on it — go to Basics"
+    },
+    "colorField": {
+      "pick": "Pick {name}",
+      "hex": "{name} hex code",
+      "names": {
+        "creatures": "Ambient creatures",
+        "gilding": "Gilded cover border",
+        "coverText": "Cover text block",
+        "calendarMarker": "Circled day",
+        "sparks": "Drifting sparks",
+        "templateColor": "Template color",
+        "fallingEffect": "Falling particles"
+      }
     }
   },
   "tickets": {
