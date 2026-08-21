@@ -24,15 +24,21 @@
         <div
           v-for="n in 3"
           :key="n"
-          class="overflow-hidden rounded-2xl border border-slate-200/60 bg-white"
+          class="relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white"
         >
-          <div class="flex gap-3 p-3 sm:hidden">
-            <div class="h-24 w-24 flex-shrink-0 rounded-xl bg-slate-200"></div>
-            <div class="flex min-w-0 flex-1 flex-col justify-center">
-              <div class="h-3 w-1/2 rounded bg-slate-200"></div>
-              <div class="mt-1.5 h-4 w-11/12 rounded bg-slate-200"></div>
-              <div class="mt-2 h-3.5 w-24 rounded bg-slate-200"></div>
+          <!-- The phone card's cover square, centred against the whole card —
+               see ManagedListingCard. Everything beside it is inset to clear
+               it. -->
+          <div
+            class="absolute left-3 top-1/2 h-28 w-28 -translate-y-1/2 rounded-xl bg-slate-200 sm:hidden"
+          ></div>
+          <div class="min-h-[4.75rem] p-3 pl-[8.5rem] sm:hidden">
+            <div class="flex items-center gap-2">
+              <div class="h-3 w-1/3 rounded bg-slate-200"></div>
+              <div class="ml-auto h-3 w-16 rounded bg-slate-200"></div>
             </div>
+            <div class="mt-1.5 h-4 w-11/12 rounded bg-slate-200"></div>
+            <div class="mt-2 h-3.5 w-24 rounded bg-slate-200"></div>
           </div>
           <div class="hidden sm:block">
             <div class="aspect-[1.9/1] bg-slate-200"></div>
@@ -42,11 +48,14 @@
               <div class="h-3 w-2/3 rounded bg-slate-200"></div>
             </div>
           </div>
-          <div
-            class="flex items-center justify-between border-t border-slate-100 px-3 py-2.5 sm:px-4 sm:py-3"
-          >
-            <div class="h-3 w-16 rounded bg-slate-200"></div>
-            <div class="h-8 w-24 rounded-lg bg-slate-100"></div>
+          <div class="pl-[8.5rem] sm:pl-0">
+            <div
+              class="flex items-center gap-2 border-t border-slate-100 px-3 py-2.5 sm:px-4 sm:py-3"
+            >
+              <div class="h-3 w-8 rounded bg-slate-200 sm:hidden"></div>
+              <div class="hidden h-3 w-16 rounded bg-slate-200 sm:block"></div>
+              <div class="ml-auto h-10 w-24 rounded-lg bg-slate-100 sm:h-8"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -134,30 +143,16 @@
 
         The breakdown only appears once every page is loaded. Counted over a
         partial list it would be a confident sentence about the wrong number.
-      -->
-      <header class="mb-5 flex items-start justify-between gap-3">
-        <div class="min-w-0">
-          <h2 class="text-xl font-semibold text-slate-900">
-            {{ t('settings.listings.title') }}
-          </h2>
-          <p class="mt-1 text-sm text-slate-500">{{ headerLine }}</p>
-        </div>
 
-        <!-- The tab's one primary action, and so the one gradient object on
-             screen — which is why the empty state below drops it rather than
-             offering the same thing twice at two weights. Icon-only on a phone;
-             the label is the first thing to go when the heading beside it is
-             what the row is for. -->
-        <button
-          v-if="listings.length > 0"
-          type="button"
-          class="inline-flex h-10 flex-shrink-0 items-center gap-2 rounded-lg bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-3 text-sm font-semibold text-white shadow-md shadow-[#2ecc71]/20 transition-all duration-200 hover:opacity-90 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 sm:px-4"
-          :aria-label="t('settings.listings.newListing')"
-          @click="openCreateDrawer"
-        >
-          <Plus class="h-5 w-5 flex-shrink-0" aria-hidden="true" />
-          <span class="hidden sm:inline">{{ t('settings.listings.newListing') }}</span>
-        </button>
+        Nothing sits beside it: the tab's one primary action is the floating
+        disc at the bottom of the screen, in the slot every list page in the app
+        puts it. See it below the grid.
+      -->
+      <header class="mb-5 min-w-0">
+        <h2 class="text-xl font-semibold text-slate-900">
+          {{ t('settings.listings.title') }}
+        </h2>
+        <p class="mt-1 text-sm text-slate-500">{{ headerLine }}</p>
       </header>
 
       <!-- Nothing listed yet. Centred, one object on screen, and the CTA is the
@@ -187,7 +182,7 @@
       <!-- The grid. Columns and gaps kept in step with ServiceListingsGrid: the
            settings column and the services page share the same max widths, so
            three-up lands on the same card width in both places. -->
-      <div v-else>
+      <div v-else class="pb-16">
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           <ManagedListingCard
             v-for="listing in listings"
@@ -214,6 +209,36 @@
           </button>
         </div>
       </div>
+
+      <!--
+        The tab's one primary action, and so the one gradient object on screen —
+        which is why the empty state above drops it rather than offering the
+        same thing twice at two weights.
+
+        It used to be a small gradient button in the heading row, which on a
+        phone was an unlabelled icon square wedged against the title. Here it is
+        the same disc, size, gradient and press as Create Event on /events and
+        List a Service on /services: the app has one shape for "make a new one",
+        anchored to the shared FAB slot above the tab pill, and this is the
+        third list in it. Hidden while the list is empty, where the empty state
+        already offers the same thing once.
+      -->
+      <button
+        v-if="listings.length > 0"
+        type="button"
+        class="fixed bottom-[var(--fab-bottom)] right-4 lg:right-6 w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center z-[60] group"
+        :aria-label="t('settings.listings.newListing')"
+        @click="openCreateDrawer"
+      >
+        <Plus class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
+        <!-- Desktop only: on touch there is no hover to reveal it, only a press
+             that would leave it stuck on screen. -->
+        <div
+          class="hidden lg:block absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
+        >
+          {{ t('settings.listings.newListing') }}
+        </div>
+      </button>
     </template>
 
     <ListingFormDrawer

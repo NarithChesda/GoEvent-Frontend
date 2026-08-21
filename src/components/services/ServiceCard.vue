@@ -78,8 +78,12 @@
     >
       <!-- Thumbnail. Square rather than the poster's 1.9:1: at this size a wide
            crop leaves a letterbox beside a two-line title, and a square is what
-           lets the row stay as short as its content. -->
-      <div class="relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100">
+           lets the row stay as short as its content. `hideRowCover` drops it
+           entirely — see the prop. -->
+      <div
+        v-if="!hideRowCover"
+        class="relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100"
+      >
         <img
           v-if="hasCover"
           :src="thumbSrc"
@@ -119,15 +123,23 @@
           <span class="truncate font-medium text-slate-600">
             {{ translateServiceCategory(listing.category) }}
           </span>
-          <span aria-hidden="true">·</span>
-          <span
-            class="inline-flex items-center gap-0.5 flex-shrink-0"
-            role="img"
-            :aria-label="t('services.detail.views', { count: listing.views })"
-          >
-            <Eye class="w-3 h-3" aria-hidden="true" />
-            {{ listing.views }}
-          </span>
+          <template v-if="!hideRowViews">
+            <span aria-hidden="true">·</span>
+            <span
+              class="inline-flex items-center gap-0.5 flex-shrink-0"
+              role="img"
+              :aria-label="t('services.detail.views', { count: listing.views })"
+            >
+              <Eye class="w-3 h-3" aria-hidden="true" />
+              {{ listing.views }}
+            </span>
+          </template>
+
+          <!-- Anything the host has to state about this listing at the row's top
+               edge — the vendor's own grid puts the listing's state here. Empty
+               in the catalogue, and display-only wherever it is filled: the row
+               is one control, so a real button may not live inside it. -->
+          <slot name="rowBadge" />
         </div>
 
         <h3 class="mt-0.5 text-[15px] font-semibold text-slate-900 leading-snug line-clamp-2">
@@ -304,6 +316,22 @@ const props = defineProps<{
    * vendor's own management grid it is their own name on every card.
    */
   hideVendor?: boolean
+  /**
+   * Drop the phone row's thumbnail, leaving the text column to be inset by the
+   * host. For a host that has its own reason to draw the cover — the vendor's
+   * management card centres a larger one against the whole card, chrome this
+   * component is only part of — and would otherwise be layering a second image
+   * over this one. Desktop is unaffected: the poster's cover is this card's own.
+   */
+  hideRowCover?: boolean
+  /**
+   * Drop the view count from the phone caption line. For a host that needs that
+   * line's right end for a mark of its own — the vendor's management card
+   * states the listing's status there — and has somewhere better to put the
+   * count: its own action row, in the corner this card has none of. Desktop is
+   * unaffected; its caption is not the one under pressure.
+   */
+  hideRowViews?: boolean
   /**
    * Render the card as an image of itself: no click, no focus stop, nothing
    * announced. The listing form draws one of these above its fields so a vendor

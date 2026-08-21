@@ -363,6 +363,13 @@
       "rejected": "Rejected",
       "suspended": "Suspended"
     },
+    "statusShort": {
+      "active": "Active",
+      "pendingReview": "Pending",
+      "draft": "Draft",
+      "rejected": "Rejected",
+      "suspended": "Suspended"
+    },
     "featured": "Featured",
     "contactForPrice": "Contact for price",
     "uncategorized": "Uncategorized",

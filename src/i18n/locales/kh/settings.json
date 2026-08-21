@@ -363,6 +363,13 @@
       "rejected": "បដិសេធ",
       "suspended": "ផ្អាក"
     },
+    "statusShort": {
+      "active": "សកម្ម",
+      "pendingReview": "រង់ចាំ",
+      "draft": "ព្រាង",
+      "rejected": "បដិសេធ",
+      "suspended": "ផ្អាក"
+    },
     "featured": "ត្រូវបានណែនាំ",
     "contactForPrice": "ទាក់ទងសម្រាប់តម្លៃ",
     "uncategorized": "គ្មានប្រភេទ",
