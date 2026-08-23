@@ -127,14 +127,17 @@
                 <span class="text-sm font-medium">{{ t('common.nav.myTickets') }}</span>
               </RouterLink>
 
+              <!-- Gated on holding a vendor profile, which is exactly what the
+                   credit-pack endpoints check — so the link never leads to a
+                   403, and wholesale pricing stays off consumer menus. -->
               <RouterLink
-                v-if="authStore.user?.is_partner"
-                to="/commission"
+                v-if="isVendor"
+                to="/credits"
                 @click="closeUserMenu"
                 class="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-200"
                 role="menuitem"
               >
-                <span class="text-sm font-medium">{{ t('common.nav.commission') }}</span>
+                <span class="text-sm font-medium">{{ t('common.nav.credits') }}</span>
               </RouterLink>
 
               <!-- Language — a straight toggle, not a submenu, same as the
@@ -331,7 +334,7 @@ const router = useRouter()
 const { t, locale, setLocale, availableLocales, currentLocaleOption } = useAppLanguage()
 
 // Vendor profile for showing listings link
-const { vendorState } = useVendorProfile({ autoLoad: true })
+const { vendorState, isVendor } = useVendorProfile({ autoLoad: true })
 const isVerifiedVendor = computed(() => vendorState.value === 'verified')
 
 // Navigation items configuration (matching top nav)

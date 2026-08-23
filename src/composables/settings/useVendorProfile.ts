@@ -62,11 +62,11 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
   const vendorProfile = ref<VendorProfile | null>(null)
   const isLoading = ref(false)
   const isSaving = ref(false)
-  // Uploading artwork is not saving the form. They shared one flag, so picking a
-  // logo spun the save button and popped the unsaved-changes bar, while saving a
-  // typed change spun both image buttons - each telling the user that something
-  // they had not touched was in progress.
-  const isUploading = ref(false)
+  // Writing artwork - uploading one or clearing one - is not saving the form.
+  // They shared one flag, so picking a logo spun the save button and popped the
+  // unsaved-changes bar, while saving a typed change spun both image buttons -
+  // each telling the user that something they had not touched was in progress.
+  const isArtworkBusy = ref(false)
   const error = ref<string | null>(null)
   // Failing to *fetch* the profile and failing to *write* one are different
   // situations and only the first is a state the whole tab should collapse into.
@@ -327,64 +327,79 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
   }
 
   /**
-   * Upload logo
+   * Writes one artwork field, which is a one-field multipart PATCH either way:
+   * a `File` uploads it, and the empty string clears it. The empty string is
+   * this backend's convention for removing an image everywhere else too (hosts,
+   * dress codes, template assets) - DRF reads a blank multipart value for a
+   * nullable ImageField as `null`, and the model's `save()` then deletes the
+   * file that was there, so a removal cannot be undone by the API.
    */
-  const uploadLogo = async (file: File) => {
-    isUploading.value = true
+  const writeArtwork = async (
+    field: 'logo' | 'cover_image',
+    value: File | '',
+    messageKeys: { success: string; failure: string },
+  ) => {
+    isArtworkBusy.value = true
     error.value = null
 
     try {
       const formData = new FormData()
-      formData.append('logo', file)
+      formData.append(field, value)
 
       const response = await vendorService.updateMyProfile(formData)
 
       if (response.success && response.data) {
         vendorProfile.value = response.data
         sharedVendorProfile.value = response.data
-        successMessage.value = t('settings.vendor.messages.logoSuccess')
+        successMessage.value = t(messageKeys.success)
         return { success: true }
       } else {
-        error.value = response.message || t('settings.vendor.messages.logoFailed')
+        error.value = response.message || t(messageKeys.failure)
         return { success: false, error: error.value }
       }
     } catch (err: any) {
       error.value = err?.message || t('settings.vendor.messages.unexpectedError')
       return { success: false, error: error.value }
     } finally {
-      isUploading.value = false
+      isArtworkBusy.value = false
     }
   }
 
   /**
+   * Upload logo
+   */
+  const uploadLogo = (file: File) =>
+    writeArtwork('logo', file, {
+      success: 'settings.vendor.messages.logoSuccess',
+      failure: 'settings.vendor.messages.logoFailed',
+    })
+
+  /**
+   * Remove the logo
+   */
+  const removeLogo = () =>
+    writeArtwork('logo', '', {
+      success: 'settings.vendor.messages.logoRemoved',
+      failure: 'settings.vendor.messages.logoRemoveFailed',
+    })
+
+  /**
    * Upload cover image
    */
-  const uploadCoverImage = async (file: File) => {
-    isUploading.value = true
-    error.value = null
+  const uploadCoverImage = (file: File) =>
+    writeArtwork('cover_image', file, {
+      success: 'settings.vendor.messages.coverSuccess',
+      failure: 'settings.vendor.messages.coverFailed',
+    })
 
-    try {
-      const formData = new FormData()
-      formData.append('cover_image', file)
-
-      const response = await vendorService.updateMyProfile(formData)
-
-      if (response.success && response.data) {
-        vendorProfile.value = response.data
-        sharedVendorProfile.value = response.data
-        successMessage.value = t('settings.vendor.messages.coverSuccess')
-        return { success: true }
-      } else {
-        error.value = response.message || t('settings.vendor.messages.coverFailed')
-        return { success: false, error: error.value }
-      }
-    } catch (err: any) {
-      error.value = err?.message || t('settings.vendor.messages.unexpectedError')
-      return { success: false, error: error.value }
-    } finally {
-      isUploading.value = false
-    }
-  }
+  /**
+   * Remove the cover image
+   */
+  const removeCoverImage = () =>
+    writeArtwork('cover_image', '', {
+      success: 'settings.vendor.messages.coverRemoved',
+      failure: 'settings.vendor.messages.coverRemoveFailed',
+    })
 
   /**
    * Clear messages
@@ -418,7 +433,7 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
     vendorForm,
     isLoading,
     isSaving,
-    isUploading,
+    isArtworkBusy,
     error,
     loadError,
     successMessage,
@@ -435,7 +450,9 @@ export function useVendorProfile(options: UseVendorProfileOptions = {}) {
     createProfile,
     updateProfile,
     uploadLogo,
+    removeLogo,
     uploadCoverImage,
+    removeCoverImage,
     syncFormFromProfile,
     resetForm,
     clearMessages,

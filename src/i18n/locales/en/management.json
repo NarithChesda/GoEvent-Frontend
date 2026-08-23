@@ -1393,7 +1393,7 @@
     "form": {
       "emailLabel": "Referrer Email",
       "emailPlaceholder": "Enter referrer's email address",
-      "emailHint": "The referrer must have an account in the system and is our partner",
+      "emailHint": "The referrer must already have an account on GoEvent",
       "cancelBtn": "Cancel",
       "savingLong": "Saving...",
       "savingShort": "Saving",
@@ -1404,8 +1404,8 @@
     },
     "info": {
       "title": "About Event Referrers",
-      "body": "A referrer is the person or vendor who introduced you to our platform. They may earn rewards or commissions based on your purchases.",
-      "note": "Note: The referrer must have an existing account in the system and is our partner to be assigned."
+      "body": "A referrer is the person or business who introduced you to GoEvent. If they are one of our partners, their logo appears alongside ours on this event’s invitation.",
+      "note": "Note: the referrer must have an existing account to be assigned."
     },
     "removeModal": {
       "title": "Remove Referrer?",
@@ -1581,39 +1581,78 @@
       "paymentMethod": "Payment method",
       "loadingMethods": "Loading methods...",
       "noMethods": "No payment methods available for this event yet.",
-      "howToPay": "How to Pay",
-      "step1": {
-        "title": "Copy the payment amount"
-      },
       "step2": {
-        "title": "Transfer to this account",
         "scanQr": "Scan with your banking app",
         "openBankApp": "Open in Bank App",
-        "bankDetails": "Bank Details",
-        "bank": "Bank:",
-        "account": "Account:",
-        "name": "Name:"
+        "bank": "Bank",
+        "account": "Account",
+        "name": "Name"
       },
       "step3": {
-        "title": "Upload payment receipt",
         "hint": "Screenshot your transfer confirmation for faster verification",
-        "chooseFile": "Choose file or drag here",
+        "chooseFile": "Add a screenshot or PDF",
         "fileTypes": "JPG, PNG, PDF up to 10MB"
       },
       "copied": "Copied!",
       "copy": "Copy",
-      "noMethodSelected": {
-        "title": "Select a payment method",
-        "hint": "Choose from the options above to see payment instructions"
-      },
-      "additionalDetails": "Additional Details",
+      "additionalDetails": "Reference and notes",
       "optional": "Optional",
       "transactionRef": "Transaction Reference",
       "transactionRefPlaceholder": "Enter transaction ID",
       "notes": "Notes",
       "notesPlaceholder": "Any additional notes for the host",
       "submitBtn": "Submit Payment",
-      "submitting": "Submitting..."
+      "submitting": "Submitting...",
+      "errorTitle": "Error",
+      "copyFailed": "Couldn't copy to the clipboard",
+      "fileTooLarge": "File size must be less than 10MB",
+      "fileTypeNotAllowed": "File type not allowed. Please use JPG, PNG, GIF, WebP or PDF",
+      "promoRequired": "Enter a promo code",
+      "promoNoTemplate": "Select a template first",
+      "promoInvalid": "Invalid promo code",
+      "promoFailed": "Couldn't validate the promo code",
+      "promoAppliedTitle": "Promo code applied",
+      "promoAppliedMessage": "Promo code \"{code}\" applied successfully.",
+      "refTooShort": "Transaction reference must be at least 3 characters long",
+      "refTooLong": "Transaction reference must be less than 100 characters",
+      "refInvalidChars": "Transaction reference can only contain letters, numbers, dashes, underscores and spaces",
+      "selectMethodError": "Please select a payment method.",
+      "submitFailed": "Error submitting payment. Please try again.",
+      "submitFailedTitle": "Payment failed",
+      "submitSuccessTitle": "Payment submitted",
+      "submitSuccessMessage": "Your payment has been submitted and is pending review.",
+      "creditSuccessTitle": "Template activated",
+      "creditSuccessMessage": "Your showcase is live — guests can see it now.",
+      "activateBtn": "Activate now",
+      "activating": "Activating…",
+      "funding": {
+        "heading": "How to pay for this",
+        "partnerRate": "Partner rate",
+        "credit": {
+          "title": "Use a partner credit",
+          "remaining": "{n} credit left | {n} credits left",
+          "instant": "activates instantly",
+          "expires": "Credits expire {date}",
+          "cost": "1 credit",
+          "costPlus": "1 credit + ${amount}",
+          "outcome": "Activating spends 1 credit. You'll have {n} left, with nothing to transfer and no receipt to upload.",
+          "outcomeSimple": "Activating now spends 1 credit. Nothing to transfer, no receipt to upload."
+        },
+        "standard": {
+          "title": "Pay by transfer",
+          "hint": "Upload your receipt and we confirm it"
+        }
+      },
+      "promoLabel": "Promo code",
+      "sendExactly": "Send exactly",
+      "qrAlt": "QR code for {name}",
+      "promoPrompt": "Have a promo code?",
+      "receipt": {
+        "title": "Payment receipt",
+        "recommended": "Recommended",
+        "required": "Required",
+        "remove": "Remove"
+      }
     },
     "updateModal": {
       "title": "Update Payment",
@@ -2846,7 +2885,7 @@
     },
     "fallingEffect": {
       "enableLabel": "Enable Falling Particles",
-      "enableHint": "Animated petals, confetti, snowflakes, etc.",
+      "enableHint": "Animated petals, confetti, snowflakes, etc. Shown on the main content stage.",
       "particleType": "Particle Type",
       "intensity": "Intensity",
       "intensityLight": "Light",
@@ -2878,7 +2917,7 @@
     },
     "ambientCreatures": {
       "enableLabel": "Enable Ambient Creatures",
-      "enableHint": "Butterflies, doves, fireflies, dragonflies, balloons, hummingbirds drifting across the page.",
+      "enableHint": "Butterflies, doves, fireflies, dragonflies, balloons, hummingbirds drifting across the cover stage.",
       "count": "Count (1–15)",
       "speed": "Speed",
       "speedSlow": "Slow",
@@ -2921,7 +2960,7 @@
       "bandOuter": "Band outer edge",
       "bandInner": "Band inner edge",
       "bandWarning": "The inner edge must sit further in than the outer edge, or there is no band to light. The default band is used until it does.",
-      "sparkMovedHint": "Drifting sparks are configured in their own section below — they span the whole showcase, so they are no longer part of this border lighting.",
+      "sparkMovedHint": "Drifting sparks are configured in the Effects tab — they span the whole showcase, so they are no longer part of this border lighting.",
       "cornerFlares": "Corner glints",
       "cornerFlaresHint": "Pulsing light on the border's four corners.",
       "colorSource": "Tint Source",
@@ -3009,16 +3048,33 @@
       },
       "cover": {
         "label": "Cover Stage",
-        "description": "The invitation cover — backdrop, frames, logos, ambient creatures, and where each block sits."
+        "description": "The invitation cover — backdrop, frames, logos, and where each block sits."
       },
       "content": {
         "label": "Main Content",
-        "description": "The backdrop, the content card, the blocks laid out on it, and falling particles."
+        "description": "The backdrop, the content card, and the blocks laid out on it."
+      },
+      "effects": {
+        "label": "Effects",
+        "description": "Ambient creatures, falling particles and drifting sparks — the decoration layered over both stages."
       }
     },
     "planRequired": {
       "title": "Pick a package plan first",
       "action": "The available slots depend on it — go to Basics"
+    },
+    "colorField": {
+      "pick": "Pick {name}",
+      "hex": "{name} hex code",
+      "names": {
+        "creatures": "Ambient creatures",
+        "gilding": "Gilded cover border",
+        "coverText": "Cover text block",
+        "calendarMarker": "Circled day",
+        "sparks": "Drifting sparks",
+        "templateColor": "Template color",
+        "fallingEffect": "Falling particles"
+      }
     }
   },
   "tickets": {

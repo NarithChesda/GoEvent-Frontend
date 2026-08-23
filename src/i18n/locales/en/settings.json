@@ -10,8 +10,6 @@
     "preferences": "Preferences",
     "language": "Language",
     "listings": "Listings",
-    "paymentMethods": "Payment Methods",
-    "commission": "Commission",
     "tickets": "My Tickets"
   },
   "profile": {
@@ -28,12 +26,20 @@
   "security": {
     "title": "Change Password",
     "subtitle": "Update your password to keep your account secure.",
+    "sections": {
+      "current": "Confirm it's you",
+      "currentHint": "Enter the password you sign in with today.",
+      "new": "Choose a new one",
+      "newHint": "Use something you don't use anywhere else. It has to reach Good before you can save."
+    },
     "currentPassword": "Current Password",
     "currentPasswordPlaceholder": "Enter your current password",
     "newPassword": "New Password",
     "newPasswordPlaceholder": "Enter your new password",
     "confirmNewPassword": "Confirm New Password",
     "confirmNewPasswordPlaceholder": "Confirm your new password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "strengthLabel": {
       "veryWeak": "Very Weak",
       "weak": "Weak",
@@ -48,6 +54,7 @@
     "securityNoticeText": "Password must be at least \"Good\" strength (3/5) for account security.",
     "changePassword": "Change Password",
     "changingPassword": "Changing Password...",
+    "clear": "Clear",
     "messages": {
       "rateLimitExceeded": "Too many password change attempts. Please try again in 1 hour.",
       "passwordsDoNotMatch": "Passwords do not match",
@@ -244,6 +251,12 @@
       "replaceLogo": "Replace",
       "uploadCover": "Upload",
       "replaceCover": "Replace",
+      "removeLogo": "Remove logo",
+      "removeCover": "Remove cover image",
+      "removeLogoTitle": "Remove logo?",
+      "removeLogoMessage": "Your logo will be deleted from your vendor profile.",
+      "removeCoverTitle": "Remove cover image?",
+      "removeCoverMessage": "Your cover image will be deleted from your vendor profile.",
       "unsavedChanges": "Unsaved changes",
       "discard": "Discard"
     },
@@ -257,6 +270,10 @@
       "logoFailed": "Failed to upload logo",
       "coverSuccess": "Cover image uploaded successfully!",
       "coverFailed": "Failed to upload cover image",
+      "logoRemoved": "Logo removed successfully!",
+      "logoRemoveFailed": "Failed to remove logo",
+      "coverRemoved": "Cover image removed successfully!",
+      "coverRemoveFailed": "Failed to remove cover image",
       "unexpectedError": "An unexpected error occurred"
     }
   },
@@ -409,5 +426,106 @@
   "messages": {
     "saveSuccess": "Settings saved successfully",
     "saveError": "Failed to save settings"
+  },
+  "credits": {
+    "title": "Partner credits",
+    "subtitle": "Buy credits at wholesale, then spend one to activate each event you set up for a customer.",
+    "errorTitle": "Couldn't load your credits",
+    "tryAgain": "Try again",
+    "balanceLabel": "credits available",
+    "allPlans": "All plans",
+    "noCodes": "You haven't bought any credits yet. Pick a pack below — we issue your credits as soon as the payment is confirmed.",
+    "free": "Free",
+    "unlimited": "Unlimited",
+    "allSpent": "All spent",
+    "expired": "Expired",
+    "inactive": "Inactive",
+    "noExpiry": "No expiry",
+    "expiresInDays": "Expires in {n} day | Expires in {n} days",
+    "expiresOn": "Expires {date}",
+    "creditCount": "{n} credit | {n} credits",
+    "dayCount": "{n} day | {n} days",
+    "perCredit": "${amount} each",
+    "forPlan": "For {plan}",
+    "alreadyClaimed": "Already claimed",
+    "orderPending": "Order in progress",
+    "needsApproval": "Needs approval",
+    "summary": {
+      "pending": "{n} order in progress | {n} orders in progress",
+      "expiring": "{n} batch expiring soon | {n} batches expiring soon"
+    },
+    "gated": {
+      "title": "Partner pricing is for partner accounts",
+      "subtitle": "Credits are sold at wholesale to partners who invite guests on behalf of their own clients. Set up a partner profile and this page opens up.",
+      "cta": "Set up a partner profile"
+    },
+    "catalogue": {
+      "title": "Buy credits",
+      "subtitle": "A credit covers one event on one plan. Credits are not interchangeable between plans.",
+      "empty": "There are no credit packs on offer right now."
+    },
+    "orders": {
+      "title": "Orders",
+      "uploadProof": "Upload proof",
+      "replaceProof": "Replace proof",
+      "cancel": "Cancel order",
+      "rejectedHint": "This order was not approved. Contact support if you think that is a mistake.",
+      "status": {
+        "pending": "Pending",
+        "confirmed": "Confirmed",
+        "rejected": "Rejected",
+        "cancelled": "Cancelled"
+      },
+      "cancelConfirm": {
+        "title": "Cancel this order?",
+        "message": "The order will be withdrawn and no credits will be issued. You can order the same pack again afterwards."
+      }
+    },
+    "drawer": {
+      "buyTitle": "Buy credits",
+      "proofTitle": "Upload proof of payment",
+      "resultTitle": "Order placed",
+      "done": "Done",
+      "submitting": "Submitting…",
+      "placeOrderBtn": "Place order",
+      "claimBtn": "Claim credits",
+      "requestBtn": "Request credits",
+      "uploadProofBtn": "Upload proof",
+      "proofRequired": "Attach your proof of payment first.",
+      "notesPlaceholder": "Anything we should know about this payment",
+      "freeInstant": "Nothing to pay — your credits are issued the moment you claim this pack.",
+      "freeNeedsApproval": "Nothing to pay. A member of our team checks these requests by hand, so your credits arrive shortly after review.",
+      "summary": {
+        "credits": "Credits",
+        "plan": "Plan",
+        "perCredit": "Per credit",
+        "retail": "Retail per event",
+        "validity": "Valid for"
+      },
+      "issued": {
+        "title": "{n} credit is yours | {n} credits are yours",
+        "subtitle": "Spend them on {plan} templates, one per event.",
+        "codeLabel": "Your credit code",
+        "accountLocked": "This code only works from your own account, so sharing it with a client will not spend your credits — and a leak cannot cost you any."
+      },
+      "awaiting": {
+        "title": "Awaiting confirmation",
+        "subtitle": "We will confirm your payment and issue your credits shortly. You can add or replace your proof of payment until then.",
+        "reference": "Order {reference}"
+      }
+    },
+    "messages": {
+      "loadFailed": "Failed to load your credits. Please try again.",
+      "orderFailed": "Could not place the order. Please try again.",
+      "orderPlaced": "Order placed — upload your proof of payment so we can confirm it.",
+      "creditsIssued": "{n} credit issued | {n} credits issued",
+      "uploadFailed": "Could not upload the proof. Please try again.",
+      "uploadThrottled": "Too many uploads just now. Wait a moment and try again.",
+      "proofUploaded": "Proof uploaded — we will review it shortly.",
+      "cancelFailed": "Could not cancel the order. Please try again.",
+      "orderCancelled": "Order cancelled."
+    },
+    "savePercent": "Save {n}%",
+    "retailPerEvent": "retail per event"
   }
 }

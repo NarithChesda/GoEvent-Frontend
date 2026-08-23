@@ -5,6 +5,13 @@
       "gradient-text"
     ],
     "ignoreFiles": [],
-    "ignoreValues": []
+    "ignoreValues": [
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "border-b-2",
+        "createdAt": "2026-08-23T06:25:38.464Z",
+        "reason": "Claude: border-b-2 + rounded-full + animate-spin is this repo's inline spinner idiom (16 occurrences, goevent-design 13) - a 24px spinning disc, not a rounded card with an accent border. The rule cannot tell the two apart."
+      }
+    ]
   }
 }

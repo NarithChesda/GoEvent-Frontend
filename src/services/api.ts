@@ -503,3 +503,18 @@ export type {
  *     ├── texts.service.ts
  *     └── core-data.service.ts
  */
+
+// Partner credit packs
+export { partnerCreditsService } from './api/modules/credits.service'
+
+export type {
+  CreditPackOrderStatus,
+  CreditPack,
+  PartnerCreditCode,
+  CreditPackOrder,
+  CreditPackOrderEnvelope,
+  CreateCreditPackOrderData,
+  PartnerCreditsSummary,
+  ActivationFundingOption,
+  ActivationOptions,
+} from './api/types/credit.types'

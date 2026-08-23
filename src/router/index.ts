@@ -147,10 +147,14 @@ const router = createRouter({
       meta: { requiresAuth: true, title: 'Security - GoEvent' },
     },
     {
-      path: '/commission',
-      name: 'commission',
-      component: () => import('../views/CommissionView.vue'),
-      meta: { requiresAuth: true, title: 'Commission - GoEvent' },
+      // Partner credits: the wholesale packs a shop buys up front and spends one
+      // per event at activation. Its own route rather than a Settings tab because
+      // Settings is for every account and this is for partners only — the same
+      // reasoning that gave the retired commission page a route here.
+      path: '/credits',
+      name: 'credits',
+      component: () => import('../views/CreditsView.vue'),
+      meta: { requiresAuth: true, title: 'Partner Credits - GoEvent' },
     },
     {
       path: '/contact',
@@ -249,7 +253,7 @@ router.beforeEach(async (to, from, next) => {
 
     // Validate token for sensitive routes
     // TokenManager has internal caching, so this won't cause excessive server calls
-    const sensitiveRoutes = ['settings', 'security', 'commission', 'event-edit']
+    const sensitiveRoutes = ['settings', 'security', 'credits', 'event-edit']
     if (sensitiveRoutes.includes(to.name as string)) {
       console.debug(`[Router] Validating token for sensitive route: ${String(to.name)}`)
 

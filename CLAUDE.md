@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 GoEvent is a Vue 3 + TypeScript event management platform with a sophisticated event showcase system. The application features:
 - Event creation, editing, and management with templates
 - Multi-language support for event showcases
-- Commission tracking system
+- Partner credit packs bought wholesale and spent on template activation
 - Real-time event check-ins and registrations
 - Collaborative event management
 - Advanced media handling (photos, videos, QR codes)
@@ -97,7 +97,6 @@ npm run format           # Format code with Prettier
 - **Additional services**:
   - [src/services/auth.ts](src/services/auth.ts): Authentication operations (login, register, OAuth)
   - [src/services/tokenManager.ts](src/services/tokenManager.ts): JWT token management with automatic refresh
-  - [src/services/commission.ts](src/services/commission.ts): Commission tracking
   - [src/services/upload.ts](src/services/upload.ts): File upload utilities
 
 - **Core API features**:
@@ -164,7 +163,6 @@ The showcase system is a complex, multi-stage component system for displaying ev
 ### Component Organization
 - **Feature-based structure**:
   - `components/settings/`: Settings page components
-  - `components/settings/commission/`: Commission-specific components
   - `components/template/`: Template selection and management
   - `components/showcase/`: Event showcase components (stages, RSVP, payment, galleries)
   - `components/expense/`: Expense tracking components (budgets, categories, records)
@@ -275,11 +273,24 @@ Field-specific errors come as: `{ "field_name": ["Error message"] }`
 - Guest names can be passed via URL params for personalization
 - Template assets cached using composables
 
-### Commission System
-- Commission data managed via [src/services/commission.ts](src/services/commission.ts)
-- Pagination and filtering supported
-- Bulk claim operations available
-- Commission stats calculated server-side
+### Partner Credit Packs
+
+Replaced the commission system, which was removed in August 2026 — do not reintroduce
+referral/commission UI without checking the current business model first. `Event.referrer`
+survives the removal because it still drives partner branding on the showcase
+([MainContentStage.vue](src/components/showcase/MainContentStage.vue)); it no longer pays anyone.
+
+A **shop partner** buys credits at wholesale for one specific pricing plan, then spends one per
+event at template-activation checkout. The partner owns the event and sets up the invitation on
+behalf of their customer, so the partner is the organizer *and* the payer — the customer has no
+account, and appears only as an event `host`.
+
+- Service: `partnerCreditsService` ([credits.service.ts](src/services/api/modules/credits.service.ts)), types in [credit.types.ts](src/services/api/types/credit.types.ts)
+- State: [usePartnerCredits.ts](src/composables/settings/usePartnerCredits.ts) — catalogue, balance and orders fetched together; a `403` means "no vendor profile yet", not a failure
+- Buying: `/credits` ([CreditsView.vue](src/views/CreditsView.vue) wrapping [CreditsTab.vue](src/components/settings/CreditsTab.vue)), linked from the profile menu for accounts holding a vendor profile. Deliberately **not** a Settings tab — Settings is one page every account sees
+- Spending: [PaymentDrawer.vue](src/components/template/PaymentDrawer.vue) calls `/activation-options/?pricing_plan_id=` on open and offers a credit when one covers that plan. A credit-funded payment posts `pay_with_credit: true` with no amount/method/proof and returns `confirmed` — branch on the returned `status`, never on price
+- Credits are **plan-scoped and not interchangeable**; a pack's price is coupled to current plan prices
+- `/activation-options/` is the one endpoint here that is *not* partner-gated, so the shared checkout calls it unconditionally and a normal user simply gets `credit: null`
 
 ### Expense Tracking System
 - Three-tier expense tracking: Categories → Budgets → Expense Records

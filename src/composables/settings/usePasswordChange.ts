@@ -65,10 +65,26 @@ export function usePasswordChange() {
     return texts[passwordStrength.value] || t('settings.security.strengthLabel.veryWeak')
   })
 
-  // Computed: Password strength color class
+  // Computed: Password strength color class.
+  //
+  // Three tones, not five. The old ramp ran red → orange → yellow → blue → green,
+  // which spent five saturated colours on one meter and gave "blue" a meaning
+  // the rest of the app does not have for it. The design system has exactly
+  // three status colours, and this meter only ever answers three questions:
+  // not acceptable, nearly there, accepted. `isPasswordStrongEnough` is the
+  // cut at 3, so that is where the green starts — the colour and the gate agree.
   const passwordStrengthColor = computed(() => {
-    const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500']
-    return colors[passwordStrength.value] || 'bg-slate-200'
+    if (passwordStrength.value >= 3) return 'bg-emerald-500'
+    if (passwordStrength.value === 2) return 'bg-amber-400'
+    return 'bg-red-400'
+  })
+
+  // The matching text tone, so the label under the meter never disagrees with
+  // the bar above it.
+  const passwordStrengthTextColor = computed(() => {
+    if (passwordStrength.value >= 3) return 'text-emerald-600'
+    if (passwordStrength.value === 2) return 'text-amber-600'
+    return 'text-red-600'
   })
 
   // Computed: Check if passwords match
@@ -152,7 +168,9 @@ export function usePasswordChange() {
     // Additional validations
     if (passwordForm.value.new_password && passwordForm.value.new_password_confirm) {
       if (passwordForm.value.new_password !== passwordForm.value.new_password_confirm) {
-        validation.errors.new_password_confirm = [t('settings.security.messages.passwordsDoNotMatch')]
+        validation.errors.new_password_confirm = [
+          t('settings.security.messages.passwordsDoNotMatch'),
+        ]
         validation.isValid = false
       }
 
@@ -203,7 +221,8 @@ export function usePasswordChange() {
 
         return { success: true }
       } else {
-        passwordErrorMessage.value = response.message || t('settings.security.messages.changeFailed')
+        passwordErrorMessage.value =
+          response.message || t('settings.security.messages.changeFailed')
         return { success: false, error: passwordErrorMessage.value }
       }
     } catch (error) {
@@ -229,6 +248,7 @@ export function usePasswordChange() {
     passwordStrength,
     passwordStrengthText,
     passwordStrengthColor,
+    passwordStrengthTextColor,
     passwordsMatch,
     isPasswordStrongEnough,
     canSubmit,

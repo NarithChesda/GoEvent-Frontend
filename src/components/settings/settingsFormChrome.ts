@@ -25,12 +25,26 @@ export const paneTitleClass = 'text-sm font-semibold text-slate-900'
 export const paneHintClass = 'mt-1 text-xs text-slate-500 leading-relaxed'
 
 const FIELD_BASE =
-  'w-full pr-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 bg-white border border-slate-300 rounded-lg transition-colors duration-200 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400'
+  'w-full py-2.5 text-sm text-slate-900 placeholder:text-slate-400 bg-white border border-slate-300 rounded-lg transition-colors duration-200 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400'
 
 /** Text/email/tel/url inputs and textareas. */
-export const fieldClass = `${FIELD_BASE} pl-3.5`
+export const fieldClass = `${FIELD_BASE} pl-3.5 pr-3.5`
 /** Same field with room for a leading affordance (the `@` on a username). */
-export const prefixedFieldClass = `${FIELD_BASE} pl-8`
+export const prefixedFieldClass = `${FIELD_BASE} pl-8 pr-3.5`
+/**
+ * Same field with room for a trailing control inside it — the eye that reveals
+ * a password. The gutter is sized for a 40px tap target (`w-10`) plus the
+ * inset it is nudged off the border by, so the button never sits on the text.
+ */
+export const trailingActionFieldClass = `${FIELD_BASE} pl-3.5 pr-11`
+
+/**
+ * Added to a field class when that field failed validation, and the line that
+ * says why. `goevent-design` §8: the border reddens and the ring follows it, so
+ * a focused invalid field still reads as invalid rather than reverting to sky.
+ */
+export const fieldErrorClass = 'border-red-300 focus:ring-red-200 focus:border-red-400'
+export const fieldErrorTextClass = 'mt-1.5 text-xs text-red-600'
 
 /** Labels go above the input, always — never a placeholder standing in for one. */
 export const labelClass = 'block text-sm font-medium text-slate-700 mb-1.5'
@@ -43,6 +57,17 @@ export const fieldHintClass = 'mt-1.5 text-xs text-slate-500'
  */
 export const imageActionClass =
   'inline-flex flex-shrink-0 items-center justify-center gap-1.5 min-h-[40px] px-3 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg transition-colors duration-200 hover:bg-slate-200 active:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200'
+
+/**
+ * The icon-only destructive twin of `imageActionClass`, sitting beside it and
+ * clearing the artwork rather than replacing it. Only rendered when there is
+ * something to clear, so it has no empty state of its own; the red arrives on
+ * hover, because a settings form should not read as dangerous at rest. Sized to
+ * a 40px tap target and given the app's one focus ring — the button is
+ * destructive, focus is not.
+ */
+export const imageRemoveClass =
+  'inline-flex flex-shrink-0 items-center justify-center w-10 h-10 min-h-[40px] text-slate-400 rounded-lg transition-colors duration-200 hover:text-red-600 hover:bg-red-50 active:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200'
 
 /**
  * The disc that sits on the corner of an image and opens the file picker. Add

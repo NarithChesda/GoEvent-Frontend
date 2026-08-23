@@ -410,13 +410,32 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
   // ============================
   const event = computed(() => showcaseData.value?.event || ({} as EventData))
   const meta = computed(() => showcaseData.value?.meta || {})
-  const guestName = computed(() => {
+  /**
+   * The guest this showcase was actually opened for, or '' when nobody.
+   *
+   * This — never `guestName` below — is what identifies a guest to the backend.
+   * The two differ only under `useDefaultGuestName`, and confusing them there is
+   * not cosmetic: the showcase endpoint echoes whatever `guest_name` it is sent
+   * straight back as `meta.guest_name`, so sending the placeholder made the
+   * server hand it back as if it were a real guest. From then on the branch
+   * below was unreachable, and the preview's guest name stayed frozen in
+   * whichever language the frame first loaded in (Khmer, per `urlLang`) however
+   * many times the language was switched.
+   */
+  const resolvedGuestName = computed(() => {
     const guestNameFromQuery = route.query.guest_name
     const guestNameStr = Array.isArray(guestNameFromQuery)
       ? guestNameFromQuery[0]
       : guestNameFromQuery
-    const resolved = meta.value.guest_name || guestNameStr || ''
-    if (resolved) return resolved
+    return meta.value.guest_name || guestNameStr || ''
+  })
+
+  /**
+   * The guest name to DISPLAY, which for a preview with no guest link is a
+   * translated "Honored Guest" placeholder that follows the language on screen.
+   */
+  const guestName = computed(() => {
+    if (resolvedGuestName.value) return resolvedGuestName.value
     if (options?.useDefaultGuestName) {
       return translateRSVP('default_guest_name', currentLanguage.value as SupportedLanguage)
     }
@@ -437,7 +456,9 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
 
     if (queryShortcode) {
       try {
-        const guestNameStr = guestName.value || ''
+        // The real name, not the placeholder — this is stored alongside a
+        // credential, so it has to be who the guest is, not what is on screen.
+        const guestNameStr = resolvedGuestName.value || ''
         sessionStorage.setItem(
           storageKey,
           JSON.stringify({ shortcode: queryShortcode, guestName: guestNameStr }),
@@ -689,7 +710,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     }
 
     const language = forceLanguage || (route.query.lang as string) || currentLanguage.value
-    const guest = guestName.value || ''
+    const guest = resolvedGuestName.value || ''
     const networkCondition = getNetworkCondition()
     const requestKey = `showcase-${eventId}-${language}-${guest}`
 
@@ -711,8 +732,8 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
           lang: currentLanguage.value,
         }
 
-        if (guestName.value) {
-          params.guest_name = guestName.value as string
+        if (resolvedGuestName.value) {
+          params.guest_name = resolvedGuestName.value as string
         }
 
         const showcaseResponse = await eventsService.getEventShowcase(eventId, params)
@@ -811,15 +832,15 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     const eventId = resolveEventId()
     if (!eventId) return
 
-    const guest = guestName.value || ''
+    const guest = resolvedGuestName.value || ''
     const requestKey = `showcase-refresh-${eventId}-${currentLanguage.value}-${guest}`
 
     try {
       const params: { lang?: string; guest_name?: string } = {
         lang: currentLanguage.value,
       }
-      if (guestName.value) {
-        params.guest_name = guestName.value as string
+      if (resolvedGuestName.value) {
+        params.guest_name = resolvedGuestName.value as string
       }
 
       const data: ShowcaseData = await deduplicateRequest<ShowcaseData>(requestKey, async (): Promise<ShowcaseData> => {
@@ -1055,7 +1076,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
 
     if (currentLanguage.value === newLanguage) return
 
-    const guest = guestName.value || ''
+    const guest = resolvedGuestName.value || ''
     const requestKey = `language-content-${eventId}-${newLanguage}-${guest}`
 
     try {
@@ -1066,8 +1087,8 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
         lang: newLanguage,
       }
 
-      if (guestName.value) {
-        params.guest_name = guestName.value as string
+      if (resolvedGuestName.value) {
+        params.guest_name = resolvedGuestName.value as string
       }
 
       const data: ShowcaseData = await deduplicateRequest<ShowcaseData>(requestKey, async (): Promise<ShowcaseData> => {

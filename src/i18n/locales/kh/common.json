@@ -4,7 +4,6 @@
     "discover": "ស្វែងរក",
     "services": "សេវាកម្ម",
     "settings": "ការកំណត់",
-    "commission": "កម្រៃជើងសារ",
     "myListings": "បញ្ជីរបស់ខ្ញុំ",
     "myTickets": "សំបុត្ររបស់ខ្ញុំ",
     "profile": "គណនី",
@@ -12,7 +11,8 @@
     "emailCopied": "បានចម្លងអ៊ីមែល",
     "signIn": "ចូលគណនី",
     "signOut": "ចាកចេញ",
-    "createEvent": "បង្កើតព្រឹត្តិការណ៍"
+    "createEvent": "បង្កើតព្រឹត្តិការណ៍",
+    "credits": "ឥណទានដៃគូ"
   },
   "actions": {
     "save": "រក្សាទុក",
