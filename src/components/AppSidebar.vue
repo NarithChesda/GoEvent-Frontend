@@ -218,13 +218,13 @@
               </RouterLink>
               <RouterLink
                 v-if="authStore.user?.is_partner"
-                to="/commission"
+                to="/credits"
                 @click="userMenuOpen = false"
                 class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:gradient-text transition-all duration-200 group"
                 role="menuitem"
               >
                 <Wallet class="w-5 h-5 group-hover:gradient-text" aria-hidden="true" />
-                <span class="font-medium">Commission</span>
+                <span class="font-medium">Credits</span>
               </RouterLink>
               <div class="border-t border-slate-200"></div>
               <button

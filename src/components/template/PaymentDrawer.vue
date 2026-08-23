@@ -28,7 +28,10 @@
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
               <div class="min-w-0">
-                <p v-if="templateName" class="text-[0.625rem] uppercase tracking-wide text-white/80">
+                <p
+                  v-if="templateName"
+                  class="text-[0.625rem] uppercase tracking-wide text-white/80"
+                >
                   {{ templateName }}
                 </p>
                 <h2 class="text-base font-semibold text-white leading-tight">
@@ -62,387 +65,243 @@
               </span>
             </div>
 
-            <!-- Order Summary & Promo Code - Combined Row -->
-            <section class="rounded-xl border border-slate-200 bg-white/80 p-3 laptop-sm:p-4">
-              <div class="flex flex-row items-center gap-2 sm:gap-3">
-                <!-- Amount Display -->
-                <div class="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
-                  <div>
-                    <p class="text-[0.625rem] sm:text-[0.6875rem] text-slate-500 uppercase tracking-wide">
-                      {{ templatePackage?.name || t('management.templatePaymentTab.paymentDrawer.total') }}
-                    </p>
-                    <div class="flex items-baseline gap-1">
-                      <p class="text-base sm:text-xl font-bold text-slate-900">${{ finalAmount }}</p>
-                      <p v-if="promoDiscount" class="text-[0.625rem] sm:text-xs text-slate-400 line-through">
-                        ${{ promoDiscount.original }}
-                      </p>
-                    </div>
-                  </div>
-                  <div
-                    v-if="promoDiscount"
-                    class="px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[0.625rem] sm:text-[0.6875rem] font-medium whitespace-nowrap"
-                  >
-                    -${{ promoDiscount.discount }}
-                  </div>
-                </div>
+            <!--
+              How this activation gets funded.
 
-                <div class="w-px h-8 sm:h-10 bg-slate-200 flex-shrink-0"></div>
-
-                <!-- Promo Code Input/Display -->
-                <div class="flex-1 min-w-0">
-                  <div
-                    v-if="appliedPromoCode"
-                    class="flex items-center justify-between gap-1.5 sm:gap-2 rounded-lg border border-emerald-200 bg-emerald-50/70 px-2 sm:px-2.5 py-1.5 sm:py-2"
-                  >
-                    <div class="flex items-center gap-1 sm:gap-2 min-w-0">
-                      <CheckCircle class="w-3 sm:w-4 h-3 sm:h-4 text-emerald-500 flex-shrink-0" />
-                      <span class="text-xs sm:text-sm font-medium text-emerald-700 truncate">
-                        {{ appliedPromoCode.code }}
-                      </span>
-                      <span class="text-[0.625rem] sm:text-[0.6875rem] text-emerald-600 flex-shrink-0">
-                        ({{
-                          appliedPromoCode.discount_type === 'percentage'
-                            ? `${appliedPromoCode.discount_value}%`
-                            : `$${appliedPromoCode.discount_value}`
-                        }})
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      @click="removePromoCode"
-                      class="p-0.5 sm:p-1 hover:bg-emerald-100 rounded-md transition-colors flex-shrink-0"
-                      :title="t('management.templatePaymentTab.paymentDrawer.removePromoTitle')"
-                    >
-                      <X class="w-3 sm:w-3.5 h-3 sm:h-3.5 text-emerald-600" />
-                    </button>
-                  </div>
-
-                  <div v-else class="space-y-1">
-                    <div class="flex gap-1.5 sm:gap-2">
-                      <div class="relative flex-1 min-w-0">
-                        <Tag
-                          class="absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 w-3 sm:w-3.5 h-3 sm:h-3.5 text-slate-400"
-                        />
-                        <input
-                          v-model="promoCodeInput"
-                          type="text"
-                          class="w-full pl-6 sm:pl-8 pr-2 sm:pr-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 uppercase placeholder:normal-case"
-                          :placeholder="t('management.templatePaymentTab.paymentDrawer.promoPlaceholder')"
-                          @keyup.enter="validatePromoCode"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        @click="validatePromoCode"
-                        :disabled="validatingPromoCode || !promoCodeInput.trim()"
-                        class="px-2 sm:px-3 py-1.5 sm:py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 sm:gap-1.5 flex-shrink-0"
-                      >
-                        <Loader v-if="validatingPromoCode" class="w-3 sm:w-3.5 h-3 sm:h-3.5 animate-spin" />
-                        <span>{{
-                          validatingPromoCode
-                            ? t('management.templatePaymentTab.paymentDrawer.applyingPromo')
-                            : t('management.templatePaymentTab.paymentDrawer.applyPromo')
-                        }}</span>
-                      </button>
-                    </div>
-                    <p v-if="promoCodeError" class="text-[0.625rem] sm:text-[0.6875rem] text-red-600 pl-1">
-                      {{ promoCodeError }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section class="space-y-3">
-              <div class="flex items-center justify-between">
-                <h3 class="text-sm sm:text-base font-semibold text-slate-800">
-                  {{ t('management.templatePaymentTab.paymentDrawer.paymentMethod') }}
-                </h3>
-                <span v-if="selectedMethod" class="text-[0.6875rem] sm:text-xs text-slate-500">
-                  {{ selectedMethod.payment_type_display }}
-                </span>
-              </div>
-
-              <div v-if="loadingMethods" class="text-center py-8">
-                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-[#1e90ff] mx-auto"></div>
-                <p class="text-slate-500 text-xs sm:text-sm mt-3">
-                  {{ t('management.templatePaymentTab.paymentDrawer.loadingMethods') }}
-                </p>
-              </div>
-
-              <div
-                v-else-if="paymentMethods.length === 0"
-                class="rounded-xl border border-slate-200 bg-white/80 p-4 text-center text-xs sm:text-sm text-slate-500"
-              >
-                {{ t('management.templatePaymentTab.paymentDrawer.noMethods') }}
-              </div>
-
-              <div v-else class="space-y-2">
-                <label
-                  v-for="method in paymentMethods"
-                  :key="method.id"
-                  class="flex items-start justify-between gap-3 rounded-xl border px-4 py-3 sm:px-5 sm:py-4 cursor-pointer transition-all duration-200"
-                  :class="
-                    selectedMethod?.id === method.id
-                      ? 'border-[#1e90ff] bg-[#F1F8FF] ring-2 ring-[#D6EDFF]'
-                      : 'border-slate-200 hover:border-slate-300'
-                  "
-                  @click="selectedMethod = method"
-                >
-                  <div class="flex items-start gap-3 flex-1 min-w-0">
-                    <input
-                      type="radio"
-                      class="mt-1.5 h-4 w-4 shrink-0 accent-[#1e90ff]"
-                      name="payment-method"
-                      :checked="selectedMethod?.id === method.id"
-                      @change="selectedMethod = method"
-                    />
-                    <div class="min-w-0">
-                      <p class="text-sm sm:text-base font-medium text-slate-900 truncate">
-                        {{ method.name }}
-                      </p>
-                      <p class="text-[0.6875rem] sm:text-xs text-slate-500 truncate">
-                        {{ method.payment_type_display }}
-                      </p>
-                    </div>
-                  </div>
-                  <CheckCircle
-                    v-if="selectedMethod?.id === method.id"
-                    class="w-4 h-4 text-[#1e90ff] flex-shrink-0 mt-1.5"
-                  />
-                </label>
-              </div>
-            </section>
-
-            <!-- Step-by-Step Payment Guide -->
+              Only rendered for a partner who actually holds a credit for *this*
+              plan — everyone else sees the transfer flow they always saw, with
+              no extra decision to make. Credits are plan-scoped, so the answer
+              can be yes for a Premium template and no for a Basic one; that is
+              why the options are re-fetched per plan rather than per account.
+            -->
             <section
-              v-if="selectedMethod"
-              class="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-3 laptop-sm:p-4 space-y-4"
+              v-if="creditOption"
+              class="rounded-xl border border-slate-200 bg-white/80 p-3 laptop-sm:p-4 space-y-2"
             >
-              <div class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-full bg-[#1e90ff]/10 flex items-center justify-center">
-                  <Banknote class="w-4 h-4 text-[#1e90ff]" />
-                </div>
-                <div>
-                  <h3 class="text-sm sm:text-base font-semibold text-slate-800">
-                    {{ t('management.templatePaymentTab.paymentDrawer.howToPay') }}
-                  </h3>
-                  <p class="text-[0.6875rem] text-slate-500">{{ selectedMethod.name }}</p>
-                </div>
-              </div>
+              <h3 class="text-sm sm:text-base font-semibold text-slate-800">
+                {{ t('management.templatePaymentTab.paymentDrawer.funding.heading') }}
+              </h3>
 
-              <!-- Step 1: Copy Amount -->
-              <div class="flex gap-3">
-                <div class="flex flex-col items-center">
-                  <div
-                    class="w-6 h-6 rounded-full bg-[#1e90ff] text-white text-xs font-bold flex items-center justify-center"
-                  >
-                    1
-                  </div>
-                  <div class="w-0.5 flex-1 bg-slate-200 mt-1"></div>
-                </div>
-                <div class="flex-1 pb-4">
-                  <p class="text-sm font-medium text-slate-800 mb-2">
-                    {{ t('management.templatePaymentTab.paymentDrawer.step1.title') }}
-                  </p>
-                  <div class="flex items-center gap-2 bg-white rounded-lg border border-slate-200 px-3 py-2">
-                    <span class="text-lg font-semibold text-slate-900">${{ finalAmount }}</span>
-                    <button
-                      type="button"
-                      @click="copyToClipboard(finalAmount, 'amount')"
-                      class="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all"
-                      :class="
-                        copiedField === 'amount'
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      "
-                    >
-                      <Check v-if="copiedField === 'amount'" class="w-3.5 h-3.5" />
-                      <Copy v-else class="w-3.5 h-3.5" />
-                      {{
-                        copiedField === 'amount'
-                          ? t('management.templatePaymentTab.paymentDrawer.copied')
-                          : t('management.templatePaymentTab.paymentDrawer.copy')
-                      }}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Step 2: Transfer Payment -->
-              <div class="flex gap-3">
-                <div class="flex flex-col items-center">
-                  <div
-                    class="w-6 h-6 rounded-full bg-[#1e90ff] text-white text-xs font-bold flex items-center justify-center"
-                  >
-                    2
-                  </div>
-                  <div class="w-0.5 flex-1 bg-slate-200 mt-1"></div>
-                </div>
-                <div class="flex-1 pb-4">
-                  <p class="text-sm font-medium text-slate-800 mb-2">
-                    {{ t('management.templatePaymentTab.paymentDrawer.step2.title') }}
-                  </p>
-
-                  <div
-                    v-if="selectedMethod.qr_code_image"
-                    class="rounded-xl border border-slate-200 bg-white p-4 text-center"
-                  >
-                    <img
-                      :src="selectedMethod.qr_code_image"
-                      :alt="`QR Code for ${selectedMethod.name}`"
-                      class="mx-auto h-40 w-40 laptop-sm:h-44 laptop-sm:w-44 object-contain rounded-lg"
-                      loading="lazy"
-                      @error="handleImageError"
-                    />
-                    <p class="text-xs text-slate-500 mt-2">
-                      {{ t('management.templatePaymentTab.paymentDrawer.step2.scanQr') }}
+              <label
+                class="flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-all duration-200"
+                :class="
+                  payingWithCredit
+                    ? 'border-[#1e90ff] bg-[#F1F8FF] ring-2 ring-[#D6EDFF]'
+                    : 'border-slate-200 hover:border-slate-300'
+                "
+                @click="selectFunding('credit')"
+              >
+                <input
+                  type="radio"
+                  class="mt-1 h-4 w-4 shrink-0 accent-[#1e90ff]"
+                  name="activation-funding"
+                  :checked="payingWithCredit"
+                  @change="selectFunding('credit')"
+                />
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <p class="text-sm font-medium text-slate-900">
+                      {{ t('management.templatePaymentTab.paymentDrawer.funding.credit.title') }}
+                    </p>
+                    <p class="text-sm font-semibold text-slate-900 flex-shrink-0">
+                      ${{ creditOption.amount_due }}
                     </p>
                   </div>
+                  <p class="text-xs text-slate-500 mt-0.5">
+                    {{
+                      t(
+                        'management.templatePaymentTab.paymentDrawer.funding.credit.remaining',
+                        { n: creditOption.credits_remaining ?? 0 },
+                        creditOption.credits_remaining ?? 0,
+                      )
+                    }}
+                    <template v-if="creditOption.instant">
+                      ·
+                      {{ t('management.templatePaymentTab.paymentDrawer.funding.credit.instant') }}
+                    </template>
+                  </p>
+                  <p v-if="creditExpiryLabel" class="text-xs text-slate-400 mt-0.5">
+                    {{ creditExpiryLabel }}
+                  </p>
+                </div>
+              </label>
 
-                  <!-- Payment Link Button - Only show on mobile devices with bank apps -->
-                  <button
-                    v-if="selectedMethod.payment_link && isMobileDevice"
-                    type="button"
-                    @click="openPaymentLink(selectedMethod.payment_link)"
-                    class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#1e90ff] to-[#2ecc71] hover:from-[#1873cc] hover:to-[#27ae60] text-white font-semibold px-4 py-3 rounded-xl transition-all shadow-md hover:shadow-lg text-sm mt-3"
-                  >
-                    <Smartphone class="w-4 h-4" />
-                    {{ t('management.templatePaymentTab.paymentDrawer.step2.openBankApp') }}
-                    <ExternalLink class="w-3.5 h-3.5 ml-1" />
-                  </button>
-
-                  <div
-                    v-if="selectedMethod.bank_name || selectedMethod.account_number || selectedMethod.account_name"
-                    class="mt-3 space-y-2 rounded-xl border border-slate-200 bg-white p-3"
-                  >
-                    <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">
-                      {{ t('management.templatePaymentTab.paymentDrawer.step2.bankDetails') }}
+              <label
+                class="flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-all duration-200"
+                :class="
+                  payingWithCredit
+                    ? 'border-slate-200 hover:border-slate-300'
+                    : 'border-[#1e90ff] bg-[#F1F8FF] ring-2 ring-[#D6EDFF]'
+                "
+                @click="selectFunding('standard')"
+              >
+                <input
+                  type="radio"
+                  class="mt-1 h-4 w-4 shrink-0 accent-[#1e90ff]"
+                  name="activation-funding"
+                  :checked="!payingWithCredit"
+                  @change="selectFunding('standard')"
+                />
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <p class="text-sm font-medium text-slate-900">
+                      {{ t('management.templatePaymentTab.paymentDrawer.funding.standard.title') }}
                     </p>
-                    <div v-if="selectedMethod.bank_name" class="text-sm text-slate-700">
-                      <span class="text-slate-500">{{
-                        t('management.templatePaymentTab.paymentDrawer.step2.bank')
-                      }}</span>
-                      {{ selectedMethod.bank_name }}
-                    </div>
-                    <div v-if="selectedMethod.account_number" class="flex items-center justify-between gap-2">
-                      <div class="text-sm">
-                        <span class="text-slate-500">{{
-                          t('management.templatePaymentTab.paymentDrawer.step2.account')
-                        }}</span>
-                        <span class="font-mono font-medium text-slate-800 ml-1">{{
-                          selectedMethod.account_number
-                        }}</span>
-                      </div>
-                      <button
-                        type="button"
-                        @click="copyToClipboard(selectedMethod.account_number, 'account')"
-                        class="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all"
-                        :class="
-                          copiedField === 'account'
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                        "
-                      >
-                        <Check v-if="copiedField === 'account'" class="w-3 h-3" />
-                        <Copy v-else class="w-3 h-3" />
-                        {{
-                          copiedField === 'account'
-                            ? t('management.templatePaymentTab.paymentDrawer.copied')
-                            : t('management.templatePaymentTab.paymentDrawer.copy')
-                        }}
-                      </button>
-                    </div>
-                    <div v-if="selectedMethod.account_name" class="flex items-center justify-between gap-2">
-                      <div class="text-sm">
-                        <span class="text-slate-500">{{
-                          t('management.templatePaymentTab.paymentDrawer.step2.name')
-                        }}</span>
-                        <span class="font-medium text-slate-800 ml-1">{{ selectedMethod.account_name }}</span>
-                      </div>
-                      <button
-                        type="button"
-                        @click="copyToClipboard(selectedMethod.account_name, 'name')"
-                        class="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all"
-                        :class="
-                          copiedField === 'name'
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                        "
-                      >
-                        <Check v-if="copiedField === 'name'" class="w-3 h-3" />
-                        <Copy v-else class="w-3 h-3" />
-                        {{
-                          copiedField === 'name'
-                            ? t('management.templatePaymentTab.paymentDrawer.copied')
-                            : t('management.templatePaymentTab.paymentDrawer.copy')
-                        }}
-                      </button>
-                    </div>
+                    <p class="text-sm font-semibold text-slate-900 flex-shrink-0">
+                      ${{ standardAmount }}
+                    </p>
                   </div>
-                </div>
-              </div>
-
-              <!-- Step 3: Upload Receipt -->
-              <div class="flex gap-3">
-                <div class="flex flex-col items-center">
-                  <div
-                    class="w-6 h-6 rounded-full bg-[#1e90ff] text-white text-xs font-bold flex items-center justify-center"
-                  >
-                    3
-                  </div>
-                </div>
-                <div class="flex-1">
-                  <p class="text-sm font-medium text-slate-800 mb-1">
-                    {{ t('management.templatePaymentTab.paymentDrawer.step3.title') }}
+                  <p class="text-xs text-slate-500 mt-0.5">
+                    {{ t('management.templatePaymentTab.paymentDrawer.funding.standard.hint') }}
                   </p>
-                  <p class="text-[0.6875rem] text-slate-500 mb-2">
-                    {{ t('management.templatePaymentTab.paymentDrawer.step3.hint') }}
-                  </p>
-                  <div class="relative">
-                    <input
-                      id="paymentProof"
-                      ref="fileInput"
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
-                      @change="handleFileSelect"
-                      class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    />
-                    <div
-                      class="flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed transition-colors"
-                      :class="
-                        paymentForm.payment_proof
-                          ? 'border-emerald-300 bg-emerald-50'
-                          : 'border-slate-200 bg-white hover:border-[#1e90ff] hover:bg-[#F1F8FF]'
-                      "
-                    >
-                      <div
-                        class="w-10 h-10 rounded-lg flex items-center justify-center"
-                        :class="paymentForm.payment_proof ? 'bg-emerald-100' : 'bg-slate-100'"
-                      >
-                        <Check v-if="paymentForm.payment_proof" class="w-5 h-5 text-emerald-600" />
-                        <Upload v-else class="w-5 h-5 text-slate-400" />
-                      </div>
-                      <div class="flex-1 min-w-0">
-                        <p
-                          class="text-sm font-medium truncate"
-                          :class="paymentForm.payment_proof ? 'text-emerald-700' : 'text-slate-700'"
-                        >
-                          {{
-                            paymentForm.payment_proof
-                              ? paymentForm.payment_proof.name
-                              : t('management.templatePaymentTab.paymentDrawer.step3.chooseFile')
-                          }}
-                        </p>
-                        <p class="text-[0.6875rem] text-slate-500">
-                          {{ t('management.templatePaymentTab.paymentDrawer.step3.fileTypes') }}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
                 </div>
-              </div>
+              </label>
             </section>
+
+            <!--
+              Paying with a credit skips everything below: the partner prepaid
+              when they bought the pack, so there is no amount to transfer, no
+              receipt to attach and no code to type. One field, one call.
+            -->
+            <template v-if="!payingWithCredit">
+              <!-- Order Summary & Promo Code - Combined Row -->
+              <section class="rounded-xl border border-slate-200 bg-white/80 p-3 laptop-sm:p-4">
+                <div class="flex flex-row items-center gap-2 sm:gap-3">
+                  <!-- Amount Display -->
+                  <div class="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+                    <div>
+                      <p
+                        class="text-[0.625rem] sm:text-[0.6875rem] text-slate-500 uppercase tracking-wide"
+                      >
+                        {{
+                          templatePackage?.name ||
+                          t('management.templatePaymentTab.paymentDrawer.total')
+                        }}
+                      </p>
+                      <div class="flex items-baseline gap-1">
+                        <p class="text-base sm:text-xl font-bold text-slate-900">
+                          ${{ finalAmount }}
+                        </p>
+                        <p
+                          v-if="strikethroughPrice"
+                          class="text-[0.625rem] sm:text-xs text-slate-400 line-through"
+                        >
+                          ${{ strikethroughPrice }}
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      v-if="promoDiscount"
+                      class="px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[0.625rem] sm:text-[0.6875rem] font-medium whitespace-nowrap"
+                    >
+                      -${{ promoDiscount.discount }}
+                    </div>
+                    <!-- A pay-as-you-go partner code discounts the normal path
+                         rather than zeroing it, so the rate is named where the
+                         price is, not hidden behind the promo field. -->
+                    <div
+                      v-else-if="partnerRate"
+                      class="px-1.5 sm:px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 text-[0.625rem] sm:text-[0.6875rem] font-medium whitespace-nowrap"
+                    >
+                      {{ t('management.templatePaymentTab.paymentDrawer.funding.partnerRate') }}
+                    </div>
+                  </div>
+
+                  <div class="w-px h-8 sm:h-10 bg-slate-200 flex-shrink-0"></div>
+
+                  <!-- Promo Code Input/Display -->
+                  <div class="flex-1 min-w-0">
+                    <div
+                      v-if="appliedPromoCode"
+                      class="flex items-center justify-between gap-1.5 sm:gap-2 rounded-lg border border-emerald-200 bg-emerald-50/70 px-2 sm:px-2.5 py-1.5 sm:py-2"
+                    >
+                      <div class="flex items-center gap-1 sm:gap-2 min-w-0">
+                        <CheckCircle class="w-3 sm:w-4 h-3 sm:h-4 text-emerald-500 flex-shrink-0" />
+                        <span class="text-xs sm:text-sm font-medium text-emerald-700 truncate">
+                          {{ appliedPromoCode.code }}
+                        </span>
+                        <span
+                          class="text-[0.625rem] sm:text-[0.6875rem] text-emerald-600 flex-shrink-0"
+                        >
+                          ({{
+                            appliedPromoCode.discount_type === 'percentage'
+                              ? `${appliedPromoCode.discount_value}%`
+                              : `$${appliedPromoCode.discount_value}`
+                          }})
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        @click="removePromoCode"
+                        class="p-0.5 sm:p-1 hover:bg-emerald-100 rounded-md transition-colors flex-shrink-0"
+                        :title="t('management.templatePaymentTab.paymentDrawer.removePromoTitle')"
+                      >
+                        <X class="w-3 sm:w-3.5 h-3 sm:h-3.5 text-emerald-600" />
+                      </button>
+                    </div>
+
+                    <div v-else class="space-y-1">
+                      <div class="flex gap-1.5 sm:gap-2">
+                        <div class="relative flex-1 min-w-0">
+                          <Tag
+                            class="absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 w-3 sm:w-3.5 h-3 sm:h-3.5 text-slate-400"
+                          />
+                          <input
+                            v-model="promoCodeInput"
+                            type="text"
+                            class="w-full pl-6 sm:pl-8 pr-2 sm:pr-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 uppercase placeholder:normal-case"
+                            :placeholder="
+                              t('management.templatePaymentTab.paymentDrawer.promoPlaceholder')
+                            "
+                            @keyup.enter="validatePromoCode"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          @click="validatePromoCode"
+                          :disabled="validatingPromoCode || !promoCodeInput.trim()"
+                          class="px-2 sm:px-3 py-1.5 sm:py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 sm:gap-1.5 flex-shrink-0"
+                        >
+                          <Loader
+                            v-if="validatingPromoCode"
+                            class="w-3 sm:w-3.5 h-3 sm:h-3.5 animate-spin"
+                          />
+                          <span>{{
+                            validatingPromoCode
+                              ? t('management.templatePaymentTab.paymentDrawer.applyingPromo')
+                              : t('management.templatePaymentTab.paymentDrawer.applyPromo')
+                          }}</span>
+                        </button>
+                      </div>
+                      <p
+                        v-if="promoCodeError"
+                        class="text-[0.625rem] sm:text-[0.6875rem] text-red-600 pl-1"
+                      >
+                        {{ promoCodeError }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <PaymentMethodPicker
+                v-model="selectedMethod"
+                :methods="paymentMethods"
+                :loading="loadingMethods"
+                group-name="activation-payment-method"
+              />
+
+              <PaymentInstructions
+                v-if="selectedMethod"
+                ref="instructions"
+                :method="selectedMethod"
+                :amount="finalAmount"
+                :proof="paymentForm.payment_proof"
+                input-id="activationPaymentProof"
+                @update:proof="paymentForm.payment_proof = $event"
+                @error="handleProofError"
+              />
+            </template>
 
             <!-- Error Display -->
             <div
@@ -454,10 +313,12 @@
 
             <!-- Placeholder when no method selected -->
             <div
-              v-if="!selectedMethod"
+              v-if="!payingWithCredit && !selectedMethod"
               class="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-8 text-center"
             >
-              <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+              <div
+                class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3"
+              >
                 <CreditCard class="w-6 h-6 text-slate-400" />
               </div>
               <p class="text-sm font-medium text-slate-600">
@@ -469,7 +330,10 @@
             </div>
 
             <!-- Additional Details (Collapsible) -->
-            <div v-if="selectedMethod" class="border border-slate-200 rounded-xl overflow-hidden">
+            <div
+              v-if="!payingWithCredit && selectedMethod"
+              class="border border-slate-200 rounded-xl overflow-hidden"
+            >
               <button
                 type="button"
                 @click="showAdditionalDetails = !showAdditionalDetails"
@@ -499,7 +363,9 @@
                     v-model="paymentForm.transaction_reference"
                     type="text"
                     class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white"
-                    :placeholder="t('management.templatePaymentTab.paymentDrawer.transactionRefPlaceholder')"
+                    :placeholder="
+                      t('management.templatePaymentTab.paymentDrawer.transactionRefPlaceholder')
+                    "
                   />
                 </div>
 
@@ -528,12 +394,9 @@
             class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#1e90ff] to-[#2ecc71] hover:from-[#1873cc] hover:to-[#27ae60] text-white text-sm font-semibold rounded-lg transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-[#1e90ff] disabled:hover:to-[#2ecc71]"
           >
             <Loader v-if="submittingPayment" class="w-4 h-4 animate-spin" />
+            <Zap v-else-if="payingWithCredit" class="w-4 h-4" />
             <CheckCircle v-else class="w-4 h-4" />
-            <span>{{
-              submittingPayment
-                ? t('management.templatePaymentTab.paymentDrawer.submitting')
-                : t('management.templatePaymentTab.paymentDrawer.submitBtn')
-            }}</span>
+            <span>{{ submitLabel }}</span>
           </button>
         </div>
       </div>
@@ -544,32 +407,39 @@
 <script setup lang="ts">
 /**
  * The template activation checkout: pick a method, transfer, upload the
- * receipt.
+ * receipt — or, for a partner holding a credit for this plan, one click.
  *
  * Extracted verbatim out of EventTemplatePaymentTab.vue so the Design Studio
  * can open the *same* checkout inline from its activation pill — the buy moment
  * belongs where the organizer is admiring the live preview, not one tab away.
  * Both mount this component; neither owns the flow.
+ *
+ * The funding question is answered by the server, not inferred here:
+ * `/activation-options/` is authenticated but not partner-gated, so it is safe
+ * to call on every open and a normal user simply gets `credit: null` and never
+ * sees a choice. Amounts always come back from that call (or from promo-code
+ * validation) — this component never computes a total, because the backend
+ * re-validates any `amount` we send and rejects a figure it disagrees with.
  */
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   ArrowRight,
-  Banknote,
-  Check,
   CheckCircle,
   ChevronDown,
-  Copy,
   CreditCard,
-  ExternalLink,
   Loader,
-  Smartphone,
   Tag,
-  Upload,
   X,
+  Zap,
 } from 'lucide-vue-next'
-import { apiService } from '../../services/api'
+import { apiService, partnerCreditsService } from '../../services/api'
+import type { ActivationOptions } from '../../services/api'
 import { useNotifications } from '../../composables/useNotifications'
+import { usePlatformPaymentMethods } from '../../composables/usePlatformPaymentMethods'
+import PaymentMethodPicker from '../payment/PaymentMethodPicker.vue'
+import PaymentInstructions from '../payment/PaymentInstructions.vue'
+import { validatePaymentProofFile } from '../payment/paymentProof'
 import type { Payment, PaymentMethod, PaymentFormData, PaymentStatus } from '../../types/payment'
 
 interface PricingPlan {
@@ -621,14 +491,13 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const { success: showSuccess, error: showError } = useNotifications()
 
-const paymentMethods = ref<readonly PaymentMethod[]>([])
+const { paymentMethods, loadingMethods, ensurePaymentMethods } = usePlatformPaymentMethods()
+
 const selectedMethod = ref<PaymentMethod | null>(null)
-const loadingMethods = ref(false)
 const submittingPayment = ref(false)
 const error = ref<string | null>(null)
 const showAdditionalDetails = ref(false)
-const copiedField = ref<string | null>(null)
-const fileInput = ref<HTMLInputElement | null>(null)
+const instructions = ref<InstanceType<typeof PaymentInstructions> | null>(null)
 
 const paymentForm = ref<PaymentFormData>({
   transaction_reference: '',
@@ -643,18 +512,68 @@ const appliedPromoCode = ref<PromoCodeValidation['promo_code'] | null>(null)
 const promoDiscount = ref<{ original: string; discount: string; final: string } | null>(null)
 const promoCodeError = ref<string | null>(null)
 
-const isMobileDevice = computed(() => {
-  if (typeof window === 'undefined') return false
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-})
+// Funding options
+const activationOptions = ref<ActivationOptions | null>(null)
+const fundingChoice = ref<'standard' | 'credit'>('standard')
 
-const finalAmount = computed(
-  () => promoDiscount.value?.final ?? props.templatePackage?.price ?? '0.00',
+const creditOption = computed(() => activationOptions.value?.credit ?? null)
+const partnerRate = computed(() => activationOptions.value?.partner_rate ?? null)
+const payingWithCredit = computed(() => fundingChoice.value === 'credit' && !!creditOption.value)
+
+/**
+ * What the transfer path costs, in order of authority: a validated promo code,
+ * then the partner's own pay-as-you-go rate, then whatever the server quoted,
+ * and only as a last resort the plan's list price (when `/activation-options/`
+ * is unavailable — an older backend, or an offline moment).
+ */
+const standardAmount = computed(
+  () =>
+    promoDiscount.value?.final ??
+    partnerRate.value?.amount_due ??
+    activationOptions.value?.standard.amount_due ??
+    props.templatePackage?.price ??
+    '0.00',
 )
 
-const isFormValid = computed(() => Boolean(selectedMethod.value && props.templatePackage))
+const finalAmount = computed(() =>
+  payingWithCredit.value ? (creditOption.value?.amount_due ?? '0.00') : standardAmount.value,
+)
 
-let abortController: AbortController | null = null
+/** The list price, shown struck through only when something actually reduced it. */
+const strikethroughPrice = computed(() => {
+  if (promoDiscount.value) return promoDiscount.value.original
+  const listPrice = activationOptions.value?.pricing_plan.price ?? props.templatePackage?.price
+  if (partnerRate.value && listPrice && listPrice !== partnerRate.value.amount_due) {
+    return listPrice
+  }
+  return null
+})
+
+const creditExpiryLabel = computed(() => {
+  const expiresAt = creditOption.value?.expires_at
+  if (!expiresAt) return null
+  const date = new Date(expiresAt)
+  if (Number.isNaN(date.getTime())) return null
+  return t('management.templatePaymentTab.paymentDrawer.funding.credit.expires', {
+    date: date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }),
+  })
+})
+
+const isFormValid = computed(() => {
+  if (!props.templatePackage) return false
+  return payingWithCredit.value || Boolean(selectedMethod.value)
+})
+
+const submitLabel = computed(() => {
+  if (submittingPayment.value) {
+    return payingWithCredit.value
+      ? t('management.templatePaymentTab.paymentDrawer.activating')
+      : t('management.templatePaymentTab.paymentDrawer.submitting')
+  }
+  return payingWithCredit.value
+    ? t('management.templatePaymentTab.paymentDrawer.activateBtn')
+    : t('management.templatePaymentTab.paymentDrawer.submitBtn')
+})
 
 const sanitizeInput = (input: string): string =>
   input.trim().replace(/[<>"'&]/g, (match) => {
@@ -689,77 +608,56 @@ const statusDisplay = (status?: PaymentStatus) =>
     ? t(`management.paymentHistoryList.status.${status}`)
     : t('management.paymentHistoryList.status.unknown')
 
-const copyToClipboard = async (text: string, fieldName: string): Promise<void> => {
-  try {
-    await navigator.clipboard.writeText(text)
-    copiedField.value = fieldName
-    setTimeout(() => {
-      copiedField.value = null
-    }, 2000)
-  } catch (err) {
-    console.error('Failed to copy:', err)
-    showError('Error', 'Failed to copy to clipboard')
-  }
-}
-
-const loadPaymentMethods = async (): Promise<void> => {
-  if (loadingMethods.value) return
-
-  abortController?.abort()
-  abortController = new AbortController()
-
-  loadingMethods.value = true
-  error.value = null
+/**
+ * Ask the server how this plan can be funded.
+ *
+ * A failure here is deliberately silent: the endpoint is new, and an older
+ * backend that 404s it must still leave the transfer checkout fully working
+ * rather than showing the organizer an error about a feature they don't have.
+ */
+const loadActivationOptions = async (): Promise<void> => {
+  const plan = props.templatePackage
+  if (!plan) return
 
   try {
-    const response = await apiService.get<{ results: PaymentMethod[] }>(
-      '/api/payment/payment-methods/',
-      undefined,
-    )
-
+    const response = await partnerCreditsService.getActivationOptions(plan.id)
     if (response.success && response.data) {
-      paymentMethods.value = Object.freeze(response.data.results || [])
+      activationOptions.value = response.data
+      // A credit is the cheapest and only instant path, so it leads when one
+      // exists — but it stays a choice, since a partner may want to keep a
+      // credit back and pay for this one event.
+      fundingChoice.value = response.data.credit ? 'credit' : 'standard'
     } else {
-      throw new Error(response.message || 'Failed to load payment methods')
+      activationOptions.value = null
+      fundingChoice.value = 'standard'
     }
   } catch (err) {
-    if (err instanceof Error && err.name !== 'AbortError') {
-      console.error('Error loading payment methods:', err)
-      error.value = 'Failed to load payment methods. Please try again.'
-    }
-  } finally {
-    loadingMethods.value = false
-    abortController = null
+    console.error('Error loading activation options:', err)
+    activationOptions.value = null
+    fundingChoice.value = 'standard'
   }
 }
 
-const openPaymentLink = (paymentLink: string): void => {
-  if (!paymentLink || typeof paymentLink !== 'string') return
-  try {
-    const url = new URL(paymentLink)
-    if (!url.protocol) return
-    window.location.href = paymentLink
-  } catch (err) {
-    console.error('Invalid payment link format:', err)
-  }
+/** A credit and a promo code are mutually exclusive server-side (400 if both). */
+const selectFunding = (choice: 'standard' | 'credit'): void => {
+  fundingChoice.value = choice
+  error.value = null
+  if (choice === 'credit') removePromoCode()
 }
 
-const handleImageError = (event: globalThis.Event): void => {
-  const img = event.target as HTMLImageElement
-  if (img?.src) {
-    console.error('Failed to load QR code image:', img.src)
-    img.style.display = 'none'
-  }
+const handleProofError = (message: string): void => {
+  error.value = message
+  showError(t('management.templatePaymentTab.paymentDrawer.errorTitle'), message)
 }
 
 const validatePromoCode = async (): Promise<void> => {
   const code = promoCodeInput.value.trim().toUpperCase()
   if (!code) {
-    promoCodeError.value = 'Please enter a promo code'
+    promoCodeError.value = t('management.templatePaymentTab.paymentDrawer.promoRequired')
     return
   }
   if (!props.templatePackage) {
-    promoCodeError.value = 'Please select a template first'
+    promoCodeError.value = t('management.templatePaymentTab.paymentDrawer.promoNoTemplate')
     return
   }
 
@@ -786,21 +684,23 @@ const validatePromoCode = async (): Promise<void> => {
         }
       }
       promoCodeInput.value = ''
-      showSuccess('Promo Code Applied', `Promo code "${code}" applied successfully!`)
+      showSuccess(
+        t('management.templatePaymentTab.paymentDrawer.promoAppliedTitle'),
+        t('management.templatePaymentTab.paymentDrawer.promoAppliedMessage', { code }),
+      )
     } else {
-      promoCodeError.value = response.data?.error || response.message || 'Invalid promo code'
+      // These strings are written for end users by the backend — render verbatim.
+      promoCodeError.value =
+        response.data?.error ||
+        response.message ||
+        t('management.templatePaymentTab.paymentDrawer.promoInvalid')
     }
   } catch (err: unknown) {
     console.error('Error validating promo code:', err)
-    // Backend returns 400 with { valid: false, error: "..." }
-    if (err && typeof err === 'object' && 'response' in err) {
-      const errorResponse = err as { response?: { data?: { error?: string } } }
-      if (errorResponse.response?.data?.error) {
-        promoCodeError.value = errorResponse.response.data.error
-        return
-      }
-    }
-    promoCodeError.value = err instanceof Error ? err.message : 'Failed to validate promo code'
+    promoCodeError.value =
+      err instanceof Error
+        ? err.message
+        : t('management.templatePaymentTab.paymentDrawer.promoFailed')
   } finally {
     validatingPromoCode.value = false
   }
@@ -816,85 +716,179 @@ const removePromoCode = (): void => {
 const validateTransactionReference = (reference: string): string | null => {
   const sanitized = sanitizeInput(reference)
   if (!sanitized || sanitized.length < 3) {
-    return 'Transaction reference must be at least 3 characters long'
+    return t('management.templatePaymentTab.paymentDrawer.refTooShort')
   }
   if (sanitized.length > 100) {
-    return 'Transaction reference must be less than 100 characters'
+    return t('management.templatePaymentTab.paymentDrawer.refTooLong')
   }
   if (!/^[a-zA-Z0-9\-_\s]+$/.test(sanitized)) {
-    return 'Transaction reference can only contain letters, numbers, dashes, underscores, and spaces'
+    return t('management.templatePaymentTab.paymentDrawer.refInvalidChars')
   }
   return null
-}
-
-const validateFile = (file: File): string | null => {
-  const maxSize = 10 * 1024 * 1024
-  const allowedTypes = [
-    'image/jpeg',
-    'image/jpg',
-    'image/png',
-    'image/gif',
-    'image/webp',
-    'application/pdf',
-  ]
-
-  if (file.size > maxSize) return 'File size must be less than 10MB'
-  if (!allowedTypes.includes(file.type)) {
-    return 'File type not allowed. Please use JPG, PNG, GIF, WebP, or PDF files'
-  }
-  return null
-}
-
-const handleFileSelect = (event: globalThis.Event): void => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0] || null
-
-  if (file) {
-    const validationError = validateFile(file)
-    if (validationError) {
-      error.value = validationError
-      showError('Error', validationError)
-      target.value = ''
-      return
-    }
-  }
-
-  paymentForm.value.payment_proof = file
-  error.value = null
 }
 
 const resetForm = (): void => {
   paymentForm.value = { transaction_reference: '', user_notes: '', payment_proof: null }
-  if (fileInput.value) fileInput.value.value = ''
+  instructions.value?.reset()
   error.value = null
   removePromoCode()
+  // Dropped rather than kept: the organizer may change template between opens,
+  // and a credit for the previous plan is not a credit for this one. Showing the
+  // stale option for the frame before the refetch lands would offer a partner a
+  // credit they cannot actually spend here.
+  activationOptions.value = null
+  fundingChoice.value = 'standard'
+}
+
+/**
+ * Paying with a credit is the whole payload: no amount, no method, no code, no
+ * proof. The partner prepaid when they bought the pack, so there is nothing to
+ * verify and the response comes back already confirmed.
+ */
+const activateWithCredit = async (): Promise<void> => {
+  const payload: Record<string, unknown> = {
+    event: sanitizeInput(props.eventId),
+    pricing_plan: props.templatePackage!.id,
+    pay_with_credit: true,
+  }
+  if (props.templateId) payload.event_template = props.templateId
+
+  const response = await apiService.post<Payment | { payment: Payment }>(
+    '/api/payment/payments/',
+    payload,
+  )
+
+  if (!response.success) {
+    throw new Error(
+      response.message || t('management.templatePaymentTab.paymentDrawer.submitFailed'),
+    )
+  }
+
+  // A fully-covered payment confirms on the spot; a partially-covered one still
+  // needs proof and an admin, so the success message follows the status rather
+  // than assuming the happy path.
+  const payment = unwrapPayment(response.data)
+
+  if (payment?.status === 'confirmed') {
+    showSuccess(
+      t('management.templatePaymentTab.paymentDrawer.creditSuccessTitle'),
+      t('management.templatePaymentTab.paymentDrawer.creditSuccessMessage'),
+    )
+  } else {
+    showSuccess(
+      t('management.templatePaymentTab.paymentDrawer.submitSuccessTitle'),
+      t('management.templatePaymentTab.paymentDrawer.submitSuccessMessage'),
+    )
+  }
+}
+
+const submitByTransfer = async (): Promise<void> => {
+  const templatePackage = props.templatePackage!
+  const formData = new FormData()
+
+  formData.append('event', sanitizeInput(props.eventId))
+  formData.append('pricing_plan', templatePackage.id.toString())
+  formData.append('payment_method', selectedMethod.value!.id.toString())
+
+  // `amount` is optional and re-validated server-side, so it has to be the same
+  // figure the drawer just showed — sending the list price while displaying a
+  // partner rate would be rejected rather than honoured.
+  formData.append('amount', standardAmount.value)
+  formData.append(
+    'original_price',
+    promoDiscount.value?.original ??
+      activationOptions.value?.pricing_plan.price ??
+      templatePackage.price,
+  )
+  if (promoDiscount.value) {
+    formData.append('promo_discount', promoDiscount.value.discount)
+  }
+
+  // Backend expects the code itself, not the promo code's UUID
+  if (appliedPromoCode.value?.code) {
+    formData.append('promo_code_string', appliedPromoCode.value.code)
+  }
+
+  if (paymentForm.value.transaction_reference.trim()) {
+    formData.append('transaction_reference', sanitizeInput(paymentForm.value.transaction_reference))
+  }
+
+  if (paymentForm.value.user_notes.trim()) {
+    formData.append('user_notes', sanitizeInput(paymentForm.value.user_notes))
+  }
+
+  if (paymentForm.value.payment_proof) {
+    formData.append('payment_proof', paymentForm.value.payment_proof)
+  }
+
+  if (props.templateId) {
+    formData.append('event_template', String(props.templateId))
+  }
+
+  const response = await apiService.postFormData<Payment | { payment: Payment }>(
+    '/api/payment/payments/',
+    formData,
+  )
+
+  if (!response.success) {
+    throw new Error(
+      response.message || t('management.templatePaymentTab.paymentDrawer.submitFailed'),
+    )
+  }
+
+  const payment = unwrapPayment(response.data)
+
+  if (payment?.status === 'confirmed') {
+    showSuccess(
+      t('management.templatePaymentTab.paymentDrawer.creditSuccessTitle'),
+      t('management.templatePaymentTab.paymentDrawer.creditSuccessMessage'),
+    )
+  } else {
+    showSuccess(
+      t('management.templatePaymentTab.paymentDrawer.submitSuccessTitle'),
+      t('management.templatePaymentTab.paymentDrawer.submitSuccessMessage'),
+    )
+  }
+}
+
+/** The create endpoint answers with the payment either bare or under `payment`. */
+const unwrapPayment = (data: Payment | { payment: Payment } | undefined): Payment | null => {
+  if (!data) return null
+  if ('payment' in data && data.payment) return data.payment
+  return data as Payment
 }
 
 const submitPayment = async (): Promise<void> => {
   if (submittingPayment.value) return
 
-  const templatePackage = props.templatePackage
-  if (!isFormValid.value || !templatePackage) {
-    error.value = 'Please select a payment method.'
-    showError('Error', 'Please select a payment method')
+  if (!isFormValid.value || !props.templatePackage) {
+    error.value = t('management.templatePaymentTab.paymentDrawer.selectMethodError')
+    showError(
+      t('management.templatePaymentTab.paymentDrawer.errorTitle'),
+      t('management.templatePaymentTab.paymentDrawer.selectMethodError'),
+    )
     return
   }
 
-  if (paymentForm.value.transaction_reference.trim()) {
-    const transactionRefError = validateTransactionReference(paymentForm.value.transaction_reference)
-    if (transactionRefError) {
-      error.value = transactionRefError
-      showError('Error', transactionRefError)
-      return
+  if (!payingWithCredit.value) {
+    if (paymentForm.value.transaction_reference.trim()) {
+      const transactionRefError = validateTransactionReference(
+        paymentForm.value.transaction_reference,
+      )
+      if (transactionRefError) {
+        error.value = transactionRefError
+        showError(t('management.templatePaymentTab.paymentDrawer.errorTitle'), transactionRefError)
+        return
+      }
     }
-  }
 
-  if (paymentForm.value.payment_proof) {
-    const fileError = validateFile(paymentForm.value.payment_proof)
-    if (fileError) {
-      error.value = fileError
-      showError('Error', fileError)
-      return
+    if (paymentForm.value.payment_proof) {
+      const fileError = validatePaymentProofFile(paymentForm.value.payment_proof, t)
+      if (fileError) {
+        error.value = fileError
+        showError(t('management.templatePaymentTab.paymentDrawer.errorTitle'), fileError)
+        return
+      }
     }
   }
 
@@ -902,80 +896,52 @@ const submitPayment = async (): Promise<void> => {
   error.value = null
 
   try {
-    const formData = new FormData()
-
-    formData.append('event', sanitizeInput(props.eventId))
-    formData.append('pricing_plan', templatePackage.id.toString())
-    formData.append('payment_method', selectedMethod.value!.id.toString())
-
-    if (promoDiscount.value) {
-      formData.append('amount', promoDiscount.value.final)
-      formData.append('original_price', promoDiscount.value.original)
-      formData.append('promo_discount', promoDiscount.value.discount)
+    if (payingWithCredit.value) {
+      await activateWithCredit()
     } else {
-      formData.append('amount', templatePackage.price)
-      formData.append('original_price', templatePackage.price)
-    }
-
-    // Backend expects the code itself, not the promo code's UUID
-    if (appliedPromoCode.value?.code) {
-      formData.append('promo_code_string', appliedPromoCode.value.code)
-    }
-
-    if (paymentForm.value.transaction_reference.trim()) {
-      formData.append(
-        'transaction_reference',
-        sanitizeInput(paymentForm.value.transaction_reference),
-      )
-    }
-
-    if (paymentForm.value.user_notes.trim()) {
-      formData.append('user_notes', sanitizeInput(paymentForm.value.user_notes))
-    }
-
-    if (paymentForm.value.payment_proof) {
-      formData.append('payment_proof', paymentForm.value.payment_proof)
-    }
-
-    if (props.templateId) {
-      formData.append('event_template', String(props.templateId))
-    }
-
-    const response = await apiService.postFormData<Payment>('/api/payment/payments/', formData)
-
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to submit payment')
+      await submitByTransfer()
     }
 
     resetForm()
-    showSuccess(
-      'Payment Submitted',
-      'Your payment has been submitted successfully and is pending review.',
-    )
     emit('submitted')
     emit('close')
   } catch (err) {
     const errorMessage =
-      err instanceof Error ? err.message : 'Error submitting payment. Please try again.'
+      err instanceof Error
+        ? err.message
+        : t('management.templatePaymentTab.paymentDrawer.submitFailed')
     console.error('Error submitting payment:', err)
     error.value = errorMessage
-    showError('Payment Failed', errorMessage)
+    showError(t('management.templatePaymentTab.paymentDrawer.submitFailedTitle'), errorMessage)
+    // The credit may have been spent elsewhere since the drawer opened; refetch
+    // so the options on screen match what the server will accept next time.
+    if (payingWithCredit.value) await loadActivationOptions()
   } finally {
     submittingPayment.value = false
   }
 }
 
-// Methods are fetched on first open rather than on mount — the drawer is
-// mounted (closed) by both the studio and the activation tab, and neither
-// should pay for a request the organizer may never need.
+// Methods and funding options are fetched on first open rather than on mount —
+// the drawer is mounted (closed) by both the studio and the activation tab, and
+// neither should pay for a request the organizer may never need.
 watch(
   () => props.open,
   (isOpen) => {
     if (isOpen) {
-      if (paymentMethods.value.length === 0) loadPaymentMethods()
+      ensurePaymentMethods()
+      loadActivationOptions()
     } else {
       resetForm()
     }
+  },
+)
+
+// A different template can mean a different plan, and credits are plan-scoped —
+// so the funding options have to be re-asked, not carried over.
+watch(
+  () => props.templatePackage?.id,
+  () => {
+    if (props.open) loadActivationOptions()
   },
 )
 

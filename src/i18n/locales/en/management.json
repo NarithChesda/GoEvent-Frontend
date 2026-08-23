@@ -1393,7 +1393,7 @@
     "form": {
       "emailLabel": "Referrer Email",
       "emailPlaceholder": "Enter referrer's email address",
-      "emailHint": "The referrer must have an account in the system and is our partner",
+      "emailHint": "The referrer must already have an account on GoEvent",
       "cancelBtn": "Cancel",
       "savingLong": "Saving...",
       "savingShort": "Saving",
@@ -1404,8 +1404,8 @@
     },
     "info": {
       "title": "About Event Referrers",
-      "body": "A referrer is the person or vendor who introduced you to our platform. They may earn rewards or commissions based on your purchases.",
-      "note": "Note: The referrer must have an existing account in the system and is our partner to be assigned."
+      "body": "A referrer is the person or business who introduced you to GoEvent. If they are one of our partners, their logo appears alongside ours on this event’s invitation.",
+      "note": "Note: the referrer must have an existing account to be assigned."
     },
     "removeModal": {
       "title": "Remove Referrer?",
@@ -1613,7 +1613,43 @@
       "notes": "Notes",
       "notesPlaceholder": "Any additional notes for the host",
       "submitBtn": "Submit Payment",
-      "submitting": "Submitting..."
+      "submitting": "Submitting...",
+      "errorTitle": "Error",
+      "copyFailed": "Couldn't copy to the clipboard",
+      "fileTooLarge": "File size must be less than 10MB",
+      "fileTypeNotAllowed": "File type not allowed. Please use JPG, PNG, GIF, WebP or PDF",
+      "promoRequired": "Enter a promo code",
+      "promoNoTemplate": "Select a template first",
+      "promoInvalid": "Invalid promo code",
+      "promoFailed": "Couldn't validate the promo code",
+      "promoAppliedTitle": "Promo code applied",
+      "promoAppliedMessage": "Promo code \"{code}\" applied successfully.",
+      "refTooShort": "Transaction reference must be at least 3 characters long",
+      "refTooLong": "Transaction reference must be less than 100 characters",
+      "refInvalidChars": "Transaction reference can only contain letters, numbers, dashes, underscores and spaces",
+      "selectMethodError": "Please select a payment method.",
+      "submitFailed": "Error submitting payment. Please try again.",
+      "submitFailedTitle": "Payment failed",
+      "submitSuccessTitle": "Payment submitted",
+      "submitSuccessMessage": "Your payment has been submitted and is pending review.",
+      "creditSuccessTitle": "Template activated",
+      "creditSuccessMessage": "Your showcase is live — guests can see it now.",
+      "activateBtn": "Activate now",
+      "activating": "Activating…",
+      "funding": {
+        "heading": "How to pay for this",
+        "partnerRate": "Partner rate",
+        "credit": {
+          "title": "Use a partner credit",
+          "remaining": "{n} credit left | {n} credits left",
+          "instant": "activates instantly",
+          "expires": "Credits expire {date}"
+        },
+        "standard": {
+          "title": "Pay by transfer",
+          "hint": "Upload your receipt and we confirm it"
+        }
+      }
     },
     "updateModal": {
       "title": "Update Payment",

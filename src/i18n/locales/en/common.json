@@ -4,7 +4,6 @@
     "discover": "Discover",
     "services": "Services",
     "settings": "Settings",
-    "commission": "Commission",
     "myListings": "My Listings",
     "myTickets": "My Tickets",
     "profile": "Profile",
@@ -12,7 +11,8 @@
     "emailCopied": "Email copied",
     "signIn": "Sign In",
     "signOut": "Sign Out",
-    "createEvent": "Create Event"
+    "createEvent": "Create Event",
+    "credits": "Partner Credits"
   },
   "actions": {
     "save": "Save",

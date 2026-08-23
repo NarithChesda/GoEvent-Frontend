@@ -318,14 +318,17 @@
                   >
                     {{ t('common.nav.myTickets') }}
                   </RouterLink>
+                  <!-- Gated on holding a vendor profile, which is exactly what
+                       the credit-pack endpoints check — so the link never leads
+                       to a 403, and wholesale pricing stays off consumer menus. -->
                   <RouterLink
-                    v-if="authStore.user?.is_partner"
-                    to="/commission"
+                    v-if="isVendor"
+                    to="/credits"
                     @click="closeUserMenu"
                     class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                     role="menuitem"
                   >
-                    {{ t('common.nav.commission') }}
+                    {{ t('common.nav.credits') }}
                   </RouterLink>
                   <!-- Language — a straight toggle, not a submenu. The menu stays
                        open so the label flips in place and confirms the switch. -->
@@ -404,7 +407,7 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 // Vendor profile for showing listings link
-const { vendorState } = useVendorProfile({ autoLoad: true })
+const { vendorState, isVendor } = useVendorProfile({ autoLoad: true })
 const isVerifiedVendor = computed(() => vendorState.value === 'verified')
 
 // Global search
