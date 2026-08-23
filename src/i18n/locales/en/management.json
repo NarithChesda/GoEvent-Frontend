@@ -1581,32 +1581,21 @@
       "paymentMethod": "Payment method",
       "loadingMethods": "Loading methods...",
       "noMethods": "No payment methods available for this event yet.",
-      "howToPay": "How to Pay",
-      "step1": {
-        "title": "Copy the payment amount"
-      },
       "step2": {
-        "title": "Transfer to this account",
         "scanQr": "Scan with your banking app",
         "openBankApp": "Open in Bank App",
-        "bankDetails": "Bank Details",
-        "bank": "Bank:",
-        "account": "Account:",
-        "name": "Name:"
+        "bank": "Bank",
+        "account": "Account",
+        "name": "Name"
       },
       "step3": {
-        "title": "Upload payment receipt",
         "hint": "Screenshot your transfer confirmation for faster verification",
-        "chooseFile": "Choose file or drag here",
+        "chooseFile": "Add a screenshot or PDF",
         "fileTypes": "JPG, PNG, PDF up to 10MB"
       },
       "copied": "Copied!",
       "copy": "Copy",
-      "noMethodSelected": {
-        "title": "Select a payment method",
-        "hint": "Choose from the options above to see payment instructions"
-      },
-      "additionalDetails": "Additional Details",
+      "additionalDetails": "Reference and notes",
       "optional": "Optional",
       "transactionRef": "Transaction Reference",
       "transactionRefPlaceholder": "Enter transaction ID",
@@ -1654,7 +1643,16 @@
           "hint": "Upload your receipt and we confirm it"
         }
       },
-      "promoLabel": "Promo code"
+      "promoLabel": "Promo code",
+      "sendExactly": "Send exactly",
+      "qrAlt": "QR code for {name}",
+      "promoPrompt": "Have a promo code?",
+      "receipt": {
+        "title": "Payment receipt",
+        "recommended": "Recommended",
+        "required": "Required",
+        "remove": "Remove"
+      }
     },
     "updateModal": {
       "title": "Update Payment",

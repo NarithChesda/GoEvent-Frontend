@@ -1,333 +1,227 @@
 <template>
-  <Teleport to="body">
-    <Transition name="fade">
-      <div
-        v-if="open"
-        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
-        @click="emit('close')"
-      />
-    </Transition>
+  <CheckoutDrawer :open="open" :title="headerTitle" :eyebrow="subjectName" @close="emit('close')">
+    <!--
+      The order landed. Which screen this is depends on the status the server
+      sent back, never on the price: a free pack without `requires_approval` is
+      confirmed in the same request, and telling a partner to wait for a review
+      that already happened would send them looking for an email that never
+      arrives.
+    -->
+    <template v-if="result">
+      <div v-if="issuedCode" class="text-center">
+        <div
+          class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20"
+        >
+          <Sparkles class="h-7 w-7 text-[#2ecc71]" aria-hidden="true" />
+        </div>
+        <h3 class="mt-3 text-lg font-semibold text-slate-900">
+          {{
+            t(
+              'settings.credits.drawer.issued.title',
+              { n: result.credit_count },
+              result.credit_count,
+            )
+          }}
+        </h3>
+        <p class="mt-1 text-sm text-slate-600">
+          {{
+            t('settings.credits.drawer.issued.subtitle', {
+              plan: issuedCode.applicable_plan_names?.[0] ?? result.pack_name,
+            })
+          }}
+        </p>
 
-    <Transition name="slide-right">
-      <div
-        v-if="open"
-        class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[32.5rem] laptop-sm:w-[35rem] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
-        role="dialog"
-        aria-modal="true"
-        @click.stop
-      >
-        <!-- Header -->
-        <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
-          <div class="flex items-center gap-2 px-3 py-2.5">
+        <div class="mt-4 rounded-2xl bg-slate-50 p-4">
+          <p class="text-xs text-slate-500">
+            {{ t('settings.credits.drawer.issued.codeLabel') }}
+          </p>
+          <div class="mt-1.5 flex items-center justify-center gap-2">
+            <code class="font-mono text-base font-semibold tracking-wide text-slate-900">
+              {{ issuedCode.code }}
+            </code>
             <button
               type="button"
-              class="p-1.5 hover:bg-white/20 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-              :title="t('common.actions.close')"
-              :aria-label="t('common.actions.close')"
-              @click="emit('close')"
+              class="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-3 text-xs font-medium transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+              :class="
+                copied
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-white text-slate-600 shadow-sm hover:bg-slate-100'
+              "
+              @click="copyCode(issuedCode.code)"
             >
-              <ArrowRight class="w-5 h-5 text-white" />
-            </button>
-            <div class="min-w-0">
-              <p
-                v-if="subjectName"
-                class="text-[0.625rem] uppercase tracking-wide text-white/80 truncate"
-              >
-                {{ subjectName }}
-              </p>
-              <h2 class="text-base font-semibold text-white leading-tight">
-                {{ headerTitle }}
-              </h2>
-            </div>
-          </div>
-        </div>
-
-        <!-- Content -->
-        <div class="flex-1 overflow-y-auto overscroll-contain">
-          <!--
-            The order landed. Which screen this is depends on the status the
-            server sent back, never on the price: a free pack without
-            `requires_approval` is confirmed in the same request, and telling a
-            partner to wait for a review that already happened would send them
-            looking for an email that never arrives.
-          -->
-          <div v-if="result" class="p-4 space-y-4">
-            <div v-if="issuedCode" class="text-center">
-              <div
-                class="w-14 h-14 mx-auto rounded-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center"
-              >
-                <Sparkles class="w-7 h-7 text-[#2ecc71]" aria-hidden="true" />
-              </div>
-              <h3 class="mt-3 text-lg font-semibold text-slate-900">
-                {{
-                  t(
-                    'settings.credits.drawer.issued.title',
-                    { n: result.credit_count },
-                    result.credit_count,
-                  )
-                }}
-              </h3>
-              <p class="mt-1 text-sm text-slate-600">
-                {{
-                  t('settings.credits.drawer.issued.subtitle', {
-                    plan: issuedCode.applicable_plan_names?.[0] ?? result.pack_name,
-                  })
-                }}
-              </p>
-
-              <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
-                <p class="text-xs text-slate-500">
-                  {{ t('settings.credits.drawer.issued.codeLabel') }}
-                </p>
-                <div class="mt-1.5 flex items-center justify-center gap-2">
-                  <code class="font-mono text-base font-semibold tracking-wide text-slate-900">
-                    {{ issuedCode.code }}
-                  </code>
-                  <button
-                    type="button"
-                    class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors duration-200"
-                    :class="
-                      copied
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    "
-                    @click="copyCode(issuedCode.code)"
-                  >
-                    <Check v-if="copied" class="w-3 h-3" aria-hidden="true" />
-                    <Copy v-else class="w-3 h-3" aria-hidden="true" />
-                    {{
-                      copied
-                        ? t('management.templatePaymentTab.paymentDrawer.copied')
-                        : t('management.templatePaymentTab.paymentDrawer.copy')
-                    }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- The lock is the selling point, and it is also the answer to
-                   "can I just give this code to my client?" — so it is said
-                   here, next to the code, rather than in a help article. -->
-              <p class="mt-3 text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
-                {{ t('settings.credits.drawer.issued.accountLocked') }}
-              </p>
-            </div>
-
-            <div v-else class="text-center">
-              <div
-                class="w-14 h-14 mx-auto rounded-full bg-amber-50 flex items-center justify-center"
-              >
-                <Clock class="w-7 h-7 text-amber-500" aria-hidden="true" />
-              </div>
-              <h3 class="mt-3 text-lg font-semibold text-slate-900">
-                {{ t('settings.credits.drawer.awaiting.title') }}
-              </h3>
-              <p class="mt-1 text-sm text-slate-600 max-w-sm mx-auto leading-relaxed">
-                {{ t('settings.credits.drawer.awaiting.subtitle') }}
-              </p>
-              <p class="mt-3 text-xs text-slate-500">
-                {{
-                  t('settings.credits.drawer.awaiting.reference', {
-                    reference: result.order_reference,
-                  })
-                }}
-              </p>
-            </div>
-          </div>
-
-          <!-- The form, in either of its two shapes -->
-          <div v-else class="p-3 laptop-sm:p-4 space-y-3 laptop-sm:space-y-4">
-            <!-- What is being bought. A quiet slate region rather than a second
-                 card: nothing here is separable from the drawer it is in. -->
-            <div v-if="pack" class="rounded-xl bg-slate-50 p-4">
-              <div class="flex items-baseline justify-between gap-3">
-                <p class="text-sm font-medium text-slate-900 min-w-0 truncate">{{ pack.name }}</p>
-                <p class="text-xl font-bold text-slate-900 flex-shrink-0 tabular-nums">
-                  {{ isFreePack ? t('settings.credits.free') : `$${pack.price}` }}
-                </p>
-              </div>
-              <!-- The same figure the catalogue card promised, restated where
-                   the order is confirmed rather than left behind on the page. -->
-              <p v-if="savingsPercent" class="mt-1 text-xs font-medium text-emerald-700">
-                {{ t('settings.credits.savePercent', { n: savingsPercent }) }}
-              </p>
-              <dl class="mt-3 space-y-1.5 text-xs">
-                <div class="flex items-center justify-between gap-3">
-                  <dt class="text-slate-500">{{ t('settings.credits.drawer.summary.credits') }}</dt>
-                  <dd class="text-slate-700 font-medium">
-                    {{
-                      t('settings.credits.creditCount', { n: pack.credit_count }, pack.credit_count)
-                    }}
-                  </dd>
-                </div>
-                <div class="flex items-center justify-between gap-3">
-                  <dt class="text-slate-500">{{ t('settings.credits.drawer.summary.plan') }}</dt>
-                  <dd class="text-slate-700 font-medium truncate">{{ pack.pricing_plan_name }}</dd>
-                </div>
-                <div v-if="!isFreePack" class="flex items-center justify-between gap-3">
-                  <dt class="text-slate-500">
-                    {{ t('settings.credits.drawer.summary.perCredit') }}
-                  </dt>
-                  <dd class="text-slate-700 font-medium tabular-nums">
-                    ${{ pack.price_per_credit }}
-                  </dd>
-                </div>
-                <!-- What one event costs at retail — the number the rate above
-                     is only meaningful against. -->
-                <div v-if="retailPrice" class="flex items-center justify-between gap-3">
-                  <dt class="text-slate-500">{{ t('settings.credits.drawer.summary.retail') }}</dt>
-                  <dd class="text-slate-500 line-through tabular-nums">${{ retailPrice }}</dd>
-                </div>
-                <div class="flex items-center justify-between gap-3">
-                  <dt class="text-slate-500">
-                    {{ t('settings.credits.drawer.summary.validity') }}
-                  </dt>
-                  <dd class="text-slate-700 font-medium">
-                    {{
-                      t('settings.credits.dayCount', { n: pack.validity_days }, pack.validity_days)
-                    }}
-                  </dd>
-                </div>
-              </dl>
-              <p v-if="pack.description" class="mt-3 text-xs text-slate-500 leading-relaxed">
-                {{ pack.description }}
-              </p>
-            </div>
-
-            <!-- Uploading proof onto an order placed earlier -->
-            <div v-else-if="order" class="rounded-xl bg-slate-50 p-4">
-              <div class="flex items-baseline justify-between gap-3">
-                <p class="text-sm font-medium text-slate-900 min-w-0 truncate">
-                  {{ order.pack_name }}
-                </p>
-                <p class="text-xl font-bold text-slate-900 flex-shrink-0">${{ order.amount }}</p>
-              </div>
-              <p class="mt-1 text-xs text-slate-500">
-                {{
-                  t('settings.credits.drawer.awaiting.reference', {
-                    reference: order.order_reference,
-                  })
-                }}
-              </p>
-            </div>
-
-            <!-- Nothing to transfer: a free pack has no payment to prove. -->
-            <div
-              v-if="isFreePack"
-              class="rounded-xl border border-slate-200 bg-white/80 p-4 text-sm text-slate-600 leading-relaxed"
-            >
+              <Check v-if="copied" class="h-3.5 w-3.5" aria-hidden="true" />
+              <Copy v-else class="h-3.5 w-3.5" aria-hidden="true" />
               {{
-                pack?.requires_approval
-                  ? t('settings.credits.drawer.freeNeedsApproval')
-                  : t('settings.credits.drawer.freeInstant')
+                copied
+                  ? t('management.templatePaymentTab.paymentDrawer.copied')
+                  : t('management.templatePaymentTab.paymentDrawer.copy')
               }}
-            </div>
-
-            <template v-else>
-              <PaymentMethodPicker
-                v-model="selectedMethod"
-                :methods="paymentMethods"
-                :loading="loadingMethods"
-                group-name="credit-pack-payment-method"
-              />
-
-              <PaymentInstructions
-                v-if="selectedMethod"
-                ref="instructions"
-                :method="selectedMethod"
-                :amount="amountDue"
-                :proof="proof"
-                input-id="creditPackProof"
-                @update:proof="proof = $event"
-                @error="onProofError"
-              />
-
-              <div
-                v-else
-                class="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-8 text-center"
-              >
-                <div
-                  class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3"
-                >
-                  <CreditCard class="w-6 h-6 text-slate-400" aria-hidden="true" />
-                </div>
-                <p class="text-sm font-medium text-slate-600">
-                  {{ t('management.templatePaymentTab.paymentDrawer.noMethodSelected.title') }}
-                </p>
-                <p class="text-xs text-slate-500 mt-1">
-                  {{ t('management.templatePaymentTab.paymentDrawer.noMethodSelected.hint') }}
-                </p>
-              </div>
-
-              <div v-if="selectedMethod" class="space-y-3">
-                <div class="space-y-1.5">
-                  <label for="creditPackRef" class="block text-sm font-medium text-slate-700">
-                    {{ t('management.templatePaymentTab.paymentDrawer.transactionRef') }}
-                    <span class="text-slate-400 font-normal"
-                      >({{ t('management.templatePaymentTab.paymentDrawer.optional') }})</span
-                    >
-                  </label>
-                  <input
-                    id="creditPackRef"
-                    v-model="transactionReference"
-                    type="text"
-                    :class="fieldClass"
-                    :placeholder="
-                      t('management.templatePaymentTab.paymentDrawer.transactionRefPlaceholder')
-                    "
-                  />
-                </div>
-
-                <div v-if="pack" class="space-y-1.5">
-                  <label for="creditPackNotes" class="block text-sm font-medium text-slate-700">
-                    {{ t('management.templatePaymentTab.paymentDrawer.notes') }}
-                    <span class="text-slate-400 font-normal"
-                      >({{ t('management.templatePaymentTab.paymentDrawer.optional') }})</span
-                    >
-                  </label>
-                  <textarea
-                    id="creditPackNotes"
-                    v-model="vendorNotes"
-                    rows="2"
-                    :class="`${fieldClass} resize-none`"
-                    :placeholder="t('settings.credits.drawer.notesPlaceholder')"
-                  ></textarea>
-                </div>
-              </div>
-            </template>
-
-            <div
-              v-if="localError"
-              class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs sm:text-sm text-red-600"
-            >
-              {{ localError }}
-            </div>
+            </button>
           </div>
         </div>
 
-        <!-- Footer -->
-        <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
-          <button
-            v-if="result"
-            type="button"
-            class="w-full px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition-colors duration-200"
-            @click="emit('close')"
-          >
-            {{ t('settings.credits.drawer.done') }}
-          </button>
-          <button
-            v-else
-            type="button"
-            :disabled="submitting || !canSubmit"
-            class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:opacity-90 text-white text-sm font-semibold rounded-lg shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            @click="handleSubmit"
-          >
-            <Loader v-if="submitting" class="w-4 h-4 animate-spin" aria-hidden="true" />
-            <span>{{ submitLabel }}</span>
-          </button>
-        </div>
+        <!-- The lock is the selling point, and it is also the answer to "can I
+             just give this code to my client?" — so it is said here, next to
+             the code, rather than in a help article. -->
+        <p class="mx-auto mt-3 max-w-sm text-xs leading-relaxed text-slate-500">
+          {{ t('settings.credits.drawer.issued.accountLocked') }}
+        </p>
       </div>
-    </Transition>
-  </Teleport>
+
+      <div v-else class="text-center">
+        <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-amber-50">
+          <Clock class="h-7 w-7 text-amber-500" aria-hidden="true" />
+        </div>
+        <h3 class="mt-3 text-lg font-semibold text-slate-900">
+          {{ t('settings.credits.drawer.awaiting.title') }}
+        </h3>
+        <p class="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-slate-600">
+          {{ t('settings.credits.drawer.awaiting.subtitle') }}
+        </p>
+        <p class="mt-3 text-xs text-slate-500">
+          {{
+            t('settings.credits.drawer.awaiting.reference', { reference: result.order_reference })
+          }}
+        </p>
+      </div>
+    </template>
+
+    <!-- The form, in either of its two shapes -->
+    <template v-else>
+      <CheckoutSummary
+        v-if="pack"
+        :title="pack.name"
+        :amount="isFreePack ? t('settings.credits.free') : `$${pack.price}`"
+      >
+        <!-- The same figure the catalogue card promised, restated where the
+             order is confirmed rather than left behind on the page. -->
+        <template v-if="savingsPercent" #badges>
+          <span
+            class="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[0.6875rem] font-medium text-emerald-700"
+          >
+            {{ t('settings.credits.savePercent', { n: savingsPercent }) }}
+          </span>
+        </template>
+
+        <template #details>
+          <dl class="space-y-1.5 text-xs">
+            <div class="flex items-center justify-between gap-3">
+              <dt class="text-slate-500">{{ t('settings.credits.drawer.summary.credits') }}</dt>
+              <dd class="font-medium text-slate-700">
+                {{ t('settings.credits.creditCount', { n: pack.credit_count }, pack.credit_count) }}
+              </dd>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <dt class="text-slate-500">{{ t('settings.credits.drawer.summary.plan') }}</dt>
+              <dd class="min-w-0 truncate font-medium text-slate-700">
+                {{ pack.pricing_plan_name }}
+              </dd>
+            </div>
+            <div v-if="!isFreePack" class="flex items-center justify-between gap-3">
+              <dt class="text-slate-500">{{ t('settings.credits.drawer.summary.perCredit') }}</dt>
+              <dd class="font-medium text-slate-700 tabular-nums">${{ pack.price_per_credit }}</dd>
+            </div>
+            <!-- What one event costs at retail — the number the rate above is
+                 only meaningful against. -->
+            <div v-if="retailPrice" class="flex items-center justify-between gap-3">
+              <dt class="text-slate-500">{{ t('settings.credits.drawer.summary.retail') }}</dt>
+              <dd class="text-slate-500 line-through tabular-nums">${{ retailPrice }}</dd>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <dt class="text-slate-500">{{ t('settings.credits.drawer.summary.validity') }}</dt>
+              <dd class="font-medium text-slate-700">
+                {{ t('settings.credits.dayCount', { n: pack.validity_days }, pack.validity_days) }}
+              </dd>
+            </div>
+          </dl>
+          <p v-if="pack.description" class="mt-3 text-xs leading-relaxed text-slate-500">
+            {{ pack.description }}
+          </p>
+        </template>
+      </CheckoutSummary>
+
+      <!-- Uploading proof onto an order placed earlier -->
+      <CheckoutSummary
+        v-else-if="order"
+        :title="order.pack_name"
+        :amount="`$${order.amount}`"
+        :subtitle="
+          t('settings.credits.drawer.awaiting.reference', { reference: order.order_reference })
+        "
+      />
+
+      <!-- Nothing to transfer: a free pack has no payment to prove. -->
+      <p
+        v-if="isFreePack"
+        class="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-600"
+      >
+        {{
+          pack?.requires_approval
+            ? t('settings.credits.drawer.freeNeedsApproval')
+            : t('settings.credits.drawer.freeInstant')
+        }}
+      </p>
+
+      <template v-else>
+        <PaymentMethodPicker
+          v-model="selectedMethod"
+          :methods="paymentMethods"
+          :loading="loadingMethods"
+          :amount="amountDue"
+          group-name="credit-pack-payment-method"
+          @error="onProofError"
+        />
+
+        <PaymentProofField
+          ref="proofField"
+          :proof="proof"
+          :required="Boolean(order)"
+          input-id="creditPackProof"
+          @update:proof="proof = $event"
+          @error="onProofError"
+        />
+
+        <PaymentDetailsDisclosure
+          ref="detailsDisclosure"
+          id-prefix="creditPack"
+          :reference="transactionReference"
+          :notes="vendorNotes"
+          :show-notes="Boolean(pack)"
+          :notes-placeholder="t('settings.credits.drawer.notesPlaceholder')"
+          @update:reference="transactionReference = $event"
+          @update:notes="vendorNotes = $event"
+        />
+      </template>
+    </template>
+
+    <template #footer>
+      <p
+        v-if="localError"
+        class="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600"
+        role="alert"
+      >
+        {{ localError }}
+      </p>
+      <button
+        v-if="result"
+        type="button"
+        class="min-h-[48px] w-full rounded-xl bg-slate-100 px-4 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+        @click="emit('close')"
+      >
+        {{ t('settings.credits.drawer.done') }}
+      </button>
+      <button
+        v-else
+        type="button"
+        :disabled="submitting || !canSubmit"
+        class="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2"
+        @click="handleSubmit"
+      >
+        <Loader v-if="submitting" class="h-4 w-4 animate-spin" aria-hidden="true" />
+        <span>{{ submitLabel }}</span>
+      </button>
+    </template>
+  </CheckoutDrawer>
 </template>
 
 <script setup lang="ts">
@@ -342,14 +236,20 @@
  * It performs no API calls of its own — the tab owns `usePartnerCredits` and is
  * the only place credits are written from, so this emits the payload and renders
  * whatever order comes back as `result`.
+ *
+ * The panel, header, summary, method list, receipt field and optional fields
+ * are all shared with the template-activation checkout under
+ * `components/payment/`: same company, same accounts, same words.
  */
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ArrowRight, Check, Clock, Copy, CreditCard, Loader, Sparkles } from 'lucide-vue-next'
+import { Check, Clock, Copy, Loader, Sparkles } from 'lucide-vue-next'
+import CheckoutDrawer from '@/components/payment/CheckoutDrawer.vue'
+import CheckoutSummary from '@/components/payment/CheckoutSummary.vue'
 import PaymentMethodPicker from '@/components/payment/PaymentMethodPicker.vue'
-import PaymentInstructions from '@/components/payment/PaymentInstructions.vue'
+import PaymentProofField from '@/components/payment/PaymentProofField.vue'
+import PaymentDetailsDisclosure from '@/components/payment/PaymentDetailsDisclosure.vue'
 import { usePlatformPaymentMethods } from '@/composables/usePlatformPaymentMethods'
-import { fieldClass } from '@/components/settings/settingsFormChrome'
 import type { CreditPack, CreditPackOrder } from '@/services/api'
 import type { PaymentMethod } from '@/types/payment'
 
@@ -394,7 +294,8 @@ const transactionReference = ref('')
 const vendorNotes = ref('')
 const localError = ref<string | null>(null)
 const copied = ref(false)
-const instructions = ref<InstanceType<typeof PaymentInstructions> | null>(null)
+const proofField = ref<InstanceType<typeof PaymentProofField> | null>(null)
+const detailsDisclosure = ref<InstanceType<typeof PaymentDetailsDisclosure> | null>(null)
 
 /** A `0.00` pack has nothing to verify, so it skips the transfer flow entirely. */
 const isFreePack = computed(() => Boolean(props.pack) && Number(props.pack?.price ?? 0) === 0)
@@ -453,11 +354,6 @@ const onProofError = (message: string): void => {
   localError.value = message
 }
 
-/** Escape closes the drawer — §10, and the only exit on a keyboard. */
-const onKeydown = (event: KeyboardEvent): void => {
-  if (event.key === 'Escape') emit('close')
-}
-
 const copyCode = async (code: string): Promise<void> => {
   try {
     await navigator.clipboard.writeText(code)
@@ -505,79 +401,19 @@ const reset = (): void => {
   vendorNotes.value = ''
   localError.value = null
   copied.value = false
-  instructions.value?.reset()
+  proofField.value?.reset()
+  detailsDisclosure.value?.collapse()
 }
 
 watch(
   () => props.open,
   (isOpen) => {
+    // A free pack never shows the transfer flow, so it never needs the list.
     if (isOpen) {
-      // A free pack never shows the transfer flow, so it never needs the list.
       if (!isFreePack.value) ensurePaymentMethods()
-      document.addEventListener('keydown', onKeydown)
     } else {
-      document.removeEventListener('keydown', onKeydown)
       reset()
     }
   },
 )
-
-onUnmounted(() => document.removeEventListener('keydown', onKeydown))
-
-// Prevent body scroll while the drawer is open, compensating for the
-// scrollbar's own width so the page behind doesn't visibly shift.
-watch(
-  () => props.open,
-  (isOpen) => {
-    if (isOpen) {
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-      document.body.style.overflow = 'hidden'
-      if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`
-    } else {
-      document.body.style.overflow = ''
-      document.body.style.paddingRight = ''
-    }
-  },
-)
 </script>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.35s ease-out;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.slide-right-enter-active {
-  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.slide-right-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-.slide-right-enter-from,
-.slide-right-leave-to {
-  transform: translateY(100%);
-}
-
-@media (min-width: 768px) {
-  .slide-right-enter-from,
-  .slide-right-leave-to {
-    transform: translateX(100%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .fade-enter-active,
-  .fade-leave-active,
-  .slide-right-enter-active,
-  .slide-right-leave-active {
-    transition-duration: 0.01ms;
-  }
-}
-</style>
