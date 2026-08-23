@@ -286,8 +286,9 @@ behalf of their customer, so the partner is the organizer *and* the payer — th
 account, and appears only as an event `host`.
 
 - Service: `partnerCreditsService` ([credits.service.ts](src/services/api/modules/credits.service.ts)), types in [credit.types.ts](src/services/api/types/credit.types.ts)
-- State: [usePartnerCredits.ts](src/composables/settings/usePartnerCredits.ts) — catalogue, balance and orders fetched together; a `403` means "no vendor profile yet", not a failure
-- Buying: `/credits` ([CreditsView.vue](src/views/CreditsView.vue) wrapping [CreditsTab.vue](src/components/settings/CreditsTab.vue)), linked from the profile menu for accounts holding a vendor profile. Deliberately **not** a Settings tab — Settings is one page every account sees
+- State: [usePartnerCredits.ts](src/composables/settings/usePartnerCredits.ts) — catalogue, balance and orders fetched together; a `403` means "not a partner", not a failure
+- Buying: `/credits` ([CreditsView.vue](src/views/CreditsView.vue) wrapping [CreditsTab.vue](src/components/settings/CreditsTab.vue)), linked from the profile menu for accounts flagged `is_partner`. Deliberately **not** a Settings tab — Settings is one page every account sees
+- **Partner ≠ vendor.** Buying credits and spending one at activation are gated on the account's `is_partner` flag alone; the backend dropped its vendor-profile requirement on 2026-08-23. A partner with no storefront is a valid customer, so anything deciding whether to offer credits reads `authStore.user?.is_partner` — never `useVendorProfile`, which answers a different question (does this account sell services on the marketplace)
 - Spending: [PaymentDrawer.vue](src/components/template/PaymentDrawer.vue) calls `/activation-options/?pricing_plan_id=` on open and offers a credit when one covers that plan. A credit-funded payment posts `pay_with_credit: true` with no amount/method/proof and returns `confirmed` — branch on the returned `status`, never on price
 - Credits are **plan-scoped and not interchangeable**; a pack's price is coupled to current plan prices
 - `/activation-options/` is the one endpoint here that is *not* partner-gated, so the shared checkout calls it unconditionally and a normal user simply gets `credit: null`

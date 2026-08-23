@@ -38,9 +38,16 @@
     </div>
 
     <!--
-      Not a partner yet. The API answers 403 here rather than an empty list —
-      wholesale pricing is confidential — so this is the state, not an error, and
-      the way in is one tab over.
+      Not a partner. The API answers 403 here rather than an empty list —
+      wholesale pricing is confidential — so this is the state, not an error.
+
+      It carries no call to action on purpose. Partner status is a flag an admin
+      sets; there is nothing the visitor can do here to earn it. The button that
+      used to sit here sent them to set up a vendor profile, which stopped
+      unlocking anything when the backend dropped that requirement — and had in
+      any case been inert since this tab moved onto its own route, where its
+      `?tab=vendor` query matched nothing. A button that cannot deliver what it
+      promises is worse than no button.
     -->
     <div v-else-if="isPartnerGated" class="px-4 py-12 text-center lg:py-16">
       <div
@@ -54,19 +61,6 @@
       <p class="mx-auto max-w-md text-sm leading-relaxed text-slate-500">
         {{ t('settings.credits.gated.subtitle') }}
       </p>
-      <div class="mt-6">
-        <button
-          type="button"
-          class="group inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-          @click="goToVendorTab"
-        >
-          {{ t('settings.credits.gated.cta') }}
-          <ArrowRight
-            class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
-            aria-hidden="true"
-          />
-        </button>
-      </div>
     </div>
 
     <template v-else>
@@ -343,9 +337,8 @@
  * balance can never disagree with the order that changed it.
  */
 import { computed, onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { AlertTriangle, ArrowRight, ChevronRight, RefreshCw, Store, Upload } from 'lucide-vue-next'
+import { AlertTriangle, ChevronRight, RefreshCw, Store, Upload } from 'lucide-vue-next'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
 import CreditPackOrderDrawer from './credits/CreditPackOrderDrawer.vue'
 import { usePartnerCredits } from '@/composables/settings/usePartnerCredits'
@@ -358,8 +351,6 @@ import type {
 } from '@/services/api'
 
 const { t } = useI18n()
-const route = useRoute()
-const router = useRouter()
 const { showSuccess, showError } = useToast()
 
 const {
@@ -489,10 +480,6 @@ const formatDate = (value: string): string => {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
   return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
-}
-
-const goToVendorTab = () => {
-  router.replace({ query: { ...route.query, tab: 'vendor' } })
 }
 
 const openBuyDrawer = (pack: CreditPack) => {

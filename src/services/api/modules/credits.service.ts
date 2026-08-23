@@ -8,10 +8,14 @@
  * order list are paginated, `my-credits` returns its own aggregate shape, and
  * `activation-options` is a single object. The return types below say which.
  *
- * Every endpoint except `getActivationOptions` requires a vendor profile and
- * answers `403 { detail: "A partner (vendor) account is required..." }` without
- * one. That is "not a partner yet", not a failure - callers should route to
- * partner signup rather than render an error.
+ * Every endpoint except `getActivationOptions` requires a partner account and
+ * answers `403` without one. That is "not a partner", not a failure - callers
+ * should render the gated state rather than an error.
+ *
+ * The check used to be for a *vendor profile*; as of 2026-08-23 the backend
+ * looks only at the account's partner flag, so a partner with no storefront can
+ * buy credits and spend them. Anything in the UI that decides whether to offer
+ * credits reads `user.is_partner`, never `useVendorProfile`.
  */
 
 import { apiClient } from '../core/ApiClient'
