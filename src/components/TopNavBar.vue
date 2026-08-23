@@ -318,11 +318,14 @@
                   >
                     {{ t('common.nav.myTickets') }}
                   </RouterLink>
-                  <!-- Gated on holding a vendor profile, which is exactly what
-                       the credit-pack endpoints check — so the link never leads
-                       to a 403, and wholesale pricing stays off consumer menus. -->
+                  <!-- Gated on `is_partner`, which is exactly what the
+                       credit-pack endpoints check — so the link never leads to a
+                       403, and wholesale pricing stays off consumer menus. It
+                       used to test for a vendor profile, which stopped matching
+                       the API once that requirement was dropped and hid the page
+                       from partners who had never set a storefront up. -->
                   <RouterLink
-                    v-if="isVendor"
+                    v-if="isPartner"
                     to="/credits"
                     @click="closeUserMenu"
                     class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
@@ -407,8 +410,15 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 // Vendor profile for showing listings link
-const { vendorState, isVendor } = useVendorProfile({ autoLoad: true })
+const { vendorState } = useVendorProfile({ autoLoad: true })
 const isVerifiedVendor = computed(() => vendorState.value === 'verified')
+
+/**
+ * Partner credits are gated on the account flag the credit endpoints
+ * themselves check — not on holding a vendor profile, which is a separate
+ * thing an account can have without being a partner, and vice versa.
+ */
+const isPartner = computed(() => authStore.user?.is_partner ?? false)
 
 // Global search
 const { open: openSearch } = useGlobalSearch()

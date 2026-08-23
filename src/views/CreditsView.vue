@@ -22,8 +22,8 @@
  * also means it could be dropped back into a tab row later without a rewrite —
  * e.g. if credits and a future referral page get folded into one partner area.
  *
- * The page owns no gating of its own: the nav links to it only for accounts with
- * a vendor profile, and CreditsTab renders its own "not a partner yet" state for
+ * The page owns no gating of its own: the nav links to it only for accounts
+ * flagged `is_partner`, and CreditsTab renders its own "not a partner" state for
  * anyone who arrives by URL.
  */
 import { onMounted } from 'vue'

@@ -7,9 +7,10 @@
  * already been claimed (that lives in the orders), and the balance headline is
  * meaningless without the codes beneath it.
  *
- * `403` from any of them means "no vendor profile yet", not a failure. It is
- * surfaced as `isPartnerGated` so the tab can route to partner signup instead of
- * showing an error state - see PARTNER_CREDIT_API_DOCS §1.
+ * `403` from any of them means "not a partner", not a failure. It is surfaced
+ * as `isPartnerGated` so the tab can explain that instead of showing an error
+ * state - see PARTNER_CREDIT_API_DOCS §1. The backend used to require a vendor
+ * profile too; since 2026-08-23 it checks only the account's partner flag.
  */
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -35,7 +36,7 @@ export function usePartnerCredits() {
   const isLoading = ref(false)
   const hasLoadedOnce = ref(false)
   const loadError = ref<string | null>(null)
-  /** True when the API answered 403 - the account has no vendor profile. */
+  /** True when the API answered 403 - the account is not a partner. */
   const isPartnerGated = ref(false)
 
   const isSubmitting = ref(false)
@@ -87,7 +88,7 @@ export function usePartnerCredits() {
 
   /**
    * One round trip per surface, run together. A 403 on any of them is the same
-   * answer - no vendor profile - so it short-circuits the whole tab rather than
+   * answer - not a partner - so it short-circuits the whole tab rather than
    * leaving two of three panels in an error state.
    */
   const load = async (): Promise<void> => {
