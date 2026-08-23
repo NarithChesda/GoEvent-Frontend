@@ -1643,13 +1643,18 @@
           "title": "Use a partner credit",
           "remaining": "{n} credit left | {n} credits left",
           "instant": "activates instantly",
-          "expires": "Credits expire {date}"
+          "expires": "Credits expire {date}",
+          "cost": "1 credit",
+          "costPlus": "1 credit + ${amount}",
+          "outcome": "Activating spends 1 credit. You'll have {n} left, with nothing to transfer and no receipt to upload.",
+          "outcomeSimple": "Activating now spends 1 credit. Nothing to transfer, no receipt to upload."
         },
         "standard": {
           "title": "Pay by transfer",
           "hint": "Upload your receipt and we confirm it"
         }
-      }
+      },
+      "promoLabel": "Promo code"
     },
     "updateModal": {
       "title": "Update Payment",

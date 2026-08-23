@@ -141,10 +141,15 @@
             <div v-if="pack" class="rounded-xl bg-slate-50 p-4">
               <div class="flex items-baseline justify-between gap-3">
                 <p class="text-sm font-medium text-slate-900 min-w-0 truncate">{{ pack.name }}</p>
-                <p class="text-xl font-bold text-slate-900 flex-shrink-0">
+                <p class="text-xl font-bold text-slate-900 flex-shrink-0 tabular-nums">
                   {{ isFreePack ? t('settings.credits.free') : `$${pack.price}` }}
                 </p>
               </div>
+              <!-- The same figure the catalogue card promised, restated where
+                   the order is confirmed rather than left behind on the page. -->
+              <p v-if="savingsPercent" class="mt-1 text-xs font-medium text-emerald-700">
+                {{ t('settings.credits.savePercent', { n: savingsPercent }) }}
+              </p>
               <dl class="mt-3 space-y-1.5 text-xs">
                 <div class="flex items-center justify-between gap-3">
                   <dt class="text-slate-500">{{ t('settings.credits.drawer.summary.credits') }}</dt>
@@ -162,7 +167,15 @@
                   <dt class="text-slate-500">
                     {{ t('settings.credits.drawer.summary.perCredit') }}
                   </dt>
-                  <dd class="text-slate-700 font-medium">${{ pack.price_per_credit }}</dd>
+                  <dd class="text-slate-700 font-medium tabular-nums">
+                    ${{ pack.price_per_credit }}
+                  </dd>
+                </div>
+                <!-- What one event costs at retail — the number the rate above
+                     is only meaningful against. -->
+                <div v-if="retailPrice" class="flex items-center justify-between gap-3">
+                  <dt class="text-slate-500">{{ t('settings.credits.drawer.summary.retail') }}</dt>
+                  <dd class="text-slate-500 line-through tabular-nums">${{ retailPrice }}</dd>
                 </div>
                 <div class="flex items-center justify-between gap-3">
                   <dt class="text-slate-500">
@@ -385,6 +398,26 @@ const instructions = ref<InstanceType<typeof PaymentInstructions> | null>(null)
 
 /** A `0.00` pack has nothing to verify, so it skips the transfer flow entirely. */
 const isFreePack = computed(() => Boolean(props.pack) && Number(props.pack?.price ?? 0) === 0)
+
+/** Retail price of the one event a credit covers, when the server sent one. */
+const retailPrice = computed(() => {
+  if (isFreePack.value) return null
+  const retail = Number(props.pack?.pricing_plan_price)
+  return Number.isFinite(retail) && retail > 0 ? props.pack!.pricing_plan_price : null
+})
+
+/**
+ * How far under retail this pack's per-credit rate lands — kept identical to the
+ * catalogue card's arithmetic so the badge cannot change between the page and
+ * the drawer it opens.
+ */
+const savingsPercent = computed(() => {
+  const retail = Number(props.pack?.pricing_plan_price)
+  const each = Number(props.pack?.price_per_credit)
+  if (!Number.isFinite(retail) || !Number.isFinite(each) || retail <= 0 || each < 0) return null
+  const percent = Math.round((1 - each / retail) * 100)
+  return percent > 0 ? percent : null
+})
 
 const amountDue = computed(() => props.pack?.price ?? props.order?.amount ?? '0.00')
 

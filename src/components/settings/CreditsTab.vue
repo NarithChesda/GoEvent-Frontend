@@ -1,13 +1,14 @@
 <template>
   <div>
-    <!-- Loading. Shaped like what arrives — headline figure, then the buy row —
-         so the balance doesn't shove the catalogue down when it lands. -->
+    <!-- Loading. Shaped like what arrives — title, balance panel, then the buy
+         grid — so nothing shoves anything else down when it lands. -->
     <div v-if="isBootstrapping" class="animate-pulse" aria-hidden="true">
-      <div class="h-6 w-40 rounded bg-slate-200"></div>
-      <div class="mt-2.5 h-4 w-56 max-w-full rounded bg-slate-100"></div>
-      <div class="mt-6 h-10 w-28 rounded bg-slate-200"></div>
-      <div class="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <div v-for="n in 3" :key="n" class="h-36 rounded-2xl border border-slate-200/60 bg-white">
+      <div class="h-8 w-48 rounded bg-slate-200"></div>
+      <div class="mt-2.5 h-4 w-64 max-w-full rounded bg-slate-100"></div>
+      <div class="mt-6 h-40 rounded-2xl bg-slate-100"></div>
+      <div class="mt-8 h-5 w-32 rounded bg-slate-200"></div>
+      <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div v-for="n in 3" :key="n" class="h-44 rounded-2xl border border-slate-200/60 bg-white">
           <div class="p-4">
             <div class="h-4 w-24 rounded bg-slate-200"></div>
             <div class="mt-4 h-7 w-20 rounded bg-slate-200"></div>
@@ -70,64 +71,105 @@
 
     <template v-else>
       <header class="mb-6 min-w-0">
-        <h2 class="text-xl font-semibold text-slate-900">{{ t('settings.credits.title') }}</h2>
-        <p class="mt-1 text-sm text-slate-500">{{ headerLine }}</p>
+        <h2 class="text-2xl font-bold text-slate-900 sm:text-3xl">
+          {{ t('settings.credits.title') }}
+        </h2>
+        <p class="mt-1.5 max-w-xl text-sm leading-relaxed text-slate-500">
+          {{ t('settings.credits.subtitle') }}
+        </p>
       </header>
 
       <!--
-        The balance, as a figure on the page rather than a card containing a
-        figure. It is the one number this tab exists to report; wrapping it in
-        chrome would make it a peer of the packs below it instead of the answer
-        they lead to.
+        What the partner holds, as one object: the balance and the batches it is
+        made of. A brand-tinted band rather than a white card — the page opens a
+        gradient-headed drawer, and without a single tinted surface of its own it
+        reads as a different product from the checkout it launches. The tint is
+        texture, not a second gradient object (the only one on this page is the
+        hairline meter inside each row).
       -->
-      <section class="mb-8">
-        <p class="flex items-baseline gap-2">
-          <span class="text-4xl font-bold leading-none text-slate-900 tabular-nums">
-            {{ totalCreditsRemaining }}
-          </span>
-          <span class="text-sm font-medium text-slate-500">
-            {{ t('settings.credits.balanceLabel') }}
-          </span>
-        </p>
+      <section
+        class="mb-8 overflow-hidden rounded-2xl bg-gradient-to-br from-[#2ecc71]/[0.12] via-white to-[#1e90ff]/[0.12] ring-1 ring-slate-900/5"
+      >
+        <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 p-5 sm:p-6">
+          <p class="flex items-baseline gap-2">
+            <span class="text-4xl font-bold leading-none text-slate-900 tabular-nums sm:text-5xl">
+              {{ totalCreditsRemaining }}
+            </span>
+            <span class="text-sm font-medium text-slate-500">
+              {{ t('settings.credits.balanceLabel') }}
+            </span>
+          </p>
 
-        <!-- Each batch, and when it lapses. A list is a list — divided rows,
-             not a second grid of cards. -->
-        <ul v-if="codes.length" class="mt-4 divide-y divide-slate-200 border-t border-slate-200">
+          <!-- Only what needs acting on. A quiet balance says nothing here. -->
+          <ul v-if="alerts.length" class="flex flex-wrap items-center gap-1.5">
+            <li
+              v-for="alert in alerts"
+              :key="alert"
+              class="inline-flex items-center rounded-full bg-amber-100/80 px-2.5 py-1 text-xs font-medium text-amber-700"
+            >
+              {{ alert }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- Each batch, and how much of it is left. Divided rows inside the band
+             rather than a second list below it: a batch is not a separate
+             subject, it is what the number above is made of. -->
+        <ul
+          v-if="codes.length"
+          class="divide-y divide-slate-900/[0.06] border-t border-slate-900/5"
+        >
           <li
             v-for="code in codes"
             :key="code.id"
-            class="flex items-center gap-3 py-3"
+            class="px-5 py-3.5 sm:px-6"
             :class="{ 'opacity-50': isCodeSpent(code) }"
           >
-            <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-medium text-slate-900">
-                {{
-                  code.applicable_plan_names?.length
-                    ? code.applicable_plan_names.join(', ')
-                    : t('settings.credits.allPlans')
-                }}
-              </p>
-              <p class="mt-0.5 truncate font-mono text-xs text-slate-500">{{ code.code }}</p>
+            <div class="flex items-start gap-3">
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-medium text-slate-900">
+                  {{
+                    code.applicable_plan_names?.length
+                      ? code.applicable_plan_names.join(', ')
+                      : t('settings.credits.allPlans')
+                  }}
+                </p>
+                <p class="mt-0.5 truncate font-mono text-xs text-slate-500">{{ code.code }}</p>
+              </div>
+
+              <div class="flex-shrink-0 text-right">
+                <p class="text-sm font-semibold text-slate-900 tabular-nums">
+                  {{ remainingLabel(code) }}
+                </p>
+                <p class="mt-0.5 text-xs" :class="expiryToneClass(code)">
+                  {{ expiryLabel(code) }}
+                </p>
+              </div>
             </div>
 
-            <div class="flex-shrink-0 text-right">
-              <p class="text-sm font-semibold text-slate-900 tabular-nums">
-                {{ remainingLabel(code) }}
-              </p>
-              <p class="mt-0.5 text-xs" :class="expiryToneClass(code)">
-                {{ expiryLabel(code) }}
-              </p>
+            <div
+              v-if="remainingFraction(code) !== null"
+              class="mt-2.5 h-1 overflow-hidden rounded-full bg-slate-900/10"
+              role="presentation"
+            >
+              <div
+                class="h-full rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
+                :style="{ width: `${Math.round(remainingFraction(code)! * 100)}%` }"
+              ></div>
             </div>
           </li>
         </ul>
 
-        <p v-else class="mt-3 max-w-md text-sm leading-relaxed text-slate-500">
+        <p
+          v-else
+          class="border-t border-slate-900/5 px-5 py-4 text-sm leading-relaxed text-slate-500 sm:px-6"
+        >
           {{ t('settings.credits.noCodes') }}
         </p>
       </section>
 
       <!-- The catalogue. Each pack is a separable, buyable object, so it earns a
-           card — and the card itself is the control, which keeps the tab's one
+           card — and the card itself is the control, which keeps the page's one
            gradient object in the drawer that opens. -->
       <section class="mb-8">
         <h3 class="text-base font-semibold text-slate-900">
@@ -144,18 +186,20 @@
             :key="pack.id"
             type="button"
             :disabled="packDisabled(pack)"
-            class="group flex flex-col rounded-2xl border border-slate-200/60 bg-white p-4 text-left transition-all duration-300 hover:border-slate-300/80 hover:shadow-lg hover:shadow-slate-200/40 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-slate-200/60 disabled:hover:shadow-none focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+            class="group flex flex-col rounded-2xl border border-slate-200/60 bg-white p-4 text-left transition-all duration-300 hover:border-slate-300/80 hover:shadow-lg hover:shadow-slate-200/40 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-slate-200/60 disabled:hover:shadow-none focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 sm:p-5"
             @click="openBuyDrawer(pack)"
           >
             <div class="flex items-start justify-between gap-2">
               <p class="min-w-0 truncate text-sm font-semibold text-slate-900">{{ pack.name }}</p>
-              <ChevronRight
-                class="h-4 w-4 flex-shrink-0 text-slate-400 transition-transform duration-200 group-hover:translate-x-0.5"
-                aria-hidden="true"
-              />
+              <span
+                v-if="savingsPercent(pack)"
+                class="inline-flex flex-shrink-0 items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[0.6875rem] font-semibold text-emerald-700 ring-1 ring-emerald-200"
+              >
+                {{ t('settings.credits.savePercent', { n: savingsPercent(pack) }) }}
+              </span>
             </div>
 
-            <p class="mt-3 text-2xl font-bold leading-none text-slate-900">
+            <p class="mt-3 text-2xl font-bold leading-none text-slate-900 tabular-nums">
               {{ Number(pack.price) === 0 ? t('settings.credits.free') : `$${pack.price}` }}
             </p>
             <p class="mt-1.5 text-xs text-slate-600">
@@ -165,13 +209,28 @@
               </span>
             </p>
 
-            <div class="mt-auto pt-3">
-              <p class="truncate text-xs text-slate-500">
-                {{ t('settings.credits.forPlan', { plan: pack.pricing_plan_name }) }}
-                ·
-                {{ t('settings.credits.dayCount', { n: pack.validity_days }, pack.validity_days) }}
-              </p>
-              <p v-if="packNote(pack)" class="mt-1 text-xs font-medium text-amber-600">
+            <!-- The comparison that makes wholesale worth buying, said once and
+                 in the retail terms the partner's own customer would pay. -->
+            <p v-if="retailPrice(pack)" class="mt-2.5 text-xs text-slate-500">
+              <span class="text-slate-400 line-through tabular-nums">${{ retailPrice(pack) }}</span>
+              {{ t('settings.credits.retailPerEvent') }}
+            </p>
+
+            <div class="mt-auto pt-4">
+              <div class="flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
+                <p class="min-w-0 truncate text-xs text-slate-500">
+                  {{ t('settings.credits.forPlan', { plan: pack.pricing_plan_name }) }}
+                  ·
+                  {{
+                    t('settings.credits.dayCount', { n: pack.validity_days }, pack.validity_days)
+                  }}
+                </p>
+                <ChevronRight
+                  class="h-4 w-4 flex-shrink-0 text-slate-400 transition-transform duration-200 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </div>
+              <p v-if="packNote(pack)" class="mt-2 text-xs font-medium text-amber-600">
                 {{ packNote(pack) }}
               </p>
             </div>
@@ -183,8 +242,8 @@
         </p>
       </section>
 
-      <!-- Orders. Divided rows again, but this list acts: a pending row can be
-           proven or cancelled. -->
+      <!-- Orders. Divided rows, but this list acts: a pending row can be proven
+           or cancelled. -->
       <section v-if="orders.length">
         <h3 class="text-base font-semibold text-slate-900">
           {{ t('settings.credits.orders.title') }}
@@ -274,10 +333,10 @@
  * Partner credits: what the partner holds, what they can buy, and where their
  * orders stand.
  *
- * Three surfaces, three deliberately different shapes — a headline figure, a
- * grid of buyable packs, and two divided lists — because six identical white
- * cards down a page is the generic tell, and these are genuinely three kinds of
- * thing rather than three instances of one.
+ * Three surfaces, three deliberately different shapes — a tinted balance band
+ * carrying its own batch rows, a grid of buyable packs, and a divided order list
+ * — because six identical white cards down a page is the generic tell, and these
+ * are genuinely three kinds of thing rather than three instances of one.
  *
  * This is the only place credits are written from: the drawer emits payloads and
  * everything routes through the one `usePartnerCredits` instance below, so the
@@ -332,20 +391,19 @@ const orderToCancel = ref<CreditPackOrder | null>(null)
 
 const isBootstrapping = computed(() => isLoading.value && !hasLoadedOnce.value)
 
-/** What is in here, in one line — the pattern the tickets and listings tabs use. */
-const headerLine = computed(() => {
-  const parts = [
-    t(
-      'settings.credits.summary.balance',
-      { n: totalCreditsRemaining.value },
-      totalCreditsRemaining.value,
-    ),
-  ]
+/**
+ * Only the things that want acting on.
+ *
+ * The balance is already the largest thing on the page, so restating it here
+ * would spend the one slot next to it on information the eye has just read.
+ */
+const alerts = computed(() => {
+  const notes: string[] = []
   const pending = orders.value.filter((o) => o.status === 'pending').length
-  if (pending > 0) parts.push(t('settings.credits.summary.pending', { n: pending }, pending))
+  if (pending > 0) notes.push(t('settings.credits.summary.pending', { n: pending }, pending))
   const expiring = codes.value.filter((c) => isExpiringSoon(c)).length
-  if (expiring > 0) parts.push(t('settings.credits.summary.expiring', { n: expiring }, expiring))
-  return parts.join(' · ')
+  if (expiring > 0) notes.push(t('settings.credits.summary.expiring', { n: expiring }, expiring))
+  return notes
 })
 
 const remainingLabel = (code: PartnerCreditCode): string => {
@@ -353,6 +411,14 @@ const remainingLabel = (code: PartnerCreditCode): string => {
   if (code.remaining_uses === null) return t('settings.credits.unlimited')
   if (code.max_total_uses === null) return String(code.remaining_uses)
   return `${code.remaining_uses} / ${code.max_total_uses}`
+}
+
+/** How much of a batch is still spendable — `null` when there is no fixed size. */
+const remainingFraction = (code: PartnerCreditCode): number | null => {
+  const total = code.max_total_uses
+  const left = code.remaining_uses
+  if (total === null || left === null || total <= 0) return null
+  return Math.min(1, Math.max(0, left / total))
 }
 
 const expiryLabel = (code: PartnerCreditCode): string => {
@@ -368,6 +434,28 @@ const expiryLabel = (code: PartnerCreditCode): string => {
 
 const expiryToneClass = (code: PartnerCreditCode): string =>
   isExpiringSoon(code) ? 'text-amber-600 font-medium' : 'text-slate-500'
+
+/** The retail price of the one event a credit covers — the thing being beaten. */
+const retailPrice = (pack: CreditPack): string | null => {
+  const retail = Number(pack.pricing_plan_price)
+  return Number.isFinite(retail) && retail > 0 ? pack.pricing_plan_price : null
+}
+
+/**
+ * How far under retail this pack's per-credit rate lands.
+ *
+ * This is the whole reason wholesale exists, and until now it was derivable only
+ * by dividing two numbers the partner had to find on different lines. Rendered
+ * only when both figures are real and the pack is genuinely cheaper — a backend
+ * that omits `pricing_plan_price` simply drops the badge.
+ */
+const savingsPercent = (pack: CreditPack): number | null => {
+  const retail = Number(pack.pricing_plan_price)
+  const each = Number(pack.price_per_credit)
+  if (!Number.isFinite(retail) || !Number.isFinite(each) || retail <= 0 || each < 0) return null
+  const percent = Math.round((1 - each / retail) * 100)
+  return percent > 0 ? percent : null
+}
 
 /** A claimed trial and an open order both make a second attempt a certain 400. */
 const packDisabled = (pack: CreditPack): boolean =>

@@ -429,6 +429,7 @@
   },
   "credits": {
     "title": "Partner credits",
+    "subtitle": "Buy credits at wholesale, then spend one to activate each event you set up for a customer.",
     "errorTitle": "Couldn't load your credits",
     "tryAgain": "Try again",
     "balanceLabel": "credits available",
@@ -450,7 +451,6 @@
     "orderPending": "Order in progress",
     "needsApproval": "Needs approval",
     "summary": {
-      "balance": "{n} credit available | {n} credits available",
       "pending": "{n} order in progress | {n} orders in progress",
       "expiring": "{n} batch expiring soon | {n} batches expiring soon"
     },
@@ -499,6 +499,7 @@
         "credits": "Credits",
         "plan": "Plan",
         "perCredit": "Per credit",
+        "retail": "Retail per event",
         "validity": "Valid for"
       },
       "issued": {
@@ -523,6 +524,8 @@
       "proofUploaded": "Proof uploaded — we will review it shortly.",
       "cancelFailed": "Could not cancel the order. Please try again.",
       "orderCancelled": "Order cancelled."
-    }
+    },
+    "savePercent": "Save {n}%",
+    "retailPerEvent": "retail per event"
   }
 }

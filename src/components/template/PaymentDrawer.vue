@@ -45,25 +45,70 @@
         <!-- Content -->
         <div class="flex-1 overflow-y-auto overscroll-contain">
           <div class="p-3 laptop-sm:p-4 space-y-3 laptop-sm:space-y-4">
-            <div
-              v-if="currentPayment"
-              class="rounded-xl border border-slate-200 bg-white/80 p-3 laptop-sm:p-4 flex items-start justify-between gap-3"
-            >
-              <div class="min-w-0">
-                <p class="text-xs sm:text-sm font-medium text-slate-700">
-                  {{ t('management.templatePaymentTab.paymentDrawer.currentPayment') }}
+            <!--
+              What is being activated and what it costs on the path currently
+              chosen — a quiet slate region rather than a bordered card, since
+              nothing in it is separable from the drawer it sits in. It is the
+              same opening block the credit-pack checkout uses, so the two
+              purchases a partner makes read as one product rather than two
+              unrelated forms. It is also the only place the credit path ever
+              names the plan: everything below it disappears when a credit is
+              spent.
+            -->
+            <section class="rounded-xl bg-slate-50 p-4">
+              <div class="flex items-baseline justify-between gap-3">
+                <p class="min-w-0 truncate text-sm font-medium text-slate-900">
+                  {{
+                    templatePackage?.name || t('management.templatePaymentTab.paymentDrawer.total')
+                  }}
                 </p>
-                <p class="text-[0.6875rem] sm:text-xs text-slate-500 mt-0.5 truncate">
-                  {{ currentPayment.plan_name }}
-                </p>
+                <div class="flex flex-shrink-0 items-baseline gap-2">
+                  <p
+                    v-if="!payingWithCredit && strikethroughPrice"
+                    class="text-xs text-slate-400 line-through tabular-nums"
+                  >
+                    ${{ strikethroughPrice }}
+                  </p>
+                  <p class="text-xl font-bold leading-none text-slate-900 tabular-nums">
+                    {{ headlineAmount }}
+                  </p>
+                </div>
               </div>
-              <span
-                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
-                :class="statusBadgeClass(currentPayment.status)"
+
+              <!-- Why the figure above is not the list price. A pay-as-you-go
+                   partner code discounts the normal path rather than zeroing it,
+                   so the rate is named where the price is. -->
+              <div v-if="promoDiscount || partnerRate" class="mt-2 flex flex-wrap gap-1.5">
+                <span
+                  v-if="promoDiscount"
+                  class="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[0.6875rem] font-medium text-emerald-700"
+                >
+                  -${{ promoDiscount.discount }}
+                </span>
+                <span
+                  v-else-if="partnerRate"
+                  class="inline-flex items-center rounded-full bg-sky-100 px-2 py-0.5 text-[0.6875rem] font-medium text-sky-700"
+                >
+                  {{ t('management.templatePaymentTab.paymentDrawer.funding.partnerRate') }}
+                </span>
+              </div>
+
+              <div
+                v-if="currentPayment"
+                class="mt-3 flex items-center justify-between gap-3 border-t border-slate-200 pt-3"
               >
-                {{ statusDisplay(currentPayment.status) }}
-              </span>
-            </div>
+                <p class="min-w-0 truncate text-xs text-slate-500">
+                  {{ t('management.templatePaymentTab.paymentDrawer.currentPayment') }}
+                  <span v-if="currentPayment.plan_name">· {{ currentPayment.plan_name }}</span>
+                </p>
+                <span
+                  class="inline-flex flex-shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+                  :class="statusBadgeClass(currentPayment.status)"
+                >
+                  {{ statusDisplay(currentPayment.status) }}
+                </span>
+              </div>
+            </section>
 
             <!--
               How this activation gets funded.
@@ -73,214 +118,223 @@
               no extra decision to make. Credits are plan-scoped, so the answer
               can be yes for a Premium template and no for a Basic one; that is
               why the options are re-fetched per plan rather than per account.
+
+              Shaped to match PaymentMethodPicker below it — same heading, same
+              selected treatment — because it is the same kind of question asked
+              twice, and a partner should not have to re-read the pattern. The
+              section carries no border of its own: a bordered box holding two
+              bordered rows makes the rows look nested rather than choosable.
             -->
-            <section
-              v-if="creditOption"
-              class="rounded-xl border border-slate-200 bg-white/80 p-3 laptop-sm:p-4 space-y-2"
-            >
+            <section v-if="creditOption" class="space-y-3">
               <h3 class="text-sm sm:text-base font-semibold text-slate-800">
                 {{ t('management.templatePaymentTab.paymentDrawer.funding.heading') }}
               </h3>
 
-              <label
-                class="flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-all duration-200"
-                :class="
-                  payingWithCredit
-                    ? 'border-[#1e90ff] bg-[#F1F8FF] ring-2 ring-[#D6EDFF]'
-                    : 'border-slate-200 hover:border-slate-300'
-                "
-                @click="selectFunding('credit')"
-              >
-                <input
-                  type="radio"
-                  class="mt-1 h-4 w-4 shrink-0 accent-[#1e90ff]"
-                  name="activation-funding"
-                  :checked="payingWithCredit"
-                  @change="selectFunding('credit')"
-                />
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-baseline justify-between gap-2">
-                    <p class="text-sm font-medium text-slate-900">
-                      {{ t('management.templatePaymentTab.paymentDrawer.funding.credit.title') }}
-                    </p>
-                    <p class="text-sm font-semibold text-slate-900 flex-shrink-0">
-                      ${{ creditOption.amount_due }}
-                    </p>
-                  </div>
-                  <p class="text-xs text-slate-500 mt-0.5">
-                    {{
-                      t(
-                        'management.templatePaymentTab.paymentDrawer.funding.credit.remaining',
-                        { n: creditOption.credits_remaining ?? 0 },
-                        creditOption.credits_remaining ?? 0,
-                      )
-                    }}
-                    <template v-if="creditOption.instant">
-                      ·
-                      {{ t('management.templatePaymentTab.paymentDrawer.funding.credit.instant') }}
-                    </template>
-                  </p>
-                  <p v-if="creditExpiryLabel" class="text-xs text-slate-400 mt-0.5">
-                    {{ creditExpiryLabel }}
-                  </p>
-                </div>
-              </label>
+              <!--
+                Real radios, visually hidden. The rows carry an icon rather than
+                a dot, but the input still has to be a radio: it is what gives
+                arrow-key movement between the two options and lets a screen
+                reader say "1 of 2". The ring follows focus through
+                `focus-within`, since the focused element is the hidden input.
+              -->
+              <div class="space-y-2">
+                <label
+                  class="flex w-full cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 text-left transition-all duration-200 focus-within:ring-2 focus-within:ring-sky-200"
+                  :class="
+                    payingWithCredit
+                      ? 'border-[#1e90ff] bg-[#F1F8FF] ring-2 ring-[#D6EDFF]'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  "
+                >
+                  <input
+                    type="radio"
+                    class="sr-only"
+                    name="activation-funding"
+                    :checked="payingWithCredit"
+                    @change="selectFunding('credit')"
+                  />
+                  <span
+                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg transition-colors duration-200"
+                    :class="
+                      payingWithCredit
+                        ? 'bg-white text-[#1e90ff] shadow-sm'
+                        : 'bg-slate-100 text-slate-500'
+                    "
+                  >
+                    <Zap class="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="flex items-baseline justify-between gap-2">
+                      <span class="text-sm font-medium text-slate-900">
+                        {{ t('management.templatePaymentTab.paymentDrawer.funding.credit.title') }}
+                      </span>
+                      <span class="flex-shrink-0 text-sm font-semibold text-slate-900 tabular-nums">
+                        {{ creditCostLabel }}
+                      </span>
+                    </span>
+                    <span class="mt-0.5 block text-xs text-slate-500">
+                      {{
+                        t(
+                          'management.templatePaymentTab.paymentDrawer.funding.credit.remaining',
+                          { n: creditOption.credits_remaining ?? 0 },
+                          creditOption.credits_remaining ?? 0,
+                        )
+                      }}
+                      <template v-if="creditOption.instant">
+                        ·
+                        {{
+                          t('management.templatePaymentTab.paymentDrawer.funding.credit.instant')
+                        }}
+                      </template>
+                    </span>
+                    <span v-if="creditExpiryLabel" class="mt-0.5 block text-xs text-slate-400">
+                      {{ creditExpiryLabel }}
+                    </span>
+                  </span>
+                </label>
 
-              <label
-                class="flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-all duration-200"
-                :class="
-                  payingWithCredit
-                    ? 'border-slate-200 hover:border-slate-300'
-                    : 'border-[#1e90ff] bg-[#F1F8FF] ring-2 ring-[#D6EDFF]'
-                "
-                @click="selectFunding('standard')"
-              >
-                <input
-                  type="radio"
-                  class="mt-1 h-4 w-4 shrink-0 accent-[#1e90ff]"
-                  name="activation-funding"
-                  :checked="!payingWithCredit"
-                  @change="selectFunding('standard')"
-                />
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-baseline justify-between gap-2">
-                    <p class="text-sm font-medium text-slate-900">
-                      {{ t('management.templatePaymentTab.paymentDrawer.funding.standard.title') }}
-                    </p>
-                    <p class="text-sm font-semibold text-slate-900 flex-shrink-0">
-                      ${{ standardAmount }}
-                    </p>
-                  </div>
-                  <p class="text-xs text-slate-500 mt-0.5">
-                    {{ t('management.templatePaymentTab.paymentDrawer.funding.standard.hint') }}
-                  </p>
-                </div>
-              </label>
+                <label
+                  class="flex w-full cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 text-left transition-all duration-200 focus-within:ring-2 focus-within:ring-sky-200"
+                  :class="
+                    payingWithCredit
+                      ? 'border-slate-200 bg-white hover:border-slate-300'
+                      : 'border-[#1e90ff] bg-[#F1F8FF] ring-2 ring-[#D6EDFF]'
+                  "
+                >
+                  <input
+                    type="radio"
+                    class="sr-only"
+                    name="activation-funding"
+                    :checked="!payingWithCredit"
+                    @change="selectFunding('standard')"
+                  />
+                  <span
+                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg transition-colors duration-200"
+                    :class="
+                      payingWithCredit
+                        ? 'bg-slate-100 text-slate-500'
+                        : 'bg-white text-[#1e90ff] shadow-sm'
+                    "
+                  >
+                    <Landmark class="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="flex items-baseline justify-between gap-2">
+                      <span class="text-sm font-medium text-slate-900">
+                        {{
+                          t('management.templatePaymentTab.paymentDrawer.funding.standard.title')
+                        }}
+                      </span>
+                      <span class="flex-shrink-0 text-sm font-semibold text-slate-900 tabular-nums">
+                        ${{ standardAmount }}
+                      </span>
+                    </span>
+                    <span class="mt-0.5 block text-xs text-slate-500">
+                      {{ t('management.templatePaymentTab.paymentDrawer.funding.standard.hint') }}
+                    </span>
+                  </span>
+                </label>
+              </div>
             </section>
 
             <!--
               Paying with a credit skips everything below: the partner prepaid
               when they bought the pack, so there is no amount to transfer, no
-              receipt to attach and no code to type. One field, one call.
+              receipt to attach and no code to type. One field, one call — which
+              leaves nothing between the choice and the button, so the drawer
+              spends that space saying what the button is about to do.
             -->
-            <template v-if="!payingWithCredit">
-              <!-- Order Summary & Promo Code - Combined Row -->
-              <section class="rounded-xl border border-slate-200 bg-white/80 p-3 laptop-sm:p-4">
-                <div class="flex flex-row items-center gap-2 sm:gap-3">
-                  <!-- Amount Display -->
-                  <div class="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
-                    <div>
-                      <p
-                        class="text-[0.625rem] sm:text-[0.6875rem] text-slate-500 uppercase tracking-wide"
-                      >
+            <p
+              v-if="payingWithCredit"
+              class="flex items-start gap-2.5 rounded-xl bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-600"
+            >
+              <Zap class="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-slate-400" aria-hidden="true" />
+              <span>{{ creditOutcomeLabel }}</span>
+            </p>
+
+            <template v-else>
+              <!-- Promo code. A real label rather than a bare placeholder: a
+                   placeholder disappears exactly when it is needed. -->
+              <section>
+                <label
+                  v-if="!appliedPromoCode"
+                  for="activationPromoCode"
+                  class="block text-sm font-medium text-slate-700"
+                >
+                  {{ t('management.templatePaymentTab.paymentDrawer.promoLabel') }}
+                  <span class="font-normal text-slate-400">
+                    ({{ t('management.templatePaymentTab.paymentDrawer.optional') }})
+                  </span>
+                </label>
+
+                <div
+                  v-if="appliedPromoCode"
+                  class="flex items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50/70 px-3 py-2"
+                >
+                  <div class="flex min-w-0 items-center gap-2">
+                    <CheckCircle
+                      class="h-4 w-4 flex-shrink-0 text-emerald-500"
+                      aria-hidden="true"
+                    />
+                    <span class="truncate text-sm font-medium text-emerald-700">
+                      {{ appliedPromoCode.code }}
+                    </span>
+                    <span class="flex-shrink-0 text-[0.6875rem] text-emerald-600">
+                      ({{
+                        appliedPromoCode.discount_type === 'percentage'
+                          ? `${appliedPromoCode.discount_value}%`
+                          : `$${appliedPromoCode.discount_value}`
+                      }})
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    class="flex-shrink-0 rounded-md p-1 transition-colors hover:bg-emerald-100"
+                    :title="t('management.templatePaymentTab.paymentDrawer.removePromoTitle')"
+                    :aria-label="t('management.templatePaymentTab.paymentDrawer.removePromoTitle')"
+                    @click="removePromoCode"
+                  >
+                    <X class="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
+                  </button>
+                </div>
+
+                <div v-else class="mt-1.5 space-y-1">
+                  <div class="flex gap-2">
+                    <div class="relative min-w-0 flex-1">
+                      <Tag
+                        class="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
+                        aria-hidden="true"
+                      />
+                      <input
+                        id="activationPromoCode"
+                        v-model="promoCodeInput"
+                        type="text"
+                        class="w-full rounded-lg border border-slate-300 bg-white py-2 pl-8 pr-3 text-sm uppercase placeholder:normal-case focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                        :placeholder="
+                          t('management.templatePaymentTab.paymentDrawer.promoPlaceholder')
+                        "
+                        @keyup.enter="validatePromoCode"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      :disabled="validatingPromoCode || !promoCodeInput.trim()"
+                      class="flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                      @click="validatePromoCode"
+                    >
+                      <Loader v-if="validatingPromoCode" class="h-3.5 w-3.5 animate-spin" />
+                      <span>
                         {{
-                          templatePackage?.name ||
-                          t('management.templatePaymentTab.paymentDrawer.total')
+                          validatingPromoCode
+                            ? t('management.templatePaymentTab.paymentDrawer.applyingPromo')
+                            : t('management.templatePaymentTab.paymentDrawer.applyPromo')
                         }}
-                      </p>
-                      <div class="flex items-baseline gap-1">
-                        <p class="text-base sm:text-xl font-bold text-slate-900">
-                          ${{ finalAmount }}
-                        </p>
-                        <p
-                          v-if="strikethroughPrice"
-                          class="text-[0.625rem] sm:text-xs text-slate-400 line-through"
-                        >
-                          ${{ strikethroughPrice }}
-                        </p>
-                      </div>
-                    </div>
-                    <div
-                      v-if="promoDiscount"
-                      class="px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[0.625rem] sm:text-[0.6875rem] font-medium whitespace-nowrap"
-                    >
-                      -${{ promoDiscount.discount }}
-                    </div>
-                    <!-- A pay-as-you-go partner code discounts the normal path
-                         rather than zeroing it, so the rate is named where the
-                         price is, not hidden behind the promo field. -->
-                    <div
-                      v-else-if="partnerRate"
-                      class="px-1.5 sm:px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 text-[0.625rem] sm:text-[0.6875rem] font-medium whitespace-nowrap"
-                    >
-                      {{ t('management.templatePaymentTab.paymentDrawer.funding.partnerRate') }}
-                    </div>
+                      </span>
+                    </button>
                   </div>
-
-                  <div class="w-px h-8 sm:h-10 bg-slate-200 flex-shrink-0"></div>
-
-                  <!-- Promo Code Input/Display -->
-                  <div class="flex-1 min-w-0">
-                    <div
-                      v-if="appliedPromoCode"
-                      class="flex items-center justify-between gap-1.5 sm:gap-2 rounded-lg border border-emerald-200 bg-emerald-50/70 px-2 sm:px-2.5 py-1.5 sm:py-2"
-                    >
-                      <div class="flex items-center gap-1 sm:gap-2 min-w-0">
-                        <CheckCircle class="w-3 sm:w-4 h-3 sm:h-4 text-emerald-500 flex-shrink-0" />
-                        <span class="text-xs sm:text-sm font-medium text-emerald-700 truncate">
-                          {{ appliedPromoCode.code }}
-                        </span>
-                        <span
-                          class="text-[0.625rem] sm:text-[0.6875rem] text-emerald-600 flex-shrink-0"
-                        >
-                          ({{
-                            appliedPromoCode.discount_type === 'percentage'
-                              ? `${appliedPromoCode.discount_value}%`
-                              : `$${appliedPromoCode.discount_value}`
-                          }})
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        @click="removePromoCode"
-                        class="p-0.5 sm:p-1 hover:bg-emerald-100 rounded-md transition-colors flex-shrink-0"
-                        :title="t('management.templatePaymentTab.paymentDrawer.removePromoTitle')"
-                      >
-                        <X class="w-3 sm:w-3.5 h-3 sm:h-3.5 text-emerald-600" />
-                      </button>
-                    </div>
-
-                    <div v-else class="space-y-1">
-                      <div class="flex gap-1.5 sm:gap-2">
-                        <div class="relative flex-1 min-w-0">
-                          <Tag
-                            class="absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 w-3 sm:w-3.5 h-3 sm:h-3.5 text-slate-400"
-                          />
-                          <input
-                            v-model="promoCodeInput"
-                            type="text"
-                            class="w-full pl-6 sm:pl-8 pr-2 sm:pr-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white/90 uppercase placeholder:normal-case"
-                            :placeholder="
-                              t('management.templatePaymentTab.paymentDrawer.promoPlaceholder')
-                            "
-                            @keyup.enter="validatePromoCode"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          @click="validatePromoCode"
-                          :disabled="validatingPromoCode || !promoCodeInput.trim()"
-                          class="px-2 sm:px-3 py-1.5 sm:py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 sm:gap-1.5 flex-shrink-0"
-                        >
-                          <Loader
-                            v-if="validatingPromoCode"
-                            class="w-3 sm:w-3.5 h-3 sm:h-3.5 animate-spin"
-                          />
-                          <span>{{
-                            validatingPromoCode
-                              ? t('management.templatePaymentTab.paymentDrawer.applyingPromo')
-                              : t('management.templatePaymentTab.paymentDrawer.applyPromo')
-                          }}</span>
-                        </button>
-                      </div>
-                      <p
-                        v-if="promoCodeError"
-                        class="text-[0.625rem] sm:text-[0.6875rem] text-red-600 pl-1"
-                      >
-                        {{ promoCodeError }}
-                      </p>
-                    </div>
-                  </div>
+                  <p v-if="promoCodeError" class="text-xs text-red-600">
+                    {{ promoCodeError }}
+                  </p>
                 </div>
               </section>
 
@@ -301,87 +355,99 @@
                 @update:proof="paymentForm.payment_proof = $event"
                 @error="handleProofError"
               />
+
+              <!-- Nothing to instruct until a method is picked -->
+              <div
+                v-else
+                class="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-8 text-center"
+              >
+                <div
+                  class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100"
+                >
+                  <CreditCard class="h-6 w-6 text-slate-400" aria-hidden="true" />
+                </div>
+                <p class="text-sm font-medium text-slate-600">
+                  {{ t('management.templatePaymentTab.paymentDrawer.noMethodSelected.title') }}
+                </p>
+                <p class="mt-1 text-xs text-slate-500">
+                  {{ t('management.templatePaymentTab.paymentDrawer.noMethodSelected.hint') }}
+                </p>
+              </div>
+
+              <!-- Additional details, collapsed by default -->
+              <div v-if="selectedMethod" class="overflow-hidden rounded-xl border border-slate-200">
+                <button
+                  type="button"
+                  class="flex w-full items-center justify-between bg-slate-50/80 px-3 py-2.5 text-left transition-colors hover:bg-slate-100/80"
+                  :aria-expanded="showAdditionalDetails"
+                  @click="showAdditionalDetails = !showAdditionalDetails"
+                >
+                  <span class="text-xs font-medium text-slate-700 sm:text-sm">
+                    {{ t('management.templatePaymentTab.paymentDrawer.additionalDetails') }}
+                    <span class="text-slate-400">
+                      ({{ t('management.templatePaymentTab.paymentDrawer.optional') }})
+                    </span>
+                  </span>
+                  <ChevronDown
+                    class="h-4 w-4 text-slate-500 transition-transform duration-200"
+                    :class="{ 'rotate-180': showAdditionalDetails }"
+                    aria-hidden="true"
+                  />
+                </button>
+                <Transition name="collapse">
+                  <div v-if="showAdditionalDetails" class="grid grid-rows-[1fr]">
+                    <div class="min-h-0 overflow-hidden">
+                      <div class="space-y-3 border-t border-slate-200 bg-white px-3 py-3">
+                        <div class="space-y-1.5">
+                          <label
+                            for="transactionRef"
+                            class="block text-sm font-medium text-slate-700"
+                          >
+                            {{ t('management.templatePaymentTab.paymentDrawer.transactionRef') }}
+                          </label>
+                          <input
+                            id="transactionRef"
+                            v-model="paymentForm.transaction_reference"
+                            type="text"
+                            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                            :placeholder="
+                              t(
+                                'management.templatePaymentTab.paymentDrawer.transactionRefPlaceholder',
+                              )
+                            "
+                          />
+                        </div>
+
+                        <div class="space-y-1.5">
+                          <label
+                            for="paymentNotes"
+                            class="block text-sm font-medium text-slate-700"
+                          >
+                            {{ t('management.templatePaymentTab.paymentDrawer.notes') }}
+                          </label>
+                          <textarea
+                            id="paymentNotes"
+                            v-model="paymentForm.user_notes"
+                            rows="2"
+                            class="w-full resize-none rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                            :placeholder="
+                              t('management.templatePaymentTab.paymentDrawer.notesPlaceholder')
+                            "
+                          ></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Transition>
+              </div>
             </template>
 
             <!-- Error Display -->
             <div
               v-if="error"
-              class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs sm:text-sm text-red-600"
+              class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-600 sm:text-sm"
             >
               {{ error }}
-            </div>
-
-            <!-- Placeholder when no method selected -->
-            <div
-              v-if="!payingWithCredit && !selectedMethod"
-              class="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-8 text-center"
-            >
-              <div
-                class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3"
-              >
-                <CreditCard class="w-6 h-6 text-slate-400" />
-              </div>
-              <p class="text-sm font-medium text-slate-600">
-                {{ t('management.templatePaymentTab.paymentDrawer.noMethodSelected.title') }}
-              </p>
-              <p class="text-xs text-slate-500 mt-1">
-                {{ t('management.templatePaymentTab.paymentDrawer.noMethodSelected.hint') }}
-              </p>
-            </div>
-
-            <!-- Additional Details (Collapsible) -->
-            <div
-              v-if="!payingWithCredit && selectedMethod"
-              class="border border-slate-200 rounded-xl overflow-hidden"
-            >
-              <button
-                type="button"
-                @click="showAdditionalDetails = !showAdditionalDetails"
-                class="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50/80 hover:bg-slate-100/80 transition-colors text-left"
-              >
-                <span class="text-xs sm:text-sm font-medium text-slate-700">
-                  {{ t('management.templatePaymentTab.paymentDrawer.additionalDetails') }}
-                  <span class="text-slate-400"
-                    >({{ t('management.templatePaymentTab.paymentDrawer.optional') }})</span
-                  >
-                </span>
-                <ChevronDown
-                  class="w-4 h-4 text-slate-500 transition-transform duration-200"
-                  :class="{ 'rotate-180': showAdditionalDetails }"
-                />
-              </button>
-              <div
-                v-show="showAdditionalDetails"
-                class="px-3 py-3 space-y-3 border-t border-slate-200 bg-white/90"
-              >
-                <div class="space-y-1.5">
-                  <label for="transactionRef" class="text-xs sm:text-sm font-medium text-slate-600">
-                    {{ t('management.templatePaymentTab.paymentDrawer.transactionRef') }}
-                  </label>
-                  <input
-                    id="transactionRef"
-                    v-model="paymentForm.transaction_reference"
-                    type="text"
-                    class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white"
-                    :placeholder="
-                      t('management.templatePaymentTab.paymentDrawer.transactionRefPlaceholder')
-                    "
-                  />
-                </div>
-
-                <div class="space-y-1.5">
-                  <label for="paymentNotes" class="text-xs sm:text-sm font-medium text-slate-600">
-                    {{ t('management.templatePaymentTab.paymentDrawer.notes') }}
-                  </label>
-                  <textarea
-                    id="paymentNotes"
-                    v-model="paymentForm.user_notes"
-                    rows="2"
-                    class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e90ff] focus:border-[#1e90ff] bg-white resize-none"
-                    :placeholder="t('management.templatePaymentTab.paymentDrawer.notesPlaceholder')"
-                  ></textarea>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -428,6 +494,7 @@ import {
   CheckCircle,
   ChevronDown,
   CreditCard,
+  Landmark,
   Loader,
   Tag,
   X,
@@ -547,6 +614,42 @@ const strikethroughPrice = computed(() => {
     return listPrice
   }
   return null
+})
+
+/**
+ * What the credit path costs, in its own unit.
+ *
+ * A credit is not a discount, so `$0.00` next to the transfer price reads as one
+ * — the partner already paid, wholesale, when they bought the pack. Say what is
+ * actually spent. A partially-covered credit still leaves money owing, so the
+ * server's `amount_due` decides which of the two sentences this is.
+ */
+const creditCostLabel = computed(() => {
+  const due = Number(creditOption.value?.amount_due ?? 0)
+  return Number.isFinite(due) && due > 0
+    ? t('management.templatePaymentTab.paymentDrawer.funding.credit.costPlus', {
+        amount: creditOption.value?.amount_due ?? '0.00',
+      })
+    : t('management.templatePaymentTab.paymentDrawer.funding.credit.cost')
+})
+
+/** The figure in the summary block: the chosen path's price, in its own unit. */
+const headlineAmount = computed(() =>
+  payingWithCredit.value ? creditCostLabel.value : `${standardAmount.value}`,
+)
+
+/**
+ * What pressing the button does, spelled out — the credit path has no receipt,
+ * no method and no code, so without this the drawer asks for a decision and then
+ * says nothing at all about its consequence.
+ */
+const creditOutcomeLabel = computed(() => {
+  const remaining = creditOption.value?.credits_remaining
+  if (typeof remaining !== 'number') {
+    return t('management.templatePaymentTab.paymentDrawer.funding.credit.outcomeSimple')
+  }
+  const left = Math.max(0, remaining - 1)
+  return t('management.templatePaymentTab.paymentDrawer.funding.credit.outcome', { n: left })
 })
 
 const creditExpiryLabel = computed(() => {
@@ -992,6 +1095,31 @@ watch(
   .slide-right-enter-from,
   .slide-right-leave-to {
     transform: translateX(100%);
+  }
+}
+
+/* Expand/collapse via grid rows — never max-height (§15). */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-enter-active,
+  .fade-leave-active,
+  .slide-right-enter-active,
+  .slide-right-leave-active,
+  .collapse-enter-active,
+  .collapse-leave-active {
+    transition-duration: 0.01ms;
   }
 }
 </style>
