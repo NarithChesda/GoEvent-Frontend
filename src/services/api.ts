@@ -518,3 +518,14 @@ export type {
   ActivationFundingOption,
   ActivationOptions,
 } from './api/types/credit.types'
+
+// Partner access requests — the one partner-programme surface a non-partner uses
+export { partnerRequestsService } from './api/modules/partner-requests.service'
+
+export type {
+  PartnerRequestStatus,
+  PartnerRequestVolume,
+  PartnerRequest,
+  PartnerRequestEnvelope,
+  CreatePartnerRequestData,
+} from './api/types/partner.types'

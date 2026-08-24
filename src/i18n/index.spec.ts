@@ -42,6 +42,51 @@ describe('lazy locale messages', () => {
     }
   })
 
+  /**
+   * vue-i18n compiles a message the first time it is rendered, not at build
+   * time, so a message with bad syntax is a *runtime* exception in whichever
+   * component happens to use it — and it is invisible to type-checking, to the
+   * build, and to every test that does not render that one component.
+   *
+   * The trap that produced this test: `@` opens vue-i18n's linked-message
+   * syntax, so a Telegram placeholder written as `"@username or link"` threw
+   * `Invalid linked format` and took down the whole drawer that rendered it.
+   * The repo convention is to escape it as `{'@'}` — 8 messages already did,
+   * and the ninth did not. `|` (plural separator) and `{}` (interpolation) are
+   * the same class of hazard.
+   *
+   * Rendering every message is the only way to find these, so that is what this
+   * does. It is cheap: compilation is memoized, so this also warms the cache
+   * the rest of the suite renders against.
+   */
+  it('compiles every message in every locale', async () => {
+    for (const locale of SUPPORTED_LOCALES) await ensureLocaleMessages(locale)
+
+    const broken: string[] = []
+
+    const render = (node: unknown, path: string, locale: string): void => {
+      if (typeof node === 'string') {
+        try {
+          i18n.global.t(path, {}, { locale })
+        } catch (error) {
+          broken.push(`[${locale}] ${path} — ${(error as Error).message}`)
+        }
+        return
+      }
+      if (node && typeof node === 'object') {
+        for (const [key, value] of Object.entries(node)) {
+          render(value, path ? `${path}.${key}` : key, locale)
+        }
+      }
+    }
+
+    for (const locale of SUPPORTED_LOCALES) {
+      render(i18n.global.getLocaleMessage(locale), '', locale)
+    }
+
+    expect(broken).toEqual([])
+  })
+
   it('only switches the active locale once its messages are loaded', async () => {
     setActivePinia(createPinia())
     const store = useLanguageStore()

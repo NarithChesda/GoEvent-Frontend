@@ -41,26 +41,80 @@
       Not a partner. The API answers 403 here rather than an empty list —
       wholesale pricing is confidential — so this is the state, not an error.
 
-      It carries no call to action on purpose. Partner status is a flag an admin
-      sets; there is nothing the visitor can do here to earn it. The button that
-      used to sit here sent them to set up a vendor profile, which stopped
-      unlocking anything when the backend dropped that requirement — and had in
-      any case been inert since this tab moved onto its own route, where its
-      `?tab=vendor` query matched nothing. A button that cannot deliver what it
-      promises is worse than no button.
+      It used to carry no call to action, on the grounds that partner status is a
+      flag an admin sets and there was nothing a visitor could do here to earn
+      it. That reasoning held only while there was no way to ask: the page told
+      people to "get in touch with the GoEvent team" and then offered them no
+      way to do so, which is a dead end inside the product. There is now an
+      application, so this state has four shapes rather than one — never asked,
+      asked and waiting, turned down, and the desync where we were approved but
+      the API still says no.
+
+      The CTA is `bg-slate-900`, not the brand gradient, because the drawer it
+      opens is headed by that gradient and the two would otherwise be on screen
+      together — the drawer header is the one that establishes context.
     -->
     <div v-else-if="isPartnerGated" class="px-4 py-12 text-center lg:py-16">
       <div
-        class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20"
+        class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full"
+        :class="gatedVisual.disc"
       >
-        <Store class="h-8 w-8 text-[#2ecc71]" aria-hidden="true" />
+        <component
+          :is="gatedVisual.icon"
+          class="h-8 w-8"
+          :class="gatedVisual.tone"
+          aria-hidden="true"
+        />
       </div>
-      <h3 class="mb-2 text-lg font-semibold text-slate-900">
-        {{ t('settings.credits.gated.title') }}
-      </h3>
+      <h3 class="mb-2 text-lg font-semibold text-slate-900">{{ gatedCopy.title }}</h3>
       <p class="mx-auto max-w-md text-sm leading-relaxed text-slate-500">
-        {{ t('settings.credits.gated.subtitle') }}
+        {{ gatedCopy.subtitle }}
       </p>
+
+      <!-- When the application was made, said quietly — it answers "did that go
+           through?" without competing with the sentence above it. -->
+      <p v-if="partnerRequest" class="mt-3 text-xs text-slate-400">
+        {{
+          t('settings.credits.request.submittedOn', { date: formatDate(partnerRequest.created_at) })
+        }}
+      </p>
+
+      <!-- Why we said no, when the reviewer wrote a reason. A tinted region
+           rather than a card: it belongs to the state above it, and a card here
+           would be a card with nothing separable inside it. -->
+      <p
+        v-if="rejectionNote"
+        class="mx-auto mt-4 max-w-md rounded-xl bg-slate-50 px-4 py-3 text-left text-sm leading-relaxed text-slate-600"
+      >
+        {{ rejectionNote }}
+      </p>
+
+      <button
+        v-if="canRequestPartner"
+        type="button"
+        class="mt-6 inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+        @click="requestDrawerOpen = true"
+      >
+        <Store class="h-4 w-4" aria-hidden="true" />
+        {{
+          partnerRequest
+            ? t('settings.credits.request.ctaAgain')
+            : t('settings.credits.request.cta')
+        }}
+      </button>
+
+      <!-- Approved, but this endpoint still says otherwise. Re-reading the
+           account is the whole fix, so offer exactly that. -->
+      <button
+        v-else-if="partnerRequest?.status === 'approved'"
+        type="button"
+        :disabled="isLoading"
+        class="mt-6 inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-slate-800 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+        @click="reloadAsPartner"
+      >
+        <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': isLoading }" aria-hidden="true" />
+        {{ t('settings.credits.tryAgain') }}
+      </button>
     </div>
 
     <template v-else>
@@ -300,6 +354,14 @@
       </section>
     </template>
 
+    <PartnerRequestDrawer
+      :open="requestDrawerOpen"
+      :submitting="isSubmittingRequest"
+      :field-errors="requestFieldErrors"
+      @close="closeRequestDrawer"
+      @submit="handleRequestPartner"
+    />
+
     <CreditPackOrderDrawer
       :open="drawerOpen"
       :pack="activePack"
@@ -338,12 +400,24 @@
  */
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { AlertTriangle, ChevronRight, RefreshCw, Store, Upload } from 'lucide-vue-next'
+import {
+  AlertTriangle,
+  Check,
+  ChevronRight,
+  Clock,
+  RefreshCw,
+  Store,
+  Upload,
+} from 'lucide-vue-next'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
 import CreditPackOrderDrawer from './credits/CreditPackOrderDrawer.vue'
+import PartnerRequestDrawer from './credits/PartnerRequestDrawer.vue'
 import { usePartnerCredits } from '@/composables/settings/usePartnerCredits'
+import { usePartnerRequest } from '@/composables/settings/usePartnerRequest'
 import { useToast } from '@/composables/useToast'
+import { useAuthStore } from '@/stores/auth'
 import type {
+  CreatePartnerRequestData,
   CreditPack,
   CreditPackOrder,
   CreditPackOrderStatus,
@@ -352,6 +426,7 @@ import type {
 
 const { t } = useI18n()
 const { showSuccess, showError } = useToast()
+const authStore = useAuthStore()
 
 const {
   packs,
@@ -374,13 +449,96 @@ const {
   cancelOrder,
 } = usePartnerCredits()
 
+const {
+  request: partnerRequest,
+  isLoading: isLoadingRequest,
+  hasLoadedOnce: hasLoadedRequestOnce,
+  isSubmitting: isSubmittingRequest,
+  fieldErrors: requestFieldErrors,
+  load: loadPartnerRequest,
+  submit: submitPartnerRequest,
+  clearFieldErrors: clearRequestFieldErrors,
+} = usePartnerRequest()
+
 const drawerOpen = ref(false)
+const requestDrawerOpen = ref(false)
 const activePack = ref<CreditPack | null>(null)
 const activeOrder = ref<CreditPackOrder | null>(null)
 const orderResult = ref<CreditPackOrder | null>(null)
 const orderToCancel = ref<CreditPackOrder | null>(null)
 
-const isBootstrapping = computed(() => isLoading.value && !hasLoadedOnce.value)
+/** What the account itself claims. The API's 403 is the authority on this page. */
+const isPartnerAccount = computed(() => authStore.user?.is_partner ?? false)
+
+/**
+ * The gated state cannot render until we know whether an application is already
+ * open — showing "Request partner access" to someone who applied last week and
+ * then swapping it for "under review" a moment later is worse than a longer
+ * skeleton, and the button in that flash leads to a guaranteed 400.
+ */
+const isBootstrapping = computed(
+  () =>
+    (isLoading.value && !hasLoadedOnce.value) ||
+    (isPartnerGated.value && !hasLoadedRequestOnce.value),
+)
+
+/**
+ * Which of the four gated shapes we are in.
+ *
+ * Keyed off the application, not off `is_partner`: reaching this branch already
+ * means the API refused, so the only open question is what the account has done
+ * about it.
+ */
+const gatedState = computed<'none' | 'pending' | 'rejected' | 'approved'>(() => {
+  if (!partnerRequest.value) return 'none'
+  return partnerRequest.value.status
+})
+
+/**
+ * Whether asking (or asking again) is allowed.
+ *
+ * `can_reapply` is the backend's call, never inferred from the status — a
+ * rejection may be final or may invite a retry, and only the reviewer knows.
+ */
+const canRequestPartner = computed(() => {
+  if (gatedState.value === 'none') return true
+  return gatedState.value === 'rejected' && Boolean(partnerRequest.value?.can_reapply)
+})
+
+/** Only a rejection carries a reason, and only when the reviewer wrote one. */
+const rejectionNote = computed(() =>
+  gatedState.value === 'rejected' ? partnerRequest.value?.review_note || null : null,
+)
+
+const gatedVisual = computed(() => {
+  switch (gatedState.value) {
+    case 'pending':
+      return { icon: Clock, disc: 'bg-amber-50', tone: 'text-amber-500' }
+    case 'rejected':
+      return { icon: Store, disc: 'bg-slate-100', tone: 'text-slate-400' }
+    case 'approved':
+      return { icon: Check, disc: 'bg-emerald-50', tone: 'text-emerald-600' }
+    default:
+      return {
+        icon: Store,
+        disc: 'bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20',
+        tone: 'text-[#2ecc71]',
+      }
+  }
+})
+
+const gatedCopy = computed(() => {
+  if (gatedState.value === 'none') {
+    return {
+      title: t('settings.credits.gated.title'),
+      subtitle: t('settings.credits.gated.subtitle'),
+    }
+  }
+  return {
+    title: t(`settings.credits.request.${gatedState.value}.title`),
+    subtitle: t(`settings.credits.request.${gatedState.value}.subtitle`),
+  }
+})
 
 /**
  * Only the things that want acting on.
@@ -554,6 +712,45 @@ const handleUploadProof = async (payload: {
   closeDrawer()
 }
 
+const closeRequestDrawer = () => {
+  requestDrawerOpen.value = false
+  clearRequestFieldErrors()
+}
+
+/** The fields the drawer actually renders, so an error can be shown *at* one. */
+const REQUEST_FORM_FIELDS = [
+  'business_name',
+  'contact_phone',
+  'contact_telegram',
+  'expected_monthly_events',
+  'message',
+]
+
+const handleRequestPartner = async (payload: CreatePartnerRequestData) => {
+  const result = await submitPartnerRequest(payload)
+
+  if (!result.success) {
+    // A complaint about a field the form shows stays in the drawer, next to the
+    // input that caused it. Anything else — `detail`, `non_field_errors`, a
+    // field we do not render — has nowhere to land there, so it takes the toast
+    // rather than disappearing.
+    const shownInline = Object.keys(requestFieldErrors.value ?? {}).some((field) =>
+      REQUEST_FORM_FIELDS.includes(field),
+    )
+    if (!shownInline) showError(result.error)
+    return
+  }
+
+  requestDrawerOpen.value = false
+  showSuccess(t('settings.credits.request.messages.sent'))
+}
+
+/** The approved-but-still-403 case: re-read the account, then the credits. */
+const reloadAsPartner = async () => {
+  await authStore.fetchProfile()
+  await load()
+}
+
 const confirmCancel = async () => {
   const order = orderToCancel.value
   if (!order) return
@@ -565,5 +762,22 @@ const confirmCancel = async () => {
   else showError(result.error ?? t('settings.credits.messages.cancelFailed'))
 }
 
-onMounted(load)
+onMounted(async () => {
+  // An account that already knows it is not a partner is asked about its
+  // application *alongside* the credit fetch that is going to 403 anyway, so
+  // the gated state resolves in one paint instead of two round trips.
+  if (!isPartnerAccount.value) loadPartnerRequest()
+
+  await load()
+
+  // Flag desync, in either direction. The API is the authority: if it gated us
+  // and we did not pre-fetch, ask now; if it let us through while the cached
+  // account still says otherwise, re-read the profile so the nav gains its
+  // Credits link without waiting for the next sign-in.
+  if (isPartnerGated.value && !hasLoadedRequestOnce.value && !isLoadingRequest.value) {
+    await loadPartnerRequest()
+  } else if (!isPartnerGated.value && !isPartnerAccount.value) {
+    await authStore.fetchProfile()
+  }
+})
 </script>

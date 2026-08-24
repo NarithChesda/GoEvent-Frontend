@@ -216,8 +216,10 @@
                 <Lock class="w-5 h-5 group-hover:gradient-text" aria-hidden="true" />
                 <span class="font-medium">Security</span>
               </RouterLink>
+              <!-- Every signed-in account: partners see their balance and the
+                   wholesale catalogue, everyone else sees the form to apply for
+                   a partner account. -->
               <RouterLink
-                v-if="authStore.user?.is_partner"
                 to="/credits"
                 @click="userMenuOpen = false"
                 class="flex items-center space-x-3 px-4 py-3 text-slate-700 hover:gradient-text transition-all duration-200 group"
