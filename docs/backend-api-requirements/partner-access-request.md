@@ -146,6 +146,47 @@ the path: change the two constants in
 [`partner-requests.service.ts`](../../src/services/api/modules/partner-requests.service.ts)
 and nothing else moves.
 
+## Notes for the implementation
+
+None of this is binding — it is the set of decisions the contract above implies,
+written down so they do not each have to be rediscovered.
+
+**One row per application, not one per account.** A rejected applicant whose
+circumstances change should be able to apply again, and the reviewer should be
+able to see that they were turned down once before. So: a plain FK to the user
+with no `unique=True`, and `me/` returns `latest('created_at')`. The constraint
+that matters is a *partial* one — at most one row per user with
+`status="pending"` — which is also what makes the "already pending → `400`" rule
+above enforceable rather than racy.
+
+**`can_reapply` is a stored field, not a property.** It is the reviewer's
+decision at the moment of rejection, so it wants to be written by the review
+action and read back verbatim. Deriving it (`status == "rejected"`) would throw
+away the only information the frontend is asking for — see
+[The two fields that are not obvious](#the-two-fields-that-are-not-obvious).
+
+**Throttle the `POST`.** It is the first write in `/api/payment/` reachable
+without the partner flag, so it is the first one exposed to any authenticated
+account. A DRF `ScopedRateThrottle` in the region of a handful per day per user
+is plenty — a person applies once. The `GET` needs nothing.
+
+**`expected_monthly_events` wants `choices`, not free text.** The four buckets
+are a closed set the frontend renders as a `<select>`
+(`1_5`, `6_20`, `21_50`, `50_plus`), and a fifth value arriving from the server
+would render as a blank option. Nullable, because "not sure yet" is a real and
+common answer.
+
+**Store what was submitted, not a pointer to the profile.** `contact_phone` and
+`contact_telegram` are prefilled from the account but saved as their own columns:
+the reviewer needs the number as it was given at application time, and the
+applicant may well correct a stale profile value in the form without meaning to
+change their account.
+
+**Trim before validating length.** `business_name` at 120 and `message` at 1000
+are the `maxlength` values the form enforces, so anything longer is either a
+paste that outran the attribute or a non-browser client — either way, reject on
+the trimmed string so trailing whitespace never costs someone their submission.
+
 ## What the frontend does meanwhile
 
 Nothing breaks while these endpoints do not exist, because a missing endpoint and
