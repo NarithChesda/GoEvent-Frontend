@@ -456,7 +456,58 @@
     },
     "gated": {
       "title": "Partner pricing is for partner accounts",
-      "subtitle": "Credits are sold at wholesale to partners who invite guests on behalf of their own clients. Get in touch with the GoEvent team if you would like a partner account."
+      "subtitle": "Credits are sold at wholesale to shops that set up invitations on behalf of their own customers. Tell us about yours and we will look at opening an account for you."
+    },
+    "request": {
+      "cta": "Request partner access",
+      "ctaAgain": "Request again",
+      "submittedOn": "Requested {date}",
+      "pending": {
+        "title": "Your request is with our team",
+        "subtitle": "We look at every request by hand. Someone will contact you on the number you gave us, usually within two working days."
+      },
+      "rejected": {
+        "title": "We could not open a partner account this time",
+        "subtitle": "Partner pricing is meant for shops that set up invitations for their own customers. Contact us if your situation has changed since you asked."
+      },
+      "approved": {
+        "title": "Your partner account is approved",
+        "subtitle": "Your credits are not showing yet. Refresh to pick up the change on this device."
+      },
+      "drawer": {
+        "title": "Request partner access",
+        "intro": "A partner buys credits at wholesale and spends one to activate each event they set up for a customer. Tell us a little about your shop and we will be in touch.",
+        "submit": "Send request",
+        "submitting": "Sending…"
+      },
+      "fields": {
+        "businessName": "Shop or business name",
+        "businessNamePlaceholder": "The name your customers know you by",
+        "phone": "Contact phone",
+        "telegram": "Telegram",
+        "telegramPlaceholder": "{'@'}username or link",
+        "volume": "Events you set up each month",
+        "volumeHint": "Only a rough idea — it helps us suggest the right pack size.",
+        "volumeOptions": {
+          "unspecified": "Not sure yet",
+          "1_5": "1–5 events",
+          "6_20": "6–20 events",
+          "21_50": "21–50 events",
+          "50_plus": "More than 50 events"
+        },
+        "message": "Anything else we should know",
+        "messagePlaceholder": "Where you are based, the kind of events you do, anyone at GoEvent you have spoken to"
+      },
+      "validation": {
+        "businessNameRequired": "Tell us what your shop is called.",
+        "phoneRequired": "We need a number to reach you on.",
+        "fixFields": "Please fill in the fields marked above."
+      },
+      "messages": {
+        "sent": "Request sent — we will be in touch shortly.",
+        "failed": "Could not send your request. Please try again.",
+        "unavailable": "Partner requests are not open yet. Contact the GoEvent team and we will set you up."
+      }
     },
     "catalogue": {
       "title": "Buy credits",
