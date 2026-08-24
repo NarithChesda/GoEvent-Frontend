@@ -269,9 +269,7 @@
                 <p class="min-w-0 truncate text-xs text-slate-500">
                   {{ t('settings.credits.forPlan', { plan: pack.pricing_plan_name }) }}
                   ·
-                  {{
-                    t('settings.credits.dayCount', { n: pack.validity_days }, pack.validity_days)
-                  }}
+                  {{ validityLabel(pack) }}
                 </p>
                 <ChevronRight
                   class="h-4 w-4 flex-shrink-0 text-slate-400 transition-transform duration-200 group-hover:translate-x-0.5"
@@ -605,6 +603,19 @@ const savingsPercent = (pack: CreditPack): number | null => {
   const percent = Math.round((1 - each / retail) * 100)
   return percent > 0 ? percent : null
 }
+
+/**
+ * How long the credits stay redeemable.
+ *
+ * A blank `validity_days` is not missing data — it is the term of sale for a
+ * pack whose credits never expire. Handing that `null` to a plural string picks
+ * the singular branch and interpolates the count away, so the pack that never
+ * expires was the one advertising itself as lasting " day".
+ */
+const validityLabel = (pack: CreditPack): string =>
+  typeof pack.validity_days === 'number'
+    ? t('settings.credits.dayCount', { n: pack.validity_days }, pack.validity_days)
+    : t('settings.credits.noExpiry')
 
 /** A claimed trial and an open order both make a second attempt a certain 400. */
 const packDisabled = (pack: CreditPack): boolean =>

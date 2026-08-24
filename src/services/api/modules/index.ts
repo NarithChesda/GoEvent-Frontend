@@ -34,3 +34,7 @@ export { donationService } from './donation.service'
 export { guestRsvpService, rsvpQuestionsService } from './rsvp.service'
 export { ticketCheckinLogService } from './ticket-checkin-log.service'
 export { partnerCreditsService } from './credits.service'
+// Deliberately not part of `credits.service`: everything there is partner-only
+// and answers 403 without the flag, whereas these two endpoints exist precisely
+// for the accounts that do not have it yet.
+export { partnerRequestsService } from './partner-requests.service'

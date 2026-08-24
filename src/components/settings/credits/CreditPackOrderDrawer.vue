@@ -130,7 +130,7 @@
             <div class="flex items-center justify-between gap-3">
               <dt class="text-slate-500">{{ t('settings.credits.drawer.summary.validity') }}</dt>
               <dd class="font-medium text-slate-700">
-                {{ t('settings.credits.dayCount', { n: pack.validity_days }, pack.validity_days) }}
+                {{ validityLabel }}
               </dd>
             </div>
           </dl>
@@ -318,6 +318,19 @@ const savingsPercent = computed(() => {
   if (!Number.isFinite(retail) || !Number.isFinite(each) || retail <= 0 || each < 0) return null
   const percent = Math.round((1 - each / retail) * 100)
   return percent > 0 ? percent : null
+})
+
+/**
+ * How long the credits stay redeemable, restated where the money is committed.
+ *
+ * `null` days means they never expire rather than expiring immediately — the
+ * plural string would otherwise drop the count and read as a bare " day".
+ */
+const validityLabel = computed(() => {
+  const days = props.pack?.validity_days
+  return typeof days === 'number'
+    ? t('settings.credits.dayCount', { n: days }, days)
+    : t('settings.credits.noExpiry')
 })
 
 const amountDue = computed(() => props.pack?.price ?? props.order?.amount ?? '0.00')

@@ -1,9 +1,10 @@
 /**
  * Partner (vendor) wholesale credit packs.
  *
- * A partner buys N credits for one specific pricing plan; confirming the payment
- * issues a promo code locked to their account carrying N redemptions scoped to
- * that plan. They spend them one per event at template-activation checkout.
+ * A partner buys N credits scoped to a set of pricing plans; confirming the
+ * payment issues a promo code locked to their account carrying N redemptions
+ * valid on those plans. They spend them one per event at template-activation
+ * checkout.
  *
  * Source: PARTNER_CREDIT_API_DOCS.md. Everything below lives under
  * `/api/payment/` and is JWT-authenticated.
@@ -11,12 +12,23 @@
 
 export type CreditPackOrderStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled'
 
+/** One plan a pack's credits may be spent on. */
+export interface CreditPackPlan {
+  id: number
+  name: string
+  /** The event category the plan belongs to - `null` if it spans all of them. */
+  category: string | null
+  /** Retail price of one event on this plan. */
+  price: string
+}
+
 /**
  * One buyable pack in the wholesale catalogue.
  *
- * Credits are **not** interchangeable between plans - a pack buys credits for
- * exactly one `pricing_plan`, which is why `pricing_plan_name` has to be on the
- * buy card rather than buried in a detail view.
+ * A pack covers a **set** of plans - normally one tier repeated across event
+ * categories, so "25 Basic" is spendable on a wedding, a funeral or a birthday.
+ * Credits stay non-interchangeable outside that set: a Basic pack cannot buy a
+ * Premium template.
  */
 export interface CreditPack {
   id: string
@@ -27,15 +39,27 @@ export interface CreditPack {
   credit_count: number
   /** Precomputed by the server - never divide client-side. */
   price_per_credit: string
-  pricing_plan: number
+  /** Plan ids the credits cover. Never empty; such a pack is unorderable. */
+  applicable_plans: number[]
+  /** Plan names, one per id above - repeats when a tier spans categories. */
+  applicable_plan_names: string[]
+  /** Per-plan name, category and retail price. Use where the category matters. */
+  applicable_plan_details: CreditPackPlan[]
+  /** The plans deduped into one line, for the narrow "For {plan}" label. */
   pricing_plan_name: string
-  /** Retail price of the plan one credit covers. */
-  pricing_plan_price: string
+  /**
+   * Retail price of ONE event on this pack's plans - the figure wholesale is
+   * measured against. Packs bundle plans of equal price, so this is that shared
+   * price; where they ever disagree the server sends the lowest, making a saving
+   * derived from it a floor. `null` only when the pack has no plans attached.
+   */
+  pricing_plan_price: string | null
   discount_type: 'percentage' | 'fixed'
   discount_type_display: string
   discount_value: string
   max_discount_amount: string | null
-  validity_days: number
+  /** Days the issued credits stay redeemable. `null` means they never expire. */
+  validity_days: number | null
   /** A free pack still waits on a human when this is set (the trial pack). */
   requires_approval: boolean
   /** Trial packs - a second order returns 400. */

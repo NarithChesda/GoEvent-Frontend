@@ -1,7 +1,32 @@
 # Backend API Requirements: Standalone Spark Field (`sparks` + `spark_custom_image`)
 
-> **Status: PENDING.** Needs a new JSON field and a new file field on the
-> partner template model, plus both showcase read paths.
+> **Status: DONE (2026-08-16).** Both fields exist on `EventTemplate`
+> (migration `core_data/0037_eventtemplate_spark_custom_image_and_more`) and
+> round-trip on every read path — the partner detail read, the paid showcase
+> (`template_assets.sparks`) and the unpaid-preview fallback
+> (`template_data.sparks`). Specifically:
+>
+> - **`enabled: false` is stored**, never normalised into a missing blob, and
+>   the rest of the settings ride along on a disabled blob. `null` still means
+>   "no standalone config" and hands the field back to the gilding.
+> - **Unknown keys are stored verbatim** (no allow-list), so the next additive
+>   key on this blob needs no backend change. `custom_image` is the one key
+>   discarded on write — it is injected on read from `spark_custom_image`.
+> - **Numbers are clamped, never rounded or rejected**; junk numbers and unknown
+>   `shape` / `color_source` / `intensity` values are dropped rather than failing
+>   the save. An inverted size pair is stored as sent for the renderer to
+>   discard.
+> - **The legacy gilding fields are untouched** — `sparkCount`, `colorSource`
+>   and `customColor` still round-trip through `CoverGildingField`.
+> - **The Django admin** gained a "Drifting Sparks" section rather than being
+>   left to rebuild the blob away. Its master switch is tri-state: blank stores
+>   nothing (legacy fallback), "Off" stores `{"enabled": false}`.
+>
+> One caveat on the custom image, inherited from `falling_effect_custom_image`
+> and not changed here: the shared image validator allows
+> `.jpg/.jpeg/.png/.gif/.webp/.bmp` only, so an **SVG upload is rejected** with a
+> 400 despite what the hint text on both fields says. Use PNG. Widening the
+> validator is its own request.
 
 ## The ask, in one line
 

@@ -228,7 +228,16 @@
       "Bash(node \"C:/Users/narit/AppData/Local/Temp/claude/c--Users-narit-Code-GoEvent-Frontend/85478f69-da41-402c-8c66-5c4beb2b58d1/scratchpad/wrap-sorry.js\")",
       "Bash(node \"C:/Users/narit/AppData/Local/Temp/claude/c--Users-narit-Code-GoEvent-Frontend/85478f69-da41-402c-8c66-5c4beb2b58d1/scratchpad/wrap-wedding.js\")",
       "Bash(npx prettier *)",
-      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('src/i18n/locales/kh/management.json','utf8'\\)\\); JSON.parse\\(require\\('fs'\\).readFileSync\\('src/i18n/locales/en/management.json','utf8'\\)\\); console.log\\('JSON valid'\\)\")"
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('src/i18n/locales/kh/management.json','utf8'\\)\\); JSON.parse\\(require\\('fs'\\).readFileSync\\('src/i18n/locales/en/management.json','utf8'\\)\\); console.log\\('JSON valid'\\)\")",
+      "PowerShell(node --version)",
+      "PowerShell(npm --version)",
+      "PowerShell(npm run dev 2>&1)",
+      "Read(//c/Users/narit/AppData/Local/Temp/claude/c--Users-narit-OneDrive-Desktop-GoEvent-Frontend-master/8139f6ef-69c8-42ae-92c8-20cec9796416/tasks/**)",
+      "Bash(break)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:5173/\" -UseBasicParsing -TimeoutSec 20; \"STATUS: $\\($r.StatusCode\\)\"; \"LENGTH: $\\($r.Content.Length\\)\" } catch { \"REQUEST FAILED: $\\($_.Exception.Message\\)\" })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:5173/src/main.ts\" -UseBasicParsing -TimeoutSec 30; \"STATUS: $\\($r.StatusCode\\)\"; \"LEN: $\\($r.Content.Length\\)\" } catch { \"FAILED: $\\($_.Exception.Message\\)\"; $_.ErrorDetails.Message })",
+      "Bash(curl -s -o /dev/null -w \"local:%{http_code}\\\\n\" --max-time 5 http://127.0.0.1:8000/api/)",
+      "Bash(curl -s -o /dev/null -w \"prod:%{http_code}\\\\n\" --max-time 15 https://api.goevent.online/api/)"
     ],
     "deny": [],
     "additionalDirectories": [
