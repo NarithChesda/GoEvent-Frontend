@@ -591,5 +591,15 @@ const doorBackgroundStyle = computed(() => {
   .door-rim-light {
     display: none;
   }
+
+  /* The hinge and centre-gap shadows below run on their own clocks — 0.8s and
+     0.6s-after-0.2s — because they shade a leaf that is swinging for 1.65s.
+     Here the leaf is not swinging; it fades out where it stands in 0.3s, so
+     both of these were still fading IN a half-second after the surface they
+     shade had gone. There is nothing left for them to sit on. */
+  .door-panel::before,
+  .door-panel::after {
+    display: none;
+  }
 }
 </style>
