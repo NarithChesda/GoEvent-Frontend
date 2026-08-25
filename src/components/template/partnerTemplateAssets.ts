@@ -24,6 +24,7 @@ export const PARTNER_TEMPLATE_ASSET_FIELDS = [
   'basic_decoration_photo',
   'standard_background_video',
   'standard_cover_video',
+  'standard_transition_video',
   'top_decoration',
   'bottom_decoration',
   'left_decoration',

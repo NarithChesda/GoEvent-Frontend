@@ -48,6 +48,8 @@ export interface EventTemplate {
   basic_decoration_photo?: string
   basic_background_photo?: string
   standard_cover_video?: string
+  /** Standard mode's middle stage, used when the event has no `event_video` of its own. */
+  standard_transition_video?: string
   standard_background_video?: string
   /** Primary sample logo (transparency). Rendered in the merged logo row when showCoverHeaderText is false. */
   sample_logo_1?: string | null
@@ -64,6 +66,8 @@ export interface TemplateAssets {
   basic_decoration_photo?: string
   basic_background_photo?: string
   standard_cover_video?: string
+  /** Standard mode's middle stage, used when the event has no `event_video` of its own. */
+  standard_transition_video?: string
   standard_background_video?: string
   /** Primary sample logo (transparency). Rendered in the merged logo row when showCoverHeaderText is false. */
   sample_logo_1?: string | null
@@ -699,6 +703,7 @@ export interface PartnerTemplate {
   guest_title_frame_mid: string | null
   guest_title_frame_right: string | null
   standard_cover_video: string | null
+  standard_transition_video: string | null
   standard_background_video: string | null
   sample_logo_1: string | null
   sample_logo_2: string | null
@@ -734,6 +739,7 @@ export interface PartnerTemplateCreatePayload {
   guest_title_frame_mid?: TemplateFileUpload
   guest_title_frame_right?: TemplateFileUpload
   standard_cover_video?: TemplateFileUpload
+  standard_transition_video?: TemplateFileUpload
   standard_background_video?: TemplateFileUpload
   sample_logo_1?: TemplateFileUpload
   sample_logo_2?: TemplateFileUpload

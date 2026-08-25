@@ -525,7 +525,8 @@ const ownedTemplateNames = computed(() => {
 //                      is the only source, called for paid templates too: its
 //                      payload matches the paid showcase endpoint's
 //                      field-for-field (see the frame view's own note), and the
-//                      one field the frame LIST keys off is standard_cover_video.
+//                      fields the frame LIST keys off are standard_cover_video
+//                      and standard_transition_video.
 //   languages          the frames themselves, over the bridge. Only they know —
 //                      `available_languages` arrives on the showcase response —
 //                      and they already publish it (postShowcaseLanguagesToParent);
@@ -539,7 +540,10 @@ const ownedTemplateNames = computed(() => {
 // ---------------------------------------------------------------------------
 
 /** Just enough of the applied template to resolve which frames exist. */
-const templateAssets = ref<{ standard_cover_video?: string | null } | null>(null)
+const templateAssets = ref<{
+  standard_cover_video?: string | null
+  standard_transition_video?: string | null
+} | null>(null)
 
 /** False until the fetch above settles, so the frame list is never rendered
  *  from a half-known template (which would flash a Transition frame in or out). */
@@ -549,6 +553,7 @@ const error = ref<string | null>(null)
 
 const toStageAssets = (templateData: TemplateAssets) => ({
   standard_cover_video: templateData.assets?.standard_cover_video ?? null,
+  standard_transition_video: templateData.assets?.standard_transition_video ?? null,
 })
 
 /**

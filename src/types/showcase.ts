@@ -80,6 +80,7 @@ export interface TemplateAssets {
     basic_decoration_photo?: string
     basic_background_photo?: string
     standard_cover_video?: string
+    standard_transition_video?: string
     standard_background_video?: string
     top_decoration?: string
     bottom_decoration?: string

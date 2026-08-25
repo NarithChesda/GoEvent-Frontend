@@ -873,6 +873,37 @@
             </section>
           </template>
 
+          <!-- =========================== TRANSITION ========================= -->
+          <!-- The beat between the cover and the invitation: tapping the cover
+               plays a film, and the invitation appears over the background video
+               when it ends. Its own rail entry rather than a group inside Cover,
+               for the reason the rail exists at all — it is a stage of its own,
+               so opening it points the preview at that stage instead of leaving
+               the partner editing one screen while looking at another.
+
+               Standard plans only (see `sections`): the basic flow's middle
+               stage is built from the event's own featured photo, with no
+               template artwork to configure, and its cover exit animation is set
+               with the rest of the cover's behaviour. -->
+          <template v-else-if="activeSection === 'transition'">
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
+              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                {{ t('management.partnerTemplateForm.transitionStage.sectionTitle') }}
+              </h5>
+              <FileUploadField
+                :label="t('management.partnerTemplateForm.transitionStage.video')"
+                accept="video/*"
+                :file-name="form.standard_transition_video?.name"
+                :has-existing-file="hasSavedAsset('standard_transition_video')"
+                @change="handleFileChange('standard_transition_video', $event)"
+                @clear="clearAssetField('standard_transition_video')"
+              />
+              <p class="text-[0.6875rem] text-slate-400 leading-snug">
+                {{ t('management.partnerTemplateForm.transitionStage.videoHint') }}
+              </p>
+            </section>
+          </template>
+
           <!-- ============================= EFFECTS ========================== -->
           <!-- The three ambient decorations, gathered off the two stage tabs they
                used to be split across. Each is an independent field with its own
@@ -1401,6 +1432,7 @@ import {
   Columns3,
   RectangleHorizontal,
   Frame,
+  Clapperboard,
   type LucideIcon,
 } from 'lucide-vue-next'
 import { partnerTemplateService, packagePlanService, customFontsService, FONT_TYPE_LABELS, LANGUAGE_CODE_LABELS } from '../../services/api'
@@ -1637,6 +1669,7 @@ interface FormState {
   basic_decoration_photo: File | null
   standard_background_video: File | null
   standard_cover_video: File | null
+  standard_transition_video: File | null
   top_decoration: File | null
   bottom_decoration: File | null
   left_decoration: File | null
@@ -1709,6 +1742,7 @@ const defaultForm = (): FormState => ({
   basic_decoration_photo: null,
   standard_background_video: null,
   standard_cover_video: null,
+  standard_transition_video: null,
   top_decoration: null,
   bottom_decoration: null,
   left_decoration: null,
@@ -2375,7 +2409,7 @@ const fontIdModel = computed<string | number | null>({
 // Cover artwork and cover layout are one entry, not two: both only ever change
 // the cover stage, and placing a block is done by looking at the artwork it
 // moves, so splitting them just meant switching tabs to see the effect.
-type SectionId = 'basics' | 'brand' | 'cover' | 'content' | 'effects'
+type SectionId = 'basics' | 'brand' | 'cover' | 'transition' | 'content' | 'effects'
 
 interface SectionDescriptor {
   id: SectionId
@@ -2388,6 +2422,10 @@ const SECTION_DESCRIPTORS: SectionDescriptor[] = [
   { id: 'basics', icon: Info, stage: 'cover' },
   { id: 'brand', icon: Palette, stage: 'cover' },
   { id: 'cover', icon: ImageIcon, stage: 'cover' },
+  // Standard-only, and filtered out of the rail below on a basic plan — see
+  // `sections`. Points at the standard flow's own middle frame; the basic
+  // flow's `transition` frame has no template artwork behind it.
+  { id: 'transition', icon: Clapperboard, stage: 'event_video' },
   { id: 'content', icon: AlignLeft, stage: 'main' },
   // Last, and pointed at the cover: the effects sit on top of both stages, and
   // two of the three (creatures, sparks) show there. The preview's own stage
@@ -2412,6 +2450,8 @@ const COVER_ASSET_FIELDS: PartnerTemplateAssetField[] = [
   'header_text_image',
 ]
 
+const TRANSITION_ASSET_FIELDS: PartnerTemplateAssetField[] = ['standard_transition_video']
+
 const BACKGROUND_ASSET_FIELDS: PartnerTemplateAssetField[] = [
   'basic_background_photo',
   'standard_background_video',
@@ -2427,7 +2467,13 @@ function countAssets(fields: PartnerTemplateAssetField[]): number {
 }
 
 const sections = computed(() =>
-  SECTION_DESCRIPTORS.map((section) => {
+  SECTION_DESCRIPTORS.filter(
+    // The one plan-dependent entry. Every other section applies to both plans
+    // and gates its own fields inside; this one would be an empty tab on a
+    // basic plan, whose middle stage is drawn from the event's featured photo
+    // and has nothing on the template to configure.
+    (section) => section.id !== 'transition' || isStandardPlan.value,
+  ).map((section) => {
     let badge = ''
     let badgeWarn = false
     switch (section.id) {
@@ -2448,6 +2494,11 @@ const sections = computed(() =>
       // would report the same switch twice in the rail.
       case 'cover': {
         const count = countAssets(COVER_ASSET_FIELDS)
+        if (count) badge = String(count)
+        break
+      }
+      case 'transition': {
+        const count = countAssets(TRANSITION_ASSET_FIELDS)
         if (count) badge = String(count)
         break
       }
@@ -2498,6 +2549,18 @@ function selectSection(id: SectionId): void {
   const descriptor = SECTION_DESCRIPTORS.find((entry) => entry.id === id)
   if (descriptor) previewStage.value = descriptor.stage
 }
+
+/**
+ * A plan switch can take away the section currently open — Transition exists
+ * only on the standard flow. Left alone that renders an empty pane beside a rail
+ * with nothing highlighted, so fall back to whatever the rail now starts with
+ * (and re-point the preview with it, which is why this goes through
+ * selectSection rather than assigning activeSection).
+ */
+watch(sections, (visible) => {
+  if (visible.some((section) => section.id === activeSection.value)) return
+  selectSection((visible[0]?.id as SectionId) ?? 'basics')
+})
 
 // --- Colors handlers ---
 async function fetchColors(): Promise<void> {

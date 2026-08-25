@@ -222,7 +222,10 @@ const draftAssets = computed(() =>
 // ---------------------------------------------------------------------------
 const rendererContext = computed(() => ({
   event: props.eventData ?? {},
-  templateAssets: { standard_cover_video: draftAssets.value.assets?.standard_cover_video ?? null },
+  templateAssets: {
+    standard_cover_video: draftAssets.value.assets?.standard_cover_video ?? null,
+    standard_transition_video: draftAssets.value.assets?.standard_transition_video ?? null,
+  },
   // Someone building a template wants to see every stage that template defines,
   // so the basic flow's Transition stage is always offered rather than gated on
   // the chosen event happening to have a featured photo — which the events list
@@ -260,12 +263,17 @@ const selectFrame = (frameId: string): void => {
   emit('update:stage', frameId)
 }
 
+// Watches the frame list as well as the request, because a requested stage the
+// draft doesn't render yet is *held*, not discarded: opening the Transition
+// section on a template with no transition video asks for a frame that doesn't
+// exist, and the whole point of that section is to upload the file that brings
+// it into being. Re-checking when the list changes means the pane lands on the
+// new stage the moment the partner picks the file, instead of stranding them on
+// the cover with no sign their upload did anything.
 watch(
-  () => props.stage,
-  (stage) => {
+  [() => props.stage, visibleFrames],
+  ([stage]) => {
     if (!stage || stage === activeFrameId.value) return
-    // A stage the current draft doesn't render (no cover video → no Event Video
-    // frame) is dropped rather than blanking the pane.
     if (visibleFrames.value.some((frame) => frame.id === stage)) activeFrameId.value = stage
   },
   { immediate: true },

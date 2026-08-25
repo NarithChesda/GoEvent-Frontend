@@ -76,7 +76,7 @@ const TEMPLATE_FILE_FIELDS: Array<keyof PartnerTemplateCreatePayload> = [
   'left_decoration', 'right_decoration', 'cover_top_decoration',
   'cover_bottom_decoration', 'cover_left_decoration', 'cover_right_decoration',
   'guest_title_frame_left', 'guest_title_frame_mid', 'guest_title_frame_right',
-  'standard_cover_video', 'standard_background_video',
+  'standard_cover_video', 'standard_transition_video', 'standard_background_video',
   'sample_logo_1', 'sample_logo_2', 'header_text_image',
   'open_envelope_button',
 ]

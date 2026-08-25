@@ -2815,6 +2815,11 @@
       "guestFrameGroup": "Guest name frame",
       "brandingGroup": "Logos & header art"
     },
+    "transitionStage": {
+      "sectionTitle": "Transition video",
+      "video": "Video",
+      "videoHint": "Plays after the cover, before the invitation appears. Used only when the event has no video of its own."
+    },
     "guestFrame": {
       "styles": {
         "split": "3-Piece",
@@ -3049,6 +3054,10 @@
       "cover": {
         "label": "Cover Stage",
         "description": "The invitation cover — backdrop, frames, logos, and where each block sits."
+      },
+      "transition": {
+        "label": "Transition",
+        "description": "The video guests see between the cover and the invitation."
       },
       "content": {
         "label": "Main Content",
