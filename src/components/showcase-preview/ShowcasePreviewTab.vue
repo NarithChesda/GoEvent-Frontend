@@ -980,11 +980,23 @@ watch(activeFrameId, (id) => {
 // The queue can't start until the frame list is known: `visibleFrames` depends
 // on the template's stage layout, and starting early would mount a frame the
 // template turns out not to have.
+//
+// Restarting it matters as much as starting it. Applying a template swaps the
+// middle frame — basic's Transition and standard's Event Video are mutually
+// exclusive — so a frame can join this list long after the first queue drained.
+// The condition used to be "nothing is mounted yet", which is false by then, so
+// the new frame was never queued and sat on its pending spinner until a full
+// page reload happened to reset the set. `frameMountTimer` is the honest
+// question: it is non-null exactly while a mount is in flight (set when one
+// starts, cleared when the next begins or when the queue finds nothing left),
+// so a null timer means nothing is coming and whatever is pending needs a push.
+// mountNextFrame is a no-op when nothing is pending, which is what makes it safe
+// to call on the every-recompute firings of this watcher.
 watch(
   [templateResolved, visibleFrames],
   ([resolved, frames]) => {
     if (!resolved || !frames.length) return
-    if (!mountedFrameIds.value.size) mountNextFrame()
+    if (frameMountTimer === null) mountNextFrame()
   },
   { immediate: true },
 )
