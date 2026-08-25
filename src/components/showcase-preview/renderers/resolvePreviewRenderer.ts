@@ -11,11 +11,15 @@ export interface PreviewFrameContext {
   event: {
     category_details?: { name?: string } | null
     category_name?: string | null
-    /** Gates the standard-mode Event Video frame — that stage only exists once
-     *  the organizer has actually uploaded a video (see isStandardShowcase). */
+    /** The organizer's own middle-stage film — first choice for the
+     *  standard-mode Event Video frame (see standardMiddleStageVideo). */
     event_video?: string | null
   }
-  templateAssets: { standard_cover_video?: string | null } | null
+  templateAssets: {
+    standard_cover_video?: string | null
+    /** Standard mode's fallback middle-stage film, when the event has no video. */
+    standard_transition_video?: string | null
+  } | null
   hasFeaturedPhoto: boolean
   /** Whether the viewing user can edit the event. Lets frames that are
    *  otherwise hidden on an "unused" state (e.g. transition with no featured
@@ -81,6 +85,17 @@ export function isStandardShowcase(ctx: PreviewFrameContext): boolean {
   return !!ctx.templateAssets?.standard_cover_video
 }
 
+/**
+ * What the standard flow's middle stage would actually play, resolved the same
+ * way the showcase resolves it (see eventVideoUrl in useEventShowcase.ts): the
+ * organizer's own upload first, then the template's own transition film. Either
+ * one is enough for the stage to exist — a template that ships a transition
+ * gives every one of its events that beat, whether or not they film anything.
+ */
+export function standardMiddleStageVideo(ctx: PreviewFrameContext): string | null {
+  return ctx.event.event_video || ctx.templateAssets?.standard_transition_video || null
+}
+
 const V1_RENDERER: PreviewRendererDescriptor = {
   id: 'v1',
   FrameComponent: V1PreviewFrame,
@@ -115,7 +130,7 @@ const V1_RENDERER: PreviewRendererDescriptor = {
       // what turns a click into the `replay` command below.
       editable: false,
       clickMessage: 'replay',
-      isVisible: (ctx) => isStandardShowcase(ctx) && !!ctx.event.event_video,
+      isVisible: (ctx) => isStandardShowcase(ctx) && !!standardMiddleStageVideo(ctx),
       isApplicable: isStandardShowcase,
       hiddenNoteKey: 'management.showcasePreview.eventVideoNotSet',
     },

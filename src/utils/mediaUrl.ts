@@ -30,12 +30,18 @@ const IMAGEKIT_URL_PATTERN = /(https:\/\/ik\.imagekit\.io\/[^/]+)(\/.*)/
  * a just-uploaded background rendered as a broken image instead of the picture.
  */
 export function isResolvedMediaUrl(url: string): boolean {
-  return (
-    url.startsWith('http://') ||
-    url.startsWith('https://') ||
-    url.startsWith('blob:') ||
-    url.startsWith('data:')
-  )
+  return url.startsWith('http://') || url.startsWith('https://') || isInMemoryMediaUrl(url)
+}
+
+/**
+ * The in-memory half of the above: a file the user has picked but not uploaded,
+ * standing in for a media URL. Worth telling apart from a resolved remote URL
+ * wherever code does more with media than point an element at it — anything
+ * that fetches, HEADs, size-checks or re-blobs a URL has nothing to gain from
+ * doing it to bytes the page is already holding (see useCoverStageVideo).
+ */
+export function isInMemoryMediaUrl(url: string): boolean {
+  return url.startsWith('blob:') || url.startsWith('data:')
 }
 
 /**

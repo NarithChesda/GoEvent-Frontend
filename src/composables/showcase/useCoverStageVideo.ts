@@ -1,5 +1,6 @@
 import { ref, computed, onUnmounted, nextTick, watch, readonly } from 'vue'
 import { useVideoResourceManager } from './useVideoResourceManager'
+import { isInMemoryMediaUrl, resolveMediaUrl } from '@/utils/mediaUrl'
 
 export type VideoPhase = 'none' | 'event' | 'background'
 export type ShowcaseStage = 'cover' | 'transition' | 'event_video' | 'main_content'
@@ -146,13 +147,35 @@ export function useCoverStageVideo(
     }
   }
 
+  /**
+   * The absolute URL to point a <video> at.
+   *
+   * Delegates to the shared resolver rather than prefixing the API base by
+   * hand, because "not http" is not the same as "relative path": the template
+   * studio previews a just-picked, not-yet-uploaded file as a `blob:` object
+   * URL, and the hand-rolled check turned that into
+   * `http://api-host/media/blob:http://host/uuid`, which 404s. That is why a
+   * standard template's background video stayed invisible in the live preview
+   * while the cover video — which the markup points at directly, with no
+   * resolution step of its own — showed up fine.
+   */
+  const resolveVideoUrl = (videoUrl: string): string => resolveMediaUrl(videoUrl) ?? videoUrl
+
   // Enhanced video download with mobile optimizations and resource management
   const forceFullVideoDownload = async (videoUrl: string, videoType: 'event' | 'background') => {
     try {
       // Get the full URL if it's relative
-      const fullUrl = videoUrl.startsWith('http')
-        ? videoUrl
-        : `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}${videoUrl.startsWith('/') ? videoUrl : `/media/${videoUrl}`}`
+      const fullUrl = resolveVideoUrl(videoUrl)
+
+      // A file the user picked but hasn't uploaded (the template studio's
+      // object URLs): the bytes are already in memory, so there is nothing to
+      // download — fetching one only to hand back a second blob URL for the
+      // same data wastes it, and the low-memory HEAD size check below can't
+      // read a content-length off it at all.
+      if (isInMemoryMediaUrl(fullUrl)) {
+        preloadedVideos.add(videoUrl)
+        return fullUrl
+      }
 
       // Safari/iOS: Use direct URL with progressive loading instead of blob
       // Safari has issues with blob URLs for video and strict memory limits
@@ -254,9 +277,7 @@ export function useCoverStageVideo(
     emit('backgroundVideoLoadStarted')
 
     // Use progressive streaming for background video
-    const fullUrl = props.backgroundVideoUrl.startsWith('http')
-      ? props.backgroundVideoUrl
-      : `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}${props.backgroundVideoUrl.startsWith('/') ? props.backgroundVideoUrl : `/media/${props.backgroundVideoUrl}`}`
+    const fullUrl = resolveVideoUrl(props.backgroundVideoUrl)
 
     // Safari-friendly preload strategy
     if (isSafari || isIOS) {

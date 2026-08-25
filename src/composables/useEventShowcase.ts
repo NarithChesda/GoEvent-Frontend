@@ -134,6 +134,12 @@ export interface TemplateAssets {
     basic_decoration_photo?: string
     basic_background_photo?: string
     standard_cover_video?: string
+    /**
+     * Standard mode's middle stage, when the organizer has no `event_video` of
+     * their own — see eventVideoUrl below. Backend field pending:
+     * docs/backend-api-requirements/standard-transition-video.md.
+     */
+    standard_transition_video?: string
     standard_background_video?: string
     top_decoration?: string
     bottom_decoration?: string
@@ -632,11 +638,26 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     return new Date(event.value.end_date) < new Date()
   })
 
+  /**
+   * The video that plays as the middle beat of the standard flow — cover →
+   * this → background video + main content.
+   *
+   * The organizer's own upload wins, because that stage was built for exactly
+   * that: a film made for this one event, played with its own sound. The
+   * template's `standard_transition_video` is the fallback for every event that
+   * never uploads one — a general-purpose standard template previously had no
+   * way to ship a transition of its own, so those events skipped the beat
+   * entirely and cut from cover straight to main content.
+   *
+   * Still named eventVideoUrl (rather than something stage-shaped) because that
+   * is the prop name the whole video pipeline uses — CoverStage, VideoContainer,
+   * useCoverStageVideo and the preview's Event Video frame all speak it, and
+   * none of them care where the URL came from.
+   */
   const eventVideoUrl = computed(() => {
-    if (event.value?.event_video) {
-      return templateProcessor.getMediaUrl(event.value.event_video)
-    }
-    return null
+    const source =
+      event.value?.event_video || event.value?.template_assets?.assets?.standard_transition_video
+    return source ? templateProcessor.getMediaUrl(source) : null
   })
 
   const backgroundVideoUrl = computed(() => {

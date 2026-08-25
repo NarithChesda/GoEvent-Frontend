@@ -525,7 +525,8 @@ const ownedTemplateNames = computed(() => {
 //                      is the only source, called for paid templates too: its
 //                      payload matches the paid showcase endpoint's
 //                      field-for-field (see the frame view's own note), and the
-//                      one field the frame LIST keys off is standard_cover_video.
+//                      fields the frame LIST keys off are standard_cover_video
+//                      and standard_transition_video.
 //   languages          the frames themselves, over the bridge. Only they know —
 //                      `available_languages` arrives on the showcase response —
 //                      and they already publish it (postShowcaseLanguagesToParent);
@@ -539,7 +540,10 @@ const ownedTemplateNames = computed(() => {
 // ---------------------------------------------------------------------------
 
 /** Just enough of the applied template to resolve which frames exist. */
-const templateAssets = ref<{ standard_cover_video?: string | null } | null>(null)
+const templateAssets = ref<{
+  standard_cover_video?: string | null
+  standard_transition_video?: string | null
+} | null>(null)
 
 /** False until the fetch above settles, so the frame list is never rendered
  *  from a half-known template (which would flash a Transition frame in or out). */
@@ -549,6 +553,7 @@ const error = ref<string | null>(null)
 
 const toStageAssets = (templateData: TemplateAssets) => ({
   standard_cover_video: templateData.assets?.standard_cover_video ?? null,
+  standard_transition_video: templateData.assets?.standard_transition_video ?? null,
 })
 
 /**
@@ -975,11 +980,23 @@ watch(activeFrameId, (id) => {
 // The queue can't start until the frame list is known: `visibleFrames` depends
 // on the template's stage layout, and starting early would mount a frame the
 // template turns out not to have.
+//
+// Restarting it matters as much as starting it. Applying a template swaps the
+// middle frame — basic's Transition and standard's Event Video are mutually
+// exclusive — so a frame can join this list long after the first queue drained.
+// The condition used to be "nothing is mounted yet", which is false by then, so
+// the new frame was never queued and sat on its pending spinner until a full
+// page reload happened to reset the set. `frameMountTimer` is the honest
+// question: it is non-null exactly while a mount is in flight (set when one
+// starts, cleared when the next begins or when the queue finds nothing left),
+// so a null timer means nothing is coming and whatever is pending needs a push.
+// mountNextFrame is a no-op when nothing is pending, which is what makes it safe
+// to call on the every-recompute firings of this watcher.
 watch(
   [templateResolved, visibleFrames],
   ([resolved, frames]) => {
     if (!resolved || !frames.length) return
-    if (!mountedFrameIds.value.size) mountNextFrame()
+    if (frameMountTimer === null) mountNextFrame()
   },
   { immediate: true },
 )
