@@ -29,7 +29,7 @@
               v-for="(word, index) in splitToWords(thankYouMessage.title)"
               :key="`thank-title-${currentLanguage}-${index}`"
               class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.thankYouTitle + index * WORD_DELAY}s` }"
+              :style="{ animationDelay: `${animationDelays.thankYouTitle + wordCascadeDelay(index)}s` }"
               >{{ word
               }}{{ index < splitToWords(thankYouMessage.title).length - 1 ? '\u00A0' : '' }}</span
             >
@@ -67,7 +67,7 @@
                 :key="`thank-content-${currentLanguage}-${lineIndex}-${wordIndex}`"
                 class="bounce-word"
                 :style="{
-                  animationDelay: `${animationDelays.thankYouContent + getGlobalWordIndex(thankYouLines, lineIndex, wordIndex) * WORD_DELAY}s`,
+                  animationDelay: `${animationDelays.thankYouContent + wordCascadeDelay(getGlobalWordIndex(thankYouLines, lineIndex, wordIndex))}s`,
                 }"
                 >{{ word }}{{ wordIndex < line.length - 1 ? '\u00A0' : '' }}</span
               >
@@ -100,7 +100,7 @@
               v-for="(word, index) in splitToWords(sorryMessage.title)"
               :key="`sorry-title-${currentLanguage}-${index}`"
               class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.sorryTitle + index * WORD_DELAY}s` }"
+              :style="{ animationDelay: `${animationDelays.sorryTitle + wordCascadeDelay(index)}s` }"
               >{{ word
               }}{{ index < splitToWords(sorryMessage.title).length - 1 ? '\u00A0' : '' }}</span
             >
@@ -138,7 +138,7 @@
                 :key="`sorry-content-${currentLanguage}-${lineIndex}-${wordIndex}`"
                 class="bounce-word"
                 :style="{
-                  animationDelay: `${animationDelays.sorryContent + getGlobalWordIndex(sorryLines, lineIndex, wordIndex) * WORD_DELAY}s`,
+                  animationDelay: `${animationDelays.sorryContent + wordCascadeDelay(getGlobalWordIndex(sorryLines, lineIndex, wordIndex))}s`,
                 }"
                 >{{ word }}{{ wordIndex < line.length - 1 ? '\u00A0' : '' }}</span
               >
@@ -152,6 +152,7 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import type { EventText } from '../../types/showcase'
 import {
@@ -159,6 +160,7 @@ import {
   splitToLines,
   getGlobalWordIndex,
   ANIMATION_CONSTANTS,
+  wordCascadeDelay,
   getTextAnimationDuration,
 } from '@/composables/showcase/useHostInfoUtils'
 
@@ -176,7 +178,6 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 
 // Intersection Observer for scroll-triggered animations
@@ -197,10 +198,7 @@ const setupObserver = () => {
         }
       })
     },
-    {
-      threshold: 0.3,
-      rootMargin: '0px 0px -100px 0px',
-    },
+    showcaseRevealObserverInit(),
   )
 
   if (containerRef.value) {
@@ -328,20 +326,17 @@ const animationDelays = computed(() => {
 }
 
 .animate-active .bounce-word {
-  animation: revealWord 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: revealWord 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes revealWord {
-  0% {
+  from {
     opacity: 0;
-    transform: scale(0.85) translateY(10px);
+    transform: translateY(6px);
   }
-  60% {
+  to {
     opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateY(0);
   }
 }
 

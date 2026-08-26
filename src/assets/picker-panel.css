@@ -1,0 +1,155 @@
+/*
+ * Shared chrome for anchored pickers (SelectField, DateTimePickerField).
+ *
+ * These live in a global sheet rather than in each component's <style scoped>
+ * for one reason: the panels are teleported to <body>, and every picker in the
+ * app must move identically. Two private copies of the same keyframes drift —
+ * that is exactly how `sf-sheet` and `dtp-sheet` ended up with matching enters
+ * and different exits.
+ */
+
+/* ── Backdrop ──────────────────────────────────────────────────────────── */
+
+.picker-fade-enter-active {
+  transition: opacity 0.25s ease-out;
+}
+
+/* Exits beat entries: once the user has decided, the scrim is in the way. */
+.picker-fade-leave-active {
+  transition: opacity 0.16s ease-out;
+}
+
+.picker-fade-enter-from,
+.picker-fade-leave-to {
+  opacity: 0;
+}
+
+/* ── Mobile bottom sheet ───────────────────────────────────────────────── */
+
+.picker-sheet-enter-active {
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Same curve family on the way out, just faster. A curve that starts slow
+   (ease-in, or a symmetric ease-in-out) reads as the sheet resisting. */
+.picker-sheet-leave-active {
+  transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.picker-sheet-enter-from,
+.picker-sheet-leave-to {
+  transform: translateY(100%);
+}
+
+/* The handle is a grab affordance, so it must not also be a text selection
+   or a browser scroll gesture. */
+.picker-sheet-grip {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: grab;
+}
+
+.picker-sheet-grip:active {
+  cursor: grabbing;
+}
+
+/* ── Desktop anchored popover ──────────────────────────────────────────── */
+
+/* transform-origin is set inline from the trigger's position — a popover that
+   grows out of its own middle reads as unrelated to the control that opened it. */
+.picker-pop-enter-active {
+  transition:
+    opacity 0.18s ease-out,
+    transform 0.18s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.picker-pop-leave-active {
+  transition:
+    opacity 0.13s ease-out,
+    transform 0.13s ease-out;
+}
+
+.picker-pop-enter-from,
+.picker-pop-leave-to {
+  opacity: 0;
+  /* Never scale(0) — nothing in the world appears out of nothing. */
+  transform: scale(0.97);
+}
+
+/* ── Nested lists inside a panel (hour / minute) ───────────────────────── */
+
+.picker-list-enter-active {
+  transition:
+    opacity 0.15s ease-out,
+    transform 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.picker-list-leave-active {
+  transition:
+    opacity 0.12s ease-out,
+    transform 0.12s ease-out;
+}
+
+.picker-list-enter-from,
+.picker-list-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -4px) scale(0.96);
+}
+
+/* ── Shared row anatomy ────────────────────────────────────────────────── */
+
+.picker-option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.75rem;
+  transition:
+    background-color 0.15s ease,
+    transform 0.13s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.picker-option:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+/* Touch devices fire :hover on tap, which leaves the row stuck highlighted. */
+@media (hover: hover) and (pointer: fine) {
+  .picker-option:hover:not(:disabled) {
+    background-color: rgb(248 250 252); /* slate-50 */
+  }
+}
+
+.picker-option[data-active='true'] {
+  background-color: rgb(241 245 249); /* slate-100 — keyboard cursor */
+}
+
+/* Trigger press feedback, shared by both field triggers. */
+.picker-trigger {
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.13s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.picker-trigger:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .picker-fade-enter-active,
+  .picker-fade-leave-active,
+  .picker-sheet-enter-active,
+  .picker-sheet-leave-active,
+  .picker-pop-enter-active,
+  .picker-pop-leave-active,
+  .picker-list-enter-active,
+  .picker-list-leave-active {
+    transition-duration: 0.01s;
+  }
+
+  .picker-option:active:not(:disabled),
+  .picker-trigger:active:not(:disabled) {
+    transform: none;
+  }
+}

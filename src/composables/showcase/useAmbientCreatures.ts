@@ -194,10 +194,31 @@ function makeSVG(viewBox: string): SVGSVGElement {
   return svg
 }
 
-function makePath(d: string, fill: string, opacity: string): SVGPathElement {
+/**
+ * A drawn path.
+ *
+ * `strokeWidth` renders it as a stroked line instead of a filled shape. The
+ * hummingbird's beak is a bare quadratic curve — filled, SVG closes it
+ * implicitly and it comes out as a thin dark sliver; it only reads as a beak
+ * when stroked. Its call site had always passed a width for exactly that, into
+ * a parameter that did not exist, so the argument was dropped on the floor.
+ */
+function makePath(
+  d: string,
+  fill: string,
+  opacity: string,
+  strokeWidth?: number,
+): SVGPathElement {
   const p = document.createElementNS(SVG_NS, 'path')
   p.setAttribute('d', d)
-  p.setAttribute('fill', fill)
+  if (strokeWidth === undefined) {
+    p.setAttribute('fill', fill)
+  } else {
+    p.setAttribute('fill', 'none')
+    p.setAttribute('stroke', fill)
+    p.setAttribute('stroke-width', String(strokeWidth))
+    p.setAttribute('stroke-linecap', 'round')
+  }
   p.setAttribute('opacity', opacity)
   return p
 }
@@ -635,7 +656,7 @@ function createHummingbirdSVG(color: string, size: number): HTMLDivElement {
     makeCircle('53', '22', '2', dark, '0.9'),
     makeCircle('54', '21.5', '0.6', light, '0.8'),
     // Long curved beak
-    makePath('M56 24 Q68 23 75 28', dark, 0.8, '0.85'),
+    makePath('M56 24 Q68 23 75 28', dark, '0.85', 0.8),
     // Tail feathers
     makePath(
       'M37 55 L28 60 L32 65 L40 62 Z M50 70 L45 82 L50 85 L55 82 Z',
@@ -710,6 +731,44 @@ export function useAmbientCreatures(
   let rafId: number | null = null
   let styleEl: HTMLStyleElement | null = null
   const preset = SPEED_PRESETS[speed]
+
+  /**
+   * Container size and decoration rectangles, measured rather than re-read.
+   *
+   * `tick` used to read offsetWidth/offsetHeight on every frame, and every
+   * waypoint a creature reached ran `getDecorationZones` — five more
+   * getBoundingClientRect() calls — from inside the same frame that was about
+   * to write all six transforms. Both are forced synchronous layouts in the
+   * middle of an animation frame. Neither measurement changes unless the stage
+   * resizes, so a ResizeObserver owns them instead.
+   */
+  let containerW = 0
+  let containerH = 0
+  let decorationZones: DecorationZone[] = []
+  let resizeObserver: ResizeObserver | null = null
+  /** Timestamp of the last zone probe, while none have been found yet. */
+  let lastZoneProbe = 0
+
+  /**
+   * Duration of one frame at 60Hz.
+   *
+   * Every step below is written as "pixels per frame", which silently meant
+   * "pixels per frame at whatever rate this display happens to run" — so the
+   * same butterfly crossed the cover twice as fast on a 120Hz phone as on a
+   * 60Hz laptop, and half as fast again whenever the showcase was busy
+   * decoding video. Scaling each step by the frames actually elapsed keeps the
+   * tuning in the presets meaningful on every device.
+   */
+  const FRAME_MS = 1000 / 60
+  let lastTimestamp = 0
+
+  function measure() {
+    const container = containerRef.value
+    if (!container) return
+    containerW = container.offsetWidth
+    containerH = container.offsetHeight
+    decorationZones = getDecorationZones(container)
+  }
 
   /** Inject CSS @keyframes for wing flapping, body bob, and firefly blink */
   function injectStyles() {
@@ -827,7 +886,7 @@ export function useAmbientCreatures(
   function pickTarget(w: number, h: number, homeZone?: number): { x: number; y: number } {
     const container = containerRef.value
     if (container) {
-      const zones = getDecorationZones(container)
+      const zones = decorationZones
       if (zones.length > 0) {
         const r = Math.random()
         if (r < 0.6 && homeZone !== undefined && homeZone < zones.length) {
@@ -880,8 +939,11 @@ export function useAmbientCreatures(
     const container = containerRef.value
     if (!container) return
 
-    const cw = container.offsetWidth
-    const ch = container.offsetHeight
+    // First spawn can land before the stage has been measured (or after a
+    // resize the observer has not delivered yet), so fall back to a read.
+    if (!containerW || !containerH) measure()
+    const cw = containerW
+    const ch = containerH
     const entry = pickCreatureEntry()
     const defaults = CREATURE_DEFAULTS[entry.type]
 
@@ -890,7 +952,7 @@ export function useAmbientCreatures(
     const size = minSize + Math.random() * (maxSize - minSize)
 
     // Assign a home decoration zone and start near it
-    const zones = getDecorationZones(container)
+    const zones = decorationZones
     const homeZone = zones.length > 0 ? Math.floor(Math.random() * zones.length) : 0
     let startX: number, startY: number
     if (zones.length > 0) {
@@ -908,12 +970,22 @@ export function useAmbientCreatures(
     // Parallax depth: far creatures are smaller, fainter, and slower
     const depth = 0.65 + Math.random() * 0.5
 
-    // Fade in gently to a depth-scaled opacity
-    element.style.opacity = '0'
-    element.style.transition = 'opacity 1.2s ease-in'
+    // Fade in gently to a depth-scaled opacity.
+    //
+    // Driven by WAAPI rather than by a CSS transition flipped inside a rAF:
+    // that callback runs at the top of the rendering update, BEFORE style is
+    // computed for the freshly appended element, so the 0 and the target
+    // collapsed into a single recalc and the transition had no start value to
+    // run from — every creature popped in at full opacity instead of fading.
+    // An animation cannot be lost that way. ease-out, not ease-in: the arrival
+    // is the moment being watched, so the movement belongs at the front of it.
+    const restOpacity = 0.55 + depth * 0.35
+    element.style.opacity = String(restOpacity)
     container.appendChild(element)
-    requestAnimationFrame(() => {
-      element.style.opacity = String(0.55 + depth * 0.35)
+    element.animate([{ opacity: 0 }, { opacity: restOpacity }], {
+      duration: 1200,
+      easing: 'cubic-bezier(0.23, 1, 0.32, 1)',
+      fill: 'backwards',
     })
 
     creatures.push({
@@ -934,6 +1006,18 @@ export function useAmbientCreatures(
       mode: 'seek',
       modeUntil: 0,
     })
+  }
+
+  /**
+   * A per-frame smoothing rate, corrected for how many frames actually passed.
+   *
+   * The step below is exponential decay toward the target, so the rate cannot
+   * simply be multiplied by dt — at dt = 3 that overshoots and the heading
+   * wobbles. Compounding the per-frame retention instead is exact at any frame
+   * rate.
+   */
+  function easeRate(perFrame: number, dt: number): number {
+    return 1 - Math.pow(1 - perFrame, dt)
   }
 
   /** Smoothly rotate heading angle (degrees) toward flight direction */
@@ -958,8 +1042,22 @@ export function useAmbientCreatures(
       return
     }
 
-    const cw = container.offsetWidth
-    const ch = container.offsetHeight
+    // Frames of 60Hz elapsed since the previous tick. Clamped at 3: a tab
+    // returning from the background hands us a multi-second gap, and scaling a
+    // whole flight step by that would teleport the flock across the cover.
+    const dt = lastTimestamp ? clamp((timestamp - lastTimestamp) / FRAME_MS, 0, 3) : 1
+    lastTimestamp = timestamp
+
+    const cw = containerW
+    const ch = containerH
+
+    // The cover decorations are eager <img>s, so on a cold load they can still
+    // be laying out when the field is first measured. Re-probe about once a
+    // second until they turn up, then stop — after that the observer owns it.
+    if (!decorationZones.length && timestamp - lastZoneProbe > 1000) {
+      lastZoneProbe = timestamp
+      decorationZones = getDecorationZones(container)
+    }
 
     for (const c of creatures) {
       const dx = c.targetX - c.x
@@ -970,7 +1068,7 @@ export function useAmbientCreatures(
         case 'butterfly': {
           // Flutter: speed surges and near-stalls; heavy wobble; occasional
           // erratic mid-flight retarget (real butterflies rarely commit)
-          if (dist < 15 || Math.random() < 0.0015) {
+          if (dist < 15 || Math.random() < 0.0015 * dt) {
             retarget(c, cw, ch)
             break
           }
@@ -982,9 +1080,13 @@ export function useAmbientCreatures(
             Math.sin(timestamp * preset.wobbleFreq * 2.2 + c.wobbleOffset) * c.wobbleAmp * 1.6
           const px = -ny * wobble
           const py = nx * wobble
-          c.x += nx * sp + px
-          c.y += ny * sp + py
-          easeAngle(c, Math.atan2(ny * sp + py, nx * sp + px) * (180 / Math.PI) + 90, 0.07)
+          c.x += (nx * sp + px) * dt
+          c.y += (ny * sp + py) * dt
+          easeAngle(
+            c,
+            Math.atan2(ny * sp + py, nx * sp + px) * (180 / Math.PI) + 90,
+            easeRate(0.07, dt),
+          )
           break
         }
 
@@ -999,10 +1101,10 @@ export function useAmbientCreatures(
           let turn = desired - c.heading
           while (turn > Math.PI) turn -= Math.PI * 2
           while (turn < -Math.PI) turn += Math.PI * 2
-          c.heading += clamp(turn, -0.025, 0.025)
+          c.heading += clamp(turn, -0.025 * dt, 0.025 * dt)
           const sp = c.speed * c.depth
-          c.x += Math.cos(c.heading) * sp
-          c.y += Math.sin(c.heading) * sp
+          c.x += Math.cos(c.heading) * sp * dt
+          c.y += Math.sin(c.heading) * sp * dt
           c.angle = c.heading * (180 / Math.PI) + 90
           break
         }
@@ -1011,8 +1113,8 @@ export function useAmbientCreatures(
           // Dart-and-hover: fast straight dashes, abrupt heading snaps,
           // then a motionless hover with micro-jitter
           if (c.mode === 'hover') {
-            c.x += (Math.random() - 0.5) * 1.2
-            c.y += (Math.random() - 0.5) * 1.2
+            c.x += (Math.random() - 0.5) * 1.2 * dt
+            c.y += (Math.random() - 0.5) * 1.2 * dt
             if (timestamp > c.modeUntil) {
               c.mode = 'seek'
               retarget(c, cw, ch)
@@ -1024,8 +1126,8 @@ export function useAmbientCreatures(
             c.modeUntil = timestamp + 600 + Math.random() * 1800
           } else {
             const sp = c.speed * 2.8 * c.depth
-            c.x += (dx / dist) * sp
-            c.y += (dy / dist) * sp
+            c.x += (dx / dist) * sp * dt
+            c.y += (dy / dist) * sp * dt
           }
           break
         }
@@ -1038,8 +1140,8 @@ export function useAmbientCreatures(
             break
           }
           const sp = c.speed * 0.5 * c.depth
-          c.x += (dx / dist) * sp + Math.sin(timestamp * 0.0007 + c.wobbleOffset) * 0.3
-          c.y += (dy / dist) * sp + Math.sin(timestamp * 0.0009 + c.wobbleOffset * 2) * 0.25
+          c.x += ((dx / dist) * sp + Math.sin(timestamp * 0.0007 + c.wobbleOffset) * 0.3) * dt
+          c.y += ((dy / dist) * sp + Math.sin(timestamp * 0.0009 + c.wobbleOffset * 2) * 0.25) * dt
           c.angle = 0
           break
         }
@@ -1049,8 +1151,8 @@ export function useAmbientCreatures(
           // Balloons rarely descend and have no target seeking
           const sway = Math.sin(timestamp * 0.0008 + c.wobbleOffset) * 20
           const upDrift = c.speed * 0.5 * c.depth
-          c.x += sway * 0.02
-          c.y -= upDrift
+          c.x += sway * 0.02 * dt
+          c.y -= upDrift * dt
           c.angle = 0
 
           // Reset to top when balloon floats off screen
@@ -1064,7 +1166,7 @@ export function useAmbientCreatures(
         case 'hummingbird': {
           // Dart: erratic, high-energy movement with rapid direction changes
           // Similar to butterfly but faster and more direct target seeking
-          if (dist < 10 || Math.random() < 0.004) {
+          if (dist < 10 || Math.random() < 0.004 * dt) {
             retarget(c, cw, ch)
             break
           }
@@ -1076,9 +1178,13 @@ export function useAmbientCreatures(
             Math.sin(timestamp * preset.wobbleFreq * 3 + c.wobbleOffset) * c.wobbleAmp * 0.8
           const px = -ny * wobble
           const py = nx * wobble
-          c.x += nx * sp + px
-          c.y += ny * sp + py
-          easeAngle(c, Math.atan2(ny * sp + py, nx * sp + px) * (180 / Math.PI) + 90, 0.1)
+          c.x += (nx * sp + px) * dt
+          c.y += (ny * sp + py) * dt
+          easeAngle(
+            c,
+            Math.atan2(ny * sp + py, nx * sp + px) * (180 / Math.PI) + 90,
+            easeRate(0.1, dt),
+          )
           break
         }
       }
@@ -1099,12 +1205,19 @@ export function useAmbientCreatures(
 
     isActive.value = true
     injectStyles()
+    measure()
+
+    if (typeof ResizeObserver !== 'undefined' && containerRef.value) {
+      resizeObserver = new ResizeObserver(() => measure())
+      resizeObserver.observe(containerRef.value)
+    }
 
     for (let i = 0; i < count; i++) {
       const timer = setTimeout(() => spawnCreature(), i * 500)
       spawnTimers.push(timer)
     }
 
+    lastTimestamp = 0
     rafId = requestAnimationFrame(tick)
   }
 
@@ -1115,6 +1228,11 @@ export function useAmbientCreatures(
       cancelAnimationFrame(rafId)
       rafId = null
     }
+    resizeObserver?.disconnect()
+    resizeObserver = null
+    // Cleared so a restart measures its first step against a fresh timestamp
+    // rather than against however long the field was stopped for.
+    lastTimestamp = 0
     isActive.value = false
   }
 

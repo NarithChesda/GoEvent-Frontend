@@ -65,7 +65,8 @@
       "basicInfo": "Basic Information",
       "dateTime": "Date & Time",
       "privacy": "Privacy",
-      "registration": "Registration"
+      "registration": "Registration",
+      "access": "Access & Registration"
     },
     "fields": {
       "eventTitle": "Event Title",
@@ -99,6 +100,7 @@
     },
     "actions": {
       "creating": "Creating...",
+      "created": "Created",
       "create": "Create Event",
       "cancel": "Cancel"
     }

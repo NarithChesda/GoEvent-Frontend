@@ -69,7 +69,7 @@
             v-for="(word, index) in splitToWords(host.title)"
             :key="`title-${hostIndex}-${currentLanguage}-${index}`"
             class="bounce-word"
-            :style="{ animationDelay: `${getHostAnimationDelay(hostIndex, 'title') + index * WORD_DELAY}s` }"
+            :style="{ animationDelay: `${getHostAnimationDelay(hostIndex, 'title') + wordCascadeDelay(index)}s` }"
           >{{ word }}{{ index < splitToWords(host.title).length - 1 ? '\u00A0' : '' }}</span>
         </p>
 
@@ -82,7 +82,7 @@
             v-for="(word, index) in splitToWords(host.name)"
             :key="`name-${hostIndex}-${currentLanguage}-${index}`"
             class="bounce-word"
-            :style="{ animationDelay: `${getHostAnimationDelay(hostIndex, 'name') + index * WORD_DELAY}s` }"
+            :style="{ animationDelay: `${getHostAnimationDelay(hostIndex, 'name') + wordCascadeDelay(index)}s` }"
           >{{ word }}{{ index < splitToWords(host.name).length - 1 ? '\u00A0' : '' }}</span>
         </h4>
 
@@ -96,7 +96,7 @@
             v-for="(word, index) in splitToWords(host.bio)"
             :key="`bio-${hostIndex}-${currentLanguage}-${index}`"
             class="bounce-word"
-            :style="{ animationDelay: `${getHostAnimationDelay(hostIndex, 'bio') + index * WORD_DELAY}s` }"
+            :style="{ animationDelay: `${getHostAnimationDelay(hostIndex, 'bio') + wordCascadeDelay(index)}s` }"
           >{{ word }}{{ index < splitToWords(host.bio).length - 1 ? '\u00A0' : '' }}</span>
         </p>
       </div>
@@ -113,12 +113,12 @@ import {
   getMediaUrl,
   splitToWords,
   ANIMATION_CONSTANTS,
+  wordCascadeDelay,
   getTextAnimationDuration,
 } from './shared'
 
 const props = defineProps<HostInfoProps>()
 
-const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 
 // Dynamic grid based on host count
@@ -282,20 +282,17 @@ const getHostAnimationDelay = (hostIndex: number, element: 'profile' | 'title' |
 .bounce-word {
   display: inline-block;
   opacity: 0;
-  animation: revealWord 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: revealWord 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes revealWord {
-  0% {
+  from {
     opacity: 0;
-    transform: scale(0.85) translateY(10px);
+    transform: translateY(6px);
   }
-  60% {
+  to {
     opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateY(0);
   }
 }
 

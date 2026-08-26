@@ -17,7 +17,7 @@
         v-for="(word, index) in words"
         :key="`${keyPrefix}-${index}`"
         class="bounce-word"
-        :style="{ animationDelay: `${baseDelay + index * wordDelay}s` }"
+        :style="{ animationDelay: `${baseDelay + cappedDelay(index)}s` }"
       >{{ word }}{{ index < words.length - 1 ? '\u00A0' : '' }}</span>
     </span>
   </div>
@@ -54,6 +54,14 @@ const textRef = ref<HTMLElement | null>(null)
 const calculatedFontSize = ref<number | null>(null)
 
 const words = computed(() => splitToWords(props.text))
+
+/**
+ * Word-cascade delay, ceilinged like wordCascadeDelay(). Kept local rather than
+ * delegated because `wordDelay` here is a caller-supplied rate, not the shared
+ * constant — the ceiling still has to apply whatever rate is passed in.
+ */
+const cappedDelay = (index: number): number =>
+  Math.min(index * props.wordDelay, ANIMATION_CONSTANTS.WORD_CASCADE_MAX)
 
 // Style for hidden measurement element
 const measureStyle = computed(() => ({
@@ -153,20 +161,17 @@ watch(() => props.fontFamily, () => {
 .bounce-word {
   display: inline-block;
   opacity: 0;
-  animation: revealWord 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: revealWord 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes revealWord {
-  0% {
+  from {
     opacity: 0;
-    transform: scale(0.85) translateY(10px);
+    transform: translateY(6px);
   }
-  60% {
+  to {
     opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateY(0);
   }
 }
 

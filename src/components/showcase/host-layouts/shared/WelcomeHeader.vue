@@ -27,7 +27,7 @@
               v-for="(word, wordIndex) in line.words"
               :key="`welcome-${currentLanguage}-${line.startIndex + wordIndex}`"
               class="bounce-word"
-              :style="{ animationDelay: `${baseDelay + (line.startIndex + wordIndex) * wordDelay}s` }"
+              :style="{ animationDelay: `${baseDelay + wordCascadeDelay(line.startIndex + wordIndex)}s` }"
             >{{ word }}{{ wordIndex < line.words.length - 1 ? '\u00A0' : '' }}</span>
           </template>
         </template>
@@ -44,7 +44,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
-import { ANIMATION_CONSTANTS } from '@/composables/showcase/useHostInfoUtils'
+import { wordCascadeDelay } from '@/composables/showcase/useHostInfoUtils'
 
 interface Props {
   message?: string
@@ -77,7 +77,7 @@ const lines = computed(() => {
   })
 })
 
-const wordDelay = ANIMATION_CONSTANTS.WORD_DELAY
+
 </script>
 
 <style scoped>
@@ -100,20 +100,17 @@ const wordDelay = ANIMATION_CONSTANTS.WORD_DELAY
 .bounce-word {
   display: inline-block;
   opacity: 0;
-  animation: revealWord 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: revealWord 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes revealWord {
-  0% {
+  from {
     opacity: 0;
-    transform: scale(0.85) translateY(10px);
+    transform: translateY(6px);
   }
-  60% {
+  to {
     opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateY(0);
   }
 }
 

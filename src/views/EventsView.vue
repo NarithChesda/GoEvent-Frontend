@@ -83,14 +83,12 @@
       <button
         v-if="showCreateFab"
         @click="handleCreateEventClick"
-        class="fixed bottom-[var(--fab-bottom)] right-4 lg:right-6 w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center z-[60] group"
+        class="create-fab fixed bottom-[var(--fab-bottom)] right-4 lg:right-6 w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center z-[60] group"
         :aria-label="t('events.createEvent')"
       >
-        <Plus
-          class="w-6 h-6 transition-transform duration-300 group-hover:rotate-90"
-        />
+        <Plus class="create-fab-icon w-6 h-6" />
         <div
-          class="hidden lg:block absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none"
+          class="hidden lg:block absolute right-full mr-4 bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out whitespace-nowrap pointer-events-none"
         >
           {{ t('events.createEvent') }}
         </div>
@@ -469,7 +467,7 @@ interface EventFormData {
   auto_populate?: boolean
 }
 
-const handleEventCreate = async (formData: EventFormData) => {
+const handleEventCreate = async (formData: EventFormData, done: (ok: boolean) => void) => {
   try {
     const eventData = {
       title: formData.title,
@@ -499,9 +497,14 @@ const handleEventCreate = async (formData: EventFormData) => {
     const response = await eventsService.createEvent(eventData)
 
     if (response.success && response.data) {
-      showMessage('success', t('events.messages.createSuccess'))
       timeFilter.value = 'recent'
-      await loadEvents('my', {})
+      // Refresh silently and BEFORE handing back: the drawer then plays its
+      // confirmation over a list that is already correct, so when it slides
+      // away the new event is simply there — no skeleton flash in between.
+      await loadEvents('my', {}, false, true)
+      showMessage('success', t('events.messages.createSuccess'))
+      done(true)
+      return
     } else {
       let errorMessage = response.message || t('events.messages.createError')
 
@@ -523,6 +526,10 @@ const handleEventCreate = async (formData: EventFormData) => {
     }
     showMessage('error', t('events.messages.networkError'))
   }
+
+  // Every failing path lands here: the drawer stays open with the user's input
+  // intact, so the error toast is something they can act on.
+  done(false)
 }
 
 // Watchers
@@ -571,3 +578,54 @@ onMounted(async () => {
 })
 </script>
 
+
+<style scoped>
+/* The FAB is seen and hovered many times a session, so its motion stays just
+   under conscious notice — 300ms on a hover scale reads as lag, not polish.
+   Press feedback is the one beat that must land instantly. */
+.create-fab {
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.create-fab:active {
+  transform: scale(0.95);
+}
+
+.create-fab-icon {
+  transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Touch fires :hover on tap and leaves it latched, so hover motion is gated. */
+@media (hover: hover) and (pointer: fine) {
+  .create-fab:hover {
+    transform: scale(1.08);
+  }
+
+  .create-fab:hover .create-fab-icon {
+    transform: rotate(90deg);
+  }
+
+  .create-fab:active:hover {
+    transform: scale(0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .create-fab,
+  .create-fab-icon {
+    transition-duration: 0.01ms;
+  }
+
+  .create-fab:active,
+  .create-fab:hover,
+  .create-fab:active:hover {
+    transform: none;
+  }
+
+  .create-fab:hover .create-fab-icon {
+    transform: none;
+  }
+}
+</style>

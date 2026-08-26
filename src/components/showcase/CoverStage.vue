@@ -292,9 +292,30 @@ const { isDoorAnimation, isDoorAnimationInProgress, startDoorAnimation, clearAft
   currentVideoPhase: videoState.currentVideoPhase,
 })
 
-// Keep decoration photo background during transition stage
+/**
+ * Mount the main-content slot while the showcase stage is still `transition`.
+ *
+ * Set by the parent when TransitionStage begins its dissolve, so that dissolve
+ * cross-fades into the invitation instead of fading back to the cover. It has
+ * to be a flag of its own: every other route to `shouldShowMainContent` runs
+ * through the video state machine, whose `skipToMainContent` ends the
+ * transition stage as a side effect.
+ */
+const isMainContentPreRevealed = ref(false)
+const preRevealMainContent = () => {
+  isMainContentPreRevealed.value = true
+}
+
+// Keep decoration photo background during transition stage — but hand it over
+// to the main stage's own backdrop the moment the invitation is mounted, so the
+// two backdrops cross-fade under the dissolve rather than swapping on the frame
+// the stage unmounts.
 const keepDecorationBackground = computed(() => {
-  return props.useTransitionStage && props.currentShowcaseStage === 'transition'
+  return (
+    props.useTransitionStage &&
+    props.currentShowcaseStage === 'transition' &&
+    !isMainContentPreRevealed.value
+  )
 })
 
 // Skip slide-up animation for decoration photo when using transition stage
@@ -318,6 +339,8 @@ const shouldShowCoverContent = computed(() => {
 const shouldShowMainContent = computed(() => {
   // Always show main content when stage has already transitioned
   if (props.currentShowcaseStage === 'main_content') return true
+  // Mounted early, behind a dissolving transition stage — see preRevealMainContent
+  if (isMainContentPreRevealed.value) return true
   // When transition stage is responsible for revealing main content, don't render
   // main content during the door animation. The decoration-mode TransitionStage
   // sits at z-35 above CoverStage (z-10) but starts transparent, so main content
@@ -442,6 +465,7 @@ const revealMainContent = () => {
 defineExpose({
   startEventVideo,
   revealMainContent,
+  preRevealMainContent,
 })
 
 // Initialize video state and notify parent

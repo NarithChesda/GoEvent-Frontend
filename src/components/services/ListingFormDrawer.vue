@@ -51,11 +51,11 @@
          drawer departs from §10: it holds a long form with unsaved photo
          uploads, and a stray click on the dimmed page should not discard it.
          Escape still closes — that is a decision, not a slip of the mouse. -->
-    <Transition name="fade">
+    <Transition name="drawer-backdrop">
       <div v-if="modelValue" class="fixed inset-0 z-[998] bg-black/40 backdrop-blur-sm" />
     </Transition>
 
-    <Transition name="slide-right">
+    <Transition name="drawer-panel">
       <div
         v-if="modelValue"
         class="fixed inset-y-0 right-0 z-[999] flex w-full flex-col overflow-hidden bg-white shadow-2xl will-change-transform md:bottom-4 md:right-4 md:top-4 md:w-[32.5rem] md:max-w-[calc(100vw-32px)] md:rounded-2xl laptop-sm:w-[35rem] laptop-md:w-[38.75rem] desktop:w-[42.5rem]"
@@ -595,7 +595,7 @@
             <button
               type="button"
               :disabled="isSubmitting"
-              class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-[#2ecc71]/20 transition-all duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+              class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-[#2ecc71]/20 drawer-action duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
               @click="handleSubmit"
             >
               <Loader v-if="isSubmitting" class="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -1327,49 +1327,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.35s ease-out;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* Up from the bottom on a phone, in from the right on a desktop. */
-.slide-right-enter-active {
-  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.slide-right-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-.slide-right-enter-from,
-.slide-right-leave-to {
-  transform: translateY(100%) translateZ(0);
-}
-
-@media (min-width: 768px) {
-  .slide-right-enter-from,
-  .slide-right-leave-to {
-    transform: translateX(100%) translateZ(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .slide-right-enter-active,
-  .slide-right-leave-active {
-    transition: opacity 0.2s ease;
-  }
-
-  .slide-right-enter-from,
-  .slide-right-leave-to {
-    transform: none;
-    opacity: 0;
-  }
-}
 
 /* Expand/collapse via grid rows, never max-height — §15. Padding lives on the
    innermost layer so it collapses with the content. */
@@ -1390,8 +1347,7 @@ onUnmounted(() => {
   .collapse-enter-active,
   .collapse-leave-active {
     transition: none;
-  }
-}
+  }}
 
 /* Thin scrollbar, per §10 */
 .overflow-y-auto::-webkit-scrollbar {
@@ -1405,5 +1361,4 @@ onUnmounted(() => {
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}
-</style>
+}</style>

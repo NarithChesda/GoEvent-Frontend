@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <!-- Backdrop -->
-    <Transition name="fade">
+    <Transition name="drawer-backdrop">
       <div
         v-if="modelValue"
         class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
@@ -10,7 +10,7 @@
     </Transition>
 
     <!-- Drawer Panel -->
-    <Transition name="slide-right">
+    <Transition name="drawer-panel">
       <div
         v-if="modelValue"
         class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[32.5rem] lg:w-[35rem] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
@@ -22,7 +22,7 @@
             <div class="flex items-center gap-2 min-w-0">
               <button
                 @click="closeDrawer"
-                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
+                class="p-1.5 hover:bg-white/20 rounded-lg drawer-close flex-shrink-0"
                 :title="t('management.media.mediaUploads.drawer.closeTitle')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
@@ -44,7 +44,7 @@
               :disabled="isUploading"
               :title="t('management.media.mediaUploads.drawer.deleteBtn')"
               :aria-label="t('management.media.mediaUploads.drawer.deleteBtn')"
-              class="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="p-1.5 hover:bg-white/20 rounded-lg drawer-close flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Trash2 class="w-5 h-5 text-white" aria-hidden="true" />
             </button>
@@ -171,7 +171,7 @@
                 type="button"
                 @click="triggerFileInput"
                 :disabled="isUploading"
-                class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 drawer-action shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Loader v-if="isUploading" class="w-4 h-4 animate-spin" aria-hidden="true" />
                 <Upload v-else class="w-4 h-4" aria-hidden="true" />
@@ -334,37 +334,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Fade transition for backdrop */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.35s ease-out;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* Slide from right on desktop, from bottom on mobile */
-.slide-right-enter-active {
-  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.slide-right-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-.slide-right-enter-from,
-.slide-right-leave-to {
-  transform: translateY(100%);
-}
-
-@media (min-width: 768px) {
-  .slide-right-enter-from,
-  .slide-right-leave-to {
-    transform: translateX(100%);
-  }
-}
 
 /* Custom scrollbar */
 .overflow-y-auto::-webkit-scrollbar {
@@ -382,5 +351,4 @@ onUnmounted(() => {
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}
-</style>
+}</style>

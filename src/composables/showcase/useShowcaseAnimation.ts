@@ -120,11 +120,19 @@ export function useShowcaseAnimation(config: ShowcaseAnimationConfig): ShowcaseA
     },
   }))
 
-  // Main content classes
+  // Cover content classes.
+  //
+  // Decoration mode only, by construction: the element this lands on is
+  // `v-if="isDecorationAnimation"` in CoverContentOverlay. It carried two
+  // door-mode keys — `door-content-hidden` / `door-content-reveal` — that could
+  // therefore never be truthy, and that no stylesheet defined either. They read
+  // as if door mode fades its main content in. It does not, and deliberately:
+  // the door flow hands off inside TransitionStageDoor's bloom, which is fully
+  // opaque at that frame, so the main content mounts behind cover and the
+  // parent's 0.8s leave transition is the only dissolve. Anything added here
+  // would animate under an opaque layer.
   const mainContentClasses = computed(() => ({
     'swipe-up-hidden': isDecorationAnimation.value && isContentHidden.value,
-    'door-content-hidden': isDoorAnimation.value && !isContentHidden.value,
-    'door-content-reveal': isDoorAnimation.value && isContentHidden.value,
   }))
 
   return {

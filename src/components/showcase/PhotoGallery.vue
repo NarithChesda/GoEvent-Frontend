@@ -106,6 +106,7 @@ import { onMounted, onUnmounted, ref, reactive, watch, nextTick } from 'vue'
 import type { EventPhoto } from '../../composables/useEventShowcase'
 import { useTemplateProcessor } from '../../composables/showcase/useTemplateProcessor'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
+import { registerScrollProgress, refreshScrollProgress } from '@/composables/showcase/useScrollProgress'
 
 // Asset protection (production-only)
 const { isProduction, protectionAttrs } = useAssetProtection()
@@ -169,93 +170,36 @@ const lazyImageObserver = ref<IntersectionObserver | null>(null)
 
 // Scroll-driven zoom animation state
 const photoRefs = ref<Map<number, HTMLElement>>(new Map())
-const scrollContainerEl = ref<HTMLElement | null>(null)
-const rafId = ref<number | null>(null)
 
-// Set photo element refs for scroll animation
+// Scroll-driven scale/fade is measured by the shared useScrollProgress
+// registry — one listener and one rAF for every registered element on the page,
+// with reads batched ahead of writes.
+const disposers = new Map<number, () => void>()
+
+// Set photo element refs for scroll animation. Registration happens here rather
+// than in a deferred setup pass so a photo that mounts late (or has its element
+// swapped on re-render) is tracked from its first frame instead of being missed
+// by a one-time snapshot.
 const setPhotoRef = (el: HTMLElement | null, index: number) => {
+  disposers.get(index)?.()
+  disposers.delete(index)
+
   if (el) {
     photoRefs.value.set(index, el)
     el.style.setProperty('--scroll-progress', '0')
+    disposers.set(index, registerScrollProgress(el))
   } else {
     photoRefs.value.delete(index)
   }
 }
 
-// Cubic ease-out for a smoother, more "modern" feel
-const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
-
-// Compute scale/opacity progress for every photo based on visible height
-const updatePhotoTransforms = () => {
-  rafId.value = null
-
-  // Resolve viewport bounds (custom scroll container if present, else window)
-  let viewportTop = 0
-  let viewportBottom = window.innerHeight
-  if (scrollContainerEl.value) {
-    const containerRect = scrollContainerEl.value.getBoundingClientRect()
-    viewportTop = containerRect.top
-    viewportBottom = containerRect.bottom
-  }
-  const viewportHeight = viewportBottom - viewportTop
-  if (viewportHeight <= 0) return
-
-  // Read all rects first, then write — avoids interleaved layout thrash
-  const updates: Array<[HTMLElement, string]> = []
-  photoRefs.value.forEach((el) => {
-    const rect = el.getBoundingClientRect()
-    if (rect.height === 0) return
-
-    const visibleTop = Math.max(rect.top, viewportTop)
-    const visibleBottom = Math.min(rect.bottom, viewportBottom)
-    const visibleHeight = Math.max(0, visibleBottom - visibleTop)
-
-    // Normalize against the smaller of photoHeight / viewportHeight so
-    // a photo taller than the viewport can still reach progress 1
-    const maxVisible = Math.min(rect.height, viewportHeight)
-    const rawProgress = maxVisible > 0 ? visibleHeight / maxVisible : 0
-    const progress = easeOutCubic(Math.min(1, Math.max(0, rawProgress)))
-
-    updates.push([el, progress.toFixed(3)])
-  })
-
-  for (const [el, value] of updates) {
-    el.style.setProperty('--scroll-progress', value)
-  }
-}
-
-const scheduleUpdate = () => {
-  if (rafId.value !== null) return
-  rafId.value = requestAnimationFrame(updatePhotoTransforms)
-}
-
 const setupScrollListener = () => {
-  scrollContainerEl.value = document.querySelector(
-    '.liquid-glass-card .custom-scrollbar',
-  ) as HTMLElement | null
-
-  if (scrollContainerEl.value) {
-    scrollContainerEl.value.addEventListener('scroll', scheduleUpdate, { passive: true })
-  } else {
-    window.addEventListener('scroll', scheduleUpdate, { passive: true })
-  }
-  window.addEventListener('resize', scheduleUpdate, { passive: true })
-
-  // Prime initial state for photos already in view on mount
-  scheduleUpdate()
+  refreshScrollProgress()
 }
 
 const teardownScrollListener = () => {
-  if (scrollContainerEl.value) {
-    scrollContainerEl.value.removeEventListener('scroll', scheduleUpdate)
-  }
-  window.removeEventListener('scroll', scheduleUpdate)
-  window.removeEventListener('resize', scheduleUpdate)
-  if (rafId.value !== null) {
-    cancelAnimationFrame(rafId.value)
-    rafId.value = null
-  }
-  scrollContainerEl.value = null
+  disposers.forEach((dispose) => dispose())
+  disposers.clear()
 }
 
 // Initialize loading states for all photos
@@ -416,11 +360,15 @@ onUnmounted(() => {
   cursor: pointer;
   overflow: hidden;
   border-radius: 0.5rem;
-  /* Scroll-driven zoom: starts small, fills 100% width when fully visible */
-  opacity: calc(0.2 + 0.8 * var(--scroll-progress));
-  transform: scale(calc(0.68 + 0.32 * var(--scroll-progress)));
+  /* Scroll-driven zoom, matched to AgendaItem. Kept to a narrow range: a
+     0.68→1 scale rasterizes the photo at a fractional size for most of its time
+     on screen, and the symmetric mapping shrank photos away at the top edge
+     while they were still being looked at.
+     No `will-change`: a 30-photo gallery would hold 30 permanent compositor
+     layers on a phone, above a backdrop-filtered card. */
+  opacity: calc(0.55 + 0.45 * var(--scroll-progress));
+  transform: scale(calc(0.94 + 0.06 * var(--scroll-progress)));
   transform-origin: center center;
-  will-change: transform, opacity;
 }
 
 .photo-item img {

@@ -22,7 +22,7 @@
           v-for="(word, index) in splitToWords(agendaHeaderText)"
           :key="`header-${currentLanguage}-${index}`"
           class="bounce-word"
-          :style="{ animationDelay: `${animationDelays.header + index * WORD_DELAY}s` }"
+          :style="{ animationDelay: `${animationDelays.header + wordCascadeDelay(index)}s` }"
         >{{ word }}{{ index < splitToWords(agendaHeaderText).length - 1 ? '\u00A0' : '' }}</span>
       </h2>
       <p
@@ -39,7 +39,7 @@
           v-for="(word, index) in splitToWords(agendaDescriptionText)"
           :key="`subdesc-${currentLanguage}-${index}`"
           class="bounce-word"
-          :style="{ animationDelay: `${animationDelays.subDescription + index * WORD_DELAY}s` }"
+          :style="{ animationDelay: `${animationDelays.subDescription + wordCascadeDelay(index)}s` }"
         >{{ word }}{{ index < splitToWords(agendaDescriptionText).length - 1 ? '\u00A0' : '' }}</span>
       </p>
     </div>
@@ -116,7 +116,7 @@
                 v-for="(word, index) in splitToWords(getFirstAgendaDescription(activeTab))"
                 :key="`desc-${currentLanguage}-${index}`"
                 class="bounce-word"
-                :style="{ animationDelay: `${animationDelays.description + index * WORD_DELAY}s` }"
+                :style="{ animationDelay: `${animationDelays.description + wordCascadeDelay(index)}s` }"
               >{{ word }}{{ index < splitToWords(getFirstAgendaDescription(activeTab)).length - 1 ? '\u00A0' : '' }}</span>
             </h4>
           </div>
@@ -148,6 +148,7 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch, nextTick, inject } from 'vue'
+import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
 import AgendaItem from '../AgendaItem.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -156,7 +157,7 @@ import {
   formatDateLocalized,
   type SupportedLanguage,
 } from '../../../utils/translations'
-import { splitToWords, ANIMATION_CONSTANTS } from '@/composables/showcase/useHostInfoUtils'
+import { splitToWords, ANIMATION_CONSTANTS, wordCascadeDelay } from '@/composables/showcase/useHostInfoUtils'
 
 interface AgendaItemIcon {
   id: number
@@ -210,7 +211,6 @@ const requestDateChange = () => {
   })
 }
 
-const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 const WORD_ANIMATION_DURATION = 0.2
 const BOUNCE_ANIMATION_DURATION = 0.5
@@ -225,12 +225,6 @@ const setupObserver = () => {
     observer.disconnect()
   }
 
-  // Use lower threshold for laptop views where the section may be taller
-  // and harder to meet the 30% visibility requirement
-  const isLaptopView = window.innerWidth >= 1024 && window.innerWidth < 1536
-  const threshold = isLaptopView ? 0.1 : 0.3
-  const rootMargin = isLaptopView ? '0px 0px -50px 0px' : '0px 0px -100px 0px'
-
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -239,10 +233,7 @@ const setupObserver = () => {
         }
       })
     },
-    {
-      threshold,
-      rootMargin,
-    }
+    showcaseRevealObserverInit(),
   )
 
   if (containerRef.value) {
@@ -259,7 +250,7 @@ const animationDelays = computed(() => {
     const startDelay = currentDelay
     const wordCount = splitToWords(text).length
     // Stagger to last word + that word's own animation duration
-    const duration = Math.max(0, wordCount - 1) * WORD_DELAY + WORD_ANIMATION_DURATION
+    const duration = wordCascadeDelay(Math.max(0, wordCount - 1)) + WORD_ANIMATION_DURATION
     currentDelay = startDelay + duration + ELEMENT_GAP
     return startDelay
   }
@@ -654,20 +645,17 @@ watch(
 }
 
 .animate-active .bounce-word {
-  animation: revealWord 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: revealWord 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes revealWord {
-  0% {
+  from {
     opacity: 0;
-    transform: scale(0.85) translateY(10px);
+    transform: translateY(6px);
   }
-  60% {
+  to {
     opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateY(0);
   }
 }
 

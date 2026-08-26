@@ -215,6 +215,27 @@ const { t: tApp } = useAppLanguage()
 const BLOOM_START_MS = 5700
 const COMPLETE_MS = 6200
 
+/**
+ * The same two beats for a guest who asked for reduced motion.
+ *
+ * Their CSS block at the bottom of this file resolves every reveal by roughly
+ * one second — exposure 0.8s, frame draw 0.4s after a 0.4s delay, cartouche
+ * wipe 0.4s after 0.6s — and then removes everything that was still moving
+ * afterwards: the dolly, the ken burns, the travelling sheen, the particles.
+ * On the full timeline that left them looking at a finished, completely static
+ * frame for four and a half seconds before anything else happened. Reduced
+ * motion is meant to be gentler, not longer. Hold just long enough to read the
+ * date, then hand off, keeping the same 500ms gap between the two beats — that
+ * gap is the bloom's cover, and the bloom is what the main content mounts
+ * behind.
+ */
+const REDUCED_BLOOM_START_MS = 1600
+const REDUCED_COMPLETE_MS = 2100
+
+const prefersReducedMotion = (): boolean =>
+  typeof window !== 'undefined' &&
+  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
+
 const isRevealing = ref(false)
 const isBlooming = ref(false)
 
@@ -354,13 +375,23 @@ const runRevealSequence = () => {
   // Preview freeze: stop at the fully-drawn frame and cartouche
   if (props.freezeAtPeak) return
 
-  bloomTimer = setTimeout(() => {
-    isBlooming.value = true
-  }, BLOOM_START_MS)
+  // Read per run, not once at module load: a guest can change the setting
+  // between visits, and the preview frame re-runs this on replay.
+  const reduced = prefersReducedMotion()
 
-  completeTimer = setTimeout(() => {
-    emit('transitionComplete')
-  }, COMPLETE_MS)
+  bloomTimer = setTimeout(
+    () => {
+      isBlooming.value = true
+    },
+    reduced ? REDUCED_BLOOM_START_MS : BLOOM_START_MS,
+  )
+
+  completeTimer = setTimeout(
+    () => {
+      emit('transitionComplete')
+    },
+    reduced ? REDUCED_COMPLETE_MS : COMPLETE_MS,
+  )
 }
 
 onMounted(runRevealSequence)
@@ -1051,8 +1082,15 @@ const replay = async () => {
   );
 }
 
+/* The wash has a job beyond looking like light: it has to be opaque by the
+   time `transitionComplete` fires 500ms in, because that is the frame the main
+   content mounts behind it. Material's standard ease-in-out spent its slow half
+   exactly where coverage was needed, reaching ~95% at the hand-off and leaving
+   a thin window for the mount to show through. A strong ease-out front-loads
+   the same 700ms and is ~99.6% covered at 500ms — and an entering element wants
+   ease-out regardless. */
 .blooming .bloom-wash {
-  animation: bloomWash 700ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: bloomWash 700ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 @keyframes bloomWash {

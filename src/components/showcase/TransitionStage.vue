@@ -50,7 +50,7 @@
           :alt="eventTitle"
           class="couple-photo"
           :style="photoStyle"
-          @load="onPhotoLoad"
+          @load="handlePhotoLoad"
         />
         <!-- Veil copy: identical image, pre-blurred and bright; fades away to
              "lift the veil". Its 4%-larger scale (which hides the blur's
@@ -69,9 +69,6 @@
           />
         </div>
       </div>
-
-      <!-- One-time soft light sweep across the photo after it sharpens -->
-      <div class="light-sweep" />
 
       <!-- Cinematic vignette hugging the edges -->
       <div class="photo-vignette" />
@@ -100,21 +97,6 @@
       </button>
     </div>
 
-    <!-- Floating bokeh particles in template accent color -->
-    <div
-      class="bokeh-field"
-      :class="{ 'show': isCouplePhotoVisible }"
-      :style="{ '--bokeh-accent': bokehAccentColor }"
-      aria-hidden="true"
-    >
-      <span
-        v-for="particle in bokehParticles"
-        :key="particle.id"
-        class="bokeh"
-        :style="particle.style"
-      />
-    </div>
-
     <!-- Footer scrim. Split out of .cloud-footer so the falling field can sit
          between the two: the mist is blur-effect colour at up to 94% alpha, so
          anything behind it is washed to that colour — which is exactly what
@@ -138,9 +120,9 @@
          both fields drew at full strength for the ~2.4s before the photo goes
          opaque and the ~1.2s while it dissolves, at visibly doubled density.
 
-         Layered above the photo, the bokeh and the scrim so the petals keep
-         their template colour, below the save-the-date copy — the same order
-         the cover uses. -->
+         Layered above the photo and the scrim so the petals keep their
+         template colour, below the save-the-date copy — the same order the
+         cover uses. -->
     <FallingEffect
       :key="fallingEffectKey"
       class="transition-petals"
@@ -155,19 +137,33 @@
     <!-- Save the date -->
     <div class="cloud-footer" :class="{ 'show': isContentVisible }">
       <div class="save-the-date-container">
-        <!-- Fine line drawing outward from center -->
-        <div class="reveal-line" :style="{ background: revealLineGradient }" />
+        <!-- Fine lines drawing outward from centre. Two of them: one alone
+             reads as an underline under a heading, which is not what this block
+             is — the pair frames the copy into a cartouche, the way the door
+             transition's two ornament rules bracket its lettering. -->
+        <div class="reveal-line reveal-line-top" :style="{ background: revealLineGradient }" />
 
-        <!-- "Save the Date" blooms in letter by letter -->
-        <p class="save-the-date-label" :style="{ color: saveDateTextColor }">
-          <span
-            v-for="(char, i) in saveTheDateChars"
-            :key="i"
-            class="std-char"
-            :style="{ animationDelay: `${i * 65}ms` }"
-            >{{ char === ' ' ? ' ' : char }}</span
-          >
-        </p>
+        <!-- "Save the Date" blooms in letter by letter, then one pass of light
+             crosses it. The gleam is a second copy of the same words stacked on
+             the first: the letters underneath animate per-character opacity and
+             blur, and `background-clip: text` on that same element would have
+             to paint the gradient for all of them at once, which kills the
+             bloom. Overlaying it keeps the two independent — the base copy is
+             untouched, and the gleam is purely additive. -->
+        <div class="label-stack">
+          <p class="save-the-date-label" :style="{ color: saveDateTextColor }">
+            <span
+              v-for="(char, i) in saveTheDateChars"
+              :key="i"
+              class="std-char"
+              :style="{ animationDelay: `${STD_CHAR_BASE_DELAY_MS + i * 65}ms` }"
+              >{{ char === ' ' ? ' ' : char }}</span
+            >
+          </p>
+          <p class="save-the-date-label save-the-date-gleam" aria-hidden="true">
+            {{ SAVE_THE_DATE_TEXT }}
+          </p>
+        </div>
 
         <p
           v-if="formattedDate"
@@ -179,13 +175,17 @@
         >
           {{ formattedDate }}
         </p>
+
+        <!-- Draws last, once the date has settled, so the frame closes around
+             finished copy rather than around copy still arriving. -->
+        <div class="reveal-line reveal-line-bottom" :style="{ background: revealLineGradient }" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick, inject } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, inject, watch } from 'vue'
 import { RotateCcw, Crop } from 'lucide-vue-next'
 import type { EventPhoto } from '@/types/showcase'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
@@ -228,6 +228,11 @@ const props = defineProps<Props>()
 const fallingEffectKey = computed(() => fallingEffectKeyOf(props.fallingEffect))
 
 const emit = defineEmits<{
+  /** Fired the moment the stage starts dissolving, so the parent can mount the
+   *  invitation behind it and let this fade become a cross-fade into it rather
+   *  than a fade back to the cover. Never fires under `freezeAtPeak`, which
+   *  returns before the fade-out timer is armed. */
+  dissolveStart: []
   transitionComplete: []
 }>()
 
@@ -242,6 +247,7 @@ const isStageFadingOut = ref(false)
 
 let fadeInTimer: ReturnType<typeof setTimeout> | null = null
 let couplePhotoTimer: ReturnType<typeof setTimeout> | null = null
+let photoLatestTimer: ReturnType<typeof setTimeout> | null = null
 let fadeOutTimer: ReturnType<typeof setTimeout> | null = null
 let completeTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -253,6 +259,13 @@ const featureImageUrl = computed(() =>
 
 // Organizer-chosen crop, laid out in pixels against the live stage size.
 const { photoContainerRef, photoStyle, onPhotoLoad } = useFeaturedPhotoGeometry(featuredPhoto)
+
+/** Whether the featured photo has actually decoded — see runRevealSequence. */
+const isPhotoDecoded = ref(false)
+const handlePhotoLoad = (event: globalThis.Event) => {
+  onPhotoLoad(event)
+  isPhotoDecoded.value = true
+}
 
 // --- Palette ---------------------------------------------------------------
 
@@ -285,6 +298,27 @@ const revealLineGradient = computed(
     `linear-gradient(to right, transparent 0%, ${flourishColor.value} 25%, ${flourishColor.value} 75%, transparent 100%)`,
 )
 
+/**
+ * The gleam's hotspot. Deliberately a lightened flourish colour rather than the
+ * near-white the door transition uses: that cartouche sits on a near-black photo
+ * scrim where white is the brightest thing available, but this copy sits on a
+ * pale vellum mist band, and a white hotspot there erases the letters into the
+ * band for the length of the pass. Lifting the copy's own hue keeps the words
+ * legible through the highlight, which is what separates a gleam from a gap.
+ */
+const mixToWhite = (hex6: string, amount: number) => {
+  const channel = (at: number) => {
+    const value = parseInt(hex6.slice(at, at + 2), 16)
+    return Math.round(value + (255 - value) * amount)
+      .toString(16)
+      .padStart(2, '0')
+  }
+  return `#${channel(1)}${channel(3)}${channel(5)}`
+}
+
+const gleamColor = computed(() => mixToWhite(flourishColor.value, 0.45))
+const gleamCoreColor = computed(() => mixToWhite(flourishColor.value, 0.68))
+
 const saveDateTextColor = flourishColor
 
 const dateTextColor = flourishColor
@@ -316,61 +350,42 @@ const mistGradient = computed(
 )
 
 /**
- * Legibility guard, not decoration. The copy is the template's primary colour
- * and the band is its `blur-effect` colour, and nothing stops a template from
- * pointing both slots at the same hue — so the halo always leans away from the
- * band: barely-there on the usual light/white band (where it just crisps the
- * script's hairlines), a soft light glow if a template makes the band dark.
+ * Legibility guard first, dimension second. The copy is the template's primary
+ * colour and the band is its `blur-effect` colour, and nothing stops a template
+ * from pointing both slots at the same hue — so the stack always leans away from
+ * the band: light band gets a dark cast, dark band gets a light glow.
+ *
+ * Two layers rather than one, which is what the door transition's cartouche does
+ * with its `drop-shadow(0 2px 0 …) drop-shadow(0 10px 26px …)` pair — a tight
+ * contact edge that separates the glyph from its ground, then a wider soft cast
+ * that puts air under it. One layer can only do one of those, which is why the
+ * script read flat next to the door's engraved lettering.
+ *
+ * The values are this stage's, not the door's. The door's are tuned for near-
+ * black photo scrim and would smother a pale vellum band; here the light branch
+ * leads with a white contact highlight (letterpress lift on a pale ground) and
+ * keeps the cast well under the door's weight.
  */
 const copyHalo = computed(() =>
   relativeLuminance(mistColor.value) > 0.6
-    ? '0 1px 2px rgba(0, 0, 0, 0.18)'
-    : '0 0 10px rgba(255, 255, 255, 0.45)',
+    ? '0 1px 0 rgba(255, 255, 255, 0.65), 0 2px 6px rgba(0, 0, 0, 0.16)'
+    : '0 0 10px rgba(255, 255, 255, 0.45), 0 2px 8px rgba(0, 0, 0, 0.35)',
 )
 
 const paletteStyle = computed<Record<string, string>>(() => ({
   '--ts-copy-halo': copyHalo.value,
+  '--ts-gleam': gleamColor.value,
+  '--ts-gleam-core': gleamCoreColor.value,
 }))
 
-const saveTheDateChars = computed(() => 'Save the Date'.split(''))
+/** Holds the script back until the flourish line above it has finished drawing;
+ *  the 65ms per-character stagger runs on top of this. Folded into the inline
+ *  delay because each character's own delay is inline, and inline beats the
+ *  stylesheet. */
+const STD_CHAR_BASE_DELAY_MS = 400
 
-// Drifting bokeh sparkles: randomized once per mount so each viewing feels organic
-interface BokehParticle {
-  id: number
-  style: Record<string, string>
-}
-
-const bokehParticles = ref<BokehParticle[]>([])
-
-// Only the randomized geometry is frozen at reveal time — the colour is left to
-// a CSS var set on the field so it stays live. The manage-page preview can swap
-// the template underneath an already-revealed stage (trying one on from the
-// Templates modal), and baking the accent into each particle at generate time
-// left the sparkles glowing in the previous template's colour until remount.
-const bokehAccentColor = computed(() => props.accentColor || props.primaryColor || '#ffffff')
-
-const generateBokeh = () => {
-  const particles: BokehParticle[] = []
-  const count = 14
-  for (let i = 0; i < count; i++) {
-    const size = 4 + Math.random() * 10
-    particles.push({
-      id: i,
-      style: {
-        '--bokeh-color': i % 3 === 0 ? '#ffffff' : 'var(--bokeh-accent)',
-        left: `${Math.random() * 100}%`,
-        bottom: `${-5 + Math.random() * 55}%`,
-        width: `${size}px`,
-        height: `${size}px`,
-        '--drift-x': `${-30 + Math.random() * 60}px`,
-        '--float-duration': `${7 + Math.random() * 7}s`,
-        animationDelay: `${Math.random() * 4}s`,
-        opacity: `${0.25 + Math.random() * 0.4}`,
-      },
-    })
-  }
-  bokehParticles.value = particles
-}
+const SAVE_THE_DATE_TEXT = 'Save the Date'
+const saveTheDateChars = computed(() => SAVE_THE_DATE_TEXT.split(''))
 
 const formattedDate = computed(() => {
   if (!props.eventStartDate) return null
@@ -387,32 +402,95 @@ const formattedDate = computed(() => {
   }
 })
 
+/**
+ * When the photograph starts rising, measured from the envelope tap — this
+ * stage mounts *on* the tap, so its clock and the cover's exit clock are one.
+ *
+ * The cover's ornaments run 100→1200ms (0.8s each, staggered 0.1/0.2/0.3/0.4)
+ * and, on the strong curve the whole chain shares, have visibly cleared by
+ * ~900ms. At the old 1000ms the photograph therefore began *after* the cover
+ * had gone: the ornaments left, the screen held on the bare backdrop for a
+ * beat, and only then did a photo start bleeding in — three events read as
+ * three. Starting at 400ms makes the photograph the fifth beat of that same
+ * stagger: it begins with the last ornament and takes the same 0.8s, so the
+ * two land together at 1200ms and the frame changes hands once. The music then
+ * cues at `coverExitDurationMs` (1400ms) onto a photograph that is already
+ * there, rather than onto one still a third of the way in.
+ */
+const PHOTO_REVEAL_AT_MS = 400
+
+/**
+ * Ceiling on waiting for the image to decode. A photograph that arrives late
+ * doesn't join the ornaments' exit — it pops in over the middle of its own
+ * fade, which is the one thing this beat exists to avoid. So the reveal waits
+ * for the decode, but never past here: a slow or broken image delays the
+ * handover rather than stalling the stage.
+ */
+const PHOTO_REVEAL_LATEST_MS = 1400
+
+let stopPhotoDecodeWatch: (() => void) | null = null
+
+const revealPhoto = () => {
+  stopPhotoDecodeWatch?.()
+  stopPhotoDecodeWatch = null
+  isCouplePhotoVisible.value = true
+}
+
 // Animation timeline (this stage backs the `decoration` animation type; door
 // templates get TransitionStageDoor.vue instead):
-//   0ms    - TransitionStage mounts (cover decorations animating out)
-//   1000ms - Photo starts: veil-blurred + bright, sharpening over ~2.4s while Ken Burns drifts
-//   1800ms - Footer scrim rises; line draws; "Save the Date" blooms letter by letter; date tracks in
-//   ~3400ms- Light sweep passes across the sharpened photo
-//   5800ms - Everything starts fading out
+//   0ms    - Envelope tapped. This stage mounts; the cover's copy leaves (0.7s),
+//            its gilding and creatures fade (0.7s), its ornaments slide out
+//            (staggered, last one clears at 1200ms)
+//   400ms  - Photograph rises *veiled*, opening outward with the parting frame
+//            (scale 0.94→1, 0.8s → 1200ms)
+//            — the fifth beat of the cover's own 0.8s stagger. The veil starts
+//            its single 2.2s hold-then-release here too. The vignette frames the
+//            photograph on the way in (0.1s behind, → 1600ms); the petal field
+//            hands off on the photograph's own ramp; Ken Burns starts its 9s drift
+//   1200ms - The photograph has the frame; last cover ornament clears. The veil
+//            has been dissolving since 400ms but holds ~85% to here, then
+//            releases and drifts upward off the photograph (→2600ms)
+//   1400ms - The view cues music here
+//   1800ms - Footer scrim rises
+//   1900ms - Flourish line draws outward from centre (lands ~2800ms)
+//   2200ms - "Save the Date" blooms letter by letter, 65ms apart (last letter ~3900ms)
+//   2600ms - Veil fully lifted
+//            on that same frame (clears ~4800ms)
+//   3250ms - Date tracks in (settles ~4450ms), then a ~1.3s hold to read it
+//   5800ms - Everything starts dissolving (1.2s) — and `dissolveStart` fires, so
+//            the invitation mounts behind and assembles under the dissolve. The
+//            photograph recedes as it goes (scale 1→0.985), converging with the
+//            invitation's ornaments flying inward, which land at 7000ms too
 //   7000ms - Fully faded out → emit transitionComplete
 const clearTimers = () => {
   if (fadeInTimer) clearTimeout(fadeInTimer)
   if (couplePhotoTimer) clearTimeout(couplePhotoTimer)
+  if (photoLatestTimer) clearTimeout(photoLatestTimer)
   if (fadeOutTimer) clearTimeout(fadeOutTimer)
   if (completeTimer) clearTimeout(completeTimer)
+  stopPhotoDecodeWatch?.()
+  stopPhotoDecodeWatch = null
   fadeInTimer = null
   couplePhotoTimer = null
+  photoLatestTimer = null
   fadeOutTimer = null
   completeTimer = null
 }
 
 const runRevealSequence = () => {
-  generateBokeh()
-
-  // Photo appears first, once the cover decorations have slid out
+  // The photograph rises through the tail of the cover's exit — but only once
+  // the image is actually on screen to rise. See the two constants above.
   couplePhotoTimer = setTimeout(() => {
-    isCouplePhotoVisible.value = true
-  }, 1000)
+    if (isPhotoDecoded.value || !featureImageUrl.value) {
+      revealPhoto()
+      return
+    }
+    stopPhotoDecodeWatch = watch(isPhotoDecoded, (decoded) => {
+      if (decoded) revealPhoto()
+    })
+  }, PHOTO_REVEAL_AT_MS)
+
+  photoLatestTimer = setTimeout(revealPhoto, PHOTO_REVEAL_LATEST_MS)
 
   // Footer scrim with text
   fadeInTimer = setTimeout(() => {
@@ -422,8 +500,11 @@ const runRevealSequence = () => {
   // Preview freeze: stop here — photo and text stay at full reveal
   if (props.freezeAtPeak) return
 
-  // Start fading out
+  // Start fading out — and in the same frame, tell the parent to bring the
+  // invitation up behind us. Its own entry (card 0.8s, ornaments staggered to
+  // 1.2s) then plays out underneath this 1.2s dissolve and lands with it.
   fadeOutTimer = setTimeout(() => {
+    emit('dissolveStart')
     isStageFadingOut.value = true
   }, 5800)
 
@@ -457,6 +538,24 @@ const replay = async () => {
   position: absolute;
   inset: 0;
   z-index: 35;
+  /* Proportion the copy to the *stage*, not the viewport: .showcase-container
+     is min(100vw, 56.25vh), so plain vw over-sizes chrome on a short desktop
+     window, where the stage is far narrower than the page. */
+  --ts-w: min(100vw, 56.25vh);
+  /* Strong ease-out for drawn chrome and copy; easeOutCubic for the full-frame
+     image layers, where the strong curve lands too abruptly to read as
+     atmosphere. Both replace built-in easings, which are too weak to shape a
+     multi-second reveal — and `ease-in-out`, which holds an entrance back at
+     exactly the moment the eye arrives. */
+  --ts-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ts-ease-atmos: cubic-bezier(0.33, 1, 0.68, 1);
+  /* Strong ease-in-out, for the veil alone. Both curves above decelerate to a
+     stop, which is right for something arriving — but the veil has to stay put
+     while the photograph arrives and only then release, and chaining a second
+     decelerating ramp behind the first to get that put a visible stop in the
+     middle of the reveal. One transition on a hold-then-release curve does the
+     same job as one motion. */
+  --ts-ease-veil: cubic-bezier(0.77, 0, 0.175, 1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -471,17 +570,67 @@ const replay = async () => {
   position: absolute;
   inset: 0;
   opacity: 0;
-  transition: opacity 1.4s ease-out;
+  /* THE ARC. Across the whole showcase the frame opens outward and then closes
+     inward, and the photograph is the middle of that one gesture — so its scale
+     carries the direction, not just its opacity.
+
+     In: 0.94 → 1, expanding. The cover's four ornaments leave *outward* — left
+     and right to ±100%, top and bottom to ∓100% — which at the frame level is
+     one outward gesture, so the photograph blooming open into the space they
+     vacate continues their direction instead of working against it. (It used to
+     contract 1.03 → 1, which is a fine "camera settling" on its own and exactly
+     backwards here: the frame opened while the photograph closed.)
+
+     Out: 1 → 0.985, contracting — see .stage-fade-out below.
+
+     0.8s from 400ms makes the photograph the fifth beat of the cover's own
+     stagger: the ornaments start at 100/200/300/400ms and each takes 0.8s, so
+     this starts with the last of them and lands with it at 1200ms. Same clock,
+     same duration; only the curve differs, and deliberately — the ornaments
+     leave on the chain's strong curve because they are objects being pulled
+     off, the photograph arrives on the gentler atmospheric one because it is
+     light filling a frame. Matching the curve too would make it slam.
+
+     Every scale here composes with .kenburns-frame's own drift (1.14 → 1.02)
+     rather than replacing it, so the composite — not either value alone — is
+     what has to stay above 1 or an edge shows inside the frame. Going in that
+     is comfortable (0.94 × 1.14 = 1.07). Going out it is the tight end, and
+     the budget is worth writing down, because it is why the exit is 1.5% and
+     not more:
+
+       Ken Burns is at ~1.039 when the dissolve starts and ~1.030 when it ends
+       (it is 6.6s into a 9s drift by then), i.e. ~1.5% of overhang a side. It
+       also translates the photo up 0.6% by that point, which is spent entirely
+       out of the *bottom* overhang. A contraction costs half its value per
+       side, so 1.5% leaves roughly 1.5 − 0.75 − 0.6 ≈ 0.15% at the bottom on
+       the final frame — a pixel or so, and that frame is at opacity 0, since
+       the scale and the fade share a duration and a curve.
+
+     A translate would have been the obvious way to carry the same recede and
+     is twice as expensive here: it spends its whole value on one edge. */
+  transform: scale(0.94);
+  transition: opacity 0.8s var(--ts-ease-atmos), transform 0.8s var(--ts-ease-atmos);
   z-index: 1;
 }
 
 .couple-photo-container.show {
   opacity: 1;
+  transform: scale(1);
 }
 
+/* Out: the photograph recedes as it dissolves, so the motion hands off instead
+   of simply stopping. Underneath it the invitation is already assembling — its
+   four ornaments fly *inward* from the edges (0.1/0.2/0.3/0.4 staggered, 0.8s
+   each, so 1.2s in total, matched to this dissolve) and its card rises. A
+   photograph pulling back with them makes everything on screen converge on the
+   centre as one move; a photograph that only faded left the incoming frame to
+   close over a still image. This is the exact mirror of the arrival above, and
+   the two together are what make the cover's exit and the invitation's entrance
+   read as one continuous opening and closing. */
 .stage-fade-out .couple-photo-container {
   opacity: 0;
-  transition: opacity 1.2s ease-out;
+  transform: scale(0.985);
+  transition: opacity 1.2s var(--ts-ease-atmos), transform 1.2s var(--ts-ease-atmos);
 }
 
 /* Ken Burns drift runs on a wrapper so it composes with the container's opacity fade */
@@ -526,41 +675,70 @@ const replay = async () => {
   min-height: 100%;
 }
 
+/* The veil is drawn up and away rather than dissolving in place — the same
+   upward direction the cover's copy leaves on, so the whole sequence reads as
+   one gesture: everything lifts off, the photograph stays. Transform only, on
+   the same 2.2s ramp as the veil's opacity, so the two are one move.
+
+   The oversize is 10%, not the 4% it needs merely to hide the blur's
+   translucent edge bleed: the lift spends 2.5% of the bottom overhang, and what
+   is left (2.5% ≈ 21px on a 844px frame) still has to cover a 16px blur. It
+   scales about the viewport centre for the reason the original comment gives —
+   on the img it would scale about the cropped image's off-screen centre. */
 .veil-frame {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  transform: scale(1.04); /* hide the blur's translucent edge bleed */
+  transform: scale(1.1);
+  transition: transform 2.2s var(--ts-ease-veil);
+}
+
+.show .veil-frame {
+  transform: scale(1.1) translateY(-2.5%);
 }
 
 /* Veil copy: pre-blurred and luminous, stacked on the sharp photo.
    Fading its opacity (cheap) reads as the photo sharpening (a blur()
    transition on a fullscreen image would be far more expensive).
 
-   Masked so it lies thin over the upper frame and full over the lower. The
-   hosts' faces sit high in a portrait crop, and an even veil spent its whole
-   fade blurring exactly the part of the photo people are trying to read — the
-   faces only resolved once the entire veil had gone. Weighted this way they
-   are legible from the first frame and the reveal still runs, reading as mist
-   lifting off the bottom of the frame rather than a sheet coming off the lot.
-   The fade is shorter for the same reason: it used to finish at 3400ms against
-   a stage that starts dissolving at 5800ms, leaving the photo truly sharp for
-   2.4s of its 7s life. */
+   THE VEIL IS THE BLENDER, so it has to be near-solid while the photograph is
+   arriving. The mask used to open at alpha 0.25, which left the top quarter of
+   the frame 75% *sharp* during the crossfade — a sharp couple photo dissolving
+   over a sharp cover, at the top of the frame, which is exactly where the cover
+   still has its title and its top ornament sliding out. That double exposure is
+   what stopped the reveal blending with the rest of the stage. It now opens at
+   0.72: nearly even, so what crosses over the departing cover is soft over
+   sharp everywhere, and only then resolves.
+
+   Still bottom-weighted, for the reason it always was — the hosts' faces sit
+   high in a portrait crop, and an even veil spends its whole fade blurring the
+   one thing people are trying to read, so the top clears first. 0.72 → 1.0 is
+   enough tilt to do that now that the lift runs on a front-loaded curve; the
+   old 0.25 was tuned against an `ease-in-out` that no longer applies.
+
+   It runs as ONE ramp across the whole reveal (400→2600ms), shaped rather than
+   delayed. A 0.7s delay bought the same hold, but at the cost of two ramps back
+   to back — the photograph's arrival decelerating to a full stop at ~900ms, a
+   beat of stillness, then the veil starting up. That stop is what read as a
+   two-part reveal. On --ts-ease-veil the veil is still ~98% at 800ms and ~85%
+   at 1200ms, so it holds through the arrival exactly as the delay did, then
+   releases through 1300→2600ms without the join. Nothing in the reveal ever
+   comes to rest until the whole thing is over. */
 .couple-photo-veil {
   filter: blur(16px) brightness(1.18) saturate(0.92);
   opacity: 1;
-  transition: opacity 1.8s ease-in-out;
+  transition: opacity 2.2s var(--ts-ease-veil);
   mask-image: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.25) 0%,
-    rgba(0, 0, 0, 0.6) 42%,
-    #000 78%
+    rgba(0, 0, 0, 0.72) 0%,
+    rgba(0, 0, 0, 0.88) 45%,
+    #000 80%
   );
   -webkit-mask-image: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.25) 0%,
-    rgba(0, 0, 0, 0.6) 42%,
-    #000 78%
+    rgba(0, 0, 0, 0.72) 0%,
+    rgba(0, 0, 0, 0.88) 45%,
+    #000 80%
   );
 }
 
@@ -568,37 +746,6 @@ const replay = async () => {
   opacity: 0;
 }
 
-/* One-time soft sheen sweeping diagonally across after the veil lifts */
-.light-sweep {
-  position: absolute;
-  inset: -20%;
-  z-index: 2;
-  background: linear-gradient(
-    105deg,
-    transparent 40%,
-    rgba(255, 255, 255, 0.18) 48%,
-    rgba(255, 255, 255, 0.32) 50%,
-    rgba(255, 255, 255, 0.18) 52%,
-    transparent 60%
-  );
-  transform: translateX(-100%);
-  opacity: 0;
-}
-
-.show .light-sweep {
-  animation: lightSweep 2.6s ease-in-out 2.4s 1 forwards;
-}
-
-@keyframes lightSweep {
-  0% {
-    transform: translateX(-100%);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-}
 
 /* Cinematic vignette: draws the eye to the couple */
 .photo-vignette {
@@ -612,7 +759,15 @@ const replay = async () => {
     rgba(0, 0, 0, 0.32) 100%
   );
   opacity: 0;
-  transition: opacity 2.2s ease-in-out 0.8s;
+  /* Arrives *with* the photograph (0.1s behind it, over 1.1s), not 2.2s after.
+     This is most of what made the reveal read as a square: a full-bleed
+     rectangle crossfading in with bright hard corners is a slab, and every
+     other element in this stage — the veil, the mist band — is soft and
+     graded. Landing the vignette on the arrival means the photograph is
+     edge-softened from the first frame it is visible, so it reads as a framed
+     photograph resolving rather than a plate laid over the cover. Its opacity
+     also multiplies with the container's own ramp, so it comes up gently. */
+  transition: opacity 1.1s var(--ts-ease-atmos) 0.1s;
 }
 
 .show .photo-vignette {
@@ -706,45 +861,6 @@ const replay = async () => {
   background: #ffffff;
 }
 
-/* ---------- Bokeh particles ---------- */
-
-.bokeh-field {
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  opacity: 0;
-  transition: opacity 2s ease-in-out 1s;
-}
-
-.bokeh-field.show {
-  opacity: 1;
-}
-
-.stage-fade-out .bokeh-field {
-  opacity: 0;
-  transition: opacity 1s ease-out;
-}
-
-.bokeh {
-  position: absolute;
-  border-radius: 50%;
-  background: var(--bokeh-color);
-  filter: blur(2px);
-  box-shadow: 0 0 8px var(--bokeh-color);
-  animation: bokehFloat var(--float-duration) ease-in-out infinite;
-}
-
-@keyframes bokehFloat {
-  0% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(calc(var(--drift-x) * 0.6), -45vh);
-  }
-  100% {
-    transform: translate(var(--drift-x), -90vh);
-  }
-}
 
 /* Handoff ramp from the shared CoverStage field — deliberately the same
    durations and easings as .couple-photo-container, since that photo is what
@@ -752,7 +868,7 @@ const replay = async () => {
    component's root inherits the parent's scope id. */
 .transition-petals {
   opacity: 0;
-  transition: opacity 1.4s ease-out;
+  transition: opacity 0.8s var(--ts-ease-atmos);
 }
 
 .transition-petals.show {
@@ -761,7 +877,7 @@ const replay = async () => {
 
 .stage-fade-out .transition-petals {
   opacity: 0;
-  transition: opacity 1.2s ease-out;
+  transition: opacity 1.2s var(--ts-ease-atmos);
 }
 
 /* ---------- Footer scrim + text ---------- */
@@ -777,7 +893,7 @@ const replay = async () => {
   height: 38vh;
   opacity: 0;
   transform: translateY(6px);
-  transition: opacity 1.6s ease-in-out, transform 1.6s ease-in-out;
+  transition: opacity 1.6s var(--ts-ease-atmos), transform 1.6s var(--ts-ease-atmos);
   will-change: opacity, transform;
 }
 
@@ -804,7 +920,7 @@ const replay = async () => {
 .stage-fade-out .cloud-footer {
   opacity: 0;
   transform: translateY(6px);
-  transition: opacity 1.2s ease-in-out, transform 1.2s ease-in-out;
+  transition: opacity 1.2s var(--ts-ease-atmos), transform 1.2s var(--ts-ease-atmos);
 }
 
 /* Lighter frosted band than before so the photo remains present behind the text */
@@ -837,19 +953,36 @@ const replay = async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: calc(var(--ts-w) * 0.022);
+  padding-inline: calc(var(--ts-w) * 0.05);
 }
 
-/* Fine line that draws outward from the center */
+/* Fine lines that draw outward from the centre. The width was a flat 140px
+   while everything around it — the date's size, the container's padding — was
+   already a ratio of the stage. At 0.36 it measures the same 140px on the
+   390px phone it was tuned against, and now holds that proportion everywhere
+   else instead of growing stubby on a wide stage. */
 .reveal-line {
-  width: 140px;
+  width: calc(var(--ts-w) * 0.36);
   height: 1px;
   transform: scaleX(0);
   opacity: 0;
 }
 
-.show .reveal-line {
-  animation: lineDraw 1.1s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
+/* The flourish leads the script instead of trailing it. It used to start 200ms
+   *after* the letters — which begin the instant .show lands — and was still
+   drawing when the name was half written, so the line read as a late underline
+   rather than as a frame being set. Now it lands first (a strong ease-out is
+   ~97% done by 0.6s) and the letters bloom into a finished frame. */
+.show .reveal-line-top {
+  animation: lineDraw 0.9s var(--ts-ease-out) 0.1s forwards;
+}
+
+/* 2.5s: the date finishes its tracking settle at 2.65s, and the stage begins
+   dissolving at 4.0s from .show. Drawing here closes the frame just as the copy
+   stops moving and still leaves ~600ms of settled, finished block to read. */
+.show .reveal-line-bottom {
+  animation: lineDraw 0.9s var(--ts-ease-out) 2.5s forwards;
 }
 
 @keyframes lineDraw {
@@ -863,10 +996,17 @@ const replay = async () => {
   }
 }
 
-/* Elegant script, revealed letter by letter */
+/* Elegant script, revealed letter by letter.
+   The size was a flat 2.6rem while .event-date directly below it was already
+   clamped against --ts-w — so the two drifted apart on any stage that wasn't
+   the ~390px phone they were eyeballed on, the script staying put while the
+   date grew or shrank under it. 0.107 reproduces 2.6rem at 390px exactly, so
+   the common case is untouched; the clamps stop a very narrow stage from
+   overflowing the nowrap line and a very wide one from turning the script into
+   a banner. */
 .save-the-date-label {
   font-family: 'Great Vibes', cursive;
-  font-size: 2.6rem;
+  font-size: clamp(1.9rem, calc(var(--ts-w) * 0.107), 3.1rem);
   line-height: 1.25;
   margin: 0;
   font-weight: 400;
@@ -874,6 +1014,69 @@ const replay = async () => {
   text-shadow: var(--ts-copy-halo);
 }
 
+/* Sizes itself to the base copy, so the gleam laid over it with inset: 0
+   lands on exactly the same glyphs. */
+.label-stack {
+  position: relative;
+}
+
+/* The pass of light. Same geometry as the door transition's goldSheen — a
+   260%-wide gradient travelling 150% -> -60% — so the two stages' lettering
+   catches light the same way. The band is transparent either side of the
+   hotspot, so everywhere but the highlight the copy underneath shows through
+   completely untouched.
+
+   No text-shadow here: the fill is transparent, and the halo the base copy
+   carries would otherwise paint over the inside of the glyphs rather than
+   behind them. */
+.save-the-date-gleam {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  text-shadow: none;
+  background-image: linear-gradient(
+    100deg,
+    transparent 38%,
+    var(--ts-gleam) 47%,
+    var(--ts-gleam-core) 50%,
+    var(--ts-gleam) 53%,
+    transparent 62%
+  );
+  background-size: 260% 100%;
+  background-position: 150% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  opacity: 0;
+}
+
+/* 2.2s: the last letter finishes blooming at ~2.08s, so the light crosses
+   finished words rather than words still arriving. It clears at 3.7s, ahead
+   of the 4.0s dissolve. Linear because a pass of light travels at a constant
+   speed — an eased sweep hesitates in the middle, which is the part being
+   watched. The opacity envelope keeps the band from popping on at full
+   strength at one edge and cutting off at the other. */
+.show .save-the-date-gleam {
+  animation: labelGleam 1.5s linear 2.2s forwards;
+}
+
+@keyframes labelGleam {
+  0% {
+    background-position: 150% 0;
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    background-position: -60% 0;
+    opacity: 0;
+  }
+}
 .std-char {
   display: inline-block;
   opacity: 0;
@@ -894,29 +1097,40 @@ const replay = async () => {
   }
 }
 
-/* Date tracks in: letter-spacing settles as it fades up */
+/* Sized against the stage, and never allowed to wrap. At a fixed 0.85rem the
+   widest en-US long date ("Wednesday, September 30, 2026") measures ~400px at
+   its opening tracking — wider than a 390px phone. So it wrapped to two lines,
+   then snapped back to one partway through the settle, jerking "Save the Date"
+   down and back up as the tracking closed. */
 .event-date {
-  font-size: 0.85rem;
+  font-size: clamp(0.62rem, calc(var(--ts-w) * 0.029), 0.85rem);
+  white-space: nowrap;
   letter-spacing: 0.18em;
+  /* letter-spacing also adds a trailing space after the *last* glyph, so a
+     centred line sits half a space left of true centre — by a changing amount
+     while the tracking settles, which makes the date creep sideways as it
+     arrives. The matching negative margin cancels it at every frame. */
+  margin: 0 -0.18em 0 0;
   text-transform: uppercase;
-  margin: 0;
   font-weight: 500;
   opacity: 0;
   text-shadow: var(--ts-copy-halo);
 }
 
 .show .event-date {
-  animation: dateTrackIn 1.4s ease-out 1.2s forwards;
+  animation: dateTrackIn 1.2s var(--ts-ease-out) 1.45s forwards;
 }
 
 @keyframes dateTrackIn {
   from {
     opacity: 0;
-    letter-spacing: 0.42em;
+    letter-spacing: 0.36em;
+    margin-right: -0.36em;
   }
   to {
     opacity: 0.8;
     letter-spacing: 0.18em;
+    margin-right: -0.18em;
   }
 }
 
@@ -928,16 +1142,25 @@ const replay = async () => {
     transform: scale(1.02);
   }
 
+  /* The photograph neither opens nor recedes, and the veil dissolves in place
+     instead of being drawn up. Everything still fades, which is the reveal. */
+  .couple-photo-container,
+  .couple-photo-container.show,
+  .stage-fade-out .couple-photo-container {
+    transform: none;
+  }
+
+  .veil-frame,
+  .show .veil-frame {
+    transform: scale(1.1);
+  }
+
   .couple-photo-veil {
-    transition-duration: 0.8s;
+    transition: opacity 0.8s ease;
   }
 
-  .show .light-sweep,
-  .bokeh {
-    animation: none;
-  }
-
-  .bokeh-field {
+  /* Pure decoration, and pure movement — nothing is lost by removing it. */
+  .save-the-date-gleam {
     display: none;
   }
 
@@ -951,13 +1174,37 @@ const replay = async () => {
     animation-delay: 0s !important;
   }
 
-  .show .reveal-line {
+  .show .reveal-line-top,
+  .show .reveal-line-bottom {
     animation-duration: 0.5s;
   }
 
+  /* Still last, but it no longer waits out a tracking settle that was removed
+     from this branch — the date fades in place here. */
+  .show .reveal-line-bottom {
+    animation-delay: 0.9s;
+  }
+
+  /* No lift on the band and no tracking settle on the date — both are position
+     changes. Everything still fades, which is what carries the sequence. */
+  .cloud-scrim,
+  .cloud-footer,
+  .stage-fade-out .cloud-scrim,
+  .stage-fade-out .cloud-footer {
+    transform: none;
+  }
+
   .show .event-date {
-    animation-duration: 0.6s;
-    animation-delay: 0.3s;
+    animation: dateFadeIn 0.6s ease 0.3s forwards;
+  }
+}
+
+/* Reduced-motion stand-in for dateTrackIn: the same settled opacity, no
+   tracking travel. Declared outside the media block so the scoped-style
+   keyframe rename never has to reach into an at-rule. */
+@keyframes dateFadeIn {
+  to {
+    opacity: 0.8;
   }
 }
 </style>

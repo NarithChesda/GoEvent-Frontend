@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <!-- Backdrop -->
-    <Transition name="fade">
+    <Transition name="drawer-backdrop">
       <div
         v-if="modelValue"
         class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
@@ -10,7 +10,7 @@
     </Transition>
 
     <!-- Drawer Panel -->
-    <Transition name="slide-right">
+    <Transition name="drawer-panel">
       <div
         v-if="modelValue"
         class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[32.5rem] lg:w-[35rem] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
@@ -22,7 +22,7 @@
             <div class="flex items-center gap-2 min-w-0">
               <button
                 @click="closeDrawer"
-                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
+                class="p-1.5 hover:bg-white/20 rounded-lg drawer-close flex-shrink-0"
                 :title="t('management.editEventTextDrawer.header.closeTitle')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
@@ -158,12 +158,12 @@
         </div>
 
         <!-- Footer with Action Buttons -->
-        <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
+        <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)]">
           <div class="flex items-center justify-between">
             <button
               @click="saveChanges"
               :disabled="loading || !hasChanges"
-              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 drawer-action shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Loader v-if="loading" class="w-4 h-4 animate-spin" />
               <Save v-else class="w-4 h-4" />
@@ -181,18 +181,6 @@
         </div>
 
         <!-- Success/Error Toast -->
-        <Transition name="slide-up">
-          <div v-if="message" class="absolute bottom-16 left-4 right-4 z-10">
-            <div
-              :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-              class="text-white px-3 py-2.5 rounded-lg shadow-lg flex items-center"
-            >
-              <CheckCircle v-if="message.type === 'success'" class="w-4 h-4 mr-2 flex-shrink-0" />
-              <AlertCircle v-else class="w-4 h-4 mr-2 flex-shrink-0" />
-              <span class="text-xs">{{ message.text }}</span>
-            </div>
-          </div>
-        </Transition>
       </div>
     </Transition>
   </Teleport>
@@ -202,8 +190,6 @@
 import { ref, reactive, computed, watch, onUnmounted } from 'vue'
 import {
   ArrowRight,
-  AlertCircle,
-  CheckCircle,
   Loader,
   Save,
   Copy,
@@ -215,6 +201,7 @@ import {
 import { eventTextsService, type EventText, type ApiResponse } from '@/services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { EVENT_TEXT_SLOTS } from '@/utils/eventTextSlots'
+import { useToast } from '@/composables/useToast'
 
 const { t } = useAppLanguage()
 
@@ -249,7 +236,6 @@ interface TextEntry {
 
 // State
 const loading = ref(false)
-const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const entries = reactive<Record<string, TextEntry>>({})
 
 // Computed
@@ -347,13 +333,10 @@ const initializeEntries = () => {
 }
 
 // Show toast message
-let messageTimer: ReturnType<typeof setTimeout> | undefined
+const { showToast } = useToast()
+
 const showMessage = (type: 'success' | 'error', text: string) => {
-  message.value = { type, text }
-  clearTimeout(messageTimer)
-  messageTimer = setTimeout(() => {
-    message.value = null
-  }, 4000)
+  showToast(type, text)
 }
 
 const closeDrawer = () => {
@@ -443,7 +426,6 @@ watch(
   (isOpen) => {
     if (isOpen) {
       initializeEntries()
-      message.value = null
 
       const scrollbarWidth = getScrollbarWidth()
       document.body.style.overflow = 'hidden'
@@ -463,58 +445,10 @@ onUnmounted(() => {
   document.body.style.overflow = ''
   document.body.style.paddingRight = ''
   document.removeEventListener('keydown', handleKeydown)
-  clearTimeout(messageTimer)
 })
 </script>
 
 <style scoped>
-/* Fade transition for backdrop */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.35s ease-out;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* Slide from right on desktop, from bottom on mobile */
-.slide-right-enter-active {
-  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.slide-right-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-.slide-right-enter-from,
-.slide-right-leave-to {
-  transform: translateY(100%);
-}
-
-@media (min-width: 768px) {
-  .slide-right-enter-from,
-  .slide-right-leave-to {
-    transform: translateX(100%);
-  }
-}
-
-/* Slide up transition for toast */
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
 
 /* Custom scrollbar */
 .overflow-y-auto::-webkit-scrollbar {
@@ -532,5 +466,4 @@ onUnmounted(() => {
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}
-</style>
+}</style>

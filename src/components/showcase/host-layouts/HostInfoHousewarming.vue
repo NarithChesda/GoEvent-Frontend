@@ -37,7 +37,7 @@
               v-for="(word, index) in splitToWords(leftHostTitle)"
               :key="`title-left-${currentLanguage}-${index}`"
               class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.titleLeft + index * WORD_DELAY}s` }"
+              :style="{ animationDelay: `${animationDelays.titleLeft + wordCascadeDelay(index)}s` }"
             >{{ word }}{{ index < splitToWords(leftHostTitle).length - 1 ? '\u00A0' : '' }}</span>
           </p>
         </div>
@@ -52,7 +52,7 @@
               v-for="(word, index) in splitToWords(rightHostTitle)"
               :key="`title-right-${currentLanguage}-${index}`"
               class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.titleRight + index * WORD_DELAY}s` }"
+              :style="{ animationDelay: `${animationDelays.titleRight + wordCascadeDelay(index)}s` }"
             >{{ word }}{{ index < splitToWords(rightHostTitle).length - 1 ? '\u00A0' : '' }}</span>
           </p>
         </div>
@@ -69,7 +69,7 @@
               v-for="(word, index) in splitToWords(hosts[0].name)"
               :key="`name-left-${currentLanguage}-${index}`"
               class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.nameLeft + index * WORD_DELAY}s` }"
+              :style="{ animationDelay: `${animationDelays.nameLeft + wordCascadeDelay(index)}s` }"
             >{{ word }}{{ index < splitToWords(hosts[0].name).length - 1 ? '\u00A0' : '' }}</span>
           </h3>
         </div>
@@ -84,7 +84,7 @@
               v-for="(word, index) in splitToWords(hosts[1]?.name)"
               :key="`name-right-${currentLanguage}-${index}`"
               class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.nameRight + index * WORD_DELAY}s` }"
+              :style="{ animationDelay: `${animationDelays.nameRight + wordCascadeDelay(index)}s` }"
             >{{ word }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? '\u00A0' : '' }}</span>
           </h3>
         </div>
@@ -130,12 +130,12 @@ import {
   getKhmerClass,
   splitToWords,
   ANIMATION_CONSTANTS,
+  wordCascadeDelay,
   getTextAnimationDuration,
 } from './shared'
 
 const props = defineProps<HostInfoProps>()
 
-const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 
 // Computed visibility flags

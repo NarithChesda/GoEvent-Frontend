@@ -117,8 +117,14 @@
             <!-- Glass Background Effects -->
             <div v-if="showLiquidGlass" class="glass-background"></div>
 
-            <!-- Content Container with Scroll -->
-            <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
+            <!-- Content Container with Scroll.
+                 `overscroll-contain` matters here: this scroller is nested
+                 inside another overflow-y-auto (the card centering wrapper),
+                 which is itself scrollable by the container's vertical padding.
+                 Without it, reaching the end of the invitation chains scroll to
+                 the outer container and the whole glass card slides — a visible
+                 break in the middle of the primary gesture. -->
+            <div class="relative z-10 h-full overflow-y-auto overscroll-contain custom-scrollbar">
               <div :class="contentPaddingClasses">
                 <!-- Host Information (now includes welcome header) -->
                 <div ref="hostInfoRef" class="animate-reveal">
@@ -940,7 +946,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, nextTick, inject } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch, nextTick, inject } from 'vue'
 import type {
   EventData,
   EventText,
@@ -951,7 +957,7 @@ import type {
 import type { EventComment, DressCode } from '../../types/showcase'
 import type { EventPaymentMethod } from '../../services/api'
 import type { } from '../../utils/translations'
-import { useScrollDrivenAnimations } from '../../composables/useAdvancedAnimations'
+import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
 import { useCoverStageLayout } from '../../composables/showcase/useCoverStageLayout'
@@ -1186,32 +1192,34 @@ onMounted(async () => {
     videoResourceManager.value = injectedVideoResourceManager
   }
 
-  // The liquid-glass-card is always 85dvh with an inner overflow-y-auto scroll container.
-  // All scrolling happens inside that inner container on every screen size, so we always
-  // use it as the IntersectionObserver root. Using root:null (viewport) would cause every
-  // section to appear intersecting at mount and fire all at once instead of on scroll.
-  const scrollContainer = document.querySelector(
-    '.liquid-glass-card .custom-scrollbar',
-  ) as Element | null
-
-  const observerConfig: IntersectionObserverInit = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -60px 0px',
-    root: scrollContainer,
-  }
+  // Shared config — see showcaseRevealObserverInit(). All scrolling happens
+  // inside the liquid-glass card's own container, so that is the observer root
+  // on every screen size; root:null would report every section as intersecting
+  // at mount and fire them all at once instead of on scroll.
+  const observerConfig = showcaseRevealObserverInit()
 
   // Create the IntersectionObserver directly
   revealObserver.value = new IntersectionObserver(
     (entries) => {
-      const intersecting = entries.filter((entry) => entry.isIntersecting)
+      // IntersectionObserver does NOT guarantee entries in document order, so a
+      // batch has to be sorted before it can be staggered — otherwise the cascade
+      // can run bottom-to-top on first paint.
+      const intersecting = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) =>
+          a.target.compareDocumentPosition(b.target) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1,
+        )
+
       intersecting.forEach((entry, i) => {
         const el = entry.target as HTMLElement
         // Stagger when multiple sections fire in the same batch (initial load).
         // Single scroll-triggered reveals get no delay so they feel instant.
-        const staggerDelay = intersecting.length > 1 ? i * 150 : 0
-        setTimeout(() => {
-          el.classList.add('is-visible')
-        }, staggerDelay)
+        // transition-delay rather than setTimeout: it rides the compositor's
+        // clock, retargets if the reveal is re-triggered, and can't drift or
+        // fire late under main-thread load the way a timer does.
+        const staggerDelay = intersecting.length > 1 ? i * REVEAL_STAGGER_MS : 0
+        revealSection(el, staggerDelay)
+
         if (revealObserver.value) {
           revealObserver.value.unobserve(entry.target)
           observedElements.value.delete(entry.target)
@@ -1223,12 +1231,6 @@ onMounted(async () => {
 
   // Initialize animations with the properly configured observer
   initializeRevealAnimations()
-
-  // Only initialize scroll animations if not in basic mode
-  const isBasicMode = !props.templateAssets?.standard_background_video
-  if (!isBasicMode) {
-    initializeScrollAnimations()
-  }
 
   // Emit that main content has been viewed
   emit('mainContentViewed')
@@ -1261,8 +1263,10 @@ const emit = defineEmits<{
   videoStateChange: [isPlaying: boolean]
 }>()
 
-// Animation setup
-const { createScrollAnimation } = useScrollDrivenAnimations()
+// Stagger between sections that become visible in the same observer batch.
+// 60ms sits in the 30–80ms band; the previous 150ms meant a four-section batch
+// took 450ms just to *start* its last reveal.
+const REVEAL_STAGGER_MS = 60
 
 // Template refs for animated sections
 const sectionRefs = {
@@ -1299,8 +1303,37 @@ const {
 } = sectionRefs
 
 /**
+ * Reveal one section, optionally offset within a staggered batch.
+ *
+ * `will-change` is applied for the duration of the transition and dropped on
+ * completion. Leaving it in the stylesheet promoted all 12 sections to their own
+ * compositor layer for the whole session, on top of the card's backdrop-filter.
+ */
+const revealSection = (el: HTMLElement, staggerDelay: number) => {
+  el.style.willChange = 'opacity, transform'
+  el.style.transitionDelay = staggerDelay > 0 ? `${staggerDelay}ms` : ''
+
+  const done = (event: TransitionEvent) => {
+    // Only the element's own transition ends the reveal, not a child's.
+    if (event.target !== el) return
+    el.style.willChange = ''
+    el.style.transitionDelay = ''
+    el.removeEventListener('transitionend', done)
+  }
+  el.addEventListener('transitionend', done)
+
+  el.classList.add('is-visible')
+}
+
+/**
  * Initialize reveal animations
  * All sections must be observed to add .is-visible class, otherwise they remain hidden
+ *
+ * Safe to call repeatedly: elements already revealed or already observed are
+ * skipped. It has to be re-runnable because nearly every section is v-if'd on
+ * data (dressCodes, agendaItems, showHostMessage, photos, paymentMethods) — a
+ * section that first renders after mount would otherwise never be observed and
+ * would sit at opacity 0 forever.
  */
 const initializeRevealAnimations = () => {
   const animationConfig: Array<[SectionRef, string]> = [
@@ -1319,33 +1352,37 @@ const initializeRevealAnimations = () => {
   ]
 
   animationConfig.forEach(([elementRef, elementId]) => {
-    if (elementRef.value && revealObserver.value) {
-      // Set the data-reveal-id attribute for CSS selectors
-      elementRef.value.setAttribute('data-reveal-id', elementId)
-      // Observe the element and track it for cleanup
-      revealObserver.value.observe(elementRef.value)
-      observedElements.value.add(elementRef.value)
-    }
+    const el = elementRef.value
+    if (!el || !revealObserver.value) return
+    if (observedElements.value.has(el) || el.classList.contains('is-visible')) return
+
+    // Set the data-reveal-id attribute for CSS selectors
+    el.setAttribute('data-reveal-id', elementId)
+    // Observe the element and track it for cleanup
+    revealObserver.value.observe(el)
+    observedElements.value.add(el)
   })
 }
 
-/**
- * Initialize scroll animations
- * Only called when not in basic mode
- */
-const initializeScrollAnimations = () => {
-  const liquidGlassCard = document.querySelector('.liquid-glass-card')
-  if (liquidGlassCard) {
-    createScrollAnimation(
-      liquidGlassCard,
-      [{ transform: 'translateY(0px)' }, { transform: 'translateY(-20px)' }],
-      {
-        duration: 1000,
-        easing: 'ease-out',
-      },
-    )
-  }
-}
+// Pick up sections that mount later than this component (data arriving after
+// the stage is shown, or a language switch changing which texts exist).
+// Watches the raw props rather than the derived `showHostMessage` computed,
+// which is declared further down this file and would be in its TDZ when the
+// watcher runs its getter for the first time.
+watch(
+  () => [
+    props.dressCodes?.length,
+    props.agendaItems?.length,
+    props.eventPhotos?.length,
+    props.paymentMethods?.length,
+    props.eventTexts?.length,
+    props.currentLanguage,
+  ],
+  async () => {
+    await nextTick()
+    initializeRevealAnimations()
+  },
+)
 
 
 
@@ -1553,9 +1590,13 @@ onUnmounted(() => {
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.add-video-btn:hover {
-  border-color: rgba(30, 144, 255, 0.9);
-  background: rgba(30, 144, 255, 0.08);
+/* Gated: touch devices fire a sticky false hover on tap, leaving the button
+   stuck in its hover treatment after the press. */
+@media (hover: hover) and (pointer: fine) {
+  .add-video-btn:hover {
+    border-color: rgba(30, 144, 255, 0.9);
+    background: rgba(30, 144, 255, 0.08);
+  }
 }
 
 .comment-section-toggle-container {
@@ -1631,36 +1672,13 @@ onUnmounted(() => {
   }
 }
 
-/* Liquid glass rotation animation */
-@keyframes liquid-rotate {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* Gleam animation for text effects */
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
 /* ===================
    LAYOUT COMPONENTS
    =================== */
 
 /* Main slide animation */
 .animate-slideUp {
-  animation: slideUp 0.8s ease-out forwards;
+  animation: slideUp 0.8s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) forwards;
 }
 
 /* ===================
@@ -1688,35 +1706,38 @@ onUnmounted(() => {
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.6s ease-out forwards;
+  animation: fadeIn 0.6s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) forwards;
 }
 
 .animate-fadeInUp {
-  animation: fadeInUp 0.8s ease-out forwards;
+  animation: fadeInUp 0.8s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) forwards;
 }
 
 /* Decoration slide-in animation classes with staggered timing */
-/* Order: left → right → top → bottom */
+/* Order: left → right → top → bottom — the exact mirror of the cover's
+   slide-out (CoverDecorations.vue), down to the 0.8s and the 0.1/0.2/0.3/0.4
+   stagger, so the frame returns the way it left. Keep the two in sync; they
+   read as one gesture only because they share every value including the curve. */
 .animate-slideInFromLeft {
-  animation: slideInFromLeft 0.8s ease-out forwards;
+  animation: slideInFromLeft 0.8s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) forwards;
   animation-delay: 0.1s;
   opacity: 0;
 }
 
 .animate-slideInFromRight {
-  animation: slideInFromRight 0.8s ease-out forwards;
+  animation: slideInFromRight 0.8s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) forwards;
   animation-delay: 0.2s;
   opacity: 0;
 }
 
 .animate-slideInFromTop {
-  animation: slideInFromTop 0.8s ease-out forwards;
+  animation: slideInFromTop 0.8s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) forwards;
   animation-delay: 0.3s;
   opacity: 0;
 }
 
 .animate-slideInFromBottom {
-  animation: slideInFromBottom 0.8s ease-out forwards;
+  animation: slideInFromBottom 0.8s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) forwards;
   animation-delay: 0.4s;
   opacity: 0;
 }
@@ -1735,8 +1756,6 @@ onUnmounted(() => {
   max-width: 85vw;
   max-height: 85vh;
   max-height: 85dvh;
-  will-change: transform;
-  transition: transform 0.3s ease-out;
 }
 
 /* Responsive width adjustments for laptop views with padding */
@@ -1845,11 +1864,6 @@ onUnmounted(() => {
    UTILITY CLASSES
    =================== */
 
-/* Gleam animation for headers */
-.gleam-animation {
-  animation: gradientShift 3s ease-in-out infinite;
-}
-
 /* Hidden scrollbar styles */
 .custom-scrollbar {
   scrollbar-width: none;
@@ -1878,13 +1892,19 @@ onUnmounted(() => {
    =================== */
 
 /* Base reveal animation styles */
+/* The curve is expo-out: ~85% of the distance lands in the first third of the
+   duration. At 0.9s the remaining ~600ms was the section creeping its last two
+   pixels — it read as unresolved rather than luxurious. Shorter duration, same
+   curve, and the motion resolves while the eye is still on it.
+   will-change is applied by revealSection() for the duration of the
+   transition and removed on transitionend, rather than living here and pinning
+   a compositor layer per section for the whole session. */
 .animate-reveal {
   opacity: 0;
   transform: translateY(28px);
   transition:
-    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
+    opacity 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.48s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .animate-reveal.is-visible {
@@ -1921,25 +1941,6 @@ onUnmounted(() => {
   }
 }
 
-/* Mobile/tablet fallback: Auto-reveal gallery section if JavaScript observer fails */
-@media (max-width: 1023px) {
-  /* Ensure gallery section becomes visible even if IntersectionObserver doesn't fire */
-  .animate-reveal[data-reveal-id='gallery-section'] {
-    animation: mobile-gallery-reveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.5s forwards;
-  }
-}
-
-@keyframes mobile-gallery-reveal {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 /* ===================
    TRANSITION EFFECTS
    =================== */
@@ -1962,7 +1963,7 @@ onUnmounted(() => {
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .animate-reveal {
-    transition: opacity 0.3s ease;
+    transition: opacity 0.25s ease;
     transform: none !important;
   }
 
@@ -1975,8 +1976,14 @@ onUnmounted(() => {
     animation: none;
   }
 
-  .gleam-animation {
-    animation: none;
+  /* These four were missed: they carry `opacity: 0` as a base, so `animation:
+     none` would leave the ornaments invisible rather than still. They fade in
+     together instead — the shorthand also clears their stagger delay. */
+  .animate-slideInFromLeft,
+  .animate-slideInFromRight,
+  .animate-slideInFromTop,
+  .animate-slideInFromBottom {
+    animation: fadeIn 0.5s ease forwards;
   }
 
   .glass-background::before {
