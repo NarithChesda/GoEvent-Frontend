@@ -1,10 +1,10 @@
 <template>
   <Teleport to="body">
     <!-- Backdrop -->
-    <Transition name="fade">
+    <Transition name="drawer-backdrop">
       <div
         v-if="modelValue"
-        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[998]"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
         @click="closeDrawer"
       />
     </Transition>
@@ -12,7 +12,7 @@
     <!-- Drawer Panel. The category theme is bound once here as CSS custom
          properties; every descendant reads `--evt-*` by inheritance rather than
          taking an `accent` prop down four levels. -->
-    <Transition name="slide-right">
+    <Transition name="drawer-panel">
       <div
         v-if="modelValue"
         class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[32.5rem] lg:w-[36.25rem] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden will-change-transform"
@@ -80,7 +80,7 @@
                 <button
                   @click="navigatePrev"
                   :disabled="!hasPrev"
-                  class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                  class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center drawer-close disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                   :class="isHeaderSolid ? 'hover:bg-slate-200' : 'hover:bg-white/15'"
                   :title="t('events.drawer.previous')"
                   :aria-label="t('events.drawer.previous')"
@@ -95,7 +95,7 @@
                 <button
                   @click="navigateNext"
                   :disabled="!hasNext"
-                  class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                  class="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center drawer-close disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                   :class="isHeaderSolid ? 'hover:bg-slate-200' : 'hover:bg-white/15'"
                   :title="t('events.drawer.next')"
                   :aria-label="t('events.drawer.next')"
@@ -1199,37 +1199,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* Fade transition for backdrop */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.35s ease-out;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* Slide from right on desktop, from bottom on mobile */
-.slide-right-enter-active {
-  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.slide-right-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-.slide-right-enter-from,
-.slide-right-leave-to {
-  transform: translateY(100%) translateZ(0);
-}
-
-@media (min-width: 768px) {
-  .slide-right-enter-from,
-  .slide-right-leave-to {
-    transform: translateX(100%) translateZ(0);
-  }
-}
 
 /* Thin scrollbar, per design system §10. */
 .drawer-scroll::-webkit-scrollbar {
@@ -1243,5 +1212,4 @@ onBeforeUnmount(() => {
 
 .drawer-scroll::-webkit-scrollbar-thumb:hover {
   background-color: #94a3b8;
-}
-</style>
+}</style>

@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <!-- Backdrop -->
-    <Transition name="fade">
+    <Transition name="drawer-backdrop">
       <div
         v-if="isOpen"
         class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
@@ -10,7 +10,7 @@
     </Transition>
 
     <!-- Right-side drawer (slide on desktop, bottom sheet on mobile) -->
-    <Transition name="slide-right">
+    <Transition name="drawer-panel">
       <div
         v-if="isOpen"
         class="fixed bottom-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[36.25rem] lg:w-[40rem] md:max-w-[calc(100vw-32px)] max-h-[85vh] md:max-h-none bg-white rounded-t-3xl md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
@@ -332,7 +332,7 @@
           <div class="flex flex-col sm:flex-row gap-2 px-4 py-3">
             <button
               type="button"
-              class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 drawer-action shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               :disabled="submitting"
               @click="confirmOrder"
             >
@@ -598,32 +598,3 @@ const rejectOrder = async () => {
   }
 }
 </script>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.slide-right-enter-active {
-  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
-}
-.slide-right-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
-}
-.slide-right-enter-from,
-.slide-right-leave-to {
-  transform: translateY(100%);
-}
-
-@media (min-width: 768px) {
-  .slide-right-enter-from,
-  .slide-right-leave-to {
-    transform: translateX(100%);
-  }
-}
-</style>

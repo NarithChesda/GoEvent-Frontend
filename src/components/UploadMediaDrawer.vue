@@ -1,12 +1,12 @@
 <template>
   <Teleport to="body">
     <!-- Backdrop -->
-    <Transition name="fade" appear>
+    <Transition name="drawer-backdrop" appear>
       <div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]" @click="handleClose" />
     </Transition>
 
     <!-- Drawer Panel -->
-    <Transition name="slide-right" appear>
+    <Transition name="drawer-panel" appear>
       <div
         class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[32.5rem] lg:w-[35rem] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
         @click.stop
@@ -18,7 +18,7 @@
               <button
                 @click="handleClose"
                 :disabled="uploading"
-                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="p-1.5 hover:bg-white/20 rounded-lg drawer-close flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                 :title="t('management.media.uploadModal.drawer.closeTitle')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
@@ -119,52 +119,55 @@
               </button>
 
               <!-- Over-limit Warning -->
-              <Transition name="slide-fade">
-                <div
-                  v-if="oversizedFiles.length > 0"
-                  class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2.5"
-                >
-                  <div class="flex items-start gap-2">
-                    <TriangleAlert class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-amber-800">
-                        {{
-                          oversizedFiles.length === 1
-                            ? t('management.media.uploadModal.oversized.titleOne', { size: sizeLimitLabel })
-                            : t('management.media.uploadModal.oversized.titleMany', {
-                                count: oversizedFiles.length,
-                                size: sizeLimitLabel,
-                              })
-                        }}
-                      </p>
-                      <p class="text-sm text-amber-700 mt-0.5">
-                        {{
-                          canShrinkOversized
-                            ? t('management.media.uploadModal.oversized.description')
-                            : t('management.media.uploadModal.oversized.descriptionUnshrinkable')
-                        }}
-                      </p>
+              <Transition name="drawer-reveal">
+                <div v-if="oversizedFiles.length > 0" class="grid grid-rows-[1fr]">
+                  <div class="min-h-0 overflow-hidden">
+                    <div
+                      class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2.5"
+                    >
+                      <div class="flex items-start gap-2">
+                        <TriangleAlert class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                        <div class="flex-1 min-w-0">
+                          <p class="text-sm font-medium text-amber-800">
+                            {{
+                              oversizedFiles.length === 1
+                                ? t('management.media.uploadModal.oversized.titleOne', { size: sizeLimitLabel })
+                                : t('management.media.uploadModal.oversized.titleMany', {
+                                    count: oversizedFiles.length,
+                                    size: sizeLimitLabel,
+                                  })
+                            }}
+                          </p>
+                          <p class="text-sm text-amber-700 mt-0.5">
+                            {{
+                              canShrinkOversized
+                                ? t('management.media.uploadModal.oversized.description')
+                                : t('management.media.uploadModal.oversized.descriptionUnshrinkable')
+                            }}
+                          </p>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-2 pl-7">
+                        <button
+                          v-if="canShrinkOversized"
+                          type="button"
+                          @click="optimizeOversized"
+                          :disabled="compressing"
+                          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Minimize2 class="w-3.5 h-3.5" aria-hidden="true" />
+                          {{ t('management.media.uploadModal.oversized.optimizeAll') }}
+                        </button>
+                        <button
+                          type="button"
+                          @click="removeOversized"
+                          :disabled="compressing"
+                          class="px-3 py-1.5 text-amber-700 hover:bg-amber-100 text-xs font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {{ t('management.media.uploadModal.oversized.removeAll') }}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <div class="flex items-center gap-2 pl-7">
-                    <button
-                      v-if="canShrinkOversized"
-                      type="button"
-                      @click="optimizeOversized"
-                      :disabled="compressing"
-                      class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Minimize2 class="w-3.5 h-3.5" aria-hidden="true" />
-                      {{ t('management.media.uploadModal.oversized.optimizeAll') }}
-                    </button>
-                    <button
-                      type="button"
-                      @click="removeOversized"
-                      :disabled="compressing"
-                      class="px-3 py-1.5 text-amber-700 hover:bg-amber-100 text-xs font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {{ t('management.media.uploadModal.oversized.removeAll') }}
-                    </button>
                   </div>
                 </div>
               </Transition>
@@ -290,12 +293,16 @@
             </div>
 
             <!-- Error Display -->
-            <Transition name="slide-fade">
-              <div v-if="error" class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
-                <AlertCircle class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
-                <div class="flex-1">
-                  <p class="text-sm font-medium text-red-800">{{ t('management.media.uploadModal.error.title') }}</p>
-                  <p class="text-sm text-red-700 mt-0.5">{{ error }}</p>
+            <Transition name="drawer-reveal">
+              <div v-if="error" class="grid grid-rows-[1fr]">
+                <div class="min-h-0 overflow-hidden">
+                  <div class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+                    <AlertCircle class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                    <div class="flex-1">
+                      <p class="text-sm font-medium text-red-800">{{ t('management.media.uploadModal.error.title') }}</p>
+                      <p class="text-sm text-red-700 mt-0.5">{{ error }}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </Transition>
@@ -310,7 +317,7 @@
               </div>
               <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
                 <div
-                  class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] h-2 rounded-full transition-all duration-300"
+                  class="bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] h-2 rounded-full drawer-action duration-300"
                   :style="{ width: `${uploadProgress}%` }"
                 ></div>
               </div>
@@ -325,7 +332,7 @@
               type="submit"
               form="upload-media-form"
               :disabled="selectedFiles.length === 0 || uploading || compressing || oversizedFiles.length > 0"
-              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 drawer-action shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span
                 v-if="uploading"
@@ -660,52 +667,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Fade transition for backdrop */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.35s ease-out;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* Slide from right on desktop, from bottom on mobile */
-.slide-right-enter-active {
-  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.slide-right-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-.slide-right-enter-from,
-.slide-right-leave-to {
-  transform: translateY(100%);
-}
-
-@media (min-width: 768px) {
-  .slide-right-enter-from,
-  .slide-right-leave-to {
-    transform: translateX(100%);
-  }
-}
-
-/* Conditional field transition */
-.slide-fade-enter-active {
-  transition: all 0.3s ease-out;
-}
-
-.slide-fade-leave-active {
-  transition: all 0.2s ease-in;
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
 
 /* Custom scrollbar */
 .overflow-y-auto::-webkit-scrollbar {
@@ -723,5 +684,4 @@ onUnmounted(() => {
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}
-</style>
+}</style>

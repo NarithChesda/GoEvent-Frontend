@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <Transition name="fade">
+    <Transition name="drawer-backdrop">
       <div
         v-if="open"
         class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
@@ -8,7 +8,7 @@
       />
     </Transition>
 
-    <Transition name="slide-right">
+    <Transition name="drawer-panel">
       <div
         v-if="open"
         ref="panel"
@@ -30,7 +30,7 @@
           <div class="flex items-center gap-2 px-2 py-2.5 sm:px-3">
             <button
               type="button"
-              class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+              class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg drawer-close hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
               :title="t('common.actions.close')"
               :aria-label="t('common.actions.close')"
               @click="emit('close')"
@@ -161,8 +161,7 @@ onUnmounted(() => {
 
   .checkout-drawer__footer {
     padding-bottom: 0.75rem;
-  }
-}
+  }}
 
 /* Thin scrollbar on the one element that scrolls — §10. */
 .checkout-drawer__body::-webkit-scrollbar {
@@ -176,45 +175,4 @@ onUnmounted(() => {
 
 .checkout-drawer__body::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.35s ease-out;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* Bottom-up on mobile, from the right on md+ — §10. */
-.slide-right-enter-active {
-  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.slide-right-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-.slide-right-enter-from,
-.slide-right-leave-to {
-  transform: translateY(100%);
-}
-
-@media (min-width: 768px) {
-  .slide-right-enter-from,
-  .slide-right-leave-to {
-    transform: translateX(100%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .fade-enter-active,
-  .fade-leave-active,
-  .slide-right-enter-active,
-  .slide-right-leave-active {
-    transition-duration: 0.01ms;
-  }
-}
-</style>
+}</style>

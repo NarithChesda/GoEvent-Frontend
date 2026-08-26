@@ -1,16 +1,16 @@
 <template>
   <Teleport to="body">
     <!-- Backdrop -->
-    <Transition name="fade">
+    <Transition name="drawer-backdrop">
       <div
         v-if="modelValue"
-        class="fixed inset-0 bg-black/50 z-[998]"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
         @click="closeDrawer()"
       />
     </Transition>
 
     <!-- Drawer Panel -->
-    <Transition name="slide-right">
+    <Transition name="drawer-panel">
       <div
         v-if="modelValue"
         class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[32.5rem] laptop-sm:w-[35rem] laptop-md:w-[38.75rem] desktop:w-[42.5rem] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden will-change-transform"
@@ -23,7 +23,7 @@
             <div class="flex items-center gap-2 min-w-0">
               <button
                 @click="closeDrawer"
-                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
+                class="p-1.5 hover:bg-white/20 rounded-lg drawer-close flex-shrink-0"
                 :title="t('management.editEventDrawer.header.closeTitle')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
@@ -36,7 +36,7 @@
               v-if="event"
               @click="showDeleteConfirm = true"
               :disabled="isSubmitting || isDeleting"
-              class="p-1.5 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+              class="p-1.5 hover:bg-white/20 rounded-lg drawer-close disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
               :title="t('management.editEventDrawer.header.deleteTitle')"
             >
               <Trash2 class="w-5 h-5 text-white" />
@@ -205,46 +205,54 @@
               </div>
 
               <!-- Location Input (In Person) -->
-              <Transition name="slide-fade">
-              <div v-if="!form.is_virtual" class="space-y-3">
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.location.addressLabel') }}</label>
-                  <div class="relative">
-                    <MapPin class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    <input
-                      v-model="form.location"
-                      type="text"
-                      :placeholder="t('management.editEventDrawer.location.addressPlaceholder')"
-                      class="w-full pl-9 pr-10 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                    />
-                    <button
-                      v-if="form.location"
-                      type="button"
-                      @click="form.location = ''"
-                      class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 bg-slate-200 rounded-full flex items-center justify-center hover:bg-slate-300 transition-colors"
-                    >
-                      <X class="w-3 h-3 text-slate-500" />
-                    </button>
+              <Transition name="drawer-reveal">
+              <div v-if="!form.is_virtual" class="grid grid-rows-[1fr]">
+                <div class="min-h-0 overflow-hidden">
+                  <div class="space-y-3">
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.location.addressLabel') }}</label>
+                      <div class="relative">
+                        <MapPin class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          v-model="form.location"
+                          type="text"
+                          :placeholder="t('management.editEventDrawer.location.addressPlaceholder')"
+                          class="w-full pl-9 pr-10 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                        />
+                        <button
+                          v-if="form.location"
+                          type="button"
+                          @click="form.location = ''"
+                          class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 bg-slate-200 rounded-full flex items-center justify-center hover:bg-slate-300 transition-colors"
+                        >
+                          <X class="w-3 h-3 text-slate-500" />
+                        </button>
+                      </div>
+                      <p class="text-xs text-slate-400 mt-1">
+                        {{ t('management.editEventDrawer.location.mapMovedHint') }}
+                      </p>
+                    </div>
                   </div>
-                  <p class="text-xs text-slate-400 mt-1">
-                    {{ t('management.editEventDrawer.location.mapMovedHint') }}
-                  </p>
                 </div>
               </div>
               </Transition>
 
               <!-- Virtual Link Input -->
-              <Transition name="slide-fade">
-              <div v-if="form.is_virtual">
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.location.virtualLinkLabel') }}</label>
-                <div class="relative">
-                  <Link2 class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    v-model="form.virtual_link"
-                    type="url"
-                    placeholder="https://zoom.us/meeting/..."
-                    class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                  />
+              <Transition name="drawer-reveal">
+              <div v-if="form.is_virtual" class="grid grid-rows-[1fr]">
+                <div class="min-h-0 overflow-hidden">
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.location.virtualLinkLabel') }}</label>
+                    <div class="relative">
+                      <Link2 class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        v-model="form.virtual_link"
+                        type="url"
+                        placeholder="https://zoom.us/meeting/..."
+                        class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
               </Transition>
@@ -317,32 +325,36 @@
               </div>
 
               <!-- Registration Details (shown when registration is required) -->
-              <Transition name="slide-fade">
-                <div v-if="form.registration_required" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <!-- Registration Deadline -->
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.registration.deadlineLabel') }}</label>
-                    <DateTimePickerField
-                      v-model="form.registration_deadline"
-                      :max="form.start_date"
-                      clearable
-                      :title="t('management.editEventDrawer.registration.deadlineLabel')"
-                      :placeholder="t('management.editEventDrawer.registration.deadlinePlaceholder')"
-                    />
-                    <p class="text-xs text-slate-500 mt-1">{{ t('management.editEventDrawer.registration.deadlineHint') }}</p>
-                  </div>
+              <Transition name="drawer-reveal">
+                <div v-if="form.registration_required" class="grid grid-rows-[1fr]">
+                  <div class="min-h-0 overflow-hidden">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <!-- Registration Deadline -->
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.registration.deadlineLabel') }}</label>
+                        <DateTimePickerField
+                          v-model="form.registration_deadline"
+                          :max="form.start_date"
+                          clearable
+                          :title="t('management.editEventDrawer.registration.deadlineLabel')"
+                          :placeholder="t('management.editEventDrawer.registration.deadlinePlaceholder')"
+                        />
+                        <p class="text-xs text-slate-500 mt-1">{{ t('management.editEventDrawer.registration.deadlineHint') }}</p>
+                      </div>
 
-                  <!-- Max Attendees -->
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.registration.maxAttendeesLabel') }}</label>
-                    <input
-                      v-model.number="form.max_attendees"
-                      type="number"
-                      min="1"
-                      class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                      :placeholder="t('management.editEventDrawer.registration.maxAttendeesPlaceholder')"
-                    />
-                    <p class="text-xs text-slate-500 mt-1">{{ t('management.editEventDrawer.registration.maxAttendeesHint') }}</p>
+                      <!-- Max Attendees -->
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.registration.maxAttendeesLabel') }}</label>
+                        <input
+                          v-model.number="form.max_attendees"
+                          type="number"
+                          min="1"
+                          class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                          :placeholder="t('management.editEventDrawer.registration.maxAttendeesPlaceholder')"
+                        />
+                        <p class="text-xs text-slate-500 mt-1">{{ t('management.editEventDrawer.registration.maxAttendeesHint') }}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </Transition>
@@ -387,92 +399,96 @@
               </div>
 
               <!-- Fundraising Details (shown when fundraising is enabled) -->
-              <Transition name="slide-fade">
-                <div v-if="form.is_fundraising" class="space-y-3">
-                  <!-- Fundraising Goal and Currency -->
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <!-- Fundraising Goal -->
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                        <div class="flex items-center gap-1.5">
-                          <Target class="w-3.5 h-3.5 text-slate-400" />
-                          <span>{{ t('management.editEventDrawer.fundraising.goalLabel') }}</span>
+              <Transition name="drawer-reveal">
+                <div v-if="form.is_fundraising" class="grid grid-rows-[1fr]">
+                  <div class="min-h-0 overflow-hidden">
+                    <div class="space-y-3">
+                      <!-- Fundraising Goal and Currency -->
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Fundraising Goal -->
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                            <div class="flex items-center gap-1.5">
+                              <Target class="w-3.5 h-3.5 text-slate-400" />
+                              <span>{{ t('management.editEventDrawer.fundraising.goalLabel') }}</span>
+                            </div>
+                          </label>
+                          <input
+                            v-model.number="form.fundraising_goal"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            :placeholder="t('management.editEventDrawer.fundraising.goalPlaceholder')"
+                            class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400 bg-white"
+                          />
+                          <p class="text-xs text-slate-500 mt-1">{{ t('management.editEventDrawer.fundraising.goalHint') }}</p>
                         </div>
-                      </label>
-                      <input
-                        v-model.number="form.fundraising_goal"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        :placeholder="t('management.editEventDrawer.fundraising.goalPlaceholder')"
-                        class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400 bg-white"
-                      />
-                      <p class="text-xs text-slate-500 mt-1">{{ t('management.editEventDrawer.fundraising.goalHint') }}</p>
-                    </div>
 
-                    <!-- Currency -->
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.fundraising.currencyLabel') }}</label>
-                      <SelectField
-                        v-model="form.fundraising_currency"
-                        :options="currencyOptions"
-                        :placeholder="t('management.editEventDrawer.fundraising.currencyLabel')"
-                        :title="t('management.editEventDrawer.fundraising.currencyLabel')"
-                      />
-                    </div>
-                  </div>
-
-                  <!-- Show Donation Progress Toggle -->
-                  <div
-                    @click="form.show_donation_progress = !form.show_donation_progress"
-                    class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
-                  >
-                    <div class="flex items-center gap-3">
-                      <TrendingUp class="w-4 h-4 text-slate-500" />
-                      <div>
-                        <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.fundraising.progressLabel') }}</p>
-                        <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.fundraising.progressDesc') }}</p>
+                        <!-- Currency -->
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.fundraising.currencyLabel') }}</label>
+                          <SelectField
+                            v-model="form.fundraising_currency"
+                            :options="currencyOptions"
+                            :placeholder="t('management.editEventDrawer.fundraising.currencyLabel')"
+                            :title="t('management.editEventDrawer.fundraising.currencyLabel')"
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div
-                      role="switch"
-                      :aria-checked="form.show_donation_progress"
-                      :class="[
-                        'relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                        form.show_donation_progress ? 'bg-pink-500' : 'bg-slate-200'
-                      ]"
-                    >
-                      <span
-                        class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
-                        :style="{ transform: form.show_donation_progress ? 'translateX(16px)' : 'translateX(0)' }"
-                      />
-                    </div>
-                  </div>
 
-                  <!-- Show Donor List Toggle -->
-                  <div
-                    @click="form.show_donor_list = !form.show_donor_list"
-                    class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
-                  >
-                    <div class="flex items-center gap-3">
-                      <Users class="w-4 h-4 text-slate-500" />
-                      <div>
-                        <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.fundraising.donorsLabel') }}</p>
-                        <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.fundraising.donorsDesc') }}</p>
+                      <!-- Show Donation Progress Toggle -->
+                      <div
+                        @click="form.show_donation_progress = !form.show_donation_progress"
+                        class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
+                      >
+                        <div class="flex items-center gap-3">
+                          <TrendingUp class="w-4 h-4 text-slate-500" />
+                          <div>
+                            <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.fundraising.progressLabel') }}</p>
+                            <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.fundraising.progressDesc') }}</p>
+                          </div>
+                        </div>
+                        <div
+                          role="switch"
+                          :aria-checked="form.show_donation_progress"
+                          :class="[
+                            'relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
+                            form.show_donation_progress ? 'bg-pink-500' : 'bg-slate-200'
+                          ]"
+                        >
+                          <span
+                            class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
+                            :style="{ transform: form.show_donation_progress ? 'translateX(16px)' : 'translateX(0)' }"
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div
-                      role="switch"
-                      :aria-checked="form.show_donor_list"
-                      :class="[
-                        'relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                        form.show_donor_list ? 'bg-pink-500' : 'bg-slate-200'
-                      ]"
-                    >
-                      <span
-                        class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
-                        :style="{ transform: form.show_donor_list ? 'translateX(16px)' : 'translateX(0)' }"
-                      />
+
+                      <!-- Show Donor List Toggle -->
+                      <div
+                        @click="form.show_donor_list = !form.show_donor_list"
+                        class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
+                      >
+                        <div class="flex items-center gap-3">
+                          <Users class="w-4 h-4 text-slate-500" />
+                          <div>
+                            <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.fundraising.donorsLabel') }}</p>
+                            <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.fundraising.donorsDesc') }}</p>
+                          </div>
+                        </div>
+                        <div
+                          role="switch"
+                          :aria-checked="form.show_donor_list"
+                          :class="[
+                            'relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
+                            form.show_donor_list ? 'bg-pink-500' : 'bg-slate-200'
+                          ]"
+                        >
+                          <span
+                            class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
+                            :style="{ transform: form.show_donor_list ? 'translateX(16px)' : 'translateX(0)' }"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -487,7 +503,7 @@
             <button
               @click="handleSubmit"
               :disabled="isSubmitting"
-              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 drawer-action shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Loader v-if="isSubmitting" class="w-4 h-4 animate-spin" />
               <Save v-else class="w-4 h-4" />
@@ -505,18 +521,6 @@
         </div>
 
         <!-- Success/Error Toast -->
-        <Transition name="slide-up">
-          <div v-if="message" class="absolute bottom-16 left-4 right-4 z-10">
-            <div
-              :class="message.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-              class="text-white px-3 py-2.5 rounded-lg shadow-lg flex items-center"
-            >
-              <CheckCircle v-if="message.type === 'success'" class="w-4 h-4 mr-2 flex-shrink-0" />
-              <AlertCircle v-else class="w-4 h-4 mr-2 flex-shrink-0" />
-              <span class="text-xs">{{ message.text }}</span>
-            </div>
-          </div>
-        </Transition>
       </div>
     </Transition>
 
@@ -540,7 +544,6 @@ import {
   X,
   Loader,
   AlertCircle,
-  CheckCircle,
   MapPin,
   Video,
   Link2,
@@ -568,6 +571,7 @@ import {
 import { TIMEZONE_OPTIONS, getUserTimezone } from '../utils/timezones'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
+import { useToast } from '@/composables/useToast'
 
 interface Props {
   modelValue: boolean
@@ -594,7 +598,6 @@ const isSubmitting = ref(false)
 const isDeleting = ref(false)
 const showDeleteConfirm = ref(false)
 const error = ref<string | null>(null)
-const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
 // Form data
 const form = reactive({
@@ -902,11 +905,10 @@ const handleSubmit = async () => {
   }
 }
 
+const { showToast } = useToast()
+
 const showMessage = (type: 'success' | 'error', text: string) => {
-  message.value = { type, text }
-  setTimeout(() => {
-    message.value = null
-  }, 4000)
+  showToast(type, text)
 }
 
 const closeDrawer = () => {
@@ -988,68 +990,3 @@ onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
 })
 </script>
-
-<style scoped>
-/* Fade transition for backdrop */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.35s ease-out;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* Slide from right on desktop, from bottom on mobile */
-.slide-right-enter-active {
-  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.slide-right-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-.slide-right-enter-from,
-.slide-right-leave-to {
-  transform: translateY(100%) translateZ(0);
-}
-
-@media (min-width: 768px) {
-  .slide-right-enter-from,
-  .slide-right-leave-to {
-    transform: translateX(100%) translateZ(0);
-  }
-}
-
-/* Slide up transition for toast */
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-
-/* Slide fade transition for registration details */
-.slide-fade-enter-active {
-  transition: all 0.3s ease-out;
-}
-
-.slide-fade-leave-active {
-  transition: all 0.2s ease-in;
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-</style>

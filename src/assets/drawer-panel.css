@@ -1,0 +1,143 @@
+/*
+ * Shared chrome for the app's side drawers.
+ *
+ * Thirteen drawers each carried a private copy of these two transitions under
+ * the names `fade` and `slide-right`, and the copies had drifted: five
+ * different exit curves, three different `transition: all` declarations, and
+ * one shared bug (see `.drawer-panel-enter-from` below) reproduced in every
+ * single one. They live here now, prefixed so they cannot collide with the
+ * generic `fade` used elsewhere in the app.
+ *
+ * Global rather than scoped because drawer panels are teleported to <body>,
+ * and because a drawer must not be able to disagree with the others again.
+ */
+
+/* ── Backdrop ──────────────────────────────────────────────────────────── */
+
+.drawer-backdrop-enter-active {
+  transition: opacity 0.35s ease-out;
+}
+
+/* The scrim leads on the way in, and must not clear before the panel it is
+   dimming for — otherwise the panel finishes its slide over the live page. */
+.drawer-backdrop-leave-active {
+  transition: opacity 0.28s ease-out;
+}
+
+.drawer-backdrop-enter-from,
+.drawer-backdrop-leave-to {
+  opacity: 0;
+}
+
+/* ── Panel ─────────────────────────────────────────────────────────────── */
+
+.drawer-panel-enter-active {
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Same curve family on the way out, just faster. A symmetric curve
+   (`cubic-bezier(0.4, 0, 0.6, 1)`, which five drawers used) starts slow, and
+   reads as the drawer resisting dismissal. */
+.drawer-panel-leave-active {
+  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Mobile: the panel is full-bleed, so its own height clears the viewport. */
+.drawer-panel-enter-from,
+.drawer-panel-leave-to {
+  transform: translateY(100%);
+}
+
+/* Desktop: the panel is inset (`md:right-4`) and casts a `shadow-2xl`, so
+   translating by its own width — which every drawer did — leaves a 12-16px
+   sliver of drawer parked at the screen edge. `leave-to` is the held end
+   state, so on close the drawer slid out, stopped short, and popped away on
+   unmount. The extra 2rem clears the inset and the shadow bleed, in rem so it
+   tracks the root-font downscale applied on 13-15" laptops. */
+@media (min-width: 768px) {
+  .drawer-panel-enter-from,
+  .drawer-panel-leave-to {
+    transform: translateX(calc(100% + 2rem));
+  }
+}
+
+/* ── Conditional sections inside a drawer ──────────────────────────────── */
+
+/* The house `collapse` transition (DESIGN.md §7), under a drawer-local name.
+   Replaces the `slide-fade` several drawers used: `transition: all` with a
+   `translateY(-10px)` and no height animation, so revealing a section snapped
+   everything below it while the new content slid in from the wrong direction.
+   Markup: <Transition name="drawer-reveal"><div v-if class="grid grid-rows-[1fr]">
+   <div class="min-h-0 overflow-hidden"><div>content</div></div></div></Transition> */
+.drawer-reveal-enter-active,
+.drawer-reveal-leave-active {
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.drawer-reveal-enter-from,
+.drawer-reveal-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+/* ── Press feedback ────────────────────────────────────────────────────── */
+
+/* Footer actions and the gradient-header close button. Applied as a class
+   rather than per-drawer utilities so the whole set presses identically. */
+.drawer-action {
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease,
+    transform 0.13s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.drawer-action:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.drawer-close {
+  transition:
+    background-color 0.15s ease,
+    transform 0.13s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.drawer-close:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer-reveal-enter-active,
+  .drawer-reveal-leave-active {
+    transition-duration: 0.01ms;
+  }
+
+  /* Gentler, not zero: the panel still announces itself, it just fades in
+     place instead of travelling the width of the screen. */
+  .drawer-panel-enter-active {
+    transition: opacity 0.2s ease-out;
+  }
+
+  .drawer-panel-leave-active {
+    transition: opacity 0.15s ease-out;
+  }
+
+  .drawer-panel-enter-from,
+  .drawer-panel-leave-to {
+    transform: none;
+    opacity: 0;
+  }
+
+  @media (min-width: 768px) {
+    .drawer-panel-enter-from,
+    .drawer-panel-leave-to {
+      transform: none;
+    }
+  }
+
+  .drawer-action:active:not(:disabled),
+  .drawer-close:active:not(:disabled) {
+    transform: none;
+  }
+}

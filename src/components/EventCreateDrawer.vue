@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <!-- Backdrop -->
-    <Transition name="fade">
+    <Transition name="drawer-backdrop">
       <div
         v-if="isVisible"
         class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
@@ -10,7 +10,7 @@
     </Transition>
 
     <!-- Drawer Panel -->
-    <Transition name="slide-right">
+    <Transition name="drawer-panel">
       <div
         v-if="isVisible"
         ref="panel"
@@ -25,7 +25,7 @@
               <button
                 :disabled="isBusy"
                 @click="$emit('close')"
-                class="p-1.5 hover:bg-white/20 active:bg-white/30 disabled:opacity-40 disabled:pointer-events-none rounded-lg transition-[background-color,transform] duration-150 ease-out active:scale-90 flex-shrink-0"
+                class="p-1.5 hover:bg-white/20 active:bg-white/30 disabled:opacity-40 disabled:pointer-events-none rounded-lg drawer-close flex-shrink-0"
                 :title="t('common.actions.close')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
@@ -78,7 +78,7 @@
                 </div>
 
                 <!-- Auto Populate (shown when category is selected) -->
-                <Transition name="collapse">
+                <Transition name="drawer-reveal">
                   <div v-if="form.category && form.category !== ''" class="grid grid-rows-[1fr]">
                     <div class="min-h-0 overflow-hidden">
                       <button
@@ -130,7 +130,7 @@
                       :title="t('events.createDrawer.fields.endDateTime')"
                       :quick-times="commonEndTimes"
                     />
-                    <Transition name="collapse">
+                    <Transition name="drawer-reveal">
                       <div v-if="dateError" class="grid grid-rows-[1fr]">
                         <div class="min-h-0 overflow-hidden">
                           <p class="text-xs sm:text-sm text-red-600 pt-1">{{ dateError }}</p>
@@ -192,7 +192,7 @@
                 </div>
 
                 <!-- Registration Details (shown when registration is required) -->
-                <Transition name="collapse">
+                <Transition name="drawer-reveal">
                   <div v-if="form.registration_required" class="grid grid-rows-[1fr]">
                     <div class="min-h-0 overflow-hidden">
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -227,7 +227,7 @@
                 </Transition>
 
                 <!-- Full Description (public events only) -->
-                <Transition name="collapse">
+                <Transition name="drawer-reveal">
                   <div v-if="form.privacy === 'public'" class="grid grid-rows-[1fr]">
                     <div class="min-h-0 overflow-hidden">
                       <div class="pt-1">
@@ -804,94 +804,10 @@ onUnmounted(() => {
   transition: transform 0.22s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-/* Backdrop. The scrim leads on the way in and must not clear before the panel
-   it is dimming for, so its exit matches the panel's rather than beating it. */
-.fade-enter-active {
-  transition: opacity 0.35s ease-out;
-}
-
-.fade-leave-active {
-  transition: opacity 0.28s ease-out;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* Slide from right on desktop, from bottom on mobile */
-.slide-right-enter-active {
-  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-/* Same curve family on the way out, just faster — a curve that starts slow
-   makes dismissal feel like the drawer is resisting. */
-.slide-right-leave-active {
-  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-/* Mobile: full-bleed, so its own height clears the viewport exactly. */
-.slide-right-enter-from,
-.slide-right-leave-to {
-  transform: translateY(100%);
-}
-
-/* Desktop: the panel is inset (`md:right-4`) and casts a `shadow-2xl`, so
-   translating by its own width leaves a 12-16px sliver of drawer parked at the
-   screen edge — held for the whole exit, then popped away on unmount. The extra
-   2rem clears the inset and the shadow bleed; it is in rem so it tracks the
-   root-font downscale applied on 13-15" laptops. */
-@media (min-width: 768px) {
-  .slide-right-enter-from,
-  .slide-right-leave-to {
-    transform: translateX(calc(100% + 2rem));
-  }
-}
-
-/* Conditional sections (auto-populate, registration details, description, date error)
-   grow and shrink the layout instead of fading over a hard jump. House collapse transition — grid-template-rows, never max-height. */
-.collapse-enter-active,
-.collapse-leave-active {
-  transition:
-    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease;
-}
-
-.collapse-enter-from,
-.collapse-leave-to {
-  grid-template-rows: 0fr;
-  opacity: 0;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .collapse-enter-active,
-  .collapse-leave-active,
   .switch-knob,
   .toggle-row {
     transition-duration: 0.01ms;
-  }
-
-  /* Gentler, not zero: the drawer still announces itself, it just fades in
-     place instead of travelling the width of the screen. */
-  .slide-right-enter-active {
-    transition: opacity 0.2s ease-out;
-  }
-
-  .slide-right-leave-active {
-    transition: opacity 0.15s ease-out;
-  }
-
-  .slide-right-enter-from,
-  .slide-right-leave-to {
-    transform: none;
-    opacity: 0;
-  }
-
-  @media (min-width: 768px) {
-    .slide-right-enter-from,
-    .slide-right-leave-to {
-      transform: none;
-    }
   }
 
   .toggle-row:active {
@@ -911,8 +827,7 @@ onUnmounted(() => {
   .submit-face[data-on='true'] {
     filter: none;
     transform: none;
-  }
-}
+  }}
 
 /* Custom scrollbar for modal content */
 .overflow-y-auto::-webkit-scrollbar {
@@ -978,5 +893,4 @@ onUnmounted(() => {
 [contenteditable="true"] :deep(em) {
   font-style: italic;
   color: #64748b;
-}
-</style>
+}</style>

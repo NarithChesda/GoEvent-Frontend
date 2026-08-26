@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <!-- Backdrop -->
-    <Transition name="fade">
+    <Transition name="drawer-backdrop">
       <div
         v-if="modelValue"
         class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
@@ -10,7 +10,7 @@
     </Transition>
 
     <!-- Drawer Panel -->
-    <Transition name="slide-right">
+    <Transition name="drawer-panel">
       <div
         v-if="modelValue"
         class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[32.5rem] lg:w-[35rem] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
@@ -22,7 +22,7 @@
             <div class="flex items-center gap-2 min-w-0">
               <button
                 @click="closeDrawer"
-                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
+                class="p-1.5 hover:bg-white/20 rounded-lg drawer-close flex-shrink-0"
                 :title="t('management.dressCode.drawer.closeTitle')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
@@ -41,7 +41,7 @@
               @click="emit('delete', dressCode)"
               :title="t('management.dressCode.drawer.deleteBtn')"
               :aria-label="t('management.dressCode.drawer.deleteBtn')"
-              class="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
+              class="p-1.5 hover:bg-white/20 rounded-lg drawer-close flex-shrink-0"
             >
               <Trash2 class="w-5 h-5 text-white" aria-hidden="true" />
             </button>
@@ -52,18 +52,22 @@
         <div class="flex-1 overflow-y-auto overscroll-contain">
           <form id="dress-code-form" @submit.prevent="handleSubmit" class="p-4 space-y-5 pb-24">
             <!-- Error banner -->
-            <Transition name="slide-fade">
-              <div v-if="error" class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
-                <AlertCircle class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
-                <p class="flex-1 text-sm text-red-700">{{ error }}</p>
-                <button
-                  type="button"
-                  @click="error = null"
-                  class="flex-shrink-0 text-red-400 hover:text-red-600"
-                  :aria-label="t('management.dressCode.drawer.dismissError')"
-                >
-                  <X class="w-4 h-4" aria-hidden="true" />
-                </button>
+            <Transition name="drawer-reveal">
+              <div v-if="error" class="grid grid-rows-[1fr]">
+                <div class="min-h-0 overflow-hidden">
+                  <div class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+                    <AlertCircle class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                    <p class="flex-1 text-sm text-red-700">{{ error }}</p>
+                    <button
+                      type="button"
+                      @click="error = null"
+                      class="flex-shrink-0 text-red-400 hover:text-red-600"
+                      :aria-label="t('management.dressCode.drawer.dismissError')"
+                    >
+                      <X class="w-4 h-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </Transition>
 
@@ -374,7 +378,7 @@
               type="submit"
               form="dress-code-form"
               :disabled="loading || !formData.dress_code_type || !formData.time_period || !formData.gender"
-              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 drawer-action shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Loader v-if="loading" class="w-4 h-4 animate-spin" aria-hidden="true" />
               <Save v-else class="w-4 h-4" aria-hidden="true" />
@@ -717,52 +721,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Fade transition for backdrop */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.35s ease-out;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* Slide from right on desktop, from bottom on mobile */
-.slide-right-enter-active {
-  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.slide-right-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-.slide-right-enter-from,
-.slide-right-leave-to {
-  transform: translateY(100%);
-}
-
-@media (min-width: 768px) {
-  .slide-right-enter-from,
-  .slide-right-leave-to {
-    transform: translateX(100%);
-  }
-}
-
-/* Conditional field reveal */
-.slide-fade-enter-active {
-  transition: all 0.3s ease-out;
-}
-
-.slide-fade-leave-active {
-  transition: all 0.2s ease-in;
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
 
 /* Custom scrollbar */
 .overflow-y-auto::-webkit-scrollbar {
@@ -780,5 +738,4 @@ onUnmounted(() => {
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}
-</style>
+}</style>

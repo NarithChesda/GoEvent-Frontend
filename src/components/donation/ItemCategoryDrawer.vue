@@ -1,16 +1,16 @@
 <template>
   <Teleport to="body">
     <!-- Backdrop -->
-    <Transition name="fade">
+    <Transition name="drawer-backdrop">
       <div
         v-if="modelValue"
-        class="fixed inset-0 bg-black/50 z-[998]"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
         @click="handleClose"
       />
     </Transition>
 
     <!-- Drawer Panel -->
-    <Transition name="slide-right">
+    <Transition name="drawer-panel">
       <div
         v-if="modelValue"
         class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[30rem] lg:w-[32.5rem] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden will-change-transform"
@@ -23,7 +23,7 @@
             <div class="flex items-center gap-2">
               <button
                 @click="handleClose"
-                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                class="p-1.5 hover:bg-white/20 rounded-lg drawer-close"
                 title="Close"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
@@ -166,7 +166,7 @@
               type="submit"
               form="category-form"
               :disabled="isSubmitting || !isFormValid"
-              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 drawer-action shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Loader2 v-if="isSubmitting" class="w-4 h-4 animate-spin" />
               <Save v-else class="w-4 h-4" />
@@ -193,18 +193,6 @@
         </div>
 
         <!-- Success/Error Toast -->
-        <Transition name="slide-up">
-          <div v-if="toastMessage" class="absolute bottom-16 left-4 right-4 z-10">
-            <div
-              :class="toastMessage.type === 'success' ? 'bg-green-500' : 'bg-red-500'"
-              class="text-white px-3 py-2.5 rounded-lg shadow-lg flex items-center"
-            >
-              <CheckCircle v-if="toastMessage.type === 'success'" class="w-4 h-4 mr-2 flex-shrink-0" />
-              <AlertCircle v-else class="w-4 h-4 mr-2 flex-shrink-0" />
-              <span class="text-xs">{{ toastMessage.text }}</span>
-            </div>
-          </div>
-        </Transition>
       </div>
     </Transition>
   </Teleport>
@@ -212,8 +200,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onBeforeUnmount } from 'vue'
-import { ArrowRight, AlertCircle, CheckCircle, Loader2, Save, Package } from 'lucide-vue-next'
+import { ArrowRight, AlertCircle, Loader2, Save, Package } from 'lucide-vue-next'
 import type { DonationItemCategory, CreateDonationItemCategoryRequest } from '@/services/api/types/donation.types'
+import { useToast } from '@/composables/useToast'
 
 interface Props {
   modelValue: boolean
@@ -241,7 +230,6 @@ const form = ref<CreateDonationItemCategoryRequest>({
 const errors = ref<Record<string, string>>({})
 const submitError = ref<string | null>(null)
 const isSubmitting = ref(false)
-const toastMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
 // Computed
 const isEditing = computed(() => !!props.category)
@@ -324,12 +312,7 @@ function handleClose() {
   emit('update:modelValue', false)
 }
 
-function showToast(type: 'success' | 'error', text: string) {
-  toastMessage.value = { type, text }
-  setTimeout(() => {
-    toastMessage.value = null
-  }, 4000)
-}
+const { showToast } = useToast()
 
 async function handleSubmit() {
   // Validate
@@ -387,53 +370,3 @@ defineExpose({
   close: handleClose
 })
 </script>
-
-<style scoped>
-/* Fade transition for backdrop */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.35s ease-out;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* Slide from right on desktop, from bottom on mobile */
-.slide-right-enter-active {
-  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.slide-right-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-.slide-right-enter-from,
-.slide-right-leave-to {
-  transform: translateY(100%) translateZ(0);
-}
-
-@media (min-width: 768px) {
-  .slide-right-enter-from,
-  .slide-right-leave-to {
-    transform: translateX(100%) translateZ(0);
-  }
-}
-
-/* Slide up transition for toast */
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-</style>
