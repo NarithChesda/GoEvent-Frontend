@@ -1,12 +1,12 @@
 <template>
   <div class="space-y-1.5">
-    <label v-if="label" :for="fieldId" class="block text-xs font-medium text-slate-600">{{ label }}</label>
+    <label v-if="label" :for="fieldId" :class="FIELD_LABEL">{{ label }}</label>
     <div class="relative">
       <select
         :id="fieldId"
         :value="modelValue === null ? '' : String(modelValue)"
         :disabled="disabled"
-        class="w-full appearance-none pl-3 pr-9 py-2 bg-slate-100 border border-transparent rounded-lg text-sm text-slate-700 transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100 disabled:opacity-60 disabled:cursor-not-allowed"
+        :class="[FIELD, 'appearance-none pl-3 pr-9']"
         @change="onChange"
       >
         <option v-if="placeholder" value="" disabled>{{ placeholder }}</option>
@@ -24,13 +24,14 @@
         aria-hidden="true"
       />
     </div>
-    <p v-if="hint" class="text-[0.6875rem] leading-snug text-slate-400">{{ hint }}</p>
+    <p v-if="hint" :class="FIELD_HINT">{{ hint }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useId } from 'vue'
 import { ChevronDown } from 'lucide-vue-next'
+import { FIELD, FIELD_HINT, FIELD_LABEL } from './templateUi'
 
 export interface TemplateFormSelectOption {
   value: string | number

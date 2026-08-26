@@ -13,7 +13,7 @@
       <button
         type="button"
         @click="emit('close')"
-        class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 active:scale-95 transition-all"
+        :class="[BTN_ICON, 'w-10 h-10']"
         :aria-label="t('management.partnerTemplateForm.header.goBack')"
       >
         <ArrowLeft class="w-[1.125rem] h-[1.125rem]" />
@@ -35,19 +35,12 @@
         {{ t('management.partnerTemplateForm.footer.missingRequired') }}
       </p>
 
-      <button
-        type="button"
-        @click="emit('close')"
-        class="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
-      >
+      <!-- Bar variants: this row is the modal's header, and everything else in
+           it is a 40px pill. See BTN_PRIMARY_BAR. -->
+      <button type="button" @click="emit('close')" :class="BTN_GHOST_BAR">
         {{ t('management.partnerTemplateForm.footer.cancel') }}
       </button>
-      <button
-        type="button"
-        @click="handleSave"
-        :disabled="saving || !canSave"
-        class="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white hover:from-[#27ae60] hover:to-[#1873cc] shadow-md shadow-sky-500/25 hover:shadow-sky-500/35 hover:-translate-y-px active:translate-y-0 disabled:opacity-60 disabled:shadow-none disabled:hover:translate-y-0 transition-all"
-      >
+      <button type="button" @click="handleSave" :disabled="saving || !canSave" :class="BTN_PRIMARY_BAR">
         <Loader2 v-if="saving" class="w-4 h-4 animate-spin" />
         {{ saving ? t('management.partnerTemplateForm.footer.saving') : (isEditing ? t('management.partnerTemplateForm.footer.saveChanges') : t('management.partnerTemplateForm.footer.createTemplate')) }}
       </button>
@@ -74,7 +67,7 @@
         <button
           type="button"
           @click="emit('close')"
-          class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 active:scale-95 transition-all"
+          :class="BTN_ICON"
           :aria-label="t('management.partnerTemplateForm.header.goBack')"
         >
           <ArrowLeft class="w-[1.125rem] h-[1.125rem]" />
@@ -84,22 +77,15 @@
           {{ isEditing ? t('management.partnerTemplateForm.header.edit') : t('management.partnerTemplateForm.header.create') }}
         </h3>
 
-        <div
-          class="flex gap-0.5 p-1 bg-slate-100 rounded-full flex-shrink-0"
-          role="group"
+        <!-- Which of the two panes am I looking at — the same question
+             Browse/Mine asks, so the same control answers it. It used to be a
+             `bg-slate-900` pill that snapped between states. -->
+        <TemplateSegmented
+          v-model="mobilePane"
+          :options="paneOptions"
           :aria-label="t('management.partnerTemplateForm.header.paneSwitch')"
-        >
-          <button
-            v-for="pane in (['edit', 'preview'] as const)"
-            :key="pane"
-            type="button"
-            class="px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-300"
-            :class="mobilePane === pane ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-800'"
-            @click="mobilePane = pane"
-          >
-            {{ t(`management.partnerTemplateForm.header.pane.${pane}`) }}
-          </button>
-        </div>
+          size="sm"
+        />
       </div>
 
       <!-- Section rail. One vertical list from `lg`; a horizontally scrolling
@@ -116,18 +102,17 @@
             :key="section.id"
             type="button"
             :aria-current="activeSection === section.id ? 'true' : undefined"
-            class="group flex-shrink-0 lg:w-full flex items-center gap-2 lg:gap-2.5 px-3 py-2 rounded-xl text-left transition-all duration-200"
-            :class="
-              activeSection === section.id
-                ? 'bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 ring-1 ring-sky-200/80 text-slate-900'
-                : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
-            "
+            class="group flex-shrink-0 lg:w-full flex items-center gap-2 lg:gap-2.5 px-3 py-2 rounded-lg text-left"
+            :class="[
+              OPTION_BASE,
+              activeSection === section.id ? OPTION_SELECTED : `${OPTION_IDLE} ring-transparent`,
+            ]"
             @click="selectSection(section.id)"
           >
             <component
               :is="section.icon"
-              class="w-4 h-4 flex-shrink-0 transition-colors"
-              :class="activeSection === section.id ? 'text-[#1e90ff]' : 'text-slate-400 group-hover:text-slate-500'"
+              class="w-4 h-4 flex-shrink-0 transition-colors duration-200"
+              :class="optionIconClass(activeSection === section.id)"
             />
             <span class="text-[0.8125rem] font-medium whitespace-nowrap lg:truncate">{{ section.label }}</span>
             <span
@@ -159,11 +144,17 @@
           </div>
 
           <!-- ============================ BASICS ============================ -->
+          <!-- Carded like every other section. It used to sit bare on the
+               slate-50 pane while Brand, Cover, Transition, Effects and Main
+               Content were all white panels — so the first screen a partner
+               lands on was the one that looked least like the rest of the
+               editor. -->
           <template v-if="activeSection === 'basics'">
-            <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_11rem] gap-5">
+            <section :class="[PANEL, 'p-4']">
+              <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_11rem] gap-5">
               <div class="space-y-4">
                 <div class="space-y-1.5">
-                  <label :for="nameFieldId" class="block text-xs font-medium text-slate-600">
+                  <label :for="nameFieldId" :class="FIELD_LABEL">
                     {{ t('management.partnerTemplateForm.fields.nameLabel') }} <span class="text-red-500">*</span>
                   </label>
                   <input
@@ -172,12 +163,12 @@
                     type="text"
                     :placeholder="t('management.partnerTemplateForm.fields.namePlaceholder')"
                     maxlength="100"
-                    class="w-full px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                    :class="FIELD"
                   />
                 </div>
 
                 <div class="space-y-1.5">
-                  <label :for="previewUrlFieldId" class="block text-xs font-medium text-slate-600">
+                  <label :for="previewUrlFieldId" :class="FIELD_LABEL">
                     {{ t('management.partnerTemplateForm.fields.previewUrlLabel') }}
                   </label>
                   <input
@@ -185,9 +176,9 @@
                     v-model="form.youtube_preview_url"
                     type="url"
                     placeholder="https://goevent.online/g/dPmdHn?lang=kh"
-                    class="w-full px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                    :class="FIELD"
                   />
-                  <p class="text-[0.6875rem] leading-snug text-slate-400">{{ t('management.partnerTemplateForm.fields.previewUrlHint') }}</p>
+                  <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.fields.previewUrlHint') }}</p>
                 </div>
               </div>
 
@@ -195,7 +186,7 @@
                    live preview where two different "previews" competed for the
                    same corner of the screen. -->
               <div class="space-y-1.5">
-                <span class="block text-xs font-medium text-slate-600">
+                <span :class="FIELD_LABEL">
                   {{ t('management.partnerTemplateForm.fields.previewImageLabel') }}
                 </span>
                 <div
@@ -232,19 +223,20 @@
                   </label>
                 </div>
               </div>
-            </div>
+              </div>
+            </section>
 
             <!-- Package plan. The single most consequential field in the form —
                  it decides which asset slots even exist — so it gets cards with
                  their prices rather than one collapsed <select> row. -->
-            <section class="space-y-1.5">
-              <h5 class="text-xs font-medium text-slate-600">
+            <section :class="[PANEL, 'p-4 space-y-3']">
+              <h5 :class="SECTION_HEADING">
                 {{ t('management.partnerTemplateForm.fields.planLabel') }} <span class="text-red-500">*</span>
               </h5>
               <div v-if="plansLoading" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div v-for="n in 2" :key="n" class="h-16 rounded-xl bg-slate-200 animate-pulse" />
+                <div v-for="n in 2" :key="n" class="h-16 rounded-xl bg-slate-100 animate-pulse" />
               </div>
-              <p v-else-if="availablePlans.length === 0" class="text-xs text-slate-500 p-3 bg-white ring-1 ring-slate-200 rounded-xl">
+              <p v-else-if="availablePlans.length === 0" class="text-xs text-slate-500 p-3 bg-slate-50 ring-1 ring-slate-200 rounded-xl">
                 {{ t('management.partnerTemplateForm.fields.planEmpty') }}
               </p>
               <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-2" role="radiogroup" :aria-label="t('management.partnerTemplateForm.fields.planLabel')">
@@ -254,18 +246,14 @@
                   type="button"
                   role="radio"
                   :aria-checked="form.package_plan_id === plan.id"
-                  class="flex items-start gap-2.5 p-3 rounded-xl text-left ring-1 transition-all duration-200"
-                  :class="
-                    form.package_plan_id === plan.id
-                      ? 'bg-gradient-to-br from-[#2ecc71]/10 to-[#1e90ff]/10 ring-sky-300 shadow-sm'
-                      : 'bg-white ring-slate-200 hover:ring-slate-300 hover:bg-slate-50'
-                  "
+                  class="flex items-start gap-2.5 p-3 rounded-xl text-left"
+                  :class="optionClass(form.package_plan_id === plan.id)"
                   @click="form.package_plan_id = plan.id"
                 >
                   <component
                     :is="isPlanStandard(plan) ? Crown : Sparkles"
-                    class="w-4 h-4 mt-0.5 flex-shrink-0"
-                    :class="form.package_plan_id === plan.id ? 'text-[#1e90ff]' : 'text-slate-400'"
+                    class="w-4 h-4 mt-0.5 flex-shrink-0 transition-colors duration-200"
+                    :class="optionIconClass(form.package_plan_id === plan.id)"
                   />
                   <span class="min-w-0 flex-1">
                     <span v-if="plan.category" class="block text-[0.625rem] font-semibold uppercase tracking-wider text-slate-400 truncate">
@@ -282,9 +270,9 @@
 
           <!-- ======================= COLORS & FONTS ======================== -->
           <template v-else-if="activeSection === 'brand'">
-            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
+            <section :class="[PANEL, 'p-4 space-y-3']">
               <div class="flex items-center justify-between gap-2">
-                <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <h5 :class="SECTION_HEADING">
                   {{ t('management.partnerTemplateForm.colors.sectionTitle') }}
                 </h5>
                 <span class="text-[0.6875rem] text-slate-400">{{ pendingColors.length }}</span>
@@ -312,7 +300,7 @@
                     v-if="isEditing"
                     type="button"
                     @click="startEditColor(color as EventTemplateColor)"
-                    class="p-1.5 rounded-lg text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 transition-colors"
+                    :class="[BTN_ICON_MICRO, 'hover:text-[#1e90ff] hover:bg-sky-50']"
                     :aria-label="t('management.partnerTemplateForm.colors.editBtn')"
                   >
                     <Pencil class="w-3.5 h-3.5" />
@@ -320,7 +308,7 @@
                   <button
                     type="button"
                     @click="isEditing ? handleDeleteColor((color as EventTemplateColor).id) : removePendingColor(index)"
-                    class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    :class="[BTN_ICON_MICRO, 'hover:text-red-600 hover:bg-red-50']"
                     :aria-label="t('management.partnerTemplateForm.colors.deleteBtn')"
                   >
                     <Trash2 class="w-3.5 h-3.5" />
@@ -351,7 +339,7 @@
                       type="button"
                       @click="handleAddOrUpdateColor"
                       :disabled="colorSaving || !colorForm.hex_color_code || !colorForm.name"
-                      class="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold bg-sky-500 text-white shadow-sm shadow-sky-500/25 hover:bg-sky-600 disabled:opacity-50 disabled:shadow-none transition-all whitespace-nowrap"
+                      :class="BTN_PRIMARY_SM"
                     >
                       <Loader2 v-if="colorSaving" class="w-3.5 h-3.5 animate-spin" />
                       <template v-else>{{ editingColorId ? t('management.partnerTemplateForm.colors.updateBtn') : t('management.partnerTemplateForm.colors.addBtn') }}</template>
@@ -360,7 +348,7 @@
                       v-if="editingColorId"
                       type="button"
                       @click="cancelEditColor"
-                      class="flex-shrink-0 px-2.5 py-2 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
+                      :class="BTN_GHOST_SM"
                     >
                       {{ t('management.partnerTemplateForm.colors.cancelBtn') }}
                     </button>
@@ -369,9 +357,9 @@
               </div>
             </section>
 
-            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
+            <section :class="[PANEL, 'p-4 space-y-3']">
               <div class="flex items-center justify-between gap-2">
-                <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <h5 :class="SECTION_HEADING">
                   {{ t('management.partnerTemplateForm.fonts.sectionTitle') }}
                 </h5>
                 <span class="text-[0.6875rem] text-slate-400">{{ pendingFonts.length }}</span>
@@ -401,7 +389,7 @@
                     v-if="isEditing"
                     type="button"
                     @click="startEditFont(f as EventTemplateLanguageFont)"
-                    class="p-1.5 rounded-lg text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 transition-colors"
+                    :class="[BTN_ICON_MICRO, 'hover:text-[#1e90ff] hover:bg-sky-50']"
                     :aria-label="t('management.partnerTemplateForm.fonts.editBtn')"
                   >
                     <Pencil class="w-3.5 h-3.5" />
@@ -409,7 +397,7 @@
                   <button
                     type="button"
                     @click="isEditing ? handleDeleteFont((f as EventTemplateLanguageFont).id) : removePendingFont(index)"
-                    class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    :class="[BTN_ICON_MICRO, 'hover:text-red-600 hover:bg-red-50']"
                     :aria-label="t('management.partnerTemplateForm.fonts.deleteBtn')"
                   >
                     <Trash2 class="w-3.5 h-3.5" />
@@ -445,7 +433,7 @@
                     type="button"
                     @click="handleAddOrUpdateFont"
                     :disabled="fontSaving || !fontForm.font || !fontForm.language || !fontForm.font_type"
-                    class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold bg-sky-500 text-white shadow-sm shadow-sky-500/25 hover:bg-sky-600 disabled:opacity-50 disabled:shadow-none transition-all"
+                    :class="BTN_PRIMARY_SM"
                   >
                     <Loader2 v-if="fontSaving" class="w-3.5 h-3.5 animate-spin" />
                     <template v-else>{{ editingFontId ? t('management.partnerTemplateForm.fonts.updateBtn') : t('management.partnerTemplateForm.fonts.addBtn') }}</template>
@@ -454,7 +442,7 @@
                     v-if="editingFontId"
                     type="button"
                     @click="cancelEditFont"
-                    class="px-2.5 py-2 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
+                    :class="BTN_GHOST_SM"
                   >
                     {{ t('management.partnerTemplateForm.fonts.cancelBtn') }}
                   </button>
@@ -471,9 +459,9 @@
           <template v-else-if="activeSection === 'cover'">
             <PlanRequiredNotice v-if="!form.package_plan_id" @pick="selectSection('basics')" />
             <template v-else>
-              <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 divide-y divide-slate-200/70">
+              <section :class="[PANEL, 'divide-y divide-slate-200/70']">
                 <div class="p-4 space-y-3">
-                  <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <h5 :class="SECTION_HEADING">
                     {{ t('management.partnerTemplateForm.coverDecorations.backdropGroup') }}
                   </h5>
                   <FileUploadField
@@ -503,7 +491,7 @@
                 </div>
 
                 <div class="p-4 space-y-3">
-                  <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <h5 :class="SECTION_HEADING">
                     {{ t('management.partnerTemplateForm.coverDecorations.guestFrameGroup') }}
                   </h5>
 
@@ -512,7 +500,7 @@
                     :options="guestFrameStyleOptions"
                     :columns="3"
                   />
-                  <p class="text-[0.6875rem] text-slate-400 leading-snug">
+                  <p :class="FIELD_HINT">
                     {{ t(`management.partnerTemplateForm.guestFrame.hint.${form.cover_stage_layout.guestFrame.style}`) }}
                   </p>
 
@@ -566,7 +554,7 @@
                 </div>
 
                 <div class="p-4 space-y-3">
-                  <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <h5 :class="SECTION_HEADING">
                     {{ t('management.partnerTemplateForm.coverDecorations.brandingGroup') }}
                   </h5>
                   <div class="grid grid-cols-3 gap-2.5">
@@ -584,8 +572,8 @@
                  it now sits in the Transition tab beside the film it plays into.
                  What is left is lighting for the cover artwork's border: still
                  stored in cover_stage_layout, but about this stage only. -->
-            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
-              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <section :class="[PANEL, 'p-4 space-y-4']">
+              <h5 :class="SECTION_HEADING">
                 {{ t('management.partnerTemplateForm.coverGilding.sectionTitle') }}
               </h5>
               <TemplateFormSwitch
@@ -683,9 +671,9 @@
                  handles write to. Switching to free seeds every block from the
                  row geometry, so nothing on the cover moves until something is
                  actually dragged. -->
-            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 divide-y divide-slate-200/70">
+            <section :class="[PANEL, 'divide-y divide-slate-200/70']">
               <div class="p-4 space-y-4">
-                <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <h5 :class="SECTION_HEADING">
                   {{ t('management.coverLayoutEditor.sectionTitle') }}
                 </h5>
                 <TemplateFormChoice v-model="layoutModeModel" :options="layoutModeOptions" />
@@ -706,12 +694,10 @@
                       type="button"
                       :disabled="!block.available"
                       :aria-pressed="selectedCoverElement === block.id"
-                      class="px-3 py-1.5 rounded-full text-xs font-medium ring-1 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                      :class="
-                        selectedCoverElement === block.id
-                          ? 'bg-slate-900 text-white ring-transparent shadow-sm'
-                          : 'bg-white text-slate-600 ring-slate-200 hover:ring-slate-300 hover:bg-slate-50'
-                      "
+                      :class="[
+                        CHIP_BASE,
+                        selectedCoverElement === block.id ? OPTION_SELECTED : OPTION_IDLE,
+                      ]"
                       @click="selectCoverElement(block.id)"
                     >
                       {{ block.label }}
@@ -765,30 +751,30 @@
                       <button
                         type="button"
                         @click="resetSelectedCoverBlock"
-                        class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 transition-colors"
+                        :class="BTN_SECONDARY_SM"
                       >
                         {{ t('management.coverLayoutEditor.resetBlock') }}
                       </button>
                       <button
                         type="button"
                         @click="resetAllCoverBlocks"
-                        class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                        :class="[BTN_GHOST_SM, 'hover:text-red-600 hover:bg-red-50']"
                       >
                         {{ t('management.coverLayoutEditor.resetAll') }}
                       </button>
                     </div>
                   </div>
-                  <p v-else class="text-[0.6875rem] text-slate-400 leading-snug">
+                  <p v-else :class="FIELD_HINT">
                     {{ t('management.coverLayoutEditor.pickBlock') }}
                   </p>
                 </template>
-                <p v-else class="text-[0.6875rem] text-slate-400 leading-snug">
+                <p v-else :class="FIELD_HINT">
                   {{ t('management.coverLayoutEditor.rowsHint') }}
                 </p>
               </div>
 
               <div class="p-4 space-y-4">
-                <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <h5 :class="SECTION_HEADING">
                   {{ t('management.partnerTemplateForm.coverLayout.containerPositioning') }}
                 </h5>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
@@ -803,7 +789,7 @@
               </div>
 
               <div v-if="!isFreeCoverLayout" class="p-4 space-y-4">
-                <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <h5 :class="SECTION_HEADING">
                   {{ t('management.partnerTemplateForm.coverLayout.rowHeights') }}
                 </h5>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
@@ -816,9 +802,9 @@
               </div>
             </section>
 
-            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 divide-y divide-slate-200/70">
+            <section :class="[PANEL, 'divide-y divide-slate-200/70']">
               <div class="p-4 space-y-3">
-                <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <h5 :class="SECTION_HEADING">
                   {{ t('management.partnerTemplateForm.coverLayout.visibilityToggles') }}
                 </h5>
                 <div class="space-y-2">
@@ -842,7 +828,7 @@
 
               <div class="p-4 space-y-4">
                 <div>
-                  <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <h5 :class="SECTION_HEADING">
                     {{ t('management.partnerTemplateForm.coverLayout.hostClip') }}
                   </h5>
                   <p class="text-[0.6875rem] text-slate-400 leading-snug mt-1">{{ t('management.partnerTemplateForm.coverLayout.hostClipHint') }}</p>
@@ -855,7 +841,7 @@
               </div>
 
               <div class="p-4 space-y-4">
-                <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <h5 :class="SECTION_HEADING">
                   {{ t('management.partnerTemplateForm.coverLayout.zIndexes') }}
                 </h5>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
@@ -885,12 +871,12 @@
                  *and* the transition that plays under it — decorations sliding
                  off into a veil reveal, or the cover splitting into two doors.
                  It used to sit in Cover, which showed half of what it does. -->
-            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
-              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <section :class="[PANEL, 'p-4 space-y-3']">
+              <h5 :class="SECTION_HEADING">
                 {{ t('management.partnerTemplateForm.transitionStage.animationGroup') }}
               </h5>
               <TemplateFormChoice v-model="animationTypeModel" :options="animationOptions" />
-              <p class="text-[0.6875rem] text-slate-400 leading-snug">
+              <p :class="FIELD_HINT">
                 {{ t('management.partnerTemplateForm.transitionStage.animationHint') }}
               </p>
             </section>
@@ -898,9 +884,9 @@
             <PlanRequiredNotice v-if="!form.package_plan_id" @pick="selectSection('basics')" />
             <section
               v-else-if="isStandardPlan"
-              class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3"
+              :class="[PANEL, 'p-4 space-y-3']"
             >
-              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <h5 :class="SECTION_HEADING">
                 {{ t('management.partnerTemplateForm.transitionStage.sectionTitle') }}
               </h5>
               <FileUploadField
@@ -911,7 +897,7 @@
                 @change="handleFileChange('standard_transition_video', $event)"
                 @clear="clearAssetField('standard_transition_video')"
               />
-              <p class="text-[0.6875rem] text-slate-400 leading-snug">
+              <p :class="FIELD_HINT">
                 {{ t('management.partnerTemplateForm.transitionStage.videoHint') }}
               </p>
             </section>
@@ -928,7 +914,7 @@
           <template v-else-if="activeSection === 'effects'">
             <!-- Cover stage only: CoverStage hands these to CoverContentOverlay
                  and nothing else renders them. -->
-            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+            <section :class="[PANEL, 'p-4 space-y-4']">
               <TemplateFormSwitch
                 v-model="form.ambient_creatures_enabled"
                 :icon="Bird"
@@ -980,7 +966,7 @@
                             type="button"
                             @click="addCreatureEntry"
                             :disabled="form.ambient_creatures.creatures.length >= 4 || availableCreatureTypes.length === 0"
-                            class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-slate-300 disabled:hover:text-slate-600 disabled:hover:bg-transparent"
+                            :class="BTN_ADD_DASHED"
                           >
                             <Plus class="w-3.5 h-3.5" />
                             {{ t('management.partnerTemplateForm.ambientCreatures.addCreature') }}
@@ -1004,7 +990,7 @@
                               v-if="form.ambient_creatures.creatures.length > 1"
                               type="button"
                               @click="removeCreatureEntry(index)"
-                              class="mt-5 p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors flex-shrink-0"
+                              :class="[BTN_ICON_MICRO, 'mt-5 hover:text-red-600 hover:bg-red-50']"
                               :aria-label="t('management.partnerTemplateForm.ambientCreatures.removeBtn')"
                             >
                               <Trash2 class="w-4 h-4" />
@@ -1013,15 +999,15 @@
                           <div class="grid grid-cols-3 gap-2">
                             <div class="space-y-1">
                               <label :for="`${creatureFieldId}-${index}-weight`" class="block text-[0.6875rem] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.weightLabel') }}</label>
-                              <input :id="`${creatureFieldId}-${index}-weight`" v-model.number="entry.weight" type="number" min="1" max="10" step="1" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
+                              <input :id="`${creatureFieldId}-${index}-weight`" v-model.number="entry.weight" type="number" min="1" max="10" step="1" :class="FIELD_SM" />
                             </div>
                             <div class="space-y-1">
                               <label :for="`${creatureFieldId}-${index}-min_size`" class="block text-[0.6875rem] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.minSize') }}</label>
-                              <input :id="`${creatureFieldId}-${index}-min_size`" v-model.number="entry.min_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
+                              <input :id="`${creatureFieldId}-${index}-min_size`" v-model.number="entry.min_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" :class="FIELD_SM" />
                             </div>
                             <div class="space-y-1">
                               <label :for="`${creatureFieldId}-${index}-max_size`" class="block text-[0.6875rem] text-slate-500">{{ t('management.partnerTemplateForm.ambientCreatures.maxSize') }}</label>
-                              <input :id="`${creatureFieldId}-${index}-max_size`" v-model.number="entry.max_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-sky-300 focus:ring-4 focus:ring-sky-100" />
+                              <input :id="`${creatureFieldId}-${index}-max_size`" v-model.number="entry.max_size" type="number" min="4" max="200" step="1" :placeholder="t('management.partnerTemplateForm.ambientCreatures.sizeAuto')" :class="FIELD_SM" />
                             </div>
                           </div>
                         </div>
@@ -1034,7 +1020,7 @@
 
             <!-- Main content stage only, see MainContentStage's FallingEffect —
                  never drawn over the cover. -->
-            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+            <section :class="[PANEL, 'p-4 space-y-4']">
               <TemplateFormSwitch
                 v-model="form.falling_effect_enabled"
                 :icon="Snowflake"
@@ -1084,8 +1070,8 @@
                       />
 
                       <div class="space-y-1.5">
-                        <span class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.fallingEffect.customImage') }}</span>
-                        <p class="text-[0.6875rem] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.fallingEffect.customImageHint') }}</p>
+                        <span :class="FIELD_LABEL">{{ t('management.partnerTemplateForm.fallingEffect.customImage') }}</span>
+                        <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.fallingEffect.customImageHint') }}</p>
                         <div
                           v-if="fallingEffectCustomImagePreview || (existingTemplate?.falling_effect?.custom_image && !form.clear_falling_effect_custom_image)"
                           class="flex items-center gap-3 p-2 ring-1 ring-slate-200 rounded-xl"
@@ -1105,7 +1091,7 @@
                           <button
                             type="button"
                             @click="clearFallingEffectCustomImage"
-                            class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            :class="[BTN_ICON_MICRO, 'hover:text-red-600 hover:bg-red-50']"
                             :aria-label="t('management.partnerTemplateForm.fallingEffect.remove')"
                           >
                             <Trash2 class="w-3.5 h-3.5" />
@@ -1128,7 +1114,7 @@
 
             <!-- Every stage: mounted by CoverStage for the life of the showcase,
                  so one field drifts unbroken from the cover into the main content. -->
-            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+            <section :class="[PANEL, 'p-4 space-y-4']">
               <TemplateFormSwitch
                 v-model="form.sparks_enabled"
                 :icon="Sparkles"
@@ -1183,7 +1169,7 @@
                           unit="%"
                         />
                       </div>
-                      <p class="text-[0.6875rem] leading-snug text-slate-400">
+                      <p :class="FIELD_HINT">
                         {{ t('management.partnerTemplateForm.sparks.sizeHint') }}
                       </p>
 
@@ -1216,8 +1202,8 @@
                       />
 
                       <div class="space-y-1.5">
-                        <span class="block text-xs font-medium text-slate-600">{{ t('management.partnerTemplateForm.sparks.customImage') }}</span>
-                        <p class="text-[0.6875rem] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.sparks.customImageHint') }}</p>
+                        <span :class="FIELD_LABEL">{{ t('management.partnerTemplateForm.sparks.customImage') }}</span>
+                        <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.sparks.customImageHint') }}</p>
                         <div
                           v-if="sparkCustomImagePreview || (existingTemplate?.spark_custom_image && !form.clear_spark_custom_image)"
                           class="flex items-center gap-3 p-2 ring-1 ring-slate-200 rounded-xl"
@@ -1237,7 +1223,7 @@
                           <button
                             type="button"
                             @click="clearSparkCustomImage"
-                            class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            :class="[BTN_ICON_MICRO, 'hover:text-red-600 hover:bg-red-50']"
                             :aria-label="t('management.partnerTemplateForm.fallingEffect.remove')"
                           >
                             <Trash2 class="w-3.5 h-3.5" />
@@ -1271,8 +1257,8 @@
                  backdrop field even applies (photo vs video) is decided by the
                  plan, while card width, glass and the block designs are not. -->
             <PlanRequiredNotice v-if="!form.package_plan_id" @pick="selectSection('basics')" />
-            <section v-else class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
-              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <section v-else :class="[PANEL, 'p-4 space-y-3']">
+              <h5 :class="SECTION_HEADING">
                 {{ t('management.partnerTemplateForm.backgroundStage.sectionTitle') }}
               </h5>
               <FileUploadField
@@ -1307,7 +1293,7 @@
                  what they change is this stage. The glass switch does also govern
                  the cover's own glass panels (see CoverContentOverlay's
                  displayLiquidGlass); it is one switch for both stages. -->
-            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
+            <section :class="[PANEL, 'p-4 space-y-4']">
               <TemplateFormChoice
                 v-model="contentWidthModel"
                 :label="t('management.partnerTemplateForm.coverLayout.contentWidth')"
@@ -1321,12 +1307,12 @@
               />
             </section>
 
-            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
-              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <section :class="[PANEL, 'p-4 space-y-3']">
+              <h5 :class="SECTION_HEADING">
                 {{ t('management.partnerTemplateForm.eventDetailsDesign.sectionTitle') }}
               </h5>
               <TemplateFormChoice v-model="eventDetailsDesignModel" :options="eventDetailsDesignOptions" :columns="1" />
-              <p class="text-[0.6875rem] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.eventDetailsDesign.designHint') }}</p>
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.eventDetailsDesign.designHint') }}</p>
 
               <!-- Every design but panel spends this on exactly one accent mark:
                    the calendar's circled day, the flanked rules, the arch
@@ -1347,7 +1333,7 @@
                         :name="t('management.partnerTemplateForm.colorField.names.calendarMarker')"
                         placeholder="#B3261E"
                       />
-                      <p class="text-[0.6875rem] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.eventDetailsDesign.markerColorHint') }}</p>
+                      <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.eventDetailsDesign.markerColorHint') }}</p>
                     </div>
                   </div>
                 </div>
@@ -1359,20 +1345,20 @@
                  countdown, RSVP). `engraved` is the set drawn in the same
                  hairline language as the calendar / flanked / arch dates, so
                  the two read as one sheet instead of type stacked on glass. -->
-            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
-              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <section :class="[PANEL, 'p-4 space-y-3']">
+              <h5 :class="SECTION_HEADING">
                 {{ t('management.partnerTemplateForm.infoCardDesign.sectionTitle') }}
               </h5>
               <TemplateFormChoice v-model="infoCardDesignModel" :options="infoCardDesignOptions" :columns="1" />
-              <p class="text-[0.6875rem] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.infoCardDesign.designHint') }}</p>
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.infoCardDesign.designHint') }}</p>
             </section>
 
-            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
-              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <section :class="[PANEL, 'p-4 space-y-3']">
+              <h5 :class="SECTION_HEADING">
                 {{ t('management.partnerTemplateForm.hostInfoDesign.sectionTitle') }}
               </h5>
               <TemplateFormChoice v-model="hostInfoDesignModel" :options="hostInfoDesignOptions" :columns="1" />
-              <p class="text-[0.6875rem] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.hostInfoDesign.designHint') }}</p>
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.designHint') }}</p>
             </section>
           </template>
 
@@ -1414,7 +1400,7 @@
           type="button"
           @click="handleSave"
           :disabled="saving || !canSave"
-          class="flex items-center justify-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-sky-500/25 active:scale-95 disabled:opacity-60 disabled:shadow-none transition-all flex-shrink-0"
+          :class="BTN_PRIMARY_BAR"
         >
           <Loader2 v-if="saving" class="w-4 h-4 animate-spin" />
           {{ saving ? t('management.partnerTemplateForm.footer.saving') : (isEditing ? t('management.partnerTemplateForm.footer.saveChangesShort') : t('management.partnerTemplateForm.footer.createShort')) }}
@@ -1512,6 +1498,29 @@ import TemplateFormChoice from './TemplateFormChoice.vue'
 import TemplateFormColor from './TemplateFormColor.vue'
 import TemplateFormSelect, { type TemplateFormSelectOption } from './TemplateFormSelect.vue'
 import PlanRequiredNotice from './TemplateFormPlanNotice.vue'
+import TemplateSegmented, { type TemplateSegmentedOption } from './TemplateSegmented.vue'
+import {
+  BTN_ADD_DASHED,
+  BTN_GHOST_BAR,
+  BTN_GHOST_SM,
+  BTN_ICON,
+  BTN_ICON_MICRO,
+  BTN_PRIMARY_BAR,
+  BTN_PRIMARY_SM,
+  BTN_SECONDARY_SM,
+  CHIP_BASE,
+  FIELD,
+  FIELD_HINT,
+  FIELD_LABEL,
+  FIELD_SM,
+  OPTION_BASE,
+  OPTION_IDLE,
+  OPTION_SELECTED,
+  PANEL,
+  SECTION_HEADING,
+  optionClass,
+  optionIconClass,
+} from './templateUi'
 import { TEMPLATES_HEADER_SLOT } from './templatesHeaderSlot'
 import { useMediaQuery } from '../../composables/useMediaQuery'
 import GuestFrameCornerGrid from './GuestFrameCornerGrid.vue'
@@ -3283,7 +3292,12 @@ async function handleSave(): Promise<void> {
 // ---------------------------------------------------------------------------
 
 /** Below `lg`, the form and the preview take turns (see the header switch). */
-const mobilePane = ref<'edit' | 'preview'>('edit')
+const mobilePane = ref<string>('edit')
+
+const paneOptions = computed((): TemplateSegmentedOption[] => [
+  { value: 'edit', label: t('management.partnerTemplateForm.header.pane.edit') },
+  { value: 'preview', label: t('management.partnerTemplateForm.header.pane.preview') },
+])
 
 /**
  * Fonts in the shape the showcase resolves them from. In edit mode the API

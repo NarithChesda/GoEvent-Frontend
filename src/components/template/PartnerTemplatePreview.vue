@@ -33,32 +33,30 @@
            own assets, so switching the plan's background video on/off adds or
            drops the middle stage here exactly as it would for a real guest. -->
       <div class="tpl-preview__segments">
-        <div v-if="visibleFrames.length > 1" class="tpl-preview__seg-group" role="group" :aria-label="t('management.partnerTemplatePreview.stageLabel')">
-          <button
-            v-for="frame in visibleFrames"
-            :key="frame.id"
-            type="button"
-            class="tpl-preview__seg"
-            :class="{ 'is-active': activeFrameId === frame.id }"
-            @click="selectFrame(frame.id)"
-          >
-            {{ t(frame.labelKey) }}
-          </button>
-        </div>
+        <!-- Both pickers are the modal's one view switcher, so they are the
+             same component the Browse/Mine and Edit/Preview tabs use — right
+             down to the thumb that slides. They used to be hand-rolled pills
+             that snapped, in a modal where the other two switchers slid. -->
+        <TemplateSegmented
+          v-if="visibleFrames.length > 1"
+          :model-value="activeFrameId"
+          :options="frameOptions"
+          :aria-label="t('management.partnerTemplatePreview.stageLabel')"
+          tone="glass"
+          size="sm"
+          @update:model-value="selectFrame"
+        />
 
-        <div v-if="previewLanguages.length > 1" class="tpl-preview__seg-group" role="group" :aria-label="t('management.partnerTemplatePreview.languageLabel')">
-          <button
-            v-for="lang in previewLanguages"
-            :key="lang"
-            type="button"
-            class="tpl-preview__seg tpl-preview__seg--lang"
-            :class="{ 'is-active': previewLanguage === lang }"
-            :disabled="languageSwitching"
-            @click="selectLanguage(lang)"
-          >
-            {{ lang.toUpperCase() }}
-          </button>
-        </div>
+        <TemplateSegmented
+          v-if="previewLanguages.length > 1"
+          :model-value="previewLanguage"
+          :options="languageOptions"
+          :aria-label="t('management.partnerTemplatePreview.languageLabel')"
+          tone="glass"
+          size="sm"
+          class="tpl-preview__langs"
+          @update:model-value="selectLanguage"
+        />
 
         <!-- Always present, even when there is only one stage and one language
              to pick from — it is the control that answers "I can't see what I'm
@@ -132,6 +130,7 @@ import type { Event, PartnerTemplate } from '@/services/api'
 import type { CoverElementBoxes, CoverElementId } from '@/services/api/types/template.types'
 import PreviewFrame from '../showcase-preview/PreviewFrame.vue'
 import InertIframe from '../showcase-preview/InertIframe.vue'
+import TemplateSegmented, { type TemplateSegmentedOption } from './TemplateSegmented.vue'
 import {
   resolvePreviewRenderer,
   type PreviewFrameDescriptor,
@@ -244,6 +243,10 @@ const visibleFrames = computed(() =>
 )
 
 const activeFrameId = ref<string>('cover')
+
+const frameOptions = computed((): TemplateSegmentedOption[] =>
+  visibleFrames.value.map((frame) => ({ value: frame.id, label: t(frame.labelKey) })),
+)
 
 const activeFrame = computed(
   () => visibleFrames.value.find((frame) => frame.id === activeFrameId.value) ?? visibleFrames.value[0] ?? null,
@@ -369,6 +372,14 @@ const previewLanguages = computed(() => {
 
 /** The frame is refetching localized content; cleared when it reports back. */
 const languageSwitching = ref(false)
+
+const languageOptions = computed((): TemplateSegmentedOption[] =>
+  previewLanguages.value.map((lang) => ({
+    value: lang,
+    label: lang.toUpperCase(),
+    disabled: languageSwitching.value,
+  })),
+)
 
 const selectLanguage = (language: string) => {
   if (language === previewLanguage.value) return
@@ -657,50 +668,9 @@ onUnmounted(() => {
   gap: 0.375rem;
 }
 
-/* Glass pill segmented control (§5). Sized down from the app-wide recipe —
-   this sits in a ~340px column beside a form, not in a page header. */
-.tpl-preview__seg-group {
-  display: flex;
-  gap: 0.125rem;
-  padding: 0.1875rem;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 9999px;
-  min-width: 0;
-}
-
-.tpl-preview__seg {
-  padding: 0.25rem 0.625rem;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  line-height: 1.25rem;
-  color: rgb(71 85 105);
-  border-radius: 9999px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: all 0.3s ease;
-}
-
-.tpl-preview__seg:hover {
-  color: rgb(30 41 59);
-}
-
-.tpl-preview__seg.is-active {
-  color: #fff;
-  background: linear-gradient(to right, #2ecc71, #1e90ff);
-  box-shadow: 0 4px 6px -1px rgba(46, 204, 113, 0.2);
-}
-
-.tpl-preview__seg--lang {
+/* Two-letter codes need the tracking to read as codes rather than as a word. */
+.tpl-preview__langs :deep(.tpl-seg__item) {
   letter-spacing: 0.05em;
-}
-
-.tpl-preview__seg:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* Sized to the segmented pills beside it (34px tall) rather than to the §17
@@ -719,12 +689,21 @@ onUnmounted(() => {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 9999px;
-  transition: all 0.3s ease;
+  transition:
+    background-color 0.2s ease-out,
+    color 0.2s ease-out,
+    transform 0.15s ease-out;
 }
 
-.tpl-preview__expand:hover {
-  color: rgb(30 41 59);
-  background: rgba(255, 255, 255, 0.9);
+.tpl-preview__expand:active {
+  transform: scale(0.94);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tpl-preview__expand:hover {
+    color: rgb(30 41 59);
+    background: rgba(255, 255, 255, 0.9);
+  }
 }
 
 .tpl-preview__body {
@@ -826,7 +805,7 @@ onUnmounted(() => {
   opacity: 1;
 }
 
-.tpl-preview.is-fullscreen .tpl-preview__seg-group,
+.tpl-preview.is-fullscreen :deep(.tpl-seg),
 .tpl-preview.is-fullscreen .tpl-preview__expand {
   background: rgba(15, 23, 42, 0.82);
   border-color: rgba(148, 163, 184, 0.22);
@@ -836,14 +815,17 @@ onUnmounted(() => {
 /* `:not(.is-active)` deliberately: these selectors outweigh the active pill's
    own rule, and without it the selected stage would lose its white-on-gradient
    label. */
-.tpl-preview.is-fullscreen .tpl-preview__seg:not(.is-active),
+.tpl-preview.is-fullscreen :deep(.tpl-seg__item:not(.is-active)),
 .tpl-preview.is-fullscreen .tpl-preview__expand {
   color: rgb(203 213 225);
 }
 
-.tpl-preview.is-fullscreen .tpl-preview__seg:not(.is-active):hover,
+.tpl-preview.is-fullscreen :deep(.tpl-seg__item:not(.is-active):hover),
 .tpl-preview.is-fullscreen .tpl-preview__expand:hover {
   color: #fff;
+}
+
+.tpl-preview.is-fullscreen .tpl-preview__expand:hover {
   background: rgba(30, 41, 59, 0.95);
 }
 
@@ -877,7 +859,7 @@ onUnmounted(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tpl-preview__seg,
+  /* TemplateSegmented handles its own reduced-motion case. */
   .tpl-preview__expand,
   .tpl-preview.is-fullscreen .tpl-preview__controls,
   .tpl-preview.is-fullscreen .tpl-preview__hint,

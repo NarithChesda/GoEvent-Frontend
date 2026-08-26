@@ -5,19 +5,10 @@
         <!-- Backdrop (hidden on mobile since modal is fullscreen) -->
         <div class="hidden lg:block absolute inset-0 bg-slate-950/60 backdrop-blur-sm" @click="handleModalClose" />
 
-        <!-- Modal Wrapper (for positioning close button outside on desktop) -->
+        <!-- Modal Wrapper. Now only the transform target of the open/close
+             transition (`.modal-enter-active > .relative`); it used to also
+             anchor a close button that hung off the modal's corner. -->
         <div class="relative w-full h-full lg:w-auto lg:h-auto">
-          <!-- Floating Close Button (outside modal, desktop only) -->
-          <button
-            ref="closeButtonRef"
-            @click="handleModalClose"
-            class="hidden lg:flex absolute -top-3 -right-3 z-20 w-10 h-10 rounded-full bg-white text-slate-400 ring-1 ring-slate-200/80 shadow-lg shadow-slate-950/20 items-center justify-center transition-all hover:text-slate-700 hover:ring-slate-300 hover:scale-105 active:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
-            :aria-label="t('management.browseTemplateModal.closeModal')"
-            type="button"
-          >
-            <X class="w-5 h-5" />
-          </button>
-
           <!-- Modal Content -->
           <div
             ref="modalRef"
@@ -41,7 +32,7 @@
               <nav class="w-56 h-full overflow-y-auto px-3 py-4 custom-scrollbar" :aria-label="t('management.browseTemplateModal.sidebar.filtersLabel')">
                 <!-- Package Filter -->
                 <div class="mb-5">
-                  <h3 class="px-3 mb-1.5 text-[0.6875rem] font-semibold text-slate-400 uppercase tracking-widest">{{ t('management.browseTemplateModal.sidebar.packageLabel') }}</h3>
+                  <h3 :class="[SECTION_HEADING, 'px-3 mb-1.5']">{{ t('management.browseTemplateModal.sidebar.packageLabel') }}</h3>
                   <div class="flex flex-col gap-0.5">
                     <button
                       type="button"
@@ -75,7 +66,7 @@
 
                 <!-- Category Filter -->
                 <div>
-                  <h3 class="px-3 mb-1.5 text-[0.6875rem] font-semibold text-slate-400 uppercase tracking-widest">{{ t('management.browseTemplateModal.sidebar.categoryLabel') }}</h3>
+                  <h3 :class="[SECTION_HEADING, 'px-3 mb-1.5']">{{ t('management.browseTemplateModal.sidebar.categoryLabel') }}</h3>
                   <div class="flex flex-col gap-0.5">
                     <!-- All Categories -->
                     <button
@@ -112,39 +103,20 @@
             <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-white">
               <!-- Mobile Header -->
               <div class="lg:hidden">
-                <!-- Tab Switcher Row (partner users only): sliding gradient thumb, close button never moves.
-                     Hidden while the template editor is open — it has its own
-                     header, and tab switching mid-edit isn't a thing. -->
+                <!-- Tab Switcher Row (partner users only). Hidden while the
+                     template editor is open — it has its own header, and tab
+                     switching mid-edit isn't a thing. -->
                 <div v-if="isPartner && !isPartnerFormOpen" class="flex items-center gap-3 px-4 pt-4 pb-2">
-                  <div class="relative flex flex-1 p-1 bg-slate-100 rounded-full">
-                    <span
-                      aria-hidden="true"
-                      class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] shadow-md shadow-[#2ecc71]/20 transition-transform duration-300 ease-out"
-                      :class="activeTab === 'my-templates' ? 'translate-x-full' : ''"
-                    />
-                    <button
-                      type="button"
-                      @click="setActiveTab('browse')"
-                      :class="[
-                        'relative flex-1 py-2 rounded-full text-[0.8125rem] font-semibold transition-colors duration-300',
-                        activeTab === 'browse' ? 'text-white' : 'text-slate-600 active:text-slate-800',
-                      ]"
-                    >{{ t('management.browseTemplateModal.tabs.browseAll') }}</button>
-                    <button
-                      type="button"
-                      @click="setActiveTab('my-templates')"
-                      :class="[
-                        'relative flex-1 py-2 rounded-full text-[0.8125rem] font-semibold transition-colors duration-300 flex items-center justify-center gap-1.5',
-                        activeTab === 'my-templates' ? 'text-white' : 'text-slate-600 active:text-slate-800',
-                      ]"
-                    >
-                      <LayoutTemplate class="w-3.5 h-3.5" />
-                      {{ t('management.browseTemplateModal.tabs.myTemplates') }}
-                    </button>
-                  </div>
+                  <TemplateSegmented
+                    :model-value="activeTab"
+                    :options="mobileTabOptions"
+                    :aria-label="t('management.browseTemplateModal.title')"
+                    fluid
+                    @update:model-value="(v) => setActiveTab(v as 'browse' | 'my-templates')"
+                  />
                   <button
                     @click="handleModalClose"
-                    class="flex-shrink-0 w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center transition-all hover:bg-slate-200 hover:text-slate-700 active:scale-95"
+                    :class="BTN_ICON"
                     :aria-label="t('management.browseTemplateModal.closeModal')"
                     type="button"
                   >
@@ -154,7 +126,7 @@
 
                 <!-- Search + Filters (collapse smoothly when leaving the browse tab) -->
                 <div
-                  class="overflow-hidden transition-all duration-300 ease-in-out"
+                  class="overflow-hidden transition-[max-height,opacity] duration-[250ms] ease-out"
                   :class="activeTab === 'browse' ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'"
                 >
                   <!-- Search Row: search input + package/category filter icon buttons -->
@@ -167,40 +139,33 @@
                         type="text"
                         :placeholder="t('management.browseTemplateModal.search.placeholder')"
                         :aria-label="t('management.browseTemplateModal.search.ariaLabel')"
-                        class="w-full h-10 pl-11 pr-4 text-base bg-slate-100 border border-transparent rounded-full transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100 placeholder:text-slate-400"
+                        :class="[SEARCH_FIELD, 'h-10 pl-11 pr-4 text-base']"
                       />
                     </div>
 
-                    <!-- Package Filter Icon Button (opens bottom sheet) -->
+                    <!-- Package + Category filters (each opens a bottom sheet).
+                         An active filter is an option among alternatives, not a
+                         view you are in, so it wears the tint-and-ring the plan
+                         cards and rail items wear — the brand gradient stays
+                         reserved for the tab switcher and the confirm button. -->
                     <button
                       type="button"
                       @click="isPlanSheetOpen = true"
                       aria-haspopup="dialog"
                       :aria-expanded="isPlanSheetOpen"
                       :aria-label="planChipLabel"
-                      class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-300"
-                      :class="
-                        selectedPlan !== null
-                          ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
-                          : 'bg-slate-100 text-slate-600 active:bg-slate-200'
-                      "
+                      :class="filterIconClass(selectedPlan !== null)"
                     >
                       <component :is="currentPlanOption.icon" class="w-[1.125rem] h-[1.125rem]" />
                     </button>
 
-                    <!-- Category Filter Icon Button (opens bottom sheet) -->
                     <button
                       type="button"
                       @click="isCategorySheetOpen = true"
                       aria-haspopup="dialog"
                       :aria-expanded="isCategorySheetOpen"
                       :aria-label="categoryChipLabel"
-                      class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-300"
-                      :class="
-                        selectedCategoryId !== null
-                          ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
-                          : 'bg-slate-100 text-slate-600 active:bg-slate-200'
-                      "
+                      :class="filterIconClass(selectedCategoryId !== null)"
                     >
                       <component :is="currentCategoryIcon" class="w-[1.125rem] h-[1.125rem]" />
                     </button>
@@ -209,7 +174,7 @@
                     <button
                       v-if="!isPartner"
                       @click="handleModalClose"
-                      class="flex-shrink-0 w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center transition-all hover:bg-slate-200 hover:text-slate-700 active:scale-95"
+                      :class="[BTN_ICON, 'w-10 h-10']"
                       :aria-label="t('management.browseTemplateModal.closeModal')"
                       type="button"
                     >
@@ -233,36 +198,17 @@
                   {{ t('management.browseTemplateModal.title') }}
                 </h2>
 
-                <!-- Sliding gradient thumb, same control as the mobile row -->
-                <div v-if="isPartner && !isPartnerFormOpen" class="relative flex p-1 bg-slate-100 rounded-full flex-shrink-0">
-                  <span
-                    aria-hidden="true"
-                    class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] shadow-md shadow-[#2ecc71]/20 transition-transform duration-300 ease-out"
-                    :class="activeTab === 'my-templates' ? 'translate-x-full' : ''"
-                  />
-                  <button
-                    type="button"
-                    @click="setActiveTab('browse')"
-                    :class="[
-                      'relative w-24 py-1.5 rounded-full text-xs font-semibold transition-colors duration-300',
-                      activeTab === 'browse' ? 'text-white' : 'text-slate-600 hover:text-slate-800',
-                    ]"
-                  >{{ t('management.browseTemplateModal.tabs.browse') }}</button>
-                  <button
-                    type="button"
-                    @click="setActiveTab('my-templates')"
-                    :class="[
-                      'relative w-24 py-1.5 rounded-full text-xs font-semibold transition-colors duration-300 flex items-center justify-center gap-1.5',
-                      activeTab === 'my-templates' ? 'text-white' : 'text-slate-600 hover:text-slate-800',
-                    ]"
-                  >
-                    <LayoutTemplate class="w-3.5 h-3.5" />
-                    {{ t('management.browseTemplateModal.tabs.mine') }}
-                  </button>
-                </div>
+                <!-- Same control as the mobile row, same component -->
+                <TemplateSegmented
+                  v-if="isPartner && !isPartnerFormOpen"
+                  :model-value="activeTab"
+                  :options="desktopTabOptions"
+                  :aria-label="t('management.browseTemplateModal.title')"
+                  @update:model-value="(v) => setActiveTab(v as 'browse' | 'my-templates')"
+                />
 
                 <div v-if="activeTab === 'browse' && !isPartnerFormOpen" class="relative ml-auto w-full max-w-xs">
-                  <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden="true" />
+                  <Search class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden="true" />
                   <label for="template-search" class="sr-only">{{ t('management.browseTemplateModal.search.srLabel') }}</label>
                   <input
                     id="template-search"
@@ -270,13 +216,30 @@
                     type="text"
                     :placeholder="t('management.browseTemplateModal.search.placeholder')"
                     :aria-label="t('management.browseTemplateModal.search.ariaLabel')"
-                    class="w-full pl-10 pr-4 py-2 text-sm bg-slate-100 border border-transparent rounded-xl transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100 placeholder:text-slate-400"
+                    :class="[SEARCH_FIELD, 'h-10 pl-11 pr-4 text-sm']"
                   />
                 </div>
 
                 <!-- Teleport target. `display: contents` so whatever a pane
                      sends up sits directly in this flex row. -->
                 <div ref="headerSlotEl" class="contents" />
+
+                <!-- Close, last in the row so it holds the top-right corner
+                     whatever a pane teleports in beside it — those groups carry
+                     `ml-auto`, so they pack up against this rather than past it.
+                     It used to hang off the modal's outer corner at
+                     `-top-3 -right-3`, overlapping the rounding and sitting on
+                     the backdrop instead of on the chrome. Inside, it is the
+                     same control the mobile row already had, aligned with the
+                     header's own baseline and spaced by its padding. -->
+                <button
+                  @click="handleModalClose"
+                  :class="[BTN_ICON, 'w-10 h-10 -mr-2']"
+                  :aria-label="t('management.browseTemplateModal.closeModal')"
+                  type="button"
+                >
+                  <X class="w-5 h-5" />
+                </button>
               </div>
 
               <!-- Package Bottom Sheet (mobile only) -->
@@ -296,7 +259,7 @@
                   class="lg:hidden fixed inset-x-0 bottom-0 z-40 bg-white rounded-t-3xl shadow-2xl pb-[max(env(safe-area-inset-bottom),0.75rem)]"
                 >
                   <div class="w-10 h-1 rounded-full bg-slate-300 mx-auto mt-3" aria-hidden="true" />
-                  <h3 class="px-5 pt-4 pb-1 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <h3 :class="[SECTION_HEADING, 'px-5 pt-4 pb-1']">
                     {{ t('management.browseTemplateModal.sidebar.packageLabel') }}
                   </h3>
                   <div class="py-1">
@@ -312,13 +275,13 @@
                         :class="[
                           'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors',
                           selectedPlan === option.value
-                            ? 'bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20'
+                            ? 'bg-gradient-to-br from-[#2ecc71]/15 to-[#1e90ff]/15 ring-1 ring-sky-300'
                             : 'bg-slate-100',
                         ]"
                       >
                         <component
                           :is="option.icon"
-                          :class="['w-[1.125rem] h-[1.125rem]', selectedPlan === option.value ? 'text-[#2ecc71]' : 'text-slate-500']"
+                          :class="['w-[1.125rem] h-[1.125rem]', optionIconClass(selectedPlan === option.value)]"
                         />
                       </span>
                       <span
@@ -327,7 +290,7 @@
                           selectedPlan === option.value ? 'font-semibold text-slate-900' : 'font-medium text-slate-700',
                         ]"
                       >{{ option.label }}</span>
-                      <Check v-if="selectedPlan === option.value" class="w-5 h-5 text-[#2ecc71] flex-shrink-0" />
+                      <Check v-if="selectedPlan === option.value" class="w-5 h-5 text-[#1e90ff] flex-shrink-0" />
                     </button>
                   </div>
                 </div>
@@ -350,7 +313,7 @@
                   class="lg:hidden fixed inset-x-0 bottom-0 z-40 bg-white rounded-t-3xl shadow-2xl pb-[max(env(safe-area-inset-bottom),0.75rem)]"
                 >
                   <div class="w-10 h-1 rounded-full bg-slate-300 mx-auto mt-3" aria-hidden="true" />
-                  <h3 class="px-5 pt-4 pb-1 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <h3 :class="[SECTION_HEADING, 'px-5 pt-4 pb-1']">
                     {{ t('management.browseTemplateModal.sidebar.categoryLabel') }}
                   </h3>
                   <div class="py-1 max-h-[60vh] overflow-y-auto overscroll-contain">
@@ -370,7 +333,7 @@
                           selectedCategoryId === null ? 'font-semibold text-slate-900' : 'font-medium text-slate-700',
                         ]"
                       >{{ t('management.browseTemplateModal.filters.all') }}</span>
-                      <Check v-if="selectedCategoryId === null" class="w-5 h-5 text-[#2ecc71] flex-shrink-0" />
+                      <Check v-if="selectedCategoryId === null" class="w-5 h-5 text-[#1e90ff] flex-shrink-0" />
                     </button>
                     <button
                       v-for="category in categories"
@@ -393,7 +356,7 @@
                       >{{ category.name }}</span>
                       <Check
                         v-if="selectedCategoryId === category.id"
-                        class="w-5 h-5 text-[#2ecc71] flex-shrink-0"
+                        class="w-5 h-5 text-[#1e90ff] flex-shrink-0"
                       />
                     </button>
                   </div>
@@ -454,11 +417,15 @@
                       {{ t('management.browseTemplateModal.footer.selected', { name: activeSelectedTemplate?.name }) }}
                     </span>
                   </div>
+                  <!-- The modal's terminal commitment, and the same act as the
+                       editor's "Save Changes" — so the same object. This is a
+                       bar (see BTN_PRIMARY_BAR): the check disc beside it is
+                       already a pill. -->
                   <button
                     ref="confirmButtonRef"
                     @click="handleConfirmSelection"
                     :disabled="selecting"
-                    class="px-5 lg:px-6 py-2.5 text-sm rounded-full lg:rounded-xl font-semibold transition-all flex items-center gap-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white shadow-md shadow-[#2ecc71]/20 hover:shadow-sky-500/35 hover:-translate-y-px active:translate-y-0 active:scale-95 lg:active:scale-100 disabled:opacity-70 disabled:hover:translate-y-0 flex-shrink-0"
+                    :class="BTN_PRIMARY_BAR"
                     type="button"
                   >
                     <Loader2 v-if="selecting" class="w-4 h-4 animate-spin" />
@@ -493,7 +460,17 @@ import TemplateGrid from './template/TemplateGrid.vue'
 import TemplateEmptyState from './template/TemplateEmptyState.vue'
 import TemplateMessage from './template/TemplateMessage.vue'
 import PartnerTemplatesPanel from './template/PartnerTemplatesPanel.vue'
+import TemplateSegmented, { type TemplateSegmentedOption } from './template/TemplateSegmented.vue'
 import { TEMPLATES_HEADER_SLOT } from './template/templatesHeaderSlot'
+import {
+  BTN_ICON,
+  BTN_PRIMARY_BAR,
+  OPTION_BASE,
+  OPTION_IDLE,
+  OPTION_SELECTED,
+  SECTION_HEADING,
+  optionIconClass,
+} from './template/templateUi'
 import {
   X,
   Check,
@@ -567,6 +544,26 @@ const setActiveTab = (tab: 'browse' | 'my-templates'): void => {
   activeTab.value = tab
 }
 
+// The desktop row has the width for the fuller wording; the phone row doesn't.
+// Same control either way — only the strings differ.
+const desktopTabOptions = computed((): TemplateSegmentedOption[] => [
+  { value: 'browse', label: t('management.browseTemplateModal.tabs.browse') },
+  {
+    value: 'my-templates',
+    label: t('management.browseTemplateModal.tabs.mine'),
+    icon: LayoutTemplate,
+  },
+])
+
+const mobileTabOptions = computed((): TemplateSegmentedOption[] => [
+  { value: 'browse', label: t('management.browseTemplateModal.tabs.browseAll') },
+  {
+    value: 'my-templates',
+    label: t('management.browseTemplateModal.tabs.myTemplates'),
+    icon: LayoutTemplate,
+  },
+])
+
 // The desktop header row the panes below teleport their own controls into, so
 // each one doesn't open a second full-width bar. See templatesHeaderSlot.ts.
 const headerSlotEl = ref<HTMLElement | null>(null)
@@ -575,7 +572,6 @@ provide(TEMPLATES_HEADER_SLOT, headerSlotEl)
 // Template refs for focus management
 const modalRef = ref<HTMLElement>()
 const searchInputRef = ref<HTMLInputElement>()
-const closeButtonRef = ref<HTMLButtonElement>()
 const confirmButtonRef = ref<HTMLButtonElement>()
 
 // Track initialization state to prevent race condition
@@ -755,48 +751,59 @@ const selectPlan = (plan: PlanValue): void => {
   isPlanSheetOpen.value = false
 }
 
-// Shared class helpers for sidebar nav items and mobile filter chips
+/**
+ * Sidebar filters, in the modal's one "chosen option" vocabulary — the same
+ * tint-and-ring the editor's section rail and its plan cards wear. This used to
+ * be a white card with `text-sky-700`, which was a fourth way of saying
+ * "selected" inside a modal that already had three.
+ */
 const navItemClass = (active: boolean): string =>
-  [
-    'flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left cursor-pointer',
-    active
-      ? 'bg-white text-sky-700 shadow-sm ring-1 ring-slate-200/80'
-      : 'text-slate-600 hover:bg-white/70 hover:text-slate-900',
-  ].join(' ')
+  `${OPTION_BASE} flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-sm font-medium text-left ${
+    active ? OPTION_SELECTED : `${OPTION_IDLE} ring-transparent`
+  }`
 
 const navIconClass = (active: boolean): string =>
-  `w-4 h-4 flex-shrink-0 transition-colors ${active ? 'text-sky-600' : 'text-slate-400'}`
+  `w-4 h-4 flex-shrink-0 transition-colors duration-200 ${optionIconClass(active)}`
+
+/**
+ * Search sits in chrome beside pill controls, so it is a pill — one shape, both
+ * breakpoints. It was `rounded-full` on the phone and `rounded-xl` on the
+ * desktop, which is the same field changing shape for no reason.
+ */
+const SEARCH_FIELD =
+  'w-full bg-slate-100 border border-transparent rounded-full transition-[background-color,border-color,box-shadow] duration-200 ease-out placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100'
+
+/** Icon-only filter trigger. Active = a chosen option, per the vocabulary. */
+const filterIconClass = (active: boolean): string =>
+  `${OPTION_BASE} flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full active:scale-[0.94] ${
+    active
+      ? 'bg-gradient-to-br from-[#2ecc71]/15 to-[#1e90ff]/15 ring-sky-300 text-[#1e90ff]'
+      : 'bg-slate-100 ring-transparent text-slate-600 hover:bg-slate-200 hover:text-slate-700'
+  }`
 
 // Focus trap implementation
 const handleKeyDown = (event: KeyboardEvent): void => {
   if (!props.isOpen || !modalRef.value) return
 
   if (event.key === 'Tab') {
+    // A plain wrap. The close button used to live outside `modalRef` — hanging
+    // off the modal's corner — so it had to be spliced into the cycle by hand;
+    // now that it sits in the header row, this query already finds it in its
+    // real DOM order.
     const focusableElements = modalRef.value.querySelectorAll<HTMLElement>(
       'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
     )
     const firstElement = focusableElements[0]
     const lastElement = focusableElements[focusableElements.length - 1]
 
-    // Include close button in focus trap
-    const closeBtn = closeButtonRef.value
-
     if (event.shiftKey) {
-      // Shift + Tab: going backwards
-      if (document.activeElement === firstElement || document.activeElement === closeBtn) {
+      if (document.activeElement === firstElement) {
         event.preventDefault()
         lastElement?.focus()
       }
-    } else {
-      // Tab: going forwards
-      if (document.activeElement === lastElement) {
-        event.preventDefault()
-        if (closeBtn) {
-          closeBtn.focus()
-        } else {
-          firstElement?.focus()
-        }
-      }
+    } else if (document.activeElement === lastElement) {
+      event.preventDefault()
+      firstElement?.focus()
     }
   }
 }

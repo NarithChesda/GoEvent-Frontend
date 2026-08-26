@@ -18,7 +18,7 @@
     <button
       v-if="hasFilters"
       @click="$emit('clearFilters')"
-      class="mt-5 sm:mt-6 inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white text-slate-700 font-semibold rounded-xl ring-1 ring-slate-200 shadow-sm transition-all duration-200 hover:ring-slate-300 hover:shadow hover:-translate-y-px text-sm"
+      :class="[BTN_SECONDARY, 'mt-5 sm:mt-6']"
       type="button"
     >
       <RotateCcw class="w-4 h-4 text-slate-400" />
@@ -30,6 +30,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { Palette, RotateCcw } from 'lucide-vue-next'
+import { BTN_SECONDARY } from './templateUi'
 
 interface Props {
   hasFilters: boolean

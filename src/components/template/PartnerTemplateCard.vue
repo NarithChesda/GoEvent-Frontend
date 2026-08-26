@@ -1,9 +1,9 @@
 <template>
   <div
     :class="[
-      'group relative bg-white rounded-2xl overflow-hidden transition-all duration-300',
+      'group relative bg-white rounded-2xl overflow-hidden transition-[box-shadow,transform] duration-200 ease-out',
       isApproved
-        ? 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50'
+        ? 'cursor-pointer active:scale-[0.985] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50'
         : 'cursor-default',
       isSelected && isApproved
         ? 'ring-2 ring-[#1e90ff] ring-offset-2 ring-offset-slate-50 shadow-xl shadow-sky-500/10'
@@ -23,7 +23,7 @@
         v-if="template.preview_image && !imageError"
         :src="template.preview_image"
         :alt="`${template.name} preview`"
-        class="w-full h-full object-cover transition-all duration-500 ease-out"
+        class="w-full h-full object-cover transition-[transform,opacity] duration-500 ease-out"
         :class="{
           'opacity-0': imageLoading,
           'opacity-100': !imageLoading,
@@ -82,12 +82,19 @@
         >
           {{ template.name }}
         </h4>
-        <p
+        <!-- Same plan chip the browse grid uses, so a partner's own templates
+             and the catalogue read as one shelf. It was plain grey text here
+             and a coloured pill there. -->
+        <span
           v-if="template.package_plan"
-          :class="['text-[0.625rem] mt-0.5', hasImage ? 'text-white/70' : 'text-slate-500']"
+          :class="[
+            'inline-flex items-center gap-1 mt-1 text-[0.625rem] sm:text-[0.6875rem] font-medium px-2 py-0.5 rounded-full',
+            hasImage ? 'bg-white/20 text-white/95 backdrop-blur-sm' : 'bg-slate-100 text-slate-600',
+          ]"
         >
+          <component :is="isStandardPlan ? Crown : Sparkles" class="w-3 h-3 flex-shrink-0" />
           {{ template.package_plan.name }}
-        </p>
+        </span>
       </div>
     </div>
 
@@ -96,7 +103,7 @@
       <button
         type="button"
         @click.stop="emit('edit', template)"
-        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 active:scale-95 transition-all"
+        :class="BTN_GHOST_SM"
         :title="t('management.partnerTemplatesPanel.card.editTitle')"
       >
         <Pencil class="w-3.5 h-3.5" />
@@ -107,7 +114,7 @@
         v-if="canSubmit"
         type="button"
         @click.stop="emit('submit', template)"
-        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-sky-600 hover:bg-sky-50 active:scale-95 transition-all"
+        :class="[BTN_GHOST_SM, 'text-sky-600 hover:text-sky-700 hover:bg-sky-50']"
         :title="t('management.partnerTemplatesPanel.card.submitTitle')"
       >
         <Send class="w-3.5 h-3.5" />
@@ -117,7 +124,7 @@
       <button
         type="button"
         @click.stop="emit('delete', template)"
-        class="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 active:scale-95 transition-all ml-auto"
+        :class="[BTN_ICON_MICRO, 'ml-auto hover:text-red-600 hover:bg-red-50']"
         :title="t('management.partnerTemplatesPanel.card.deleteTitle')"
         :aria-label="t('management.partnerTemplatesPanel.card.deleteTitle')"
       >
@@ -137,8 +144,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ImageOff, Check, Pencil, Send, Trash2, Clock, CheckCircle, XCircle, FileEdit, type LucideIcon } from 'lucide-vue-next'
+import { ImageOff, Check, Crown, Pencil, Send, Sparkles, Trash2, Clock, CheckCircle, XCircle, FileEdit, type LucideIcon } from 'lucide-vue-next'
 import type { PartnerTemplate } from '../../services/api'
+import { BTN_GHOST_SM, BTN_ICON_MICRO } from './templateUi'
 
 interface Props {
   template: PartnerTemplate
@@ -162,6 +170,9 @@ const imageError = ref(false)
 const hasImage = computed(() => !!props.template.preview_image && !imageError.value)
 
 const isApproved = computed(() => props.template.status === 'approved')
+const isStandardPlan = computed(() =>
+  (props.template.package_plan?.name ?? '').toLowerCase().includes('standard'),
+)
 const canSubmit = computed(() =>
   props.template.status === 'draft' || props.template.status === 'rejected'
 )

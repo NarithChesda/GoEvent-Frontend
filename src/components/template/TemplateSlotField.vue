@@ -1,6 +1,6 @@
 <template>
   <div ref="rootRef" class="relative">
-    <label v-if="label" :for="fieldId" class="block mb-1 text-xs font-medium text-slate-600">{{ label }}</label>
+    <label v-if="label" :for="fieldId" :class="[FIELD_LABEL, 'mb-1']">{{ label }}</label>
     <div class="flex items-stretch gap-1">
       <!-- Colors accept any name (extras still count toward the positional
            fallbacks), so that variant stays a real text input. Font types are a
@@ -12,7 +12,7 @@
         type="text"
         :maxlength="maxlength"
         :placeholder="placeholder"
-        class="flex-1 min-w-0 px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+        :class="[FIELD, 'flex-1 min-w-0']"
         @input="onInput"
         @focus="open = true"
         @keydown.esc="open = false"
@@ -21,7 +21,7 @@
         v-else
         :id="fieldId"
         type="button"
-        class="flex-1 min-w-0 flex items-center px-2 py-1.5 bg-slate-100 border border-transparent rounded-lg text-sm text-left transition-colors hover:bg-slate-200/70 focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+        :class="[FIELD, 'flex-1 min-w-0 flex items-center text-left hover:bg-slate-200/70']"
         @click="open = !open"
       >
         <span class="truncate">{{ selectedLabel }}</span>
@@ -96,6 +96,7 @@ import { computed, onUnmounted, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Check, ChevronDown } from 'lucide-vue-next'
 import type { TemplateSlotOption } from './templateSlots'
+import { FIELD, FIELD_LABEL } from './templateUi'
 
 interface Props {
   modelValue: string

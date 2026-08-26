@@ -2,7 +2,7 @@
   <div
     @click="handleSelect"
     :class="[
-      'group relative cursor-pointer bg-white rounded-2xl overflow-hidden transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50',
+      'group relative cursor-pointer bg-white rounded-2xl overflow-hidden transition-[box-shadow,transform] duration-200 ease-out active:scale-[0.985] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50',
       isSelected
         ? 'ring-2 ring-[#1e90ff] ring-offset-2 ring-offset-slate-50 shadow-xl shadow-sky-500/10'
         : 'ring-1 ring-slate-200/80 hover:ring-slate-300 hover:shadow-xl hover:shadow-slate-900/10 hover:-translate-y-0.5',
@@ -20,7 +20,7 @@
         v-if="template.preview_image && !imageError"
         :src="template.preview_image"
         :alt="`${template.name} template preview`"
-        class="w-full h-full object-cover transition-all duration-500 ease-out group-hover:scale-[1.04]"
+        class="w-full h-full object-cover transition-[transform,opacity] duration-500 ease-out group-hover:scale-[1.04]"
         :class="{ 'opacity-0': imageLoading, 'opacity-100': !imageLoading }"
         loading="lazy"
         @load="handleImageLoad"
@@ -41,15 +41,12 @@
         <ImageOff class="w-10 h-10" />
       </div>
 
-      <!-- Price pill (top-right, minimal) -->
-      <div class="absolute top-2 right-2 z-10">
+      <!-- Price pill (top-right) — only when there is a price to state. A free
+           template used to carry a "Free" pill up here AND a "Free Basic" chip
+           in the footer, which is the same fact twice on a 180px-wide card. -->
+      <div v-if="!isFree" class="absolute top-2 right-2 z-10">
         <span
-          :class="[
-            'inline-flex items-center px-2.5 py-1 rounded-full text-[0.6875rem] font-semibold backdrop-blur-md',
-            isFree
-              ? 'bg-white/90 text-slate-600 ring-1 ring-black/10'
-              : 'bg-black/55 text-white ring-1 ring-white/20',
-          ]"
+          class="inline-flex items-center px-2.5 py-1 rounded-full text-[0.6875rem] font-semibold backdrop-blur-md bg-black/55 text-white ring-1 ring-white/20"
         >
           {{ priceLabel }}
         </span>
@@ -91,13 +88,20 @@
         >
           {{ template.name }}
         </h4>
-        <!-- Plan -->
+        <!-- Plan. The tier reads from its icon — the same Crown/Sparkles pair
+             the sidebar filter and the editor's plan cards use — not from a
+             tier colour. Sky-for-basic and violet-for-standard put two more
+             saturated hues on a card that already carries a status pill, a
+             price pill and whatever the artwork is doing. -->
         <span
           :class="[
-            'text-[0.625rem] sm:text-[0.6875rem] font-medium px-2 py-0.5 rounded-full inline-block',
-            packageColorClass,
+            'inline-flex items-center gap-1 text-[0.625rem] sm:text-[0.6875rem] font-medium px-2 py-0.5 rounded-full',
+            hasImage
+              ? 'bg-white/20 text-white/95 backdrop-blur-sm'
+              : 'bg-slate-100 text-slate-600',
           ]"
         >
+          <component :is="isStandardPlan ? Crown : Sparkles" class="w-3 h-3 flex-shrink-0" />
           {{ template.package_plan.name }}
         </span>
       </div>
@@ -106,7 +110,7 @@
       <div v-if="isSelected && template.youtube_preview_url" class="absolute inset-0 flex items-center justify-center">
         <button
           type="button"
-          class="inline-flex items-center gap-1.5 px-3.5 py-2 sm:px-4 sm:py-2 rounded-full bg-white/95 text-slate-900 text-xs sm:text-sm font-semibold shadow-xl backdrop-blur-md transition-all hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e90ff]"
+          class="inline-flex items-center gap-1.5 px-3.5 py-2 sm:px-4 sm:py-2 rounded-full bg-white/95 text-slate-900 text-xs sm:text-sm font-semibold shadow-xl backdrop-blur-md transition-[background-color,transform] duration-200 ease-out hover:bg-white active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e90ff]"
           @click.stop="openPreview"
         >
           <Play class="w-3.5 h-3.5 fill-current" />
@@ -120,7 +124,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Check, ImageOff, Play } from 'lucide-vue-next'
+import { Check, Crown, ImageOff, Play, Sparkles } from 'lucide-vue-next'
 import type { EventTemplate } from '../../services/api'
 
 interface Props {
@@ -175,17 +179,7 @@ const openPreview = (): void => {
   }
 }
 
-const packageColorClass = computed(() => {
-  const planName = props.template.package_plan.name.toLowerCase()
-
-  if (planName.includes('basic')) {
-    return 'bg-sky-500/90 text-white'
-  } else if (planName.includes('standard')) {
-    return 'bg-violet-500/90 text-white'
-  }
-
-  return hasImage.value
-    ? 'bg-white/20 text-white backdrop-blur-sm'
-    : 'bg-slate-200/80 text-slate-600'
-})
+const isStandardPlan = computed(() =>
+  props.template.package_plan.name.toLowerCase().includes('standard'),
+)
 </script>

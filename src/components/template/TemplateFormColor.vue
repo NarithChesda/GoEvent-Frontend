@@ -1,11 +1,11 @@
 <template>
   <div class="space-y-1.5">
-    <label v-if="label" :for="hexFieldId" class="block text-xs font-medium text-slate-600">{{ label }}</label>
+    <label v-if="label" :for="hexFieldId" :class="FIELD_LABEL">{{ label }}</label>
     <div class="flex items-center gap-2">
       <input
         :value="modelValue || '#000000'"
         type="color"
-        class="w-10 h-[2.375rem] p-0.5 border border-slate-200 rounded-lg cursor-pointer hover:border-sky-300 transition-colors flex-shrink-0"
+        class="w-10 h-[2.375rem] p-0.5 bg-slate-100 border border-transparent rounded-lg cursor-pointer transition-[background-color,border-color] duration-200 ease-out hover:border-sky-300 flex-shrink-0"
         :aria-label="t('management.partnerTemplateForm.colorField.pick', { name })"
         @input="onInput"
       />
@@ -16,7 +16,7 @@
         maxlength="7"
         :placeholder="placeholder"
         :aria-label="t('management.partnerTemplateForm.colorField.hex', { name })"
-        class="flex-1 min-w-0 px-3 py-2 bg-slate-100 border border-transparent rounded-lg text-sm uppercase tabular-nums transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+        :class="[FIELD, 'flex-1 min-w-0 uppercase tabular-nums']"
         @input="onInput"
       />
       <slot name="actions" />
@@ -27,6 +27,7 @@
 <script setup lang="ts">
 import { useId } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { FIELD, FIELD_LABEL } from './templateUi'
 
 /**
  * Swatch + hex pair. This markup was copied out six times across the partner
