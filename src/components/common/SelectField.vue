@@ -102,8 +102,8 @@
               type="button"
               :aria-pressed="isSelected(option)"
               @click="selectOption(option)"
-              class="w-full flex items-center gap-3 transition-colors active:bg-slate-100"
-              :class="isMobile ? 'px-5 py-3' : 'px-4 py-2.5 hover:bg-slate-50'"
+              class="option-row w-full flex items-center gap-3 transition-colors active:bg-slate-100"
+              :class="isMobile ? 'px-5 py-3' : 'px-4 py-2.5'"
             >
               <span
                 v-if="option.color"
@@ -233,10 +233,18 @@ const positionPanel = async () => {
   const panelHeight = panel.offsetHeight
   const left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8))
   let top = rect.bottom + 8
+  let flipped = false
   if (top + panelHeight > window.innerHeight - 8) {
     top = Math.max(8, rect.top - panelHeight - 8)
+    flipped = true
   }
-  panelStyle.value = { width: `${width}px`, top: `${top}px`, left: `${left}px` }
+  // Scale from the edge nearest the trigger (see DateTimePickerField).
+  panelStyle.value = {
+    width: `${width}px`,
+    top: `${top}px`,
+    left: `${left}px`,
+    transformOrigin: flipped ? 'bottom left' : 'top left',
+  }
 }
 
 const openPicker = async () => {
@@ -263,6 +271,12 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+@media (hover: hover) and (pointer: fine) {
+  .option-row:hover {
+    background-color: rgb(248 250 252); /* slate-50 */
+  }
+}
+
 .sf-fade-enter-active,
 .sf-fade-leave-active {
   transition: opacity 0.25s ease-out;
@@ -289,17 +303,21 @@ onUnmounted(() => {
 
 /* Desktop popover */
 .sf-pop-enter-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.18s ease-out,
+    transform 0.18s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .sf-pop-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.13s ease-out,
+    transform 0.13s ease-out;
 }
 
 .sf-pop-enter-from,
 .sf-pop-leave-to {
   opacity: 0;
-  transform: translateY(-6px);
+  transform: scale(0.97) translateY(-4px);
 }
 
 @media (prefers-reduced-motion: reduce) {
