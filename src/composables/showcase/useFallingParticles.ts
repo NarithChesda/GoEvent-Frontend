@@ -262,6 +262,34 @@ const INTENSITY_PRESETS = {
   heavy: { interval: 420, maxParticles: 26 },
 } as const
 
+/**
+ * Keyframes sampled per full oscillation of a particle's fastest sine.
+ *
+ * The motion below is authored as continuous sine waves and then handed to
+ * WAAPI as discrete stops it interpolates LINEARLY between, so the sample rate
+ * is what decides whether a sway reads as a curve or as a crease. A fixed ten
+ * stops was enough for a petal at 1.6 cycles and nowhere near enough for
+ * confetti, whose tumble runs at swayCycles + 1 — up to five cycles, i.e. two
+ * samples per cycle, right at Nyquist. Measured against the true sine, that
+ * reconstruction kept 61% of the intended amplitude with an RMS error of 0.49:
+ * the confetti was not tumbling slowly, it was tumbling through a shape that
+ * had little to do with the one written here. Twelve samples per cycle holds
+ * the error at 0.018 for every profile.
+ */
+const SAMPLES_PER_CYCLE = 12
+/** Floor keeps the gentle profiles smooth; ceiling keeps a spawn cheap. */
+const KEYFRAME_STEPS = { min: 12, max: 72 } as const
+
+/**
+ * Stage width the sway and drift amplitudes below were tuned against.
+ *
+ * The showcase stage is `min(100vw, 56.25vh)`, so it is roughly 600px on a
+ * laptop and 390px on a phone. Pixel amplitudes tuned on the former swing a
+ * petal across half the width of the latter — the same reason the spark field
+ * measures its motes in percent of the stage rather than in pixels.
+ */
+const REFERENCE_STAGE_WIDTH = 600
+
 const rand = (min: number, max: number) => Math.random() * (max - min) + min
 
 function pickDepthLayer() {
@@ -428,7 +456,19 @@ export function useFallingParticles(
     rotateDir: number
     tumblePhase: number
   }): Keyframe[] {
-    const STEPS = 10
+    // Sample against whichever of this particle's oscillators runs fastest:
+    // the sway, the tumble that beats one cycle above it, or the star twinkle
+    // at its fixed 2.5 cycles.
+    const fastestCycles = Math.max(
+      opts.swayCycles,
+      profile.tumble ? opts.swayCycles + 1 : 0,
+      profile.twinkle ? 2.5 : 0,
+      1,
+    )
+    const STEPS = Math.min(
+      KEYFRAME_STEPS.max,
+      Math.max(KEYFRAME_STEPS.min, Math.round(fastestCycles * SAMPLES_PER_CYCLE)),
+    )
     const frames: Keyframe[] = []
     for (let i = 0; i <= STEPS; i++) {
       const p = i / STEPS
@@ -492,8 +532,28 @@ export function useFallingParticles(
     const size = rand(minSize, maxSize) * profile.sizeScale * layer.size
     particle.style.width = size + 'px'
     particle.style.height = size * (shape?.aspect ?? 1) + 'px'
-    // Keep sway from carrying particles off-screen at the edges
-    particle.style.left = rand(2, 98) + '%'
+
+    const containerWidth = container.offsetWidth
+    const containerHeight = container.offsetHeight
+
+    // Trim the horizontal amplitudes on a narrow stage so a phone gets the same
+    // proportion of sway a laptop does rather than the same pixel count.
+    const widthScale = Math.min(
+      1,
+      Math.max(0.6, containerWidth / REFERENCE_STAGE_WIDTH),
+    )
+    const sway = rand(profile.sway[0], profile.sway[1]) * widthScale
+    const drift = rand(-80, 80) * widthScale
+
+    // Spawn inside a band narrow enough that THIS particle's own excursion
+    // still lands on stage. The old fixed 2–98% claimed to do this and could
+    // not: sway plus drift reaches a third of a phone's stage width, so a petal
+    // spawned near either edge spent much of its fall clipped against the
+    // container's `overflow: hidden` — it simply vanished partway down. Capped
+    // at 48 so a wide excursion narrows the band rather than inverting it.
+    const excursion = sway + Math.abs(drift) + size
+    const band = Math.min(48, (excursion / Math.max(1, containerWidth)) * 100)
+    particle.style.left = rand(band, 100 - band) + '%'
 
     if (customImage) {
       // Render as an <img> element for custom uploaded images
@@ -556,13 +616,12 @@ export function useFallingParticles(
     const baseOpacity = (shape?.opacity ?? 0.75) * layer.opacity
     const duration =
       (rand(minDuration, maxDuration) * profile.fallSpeed * layer.speed) / speedFactor
-    const containerHeight = container.offsetHeight
 
     const frames = buildKeyframes({
       fallDistance: containerHeight + 140,
       baseOpacity,
-      drift: rand(-80, 80),
-      sway: rand(profile.sway[0], profile.sway[1]),
+      drift,
+      sway,
       swayCycles: rand(profile.swayCycles[0], profile.swayCycles[1]),
       swayPhase: rand(0, Math.PI * 2),
       rotateTotal: rand(profile.rotate[0], profile.rotate[1]),

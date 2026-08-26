@@ -401,3 +401,34 @@ p {
     max-width: 450px;
   }
 }
+
+/* Reduced motion preference.
+ *
+ * MainContentStage.vue already carries this block for its own copies of these
+ * two classes; the cover's were missed, so a guest who asks for reduced motion
+ * still got the 30px lift under the title / logo / invite rows and a gleam
+ * cycling behind the header for as long as the cover was up.
+ *
+ * The fade is kept rather than dropped: reduced motion means removing movement,
+ * not removing the animation — the rows should still arrive, just without
+ * travelling to get there. Redefining the keyframes inside the query is what
+ * strips the translate while leaving `.animate-fadeIn`'s stagger delays intact.
+ */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-fadeIn {
+    animation-duration: 0.4s;
+  }
+
+  .gleam-animation {
+    animation: none;
+  }
+}
