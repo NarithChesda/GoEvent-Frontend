@@ -104,12 +104,12 @@
     </div>
 
     <!-- Cartouche -->
-    <div class="copy-block">
+    <div class="copy-block" :class="{ 'copy-script-fallback': showcaseLanguage !== 'en' }">
       <div class="copy-rule copy-rule-top">
         <OrnamentRule :gold="gold" :gold-light="goldLight" />
       </div>
 
-      <p class="copy-label gold-text">Save the Date</p>
+      <p class="copy-label gold-text">{{ saveTheDateLabel }}</p>
 
       <p v-if="numericDate" class="copy-date gold-text">{{ numericDate }}</p>
 
@@ -157,6 +157,12 @@ import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useFeaturedPhotoGeometry } from '@/composables/showcase/useFeaturedPhotoGeometry'
 import { fallingEffectKeyOf } from '@/composables/showcase/useFallingParticles'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import {
+  formatDateLocalized,
+  toKhmerNumerals,
+  translateRSVP,
+  type SupportedLanguage,
+} from '@/utils/translations'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import FallingEffect from './FallingEffect.vue'
 import type { FallingEffectConfig } from '@/services/api/types/template.types'
@@ -175,6 +181,9 @@ interface Props {
   blurEffectColor?: string
   /** Falling particle effect config from template_assets. */
   fallingEffect?: FallingEffectConfig | null
+  /** The showcase's own language (its switcher), not the app UI's — this stage
+   *  is guest-facing, so its cartouche follows the invitation. */
+  currentLanguage?: string
   getMediaUrl: (url: string) => string
   /** Preview-only: hold at the fully-revealed state (frame drawn + cartouche
    *  wiped in) instead of blooming out and emitting transitionComplete.
@@ -335,23 +344,36 @@ const eventDate = computed(() => {
   return Number.isNaN(date.getTime()) ? null : date
 })
 
-/** The reference's cartouche form: day · month · year, the hero of the block. */
+const showcaseLanguage = computed<SupportedLanguage>(() =>
+  props.currentLanguage === 'kh' || props.currentLanguage === 'zh-cn' ? props.currentLanguage : 'en',
+)
+
+const saveTheDateLabel = computed(() =>
+  translateRSVP('save_the_date', showcaseLanguage.value),
+)
+
+/**
+ * The reference's cartouche form: day · month · year, the hero of the block.
+ * The separators and the zero-padding are the drawing, so they hold in every
+ * language; only the digits change, since Khmer sets its own numerals and a
+ * cartouche of Arabic figures under Khmer copy reads as a different typeface.
+ */
 const numericDate = computed(() => {
   const date = eventDate.value
   if (!date) return null
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${pad(date.getDate())} · ${pad(date.getMonth() + 1)} · ${date.getFullYear()}`
+  const pad = (n: number) => {
+    const padded = String(n).padStart(2, '0')
+    return showcaseLanguage.value === 'kh' ? toKhmerNumerals(padded) : padded
+  }
+  const year =
+    showcaseLanguage.value === 'kh' ? toKhmerNumerals(date.getFullYear()) : date.getFullYear()
+  return `${pad(date.getDate())} · ${pad(date.getMonth() + 1)} · ${year}`
 })
 
 const formattedDate = computed(() => {
   const date = eventDate.value
   if (!date) return null
-  return date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
+  return formatDateLocalized(date, 'long', showcaseLanguage.value)
 })
 
 // The 9–20px handed to <FallingEffect> above. Sized from the reference's own
@@ -1014,6 +1036,28 @@ const replay = async () => {
   text-transform: uppercase;
   font-weight: 500;
   line-height: 1.6;
+}
+
+/* The engraved look above is built out of wide tracking on uppercase Latin.
+   Khmer has no case, and tracking is actively wrong for it: the letter-spacing
+   is inserted between a base consonant and its own subscripts and vowel signs,
+   pulling a cluster apart into pieces that no longer read as one letter. So the
+   tracking goes, the trailing-only indent that balanced it goes with it, and the
+   lines get room to wrap instead of running out of the cartouche. */
+.copy-script-fallback .copy-label,
+.copy-script-fallback .copy-date,
+.copy-script-fallback .copy-date-long {
+  letter-spacing: normal;
+  white-space: normal;
+}
+
+.copy-script-fallback .copy-label {
+  padding-left: 0;
+  line-height: 1.5;
+}
+
+.copy-script-fallback .copy-date-long {
+  line-height: 1.7;
 }
 
 /* Polished metal: the lettering is a gold gradient clipped to the glyphs, with

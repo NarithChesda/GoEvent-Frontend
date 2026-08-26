@@ -10,6 +10,8 @@ export const rsvpTranslations: Record<
     rsvp_header_birthday: string
     rsvp_header_default: string
     invite_text: string
+    /** The transition stage's headline, between the cover and the invitation. */
+    save_the_date: string
     /** Placeholder guest name used where no real guest link/name is available
      *  (e.g. the manage-page live preview). */
     default_guest_name: string
@@ -217,6 +219,7 @@ export const rsvpTranslations: Record<
     rsvp_header_birthday: 'Will you join our birthday party?',
     rsvp_header_default: 'Will you attend our event?',
     invite_text: "You're Invited",
+    save_the_date: 'Save the Date',
     default_guest_name: 'Honored Guest',
 
     // Buttons
@@ -422,6 +425,7 @@ export const rsvpTranslations: Record<
     rsvp_header_birthday: 'តើលោកអ្នកនឹងចូលរួមពិធីជប់លៀងខួបកំណើតរបស់យើងខ្ញុំទេ?',
     rsvp_header_default: 'តើលោកអ្នកនឹងចូលរួមព្រឹត្តិការណ៍របស់យើងខ្ញុំទេ?',
     invite_text: 'សូមគោរពអញ្ជើញ',
+    save_the_date: 'រក្សាទុកកាលបរិច្ឆេទ',
     default_guest_name: 'ភ្ញៀវកិត្តិយស',
 
     // Buttons
@@ -627,6 +631,7 @@ export const rsvpTranslations: Record<
     rsvp_header_birthday: '您会参加我们的生日派对吗？',
     rsvp_header_default: '您会参加我们的活动吗？',
     invite_text: '诚邀您',
+    save_the_date: '敬请预留佳期',
     default_guest_name: '尊敬的来宾',
 
     // Buttons
