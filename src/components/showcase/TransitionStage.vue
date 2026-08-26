@@ -70,9 +70,6 @@
         </div>
       </div>
 
-      <!-- One-time soft light sweep across the photo after it sharpens -->
-      <div class="light-sweep" />
-
       <!-- Cinematic vignette hugging the edges -->
       <div class="photo-vignette" />
 
@@ -100,21 +97,6 @@
       </button>
     </div>
 
-    <!-- Floating bokeh particles in template accent color -->
-    <div
-      class="bokeh-field"
-      :class="{ 'show': isCouplePhotoVisible }"
-      :style="{ '--bokeh-accent': bokehAccentColor }"
-      aria-hidden="true"
-    >
-      <span
-        v-for="particle in bokehParticles"
-        :key="particle.id"
-        class="bokeh"
-        :style="particle.style"
-      />
-    </div>
-
     <!-- Footer scrim. Split out of .cloud-footer so the falling field can sit
          between the two: the mist is blur-effect colour at up to 94% alpha, so
          anything behind it is washed to that colour — which is exactly what
@@ -138,9 +120,9 @@
          both fields drew at full strength for the ~2.4s before the photo goes
          opaque and the ~1.2s while it dissolves, at visibly doubled density.
 
-         Layered above the photo, the bokeh and the scrim so the petals keep
-         their template colour, below the save-the-date copy — the same order
-         the cover uses. -->
+         Layered above the photo and the scrim so the petals keep their
+         template colour, below the save-the-date copy — the same order the
+         cover uses. -->
     <FallingEffect
       :key="fallingEffectKey"
       class="transition-petals"
@@ -155,19 +137,33 @@
     <!-- Save the date -->
     <div class="cloud-footer" :class="{ 'show': isContentVisible }">
       <div class="save-the-date-container">
-        <!-- Fine line drawing outward from center -->
-        <div class="reveal-line" :style="{ background: revealLineGradient }" />
+        <!-- Fine lines drawing outward from centre. Two of them: one alone
+             reads as an underline under a heading, which is not what this block
+             is — the pair frames the copy into a cartouche, the way the door
+             transition's two ornament rules bracket its lettering. -->
+        <div class="reveal-line reveal-line-top" :style="{ background: revealLineGradient }" />
 
-        <!-- "Save the Date" blooms in letter by letter -->
-        <p class="save-the-date-label" :style="{ color: saveDateTextColor }">
-          <span
-            v-for="(char, i) in saveTheDateChars"
-            :key="i"
-            class="std-char"
-            :style="{ animationDelay: `${STD_CHAR_BASE_DELAY_MS + i * 65}ms` }"
-            >{{ char === ' ' ? ' ' : char }}</span
-          >
-        </p>
+        <!-- "Save the Date" blooms in letter by letter, then one pass of light
+             crosses it. The gleam is a second copy of the same words stacked on
+             the first: the letters underneath animate per-character opacity and
+             blur, and `background-clip: text` on that same element would have
+             to paint the gradient for all of them at once, which kills the
+             bloom. Overlaying it keeps the two independent — the base copy is
+             untouched, and the gleam is purely additive. -->
+        <div class="label-stack">
+          <p class="save-the-date-label" :style="{ color: saveDateTextColor }">
+            <span
+              v-for="(char, i) in saveTheDateChars"
+              :key="i"
+              class="std-char"
+              :style="{ animationDelay: `${STD_CHAR_BASE_DELAY_MS + i * 65}ms` }"
+              >{{ char === ' ' ? ' ' : char }}</span
+            >
+          </p>
+          <p class="save-the-date-label save-the-date-gleam" aria-hidden="true">
+            {{ SAVE_THE_DATE_TEXT }}
+          </p>
+        </div>
 
         <p
           v-if="formattedDate"
@@ -179,6 +175,10 @@
         >
           {{ formattedDate }}
         </p>
+
+        <!-- Draws last, once the date has settled, so the frame closes around
+             finished copy rather than around copy still arriving. -->
+        <div class="reveal-line reveal-line-bottom" :style="{ background: revealLineGradient }" />
       </div>
     </div>
   </div>
@@ -298,6 +298,27 @@ const revealLineGradient = computed(
     `linear-gradient(to right, transparent 0%, ${flourishColor.value} 25%, ${flourishColor.value} 75%, transparent 100%)`,
 )
 
+/**
+ * The gleam's hotspot. Deliberately a lightened flourish colour rather than the
+ * near-white the door transition uses: that cartouche sits on a near-black photo
+ * scrim where white is the brightest thing available, but this copy sits on a
+ * pale vellum mist band, and a white hotspot there erases the letters into the
+ * band for the length of the pass. Lifting the copy's own hue keeps the words
+ * legible through the highlight, which is what separates a gleam from a gap.
+ */
+const mixToWhite = (hex6: string, amount: number) => {
+  const channel = (at: number) => {
+    const value = parseInt(hex6.slice(at, at + 2), 16)
+    return Math.round(value + (255 - value) * amount)
+      .toString(16)
+      .padStart(2, '0')
+  }
+  return `#${channel(1)}${channel(3)}${channel(5)}`
+}
+
+const gleamColor = computed(() => mixToWhite(flourishColor.value, 0.45))
+const gleamCoreColor = computed(() => mixToWhite(flourishColor.value, 0.68))
+
 const saveDateTextColor = flourishColor
 
 const dateTextColor = flourishColor
@@ -329,20 +350,32 @@ const mistGradient = computed(
 )
 
 /**
- * Legibility guard, not decoration. The copy is the template's primary colour
- * and the band is its `blur-effect` colour, and nothing stops a template from
- * pointing both slots at the same hue — so the halo always leans away from the
- * band: barely-there on the usual light/white band (where it just crisps the
- * script's hairlines), a soft light glow if a template makes the band dark.
+ * Legibility guard first, dimension second. The copy is the template's primary
+ * colour and the band is its `blur-effect` colour, and nothing stops a template
+ * from pointing both slots at the same hue — so the stack always leans away from
+ * the band: light band gets a dark cast, dark band gets a light glow.
+ *
+ * Two layers rather than one, which is what the door transition's cartouche does
+ * with its `drop-shadow(0 2px 0 …) drop-shadow(0 10px 26px …)` pair — a tight
+ * contact edge that separates the glyph from its ground, then a wider soft cast
+ * that puts air under it. One layer can only do one of those, which is why the
+ * script read flat next to the door's engraved lettering.
+ *
+ * The values are this stage's, not the door's. The door's are tuned for near-
+ * black photo scrim and would smother a pale vellum band; here the light branch
+ * leads with a white contact highlight (letterpress lift on a pale ground) and
+ * keeps the cast well under the door's weight.
  */
 const copyHalo = computed(() =>
   relativeLuminance(mistColor.value) > 0.6
-    ? '0 1px 2px rgba(0, 0, 0, 0.18)'
-    : '0 0 10px rgba(255, 255, 255, 0.45)',
+    ? '0 1px 0 rgba(255, 255, 255, 0.65), 0 2px 6px rgba(0, 0, 0, 0.16)'
+    : '0 0 10px rgba(255, 255, 255, 0.45), 0 2px 8px rgba(0, 0, 0, 0.35)',
 )
 
 const paletteStyle = computed<Record<string, string>>(() => ({
   '--ts-copy-halo': copyHalo.value,
+  '--ts-gleam': gleamColor.value,
+  '--ts-gleam-core': gleamCoreColor.value,
 }))
 
 /** Holds the script back until the flourish line above it has finished drawing;
@@ -351,47 +384,8 @@ const paletteStyle = computed<Record<string, string>>(() => ({
  *  stylesheet. */
 const STD_CHAR_BASE_DELAY_MS = 400
 
-const saveTheDateChars = computed(() => 'Save the Date'.split(''))
-
-// Drifting bokeh sparkles: randomized once per mount so each viewing feels organic
-interface BokehParticle {
-  id: number
-  style: Record<string, string>
-}
-
-const bokehParticles = ref<BokehParticle[]>([])
-
-// Only the randomized geometry is frozen at reveal time — the colour is left to
-// a CSS var set on the field so it stays live. The manage-page preview can swap
-// the template underneath an already-revealed stage (trying one on from the
-// Templates modal), and baking the accent into each particle at generate time
-// left the sparkles glowing in the previous template's colour until remount.
-const bokehAccentColor = computed(() => props.accentColor || props.primaryColor || '#ffffff')
-
-const generateBokeh = () => {
-  const particles: BokehParticle[] = []
-  const count = 14
-  for (let i = 0; i < count; i++) {
-    const size = 4 + Math.random() * 10
-    particles.push({
-      id: i,
-      style: {
-        '--bokeh-color': i % 3 === 0 ? '#ffffff' : 'var(--bokeh-accent)',
-        left: `${Math.random() * 100}%`,
-        bottom: `${-5 + Math.random() * 55}%`,
-        width: `${size}px`,
-        height: `${size}px`,
-        '--drift-x': `${-30 + Math.random() * 60}px`,
-        '--float-duration': `${7 + Math.random() * 7}s`,
-        animationDelay: `${Math.random() * 4}s`,
-        // Peak brightness, applied by the keyframes rather than set on the
-        // element — see .bokeh for why the loop needs an opacity envelope.
-        '--bokeh-peak': `${0.25 + Math.random() * 0.4}`,
-      },
-    })
-  }
-  bokehParticles.value = particles
-}
+const SAVE_THE_DATE_TEXT = 'Save the Date'
+const saveTheDateChars = computed(() => SAVE_THE_DATE_TEXT.split(''))
 
 const formattedDate = computed(() => {
   if (!props.eventStartDate) return null
@@ -456,11 +450,11 @@ const revealPhoto = () => {
 //   1200ms - The photograph has the frame; last cover ornament clears. The veil
 //            has been dissolving since 400ms but holds ~85% to here, then
 //            releases and drifts upward off the photograph (→2600ms)
-//   1400ms - Bokeh rises (→3400ms). The view cues music here too
+//   1400ms - The view cues music here
 //   1800ms - Footer scrim rises
 //   1900ms - Flourish line draws outward from centre (lands ~2800ms)
 //   2200ms - "Save the Date" blooms letter by letter, 65ms apart (last letter ~3900ms)
-//   2600ms - Veil fully lifted, and the light sweep crosses the now-sharp photo
+//   2600ms - Veil fully lifted
 //            on that same frame (clears ~4800ms)
 //   3250ms - Date tracks in (settles ~4450ms), then a ~1.3s hold to read it
 //   5800ms - Everything starts dissolving (1.2s) — and `dissolveStart` fires, so
@@ -484,8 +478,6 @@ const clearTimers = () => {
 }
 
 const runRevealSequence = () => {
-  generateBokeh()
-
   // The photograph rises through the tail of the cover's exit — but only once
   // the image is actually on screen to rise. See the two constants above.
   couplePhotoTimer = setTimeout(() => {
@@ -754,53 +746,6 @@ const replay = async () => {
   opacity: 0;
 }
 
-/* One-time soft sheen sweeping diagonally across after the veil lifts */
-.light-sweep {
-  position: absolute;
-  inset: -20%;
-  z-index: 2;
-  background: linear-gradient(
-    105deg,
-    transparent 40%,
-    rgba(255, 255, 255, 0.18) 48%,
-    rgba(255, 255, 255, 0.32) 50%,
-    rgba(255, 255, 255, 0.18) 52%,
-    transparent 60%
-  );
-  transform: translateX(-100%);
-  opacity: 0;
-}
-
-/* The band is only in frame for the middle ~half of its travel, so its
-   brightness envelope has to peak there. Ramping opacity 1 → 0 across the whole
-   sweep instead spent full strength while the band was still off the left edge,
-   and had it half-faded by the time it crossed the subject — a smear rather
-   than a pass of light. `linear` for the same reason: an eased sweep crawls at
-   the off-screen ends and hurries through the part you can actually see.
-
-   Retimed to finish inside the stage's life: 3200 → 5400ms against a dissolve
-   that starts at 5800ms. At 2.6s from a 2.4s delay it was still crossing when
-   the stage began to go, so the sheen got cut mid-pass. */
-.show .light-sweep {
-  animation: lightSweep 2.2s linear 2.2s 1 forwards;
-}
-
-@keyframes lightSweep {
-  0% {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  22% {
-    opacity: 1;
-  }
-  78% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-}
 
 /* Cinematic vignette: draws the eye to the couple */
 .photo-vignette {
@@ -817,8 +762,8 @@ const replay = async () => {
   /* Arrives *with* the photograph (0.1s behind it, over 1.1s), not 2.2s after.
      This is most of what made the reveal read as a square: a full-bleed
      rectangle crossfading in with bright hard corners is a slab, and every
-     other element in this stage — the veil, the mist band, the bokeh — is soft
-     and graded. Landing the vignette on the arrival means the photograph is
+     other element in this stage — the veil, the mist band — is soft and
+     graded. Landing the vignette on the arrival means the photograph is
      edge-softened from the first frame it is visible, so it reads as a framed
      photograph resolving rather than a plate laid over the cover. Its opacity
      also multiplies with the container's own ramp, so it comes up gently. */
@@ -916,69 +861,6 @@ const replay = async () => {
   background: #ffffff;
 }
 
-/* ---------- Bokeh particles ---------- */
-
-.bokeh-field {
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  opacity: 0;
-  transition: opacity 2s var(--ts-ease-atmos) 1s;
-}
-
-.bokeh-field.show {
-  opacity: 1;
-}
-
-.stage-fade-out .bokeh-field {
-  opacity: 0;
-  transition: opacity 1s ease-out;
-}
-
-/* Opacity belongs in the keyframes, not on the element: the loop is infinite,
-   so a mote pinned at a fixed opacity is still fully lit 90vh up when the
-   animation wraps — and teleports back to the bottom at that same brightness.
-   Fading it in off the bottom and out at the top makes the wrap invisible, and
-   reads as bokeh drifting through a shallow depth of field rather than as dots
-   on a conveyor. Worst in the manage-page preview, which holds this stage at
-   full reveal (freezeAtPeak) long past the 7s the live showcase gives it.
-
-   It also fixes the delay: a mote used to sit visible and motionless at its
-   start point for up to 4s of `animation-delay`. At opacity 0 it simply isn't
-   there until it starts rising.
-
-   `linear` because the rise should be steady — the 50% stop still bends the
-   horizontal drift, so the path curves rather than running a straight
-   diagonal. */
-.bokeh {
-  position: absolute;
-  border-radius: 50%;
-  background: var(--bokeh-color);
-  filter: blur(2px);
-  box-shadow: 0 0 8px var(--bokeh-color);
-  opacity: 0;
-  animation: bokehFloat var(--float-duration) linear infinite;
-}
-
-@keyframes bokehFloat {
-  0% {
-    transform: translate(0, 0);
-    opacity: 0;
-  }
-  18% {
-    opacity: var(--bokeh-peak);
-  }
-  50% {
-    transform: translate(calc(var(--drift-x) * 0.6), -45vh);
-  }
-  72% {
-    opacity: var(--bokeh-peak);
-  }
-  100% {
-    transform: translate(var(--drift-x), -90vh);
-    opacity: 0;
-  }
-}
 
 /* Handoff ramp from the shared CoverStage field — deliberately the same
    durations and easings as .couple-photo-container, since that photo is what
@@ -1071,13 +953,17 @@ const replay = async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: calc(var(--ts-w) * 0.022);
   padding-inline: calc(var(--ts-w) * 0.05);
 }
 
-/* Fine line that draws outward from the center */
+/* Fine lines that draw outward from the centre. The width was a flat 140px
+   while everything around it — the date's size, the container's padding — was
+   already a ratio of the stage. At 0.36 it measures the same 140px on the
+   390px phone it was tuned against, and now holds that proportion everywhere
+   else instead of growing stubby on a wide stage. */
 .reveal-line {
-  width: 140px;
+  width: calc(var(--ts-w) * 0.36);
   height: 1px;
   transform: scaleX(0);
   opacity: 0;
@@ -1088,8 +974,15 @@ const replay = async () => {
    drawing when the name was half written, so the line read as a late underline
    rather than as a frame being set. Now it lands first (a strong ease-out is
    ~97% done by 0.6s) and the letters bloom into a finished frame. */
-.show .reveal-line {
+.show .reveal-line-top {
   animation: lineDraw 0.9s var(--ts-ease-out) 0.1s forwards;
+}
+
+/* 2.5s: the date finishes its tracking settle at 2.65s, and the stage begins
+   dissolving at 4.0s from .show. Drawing here closes the frame just as the copy
+   stops moving and still leaves ~600ms of settled, finished block to read. */
+.show .reveal-line-bottom {
+  animation: lineDraw 0.9s var(--ts-ease-out) 2.5s forwards;
 }
 
 @keyframes lineDraw {
@@ -1103,10 +996,17 @@ const replay = async () => {
   }
 }
 
-/* Elegant script, revealed letter by letter */
+/* Elegant script, revealed letter by letter.
+   The size was a flat 2.6rem while .event-date directly below it was already
+   clamped against --ts-w — so the two drifted apart on any stage that wasn't
+   the ~390px phone they were eyeballed on, the script staying put while the
+   date grew or shrank under it. 0.107 reproduces 2.6rem at 390px exactly, so
+   the common case is untouched; the clamps stop a very narrow stage from
+   overflowing the nowrap line and a very wide one from turning the script into
+   a banner. */
 .save-the-date-label {
   font-family: 'Great Vibes', cursive;
-  font-size: 2.6rem;
+  font-size: clamp(1.9rem, calc(var(--ts-w) * 0.107), 3.1rem);
   line-height: 1.25;
   margin: 0;
   font-weight: 400;
@@ -1114,6 +1014,69 @@ const replay = async () => {
   text-shadow: var(--ts-copy-halo);
 }
 
+/* Sizes itself to the base copy, so the gleam laid over it with inset: 0
+   lands on exactly the same glyphs. */
+.label-stack {
+  position: relative;
+}
+
+/* The pass of light. Same geometry as the door transition's goldSheen — a
+   260%-wide gradient travelling 150% -> -60% — so the two stages' lettering
+   catches light the same way. The band is transparent either side of the
+   hotspot, so everywhere but the highlight the copy underneath shows through
+   completely untouched.
+
+   No text-shadow here: the fill is transparent, and the halo the base copy
+   carries would otherwise paint over the inside of the glyphs rather than
+   behind them. */
+.save-the-date-gleam {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  text-shadow: none;
+  background-image: linear-gradient(
+    100deg,
+    transparent 38%,
+    var(--ts-gleam) 47%,
+    var(--ts-gleam-core) 50%,
+    var(--ts-gleam) 53%,
+    transparent 62%
+  );
+  background-size: 260% 100%;
+  background-position: 150% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  opacity: 0;
+}
+
+/* 2.2s: the last letter finishes blooming at ~2.08s, so the light crosses
+   finished words rather than words still arriving. It clears at 3.7s, ahead
+   of the 4.0s dissolve. Linear because a pass of light travels at a constant
+   speed — an eased sweep hesitates in the middle, which is the part being
+   watched. The opacity envelope keeps the band from popping on at full
+   strength at one edge and cutting off at the other. */
+.show .save-the-date-gleam {
+  animation: labelGleam 1.5s linear 2.2s forwards;
+}
+
+@keyframes labelGleam {
+  0% {
+    background-position: 150% 0;
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    background-position: -60% 0;
+    opacity: 0;
+  }
+}
 .std-char {
   display: inline-block;
   opacity: 0;
@@ -1196,12 +1159,8 @@ const replay = async () => {
     transition: opacity 0.8s ease;
   }
 
-  .show .light-sweep,
-  .bokeh {
-    animation: none;
-  }
-
-  .bokeh-field {
+  /* Pure decoration, and pure movement — nothing is lost by removing it. */
+  .save-the-date-gleam {
     display: none;
   }
 
@@ -1215,8 +1174,15 @@ const replay = async () => {
     animation-delay: 0s !important;
   }
 
-  .show .reveal-line {
+  .show .reveal-line-top,
+  .show .reveal-line-bottom {
     animation-duration: 0.5s;
+  }
+
+  /* Still last, but it no longer waits out a tracking settle that was removed
+     from this branch — the date fades in place here. */
+  .show .reveal-line-bottom {
+    animation-delay: 0.9s;
   }
 
   /* No lift on the band and no tracking settle on the date — both are position
