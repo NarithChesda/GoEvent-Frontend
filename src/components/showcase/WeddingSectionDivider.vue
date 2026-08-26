@@ -41,6 +41,9 @@ defineProps<Props>()
 </script>
 
 <style scoped>
+/* No hover state: a divider is decoration, not a control, and the one
+   it had started a second infinite animation on something nobody can
+   click. */
 .bow-tie-divider {
   display: flex;
   align-items: center;
@@ -50,19 +53,28 @@ defineProps<Props>()
   position: relative;
 }
 
+/* One layer. This was a solid primaryColor line at 0.4 with a
+   currentColor gradient painted over it at 0.3 — two stacked lines in
+   two different colours (the overlay resolved against inherited text
+   colour, never the brand colour), which is what made the rule read
+   muddy rather than crisp. The fade toward the outer edge is kept, as
+   a mask on the one line. */
 .divider-line {
   height: 1px;
   flex: 1;
-  opacity: 0.4;
-  position: relative;
+  opacity: 0.45;
 }
 
 .left-line {
   margin-right: 1rem;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000);
+  mask-image: linear-gradient(90deg, transparent, #000);
 }
 
 .right-line {
   margin-left: 1rem;
+  -webkit-mask-image: linear-gradient(90deg, #000, transparent);
+  mask-image: linear-gradient(90deg, #000, transparent);
 }
 
 .bow-tie-center {
@@ -73,11 +85,13 @@ defineProps<Props>()
   z-index: 2;
 }
 
+/* No idle animation. gentle-glow ran forever, on eight dividers per
+   invitation, in the reader's peripheral vision, for no purpose —
+   motion the reader sees constantly and never acts on. */
 .bow-tie-svg {
   width: 32px;
   height: 16px;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1));
-  animation: gentle-glow 4s ease-in-out infinite alternate;
 }
 
 @media (min-width: 640px) {
@@ -112,58 +126,5 @@ defineProps<Props>()
   .right-line {
     margin-left: 2rem;
   }
-}
-
-@keyframes gentle-glow {
-  0% {
-    opacity: 0.8;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1.02);
-  }
-}
-
-/* Add subtle hover effect */
-.bow-tie-divider:hover .bow-tie-svg {
-  animation: gentle-pulse 2s ease-in-out infinite;
-}
-
-.bow-tie-divider:hover .divider-line {
-  opacity: 0.6;
-  transition: opacity 0.3s ease;
-}
-
-@keyframes gentle-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 1;
-  }
-}
-
-/* Add elegant gradient effect to lines */
-.divider-line::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent, currentColor, transparent);
-  opacity: 0.3;
-}
-
-.left-line::before {
-  background: linear-gradient(90deg, transparent, currentColor);
-}
-
-.right-line::before {
-  background: linear-gradient(90deg, currentColor, transparent);
 }
 </style>
