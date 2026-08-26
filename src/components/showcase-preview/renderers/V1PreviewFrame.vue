@@ -115,7 +115,6 @@
     :background-color="backgroundColor"
     :blur-effect-color="blurEffectColor"
     :falling-effect="event.template_assets?.falling_effect"
-    :current-language="currentLanguage"
     :get-media-url="getMediaUrl"
   />
 
@@ -136,7 +135,6 @@
     :primary-font="primaryFont"
     :secondary-font="secondaryFont"
     :falling-effect="event.template_assets?.falling_effect"
-    :current-language="currentLanguage"
     :get-media-url="getMediaUrl"
   />
 

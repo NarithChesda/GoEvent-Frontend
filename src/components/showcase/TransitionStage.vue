@@ -158,17 +158,13 @@
         <!-- Fine line drawing outward from center -->
         <div class="reveal-line" :style="{ background: revealLineGradient }" />
 
-        <!-- The headline blooms in cluster by cluster -->
-        <p
-          class="save-the-date-label"
-          :class="{ 'label-script-fallback': showcaseLanguage !== 'en' }"
-          :style="{ color: saveDateTextColor }"
-        >
+        <!-- "Save the Date" blooms in letter by letter -->
+        <p class="save-the-date-label" :style="{ color: saveDateTextColor }">
           <span
             v-for="(char, i) in saveTheDateChars"
             :key="i"
             class="std-char"
-            :style="{ animationDelay: `${STD_CHAR_BASE_DELAY_MS + i * stdCharStepMs}ms` }"
+            :style="{ animationDelay: `${STD_CHAR_BASE_DELAY_MS + i * 65}ms` }"
             >{{ char === ' ' ? ' ' : char }}</span
           >
         </p>
@@ -196,7 +192,6 @@ import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useFeaturedPhotoGeometry } from '@/composables/showcase/useFeaturedPhotoGeometry'
 import { fallingEffectKeyOf } from '@/composables/showcase/useFallingParticles'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { formatDateLocalized, translateRSVP, type SupportedLanguage } from '@/utils/translations'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import FallingEffect from './FallingEffect.vue'
 import type { FallingEffectConfig } from '@/services/api/types/template.types'
@@ -217,9 +212,6 @@ interface Props {
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
-  /** The showcase's own language (its switcher), not the app UI's — this stage
-   *  is guest-facing, so its headline and date follow the invitation. */
-  currentLanguage?: string
   getMediaUrl: (url: string) => string
   /** Falling particle effect config from template_assets. */
   fallingEffect?: FallingEffectConfig | null
@@ -359,47 +351,7 @@ const paletteStyle = computed<Record<string, string>>(() => ({
  *  stylesheet. */
 const STD_CHAR_BASE_DELAY_MS = 400
 
-const showcaseLanguage = computed<SupportedLanguage>(() =>
-  props.currentLanguage === 'kh' || props.currentLanguage === 'zh-cn' ? props.currentLanguage : 'en',
-)
-
-/**
- * Intl.Segmenter is ES2022 and this project's TS lib is pinned at ES2021, so it
- * is reached through a local type rather than by widening the lib for one call.
- * The runtime check below is the real guard.
- */
-type GraphemeSegmenter = { segment: (input: string) => Iterable<{ segment: string }> }
-type SegmenterCtor = new (
-  locales?: string | string[],
-  options?: { granularity?: 'grapheme' },
-) => GraphemeSegmenter
-
-/**
- * Segmented by grapheme rather than by code unit. Khmer stacks subscripts and
- * vowel signs onto a base consonant, and `split('')` tears those apart into
- * orphaned marks that render as dotted circles — segmentation keeps each cluster
- * whole (រក្សា → រ + ក្សា). Array.from is the fallback for a runtime without it:
- * still whole code points rather than UTF-16 halves.
- */
-const saveTheDateChars = computed(() => {
-  const text = translateRSVP('save_the_date', showcaseLanguage.value)
-  const Segmenter = (Intl as unknown as { Segmenter?: SegmenterCtor }).Segmenter
-  if (!Segmenter) return Array.from(text)
-  const segmenter = new Segmenter(undefined, { granularity: 'grapheme' })
-  return Array.from(segmenter.segment(text), (part) => part.segment)
-})
-
-/**
- * 65ms is the English phrase's cadence: 13 letters, 12 gaps, the last starting
- * 780ms into the bloom — which is what the timeline below budgets for. A longer
- * translation would walk past the dissolve at a fixed step, so the stagger
- * compresses to hold the whole bloom inside that same 780ms. Shorter ones keep
- * the 65ms feel and simply land early.
- */
-const STD_BLOOM_BUDGET_MS = 780
-const stdCharStepMs = computed(() =>
-  Math.min(65, STD_BLOOM_BUDGET_MS / Math.max(saveTheDateChars.value.length - 1, 1)),
-)
+const saveTheDateChars = computed(() => 'Save the Date'.split(''))
 
 // Drifting bokeh sparkles: randomized once per mount so each viewing feels organic
 interface BokehParticle {
@@ -443,9 +395,17 @@ const generateBokeh = () => {
 
 const formattedDate = computed(() => {
   if (!props.eventStartDate) return null
-  const date = new Date(props.eventStartDate)
-  if (Number.isNaN(date.getTime())) return null
-  return formatDateLocalized(date, 'long', showcaseLanguage.value)
+  try {
+    const date = new Date(props.eventStartDate)
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+  } catch {
+    return null
+  }
 })
 
 /**
@@ -1152,22 +1112,6 @@ const replay = async () => {
   font-weight: 400;
   white-space: nowrap;
   text-shadow: var(--ts-copy-halo);
-}
-
-/* Great Vibes is Latin-only, so a Khmer or Chinese headline falls through it to
-   whatever comes next — which must be named, or the browser picks a default that
-   has nothing to do with this stage. These faces also carry far more ink per
-   glyph than a copperplate script, so the display size comes down with them and
-   the line is allowed to wrap rather than run off a phone. */
-.save-the-date-label.label-script-fallback {
-  font-family: 'Kantumruy Pro', 'Noto Sans Khmer', 'Noto Sans SC', sans-serif;
-  font-size: 1.6rem;
-  line-height: 1.5;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  white-space: normal;
-  max-width: 84%;
-  margin-inline: auto;
 }
 
 .std-char {
