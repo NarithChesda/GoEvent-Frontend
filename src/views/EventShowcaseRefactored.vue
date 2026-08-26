@@ -211,6 +211,7 @@
         :secondary-font="secondaryFont"
         :falling-effect="event.template_assets?.falling_effect"
         :get-media-url="getMediaUrl"
+        @dissolve-start="handleTransitionDissolveStart"
         @transition-complete="handleTransitionComplete"
       />
 
@@ -576,6 +577,25 @@ const openEnvelopeWithVideoSync = async () => {
   }
 }
 
+/**
+ * The transition stage is about to dissolve. Mount the invitation *behind* it
+ * now, so the dissolve is a cross-fade into it.
+ *
+ * Without this the stage spent 1.2s fading back to the cover it had already
+ * replaced, and the invitation then hard-cut in on the frame the stage
+ * unmounted — two cuts where the door flow has none. (The door flow got this
+ * right by construction: its main content is mounted throughout the swing, and
+ * its `door-transition-out` leave fade dissolves the stage over it.)
+ *
+ * Deliberately not `revealMainContent()`: that routes through
+ * `skipToMainContent`, which emits `sequentialVideoEnded` → `onEventVideoEnded`
+ * → `currentShowcaseStage = 'main_content'`, which would unmount this very
+ * stage mid-dissolve. `preRevealMainContent` only mounts the slot.
+ */
+const handleTransitionDissolveStart = () => {
+  coverStageRef.value?.preRevealMainContent()
+}
+
 const handleTransitionComplete = () => {
   // Tell CoverStage to reveal the main content slot (triggers video phase change)
   if (coverStageRef.value) {
@@ -802,6 +822,15 @@ onUnmounted(() => {
   position: relative;
   overflow: hidden;
   margin: 0 auto;
+  /* One curve for the whole cover → transition → main-content chain. The cover's
+     ornaments sliding out and the invitation's sliding back in are the same
+     gesture reversed, so they must not be shaped differently — and the built-in
+     `ease-out` they both used is too weak to shape an 0.8s travel. Declared here
+     because every stage renders inside this element and custom properties cross
+     scoped-style boundaries; each consumer still carries the literal as a
+     fallback, for the manage-page preview frame, which mounts these components
+     without this container. Matches TransitionStage's own --ts-ease-out. */
+  --sc-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 /* Small mobile phones only - full width */

@@ -62,9 +62,8 @@
     <!-- When skipDecorationSlideUp is true (after transition stage), hide instantly without slide-up -->
     <div
       v-if="decorationPhotoUrl && !templateAssets?.standard_cover_video"
-      class="absolute inset-0"
+      class="absolute inset-0 decoration-backdrop"
       :class="{
-        'transition-all duration-700 ease-out': !skipDecorationSlideUp,
         'swipe-up-hidden': isContentHidden && isDecorationAnimation && !keepDecorationBackground && !skipDecorationSlideUp,
       }"
       :style="{
@@ -276,6 +275,24 @@ defineExpose({
 </script>
 
 <style scoped>
+/* The cover backdrop's handover to the main stage's own (which mounts beneath
+   it at z-index -1, so lowering this one reveals it).
+   `transition-all` before, and only when the decoration slide-up was in play —
+   with a transition stage the class was dropped entirely and the opacity cut
+   from 1 to 0 on a single frame. That was invisible while the stage above was
+   opaque at that moment; it no longer is, now that the invitation mounts under
+   the dissolve. Naming the two properties means the transition can stay on
+   unconditionally. */
+.decoration-backdrop {
+  transition: transform 0.7s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)), opacity 0.7s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .decoration-backdrop.swipe-up-hidden {
+    transform: none;
+  }
+}
+
 /* Swipe Up Animation */
 .swipe-up-hidden {
   transform: translateY(-100%);

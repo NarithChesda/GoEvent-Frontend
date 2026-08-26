@@ -172,7 +172,7 @@
       @touchstart.passive="handleTouchStart"
       @touchmove.passive="handleTouchMove"
       @touchend="handleTouchEnd"
-      class="absolute inset-0 flex justify-center text-center transition-all duration-700 ease-out"
+      class="absolute inset-0 flex justify-center text-center cover-copy-exit"
       :class="[animationClasses.mainContentClasses.value, cursorClasses]"
       style="z-index: 30; touch-action: none;"
     >
@@ -467,6 +467,20 @@ const displayLiquidGlass = computed(() =>
   perspective-origin: 50% 44%;
   z-index: 28;
   overflow: hidden;
+}
+
+/* The cover copy's exit. Was `transition-all`, which puts every animatable
+   property of a block containing the whole cover header, guest name and
+   envelope button on a 0.7s tween — including ones that change for reasons that
+   have nothing to do with leaving. Only these two ever move. */
+.cover-copy-exit {
+  transition: transform 0.7s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)), opacity 0.7s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover-copy-exit.swipe-up-hidden {
+    transform: none;
+  }
 }
 
 /* Swipe Up Animation */

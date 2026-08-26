@@ -91,7 +91,10 @@ const { protectionAttrs } = useAssetProtection()
 .cover-decoration-right,
 .cover-decoration-top,
 .cover-decoration-bottom {
-  transition: transform 0.8s ease-out, opacity 0.8s ease-out;
+  /* Shared with the invitation's mirrored slide-in (MainContentStage's
+     .animate-slideInFrom*) — same 0.8s, same stagger, same curve, so the frame
+     leaves and returns as one gesture. */
+  transition: transform 0.8s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)), opacity 0.8s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1));
 
   /* Cast shadow lifting the ornament off the plate. `drop-shadow`, not
      `box-shadow`: these are transparent PNGs, and box-shadow would trace the
@@ -129,5 +132,16 @@ const { protectionAttrs } = useAssetProtection()
   transform: translateY(100%);
   opacity: 0;
   transition-delay: 0.4s;
+}
+
+/* The ornaments still leave — they just stop travelling the width of the screen
+   to do it. Opacity and the stagger are what carry the sequence. */
+@media (prefers-reduced-motion: reduce) {
+  .slide-out-to-left,
+  .slide-out-to-right,
+  .slide-out-to-top,
+  .slide-out-to-bottom {
+    transform: none;
+  }
 }
 </style>

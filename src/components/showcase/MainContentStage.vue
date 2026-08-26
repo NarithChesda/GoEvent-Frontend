@@ -1660,7 +1660,7 @@ onUnmounted(() => {
 
 /* Main slide animation */
 .animate-slideUp {
-  animation: slideUp 0.8s ease-out forwards;
+  animation: slideUp 0.8s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) forwards;
 }
 
 /* ===================
@@ -1688,35 +1688,38 @@ onUnmounted(() => {
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.6s ease-out forwards;
+  animation: fadeIn 0.6s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) forwards;
 }
 
 .animate-fadeInUp {
-  animation: fadeInUp 0.8s ease-out forwards;
+  animation: fadeInUp 0.8s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) forwards;
 }
 
 /* Decoration slide-in animation classes with staggered timing */
-/* Order: left → right → top → bottom */
+/* Order: left → right → top → bottom — the exact mirror of the cover's
+   slide-out (CoverDecorations.vue), down to the 0.8s and the 0.1/0.2/0.3/0.4
+   stagger, so the frame returns the way it left. Keep the two in sync; they
+   read as one gesture only because they share every value including the curve. */
 .animate-slideInFromLeft {
-  animation: slideInFromLeft 0.8s ease-out forwards;
+  animation: slideInFromLeft 0.8s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) forwards;
   animation-delay: 0.1s;
   opacity: 0;
 }
 
 .animate-slideInFromRight {
-  animation: slideInFromRight 0.8s ease-out forwards;
+  animation: slideInFromRight 0.8s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) forwards;
   animation-delay: 0.2s;
   opacity: 0;
 }
 
 .animate-slideInFromTop {
-  animation: slideInFromTop 0.8s ease-out forwards;
+  animation: slideInFromTop 0.8s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) forwards;
   animation-delay: 0.3s;
   opacity: 0;
 }
 
 .animate-slideInFromBottom {
-  animation: slideInFromBottom 0.8s ease-out forwards;
+  animation: slideInFromBottom 0.8s var(--sc-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) forwards;
   animation-delay: 0.4s;
   opacity: 0;
 }
@@ -1973,6 +1976,16 @@ onUnmounted(() => {
   .animate-fadeIn,
   .animate-fadeInUp {
     animation: none;
+  }
+
+  /* These four were missed: they carry `opacity: 0` as a base, so `animation:
+     none` would leave the ornaments invisible rather than still. They fade in
+     together instead — the shorthand also clears their stagger delay. */
+  .animate-slideInFromLeft,
+  .animate-slideInFromRight,
+  .animate-slideInFromTop,
+  .animate-slideInFromBottom {
+    animation: fadeIn 0.5s ease forwards;
   }
 
   .gleam-animation {
