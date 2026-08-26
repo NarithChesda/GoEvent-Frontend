@@ -2816,6 +2816,10 @@
       "brandingGroup": "Logos & header art"
     },
     "transitionStage": {
+      "animationGroup": "Opening Animation",
+      "animationDecoration": "Decoration (slide out)",
+      "animationDoor": "Door (split open)",
+      "animationHint": "Picks how the cover gives way and which transition follows it: decorations slide off and the invitation is unveiled, or the cover splits into two doors that swing open.",
       "sectionTitle": "Transition video",
       "video": "Video",
       "videoHint": "Plays after the cover, before the invitation appears. Used only when the event has no video of its own."
@@ -2853,9 +2857,6 @@
       "scale": "Frame Scale"
     },
     "coverLayout": {
-      "animationType": "Animation Type",
-      "animationDecoration": "Decoration (slide out)",
-      "animationDoor": "Door (split open)",
       "contentWidth": "Main Content Width",
       "contentWidthStandard": "Standard",
       "contentWidthWide": "Wide (more content width)",
@@ -2885,8 +2886,7 @@
       "left": "Left",
       "right": "Right",
       "top": "Top",
-      "bottom": "Bottom",
-      "presentationGroup": "Presentation"
+      "bottom": "Bottom"
     },
     "fallingEffect": {
       "enableLabel": "Enable Falling Particles",
@@ -2951,6 +2951,7 @@
       }
     },
     "coverGilding": {
+      "sectionTitle": "Cover Lighting",
       "enableLabel": "Gilded Cover Border",
       "enableHint": "Lights the edge of the cover artwork: a raised bevel, two travelling highlights and corner glints. Best on artwork that already has a printed border to catch the light.",
       "intensity": "Intensity",
@@ -3057,7 +3058,7 @@
       },
       "transition": {
         "label": "Transition",
-        "description": "The video guests see between the cover and the invitation."
+        "description": "How the cover opens, and what guests see between it and the invitation."
       },
       "content": {
         "label": "Main Content",

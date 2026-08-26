@@ -578,21 +578,16 @@
               </section>
             </template>
 
-            <!-- ------------------------ Cover layout ------------------------ -->
+            <!-- ----------------------- Cover lighting ----------------------- -->
+            <!-- The cover's exit animation used to head this group. It chooses
+                 the transition stage as much as it chooses the cover's exit, so
+                 it now sits in the Transition tab beside the film it plays into.
+                 What is left is lighting for the cover artwork's border: still
+                 stored in cover_stage_layout, but about this stage only. -->
             <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-4">
               <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                {{ t('management.partnerTemplateForm.coverLayout.presentationGroup') }}
+                {{ t('management.partnerTemplateForm.coverGilding.sectionTitle') }}
               </h5>
-              <TemplateFormChoice
-                v-model="animationTypeModel"
-                :label="t('management.partnerTemplateForm.coverLayout.animationType')"
-                :options="animationOptions"
-              />
-
-              <!-- Lighting for the cover artwork's border. Lives with the
-                   animation type because both describe how the cover behaves
-                   rather than what it contains, and both are stored inside
-                   cover_stage_layout. -->
               <TemplateFormSwitch
                 v-model="form.cover_stage_layout.coverGilding.enabled"
                 :icon="Sparkles"
@@ -881,12 +876,30 @@
                so opening it points the preview at that stage instead of leaving
                the partner editing one screen while looking at another.
 
-               Standard plans only (see `sections`): the basic flow's middle
-               stage is built from the event's own featured photo, with no
-               template artwork to configure, and its cover exit animation is set
-               with the rest of the cover's behaviour. -->
+               Shown on both plans, because the animation below is what picks
+               this stage's shape on either one. Only the film is standard-only:
+               the basic flow's middle stage is built from the event's own
+               featured photo, with no template artwork to configure. -->
           <template v-else-if="activeSection === 'transition'">
+            <!-- One control, two stages: it chooses the cover's exit animation
+                 *and* the transition that plays under it — decorations sliding
+                 off into a veil reveal, or the cover splitting into two doors.
+                 It used to sit in Cover, which showed half of what it does. -->
             <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
+              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                {{ t('management.partnerTemplateForm.transitionStage.animationGroup') }}
+              </h5>
+              <TemplateFormChoice v-model="animationTypeModel" :options="animationOptions" />
+              <p class="text-[0.6875rem] text-slate-400 leading-snug">
+                {{ t('management.partnerTemplateForm.transitionStage.animationHint') }}
+              </p>
+            </section>
+
+            <PlanRequiredNotice v-if="!form.package_plan_id" @pick="selectSection('basics')" />
+            <section
+              v-else-if="isStandardPlan"
+              class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3"
+            >
               <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 {{ t('management.partnerTemplateForm.transitionStage.sectionTitle') }}
               </h5>
@@ -1856,8 +1869,8 @@ function creatureTypeOptionsFor(index: number): Array<{ value: string; label: st
 // class) the form used to carry on every single select.
 // ---------------------------------------------------------------------------
 const animationOptions = computed(() => [
-  { value: 'decoration', label: t('management.partnerTemplateForm.coverLayout.animationDecoration'), icon: Sparkles },
-  { value: 'door', label: t('management.partnerTemplateForm.coverLayout.animationDoor'), icon: DoorOpen },
+  { value: 'decoration', label: t('management.partnerTemplateForm.transitionStage.animationDecoration'), icon: Sparkles },
+  { value: 'door', label: t('management.partnerTemplateForm.transitionStage.animationDoor'), icon: DoorOpen },
 ])
 
 const contentWidthOptions = computed(() => [
@@ -2414,18 +2427,24 @@ type SectionId = 'basics' | 'brand' | 'cover' | 'transition' | 'content' | 'effe
 interface SectionDescriptor {
   id: SectionId
   icon: LucideIcon
-  /** Preview frame id (see resolvePreviewRenderer) this section's edits show up on. */
-  stage: string
+  /**
+   * Preview frame id (see resolvePreviewRenderer) this section's edits show up
+   * on. A function where the answer depends on the plan — the two flows draw
+   * their middle stage from different sources, so they are two different frames.
+   */
+  stage: string | ((standard: boolean) => string)
 }
 
 const SECTION_DESCRIPTORS: SectionDescriptor[] = [
   { id: 'basics', icon: Info, stage: 'cover' },
   { id: 'brand', icon: Palette, stage: 'cover' },
   { id: 'cover', icon: ImageIcon, stage: 'cover' },
-  // Standard-only, and filtered out of the rail below on a basic plan — see
-  // `sections`. Points at the standard flow's own middle frame; the basic
-  // flow's `transition` frame has no template artwork behind it.
-  { id: 'transition', icon: Clapperboard, stage: 'event_video' },
+  // The middle stage. Standard plays the template's own film (`event_video`
+  // frame); basic composes the event's featured photo (`transition` frame).
+  // Both plans get the tab, because the opening animation inside it is what
+  // picks that stage's shape on either one — only the film upload is
+  // standard-only, and it gates itself inside the section.
+  { id: 'transition', icon: Clapperboard, stage: (standard) => (standard ? 'event_video' : 'transition') },
   { id: 'content', icon: AlignLeft, stage: 'main' },
   // Last, and pointed at the cover: the effects sit on top of both stages, and
   // two of the three (creatures, sparks) show there. The preview's own stage
@@ -2466,14 +2485,13 @@ function countAssets(fields: PartnerTemplateAssetField[]): number {
   return fields.filter((field) => form[field] instanceof File || !!props.existingTemplate?.[field]).length
 }
 
+/** Fixed for every section but the middle stage, whose frame follows the plan. */
+function resolveStage(section: SectionDescriptor): string {
+  return typeof section.stage === 'function' ? section.stage(isStandardPlan.value) : section.stage
+}
+
 const sections = computed(() =>
-  SECTION_DESCRIPTORS.filter(
-    // The one plan-dependent entry. Every other section applies to both plans
-    // and gates its own fields inside; this one would be an empty tab on a
-    // basic plan, whose middle stage is drawn from the event's featured photo
-    // and has nothing on the template to configure.
-    (section) => section.id !== 'transition' || isStandardPlan.value,
-  ).map((section) => {
+  SECTION_DESCRIPTORS.map((section) => {
     let badge = ''
     let badgeWarn = false
     switch (section.id) {
@@ -2498,7 +2516,10 @@ const sections = computed(() =>
         break
       }
       case 'transition': {
-        const count = countAssets(TRANSITION_ASSET_FIELDS)
+        // Only the film is countable, and only standard plans have one. A
+        // template demoted to basic keeps the uploaded file on the server, so
+        // count it only where the tab actually offers the slot.
+        const count = isStandardPlan.value ? countAssets(TRANSITION_ASSET_FIELDS) : 0
         if (count) badge = String(count)
         break
       }
@@ -2518,6 +2539,7 @@ const sections = computed(() =>
     }
     return {
       ...section,
+      stage: resolveStage(section),
       label: t(`management.partnerTemplateForm.sections.${section.id}.label`),
       description: t(`management.partnerTemplateForm.sections.${section.id}.description`),
       badge,
@@ -2547,19 +2569,16 @@ const previewStage = ref<string>('cover')
 function selectSection(id: SectionId): void {
   activeSection.value = id
   const descriptor = SECTION_DESCRIPTORS.find((entry) => entry.id === id)
-  if (descriptor) previewStage.value = descriptor.stage
+  if (descriptor) previewStage.value = resolveStage(descriptor)
 }
 
 /**
- * A plan switch can take away the section currently open — Transition exists
- * only on the standard flow. Left alone that renders an empty pane beside a rail
- * with nothing highlighted, so fall back to whatever the rail now starts with
- * (and re-point the preview with it, which is why this goes through
- * selectSection rather than assigning activeSection).
+ * Every section shows on both plans, so a plan switch can no longer take the
+ * open one away — but it can move the middle stage's preview frame under it, and
+ * the preview would otherwise sit on a frame the new plan doesn't render.
  */
-watch(sections, (visible) => {
-  if (visible.some((section) => section.id === activeSection.value)) return
-  selectSection((visible[0]?.id as SectionId) ?? 'basics')
+watch(isStandardPlan, () => {
+  if (activeSection.value === 'transition') selectSection('transition')
 })
 
 // --- Colors handlers ---
