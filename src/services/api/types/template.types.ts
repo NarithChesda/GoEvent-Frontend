@@ -419,19 +419,33 @@ export interface CoverStageLayout {
  *                month on the left, location on the right (the original look).
  * - `calendar` — a full month-grid calendar with the event day circled, with
  *                the location rendered below it.
+ * - `flanked`  — engraved-invitation typography: weekday | day numeral | month
+ *                on one baseline, split by vertical hairlines, year + time
+ *                beneath. No card frame.
+ * - `arch`     — the date set inside a hairline arch that draws itself on
+ *                reveal, with the type sized to fill the arch.
+ * - `ticket`   — an admit-one stub: a die-cut rounded card split by a dashed
+ *                perforation, date on the stub, weekday/time + location beside it.
+ *
+ * Every design except `panel` needs a parseable `start_date`; without one the
+ * showcase falls back to `panel`.
+ *
+ * `panel` and `ticket` set the venue themselves; `calendar`, `flanked` and
+ * `arch` are date marks and hand it to the map card header instead.
  *
  * Selected per template via `template_assets.event_details_design` and flows
  * through the showcase exactly like `falling_effect`.
  */
-export type EventDetailsDesignType = 'panel' | 'calendar'
+export type EventDetailsDesignType = 'panel' | 'calendar' | 'flanked' | 'arch' | 'ticket'
 
 /**
- * Where the calendar design's event-day marker (the hand-drawn heart around the
- * date, and the matching tint on the day number) takes its colour from.
+ * Where a date design's accent mark takes its colour from — the calendar's
+ * hand-drawn heart (and the matching tint on the day number), the `flanked`
+ * rules, the `arch` outline, the `ticket` perforation and stub numeral.
  *
- * Mirrors `FallingEffectConfig.color_source`. Defaults to `accent` so the marker
+ * Mirrors `FallingEffectConfig.color_source`. Defaults to `accent` so the mark
  * follows the template's own highlight colour instead of a fixed red that can
- * disappear against a red background.
+ * disappear against a red background. Ignored by `panel`, which has no accent mark.
  */
 export type EventDetailsMarkerColorSource = 'accent' | 'primary' | 'secondary' | 'custom'
 
@@ -446,8 +460,8 @@ export interface EventDetailsDesignConfig {
   /** Which date/location layout to render. Defaults to `panel`. */
   type: EventDetailsDesignType
   /**
-   * Colour slot for the calendar design's event-day marker. Ignored by the
-   * `panel` design. Defaults to `accent`.
+   * Colour slot for the design's accent mark. Ignored by the `panel` design,
+   * which has none. Defaults to `accent`.
    */
   marker_color_source?: EventDetailsMarkerColorSource
   /** Hex colour, read only when `marker_color_source` is `custom`. */

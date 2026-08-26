@@ -3000,10 +3000,13 @@
       "designHint": "Controls how the event date and location are displayed in the showcase.",
       "types": {
         "panel": "Panel (stacked date + location)",
-        "calendar": "Calendar (month grid, day circled)"
+        "calendar": "Calendar (month grid, day circled)",
+        "flanked": "Flanked (date on one line, rules)",
+        "arch": "Arch (date inside a drawn arch)",
+        "ticket": "Ticket (stub + venue)"
       },
-      "markerColorSource": "Circled day colour",
-      "markerColorHint": "Colour of the heart drawn around the event day and the day number itself. Pick a template colour that stands out against the background.",
+      "markerColorSource": "Accent mark colour",
+      "markerColorHint": "Colour of the design's one accent mark — the calendar's circled day, the flanked rules, the arch outline, the ticket perforation. Pick a template colour that stands out against the background.",
       "sourceAccent": "Accent",
       "sourcePrimary": "Primary",
       "sourceSecondary": "Secondary"

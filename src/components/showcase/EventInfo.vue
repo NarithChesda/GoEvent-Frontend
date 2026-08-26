@@ -80,7 +80,7 @@
          When eventStartDate is missing, the left column and vertical divider
          collapse so locationText spans the card. -->
     <div
-      v-if="!isCalendarDesign && (hasDateParts || locationText)"
+      v-if="activeDesign === 'panel' && (hasDateParts || locationText)"
       class="event-details-card bounce-in-element"
       :class="[hasDateParts ? 'has-date-column' : 'no-date-column']"
       :style="{
@@ -132,17 +132,238 @@
       </div>
     </div>
 
+    <!-- ==========================================================
+         Flanked design — engraved-invitation typography. The date is one
+         baseline: weekday | day numeral | month, split by two vertical
+         hairlines that draw themselves open from their centre, with year + time
+         under it. No card frame at all, which is what separates it from the
+         panel design: this block is meant to read as set type on the
+         background, not as a card on it. The venue is not set here — it goes to
+         the map card's header (see locationInMapCard).
+         ========================================================== -->
+    <div
+      v-if="activeDesign === 'flanked'"
+      class="details-design flanked-card bounce-in-element"
+      :class="{ 'details-kh': currentLanguage === 'kh' }"
+      :style="{
+        color: primaryColor,
+        animationDelay: `${animationDelays.date}s`,
+        '--details-marker-color': detailsMarkerColor,
+      }"
+    >
+      <EditableRegion :intent="{ kind: 'eventDate' }" class="flanked-region">
+        <div :class="['flanked-row', currentLanguage === 'kh' && 'khmer-text-fix']">
+          <div
+            class="flanked-side details-line"
+            :style="{ fontFamily: secondaryFont || currentFont, animationDelay: detailsTextDelay(0) }"
+          >{{ dateParts.weekday }}</div>
+          <span
+            class="flanked-rule"
+            aria-hidden="true"
+            :style="{ animationDelay: `${detailsTiming.draw}s` }"
+          ></span>
+          <div
+            class="flanked-day details-line"
+            :style="{ fontFamily: primaryFont || currentFont, animationDelay: detailsTextDelay(1) }"
+          >{{ dateParts.day }}</div>
+          <span
+            class="flanked-rule"
+            aria-hidden="true"
+            :style="{ animationDelay: `${detailsTiming.draw}s` }"
+          ></span>
+          <div
+            class="flanked-side details-line"
+            :style="{ fontFamily: secondaryFont || currentFont, animationDelay: detailsTextDelay(2) }"
+          >{{ dateParts.month }}</div>
+        </div>
+      </EditableRegion>
+
+      <div
+        v-if="dateYear || timeText"
+        :class="['flanked-meta details-line', currentLanguage === 'kh' && 'khmer-text-fix']"
+        :style="{ fontFamily: secondaryFont || currentFont, animationDelay: detailsTextDelay(3) }"
+      >
+        <span v-if="dateYear">{{ dateYear }}</span>
+        <span v-if="dateYear && timeText" class="details-dot" aria-hidden="true"></span>
+        <span v-if="timeText">{{ timeText }}</span>
+      </div>
+
+    </div>
+
+    <!-- ==========================================================
+         Arch design — the date set inside a hairline arch whose outline draws
+         itself on reveal, same pathLength/dashoffset technique as the
+         calendar's heart so the two designs share a motion language. The arch
+         is a fixed-aspect box so the SVG scales uniformly and the stroke stays
+         an even hairline (deliberately no vector-effect: non-scaling-stroke —
+         it has a Chromium dash-normalization bug that breaks pathLength draws).
+         The type is sized to fill the arch rather than sit in it — an outline
+         this large reads as hollow the moment the date does not carry it. Venue
+         goes to the map card's header (see locationInMapCard).
+         ========================================================== -->
+    <div
+      v-else-if="activeDesign === 'arch'"
+      class="details-design arch-card bounce-in-element"
+      :class="{ 'details-kh': currentLanguage === 'kh' }"
+      :style="{
+        color: primaryColor,
+        animationDelay: `${animationDelays.date}s`,
+        '--details-marker-color': detailsMarkerColor,
+      }"
+    >
+      <div class="arch-frame">
+        <!-- The outline is three pieces, not one path, so the arch can grow with
+             its own content. The dome keeps a fixed aspect (uniform stroke); the
+             legs stretch to whatever height the date needs. They still draw as
+             one continuous stroke — left leg up, over the dome, right leg down. -->
+        <div class="arch-shell" aria-hidden="true">
+          <svg class="arch-dome" viewBox="0 0 200 106">
+            <path
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              pathLength="100"
+              d="M3 103 A97 97 0 0 1 197 103"
+              :style="{ animationDelay: `${detailsTiming.draw + 0.25}s` }"
+            />
+          </svg>
+          <!-- preserveAspectRatio="none" is deliberate: a vertical stroke's
+               width follows the horizontal scale only, so these stay exactly as
+               thick as the dome's stroke however far they stretch. -->
+          <svg class="arch-legs" viewBox="0 0 200 10" preserveAspectRatio="none">
+            <path
+              class="arch-leg-left"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              pathLength="100"
+              d="M3 10 L3 0"
+              :style="{ animationDelay: `${detailsTiming.draw}s` }"
+            />
+            <path
+              class="arch-leg-right"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              pathLength="100"
+              d="M197 0 L197 10"
+              :style="{ animationDelay: `${detailsTiming.draw + 0.85}s` }"
+            />
+          </svg>
+        </div>
+
+        <EditableRegion :intent="{ kind: 'eventDate' }" class="arch-region">
+          <div
+            :class="['arch-weekday details-line', currentLanguage === 'kh' && 'khmer-text-fix']"
+            :style="{ fontFamily: secondaryFont || currentFont, animationDelay: detailsTextDelay(0) }"
+          >{{ dateParts.weekday }}</div>
+          <div
+            class="arch-day details-line"
+            :style="{ fontFamily: primaryFont || currentFont, animationDelay: detailsTextDelay(1) }"
+          >{{ dateParts.day }}</div>
+          <div
+            :class="['arch-month details-line', currentLanguage === 'kh' && 'khmer-text-fix']"
+            :style="{ fontFamily: secondaryFont || currentFont, animationDelay: detailsTextDelay(2) }"
+          >{{ dateParts.month }}</div>
+          <span
+            v-if="dateYear || timeText"
+            class="arch-hairline"
+            aria-hidden="true"
+            :style="{ animationDelay: detailsTextDelay(3) }"
+          ></span>
+          <div
+            v-if="dateYear || timeText"
+            :class="['arch-meta details-line', currentLanguage === 'kh' && 'khmer-text-fix']"
+            :style="{ fontFamily: secondaryFont || currentFont, animationDelay: detailsTextDelay(4) }"
+          >
+            <span v-if="dateYear">{{ dateYear }}</span>
+            <span v-if="dateYear && timeText" class="details-dot" aria-hidden="true"></span>
+            <span v-if="timeText">{{ timeText }}</span>
+          </div>
+        </EditableRegion>
+      </div>
+
+    </div>
+
+    <!-- ==========================================================
+         Ticket design — an admit-one stub for parties and birthdays. Fixed
+         5.4em date stub, a dashed perforation that tears downward on reveal,
+         and the venue on the wide half. The two notches are a real die-cut (a
+         radial-gradient mask that cuts the border too), positioned on the
+         perforation's own x because the stub width is fixed; browsers without
+         mask-composite just get a plain rounded ticket.
+         ========================================================== -->
+    <div
+      v-else-if="activeDesign === 'ticket'"
+      class="details-design ticket-card bounce-in-element"
+      :class="{ 'details-kh': currentLanguage === 'kh' }"
+      :style="{
+        color: primaryColor,
+        animationDelay: `${animationDelays.date}s`,
+        '--details-marker-color': detailsMarkerColor,
+      }"
+    >
+      <div class="ticket-stub">
+        <EditableRegion :intent="{ kind: 'eventDate' }" class="ticket-stub-region">
+          <div
+            :class="['ticket-month details-line', currentLanguage === 'kh' && 'khmer-text-fix']"
+            :style="{ fontFamily: secondaryFont || currentFont, animationDelay: detailsTextDelay(0) }"
+          >{{ monthShort }}</div>
+          <div
+            class="ticket-day details-line"
+            :style="{ fontFamily: primaryFont || currentFont, animationDelay: detailsTextDelay(1) }"
+          >{{ dateParts.day }}</div>
+          <div
+            v-if="dateYear"
+            class="ticket-year details-line"
+            :style="{ fontFamily: secondaryFont || currentFont, animationDelay: detailsTextDelay(2) }"
+          >{{ dateYear }}</div>
+        </EditableRegion>
+      </div>
+
+      <span
+        class="ticket-perforation"
+        aria-hidden="true"
+        :style="{ animationDelay: `${detailsTiming.draw}s` }"
+      ></span>
+
+      <div class="ticket-body">
+        <div
+          v-if="dateParts.weekday || timeText"
+          :class="['ticket-meta details-line', currentLanguage === 'kh' && 'khmer-text-fix']"
+          :style="{ fontFamily: secondaryFont || currentFont, animationDelay: detailsTextDelay(2) }"
+        >
+          <span v-if="dateParts.weekday">{{ dateParts.weekday }}</span>
+          <span v-if="dateParts.weekday && timeText" class="details-dot" aria-hidden="true"></span>
+          <span v-if="timeText">{{ timeText }}</span>
+        </div>
+        <InlineEditableText
+          v-if="locationText"
+          :value="locationText"
+          :target="{ kind: 'eventText', textType: 'location_text', field: 'content' }"
+          :multiline="true"
+          :input-style="{ fontFamily: secondaryFont || currentFont, color: primaryColor }"
+        >
+          <div
+            :class="['ticket-location details-line', currentLanguage === 'kh' && 'khmer-text-fix']"
+            :style="{ fontFamily: secondaryFont || currentFont, animationDelay: detailsTextDelay(3) }"
+          >{{ locationText }}</div>
+        </InlineEditableText>
+      </div>
+    </div>
+
     <!-- Calendar design: a full month grid with the event day circled. Driven
-         by template_assets.event_details_design.type === 'calendar'. Falls back
-         to the panel design above when no parseable start date is available.
-         Location renders beneath the grid. -->
+         by template_assets.event_details_design.type === 'calendar' (see
+         activeDesign, which handles the no-start-date fallback to panel).
+         Location renders inside the map card header below. -->
     <div
       v-if="isCalendarDesign"
       class="calendar-card bounce-in-element"
       :style="{
         color: primaryColor,
         animationDelay: `${animationDelays.date}s`,
-        '--calendar-marker-color': calendarMarkerColor,
+        '--details-marker-color': detailsMarkerColor,
       }"
     >
       <EditableRegion :intent="{ kind: 'eventDate' }" class="calendar-region">
@@ -213,10 +434,11 @@
            background: `${backgroundColor || primaryColor}60`,
           }"
         >
-          <!-- Location header (calendar design): centered above the map frame,
-               replacing the panel design's location card. -->
+          <!-- Location header for every design that delegates its venue here
+               (calendar, flanked, arch — see locationInMapCard): centered above
+               the map frame, replacing the panel design's location card. -->
           <InlineEditableText
-            v-if="isCalendarDesign && locationText"
+            v-if="locationInMapCard && locationText"
             :value="locationText"
             :target="{ kind: 'eventText', textType: 'location_text', field: 'content' }"
             :multiline="true"
@@ -433,10 +655,11 @@ interface Props {
   eventStartDate?: string
   baseDelay?: number
   /** Date/location block design from the template package. Defaults to 'panel'. */
-  detailsDesign?: 'panel' | 'calendar'
+  detailsDesign?: 'panel' | 'calendar' | 'flanked' | 'arch' | 'ticket'
   /**
-   * Colour slot the calendar design's event-day marker (heart ring + day-number
-   * tint) draws from. Defaults to 'accent' so it tracks the template palette.
+   * Colour slot the design's accent mark draws from — the calendar's heart ring
+   * + day-number tint, the flanked rules, the arch outline, the ticket
+   * perforation + stub numeral. Defaults to 'accent' so it tracks the palette.
    */
   detailsMarkerColorSource?: EventDetailsMarkerColorSource
   /** Hex colour, read only when detailsMarkerColorSource is 'custom'. */
@@ -540,30 +763,84 @@ const hasDateParts = computed(
   () => !!(dateParts.value.weekday || dateParts.value.day || dateParts.value.month),
 )
 
-// Active design: 'calendar' only renders when we also have a parseable start
-// date to build the month grid from; otherwise fall back to the panel design.
-const isCalendarDesign = computed(
-  () => props.detailsDesign === 'calendar' && hasDateParts.value,
+// Active design. Every design except 'panel' is built around the event's own
+// date, so any of them falls back to 'panel' when start_date is missing or
+// unparseable — panel is the only one that degrades to location-only.
+const activeDesign = computed(() =>
+  props.detailsDesign !== 'panel' && !hasDateParts.value ? 'panel' : props.detailsDesign,
 )
+
+const isCalendarDesign = computed(() => activeDesign.value === 'calendar')
+
+// Designs that hand the venue off to the map card's own header instead of
+// setting it themselves. The calendar started this; flanked and arch follow,
+// because all three are date *medallions* — a venue line hung underneath reads
+// as an orphaned caption rather than part of the mark. Panel sets it in its own
+// right-hand column, and the ticket keeps it because there the venue is half
+// the object, not a footnote to it.
+const locationInMapCard = computed(
+  () =>
+    activeDesign.value === 'calendar' ||
+    activeDesign.value === 'flanked' ||
+    activeDesign.value === 'arch',
+)
+
+// Localized 4-digit year (Khmer numerals for 'kh'), used by the designs that
+// spell the date out in full rather than showing a month grid.
+const dateYear = computed<string>(() => {
+  if (!props.eventStartDate) return ''
+  const d = new Date(props.eventStartDate)
+  if (Number.isNaN(d.getTime())) return ''
+  return (props.currentLanguage ?? 'en') === 'kh'
+    ? toKhmerNumerals(d.getFullYear())
+    : String(d.getFullYear())
+})
+
+// Abbreviated month for the ticket stub, where the column is only ~5em wide.
+// Khmer has no conventional 3-letter month abbreviation, so 'kh' keeps the full
+// name (KHMER_MONTHS entries are short enough to fit).
+const monthShort = computed<string>(() => {
+  if (!props.eventStartDate) return ''
+  const d = new Date(props.eventStartDate)
+  if (Number.isNaN(d.getTime())) return ''
+  const lang = props.currentLanguage ?? 'en'
+  if (lang === 'kh') return KHMER_MONTHS[d.getMonth()]
+  const localeMap: Record<string, string> = {
+    en: 'en-US',
+    'zh-cn': 'zh-CN',
+    fr: 'fr-FR',
+    ja: 'ja-JP',
+    ko: 'ko-KR',
+    th: 'th-TH',
+    vn: 'vi-VN',
+  }
+  try {
+    return new Intl.DateTimeFormat(localeMap[lang] ?? lang ?? 'en-US', {
+      month: 'short',
+    }).format(d)
+  } catch {
+    return dateParts.value.month
+  }
+})
 
 /** Used only when the chosen colour slot resolves to nothing (custom source
  *  with no hex yet). Matches the original hand-drawn-heart red. */
-const CALENDAR_MARKER_FALLBACK = '#b3261e'
+const MARKER_FALLBACK = '#b3261e'
 
 // Colour of the calendar's event-day marker — the heart ring drawn around the
 // date and the matching tint applied to the day number once it finishes drawing.
 // Template-driven so it can sit on any background instead of always being red.
-const calendarMarkerColor = computed(() => {
+const detailsMarkerColor = computed(() => {
   switch (props.detailsMarkerColorSource) {
     case 'custom':
-      return props.detailsMarkerCustomColor || CALENDAR_MARKER_FALLBACK
+      return props.detailsMarkerCustomColor || MARKER_FALLBACK
     case 'primary':
-      return props.primaryColor || CALENDAR_MARKER_FALLBACK
+      return props.primaryColor || MARKER_FALLBACK
     case 'secondary':
-      return props.secondaryColor || props.primaryColor || CALENDAR_MARKER_FALLBACK
+      return props.secondaryColor || props.primaryColor || MARKER_FALLBACK
     case 'accent':
     default:
-      return props.accentColor || props.primaryColor || CALENDAR_MARKER_FALLBACK
+      return props.accentColor || props.primaryColor || MARKER_FALLBACK
   }
 })
 
@@ -683,6 +960,25 @@ const animationDelays = computed(() => {
 
   return { title, description, date, card, map, countdown, divider, rsvp }
 })
+
+// Reveal timeline shared by the flanked / arch / ticket designs. All three land
+// with the card's own bounce-in, then draw their one structural line (the pair
+// of rules, the arch outline, the perforation) while the text settles in behind
+// it — so the line reads as the thing being drawn, not as decoration arriving late.
+const detailsTiming = computed(() => {
+  const cardIn = animationDelays.value.date
+  return {
+    /** Structural stroke starts just after the card finishes its 0.5s bounce-in. */
+    draw: cardIn + 0.28,
+    /** First text line; each subsequent one adds `step`. */
+    textBase: cardIn + 0.34,
+    step: 0.055,
+  }
+})
+
+/** Per-line reveal delay for the flanked / arch / ticket text stacks. */
+const detailsTextDelay = (index: number): string =>
+  `${detailsTiming.value.textBase + index * detailsTiming.value.step}s`
 
 // Calendar design animation timeline, all offset from the card's own bounce-in:
 // weekday labels fade in first, then day cells cascade in with a small per-cell
@@ -1003,7 +1299,7 @@ const countdownNumberFont = computed(() =>
    sketched-by-hand feel. Once revealed it settles into a slow heartbeat pulse
    (delay set via --heart-pulse-delay on the event cell).
 
-   Colour comes from --calendar-marker-color, resolved from the template's
+   Colour comes from --details-marker-color, resolved from the template's
    marker colour slot on .calendar-card; the red is only a last-resort default. */
 .calendar-day-ring {
   position: absolute;
@@ -1013,7 +1309,7 @@ const countdownNumberFont = computed(() =>
   height: 150%;
   transform: translate(-50%, -50%) rotate(-5deg);
   pointer-events: none;
-  color: var(--calendar-marker-color, #b3261e);
+  color: var(--details-marker-color, #b3261e);
   opacity: 0.9;
 }
 
@@ -1074,7 +1370,7 @@ const countdownNumberFont = computed(() =>
 
 @keyframes eventDayTint {
   to {
-    color: var(--calendar-marker-color, #b3261e);
+    color: var(--details-marker-color, #b3261e);
   }
 }
 
@@ -1096,6 +1392,509 @@ const countdownNumberFont = computed(() =>
 .calendar-grid.khmer-text-fix .calendar-day {
   line-height: 1.2;
 }
+
+/* ============================================================
+   Flanked / arch / ticket designs.
+
+   Unlike the panel and calendar designs above — which re-declare a font-size
+   for every element in each of six breakpoint blocks — these three size
+   everything in `em` off one root font-size, so a breakpoint only has to move
+   two numbers: --dd-scale (type) and --dd-max (measure). The ladder at the
+   bottom of this section is the whole responsive story for all three.
+
+   --details-marker-color is the template's accent-mark slot (shared with the
+   calendar's heart). Each design spends it on exactly one thing: the flanked
+   rules, the arch outline, the ticket perforation + stub numeral. The day
+   numeral itself stays primaryColor in every design — it is already four times
+   the size of everything around it and does not need colour to lead as well.
+   ============================================================ */
+.details-design {
+  --dd-scale: 1;
+  --dd-max: 420px;
+  container-type: inline-size;
+  width: 100%;
+  max-width: var(--dd-max);
+  margin: 0 auto;
+  box-sizing: border-box;
+  font-size: calc(1rem * var(--dd-scale));
+  text-align: center;
+}
+
+/* Per-line settle, staggered from detailsTextDelay(). The parent card is still
+   running its own bounce-in underneath; these ride on top of it so the block
+   lands as one object and then resolves into type. */
+.details-line {
+  opacity: 0;
+}
+
+.animate-active .details-line {
+  animation: detailsLineIn 0.45s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes detailsLineIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Muted text is mixed toward transparent rather than dimmed with opacity —
+   opacity would cascade into children and fight .details-line's own fade. */
+.details-dot::before {
+  content: '·';
+  padding: 0 0.5em;
+  color: color-mix(in srgb, currentColor 55%, transparent);
+}
+
+/* ---------- Flanked ---------- */
+.flanked-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Editable-preview-only wrapper (bare slot in production, see EditableRegion) —
+   must not change how .flanked-row measures itself. */
+.flanked-region {
+  display: block;
+  width: 100%;
+}
+
+/* Equal 1fr side tracks and equal gaps put the day numeral dead centre no
+   matter how much longer one label is than the other — a centred flex row
+   centres the whole group instead, which throws the numeral off-axis the moment
+   the weekday outruns the month (very visible in Khmer: ព្រហស្បតិ៍ vs សីហា).
+   The labels then align inward, toward the rules, so the composition reads from
+   the centre out and only the outer edges go ragged. */
+.flanked-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, auto) 1px minmax(0, 1fr);
+  align-items: center;
+  gap: 0 0.95em;
+  width: 100%;
+}
+
+.flanked-side:first-child {
+  text-align: end;
+}
+
+.flanked-side:last-child {
+  text-align: start;
+}
+
+.flanked-side {
+  font-size: 0.7em;
+  /* Weekday and month names are single unbreakable words — shrink them rather
+     than let a narrow block break them a letter per line. */
+  font-size: clamp(0.5em, 3.4cqi, 0.7em);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.flanked-day {
+  font-size: 2.6em;
+  font-size: clamp(1.5em, 12.6cqi, 2.6em);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* The two rules open from their centre — a draw, not an appearance. clip-path
+   keeps the element's box (and therefore the grid track) fixed the whole time,
+   which scaleY would not. */
+.flanked-rule {
+  width: 1px;
+  height: 2.4em;
+  align-self: center;
+  background: color-mix(in srgb, var(--details-marker-color, currentColor) 75%, transparent);
+  clip-path: inset(50% 0 50% 0);
+}
+
+.animate-active .flanked-rule {
+  animation: ruleOpen 0.55s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes ruleOpen {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.flanked-meta {
+  margin-top: 0.35em;
+  font-size: 0.68em;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: color-mix(in srgb, currentColor 78%, transparent);
+}
+
+@keyframes dividerOpen {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* ---------- Arch ---------- */
+.arch-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Height follows the content, which is the whole point of the split outline: a
+   fixed aspect-ratio box has to serve both a 7.2em English stack and a 9.9em
+   Khmer one, so one of them always ends up crowded into the dome while the other
+   floats above the base. Here the padding sets where the type meets the curve
+   and how much base it sits on, and both languages get the same two numbers.
+
+   padding-top is in em against a frame that is 15em wide, so it lands at the
+   same point on the dome's curve (viewBox y ≈ 49) at every rung. */
+.arch-frame {
+  position: relative;
+  container-type: inline-size;
+  width: 15em;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3.7em 1.25em 1.15em;
+  box-sizing: border-box;
+  /* Floor so a short date still sits on visible legs rather than a bare dome. */
+  min-height: 10.5em;
+}
+
+/* Dome + legs stacked; inset:0 makes them track the frame's content height. */
+.arch-shell {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  color: var(--details-marker-color, currentColor);
+}
+
+.arch-dome {
+  flex: none;
+  width: 100%;
+  aspect-ratio: 200 / 106;
+  overflow: visible;
+}
+
+.arch-legs {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  /* The arc bottoms out at y=103 of a 106-tall viewBox — 1.5% of the frame's
+     width above the dome's lower edge. Percentage margins resolve against width,
+     which is exactly the axis this offset belongs to. */
+  margin-top: -1.5%;
+  overflow: visible;
+}
+
+.arch-region {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Same pathLength="100" dashoffset trick as the calendar's heart, now across
+   three paths whose delays chain them into one stroke: left leg (0.25s) → dome
+   (0.6s) → right leg (0.25s). pathLength normalises each path to 100 units, so
+   the legs draw at the right fraction however tall they have stretched.
+
+   linear, not the usual ease-out: three eased segments butted together read as
+   three separate marks. A steady pen is what sells it as one. */
+.arch-dome path,
+.arch-legs path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+
+.animate-active .arch-legs path {
+  animation: archDraw 0.25s linear forwards;
+}
+
+.animate-active .arch-dome path {
+  animation: archDraw 0.6s linear forwards;
+}
+
+@keyframes archDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.arch-weekday,
+.arch-month {
+  font-size: 0.74em;
+  font-size: clamp(0.52em, 5cqi, 0.74em);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  max-width: 100%;
+}
+
+.arch-day {
+  font-size: 3.5em;
+  font-size: clamp(2.1em, 26cqi, 3.5em);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.arch-hairline {
+  width: 2.6em;
+  height: 1px;
+  margin: 0.5em 0 0.36em;
+  background: color-mix(in srgb, var(--details-marker-color, currentColor) 70%, transparent);
+  clip-path: inset(0 50% 0 50%);
+}
+
+.animate-active .arch-hairline {
+  animation: dividerOpen 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.arch-meta {
+  font-size: 0.66em;
+  font-size: clamp(0.47em, 4.5cqi, 0.66em);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: color-mix(in srgb, currentColor 78%, transparent);
+}
+
+/* ---------- Ticket ---------- */
+.ticket-card {
+  --stub-w: 5.4em;
+  --notch: 0.5em;
+  display: grid;
+  grid-template-columns: var(--stub-w) 1px minmax(0, 1fr);
+  align-items: stretch;
+  max-width: min(var(--dd-max), 24em);
+  border: 1px solid color-mix(in srgb, currentColor 55%, transparent);
+  border-radius: 0.85em;
+  padding: 0.9em 0;
+}
+
+/* Real die-cut notches: the mask removes the border along the curve too, which
+   is what sells it against a photographic background. Wrapped in @supports
+   because without mask-composite the two gradients would union back to a
+   full-coverage mask — harmless, but then there is no reason to pay for it. */
+@supports (mask-composite: intersect) or (-webkit-mask-composite: source-in) {
+  .ticket-card {
+    -webkit-mask-image: radial-gradient(circle var(--notch) at var(--stub-w) 0, transparent 97%, #000 100%),
+      radial-gradient(circle var(--notch) at var(--stub-w) 100%, transparent 97%, #000 100%);
+    mask-image: radial-gradient(circle var(--notch) at var(--stub-w) 0, transparent 97%, #000 100%),
+      radial-gradient(circle var(--notch) at var(--stub-w) 100%, transparent 97%, #000 100%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+}
+
+.ticket-stub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.5em;
+  min-width: 0;
+}
+
+.ticket-stub-region {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ticket-month {
+  font-size: 0.66em;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.ticket-day {
+  font-size: 2.35em;
+  font-weight: 500;
+  line-height: 1.05;
+  color: var(--details-marker-color, currentColor);
+}
+
+.ticket-year {
+  font-size: 0.62em;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  color: color-mix(in srgb, currentColor 70%, transparent);
+}
+
+/* Tears downward on reveal rather than fading in — a perforation is made, not
+   placed. Dashes come from a repeating gradient so the dash rhythm scales with
+   the type instead of being frozen at the browser's border-dash size. */
+.ticket-perforation {
+  align-self: stretch;
+  width: 1px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--details-marker-color, currentColor) 0 0.28em,
+    transparent 0.28em 0.6em
+  );
+  opacity: 0.75;
+  clip-path: inset(0 0 100% 0);
+}
+
+.animate-active .ticket-perforation {
+  animation: perforationTear 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes perforationTear {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.ticket-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  padding: 0 1em;
+  min-width: 0;
+  text-align: center;
+}
+
+.ticket-meta {
+  font-size: 0.64em;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.35;
+  color: color-mix(in srgb, currentColor 80%, transparent);
+}
+
+.ticket-location {
+  font-size: 0.8em;
+  line-height: 1.45;
+  white-space: pre-line;
+  word-break: break-word;
+}
+
+/* Khmer sets on a taller em-box and khmer-text-fix forces line-height 1.8,
+   which is fine for prose and far too loose for a stacked date. */
+.details-design .khmer-text-fix.flanked-side,
+.details-design .khmer-text-fix.arch-weekday,
+.details-design .khmer-text-fix.arch-month,
+.details-design .khmer-text-fix.ticket-month {
+  line-height: 1.35 !important;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.details-design .khmer-text-fix.flanked-meta,
+.details-design .khmer-text-fix.arch-meta,
+.details-design .khmer-text-fix.ticket-meta {
+  line-height: 1.5 !important;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+/* Khmer needs clearance between the weekday and the day numeral: the weekday's
+   COENG subscripts hang below its line box, and the numeral sits at
+   line-height: 1 with no room above it. The clearance is one-sided on purpose —
+   the month below already sat correctly, and adding leading instead would split
+   the space evenly and open a hole under the numeral.
+
+   Sized in the numeral's own em, so it tracks the type at every rung rather
+   than the weekday's em, which is a quarter the size and gives far too little.
+
+   Keyed off .details-kh, not .khmer-text-fix: the numerals never carry that class
+   (it forces line-height 1.8 !important plus its own padding, which is right for
+   prose and wrong for a stacked date), so the selector this replaced —
+   `.arch-card .khmer-text-fix.arch-day` and its ticket twin — required both
+   classes on one element and silently never matched. */
+.details-design.details-kh .arch-day,
+.details-design.details-kh .ticket-day {
+  margin-top: 0.12em;
+}
+
+/* Khmer only, arch only: close the gap under the day numeral. khmer-text-fix
+   gives every element it touches padding-top: 0.3em + margin-top: 0.2em to keep
+   diacritics off the line above — right for prose, but here it stacks on top of
+   the month's own leading and pushes it away from the numeral it belongs to.
+
+   Tuned against measured *ink* extents, not box edges — Khmer ink routinely sits
+   outside its line box, so the boxes lie about what you actually see. The target
+   is the gap under the numeral sitting a little tighter than the one above it
+   (0.26 vs 0.27 of the numeral's own size), so the month reads as belonging to
+   the number rather than floating under it.
+
+   Must stay after `.details-design .khmer-text-fix.arch-month` above: same
+   (0,3,0) specificity, so source order is what decides it. Nothing else moves —
+   the weekday keeps its full khmer-text-fix spacing (that gap was the one that
+   needed opening), and flanked, ticket, panel and calendar are untouched. */
+.details-design.details-kh .arch-month {
+  margin-top: -0.2em;
+  padding-top: 0;
+}
+
+.details-design.details-kh .flanked-day {
+  line-height: 1.2;
+}
+
+/* The whole responsive ladder for all three designs. --dd-scale tracks the
+   panel design's own day-number sizes at each breakpoint (2.125 → 3.25 → 3.5 →
+   1.6 → 2.0 → 2.375 rem) so a template that switches design does not jump size,
+   and --dd-max tracks its max-width. */
+@media (min-width: 640px) {
+  .details-design {
+    --dd-scale: 1.25;
+    --dd-max: 460px;
+  }
+}
+
+@media (min-width: 768px) {
+  .details-design {
+    --dd-scale: 1.3;
+    --dd-max: 500px;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .details-design {
+    --dd-scale: 0.72;
+    --dd-max: 320px;
+  }
+}
+
+@media (min-width: 1366px) {
+  .details-design {
+    --dd-scale: 0.85;
+    --dd-max: 380px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .details-design {
+    --dd-scale: 0.95;
+    --dd-max: 420px;
+  }
+}
+
 
 @media (min-width: 640px) {
   .calendar-card {
@@ -1933,7 +2732,35 @@ const countdownNumberFont = computed(() =>
 
   .animate-active .calendar-day.is-event .calendar-day-num {
     animation: none;
-    color: var(--calendar-marker-color, #b3261e);
+    color: var(--details-marker-color, #b3261e);
+  }
+
+  /* Flanked / arch / ticket: show every line settled and every rule already
+     drawn. Reduced motion means fewer and gentler animations, not a broken
+     layout — an undrawn clip-path or dashoffset would hide the element. */
+  .details-line,
+  .animate-active .details-line {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .flanked-rule,
+  .animate-active .flanked-rule,
+  .arch-hairline,
+  .animate-active .arch-hairline,
+  .ticket-perforation,
+  .animate-active .ticket-perforation {
+    animation: none;
+    clip-path: none;
+  }
+
+  .arch-dome path,
+  .animate-active .arch-dome path,
+  .arch-legs path,
+  .animate-active .arch-legs path {
+    animation: none;
+    stroke-dashoffset: 0;
   }
 }
 

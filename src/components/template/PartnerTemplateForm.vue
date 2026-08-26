@@ -1328,9 +1328,11 @@
               <TemplateFormChoice v-model="eventDetailsDesignModel" :options="eventDetailsDesignOptions" :columns="1" />
               <p class="text-[0.6875rem] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.eventDetailsDesign.designHint') }}</p>
 
-              <!-- Marker colour only affects the calendar design's circled day. -->
+              <!-- Every design but panel spends this on exactly one accent mark:
+                   the calendar's circled day, the flanked rules, the arch
+                   outline, the ticket perforation + stub numeral. -->
               <Transition name="collapse">
-                <div v-if="form.event_details_design_type === 'calendar'" class="grid grid-rows-[1fr]">
+                <div v-if="form.event_details_design_type !== 'panel'" class="grid grid-rows-[1fr]">
                   <div class="min-h-0 overflow-hidden">
                     <div class="space-y-3 pt-1">
                       <TemplateFormChoice
@@ -1438,6 +1440,9 @@ import {
   Minimize2,
   CalendarDays,
   LayoutPanelTop,
+  AlignVerticalJustifyCenter,
+  Church,
+  Ticket,
   Users,
   UserRound,
   Move,
@@ -1881,6 +1886,9 @@ const contentWidthOptions = computed(() => [
 const eventDetailsDesignOptions = computed(() => [
   { value: 'panel', label: t('management.partnerTemplateForm.eventDetailsDesign.types.panel'), icon: LayoutPanelTop },
   { value: 'calendar', label: t('management.partnerTemplateForm.eventDetailsDesign.types.calendar'), icon: CalendarDays },
+  { value: 'flanked', label: t('management.partnerTemplateForm.eventDetailsDesign.types.flanked'), icon: AlignVerticalJustifyCenter },
+  { value: 'arch', label: t('management.partnerTemplateForm.eventDetailsDesign.types.arch'), icon: Church },
+  { value: 'ticket', label: t('management.partnerTemplateForm.eventDetailsDesign.types.ticket'), icon: Ticket },
 ])
 
 const eventDetailsMarkerColorOptions = computed(() => [
@@ -3071,7 +3079,7 @@ function normalizedSparkSizes(): { min: number; max: number } {
 // just its type — nothing stale to interpret if the template switches back.
 function buildEventDetailsDesignPayload(): EventDetailsDesignConfig {
   const cfg: EventDetailsDesignConfig = { type: form.event_details_design_type }
-  if (form.event_details_design_type !== 'calendar') return cfg
+  if (form.event_details_design_type === 'panel') return cfg
 
   cfg.marker_color_source = form.event_details_marker_color_source
   if (form.event_details_marker_color_source === 'custom') {
