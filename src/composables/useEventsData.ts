@@ -202,10 +202,17 @@ export function useEventsData(isAuthenticated: Ref<boolean>) {
    * @param append - Whether to append to existing events (pagination) or replace
    * @returns Object with success status, optional error message, and hasMore flag
    */
+  /**
+   * @param silent  Refresh in place without flipping `loading`. Use it when the
+   *   list is already on screen and only its contents change — swapping a full
+   *   page of real cards for a skeleton and back reads as a page reload, not as
+   *   the one row that actually changed.
+   */
   const loadEvents = async (
     view: ViewType,
     filters: EventFiltersType,
-    append = false
+    append = false,
+    silent = false
   ): Promise<{ success: boolean; message?: string; hasMore: boolean }> => {
     // Don't load if unauthenticated and trying to view 'my' tab
     if (!isAuthenticated.value && view === 'my') {
@@ -218,7 +225,7 @@ export function useEventsData(isAuthenticated: Ref<boolean>) {
     if (append) {
       isLoadingMore.value = true
     } else {
-      loading.value = true
+      if (!silent) loading.value = true
       currentPage.value = 1
       hasMore.value = true
     }

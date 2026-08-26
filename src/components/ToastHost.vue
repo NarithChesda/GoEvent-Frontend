@@ -192,7 +192,7 @@ const dragStyle = (id: string): Record<string, string> => {
 
 .toast-leave-active {
   transition:
-    transform 0.22s cubic-bezier(0.4, 0, 0.6, 1),
+    transform 0.22s cubic-bezier(0.32, 0.72, 0, 1),
     opacity 0.18s ease;
   /* Pull the leaving toast out of flow so the survivors glide up smoothly. */
   position: absolute;

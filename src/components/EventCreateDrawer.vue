@@ -13,6 +13,7 @@
     <Transition name="slide-right">
       <div
         v-if="isVisible"
+        ref="panel"
         class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[36.25rem] lg:w-[40rem] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden"
         @click.stop
       >
@@ -22,8 +23,9 @@
             <!-- Left: Close button & Title -->
             <div class="flex items-center gap-2 min-w-0">
               <button
+                :disabled="isBusy"
                 @click="$emit('close')"
-                class="p-1.5 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
+                class="p-1.5 hover:bg-white/20 active:bg-white/30 disabled:opacity-40 disabled:pointer-events-none rounded-lg transition-[background-color,transform] duration-150 ease-out active:scale-90 flex-shrink-0"
                 :title="t('common.actions.close')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
@@ -35,7 +37,12 @@
 
         <!-- Content -->
         <div class="flex-1 overflow-y-auto overscroll-contain">
-          <form @submit.prevent="handleSubmit" class="p-4 space-y-5 pb-24">
+          <form
+            @submit.prevent="handleSubmit"
+            class="p-4 space-y-5 pb-6"
+            :class="isBusy ? 'form-busy' : ''"
+            :inert="isBusy"
+          >
             <div class="space-y-5">
               <!-- Basic Information -->
               <div class="space-y-3">
@@ -47,6 +54,7 @@
                   <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.eventTitle') }} *</label>
                     <input
+                      ref="titleInput"
                       v-model="form.title"
                       type="text"
                       required
@@ -70,37 +78,31 @@
                 </div>
 
                 <!-- Auto Populate (shown when category is selected) -->
-                <Transition name="slide-fade">
-                  <button
-                    v-if="form.category && form.category !== ''"
-                    type="button"
-                    role="switch"
-                    :aria-checked="form.auto_populate"
-                    @click="form.auto_populate = !form.auto_populate"
-                    class="w-full flex items-center justify-between gap-3 p-3 text-left bg-slate-50 rounded-lg hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 transition-colors"
-                  >
-                    <div class="flex items-center gap-3">
-                      <div class="p-2 bg-white rounded-lg shadow-sm">
-                        <Sparkles class="w-4 h-4 text-sky-500" />
-                      </div>
-                      <div>
-                        <p class="text-sm font-medium text-slate-700">{{ t('events.createDrawer.autoPopulate.label') }}</p>
-                        <p class="text-xs text-slate-500">{{ t('events.createDrawer.autoPopulate.description') }}</p>
-                      </div>
+                <Transition name="collapse">
+                  <div v-if="form.category && form.category !== ''" class="grid grid-rows-[1fr]">
+                    <div class="min-h-0 overflow-hidden">
+                      <button
+                        type="button"
+                        role="switch"
+                        :aria-checked="form.auto_populate"
+                        @click="form.auto_populate = !form.auto_populate"
+                        class="toggle-row rounded-lg bg-slate-50"
+                      >
+                        <div class="flex items-center gap-3">
+                          <div class="p-2 bg-white rounded-lg shadow-sm">
+                            <Sparkles class="w-4 h-4 text-sky-500" />
+                          </div>
+                          <div>
+                            <p class="text-sm font-medium text-slate-700">{{ t('events.createDrawer.autoPopulate.label') }}</p>
+                            <p class="text-xs text-slate-500">{{ t('events.createDrawer.autoPopulate.description') }}</p>
+                          </div>
+                        </div>
+                        <div aria-hidden="true" :class="['switch-track', form.auto_populate ? 'bg-sky-500' : 'bg-slate-200']">
+                          <span class="switch-knob" :style="{ transform: form.auto_populate ? 'translateX(20px)' : 'translateX(0)' }" />
+                        </div>
+                      </button>
                     </div>
-                    <div
-                      aria-hidden="true"
-                      :class="[
-                        'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                        form.auto_populate ? 'bg-sky-500' : 'bg-slate-200'
-                      ]"
-                    >
-                      <span
-                        class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
-                        :style="{ transform: form.auto_populate ? 'translateX(20px)' : 'translateX(0)' }"
-                      />
-                    </div>
-                  </button>
+                  </div>
                 </Transition>
 
               </div>
@@ -128,123 +130,117 @@
                       :title="t('events.createDrawer.fields.endDateTime')"
                       :quick-times="commonEndTimes"
                     />
-                    <p v-if="dateError" class="text-xs sm:text-sm text-red-600 mt-1">{{ dateError }}</p>
+                    <Transition name="collapse">
+                      <div v-if="dateError" class="grid grid-rows-[1fr]">
+                        <div class="min-h-0 overflow-hidden">
+                          <p class="text-xs sm:text-sm text-red-600 pt-1">{{ dateError }}</p>
+                        </div>
+                      </div>
+                    </Transition>
                   </div>
                 </div>
               </div>
 
-              <!-- Privacy Settings -->
+              <!-- Access: privacy + registration read as one group of switches -->
               <div class="space-y-3">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('events.createDrawer.sections.privacy') }}</h3>
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('events.createDrawer.sections.access') }}</h3>
 
-                <button
-                  type="button"
-                  role="switch"
-                  :aria-checked="form.privacy === 'public'"
-                  @click="form.privacy = form.privacy === 'public' ? 'private' : 'public'"
-                  class="w-full flex items-center justify-between gap-3 p-3 text-left bg-slate-50 rounded-lg hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 transition-colors"
-                >
-                  <div class="flex items-center gap-3">
-                    <div class="p-2 bg-white rounded-lg shadow-sm">
-                      <component :is="form.privacy === 'public' ? Globe : Lock" class="w-4 h-4 text-sky-500" />
-                    </div>
-                    <div>
-                      <p class="text-sm font-medium text-slate-700">{{ form.privacy === 'public' ? t('events.createDrawer.privacyToggle.publicLabel') : t('events.createDrawer.privacyToggle.privateLabel') }}</p>
-                      <p class="text-xs text-slate-500">{{ form.privacy === 'public' ? t('events.createDrawer.privacyToggle.publicDescription') : t('events.createDrawer.privacyToggle.privateDescription') }}</p>
-                    </div>
-                  </div>
-                  <div
-                    aria-hidden="true"
-                    :class="[
-                      'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                      form.privacy === 'public' ? 'bg-sky-500' : 'bg-slate-200'
-                    ]"
+                <div class="rounded-lg bg-slate-50 divide-y divide-slate-200/70 overflow-hidden">
+                  <!-- Privacy Toggle -->
+                  <button
+                    type="button"
+                    role="switch"
+                    :aria-checked="form.privacy === 'public'"
+                    @click="form.privacy = form.privacy === 'public' ? 'private' : 'public'"
+                    class="toggle-row"
                   >
-                    <span
-                      class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
-                      :style="{ transform: form.privacy === 'public' ? 'translateX(20px)' : 'translateX(0)' }"
-                    />
-                  </div>
-                </button>
-
-                <!-- Full Description (public events only) -->
-                <Transition name="slide-fade">
-                  <div v-if="form.privacy === 'public'">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.aboutEvent') }}</label>
-                    <div
-                      contenteditable="true"
-                      ref="descriptionEditor"
-                      @input="handleDescriptionInput"
-                      @blur="handleDescriptionBlur"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white text-slate-800 min-h-[8.75rem] max-h-[20rem] overflow-y-auto"
-                      :data-placeholder="form.description ? '' : t('events.createDrawer.fields.descriptionPlaceholder')"
-                    ></div>
-                  </div>
-                </Transition>
-              </div>
-
-              <!-- Registration Settings -->
-              <div class="space-y-3">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('events.createDrawer.sections.registration') }}</h3>
-
-                <!-- Require Registration Toggle -->
-                <button
-                  type="button"
-                  role="switch"
-                  :aria-checked="form.registration_required"
-                  @click="form.registration_required = !form.registration_required"
-                  class="w-full flex items-center justify-between gap-3 p-3 text-left bg-slate-50 rounded-lg hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 transition-colors"
-                >
-                  <div class="flex items-center gap-3">
-                    <div class="p-2 bg-white rounded-lg shadow-sm">
-                      <ClipboardList class="w-4 h-4 text-sky-500" />
+                    <div class="flex items-center gap-3">
+                      <div class="p-2 bg-white rounded-lg shadow-sm">
+                        <component :is="form.privacy === 'public' ? Globe : Lock" class="w-4 h-4 text-sky-500" />
+                      </div>
+                      <div>
+                        <p class="text-sm font-medium text-slate-700">{{ form.privacy === 'public' ? t('events.createDrawer.privacyToggle.publicLabel') : t('events.createDrawer.privacyToggle.privateLabel') }}</p>
+                        <p class="text-xs text-slate-500">{{ form.privacy === 'public' ? t('events.createDrawer.privacyToggle.publicDescription') : t('events.createDrawer.privacyToggle.privateDescription') }}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p class="text-sm font-medium text-slate-700">{{ t('events.createDrawer.requireRegistration.label') }}</p>
-                      <p class="text-xs text-slate-500">{{ t('events.createDrawer.requireRegistration.description') }}</p>
+                    <div aria-hidden="true" :class="['switch-track', form.privacy === 'public' ? 'bg-sky-500' : 'bg-slate-200']">
+                      <span class="switch-knob" :style="{ transform: form.privacy === 'public' ? 'translateX(20px)' : 'translateX(0)' }" />
                     </div>
-                  </div>
-                  <div
-                    aria-hidden="true"
-                    :class="[
-                      'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                      form.registration_required ? 'bg-sky-500' : 'bg-slate-200'
-                    ]"
+                  </button>
+
+                  <!-- Require Registration Toggle -->
+                  <button
+                    type="button"
+                    role="switch"
+                    :aria-checked="form.registration_required"
+                    @click="form.registration_required = !form.registration_required"
+                    class="toggle-row"
                   >
-                    <span
-                      class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
-                      :style="{ transform: form.registration_required ? 'translateX(20px)' : 'translateX(0)' }"
-                    />
-                  </div>
-                </button>
+                    <div class="flex items-center gap-3">
+                      <div class="p-2 bg-white rounded-lg shadow-sm">
+                        <ClipboardList class="w-4 h-4 text-sky-500" />
+                      </div>
+                      <div>
+                        <p class="text-sm font-medium text-slate-700">{{ t('events.createDrawer.requireRegistration.label') }}</p>
+                        <p class="text-xs text-slate-500">{{ t('events.createDrawer.requireRegistration.description') }}</p>
+                      </div>
+                    </div>
+                    <div aria-hidden="true" :class="['switch-track', form.registration_required ? 'bg-sky-500' : 'bg-slate-200']">
+                      <span class="switch-knob" :style="{ transform: form.registration_required ? 'translateX(20px)' : 'translateX(0)' }" />
+                    </div>
+                  </button>
+                </div>
 
                 <!-- Registration Details (shown when registration is required) -->
-                <Transition name="slide-fade">
-                  <div v-if="form.registration_required" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <!-- Registration Deadline -->
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.registrationDeadline') }}</label>
-                      <DateTimePickerField
-                        v-model="form.registration_deadline"
-                        :max="form.start_date"
-                        clearable
-                        :title="t('events.createDrawer.fields.registrationDeadline')"
-                        :placeholder="t('events.createDrawer.fields.deadlinePlaceholder')"
-                      />
-                      <p class="text-xs text-slate-500 mt-1">{{ t('events.createDrawer.fields.deadlineHint') }}</p>
-                    </div>
+                <Transition name="collapse">
+                  <div v-if="form.registration_required" class="grid grid-rows-[1fr]">
+                    <div class="min-h-0 overflow-hidden">
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Registration Deadline -->
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.registrationDeadline') }}</label>
+                          <DateTimePickerField
+                            v-model="form.registration_deadline"
+                            :max="form.start_date"
+                            clearable
+                            :title="t('events.createDrawer.fields.registrationDeadline')"
+                            :placeholder="t('events.createDrawer.fields.deadlinePlaceholder')"
+                          />
+                          <p class="text-xs text-slate-500 mt-1">{{ t('events.createDrawer.fields.deadlineHint') }}</p>
+                        </div>
 
-                    <!-- Max Attendees -->
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.maxAttendees') }}</label>
-                      <input
-                        v-model.number="form.max_attendees"
-                        type="number"
-                        min="1"
-                        class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                        :placeholder="t('events.createDrawer.fields.maxAttendeesPlaceholder')"
-                      />
-                      <p class="text-xs text-slate-500 mt-1">{{ t('events.createDrawer.fields.maxAttendeesHint') }}</p>
+                        <!-- Max Attendees -->
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.maxAttendees') }}</label>
+                          <input
+                            v-model.number="form.max_attendees"
+                            type="number"
+                            min="1"
+                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                            :placeholder="t('events.createDrawer.fields.maxAttendeesPlaceholder')"
+                          />
+                          <p class="text-xs text-slate-500 mt-1">{{ t('events.createDrawer.fields.maxAttendeesHint') }}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Transition>
+
+                <!-- Full Description (public events only) -->
+                <Transition name="collapse">
+                  <div v-if="form.privacy === 'public'" class="grid grid-rows-[1fr]">
+                    <div class="min-h-0 overflow-hidden">
+                      <div class="pt-1">
+                        <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.aboutEvent') }}</label>
+                        <div
+                          contenteditable="true"
+                          ref="descriptionEditor"
+                          @input="handleDescriptionInput"
+                          @blur="handleDescriptionBlur"
+                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white text-slate-800 min-h-[8.75rem] max-h-[20rem] overflow-y-auto"
+                          :data-placeholder="form.description ? '' : t('events.createDrawer.fields.descriptionPlaceholder')"
+                        ></div>
+                      </div>
                     </div>
                   </div>
                 </Transition>
@@ -256,20 +252,33 @@
         <!-- Footer with Action Buttons -->
         <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)]">
           <div class="flex items-center justify-between">
+            <!-- The three states are stacked in one grid cell, so the button's
+                 width is the widest of them and never jumps as they swap. -->
             <button
               @click="handleSubmit"
-              :disabled="isSubmitting"
-              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              :disabled="isBusy"
+              :class="['submit-btn', isComplete ? 'is-complete' : '']"
+              class="grid px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg rounded-lg hover:opacity-90 shadow-md disabled:cursor-not-allowed"
             >
-              <Loader v-if="isSubmitting" class="w-4 h-4 animate-spin" />
-              <Save v-else class="w-4 h-4" />
-              <span>{{ isSubmitting ? t('events.createDrawer.actions.creating') : t('events.createDrawer.actions.create') }}</span>
+              <span class="submit-face" :data-on="!isSubmitting && !isComplete">
+                <Save class="w-4 h-4" />
+                <span>{{ t('events.createDrawer.actions.create') }}</span>
+              </span>
+              <span class="submit-face" :data-on="isSubmitting">
+                <Loader class="w-4 h-4 animate-spin" />
+                <span>{{ t('events.createDrawer.actions.creating') }}</span>
+              </span>
+              <span class="submit-face" :data-on="isComplete" aria-live="polite">
+                <Check class="w-4 h-4" />
+                <span>{{ t('events.createDrawer.actions.created') }}</span>
+              </span>
             </button>
 
             <button
               type="button"
+              :disabled="isBusy"
               @click="$emit('close')"
-              class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
+              class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-[background-color,transform,opacity] duration-150 ease-out active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
             >
               {{ t('events.createDrawer.actions.cancel') }}
             </button>
@@ -282,7 +291,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch, onMounted, onUnmounted } from 'vue'
-import { ArrowRight, Loader, Save, ClipboardList, Globe, Lock, Sparkles } from 'lucide-vue-next'
+import { ArrowRight, Loader, Save, Check, ClipboardList, Globe, Lock, Sparkles } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useToast } from '@/composables/useToast'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
@@ -337,7 +346,12 @@ interface Props {
 
 interface Emits {
   close: []
-  submit: [formData: EventSubmitData]
+  /**
+   * The parent performs the create and calls `done(ok)` when it settles.
+   * The drawer owns the press -> working -> confirmed choreography; the parent
+   * only owns the request, so it must not close this drawer itself.
+   */
+  submit: [formData: EventSubmitData, done: (ok: boolean) => void]
 }
 
 const props = defineProps<Props>()
@@ -345,7 +359,15 @@ const emit = defineEmits<Emits>()
 
 // Refs
 const descriptionEditor = ref<HTMLElement>()
+const panel = ref<HTMLElement>()
+const titleInput = ref<HTMLInputElement>()
 const isSubmitting = ref(false)
+// Held on screen after a successful create, long enough to be seen.
+const isComplete = ref(false)
+const isBusy = computed(() => isSubmitting.value || isComplete.value)
+// The confirmation is the point of the beat, so it outlasts a glance.
+const SUCCESS_HOLD_MS = 620
+let successTimer: number | undefined
 const categories = ref<EventCategory[]>([])
 
 // Form data
@@ -414,6 +436,7 @@ const updateDescriptionEditor = () => {
 }
 
 const handleBackdropClick = (event: MouseEvent) => {
+  if (isBusy.value) return
   if (event.target === event.currentTarget) {
     emit('close')
   }
@@ -439,6 +462,8 @@ const resetForm = () => {
 }
 
 const handleSubmit = async () => {
+  if (isBusy.value) return
+
   // Validate before submitting; button sits outside the <form>, so native
   // required validation never runs
   if (!form.title.trim()) {
@@ -497,15 +522,29 @@ const handleSubmit = async () => {
       auto_populate: formData.auto_populate,
     }
 
-    emit('submit', eventData)
-    resetForm()
-    emit('close')
+    // Hand off and wait. Closing here — as this did — meant the drawer was gone
+    // before the event existed: the spinner never rendered, a failure arrived as
+    // a toast over a form that had already been wiped, and there was no moment
+    // that read as "created".
+    emit('submit', eventData, onSubmitSettled)
   } catch (error) {
     console.error('Error creating event:', error)
     showError(t('events.messages.createFailed'))
-  } finally {
     isSubmitting.value = false
   }
+}
+
+const onSubmitSettled = (ok: boolean) => {
+  isSubmitting.value = false
+  // Failure keeps the drawer open with the form intact; the parent has toasted
+  // the reason, and the user is one edit away from retrying.
+  if (!ok) return
+
+  isComplete.value = true
+  successTimer = window.setTimeout(() => {
+    successTimer = undefined
+    emit('close')
+  }, SUCCESS_HOLD_MS)
 }
 
 // Calculate scrollbar width to prevent layout shift
@@ -513,8 +552,35 @@ const getScrollbarWidth = (): number => {
   return window.innerWidth - document.documentElement.clientWidth
 }
 
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+
+// Keep Tab inside the drawer — without this the user tabs straight out into the
+// page behind the backdrop, which they can neither see nor click.
+const trapFocus = (e: KeyboardEvent) => {
+  if (!panel.value) return
+  const items = Array.from(panel.value.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+    (el) => el.offsetParent !== null,
+  )
+  if (!items.length) return
+
+  const first = items[0]
+  const last = items[items.length - 1]
+  const active = document.activeElement as HTMLElement | null
+
+  if (e.shiftKey && (active === first || !panel.value.contains(active))) {
+    e.preventDefault()
+    last.focus()
+  } else if (!e.shiftKey && active === last) {
+    e.preventDefault()
+    first.focus()
+  }
+}
+
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape') emit('close')
+  if (e.key === 'Escape') {
+    if (!isBusy.value) emit('close')
+  } else if (e.key === 'Tab') trapFocus(e)
 }
 
 // Watch for drawer visibility
@@ -524,6 +590,10 @@ watch(
     if (isVisible) {
       // Reset form when drawer opens
       resetForm()
+      if (successTimer) window.clearTimeout(successTimer)
+      successTimer = undefined
+      isSubmitting.value = false
+      isComplete.value = false
 
       // Prevent body scroll when drawer is open
       const scrollbarWidth = getScrollbarWidth()
@@ -532,6 +602,10 @@ watch(
         document.body.style.paddingRight = `${scrollbarWidth}px`
       }
       document.addEventListener('keydown', handleKeydown)
+
+      if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        window.setTimeout(() => titleInput.value?.focus(), 400)
+      }
     } else {
       document.body.style.overflow = ''
       document.body.style.paddingRight = ''
@@ -616,6 +690,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (successTimer) window.clearTimeout(successTimer)
   document.body.style.overflow = ''
   document.body.style.paddingRight = ''
   document.removeEventListener('keydown', handleKeydown)
@@ -623,10 +698,120 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Fade transition for backdrop */
-.fade-enter-active,
-.fade-leave-active {
+/* Three-state submit button: idle -> working -> confirmed.
+   All three faces occupy the same grid cell, so the button sizes to the widest
+   of them once and never resizes as they swap. */
+.submit-btn {
+  transition:
+    opacity 0.15s ease-out,
+    transform 0.15s ease-out,
+    filter 0.2s ease-out;
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.submit-btn:disabled {
+  cursor: not-allowed;
+}
+
+/* Working reads as held, not broken — it is still the same live control. */
+.submit-btn:disabled:not(.is-complete) {
+  opacity: 0.75;
+}
+
+.submit-face {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  /* Blur bridges the two faces so the swap reads as one label transforming
+     rather than two labels overlapping. */
+  filter: blur(3px);
+  opacity: 0;
+  transform: scale(0.96);
+  transition:
+    opacity 0.18s ease-out,
+    filter 0.18s ease-out,
+    transform 0.18s cubic-bezier(0.23, 1, 0.32, 1);
+  pointer-events: none;
+}
+
+.submit-face[data-on='true'] {
+  filter: blur(0);
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* The form stays visible but stops accepting edits while the create is in
+   flight, so nothing the user types can be silently dropped. */
+.form-busy {
+  pointer-events: none;
+  opacity: 0.6;
+  transition: opacity 0.2s ease-out;
+}
+
+/* Shared switch-row anatomy (privacy, registration, auto-populate) */
+.toggle-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  text-align: left;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.toggle-row:hover {
+  background-color: rgb(241 245 249 / 0.7);
+}
+
+.toggle-row:active {
+  transform: scale(0.99);
+}
+
+.toggle-row:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgb(186 230 253);
+}
+
+.switch-track {
+  position: relative;
+  display: inline-flex;
+  height: 1.5rem;
+  width: 2.75rem;
+  flex-shrink: 0;
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+.switch-knob {
+  pointer-events: none;
+  display: inline-block;
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 9999px;
+  background-color: #fff;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  /* Strong ease-out: the knob should land, not coast. */
+  transition: transform 0.22s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Backdrop. The scrim leads on the way in and must not clear before the panel
+   it is dimming for, so its exit matches the panel's rather than beating it. */
+.fade-enter-active {
   transition: opacity 0.35s ease-out;
+}
+
+.fade-leave-active {
+  transition: opacity 0.28s ease-out;
 }
 
 .fade-enter-from,
@@ -639,35 +824,94 @@ onUnmounted(() => {
   transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
+/* Same curve family on the way out, just faster — a curve that starts slow
+   makes dismissal feel like the drawer is resisting. */
 .slide-right-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1);
+  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
+/* Mobile: full-bleed, so its own height clears the viewport exactly. */
 .slide-right-enter-from,
 .slide-right-leave-to {
   transform: translateY(100%);
 }
 
+/* Desktop: the panel is inset (`md:right-4`) and casts a `shadow-2xl`, so
+   translating by its own width leaves a 12-16px sliver of drawer parked at the
+   screen edge — held for the whole exit, then popped away on unmount. The extra
+   2rem clears the inset and the shadow bleed; it is in rem so it tracks the
+   root-font downscale applied on 13-15" laptops. */
 @media (min-width: 768px) {
   .slide-right-enter-from,
   .slide-right-leave-to {
-    transform: translateX(100%);
+    transform: translateX(calc(100% + 2rem));
   }
 }
 
-/* Slide fade transition for registration details */
-.slide-fade-enter-active {
-  transition: all 0.3s ease-out;
+/* Conditional sections (auto-populate, registration details, description, date error)
+   grow and shrink the layout instead of fading over a hard jump. House collapse transition — grid-template-rows, never max-height. */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
 }
 
-.slide-fade-leave-active {
-  transition: all 0.2s ease-in;
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
+.collapse-enter-from,
+.collapse-leave-to {
+  grid-template-rows: 0fr;
   opacity: 0;
-  transform: translateY(-10px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse-enter-active,
+  .collapse-leave-active,
+  .switch-knob,
+  .toggle-row {
+    transition-duration: 0.01ms;
+  }
+
+  /* Gentler, not zero: the drawer still announces itself, it just fades in
+     place instead of travelling the width of the screen. */
+  .slide-right-enter-active {
+    transition: opacity 0.2s ease-out;
+  }
+
+  .slide-right-leave-active {
+    transition: opacity 0.15s ease-out;
+  }
+
+  .slide-right-enter-from,
+  .slide-right-leave-to {
+    transform: none;
+    opacity: 0;
+  }
+
+  @media (min-width: 768px) {
+    .slide-right-enter-from,
+    .slide-right-leave-to {
+      transform: none;
+    }
+  }
+
+  .toggle-row:active {
+    transform: none;
+  }
+
+  .submit-btn:active:not(:disabled) {
+    transform: none;
+  }
+
+  .submit-face {
+    transition-duration: 0.01ms;
+    filter: none;
+    transform: none;
+  }
+
+  .submit-face[data-on='true'] {
+    filter: none;
+    transform: none;
+  }
 }
 
 /* Custom scrollbar for modal content */
