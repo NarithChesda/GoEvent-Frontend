@@ -10,6 +10,7 @@ import type {
   FallingEffectConfig,
   EventDetailsDesignConfig,
   HostInfoDesignConfig,
+  InfoCardDesignConfig,
   SparkFieldConfig,
 } from '../services/api/types/template.types'
 import type { StoredMusicStartStage } from '../services/api/types/event.types'
@@ -187,6 +188,8 @@ export interface TemplateAssets {
   event_details_design?: EventDetailsDesignConfig | null
   /** Host info block design (standard | simple). Defaults to `standard`. */
   host_info_design?: HostInfoDesignConfig | null
+  /** Info card (venue/map/countdown/RSVP) design (glass | engraved). Defaults to `glass`. */
+  info_card_design?: InfoCardDesignConfig | null
   display_liquid_glass_background?: boolean
   guest_title_frame_left?: string | null
   guest_title_frame_mid?: string | null

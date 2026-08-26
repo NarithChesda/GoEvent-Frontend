@@ -494,6 +494,36 @@ export interface HostInfoDesignConfig {
 }
 
 /**
+ * Visual language of the info card below the date — the block that carries the
+ * venue, the Google Map, the countdown and the RSVP form.
+ *
+ * - `glass`    — the default: a rounded liquid-glass panel with a 2px white
+ *                border, a tinted translucent fill and white text throughout.
+ * - `engraved` — the same content set as engraved type on the page ground:
+ *                hairline rules instead of a card frame, everything inked in
+ *                the template's primary colour, and a hairline-framed map
+ *                plate. Built to sit under the `calendar` / `flanked` / `arch`
+ *                date designs, which are drawn in the same language — the glass
+ *                panel reads as a different material stacked under them.
+ *
+ * Selected per template via `template_assets.info_card_design` and flows through
+ * the showcase exactly like `event_details_design`.
+ */
+export type InfoCardDesignType = 'glass' | 'engraved'
+
+/**
+ * Configuration for the venue / map / countdown / RSVP card on the showcase.
+ *
+ * Mirrors the `HostInfoDesignConfig` pattern: a small JSON object sent inside
+ * the template package and forwarded down to EventInfo.vue. When omitted the
+ * showcase falls back to the `glass` design, so existing templates are unchanged.
+ */
+export interface InfoCardDesignConfig {
+  /** Which info card treatment to render. Defaults to `glass`. */
+  type: InfoCardDesignType
+}
+
+/**
  * Built-in falling particle effect types.
  * Each maps to a predefined SVG shape in the particle registry.
  */
@@ -697,6 +727,7 @@ export interface PartnerTemplate {
   falling_effect: FallingEffectConfig | null
   event_details_design: EventDetailsDesignConfig | null
   host_info_design: HostInfoDesignConfig | null
+  info_card_design: InfoCardDesignConfig | null
   ambient_creatures: AmbientCreaturesConfig | null
   sparks: SparkFieldConfig | null
   /** Custom spark image, when the field uses one instead of a built-in shape. */
@@ -769,6 +800,8 @@ export interface PartnerTemplateCreatePayload {
   event_details_design?: EventDetailsDesignConfig | null
   /** Host info block design. Pass `null` to fall back to the `standard` design. */
   host_info_design?: HostInfoDesignConfig | null
+  /** Info card (venue/map/countdown/RSVP) design. Pass `null` to fall back to `glass`. */
+  info_card_design?: InfoCardDesignConfig | null
   /** Ambient creature effect config. Pass `null` to disable the effect. */
   ambient_creatures?: AmbientCreaturesConfig | null
   /** Drifting spark field config. Pass `null` to disable the effect. */

@@ -8,6 +8,7 @@ import type {
   FallingEffectConfig,
   EventDetailsDesignConfig,
   HostInfoDesignType,
+  InfoCardDesignConfig,
 } from '@/services/api/types/template.types'
 
 // Core showcase data types
@@ -102,6 +103,8 @@ export interface TemplateAssets {
   falling_effect?: FallingEffectConfig | null
   /** Date + location block design (panel | calendar). Defaults to `panel`. */
   event_details_design?: EventDetailsDesignConfig | null
+  /** Info card (venue/map/countdown/RSVP) design (glass | engraved). Defaults to `glass`. */
+  info_card_design?: InfoCardDesignConfig | null
 }
 
 export interface EventPhoto {

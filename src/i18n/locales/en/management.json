@@ -3011,6 +3011,14 @@
       "sourcePrimary": "Primary",
       "sourceSecondary": "Secondary"
     },
+    "infoCardDesign": {
+      "sectionTitle": "Info Card Design",
+      "designHint": "Controls how the venue, map, countdown and RSVP block is presented. Engraved is drawn in the same hairline language as the calendar, flanked and arch date designs.",
+      "types": {
+        "glass": "Glass (rounded panel, white text)",
+        "engraved": "Engraved (hairline rules, inked type)"
+      }
+    },
     "hostInfoDesign": {
       "sectionTitle": "Host Info Design",
       "designHint": "Controls how the host information is displayed in the showcase.",

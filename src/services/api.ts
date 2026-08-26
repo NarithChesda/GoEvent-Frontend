@@ -103,6 +103,8 @@ export type {
   EventDetailsMarkerColorSource,
   HostInfoDesignType,
   HostInfoDesignConfig,
+  InfoCardDesignType,
+  InfoCardDesignConfig,
   AmbientCreatureEffectType,
   AmbientCreatureEntry,
   AmbientCreaturesConfig,

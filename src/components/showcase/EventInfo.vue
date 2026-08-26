@@ -3,7 +3,7 @@
     ref="containerRef"
     :key="`event-info-${currentLanguage}`"
     class="text-center space-y-6 sm:space-y-8"
-    :class="{ 'animate-active': isVisible }"
+    :class="{ 'animate-active': isVisible, 'is-engraved': isEngraved, 'joins-date-mark': engravedJoinsDateMark }"
   >
     <!-- Primary Content Block -->
     <div v-if="descriptionTitle || descriptionText" class="space-y-4">
@@ -418,21 +418,43 @@
 
     <!-- Event Details Block -->
     <div class="space-y-3">
+      <!-- Two treatments of the same content. `glass` is the original: a
+           2px-white-bordered, tinted, blurred panel with white type throughout.
+           `engraved` throws the panel away and sets the block as ink on the
+           page ground, bounded by the same hairline rules the calendar uses —
+           see the .engraved-sheet block in <style>. -->
       <div
-        class="block relative gradient-stroke-container bounce-in-element"
-        :style="{
-          background: `${backgroundColor || primaryColor}60`,
-          padding: '2px',
-          borderRadius: '2rem',
-          animationDelay: `${animationDelays.card}s`,
-        }"
+        class="block relative bounce-in-element"
+        :class="isEngraved ? 'engraved-sheet' : 'gradient-stroke-container'"
+        :style="
+          isEngraved
+            ? {
+                color: primaryColor,
+                '--engraved-ink': primaryColor,
+                '--engraved-paper': engravedPaper,
+                '--details-marker-color': detailsMarkerColor,
+                animationDelay: `${animationDelays.card}s`,
+              }
+            : {
+                background: `${backgroundColor || primaryColor}60`,
+                padding: '2px',
+                borderRadius: '2rem',
+                animationDelay: `${animationDelays.card}s`,
+              }
+        "
       >
         <div
-          class="px-4 pt-3 pb-4 backdrop-blur-sm space-y-1 relative"
-          style="border-radius: calc(2rem - 2px); border: 2px solid white"
-          :style="{
-           background: `${backgroundColor || primaryColor}60`,
-          }"
+          class="relative"
+          :class="isEngraved ? 'engraved-inner' : 'px-4 pt-3 pb-4 backdrop-blur-sm space-y-1'"
+          :style="
+            isEngraved
+              ? {}
+              : {
+                  borderRadius: 'calc(2rem - 2px)',
+                  border: '2px solid white',
+                  background: `${backgroundColor || primaryColor}60`,
+                }
+          "
         >
           <!-- Location header for every design that delegates its venue here
                (calendar, flanked, arch — see locationInMapCard): centered above
@@ -458,15 +480,22 @@
           <div
             v-if="hasGoogleMap && googleMapEmbedLink"
             class="pt-2 bounce-in-element"
+            :class="{ 'engraved-map': isEngraved }"
             :style="{ animationDelay: `${animationDelays.map}s` }"
           >
             <EditableRegion :intent="{ kind: 'gmapEmbed' }">
+              <!-- Engraved mounts the map as a plate: a hairline frame with a
+                   thin margin inside it and a second, fainter hairline against
+                   the image, which is how a photograph is set on printed
+                   stationery. Glass keeps the soft rounded window. -->
               <div
                 class="aspect-video overflow-hidden"
-                :style="{
-                  border: `1px solid rgba(255, 255, 255, 0.3)`,
-                  borderRadius: '1rem',
-                }"
+                :class="{ 'engraved-plate': isEngraved }"
+                :style="
+                  isEngraved
+                    ? {}
+                    : { border: '1px solid rgba(255, 255, 255, 0.3)', borderRadius: '1rem' }
+                "
               >
                 <iframe
                   :src="googleMapEmbedLink"
@@ -501,7 +530,7 @@
           <div
             v-if="countdown && isCountdownActive && (showCountdown || editIntentCtx)"
             class="countdown-container px-4 pt-2 pb-2 bounce-in-element"
-            :class="{ 'has-display-toggle': editIntentCtx }"
+            :class="{ 'has-display-toggle': editIntentCtx, 'engraved-band': isEngraved }"
             :style="{ animationDelay: `${animationDelays.countdown}s` }"
           >
             <SectionDisplayToggle
@@ -516,7 +545,7 @@
                 :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
                 :style="{
                   fontFamily: secondaryFont || currentFont,
-                  color: 'white',
+                  ...(isEngraved ? {} : { color: 'white' }),
                 }"
               >
                 {{ countdownHeader }}
@@ -543,8 +572,18 @@
                   </div>
                 </div>
 
-                <!-- Separator -->
+                <!-- Separator. Engraved swaps the colon for a vertical
+                     hairline — the same rule the panel design puts between its
+                     date and venue columns, and the same one the flanked design
+                     draws beside its numeral. It also retires the Khmer colon
+                     baseline hack, since a rule has no em-box to sit wrong in. -->
                 <div
+                  v-if="isEngraved"
+                  class="countdown-rule"
+                  aria-hidden="true"
+                ></div>
+                <div
+                  v-else
                   class="countdown-separator"
                   :class="[currentLanguage === 'kh' && 'is-khmer']"
                   :style="{ fontFamily: countdownNumberFont }"
@@ -576,7 +615,7 @@
 
           <!-- Divider between Countdown and RSVP -->
           <div
-            v-if="countdown && isCountdownActive && (showCountdown || editIntentCtx) && (showRsvp || editIntentCtx)"
+            v-if="!isEngraved && countdown && isCountdownActive && (showCountdown || editIntentCtx) && (showRsvp || editIntentCtx)"
             class="countdown-divider bounce-in-element"
             :style="{ animationDelay: `${animationDelays.divider}s` }"
           >
@@ -591,7 +630,7 @@
           <div
             v-if="showRsvp || editIntentCtx"
             class="bounce-in-element rsvp-toggle-container"
-            :class="{ 'has-display-toggle': editIntentCtx }"
+            :class="{ 'has-display-toggle': editIntentCtx, 'engraved-band': isEngraved }"
             :style="{ animationDelay: `${animationDelays.rsvp}s` }"
           >
             <SectionDisplayToggle
@@ -656,6 +695,13 @@ interface Props {
   baseDelay?: number
   /** Date/location block design from the template package. Defaults to 'panel'. */
   detailsDesign?: 'panel' | 'calendar' | 'flanked' | 'arch' | 'ticket'
+  /**
+   * Treatment of the card below the date — venue, map, countdown and RSVP.
+   * Defaults to 'glass' (the liquid-glass panel), so every existing template
+   * renders unchanged. 'engraved' redraws the same content in the calendar's
+   * hairline language: no panel, no white, ink on the page ground.
+   */
+  infoCardDesign?: 'glass' | 'engraved'
   /**
    * Colour slot the design's accent mark draws from — the calendar's heart ring
    * + day-number tint, the flanked rules, the arch outline, the ticket
@@ -771,6 +817,20 @@ const activeDesign = computed(() =>
 )
 
 const isCalendarDesign = computed(() => activeDesign.value === 'calendar')
+
+// The info card's own treatment, independent of which date design sits above
+// it. 'engraved' drops the glass panel and re-inks the whole block in
+// primaryColor, which is what lets it read as the same sheet as the calendar /
+// flanked / arch date marks rather than a second material stacked under them.
+const isEngraved = computed(() => props.infoCardDesign === 'engraved')
+
+// The engraved card is one continuous sheet with the date mark above it, so the
+// mark gives up its own closing rule and lets the card's opening rule serve as
+// the single boundary between them. Only the designs that already draw
+// top/bottom rules have one to give up.
+const engravedJoinsDateMark = computed(
+  () => isEngraved.value && (isCalendarDesign.value || activeDesign.value === 'panel'),
+)
 
 // Designs that hand the venue off to the map card's own header instead of
 // setting it themselves. The calendar started this; flanked and arch follow,
@@ -1073,11 +1133,22 @@ const countdownHoursDisplay = computed(() => {
 
 // Rajdhani has no Khmer glyphs — fall back to the showcase primary font so
 // the Khmer numerals render consistently with the rest of the card.
-const countdownNumberFont = computed(() =>
-  props.currentLanguage === 'kh'
+const countdownNumberFont = computed(() => {
+  // Engraved sets the count in the template's own display face — the same one
+  // the calendar heading uses. Rajdhani is a condensed UI face chosen to fill
+  // the glass panel; on the engraved sheet it reads as a different document.
+  if (isEngraved.value) return props.primaryFont || props.currentFont
+  return props.currentLanguage === 'kh'
     ? props.primaryFont || props.currentFont
-    : `'Rajdhani', sans-serif`,
-)
+    : `'Rajdhani', sans-serif`
+})
+
+/**
+ * Paper colour behind the engraved ink — used for the text of the one filled
+ * control the set allows (the RSVP submit / selected option), which inverts to
+ * ink-on-paper. Falls back to white when the template declares no background.
+ */
+const engravedPaper = computed(() => props.backgroundColor || '#ffffff')
 </script>
 
 <style scoped>
@@ -1487,10 +1558,14 @@ const countdownNumberFont = computed(() =>
 }
 
 .flanked-side {
-  font-size: 0.7em;
+  font-size: 0.84em;
   /* Weekday and month names are single unbreakable words — shrink them rather
-     than let a narrow block break them a letter per line. */
-  font-size: clamp(0.5em, 3.4cqi, 0.7em);
+     than let a narrow block break them a letter per line. The cqi coefficient is
+     not the 20% bump the rest of this design got: at phone widths the longest
+     English pair (WEDNESDAY / SEPTEMBER) already fills its 1fr track, so the
+     labels are width-bound there and only the em max — which wins from the
+     laptop rung up — carries the increase. */
+  font-size: clamp(0.6em, 3.5cqi, 0.84em);
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -1499,8 +1574,8 @@ const countdownNumberFont = computed(() =>
 }
 
 .flanked-day {
-  font-size: 2.6em;
-  font-size: clamp(1.5em, 12.6cqi, 2.6em);
+  font-size: 3.12em;
+  font-size: clamp(1.8em, 15.12cqi, 3.12em);
   font-weight: 400;
   line-height: 1;
   letter-spacing: 0.02em;
@@ -1512,7 +1587,7 @@ const countdownNumberFont = computed(() =>
    which scaleY would not. */
 .flanked-rule {
   width: 1px;
-  height: 2.4em;
+  height: 2.88em;
   align-self: center;
   background: color-mix(in srgb, var(--details-marker-color, currentColor) 75%, transparent);
   clip-path: inset(50% 0 50% 0);
@@ -1530,7 +1605,7 @@ const countdownNumberFont = computed(() =>
 
 .flanked-meta {
   margin-top: 0.35em;
-  font-size: 0.68em;
+  font-size: 0.82em;
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -2701,6 +2776,405 @@ const countdownNumberFont = computed(() =>
   }
 }
 
+/* ============================================================
+   ENGRAVED INFO CARD  (info_card_design.type === 'engraved')
+
+   Why this exists: the glass card is a *material* — a rounded panel
+   with a 2px white border, a tinted fill and white type. The
+   calendar / flanked / arch date marks above it are *type* —
+   hairline rules and inked letterforms set straight on the page.
+   Stacking the two is what makes them refuse to blend, and no
+   amount of spacing fixes it, because the disagreement is the
+   border and the ink colour, not the gap.
+
+   So this set rebuilds the same content — venue, map, countdown,
+   RSVP — in the date marks' own language:
+
+     · rules, never frames — 1px hairlines at the same
+       color-mix(currentColor …%) the calendar's borders use
+     · ink, never white — everything inherits primaryColor
+     · one accent — --details-marker-color, spent on the countdown
+       numerals exactly as the calendar spends it on the heart
+     · squared corners — 2px, so the map reads as a mounted plate
+       rather than a soft glass window
+
+   Engraved is selectable under any date design; only the designs
+   that draw their own top/bottom rules hand one off, see
+   .joins-date-mark below.
+   ============================================================ */
+
+/* One rule weight, three strengths — the calendar's 60% is the
+   structural line, 40% frames the map plate, 28% is for hairlines
+   that sit against content and must not compete with it. */
+.engraved-sheet {
+  --engraved-rule: color-mix(in srgb, currentColor 60%, transparent);
+  --engraved-rule-mid: color-mix(in srgb, currentColor 40%, transparent);
+  --engraved-rule-soft: color-mix(in srgb, currentColor 28%, transparent);
+  /* Same measure as .calendar-card, so the two blocks share an edge
+     rather than merely sitting near each other. */
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  border-top: 1px solid var(--engraved-rule);
+  border-bottom: 1px solid var(--engraved-rule);
+}
+
+/* The sheet's own two rules arrive with the sheet's bounce-in — one
+   element, one motion. The sheet's one interior mark draws itself
+   (see .rsvp-toggle-container::before): it lands after the sheet has
+   already settled, which is the moment the calendar's heart, the
+   flanked rules and the arch outline all use to draw. */
+
+.engraved-inner {
+  padding: 0;
+}
+
+/* --- Joining the date mark ------------------------------------
+   The calendar's bottom rule and the sheet's top rule are the same
+   boundary drawn twice, 14px apart — the doubled line in the middle
+   of the composition. The mark gives its rule up and the sheet's
+   becomes the single seam, so the two blocks read as one sheet of
+   stationery instead of two stacked cards. */
+.is-engraved.joins-date-mark .calendar-card,
+.is-engraved.joins-date-mark .event-details-card {
+  border-bottom: none;
+  /* Matches the venue block below the seam, so the one remaining line sits
+     centred in its own air instead of hugging the grid above it. */
+  padding-bottom: 0.8rem;
+}
+
+.is-engraved.joins-date-mark > .space-y-3 {
+  margin-top: 0 !important;
+}
+
+/* --- Venue ----------------------------------------------------- */
+.is-engraved .map-location-header {
+  color: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+  padding: 0.85rem 0.75rem 0.7rem;
+}
+
+/* --- Map plate --------------------------------------------------
+   A mounted photograph — hairline frame, paper margin, second
+   hairline on the image — is a print convention that does not
+   survive the trip to a 396px-wide phone: 4px of mat between two
+   1px rules reads as a doubled border, not as a mat. So the plate
+   is full-bleed to the sheet with a single hairline tight to the
+   image. Its two edges then continue the sheet's own rules instead
+   of adding two more at a near-miss width (396 against 420), which
+   is what made the block read as a table rather than as stationery.
+
+   Text keeps .calendar-card's 0.75rem side padding; only the plate
+   goes edge to edge, which is how a plate is set in print. */
+.is-engraved .engraved-map {
+  padding: 0 0 0.95rem;
+}
+
+/* Designs that keep their venue in their own date mark (panel) leave the
+   map as the sheet's opening element, where full bleed would butt the
+   plate straight into the sheet's top rule. Vue renders a comment node
+   for a false v-if, which :first-child ignores, so this stays correct
+   however the venue header is toggled. */
+.is-engraved .engraved-inner > .engraved-map:first-child {
+  padding-top: 0.95rem;
+}
+
+/* The hairline is a border on the plate, not an outset box-shadow on
+   the iframe: a shadow spreads *outside* the box, so at full bleed it
+   would run 1px past the sheet's own rules on each side — the exact
+   near-miss this change exists to remove. Preflight's border-box keeps
+   the bordered plate at the sheet's width. */
+.is-engraved .engraved-plate {
+  border: 1px solid var(--engraved-rule-soft);
+  /* A 1-2px radius under a 1px stroke is not a corner, it is an
+     antialiasing smudge. */
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.is-engraved .engraved-plate iframe {
+  display: block;
+  border-radius: 0;
+}
+
+/* --- Section bands ---------------------------------------------
+   Interior boundaries are space, not lines. A rule at --engraved-rule
+   is the same weight the sheet uses for its own two borders, so
+   spending one on every section put three identical full-width rules
+   inside one block — a ledger, not an invitation. Engraving spends
+   rules the way it spends ink: a rule is punctuation, and punctuation
+   stops meaning anything once it is the default separator.
+
+   The sheet's top and bottom borders bound the block; inside it the
+   bands are separated by their own rhythm, which is why the padding
+   here is larger than the 0.95/0.85 a drawn rule allowed.
+
+   position: relative stays — SectionDisplayToggle (manage-preview
+   only) is absolutely positioned against these bands. */
+.is-engraved .engraved-band {
+  position: relative;
+  padding: 1.4rem 0.75rem 1.25rem;
+  border-top: none;
+}
+
+/* --- The one interior mark --------------------------------------
+   RSVP is where the sheet stops being read and starts being answered,
+   and that shift earns punctuation — but a *mark*, not a divider. A
+   short centred hairline is the vocabulary .calendar-heading::before
+   already established for this set; a full-width rule here would put
+   a third 60% line into a block that already has two.
+
+   Drawn from the centre out, like .flanked-rule and the calendar's
+   heart — but at --engraved-rule-soft, because a mark that competes
+   with the sheet's structural borders is just another divider. */
+.is-engraved .rsvp-toggle-container {
+  padding-top: 1.6rem;
+}
+
+.is-engraved .rsvp-toggle-container::before {
+  content: '';
+  display: block;
+  width: 2.5rem;
+  height: 1px;
+  margin: 0 auto 1.35rem;
+  background: var(--engraved-rule-soft);
+  transform: scaleX(0);
+  transform-origin: center;
+}
+
+/* animation-delay: inherit takes the band's own inline delay (set for
+   its bounce-in), then the keyframes hold flat through that 0.5s
+   entrance before drawing — so the band lands first and the mark is
+   drawn across it after, never both at once. The hold percentage and
+   the duration are one number: 70% of 0.72s is the 0.5s bounce-in, and
+   the remaining 0.216s is the draw. Change one, change the other. */
+.animate-active.is-engraved .rsvp-toggle-container::before {
+  animation: engravedRuleDraw 0.72s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  animation-delay: inherit;
+}
+
+@keyframes engravedRuleDraw {
+  0%,
+  70% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+/* --- Countdown --------------------------------------------------
+   The glass card sets the count at up to 8rem in a condensed UI face
+   with a drop shadow, because it has a panel to fill. On the sheet
+   that reads as a scoreboard dropped into an invitation, so engraved
+   sets it in the template's own display face at roughly half the
+   size, inked in the accent colour the calendar's heart uses. */
+.is-engraved .countdown-header {
+  color: inherit;
+  opacity: 0.85;
+  font-size: 0.6875rem !important;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.55rem;
+}
+
+.is-engraved .countdown-time-row {
+  align-items: stretch;
+  gap: 1.15rem;
+}
+
+.is-engraved .countdown-number {
+  color: var(--details-marker-color, currentColor);
+  font-weight: 600;
+  font-size: clamp(2.5rem, 11vw, 3.75rem);
+  letter-spacing: 0.02em;
+  text-shadow: none;
+}
+
+/* The colon's replacement: the same vertical hairline the panel
+   design puts between its date and venue columns. */
+.is-engraved .countdown-rule {
+  width: 1px;
+  align-self: stretch;
+  margin: 0.15rem 0 1.4rem;
+  background: var(--engraved-rule-mid);
+  flex-shrink: 0;
+}
+
+/* !important here only to outrank the desktop breakpoint blocks above,
+   which set the glass card's label sizes the same way. */
+.is-engraved .countdown-unit-label {
+  color: inherit;
+  opacity: 0.75;
+  font-size: 0.6875rem !important;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin-top: 0.3rem;
+}
+
+/* --- RSVP -------------------------------------------------------
+   The RSVP form is slotted in from MainContentStage, so its own
+   white-on-glass styling is re-inked from here rather than forked
+   into two copies of an 1,800-line component. `!important` appears
+   only where the source sets colour as an *inline* style (the
+   status options, the chips, the submit button) and nothing else
+   can outrank it. */
+.is-engraved .rsvp-toggle-container {
+  color: inherit;
+}
+
+.is-engraved .rsvp-toggle-container :deep(.rsvp-title),
+.is-engraved .rsvp-toggle-container :deep(.step-prompt),
+.is-engraved .rsvp-toggle-container :deep(.stepper-value),
+.is-engraved .rsvp-toggle-container :deep(.toggle-label),
+.is-engraved .rsvp-toggle-container :deep(.confirmation-text),
+.is-engraved .rsvp-toggle-container :deep(.confirmation-code-text),
+.is-engraved .rsvp-toggle-container :deep(.seat-stat-value),
+.is-engraved .rsvp-toggle-container :deep(.text-white) {
+  color: inherit;
+}
+
+.is-engraved .rsvp-toggle-container :deep(.step-hint),
+.is-engraved .rsvp-toggle-container :deep(.rsvp-placeholder),
+.is-engraved .rsvp-toggle-container :deep(.responded-at),
+.is-engraved .rsvp-toggle-container :deep(.seat-stat-label) {
+  color: color-mix(in srgb, currentColor 65%, transparent);
+}
+
+/* Outlined controls: hairline box, squared to 2px, ink on paper. */
+.is-engraved .rsvp-toggle-container :deep(.status-option),
+.is-engraved .rsvp-toggle-container :deep(.chip),
+.is-engraved .rsvp-toggle-container :deep(.nav-btn),
+.is-engraved .rsvp-toggle-container :deep(.edit-btn) {
+  border-radius: 2px;
+  border: 1px solid var(--engraved-rule-mid);
+  background: transparent !important;
+  color: inherit !important;
+  box-shadow: none;
+  letter-spacing: 0.03em;
+}
+
+/* The one filled control the set allows, inverted to paper-on-ink.
+   currentColor cannot be the fill here: these rules also set the
+   element's own color to paper, and currentColor resolves against
+   that same declaration — the button would fill with paper and
+   vanish. --engraved-ink carries the sheet's colour in explicitly. */
+.is-engraved .rsvp-toggle-container :deep(.status-option.active),
+.is-engraved .rsvp-toggle-container :deep(.chip.active),
+.is-engraved .rsvp-toggle-container :deep(.nav-btn.next),
+.is-engraved .rsvp-toggle-container :deep(.nav-btn.submit),
+.is-engraved .rsvp-toggle-container :deep(.rsvp-btn-signin) {
+  border: 1px solid var(--engraved-ink, currentColor);
+  border-radius: 2px;
+  background: var(--engraved-ink, currentColor) !important;
+  color: var(--engraved-paper, #fff) !important;
+  box-shadow: none;
+  letter-spacing: 0.03em;
+}
+
+/* Ink is opaque, so a hover tint would flip the control to solid.
+   Deepen the rule instead — the outline is the only thing the
+   engraved set can move without changing material. */
+@media (hover: hover) and (pointer: fine) {
+  .is-engraved .rsvp-toggle-container :deep(.status-option:hover:not(.active)),
+  .is-engraved .rsvp-toggle-container :deep(.chip:hover:not(.active)),
+  .is-engraved .rsvp-toggle-container :deep(.nav-btn.back:hover) {
+    background: transparent !important;
+    border-color: var(--engraved-ink, currentColor);
+  }
+}
+
+.is-engraved .rsvp-toggle-container :deep(.stepper-btn) {
+  border: 1px solid var(--engraved-rule-mid);
+  background: transparent;
+  color: inherit;
+}
+
+.is-engraved .rsvp-toggle-container :deep(.line-input),
+.is-engraved .rsvp-toggle-container :deep(.line-textarea) {
+  color: inherit;
+  border-bottom-color: var(--engraved-rule-mid);
+}
+
+.is-engraved .rsvp-toggle-container :deep(.line-input::placeholder),
+.is-engraved .rsvp-toggle-container :deep(.line-textarea::placeholder) {
+  color: color-mix(in srgb, currentColor 45%, transparent);
+}
+
+.is-engraved .rsvp-toggle-container :deep(.line-input:focus),
+.is-engraved .rsvp-toggle-container :deep(.line-textarea:focus) {
+  border-bottom-color: var(--engraved-ink, currentColor);
+}
+
+/* The progress bar is the one place the glass card uses a glow. On
+   the sheet it becomes what a printed form would use: a hairline
+   track with a solid rule filling it. */
+.is-engraved .rsvp-toggle-container :deep(.wizard-progress) {
+  height: 1px;
+  border-radius: 0;
+  background: var(--engraved-rule-soft);
+}
+
+.is-engraved .rsvp-toggle-container :deep(.wizard-progress-fill) {
+  border-radius: 0;
+  background: var(--engraved-ink, currentColor);
+  box-shadow: none;
+}
+
+.is-engraved .rsvp-toggle-container :deep(.rsvp-title-check),
+.is-engraved .rsvp-toggle-container :deep(.confirmation-chip),
+.is-engraved .rsvp-toggle-container :deep(.seat-ticket) {
+  background: transparent;
+  border-color: var(--engraved-rule-mid);
+  color: inherit;
+}
+
+.is-engraved .rsvp-toggle-container :deep(.toggle-switch) {
+  border: 1px solid var(--engraved-rule-mid);
+  background: transparent !important;
+}
+
+.is-engraved .rsvp-toggle-container :deep(.toggle-thumb) {
+  background: var(--engraved-ink, currentColor) !important;
+}
+
+.is-engraved .rsvp-toggle-container :deep(.spinner-white),
+.is-engraved .rsvp-toggle-container :deep(.spinner-inline) {
+  border-color: color-mix(in srgb, currentColor 25%, transparent);
+  border-top-color: currentColor;
+}
+
+.is-engraved .rsvp-toggle-container :deep(.seat-ticket-divider) {
+  background: var(--engraved-rule-soft);
+}
+
+/* Manage-preview only: the dashed add-map affordance, re-inked so the
+   partner sees the engraved sheet rather than a white dashed box. */
+.is-engraved .add-map-placeholder {
+  border-color: var(--engraved-rule-mid);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  /* Stands in for the plate, so it occupies the plate's box — full
+     bleed to the sheet, same closing gap. */
+  margin: 0 0 0.95rem;
+}
+
+/* Khmer runs wider than Latin at the same size and its clusters break
+   under tracking, so the eyebrows give theirs back and relax their
+   line-height rather than tightening the type. */
+.is-engraved .countdown-header.khmer-text-fix,
+.is-engraved .countdown-unit-label.khmer-text-fix {
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+
 /* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   .bounce-word,
@@ -2761,6 +3235,14 @@ const countdownNumberFont = computed(() =>
   .animate-active .arch-legs path {
     animation: none;
     stroke-dashoffset: 0;
+  }
+
+  /* Engraved: the RSVP mark is the sheet's one interior boundary — an
+     undrawn scaleX(0) would delete it outright. */
+  .is-engraved .rsvp-toggle-container::before,
+  .animate-active.is-engraved .rsvp-toggle-container::before {
+    animation: none;
+    transform: scaleX(1);
   }
 }
 

@@ -1354,6 +1354,19 @@
               </Transition>
             </section>
 
+            <!-- The other half of the date design above: whatever the date
+                 becomes, this is the block that sits under it (venue, map,
+                 countdown, RSVP). `engraved` is the set drawn in the same
+                 hairline language as the calendar / flanked / arch dates, so
+                 the two read as one sheet instead of type stacked on glass. -->
+            <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
+              <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                {{ t('management.partnerTemplateForm.infoCardDesign.sectionTitle') }}
+              </h5>
+              <TemplateFormChoice v-model="infoCardDesignModel" :options="infoCardDesignOptions" :columns="1" />
+              <p class="text-[0.6875rem] text-slate-400 leading-snug">{{ t('management.partnerTemplateForm.infoCardDesign.designHint') }}</p>
+            </section>
+
             <section class="bg-white rounded-2xl ring-1 ring-slate-200/80 p-4 space-y-3">
               <h5 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 {{ t('management.partnerTemplateForm.hostInfoDesign.sectionTitle') }}
@@ -1432,6 +1445,7 @@ import {
   Plus,
   X,
   Droplets,
+  PenLine,
   Snowflake,
   Bird,
   Wand2,
@@ -1480,6 +1494,7 @@ import type {
   EventDetailsDesignConfig,
   EventDetailsMarkerColorSource,
   HostInfoDesignType,
+  InfoCardDesignType,
   AmbientCreaturesConfig,
   AmbientCreatureEntry,
   AmbientCreatureEffectType,
@@ -1721,6 +1736,8 @@ interface FormState {
   event_details_marker_custom_color: string
   /** Host info block design rendered in the showcase (standard | simple). */
   host_info_design_type: HostInfoDesignType
+  /** Info card (venue/map/countdown/RSVP) treatment in the showcase (glass | engraved). */
+  info_card_design_type: InfoCardDesignType
 }
 
 const defaultFallingEffect = (): FallingEffectFormState => ({
@@ -1790,6 +1807,7 @@ const defaultForm = (): FormState => ({
   event_details_marker_color_source: 'accent',
   event_details_marker_custom_color: '#B3261E',
   host_info_design_type: 'standard',
+  info_card_design_type: 'glass',
 })
 
 const CREATURE_TYPES: AmbientCreatureEffectType[] = ['butterfly', 'dove', 'firefly', 'dragonfly', 'balloon', 'hummingbird']
@@ -1901,6 +1919,14 @@ const eventDetailsMarkerColorOptions = computed(() => [
 const hostInfoDesignOptions = computed(() => [
   { value: 'standard', label: t('management.partnerTemplateForm.hostInfoDesign.types.standard'), icon: Users },
   { value: 'simple', label: t('management.partnerTemplateForm.hostInfoDesign.types.simple'), icon: UserRound },
+])
+
+// The engraved option is built to sit under the calendar / flanked / arch date
+// designs, which are drawn in the same hairline language. Under the panel or
+// ticket designs it still renders, it just has nothing above it to rhyme with.
+const infoCardDesignOptions = computed(() => [
+  { value: 'glass', label: t('management.partnerTemplateForm.infoCardDesign.types.glass'), icon: Droplets },
+  { value: 'engraved', label: t('management.partnerTemplateForm.infoCardDesign.types.engraved'), icon: PenLine },
 ])
 
 const intensityOptions = computed(() => [
@@ -2315,6 +2341,11 @@ const eventDetailsMarkerColorSourceModel = computed<string>({
 const hostInfoDesignModel = computed<string>({
   get: () => form.host_info_design_type,
   set: (value) => { form.host_info_design_type = value as HostInfoDesignType },
+})
+
+const infoCardDesignModel = computed<string>({
+  get: () => form.info_card_design_type,
+  set: (value) => { form.info_card_design_type = value as InfoCardDesignType },
 })
 
 const fallingTypeModel = computed<string>({
@@ -2859,6 +2890,8 @@ watch(
         template.event_details_design?.marker_custom_color ?? '#B3261E'
       // Hydrate host info design (standard | simple)
       form.host_info_design_type = template.host_info_design?.type ?? 'standard'
+      // Hydrate info card design (glass | engraved)
+      form.info_card_design_type = template.info_card_design?.type ?? 'glass'
       // Hydrate ambient creatures
       if (template.ambient_creatures) {
         form.ambient_creatures_enabled = true
@@ -3125,6 +3158,7 @@ async function handleSave(): Promise<void> {
       sparks: buildSparksPayload(),
       event_details_design: buildEventDetailsDesignPayload(),
       host_info_design: { type: form.host_info_design_type },
+      info_card_design: { type: form.info_card_design_type },
     }
 
     // Add file fields that have been set. The asset list is shared with the
@@ -3289,6 +3323,7 @@ const previewDraft = computed<PartnerTemplateDraft>(() => {
     sparks: buildSparksPayload(),
     event_details_design: buildEventDetailsDesignPayload(),
     host_info_design: { type: form.host_info_design_type },
+    info_card_design: { type: form.info_card_design_type },
     colors: pendingColors.value,
     fonts: previewFonts.value,
     files,
