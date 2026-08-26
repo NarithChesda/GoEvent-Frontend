@@ -475,11 +475,21 @@ export interface EventDetailsDesignConfig {
  *                host titles, host names and profile pictures (the original look).
  * - `simple`   — a minimal layout: the welcome header above large script host
  *                names stacked and joined by an ampersand.
+ * - `portrait` — the standard layout with one row moved: title, then portrait,
+ *                then name, so the label introduces the person, the photo shows
+ *                them and the name closes.
+ * - `arch`     — the showcase-v2 couple-story composition: two arch-framed
+ *                portraits staged on a diagonal with a drawn hairline between
+ *                them, each host's title, name and parents stacked under their
+ *                own frame instead of split across shared rows.
+ *
+ * `portrait` and `arch` are implemented by the **wedding** host layout only;
+ * other event types ignore them and render `standard`.
  *
  * Selected per template via `template_assets.host_info_design` and flows through
  * the showcase exactly like `event_details_design`.
  */
-export type HostInfoDesignType = 'standard' | 'simple'
+export type HostInfoDesignType = 'standard' | 'simple' | 'portrait' | 'arch'
 
 /**
  * Configuration for the host information block on the showcase.

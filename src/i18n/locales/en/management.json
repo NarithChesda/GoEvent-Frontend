@@ -3024,7 +3024,9 @@
       "designHint": "Controls how the host information is displayed in the showcase.",
       "types": {
         "standard": "Standard (parents, logo, titles, photos)",
-        "simple": "Simple (welcome + large names)"
+        "simple": "Simple (welcome + large names)",
+        "portrait": "Portrait (title, photo, then name)",
+        "arch": "Arch (couple story, arched photos)"
       }
     },
     "footer": {

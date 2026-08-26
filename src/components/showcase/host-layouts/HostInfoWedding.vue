@@ -63,9 +63,19 @@
       </div>
     </div>
 
+    <!-- Arch design: the V2 couple-story composition — two arch-framed
+         portraits on a diagonal, each host's label / name / parents stacked
+         under their own frame. Its own component, because it shares no rows
+         with the grid below. -->
+    <HostInfoWeddingArch v-else-if="isArchDesign" v-bind="props" />
+
     <!-- Standard design (default): rich layout with parent names, logo, titles,
-         host names and profile pictures arranged in a 7-row grid. -->
-    <div v-else class="host-info-grid">
+         host names and profile pictures arranged in a 7-row grid.
+
+         The portrait design is these same seven rows with two of them swapped
+         (see .is-portrait in <style>) rather than a second copy of this markup:
+         title, then face, then name. -->
+    <div v-else class="host-info-grid" :class="{ 'is-portrait': isPortraitDesign }">
       <!-- Row 1: Welcome Header -->
       <WelcomeHeader
         v-if="showWelcomeHeaderText !== false"
@@ -356,6 +366,7 @@ import { useAppLanguage } from '@/composables/useAppLanguage'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import HostInfoWeddingArch from './wedding/HostInfoWeddingArch.vue'
 import {
   WelcomeHeader,
   HostLogo,
@@ -429,9 +440,13 @@ const nameTextStyle = computed(() => ({
   fontFamily: props.primaryFont || props.secondaryFont || props.currentFont,
 }))
 
-// Active design: 'simple' renders the minimal welcome + script-names layout;
-// anything else falls back to the rich 'standard' grid below.
+// Active design. 'simple' renders the minimal welcome + script-names layout
+// and 'arch' hands off to its own component; 'portrait' is the standard grid
+// with the portrait row moved between the titles and the names, so it stays
+// here. Anything else falls back to the rich 'standard' grid below.
 const isSimpleDesign = computed(() => props.designType === 'simple')
+const isArchDesign = computed(() => props.designType === 'arch')
+const isPortraitDesign = computed(() => props.designType === 'portrait')
 
 // Script-name styling for the simple design — uses the primary (typically script)
 // font and the theme accent color, matching the standard layout's host names.
@@ -495,11 +510,30 @@ const animationDelays = computed(() => {
   currentDelay += 0.25
   const titleLeft = getNextDelay(leftHostTitle.value)
   const titleRight = getNextDelay(props.hosts.length > 1 ? rightHostTitle.value : null)
-  const nameLeft = getNextDelay(props.hosts[0]?.name)
-  const nameRight = getNextDelay(props.hosts.length > 1 ? props.hosts[1]?.name : null)
-  const profileLeft = currentDelay
-  currentDelay += 0.15
-  const profileRight = currentDelay
+
+  // The portrait design renders the faces between the titles and the names, so
+  // its cascade has to reveal them in that order too — reusing the standard
+  // timings here would name each host before showing them, and leave the
+  // portraits arriving last under text that has already settled.
+  let profileLeft: number
+  let profileRight: number
+  let nameLeft: number
+  let nameRight: number
+
+  if (isPortraitDesign.value) {
+    profileLeft = currentDelay
+    currentDelay += 0.15
+    profileRight = currentDelay
+    currentDelay += 0.3
+    nameLeft = getNextDelay(props.hosts[0]?.name)
+    nameRight = getNextDelay(props.hosts.length > 1 ? props.hosts[1]?.name : null)
+  } else {
+    nameLeft = getNextDelay(props.hosts[0]?.name)
+    nameRight = getNextDelay(props.hosts.length > 1 ? props.hosts[1]?.name : null)
+    profileLeft = currentDelay
+    currentDelay += 0.15
+    profileRight = currentDelay
+  }
 
   return {
     welcome,
@@ -534,6 +568,67 @@ const animationDelays = computed(() => {
 /* Reduce spacing between title and name rows */
 .name-row {
   margin-top: -0.125rem;
+}
+
+/* ============================================================
+   Portrait design — the standard seven rows, with the face moved
+   between the title and the name.
+
+   Why order and not a second template: the two designs differ by
+   the position of one row out of seven. Forking the markup would
+   duplicate ~190 lines of grid, editable regions and per-word
+   animation bindings, and every later fix would have to be made
+   twice. `order` moves the row and leaves one source of truth.
+   nth-child still counts source order, so the parent-row spacing
+   rules above are unaffected.
+   ============================================================ */
+.is-portrait .profile-picture-row {
+  order: 1;
+}
+
+.is-portrait .name-row {
+  order: 2;
+}
+
+/* The negative margins above are tuned for a title sitting directly over a
+   name. In this order the face separates them, so both rows get their own
+   air back. */
+.is-portrait .profile-picture-row {
+  margin-top: 0.35rem;
+}
+
+.is-portrait .name-row {
+  margin-top: 0.35rem;
+}
+
+.khmer-text .is-portrait .name-row,
+.khmer-text .is-portrait .profile-picture-row {
+  margin-top: 0.25rem;
+}
+
+/* Standard ends on the portraits, so they carry the block and run large. Here
+   the name is the closer, and a 75% circle above it would outweigh it — step
+   the portrait down, and give the name back the weight it now has to carry,
+   so the eye lands on it last instead of sliding off the photo. */
+.is-portrait .host-name-text {
+  font-size: 1.0625em;
+  font-weight: 500;
+}
+
+.is-portrait .host-profile-left :deep(.profile-picture-wrapper),
+.is-portrait .host-profile-left :deep(.profile-picture-fallback),
+.is-portrait .host-profile-right :deep(.profile-picture-wrapper),
+.is-portrait .host-profile-right :deep(.profile-picture-fallback) {
+  width: 62%;
+}
+
+@media (min-width: 1920px) {
+  .is-portrait .host-profile-left :deep(.profile-picture-wrapper),
+  .is-portrait .host-profile-left :deep(.profile-picture-fallback),
+  .is-portrait .host-profile-right :deep(.profile-picture-wrapper),
+  .is-portrait .host-profile-right :deep(.profile-picture-fallback) {
+    width: 52%;
+  }
 }
 
 /* Preview editor only: the empty avatar standing in for a host photo that

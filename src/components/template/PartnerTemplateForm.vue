@@ -1446,6 +1446,7 @@ import {
   X,
   Droplets,
   PenLine,
+  IdCard,
   Snowflake,
   Bird,
   Wand2,
@@ -1916,9 +1917,13 @@ const eventDetailsMarkerColorOptions = computed(() => [
   { value: 'custom', label: t('management.partnerTemplateForm.fallingEffect.sourceCustomShort') },
 ])
 
+// portrait and arch are wedding-only rearrangements of the host block; on any
+// other event type they fall through to the standard layout.
 const hostInfoDesignOptions = computed(() => [
   { value: 'standard', label: t('management.partnerTemplateForm.hostInfoDesign.types.standard'), icon: Users },
   { value: 'simple', label: t('management.partnerTemplateForm.hostInfoDesign.types.simple'), icon: UserRound },
+  { value: 'portrait', label: t('management.partnerTemplateForm.hostInfoDesign.types.portrait'), icon: IdCard },
+  { value: 'arch', label: t('management.partnerTemplateForm.hostInfoDesign.types.arch'), icon: Church },
 ])
 
 // The engraved option is built to sit under the calendar / flanked / arch date

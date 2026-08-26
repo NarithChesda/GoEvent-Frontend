@@ -17,12 +17,14 @@ nullable JSON field to the partner-template model, accept it on create/update
 (sent as a JSON-encoded string inside `multipart/form-data`), return it on read,
 and surface it inside the event's `template_assets` payload.
 
-Two designs exist today:
+Four designs exist today:
 
 | `type`     | Description                                                                                          |
 |------------|------------------------------------------------------------------------------------------------------|
 | `standard` | **Default.** Rich layout: welcome header, parent names, logo, host titles, host names, profile photos. |
 | `simple`   | Minimal layout: the welcome header above large script host names stacked and joined by an ampersand. |
+| `portrait` | The `standard` layout with one row moved — title, then photo, then name — so the label introduces the person, the photo shows them and the name closes. |
+| `arch`     | The showcase-v2 couple-story composition: two arch-framed portraits staged on a diagonal, each host's title, name and parents stacked under their own frame. Renders no logo. |
 
 When the field is absent / `null`, the frontend falls back to `standard`, so this
 is fully backward compatible — existing templates need no migration.
@@ -41,7 +43,7 @@ is fully backward compatible — existing templates need no migration.
 
 | Field  | Type   | Required | Allowed values            | Notes                                  |
 |--------|--------|----------|---------------------------|----------------------------------------|
-| `type` | string | yes      | `"standard"`, `"simple"`  | Reject any other value (400).          |
+| `type` | string | yes      | `"standard"`, `"simple"`, `"portrait"`, `"arch"` | Reject any other value (400). |
 
 The whole `host_info_design` field may also be `null` (meaning "use the default
 `standard`"). It is **not** a file and carries no images — `type` is the only
@@ -71,7 +73,7 @@ client.
 On create and update, validate the field when present:
 
 - Accept `null` (clears the field → frontend uses `standard`).
-- When an object is provided, require `type` ∈ {`standard`, `simple`}.
+- When an object is provided, require `type` ∈ {`standard`, `simple`, `portrait`, `arch`}.
 - Reject unknown `type` values and unknown extra keys with a `400` and a
   field-specific error under `host_info_design`.
 
@@ -79,7 +81,7 @@ On create and update, validate the field when present:
 {
   "success": false,
   "errors": {
-    "host_info_design": ["type must be one of: standard, simple"]
+    "host_info_design": ["type must be one of: standard, simple, portrait, arch"]
   }
 }
 ```
@@ -183,15 +185,15 @@ defaults to `standard` either way.
   field's model definition, serializer handling, form-data parsing, and
   `template_assets` assembly, you've covered everything here.
 - No new endpoints, no file handling, no images.
-- The only enum to enforce is `type ∈ {standard, simple}`. Treat the object as
+- The only enum to enforce is `type ∈ {standard, simple, portrait, arch}`. Treat the object as
   extensible (don't hard-fail on future sibling keys unless you prefer strict
   validation — current frontend only sends `type`).
-- **Frontend rendering scope (FYI, not a backend task):** the `simple` design is
-  currently implemented by the **wedding** host layout. Other event-type host
-  layouts ignore `host_info_design` and always render their `standard` look —
-  setting `simple` on a non-wedding template is harmless and simply renders
-  standard. The backend should still store/return the field unchanged regardless
-  of event type.
+- **Frontend rendering scope (FYI, not a backend task):** `simple`, `portrait`
+  and `arch` are all implemented by the **wedding** host layout only. Other
+  event-type host layouts ignore `host_info_design` and always render their
+  `standard` look — setting any of the three on a non-wedding template is
+  harmless and simply renders standard. The backend should still store/return
+  the field unchanged regardless of event type.
 
 > The dev-only `VITE_FORCE_HOST_INFO_DESIGN` env override has been **removed**.
 > The showcase now binds `:host-info-design` directly to
