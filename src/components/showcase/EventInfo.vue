@@ -3177,8 +3177,18 @@ const engravedPaper = computed(() => props.backgroundColor || '#ffffff')
 
 /* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
+  /* The .animate-active variants are load-bearing: the rules that start
+     these two (.animate-active .bounce-word / .bounce-in-element) are
+     0,2,0 and a media query adds no specificity, so the unprefixed
+     selectors alone lose the cascade and every bounce — a 15px
+     translateY with an overshoot on the sheet, the map, both bands and
+     the date mark, plus a 6px one per word — keeps running for exactly
+     the readers who asked it not to. Matches the .details-line and
+     .calendar-day entries below, which already carry the prefix. */
   .bounce-word,
-  .bounce-in-element {
+  .animate-active .bounce-word,
+  .bounce-in-element,
+  .animate-active .bounce-in-element {
     animation: none;
     opacity: 1;
     transform: none;
