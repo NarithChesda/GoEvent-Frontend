@@ -51,7 +51,8 @@ export function getGlobalWordIndex(
  * Animation timing constants
  */
 export const ANIMATION_CONSTANTS = {
-  WORD_DELAY: 0.08, // delay between each word
+  WORD_DELAY: 0.03, // delay between each word
+  WORD_CASCADE_MAX: 0.6, // ceiling on a single text's word cascade
   ELEMENT_GAP: 0.08, // gap between elements
   LOGO_DURATION: 0.25, // logo animation time + gap
   PROFILE_GAP: 0.15, // gap between profile pictures
@@ -59,12 +60,26 @@ export const ANIMATION_CONSTANTS = {
 }
 
 /**
- * Calculate animation duration for a text based on its word count
+ * Delay for the Nth word of a word-by-word text reveal.
+ *
+ * Capped at WORD_CASCADE_MAX so a long passage still finishes assembling in
+ * well under a second. Uncapped `index * WORD_DELAY` meant a 40-word paragraph
+ * took seconds to appear — the reader had scrolled past text that was still
+ * arriving, and any element chained after it (see getTextAnimationDuration)
+ * inherited the whole wait.
+ */
+export function wordCascadeDelay(index: number): number {
+  return Math.min(index * ANIMATION_CONSTANTS.WORD_DELAY, ANIMATION_CONSTANTS.WORD_CASCADE_MAX)
+}
+
+/**
+ * Calculate animation duration for a text based on its word count.
+ * Shares the cascade ceiling, so chaining off it can never blow up either.
  */
 export function getTextAnimationDuration(text: string | null | undefined): number {
   if (!text) return 0
   const wordCount = splitToWords(text).length
-  return wordCount * ANIMATION_CONSTANTS.WORD_DELAY
+  return wordCascadeDelay(wordCount)
 }
 
 /**

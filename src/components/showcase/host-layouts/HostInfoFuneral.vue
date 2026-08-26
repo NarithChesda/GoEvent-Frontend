@@ -53,7 +53,7 @@
             v-for="(word, wordIndex) in line"
             :key="`instruction-${currentLanguage}-${lineIndex}-${wordIndex}`"
             class="bounce-word"
-            :style="{ animationDelay: `${animationDelays.instruction + getGlobalWordIndex(splitToLines(instructionText), lineIndex, wordIndex) * WORD_DELAY}s` }"
+            :style="{ animationDelay: `${animationDelays.instruction + wordCascadeDelay(getGlobalWordIndex(splitToLines(instructionText), lineIndex, wordIndex))}s` }"
           >{{ word }}{{ wordIndex < line.length - 1 ? '\u00A0' : '' }}</span>
         </template>
       </p>
@@ -69,7 +69,7 @@
           v-for="(word, index) in splitToWords(hostsHeaderText)"
           :key="`header-${currentLanguage}-${index}`"
           class="bounce-word"
-          :style="{ animationDelay: `${animationDelays.header + index * WORD_DELAY}s` }"
+          :style="{ animationDelay: `${animationDelays.header + wordCascadeDelay(index)}s` }"
         >{{ word }}{{ index < splitToWords(hostsHeaderText).length - 1 ? '\u00A0' : '' }}</span>
       </h3>
 
@@ -106,6 +106,7 @@ import {
   splitToLines,
   getGlobalWordIndex,
   ANIMATION_CONSTANTS,
+  wordCascadeDelay,
   getTextAnimationDuration,
 } from './shared'
 import { useFallbackLogo } from '@/composables/showcase/useHostInfoUtils'
@@ -117,7 +118,6 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
   computed(() => props.primaryColor)
 )
 
-const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 
 const hostsHeaderText = computed(() => {
@@ -210,7 +210,7 @@ const animationDelays = computed(() => {
   padding: 0.5rem 0;
   display: block;
   opacity: 0;
-  animation: revealWord 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: revealWord 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .host-title {
@@ -298,20 +298,17 @@ const animationDelays = computed(() => {
 .bounce-word {
   display: inline-block;
   opacity: 0;
-  animation: revealWord 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: revealWord 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes revealWord {
-  0% {
+  from {
     opacity: 0;
-    transform: scale(0.85) translateY(10px);
+    transform: translateY(6px);
   }
-  60% {
+  to {
     opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateY(0);
   }
 }
 

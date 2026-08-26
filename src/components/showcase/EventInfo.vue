@@ -28,7 +28,7 @@
               v-for="(word, index) in splitToWords(descriptionTitle)"
               :key="`title-${currentLanguage}-${index}`"
               class="bounce-word"
-              :style="{ animationDelay: `${animationDelays.title + index * WORD_DELAY}s` }"
+              :style="{ animationDelay: `${animationDelays.title + wordCascadeDelay(index)}s` }"
             >{{ word }}{{ index < splitToWords(descriptionTitle).length - 1 ? '\u00A0' : '' }}</span>
           </h2>
         </InlineEditableText>
@@ -64,7 +64,7 @@
                 :key="`desc-${currentLanguage}-${lineIndex}-${wordIndex}`"
                 class="bounce-word"
                 :style="{
-                  animationDelay: `${animationDelays.description + getGlobalWordIndex(descriptionLines, lineIndex, wordIndex) * WORD_DELAY}s`,
+                  animationDelay: `${animationDelays.description + wordCascadeDelay(getGlobalWordIndex(descriptionLines, lineIndex, wordIndex))}s`,
                 }"
               >{{ word }}{{ wordIndex < line.length - 1 ? '\u00A0' : '' }}</span>
             </template>
@@ -387,6 +387,7 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch, nextTick, inject } from 'vue'
+import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import SectionDisplayToggle from '@/components/showcase-preview/edit/SectionDisplayToggle.vue'
@@ -407,6 +408,7 @@ import {
   splitToLines,
   getGlobalWordIndex,
   ANIMATION_CONSTANTS,
+  wordCascadeDelay,
   getTextAnimationDuration,
 } from '@/composables/showcase/useHostInfoUtils'
 
@@ -449,7 +451,6 @@ const props = withDefaults(defineProps<Props>(), {
   detailsMarkerColorSource: 'accent',
 })
 
-const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 
 // Visibility tracking for scroll-triggered animations
@@ -489,9 +490,6 @@ const setupVisibilityTracking = () => {
     classObserver.observe(parent, { attributes: true, attributeFilter: ['class'] })
   } else {
     // Fallback for use outside the showcase (e.g. preview / admin)
-    const scrollContainer = document.querySelector(
-      '.liquid-glass-card .custom-scrollbar',
-    ) as Element | null
     const fallback = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -501,7 +499,7 @@ const setupVisibilityTracking = () => {
           }
         })
       },
-      { threshold: 0.1, rootMargin: '0px 0px -60px 0px', root: scrollContainer },
+      showcaseRevealObserverInit(),
     )
     if (containerRef.value) fallback.observe(containerRef.value)
   }
@@ -1177,20 +1175,17 @@ const countdownNumberFont = computed(() =>
 }
 
 .animate-active .bounce-word {
-  animation: revealWord 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: revealWord 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes revealWord {
-  0% {
+  from {
     opacity: 0;
-    transform: scale(0.85) translateY(10px);
+    transform: translateY(6px);
   }
-  60% {
+  to {
     opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateY(0);
   }
 }
 

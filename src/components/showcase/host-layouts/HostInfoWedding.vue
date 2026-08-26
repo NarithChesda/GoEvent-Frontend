@@ -30,7 +30,7 @@
               v-for="(word, index) in splitToWords(hosts[0].name)"
               :key="`simple-name-left-${currentLanguage}-${index}`"
               class="bounce-word"
-              :style="{ animationDelay: `${simpleAnimationDelays.nameLeft + index * WORD_DELAY}s` }"
+              :style="{ animationDelay: `${simpleAnimationDelays.nameLeft + wordCascadeDelay(index)}s` }"
               >{{ word }}{{ index < splitToWords(hosts[0].name).length - 1 ? ' ' : '' }}</span
             >
           </h2>
@@ -54,7 +54,7 @@
               :key="`simple-name-right-${currentLanguage}-${index}`"
               class="bounce-word"
               :style="{
-                animationDelay: `${simpleAnimationDelays.nameRight + index * WORD_DELAY}s`,
+                animationDelay: `${simpleAnimationDelays.nameRight + wordCascadeDelay(index)}s`,
               }"
               >{{ word }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? ' ' : '' }}</span
             >
@@ -223,7 +223,7 @@
                 v-for="(word, index) in splitToWords(leftHostTitle)"
                 :key="`title-left-${currentLanguage}-${index}`"
                 class="bounce-word"
-                :style="{ animationDelay: `${animationDelays.titleLeft + index * WORD_DELAY}s` }"
+                :style="{ animationDelay: `${animationDelays.titleLeft + wordCascadeDelay(index)}s` }"
                 >{{ word
                 }}{{ index < splitToWords(leftHostTitle).length - 1 ? '\u00A0' : '' }}</span
               >
@@ -249,7 +249,7 @@
                 v-for="(word, index) in splitToWords(rightHostTitle)"
                 :key="`title-right-${currentLanguage}-${index}`"
                 class="bounce-word"
-                :style="{ animationDelay: `${animationDelays.titleRight + index * WORD_DELAY}s` }"
+                :style="{ animationDelay: `${animationDelays.titleRight + wordCascadeDelay(index)}s` }"
                 >{{ word
                 }}{{ index < splitToWords(rightHostTitle).length - 1 ? '\u00A0' : '' }}</span
               >
@@ -274,7 +274,7 @@
                 v-for="(word, index) in splitToWords(hosts[0].name)"
                 :key="`name-left-${currentLanguage}-${index}`"
                 class="bounce-word"
-                :style="{ animationDelay: `${animationDelays.nameLeft + index * WORD_DELAY}s` }"
+                :style="{ animationDelay: `${animationDelays.nameLeft + wordCascadeDelay(index)}s` }"
                 >{{ word
                 }}{{ index < splitToWords(hosts[0].name).length - 1 ? '\u00A0' : '' }}</span
               >
@@ -297,7 +297,7 @@
                 v-for="(word, index) in splitToWords(hosts[1]?.name)"
                 :key="`name-right-${currentLanguage}-${index}`"
                 class="bounce-word"
-                :style="{ animationDelay: `${animationDelays.nameRight + index * WORD_DELAY}s` }"
+                :style="{ animationDelay: `${animationDelays.nameRight + wordCascadeDelay(index)}s` }"
                 >{{ word
                 }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? '\u00A0' : '' }}</span
               >
@@ -364,6 +364,7 @@ import {
   splitToWords,
   getKhmerClass,
   ANIMATION_CONSTANTS,
+  wordCascadeDelay,
   getTextAnimationDuration,
 } from './shared'
 

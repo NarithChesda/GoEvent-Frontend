@@ -82,6 +82,7 @@ import { Calendar, ChevronUp, ChevronDown } from 'lucide-vue-next'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useScrollProgress } from '@/composables/showcase/useScrollProgress'
 
 interface AgendaItemIcon {
   id: number
@@ -172,88 +173,33 @@ const timeText = computed(() => {
 
 // Scroll-driven zoom/fade — mirrors the PhotoGallery animation so agenda
 // cards scale and fade in as they scroll through the showcase viewport.
-// Progress is read from the same scroll container as PhotoGallery (the
-// liquid-glass card's custom scrollbar) and exposed via --scroll-progress
-// for the CSS below to drive opacity/scale. Updates coalesce through rAF
-// to keep scroll handling paint-aligned.
+// Measurement is delegated to the shared useScrollProgress registry: one
+// listener and one rAF for every card and photo on the page, with reads batched
+// ahead of writes. Registering here per card meant N rAF callbacks per frame
+// each forcing its own layout.
 const cardRef = ref<HTMLElement | null>(null)
-let scrollContainerEl: HTMLElement | null = null
-let rafId: number | null = null
+const entranceDelayMs = (props.entranceDelay || 0) * 1000
 
-const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3)
-
-const updateProgress = () => {
-  rafId = null
-  const el = cardRef.value
-  if (!el) return
-
-  let viewportTop = 0
-  let viewportBottom = window.innerHeight
-  if (scrollContainerEl) {
-    const containerRect = scrollContainerEl.getBoundingClientRect()
-    viewportTop = containerRect.top
-    viewportBottom = containerRect.bottom
-  }
-  const viewportHeight = viewportBottom - viewportTop
-  if (viewportHeight <= 0) return
-
-  const rect = el.getBoundingClientRect()
-  if (rect.height === 0) return
-
-  const visibleTop = Math.max(rect.top, viewportTop)
-  const visibleBottom = Math.min(rect.bottom, viewportBottom)
-  const visibleHeight = Math.max(0, visibleBottom - visibleTop)
-  const maxVisible = Math.min(rect.height, viewportHeight)
-  const raw = maxVisible > 0 ? visibleHeight / maxVisible : 0
-  const progress = easeOutCubic(Math.min(1, Math.max(0, raw)))
-  el.style.setProperty('--scroll-progress', progress.toFixed(3))
-}
-
-const scheduleUpdate = () => {
-  if (rafId !== null) return
-  rafId = requestAnimationFrame(updateProgress)
-}
+useScrollProgress(cardRef, { startDelayMs: entranceDelayMs })
 
 let revealTimer: number | null = null
 
 onMounted(() => {
-  const delayMs = (props.entranceDelay || 0) * 1000
   if (cardRef.value) {
-    cardRef.value.style.setProperty('--scroll-progress', '0')
     cardRef.value.classList.add('is-revealing')
     // Remove the reveal class only after the entrance delay + transition duration
     revealTimer = window.setTimeout(() => {
       cardRef.value?.classList.remove('is-revealing')
       revealTimer = null
-    }, delayMs + 600)
-  }
-  scrollContainerEl = document.querySelector(
-    '.liquid-glass-card .custom-scrollbar',
-  ) as HTMLElement | null
-  const target: EventTarget = scrollContainerEl ?? window
-  target.addEventListener('scroll', scheduleUpdate, { passive: true })
-  window.addEventListener('resize', scheduleUpdate, { passive: true })
-  // Delay the first progress update so cards animate in one at a time
-  if (delayMs > 0) {
-    setTimeout(scheduleUpdate, delayMs)
-  } else {
-    scheduleUpdate()
+    }, entranceDelayMs + 600)
   }
 })
 
 onUnmounted(() => {
-  const target: EventTarget = scrollContainerEl ?? window
-  target.removeEventListener('scroll', scheduleUpdate)
-  window.removeEventListener('resize', scheduleUpdate)
-  if (rafId !== null) {
-    cancelAnimationFrame(rafId)
-    rafId = null
-  }
   if (revealTimer !== null) {
     clearTimeout(revealTimer)
     revealTimer = null
   }
-  scrollContainerEl = null
 })
 </script>
 
@@ -264,11 +210,17 @@ onUnmounted(() => {
   display: flex;
   gap: 0.875rem;
   /* Scroll-driven zoom/fade matched to PhotoGallery so stacked agenda items
-     scale up and fade in as they scroll through the showcase viewport. */
-  opacity: calc(0.2 + 0.8 * var(--scroll-progress));
-  transform: scale(calc(0.68 + 0.32 * var(--scroll-progress)));
+     scale up and fade in as they scroll through the showcase viewport.
+     The range is deliberately narrow. A 0.68→1 scale re-rasterizes the card's
+     text at a fractional scale for most of its time on screen (visibly soft),
+     and because the mapping is symmetric, an item at the top edge shrank away
+     while it was still being read. 0.94→1 keeps the parallax read without
+     turning the list into a lens.
+     No `will-change`: these cards live in a long list, and promoting every one
+     of them costs more than the transform saves. */
+  opacity: calc(0.55 + 0.45 * var(--scroll-progress));
+  transform: scale(calc(0.94 + 0.06 * var(--scroll-progress)));
   transform-origin: center center;
-  will-change: transform, opacity;
 }
 
 /* Reveal-only transition: kept for the first ~600ms after mount so the item

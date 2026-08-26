@@ -16,6 +16,7 @@ export {
   getGlobalWordIndex,
   ANIMATION_CONSTANTS,
   getTextAnimationDuration,
+  wordCascadeDelay,
   useFallbackLogo,
   useAnimatedDelays,
   getKhmerClass,
