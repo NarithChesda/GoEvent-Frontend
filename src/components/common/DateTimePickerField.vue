@@ -582,6 +582,21 @@ onUnmounted(() => {
   transform: translateY(100%);
 }
 
+/* Hour/minute lists */
+.dropdown-enter-active {
+  transition: opacity 0.15s ease-out, transform 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.dropdown-leave-active {
+  transition: opacity 0.12s ease-out, transform 0.12s ease-out;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -4px) scale(0.96);
+}
+
 /* Desktop popover */
 .dtp-pop-enter-active {
   transition: opacity 0.2s ease, transform 0.2s ease;
@@ -602,6 +617,8 @@ onUnmounted(() => {
   .dtp-sheet-leave-active,
   .dtp-pop-enter-active,
   .dtp-pop-leave-active,
+  .dropdown-enter-active,
+  .dropdown-leave-active,
   .dtp-fade-enter-active,
   .dtp-fade-leave-active {
     transition-duration: 0.01s;

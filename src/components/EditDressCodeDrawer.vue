@@ -368,7 +368,7 @@
         </div>
 
         <!-- Footer -->
-        <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
+        <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)]">
           <div class="flex items-center justify-between">
             <button
               type="submit"

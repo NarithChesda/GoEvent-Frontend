@@ -71,10 +71,13 @@
 
                 <!-- Auto Populate (shown when category is selected) -->
                 <Transition name="slide-fade">
-                  <div
+                  <button
                     v-if="form.category && form.category !== ''"
+                    type="button"
+                    role="switch"
+                    :aria-checked="form.auto_populate"
                     @click="form.auto_populate = !form.auto_populate"
-                    class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+                    class="w-full flex items-center justify-between gap-3 p-3 text-left bg-slate-50 rounded-lg hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 transition-colors"
                   >
                     <div class="flex items-center gap-3">
                       <div class="p-2 bg-white rounded-lg shadow-sm">
@@ -86,8 +89,7 @@
                       </div>
                     </div>
                     <div
-                      role="switch"
-                      :aria-checked="form.auto_populate"
+                      aria-hidden="true"
                       :class="[
                         'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
                         form.auto_populate ? 'bg-sky-500' : 'bg-slate-200'
@@ -98,7 +100,7 @@
                         :style="{ transform: form.auto_populate ? 'translateX(20px)' : 'translateX(0)' }"
                       />
                     </div>
-                  </div>
+                  </button>
                 </Transition>
 
               </div>
@@ -135,9 +137,12 @@
               <div class="space-y-3">
                 <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('events.createDrawer.sections.privacy') }}</h3>
 
-                <div
+                <button
+                  type="button"
+                  role="switch"
+                  :aria-checked="form.privacy === 'public'"
                   @click="form.privacy = form.privacy === 'public' ? 'private' : 'public'"
-                  class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+                  class="w-full flex items-center justify-between gap-3 p-3 text-left bg-slate-50 rounded-lg hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 transition-colors"
                 >
                   <div class="flex items-center gap-3">
                     <div class="p-2 bg-white rounded-lg shadow-sm">
@@ -149,8 +154,7 @@
                     </div>
                   </div>
                   <div
-                    role="switch"
-                    :aria-checked="form.privacy === 'public'"
+                    aria-hidden="true"
                     :class="[
                       'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
                       form.privacy === 'public' ? 'bg-sky-500' : 'bg-slate-200'
@@ -161,7 +165,7 @@
                       :style="{ transform: form.privacy === 'public' ? 'translateX(20px)' : 'translateX(0)' }"
                     />
                   </div>
-                </div>
+                </button>
 
                 <!-- Full Description (public events only) -->
                 <Transition name="slide-fade">
@@ -184,9 +188,12 @@
                 <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('events.createDrawer.sections.registration') }}</h3>
 
                 <!-- Require Registration Toggle -->
-                <div
+                <button
+                  type="button"
+                  role="switch"
+                  :aria-checked="form.registration_required"
                   @click="form.registration_required = !form.registration_required"
-                  class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+                  class="w-full flex items-center justify-between gap-3 p-3 text-left bg-slate-50 rounded-lg hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 transition-colors"
                 >
                   <div class="flex items-center gap-3">
                     <div class="p-2 bg-white rounded-lg shadow-sm">
@@ -198,8 +205,7 @@
                     </div>
                   </div>
                   <div
-                    role="switch"
-                    :aria-checked="form.registration_required"
+                    aria-hidden="true"
                     :class="[
                       'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
                       form.registration_required ? 'bg-sky-500' : 'bg-slate-200'
@@ -210,7 +216,7 @@
                       :style="{ transform: form.registration_required ? 'translateX(20px)' : 'translateX(0)' }"
                     />
                   </div>
-                </div>
+                </button>
 
                 <!-- Registration Details (shown when registration is required) -->
                 <Transition name="slide-fade">
@@ -248,7 +254,7 @@
         </div>
 
         <!-- Footer with Action Buttons -->
-        <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
+        <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)]">
           <div class="flex items-center justify-between">
             <button
               @click="handleSubmit"
@@ -269,16 +275,6 @@
             </button>
           </div>
         </div>
-
-        <!-- Error Toast -->
-        <Transition name="slide-up">
-          <div v-if="message" class="absolute bottom-16 left-4 right-4 z-10">
-            <div class="bg-red-500 text-white px-3 py-2.5 rounded-lg shadow-lg flex items-center">
-              <AlertCircle class="w-4 h-4 mr-2 flex-shrink-0" />
-              <span class="text-xs">{{ message }}</span>
-            </div>
-          </div>
-        </Transition>
       </div>
     </Transition>
   </Teleport>
@@ -286,13 +282,15 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch, onMounted, onUnmounted } from 'vue'
-import { ArrowRight, Loader, Save, ClipboardList, Globe, Lock, Sparkles, AlertCircle } from 'lucide-vue-next'
+import { ArrowRight, Loader, Save, ClipboardList, Globe, Lock, Sparkles } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useToast } from '@/composables/useToast'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
 import DateTimePickerField from '@/components/common/DateTimePickerField.vue'
 import SelectField, { type SelectFieldOption } from '@/components/common/SelectField.vue'
 
 const { t } = useAppLanguage()
+const { showError } = useToast()
 const { translateEventCategory } = useCategoryTranslation()
 
 // Common start/end times for hosted events (weddings, birthdays, housewarmings, etc.)
@@ -349,7 +347,6 @@ const emit = defineEmits<Emits>()
 const descriptionEditor = ref<HTMLElement>()
 const isSubmitting = ref(false)
 const categories = ref<EventCategory[]>([])
-const message = ref<string | null>(null)
 
 // Form data
 const form = reactive<EventFormData>({
@@ -382,16 +379,6 @@ const dateError = computed(() =>
     ? t('events.messages.endDateAfterStart')
     : '',
 )
-
-// In-drawer error toast
-let messageTimer: ReturnType<typeof setTimeout> | undefined
-const showMessage = (text: string) => {
-  message.value = text
-  clearTimeout(messageTimer)
-  messageTimer = setTimeout(() => {
-    message.value = null
-  }, 4000)
-}
 
 // Methods
 const loadCategories = async () => {
@@ -455,11 +442,11 @@ const handleSubmit = async () => {
   // Validate before submitting; button sits outside the <form>, so native
   // required validation never runs
   if (!form.title.trim()) {
-    showMessage(t('common.errors.validation'))
+    showError(t('common.errors.validation'))
     return
   }
   if (!form.start_date || !form.end_date || dateError.value) {
-    showMessage(t('events.messages.endDateAfterStart'))
+    showError(t('events.messages.endDateAfterStart'))
     return
   }
 
@@ -515,7 +502,7 @@ const handleSubmit = async () => {
     emit('close')
   } catch (error) {
     console.error('Error creating event:', error)
-    showMessage(t('events.messages.createFailed'))
+    showError(t('events.messages.createFailed'))
   } finally {
     isSubmitting.value = false
   }
@@ -537,7 +524,6 @@ watch(
     if (isVisible) {
       // Reset form when drawer opens
       resetForm()
-      message.value = null
 
       // Prevent body scroll when drawer is open
       const scrollbarWidth = getScrollbarWidth()
@@ -633,7 +619,6 @@ onUnmounted(() => {
   document.body.style.overflow = ''
   document.body.style.paddingRight = ''
   document.removeEventListener('keydown', handleKeydown)
-  clearTimeout(messageTimer)
 })
 </script>
 
@@ -683,22 +668,6 @@ onUnmounted(() => {
 .slide-fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
-}
-
-/* Slide up transition for toast */
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
 }
 
 /* Custom scrollbar for modal content */
