@@ -737,20 +737,49 @@ const delays = computed(() => {
 
 /* ---------- Khmer ----------
    Khmer clusters break under heavy tracking and its glyphs sit lower in the
-   em-box, so the role label gives its tracking back and every line relaxes. */
+   em-box, so the role label gives its tracking back and every line relaxes.
+
+   The `!important` on each line-height is not a shortcut past specificity — it
+   is the only way to reach these. Every one of these elements also carries the
+   global `.khmer-text-fix`, whose `line-height: 1.8 !important` (main.css) beats
+   an ordinary declaration however specific the selector. Without it the three
+   values below were dead code: all three rendered at 1.8, which is what left the
+   name floating in ~28px of empty box above and ~32px below against 20px of
+   type. 1.8 is a safe blanket for Khmer set anywhere; these are the values for
+   Khmer set *here*, at these sizes, in a narrow column.
+
+   The vertical padding/margin `.khmer-text-fix` adds are trimmed rather than
+   removed — they are diacritic clip protection on Safari, which composites
+   these onto their own layer (see the @supports block in main.css). main.css
+   deliberately leaves both without `!important` so a component can do exactly
+   this. The leading above already carries most of the guard. */
+.khmer-text .arch-role,
+.khmer-text .arch-name,
+.khmer-text .arch-parents {
+  padding-top: 0.12em;
+  padding-bottom: 0.12em;
+}
+
 .khmer-text .arch-role {
   letter-spacing: 0.04em;
   font-size: 0.6875rem;
-  line-height: 1.5;
+  line-height: 1.5 !important;
+  margin-top: 0;
 }
 
+/* The name is the one line with air on both sides of it, so it is the one that
+   gives its margins back entirely — the role above and the parents below each
+   keep their own layout margin, which is what still separates the three. */
 .khmer-text .arch-name {
-  line-height: 1.45;
+  line-height: 1.45 !important;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .khmer-text .arch-parents {
   font-size: 0.75rem;
-  line-height: 1.65;
+  line-height: 1.65 !important;
+  margin-bottom: 0;
 }
 
 /* ---------- breakpoints ---------- */
