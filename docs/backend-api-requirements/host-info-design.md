@@ -37,19 +37,37 @@ is fully backward compatible — existing templates need no migration.
 
 ```json
 {
-  "type": "simple"
+  "type": "portrait",
+  "frame_style": "banner",
+  "couple_ornament": "heart"
 }
 ```
 
 | Field  | Type   | Required | Allowed values            | Notes                                  |
 |--------|--------|----------|---------------------------|----------------------------------------|
 | `type` | string | yes      | `"standard"`, `"simple"`, `"portrait"`, `"arch"` | Reject any other value (400). |
+| `frame_style` | string | no | `"none"`, `"banner"`, `"plaque"`, `"ribbon"`, `"laurel"` | Defaults to `"none"`. |
+| `couple_ornament` | string | no | `"none"`, `"heart"`, `"rings"`, `"knot"`, `"bloom"` | Defaults to `"none"`. |
 
 The whole `host_info_design` field may also be `null` (meaning "use the default
-`standard`"). It is **not** a file and carries no images — `type` is the only
-key. Keep it an object (rather than a bare string) so future design options can
-add sibling keys without a breaking change, matching the `event_details_design`
-precedent.
+`standard`"). It is **not** a file and carries no images.
+
+> **`frame_style` and `couple_ornament` are the sibling keys this doc predicted.**
+> They were added exactly as the original note below anticipated — as extra keys
+> on the same object, not as new fields — so there is **no new model field, no
+> new migration and no new endpoint**. If your serializer already stores and
+> returns `host_info_design` as an opaque JSON object, they may already work; the
+> only backend change needed is validating the two new keys.
+
+**`frame_style`** is one choice drawn twice — around the host's title *and*
+around their avatar — so the pair always match. **`couple_ornament`** is the
+motif drawn between the two hosts. Both are rendered by the `standard` and
+`portrait` layouts only; `arch` draws its own frames and `simple` has neither a
+title nor an avatar, so both ignore them (harmless — store and return unchanged
+regardless of `type`).
+
+Both default to `"none"`, which is the look every template had before these
+existed — so this is fully backward compatible and **must not be backfilled**.
 
 ---
 
@@ -74,8 +92,13 @@ On create and update, validate the field when present:
 
 - Accept `null` (clears the field → frontend uses `standard`).
 - When an object is provided, require `type` ∈ {`standard`, `simple`, `portrait`, `arch`}.
-- Reject unknown `type` values and unknown extra keys with a `400` and a
-  field-specific error under `host_info_design`.
+- When present, require `frame_style` ∈ {`none`, `banner`, `plaque`, `ribbon`, `laurel`}
+  and `couple_ornament` ∈ {`none`, `heart`, `rings`, `knot`, `bloom`}. Both are
+  optional; absent means `none`.
+- Reject unknown values for any of the three with a `400` and a field-specific
+  error under `host_info_design`. Do **not** reject unknown *keys* — this object
+  is the designated place for future design options, and rejecting extras would
+  make the next one a breaking change.
 
 ```json
 {
@@ -185,7 +208,8 @@ defaults to `standard` either way.
   field's model definition, serializer handling, form-data parsing, and
   `template_assets` assembly, you've covered everything here.
 - No new endpoints, no file handling, no images.
-- The only enum to enforce is `type ∈ {standard, simple, portrait, arch}`. Treat the object as
+- Three enums to enforce now: `type`, plus the optional `frame_style` and
+  `couple_ornament` (see Validation). Treat the object as
   extensible (don't hard-fail on future sibling keys unless you prefer strict
   validation — current frontend only sends `type`).
 - **Frontend rendering scope (FYI, not a backend task):** `simple`, `portrait`

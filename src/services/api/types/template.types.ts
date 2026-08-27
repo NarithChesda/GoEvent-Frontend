@@ -498,9 +498,55 @@ export type HostInfoDesignType = 'standard' | 'simple' | 'portrait' | 'arch'
  * the template package and forwarded down to HostInfo.vue. When omitted the
  * showcase falls back to the `standard` design.
  */
+/**
+ * Chrome drawn around the host's title *and* around their avatar — one choice,
+ * two renderings, so the pair can never be mismatched.
+ *
+ * Each style is a matched set in one visual language, not a title treatment and
+ * an avatar treatment picked independently:
+ *
+ * - `none`   — the default: plain title text over a plain circular avatar.
+ *              Every template that predates this field renders here, unchanged.
+ * - `banner` — the title on a filled banner with notched ends; the avatar in a
+ *              thick ring of the same fill with a small gem at its crown. The
+ *              solid, high-contrast option.
+ * - `plaque` — the title in a hairline double rule with cut corners; the avatar
+ *              in a double hairline ring. Engraved and quiet — the one that
+ *              rhymes with the `engraved` save-the-date and the `arch` /
+ *              `flanked` date designs.
+ * - `ribbon` — the title on a band with folded tails either side; the avatar
+ *              ring with two tails at its foot. Wedding stationery.
+ * - `laurel` — the title flanked by two sprigs; the avatar ring with laurel
+ *              sweeping its lower half. The most ornament of the four.
+ *
+ * Rendered by the **grid** host layouts (`standard` and `portrait`). `arch`
+ * draws its own frames and `simple` has neither a title nor an avatar, so both
+ * ignore this.
+ */
+export type HostFrameStyle = 'none' | 'banner' | 'plaque' | 'ribbon' | 'laurel'
+
+/**
+ * The motif in the centre column between the two hosts — the empty
+ * `.center-spacer` track that the grid has always had and never filled.
+ *
+ * Defaults to `none`, which is the empty spacer as before.
+ */
+export type CoupleOrnament = 'none' | 'heart' | 'rings' | 'knot' | 'bloom'
+
 export interface HostInfoDesignConfig {
   /** Which host info layout to render. Defaults to `standard`. */
   type: HostInfoDesignType
+  /**
+   * Frame chrome shared by the host title and the avatar. Defaults to `none`.
+   *
+   * A sibling key rather than a field of its own: this config was deliberately
+   * kept an object so design options could be added without a breaking change
+   * (see docs/backend-api-requirements/host-info-design.md), and this is the
+   * first one to take that path.
+   */
+  frame_style?: HostFrameStyle
+  /** Motif drawn between the two hosts. Defaults to `none`. */
+  couple_ornament?: CoupleOrnament
 }
 
 /**

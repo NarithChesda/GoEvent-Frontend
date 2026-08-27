@@ -3040,6 +3040,24 @@
         "simple": "Simple (welcome + large names)",
         "portrait": "Portrait (title, photo, then name)",
         "arch": "Arch (couple story, arched photos)"
+      },
+      "frameLabel": "Title & Avatar Frame",
+      "frameHint": "One choice, drawn twice - around the host title and around their avatar, so the pair always match. Standard and Portrait only; Arch brings its own frames and Simple has neither.",
+      "frames": {
+        "none": "None (plain title, plain circle)",
+        "banner": "Banner (filled plate, thick ring)",
+        "plaque": "Plaque (hairline rules, double ring)",
+        "ribbon": "Ribbon (folded tails)",
+        "laurel": "Laurel (sprigs and wreath)"
+      },
+      "ornamentLabel": "Centre Motif",
+      "ornamentHint": "Drawn in the column between the two hosts, beside their photos.",
+      "ornaments": {
+        "none": "None",
+        "heart": "Heart",
+        "rings": "Interlocked rings",
+        "knot": "Knot",
+        "bloom": "Bloom"
       }
     },
     "footer": {

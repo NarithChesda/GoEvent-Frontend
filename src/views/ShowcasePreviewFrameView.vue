@@ -25,6 +25,7 @@ import { useEventShowcase, type TemplateAssets } from '@/composables/useEventSho
 import { eventTemplateService } from '@/services/api'
 import { useShowcaseEditSaves } from '@/composables/showcase-preview/useShowcaseEditSaves'
 import { InlineEditKey, EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import { PreviewFrameKey } from '@/components/showcase-preview/previewContext'
 import { CoverLayoutEditKey } from '@/components/showcase-preview/edit/coverLayoutEditContext'
 import type { CoverElementBoxes, CoverElementId } from '@/services/api/types/template.types'
 import {
@@ -91,6 +92,12 @@ const renderer = computed(() =>
 // editable=1 URL can't bypass anything.
 // ---------------------------------------------------------------------------
 const isEditable = computed(() => route.query.editable === '1')
+
+// Unconditional, and deliberately not folded into the `editable` branch below:
+// this is a preview frame whether or not the viewer can edit. Components use it
+// to decide whether to render slots that have no content yet — a question every
+// preview answers "yes" and the live showcase answers "no". See previewContext.
+provide(PreviewFrameKey, true)
 
 if (route.query.editable === '1') {
   const { save } = useShowcaseEditSaves({ event, showcaseData, currentLanguage })

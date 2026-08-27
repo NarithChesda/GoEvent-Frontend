@@ -1373,6 +1373,38 @@
               </h5>
               <TemplateFormChoice v-model="hostInfoDesignModel" :options="hostInfoDesignOptions" :columns="1" />
               <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.designHint') }}</p>
+
+              <!-- The frame is one choice drawn twice — around the title and
+                   around the avatar — so the pair can never be mismatched. Only
+                   the grid designs draw it, so it collapses away on the two that
+                   don't: arch brings its own frames and simple has neither a
+                   title nor an avatar to frame. -->
+              <Transition name="collapse">
+                <div
+                  v-if="form.host_info_design_type === 'standard' || form.host_info_design_type === 'portrait'"
+                  class="grid grid-rows-[1fr]"
+                >
+                  <div class="min-h-0 overflow-hidden">
+                    <div class="space-y-3 pt-1">
+                      <TemplateFormChoice
+                        v-model="hostFrameStyleModel"
+                        :label="t('management.partnerTemplateForm.hostInfoDesign.frameLabel')"
+                        :options="hostFrameStyleOptions"
+                        :columns="1"
+                      />
+                      <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.frameHint') }}</p>
+
+                      <TemplateFormChoice
+                        v-model="hostCoupleOrnamentModel"
+                        :label="t('management.partnerTemplateForm.hostInfoDesign.ornamentLabel')"
+                        :options="hostCoupleOrnamentOptions"
+                        :columns="1"
+                      />
+                      <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.ornamentHint') }}</p>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
             </section>
           </template>
 
@@ -1466,6 +1498,14 @@ import {
   Signature,
   Stamp,
   Minus,
+  Square,
+  Ban,
+  Bookmark,
+  Award,
+  Heart,
+  CircleDashed,
+  Infinity as InfinityIcon,
+  Flower2,
   RectangleHorizontal,
   Frame,
   Clapperboard,
@@ -1498,8 +1538,11 @@ import type {
   EventDetailsDesignConfig,
   EventDetailsMarkerColorSource,
   HostInfoDesignType,
+  HostInfoDesignConfig,
   InfoCardDesignType,
   SaveTheDateDesignType,
+  HostFrameStyle,
+  CoupleOrnament,
   SaveTheDateDesignConfig,
   AmbientCreaturesConfig,
   AmbientCreatureEntry,
@@ -1765,6 +1808,10 @@ interface FormState {
   event_details_marker_custom_color: string
   /** Host info block design rendered in the showcase (standard | simple). */
   host_info_design_type: HostInfoDesignType
+  /** Frame chrome shared by the host title and avatar. `none` is the pre-frames look. */
+  host_frame_style: HostFrameStyle
+  /** Motif between the two hosts in the grid's centre column. */
+  host_couple_ornament: CoupleOrnament
   /** Info card (venue/map/countdown/RSVP) treatment in the showcase (glass | engraved). */
   info_card_design_type: InfoCardDesignType
   /**
@@ -1844,6 +1891,8 @@ const defaultForm = (): FormState => ({
   event_details_marker_color_source: 'accent',
   event_details_marker_custom_color: '#B3261E',
   host_info_design_type: 'standard',
+  host_frame_style: 'none',
+  host_couple_ornament: 'none',
   info_card_design_type: 'glass',
   save_the_date_design_type: 'auto',
 })
@@ -1961,6 +2010,26 @@ const hostInfoDesignOptions = computed(() => [
   { value: 'simple', label: t('management.partnerTemplateForm.hostInfoDesign.types.simple'), icon: UserRound },
   { value: 'portrait', label: t('management.partnerTemplateForm.hostInfoDesign.types.portrait'), icon: IdCard },
   { value: 'arch', label: t('management.partnerTemplateForm.hostInfoDesign.types.arch'), icon: Church },
+])
+
+// One choice, two renderings — the title's frame and the avatar's ring are a
+// matched pair, so they are never selected independently. Drawn by the grid
+// designs (standard, portrait); arch draws its own and simple has neither.
+const hostFrameStyleOptions = computed(() => [
+  { value: 'none', label: t('management.partnerTemplateForm.hostInfoDesign.frames.none'), icon: Ban },
+  { value: 'banner', label: t('management.partnerTemplateForm.hostInfoDesign.frames.banner'), icon: RectangleHorizontal },
+  { value: 'plaque', label: t('management.partnerTemplateForm.hostInfoDesign.frames.plaque'), icon: Square },
+  { value: 'ribbon', label: t('management.partnerTemplateForm.hostInfoDesign.frames.ribbon'), icon: Bookmark },
+  { value: 'laurel', label: t('management.partnerTemplateForm.hostInfoDesign.frames.laurel'), icon: Award },
+])
+
+// The motif in the centre column between the two hosts.
+const hostCoupleOrnamentOptions = computed(() => [
+  { value: 'none', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.none'), icon: Ban },
+  { value: 'heart', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.heart'), icon: Heart },
+  { value: 'rings', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.rings'), icon: CircleDashed },
+  { value: 'knot', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.knot'), icon: InfinityIcon },
+  { value: 'bloom', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.bloom'), icon: Flower2 },
 ])
 
 // The engraved option is built to sit under the calendar / flanked / arch date
@@ -2398,6 +2467,28 @@ const eventDetailsMarkerColorSourceModel = computed<string>({
 const hostInfoDesignModel = computed<string>({
   get: () => form.host_info_design_type,
   set: (value) => { form.host_info_design_type = value as HostInfoDesignType },
+})
+
+const hostFrameStyleModel = computed<string>({
+  get: () => form.host_frame_style,
+  set: (value) => { form.host_frame_style = value as HostFrameStyle },
+})
+
+const hostCoupleOrnamentModel = computed<string>({
+  get: () => form.host_couple_ornament,
+  set: (value) => { form.host_couple_ornament = value as CoupleOrnament },
+})
+
+/**
+ * The three host-info choices travel as one config object, because they are one
+ * on the wire: `frame_style` and `couple_ornament` are sibling keys on
+ * `host_info_design` rather than fields of their own. Shared by the save payload
+ * and the live preview draft so the two can't drift.
+ */
+const buildHostInfoDesignPayload = (): HostInfoDesignConfig => ({
+  type: form.host_info_design_type,
+  frame_style: form.host_frame_style,
+  couple_ornament: form.host_couple_ornament,
 })
 
 const infoCardDesignModel = computed<string>({
@@ -2965,6 +3056,10 @@ watch(
         template.event_details_design?.marker_custom_color ?? '#B3261E'
       // Hydrate host info design (standard | simple)
       form.host_info_design_type = template.host_info_design?.type ?? 'standard'
+      // Sibling keys on the same config. Absent means the template predates
+      // frames, which is exactly 'none' - the look it already has.
+      form.host_frame_style = template.host_info_design?.frame_style ?? 'none'
+      form.host_couple_ornament = template.host_info_design?.couple_ornament ?? 'none'
       // Hydrate info card design (glass | engraved)
       form.info_card_design_type = template.info_card_design?.type ?? 'glass'
       // Hydrate the Save the Date design. No stored value means 'auto' — each
@@ -3236,7 +3331,7 @@ async function handleSave(): Promise<void> {
       ambient_creatures: buildAmbientCreaturesPayload(),
       sparks: buildSparksPayload(),
       event_details_design: buildEventDetailsDesignPayload(),
-      host_info_design: { type: form.host_info_design_type },
+      host_info_design: buildHostInfoDesignPayload(),
       info_card_design: { type: form.info_card_design_type },
       save_the_date_design: buildSaveTheDateDesignPayload(),
     }
@@ -3407,7 +3502,7 @@ const previewDraft = computed<PartnerTemplateDraft>(() => {
     ambient_creatures: buildAmbientCreaturesPayload(),
     sparks: buildSparksPayload(),
     event_details_design: buildEventDetailsDesignPayload(),
-    host_info_design: { type: form.host_info_design_type },
+    host_info_design: buildHostInfoDesignPayload(),
     info_card_design: { type: form.info_card_design_type },
     save_the_date_design: buildSaveTheDateDesignPayload(),
     colors: pendingColors.value,

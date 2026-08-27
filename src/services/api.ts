@@ -103,6 +103,8 @@ export type {
   EventDetailsMarkerColorSource,
   HostInfoDesignType,
   HostInfoDesignConfig,
+  HostFrameStyle,
+  CoupleOrnament,
   InfoCardDesignType,
   InfoCardDesignConfig,
   SaveTheDateDesignType,

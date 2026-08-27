@@ -151,6 +151,8 @@
                     :first-host-id="firstHostId"
                     :host-clip-style="hostClipStyle"
                     :design-type="hostInfoDesign?.type"
+                    :frame-style="hostInfoDesign?.frame_style"
+                    :couple-ornament="hostInfoDesign?.couple_ornament"
                   />
                 </div>
 

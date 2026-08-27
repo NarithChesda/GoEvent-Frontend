@@ -8,6 +8,8 @@ import type {
   FallingEffectConfig,
   EventDetailsDesignConfig,
   HostInfoDesignType,
+  HostFrameStyle,
+  CoupleOrnament,
   InfoCardDesignConfig,
 } from '@/services/api/types/template.types'
 
@@ -307,6 +309,15 @@ export interface HostInfoProps {
   hostClipStyle?: Record<string, string>
   /** Host info block design from the template package. Defaults to 'standard'. */
   designType?: HostInfoDesignType
+  /**
+   * Frame chrome shared by the host title and the avatar. Defaults to 'none',
+   * which renders both exactly as they did before frames existed.
+   * Drawn by the grid layouts only — `arch` has its own frames and `simple` has
+   * neither a title nor an avatar.
+   */
+  frameStyle?: HostFrameStyle
+  /** Motif between the two hosts, in the grid's centre column. Defaults to 'none'. */
+  coupleOrnament?: CoupleOrnament
 }
 
 // Error boundary types

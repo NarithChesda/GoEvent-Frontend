@@ -75,7 +75,11 @@
          The portrait design is these same seven rows with two of them swapped
          (see .is-portrait in <style>) rather than a second copy of this markup:
          title, then face, then name. -->
-    <div v-else class="host-info-grid" :class="{ 'is-portrait': isPortraitDesign }">
+    <div
+      v-else
+      class="host-info-grid"
+      :class="{ 'is-portrait': isPortraitDesign, 'has-ornament': coupleOrnament !== 'none' }"
+    >
       <!-- Row 1: Welcome Header -->
       <WelcomeHeader
         v-if="showWelcomeHeaderText !== false"
@@ -222,22 +226,28 @@
             :target="{ kind: 'host', hostId: hosts[0].id, field: 'title' }"
             :input-style="{ fontFamily: titleTextStyle.fontFamily, color: titleTextStyle.color }"
           >
-            <p
-              :class="[
-                'parent-name-text leading-normal text-center opacity-90',
-                getKhmerClass(currentLanguage),
-              ]"
-              :style="titleTextStyle"
+            <HostTitleFrame
+              :frame="frameStyle"
+              :accent-color="accentColor"
+              :primary-color="primaryColor"
             >
-              <span
-                v-for="(word, index) in splitToWords(leftHostTitle)"
-                :key="`title-left-${currentLanguage}-${index}`"
-                class="bounce-word"
-                :style="{ animationDelay: `${animationDelays.titleLeft + wordCascadeDelay(index)}s` }"
-                >{{ word
-                }}{{ index < splitToWords(leftHostTitle).length - 1 ? '\u00A0' : '' }}</span
+              <p
+                :class="[
+                  'parent-name-text leading-normal text-center opacity-90',
+                  getKhmerClass(currentLanguage),
+                ]"
+                :style="titleTextStyle"
               >
-            </p>
+                <span
+                  v-for="(word, index) in splitToWords(leftHostTitle)"
+                  :key="`title-left-${currentLanguage}-${index}`"
+                  class="bounce-word"
+                  :style="{ animationDelay: `${animationDelays.titleLeft + wordCascadeDelay(index)}s` }"
+                  >{{ word
+                  }}{{ index < splitToWords(leftHostTitle).length - 1 ? '\u00A0' : '' }}</span
+                >
+              </p>
+            </HostTitleFrame>
           </InlineEditableText>
         </div>
         <div class="center-spacer"></div>
@@ -248,22 +258,28 @@
             :target="{ kind: 'host', hostId: hosts[1]?.id ?? 0, field: 'title' }"
             :input-style="{ fontFamily: titleTextStyle.fontFamily, color: titleTextStyle.color }"
           >
-            <p
-              :class="[
-                'parent-name-text leading-normal text-center opacity-90',
-                getKhmerClass(currentLanguage),
-              ]"
-              :style="titleTextStyle"
+            <HostTitleFrame
+              :frame="frameStyle"
+              :accent-color="accentColor"
+              :primary-color="primaryColor"
             >
-              <span
-                v-for="(word, index) in splitToWords(rightHostTitle)"
-                :key="`title-right-${currentLanguage}-${index}`"
-                class="bounce-word"
-                :style="{ animationDelay: `${animationDelays.titleRight + wordCascadeDelay(index)}s` }"
-                >{{ word
-                }}{{ index < splitToWords(rightHostTitle).length - 1 ? '\u00A0' : '' }}</span
+              <p
+                :class="[
+                  'parent-name-text leading-normal text-center opacity-90',
+                  getKhmerClass(currentLanguage),
+                ]"
+                :style="titleTextStyle"
               >
-            </p>
+                <span
+                  v-for="(word, index) in splitToWords(rightHostTitle)"
+                  :key="`title-right-${currentLanguage}-${index}`"
+                  class="bounce-word"
+                  :style="{ animationDelay: `${animationDelays.titleRight + wordCascadeDelay(index)}s` }"
+                  >{{ word
+                  }}{{ index < splitToWords(rightHostTitle).length - 1 ? '\u00A0' : '' }}</span
+                >
+              </p>
+            </HostTitleFrame>
           </InlineEditableText>
         </div>
       </div>
@@ -325,33 +341,57 @@
             :intent="{ kind: 'hostImage', hostId: hosts[0].id }"
             :label="hosts[0].profile_image ? undefined : addPhotoLabel"
           >
-            <HostProfilePicture
-              :key="`profile-left-${currentLanguage}`"
-              :image-url="hosts[0].profile_image"
-              :alt="`${hosts[0].name} profile`"
-              :background-color="primaryColor"
-              :animated="true"
-              :animation-delay="animationDelays.profileLeft"
-              :wrapper-class="hosts[0].profile_image ? '' : 'photo-placeholder'"
-            />
+            <HostAvatarFrame
+              :frame="frameStyle"
+              :accent-color="accentColor"
+              :primary-color="primaryColor"
+            >
+              <HostProfilePicture
+                :key="`profile-left-${currentLanguage}`"
+                :image-url="hosts[0].profile_image"
+                :alt="`${hosts[0].name} profile`"
+                :background-color="primaryColor"
+                :animated="true"
+                :animation-delay="animationDelays.profileLeft"
+                :wrapper-class="hosts[0].profile_image ? '' : 'photo-placeholder'"
+              />
+            </HostAvatarFrame>
           </EditableRegion>
         </div>
-        <div class="center-spacer"></div>
+        <!-- The one row whose centre track carries something. The spacer exists
+             in every row and has always been empty; the motif goes here because
+             this is the row it belongs between — beside the faces, not beside
+             the titles or the names. -->
+        <div class="center-spacer center-spacer--ornament">
+          <CoupleOrnamentMark
+            v-if="coupleOrnament !== 'none'"
+            :ornament="coupleOrnament"
+            :color="accentColor || primaryColor"
+            :animated="true"
+            :animation-delay="animationDelays.profileLeft"
+          />
+        </div>
         <div class="host-profile-right">
           <EditableRegion
             v-if="hosts.length > 1"
             :intent="{ kind: 'hostImage', hostId: hosts[1]?.id ?? 0 }"
             :label="hosts[1]?.profile_image ? undefined : addPhotoLabel"
           >
-            <HostProfilePicture
-              :key="`profile-right-${currentLanguage}`"
-              :image-url="hosts[1]?.profile_image"
-              :alt="`${hosts[1]?.name} profile`"
-              :background-color="primaryColor"
-              :animated="true"
-              :animation-delay="animationDelays.profileRight"
-              :wrapper-class="hosts[1]?.profile_image ? '' : 'photo-placeholder'"
-            />
+            <HostAvatarFrame
+              :frame="frameStyle"
+              :accent-color="accentColor"
+              :primary-color="primaryColor"
+            >
+              <HostProfilePicture
+                :key="`profile-right-${currentLanguage}`"
+                :image-url="hosts[1]?.profile_image"
+                :alt="`${hosts[1]?.name} profile`"
+                :background-color="primaryColor"
+                :animated="true"
+                :animation-delay="animationDelays.profileRight"
+                :wrapper-class="hosts[1]?.profile_image ? '' : 'photo-placeholder'"
+              />
+            </HostAvatarFrame>
           </EditableRegion>
         </div>
       </div>
@@ -362,11 +402,16 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue'
 import type { HostInfoProps } from '@/types/showcase'
+import type { HostFrameStyle, CoupleOrnament } from '@/services/api/types/template.types'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import { PreviewFrameKey } from '@/components/showcase-preview/previewContext'
 import HostInfoWeddingArch from './wedding/HostInfoWeddingArch.vue'
+import HostTitleFrame from './shared/frames/HostTitleFrame.vue'
+import HostAvatarFrame from './shared/frames/HostAvatarFrame.vue'
+import CoupleOrnamentMark from './shared/frames/CoupleOrnamentMark.vue'
 import {
   WelcomeHeader,
   HostLogo,
@@ -384,6 +429,8 @@ const props = defineProps<HostInfoProps>()
 // Only provided by the editable manage-page preview frame — undefined on the
 // public showcase, so the empty avatar slots below can never reach guests.
 const editIntentCtx = inject(EditIntentKey, undefined)
+// Present in every preview frame, editable or not. See previewContext.ts.
+const previewCtx = inject(PreviewFrameKey, undefined)
 const { t: tApp } = useAppLanguage()
 
 const addPhotoLabel = computed(() => tApp('management.showcasePreview.editors.addHostPhoto'))
@@ -410,11 +457,17 @@ const showParentBRow = computed(
 // The portrait row is a matched pair by design, so it stays two-hosts-only.
 // What differs by context is the missing-photo case: guests only see the row
 // once both portraits exist (one photo beside an empty circle reads as broken),
-// while the preview editor always gets it so an organizer with no host photos
-// yet can still see — and click — where they go.
+// while any preview always gets it — an organizer with no host photos yet can
+// still see (and, when editable, click) where they go, and a partner choosing a
+// frame style can see the frame at all.
+//
+// Keyed off the preview context rather than the edit one. Those coincided until
+// the partner-template preview arrived: it renders this frame with
+// `canEdit: false`, so gating on `editIntentCtx` hid the whole row there — which
+// took the avatar frames and the centre ornament with it, on every design.
 const showProfilePictures = computed(() => {
   if (props.hosts.length !== 2) return false
-  if (editIntentCtx) return true
+  if (previewCtx || editIntentCtx) return true
   return !!(props.hosts[0].profile_image && props.hosts[1].profile_image)
 })
 
@@ -447,6 +500,13 @@ const nameTextStyle = computed(() => ({
 const isSimpleDesign = computed(() => props.designType === 'simple')
 const isArchDesign = computed(() => props.designType === 'arch')
 const isPortraitDesign = computed(() => props.designType === 'portrait')
+
+// Frame chrome and the centre motif, normalised once here so the template never
+// has to reason about `undefined`. Both default to 'none', which is what every
+// template that predates these fields has — so `standard` and `portrait` render
+// exactly as they did before, and frames are opt-in rather than a new baseline.
+const frameStyle = computed<HostFrameStyle>(() => props.frameStyle ?? 'none')
+const coupleOrnament = computed<CoupleOrnament>(() => props.coupleOrnament ?? 'none')
 
 // Script-name styling for the simple design — uses the primary (typically script)
 // font and the theme accent color, matching the standard layout's host names.
@@ -558,6 +618,39 @@ const animationDelays = computed(() => {
 /* Wedding-specific: 7 rows grid */
 .host-info-grid {
   grid-template-rows: auto auto auto auto auto auto auto;
+}
+
+/* One size for the motif, read by both the track that holds it and the drawing
+   itself, so the two can never disagree. CoupleOrnamentMark carries the same
+   value as its own fallback for use outside this grid. */
+.host-info-grid {
+  --ornament-size: clamp(26px, 8vw, 46px);
+  --ornament-track: calc(var(--ornament-size) + 0.7rem);
+}
+
+/* **Every** row's centre track widens, not just the one carrying the motif.
+   Each row is its own `1fr auto 1fr` grid, so the `1fr` columns are only as
+   wide as that row's centre track leaves them — widening one row alone gives it
+   different column widths from the others, and the title and name end up
+   centred on a different axis than the avatar directly below them. Sharing one
+   width keeps all four rows on one geometry, which is the only thing that keeps
+   the block vertically aligned.
+
+   Specificity is deliberate: host-info-base.css pins this element with
+   `.center-spacer` and again with `.khmer-text .center-spacer`, and the second
+   is 0-3-0 once scoped. A single class loses to it, the track snaps back to a
+   fixed width, and the motif — a flex item — silently shrinks to fit rather
+   than overflowing. Measured at 4.8px in Khmer while English rendered fine.
+   `.host-info-grid.has-ornament` matches that 0-3-0 and wins on source order,
+   since this file's rules come after the `@import`. */
+.host-info-grid.has-ornament .center-spacer {
+  width: var(--ornament-track);
+}
+
+.center-spacer--ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Reduce spacing between parent rows */
