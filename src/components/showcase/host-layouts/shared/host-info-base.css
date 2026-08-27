@@ -286,9 +286,21 @@
   }
 }
 
-/* Enhanced reveal animation for Khmer text on non-text elements */
+/* Khmer's own reveal for non-text elements — a slightly longer settle with a
+   scale, because its glyphs carry more vertical detail and arrive better with a
+   touch more room than the Latin curve alone gives them.
+   The curve itself is the same strong ease-out the rest of the showcase uses.
+   It used to be an overshoot curve (a bezier with y2 well above 1): Khmer
+   entrances sprang past their resting size and settled back while Latin ones
+   did not, so the same block moved differently in the two languages for no
+   reason a reader could name.
+
+   The old value is described rather than quoted on purpose — the bounce-easing
+   detector matches literal curves without stripping comments, and writing it out
+   here would either trip on every scan or force an ignore that disarms the rule
+   for a genuine reintroduction. */
 .khmer-text .bounce-in-element {
-  animation: revealKhmerElement 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: revealKhmerElement 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 @keyframes revealKhmerElement {
