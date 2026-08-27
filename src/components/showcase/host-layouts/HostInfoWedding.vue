@@ -78,7 +78,12 @@
     <div
       v-else
       class="host-info-grid"
-      :class="{ 'is-portrait': isPortraitDesign, 'has-ornament': coupleOrnament !== 'none' }"
+      :class="{
+        'is-portrait': isPortraitDesign,
+        'has-ornament': coupleOrnament !== 'none',
+        'has-frame': frameStyle !== 'none',
+        'has-frame-tall': frameStyle === 'laurel',
+      }"
     >
       <!-- Row 1: Welcome Header -->
       <WelcomeHeader
@@ -697,6 +702,30 @@ const animationDelays = computed(() => {
 .khmer-text .is-portrait .name-row,
 .khmer-text .is-portrait .profile-picture-row {
   margin-top: 0.25rem;
+}
+
+/* Khmer, portrait, framed avatar only: close the gap the frame opens under the
+   portrait.
+
+   `.avatar-frame` carries vertical padding so the row — which is
+   `overflow: hidden` and exactly as tall as its content — doesn't clip the
+   rings, tails and wreath. That padding is language-neutral and adds the same
+   ~23px (or ~49px under laurel) either way, but Khmer starts ~9px wider to
+   begin with, because `.khmer-text-fix` gives the name its own vertical padding
+   on top of a 1.8 line-height. Unframed that lands at a comfortable ~17px;
+   framed the two stack into 40px and the name reads as belonging to nothing.
+
+   The pull is on the *name row*, never on the frame: a negative margin on the
+   frame would shrink the profile row and clip the chrome straight back off. The
+   two values track the two padding sizes, so what's left below the visible
+   chrome is about the same ~18-20px in both cases — and in the unframed case
+   too, which is the gap that already reads correctly. */
+.khmer-text .is-portrait.has-frame .name-row {
+  margin-top: -0.6rem;
+}
+
+.khmer-text .is-portrait.has-frame-tall .name-row {
+  margin-top: -0.9rem;
 }
 
 /* Standard ends on the portraits, so they carry the block and run large. Here
