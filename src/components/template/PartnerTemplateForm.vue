@@ -881,6 +881,20 @@
               </p>
             </section>
 
+            <!-- The title card that plays over the featured photo on whichever
+                 stage the control above picked. Directly under it because the
+                 two are the transition beat between them, and because the
+                 default option here — match the transition — only means
+                 anything next to the control it matches. Not plan-gated: this
+                 is a composition, not an asset slot. -->
+            <section :class="[PANEL, 'p-4 space-y-3']">
+              <h5 :class="SECTION_HEADING">
+                {{ t('management.partnerTemplateForm.saveTheDateDesign.sectionTitle') }}
+              </h5>
+              <TemplateFormChoice v-model="saveTheDateDesignModel" :options="saveTheDateDesignOptions" :columns="1" />
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.saveTheDateDesign.designHint') }}</p>
+            </section>
+
             <PlanRequiredNotice v-if="!form.package_plan_id" @pick="selectSection('basics')" />
             <section
               v-else-if="isStandardPlan"
@@ -1449,6 +1463,9 @@ import {
   Move,
   Rows3,
   Columns3,
+  Signature,
+  Stamp,
+  Minus,
   RectangleHorizontal,
   Frame,
   Clapperboard,
@@ -1482,6 +1499,8 @@ import type {
   EventDetailsMarkerColorSource,
   HostInfoDesignType,
   InfoCardDesignType,
+  SaveTheDateDesignType,
+  SaveTheDateDesignConfig,
   AmbientCreaturesConfig,
   AmbientCreatureEntry,
   AmbientCreatureEffectType,
@@ -1748,6 +1767,14 @@ interface FormState {
   host_info_design_type: HostInfoDesignType
   /** Info card (venue/map/countdown/RSVP) treatment in the showcase (glass | engraved). */
   info_card_design_type: InfoCardDesignType
+  /**
+   * Save the Date composition on the transition stage. `auto` is not a design —
+   * it stores nothing, which leaves each transition stage on the one it shipped
+   * with (`script` for decoration, `engraved` for door). Every template saved
+   * before this field existed loads as `auto`, so opening and re-saving one
+   * can't silently pin it to a design its partner never chose.
+   */
+  save_the_date_design_type: SaveTheDateDesignType | 'auto'
 }
 
 const defaultFallingEffect = (): FallingEffectFormState => ({
@@ -1818,6 +1845,7 @@ const defaultForm = (): FormState => ({
   event_details_marker_custom_color: '#B3261E',
   host_info_design_type: 'standard',
   info_card_design_type: 'glass',
+  save_the_date_design_type: 'auto',
 })
 
 const CREATURE_TYPES: AmbientCreatureEffectType[] = ['butterfly', 'dove', 'firefly', 'dragonfly', 'balloon', 'hummingbird']
@@ -1941,6 +1969,21 @@ const hostInfoDesignOptions = computed(() => [
 const infoCardDesignOptions = computed(() => [
   { value: 'glass', label: t('management.partnerTemplateForm.infoCardDesign.types.glass'), icon: Droplets },
   { value: 'engraved', label: t('management.partnerTemplateForm.infoCardDesign.types.engraved'), icon: PenLine },
+])
+
+// Both transition stages render all six. `auto` leads because it is what every
+// existing template is, and because it is the right answer for most: `script`
+// and `engraved` were each drawn *for* their own stage's ground, so matching the
+// transition is a real choice rather than a placeholder. The five below it are
+// listed by how much chrome they add — none, then structure, then ornament.
+const saveTheDateDesignOptions = computed(() => [
+  { value: 'auto', label: t('management.partnerTemplateForm.saveTheDateDesign.types.auto'), icon: Wand2 },
+  { value: 'script', label: t('management.partnerTemplateForm.saveTheDateDesign.types.script'), icon: Signature },
+  { value: 'engraved', label: t('management.partnerTemplateForm.saveTheDateDesign.types.engraved'), icon: Frame },
+  { value: 'minimal', label: t('management.partnerTemplateForm.saveTheDateDesign.types.minimal'), icon: Minus },
+  { value: 'columns', label: t('management.partnerTemplateForm.saveTheDateDesign.types.columns'), icon: Columns3 },
+  { value: 'medallion', label: t('management.partnerTemplateForm.saveTheDateDesign.types.medallion'), icon: Stamp },
+  { value: 'poster', label: t('management.partnerTemplateForm.saveTheDateDesign.types.poster'), icon: Type },
 ])
 
 const intensityOptions = computed(() => [
@@ -2361,6 +2404,24 @@ const infoCardDesignModel = computed<string>({
   get: () => form.info_card_design_type,
   set: (value) => { form.info_card_design_type = value as InfoCardDesignType },
 })
+
+const saveTheDateDesignModel = computed<string>({
+  get: () => form.save_the_date_design_type,
+  set: (value) => {
+    form.save_the_date_design_type = value as SaveTheDateDesignType | 'auto'
+  },
+})
+
+/**
+ * `auto` is the absence of a choice, so it persists as `null` rather than as a
+ * type — which is what makes the per-stage fallback in SaveTheDate.vue reachable
+ * at all. Shared by the save payload and the live preview draft so the two can't
+ * drift.
+ */
+const buildSaveTheDateDesignPayload = (): SaveTheDateDesignConfig | null =>
+  form.save_the_date_design_type === 'auto'
+    ? null
+    : { type: form.save_the_date_design_type }
 
 const fallingTypeModel = computed<string>({
   get: () => form.falling_effect.type,
@@ -2906,6 +2967,10 @@ watch(
       form.host_info_design_type = template.host_info_design?.type ?? 'standard'
       // Hydrate info card design (glass | engraved)
       form.info_card_design_type = template.info_card_design?.type ?? 'glass'
+      // Hydrate the Save the Date design. No stored value means 'auto' — each
+      // transition stage keeps its own default — which is what every template
+      // saved before this field existed has.
+      form.save_the_date_design_type = template.save_the_date_design?.type ?? 'auto'
       // Hydrate ambient creatures
       if (template.ambient_creatures) {
         form.ambient_creatures_enabled = true
@@ -3173,6 +3238,7 @@ async function handleSave(): Promise<void> {
       event_details_design: buildEventDetailsDesignPayload(),
       host_info_design: { type: form.host_info_design_type },
       info_card_design: { type: form.info_card_design_type },
+      save_the_date_design: buildSaveTheDateDesignPayload(),
     }
 
     // Add file fields that have been set. The asset list is shared with the
@@ -3343,6 +3409,7 @@ const previewDraft = computed<PartnerTemplateDraft>(() => {
     event_details_design: buildEventDetailsDesignPayload(),
     host_info_design: { type: form.host_info_design_type },
     info_card_design: { type: form.info_card_design_type },
+    save_the_date_design: buildSaveTheDateDesignPayload(),
     colors: pendingColors.value,
     fonts: previewFonts.value,
     files,

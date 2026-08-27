@@ -187,6 +187,7 @@
               :background-color="backgroundColor"
               :blur-effect-color="blurEffectColor"
               :falling-effect="event.template_assets?.falling_effect"
+              :save-the-date-design="event.template_assets?.save_the_date_design"
               :get-media-url="getMediaUrl"
               @transition-complete="handleTransitionComplete"
             />
@@ -211,6 +212,7 @@
         :primary-font="primaryFont"
         :secondary-font="secondaryFont"
         :falling-effect="event.template_assets?.falling_effect"
+        :save-the-date-design="event.template_assets?.save_the_date_design"
         :get-media-url="getMediaUrl"
         @dissolve-start="handleTransitionDissolveStart"
         @transition-complete="handleTransitionComplete"

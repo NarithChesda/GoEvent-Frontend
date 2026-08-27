@@ -103,21 +103,24 @@
       <div class="frame-sheen frame-sheen-slow" />
     </div>
 
-    <!-- Cartouche -->
+    <!-- Cartouche. The composition is the template's choice; what this stage
+         supplies is the ground it is drawn on — struck metal over the near-black
+         photo scrim — and the clock it runs against, which starts a second in,
+         once the leaves have gathered and the frame has drawn. `engraved` is the
+         design this stage shipped with, so a template that has never set the
+         field renders exactly as before. -->
     <div class="copy-block">
-      <div class="copy-rule copy-rule-top">
-        <OrnamentRule :gold="gold" :gold-light="goldLight" />
-      </div>
-
-      <p class="copy-label gold-text">Save the Date</p>
-
-      <p v-if="numericDate" class="copy-date gold-text">{{ numericDate }}</p>
-
-      <p v-if="formattedDate" class="copy-date-long gold-text">{{ formattedDate }}</p>
-
-      <div class="copy-rule copy-rule-bottom">
-        <OrnamentRule :gold="gold" :gold-light="goldLight" />
-      </div>
+      <SaveTheDate
+        :design="saveTheDateDesign"
+        fallback="engraved"
+        :revealed="isRevealing"
+        :event-start-date="eventStartDate"
+        ink="metal"
+        :ink-color="gold"
+        :ink-light-color="goldLight"
+        :hot-color="goldHot"
+        :start-delay-ms="COPY_START_MS"
+      />
     </div>
 
     <div class="stage-vignette" aria-hidden="true" />
@@ -159,8 +162,11 @@ import { fallingEffectKeyOf } from '@/composables/showcase/useFallingParticles'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import FallingEffect from './FallingEffect.vue'
-import type { FallingEffectConfig } from '@/services/api/types/template.types'
-import OrnamentRule from './transition/OrnamentRule.vue'
+import SaveTheDate from './save-the-date/SaveTheDate.vue'
+import type {
+  FallingEffectConfig,
+  SaveTheDateDesignConfig,
+} from '@/services/api/types/template.types'
 
 interface Props {
   eventTitle: string
@@ -171,10 +177,16 @@ interface Props {
   backgroundColor?: string
   /** The template's `blur-effect` colour — every washed layer on this stage
    *  (plate, printed mat, cartouche scrim) is made of it. See effectColor.
-   *  There are deliberately no font props — see --dt-display. */
+   *  There are deliberately no font props — the cartouche's face is fixed. */
   blurEffectColor?: string
   /** Falling particle effect config from template_assets. */
   fallingEffect?: FallingEffectConfig | null
+  /**
+   * Which Save the Date composition the template picked. Absent falls back to
+   * `engraved`, the design this stage shipped with — see SaveTheDate.vue for
+   * why the fallback is per-stage rather than global.
+   */
+  saveTheDateDesign?: SaveTheDateDesignConfig | null
   getMediaUrl: (url: string) => string
   /** Preview-only: hold at the fully-revealed state (frame drawn + cartouche
    *  wiped in) instead of blooming out and emitting transitionComplete.
@@ -214,6 +226,19 @@ const { t: tApp } = useAppLanguage()
 // ---------------------------------------------------------------------------
 const BLOOM_START_MS = 5700
 const COMPLETE_MS = 6200
+
+/**
+ * When the cartouche may begin, measured from `.revealing` — the stage's half of
+ * the Save the Date block's contract (`--std-t0` in SaveTheDate.vue). The design
+ * inside owns its own rhythm from here; this owns only *when here is*.
+ *
+ * 1000ms because that is where this stage's own chrome makes room: the leaves
+ * are still gathering away (they clear at 1650ms) and the gold frame draws at
+ * 1250ms, so copy arriving now lands into a composition that is assembling
+ * rather than onto a bare photograph. Every design finishes well inside the
+ * 5700ms bloom.
+ */
+const COPY_START_MS = 1000
 
 /**
  * The same two beats for a guest who asked for reduced motion.
@@ -274,6 +299,9 @@ const alpha = (hex6: string, hex2: string) => `${hex6}${hex2}`
 
 const gold = computed(() => toHex6(props.accentColor || props.primaryColor, '#e0b269'))
 const goldLight = '#fff6de'
+/** The specular hotspot on the lettering — near-white, because that is what any
+ *  polished metal's highlight looks like on this stage's near-black scrim. */
+const goldHot = '#fffdf4'
 
 /**
  * The colour the stage's printed chrome is made of: the plate behind the photo
@@ -329,30 +357,6 @@ const paletteStyle = computed<Record<string, string>>(() => ({
     'drop-shadow(0 2px 0 rgba(60, 34, 8, 0.45)) drop-shadow(0 10px 26px rgba(0, 0, 0, 0.8))',
 }))
 
-const eventDate = computed(() => {
-  if (!props.eventStartDate) return null
-  const date = new Date(props.eventStartDate)
-  return Number.isNaN(date.getTime()) ? null : date
-})
-
-/** The reference's cartouche form: day · month · year, the hero of the block. */
-const numericDate = computed(() => {
-  const date = eventDate.value
-  if (!date) return null
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${pad(date.getDate())} · ${pad(date.getMonth() + 1)} · ${date.getFullYear()}`
-})
-
-const formattedDate = computed(() => {
-  const date = eventDate.value
-  if (!date) return null
-  return date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-})
 
 // The 9–20px handed to <FallingEffect> above. Sized from the reference's own
 // 16–36 against a 1080-wide composition, i.e. 1.5–3.3% of the stage — the
@@ -899,19 +903,13 @@ const replay = async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: calc(var(--dt-w) * 0.024); /* 26 */
-  padding: 0 6%;
-  text-align: center;
-  filter: var(--dt-copy-shadow);
 
-  /* The cartouche's face is fixed rather than template-driven, the same way its
-     ornament rule is a fixed drawing and the decoration stage's own label is
-     fixed to 'Great Vibes'. It's the reference artwork's typeface — a
-     high-contrast display serif whose weight 600 still reads light, which is
-     what carries the engraved look. A workaday template serif at the same
-     weight comes out blunt. Already loaded app-wide at 400/500/600 (index.html),
-     so this costs no extra request; Kantumruy Pro backs it for any Khmer. */
-  font-family: 'Cormorant Garamond', 'Kantumruy Pro', Georgia, serif;
+  /* One cast for the whole block rather than a text-shadow per line, which is
+     why this stage passes no `halo` into SaveTheDate: a tight contact edge that
+     separates the glyphs from the near-black scrim, then a wider soft cast that
+     puts air under them. Whichever composition renders, it lands on the same
+     ground and gets the same shadow. */
+  filter: var(--dt-copy-shadow);
 }
 
 .blooming .copy-block {
@@ -922,124 +920,6 @@ const replay = async () => {
   to {
     transform: scale(1.22);
     opacity: 0;
-  }
-}
-
-/* Both rules draw outward from the centre. Width is stage-relative rather than
-   a percentage of this block so the block's own padding can't widen it — 440
-   of the reference's 1080. */
-.copy-rule {
-  width: calc(var(--dt-w) * 0.407);
-  transform: scaleX(0);
-  opacity: 0;
-}
-
-.revealing .copy-rule-top {
-  animation: ruleDraw 700ms cubic-bezier(0.22, 1, 0.36, 1) 1s forwards;
-}
-
-.revealing .copy-rule-bottom {
-  animation: ruleDraw 800ms cubic-bezier(0.22, 1, 0.36, 1) 2.8s forwards;
-}
-
-@keyframes ruleDraw {
-  to {
-    transform: scaleX(1);
-    opacity: 1;
-  }
-}
-
-/* Every line arrives on a centre-out wipe, then the sheen below travels across
-   it. Both animations are declared together per line: they run on the same
-   element, so two `animation` shorthands would silently drop the first. The
-   negative vertical inset keeps descenders and the drop-shadow outside the
-   clip. */
-.copy-label,
-.copy-date,
-.copy-date-long {
-  margin: 0;
-  clip-path: inset(-40% 50% -40% 50%);
-}
-
-.revealing .copy-label {
-  animation:
-    copyWipe 850ms cubic-bezier(0.33, 0, 0.15, 1) 1.5s forwards,
-    goldSheen 2.3s ease-in-out 2.7s forwards;
-}
-
-.revealing .copy-date {
-  animation:
-    copyWipe 850ms cubic-bezier(0.33, 0, 0.15, 1) 2.05s forwards,
-    goldSheen 2.3s ease-in-out 2.7s forwards;
-}
-
-.revealing .copy-date-long {
-  animation:
-    copyWipe 800ms cubic-bezier(0.33, 0, 0.15, 1) 2.5s forwards,
-    goldSheen 2.3s ease-in-out 2.7s forwards;
-}
-
-@keyframes copyWipe {
-  to {
-    clip-path: inset(-40% -3% -40% -3%);
-  }
-}
-
-/* Sizes, tracking and weights are the reference's own, as ratios of the stage
-   width (its 50 / 104 / 38 against 1080). They're tuned for the display face
-   set on .copy-block — its 600 is another face's 400. */
-.copy-label {
-  font-size: calc(var(--dt-w) * 0.0463);
-  letter-spacing: 0.34em;
-  /* The tracking is trailing-only, so the block reads off-centre without a
-     matching lead indent. */
-  padding-left: 0.34em;
-  text-transform: uppercase;
-  font-weight: 600;
-  line-height: 1.3;
-  white-space: nowrap;
-}
-
-.copy-date {
-  font-size: calc(var(--dt-w) * 0.0963);
-  letter-spacing: 0.08em;
-  font-weight: 600;
-  line-height: 1.15;
-  white-space: nowrap;
-}
-
-.copy-date-long {
-  font-size: calc(var(--dt-w) * 0.0298);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  font-weight: 500;
-  line-height: 1.6;
-}
-
-/* Polished metal: the lettering is a gold gradient clipped to the glyphs, with
-   a near-white hotspot travelling across it once the block has settled. */
-.gold-text {
-  background-image: linear-gradient(
-    100deg,
-    var(--dt-gold) 0%,
-    var(--dt-gold) 38%,
-    var(--dt-gold-light) 47%,
-    #fffdf4 50%,
-    var(--dt-gold-light) 53%,
-    var(--dt-gold) 62%,
-    var(--dt-gold) 100%
-  );
-  background-size: 260% 100%;
-  background-position: 150% 0;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-}
-
-@keyframes goldSheen {
-  to {
-    background-position: -60% 0;
   }
 }
 
@@ -1270,19 +1150,6 @@ const replay = async () => {
      out of it does not. */
   .bloom-core {
     display: none;
-  }
-
-  .revealing .copy-rule-top,
-  .revealing .copy-rule-bottom {
-    animation-duration: 0.4s;
-    animation-delay: 0.6s;
-  }
-
-  /* Wipe only — the travelling sheen is dropped entirely rather than sped up */
-  .revealing .copy-label,
-  .revealing .copy-date,
-  .revealing .copy-date-long {
-    animation: copyWipe 0.4s ease 0.6s forwards;
   }
 }
 </style>

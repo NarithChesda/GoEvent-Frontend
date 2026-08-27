@@ -534,6 +534,68 @@ export interface InfoCardDesignConfig {
 }
 
 /**
+ * Composition used for the **Save the Date** title card on the transition
+ * stage — the block that carries the label and the event date over the
+ * featured photograph, between the cover and the invitation.
+ *
+ * Both transition stages render the same six designs. Each one owns a distinct
+ * *composition* and a distinct reveal *gesture*, not just a restyle:
+ *
+ * - `script`    — the decoration stage's original: an italic script label
+ *                 blooming in letter by letter between two fine hairlines that
+ *                 draw outward from centre, with the long date tracked out
+ *                 beneath it.
+ * - `engraved`  — the door stage's original: ornament rules top and bottom
+ *                 bracketing a tracked uppercase label, a large `DD · MM · YYYY`
+ *                 numeral as the hero, and the long date under it, every line
+ *                 arriving on a centre-out wipe.
+ * - `minimal`   — no rules, no ornament: a small tracked label over the long
+ *                 date set large in the display serif, both on one short
+ *                 rise-and-fade. For templates whose photograph is the hero.
+ * - `columns`   — a large day flanked by the month and year as tracked-caps
+ *                 labels, divided by vertical hairlines that draw downward,
+ *                 under a tracked eyebrow with the weekday closing beneath.
+ *                 Laid out on the same flanked grid as the info card's
+ *                 `flanked` date, so the row is centred on the day rather than
+ *                 on its own total width.
+ * - `medallion` — a drawn hairline ring with the day numeral inside it, the
+ *                 month and year tracked below and the label above: a crest
+ *                 rather than a frame.
+ * - `poster`    — `SAVE` / `THE DATE` stacked large at tight leading, each line
+ *                 mask-revealed from below, with the numeric date small beneath
+ *                 a hairline. The one design that isn't wedding-coded.
+ *
+ * Absent / `null` falls back to **whichever design that stage shipped with** —
+ * `script` for the decoration transition, `engraved` for the door transition —
+ * so every already-published template renders exactly as it does today. That
+ * per-stage fallback is the one way this config differs from
+ * `host_info_design`, which has a single global default.
+ *
+ * Selected per template via `template_assets.save_the_date_design` and flows
+ * through the showcase exactly like `host_info_design`.
+ */
+export type SaveTheDateDesignType =
+  | 'script'
+  | 'engraved'
+  | 'minimal'
+  | 'columns'
+  | 'medallion'
+  | 'poster'
+
+/**
+ * Configuration for the Save the Date title card on the transition stage.
+ *
+ * Mirrors the `HostInfoDesignConfig` pattern: a small JSON object sent inside
+ * the template package and forwarded down to both TransitionStage.vue and
+ * TransitionStageDoor.vue. When omitted each stage keeps its own original
+ * design (see `SaveTheDateDesignType`).
+ */
+export interface SaveTheDateDesignConfig {
+  /** Which Save the Date composition to render. Defaults per stage. */
+  type: SaveTheDateDesignType
+}
+
+/**
  * Built-in falling particle effect types.
  * Each maps to a predefined SVG shape in the particle registry.
  */
@@ -738,6 +800,7 @@ export interface PartnerTemplate {
   event_details_design: EventDetailsDesignConfig | null
   host_info_design: HostInfoDesignConfig | null
   info_card_design: InfoCardDesignConfig | null
+  save_the_date_design: SaveTheDateDesignConfig | null
   ambient_creatures: AmbientCreaturesConfig | null
   sparks: SparkFieldConfig | null
   /** Custom spark image, when the field uses one instead of a built-in shape. */
@@ -812,6 +875,8 @@ export interface PartnerTemplateCreatePayload {
   host_info_design?: HostInfoDesignConfig | null
   /** Info card (venue/map/countdown/RSVP) design. Pass `null` to fall back to `glass`. */
   info_card_design?: InfoCardDesignConfig | null
+  /** Transition-stage Save the Date design. Pass `null` to keep each stage's own default. */
+  save_the_date_design?: SaveTheDateDesignConfig | null
   /** Ambient creature effect config. Pass `null` to disable the effect. */
   ambient_creatures?: AmbientCreaturesConfig | null
   /** Drifting spark field config. Pass `null` to disable the effect. */

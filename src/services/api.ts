@@ -105,6 +105,8 @@ export type {
   HostInfoDesignConfig,
   InfoCardDesignType,
   InfoCardDesignConfig,
+  SaveTheDateDesignType,
+  SaveTheDateDesignConfig,
   AmbientCreatureEffectType,
   AmbientCreatureEntry,
   AmbientCreaturesConfig,
