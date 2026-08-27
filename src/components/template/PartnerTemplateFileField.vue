@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-1">
-    <label class="block text-xs font-medium text-slate-600">{{ label }}</label>
+    <label :class="FIELD_LABEL">{{ label }}</label>
     <!-- The clear button is a SIBLING of the picker label, not a child of it:
          anything inside a <label> forwards its clicks to the label's control, so
          a nested button would open the file dialog on the way to removing the
@@ -33,7 +33,7 @@
       <button
         v-if="canClear"
         type="button"
-        class="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+        :class="[BTN_ICON_MICRO, 'absolute right-1.5 top-1/2 -translate-y-1/2 !p-1 hover:text-red-600 hover:bg-red-50']"
         :aria-label="t('management.partnerTemplateForm.fileField.remove')"
         :title="t('management.partnerTemplateForm.fileField.remove')"
         @click="emit('clear')"
@@ -48,6 +48,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Upload, CheckCircle2, FileCheck, X } from 'lucide-vue-next'
+import { BTN_ICON_MICRO, FIELD_LABEL } from './templateUi'
 
 const props = defineProps<{
   label: string

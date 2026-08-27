@@ -8,7 +8,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Host } from '../../composables/useEventShowcase'
-import type { HostInfoDesignType } from '../../services/api/types/template.types'
+import type {
+  HostInfoDesignType,
+  HostFrameStyle,
+  CoupleOrnament,
+} from '../../services/api/types/template.types'
 
 // Import all layout variants
 import HostInfoWedding from './host-layouts/HostInfoWedding.vue'
@@ -49,6 +53,10 @@ interface Props {
   hostClipStyle?: Record<string, string>
   /** Host info block design from template (standard | simple). Forwarded to the layout variant. */
   designType?: HostInfoDesignType
+  /** Frame chrome shared by the host title and avatar. Forwarded to the layout variant. */
+  frameStyle?: HostFrameStyle
+  /** Motif between the two hosts. Forwarded to the layout variant. */
+  coupleOrnament?: CoupleOrnament
 }
 
 const props = defineProps<Props>()

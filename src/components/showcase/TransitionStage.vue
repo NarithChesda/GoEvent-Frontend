@@ -1,9 +1,5 @@
 <template>
-  <div
-    class="transition-stage"
-    :class="{ 'stage-fade-out': isStageFadingOut }"
-    :style="paletteStyle"
-  >
+  <div class="transition-stage" :class="{ 'stage-fade-out': isStageFadingOut }">
     <!-- Manage-page preview controls: replay the reveal, and re-aim the
          featured photo's crop. Replay has to be a real button because the
          featured-photo edit region below drops the frame's normal
@@ -134,52 +130,24 @@
       :z-index="6"
     />
 
-    <!-- Save the date -->
+    <!-- Save the date. The composition is the template's choice; what this
+         stage supplies is the ground it is drawn on — flat primary ink over the
+         pale vellum band, plus the halo that separates the two — and the clock
+         it runs against. `script` is the design this stage shipped with, so a
+         template that has never set the field renders exactly as before. -->
     <div class="cloud-footer" :class="{ 'show': isContentVisible }">
-      <div class="save-the-date-container">
-        <!-- Fine lines drawing outward from centre. Two of them: one alone
-             reads as an underline under a heading, which is not what this block
-             is — the pair frames the copy into a cartouche, the way the door
-             transition's two ornament rules bracket its lettering. -->
-        <div class="reveal-line reveal-line-top" :style="{ background: revealLineGradient }" />
-
-        <!-- "Save the Date" blooms in letter by letter, then one pass of light
-             crosses it. The gleam is a second copy of the same words stacked on
-             the first: the letters underneath animate per-character opacity and
-             blur, and `background-clip: text` on that same element would have
-             to paint the gradient for all of them at once, which kills the
-             bloom. Overlaying it keeps the two independent — the base copy is
-             untouched, and the gleam is purely additive. -->
-        <div class="label-stack">
-          <p class="save-the-date-label" :style="{ color: saveDateTextColor }">
-            <span
-              v-for="(char, i) in saveTheDateChars"
-              :key="i"
-              class="std-char"
-              :style="{ animationDelay: `${STD_CHAR_BASE_DELAY_MS + i * 65}ms` }"
-              >{{ char === ' ' ? ' ' : char }}</span
-            >
-          </p>
-          <p class="save-the-date-label save-the-date-gleam" aria-hidden="true">
-            {{ SAVE_THE_DATE_TEXT }}
-          </p>
-        </div>
-
-        <p
-          v-if="formattedDate"
-          class="event-date"
-          :style="{
-            fontFamily: primaryFont || currentFont,
-            color: dateTextColor,
-          }"
-        >
-          {{ formattedDate }}
-        </p>
-
-        <!-- Draws last, once the date has settled, so the frame closes around
-             finished copy rather than around copy still arriving. -->
-        <div class="reveal-line reveal-line-bottom" :style="{ background: revealLineGradient }" />
-      </div>
+      <SaveTheDate
+        :design="saveTheDateDesign"
+        fallback="script"
+        :revealed="isContentVisible"
+        :event-start-date="eventStartDate"
+        ink="solid"
+        :ink-color="flourishColor"
+        :ink-light-color="gleamColor"
+        :hot-color="gleamCoreColor"
+        :halo="copyHalo"
+        :date-font="primaryFont || currentFont"
+      />
     </div>
   </div>
 </template>
@@ -194,7 +162,11 @@ import { fallingEffectKeyOf } from '@/composables/showcase/useFallingParticles'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import FallingEffect from './FallingEffect.vue'
-import type { FallingEffectConfig } from '@/services/api/types/template.types'
+import SaveTheDate from './save-the-date/SaveTheDate.vue'
+import type {
+  FallingEffectConfig,
+  SaveTheDateDesignConfig,
+} from '@/services/api/types/template.types'
 
 interface Props {
   eventTitle: string
@@ -215,6 +187,12 @@ interface Props {
   getMediaUrl: (url: string) => string
   /** Falling particle effect config from template_assets. */
   fallingEffect?: FallingEffectConfig | null
+  /**
+   * Which Save the Date composition the template picked. Absent falls back to
+   * `script`, the design this stage shipped with — see SaveTheDate.vue for why
+   * the fallback is per-stage rather than global.
+   */
+  saveTheDateDesign?: SaveTheDateDesignConfig | null
   /** Preview-only: hold at the fully-revealed state (photo sharp + "Save the
    *  Date" bloomed) instead of fading out and emitting transitionComplete.
    *  Never set on the live showcase. */
@@ -287,15 +265,11 @@ const relativeLuminance = (hex6: string) => {
   return 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5)
 }
 
-// The cartouche — flourish line, "Save the Date", and the date — is the
-// template's primary colour, and reads as one unit in it.
+// The Save the Date block — whichever composition the template picked — is the
+// template's primary colour throughout, and reads as one unit in it. This is
+// the `--std-ink` half of the block's contract; see SaveTheDate.vue.
 const flourishColor = computed(() =>
   toHex6(props.primaryColor || props.accentColor, '#b08d57'),
-)
-
-const revealLineGradient = computed(
-  () =>
-    `linear-gradient(to right, transparent 0%, ${flourishColor.value} 25%, ${flourishColor.value} 75%, transparent 100%)`,
 )
 
 /**
@@ -318,10 +292,6 @@ const mixToWhite = (hex6: string, amount: number) => {
 
 const gleamColor = computed(() => mixToWhite(flourishColor.value, 0.45))
 const gleamCoreColor = computed(() => mixToWhite(flourishColor.value, 0.68))
-
-const saveDateTextColor = flourishColor
-
-const dateTextColor = flourishColor
 
 /**
  * The colour the footer band is made of: the template's `blur-effect` slot, the
@@ -371,36 +341,6 @@ const copyHalo = computed(() =>
     ? '0 1px 0 rgba(255, 255, 255, 0.65), 0 2px 6px rgba(0, 0, 0, 0.16)'
     : '0 0 10px rgba(255, 255, 255, 0.45), 0 2px 8px rgba(0, 0, 0, 0.35)',
 )
-
-const paletteStyle = computed<Record<string, string>>(() => ({
-  '--ts-copy-halo': copyHalo.value,
-  '--ts-gleam': gleamColor.value,
-  '--ts-gleam-core': gleamCoreColor.value,
-}))
-
-/** Holds the script back until the flourish line above it has finished drawing;
- *  the 65ms per-character stagger runs on top of this. Folded into the inline
- *  delay because each character's own delay is inline, and inline beats the
- *  stylesheet. */
-const STD_CHAR_BASE_DELAY_MS = 400
-
-const SAVE_THE_DATE_TEXT = 'Save the Date'
-const saveTheDateChars = computed(() => SAVE_THE_DATE_TEXT.split(''))
-
-const formattedDate = computed(() => {
-  if (!props.eventStartDate) return null
-  try {
-    const date = new Date(props.eventStartDate)
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-  } catch {
-    return null
-  }
-})
 
 /**
  * When the photograph starts rising, measured from the envelope tap — this
@@ -946,194 +886,6 @@ const replay = async () => {
   pointer-events: none;
 }
 
-.save-the-date-container {
-  position: relative;
-  z-index: 3;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: calc(var(--ts-w) * 0.022);
-  padding-inline: calc(var(--ts-w) * 0.05);
-}
-
-/* Fine lines that draw outward from the centre. The width was a flat 140px
-   while everything around it — the date's size, the container's padding — was
-   already a ratio of the stage. At 0.36 it measures the same 140px on the
-   390px phone it was tuned against, and now holds that proportion everywhere
-   else instead of growing stubby on a wide stage. */
-.reveal-line {
-  width: calc(var(--ts-w) * 0.36);
-  height: 1px;
-  transform: scaleX(0);
-  opacity: 0;
-}
-
-/* The flourish leads the script instead of trailing it. It used to start 200ms
-   *after* the letters — which begin the instant .show lands — and was still
-   drawing when the name was half written, so the line read as a late underline
-   rather than as a frame being set. Now it lands first (a strong ease-out is
-   ~97% done by 0.6s) and the letters bloom into a finished frame. */
-.show .reveal-line-top {
-  animation: lineDraw 0.9s var(--ts-ease-out) 0.1s forwards;
-}
-
-/* 2.5s: the date finishes its tracking settle at 2.65s, and the stage begins
-   dissolving at 4.0s from .show. Drawing here closes the frame just as the copy
-   stops moving and still leaves ~600ms of settled, finished block to read. */
-.show .reveal-line-bottom {
-  animation: lineDraw 0.9s var(--ts-ease-out) 2.5s forwards;
-}
-
-@keyframes lineDraw {
-  from {
-    transform: scaleX(0);
-    opacity: 0;
-  }
-  to {
-    transform: scaleX(1);
-    opacity: 0.9;
-  }
-}
-
-/* Elegant script, revealed letter by letter.
-   The size was a flat 2.6rem while .event-date directly below it was already
-   clamped against --ts-w — so the two drifted apart on any stage that wasn't
-   the ~390px phone they were eyeballed on, the script staying put while the
-   date grew or shrank under it. 0.107 reproduces 2.6rem at 390px exactly, so
-   the common case is untouched; the clamps stop a very narrow stage from
-   overflowing the nowrap line and a very wide one from turning the script into
-   a banner. */
-.save-the-date-label {
-  font-family: 'Great Vibes', cursive;
-  font-size: clamp(1.9rem, calc(var(--ts-w) * 0.107), 3.1rem);
-  line-height: 1.25;
-  margin: 0;
-  font-weight: 400;
-  white-space: nowrap;
-  text-shadow: var(--ts-copy-halo);
-}
-
-/* Sizes itself to the base copy, so the gleam laid over it with inset: 0
-   lands on exactly the same glyphs. */
-.label-stack {
-  position: relative;
-}
-
-/* The pass of light. Same geometry as the door transition's goldSheen — a
-   260%-wide gradient travelling 150% -> -60% — so the two stages' lettering
-   catches light the same way. The band is transparent either side of the
-   hotspot, so everywhere but the highlight the copy underneath shows through
-   completely untouched.
-
-   No text-shadow here: the fill is transparent, and the halo the base copy
-   carries would otherwise paint over the inside of the glyphs rather than
-   behind them. */
-.save-the-date-gleam {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  text-shadow: none;
-  background-image: linear-gradient(
-    100deg,
-    transparent 38%,
-    var(--ts-gleam) 47%,
-    var(--ts-gleam-core) 50%,
-    var(--ts-gleam) 53%,
-    transparent 62%
-  );
-  background-size: 260% 100%;
-  background-position: 150% 0;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  opacity: 0;
-}
-
-/* 2.2s: the last letter finishes blooming at ~2.08s, so the light crosses
-   finished words rather than words still arriving. It clears at 3.7s, ahead
-   of the 4.0s dissolve. Linear because a pass of light travels at a constant
-   speed — an eased sweep hesitates in the middle, which is the part being
-   watched. The opacity envelope keeps the band from popping on at full
-   strength at one edge and cutting off at the other. */
-.show .save-the-date-gleam {
-  animation: labelGleam 1.5s linear 2.2s forwards;
-}
-
-@keyframes labelGleam {
-  0% {
-    background-position: 150% 0;
-    opacity: 0;
-  }
-  18% {
-    opacity: 1;
-  }
-  82% {
-    opacity: 1;
-  }
-  100% {
-    background-position: -60% 0;
-    opacity: 0;
-  }
-}
-.std-char {
-  display: inline-block;
-  opacity: 0;
-  filter: blur(6px);
-  transform: translateY(8px);
-}
-
-.show .std-char {
-  animation: charBloom 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  /* per-character stagger applied inline via animation-delay */
-}
-
-@keyframes charBloom {
-  to {
-    opacity: 1;
-    filter: blur(0);
-    transform: translateY(0);
-  }
-}
-
-/* Sized against the stage, and never allowed to wrap. At a fixed 0.85rem the
-   widest en-US long date ("Wednesday, September 30, 2026") measures ~400px at
-   its opening tracking — wider than a 390px phone. So it wrapped to two lines,
-   then snapped back to one partway through the settle, jerking "Save the Date"
-   down and back up as the tracking closed. */
-.event-date {
-  font-size: clamp(0.62rem, calc(var(--ts-w) * 0.029), 0.85rem);
-  white-space: nowrap;
-  letter-spacing: 0.18em;
-  /* letter-spacing also adds a trailing space after the *last* glyph, so a
-     centred line sits half a space left of true centre — by a changing amount
-     while the tracking settles, which makes the date creep sideways as it
-     arrives. The matching negative margin cancels it at every frame. */
-  margin: 0 -0.18em 0 0;
-  text-transform: uppercase;
-  font-weight: 500;
-  opacity: 0;
-  text-shadow: var(--ts-copy-halo);
-}
-
-.show .event-date {
-  animation: dateTrackIn 1.2s var(--ts-ease-out) 1.45s forwards;
-}
-
-@keyframes dateTrackIn {
-  from {
-    opacity: 0;
-    letter-spacing: 0.36em;
-    margin-right: -0.36em;
-  }
-  to {
-    opacity: 0.8;
-    letter-spacing: 0.18em;
-    margin-right: -0.18em;
-  }
-}
-
 /* ---------- Reduced motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {
@@ -1159,32 +911,6 @@ const replay = async () => {
     transition: opacity 0.8s ease;
   }
 
-  /* Pure decoration, and pure movement — nothing is lost by removing it. */
-  .save-the-date-gleam {
-    display: none;
-  }
-
-  .std-char {
-    filter: none;
-    transform: none;
-  }
-
-  .show .std-char {
-    animation: charBloom 0.6s ease forwards;
-    animation-delay: 0s !important;
-  }
-
-  .show .reveal-line-top,
-  .show .reveal-line-bottom {
-    animation-duration: 0.5s;
-  }
-
-  /* Still last, but it no longer waits out a tracking settle that was removed
-     from this branch — the date fades in place here. */
-  .show .reveal-line-bottom {
-    animation-delay: 0.9s;
-  }
-
   /* No lift on the band and no tracking settle on the date — both are position
      changes. Everything still fades, which is what carries the sequence. */
   .cloud-scrim,
@@ -1192,19 +918,6 @@ const replay = async () => {
   .stage-fade-out .cloud-scrim,
   .stage-fade-out .cloud-footer {
     transform: none;
-  }
-
-  .show .event-date {
-    animation: dateFadeIn 0.6s ease 0.3s forwards;
-  }
-}
-
-/* Reduced-motion stand-in for dateTrackIn: the same settled opacity, no
-   tracking travel. Declared outside the media block so the scoped-style
-   keyframe rename never has to reach into an at-rule. */
-@keyframes dateFadeIn {
-  to {
-    opacity: 0.8;
   }
 }
 </style>

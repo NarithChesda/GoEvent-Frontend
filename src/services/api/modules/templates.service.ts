@@ -133,6 +133,12 @@ export const partnerTemplateService = {
     if (payload.host_info_design !== undefined) {
       formData.append('host_info_design', JSON.stringify(payload.host_info_design))
     }
+    if (payload.info_card_design !== undefined) {
+      formData.append('info_card_design', JSON.stringify(payload.info_card_design))
+    }
+    if (payload.save_the_date_design !== undefined) {
+      formData.append('save_the_date_design', JSON.stringify(payload.save_the_date_design))
+    }
     if (payload.falling_effect_custom_image instanceof File) {
       formData.append('falling_effect_custom_image', payload.falling_effect_custom_image)
     } else if (payload.falling_effect_custom_image === '') {
@@ -188,6 +194,12 @@ export const partnerTemplateService = {
     }
     if (payload.host_info_design !== undefined) {
       formData.append('host_info_design', JSON.stringify(payload.host_info_design))
+    }
+    if (payload.info_card_design !== undefined) {
+      formData.append('info_card_design', JSON.stringify(payload.info_card_design))
+    }
+    if (payload.save_the_date_design !== undefined) {
+      formData.append('save_the_date_design', JSON.stringify(payload.save_the_date_design))
     }
     if (payload.falling_effect_custom_image instanceof File) {
       formData.append('falling_effect_custom_image', payload.falling_effect_custom_image)

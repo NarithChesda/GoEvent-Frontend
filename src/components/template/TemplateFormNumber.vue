@@ -1,14 +1,14 @@
 <template>
   <div class="space-y-1">
     <div class="flex items-center justify-between gap-2">
-      <label :for="fieldId" class="text-xs font-medium text-slate-600 truncate">{{ label }}</label>
+      <label :for="fieldId" :class="[FIELD_LABEL, 'truncate']">{{ label }}</label>
       <div class="flex items-center gap-1 flex-shrink-0">
         <input
           :id="fieldId"
           type="number"
           :value="modelValue"
           :step="step"
-          class="w-16 px-2 py-1 text-right text-xs font-semibold text-slate-700 tabular-nums bg-slate-100 border border-transparent rounded-lg transition-colors focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+          :class="FIELD_NUM"
           @input="onNumberInput"
         />
         <span v-if="unit" class="w-6 text-[0.625rem] font-medium text-slate-400">{{ unit }}</span>
@@ -35,6 +35,7 @@
 
 <script setup lang="ts">
 import { computed, useId } from 'vue'
+import { FIELD_LABEL, FIELD_NUM } from './templateUi'
 
 const props = withDefaults(
   defineProps<{

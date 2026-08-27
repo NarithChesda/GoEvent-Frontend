@@ -8,6 +8,9 @@ import type {
   FallingEffectConfig,
   EventDetailsDesignConfig,
   HostInfoDesignType,
+  HostFrameStyle,
+  CoupleOrnament,
+  InfoCardDesignConfig,
 } from '@/services/api/types/template.types'
 
 // Core showcase data types
@@ -102,6 +105,8 @@ export interface TemplateAssets {
   falling_effect?: FallingEffectConfig | null
   /** Date + location block design (panel | calendar). Defaults to `panel`. */
   event_details_design?: EventDetailsDesignConfig | null
+  /** Info card (venue/map/countdown/RSVP) design (glass | engraved). Defaults to `glass`. */
+  info_card_design?: InfoCardDesignConfig | null
 }
 
 export interface EventPhoto {
@@ -304,6 +309,15 @@ export interface HostInfoProps {
   hostClipStyle?: Record<string, string>
   /** Host info block design from the template package. Defaults to 'standard'. */
   designType?: HostInfoDesignType
+  /**
+   * Frame chrome shared by the host title and the avatar. Defaults to 'none',
+   * which renders both exactly as they did before frames existed.
+   * Drawn by the grid layouts only — `arch` has its own frames and `simple` has
+   * neither a title nor an avatar.
+   */
+  frameStyle?: HostFrameStyle
+  /** Motif between the two hosts, in the grid's centre column. Defaults to 'none'. */
+  coupleOrnament?: CoupleOrnament
 }
 
 // Error boundary types

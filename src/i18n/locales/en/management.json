@@ -3000,20 +3000,64 @@
       "designHint": "Controls how the event date and location are displayed in the showcase.",
       "types": {
         "panel": "Panel (stacked date + location)",
-        "calendar": "Calendar (month grid, day circled)"
+        "calendar": "Calendar (month grid, day circled)",
+        "flanked": "Flanked (date on one line, rules)",
+        "arch": "Arch (date inside a drawn arch)",
+        "ticket": "Ticket (stub + venue)"
       },
-      "markerColorSource": "Circled day colour",
-      "markerColorHint": "Colour of the heart drawn around the event day and the day number itself. Pick a template colour that stands out against the background.",
+      "markerColorSource": "Accent mark colour",
+      "markerColorHint": "Colour of the design's one accent mark — the calendar's circled day, the flanked rules, the arch outline, the ticket perforation. Pick a template colour that stands out against the background.",
       "sourceAccent": "Accent",
       "sourcePrimary": "Primary",
       "sourceSecondary": "Secondary"
+    },
+    "infoCardDesign": {
+      "sectionTitle": "Info Card Design",
+      "designHint": "Controls how the venue, map, countdown and RSVP block is presented. Engraved is drawn in the same hairline language as the calendar, flanked and arch date designs.",
+      "types": {
+        "glass": "Glass (rounded panel, white text)",
+        "engraved": "Engraved (hairline rules, inked type)"
+      }
+    },
+    "saveTheDateDesign": {
+      "sectionTitle": "Save the Date Design",
+      "designHint": "The title card on the transition stage, between the cover and the invitation. Both transition types render all six — match the transition to keep each on the design it was drawn for.",
+      "types": {
+        "auto": "Match the transition (script or engraved)",
+        "script": "Script (letter-by-letter, fine rules)",
+        "engraved": "Engraved (ornament rules, big numeral)",
+        "minimal": "Minimal (label over a large date)",
+        "columns": "Columns (large day, month and year either side)",
+        "medallion": "Medallion (drawn ring, day inside)",
+        "poster": "Poster (large stacked type)"
+      }
     },
     "hostInfoDesign": {
       "sectionTitle": "Host Info Design",
       "designHint": "Controls how the host information is displayed in the showcase.",
       "types": {
         "standard": "Standard (parents, logo, titles, photos)",
-        "simple": "Simple (welcome + large names)"
+        "simple": "Simple (welcome + large names)",
+        "portrait": "Portrait (title, photo, then name)",
+        "arch": "Arch (couple story, arched photos)"
+      },
+      "frameLabel": "Title & Avatar Frame",
+      "frameHint": "One choice, drawn twice - around the host title and around their avatar, so the pair always match. Standard and Portrait only; Arch brings its own frames and Simple has neither.",
+      "frames": {
+        "none": "None (plain title, plain circle)",
+        "banner": "Banner (filled plate, thick ring)",
+        "plaque": "Plaque (hairline rules, double ring)",
+        "ribbon": "Ribbon (folded tails)",
+        "laurel": "Laurel (sprigs and wreath)"
+      },
+      "ornamentLabel": "Centre Motif",
+      "ornamentHint": "Drawn in the column between the two hosts, beside their photos.",
+      "ornaments": {
+        "none": "None",
+        "heart": "Heart",
+        "rings": "Interlocked rings",
+        "knot": "Knot",
+        "bloom": "Bloom"
       }
     },
     "footer": {

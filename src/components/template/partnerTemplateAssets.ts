@@ -7,7 +7,9 @@ import type {
   EventTemplateLanguageFont,
   FallingEffectConfig,
   HostInfoDesignConfig,
+  InfoCardDesignConfig,
   PartnerTemplate,
+  SaveTheDateDesignConfig,
   SparkFieldConfig,
 } from '@/services/api'
 
@@ -57,6 +59,8 @@ export interface PartnerTemplateDraft {
   ambient_creatures: AmbientCreaturesConfig | null
   event_details_design: EventDetailsDesignConfig
   host_info_design: HostInfoDesignConfig
+  info_card_design: InfoCardDesignConfig
+  save_the_date_design: SaveTheDateDesignConfig | null
   /** Saved colors (edit mode) or pending ones (create mode) — same shape either way. */
   colors: Array<Pick<EventTemplateColor, 'hex_color_code' | 'name'> & { id?: number }>
   /** Saved language fonts. Pending (create-mode) fonts carry no font file yet, so they can't preview. */
@@ -225,6 +229,8 @@ export function partnerTemplateDraftToAssets(
     sparks: resolveSparks(draft, saved, resolveFileUrl),
     event_details_design: draft.event_details_design,
     host_info_design: draft.host_info_design,
+    info_card_design: draft.info_card_design,
+    save_the_date_design: draft.save_the_date_design,
     display_liquid_glass_background: draft.display_liquid_glass_background,
   }
 }

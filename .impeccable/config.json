@@ -11,6 +11,12 @@
         "value": "border-b-2",
         "createdAt": "2026-08-23T06:25:38.464Z",
         "reason": "Claude: border-b-2 + rounded-full + animate-spin is this repo's inline spinner idiom (16 occurrences, goevent-design 13) - a 24px spinning disc, not a rounded card with an accent border. The rule cannot tell the two apart."
+      },
+      {
+        "rule": "bounce-easing",
+        "value": "bounceinelement",
+        "createdAt": "2026-08-27T07:38:25.937Z",
+        "reason": "Claude triage: not an easing. The rule's curve is cubic-bezier(0.25,0.46,0.45,0.94) (easeInOutQuad); the detector matched the keyframe NAME. Its overshoot is a -3px/+1px settle on a 15px travel, i.e. a settle rather than a bounce."
       }
     ]
   }

@@ -157,6 +157,7 @@
             :main-stage-layout="event.template_assets?.cover_stage_layout"
             :event-details-design="event.template_assets?.event_details_design"
             :host-info-design="event.template_assets?.host_info_design"
+            :info-card-design="event.template_assets?.info_card_design"
             @open-map="openGoogleMap"
             @open-photo="openPhotoModal"
             @register="registerForEvent"
@@ -186,6 +187,7 @@
               :background-color="backgroundColor"
               :blur-effect-color="blurEffectColor"
               :falling-effect="event.template_assets?.falling_effect"
+              :save-the-date-design="event.template_assets?.save_the_date_design"
               :get-media-url="getMediaUrl"
               @transition-complete="handleTransitionComplete"
             />
@@ -210,6 +212,7 @@
         :primary-font="primaryFont"
         :secondary-font="secondaryFont"
         :falling-effect="event.template_assets?.falling_effect"
+        :save-the-date-design="event.template_assets?.save_the_date_design"
         :get-media-url="getMediaUrl"
         @dissolve-start="handleTransitionDissolveStart"
         @transition-complete="handleTransitionComplete"

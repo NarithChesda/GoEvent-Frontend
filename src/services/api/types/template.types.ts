@@ -419,19 +419,33 @@ export interface CoverStageLayout {
  *                month on the left, location on the right (the original look).
  * - `calendar` — a full month-grid calendar with the event day circled, with
  *                the location rendered below it.
+ * - `flanked`  — engraved-invitation typography: weekday | day numeral | month
+ *                on one baseline, split by vertical hairlines, year + time
+ *                beneath. No card frame.
+ * - `arch`     — the date set inside a hairline arch that draws itself on
+ *                reveal, with the type sized to fill the arch.
+ * - `ticket`   — an admit-one stub: a die-cut rounded card split by a dashed
+ *                perforation, date on the stub, weekday/time + location beside it.
+ *
+ * Every design except `panel` needs a parseable `start_date`; without one the
+ * showcase falls back to `panel`.
+ *
+ * `panel` and `ticket` set the venue themselves; `calendar`, `flanked` and
+ * `arch` are date marks and hand it to the map card header instead.
  *
  * Selected per template via `template_assets.event_details_design` and flows
  * through the showcase exactly like `falling_effect`.
  */
-export type EventDetailsDesignType = 'panel' | 'calendar'
+export type EventDetailsDesignType = 'panel' | 'calendar' | 'flanked' | 'arch' | 'ticket'
 
 /**
- * Where the calendar design's event-day marker (the hand-drawn heart around the
- * date, and the matching tint on the day number) takes its colour from.
+ * Where a date design's accent mark takes its colour from — the calendar's
+ * hand-drawn heart (and the matching tint on the day number), the `flanked`
+ * rules, the `arch` outline, the `ticket` perforation and stub numeral.
  *
- * Mirrors `FallingEffectConfig.color_source`. Defaults to `accent` so the marker
+ * Mirrors `FallingEffectConfig.color_source`. Defaults to `accent` so the mark
  * follows the template's own highlight colour instead of a fixed red that can
- * disappear against a red background.
+ * disappear against a red background. Ignored by `panel`, which has no accent mark.
  */
 export type EventDetailsMarkerColorSource = 'accent' | 'primary' | 'secondary' | 'custom'
 
@@ -446,8 +460,8 @@ export interface EventDetailsDesignConfig {
   /** Which date/location layout to render. Defaults to `panel`. */
   type: EventDetailsDesignType
   /**
-   * Colour slot for the calendar design's event-day marker. Ignored by the
-   * `panel` design. Defaults to `accent`.
+   * Colour slot for the design's accent mark. Ignored by the `panel` design,
+   * which has none. Defaults to `accent`.
    */
   marker_color_source?: EventDetailsMarkerColorSource
   /** Hex colour, read only when `marker_color_source` is `custom`. */
@@ -461,11 +475,21 @@ export interface EventDetailsDesignConfig {
  *                host titles, host names and profile pictures (the original look).
  * - `simple`   — a minimal layout: the welcome header above large script host
  *                names stacked and joined by an ampersand.
+ * - `portrait` — the standard layout with one row moved: title, then portrait,
+ *                then name, so the label introduces the person, the photo shows
+ *                them and the name closes.
+ * - `arch`     — the showcase-v2 couple-story composition: two arch-framed
+ *                portraits staged on a diagonal with a drawn hairline between
+ *                them, each host's title, name and parents stacked under their
+ *                own frame instead of split across shared rows.
+ *
+ * `portrait` and `arch` are implemented by the **wedding** host layout only;
+ * other event types ignore them and render `standard`.
  *
  * Selected per template via `template_assets.host_info_design` and flows through
  * the showcase exactly like `event_details_design`.
  */
-export type HostInfoDesignType = 'standard' | 'simple'
+export type HostInfoDesignType = 'standard' | 'simple' | 'portrait' | 'arch'
 
 /**
  * Configuration for the host information block on the showcase.
@@ -474,9 +498,147 @@ export type HostInfoDesignType = 'standard' | 'simple'
  * the template package and forwarded down to HostInfo.vue. When omitted the
  * showcase falls back to the `standard` design.
  */
+/**
+ * Chrome drawn around the host's title *and* around their avatar — one choice,
+ * two renderings, so the pair can never be mismatched.
+ *
+ * Each style is a matched set in one visual language, not a title treatment and
+ * an avatar treatment picked independently:
+ *
+ * - `none`   — the default: plain title text over a plain circular avatar.
+ *              Every template that predates this field renders here, unchanged.
+ * - `banner` — the title on a filled banner with notched ends; the avatar in a
+ *              thick ring of the same fill with a small gem at its crown. The
+ *              solid, high-contrast option.
+ * - `plaque` — the title in a hairline double rule with cut corners; the avatar
+ *              in a double hairline ring. Engraved and quiet — the one that
+ *              rhymes with the `engraved` save-the-date and the `arch` /
+ *              `flanked` date designs.
+ * - `ribbon` — the title on a band with folded tails either side; the avatar
+ *              ring with two tails at its foot. Wedding stationery.
+ * - `laurel` — the title flanked by two sprigs; the avatar ring with laurel
+ *              sweeping its lower half. The most ornament of the four.
+ *
+ * Rendered by the **grid** host layouts (`standard` and `portrait`). `arch`
+ * draws its own frames and `simple` has neither a title nor an avatar, so both
+ * ignore this.
+ */
+export type HostFrameStyle = 'none' | 'banner' | 'plaque' | 'ribbon' | 'laurel'
+
+/**
+ * The motif in the centre column between the two hosts — the empty
+ * `.center-spacer` track that the grid has always had and never filled.
+ *
+ * Defaults to `none`, which is the empty spacer as before.
+ */
+export type CoupleOrnament = 'none' | 'heart' | 'rings' | 'knot' | 'bloom'
+
 export interface HostInfoDesignConfig {
   /** Which host info layout to render. Defaults to `standard`. */
   type: HostInfoDesignType
+  /**
+   * Frame chrome shared by the host title and the avatar. Defaults to `none`.
+   *
+   * A sibling key rather than a field of its own: this config was deliberately
+   * kept an object so design options could be added without a breaking change
+   * (see docs/backend-api-requirements/host-info-design.md), and this is the
+   * first one to take that path.
+   */
+  frame_style?: HostFrameStyle
+  /** Motif drawn between the two hosts. Defaults to `none`. */
+  couple_ornament?: CoupleOrnament
+}
+
+/**
+ * Visual language of the info card below the date — the block that carries the
+ * venue, the Google Map, the countdown and the RSVP form.
+ *
+ * - `glass`    — the default: a rounded liquid-glass panel with a 2px white
+ *                border, a tinted translucent fill and white text throughout.
+ * - `engraved` — the same content set as engraved type on the page ground:
+ *                hairline rules instead of a card frame, everything inked in
+ *                the template's primary colour, and a hairline-framed map
+ *                plate. Built to sit under the `calendar` / `flanked` / `arch`
+ *                date designs, which are drawn in the same language — the glass
+ *                panel reads as a different material stacked under them.
+ *
+ * Selected per template via `template_assets.info_card_design` and flows through
+ * the showcase exactly like `event_details_design`.
+ */
+export type InfoCardDesignType = 'glass' | 'engraved'
+
+/**
+ * Configuration for the venue / map / countdown / RSVP card on the showcase.
+ *
+ * Mirrors the `HostInfoDesignConfig` pattern: a small JSON object sent inside
+ * the template package and forwarded down to EventInfo.vue. When omitted the
+ * showcase falls back to the `glass` design, so existing templates are unchanged.
+ */
+export interface InfoCardDesignConfig {
+  /** Which info card treatment to render. Defaults to `glass`. */
+  type: InfoCardDesignType
+}
+
+/**
+ * Composition used for the **Save the Date** title card on the transition
+ * stage — the block that carries the label and the event date over the
+ * featured photograph, between the cover and the invitation.
+ *
+ * Both transition stages render the same six designs. Each one owns a distinct
+ * *composition* and a distinct reveal *gesture*, not just a restyle:
+ *
+ * - `script`    — the decoration stage's original: an italic script label
+ *                 blooming in letter by letter between two fine hairlines that
+ *                 draw outward from centre, with the long date tracked out
+ *                 beneath it.
+ * - `engraved`  — the door stage's original: ornament rules top and bottom
+ *                 bracketing a tracked uppercase label, a large `DD · MM · YYYY`
+ *                 numeral as the hero, and the long date under it, every line
+ *                 arriving on a centre-out wipe.
+ * - `minimal`   — no rules, no ornament: a small tracked label over the long
+ *                 date set large in the display serif, both on one short
+ *                 rise-and-fade. For templates whose photograph is the hero.
+ * - `columns`   — a large day flanked by the month and year as tracked-caps
+ *                 labels, divided by vertical hairlines that draw downward,
+ *                 under a tracked eyebrow with the weekday closing beneath.
+ *                 Laid out on the same flanked grid as the info card's
+ *                 `flanked` date, so the row is centred on the day rather than
+ *                 on its own total width.
+ * - `medallion` — a drawn hairline ring with the day numeral inside it, the
+ *                 month and year tracked below and the label above: a crest
+ *                 rather than a frame.
+ * - `poster`    — `SAVE` / `THE DATE` stacked large at tight leading, each line
+ *                 mask-revealed from below, with the numeric date small beneath
+ *                 a hairline. The one design that isn't wedding-coded.
+ *
+ * Absent / `null` falls back to **whichever design that stage shipped with** —
+ * `script` for the decoration transition, `engraved` for the door transition —
+ * so every already-published template renders exactly as it does today. That
+ * per-stage fallback is the one way this config differs from
+ * `host_info_design`, which has a single global default.
+ *
+ * Selected per template via `template_assets.save_the_date_design` and flows
+ * through the showcase exactly like `host_info_design`.
+ */
+export type SaveTheDateDesignType =
+  | 'script'
+  | 'engraved'
+  | 'minimal'
+  | 'columns'
+  | 'medallion'
+  | 'poster'
+
+/**
+ * Configuration for the Save the Date title card on the transition stage.
+ *
+ * Mirrors the `HostInfoDesignConfig` pattern: a small JSON object sent inside
+ * the template package and forwarded down to both TransitionStage.vue and
+ * TransitionStageDoor.vue. When omitted each stage keeps its own original
+ * design (see `SaveTheDateDesignType`).
+ */
+export interface SaveTheDateDesignConfig {
+  /** Which Save the Date composition to render. Defaults per stage. */
+  type: SaveTheDateDesignType
 }
 
 /**
@@ -683,6 +845,8 @@ export interface PartnerTemplate {
   falling_effect: FallingEffectConfig | null
   event_details_design: EventDetailsDesignConfig | null
   host_info_design: HostInfoDesignConfig | null
+  info_card_design: InfoCardDesignConfig | null
+  save_the_date_design: SaveTheDateDesignConfig | null
   ambient_creatures: AmbientCreaturesConfig | null
   sparks: SparkFieldConfig | null
   /** Custom spark image, when the field uses one instead of a built-in shape. */
@@ -755,6 +919,10 @@ export interface PartnerTemplateCreatePayload {
   event_details_design?: EventDetailsDesignConfig | null
   /** Host info block design. Pass `null` to fall back to the `standard` design. */
   host_info_design?: HostInfoDesignConfig | null
+  /** Info card (venue/map/countdown/RSVP) design. Pass `null` to fall back to `glass`. */
+  info_card_design?: InfoCardDesignConfig | null
+  /** Transition-stage Save the Date design. Pass `null` to keep each stage's own default. */
+  save_the_date_design?: SaveTheDateDesignConfig | null
   /** Ambient creature effect config. Pass `null` to disable the effect. */
   ambient_creatures?: AmbientCreaturesConfig | null
   /** Drifting spark field config. Pass `null` to disable the effect. */

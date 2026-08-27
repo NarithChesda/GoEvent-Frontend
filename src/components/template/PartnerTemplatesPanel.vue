@@ -7,15 +7,11 @@
          where a second row costs less than the width would. -->
     <Teleport v-if="headerSlot && useSharedHeader" :to="headerSlot">
       <div class="ml-auto flex items-center gap-2 flex-shrink-0">
-        <span
-          v-for="stat in statusStats"
-          :key="stat.status"
-          :class="['inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium', stat.class]"
-        >
+        <span v-for="stat in statusStats" :key="stat.status" :class="[STAT_CHIP, stat.class]">
           <component :is="stat.icon" class="w-3 h-3" />
           {{ stat.count }} {{ stat.label }}
         </span>
-        <button type="button" @click="openForm(null)" :class="newTemplateButtonClass">
+        <button type="button" @click="openForm(null)" :class="BTN_PRIMARY_BAR">
           <Plus class="w-4 h-4" />
           {{ t('management.partnerTemplatesPanel.newTemplate') }}
         </button>
@@ -30,16 +26,12 @@
          transition anyway). -->
     <div v-if="!useSharedHeader" class="flex-shrink-0 flex items-center justify-between gap-3 px-4 sm:px-6 py-3 bg-white">
       <div class="flex gap-1.5 flex-wrap min-w-0">
-        <span
-          v-for="stat in statusStats"
-          :key="stat.status"
-          :class="['inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium', stat.class]"
-        >
+        <span v-for="stat in statusStats" :key="stat.status" :class="[STAT_CHIP, stat.class]">
           <component :is="stat.icon" class="w-3 h-3" />
           {{ stat.count }} {{ stat.label }}
         </span>
       </div>
-      <button type="button" @click="openForm(null)" :class="newTemplateButtonClass">
+      <button type="button" @click="openForm(null)" :class="BTN_PRIMARY_BAR">
         <Plus class="w-4 h-4" />
         <span class="hidden sm:inline">{{ t('management.partnerTemplatesPanel.newTemplate') }}</span>
         <span class="sm:hidden">{{ t('management.partnerTemplatesPanel.newShort') }}</span>
@@ -57,7 +49,10 @@
       <div v-else-if="loadError" class="flex flex-col items-center justify-center py-16 text-center">
         <AlertCircle class="w-10 h-10 text-red-400 mb-3" />
         <p class="text-sm font-medium text-slate-700">{{ t('management.partnerTemplatesPanel.loadError') }}</p>
-        <button type="button" @click="loadTemplates" class="mt-3 text-sm text-sky-600 hover:underline">{{ t('management.partnerTemplatesPanel.tryAgain') }}</button>
+        <button type="button" @click="loadTemplates" :class="[BTN_SECONDARY, 'mt-4']">
+          <RotateCcw class="w-4 h-4 text-slate-400" />
+          {{ t('management.partnerTemplatesPanel.tryAgain') }}
+        </button>
       </div>
 
       <!-- Empty State -->
@@ -69,11 +64,7 @@
         <p class="text-sm text-slate-500 max-w-xs">
           {{ t('management.partnerTemplatesPanel.empty.description') }}
         </p>
-        <button
-          type="button"
-          @click="openForm(null)"
-          class="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white hover:from-[#27ae60] hover:to-[#1873cc] transition-all"
-        >
+        <button type="button" @click="openForm(null)" :class="[BTN_PRIMARY, 'mt-5']">
           <Plus class="w-4 h-4" />
           {{ t('management.partnerTemplatesPanel.empty.createFirst') }}
         </button>
@@ -115,19 +106,10 @@
             <template #name><strong>{{ templateToDelete.name }}</strong></template>
           </i18n-t>
           <div class="flex gap-2">
-            <button
-              type="button"
-              @click="templateToDelete = null"
-              class="flex-1 px-3 py-2 rounded-xl text-sm font-medium bg-white text-slate-700 ring-1 ring-slate-200 shadow-sm hover:ring-slate-300 hover:bg-slate-50 transition-all"
-            >
+            <button type="button" @click="templateToDelete = null" :class="[BTN_SECONDARY, 'flex-1']">
               {{ t('management.partnerTemplatesPanel.deleteModal.cancel') }}
             </button>
-            <button
-              type="button"
-              @click="confirmDelete"
-              :disabled="deleting"
-              class="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-xl text-sm font-semibold bg-red-500 text-white shadow-lg shadow-red-500/25 hover:bg-red-600 disabled:opacity-60 transition-all"
-            >
+            <button type="button" @click="confirmDelete" :disabled="deleting" :class="[BTN_DANGER, 'flex-1']">
               <Loader2 v-if="deleting" class="w-4 h-4 animate-spin" />
               {{ deleting ? t('management.partnerTemplatesPanel.deleteModal.deleting') : t('management.partnerTemplatesPanel.deleteModal.delete') }}
             </button>
@@ -161,11 +143,13 @@ import {
   Clock,
   XCircle,
   FileEdit,
+  RotateCcw,
   type LucideIcon,
 } from 'lucide-vue-next'
 import { useToast } from '../../composables/useToast'
 import { useMediaQuery } from '../../composables/useMediaQuery'
 import { TEMPLATES_HEADER_SLOT } from './templatesHeaderSlot'
+import { BTN_DANGER, BTN_PRIMARY, BTN_PRIMARY_BAR, BTN_SECONDARY, STAT_CHIP } from './templateUi'
 import { partnerTemplateService } from '../../services/api'
 import type { Event, PartnerTemplate } from '../../services/api'
 import PartnerTemplateCard from './PartnerTemplateCard.vue'
@@ -211,9 +195,6 @@ const templateToDelete = ref<PartnerTemplate | null>(null)
 const headerSlot = inject(TEMPLATES_HEADER_SLOT, ref(null))
 const isDesktop = useMediaQuery('(min-width: 1024px)')
 const useSharedHeader = computed(() => isDesktop.value && !showForm.value)
-
-const newTemplateButtonClass =
-  'flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white hover:from-[#27ae60] hover:to-[#1873cc] transition-all shadow-md shadow-sky-500/25 hover:shadow-sky-500/35 hover:-translate-y-px active:translate-y-0'
 
 const statusStats = computed(() => {
   const counts = { draft: 0, pending_review: 0, approved: 0, rejected: 0 }

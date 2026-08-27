@@ -151,6 +151,8 @@
                     :first-host-id="firstHostId"
                     :host-clip-style="hostClipStyle"
                     :design-type="hostInfoDesign?.type"
+                    :frame-style="hostInfoDesign?.frame_style"
+                    :couple-ornament="hostInfoDesign?.couple_ornament"
                   />
                 </div>
 
@@ -161,7 +163,16 @@
                     eventType === 'Birthday'
                       ? 'mt-3 sm:mt-4 laptop-sm:mt-4 laptop-md:mt-5 laptop-lg:mt-6 desktop:mt-5'
                       : 'mt-6 sm:mt-8 laptop-sm:mt-8 laptop-md:mt-10 laptop-lg:mt-12 desktop:mt-10',
-                    'mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10 animate-reveal',
+                    // Engraved drops the bow-tie below (see the divider's
+                    // v-if): the sheet closes itself with its own bottom rule,
+                    // so the bow-tie would be that boundary drawn twice — the
+                    // doubled line joins-date-mark already removes at the top
+                    // seam. The divider's air moves here so the gap to the next
+                    // section survives its removal.
+                    infoCardDesign?.type === 'engraved'
+                      ? 'mb-12 sm:mb-14 laptop-sm:mb-14 laptop-md:mb-16 laptop-lg:mb-20 desktop:mb-16'
+                      : 'mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10',
+                    'animate-reveal',
                   ]"
                 >
                   <EventInfo
@@ -183,6 +194,7 @@
                     :show-rsvp="event.rsvp_enabled !== false"
                     :show-countdown="event.countdown_enabled !== false"
                     :event-start-date="event.start_date"
+                    :info-card-design="infoCardDesign?.type"
                     :details-design="eventDetailsDesign?.type"
                     :details-marker-color-source="eventDetailsDesign?.marker_color_source"
                     :details-marker-custom-color="eventDetailsDesign?.marker_custom_color"
@@ -232,8 +244,14 @@
                     </template>
                   </EventInfo>
 
-                  <!-- Event Info + RSVP Section Divider -->
-                  <WeddingSectionDivider :primary-color="primaryColor" />
+                  <!-- Event Info + RSVP Section Divider. Engraved has none:
+                       the sheet's own bottom rule is already this boundary,
+                       and a bow-tie under a hairline sheet is the material
+                       clash the engraved set exists to avoid. -->
+                  <WeddingSectionDivider
+                    v-if="infoCardDesign?.type !== 'engraved'"
+                    :primary-color="primaryColor"
+                  />
                 </div>
 
                 <!-- Dress Code Section (also rendered when empty inside the
@@ -965,6 +983,7 @@ import type {
   CoverStageLayout,
   EventDetailsDesignConfig,
   HostInfoDesignConfig,
+  InfoCardDesignConfig,
 } from '../../services/api/types/template.types'
 
 // Asset protection (production-only)
@@ -1044,6 +1063,8 @@ interface Props {
   eventDetailsDesign?: EventDetailsDesignConfig | null
   /** Host info block design from template (standard | simple) */
   hostInfoDesign?: HostInfoDesignConfig | null
+  /** Info card (venue/map/countdown/RSVP) design from template (glass | engraved) */
+  infoCardDesign?: InfoCardDesignConfig | null
 }
 
 const props = defineProps<Props>()
