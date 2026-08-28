@@ -118,9 +118,12 @@ withDefaults(defineProps<Props>(), {
   diffuse glow, but nothing extra to composite on a layer that covers every
   page. It is wider than the viewport and centred above it, so only the soft
   middle of the falloff is ever on screen — no visible arc at the edges.
+
+  Held in a variable because opaque chrome fixed to the top of the viewport has
+  to paint this exact stack rather than a fill of its own — see `.premium-chrome`.
 */
-.premium-bg {
-  background:
+:root {
+  --premium-bg:
     radial-gradient(
       120% 26rem at 50% -4rem,
       rgba(46, 204, 113, 0.28) 0%,
@@ -135,5 +138,35 @@ withDefaults(defineProps<Props>(), {
       #f0f9ff 75%,
       #f8fffe 100%
     );
+}
+
+.premium-bg {
+  background: var(--premium-bg);
+}
+
+/*
+  Opaque chrome pinned to the top of the viewport — the manage header, its tab
+  bar, the Design Studio toolbar — painted with the page's own background rather
+  than with a fill of its own.
+
+  `.premium-bg` lives on a `fixed inset-0` layer, so its stack is laid out
+  against the viewport. A bar that repaints the base gradient inside its own
+  ~3rem-tall box samples entirely different colours from it, and cannot
+  reproduce the bloom at all — and the bloom lands on exactly the strip this
+  chrome occupies, so the bar read as a pale slab with a hard colour edge along
+  its bottom lip. Sizing the same stack to the viewport and pulling it up by the
+  bar's own distance from the top lands every bar on the colours the page is
+  painting a pixel below it.
+
+  Set `--premium-chrome-top` to that distance (0, the default, for a bar sitting
+  at the very top). The `100vh` need not be exact: the bloom's geometry is
+  anchored to the top and sized in `rem`, and the base gradient's diagonal is
+  far too soft for a URL-bar-sized difference in viewport height to show.
+*/
+.premium-chrome {
+  background: var(--premium-bg);
+  background-repeat: no-repeat;
+  background-size: 100vw 100vh;
+  background-position: 0 calc(-1 * var(--premium-chrome-top, 0px));
 }
 </style>

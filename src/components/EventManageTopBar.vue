@@ -1,7 +1,7 @@
 <template>
   <!-- Top Navigation Bar for Event Detail -->
   <header
-    class="fixed top-0 left-0 right-0 z-50 h-16 glass-manage-header md:border-b md:border-slate-200/30"
+    class="fixed top-0 left-0 right-0 z-50 h-16 premium-chrome glass-manage-header md:border-b md:border-slate-200/30"
     :class="{ 'is-scrolled': isScrolled }"
     :style="{ marginLeft: headerMarginLeft }"
   >
@@ -278,14 +278,20 @@ const goBack = () => {
    scrolling behind this bar competed with the event title on top of it;
    blur(20px) blurred that content without stopping it.
 
+   The fill itself comes from `.premium-chrome` (MainLayout), which paints the
+   page's own background stack sized to the viewport: this bar sits in the top
+   strip, which is where `premium-bg`'s brand bloom is strongest, so a private
+   copy of the base gradient — what this used to carry — left the bar visibly
+   paler than the page and drew a hard colour edge along its bottom lip. This
+   one is at the very top, so it needs no `--premium-chrome-top` offset.
+
    From `lg` there is no tab bar under it — the header, the icon rail and the
    Design Studio panel are the only chrome, and each used to paint its own
-   near-white fill over `premium-bg`, whose brand bloom covers exactly this
-   strip. Three fills that can't match a gradient read as three mismatched
-   panels, so from `lg` all three go transparent and the page's own background
-   is the only one on screen (see the min-width:1024px block). */
+   near-white fill over `premium-bg`. Three fills that can't match a gradient
+   read as three mismatched panels, so from `lg` all three go transparent and
+   the page's own background is the only one on screen (see the
+   min-width:1024px block). */
 .glass-manage-header {
-  background: linear-gradient(135deg, #f8fffe 0%, #f0fdf9 50%, #f0f9ff 100%);
   transition:
     margin-left 300ms ease,
     border-color 200ms ease,

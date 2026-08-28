@@ -1498,6 +1498,12 @@
       "unpaid": "Preview only",
       "pending": "Payment under review",
       "active": "Live for guests",
+      "short": {
+        "no-template": "No template",
+        "unpaid": "Preview only",
+        "pending": "In review",
+        "active": "Live"
+      },
       "activateCta": "Activate",
       "viewPayment": "View payment",
       "viewReceipt": "View receipt"

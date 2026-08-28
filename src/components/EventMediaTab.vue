@@ -11,9 +11,11 @@
     <!-- All Sections Stacked -->
     <div class="space-y-6">
       <!-- Auto-fill from the category template — sits above the very sections
-           it creates (Texts, Hosts, Agenda). Self-hides once the event no
-           longer looks empty. -->
+           it creates (Texts, Hosts, Agenda). Suppressed where a host renders the
+           trigger itself (the Design Studio's mobile toolbar), which then calls
+           `refreshContent` in this component's place. -->
       <PopulateFromTemplateCard
+        v-if="!props.hidePopulate"
         :event="localEventData"
         :can-edit="canEdit"
         @populated="handlePopulated"
@@ -336,6 +338,9 @@ interface Props {
    *  Content panel, which has its own chrome and no room for it. Left showing
    *  when this is the full-width Showcase tab body for other categories. */
   hideHeader?: boolean
+  /** Hides the auto-fill card because the host puts that trigger in its own
+   *  chrome instead — see `refreshContent` in defineExpose. */
+  hidePopulate?: boolean
 }
 
 const props = defineProps<Props>()
@@ -712,6 +717,11 @@ defineExpose({
   // Method to trigger event text editing
   openEventTextModal: () => {
     eventTextTabRef.value?.openAddModal()
+  },
+  /** Refetch every section — for a host that owns the auto-fill trigger itself
+   *  (see `hidePopulate`) and so has to report the write back in. */
+  refreshContent: () => {
+    handlePopulated()
   }
 })
 </script>
