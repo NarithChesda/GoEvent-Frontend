@@ -1,5 +1,40 @@
 <template>
-  <div v-if="visible" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
+  <!--
+    Icon variant: the trigger alone, for hosts that already have a toolbar to
+    put it in (the Design Studio's mobile bar). The card's heading and sentence
+    are not lost — the confirm dialog below, which this button can never bypass,
+    says the same thing before anything is written, and it is the only screen
+    where the wording actually matters.
+  -->
+  <template v-if="visible && variant === 'icon'">
+    <button
+      type="button"
+      class="populate-icon-btn"
+      :disabled="loading"
+      :title="t('management.media.populate.label')"
+      :aria-label="t('management.media.populate.label')"
+      @click="handlePopulateClick"
+    >
+      <Loader2 v-if="loading" class="w-4 h-4 animate-spin" />
+      <Wand2 v-else class="w-4 h-4" />
+    </button>
+
+    <!-- Absolutely positioned so a result never changes the toolbar's height:
+         this bar is sticky chrome, and a line appearing inside it would shove
+         the whole page down for the few seconds the message is up. -->
+    <Transition name="fade">
+      <div
+        v-if="message"
+        class="populate-icon-msg"
+        :class="message.type === 'success' ? 'is-success' : 'is-error'"
+        role="status"
+      >
+        {{ message.text }}
+      </div>
+    </Transition>
+  </template>
+
+  <div v-else-if="visible" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
     <div class="flex items-start gap-3">
       <span
         class="w-9 h-9 rounded-lg bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center flex-shrink-0"
@@ -154,9 +189,15 @@ import { useAppLanguage } from '@/composables/useAppLanguage'
 interface Props {
   event?: Event
   canEdit: boolean
+  /**
+   * `card` — the standalone card at the top of the content stack (default).
+   * `icon` — the trigger only, for a host toolbar that supplies its own
+   * surface and sizing (it reads `--studio-control-h` for its dimensions).
+   */
+  variant?: 'card' | 'icon'
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { variant: 'card' })
 
 const emit = defineEmits<{
   /** Content was created — the sections below need to refetch. */
@@ -271,6 +312,73 @@ const runPopulate = async (mode: 'skip' | 'overwrite') => {
 </script>
 
 <style scoped>
+/* Icon variant. Sized off the host toolbar's shared control height so it lines
+   up exactly with the Preview and Templates buttons beside it, and painted in
+   the same glass as Preview — auto-fill and preview are both secondary tools
+   next to Templates, so they should look like siblings. */
+.populate-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--studio-control-h, 2.75rem);
+  height: var(--studio-control-h, 2.75rem);
+  color: rgb(51 65 85);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 9999px;
+  transition:
+    transform 0.16s cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 0.16s ease;
+}
+
+.populate-icon-btn:active {
+  transform: scale(0.97);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.populate-icon-btn:disabled {
+  opacity: 0.5;
+}
+
+.populate-icon-msg {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  left: 1rem;
+  right: 1rem;
+  z-index: 1;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  border: 1px solid;
+  box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.12);
+}
+
+.populate-icon-msg.is-success {
+  color: rgb(4 108 78);
+  background: rgb(236 253 245);
+  border-color: rgb(167 243 208);
+}
+
+.populate-icon-msg.is-error {
+  color: rgb(185 28 28);
+  background: rgb(254 242 242);
+  border-color: rgb(254 202 202);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .populate-icon-btn {
+    transition: none;
+  }
+
+  .populate-icon-btn:active {
+    transform: none;
+  }
+}
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;

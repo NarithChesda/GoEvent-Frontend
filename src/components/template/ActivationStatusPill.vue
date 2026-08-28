@@ -3,8 +3,12 @@
     <!-- Status half: what guests can (or can't) see right now. -->
     <span class="activation-pill__status">
       <span v-if="state === 'active'" class="activation-pill__live-dot" aria-hidden="true" />
-      <component v-else :is="stateIcon" class="w-3.5 h-3.5 flex-shrink-0" />
+      <component v-else :is="stateIcon" class="activation-pill__icon w-3.5 h-3.5 flex-shrink-0" />
+      <!-- Two labels, one shown at a time (see the ≤640px block): the phone
+           toolbar has room for "Live", not for "Live for guests". Rendering
+           both and swapping in CSS keeps the swap free of a resize listener. -->
       <span class="activation-pill__label">{{ t(`management.activation.pill.${state}`) }}</span>
+      <span class="activation-pill__label-short">{{ t(`management.activation.pill.short.${state}`) }}</span>
     </span>
 
     <!-- Action half: only where there's something to do about it. -->
@@ -15,7 +19,7 @@
       @click="emit('activate')"
     >
       <Sparkles class="w-3.5 h-3.5 flex-shrink-0" />
-      <span>
+      <span class="activation-pill__cta-label">
         {{ t('management.activation.pill.activateCta') }}
         <template v-if="price"> · {{ formatCurrency(price, 'USD') }}</template>
       </span>
@@ -111,10 +115,15 @@ const stateIcon = computed(() => {
   min-width: 0;
 }
 
-.activation-pill__label {
+.activation-pill__label,
+.activation-pill__label-short {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.activation-pill__label-short {
+  display: none;
 }
 
 /* --- no template --------------------------------------------------------- */
@@ -179,7 +188,7 @@ const stateIcon = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  flex-shrink: 0;
+  min-width: 0;
   height: 1.75rem;
   padding: 0 0.75rem;
   border-radius: 9999px;
@@ -190,6 +199,13 @@ const stateIcon = computed(() => {
   background: rgb(180 83 9);
   box-shadow: 0 2px 4px -1px rgba(120, 53, 15, 0.35);
   transition: all 0.2s ease;
+}
+
+/* Truncates rather than pushing the toolbar's actions off a narrow screen — a
+   three-digit price is the only realistic way this row runs out of room. */
+.activation-pill__cta-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .activation-pill__cta:hover {
@@ -213,13 +229,27 @@ const stateIcon = computed(() => {
   opacity: 1;
 }
 
-/* Tight header rows: drop to the icon/dot plus the CTA. The full wording stays
-   available as the activation tab's stepper, which has room for it. Same
-   breakpoint as the studio toolbar's Templates button label, so the whole row
-   collapses to icons together rather than one control at a time. */
+/* Phone: this is a badge, not a sentence.
+   In the studio's mobile toolbar it shares ~358px with Templates and Preview,
+   and it is the one control there that reports rather than does — so it gives
+   up its wording first. The short label keeps it a status indicator (a bare
+   dot reports nothing); the trailing link goes because the Activation tab is
+   one tap away in the tab bar directly above. */
 @media (max-width: 640px) {
   .activation-pill__label,
   .activation-pill__link {
+    display: none;
+  }
+
+  .activation-pill__label-short {
+    display: inline;
+  }
+
+  /* The icon goes with the wording it was decorating: "In review" in amber
+     needs no clock beside it, and those ~20px are the difference between this
+     row fitting a 360px phone and not. The live dot is a separate element and
+     stays — it is the signal, not decoration. */
+  .activation-pill__icon {
     display: none;
   }
 
@@ -229,8 +259,20 @@ const stateIcon = computed(() => {
     display: none;
   }
 
-  /* These two lose their trailing link, leaving only the status icon — even the
-     padding back up so the pill doesn't sit off-centre inside itself. */
+  /* Unpaid is the one state carrying an action, and here the action *is* the
+     message: an amber "Activate · $15" says "not live yet" on its own, while
+     "Preview only" beside it says the same thing twice and costs ~90px in the
+     row's widest state — the state that used to push Preview off the end. */
+  .activation-pill--unpaid .activation-pill__status {
+    display: none;
+  }
+
+  .activation-pill--unpaid {
+    padding-left: 0.25rem;
+  }
+
+  /* These two lose their trailing link — even the padding back up so the pill
+     doesn't sit off-centre inside itself. */
   .activation-pill--pending,
   .activation-pill--active {
     padding-right: 0.75rem;

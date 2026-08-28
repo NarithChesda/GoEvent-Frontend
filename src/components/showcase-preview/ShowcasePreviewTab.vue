@@ -160,7 +160,15 @@
            Sticky, because the edit surface below it is ~10 accordion sections
            long and Preview has to stay one tap away from wherever you are in
            it. -->
-      <div v-else class="studio-mobile-bar">
+      <div
+        v-else
+        class="premium-chrome studio-mobile-bar"
+        :class="{ 'is-activation-cta': showsActivationCta }"
+      >
+        <!-- Reports; doesn't do. So it leads the row as a badge and gives up
+             its width to the two actions (see ActivationStatusPill's ≤640px
+             block). The one exception is the unpaid state, where it turns into
+             the activate CTA and earns the room. -->
         <ActivationStatusPill
           v-if="activationResolved"
           :state="activationState"
@@ -170,8 +178,45 @@
           @view-payment="emit('open-activation')"
         />
 
-        <span v-else class="studio-mobile-bar__spacer" />
+<!-- Auto-fill, hoisted out of the content stack below and into this row's
+             slack. It was a full-width card there, which is a lot of permanent
+             height for a *bootstrap* action — used once or twice per event, then
+             never again — while this row had ~60px going spare. The card's
+             wording is not lost: the confirm dialog it opens says the same thing
+             before anything is written. EventMediaTab drops its own copy (see
+             `hide-populate`) and this one reports the write back through the
+             ref. -->
+        <PopulateFromTemplateCard
+          v-if="canEdit"
+          :event="eventData"
+          :can-edit="canEdit"
+          variant="icon"
+          @populated="onPopulated"
+        />
 
+        <!-- Preview: deliberately NOT a FAB — the bottom-right corner on mobile
+             is already a coordinated stack (MobileTabBar's floating pill at
+             z-70, the primary FAB slot at --fab-bottom, ContactUsFAB in
+             --fab-stack-2 above it via its own hasFabBelow prop), so a fourth
+             floating button there would either hide under the tab bar or force
+             this tab to negotiate that stack from the inside.
+             Glass and icon-only, like auto-fill beside it: with four controls
+             the row only has room for one label, and it belongs to Templates.
+             An eye is the least ambiguous of the three glyphs. -->
+        <button
+          v-if="canViewLivePreview && eventData?.id && templateResolved"
+          type="button"
+          class="studio-preview-btn"
+          :title="t('management.showcasePreview.mobilePreview.open')"
+          :aria-label="t('management.showcasePreview.mobilePreview.open')"
+          @click="openMobilePreview"
+        >
+          <Eye class="w-4 h-4 flex-shrink-0" />
+        </button>
+
+        <!-- The row's primary, and last so it sits under the thumb. Choosing a
+             design is the decision the whole tab exists to serve; everything
+             below it edits content *into* that choice. -->
         <button
           v-if="canEdit"
           type="button"
@@ -182,24 +227,6 @@
         >
           <Palette class="w-4 h-4" />
           <span>{{ t('management.templatePaymentTab.browseBtn.templates') }}</span>
-        </button>
-
-        <!-- The mobile studio's primary action, and deliberately NOT a FAB:
-             the bottom-right corner on mobile is already a coordinated stack
-             (MobileTabBar's floating pill at z-70, the primary FAB slot at
-             --fab-bottom, ContactUsFAB in --fab-stack-2 above it via its own
-             hasFabBelow prop), so a fourth floating button there would either
-             hide under the tab bar or force this tab to negotiate that stack
-             from the inside. It also belongs here on the merits — it's a view
-             control, next to the other view control. -->
-        <button
-          v-if="canViewLivePreview && eventData?.id && templateResolved"
-          type="button"
-          class="studio-preview-btn"
-          @click="openMobilePreview"
-        >
-          <Eye class="w-4 h-4 flex-shrink-0" />
-          <span>{{ t('management.showcasePreview.mobilePreview.open') }}</span>
         </button>
       </div>
 
@@ -218,12 +245,14 @@
 
         <div v-if="canEdit" class="showcase-studio__mobile-body">
           <EventMediaTab
+            ref="mobileMediaTabRef"
             :event-id="eventId"
             :can-edit="canEdit"
             :initial-media="eventData?.photos || []"
             :event-data="eventData"
             :show-category-specific-sections="showCategorySpecificSections"
             hide-header
+            hide-populate
             @media-updated="onMediaUpdated"
             @event-updated="onEditorSaved"
             @content-refreshed="onEditorSaved()"
@@ -430,6 +459,7 @@ import MobilePreviewSheet from './MobilePreviewSheet.vue'
 import PreviewEditorHost from './editors/PreviewEditorHost.vue'
 import BrowseTemplateModal from '../BrowseTemplateModal.vue'
 import EventMediaTab from '../EventMediaTab.vue'
+import PopulateFromTemplateCard from '../PopulateFromTemplateCard.vue'
 import ActivationStatusPill from '../template/ActivationStatusPill.vue'
 import PaymentDrawer from '../template/PaymentDrawer.vue'
 import {
@@ -490,6 +520,14 @@ const {
   loadPayments: loadActivationPayments,
   refreshPayments: refreshActivationPayments,
 } = useTemplateActivation(() => props.eventData)
+
+/**
+ * The one state where the status badge expands into a real CTA — and therefore
+ * the one where the mobile toolbar has to buy that width back from Preview.
+ */
+const showsActivationCta = computed(
+  () => activationResolved.value && activationState.value === 'unpaid' && props.canEdit,
+)
 
 const showPaymentDrawer = ref(false)
 
@@ -1231,6 +1269,19 @@ const onEditorSaved = (updated?: Event) => {
   if (updated) emit('event-updated', updated)
 }
 
+/**
+ * The mobile toolbar owns the auto-fill trigger (EventMediaTab renders none —
+ * see `hide-populate`), so the write has to be reported back into the form
+ * stack by hand. `refreshContent` is what EventMediaTab runs for its own copy
+ * of the card, so both paths end in exactly the same refetch.
+ */
+const mobileMediaTabRef = ref<InstanceType<typeof EventMediaTab> | null>(null)
+
+const onPopulated = () => {
+  mobileMediaTabRef.value?.refreshContent()
+  onEditorSaved()
+}
+
 onMounted(() => {
   loadTemplateAssets()
   // The activation state gates the header pill and the frame watermark, so it
@@ -1557,6 +1608,7 @@ defineExpose({
   z-index: 30;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.5rem;
   /* Negative top margin cancels EventManageView's own `py-6` on the content
      section. Without it this row floated 24px below the fixed tab bar at rest —
@@ -1568,9 +1620,14 @@ defineExpose({
   padding: 0.5rem 1rem;
   /* Opaque, not glass: this is fixed chrome that scrolling form cards pass
      directly behind, and at 0.92 alpha their text read through it (and through
-     the tab labels above). Same gradient as EventManageMobileTabBar's, so the
-     two surfaces are one continuous header block. */
-  background: linear-gradient(135deg, #f8fffe 0%, #f0fdf9 50%, #f0f9ff 100%);
+     the tab labels above). The fill comes from `.premium-chrome` (MainLayout) —
+     the page's own background stack sized to the viewport — so this row, the tab
+     bar and the header are three windows onto one continuous background rather
+     than three flat gradients that can't match it or each other. The offset is
+     this row's own stuck position, i.e. the `top` above; at rest it starts flush
+     against the tab bar (that's what the negative margin buys), so the same
+     offset is right before it sticks too. */
+  --premium-chrome-top: calc(4rem + var(--manage-tabbar-h, 52px) - 1px);
   border-bottom: 1px solid rgba(148, 163, 184, 0.15);
 }
 
@@ -1580,67 +1637,68 @@ defineExpose({
   }
 }
 
-.studio-mobile-bar__spacer {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-/* ActivationStatusPill's own ≤640px rule drops its wording, which is right in
-   the desktop toolbar (four controls competing for one row) but here left a
-   bare pulsing dot — a status indicator showing no status. This row has the
-   slack, so the label comes back; the pill takes up the slack and ellipsizes
-   on the widest state (unpaid, which also carries an Activate CTA) instead of
-   pushing the buttons off the row. */
+/* The badge is pushed left by its own auto margin rather than by a spacer
+   element: a spacer is a flex child, so it costs a second `gap` (8px) that this
+   row cannot spare at 360px — and without one the actions still sit right when
+   activation hasn't resolved and there is no badge at all. It keeps its natural
+   size but may shrink; see the pill's own ellipsis rule. */
 .studio-mobile-bar :deep(.activation-pill) {
-  flex: 1 1 auto;
+  margin-right: auto;
   min-width: 0;
+  flex-shrink: 1;
 }
 
-.studio-mobile-bar :deep(.activation-pill__label) {
-  display: block;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-/* Templates steps down to a glass icon button here: Preview is this row's
-   primary action (the edit forms are already the page), and two gradient
-   buttons 8px apart read as two competing primaries — the same reasoning that
-   makes the desktop activation CTA amber. */
+/* Templates keeps its full pill here — it is the row's primary, and a lone
+   palette glyph is the least legible icon of the three. This undoes the global
+   ≤640px icon-only rule below, which exists for the desktop header's copy of
+   the same button (that header never renders this narrow in practice, but the
+   rule is the one that would apply if it did). */
 .studio-mobile-bar .showcase-preview-tab__templates-btn {
-  width: var(--studio-control-h);
-  padding: 0;
-  color: rgb(71 85 105);
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  box-shadow: none;
+  width: auto;
+  padding: 0 0.9375rem;
 }
 
 .studio-mobile-bar .showcase-preview-tab__templates-btn span {
-  display: none;
+  display: inline;
 }
 
+/* Preview, in the same glass as the auto-fill button beside it — the two are
+   siblings in weight, both secondary to Templates. Square, because it is
+   icon-only: see the template. */
 .studio-preview-btn {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4375rem;
+  width: var(--studio-control-h);
   height: var(--studio-control-h);
-  padding: 0 1rem;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: white;
-  white-space: nowrap;
-  background: linear-gradient(to right, #2ecc71, #1e90ff);
+  color: rgb(51 65 85);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 9999px;
-  box-shadow: 0 4px 6px -1px rgba(46, 204, 113, 0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1), background-color 0.16s ease;
 }
 
 .studio-preview-btn:active {
   transform: scale(0.97);
-  box-shadow: 0 2px 4px -1px rgba(46, 204, 113, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* One label per row, and it goes to whatever most needs doing. Normally that is
+   Templates. In the unpaid state the badge becomes a full "Activate · $15.00"
+   CTA — 147px, and the row cannot carry that plus a second label on a 360px
+   phone — so the label moves there and Templates falls back to its icon. It is
+   the honest hierarchy too: until this is paid for, nothing the other three
+   buttons do reaches a single guest. */
+.studio-mobile-bar.is-activation-cta .showcase-preview-tab__templates-btn {
+  width: var(--studio-control-h);
+  padding: 0;
+}
+
+.studio-mobile-bar.is-activation-cta .showcase-preview-tab__templates-btn span {
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1747,9 +1805,9 @@ defineExpose({
   transform: translateY(0);
 }
 
-/* Narrow: the label goes, the palette icon stays — matching how the activation
-   pill drops its own label at the same width, so the whole row shrinks as one
-   thing instead of one control at a time. */
+/* Narrow: the label goes, the palette icon stays. Only the desktop header's
+   copy of this button can reach this width — the mobile toolbar's copy opts
+   back out above, since there it is the primary action. */
 @media (max-width: 640px) {
   .showcase-preview-tab__templates-btn {
     padding: 0;
