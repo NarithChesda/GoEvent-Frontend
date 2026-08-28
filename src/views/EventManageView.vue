@@ -39,9 +39,12 @@
     />
 
     <!-- Loading Top Bar Skeleton (only show when loading and no event data) -->
-    <!-- Matches EventManageTopBar's own resting surface: opaque below `lg`,
-         transparent from `lg` so the page background runs through it. -->
-    <div v-if="loading && !event" class="fixed top-0 left-0 right-0 z-50 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/50 shadow-sm lg:bg-transparent lg:border-transparent lg:shadow-none">
+    <!-- Matches EventManageTopBar's own resting surface: the page's own
+         background below `lg` (see `.premium-chrome`), fully transparent from
+         `lg` so the page background runs through it. Otherwise the first thing
+         drawn on entry is a white slab that swaps for a seamless bar the moment
+         the event arrives. -->
+    <div v-if="loading && !event" class="manage-header-skeleton premium-chrome fixed top-0 left-0 right-0 z-50 h-16 border-b border-slate-200/50 shadow-sm lg:border-transparent lg:shadow-none">
       <div class="flex items-center justify-between h-full px-4 sm:px-6">
         <div class="flex items-center gap-3 animate-pulse">
           <div class="w-10 h-10 lg:w-12 lg:h-12 bg-slate-200 rounded-xl"></div>
@@ -1064,6 +1067,15 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* Scoped so it outranks the global `.premium-chrome` it is undoing — a Tailwind
+   `lg:bg-none` would be the same specificity as that class and decided by
+   stylesheet order. */
+@media (min-width: 1024px) {
+  .manage-header-skeleton {
+    background: none;
+  }
+}
+
 .prose p {
   margin-bottom: 1rem;
 }

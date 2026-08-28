@@ -7,23 +7,16 @@
        entirely. -->
   <div
     ref="rootRef"
-    class="lg:hidden fixed top-16 left-0 right-0 z-40 glass-manage-mobile-tabs tab-bar-container"
+    class="lg:hidden fixed top-16 left-0 right-0 z-40 premium-chrome glass-manage-mobile-tabs tab-bar-container"
   >
     <div class="relative">
-      <!-- Left scroll fade -->
-      <div
-        class="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-[#f8fffe]/90 via-[#f8fffe]/50 to-transparent pointer-events-none z-10"
-      ></div>
-
-      <!-- Right scroll fade -->
-      <div
-        class="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[#f0f9ff]/90 via-[#f0f9ff]/50 to-transparent pointer-events-none z-10"
-      ></div>
-
-      <!-- Scrollable tabs -->
+      <!-- Scrollable tabs. The ends fade out to show the row scrolls — done by
+           masking the row itself rather than by laying a colour-matched
+           gradient over each end, because the bar's fill is the page's own
+           background (see `.premium-chrome`) and no flat hex can match it. -->
       <div
         ref="tabContainer"
-        class="flex overflow-x-auto scrollbar-hide px-2 py-1 gap-1"
+        class="tabs-scroller flex overflow-x-auto scrollbar-hide px-2 py-1 gap-1"
         role="tablist"
         aria-label="Event detail sections"
       >
@@ -216,16 +209,38 @@ const handleKeyboard = (event: KeyboardEvent, index: number) => {
   display: none;
 }
 
-/* Matches EventManageTopBar's surface for a seamless connection with it.
-   Opaque rather than glass. This bar is fixed over a scrolling page, and at
+/* Opaque rather than glass: this bar is fixed over a scrolling page, and at
    0.9 alpha the content passing behind it stayed legible *through* the tab
    labels — blur(20px) softens that content but doesn't stop it competing with
-   the text on top of it. The gradient is unchanged, so at rest (nothing behind
-   it but the page's own brand-tinted background) this looks the same as before;
-   it only differs while scrolling, which is exactly the case it was failing. */
+   the text on top of it.
+
+   The fill comes from `.premium-chrome` (MainLayout), the page's own background
+   stack sized to the viewport, so this bar and the header above it are two
+   windows onto one continuous background instead of two flat gradients of their
+   own. `--premium-chrome-top` is this bar's `top-16`. */
 .glass-manage-mobile-tabs {
-  background: linear-gradient(135deg, #f8fffe 0%, #f0fdf9 50%, #f0f9ff 100%);
+  --premium-chrome-top: 4rem;
   /* Bottom border for separation from content */
   border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+/* 1.5rem is the row's own `px-2` plus the first button's `px-4`, i.e. exactly
+   where the first label starts — so on a short tab list that doesn't overflow,
+   the fade falls entirely on padding and nothing looks dimmed. */
+.tabs-scroller {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 1.5rem,
+    #000 calc(100% - 1.5rem),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 1.5rem,
+    #000 calc(100% - 1.5rem),
+    transparent 100%
+  );
 }
 </style>
