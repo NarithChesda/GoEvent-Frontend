@@ -20,50 +20,87 @@
         class="hidden md:block w-4 h-4 rounded border-slate-300 text-sky-500 focus:ring-2 focus:ring-sky-200 focus:ring-offset-0 cursor-pointer flex-shrink-0 transition-colors"
       />
 
-      <!-- Initials avatar tinted with the guest's group color; tap to select
-           (flips to a checkmark). ::after pad extends the touch target to ~44px. -->
+      <!-- Initials avatar tinted with the guest's group color. Below `md` it
+           doubles as the selection toggle and flips to a checkmark, because
+           there is no checkbox at that width. From `md` up the checkbox is
+           back, and flipping here too put *two* ticks on one row — so the
+           avatar keeps its initials and the checkbox alone carries the state.
+           ::after pad extends the touch target to ~44px. -->
       <button
         type="button"
         @click.stop="$emit('toggle-select', guest)"
-        class="relative flex w-8 h-8 sm:w-9 sm:h-9 rounded-full items-center justify-center text-[11px] sm:text-xs font-bold flex-shrink-0 select-none transition-all duration-200 after:absolute after:-inset-1.5 after:content-[''] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-        :style="selected ? {} : { backgroundColor: `${avatarColor}1a`, color: avatarColor }"
-        :class="{ 'bg-sky-500 text-white': selected }"
+        class="relative flex w-8 h-8 sm:w-9 sm:h-9 rounded-full items-center justify-center text-[11px] sm:text-xs font-bold flex-shrink-0 select-none transition-[background-color,color] duration-150 ease-out after:absolute after:-inset-1.5 after:content-[''] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+        :style="{ backgroundColor: `${avatarColor}1a`, color: avatarColor }"
+        :class="selected ? 'max-md:!bg-sky-500 max-md:!text-white' : ''"
         :aria-pressed="selected"
         :title="t('management.guestGroupsView.guestListItem.selectHint')"
         :aria-label="`${t('management.guestGroupsView.guestListItem.selectHint')} - ${guest.name}`"
       >
-        <Check v-if="selected" class="w-4 h-4" />
-        <template v-else>{{ guestInitials }}</template>
+        <Check v-if="selected" class="w-4 h-4 md:hidden" />
+        <span :class="selected ? 'hidden md:inline' : ''">{{ guestInitials }}</span>
+
+        <!-- Invitation status, mobile only. The pill this replaces cost ~83px
+             of a ~260px badge row and pushed most rows onto a second line; as
+             a corner dot it costs nothing and says *more* — the pill collapsed
+             sent and viewed into one "Sent" label and drew nothing at all for
+             not-yet-sent. The three colours are the ones GuestStatsCard's
+             donut legend already teaches at the top of this panel, so the key
+             is on screen. Hidden while selected: the avatar is a checkmark
+             then, and a status dot on it reads as a second control. -->
+        <span
+          v-if="!selected"
+          class="md:hidden absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ring-2 ring-white"
+          :class="invitationDot.dotClass"
+          aria-hidden="true"
+        ></span>
       </button>
 
       <!-- Guest Info (grows to fill space; part of the card's tap target —
-           renaming happens in the edit modal) -->
-      <div class="flex-1 min-w-0">
-        <p class="font-semibold text-slate-900 truncate">{{ guest.name }}</p>
+           renaming happens in the edit modal).
 
-        <!-- Badges under name -->
-        <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+           Two lines on a phone, where the name needs the full width. From `lg`
+           up it becomes one line and the badges move out onto the row's own
+           axis: the panel is ~1024px there, so a stacked card left everything
+           bunched at the left edge with a few hundred pixels of nothing before
+           the actions. `lg:ml-auto` on the badge cluster parks it against the
+           actions, which also gives every row's badges a common right edge to
+           scan down. -->
+      <div class="flex-1 min-w-0 lg:flex lg:items-center lg:gap-3">
+        <p class="font-semibold text-slate-900 truncate lg:flex-shrink lg:min-w-0">{{ guest.name }}</p>
+
+        <!-- The dot's meaning in words, so the state is never colour-only.
+             It lives here rather than inside the avatar button because that
+             button carries an explicit `aria-label`, which would override
+             any text nested in it. Mobile only: from `md` up the visible
+             "Sent" pill below already says it, and both would be read out. -->
+        <span class="md:hidden sr-only">{{ invitationDot.label }}</span>
+
+        <!-- Badges: under the name on a phone, on the same line from `lg` -->
+        <div class="flex items-center gap-1.5 mt-1 flex-wrap lg:mt-0 lg:ml-auto lg:flex-nowrap lg:flex-shrink-0">
           <!-- Group badge (click/tap to reassign) -->
           <button
             v-if="guest.group_details"
             ref="groupBadgeRef"
             type="button"
             @click.stop="toggleGroupPopover"
-            class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+            class="relative inline-flex items-center gap-1.5 px-2 py-1 md:py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] md:after:hidden"
             :title="t('management.guestGroupsView.guestListItem.changeGroupHint')"
           >
             <span
               class="w-1.5 h-1.5 rounded-full flex-shrink-0"
               :style="{ backgroundColor: guest.group_details.color || '#64748b' }"
             ></span>
-            <span class="truncate max-w-[80px]">{{ guest.group_details.name }}</span>
+            <!-- Tighter cap below `md`, where the badge row has ~217px to
+                 hold the group and the RSVP reply on one line. -->
+            <span class="truncate max-w-[72px] md:max-w-[80px]">{{ guest.group_details.name }}</span>
             <ChevronDown class="w-2.5 h-2.5 text-slate-400 flex-shrink-0" />
           </button>
 
-          <!-- Sent status badge -->
+          <!-- Sent status badge. Desktop only — on mobile this is the avatar's
+               corner dot above, which is what keeps the badge row to one line. -->
           <div
             v-if="guest.invitation_status === 'sent' || guest.invitation_status === 'viewed'"
-            class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-medium"
+            class="hidden md:inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-medium"
             :title="t('management.guestGroupsView.guestListItem.invitationSent')"
           >
             <CheckCheck class="w-3 h-3" />
@@ -77,7 +114,10 @@
             :class="rsvpBadge.classes"
             :title="rsvpBadge.title"
           >
-            <component :is="rsvpBadge.icon" class="w-3 h-3" />
+            <!-- The glyph is redundant with the label it sits beside — the
+                 badge is never colour-only — so mobile spends those ~16px on
+                 keeping the row to one line instead. -->
+            <component :is="rsvpBadge.icon" class="hidden md:block w-3 h-3" />
             <span>{{ rsvpBadge.label }}</span>
             <span
               v-if="rsvpBadge.plusOnes"
@@ -112,7 +152,7 @@
       <!-- Mobile Copy Link Button (right side) -->
       <button
         @click.stop="handleMobileCopyLink"
-        class="md:hidden px-3 py-1.5 text-xs font-semibold flex-shrink-0 rounded-full transition-all duration-200"
+        class="md:hidden relative px-3 py-1.5 text-xs font-semibold flex-shrink-0 rounded-full transition-all duration-200 after:absolute after:-inset-y-2 after:inset-x-0 after:content-['']"
         :class="showCopiedFeedback
           ? 'text-emerald-700 bg-emerald-100'
           : 'text-slate-600 bg-slate-100 hover:bg-slate-200 active:bg-slate-300'"
@@ -353,6 +393,34 @@ const handleMobileCopyLink = () => {
     showCopiedFeedback.value = false
   }, 1500)
 }
+
+/**
+ * Invitation status as the avatar's corner dot (mobile).
+ *
+ * The three colours are deliberately the ones GuestStatsCard uses for its
+ * donut legend — emerald `viewed`, sky `awaiting`, slate `pending` — so the
+ * band at the top of the panel doubles as this dot's key and nothing has to
+ * be learned twice. The dot is `aria-hidden`; the label beside it carries the
+ * meaning for assistive tech, so the state is never colour-only.
+ */
+const invitationDot = computed(() => {
+  if (props.guest.invitation_status === 'viewed') {
+    return {
+      dotClass: 'bg-emerald-600',
+      label: t('management.guestGroupsView.guestListItem.invitationViewed'),
+    }
+  }
+  if (props.guest.invitation_status === 'sent') {
+    return {
+      dotClass: 'bg-sky-600',
+      label: t('management.guestGroupsView.guestListItem.invitationSent'),
+    }
+  }
+  return {
+    dotClass: 'bg-slate-300',
+    label: t('management.guestGroupsView.guestListItem.invitationNotSent'),
+  }
+})
 
 // RSVP badge config — drives the badge rendered next to the existing
 // group / sent / cash-gift badges. Hidden for `pending` (default state)

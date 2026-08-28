@@ -34,94 +34,115 @@
       :aria-label="`${activeFilter === 'all' ? t('management.guestGroupsView.filterBar.allGroups') : groups.find(g => g.id.toString() === activeFilter)?.name || ''} ${t('management.guestGroupsView.filterBar.guestsPanelSuffix')}`"
       class="rounded-3xl bg-white ring-1 ring-slate-900/5 shadow-sm"
     >
-      <!-- Guest Statistics band (donut + legend) — the panel's header row -->
+      <!-- Panel header.
+           Two stacked bands until `2xl`, where the panel is ~960px and both
+           bands were half-empty; there they sit side by side as one row —
+           status on the left, tools on the right — and the horizontal rule
+           between them becomes a vertical one. The two blocks stay siblings
+           rather than being merged into one, so nothing is duplicated and the
+           selection bar keeps covering only the tools. -->
+      <div class="2xl:flex 2xl:items-stretch">
+      <!-- Guest Statistics band (meter + legend) -->
       <section
-        class="border-b border-slate-100"
+        class="border-b border-slate-100 2xl:flex-none 2xl:border-b-0 2xl:border-r"
         :aria-label="t('management.guestGroupsView.statsCard.invitedGuests')"
       >
         <GuestStatsCard :stats="guestStats" :loading="loadingStats" />
       </section>
 
-      <!-- Filter and Actions Header -->
-      <div>
-          <!-- Search Row (Mobile Only - appears first on mobile) -->
-          <div class="p-3 pb-0 sm:hidden">
-            <div class="relative">
-              <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              <input
-                ref="searchInputRef"
-                id="guest-search"
-                type="text"
-                v-model="groupSearchQuery"
-                @input="handleGroupSearch"
-                :placeholder="t('management.guestGroupsView.filterBar.searchPlaceholder')"
-                :aria-label="t('management.guestGroupsView.filterBar.searchAriaLabel')"
-                class="w-full pl-9 pr-8 py-2 bg-slate-50 border border-transparent rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
-              />
-              <button
-                v-if="groupSearchQuery"
-                @click="clearGroupSearch"
-                class="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 rounded transition-colors"
-              >
-                <X class="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
+      <!-- Filter and Actions Header.
+           The ring is a fixed-size object, so the stats take their natural
+           width and the tools take everything left over — the reverse of the
+           split the meter needed, and it hands the search field back the room
+           a fixed 27rem column had been holding. -->
+      <div class="2xl:min-w-0 2xl:flex-1">
+          <!-- Toolbar.
+               One row, and the group filter lives *inside* the search field
+               rather than on a row of its own. The filter narrows exactly the
+               result set the query narrows, so they are one control; split
+               across two rows they read as two unlabelled glyphs with a dead
+               gap between them, which is what the old layout was.
 
-          <!-- Filter and Actions Row -->
-          <div class="flex items-center gap-3 p-3">
-            <!-- Select All Checkbox -->
-            <label class="flex items-center cursor-pointer group flex-shrink-0">
-              <input
-                type="checkbox"
-                :checked="isAllCurrentPageSelected"
-                :indeterminate.prop="totalSelectedCount > 0 && !isAllCurrentPageSelected"
-                @change="handleToggleSelectAll"
-                class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-2 focus:ring-emerald-500/20 focus:ring-offset-0 cursor-pointer transition-colors"
-              />
-            </label>
-
-            <!-- Filter Dropdown -->
-            <div class="relative" ref="tabsContainer">
-              <!-- Mobile: icon-only trigger (gradient when a filter is active) -->
-              <button
-                @click="isDropdownOpen = !isDropdownOpen"
-                class="sm:hidden flex items-center justify-center w-10 h-10 rounded-full transition-all"
-                :class="!hasActiveFilter
-                  ? 'bg-slate-50 text-slate-600 hover:bg-slate-100'
-                  : 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'"
-                :title="t('management.guestGroupsView.filterBar.filterByGroup')"
-                :aria-label="t('management.guestGroupsView.filterBar.filterByGroup')"
+               `relative`, because the selection bar sits *over* this row at
+               the same height rather than pushing it down — changing mode
+               must not reflow the panel under the finger that caused it. -->
+          <!-- `sm:p-4` matches the stats band above (`sm:px-4`) and the list
+               below (`p-3 sm:p-4`). At `p-3` alone the toolbar sat 3px inside
+               every other row in the panel, so the search field's left edge
+               missed the donut's and the guest cards' by the same 3px — the
+               kind of misalignment you feel as "off" before you can name it. -->
+          <div class="relative p-3 sm:p-4">
+            <div
+              class="flex items-center gap-2 transition-opacity duration-150 ease-out"
+              :class="hasSelection ? 'opacity-0 pointer-events-none' : 'opacity-100'"
+              :aria-hidden="hasSelection"
+              :inert="hasSelection || undefined"
+            >
+              <!-- Query and filter, one field. It fills the row rather than
+                   sitting at a fixed measure: the page caps the panel at
+                   `max-w-5xl`, so there is no runaway width to guard against,
+                   and a capped field just moved the emptiness from the field's
+                   inside to the gap beside it. -->
+              <div
+                class="flex-1 min-w-0 flex items-center rounded-xl bg-slate-50 ring-1 ring-transparent transition-[background-color,box-shadow] duration-150 ease-out focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-200"
               >
-                <Filter class="w-4 h-4" />
-              </button>
-
-              <!-- Desktop: labeled trigger -->
-              <button
-                @click="isDropdownOpen = !isDropdownOpen"
-                class="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors"
-              >
-                <Filter v-if="activeFilter === 'all'" class="w-4 h-4 text-slate-400 flex-shrink-0" />
-                <span
-                  v-else
-                  class="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                  :style="{ backgroundColor: groups.find(g => g.id.toString() === activeFilter)?.color || '#3498db' }"
-                ></span>
-                <span class="truncate max-w-[7.5rem]">
-                  {{ activeFilter === 'all' ? t('management.guestGroupsView.filterBar.allGroups') : groups.find(g => g.id.toString() === activeFilter)?.name || t('management.guestGroupsView.filterBar.select') }}
-                </span>
-                <!-- RSVP status reads as a second, independent axis, so it
-                     gets its own chip rather than replacing the group label -->
-                <span
-                  v-if="activeRsvpOption"
-                  class="flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold flex-shrink-0"
-                  :class="activeRsvpOption.chipClass"
+                <Search class="ml-3 mr-2 w-4 h-4 text-slate-400 flex-shrink-0 pointer-events-none" />
+                <input
+                  ref="searchInputRef"
+                  id="guest-search"
+                  type="text"
+                  v-model="groupSearchQuery"
+                  @input="handleGroupSearch"
+                  :placeholder="t('management.guestGroupsView.filterBar.searchPlaceholder')"
+                  :aria-label="t('management.guestGroupsView.filterBar.searchAriaLabel')"
+                  class="min-w-0 flex-1 bg-transparent border-0 p-0 py-3 sm:py-2.5 text-base sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0"
+                />
+                <button
+                  v-if="groupSearchQuery"
+                  @click="clearGroupSearch"
+                  :aria-label="t('management.guestGroupsView.filterBar.clearSearch')"
+                  class="flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 flex-shrink-0 text-slate-400 hover:text-slate-600 rounded-lg transition-colors"
                 >
-                  <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="activeRsvpOption.dotClass" aria-hidden="true"></span>
-                  {{ activeRsvpOption.label }}
-                </span>
-                <ChevronDown class="w-4 h-4 text-slate-400 transition-transform flex-shrink-0" :class="{ 'rotate-180': isDropdownOpen }" />
-              </button>
+                  <X class="w-4 h-4" />
+                </button>
+
+                <!-- Hairline between the query and the filter that narrows it:
+                     one field, two jobs. -->
+                <div class="w-px h-5 bg-slate-200 flex-shrink-0" aria-hidden="true"></div>
+
+                <!-- Filter Dropdown -->
+                <div class="relative flex-shrink-0" ref="tabsContainer">
+                  <button
+                    @click="isDropdownOpen = !isDropdownOpen"
+                    class="flex items-center gap-1.5 h-11 sm:h-10 pl-2.5 pr-2.5 sm:pr-3 rounded-r-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 active:scale-[0.98] transition-[color,background-color,transform] duration-150 ease-out"
+                    :aria-expanded="isDropdownOpen"
+                    :title="t('management.guestGroupsView.filterBar.filterByGroup')"
+                    :aria-label="t('management.guestGroupsView.filterBar.filterByGroup')"
+                  >
+                    <!-- Unfiltered: the funnel. Filtered: the group's own
+                         colour, which says *which* filter without the label
+                         a phone has no width for. -->
+                    <Filter v-if="activeFilter === 'all'" class="w-4 h-4 flex-shrink-0" />
+                    <span
+                      v-else
+                      class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                      :style="{ backgroundColor: groups.find(g => g.id.toString() === activeFilter)?.color || '#3498db' }"
+                    ></span>
+                    <span v-if="activeFilter !== 'all'" class="hidden sm:inline truncate max-w-[7.5rem] text-slate-900">
+                      {{ groups.find(g => g.id.toString() === activeFilter)?.name || t('management.guestGroupsView.filterBar.select') }}
+                    </span>
+                    <!-- RSVP status is a second, independent axis, so it gets
+                         its own chip rather than replacing the group label. -->
+                    <span
+                      v-if="activeRsvpOption"
+                      class="flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold flex-shrink-0"
+                      :class="activeRsvpOption.chipClass"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="activeRsvpOption.dotClass" aria-hidden="true"></span>
+                      <span class="hidden sm:inline">{{ activeRsvpOption.label }}</span>
+                    </span>
+                    <ChevronDown class="w-4 h-4 text-slate-400 transition-transform duration-150 flex-shrink-0" :class="{ 'rotate-180': isDropdownOpen }" />
+                  </button>
 
               <!-- Dropdown Menu (desktop) -->
               <Transition name="dropdown">
@@ -400,88 +421,129 @@
                     <Check v-if="activeRsvpStatus === option.key" class="w-5 h-5 text-[#2ecc71] flex-shrink-0" />
                   </button>
                 </div>
-              </MobileBottomSheet>
+                  </MobileBottomSheet>
+                </div>
+                <!-- /filter -->
+              </div>
+              <!-- /query + filter field -->
+
+              <!-- How many the query and filter left, and *only* then. The old
+                   toolbar showed "8 / 8" permanently, which restates the stats
+                   band two rows above; the number is worth saying exactly when
+                   it stops matching the total. -->
+              <span
+                v-if="isFiltering"
+                class="flex-shrink-0 text-xs font-medium text-slate-500 tabular-nums"
+                aria-live="polite"
+              >{{ t('management.guestGroupsView.filterBar.matchCount', { shown: loadedGuestCount, total: guestStats?.total_guests ?? paginationTotal }) }}</span>
+
+              <!-- Help. Icon-only at every width now that it is the only
+                   thing between the field and the primary action. -->
+              <button
+                @click="showInstructionModal = true"
+                class="hidden sm:flex items-center justify-center w-10 h-10 flex-shrink-0 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors duration-150 ease-out"
+                :title="t('management.guestGroupsView.filterBar.helpTitle')"
+                :aria-label="t('management.guestGroupsView.filterBar.helpTitle')"
+              >
+                <Info class="w-4 h-4" />
+              </button>
+
+              <!-- Import Guests (bulk CSV/Excel).
+                   Secondary, not the brand gradient. Importing a spreadsheet
+                   happens roughly once per event; adding a guest happens all
+                   day, and that lives in the dashed quick-add row directly
+                   below. Spending the loudest treatment in the design system
+                   on the rarer of the two inverted the emphasis — the eye
+                   landed on Import before it found the list. DESIGN.md
+                   reserves the gradient for submit/save/create, and the
+                   sibling expense tab spends it on its *inline* quick-add
+                   for exactly this reason. -->
+              <button
+                @click="$emit('add-guest')"
+                class="flex items-center justify-center gap-2 w-12 h-12 sm:w-auto sm:h-auto sm:px-3.5 sm:py-2.5 bg-slate-100 hover:bg-slate-200 active:scale-[0.97] text-slate-700 text-sm font-medium rounded-xl transition-[background-color,transform] duration-150 ease-out flex-shrink-0"
+                :aria-label="t('management.guestGroupsView.filterBar.addGuestAriaLabel')"
+              >
+                <Upload class="w-4 h-4" />
+                <span class="hidden sm:inline">{{ t('management.guestGroupsView.filterBar.addGuest') }}</span>
+              </button>
             </div>
 
-            <!-- Search Input (Desktop Only) -->
-            <div class="hidden sm:block flex-1 min-w-0">
-              <div class="relative">
-                <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                <input
-                  id="guest-search-desktop"
-                  type="text"
-                  v-model="groupSearchQuery"
-                  @input="handleGroupSearch"
-                  :placeholder="t('management.guestGroupsView.filterBar.searchPlaceholder')"
-                  :aria-label="t('management.guestGroupsView.filterBar.searchAriaLabel')"
-                  class="w-full pl-9 pr-8 py-2 bg-slate-50 border border-transparent rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
-                />
-                <button
-                  v-if="groupSearchQuery"
-                  @click="clearGroupSearch"
-                  class="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 rounded transition-colors"
+            <!-- Selection bar.
+                 It takes the toolbar's place rather than stacking under it —
+                 selecting guests is a mode, and while you are in it the query
+                 and the filter are not what you want. Overlaid at the same
+                 height so the list never jumps.
+
+                 Select-all lives here too. As a permanent toolbar checkbox it
+                 was an unlabelled control that did nothing until a selection
+                 existed; here it reads as "extend this selection", which is
+                 the only moment it means anything. -->
+            <Transition name="selection-bar">
+              <div
+                v-if="hasSelection"
+                class="absolute inset-x-3 top-3 bottom-3 sm:inset-x-4 sm:top-4 sm:bottom-4 flex items-center gap-1 rounded-xl bg-sky-50 ring-1 ring-sky-100 pl-2 pr-1.5"
+              >
+                <label
+                  class="flex items-center justify-center cursor-pointer flex-shrink-0 w-10 h-10"
+                  :title="t('management.guestGroupsView.filterBar.selectAllAriaLabel')"
                 >
-                  <X class="w-3.5 h-3.5" />
+                  <input
+                    type="checkbox"
+                    :checked="isAllCurrentPageSelected"
+                    :indeterminate.prop="!isAllCurrentPageSelected"
+                    @change="handleToggleSelectAll"
+                    :aria-label="t('management.guestGroupsView.filterBar.selectAllAriaLabel')"
+                    class="w-4 h-4 text-sky-500 border-slate-300 rounded focus:ring-2 focus:ring-sky-200 focus:ring-offset-0 cursor-pointer transition-colors"
+                  />
+                </label>
+
+                <span class="min-w-0 flex-1 truncate pl-1 text-sm font-medium text-sky-900 tabular-nums">
+                  <span class="font-semibold">{{ totalSelectedCount }}</span>
+                  {{ t('management.guestGroupsView.selectionBar.selected') }}
+                </span>
+
+                <!-- Ghost buttons, not white pills. A raised pill on a tinted
+                     field reads as an object dropped onto the bar; the row
+                     actions two rows below are already ghost icons in these
+                     exact two colours, so the bar borrows their idiom. -->
+                <button
+                  @click="handleBulkMarkSent"
+                  class="flex items-center justify-center gap-1.5 h-10 w-10 sm:w-auto sm:px-3 text-sm font-semibold text-emerald-600 hover:bg-white active:scale-[0.97] rounded-lg transition-[background-color,transform] duration-150 ease-out flex-shrink-0"
+                  :aria-label="t('management.guestGroupsView.selectionBar.markSent')"
+                  :title="t('management.guestGroupsView.selectionBar.markSent')"
+                >
+                  <Send class="w-4 h-4" />
+                  <span class="hidden sm:inline">{{ t('management.guestGroupsView.selectionBar.markSent') }}</span>
+                </button>
+                <button
+                  @click="handleBulkDelete"
+                  class="flex items-center justify-center gap-1.5 h-10 w-10 sm:w-auto sm:px-3 text-sm font-semibold text-red-600 hover:bg-white active:scale-[0.97] rounded-lg transition-[background-color,transform] duration-150 ease-out flex-shrink-0"
+                  :aria-label="t('management.guestGroupsView.selectionBar.delete')"
+                  :title="t('management.guestGroupsView.selectionBar.delete')"
+                >
+                  <Trash2 class="w-4 h-4" />
+                  <span class="hidden sm:inline">{{ t('management.guestGroupsView.selectionBar.delete') }}</span>
+                </button>
+
+                <!-- Hairline before the exit. Leaving the mode sat flush
+                     against Delete, which is the one control on this bar you
+                     must never hit by accident. -->
+                <div class="w-px h-5 bg-sky-200 flex-shrink-0 mx-0.5" aria-hidden="true"></div>
+
+                <!-- The way out of the mode. Without it the only exit was
+                     deselecting every guest one at a time. -->
+                <button
+                  @click="clearSelection"
+                  class="flex items-center justify-center w-10 h-10 flex-shrink-0 text-slate-400 hover:text-slate-700 hover:bg-white rounded-lg transition-colors duration-150 ease-out"
+                  :aria-label="t('management.guestGroupsView.selectionBar.clearSelection')"
+                  :title="t('management.guestGroupsView.selectionBar.clearSelection')"
+                >
+                  <X class="w-4 h-4" />
                 </button>
               </div>
-            </div>
-
-            <!-- Guest Count -->
-            <div class="flex items-center gap-1 text-xs text-slate-400 tabular-nums flex-shrink-0">
-              <span class="font-semibold text-slate-600">{{ loadedGuestCount }}</span>
-              <span>/</span>
-              <span>{{ paginationTotal }}</span>
-            </div>
-
-            <!-- Spacer to push Add button to the right -->
-            <div class="flex-1"></div>
-
-            <!-- Help Button (Desktop Only) -->
-            <button
-              @click="showInstructionModal = true"
-              class="hidden sm:flex items-center justify-center p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all duration-200 flex-shrink-0"
-              :title="t('management.guestGroupsView.filterBar.helpTitle')"
-            >
-              <Info class="w-4 h-4" />
-            </button>
-
-            <!-- Import Guests Button (bulk CSV/Excel import — single adds happen inline via the quick-add row) -->
-            <button
-              @click="$emit('add-guest')"
-              class="flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white text-sm font-semibold rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 transition-all duration-200 flex-shrink-0"
-              :aria-label="t('management.guestGroupsView.filterBar.addGuestAriaLabel')"
-            >
-              <Upload class="w-4 h-4" />
-              <span class="hidden sm:inline">{{ t('management.guestGroupsView.filterBar.addGuest') }}</span>
-            </button>
+            </Transition>
           </div>
-
-          <!-- Selection Actions Bar - Appears when items selected -->
-          <Transition name="selection-bar">
-            <div v-if="totalSelectedCount > 0" class="px-3 pb-3">
-              <div class="flex items-center justify-between gap-3 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
-                <span class="text-xs font-medium text-emerald-800">
-                  <span class="font-bold">{{ totalSelectedCount }}</span> {{ t('management.guestGroupsView.selectionBar.selected') }}
-                </span>
-                <div class="flex items-center gap-1.5">
-                  <button
-                    @click="handleBulkMarkSent"
-                    class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-[#1e90ff] bg-white hover:bg-sky-50 rounded-lg shadow-sm ring-1 ring-slate-900/5 transition-colors"
-                  >
-                    <Send class="w-3.5 h-3.5" />
-                    <span class="hidden xs:inline">{{ t('management.guestGroupsView.selectionBar.markSent') }}</span>
-                  </button>
-                  <button
-                    @click="handleBulkDelete"
-                    class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-red-600 bg-white hover:bg-red-50 rounded-lg shadow-sm ring-1 ring-slate-900/5 transition-colors"
-                  >
-                    <Trash2 class="w-3.5 h-3.5" />
-                    <span class="hidden xs:inline">{{ t('management.guestGroupsView.selectionBar.delete') }}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </Transition>
+      </div>
       </div>
 
       <!-- Content Area -->
@@ -495,7 +557,7 @@
         <div
           v-else-if="hasAnyGuests"
           ref="scrollContainerRef"
-          class="max-h-[37.5rem] overflow-y-auto space-y-2 p-3 sm:p-4 custom-scrollbar"
+          class="space-y-2 p-3 sm:p-4 sm:max-h-[37.5rem] sm:overflow-y-auto custom-scrollbar"
         >
           <QuickAddGuestRow
             v-if="groups.length > 0"
@@ -884,6 +946,13 @@ const hasActiveFilter = computed(
   () => activeFilter.value !== 'all' || activeRsvpStatus.value !== null,
 )
 
+/** Any narrowing at all — a group, an RSVP status, or a typed query. Drives
+ *  the match count, which is only worth showing once the list stops being
+ *  the whole list. */
+const isFiltering = computed(
+  () => hasActiveFilter.value || groupSearchQuery.value.trim().length > 0,
+)
+
 const selectRsvpStatus = (status: GuestRsvpStatusValue | null) => {
   activeRsvpStatus.value = status
   selectedGuestIds.value.clear()
@@ -1004,6 +1073,16 @@ const isAnyGroupLoading = computed(() => {
 })
 
 const totalSelectedCount = computed(() => selectedGuestIds.value.size)
+
+/** Selecting guests is a mode: while it is on, the toolbar becomes the
+ *  selection bar. Everything that swaps between the two reads this one flag. */
+const hasSelection = computed(() => totalSelectedCount.value > 0)
+
+/** The way out of selection mode. Without it the only exit was deselecting
+ *  every guest one at a time. */
+const clearSelection = () => {
+  selectedGuestIds.value.clear()
+}
 
 // Pagination computed properties
 const activePagination = computed(() => {
@@ -1207,7 +1286,12 @@ const setupIntersectionObserver = () => {
       }
     },
     {
-      root: scrollContainerRef.value,
+      // The list is only its own scroll region from `sm` up — below that the
+      // page scrolls (see the container's classes). Handing a non-scrolling
+      // element to `root` would make the trigger permanently intersect its
+      // own root and fire load-more on a loop, so mobile observes the
+      // viewport instead.
+      root: isDesktop.value ? scrollContainerRef.value : null,
       rootMargin: '100px', // Trigger 100px before reaching the bottom
       threshold: 0.1,
     }
@@ -1223,6 +1307,14 @@ watch(scrollTriggerRef, (newRef) => {
   if (newRef) {
     setupIntersectionObserver()
   }
+})
+
+// Crossing the `sm` breakpoint swaps which element scrolls, so the observer
+// has to be rebuilt against the new root — a rotated phone or a resized
+// window otherwise keeps observing the wrong one.
+watch(isDesktop, async () => {
+  await nextTick()
+  setupIntersectionObserver()
 })
 
 // Re-setup observer when filter changes (content changes)
@@ -1359,15 +1451,27 @@ defineExpose({
 }
 
 /* Selection bar transition */
-.selection-bar-enter-active,
+/* The selection bar is overlaid on the toolbar, so it crossfades in place —
+   no translate, because there is nowhere for it to travel from and a slide
+   would read as a second row arriving. Exit is quicker than entry: entering
+   the mode is the user's decision, leaving it is the system getting out of
+   the way. */
+.selection-bar-enter-active {
+  transition:
+    opacity 0.18s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.18s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
 .selection-bar-leave-active {
-  transition: all 0.2s ease;
+  transition:
+    opacity 0.12s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.12s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .selection-bar-enter-from,
 .selection-bar-leave-to {
   opacity: 0;
-  transform: translateY(-8px);
+  transform: scale(0.98);
 }
 
 /* Modal transition */

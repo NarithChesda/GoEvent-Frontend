@@ -3,7 +3,12 @@
     ref="containerRef"
     :key="`event-info-${currentLanguage}`"
     class="text-center space-y-6 sm:space-y-8"
-    :class="{ 'animate-active': isVisible, 'is-engraved': isEngraved, 'joins-date-mark': engravedJoinsDateMark }"
+    :class="{
+      'animate-active': isVisible,
+      'is-engraved': isEngraved,
+      'is-khmer': currentLanguage === 'kh',
+      'joins-date-mark': engravedJoinsDateMark,
+    }"
   >
     <!-- Primary Content Block -->
     <div v-if="descriptionTitle || descriptionText" class="space-y-4">
@@ -572,18 +577,14 @@
                   </div>
                 </div>
 
-                <!-- Separator. Engraved swaps the colon for a vertical
-                     hairline — the same rule the panel design puts between its
-                     date and venue columns, and the same one the flanked design
-                     draws beside its numeral. It also retires the Khmer colon
-                     baseline hack, since a rule has no em-box to sit wrong in. -->
+                <!-- Separator. Glass sets the two figures as one clock, so it
+                     needs a colon between them. Engraved sets them as two
+                     captioned figures, each measured by its own rule — there is
+                     nothing between them to separate, so nothing is drawn
+                     there. This also retires the Khmer colon baseline hack for
+                     that design, since no glyph sits between the columns. -->
                 <div
-                  v-if="isEngraved"
-                  class="countdown-rule"
-                  aria-hidden="true"
-                ></div>
-                <div
-                  v-else
+                  v-if="!isEngraved"
                   class="countdown-separator"
                   :class="[currentLanguage === 'kh' && 'is-khmer']"
                   :style="{ fontFamily: countdownNumberFont }"
@@ -1143,12 +1144,69 @@ const countdownNumberFont = computed(() => {
     : `'Rajdhani', sans-serif`
 })
 
+/* Off-white and near-black rather than pure — pure white on a saturated fill
+   vibrates, and pure black reads as a hole punched in it. Same pair, and the
+   same reasoning, as the host frames' label ink (frames/frameInk.ts). */
+const PAPER_LIGHT = '#fdfaf4'
+const PAPER_DARK = '#2a2118'
+/* The label on the filled control is 0.72rem/600 — small text, so AA is 4.5:1. */
+const PAPER_MIN_CONTRAST = 4.5
+
+/** Force a template colour to `#rrggbb`, or null when it isn't a hex at all. */
+const toHex6 = (color: string | null | undefined): string | null => {
+  const value = (color ?? '').trim()
+  if (/^#[0-9a-f]{6}$/i.test(value)) return value.toLowerCase()
+  const short = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(value)
+  if (short) return `#${short[1]}${short[1]}${short[2]}${short[2]}${short[3]}${short[3]}`.toLowerCase()
+  return null
+}
+
+const relativeLuminance = (hex6: string): number => {
+  const channel = (at: number) => {
+    const s = parseInt(hex6.slice(at, at + 2), 16) / 255
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+  }
+  return 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5)
+}
+
+const contrastRatio = (a: string, b: string): number => {
+  const [hi, lo] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x)
+  return (hi + 0.05) / (lo + 0.05)
+}
+
 /**
  * Paper colour behind the engraved ink — used for the text of the one filled
  * control the set allows (the RSVP submit / selected option), which inverts to
- * ink-on-paper. Falls back to white when the template declares no background.
+ * ink-on-paper.
+ *
+ * It cannot simply *be* the template's background. `useTemplateProcessor`
+ * already substitutes the primary colour for any template that declares no
+ * colour named `background`, so `backgroundColor` arrives here as the ink
+ * itself far more often than not — and the submit button then paints primary
+ * type on a primary fill and disappears. Keep the declared background only
+ * while it stays readable against the ink; otherwise pick whichever of the two
+ * papers contrasts better, the way InlineEditableText picks its backing plate.
  */
-const engravedPaper = computed(() => props.backgroundColor || '#ffffff')
+const engravedPaper = computed(() => {
+  const ink = toHex6(props.primaryColor)
+  if (!ink) {
+    /* Unmeasurable ink (a named colour, an rgb()/hsl() string, an 8-digit
+       hex). The declared background is only safe here if it is demonstrably
+       a *different* colour from the ink — which is exactly what the
+       substitution described above makes it not, most of the time. */
+    const bg = (props.backgroundColor ?? '').trim()
+    return bg && bg.toLowerCase() !== (props.primaryColor ?? '').trim().toLowerCase()
+      ? bg
+      : PAPER_LIGHT
+  }
+
+  const declared = toHex6(props.backgroundColor)
+  if (declared && contrastRatio(declared, ink) >= PAPER_MIN_CONTRAST) return declared
+
+  return contrastRatio(PAPER_LIGHT, ink) >= contrastRatio(PAPER_DARK, ink)
+    ? PAPER_LIGHT
+    : PAPER_DARK
+})
 </script>
 
 <style scoped>
@@ -2969,53 +3027,88 @@ const engravedPaper = computed(() => props.backgroundColor || '#ffffff')
 }
 
 /* --- Countdown --------------------------------------------------
-   The glass card sets the count at up to 8rem in a condensed UI face
-   with a drop shadow, because it has a panel to fill. On the sheet
-   that reads as a scoreboard dropped into an invitation, so engraved
-   sets it in the template's own display face at roughly half the
-   size, inked in the accent colour the calendar's heart uses. */
+   The glass card sets the count as a clock: two numerals at up to
+   8rem in a condensed UI face, a colon between them, floating labels
+   beneath. That is a scoreboard, and the first engraved pass only
+   shrank it — same arrangement, smaller. Worse, it spent a rule on
+   the colon's job. A rule is this set's structural mark, and putting
+   one between the two halves of a single measurement gave the block a
+   stray tick that reached neither baseline, held there by a bottom
+   margin hand-fitted to the label's height (and therefore wrong the
+   moment the label changed language or size).
+
+   So the block is re-set the way print sets a figure: each numeral is
+   captioned, with its own hairline under it at the sheet's 28% caption
+   weight and the unit beneath that. The rules now run *under* the
+   figures instead of *between* them — they measure rather than divide,
+   which is the one job the engraved set still has for a rule. Two
+   columns of one measure, so the pair is centred on the sheet's own
+   axis rather than hung off a separator, and the count stops
+   out-shouting the venue above it and the reply below. */
+
+/* `!important` throughout this block only outranks the desktop
+   breakpoint blocks above, which size the glass card's countdown the
+   same way. */
+.is-engraved .countdown-wrapper {
+  /* Every gap in the band is a margin below its owner, so the block
+     reads in one rhythm instead of a flex gap plus a margin. */
+  gap: 0 !important;
+}
+
 .is-engraved .countdown-header {
   color: inherit;
-  opacity: 0.85;
-  font-size: 0.6875rem !important;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  /* Demoted a step from the unit labels below. The two used to be the
+     same size and weight, which left the band with three tiers of
+     identical small caps and hierarchy only in the numerals. */
+  opacity: 0.55;
+  font-size: 0.625rem !important;
+  font-weight: 500;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  margin-bottom: 0.55rem;
+  line-height: 1.4;
+  margin-bottom: 1.05rem;
 }
 
 .is-engraved .countdown-time-row {
   align-items: stretch;
-  gap: 1.15rem;
+  gap: clamp(1.25rem, 7vw, 2.25rem);
+}
+
+/* One measure for both columns, so the two caption rules come out the
+   same length — a figure whose rule is shorter than its neighbour's
+   reads as a mistake rather than as a smaller number. Wide enough for
+   the longest label the set carries (HOURS, ម៉ោង) plus its tracking. */
+.is-engraved .countdown-unit {
+  min-width: 4.75rem;
 }
 
 .is-engraved .countdown-number {
   color: var(--details-marker-color, currentColor);
   font-weight: 600;
-  font-size: clamp(2.5rem, 11vw, 3.75rem);
+  font-size: clamp(2.1rem, 9.5vw, 2.85rem);
   letter-spacing: 0.02em;
+  /* Tracking is trailing width; the indent hands it back so the
+     numeral sits on its rule's centre. Same trade as the reply plate. */
+  text-indent: 0.02em;
+  padding-bottom: 0.5rem;
   text-shadow: none;
 }
 
-/* The colon's replacement: the same vertical hairline the panel
-   design puts between its date and venue columns. */
-.is-engraved .countdown-rule {
-  width: 1px;
-  align-self: stretch;
-  margin: 0.15rem 0 1.4rem;
-  background: var(--engraved-rule-mid);
-  flex-shrink: 0;
-}
-
-/* !important here only to outrank the desktop breakpoint blocks above,
-   which set the glass card's label sizes the same way. */
 .is-engraved .countdown-unit-label {
   color: inherit;
-  opacity: 0.75;
-  font-size: 0.6875rem !important;
+  opacity: 0.72;
+  font-size: 0.625rem !important;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  margin-top: 0.3rem;
+  letter-spacing: 0.14em;
+  /* Full column width so the rule is the measure, not the word: the
+     labels differ in length and a rule fitted to each would give the
+     two figures different mats. */
+  width: 100%;
+  /* The base's margin would open a gap above the rule; the space this
+     caption needs is under it, which is what the padding gives. */
+  margin-top: 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--engraved-rule-soft);
 }
 
 /* --- RSVP -------------------------------------------------------
@@ -3032,27 +3125,58 @@ const engravedPaper = computed(() => props.backgroundColor || '#ffffff')
 .is-engraved .rsvp-toggle-container :deep(.rsvp-title),
 .is-engraved .rsvp-toggle-container :deep(.step-prompt),
 .is-engraved .rsvp-toggle-container :deep(.stepper-value),
+.is-engraved .rsvp-toggle-container :deep(.stepper-label),
 .is-engraved .rsvp-toggle-container :deep(.toggle-label),
 .is-engraved .rsvp-toggle-container :deep(.confirmation-text),
 .is-engraved .rsvp-toggle-container :deep(.confirmation-code-text),
 .is-engraved .rsvp-toggle-container :deep(.seat-stat-value),
+.is-engraved .rsvp-toggle-container :deep(.link-btn),
+.is-engraved .rsvp-toggle-container :deep(.message-text),
+.is-engraved .rsvp-toggle-container :deep(.label-error),
+.is-engraved .rsvp-toggle-container :deep(.required-star),
 .is-engraved .rsvp-toggle-container :deep(.text-white) {
   color: inherit;
+}
+
+/* The glass card colour-codes its two outcomes — mint for success, rose for
+   error — and both land on paper as a wash. The sheet has one ink, so the
+   distinction is weight: the error is stated, the success is an aside under a
+   header that already reads as a thank-you. */
+.is-engraved .rsvp-toggle-container :deep(.message-text.error) {
+  font-weight: 600;
 }
 
 .is-engraved .rsvp-toggle-container :deep(.step-hint),
 .is-engraved .rsvp-toggle-container :deep(.rsvp-placeholder),
 .is-engraved .rsvp-toggle-container :deep(.responded-at),
+.is-engraved .rsvp-toggle-container :deep(.message-text.success),
 .is-engraved .rsvp-toggle-container :deep(.seat-stat-label) {
   color: color-mix(in srgb, currentColor 65%, transparent);
 }
 
-/* Outlined controls: hairline box, squared to 2px, ink on paper. */
-.is-engraved .rsvp-toggle-container :deep(.status-option),
+/* The inactive half of the public form's attend/decline pair is dimmed by an
+   *inline* opacity: 0.6 — tuned for white on a tinted panel, where it still
+   reads. The same 0.6 on ink over paper is a 2.8:1 whisper, so the dimming is
+   done in the colour here and the inline opacity is cancelled. */
+.is-engraved .rsvp-toggle-container :deep(.toggle-label) {
+  opacity: 1 !important;
+  color: color-mix(in srgb, currentColor 62%, transparent);
+}
+
+.is-engraved .rsvp-toggle-container :deep(.toggle-container:has(.toggle-switch:not(.active)) .toggle-label:first-child),
+.is-engraved .rsvp-toggle-container :deep(.toggle-container:has(.toggle-switch.active) .toggle-label:last-child) {
+  color: inherit;
+  font-weight: 600;
+}
+
+/* Outlined controls: hairline box, squared corners, ink on paper. A
+   1-2px radius under a 1px stroke is not a corner, it is an
+   antialiasing smudge — the same call .engraved-plate makes. The nav
+   buttons and the status list have left this group entirely; see The
+   answer and The reply below. */
 .is-engraved .rsvp-toggle-container :deep(.chip),
-.is-engraved .rsvp-toggle-container :deep(.nav-btn),
 .is-engraved .rsvp-toggle-container :deep(.edit-btn) {
-  border-radius: 2px;
+  border-radius: 0;
   border: 1px solid var(--engraved-rule-mid);
   background: transparent !important;
   color: inherit !important;
@@ -3060,44 +3184,405 @@ const engravedPaper = computed(() => props.backgroundColor || '#ffffff')
   letter-spacing: 0.03em;
 }
 
-/* The one filled control the set allows, inverted to paper-on-ink.
-   currentColor cannot be the fill here: these rules also set the
+/* The guest's own marks, and the only fill on the sheet.
+   A filled chip is ink the *guest* laid down; the sheet's own
+   furniture stays line-drawn (see The reply). Keeping the split that
+   way is what lets the answers be solid without the card's chrome
+   turning back into buttons — and it keeps selection unmistakable,
+   which a rule-weight change alone would not.
+
+   currentColor cannot be the fill here: this rule also sets the
    element's own color to paper, and currentColor resolves against
-   that same declaration — the button would fill with paper and
-   vanish. --engraved-ink carries the sheet's colour in explicitly. */
-.is-engraved .rsvp-toggle-container :deep(.status-option.active),
-.is-engraved .rsvp-toggle-container :deep(.chip.active),
-.is-engraved .rsvp-toggle-container :deep(.nav-btn.next),
-.is-engraved .rsvp-toggle-container :deep(.nav-btn.submit),
-.is-engraved .rsvp-toggle-container :deep(.rsvp-btn-signin) {
+   that same declaration — the chip would fill with paper and vanish.
+   --engraved-ink carries the sheet's colour in explicitly. */
+.is-engraved .rsvp-toggle-container :deep(.chip.active) {
   border: 1px solid var(--engraved-ink, currentColor);
-  border-radius: 2px;
+  border-radius: 0;
   background: var(--engraved-ink, currentColor) !important;
   color: var(--engraved-paper, #fff) !important;
   box-shadow: none;
   letter-spacing: 0.03em;
 }
 
-/* Ink is opaque, so a hover tint would flip the control to solid.
+/* --- The answer -------------------------------------------------
+   The status step is the one question the whole sheet is asking, and
+   on the glass card it is a centred wrap of pills. That row is what
+   a card can afford: three labels of very different lengths
+   ("Joyfully accepts", "Regretfully declines", "Maybe") set as
+   nowrap capsules, ragged on both edges, wrapping to a second line
+   on a phone with the orphan centred under the gap. On a panel the
+   ragged edge is absorbed by the panel's own border. The sheet has
+   no border to absorb it — its edges *are* the page — so the row
+   reads as three loose objects rather than as one question.
+
+   Printed reply cards have solved this for a century: the options
+   are a ruled list, one to a line, each on the same measure, each
+   with a box to mark. So that is what the answer becomes here —
+   which also settles the alignment, because the list now shares
+   --reply-measure with the progress rule, the inputs and the plate,
+   and the band finally has one column instead of four widths.
+
+   The mark is the selection, not a fill: a small square that takes
+   the ink. That keeps a filled box (unmistakable) without ever
+   putting *type* on ink, so the answer can never depend on
+   --engraved-paper resolving to something readable. */
+.is-engraved .rsvp-toggle-container :deep(.status-options) {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  max-width: var(--reply-measure);
+  margin: 0.25rem auto 0;
+}
+
+.is-engraved .rsvp-toggle-container :deep(.status-option) {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  /* 44px minimum target, from the row height rather than from padding
+     on a capsule — same floor the plate takes below. */
+  min-height: 2.75rem;
+  padding: 0.6rem 0.1rem;
+  border: none;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--engraved-ink, currentColor) 26%, transparent);
+  border-radius: 0;
+  background: transparent !important;
+  /* Full ink on the row, and the setting-back done on the label span
+     instead — the row's own `color` is what every color-mix() below
+     resolves against, so dimming it here would quietly dim the rule
+     and the box by the same factor and compound to a whisper. */
+  color: inherit !important;
+  box-shadow: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-align: left;
+  white-space: normal;
+  transition: border-color 0.18s ease;
+}
+
+/* Unchosen options are set back so the chosen one carries the line;
+   they are still options, not hints, so 72% and not the 65% the true
+   secondary text takes. */
+.is-engraved .rsvp-toggle-container :deep(.status-option) > span {
+  color: color-mix(in srgb, currentColor 72%, transparent);
+  transition: color 0.18s ease;
+}
+
+/* The box to mark. A pseudo-element, not markup, so the shared
+   GuestRSVPSection template stays one component. */
+.is-engraved .rsvp-toggle-container :deep(.status-option)::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 0.62rem;
+  height: 0.62rem;
+  border: 1px solid
+    color-mix(in srgb, var(--engraved-ink, currentColor) 55%, transparent);
+  background: transparent;
+  transition: background 0.18s cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 0.18s ease;
+}
+
+.is-engraved .rsvp-toggle-container :deep(.status-option.active) {
+  border-bottom-color: var(--engraved-ink, currentColor);
+}
+
+.is-engraved .rsvp-toggle-container :deep(.status-option.active) > span {
+  color: inherit;
+  font-weight: 600;
+}
+
+.is-engraved .rsvp-toggle-container :deep(.status-option.active)::before {
+  background: var(--engraved-ink, currentColor);
+  border-color: var(--engraved-ink, currentColor);
+}
+
+/* A row is not a button, so it does not press like one — a 0.97 scale
+   on a full-measure line reads as the whole list twitching. The ink
+   going into the box *is* the feedback, and it arrives on pointerdown
+   rather than on the state change. */
+.is-engraved .rsvp-toggle-container :deep(.status-option:active) {
+  transform: none;
+}
+
+/* :not(.active) matters here: `:active` and `.active` carry the same
+   specificity and this rule is the later one, so without it pressing the
+   row that is already chosen would lift its box back out of full ink. */
+.is-engraved .rsvp-toggle-container :deep(.status-option:active:not(.active))::before {
+  background: color-mix(in srgb, var(--engraved-ink, currentColor) 35%, transparent);
+  border-color: var(--engraved-ink, currentColor);
+}
+
+/* --- The reply ---------------------------------------------------
+   Everything else in this band sits on one centre line: the drawn
+   mark, the prompt, the options, the progress track, every input.
+   The nav bar did not. It came over from the glass card as a form
+   *footer* — `justify-content: flex-end` with the back button shoved
+   out on `margin-right: auto` — and a footer needs a panel to be
+   pinned to. The card had one. The sheet does not: its left and right
+   edges are the page's own, so a control pinned to them is not
+   anchored, it is just off-axis.
+
+   So the two actions stack on the sheet's centre line, and they stop
+   being siblings. Engraving has no rounded 7rem pill and no solid
+   slab — a plate lays lines, not fields — so the primary action is a
+   squared hairline plate and the retreat is a signed line.
+
+   Visual order is reversed against the DOM: the plate reads first on
+   paper but stays second in the tab order, which is what keeps it
+   from moving under a finger when the back link appears on step two.
+   Two controls, both plainly labelled, so the sequence carries the
+   same meaning read either way. */
+.is-engraved .rsvp-toggle-container {
+  /* One measure for everything the guest reads down: the progress
+     rule, the list of answers, every input, and the plate. Four
+     different widths stacked on a centre line is what made the band
+     read as parts of a form rather than as one; a single measure is
+     the cheapest way to give a column an edge. min() rather than a
+     flat rem so the narrowest phones give the list its full width
+     back instead of indenting it. */
+  --reply-measure: min(17.5rem, 100%);
+}
+
+.is-engraved .rsvp-toggle-container :deep(.wizard-nav) {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.35rem;
+  min-height: 0;
+  margin-top: 1rem;
+}
+
+/* Chevrons are the last piece of app chrome in the band — the
+   countdown already traded its colon for a hairline and the map its
+   rounded frame. A plate does not print arrows. */
+.is-engraved .rsvp-toggle-container :deep(.nav-btn svg),
+.is-engraved .rsvp-toggle-container :deep(.signin-icon) {
+  display: none;
+}
+
+/* Shared reset for both actions, in either flow. The 44px floor is
+   new: the pill was ~24px tall, which is a control for a card read on
+   a laptop, not one answered with a thumb. */
+.is-engraved .rsvp-toggle-container :deep(.nav-btn),
+.is-engraved .rsvp-toggle-container :deep(.rsvp-btn-signin) {
+  gap: 0;
+  min-height: 2.75rem;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent !important;
+  transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease,
+    text-decoration-color 0.2s ease,
+    transform 0.14s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* The one primary action, whichever flow drew it: the wizard's
+   next/submit and the public form's sign-in.
+
+   Emphasis is area, tracking, and a full-ink rule — the only full-ink
+   rule on the sheet, where every other box sits at 28-40%. No fill,
+   and no second rule inside it: .engraved-map already established
+   that a 1px mat between two hairlines reads as one doubled border at
+   phone width rather than as a mat. */
+.is-engraved .rsvp-toggle-container :deep(.nav-btn.next),
+.is-engraved .rsvp-toggle-container :deep(.nav-btn.submit),
+.is-engraved .rsvp-toggle-container :deep(.rsvp-btn-signin) {
+  width: 100%;
+  max-width: var(--reply-measure);
+  min-width: 0;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--engraved-ink, currentColor);
+  color: inherit !important;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  /* Tracking is trailing width. The indent hands the label back its
+     right half so the type sits on the plate's centre, not 3px left. */
+  text-indent: 0.18em;
+  text-transform: uppercase;
+}
+
+/* Sits outside .wizard-nav, in its own flow, so it centres itself. */
+.is-engraved .rsvp-toggle-container :deep(.rsvp-btn-signin) {
+  margin: 0.4rem auto 0;
+}
+
+/* Disabled is a lighter impression, not a faded one: the base rule's
+   opacity: 0.5 over already-soft ink reads as a printing error. The
+   plate is also the band's whole call to action while the guest is
+   still on step one, so it has to stay *legible* while inert —
+   28%/45% dropped it to a ghost, which read as a rendering fault
+   rather than as "answer the question first". */
+.is-engraved .rsvp-toggle-container :deep(.nav-btn.next:disabled),
+.is-engraved .rsvp-toggle-container :deep(.nav-btn.submit:disabled) {
+  opacity: 1;
+  /* Mixed from --engraved-ink, not from currentColor: this rule sets the
+     element's own color to 58% ink, and a currentColor mix in the same
+     declaration block would resolve against *that* — 40% of 58% is a
+     0.23 border, which is the ghost this rule exists to avoid. */
+  border-color: color-mix(in srgb, var(--engraved-ink, currentColor) 40%, transparent);
+  color: color-mix(in srgb, currentColor 58%, transparent) !important;
+}
+
+/* The retreat is a signed line, not a control — a word set small in
+   reduced ink over a hairline. The rule is drawn on the text rather
+   than on the box, so the box can carry a 44px target while the line
+   stays tight under the word. */
+.is-engraved .rsvp-toggle-container :deep(.nav-btn.back) {
+  margin-right: 0;
+  padding: 0 1rem;
+  border: none;
+  color: color-mix(in srgb, currentColor 60%, transparent) !important;
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-indent: 0.12em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--engraved-rule-soft);
+  text-underline-offset: 0.5em;
+}
+
+/* Ink is opaque, so a hover tint would flip a control to solid.
    Deepen the rule instead — the outline is the only thing the
    engraved set can move without changing material. */
 @media (hover: hover) and (pointer: fine) {
-  .is-engraved .rsvp-toggle-container :deep(.status-option:hover:not(.active)),
   .is-engraved .rsvp-toggle-container :deep(.chip:hover:not(.active)),
-  .is-engraved .rsvp-toggle-container :deep(.nav-btn.back:hover) {
+  .is-engraved .rsvp-toggle-container :deep(.edit-btn:hover) {
     background: transparent !important;
     border-color: var(--engraved-ink, currentColor);
   }
+
+  /* A ruled row has no box to deepen, so the hover is the label coming
+     up to full ink and its own rule with it — the line the pointer is
+     on darkens, which is how a printed list is read with a finger. */
+  .is-engraved .rsvp-toggle-container :deep(.status-option:hover:not(.active)) {
+    background: transparent !important;
+    border-bottom-color: var(--engraved-rule-mid);
+  }
+
+  .is-engraved .rsvp-toggle-container :deep(.status-option:hover:not(.active)) > span {
+    color: inherit;
+  }
+
+  .is-engraved .rsvp-toggle-container :deep(.status-option:hover:not(.active))::before {
+    border-color: var(--engraved-ink, currentColor);
+  }
+
+  /* The public form's counter: its base rule sets `border-color: white`,
+     which on paper deletes the button outright at exactly the moment the
+     pointer is on it. */
+  .is-engraved .rsvp-toggle-container :deep(.stepper-btn:hover:not(:disabled)) {
+    background: transparent;
+    border-color: var(--engraved-ink, currentColor);
+    transform: none;
+  }
+
+  /* The plate's rule is already full ink, so it cannot deepen — it
+     thickens, as an inset shadow so nothing reflows. The pill's -1px
+     lift and drop shadow are cancelled here: paper does not hover.
+
+     `:not(:active)` keeps this selector out of the press state, so the
+     lower-specificity press rule below still wins the transform while
+     a mouse is held down. */
+  .is-engraved
+    .rsvp-toggle-container
+    :deep(.nav-btn.next:hover:not(:disabled):not(:active)),
+  .is-engraved
+    .rsvp-toggle-container
+    :deep(.nav-btn.submit:hover:not(:disabled):not(:active)),
+  .is-engraved .rsvp-toggle-container :deep(.rsvp-btn-signin:hover:not(:active)) {
+    transform: none;
+    box-shadow: inset 0 0 0 1px var(--engraved-ink, currentColor);
+  }
+
+  .is-engraved .rsvp-toggle-container :deep(.nav-btn.back:hover) {
+    background: transparent !important;
+    color: inherit !important;
+    text-decoration-color: var(--engraved-rule);
+  }
 }
 
+/* A wide element reads a given scale as more movement than a small one
+   does, so the plate presses less far than the 0.97 the pill used. */
+.is-engraved .rsvp-toggle-container :deep(.nav-btn:active:not(:disabled)),
+.is-engraved .rsvp-toggle-container :deep(.rsvp-btn-signin:active) {
+  transform: scale(0.985);
+}
+
+/* The glass card's focus ring is white, which on paper is no ring. */
+.is-engraved .rsvp-toggle-container :deep(.status-option:focus-visible),
+.is-engraved .rsvp-toggle-container :deep(.chip:focus-visible),
+.is-engraved .rsvp-toggle-container :deep(.stepper-btn:focus-visible),
+.is-engraved .rsvp-toggle-container :deep(.nav-btn:focus-visible),
+.is-engraved .rsvp-toggle-container :deep(.edit-btn:focus-visible),
+.is-engraved .rsvp-toggle-container :deep(.link-btn:focus-visible),
+.is-engraved .rsvp-toggle-container :deep(.rsvp-btn-signin:focus-visible) {
+  outline: 1px solid var(--engraved-ink, currentColor);
+  outline-offset: 3px;
+}
+
+/* Khmer has no case, and its clusters break under tracking, so both
+   actions give theirs back — the same trade the countdown eyebrows
+   make above. */
+.is-engraved.is-khmer .rsvp-toggle-container :deep(.nav-btn.next),
+.is-engraved.is-khmer .rsvp-toggle-container :deep(.nav-btn.submit),
+.is-engraved.is-khmer .rsvp-toggle-container :deep(.nav-btn.back),
+.is-engraved.is-khmer .rsvp-toggle-container :deep(.rsvp-btn-signin) {
+  letter-spacing: 0;
+  text-indent: 0;
+  text-transform: none;
+}
+/* The counter's two buttons are the last circles in the band, on a
+   sheet where the map plate, the chips and the plate are all squared.
+   Their 1.55-1.75rem box is also well under a thumb, so an invisible
+   expander takes the target to ~44px without moving anything: the
+   layout is still driven by the drawn square. */
 .is-engraved .rsvp-toggle-container :deep(.stepper-btn) {
+  position: relative;
   border: 1px solid var(--engraved-rule-mid);
+  border-radius: 0;
   background: transparent;
   color: inherit;
 }
 
+.is-engraved .rsvp-toggle-container :deep(.stepper-btn)::after {
+  content: '';
+  position: absolute;
+  inset: -0.6rem;
+}
+
+/* The public form's attend/decline control is an iOS switch — a
+   1.5rem capsule with a round thumb sliding inside it — which is the
+   single most app-shaped object in the band. Squaring the track and
+   the thumb turns it into a marker sliding in a ruled slot, the same
+   figure the status list's box makes. */
+.is-engraved .rsvp-toggle-container :deep(.toggle-switch) {
+  border-radius: 0;
+  height: 1.35rem;
+}
+
+.is-engraved .rsvp-toggle-container :deep(.toggle-thumb) {
+  top: 0.2rem;
+  left: 0.2rem;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 0;
+}
+
 .is-engraved .rsvp-toggle-container :deep(.line-input),
 .is-engraved .rsvp-toggle-container :deep(.line-textarea) {
+  width: 100%;
+  max-width: var(--reply-measure);
+  margin-left: auto;
+  margin-right: auto;
   color: inherit;
   border-bottom-color: var(--engraved-rule-mid);
 }
@@ -3117,6 +3602,7 @@ const engravedPaper = computed(() => props.backgroundColor || '#ffffff')
    track with a solid rule filling it. */
 .is-engraved .rsvp-toggle-container :deep(.wizard-progress) {
   height: 1px;
+  max-width: var(--reply-measure);
   border-radius: 0;
   background: var(--engraved-rule-soft);
 }
@@ -3173,6 +3659,11 @@ const engravedPaper = computed(() => props.backgroundColor || '#ffffff')
 .is-engraved .countdown-unit-label.khmer-text-fix {
   letter-spacing: 0;
   line-height: 1.35;
+  /* Latin small caps carry at 0.625rem because the caps are the whole
+     glyph; a Khmer cluster at that size loses its subscripts and
+     diacritics, so it takes back the step the Latin type gave up. The
+     two scripts are matched by legibility, not by number. */
+  font-size: 0.6875rem !important;
 }
 
 /* Reduced motion preference */

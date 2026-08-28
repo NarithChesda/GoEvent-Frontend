@@ -1681,8 +1681,11 @@
       "filterByGroup": "Filter by Group",
       "select": "Select",
       "helpTitle": "How to manage guests",
+      "clearSearch": "Clear search",
+      "matchCount": "{shown} of {total}",
+      "selectAllAriaLabel": "Select all guests",
       "addGuestAriaLabel": "Import Guests",
-      "addGuest": "Import Guests",
+      "addGuest": "Import",
       "guestsPanelSuffix": "guests",
       "editGroup": "Edit group",
       "deleteGroup": "Delete group",
@@ -1693,6 +1696,7 @@
       }
     },
     "selectionBar": {
+      "clearSelection": "Clear selection",
       "selected": "selected",
       "markSent": "Mark Sent",
       "delete": "Delete"
@@ -1711,6 +1715,8 @@
       "selectHint": "Tap to select",
       "changeGroupHint": "Click to change group",
       "moreDetails": "More details",
+      "invitationViewed": "Invitation viewed",
+      "invitationNotSent": "Invitation not sent yet",
       "invitationSent": "Invitation sent",
       "sent": "Sent",
       "copy": "Copy",
