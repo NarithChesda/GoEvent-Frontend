@@ -1681,8 +1681,11 @@
       "filterByGroup": "ត្រងតាមក្រុម",
       "select": "ជ្រើសរើស",
       "helpTitle": "របៀបគ្រប់គ្រងភ្ញៀវ",
+      "clearSearch": "សម្អាតការស្វែងរក",
+      "matchCount": "{shown} ក្នុង {total}",
+      "selectAllAriaLabel": "ជ្រើសរើសភ្ញៀវទាំងអស់",
       "addGuestAriaLabel": "នាំចូលភ្ញៀវ",
-      "addGuest": "នាំចូលភ្ញៀវ",
+      "addGuest": "នាំចូល",
       "guestsPanelSuffix": "ភ្ញៀវ",
       "editGroup": "កែសម្រួលក្រុម",
       "deleteGroup": "លុបក្រុម",
@@ -1693,6 +1696,7 @@
       }
     },
     "selectionBar": {
+      "clearSelection": "សម្អាតការជ្រើសរើស",
       "selected": "បានជ្រើសរើស",
       "markSent": "កំណត់ថាបានផ្ញើ",
       "delete": "លុប"
@@ -1711,6 +1715,8 @@
       "selectHint": "ចុចដើម្បីជ្រើសរើស",
       "changeGroupHint": "ចុចដើម្បីប្តូរក្រុម",
       "moreDetails": "ព័ត៌មានលម្អិត",
+      "invitationViewed": "បានមើលលិខិតអញ្ជើញ",
+      "invitationNotSent": "មិនទាន់ផ្ញើលិខិតអញ្ជើញ",
       "invitationSent": "បានផ្ញើលិខិតអញ្ជើញ",
       "sent": "បានផ្ញើ",
       "copy": "ចម្លង",
