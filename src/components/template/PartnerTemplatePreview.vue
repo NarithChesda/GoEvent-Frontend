@@ -381,16 +381,26 @@ const previewLanguages = computed(() => {
 /** The frame is refetching localized content; cleared when it reports back. */
 const languageSwitching = ref(false)
 
+// Deliberately without `disabled` while a switch is in flight. It is the same
+// control as the stage picker beside it and has to read as one — and
+// `:disabled` halves the opacity of every segment, which washes the active
+// pill's white-on-gradient out to pastel and the inactive labels out to light
+// grey, next to a stage picker still at full strength. The wait is already
+// drawn where the change is happening (the loading veil over the frame), and a
+// second click mid-switch is ignored below rather than styled away. It also
+// can't get stuck: `languageSwitching` only clears on the frame's report, so a
+// frame that never reports used to leave the whole pill dimmed for good.
 const languageOptions = computed((): TemplateSegmentedOption[] =>
   previewLanguages.value.map((lang) => ({
     value: lang,
     label: lang.toUpperCase(),
-    disabled: languageSwitching.value,
   })),
 )
 
 const selectLanguage = (language: string) => {
   if (language === previewLanguage.value) return
+  // One switch at a time — what the `disabled` flag above used to enforce.
+  if (languageSwitching.value) return
 
   // Without a mounted frame there is nothing to post to, and `postSetLanguage`
   // would swallow that silently — leaving the toggle highlighting a language
@@ -445,8 +455,14 @@ watch(
  * what it could actually render, and the toggle follows the frame.
  */
 const onFrameLanguages = (languages: string[], current: string) => {
-  frameLanguages.value = languages
-  previewLanguage.value = current
+  // Guarded, never assigned outright. `loadShowcase` swallows its own errors
+  // and the frame publishes its languages regardless, so a failed fetch — on
+  // the initial load, or on any stage switch, each of which mounts a fresh
+  // frame that reports again — arrives here as an empty list. Adopting it would
+  // erase a switcher that was working, with no way back but a reload. Same
+  // guard the manage studio's own onFrameLanguages has always had.
+  if (languages.length) frameLanguages.value = languages
+  if (current) previewLanguage.value = current
   languageSwitching.value = false
 
   // A language switch refetches the showcase, and that response carries the
