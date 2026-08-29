@@ -40,7 +40,7 @@
     </div>
 
     <!-- Simple Grid Gallery -->
-    <div v-else class="photo-grid">
+    <div v-else ref="gridRef" class="photo-grid">
       <div
         v-for="(photo, index) in photos"
         :key="photo.id"
@@ -80,6 +80,8 @@
             v-show="!imageLoadingStates[photo.id] && !imageErrorStates[photo.id]"
             :data-photo-id="photo.id"
             :src="getOptimizedPhotoUrl(photo.image)"
+            :srcset="getPhotoSrcset(photo.image)"
+            :sizes="photoSizes"
             :alt="photo.caption || 'Event Photo'"
             :loading="index < 4 ? 'eager' : 'lazy'"
             :decoding="index < 3 ? 'sync' : 'async'"
@@ -102,9 +104,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, reactive, watch, nextTick } from 'vue'
+import { computed, onMounted, onUnmounted, ref, reactive, watch, nextTick } from 'vue'
 import type { EventPhoto } from '../../composables/useEventShowcase'
-import { useTemplateProcessor } from '../../composables/showcase/useTemplateProcessor'
+import {
+  useTemplateProcessor,
+  PHOTO_DELIVERY,
+} from '../../composables/showcase/useTemplateProcessor'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
 import { registerScrollProgress, refreshScrollProgress } from '@/composables/showcase/useScrollProgress'
 
@@ -137,27 +142,50 @@ const emit = defineEmits<{
 }>()
 
 // Template processor for optimized media URLs
-const { getOptimizedMediaUrl } = useTemplateProcessor()
+const { getOptimizedMediaUrl, getOptimizedMediaSrcset } = useTemplateProcessor()
 
-// Calculate optimal thumbnail width based on actual rendered size
-// Gallery is inside a liquid-glass container with padding, so actual width is smaller than viewport
-// Mobile: ~320-350px rendered width, Desktop: ~400-500px max per image
-const getThumbnailWidth = () => {
-  if (typeof window === 'undefined') return 400
-  // Account for container padding (~48px on mobile, more on desktop)
-  // and use a reasonable max for quality without over-fetching
-  const containerPadding = window.innerWidth < 768 ? 48 : 80
-  const availableWidth = window.innerWidth - containerPadding
-  return Math.min(availableWidth, 500)
-}
+/**
+ * The photo's rendered CSS width, fed to `sizes` so the browser can pick a
+ * `srcset` rung. Measured rather than derived from the viewport: `.photo-grid`
+ * is a single column inside the 85vw liquid-glass card, whose padding moves
+ * across six breakpoints and whose width changes again in wide mode — and the
+ * whole showcase also renders inside a phone-sized preview iframe, where any
+ * `vw` estimate would describe the wrong box.
+ *
+ * The initial guess only has to survive until the ResizeObserver fires on mount;
+ * it is deliberately generous, because guessing high costs one rung of bytes
+ * while guessing low costs visible sharpness.
+ */
+const gridRef = ref<HTMLElement | null>(null)
+const measuredPhotoWidth = ref(
+  typeof window === 'undefined' ? 1080 : Math.round(window.innerWidth * 0.85),
+)
+const photoSizes = computed(() => `${measuredPhotoWidth.value}px`)
 
-// Get optimized photo URL for gallery thumbnails
-const getOptimizedPhotoUrl = (imageUrl: string) => {
-  return getOptimizedMediaUrl(imageUrl, {
-    width: getThumbnailWidth(),
-    retina: 2, // Use fixed 2x for good quality without over-fetching on 3x devices
+let gridResizeObserver: ResizeObserver | null = null
+
+const observeGridWidth = () => {
+  if (!gridRef.value || typeof ResizeObserver === 'undefined') return
+  gridResizeObserver = new ResizeObserver((entries) => {
+    const width = Math.round(entries[0]?.contentRect.width ?? 0)
+    // Only ever grow. A card mid-transition (scaled, or briefly zero-width
+    // while the stage animates in) would otherwise report a small box and
+    // demote every photo already on screen to a lower rung.
+    if (width > measuredPhotoWidth.value) measuredPhotoWidth.value = width
   })
+  gridResizeObserver.observe(gridRef.value)
 }
+
+/**
+ * `src` is the fallback for browsers without srcset support and the candidate
+ * the parser uses before `sizes` is resolved; keep it mid-ladder so neither
+ * case is badly served.
+ */
+const getOptimizedPhotoUrl = (imageUrl: string) =>
+  getOptimizedMediaUrl(imageUrl, { ...PHOTO_DELIVERY, width: 1080, retina: 1 })
+
+const getPhotoSrcset = (imageUrl: string) =>
+  getOptimizedMediaSrcset(imageUrl, PHOTO_DELIVERY) || undefined
 
 // Image loading states
 const imageLoadingStates = reactive<Record<string, boolean>>({})
@@ -289,6 +317,7 @@ const setupLazyImageObserver = () => {
 
 onMounted(() => {
   initializeImageStates()
+  observeGridWidth()
 
   // Wait for DOM/layout, then attach observers and scroll listener
   setTimeout(() => {
@@ -327,6 +356,9 @@ watch(() => props.photos, (newPhotos, oldPhotos) => {
 }, { deep: false })
 
 onUnmounted(() => {
+  gridResizeObserver?.disconnect()
+  gridResizeObserver = null
+
   if (lazyImageObserver.value) {
     lazyImageObserver.value.disconnect()
     lazyImageObserver.value = null
@@ -375,8 +407,12 @@ onUnmounted(() => {
   width: 100%;
   height: auto;
   display: block;
-  /* Optimize for mobile performance */
-  image-rendering: -webkit-optimize-contrast;
+  /* No `image-rendering` override. Blink treats -webkit-optimize-contrast as
+     crisp-edges, i.e. a nearest-neighbour-ish filter, which aliases at any
+     scale factor other than 1 — and the served image never lands on exactly 1,
+     since srcset picks the nearest rung above the box. The mobile block below
+     used to reset it to auto, which was the tell: it was only ever "optimizing"
+     desktop, where the upscale was worst. */
   backface-visibility: hidden;
   transform: translateZ(0);
   will-change: auto;
@@ -430,8 +466,6 @@ onUnmounted(() => {
   }
 
   .photo-item img {
-    /* Better memory management on mobile */
-    image-rendering: auto;
     /* Reduce blur during scroll */
     -webkit-transform: translateZ(0);
     -webkit-backface-visibility: hidden;

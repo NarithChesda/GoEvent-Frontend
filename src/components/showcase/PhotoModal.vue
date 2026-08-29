@@ -43,14 +43,30 @@
         @touchend="handleTouchEnd"
       >
         <div class="relative">
+          <!-- Base layer: the smallest ladder rung, so the frame is never blank
+               while the full-resolution candidate is in flight. On a phone this
+               is usually the rung the grid already loaded, i.e. free. -->
           <img
             v-if="currentPhoto"
-            :src="getOptimizedModalPhotoUrl(currentPhoto.image)"
-            :alt="currentPhoto.caption || 'Event Photo'"
+            :src="getPhotoPreviewUrl(currentPhoto.image)"
+            alt=""
             :style="{ transform: `translateX(${swipeOffset}px)` }"
             class="photo-image pointer-events-none"
-            loading="lazy"
+            aria-hidden="true"
             v-bind="protectionAttrs"
+          />
+          <img
+            v-if="currentPhoto"
+            :key="currentPhoto.id"
+            :src="getFullPhotoUrl(currentPhoto.image)"
+            :srcset="getFullPhotoSrcset(currentPhoto.image)"
+            sizes="(min-width: 1152px) 1152px, calc(100vw - 2rem)"
+            :alt="currentPhoto.caption || 'Event Photo'"
+            :style="{ transform: `translateX(${swipeOffset}px)` }"
+            class="photo-image photo-image--full pointer-events-none"
+            :class="{ 'is-loaded': fullImageLoaded }"
+            v-bind="protectionAttrs"
+            @load="fullImageLoaded = true"
           />
           <!-- Transparent protection overlay (production-only) -->
           <div
@@ -85,7 +101,10 @@
 import { computed, watch, ref, onUnmounted } from 'vue'
 import { X, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import type { EventPhoto } from '../../composables/useEventShowcase'
-import { useTemplateProcessor } from '../../composables/showcase/useTemplateProcessor'
+import {
+  useTemplateProcessor,
+  PHOTO_DELIVERY,
+} from '../../composables/showcase/useTemplateProcessor'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
 
 // Asset protection (production-only)
@@ -106,24 +125,35 @@ const emit = defineEmits<{
 }>()
 
 // Template processor for optimized media URLs
-const { getOptimizedMediaUrl } = useTemplateProcessor()
+const { getOptimizedMediaUrl, getOptimizedMediaSrcset } = useTemplateProcessor()
 
-// Calculate thumbnail width - MUST match PhotoGallery.vue exactly for cache reuse
-const getThumbnailWidth = () => {
-  if (typeof window === 'undefined') return 400
-  const containerPadding = window.innerWidth < 768 ? 48 : 80
-  const availableWidth = window.innerWidth - containerPadding
-  return Math.min(availableWidth, 500)
-}
+/**
+ * The lightbox used to request the *thumbnail* width, deliberately, so opening
+ * a photo was a guaranteed cache hit. That made the cache hit the whole feature:
+ * the frame is up to 1152px wide at 85vh, so tapping a photo showed the same
+ * ~500px image stretched, and there was no way to actually look at a picture.
+ *
+ * It now asks for the frame's real size and keeps the fast first paint by
+ * layering, rather than by refusing to load anything better.
+ */
+const getPhotoPreviewUrl = (imageUrl: string) =>
+  getOptimizedMediaUrl(imageUrl, { ...PHOTO_DELIVERY, width: 640, retina: 1 })
 
-// Get optimized photo URL - uses same calculation as gallery thumbnails
-// This ensures browser cache is reused when opening the modal
-const getOptimizedModalPhotoUrl = (imageUrl: string) => {
-  return getOptimizedMediaUrl(imageUrl, {
-    width: getThumbnailWidth(),
-    retina: 2,
-  })
-}
+const getFullPhotoUrl = (imageUrl: string) =>
+  getOptimizedMediaUrl(imageUrl, { ...PHOTO_DELIVERY, width: 1600, retina: 1 })
+
+const getFullPhotoSrcset = (imageUrl: string) =>
+  getOptimizedMediaSrcset(imageUrl, PHOTO_DELIVERY) || undefined
+
+/** Reset per photo, so swiping doesn't reveal the next image before it decodes. */
+const fullImageLoaded = ref(false)
+
+watch(
+  () => props.currentPhoto?.id,
+  () => {
+    fullImageLoaded.value = false
+  },
+)
 
 const currentIndex = computed(() => {
   if (!props.currentPhoto || props.photos.length === 0) return 0
@@ -356,6 +386,28 @@ onUnmounted(() => {
 }
 
 /* Photo Image with Swipe Animation */
+/*
+ * The full-resolution layer sits exactly on top of the preview layer and fades
+ * in once decoded. Both are laid out identically (same width rules, same
+ * max-height, same object-fit), so the swap is a pure crossfade with no reflow.
+ */
+.photo-image--full {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+}
+
+.photo-image--full.is-loaded {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo-image--full {
+    transition: none;
+  }
+}
+
 .photo-image {
   width: 100%;
   max-width: 100%;

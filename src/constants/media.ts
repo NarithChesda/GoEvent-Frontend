@@ -47,11 +47,33 @@ export const MEDIA_ERROR_MESSAGES = {
   DELETE_FAILED: 'Failed to delete media',
 } as const
 
-// Image compression settings
+/**
+ * Gallery upload geometry — the bounds of the *stored master*, not of what a
+ * viewer downloads.
+ *
+ * Every showcase surface fetches photos through ImageKit, which resizes per
+ * device (see RESPONSIVE_WIDTH_LADDER in useTemplateProcessor). So the client's
+ * only jobs here are to keep the browser from decoding a 50MP camera bitmap and
+ * to land the upload under FILE_SIZE_LIMITS.IMAGE. Pre-shrinking for display is
+ * not one of them: detail thrown away at this step is gone for good, and the
+ * CDN then has nothing left to serve a retina laptop.
+ *
+ * MAX_WIDTH and MAX_HEIGHT are deliberately equal, which turns compressImage's
+ * `Math.min(maxW / w, maxH / h)` into a plain long-edge cap. They were
+ * 1920x1080 — a 16:9 *box*, which constrains the long edge of anything
+ * portrait: a 4000x6000 wedding portrait was stored at 720x1080, and no amount
+ * of CDN tuning brings that back. 3000 also sits above the 2560px top rung of
+ * the delivery ladder, so the CDN never has to enlarge.
+ */
 export const IMAGE_COMPRESSION = {
-  MAX_WIDTH: 1920,
-  MAX_HEIGHT: 1080,
-  QUALITY: 0.85,
+  MAX_WIDTH: 3000,
+  MAX_HEIGHT: 3000,
+  /**
+   * Near-transparent. This is a generation-loss budget, not a delivery size:
+   * ImageKit re-encodes every derivative anyway, so a low number here only
+   * means the CDN is handed artifacts to compress a second time.
+   */
+  QUALITY: 0.92,
   OUTPUT_TYPE: 'image/jpeg',
 } as const
 
