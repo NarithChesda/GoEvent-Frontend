@@ -18,7 +18,7 @@
     <button
       v-for="option in options"
       :key="option.value"
-      ref="buttonRefs"
+      :ref="(el) => setButtonRef(option.value, el)"
       type="button"
       class="tpl-seg__item"
       :class="{ 'is-active': option.value === modelValue }"
@@ -33,7 +33,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import type { ComponentPublicInstance } from 'vue'
 import type { LucideIcon } from 'lucide-vue-next'
 
 export interface TemplateSegmentedOption {
@@ -74,13 +75,38 @@ const props = withDefaults(
 const emit = defineEmits<{ 'update:modelValue': [string] }>()
 
 const rootRef = ref<HTMLElement | null>(null)
-const buttonRefs = ref<HTMLButtonElement[]>([])
 const thumb = ref({ left: 0, width: 0 })
 
-const activeIndex = computed(() => props.options.findIndex((o) => o.value === props.modelValue))
+/**
+ * The buttons, keyed by the option they belong to — deliberately NOT the array
+ * that a `ref="..."` inside `v-for` produces.
+ *
+ * Vue only ever pushes to that array on mount and splices on unmount, so it
+ * holds MOUNT order rather than list order (its own docs say the order isn't
+ * guaranteed). A list that is merely RE-ORDERED — same keys, nothing mounted or
+ * unmounted — leaves it stale, and measuring `array[activeIndex]` then sizes the
+ * thumb to whichever button happened to sit at that index when the control first
+ * rendered.
+ *
+ * Not hypothetical: the preview pane's language switcher appears as soon as the
+ * template's own fonts name two languages, and re-orders a moment later when the
+ * frame reports the event's `available_languages` (PartnerTemplatePreview's
+ * `previewLanguages` builds its Set from that list first). The thumb stayed
+ * under the previously-active segment — a brand-gradient pill wearing a slate
+ * label — while the segment that really was active kept its white text and
+ * vanished against the control's near-white ground.
+ *
+ * Keying by value takes the index out of the middle of it entirely.
+ */
+const buttonEls = new Map<string, HTMLButtonElement>()
+
+const setButtonRef = (value: string, el: Element | ComponentPublicInstance | null): void => {
+  if (el instanceof HTMLButtonElement) buttonEls.set(value, el)
+  else buttonEls.delete(value)
+}
 
 const measure = (): void => {
-  const el = buttonRefs.value[activeIndex.value]
+  const el = buttonEls.get(props.modelValue)
   if (!el || !rootRef.value) {
     thumb.value = { left: 0, width: 0 }
     return
