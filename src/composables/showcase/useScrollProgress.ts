@@ -25,10 +25,28 @@ const SCROLL_ROOT_SELECTOR = '.liquid-glass-card .custom-scrollbar'
  * wrapper firing at one moment and the word animation inside it at another —
  * plus a width-based threshold hack in the agenda layouts that was really just
  * compensating for the wrong root.
+ *
+ * `threshold` MUST stay 0. An area-fraction threshold asks a question no tall
+ * section can answer: `intersectionRatio` is capped at rootHeight / sectionHeight,
+ * so once a section grows past `rootHeight / threshold` the ratio can never
+ * reach it and the section sits at `opacity: 0` forever — present, laid out and
+ * still clickable, which reads to a guest as blank space that opens a photo when
+ * tapped. The photo gallery is the section that hits it: measured on a Pixel 7,
+ * the card scrolls in a 713px window while an 11-photo gallery is 3139px tall
+ * (ceiling 0.21), and the same gallery in a messaging app's browser, where
+ * toolbars leave a 366px window, peaks at 0.097 against the old 0.1 and never
+ * appears at all. A portrait-heavy wedding gallery crosses it on a full-height
+ * phone at ~15 photos. This is the same failure the deleted mobile CSS fallback
+ * was papering over.
+ *
+ * The intent — "don't reveal until a bit of it is showing" — is carried by the
+ * bottom `rootMargin` instead, which states it in pixels: the section reveals
+ * once 60px of it has entered the scroller, whatever its height. For the ~600px
+ * sections the 0.1 was tuned against that is the same moment as before.
  */
 export function showcaseRevealObserverInit(): IntersectionObserverInit {
   return {
-    threshold: 0.1,
+    threshold: 0,
     rootMargin: '0px 0px -60px 0px',
     root: document.querySelector(SCROLL_ROOT_SELECTOR),
   }

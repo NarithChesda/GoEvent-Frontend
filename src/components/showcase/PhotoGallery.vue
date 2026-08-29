@@ -152,9 +152,10 @@ const { getOptimizedMediaUrl, getOptimizedMediaSrcset } = useTemplateProcessor()
  * whole showcase also renders inside a phone-sized preview iframe, where any
  * `vw` estimate would describe the wrong box.
  *
- * The initial guess only has to survive until the ResizeObserver fires on mount;
- * it is deliberately generous, because guessing high costs one rung of bytes
- * while guessing low costs visible sharpness.
+ * The initial guess only has to survive until the ResizeObserver fires on mount,
+ * and it is generous, because until then guessing high costs one rung of bytes
+ * while guessing low costs visible sharpness. It is not allowed to outlive the
+ * first measurement, though — see below.
  */
 const gridRef = ref<HTMLElement | null>(null)
 const measuredPhotoWidth = ref(
@@ -163,15 +164,28 @@ const measuredPhotoWidth = ref(
 const photoSizes = computed(() => `${measuredPhotoWidth.value}px`)
 
 let gridResizeObserver: ResizeObserver | null = null
+let hasRealMeasurement = false
 
 const observeGridWidth = () => {
   if (!gridRef.value || typeof ResizeObserver === 'undefined') return
   gridResizeObserver = new ResizeObserver((entries) => {
     const width = Math.round(entries[0]?.contentRect.width ?? 0)
-    // Only ever grow. A card mid-transition (scaled, or briefly zero-width
-    // while the stage animates in) would otherwise report a small box and
-    // demote every photo already on screen to a lower rung.
-    if (width > measuredPhotoWidth.value) measuredPhotoWidth.value = width
+    if (width <= 0) return
+
+    // The first real measurement replaces the guess outright, in either
+    // direction. On a phone the guess overshoots badly — 85vw of a 412px screen
+    // is 350px against a grid that measures 284 — and since the ladder is
+    // coarse, that one wrong guess is a whole rung: 350 x 2.6dpr asks for the
+    // 1080 rung where 284 asks for 828, which on a real gallery photo is 113KB
+    // against 70KB, on every photo, over a phone connection.
+    //
+    // After that, only ever grow. A card mid-transition (scaled, or briefly
+    // zero-width while the stage animates in) would otherwise report a small
+    // box and demote every photo already on screen to a lower rung.
+    if (!hasRealMeasurement || width > measuredPhotoWidth.value) {
+      hasRealMeasurement = true
+      measuredPhotoWidth.value = width
+    }
   })
   gridResizeObserver.observe(gridRef.value)
 }
