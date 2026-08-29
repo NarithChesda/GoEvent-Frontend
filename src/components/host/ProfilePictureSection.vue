@@ -35,11 +35,12 @@
         <button
           type="button"
           @click="$emit('trigger-upload')"
-          :disabled="profilePictureUploading"
+          :disabled="profilePictureUploading || preparingImage"
           class="px-4 py-2 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-400 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center gap-2"
         >
-          <Upload class="w-4 h-4" />
-          <span>{{ profilePictureUploading ? t('management.hostsDrawer.profilePicture.uploading') : t('management.hostsDrawer.profilePicture.upload') }}</span>
+          <Loader v-if="preparingImage" class="w-4 h-4 animate-spin" />
+          <Upload v-else class="w-4 h-4" />
+          <span>{{ uploadButtonLabel }}</span>
         </button>
         <button
           v-if="profilePicturePreview || (profileImage && profileImage !== '')"
@@ -65,8 +66,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { User, Upload, Crop } from 'lucide-vue-next'
+import { computed, ref, onMounted } from 'vue'
+import { User, Upload, Crop, Loader } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 
 const { t } = useAppLanguage()
@@ -75,6 +76,8 @@ interface Props {
   profilePicturePreview: string | null
   profileImage: string
   profilePictureUploading: boolean
+  /** True while a large photo is being downscaled before the cropper opens. */
+  preparingImage?: boolean
   profilePictureInput?: HTMLInputElement
 }
 
@@ -86,8 +89,14 @@ interface Emits {
   'update:profilePictureInput': [el: HTMLInputElement | null]
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+const uploadButtonLabel = computed(() => {
+  if (props.preparingImage) return t('management.hostsDrawer.profilePicture.preparing')
+  if (props.profilePictureUploading) return t('management.hostsDrawer.profilePicture.uploading')
+  return t('management.hostsDrawer.profilePicture.upload')
+})
 
 const fileInput = ref<HTMLInputElement>()
 

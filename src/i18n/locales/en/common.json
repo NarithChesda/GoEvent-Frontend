@@ -129,6 +129,10 @@
     "previousMonth": "Previous month",
     "nextMonth": "Next month"
   },
+  "imageCropper": {
+    "flip": "Flip",
+    "flipHint": "Flip the photo left to right"
+  },
   "deleteConfirmModal": {
     "title": "Delete Item",
     "message": "Are you sure you want to delete this item?",

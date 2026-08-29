@@ -129,6 +129,10 @@
     "previousMonth": "ខែមុន",
     "nextMonth": "ខែបន្ទាប់"
   },
+  "imageCropper": {
+    "flip": "ត្រឡប់",
+    "flipHint": "ត្រឡប់រូបភាពពីឆ្វេងទៅស្ដាំ"
+  },
   "deleteConfirmModal": {
     "title": "លុបធាតុ",
     "message": "តើអ្នកពិតជាចង់លុបធាតុនេះមែនទេ?",

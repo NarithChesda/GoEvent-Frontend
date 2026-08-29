@@ -299,9 +299,12 @@
       "label": "Profile Picture",
       "upload": "Upload Photo",
       "uploading": "Uploading...",
+      "preparing": "Preparing...",
       "crop": "Crop",
       "remove": "Remove",
-      "hint": "JPG, PNG, or WebP. Max 3MB."
+      "hint": "JPG, PNG, or WebP. Large photos are resized for you.",
+      "cropperTitle": "Crop Avatar",
+      "cropperHelpText": "Drag the circle to choose the part of the photo to keep, or drag its edges to resize it. Scroll or pinch to zoom."
     },
     "fields": {
       "title": "Title/Position",
