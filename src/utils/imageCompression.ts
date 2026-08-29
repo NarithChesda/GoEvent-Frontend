@@ -47,6 +47,20 @@ export async function compressImage(
     return file
   }
 
+  // Default smoothing is "low" in Chromium, which shows as ragged edges once a
+  // 24MP source is reduced by 2x or more; "high" costs a few ms per photo and
+  // this runs once per upload, off the render path.
+  ctx.imageSmoothingEnabled = true
+  ctx.imageSmoothingQuality = 'high'
+
+  // A canvas starts transparent and JPEG has no alpha, so an unfilled one
+  // encodes every transparent pixel as black. Matte to white first — the same
+  // thing every image editor does when flattening to JPEG.
+  if (outputType === 'image/jpeg') {
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, newWidth, newHeight)
+  }
+
   ctx.drawImage(img, 0, 0, newWidth, newHeight)
   URL.revokeObjectURL(img.src)
 

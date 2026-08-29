@@ -2,19 +2,80 @@
  * Event template type definitions
  */
 
+/**
+ * A font from the shared library, as nested inside a template's font row.
+ *
+ * The four metric fields normalize how big the face *renders* at a given
+ * `font-size`, which varies widely between typefaces and is what made a showcase
+ * size tuned against one family land wrong on another. They describe the face
+ * itself, so they live here — on the library record every template shares —
+ * rather than on the per-template row. All are optional and default to unadjusted.
+ *
+ * See `src/utils/fontMetrics.ts` and
+ * docs/backend-api-requirements/font-metric-normalization.md
+ */
+/**
+ * Where a library font came from.
+ *
+ * - `system`   — curated by staff, visible to everyone while `is_active`
+ * - `partner`  — uploaded by one partner, visible ONLY to them (and staff)
+ *
+ * A partner font never appears in another partner's library. It reaches the
+ * public solely through that partner's own approved template, whose assets are
+ * served by `public_template_assets`.
+ */
+export type CustomFontSource = 'system' | 'partner'
+
 export interface EventTemplateFont {
   id: number
   name: string
   font_file: string
+  source?: CustomFontSource
+  source_display?: string
+  is_active?: boolean
+  /** Licence or provenance. Shown to the admin reviewing the template. */
+  license_note?: string | null
+  /** Uploader's user id; `null` for system fonts. */
+  created_by?: number | null
+  /** Whether the calling account uploaded this font, i.e. may edit or delete it. */
+  is_owner?: boolean
+  /** Glyph scale inside the em box. 1 = unchanged. CSS `size-adjust`. */
+  size_adjust?: number | string | null
+  /** Ascent as a fraction of the em. CSS `ascent-override`. */
+  ascent_override?: number | string | null
+  /** Descent as a fraction of the em. CSS `descent-override`. */
+  descent_override?: number | string | null
+  /** Line gap as a fraction of the em. CSS `line-gap-override`. */
+  line_gap_override?: number | string | null
 }
 
 export interface EventTemplateLanguageFont {
   id: number
   language: string
   language_display: string
+  /**
+   * `null` means "no custom font assigned" — the showcase falls back to its own
+   * system default for that language. A deleted library font also leaves rows
+   * pointing at it in this state, so null is a normal steady state, not an error.
+   *
+   * On the parent template read (`/partner-templates/{id}/`) this is the full
+   * font object. On the nested row endpoints (`/fonts/`) the API returns an
+   * integer id here and expands the object under `font_detail` instead.
+   */
   font: EventTemplateFont | null
+  /** Only on the nested `/fonts/` endpoints, where `font` is an id. */
+  font_detail?: EventTemplateFont | null
   font_type: string
   font_type_display: string
+  /**
+   * The partner's size trim for this template, multiplied onto the library's
+   * `size_adjust`. 1 (the default) is exactly what the template rendered before
+   * this field existed.
+   *
+   * Rows are already per language x font_type, so this is also how a template
+   * says "Khmer a little smaller" without touching its English type.
+   */
+  size_scale?: number | string | null
 }
 
 export interface EventTemplateColor {
@@ -144,10 +205,15 @@ export interface CoverElementBox {
    * the type. Naming the slot lets the existing per-language resolution in
    * useTemplateProcessor keep doing its job.
    *
+   * `CoverFontSlot`, not the full `TemplateFontType`: the cover stage is a V1
+   * construct and only V1's four slots are published as CSS variables for blocks
+   * to inherit (`COVER_FONT_SLOT_VARS`). Naming a V2 slot here would resolve to
+   * no variable at all and render the block in nothing.
+   *
    * Unset means "whatever this block used before free placement existed" —
    * primary for the header and guest name, secondary for the invite line.
    */
-  fontType?: TemplateFontType
+  fontType?: CoverFontSlot
   /** Which palette slot the block's text colour comes from. Unset = unchanged. */
   colorSource?: CoverElementColorSource
   /** Hex colour, read only when `colorSource` is `custom`. */
@@ -932,13 +998,58 @@ export interface PartnerTemplateCreatePayload {
 }
 
 // Custom fonts (available via core-data endpoint)
+/**
+ * The font library list endpoint's row. Carries the same metric normalization as
+ * `EventTemplateFont` — it is the same record, read from the library rather than
+ * through a template — so the studio can calibrate against it before a font has
+ * ever been attached to a template.
+ */
 export interface CustomFont {
   id: number
   name: string
   font_file: string
   created_at: string
   updated_at: string
+  source: CustomFontSource
+  source_display: string
+  is_active: boolean
+  license_note: string | null
+  created_by: number | null
+  /** True when the caller uploaded it — the only fonts they may edit or delete. */
+  is_owner: boolean
+  size_adjust?: number | string | null
+  ascent_override?: number | string | null
+  descent_override?: number | string | null
+  line_gap_override?: number | string | null
 }
+
+/** Filters accepted by the font library list endpoint. */
+export interface CustomFontQuery {
+  source?: CustomFontSource
+  /** `true` narrows to the caller's own uploads. */
+  mine?: boolean
+  search?: string
+  /** `name` or `created_at`, prefix `-` to reverse. */
+  ordering?: string
+}
+
+/**
+ * A font upload. Sent as multipart, never JSON — `font_file` is a real file.
+ *
+ * `source` and `created_by` are stamped by the server from the caller's account
+ * and are read-only, so they are deliberately absent here: a partner's upload
+ * becomes a partner font, a staff upload becomes a system font, and the client
+ * gets no say in it.
+ */
+export interface CreateCustomFontPayload {
+  name: string
+  font_file: File
+  license_note?: string
+  is_active?: boolean
+}
+
+/** Any subset of the above. Omitting `font_file` leaves the stored file alone. */
+export type UpdateCustomFontPayload = Partial<CreateCustomFontPayload>
 
 // Template Color CRUD payloads
 export interface CreateTemplateColorPayload {
@@ -949,14 +1060,46 @@ export interface CreateTemplateColorPayload {
 export type UpdateTemplateColorPayload = Partial<CreateTemplateColorPayload>
 
 // Template Font types
-export type TemplateFontType = 'primary' | 'secondary' | 'accent' | 'decorative'
+/**
+ * `v2-body` and `v2-display` are the scroll-story showcase's own slots, kept
+ * separate from V1's four so a template's V1 type never leaks into V2 by
+ * accident (see `V2_FONT_TYPES` in composables/showcase-v2/v2Theme.ts). They
+ * became valid backend enum values in the Aug 2026 font-library release; the
+ * request that asked for them is docs/backend-api-requirements/showcase-v2-theming.md.
+ */
+export type TemplateFontType =
+  | 'primary'
+  | 'secondary'
+  | 'accent'
+  | 'decorative'
+  | 'v2-body'
+  | 'v2-display'
+
+/**
+ * The font slots a V1 cover block may name.
+ *
+ * V1's four only. The V2 slots are real `font_type` values on a template row, but
+ * the cover stage doesn't exist in V2 and doesn't publish variables for them, so
+ * they are not selectable here.
+ */
+export type CoverFontSlot = Extract<
+  TemplateFontType,
+  'primary' | 'secondary' | 'accent' | 'decorative'
+>
 export type TemplateLanguageCode = 'en' | 'kh' | 'fr' | 'ja' | 'ko' | 'zh-cn' | 'th' | 'vn'
 
 // Nested font payload (font is an integer ID in create/update)
 export interface CreateTemplateFontPayload {
   language: TemplateLanguageCode
-  font: number
+  /**
+   * A font id from the caller's visible library — an active system font, or one
+   * they uploaded. `null` assigns no custom font and lets the showcase use its
+   * own default for that language.
+   */
+  font: number | null
   font_type: TemplateFontType
+  /** Size trim for this row. Omitted when 1, so an untouched row sends nothing new. */
+  size_scale?: number
 }
 
 export type UpdateTemplateFontPayload = Partial<CreateTemplateFontPayload>
@@ -967,6 +1110,8 @@ export const FONT_TYPE_LABELS: Record<TemplateFontType, string> = {
   secondary: 'Secondary',
   accent: 'Accent',
   decorative: 'Decorative',
+  'v2-body': 'Scroll story body',
+  'v2-display': 'Scroll story display',
 }
 
 export const LANGUAGE_CODE_LABELS: Record<TemplateLanguageCode, string> = {

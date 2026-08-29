@@ -55,12 +55,21 @@ const FONT_BASE = 'management.templateSlots.fonts'
  * useEventShowcase (accentFont/decorativeFont) and returned from it, but no
  * component consumes either — verified across the whole `src` tree — so they're
  * flagged rather than presented as equals to primary/secondary.
+ *
+ * `v2-body` and `v2-display` are flagged for a different reason: they render, but
+ * only in the scroll-story showcase, which is still behind
+ * `VITE_SHOWCASE_TEMPLATE_VERSION=v2` and reaches no partner's guests yet. They
+ * are listed anyway, for the reason in `unused` above — they are valid backend
+ * enum values as of the Aug 2026 font-library release, and a partner who meets
+ * them in the API would wonder why the studio pretends they don't exist.
  */
 export const TEMPLATE_FONT_TYPE_SLOTS: TemplateSlotOption[] = [
   { value: 'primary', i18nBase: `${FONT_BASE}.primary` },
   { value: 'secondary', i18nBase: `${FONT_BASE}.secondary` },
   { value: 'accent', i18nBase: `${FONT_BASE}.accent`, unused: true },
   { value: 'decorative', i18nBase: `${FONT_BASE}.decorative`, unused: true },
+  { value: 'v2-body', i18nBase: `${FONT_BASE}.v2Body`, unused: true },
+  { value: 'v2-display', i18nBase: `${FONT_BASE}.v2Display`, unused: true },
 ]
 
 /** Whether a partner-typed name maps onto a slot the showcase reads. */

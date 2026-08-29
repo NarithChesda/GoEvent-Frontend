@@ -68,6 +68,7 @@
             <!-- Profile Picture Section -->
             <div>
               <ProfilePictureSection
+                :preparing-image="preparingImage"
                 :profile-picture-preview="profilePicturePreview"
                 :profile-image="profileImageFullUrl"
                 :profile-picture-uploading="profilePictureUploading"
@@ -343,9 +344,16 @@
       v-if="showCropper"
       :show="showCropper"
       :image-source="cropperImage || ''"
-      title="Crop Avatar"
+      :title="t('management.hostsDrawer.profilePicture.cropperTitle')"
       :aspect-ratio="1"
-      help-text="Adjust the crop area to frame your avatar image"
+      stencil-shape="circle"
+      image-restriction="fit-area"
+      fit-image
+      cropper-height="min(60vh, 440px)"
+      max-width-class="max-w-lg"
+      allow-flip
+      v-model:flipped="cropFlipHorizontal"
+      :help-text="t('management.hostsDrawer.profilePicture.cropperHelpText')"
       @close="closeCropper"
       @apply="handleCropApply"
       @update:cropper-ref="setCropperRef"
@@ -443,6 +451,8 @@ const {
   profilePictureInput,
   profilePicturePreview,
   profilePictureUploading,
+  preparingImage,
+  cropFlipHorizontal,
   selectedProfileImageFile,
   imageRemoved,
   showCropper,

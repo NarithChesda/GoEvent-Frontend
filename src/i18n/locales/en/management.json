@@ -299,9 +299,12 @@
       "label": "Profile Picture",
       "upload": "Upload Photo",
       "uploading": "Uploading...",
+      "preparing": "Preparing...",
       "crop": "Crop",
       "remove": "Remove",
-      "hint": "JPG, PNG, or WebP. Max 3MB."
+      "hint": "JPG, PNG, or WebP. Large photos are resized for you.",
+      "cropperTitle": "Crop Avatar",
+      "cropperHelpText": "Drag the circle to choose the part of the photo to keep, or drag its edges to resize it. Scroll or pinch to zoom."
     },
     "fields": {
       "title": "Title/Position",
@@ -2682,6 +2685,14 @@
       "decorative": {
         "label": "Decorative",
         "description": "Accepted by the API, but no part of the showcase renders it yet — attaching a font here has no visible effect."
+      },
+      "v2Body": {
+        "label": "Scroll story body",
+        "description": "Body text in the scroll-story showcase, which is still in testing and does not reach guests yet."
+      },
+      "v2Display": {
+        "label": "Scroll story display",
+        "description": "Headings in the scroll-story showcase, which is still in testing and does not reach guests yet."
       }
     }
   },
@@ -2800,7 +2811,33 @@
       "updateBtn": "Update",
       "cancelBtn": "Cancel",
       "empty": "No fonts yet. Add one below.",
-      "unknownFont": "Unknown font"
+      "unknownFont": "Unknown font",
+      "sizeScale": "Size",
+      "sizeScaleHint": "Scales this font's glyphs so the showcase text sizes suit it. Every face renders at a different visual size for the same setting, Khmer faces especially. 1x leaves the font exactly as drawn.",
+      "calibrateBtn": "Match reference size",
+      "calibrate": {
+        "matched": "Matched. Adjust from here if you want it larger or smaller.",
+        "unavailable": "Could not measure this font. Set the size by eye instead."
+      },
+      "sourceMine": "Yours",
+      "systemDefault": "System default",
+      "upload": {
+        "openBtn": "Upload your own",
+        "title": "Upload a font",
+        "fileLabel": "Font file",
+        "nameLabel": "Name",
+        "namePlaceholder": "e.g. Moul Custom",
+        "licenseLabel": "Licence note",
+        "licensePlaceholder": "e.g. Licensed from foundry, invoice 2211",
+        "licenseHint": "Shown to the admin reviewing your template. Worth filling in.",
+        "hint": "TTF, OTF, WOFF or WOFF2, up to 5MB. Only you can see and use the fonts you upload.",
+        "submitBtn": "Upload",
+        "deleteBtn": "Remove from library",
+        "deleteConfirm": "Remove permanently?",
+        "errorExtension": "Fonts must be a .ttf, .otf, .woff or .woff2 file.",
+        "errorSize": "Font files must be under 5MB.",
+        "errorGeneric": "Upload failed. Please try again."
+      }
     },
     "backgroundStage": {
       "sectionTitle": "Background",

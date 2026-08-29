@@ -85,9 +85,19 @@ export interface TemplateFont {
   font_file?: string
   font_type?: string
   font_type_display?: string
+  /**
+   * This row's size trim, multiplied onto the library face's own normalization
+   * when the `@font-face` is injected. See `src/utils/fontMetrics.ts`.
+   */
+  size_scale?: number | string | null
   font?: {
     name: string
     font_file: string
+    /** Metric normalization for the face itself — a property of the typeface. */
+    size_adjust?: number | string | null
+    ascent_override?: number | string | null
+    descent_override?: number | string | null
+    line_gap_override?: number | string | null
   }
 }
 
@@ -1155,7 +1165,12 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
             event_texts: mergedEventTexts,
             hosts: data.event.hosts,
             agenda_items: data.event.agenda_items,
-            available_languages: data.event.available_languages,
+            // The same `|| existing` fallback the two lines below carry. This is
+            // a per-language content fetch; a response that answers without the
+            // list would otherwise blank it, and every preview watching this
+            // frame drops its language switcher (see postShowcaseLanguagesToParent).
+            available_languages:
+              data.event.available_languages || showcaseData.value.event.available_languages,
             // Update template fonts for the new language
             template_fonts: data.event.template_fonts || showcaseData.value.event.template_fonts,
             template_assets: data.event.template_assets || showcaseData.value.event.template_assets,

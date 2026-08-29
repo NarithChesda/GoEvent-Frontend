@@ -383,6 +383,12 @@
                     </span>
                     <span class="block text-[0.6875rem] text-slate-400 truncate">
                       {{ getFontLanguageDisplay(f.language) }} · {{ getFontTypeDisplay(f.font_type) }}
+                      <!-- Shown only when trimmed. A row at 1x is the norm, and
+                           labelling every one of those "100%" would bury the few
+                           that were actually adjusted. -->
+                      <template v-if="readSizeScale(f.size_scale) !== DEFAULT_SIZE_SCALE">
+                        · {{ Math.round(readSizeScale(f.size_scale) * 100) }}%
+                      </template>
                     </span>
                   </span>
                   <button
@@ -419,15 +425,153 @@
                     :placeholder="availableCustomFonts.length ? t('management.partnerTemplateForm.fonts.fontSelect') : t('management.partnerTemplateForm.fonts.fontSelectLoading')"
                   />
                 </div>
-                <!-- Two of the four types are resolved but never rendered — the
-                     picker says so rather than letting a partner attach a font
-                     that silently does nothing. -->
+
+                <!-- Font library.
+                     Uploading belongs here rather than on a library screen of its
+                     own: a partner reaches for it precisely when the typeface
+                     they want is missing from the picker above, so the moment
+                     they need it is the moment they are looking at that picker. -->
+                <div v-if="!fontUploadOpen" class="flex items-center justify-between gap-2">
+                  <button type="button" @click="openFontUpload" :class="BTN_GHOST_SM">
+                    <Upload class="w-3.5 h-3.5" />
+                    {{ t('management.partnerTemplateForm.fonts.upload.openBtn') }}
+                  </button>
+
+                  <!-- Only ever offered for the partner's own uploads: a system
+                       font answers 403 and another partner's answers 404, so a
+                       delete control on either is a button that cannot work. -->
+                  <button
+                    v-if="selectedCustomFont?.is_owner"
+                    type="button"
+                    :disabled="fontDeleting"
+                    @click="handleDeleteLibraryFont(selectedCustomFont.id)"
+                    class="text-[0.6875rem] font-medium transition-colors disabled:opacity-50"
+                    :class="fontDeleteConfirmId === selectedCustomFont.id ? 'text-red-600' : 'text-slate-400 hover:text-red-600'"
+                  >
+                    {{ fontDeleteConfirmId === selectedCustomFont.id
+                      ? t('management.partnerTemplateForm.fonts.upload.deleteConfirm')
+                      : t('management.partnerTemplateForm.fonts.upload.deleteBtn') }}
+                  </button>
+                </div>
+
+                <div v-else class="rounded-lg bg-slate-50 ring-1 ring-slate-200 p-3 space-y-2">
+                  <p class="text-[0.6875rem] font-medium text-slate-600">
+                    {{ t('management.partnerTemplateForm.fonts.upload.title') }}
+                  </p>
+
+                  <PartnerTemplateFileField
+                    :label="t('management.partnerTemplateForm.fonts.upload.fileLabel')"
+                    :accept="FONT_FILE_ACCEPT"
+                    :file-name="fontUploadForm.file?.name ?? null"
+                    @change="handleFontFileChange"
+                    @clear="fontUploadForm.file = null"
+                  />
+
+                  <div class="space-y-1">
+                    <label :for="fontUploadNameId" :class="FIELD_LABEL">
+                      {{ t('management.partnerTemplateForm.fonts.upload.nameLabel') }}
+                    </label>
+                    <input
+                      :id="fontUploadNameId"
+                      v-model="fontUploadForm.name"
+                      type="text"
+                      maxlength="100"
+                      :placeholder="t('management.partnerTemplateForm.fonts.upload.namePlaceholder')"
+                      :class="FIELD"
+                    />
+                  </div>
+
+                  <div class="space-y-1">
+                    <label :for="fontUploadLicenseId" :class="FIELD_LABEL">
+                      {{ t('management.partnerTemplateForm.fonts.upload.licenseLabel') }}
+                    </label>
+                    <input
+                      :id="fontUploadLicenseId"
+                      v-model="fontUploadForm.license_note"
+                      type="text"
+                      :placeholder="t('management.partnerTemplateForm.fonts.upload.licensePlaceholder')"
+                      :class="FIELD"
+                    />
+                    <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.fonts.upload.licenseHint') }}</p>
+                  </div>
+
+                  <p v-if="fontUploadError" class="text-[0.6875rem] text-red-600 leading-snug">
+                    {{ fontUploadError }}
+                  </p>
+                  <p v-else class="text-[0.6875rem] text-slate-400 leading-snug">
+                    {{ t('management.partnerTemplateForm.fonts.upload.hint') }}
+                  </p>
+
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      @click="handleUploadFont"
+                      :disabled="fontUploading || !fontUploadForm.file || !fontUploadForm.name.trim()"
+                      :class="BTN_PRIMARY_SM"
+                    >
+                      <Loader2 v-if="fontUploading" class="w-3.5 h-3.5 animate-spin" />
+                      <template v-else>{{ t('management.partnerTemplateForm.fonts.upload.submitBtn') }}</template>
+                    </button>
+                    <button type="button" @click="cancelFontUpload" :class="BTN_GHOST_SM">
+                      {{ t('management.partnerTemplateForm.fonts.cancelBtn') }}
+                    </button>
+                  </div>
+                </div>
+                <!-- Only two of the six slots reach a guest today: `accent` and
+                     `decorative` are resolved but rendered by nothing, and the two
+                     scroll-story slots render only in V2, which is still behind an
+                     env flag. The picker flags all four rather than letting a
+                     partner attach a font that silently does nothing. -->
                 <TemplateSlotField
                   v-model="fontTypeModel"
                   :label="t('management.partnerTemplateForm.fonts.typeLabel')"
                   :options="TEMPLATE_FONT_TYPE_SLOTS"
                   :used-values="definedFontTypes"
                 />
+
+                <!-- Size trim.
+                     Every font renders at a different visual size for the same
+                     font-size — cap height per em is the designer's choice, and
+                     Khmer faces vary more than Latin ones — so the showcase's
+                     sizes, tuned against one reference face per script, land
+                     wrong on a face that sits larger or smaller in its em box.
+                     This scales the glyphs inside that box, which corrects the
+                     whole showcase at once without any section needing its own
+                     number. Hidden until a font is picked: there is nothing to
+                     calibrate against yet, and an enabled slider would invite a
+                     value that the next pick silently reinterprets. -->
+                <div v-if="fontForm.font" class="space-y-1.5">
+                  <TemplateFormNumber
+                    v-model="fontForm.size_scale"
+                    :label="t('management.partnerTemplateForm.fonts.sizeScale')"
+                    :min="FONT_SIZE_SCALE_RANGE.min"
+                    :max="FONT_SIZE_SCALE_RANGE.max"
+                    :step="0.01"
+                    unit="x"
+                  />
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      @click="handleCalibrateFontSize"
+                      :disabled="fontCalibrating"
+                      :class="BTN_GHOST_SM"
+                    >
+                      <Loader2 v-if="fontCalibrating" class="w-3.5 h-3.5 animate-spin" />
+                      <template v-else>{{ t('management.partnerTemplateForm.fonts.calibrateBtn') }}</template>
+                    </button>
+                    <span
+                      v-if="fontCalibrationNote"
+                      class="text-[0.6875rem] leading-tight"
+                      :class="fontCalibrationNote === 'matched' ? 'text-slate-500' : 'text-amber-600'"
+                    >
+                      {{ t(`management.partnerTemplateForm.fonts.calibrate.${fontCalibrationNote}`) }}
+                    </span>
+                  </div>
+                  <p class="text-[0.6875rem] text-slate-400 leading-snug">
+                    {{ t('management.partnerTemplateForm.fonts.sizeScaleHint') }}
+                  </p>
+                </div>
+
                 <div class="flex items-center gap-2">
                   <button
                     type="button"
@@ -1423,6 +1567,7 @@
           v-model:stage="previewStage"
           v-model:selected-element="selectedCoverElement"
           :draft="previewDraft"
+          :language="previewLanguageRequest"
           :event-id="eventId"
           :event-data="eventData"
           :saved-template="existingTemplate"
@@ -1531,6 +1676,7 @@ import type {
   EventTemplateLanguageFont,
   CustomFont,
   TemplateFontType,
+  CoverFontSlot,
   TemplateLanguageCode,
   FallingEffectConfig,
   FallingEffectType,
@@ -1559,6 +1705,12 @@ import TemplateFormNumber from './TemplateFormNumber.vue'
 import TemplateFormChoice from './TemplateFormChoice.vue'
 import TemplateFormColor from './TemplateFormColor.vue'
 import TemplateFormSelect, { type TemplateFormSelectOption } from './TemplateFormSelect.vue'
+import {
+  DEFAULT_SIZE_SCALE,
+  FONT_SIZE_SCALE_RANGE,
+  METRIC_REFERENCE_FAMILY,
+  deriveSizeScale,
+} from '@/utils/fontMetrics'
 import PlanRequiredNotice from './TemplateFormPlanNotice.vue'
 import TemplateSegmented, { type TemplateSegmentedOption } from './TemplateSegmented.vue'
 import {
@@ -1588,6 +1740,7 @@ import { useMediaQuery } from '../../composables/useMediaQuery'
 import GuestFrameCornerGrid from './GuestFrameCornerGrid.vue'
 import {
   COVER_ELEMENT_IDS,
+  COVER_FONT_SLOT_VARS,
   resolveCoverElements,
   resolveCoverGilding,
   resolveGuestFrame,
@@ -1622,6 +1775,8 @@ const FileUploadField = PartnerTemplateFileField
 
 const nameFieldId = useId()
 const previewUrlFieldId = useId()
+const fontUploadNameId = useId()
+const fontUploadLicenseId = useId()
 /** Base for the per-row ids of the ambient-creature number fields. */
 const creatureFieldId = useId()
 
@@ -2093,8 +2248,32 @@ const languageOptions = computed(() =>
   })),
 )
 
-const customFontOptions = computed(() =>
-  availableCustomFonts.value.map((font) => ({ value: font.id, label: font.name })),
+/**
+ * The font picker's options, partner uploads first.
+ *
+ * One library holds both kinds and the API already scopes it to what this
+ * account may see, so there is nothing to filter here — only to label. A
+ * partner's own uploads are the ones they are looking for and the only ones they
+ * can manage, so they sort to the top; the source tag is what makes a partner
+ * font named after a system font ("Moul") distinguishable from it, which the
+ * backend explicitly permits.
+ */
+const customFontOptions = computed(() => {
+  const rank = (font: CustomFont): number => (font.source === 'partner' ? 0 : 1)
+  return [...availableCustomFonts.value]
+    .sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name))
+    .map((font) => ({
+      value: font.id,
+      label:
+        font.source === 'partner'
+          ? `${font.name} · ${t('management.partnerTemplateForm.fonts.sourceMine')}`
+          : font.name,
+    }))
+})
+
+/** The library record behind the current pick, or null while nothing is chosen. */
+const selectedCustomFont = computed<CustomFont | null>(
+  () => availableCustomFonts.value.find((cf) => cf.id === fontForm.font) ?? null,
 )
 
 /**
@@ -2373,9 +2552,18 @@ const selectedCoverBlockHasText = computed(
  */
 const COVER_SLOT_AUTO = 'auto'
 
+/**
+ * Driven by `COVER_FONT_SLOT_VARS`, not by `FONT_TYPE_LABELS`.
+ *
+ * The two lists used to be the same four values, but `font_type` gained the
+ * scroll-story slots (`v2-body`, `v2-display`) and the cover stage publishes no
+ * CSS variable for those — a block pointed at one would inherit nothing and
+ * render in no font at all. Reading the slot-variable map means the picker can
+ * only ever offer slots that actually resolve.
+ */
 const coverFontTypeOptions = computed<TemplateFormSelectOption[]>(() => [
   { value: COVER_SLOT_AUTO, label: t('management.coverLayoutEditor.fontTypes.auto') },
-  ...(Object.keys(FONT_TYPE_LABELS) as TemplateFontType[]).map((slot) => ({
+  ...(Object.keys(COVER_FONT_SLOT_VARS) as CoverFontSlot[]).map((slot) => ({
     value: slot,
     label: t(`management.coverLayoutEditor.fontTypes.${slot}`),
   })),
@@ -2395,7 +2583,7 @@ const coverBoxFontType = computed<string>({
   get: () => selectedCoverBox.value?.fontType ?? COVER_SLOT_AUTO,
   set: (value) =>
     updateSelectedCoverBox({
-      fontType: value === COVER_SLOT_AUTO ? undefined : (value as TemplateFontType),
+      fontType: value === COVER_SLOT_AUTO ? undefined : (value as CoverFontSlot),
     }),
 })
 
@@ -2556,13 +2744,69 @@ const pendingColors = computed(() => {
 
 // --- Fonts CRUD state ---
 const fonts = ref<EventTemplateLanguageFont[]>([])
-const localFonts = ref<Array<{ language: TemplateLanguageCode; font: number; font_type: TemplateFontType }>>([])
+const localFonts = ref<
+  Array<{
+    language: TemplateLanguageCode
+    font: number
+    font_type: TemplateFontType
+    size_scale: number
+  }>
+>([])
 const availableCustomFonts = ref<CustomFont[]>([])
-const fontForm = reactive<{ language: TemplateLanguageCode; font: number | null; font_type: TemplateFontType }>({
+const fontForm = reactive<{
+  language: TemplateLanguageCode
+  font: number | null
+  font_type: TemplateFontType
+  size_scale: number
+}>({
   language: 'en',
   font: null,
   font_type: 'primary',
+  size_scale: DEFAULT_SIZE_SCALE,
 })
+
+/** Set after an auto-calibration run so the studio can say what it did (or could not do). */
+const fontCalibrationNote = ref<'matched' | 'unavailable' | null>(null)
+const fontCalibrating = ref(false)
+
+// ---------------------------------------------------------------------------
+// Font library uploads.
+//
+// A partner can put their own typeface into the library and use it on their
+// templates. The upload is stamped `source=partner` with `created_by` set to
+// them, so it is visible to nobody else and reaches guests only through their own
+// approved template's assets.
+//
+// The controls live inside the Fonts section rather than in a library screen of
+// their own: uploading is something a partner does *because* the font they want
+// is not in the picker, so the moment they need it is the moment they are looking
+// at that picker.
+// ---------------------------------------------------------------------------
+
+/** Mirrors the backend's accepted extensions. */
+const FONT_FILE_ACCEPT = '.ttf,.otf,.woff,.woff2'
+const FONT_FILE_EXTENSIONS = ['.ttf', '.otf', '.woff', '.woff2']
+const FONT_FILE_MAX_BYTES = 5 * 1024 * 1024
+
+const fontUploadOpen = ref(false)
+const fontUploading = ref(false)
+const fontUploadError = ref<string | null>(null)
+const fontUploadForm = reactive<{ name: string; file: File | null; license_note: string }>({
+  name: '',
+  file: null,
+  license_note: '',
+})
+
+/**
+ * Which library font is one click away from being deleted.
+ *
+ * Two-step rather than a modal: removing a font is destructive beyond this
+ * template — every other template of theirs pointing at it silently drops to the
+ * system default — but it is also a one-line control inside a dense panel, and a
+ * modal for it would be heavier than the rest of the section's affordances.
+ */
+const fontDeleteConfirmId = ref<number | null>(null)
+const fontDeleting = ref(false)
 const editingFontId = ref<number | null>(null)
 const fontSaving = ref(false)
 
@@ -2894,8 +3138,16 @@ async function fetchFonts(): Promise<void> {
   }
 }
 
-async function fetchCustomFonts(): Promise<void> {
-  if (availableCustomFonts.value.length > 0) return
+/**
+ * Loads the font library.
+ *
+ * One list, already scoped by the API to what this account may see — the active
+ * system fonts plus, for a partner, their own uploads — so there is no second
+ * request for "my fonts" to merge in. `force` is for after an upload or a delete,
+ * where the cached list is exactly what has just gone stale.
+ */
+async function fetchCustomFonts(force = false): Promise<void> {
+  if (!force && availableCustomFonts.value.length > 0) return
   try {
     const res = await customFontsService.listFonts()
     if (res.success && res.data) {
@@ -2909,13 +3161,156 @@ async function fetchCustomFonts(): Promise<void> {
   } catch { /* ignore */ }
 }
 
+function openFontUpload(): void {
+  fontUploadOpen.value = true
+  fontUploadError.value = null
+}
+
+function cancelFontUpload(): void {
+  fontUploadOpen.value = false
+  fontUploadError.value = null
+  fontUploadForm.name = ''
+  fontUploadForm.file = null
+  fontUploadForm.license_note = ''
+}
+
+/**
+ * Validates the picked file the same way the backend will, and proposes a name.
+ *
+ * Checking here is not a substitute for the server's check — it also reads the
+ * file's header bytes, which the browser cannot do cheaply — but a 5MB upload
+ * that fails on extension is a round trip nobody needs, and on a phone
+ * connection it is a slow one. The filename becomes the default font name
+ * because it is almost always what the partner would type anyway.
+ */
+function handleFontFileChange(event: Event): void {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0] ?? null
+  // Reset so re-picking the same file after an error still fires `change`.
+  input.value = ''
+  fontUploadError.value = null
+  if (!file) return
+
+  const name = file.name.toLowerCase()
+  if (!FONT_FILE_EXTENSIONS.some((ext) => name.endsWith(ext))) {
+    fontUploadError.value = t('management.partnerTemplateForm.fonts.upload.errorExtension')
+    return
+  }
+  if (file.size > FONT_FILE_MAX_BYTES) {
+    fontUploadError.value = t('management.partnerTemplateForm.fonts.upload.errorSize')
+    return
+  }
+
+  fontUploadForm.file = file
+  if (!fontUploadForm.name.trim()) {
+    fontUploadForm.name = file.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim()
+  }
+}
+
+/**
+ * Uploads the font and selects it, so the partner lands back on a picker that has
+ * already moved to what they just added rather than one they have to search.
+ *
+ * Field errors are surfaced verbatim. The two the backend actually returns here
+ * are worth the partner reading — a duplicate name among *their own* fonts, and
+ * a file whose header bytes are not a font container — and paraphrasing either
+ * into a generic failure would hide what to do about it.
+ */
+async function handleUploadFont(): Promise<void> {
+  if (!fontUploadForm.file || !fontUploadForm.name.trim()) return
+
+  fontUploading.value = true
+  fontUploadError.value = null
+  try {
+    const res = await customFontsService.uploadFont({
+      name: fontUploadForm.name.trim(),
+      font_file: fontUploadForm.file,
+      license_note: fontUploadForm.license_note.trim() || undefined,
+    })
+
+    if (res.success && res.data) {
+      await fetchCustomFonts(true)
+      fontForm.font = res.data.id
+      fontCalibrationNote.value = null
+      cancelFontUpload()
+      return
+    }
+
+    fontUploadError.value =
+      firstFieldError(res.errors) ||
+      res.message ||
+      t('management.partnerTemplateForm.fonts.upload.errorGeneric')
+  } catch {
+    fontUploadError.value = t('management.partnerTemplateForm.fonts.upload.errorGeneric')
+  } finally {
+    fontUploading.value = false
+  }
+}
+
+/** The first field-level message from a DRF error map, which is the useful one. */
+function firstFieldError(errors: Record<string, string[]> | undefined): string | null {
+  if (!errors) return null
+  for (const messages of Object.values(errors)) {
+    if (Array.isArray(messages) && messages.length) return messages[0]
+  }
+  return null
+}
+
+/**
+ * Removes one of the partner's own fonts from the library.
+ *
+ * The blast radius is wider than this form: the backend nulls the `font` on every
+ * template row that referenced it, across all of their templates, and those rows
+ * fall back to the system default rather than disappearing. Hence the two-step
+ * confirm, and hence refetching this template's rows afterwards — one of them may
+ * have just become `font: null` under us.
+ */
+async function handleDeleteLibraryFont(fontId: number): Promise<void> {
+  if (fontDeleteConfirmId.value !== fontId) {
+    fontDeleteConfirmId.value = fontId
+    return
+  }
+
+  fontDeleting.value = true
+  try {
+    const res = await customFontsService.deleteFont(fontId)
+    if (res.success) {
+      if (fontForm.font === fontId) fontForm.font = null
+      localFonts.value = localFonts.value.filter((entry) => entry.font !== fontId)
+      await fetchCustomFonts(true)
+      if (isEditing.value) await fetchFonts()
+    } else {
+      error.value = res.message || t('management.partnerTemplateForm.errors.fontDeleteFailed')
+    }
+  } catch {
+    error.value = t('management.partnerTemplateForm.errors.fontDeleteFailed')
+  } finally {
+    fontDeleting.value = false
+    fontDeleteConfirmId.value = null
+  }
+}
+
 // Helper functions to display font information
 function getFontLanguageDisplay(language: string | TemplateLanguageCode): string {
   return LANGUAGE_CODE_LABELS[language as TemplateLanguageCode] || language
 }
 
+/**
+ * Names the font on a row.
+ *
+ * `null` is a legitimate steady state, not a broken row: the backend nulls this
+ * field on every template that referenced a library font when its owner deletes
+ * it, and the showcase then falls back to its own default for that language. So
+ * it reads as "system default", not as "unknown" — the row is fine, it just no
+ * longer names a face.
+ *
+ * "Unknown font" is reserved for the one case that really is a gap: an id whose
+ * font is not in the library this account can see.
+ */
 function getFontNameDisplay(fontId: number | { id: number; name: string } | null): string {
-  if (!fontId) return t('management.partnerTemplateForm.fonts.unknownFont')
+  if (fontId === null || fontId === undefined) {
+    return t('management.partnerTemplateForm.fonts.systemDefault')
+  }
   if (typeof fontId === 'object' && 'name' in fontId) return fontId.name
   const font = availableCustomFonts.value.find(f => f.id === fontId)
   return font?.name || t('management.partnerTemplateForm.fonts.unknownFont')
@@ -2930,6 +3325,8 @@ function startEditFont(f: EventTemplateLanguageFont): void {
   fontForm.language = f.language as TemplateLanguageCode
   fontForm.font = f.font?.id ?? null
   fontForm.font_type = f.font_type as TemplateFontType
+  fontForm.size_scale = readSizeScale(f.size_scale)
+  fontCalibrationNote.value = null
 }
 
 function cancelEditFont(): void {
@@ -2937,6 +3334,61 @@ function cancelEditFont(): void {
   fontForm.language = 'en'
   fontForm.font = null
   fontForm.font_type = 'primary'
+  fontForm.size_scale = DEFAULT_SIZE_SCALE
+  fontCalibrationNote.value = null
+}
+
+/**
+ * A stored scale, as a number the slider can bind to.
+ *
+ * Falls back to 1 for anything missing or unparseable — a row saved before the
+ * field existed, or a backend that dropped it — so an absent value means
+ * "unchanged", never "shrink this to nothing".
+ */
+function readSizeScale(raw: number | string | null | undefined): number {
+  if (raw === null || raw === undefined || raw === '') return DEFAULT_SIZE_SCALE
+  const value = typeof raw === 'number' ? raw : Number(raw)
+  return Number.isFinite(value) ? value : DEFAULT_SIZE_SCALE
+}
+
+/**
+ * Sets the size scale that makes the picked font read at the same visual size as
+ * the language's reference face.
+ *
+ * This is the control that matters: the whole problem is that a partner cannot
+ * eyeball "is this font 12% too big", and the sizes throughout the showcase were
+ * tuned against one reference family per script. Measuring is the answer, so the
+ * slider beside it exists for taste afterwards rather than for finding the number
+ * in the first place.
+ *
+ * Both faces must actually be loaded before measuring — canvas silently falls
+ * back to a generic family for one that is not, which yields a confidently wrong
+ * ratio rather than an error.
+ */
+async function handleCalibrateFontSize(): Promise<void> {
+  const custom = availableCustomFonts.value.find((cf) => cf.id === fontForm.font)
+  if (!custom) return
+
+  fontCalibrating.value = true
+  fontCalibrationNote.value = null
+  try {
+    const reference =
+      METRIC_REFERENCE_FAMILY[fontForm.language] ?? METRIC_REFERENCE_FAMILY.en
+    await Promise.all([
+      document.fonts.load(`64px "${custom.name}"`).catch(() => []),
+      document.fonts.load(`64px "${reference}"`).catch(() => []),
+    ])
+
+    const scale = deriveSizeScale(custom.name, fontForm.language)
+    if (scale === null) {
+      fontCalibrationNote.value = 'unavailable'
+      return
+    }
+    fontForm.size_scale = scale
+    fontCalibrationNote.value = 'matched'
+  } finally {
+    fontCalibrating.value = false
+  }
 }
 
 // Add or update font (handles both editing mode with API and creation mode with local state)
@@ -2953,12 +3405,14 @@ async function handleAddOrUpdateFont(): Promise<void> {
           language: fontForm.language,
           font: fontForm.font,
           font_type: fontForm.font_type,
+          size_scale: fontForm.size_scale,
         })
       } else {
         res = await partnerTemplateService.createFont(props.existingTemplate.id, {
           language: fontForm.language,
           font: fontForm.font,
           font_type: fontForm.font_type,
+          size_scale: fontForm.size_scale,
         })
       }
       if (res.success) {
@@ -2978,6 +3432,7 @@ async function handleAddOrUpdateFont(): Promise<void> {
       language: fontForm.language,
       font: fontForm.font,
       font_type: fontForm.font_type,
+      size_scale: fontForm.size_scale,
     })
     cancelEditFont()
   }
@@ -3460,31 +3915,170 @@ const paneOptions = computed((): TemplateSegmentedOption[] => [
   { value: 'preview', label: t('management.partnerTemplateForm.header.pane.preview') },
 ])
 
+/** A complete six-digit hex. The text field emits every keystroke on the way to one. */
+const HEX_COLOR_RE = /^#[0-9a-f]{6}$/i
+
 /**
- * Fonts in the shape the showcase resolves them from. In edit mode the API
- * already returns the font file with each entry; while creating, the selection
- * is still just a custom-font id, so it's joined against the loaded custom-font
- * list here — otherwise picking a font would show nothing until the first save.
+ * The row currently sitting in the colour add/edit fields, as the showcase reads
+ * colours.
+ *
+ * The same job draftFontRow does below: the committed list only moves on
+ * Add/Update — a round trip to the API in edit mode — so dragging the swatch
+ * used to tell the partner nothing at all until they saved. Null until the hex
+ * is complete, because the hex text field emits every intermediate keystroke and
+ * a half-typed `#12` would otherwise repaint the slot mid-word.
+ */
+const draftColorRow = computed<PartnerTemplateDraft['colors'][number] | null>(() => {
+  if (!colorForm.name || !HEX_COLOR_RE.test(colorForm.hex_color_code)) return null
+  return {
+    // Present only when editing, so the lookup below matches the row being
+    // edited by id and a brand-new one by the slot its name claims.
+    id: editingColorId.value ?? undefined,
+    name: colorForm.name,
+    hex_color_code: colorForm.hex_color_code,
+  }
+})
+
+/**
+ * Colours as the showcase reads them: everything committed, with the row being
+ * picked laid over it IN PLACE.
+ *
+ * In place — not evicted-and-appended the way the fonts overlay works — because
+ * colour lookup falls back to LIST POSITION whenever a name doesn't match
+ * (templateColors[0]/[1]/[2] in extractTemplateColors, where fonts have no
+ * comparable fallback for rows that carry a type). Moving the edited row to the
+ * end renumbers every row after it, so a name half-typed on the way back to
+ * `primary` would briefly promote the next colour into the primary slot and
+ * repaint the whole preview in it.
+ *
+ * Names are compared lowercased and untrimmed, which is exactly what
+ * extractTemplateColors does — so a name typed with a stray space previews as
+ * the dead slot it really is instead of appearing to work.
+ *
+ * A brand-new row whose name is already taken displaces that row here, where a
+ * save would keep both and let the first win. Showing the colour being picked is
+ * the whole point of the pane, and the name field already marks a slot that is
+ * spoken for.
+ */
+const previewColors = computed<PartnerTemplateDraft['colors']>(() => {
+  const committed: PartnerTemplateDraft['colors'] = pendingColors.value
+  const draft = draftColorRow.value
+  if (!draft) return committed
+
+  const target = committed.findIndex((row) =>
+    draft.id === undefined
+      ? row.name.toLowerCase() === draft.name.toLowerCase()
+      : row.id === draft.id,
+  )
+  if (target === -1) return [...committed, draft]
+  return committed.map((row, index) => (index === target ? draft : row))
+})
+
+/**
+ * The row currently sitting in the font add/edit fields, resolved into the shape
+ * the showcase reads.
+ *
+ * This is what lets the picker steer the preview *while* it is being used. The
+ * committed list only changes on Add/Update, which in edit mode is a round trip
+ * to the API — so without this, finding out whether a font was the right one
+ * meant saving it first. Null while the selection is incomplete (or names a font
+ * whose file hasn't been fetched yet), which is also how the overlay disappears
+ * again on Cancel.
+ */
+const draftFontRow = computed<EventTemplateLanguageFont | null>(() => {
+  if (!fontForm.font || !fontForm.language || !fontForm.font_type) return null
+  const custom = availableCustomFonts.value.find((cf) => cf.id === fontForm.font)
+  if (!custom) return null
+  return {
+    // Carries the id of the row being edited, so it replaces that row below.
+    // A brand-new row gets 0: saved rows have positive ids and pending ones
+    // negative, so it is the one value neither side can collide with.
+    id: editingFontId.value ?? 0,
+    language: fontForm.language,
+    language_display: fontForm.language,
+    font: custom,
+    font_type: fontForm.font_type,
+    font_type_display: fontForm.font_type,
+    // What makes the size slider live: the preview re-resolves this row's
+    // `size-adjust` from it on every debounce tick, so dragging resizes the type
+    // in the frame beside the control rather than only after a save.
+    size_scale: fontForm.size_scale,
+  }
+})
+
+/**
+ * Fonts in the shape the showcase resolves them from: everything committed, with
+ * the row being picked overlaid on top.
+ *
+ * In edit mode the API already returns the font file with each entry; while
+ * creating, the selection is still just a custom-font id, so it's joined against
+ * the loaded custom-font list here — otherwise picking a font would show nothing
+ * until the first save.
+ *
+ * The overlay doesn't just append: it evicts the row it is editing AND anything
+ * else already holding its language + type slot. A language resolves exactly one
+ * font per slot (getLanguageFonts in useTemplateProcessor), so a pending pick
+ * left alongside the row it is about to displace would be competing with it
+ * instead of showing what the save is going to look like.
  */
 const previewFonts = computed<EventTemplateLanguageFont[]>(() => {
-  if (isEditing.value) return fonts.value
-  return localFonts.value.flatMap((entry, index) => {
-    const custom = availableCustomFonts.value.find((cf) => cf.id === entry.font)
-    if (!custom) return []
-    return [
-      {
-        // Negative ids keep these distinguishable from saved rows; nothing
-        // downstream persists them.
-        id: -(index + 1),
-        language: entry.language,
-        language_display: entry.language,
-        font: { id: custom.id, name: custom.name, font_file: custom.font_file },
-        font_type: entry.font_type,
-        font_type_display: entry.font_type,
-      },
-    ]
-  })
+  const committed: EventTemplateLanguageFont[] = isEditing.value
+    ? fonts.value
+    : localFonts.value.flatMap((entry, index) => {
+        const custom = availableCustomFonts.value.find((cf) => cf.id === entry.font)
+        if (!custom) return []
+        return [
+          {
+            // Negative ids keep these distinguishable from saved rows; nothing
+            // downstream persists them.
+            id: -(index + 1),
+            language: entry.language,
+            language_display: entry.language,
+            font: custom,
+            font_type: entry.font_type,
+            font_type_display: entry.font_type,
+            size_scale: entry.size_scale,
+          },
+        ]
+      })
+
+  const draft = draftFontRow.value
+  if (!draft) return committed
+
+  return [
+    ...committed.filter(
+      (row) =>
+        row.id !== draft.id &&
+        !(row.language === draft.language && row.font_type === draft.font_type),
+    ),
+    draft,
+  ]
 })
+
+/**
+ * Which language the preview should be showing, proposed whenever the font being
+ * picked belongs to another one.
+ *
+ * Fonts are declared per language and only apply to that language's text, so
+ * choosing a Khmer font while the pane renders English changes nothing on
+ * screen — the pick reads as broken when it is merely being previewed in the
+ * wrong script. Editing an existing row proposes its language too, since
+ * startEditFont loads it into the same field.
+ *
+ * Only re-proposed when the in-progress row's *language* changes, never on every
+ * edit: after that, moving the pane's own language segments is a deliberate act,
+ * and pulling it back would be fighting the partner. It deliberately isn't
+ * cleared when the selection is committed either — the pane should stay on the
+ * language whose font was just added, not snap back as the fields reset.
+ */
+const previewLanguageRequest = ref('')
+
+watch(
+  () => (fontForm.font ? fontForm.language : ''),
+  (language) => {
+    if (language) previewLanguageRequest.value = language
+  },
+)
 
 const previewDraft = computed<PartnerTemplateDraft>(() => {
   const files: Partial<Record<PartnerTemplateAssetField, File | null>> = {}
@@ -3505,7 +4099,7 @@ const previewDraft = computed<PartnerTemplateDraft>(() => {
     host_info_design: buildHostInfoDesignPayload(),
     info_card_design: { type: form.info_card_design_type },
     save_the_date_design: buildSaveTheDateDesignPayload(),
-    colors: pendingColors.value,
+    colors: previewColors.value,
     fonts: previewFonts.value,
     files,
     // A staged removal has to reach the preview too, or the frame keeps

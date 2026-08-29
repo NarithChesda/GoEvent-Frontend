@@ -10,7 +10,7 @@ import type {
   GuestFrameConfig,
   GuestFrameCornerId,
   GuestFrameCorners,
-  TemplateFontType,
+  CoverFontSlot,
 } from '@/services/api/types/template.types'
 
 /** Corner positions in render order (also their DOM order). */
@@ -185,7 +185,7 @@ export type CoverTextPalette = Partial<
  * switch re-resolves the font with no work here at all: the variable's value
  * changes, every block that references it follows.
  */
-export const COVER_FONT_SLOT_VARS: Record<TemplateFontType, string> = {
+export const COVER_FONT_SLOT_VARS: Record<CoverFontSlot, string> = {
   primary: '--tpl-font-primary',
   secondary: '--tpl-font-secondary',
   accent: '--tpl-font-accent',

@@ -162,6 +162,13 @@ interface Props {
    */
   stage?: string
   /**
+   * Which language to show, driven from outside — proposed, exactly like
+   * `stage`. The form's font picker sets it so choosing a font points the pane
+   * at the language that font actually applies to. Empty means "no opinion";
+   * anything the frame can't render is reconciled away by its own report.
+   */
+  language?: string
+  /**
    * Turn the cover's direct-manipulation layout overlay on. Only meaningful on
    * the cover stage, which is where the boxes live — the frame is told to drop
    * the mode whenever another stage is showing, so switching tabs mid-edit can't
@@ -176,6 +183,7 @@ const props = withDefaults(defineProps<Props>(), {
   savedTemplate: null,
   eventData: null,
   stage: '',
+  language: '',
   layoutEditing: false,
   selectedElement: null,
 })
@@ -373,16 +381,26 @@ const previewLanguages = computed(() => {
 /** The frame is refetching localized content; cleared when it reports back. */
 const languageSwitching = ref(false)
 
+// Deliberately without `disabled` while a switch is in flight. It is the same
+// control as the stage picker beside it and has to read as one — and
+// `:disabled` halves the opacity of every segment, which washes the active
+// pill's white-on-gradient out to pastel and the inactive labels out to light
+// grey, next to a stage picker still at full strength. The wait is already
+// drawn where the change is happening (the loading veil over the frame), and a
+// second click mid-switch is ignored below rather than styled away. It also
+// can't get stuck: `languageSwitching` only clears on the frame's report, so a
+// frame that never reports used to leave the whole pill dimmed for good.
 const languageOptions = computed((): TemplateSegmentedOption[] =>
   previewLanguages.value.map((lang) => ({
     value: lang,
     label: lang.toUpperCase(),
-    disabled: languageSwitching.value,
   })),
 )
 
 const selectLanguage = (language: string) => {
   if (language === previewLanguage.value) return
+  // One switch at a time — what the `disabled` flag above used to enforce.
+  if (languageSwitching.value) return
 
   // Without a mounted frame there is nothing to post to, and `postSetLanguage`
   // would swallow that silently — leaving the toggle highlighting a language
@@ -399,6 +417,37 @@ const selectLanguage = (language: string) => {
   frame.postSetLanguage(language)
 }
 
+// A language proposed from outside, applied the same way a click on the segments
+// would be — one-shot, and only ever on a *change* of the proposal.
+//
+// That is what keeps the toggle the partner's: an applied proposal is forgotten,
+// so moving the segments afterwards stands, and the next stage switch (which
+// remounts the frame, and with it re-runs anything watching the load flag) can't
+// quietly drag the pane back to the font picker's idea of the language.
+//
+// The load flag is watched alongside because `selectLanguage` needs a mounted
+// frame to post to and silently drops the request without one — a proposal that
+// lands mid-reload is held until the new frame is up rather than lost.
+const pendingLanguageRequest = ref('')
+
+watch(
+  () => props.language,
+  (language) => {
+    pendingLanguageRequest.value = language
+  },
+  { immediate: true },
+)
+
+watch(
+  [pendingLanguageRequest, frameLoading],
+  ([language, loading]) => {
+    if (!language || loading) return
+    pendingLanguageRequest.value = ''
+    selectLanguage(language)
+  },
+  { immediate: true },
+)
+
 /**
  * The frame finished loading (or finished a language switch) and reported where
  * it landed. This is the authority on what is on screen: the parent proposes a
@@ -406,8 +455,14 @@ const selectLanguage = (language: string) => {
  * what it could actually render, and the toggle follows the frame.
  */
 const onFrameLanguages = (languages: string[], current: string) => {
-  frameLanguages.value = languages
-  previewLanguage.value = current
+  // Guarded, never assigned outright. `loadShowcase` swallows its own errors
+  // and the frame publishes its languages regardless, so a failed fetch — on
+  // the initial load, or on any stage switch, each of which mounts a fresh
+  // frame that reports again — arrives here as an empty list. Adopting it would
+  // erase a switcher that was working, with no way back but a reload. Same
+  // guard the manage studio's own onFrameLanguages has always had.
+  if (languages.length) frameLanguages.value = languages
+  if (current) previewLanguage.value = current
   languageSwitching.value = false
 
   // A language switch refetches the showcase, and that response carries the

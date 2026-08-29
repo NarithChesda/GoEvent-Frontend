@@ -21,7 +21,50 @@ export interface ImageOptimizationOptions {
   quality?: number
   /** Output format. 'auto' lets ImageKit choose the best format */
   format?: 'auto' | 'webp' | 'avif' | 'jpg' | 'png'
+  /**
+   * Add `c-at_max`, so a master smaller than the requested width comes back at
+   * its own size instead of being enlarged. Enlarging costs bytes for zero
+   * detail, which matters for every photo uploaded before the master bounds
+   * were raised (see IMAGE_COMPRESSION in constants/media.ts).
+   */
+  noUpscale?: boolean
 }
+
+/**
+ * Width rungs, in **device pixels**, offered to the browser in a responsive
+ * `srcset`. The browser multiplies the CSS width in `sizes` by the device
+ * pixel ratio and picks the smallest rung that covers it, which is a better
+ * answer than any fixed retina multiplier we can guess at: a 3x phone stops
+ * being under-served and a 1x desktop stops paying for pixels it cannot show.
+ *
+ * Capped at 2560 on purpose. The stored master is 3000px on its long edge, and
+ * the showcase card is 85vw — so 2560 covers every viewport up to ~3000px
+ * wide at 1x and every phone at 3x, without offering a rung the CDN would have
+ * to invent detail for.
+ */
+export const RESPONSIVE_WIDTH_LADDER = [480, 640, 828, 1080, 1280, 1600, 2000, 2560] as const
+
+/**
+ * Delivery settings for event photographs, shared by the gallery grid and the
+ * lightbox so both address one set of URLs. That shared cache key is the point:
+ * a rung the grid has already fetched opens the lightbox instantly, and the
+ * lightbox's larger rung is still warm when the viewer scrolls back past the
+ * grid. Split the quality between the two surfaces and neither ever hits.
+ *
+ * `f-auto` is passed explicitly rather than left to the ImageKit dashboard —
+ * it is the single biggest lever here, since AVIF/WebP at q82 is both smaller
+ * and sharper than the default JPEG. q82 is visually transparent for
+ * photographs in those formats, including full-screen.
+ *
+ * `noUpscale` matters most for photos uploaded while the master was capped at
+ * 1080px tall: measured on a real asset, asking for w-4000 without it returned
+ * 202KB of invented pixels against 57KB with it.
+ */
+export const PHOTO_DELIVERY = {
+  format: 'auto',
+  quality: 82,
+  noUpscale: true,
+} as const satisfies ImageOptimizationOptions
 
 /**
  * Template Processing Composable
@@ -155,6 +198,9 @@ export function useTemplateProcessor() {
       if (options.height) {
         parts.push(`h-${Math.round(options.height * retinaMultiplier)}`)
       }
+      if (options.noUpscale) {
+        parts.push('c-at_max')
+      }
       if (options.quality) {
         parts.push(`q-${options.quality}`)
       }
@@ -189,6 +235,38 @@ export function useTemplateProcessor() {
       // Return basic resolved URL as fallback
       return getMediaUrl(url)
     }
+  }
+
+  /**
+   * Build a responsive `srcset` for a media URL: the same image at each rung of
+   * RESPONSIVE_WIDTH_LADDER, tagged with its real pixel width.
+   *
+   * Pair it with a `sizes` attribute carrying the element's rendered CSS width.
+   * The browser then does the arithmetic we used to hard-code — width x DPR,
+   * against its own connection and cache — and picks one candidate. That is why
+   * the rungs are passed with `retina: 1`: the `w` descriptor must be the
+   * image's actual pixel width or the browser's selection is wrong.
+   *
+   * Returns '' when there is nothing to choose between: ImageKit disabled, a
+   * blob:/data: URL, or a host we do not proxy all collapse to one identical
+   * URL, and a srcset of identical URLs under different `w` descriptors tells
+   * the browser a lie it will act on. Callers fall back to plain `src`.
+   */
+  const getOptimizedMediaSrcset = (
+    url: string,
+    options: Omit<ImageOptimizationOptions, 'width' | 'height' | 'retina'> = {},
+    widths: readonly number[] = RESPONSIVE_WIDTH_LADDER,
+  ): string => {
+    if (!url) return ''
+
+    const candidates = widths.map((width) => ({
+      width,
+      src: getOptimizedMediaUrl(url, { ...options, width, retina: 1 }),
+    }))
+
+    if (new Set(candidates.map((candidate) => candidate.src)).size <= 1) return ''
+
+    return candidates.map(({ src, width }) => `${src} ${width}w`).join(', ')
   }
 
   /**
@@ -505,6 +583,7 @@ export function useTemplateProcessor() {
     extractTemplateAssets,
     getMediaUrl,
     getOptimizedMediaUrl,
+    getOptimizedMediaSrcset,
 
     // SVG processing
     processSVGWithColors,
