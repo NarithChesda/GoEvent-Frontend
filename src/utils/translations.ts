@@ -120,6 +120,8 @@ export const rsvpTranslations: Record<
 
     // Video section
     video_header: string
+    video_play: string
+    video_close: string
 
     // Gallery section
     gallery_header: string
@@ -325,6 +327,8 @@ export const rsvpTranslations: Record<
 
     // Video section
     video_header: 'Video',
+    video_play: 'Play video',
+    video_close: 'Close video',
 
     // Gallery section
     gallery_header: 'Photo Gallery',
@@ -530,6 +534,8 @@ export const rsvpTranslations: Record<
 
     // Video section
     video_header: 'វីដេអូ',
+    video_play: 'មើលវីដេអូ',
+    video_close: 'បិទវីដេអូ',
 
     // Gallery section
     gallery_header: 'រូបថត',
@@ -735,6 +741,8 @@ export const rsvpTranslations: Record<
 
     // Video section
     video_header: '视频',
+    video_play: '播放视频',
+    video_close: '关闭视频',
 
     // Gallery section
     gallery_header: '照片库',
