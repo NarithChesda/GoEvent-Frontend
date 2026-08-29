@@ -1,14 +1,26 @@
 <template>
   <div class="mb-6 sm:mb-8">
-    <!-- <h2
-      class="leading-relaxed py-2 text-lg sm:text-xl md:text-2xl font-semibold sm:mb-4 md:mb-6 capitalize text-center"
-      :style="{
-        fontFamily: primaryFont || currentFont,
-        color: primaryColor,
-      }"
+    <!-- Gallery Header. Deliberately identical in markup and type scale to the
+         video section's header: the film and the photographs come from the same
+         shoot, and every other section on the invitation announces itself, so
+         the gallery arriving unnamed read as an appendix rather than a chapter. -->
+    <div
+      v-if="photos.length > 0"
+      class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3"
     >
-      {{ galleryHeaderText }}
-    </h2> -->
+      <h2
+        :class="[
+          'leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize gallery-header',
+          currentLanguage === 'kh' && 'khmer-text-fix',
+        ]"
+        :style="{
+          fontFamily: primaryFont || currentFont,
+          color: primaryColor,
+        }"
+      >
+        {{ galleryHeaderText }}
+      </h2>
+    </div>
 
     <!-- No Photos Placeholder -->
     <div v-if="photos.length === 0" class="p-6 sm:p-8 rounded-xl text-center">
@@ -40,7 +52,12 @@
     </div>
 
     <!-- Simple Grid Gallery -->
-    <div v-else ref="gridRef" class="photo-grid">
+    <div
+      v-else
+      ref="gridRef"
+      class="photo-grid"
+      :style="{ '--photo-mat': photoMatColor }"
+    >
       <div
         v-for="(photo, index) in photos"
         :key="photo.id"
@@ -111,6 +128,7 @@ import {
   PHOTO_DELIVERY,
 } from '../../composables/showcase/useTemplateProcessor'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
+import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
 import { registerScrollProgress, refreshScrollProgress } from '@/composables/showcase/useScrollProgress'
 
 // Asset protection (production-only)
@@ -287,6 +305,24 @@ const handleImageError = (photoId: string) => {
 
 
 
+// Header copy: organizer-authored `gallery_header` text when present, otherwise
+// the shipped translation. Same resolution order as every other section header.
+const galleryHeaderText = computed(() => {
+  if (props.eventTexts && props.currentLanguage) {
+    const text = props.eventTexts.find(
+      (t) => t.text_type === 'gallery_header' && t.language === props.currentLanguage,
+    )
+    if (text?.content) return text.content
+  }
+  return translateRSVP('gallery_header', (props.currentLanguage as SupportedLanguage) || 'en')
+})
+
+// Hairline mat around each photo, at low opacity. The video frame carries the
+// full-strength rule because it is the one thing here we want pressed; the
+// photographs echo it quietly so the pair reads as one spread rather than two
+// unrelated widgets, without twenty saturated outlines fighting the images.
+const photoMatColor = computed(() => `${props.primaryColor}33`)
+
 const handlePhotoClick = (photo: EventPhoto) => {
   emit('openPhoto', photo)
 }
@@ -402,10 +438,13 @@ onUnmounted(() => {
 
 .photo-item {
   --scroll-progress: 0;
+  position: relative;
   width: 100%;
   cursor: pointer;
   overflow: hidden;
-  border-radius: 0.5rem;
+  /* Matches the video frame's radius so the two blocks read as the same object. */
+  border-radius: 0.75rem;
+  -webkit-tap-highlight-color: transparent;
   /* Scroll-driven zoom, matched to AgendaItem. Kept to a narrow range: a
      0.68→1 scale rasterizes the photo at a fractional size for most of its time
      on screen, and the symmetric mapping shrank photos away at the top edge
@@ -430,6 +469,31 @@ onUnmounted(() => {
   backface-visibility: hidden;
   transform: translateZ(0);
   will-change: auto;
+}
+
+/* The mat itself. Drawn as an overlay rather than an inset box-shadow because
+   the image is a child and would paint straight over the shadow. Sits above the
+   production right-click guard (z-10) and takes no pointer events, so the tap
+   still reaches the photo. */
+.photo-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px var(--photo-mat, transparent);
+  pointer-events: none;
+}
+
+/* Press feedback lives on the `scale` longhand, not on `transform`: the scroll
+   progress already owns `transform` on this element, and the two longhands
+   compose instead of overwriting each other. */
+.photo-item {
+  transition: scale 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.photo-item:active {
+  scale: 0.985;
 }
 
 .photo-placeholder,
@@ -513,6 +577,34 @@ onUnmounted(() => {
   }
 }
 
+/* Header scale ladder, copied verbatim from .video-header so the two headers
+   stay the same size on every laptop breakpoint. */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .gallery-header {
+    font-size: 1.265625rem !important; /* 1.875rem * 0.675 - exact mobile ratio */
+    line-height: 1.25 !important;
+    padding-top: 0rem !important;
+    padding-bottom: 0.3375rem !important;
+    margin-bottom: 1.0125rem !important;
+  }
+}
+
+@media (min-width: 1366px) and (max-width: 1535px) {
+  .gallery-header {
+    font-size: 1.40625rem !important; /* 1.875rem * 0.75 - exact mobile ratio */
+    line-height: 1.25 !important;
+    padding-top: 0rem !important;
+    padding-bottom: 0.375rem !important;
+    margin-bottom: 1.125rem !important;
+  }
+}
+
+@media (min-width: 1536px) {
+  .gallery-header {
+    font-size: 1.875rem !important; /* 30px - text-3xl */
+  }
+}
+
 /* Very small devices - optimize further */
 @media (max-width: 375px) {
   .photo-grid {
@@ -520,7 +612,7 @@ onUnmounted(() => {
   }
 
   .photo-item {
-    border-radius: 0.375rem;
+    border-radius: 0.5rem;
   }
 
   .photo-placeholder,
