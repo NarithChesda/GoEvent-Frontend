@@ -1423,6 +1423,7 @@
           v-model:stage="previewStage"
           v-model:selected-element="selectedCoverElement"
           :draft="previewDraft"
+          :language="previewLanguageRequest"
           :event-id="eventId"
           :event-data="eventData"
           :saved-template="existingTemplate"
@@ -3460,31 +3461,165 @@ const paneOptions = computed((): TemplateSegmentedOption[] => [
   { value: 'preview', label: t('management.partnerTemplateForm.header.pane.preview') },
 ])
 
+/** A complete six-digit hex. The text field emits every keystroke on the way to one. */
+const HEX_COLOR_RE = /^#[0-9a-f]{6}$/i
+
 /**
- * Fonts in the shape the showcase resolves them from. In edit mode the API
- * already returns the font file with each entry; while creating, the selection
- * is still just a custom-font id, so it's joined against the loaded custom-font
- * list here — otherwise picking a font would show nothing until the first save.
+ * The row currently sitting in the colour add/edit fields, as the showcase reads
+ * colours.
+ *
+ * The same job draftFontRow does below: the committed list only moves on
+ * Add/Update — a round trip to the API in edit mode — so dragging the swatch
+ * used to tell the partner nothing at all until they saved. Null until the hex
+ * is complete, because the hex text field emits every intermediate keystroke and
+ * a half-typed `#12` would otherwise repaint the slot mid-word.
+ */
+const draftColorRow = computed<PartnerTemplateDraft['colors'][number] | null>(() => {
+  if (!colorForm.name || !HEX_COLOR_RE.test(colorForm.hex_color_code)) return null
+  return {
+    // Present only when editing, so the lookup below matches the row being
+    // edited by id and a brand-new one by the slot its name claims.
+    id: editingColorId.value ?? undefined,
+    name: colorForm.name,
+    hex_color_code: colorForm.hex_color_code,
+  }
+})
+
+/**
+ * Colours as the showcase reads them: everything committed, with the row being
+ * picked laid over it IN PLACE.
+ *
+ * In place — not evicted-and-appended the way the fonts overlay works — because
+ * colour lookup falls back to LIST POSITION whenever a name doesn't match
+ * (templateColors[0]/[1]/[2] in extractTemplateColors, where fonts have no
+ * comparable fallback for rows that carry a type). Moving the edited row to the
+ * end renumbers every row after it, so a name half-typed on the way back to
+ * `primary` would briefly promote the next colour into the primary slot and
+ * repaint the whole preview in it.
+ *
+ * Names are compared lowercased and untrimmed, which is exactly what
+ * extractTemplateColors does — so a name typed with a stray space previews as
+ * the dead slot it really is instead of appearing to work.
+ *
+ * A brand-new row whose name is already taken displaces that row here, where a
+ * save would keep both and let the first win. Showing the colour being picked is
+ * the whole point of the pane, and the name field already marks a slot that is
+ * spoken for.
+ */
+const previewColors = computed<PartnerTemplateDraft['colors']>(() => {
+  const committed: PartnerTemplateDraft['colors'] = pendingColors.value
+  const draft = draftColorRow.value
+  if (!draft) return committed
+
+  const target = committed.findIndex((row) =>
+    draft.id === undefined
+      ? row.name.toLowerCase() === draft.name.toLowerCase()
+      : row.id === draft.id,
+  )
+  if (target === -1) return [...committed, draft]
+  return committed.map((row, index) => (index === target ? draft : row))
+})
+
+/**
+ * The row currently sitting in the font add/edit fields, resolved into the shape
+ * the showcase reads.
+ *
+ * This is what lets the picker steer the preview *while* it is being used. The
+ * committed list only changes on Add/Update, which in edit mode is a round trip
+ * to the API — so without this, finding out whether a font was the right one
+ * meant saving it first. Null while the selection is incomplete (or names a font
+ * whose file hasn't been fetched yet), which is also how the overlay disappears
+ * again on Cancel.
+ */
+const draftFontRow = computed<EventTemplateLanguageFont | null>(() => {
+  if (!fontForm.font || !fontForm.language || !fontForm.font_type) return null
+  const custom = availableCustomFonts.value.find((cf) => cf.id === fontForm.font)
+  if (!custom) return null
+  return {
+    // Carries the id of the row being edited, so it replaces that row below.
+    // A brand-new row gets 0: saved rows have positive ids and pending ones
+    // negative, so it is the one value neither side can collide with.
+    id: editingFontId.value ?? 0,
+    language: fontForm.language,
+    language_display: fontForm.language,
+    font: { id: custom.id, name: custom.name, font_file: custom.font_file },
+    font_type: fontForm.font_type,
+    font_type_display: fontForm.font_type,
+  }
+})
+
+/**
+ * Fonts in the shape the showcase resolves them from: everything committed, with
+ * the row being picked overlaid on top.
+ *
+ * In edit mode the API already returns the font file with each entry; while
+ * creating, the selection is still just a custom-font id, so it's joined against
+ * the loaded custom-font list here — otherwise picking a font would show nothing
+ * until the first save.
+ *
+ * The overlay doesn't just append: it evicts the row it is editing AND anything
+ * else already holding its language + type slot. A language resolves exactly one
+ * font per slot (getLanguageFonts in useTemplateProcessor), so a pending pick
+ * left alongside the row it is about to displace would be competing with it
+ * instead of showing what the save is going to look like.
  */
 const previewFonts = computed<EventTemplateLanguageFont[]>(() => {
-  if (isEditing.value) return fonts.value
-  return localFonts.value.flatMap((entry, index) => {
-    const custom = availableCustomFonts.value.find((cf) => cf.id === entry.font)
-    if (!custom) return []
-    return [
-      {
-        // Negative ids keep these distinguishable from saved rows; nothing
-        // downstream persists them.
-        id: -(index + 1),
-        language: entry.language,
-        language_display: entry.language,
-        font: { id: custom.id, name: custom.name, font_file: custom.font_file },
-        font_type: entry.font_type,
-        font_type_display: entry.font_type,
-      },
-    ]
-  })
+  const committed: EventTemplateLanguageFont[] = isEditing.value
+    ? fonts.value
+    : localFonts.value.flatMap((entry, index) => {
+        const custom = availableCustomFonts.value.find((cf) => cf.id === entry.font)
+        if (!custom) return []
+        return [
+          {
+            // Negative ids keep these distinguishable from saved rows; nothing
+            // downstream persists them.
+            id: -(index + 1),
+            language: entry.language,
+            language_display: entry.language,
+            font: { id: custom.id, name: custom.name, font_file: custom.font_file },
+            font_type: entry.font_type,
+            font_type_display: entry.font_type,
+          },
+        ]
+      })
+
+  const draft = draftFontRow.value
+  if (!draft) return committed
+
+  return [
+    ...committed.filter(
+      (row) =>
+        row.id !== draft.id &&
+        !(row.language === draft.language && row.font_type === draft.font_type),
+    ),
+    draft,
+  ]
 })
+
+/**
+ * Which language the preview should be showing, proposed whenever the font being
+ * picked belongs to another one.
+ *
+ * Fonts are declared per language and only apply to that language's text, so
+ * choosing a Khmer font while the pane renders English changes nothing on
+ * screen — the pick reads as broken when it is merely being previewed in the
+ * wrong script. Editing an existing row proposes its language too, since
+ * startEditFont loads it into the same field.
+ *
+ * Only re-proposed when the in-progress row's *language* changes, never on every
+ * edit: after that, moving the pane's own language segments is a deliberate act,
+ * and pulling it back would be fighting the partner. It deliberately isn't
+ * cleared when the selection is committed either — the pane should stay on the
+ * language whose font was just added, not snap back as the fields reset.
+ */
+const previewLanguageRequest = ref('')
+
+watch(
+  () => (fontForm.font ? fontForm.language : ''),
+  (language) => {
+    if (language) previewLanguageRequest.value = language
+  },
+)
 
 const previewDraft = computed<PartnerTemplateDraft>(() => {
   const files: Partial<Record<PartnerTemplateAssetField, File | null>> = {}
@@ -3505,7 +3640,7 @@ const previewDraft = computed<PartnerTemplateDraft>(() => {
     host_info_design: buildHostInfoDesignPayload(),
     info_card_design: { type: form.info_card_design_type },
     save_the_date_design: buildSaveTheDateDesignPayload(),
-    colors: pendingColors.value,
+    colors: previewColors.value,
     fonts: previewFonts.value,
     files,
     // A staged removal has to reach the preview too, or the frame keeps

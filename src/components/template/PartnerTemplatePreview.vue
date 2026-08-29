@@ -162,6 +162,13 @@ interface Props {
    */
   stage?: string
   /**
+   * Which language to show, driven from outside — proposed, exactly like
+   * `stage`. The form's font picker sets it so choosing a font points the pane
+   * at the language that font actually applies to. Empty means "no opinion";
+   * anything the frame can't render is reconciled away by its own report.
+   */
+  language?: string
+  /**
    * Turn the cover's direct-manipulation layout overlay on. Only meaningful on
    * the cover stage, which is where the boxes live — the frame is told to drop
    * the mode whenever another stage is showing, so switching tabs mid-edit can't
@@ -176,6 +183,7 @@ const props = withDefaults(defineProps<Props>(), {
   savedTemplate: null,
   eventData: null,
   stage: '',
+  language: '',
   layoutEditing: false,
   selectedElement: null,
 })
@@ -398,6 +406,37 @@ const selectLanguage = (language: string) => {
   // In place, over the bridge — never by touching the iframe's `src`.
   frame.postSetLanguage(language)
 }
+
+// A language proposed from outside, applied the same way a click on the segments
+// would be — one-shot, and only ever on a *change* of the proposal.
+//
+// That is what keeps the toggle the partner's: an applied proposal is forgotten,
+// so moving the segments afterwards stands, and the next stage switch (which
+// remounts the frame, and with it re-runs anything watching the load flag) can't
+// quietly drag the pane back to the font picker's idea of the language.
+//
+// The load flag is watched alongside because `selectLanguage` needs a mounted
+// frame to post to and silently drops the request without one — a proposal that
+// lands mid-reload is held until the new frame is up rather than lost.
+const pendingLanguageRequest = ref('')
+
+watch(
+  () => props.language,
+  (language) => {
+    pendingLanguageRequest.value = language
+  },
+  { immediate: true },
+)
+
+watch(
+  [pendingLanguageRequest, frameLoading],
+  ([language, loading]) => {
+    if (!language || loading) return
+    pendingLanguageRequest.value = ''
+    selectLanguage(language)
+  },
+  { immediate: true },
+)
 
 /**
  * The frame finished loading (or finished a language switch) and reported where
