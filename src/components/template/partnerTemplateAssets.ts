@@ -169,7 +169,19 @@ function toShowcaseFonts(fonts: EventTemplateLanguageFont[]): TemplateFont[] {
       font_name: entry.font!.name,
       font_file: entry.font!.font_file,
       font_type: entry.font_type,
-      font: { name: entry.font!.name, font_file: entry.font!.font_file },
+      // The size trim and the library face's own normalization both have to make
+      // the crossing: the font manager multiplies them into the `size-adjust` it
+      // injects, so dropping either here would leave the preview rendering at a
+      // different size than the saved template will.
+      size_scale: entry.size_scale,
+      font: {
+        name: entry.font!.name,
+        font_file: entry.font!.font_file,
+        size_adjust: entry.font!.size_adjust,
+        ascent_override: entry.font!.ascent_override,
+        descent_override: entry.font!.descent_override,
+        line_gap_override: entry.font!.line_gap_override,
+      },
     }))
 }
 

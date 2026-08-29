@@ -6,6 +6,39 @@ import type {
   FontLoadStats,
   FontCacheEntry,
 } from '../useEventShowcase'
+import {
+  resolveFontMetrics,
+  fontMetricDescriptorCss,
+  fontMetricDescriptorDict,
+  fontMetricSignature,
+  type ResolvedFontMetrics,
+} from '@/utils/fontMetrics'
+
+/**
+ * The `@font-face` rules currently in the document, keyed by family + URL.
+ *
+ * Module scope, not composable scope, because the `<style>` tag they render into
+ * is a document-level singleton — two composable instances writing to it from
+ * separate registries would each believe they owned its whole contents and
+ * clobber the other's rules.
+ *
+ * Keyed WITHOUT the metrics so that re-injecting a face at a new size replaces
+ * its rule rather than appending a second one. The old code appended to
+ * `textContent` unconditionally, which grew the sheet without bound and, once
+ * sizes became adjustable, would have left every superseded size in the document.
+ */
+const fontFaceRules = new Map<string, string>()
+
+/**
+ * The `FontFace` objects registered on `document.fonts`, same key as above.
+ *
+ * `document.fonts.add()` appends rather than replaces, so without this a size
+ * change would leave two faces under one family name with different `sizeAdjust`
+ * and no defined answer about which one paints.
+ */
+const documentFontFaces = new Map<string, FontFace>()
+
+const fontFaceKey = (fontName: string, fontUrl: string): string => `${fontName}|${fontUrl}`
 
 // Font configuration constants
 const FONT_CONFIG = {
@@ -292,8 +325,14 @@ export function useFontManager() {
     const fullUrl = getMediaUrl(fontFile)
     result.url = fullUrl
 
-    // Check for existing loading promise
-    const cacheKey = `${fontName}-${fullUrl}`
+    // The library face's own normalization, trimmed by this template row's scale.
+    const metrics = resolveFontMetrics(font.font, font.size_scale)
+
+    // The metric signature is part of the key on purpose: family and URL are both
+    // unchanged when a partner drags the size slider, so without it the second
+    // render is served from cache, the new descriptors are never injected, and the
+    // live preview stays frozen at the first size tried.
+    const cacheKey = `${fontName}-${fullUrl}-${fontMetricSignature(metrics)}`
     if (fontLoadingPromises.value.has(cacheKey)) {
       return await fontLoadingPromises.value.get(cacheKey)!
     }
@@ -304,6 +343,14 @@ export function useFontManager() {
       cachedEntry?.isLoaded &&
       Date.now() - cachedEntry.loadedAt < FONT_CONFIG.CACHE_EXPIRY_TIME
     ) {
+      // A cache hit still has to re-assert the document state, because the cache
+      // is keyed by metrics and the document is not. Dragging the size slider
+      // 1.0 -> 0.9 -> 1.0 returns to a cached entry while the sheet and the
+      // registered FontFace are both still the 0.9 ones, so skipping this would
+      // strand the type at a size the partner has already moved away from.
+      injectFontFaceCSS(fontName, fullUrl, metrics)
+      adoptFontFace(fontName, fullUrl, cachedEntry.fontFace)
+
       result.success = true
       result.fromCache = true
       result.loadTime = performance.now() - startTime
@@ -312,9 +359,10 @@ export function useFontManager() {
 
     // Create loading promise with retry logic
     const loadPromise = executeLoadWithRetry(
-      font,
       fontName,
       fullUrl,
+      metrics,
+      cacheKey,
       timeout,
       maxRetries,
       display,
@@ -355,9 +403,20 @@ export function useFontManager() {
   /**
    * Injects font using CSS @font-face rule
    * This is more reliable across browsers, especially Safari
+   *
+   * `metrics` carries the size/vertical normalization for this face (see
+   * `@/utils/fontMetrics`). It is emitted as `@font-face` descriptors, which
+   * resize the glyphs INSIDE the em box — `font-size` still computes to the same
+   * pixel value and no line box moves, so none of the showcase's hard-coded sizes
+   * need to know this happened.
    */
-  const injectFontFaceCSS = (fontName: string, fontUrl: string): void => {
+  const injectFontFaceCSS = (
+    fontName: string,
+    fontUrl: string,
+    metrics: ResolvedFontMetrics,
+  ): void => {
     const fontFormat = getFontFormat(fontUrl)
+    const descriptors = fontMetricDescriptorCss(metrics)
 
     // Check if style tag already exists
     let styleTag = document.getElementById('custom-fonts-css') as HTMLStyleElement
@@ -374,16 +433,47 @@ export function useFontManager() {
         src: url("${fontUrl}") format("${fontFormat}");
         font-display: swap;
         font-weight: 100 900;
-        font-style: normal;
+        font-style: normal;${descriptors ? `\n        ${descriptors}` : ''}
       }
     `
 
-    // Append to existing stylesheet
-    styleTag.textContent += fontFaceRule
+    // Rewrite the sheet from the registry rather than appending, so a face
+    // re-injected at a different size supersedes its old rule. Only when the rule
+    // actually changed: replacing textContent re-parses every rule in the sheet,
+    // and there is no reason to pay that when re-loading an unchanged font.
+    const key = fontFaceKey(fontName, fontUrl)
+    if (fontFaceRules.get(key) !== fontFaceRule) {
+      fontFaceRules.set(key, fontFaceRule)
+      styleTag.textContent = Array.from(fontFaceRules.values()).join('')
+    }
 
     // Safari/WebKit fix: Force font to load by creating invisible element
     // Safari only downloads fonts when they're actually used on the page
     forceFontLoadInSafari(fontName)
+  }
+
+  /**
+   * Makes `fontFace` the one registered under its family+URL on `document.fonts`.
+   *
+   * `document.fonts.add()` appends rather than replaces, so re-loading a face at a
+   * new size would otherwise stack a second, differently-scaled face under the
+   * same family name — with no defined answer about which one paints. Evicting the
+   * previous registration is what keeps one name meaning one size.
+   */
+  const adoptFontFace = (fontName: string, fontUrl: string, fontFace: FontFace): void => {
+    const faceKey = fontFaceKey(fontName, fontUrl)
+    const superseded = documentFontFaces.get(faceKey)
+    if (superseded === fontFace) return
+
+    if (superseded) {
+      try {
+        document.fonts.delete(superseded)
+      } catch {
+        // A face the document already dropped — nothing to undo.
+      }
+    }
+    document.fonts.add(fontFace)
+    documentFontFaces.set(faceKey, fontFace)
   }
 
   /**
@@ -437,9 +527,10 @@ export function useFontManager() {
    * Uses CSS @font-face injection for better cross-browser compatibility
    */
   const executeLoadWithRetry = async (
-    font: TemplateFont,
     fontName: string,
     fullUrl: string,
+    metrics: ResolvedFontMetrics,
+    cacheKey: string,
     timeout: number,
     maxRetries: number,
     display: string,
@@ -447,7 +538,6 @@ export function useFontManager() {
     startTime: number,
   ): Promise<FontLoadResult> => {
     let lastError = ''
-    const cacheKey = `${fontName}-${fullUrl}`
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
@@ -461,14 +551,20 @@ export function useFontManager() {
 
         // Use CSS @font-face injection for all browsers
         // This is more reliable than FontFace API, especially on Safari
-        injectFontFaceCSS(fontName, fullUrl)
+        injectFontFaceCSS(fontName, fullUrl, metrics)
 
-        // Also use FontFace API for loading detection
+        // Also use FontFace API for loading detection.
+        //
+        // It carries the SAME metric descriptors as the CSS rule above. Both
+        // register under one family name, so a face adjusted in only one of them
+        // would leave the browser holding two different sizes for that name with
+        // no defined answer about which paints.
         const fontFace = new FontFace(fontName, `url("${fullUrl}")`, {
           display: display as FontDisplay,
           weight: '100 900',
           style: 'normal',
-        })
+          ...fontMetricDescriptorDict(metrics),
+        } as FontFaceDescriptors)
 
         // Load with timeout
         const loadedFont = await Promise.race([
@@ -482,7 +578,7 @@ export function useFontManager() {
         ])
 
         // Add to document fonts for detection
-        document.fonts.add(loadedFont)
+        adoptFontFace(fontName, fullUrl, loadedFont)
 
         // Wait for fonts to be ready
         await Promise.race([
@@ -558,11 +654,18 @@ export function useFontManager() {
       }
     }
 
-    // Remove custom fonts stylesheet
+    // Remove custom fonts stylesheet, and forget the rules that were in it.
+    //
+    // Clearing the registry is load-bearing, not tidiness: `injectFontFaceCSS`
+    // skips rewriting the sheet when a rule matches what it already recorded, so a
+    // registry surviving the tag's removal would make the next mount decide every
+    // rule was already present and leave the fresh, empty tag unpopulated.
     const styleTag = document.getElementById('custom-fonts-css')
     if (styleTag) {
       styleTag.remove()
     }
+    fontFaceRules.clear()
+    documentFontFaces.clear()
 
     // Remove Safari font loader
     const fontLoader = document.getElementById('font-loader-safari')

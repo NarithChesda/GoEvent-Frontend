@@ -21,6 +21,9 @@ import type {
   CreateTemplateFontPayload,
   UpdateTemplateFontPayload,
   CustomFont,
+  CustomFontQuery,
+  CreateCustomFontPayload,
+  UpdateCustomFontPayload,
 } from '../types'
 
 export const eventTemplateService = {
@@ -299,9 +302,86 @@ export const partnerTemplateService = {
   },
 }
 
-// Custom fonts service (core data endpoint)
+/**
+ * The shared font library.
+ *
+ * One list holds both staff-curated `system` fonts and partner uploads, and the
+ * API scopes the read to the caller: anonymous and ordinary users see the active
+ * system fonts, a partner also sees their own uploads, staff see everything. So
+ * there is no "my fonts" endpoint to call separately — `listFonts()` already
+ * returns the right set, and `source` / `mine` only narrow it further.
+ *
+ * Write access is narrower than read access: a partner may only modify fonts they
+ * uploaded. A system font answers `403` and another partner's font answers `404`,
+ * since it was never in their library to begin with.
+ */
 export const customFontsService = {
-  async listFonts(): Promise<ApiResponse<CustomFont[]>> {
-    return apiClient.get<CustomFont[]>('/api/core-data/custom-fonts/')
+  async listFonts(params?: CustomFontQuery): Promise<ApiResponse<CustomFont[]>> {
+    return apiClient.get<CustomFont[]>('/api/core-data/custom-fonts/', {
+      ...(params?.source ? { source: params.source } : {}),
+      // Only sent when true — the endpoint reads the parameter's presence, and
+      // `mine=false` would be a string the server has no reason to interpret.
+      ...(params?.mine ? { mine: 'true' } : {}),
+      ...(params?.search ? { search: params.search } : {}),
+      ...(params?.ordering ? { ordering: params.ordering } : {}),
+    })
+  },
+
+  /**
+   * Uploads a font file to the library.
+   *
+   * Multipart, always. The server stamps `source` and `created_by` from the
+   * caller's account, so a partner's upload becomes a partner font visible only
+   * to them, and there is nothing the client can send to change that.
+   */
+  async uploadFont(payload: CreateCustomFontPayload): Promise<ApiResponse<CustomFont>> {
+    const formData = new FormData()
+    formData.append('name', payload.name)
+    formData.append('font_file', payload.font_file)
+    if (payload.license_note !== undefined) {
+      formData.append('license_note', payload.license_note)
+    }
+    if (payload.is_active !== undefined) {
+      formData.append('is_active', String(payload.is_active))
+    }
+    return apiClient.postFormData<CustomFont>('/api/core-data/custom-fonts/', formData)
+  },
+
+  /**
+   * Edits a font the caller uploaded.
+   *
+   * Sent as multipart only when the file itself is being replaced; a rename or a
+   * licence-note edit goes as JSON so an omitted `font_file` unambiguously means
+   * "leave the stored file alone" rather than "an empty file field".
+   */
+  async updateFont(
+    fontId: number,
+    payload: UpdateCustomFontPayload,
+  ): Promise<ApiResponse<CustomFont>> {
+    const endpoint = `/api/core-data/custom-fonts/${fontId}/`
+
+    if (payload.font_file) {
+      const formData = new FormData()
+      formData.append('font_file', payload.font_file)
+      if (payload.name !== undefined) formData.append('name', payload.name)
+      if (payload.license_note !== undefined) formData.append('license_note', payload.license_note)
+      if (payload.is_active !== undefined) formData.append('is_active', String(payload.is_active))
+      return apiClient.patchFormData<CustomFont>(endpoint, formData)
+    }
+
+    const { font_file: _file, ...rest } = payload
+    return apiClient.patch<CustomFont>(endpoint, rest)
+  },
+
+  /**
+   * Permanently removes a font the caller uploaded, file included.
+   *
+   * Templates still pointing at it are not blocked or cascaded away — their font
+   * row survives with `font` set to `null`, which the showcase reads as "use the
+   * system default for this language". So a delete degrades a template's type
+   * rather than breaking it, and the row stays there to be reassigned.
+   */
+  async deleteFont(fontId: number): Promise<ApiResponse<void>> {
+    return apiClient.delete<void>(`/api/core-data/custom-fonts/${fontId}/`)
   },
 }

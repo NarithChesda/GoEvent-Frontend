@@ -66,9 +66,19 @@ export interface TemplateFont {
   font_file?: string
   font_type?: string
   font_type_display?: string
+  /**
+   * This row's size trim, multiplied onto the library face's own normalization
+   * when the `@font-face` is injected. See `src/utils/fontMetrics.ts`.
+   */
+  size_scale?: number | string | null
   font?: {
     name: string
     font_file: string
+    /** Metric normalization for the face itself — a property of the typeface. */
+    size_adjust?: number | string | null
+    ascent_override?: number | string | null
+    descent_override?: number | string | null
+    line_gap_override?: number | string | null
   }
 }
 
