@@ -127,9 +127,32 @@ Categories, guest groups, and agenda types carry user/backend-defined hex colors
 Loaded via Google Fonts in [src/assets/main.css](src/assets/main.css) and set as the default `font-sans`:
 
 - **Figtree** (300–900) — all Latin text
-- **Kantumruy Pro** (300–700) — all Khmer text, applied automatically via unicode fallback
+- **Kantumruy Pro** (300–700) — all Khmer body and UI text, applied automatically via unicode fallback
+- **Noto Serif Khmer** (500–700) — Khmer *display* text only, i.e. marketing headlines carrying `.type-display` / `.type-display-sm`. Kantumruy Pro is a UI face: at `font-bold` and headline sizes its counters close up and the coeng subscripts mass into a bar. Noto Serif Khmer is drawn for setting, so a Khmer headline reads as a headline instead of as enlarged interface text. Latin is untouched — Figtree still wins for anything in its own unicode range.
 
 Never hardcode fonts in showcase templates — they load their own fonts dynamically via `primaryFont` / `secondaryFont` props.
+
+### 3.1.1 Khmer is not a heavier Latin
+
+Every size, leading and tracking value in this file was chosen against Figtree. Khmer *stacks* — a vowel sign above the consonant, a coeng subscript below it — so the Latin ladder does not merely run tight, it collides. The corrections live in [main.css](src/assets/main.css) keyed off `:lang(km)` (i18n stamps `<html lang="km">`) and are applied **through the utilities this file already prescribes**, so a component keeps saying what it means once and gets the right number in both scripts:
+
+| Utility | Latin | Khmer |
+|---|---|---|
+| `leading-tight` | 1.25 | 1.35 |
+| `leading-snug` | 1.375 | 1.45 |
+| `leading-normal` | 1.5 | 1.65 |
+| `leading-relaxed` | 1.625 | **1.85** |
+| `leading-loose` | 2 | 2.05 |
+| `tracking-tight(er)` | −0.025em | `normal` |
+| `tracking-wide/wider/widest` | up to 0.1em | 0.01em |
+
+Rules of thumb when writing new UI:
+
+- **Body copy gets `leading-relaxed`.** It is already the prescribed body class (§3.2); it is also the single rule that keeps Khmer paragraphs, list items and descriptions off each other.
+- **Never put display leading in a `text-*` utility's shadow.** Tailwind's `text-*` classes ship their own `line-height` and sort *after* every `leading-*`, so `text-3xl leading-[1.2] lg:text-5xl` silently becomes 1.0 from `lg:` up. Use `.type-display` (hero headline) or `.type-display-sm` (section heading) instead — they are emitted after the utilities and win at every breakpoint, and they carry the Khmer face and leading with them.
+- **Wrap `bg-clip-text` runs in `.clip-text-safe`.** A gradient is painted only inside the element's own background box; a Khmer coeng hangs outside it and, the text being transparent, simply vanishes.
+- **Khmer has no spaces between words.** The reader finds boundaries by cluster shape, so tracking costs more than it costs Latin — never reach for `tracking-*` to fix a Khmer heading.
+- **`ch` is the wrong unit for a Khmer measure.** It is the advance of the current font's zero; use `em`.
 
 ### 3.2 Scale (mobile-first, never a fixed large size on mobile)
 

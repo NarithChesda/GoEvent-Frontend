@@ -75,12 +75,12 @@
            the size are tuned together, such that the longest word sets the
            column width and the second word has to fall to its own line. -->
       <h1
-        class="hero-item text-[clamp(2.125rem,11.5vw,3rem)] font-bold leading-[1.1] tracking-tight text-slate-900 max-w-[13ch] lg:text-[clamp(1.75rem,4.4vw,3.5rem)] lg:leading-[1.18]"
+        class="hero-item hero-headline type-display text-[clamp(2.125rem,11.5vw,3rem)] font-bold tracking-tight text-slate-900 max-w-[13ch] lg:text-[clamp(1.75rem,4.4vw,3.5rem)]"
         style="animation-delay: 80ms"
       >
         {{ t('events.landing.headline') }}
         <span
-          class="block bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] bg-clip-text text-transparent"
+          class="clip-text-safe block bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] bg-clip-text text-transparent"
         >
           {{ t('events.landing.headlineAccent') }}
         </span>
@@ -542,6 +542,38 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* The Khmer headline, sized and measured on its own terms.
+ *
+ * The Latin pair — `13ch` and `11.5vw` — is tuned together so the longest word
+ * sets the column and the headline always stacks (see the template). Neither
+ * number survives the script change. `ch` is the advance of the *current
+ * font's* zero, so under the Khmer display face the same 13 resolves ~15%
+ * short of one line of this headline, which broke the first phrase in two and
+ * stranded the particle ដ៏ at the end of line one. And a Khmer cluster carries
+ * its vowel sign and coeng in the same advance a Latin letter uses for one
+ * glyph, so at 11.5vw the lead line is intrinsically 8.16em — wider than any
+ * phone's text column, at every phone width, regardless of the measure.
+ *
+ * So: `em` for the measure, because it tracks the type size rather than a
+ * Latin digit's width, and its own vw coefficient, set so the lead line holds
+ * on one line down to a 320px phone. The 11% it gives up against the Latin
+ * size is not a loss — Khmer fills more of its em box, so the two set at the
+ * same px do not read at the same size anyway.
+ *
+ * The `lg:` rule only restores the Latin desktop clamp: this selector outranks
+ * the utility class at every width, so without it the phone size would follow
+ * the headline onto a 27" monitor. */
+.hero-headline:lang(km) {
+  font-size: clamp(1.875rem, 10.25vw, 2.75rem);
+  max-width: 9em;
+}
+
+@media (min-width: 1024px) {
+  .hero-headline:lang(km) {
+    font-size: clamp(1.75rem, 4.4vw, 3.5rem);
+  }
+}
+
 /* Own stacking context: without it the per-tile z-indexes would compete with
    the copy's `z-10` and the higher tiles would paint over the headline. */
 /* The base size the multipliers scale from. Tuned so the largest tile is about

@@ -31,7 +31,7 @@
               <h1
                 data-reveal
                 style="--reveal-delay: 60ms"
-                class="mt-5 text-balance text-3xl font-bold leading-[1.2] tracking-tight sm:text-4xl lg:text-5xl 2xl:text-6xl"
+                class="type-display mt-5 text-balance text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl 2xl:text-6xl"
               >
                 <span class="block text-slate-500">{{ t('partners.hero.titleLead') }}</span>
                 <span class="block text-slate-900">{{ t('partners.hero.titleAccent') }}</span>
@@ -82,7 +82,7 @@
                 <li
                   v-for="key in HERO_PROOF"
                   :key="key"
-                  class="flex items-start gap-2.5 text-sm text-slate-600"
+                  class="flex items-start gap-2.5 text-sm leading-relaxed text-slate-600"
                 >
                   <Check class="mt-0.5 h-4 w-4 flex-shrink-0 text-[#2ecc71]" aria-hidden="true" />
                   {{ t(`partners.hero.proof.${key}`) }}
@@ -112,7 +112,7 @@
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
           <header data-reveal class="max-w-2xl">
             <h2
-              class="text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+              class="type-display-sm text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
             >
               {{ t('partners.steps.title') }}
             </h2>
@@ -182,7 +182,7 @@
               {{ t('partners.pricing.eyebrow') }}
             </p>
             <h2
-              class="mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+              class="type-display-sm mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
             >
               {{ t('partners.pricing.title') }}
             </h2>
@@ -430,7 +430,7 @@
               {{ t('partners.product.eyebrow') }}
             </p>
             <h2
-              class="mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+              class="type-display-sm mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
             >
               {{ t('partners.product.title') }}
             </h2>
@@ -476,7 +476,7 @@
                 {{ t('partners.partner.eyebrow') }}
               </p>
               <h2
-                class="mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+                class="type-display-sm mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
               >
                 {{ t('partners.partner.title') }}
               </h2>
@@ -517,7 +517,7 @@
               {{ t('partners.faq.eyebrow') }}
             </p>
             <h2
-              class="mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+              class="type-display-sm mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
             >
               {{ t('partners.faq.title') }}
             </h2>
@@ -567,7 +567,7 @@
             class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-6 py-12 text-center sm:px-10 sm:py-16 lg:py-20"
           >
             <h2
-              class="mx-auto max-w-2xl text-balance text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl lg:text-4xl"
+              class="type-display-sm mx-auto max-w-2xl text-balance text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl"
             >
               {{ t('partners.closing.title') }}
             </h2>
