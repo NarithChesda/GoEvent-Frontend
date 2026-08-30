@@ -223,15 +223,17 @@ const draftAssets = computed(() =>
 
 // ---------------------------------------------------------------------------
 // Which stages this draft even has. Same registry the manage-page studio uses,
-// fed the draft's own assets — so a template with a cover video shows the
-// standard flow's Event Video stage, and one without shows the basic flow's
-// Transition stage, without either being hardcoded here.
+// fed the draft's own stage modes — so the frame list follows what the template
+// says its middle beat is, and falls back to reading it out of the uploaded
+// videos only for a draft that hasn't declared one.
 // ---------------------------------------------------------------------------
 const rendererContext = computed(() => ({
   event: props.eventData ?? {},
   templateAssets: {
     standard_cover_video: draftAssets.value.assets?.standard_cover_video ?? null,
     standard_transition_video: draftAssets.value.assets?.standard_transition_video ?? null,
+    standard_background_video: draftAssets.value.assets?.standard_background_video ?? null,
+    stage_modes: draftAssets.value.stage_modes ?? null,
   },
   // Someone building a template wants to see every stage that template defines,
   // so the basic flow's Transition stage is always offered rather than gated on

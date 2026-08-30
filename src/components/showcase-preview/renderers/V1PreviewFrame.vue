@@ -44,7 +44,7 @@
     :ambient-creatures="event.template_assets?.ambient_creatures"
     :falling-effect="event.template_assets?.falling_effect"
     :sparks="event.template_assets?.sparks"
-    :use-transition-stage="isBasicWedding"
+    :stage-modes="stageModes"
     :get-media-url="getMediaUrl"
     :disable-envelope-interaction="true"
     :show-swipe-arrow="true"
@@ -175,7 +175,7 @@
 <script setup lang="ts">
 import { computed, inject, ref, watch } from 'vue'
 import type { useEventShowcase } from '@/composables/useEventShowcase'
-import { isBasicWeddingShowcase } from './resolvePreviewRenderer'
+import { resolveStageModesForEvent } from '@/composables/showcase/useStageModes'
 import {
   useCoverStageLayout,
   type CoverTextPalette,
@@ -364,13 +364,7 @@ const isDoorTransition = computed(
   () => event.value?.template_assets?.cover_stage_layout?.showcaseAnimationType === 'door',
 )
 
-// Same template-capability check EventShowcaseRefactored.vue uses — tells
-// CoverStage whether the basic-mode decoration background should persist.
-const isBasicWedding = computed(() =>
-  isBasicWeddingShowcase({
-    event: event.value,
-    templateAssets: templateAssets.value,
-    hasFeaturedPhoto: false,
-  }),
-)
+// Resolved by the same function the live showcase uses, so the frame draws
+// the backdrop, the cover exit and the hand-off its guests will actually see.
+const stageModes = computed(() => resolveStageModesForEvent(event.value))
 </script>

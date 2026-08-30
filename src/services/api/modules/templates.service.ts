@@ -142,6 +142,9 @@ export const partnerTemplateService = {
     if (payload.save_the_date_design !== undefined) {
       formData.append('save_the_date_design', JSON.stringify(payload.save_the_date_design))
     }
+    if (payload.stage_modes !== undefined) {
+      formData.append('stage_modes', JSON.stringify(payload.stage_modes))
+    }
     if (payload.falling_effect_custom_image instanceof File) {
       formData.append('falling_effect_custom_image', payload.falling_effect_custom_image)
     } else if (payload.falling_effect_custom_image === '') {
@@ -203,6 +206,9 @@ export const partnerTemplateService = {
     }
     if (payload.save_the_date_design !== undefined) {
       formData.append('save_the_date_design', JSON.stringify(payload.save_the_date_design))
+    }
+    if (payload.stage_modes !== undefined) {
+      formData.append('stage_modes', JSON.stringify(payload.stage_modes))
     }
     if (payload.falling_effect_custom_image instanceof File) {
       formData.append('falling_effect_custom_image', payload.falling_effect_custom_image)

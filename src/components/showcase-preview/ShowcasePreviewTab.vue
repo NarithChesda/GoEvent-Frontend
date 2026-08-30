@@ -446,6 +446,7 @@ import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useHistoryOverlay } from '@/composables/useHistoryOverlay'
 import type { TemplateAssets } from '@/composables/useEventShowcase'
+import type { StageModesConfig } from '@/composables/showcase/useStageModes'
 import type { Event, EventPhoto, EventTemplate } from '@/services/api'
 import { eventTemplateService } from '@/services/api'
 import { useTemplateActivation } from '@/composables/useTemplateActivation'
@@ -563,8 +564,8 @@ const ownedTemplateNames = computed(() => {
 //                      is the only source, called for paid templates too: its
 //                      payload matches the paid showcase endpoint's
 //                      field-for-field (see the frame view's own note), and the
-//                      fields the frame LIST keys off are standard_cover_video
-//                      and standard_transition_video.
+//                      fields the frame LIST keys off are stage_modes and the
+//                      three standard_* videos.
 //   languages          the frames themselves, over the bridge. Only they know —
 //                      `available_languages` arrives on the showcase response —
 //                      and they already publish it (postShowcaseLanguagesToParent);
@@ -581,6 +582,8 @@ const ownedTemplateNames = computed(() => {
 const templateAssets = ref<{
   standard_cover_video?: string | null
   standard_transition_video?: string | null
+  standard_background_video?: string | null
+  stage_modes?: StageModesConfig | null
 } | null>(null)
 
 /** False until the fetch above settles, so the frame list is never rendered
@@ -592,6 +595,8 @@ const error = ref<string | null>(null)
 const toStageAssets = (templateData: TemplateAssets) => ({
   standard_cover_video: templateData.assets?.standard_cover_video ?? null,
   standard_transition_video: templateData.assets?.standard_transition_video ?? null,
+  standard_background_video: templateData.assets?.standard_background_video ?? null,
+  stage_modes: templateData.stage_modes ?? null,
 })
 
 /**
@@ -634,15 +639,11 @@ const stagedTemplateData = ref<TemplateAssets | null>(null)
 // Apply), the frame LIST itself (which tabs — Cover/Transition/Main — even
 // exist to look at) must reflect that candidate's stage layout, not whatever
 // template is actually still applied to the event — otherwise trying on a
-// basic-mode template never shows a "Transition" tab if the currently-applied
-// real template happens to be standard-mode (has a cover video), even though
+// template whose middle beat is the Save the Date card never shows a
+// "Transition" tab if the applied template films that beat instead, even though
 // every frame's own iframe content already updated via postTemplatePreview.
 const rendererContext = computed(() => ({
-  event: {
-    category_details: props.eventData?.category_details,
-    category_name: props.eventData?.category_name,
-    event_video: props.eventData?.event_video,
-  },
+  event: { event_video: props.eventData?.event_video },
   templateAssets: stagedTemplateData.value
     ? toStageAssets(stagedTemplateData.value)
     : templateAssets.value,

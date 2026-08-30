@@ -708,6 +708,60 @@ export interface SaveTheDateDesignConfig {
 }
 
 /**
+ * How one showcase stage presents itself: built from artwork and animated, or
+ * a film.
+ *
+ * One vocabulary for all three stages, because it is one question asked three
+ * times. What each value draws depends on the stage:
+ *
+ * | stage        | `animation`                                        | `video` |
+ * |--------------|----------------------------------------------------|---------|
+ * | `cover`      | the decoration photo, exited by the cover animation | `standard_cover_video` looping full-bleed |
+ * | `transition` | the Save the Date card over the featured photograph | the event's `event_video`, else `standard_transition_video`, full screen |
+ * | `background` | `basic_background_photo` → template colour → white  | `standard_background_video` looping |
+ *
+ * A stage whose asset is missing degrades rather than breaking: an `animation`
+ * middle beat on an event with no featured photo makes the cover's own exit the
+ * whole beat, and a `video` one with no film skips it — which is what those
+ * events already do today.
+ */
+export type StageMode = 'animation' | 'video'
+
+/**
+ * Per-stage presentation modes — which stage is animated and which plays a
+ * film — declared by the template.
+ *
+ * Before this existed the showcase inferred all three from asset presence and
+ * event category: a `standard_cover_video` meant "standard package" and
+ * switched the cover, the middle beat *and* the main backdrop to video
+ * together, while the animated middle beat was hard-limited to the wedding
+ * category. That coupling is what this config replaces. The package plan is a
+ * **pricing** decision and decides nothing here: any plan may put any mode on
+ * any stage.
+ *
+ * **Every key is optional and absent means "infer it from the assets"**, so a
+ * template that carries no `stage_modes` renders as it did before:
+ *
+ * | resolved     | fallback inference                                        |
+ * |--------------|-----------------------------------------------------------|
+ * | `cover`      | `standard_cover_video` present → `video`, else `animation` |
+ * | `transition` | follows the resolved cover                                |
+ * | `background` | `standard_background_video` present, or cover is `video` → `video`, else `animation` |
+ *
+ * See `resolveStageModes` in src/composables/showcase/useStageModes.ts — the
+ * one place that table is implemented — and
+ * docs/backend-api-requirements/stage-modes.md for the pending backend field.
+ */
+export interface StageModesConfig {
+  /** Cover stage. Absent = inferred from `standard_cover_video`. */
+  cover?: StageMode | null
+  /** Middle beat. Absent = follows the cover. */
+  transition?: StageMode | null
+  /** Main content backdrop. Absent = inferred from `standard_background_video`. */
+  background?: StageMode | null
+}
+
+/**
  * Built-in falling particle effect types.
  * Each maps to a predefined SVG shape in the particle registry.
  */
@@ -913,6 +967,8 @@ export interface PartnerTemplate {
   host_info_design: HostInfoDesignConfig | null
   info_card_design: InfoCardDesignConfig | null
   save_the_date_design: SaveTheDateDesignConfig | null
+  /** Per-stage animation/video modes. Null = infer from assets + category. */
+  stage_modes: StageModesConfig | null
   ambient_creatures: AmbientCreaturesConfig | null
   sparks: SparkFieldConfig | null
   /** Custom spark image, when the field uses one instead of a built-in shape. */
@@ -989,6 +1045,8 @@ export interface PartnerTemplateCreatePayload {
   info_card_design?: InfoCardDesignConfig | null
   /** Transition-stage Save the Date design. Pass `null` to keep each stage's own default. */
   save_the_date_design?: SaveTheDateDesignConfig | null
+  /** Per-stage animation/video modes. Pass `null` to fall back to the legacy inference. */
+  stage_modes?: StageModesConfig | null
   /** Ambient creature effect config. Pass `null` to disable the effect. */
   ambient_creatures?: AmbientCreaturesConfig | null
   /** Drifting spark field config. Pass `null` to disable the effect. */

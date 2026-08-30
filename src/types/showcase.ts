@@ -11,6 +11,7 @@ import type {
   HostFrameStyle,
   CoupleOrnament,
   InfoCardDesignConfig,
+  StageModesConfig,
 } from '@/services/api/types/template.types'
 
 // Core showcase data types
@@ -117,6 +118,8 @@ export interface TemplateAssets {
   event_details_design?: EventDetailsDesignConfig | null
   /** Info card (venue/map/countdown/RSVP) design (glass | engraved). Defaults to `glass`. */
   info_card_design?: InfoCardDesignConfig | null
+  /** Per-stage animation/video modes. Absent = legacy asset/category inference. */
+  stage_modes?: StageModesConfig | null
 }
 
 export interface EventPhoto {
