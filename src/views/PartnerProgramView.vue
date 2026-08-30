@@ -264,6 +264,24 @@
                   >
                     {{ tier.credits }}
                   </p>
+                  <!--
+                    Which packages the credits unlock. Two packs can be the same
+                    size at the same price and still be different products — "25
+                    Basic" and "25 Basic Plus" are — so without this line those
+                    two cards differ by one word in the title and read as a bug.
+
+                    A step smaller than the count above it and allowed to wrap:
+                    a pack spanning several plans has a genuinely long label, and
+                    truncating it would hide the very thing the line is here to
+                    show.
+                  -->
+                  <p
+                    v-if="tier.plans"
+                    class="mt-1.5 text-xs leading-relaxed"
+                    :class="tier.featured ? 'text-slate-500' : 'text-slate-400'"
+                  >
+                    {{ t('partners.pricing.forPlan', { plan: tier.plans }) }}
+                  </p>
                 </div>
 
                 <!--

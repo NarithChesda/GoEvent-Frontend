@@ -1,43 +1,55 @@
 /**
  * The pricing tiers shown on the public partner page (`/partners`).
  *
- * Two sources, one shape. The credit packs are the real catalogue and should
- * win whenever we can read them; the authored copy in `partners.json` is what
- * renders when we cannot, which is most of the time — see the gate below.
+ * Two fixed cards, then whatever the backend says belongs here.
  *
  * ---------------------------------------------------------------------------
- * Why this is not simply "fetch the catalogue"
+ * The rule
  * ---------------------------------------------------------------------------
- * `GET /api/payment/credit-packs/` answers **401 to an anonymous request** and
- * 403 to a signed-in non-partner (verified against the running backend on
- * 2026-08-30). The audience for `/partners` is precisely people who are neither
- * — so for the visitor this page exists for, there is no live data to fetch and
- * there cannot be until the backend exposes a public read. That ask is written
- * up in docs/backend-api-requirements/public-credit-pack-catalogue.md.
+ * The rail always opens with the two ways in that cost nothing up front — the
+ * free trial and pay-as-you-go — and those two are always authored copy. Every
+ * card after them is a credit pack the backend has flagged `is_featured`; the
+ * page publishes no wholesale ladder of its own any more. So a catalogue with
+ * nothing featured — or one this visitor cannot read — renders exactly the two
+ * lead cards, which is a complete offer rather than a degraded one.
  *
- * So the fetch waits on `isAuthenticated` (see the watcher at the bottom, and
- * why it is a watcher rather than a check): an anonymous visitor makes no
- * request at all, sees no skeleton, and gets the authored copy immediately,
- * which is the correct and only possible result for them. A signed-in partner
- * gets the live catalogue. When the endpoint goes public, replace that watcher
- * with a bare `onMounted(load)` and every visitor gets live numbers.
+ * Which packs those are is the catalogue's call, not this file's. It used to be
+ * a `/basic/i` test against the plan name, which silently emptied the section
+ * whenever a plan was renamed in the admin; staff now decide with `is_public`,
+ * order with `display_order`, and pick the highlight with `is_featured`. All
+ * three are read here and none is second-guessed.
  *
  * ---------------------------------------------------------------------------
- * What is NOT derived from the API
+ * Why the lead cards are not read from the catalogue
  * ---------------------------------------------------------------------------
- * - **The pay-as-you-go tier.** It is not a pack. It is the `partner_rate`
- *   funding option (see `ActivationOptions`), priced as a percentage of the
- *   plan rather than as a catalogue row, so it has nothing to read here and
- *   stays authored in both modes.
+ * - **Pay-as-you-go is not a pack.** It is the `partner_rate` funding option
+ *   (see `ActivationOptions`), priced as a percentage of the plan rather than
+ *   as a catalogue row, so it has nothing to read here.
+ * - **The trial is a pack**, and its real numbers are used when the catalogue
+ *   carries a featured free one — but its copy ("Nothing", "Free") is authored
+ *   either way, and it falls back to authored figures when there is none.
  * - **The badges.** The catalogue has no notion of a recommendation, so which
- *   pack is "most shops start here" is an editorial call. It is applied by
- *   position after sorting on `credit_count`, so it survives packs being added,
- *   renamed or repriced.
+ *   pack is "most shops start here" is applied by position after sorting on
+ *   `credit_count`, and survives packs being added, renamed or repriced.
+ *
+ * ---------------------------------------------------------------------------
+ * The catalogue is public
+ * ---------------------------------------------------------------------------
+ * `GET /api/payment/credit-packs/` needs no token as of 2026-08-30, which is
+ * what this page was always waiting for: its audience is prospects, and it can
+ * finally quote them real numbers. So the fetch is a plain `onMounted` — there
+ * is nothing to wait for and no `403` to branch on. It used to wait on
+ * `isAuthenticated`, which meant live numbers for signed-in partners and
+ * authored copy for everyone else, exactly backwards.
+ *
+ * A signed-in partner may see one or two packs a prospect never does
+ * (`is_public: false` — a bespoke rate). Those are filtered out here on
+ * purpose: this page is the public offer, and it should read the same to
+ * whoever opens it. A partner's own rate belongs on `/credits`.
  */
 
-import { ref, computed, watch, type ComputedRef, type Ref } from 'vue'
+import { ref, computed, onMounted, type ComputedRef, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/auth'
 import { partnerCreditsService } from '@/services/api/modules/credits.service'
 import type { CreditPack } from '@/services/api/types'
 
@@ -48,6 +60,17 @@ export interface PartnerPricingTier {
   name: string
   /** The line under the name — "Pay per event", "25 invitations". */
   credits: string
+  /**
+   * What the credits may be spent on — "For Basic Plus". Empty renders nothing,
+   * which is the authored tiers: pay-as-you-go is a rate rather than a pack,
+   * and the trial is only scoped once it comes from a real one.
+   *
+   * This is what tells two same-sized packs apart. "25 Basic" and "25 Basic
+   * Plus" are 25 credits at $700 each, so without their plan sets the two cards
+   * are identical but for one word in the title, and a prospect reads that as a
+   * bug rather than a choice.
+   */
+  plans: string
   /**
    * The uppercase line above the name. Editorial; never from the API, and
    * empty on any tier that has nothing to distinguish it — the card reserves
@@ -78,17 +101,14 @@ export interface PartnerPricingTier {
 }
 
 /**
- * Which packs belong on this page. The page is Basic-only for now and the
- * catalogue carries every tier, so the packs have to be narrowed to the plan
- * the copy is talking about.
+ * The cards that always render, in the order they render.
  *
- * Matching on the plan's *name* is the fragile part of this file — a plan
- * renamed in the admin silently empties the section (which falls back to the
- * authored copy, so it degrades quietly rather than breaking). It is the only
- * signal the serializer offers; a `tier` field on the plan would fix it
- * properly. Keep it as one constant so changing it is one line.
+ * `partners.json` still carries a `tiers.shop` and `tiers.volume` block, but
+ * only for their `badge` strings, which label live packs by position. Their
+ * prices are gone: hand-copied wholesale figures that nothing kept in sync are
+ * the problem `is_featured` exists to solve.
  */
-const PLAN_PATTERN = /basic/i
+const LEAD_KEYS = ['trial', 'payg'] as const
 
 /** "675.00" → "$675", "27.50" → "$27.50", with thousands separators. */
 function money(value: string | number): string {
@@ -133,6 +153,26 @@ function planCeiling(pack: CreditPack): number | null {
 }
 
 /**
+ * The plans a pack's credits cover, as one line.
+ *
+ * `pricing_plan_name` is the server's own deduped label, built for exactly this
+ * — the four plans behind a pack that spans categories read as "Basic Plus,
+ * Basic Birthday", not as "Basic Plus" three times. `applicable_plan_names` is
+ * the fallback for a serializer that sends only the flat list, deduped here for
+ * the same reason.
+ *
+ * The category is deliberately left off. The doc's warning that plan names are
+ * ambiguous across categories is about the *buy* card, where a partner is
+ * choosing what to spend; here the line only has to separate one card from its
+ * neighbour, and a second facet doubles its length inside a 17.5rem card.
+ */
+function planLabel(pack: CreditPack): string {
+  const flat = pack.pricing_plan_name?.trim()
+  if (flat) return flat
+  return [...new Set(pack.applicable_plan_names ?? [])].filter(Boolean).join(', ')
+}
+
+/**
  * What a partner can realistically charge for one event on this pack's plan,
  * as [floor, ceiling]. Anchored on the highest plan price rather than spanning
  * every plan the pack covers: a pack that also works on a cheaper category
@@ -150,23 +190,17 @@ export function usePartnerPricingTiers(): {
   isLive: ComputedRef<boolean>
   isLoading: Ref<boolean>
 } {
-  const { t, tm } = useI18n()
-  const authStore = useAuthStore()
+  const { t } = useI18n()
 
   const packs = ref<CreditPack[]>([])
   const isLoading = ref(false)
 
-  /** The keys authored in `partners.json`, in the order they should render. */
-  const authoredKeys = computed<string[]>(() => {
-    const tiers = tm('partners.pricing.tiers') as Record<string, unknown>
-    return tiers && typeof tiers === 'object' ? Object.keys(tiers) : []
-  })
-
   const authoredTiers = computed<PartnerPricingTier[]>(() =>
-    authoredKeys.value.map((key) => ({
+    LEAD_KEYS.map((key) => ({
       key,
       name: t(`partners.pricing.tiers.${key}.name`),
       credits: t(`partners.pricing.tiers.${key}.credits`),
+      plans: '',
       badge: t(`partners.pricing.tiers.${key}.badge`),
       profit: t(`partners.pricing.tiers.${key}.profit`),
       profitCaption: t(`partners.pricing.tiers.${key}.profitCaption`),
@@ -174,75 +208,104 @@ export function usePartnerPricingTiers(): {
       costEach: t(`partners.pricing.tiers.${key}.costEach`),
       keepEach: t(`partners.pricing.tiers.${key}.keepEach`),
       note: t(`partners.pricing.tiers.${key}.note`),
-      featured: key === 'shop',
+      // The dark card is reserved for a recommendation, and neither way in is
+      // one — they are the two things a shop owner can do before deciding.
+      featured: false,
     })),
   )
 
-  /** Packs on the plan this page is about, that we can price a margin against. */
-  const onPlan = computed<CreditPack[]>(() =>
-    packs.value.filter((p) => {
-      const planNames = [p.pricing_plan_name, ...(p.applicable_plan_names ?? [])]
-        .filter(Boolean)
-        .join(' ')
-      return PLAN_PATTERN.test(planNames) && retailBand(p) !== null
-    }),
+  /**
+   * The packs this page may quote.
+   *
+   * Two gates, both of them the backend's. `is_public` is staff's — a bespoke
+   * rate is not the standard offer, and a signed-in partner is the only caller
+   * who ever receives one. `retailBand` is arithmetic: a pack with no plan
+   * attached has no retail price to measure a margin from, so every figure on
+   * its card would be blank (that pack is also unorderable, so it is a mistake
+   * in the admin rather than a case to render).
+   */
+  const listedPacks = computed<CreditPack[]>(() =>
+    packs.value.filter((p) => p.is_public !== false && retailBand(p) !== null),
   )
 
   /**
-   * The wholesale ladder, cheapest pack first.
+   * The wholesale ladder, in the order staff put it in.
    *
-   * Sorted on credit count, then on rate and name so the order is *total*: the
-   * real catalogue carries several packs at the same size (a "25 Basic" and a
-   * "25 Basic Plus"), and `Array.sort` on a partial comparator leaves those in
-   * whatever order the server happened to send, which reshuffles the badges and
-   * the featured card between loads.
+   * `display_order` leads because that is what it is for, and the rest of the
+   * comparator only breaks ties: today every pack in the real catalogue carries
+   * `display_order: 0`, so without a tiebreak `Array.sort` would leave them in
+   * whatever order the server happened to send and the badges would reshuffle
+   * between loads. Size, then rate, then name makes the order *total* — and
+   * when a pack is genuinely ordered, that leading term wins and nothing below
+   * it is consulted.
    */
   const paidPacks = computed<CreditPack[]>(() => {
-    const sorted = onPlan.value
+    const sorted = listedPacks.value
       .filter((p) => Number.parseFloat(p.price) > 0)
       .slice()
       .sort(
         (a, b) =>
+          a.display_order - b.display_order ||
           a.credit_count - b.credit_count ||
           Number.parseFloat(a.price_per_credit) - Number.parseFloat(b.price_per_credit) ||
           a.name.localeCompare(b.name),
       )
 
     /**
-     * One card per pack *size*. The live catalogue carries several packs of the
-     * same size on neighbouring plans — a "25 Basic" and a "25 Basic Plus", both
-     * $28 an invitation — and rendering each as its own card puts two cards on
-     * the page that differ only by a word in the title. A prospect reads that as
-     * a mistake, not a choice. The sort above already puts the cheapest rate
-     * first within a size, so first-wins keeps the better offer.
+     * Every pack, exactly as the catalogue lists it.
+     *
+     * Nothing is collapsed or capped here. Two packs of the same size are two
+     * different packages — "25 Basic" covers Free Basic, Basic Plus and Basic
+     * Birthday, "25 Basic Plus" covers Basic Plus alone — and which of those a
+     * shop can sell is the whole decision. An earlier version kept one card per
+     * size, which was a workaround for cards that did not name their plans;
+     * they do now (`planLabel`), so the duplicate it was hiding was never a
+     * duplicate.
+     *
+     * Staff already own what appears here, through `is_public` and
+     * `display_order`. A second opinion in this file is exactly what this page
+     * spent two rewrites removing.
      */
-    const bySize = new Map<number, CreditPack>()
-    for (const pack of sorted) {
-      if (!bySize.has(pack.credit_count)) bySize.set(pack.credit_count, pack)
-    }
-
-    /**
-     * Every rung, however many there are. This used to keep only the entry pack
-     * and the best rate, because the cards lived in a fixed grid that could not
-     * hold more than four without orphaning one onto a second row. The rail has
-     * no such ceiling, so capping the ladder now just hides packs the partner
-     * could buy — and the whole reason the row scrolls is that the catalogue
-     * decides its own length.
-     */
-    return [...bySize.values()]
+    return sorted
   })
 
-  /** The giveaway, if the catalogue carries one. */
+  /** The giveaway, if the public catalogue carries one. */
   const freePack = computed<CreditPack | null>(
-    () => onPlan.value.find((p) => Number.parseFloat(p.price) === 0) ?? null,
+    () => listedPacks.value.find((p) => Number.parseFloat(p.price) === 0) ?? null,
   )
 
   const livePackTiers = computed<PartnerPricingTier[]>(() => {
     const list = paidPacks.value
-    return list.map((pack, i) => {
+
+    /**
+     * The dark card, and the one that reads "most shops start here".
+     *
+     * Staff's call, via `is_featured`. Nothing stops them flagging several, so
+     * the first flagged pack takes it and the rest render as ordinary cards —
+     * four highlights is the same as none. No pack flagged means no dark card,
+     * which is the honest result: the page is not recommending one.
+     */
+    const highlight = list.find((p) => p.is_featured) ?? null
+
+    /**
+     * "Lowest rate" is a fact rather than an editorial call, so it is measured
+     * rather than assumed from position — `display_order` is staff's and need
+     * not run cheapest-last. Meaningless with a single pack.
+     */
+    const cheapest =
+      list.length > 1
+        ? list.reduce((best, p) =>
+            Number.parseFloat(p.price_per_credit) < Number.parseFloat(best.price_per_credit)
+              ? p
+              : best,
+          )
+        : null
+
+    return list.map((pack) => {
       const [low, high] = retailBand(pack)!
       const perCredit = Number.parseFloat(pack.price_per_credit)
-      const isCheapest = list.length > 1 && i === list.length - 1
+      const isHighlight = pack === highlight
+      const isCheapest = !isHighlight && pack === cheapest
 
       const cost = Number.parseFloat(pack.price)
 
@@ -250,16 +313,16 @@ export function usePartnerPricingTiers(): {
         key: pack.id,
         name: pack.name,
         credits: t('partners.pricing.invitationCount', { n: pack.credit_count }, pack.credit_count),
+        plans: planLabel(pack),
         /**
-         * At most one card claims each label, and the middle of a long ladder
-         * claims none. The old rule gave "most shops start here" to everything
-         * that was not last, so a catalogue with three paid packs printed the
-         * recommendation twice — on two cards that were not even styled alike.
+         * At most one card claims each label, and most of a long ladder claims
+         * none. One card can only carry one line, so the highlight wins where a
+         * pack is both featured and the cheapest.
          */
-        badge: isCheapest
-          ? t('partners.pricing.tiers.volume.badge')
-          : i === 0
-            ? t('partners.pricing.tiers.shop.badge')
+        badge: isHighlight
+          ? t('partners.pricing.tiers.shop.badge')
+          : isCheapest
+            ? t('partners.pricing.tiers.volume.badge')
             : '',
         // What the whole pack is worth once it is sold through, which is the
         // figure that makes the case. Floored at zero so a pack priced above
@@ -276,7 +339,7 @@ export function usePartnerPricingTiers(): {
         costEach: money(perCredit),
         keepEach: range(Math.max(0, low - perCredit), Math.max(0, high - perCredit)),
         note: pack.description || '',
-        featured: i === 0,
+        featured: isHighlight,
       }
     })
   })
@@ -295,6 +358,7 @@ export function usePartnerPricingTiers(): {
       key: pack.id,
       name: t('partners.pricing.tiers.trial.name'),
       credits: t('partners.pricing.eventCount', { n: pack.credit_count }, pack.credit_count),
+      plans: planLabel(pack),
       badge: t('partners.pricing.tiers.trial.badge'),
       profit: range(low * pack.credit_count, high * pack.credit_count),
       profitCaption: t('partners.pricing.packProfitCaption', {
@@ -309,18 +373,20 @@ export function usePartnerPricingTiers(): {
     }
   })
 
+  /** Whether any card after the two lead ones came from the catalogue. */
   const isLive = computed(() => livePackTiers.value.length > 0)
 
   /**
    * The ladder, in the order a shop owner climbs it: try it for nothing, then
-   * pay per event with nothing committed, then buy in bulk. The first two are
-   * authored in both modes — pay-as-you-go is the `partner_rate` option rather
-   * than a catalogue row, and the trial falls back to authored copy when the
-   * catalogue has no free pack.
+   * pay per event with nothing committed, then buy in bulk.
+   *
+   * The two lead cards are unconditional — they are the offer, not a fallback,
+   * so nothing here branches on whether the catalogue could be read. The trial
+   * takes the catalogue's own free pack when there is a featured one, because
+   * that gives it a real credit count and a computed margin instead of authored
+   * ones; the card reads the same either way.
    */
   const tiers = computed<PartnerPricingTier[]>(() => {
-    if (!isLive.value) return authoredTiers.value
-
     const authored = (key: string) => authoredTiers.value.find((tier) => tier.key === key)
     const lead = [liveTrialTier.value ?? authored('trial'), authored('payg')].filter(
       (tier): tier is PartnerPricingTier => Boolean(tier),
@@ -328,58 +394,28 @@ export function usePartnerPricingTiers(): {
     return [...lead, ...livePackTiers.value]
   })
 
-  let hasLoaded = false
-
   async function load() {
-    if (hasLoaded) return
-    hasLoaded = true
-
     isLoading.value = true
     try {
       const res = await partnerCreditsService.getPacks()
-      // A 403 here is "not a partner", not a failure — same as everywhere else
-      // that touches this endpoint. Either way the authored copy is correct.
       if (res.success && res.data) {
         packs.value = Array.isArray(res.data) ? res.data : (res.data.results ?? [])
       }
     } catch {
-      // Nothing to report: this page has a complete answer without the network.
+      // Nothing to report: the two lead cards are a complete offer on their own,
+      // so a failed catalogue read costs the page a ladder, not its meaning.
     } finally {
       isLoading.value = false
     }
   }
 
   /**
-   * Wait for authentication rather than sampling it once on mount.
-   *
-   * `isAuthenticated` is `!!user && authService.isAuthenticated()`, and `user`
-   * arrives from the profile request `App.vue` fires on mount — so at the
-   * moment this composable's `onMounted` runs it is still false for a signed-in
-   * partner who loaded or refreshed `/partners` directly. Reading it once there
-   * meant the live catalogue was never fetched for the only people who can read
-   * it; the page silently served authored copy to everyone.
-   *
-   * `immediate` covers the client-side navigation case, where auth has long
-   * since settled, and `hasLoaded` is what makes it fire exactly once either
-   * way. The watcher deliberately does NOT stop itself: with `immediate`, Vue
-   * runs the callback synchronously *inside* the `watch()` call, so a
-   * `const stop = watch(...)` that calls `stop()` from its own callback throws
-   * `Cannot access 'stop' before initialization` for anyone already signed in
-   * when the page mounts — which took the whole pricing section down. Vue
-   * disposes the watcher with the component scope anyway, and re-entry is
-   * already impossible.
-   *
-   * This gate is also the only thing to remove when the catalogue goes public:
-   * replace the whole watcher with `onMounted(load)` and every visitor gets
-   * live numbers.
+   * One request, on mount, for every visitor. The catalogue is public, so there
+   * is no auth state to wait for — and a token, when the browser has one, is
+   * attached by `apiClient` without this page asking, which is what widens the
+   * response to a partner's own packs.
    */
-  watch(
-    () => authStore.isAuthenticated,
-    (authed) => authed && void load(),
-    {
-      immediate: true,
-    },
-  )
+  onMounted(load)
 
   return { tiers, isLive, isLoading }
 }

@@ -38,6 +38,7 @@
     "payUpfront": "Pay up front",
     "costEach": "Cost each",
     "keepEach": "You keep each",
+    "forPlan": "For {plan}",
     "invitationCount": "{n} invitation | {n} invitations",
     "eventCount": "{n} event | {n} events",
     "packProfitCaption": "selling all {n} at {retail}",
@@ -67,26 +68,10 @@
         "note": "Half the package price, every time. The way to start while your volume is still uncertain."
       },
       "shop": {
-        "name": "25 credits",
-        "credits": "25 invitations",
-        "badge": "Most shops start here",
-        "profit": "$825–1,450",
-        "profitCaption": "selling all 25 at $60–85",
-        "upfront": "$675",
-        "costEach": "$27",
-        "keepEach": "$33–58",
-        "note": "The pack most invitation shops re-order."
+        "badge": "Most shops start here"
       },
       "volume": {
-        "name": "50 credits",
-        "credits": "50 invitations",
-        "badge": "Lowest rate",
-        "profit": "$1,800–3,050",
-        "profitCaption": "selling all 50 at $60–85",
-        "upfront": "$1,200",
-        "costEach": "$24",
-        "keepEach": "$36–61",
-        "note": "For a busy season, when the work is already on the books."
+        "badge": "Lowest rate"
       }
     },
     "footnote": "These are Basic package rates. The Standard package retails at $120–150 per event and has wholesale rates of its own — ask when we open your account. Credits are scoped to the plan you buy them for and can be spent on any event category on that plan: a wedding, a birthday, a funeral. Profit assumes you sell every invitation in the pack; what you charge your own customer is your decision. Prices in USD."
