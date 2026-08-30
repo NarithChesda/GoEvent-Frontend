@@ -1,3 +1,6 @@
+// @vitest-environment jsdom
+// The stack cap is viewport-dependent (one bar on a phone, three on a desktop),
+// so these need a window to measure.
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { useToast } from './useToast'
 
@@ -10,6 +13,7 @@ describe('useToast', () => {
   afterEach(() => {
     useToast().clearToasts()
     vi.useRealTimers()
+    vi.unstubAllGlobals()
   })
 
   it('shares one queue across every call site', () => {
@@ -67,7 +71,9 @@ describe('useToast', () => {
     expect(toasts.value).toHaveLength(0)
   })
 
-  it('caps the stack at three, evicting the oldest', () => {
+  it('caps the stack at three on a desktop, evicting the oldest', () => {
+    // jsdom has no matchMedia; the composable falls back to innerWidth, which
+    // defaults to 1024 — desktop.
     const { showInfo, toasts } = useToast()
     showInfo('One')
     showInfo('Two')
@@ -75,6 +81,17 @@ describe('useToast', () => {
     showInfo('Four')
 
     expect(toasts.value.map((toast) => toast.title)).toEqual(['Two', 'Three', 'Four'])
+  })
+
+  it('shows one at a time on a phone', () => {
+    // Two bars over a ~380px list read as a takeover, so the newest wins.
+    vi.stubGlobal('matchMedia', (media: string) => ({ matches: false, media }))
+
+    const { showInfo, toasts } = useToast()
+    showInfo('Guest added')
+    showInfo('Link copied')
+
+    expect(toasts.value.map((toast) => toast.title)).toEqual(['Link copied'])
   })
 
   it('holds a toast open while paused and resumes with the time it had left', () => {

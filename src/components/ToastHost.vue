@@ -1,18 +1,30 @@
 <template>
   <Teleport to="body">
     <!--
-      Single app-wide toast stack. Anchored top-center on mobile and top-right on
-      desktop: the bottom-right corner belongs to the FAB stack and the mobile tab
-      bar, so anchoring there buried toasts under the Telegram FAB.
+      Single app-wide toast stack.
+
+      Desktop: bottom-right — the corner people expect a notification in — but
+      *beside* the floating action column, never on top of it. `--toast-right`
+      is that column's full lane width, published by MainLayout alongside the
+      other bottom-chrome slots, so the stack shares the FAB's baseline and
+      grows upward without ever covering a button. Anchoring in the corner
+      itself is what drove this stack to the top of the screen originally; the
+      fix was a lane, not a different corner.
+
+      Mobile: top-centre, one bar at a time. The bottom of a phone viewport is
+      entirely spoken for — the floating tab bar, then up to two FABs above it
+      — so a bottom-anchored toast there would either sit ~200px off the edge
+      or block the chrome. A single compact bar dropping from the top is the
+      platform convention and costs one row of the screen.
     -->
     <div
-      class="toast-host fixed z-[1100] flex flex-col items-stretch pointer-events-none left-1/2 -translate-x-1/2 w-[calc(100%-1.5rem)] max-w-[26rem] top-[calc(env(safe-area-inset-top,0px)_+_4.5rem)] lg:left-auto lg:right-6 lg:translate-x-0 lg:w-[23rem] lg:top-20"
+      class="toast-host fixed z-[1100] flex flex-col pointer-events-none left-1/2 -translate-x-1/2 w-[calc(100%-1.5rem)] max-w-[24rem] top-[calc(env(safe-area-inset-top,0px)_+_4.5rem)] lg:left-auto lg:translate-x-0 lg:top-auto lg:w-[20.5rem] lg:right-[var(--toast-right,6rem)] lg:bottom-[var(--fab-bottom,1rem)]"
       role="region"
       :aria-label="t('common.notifications.title')"
       @focusin="pauseToasts"
       @focusout="resumeToasts"
     >
-      <TransitionGroup name="toast" tag="div" class="relative flex flex-col gap-2">
+      <TransitionGroup name="toast" tag="div" class="relative flex flex-col gap-2" @leave="onLeave">
         <div
           v-for="toast in toasts"
           :key="toast.id"
@@ -26,27 +38,35 @@
           @pointerup="onPointerEnd"
           @pointercancel="onPointerEnd"
         >
+          <!--
+            A quiet glass row, not a status banner: the type reads from a small
+            icon disc and nothing else. The full-bleed coloured countdown bar
+            this replaced was the loudest thing on the page for a message that
+            says "copied", and the only place in the app painting a saturated
+            band edge to edge. Hover still pauses the timer — the bar was never
+            the affordance, only its decoration.
+          -->
           <div
             :role="toast.type === 'error' ? 'alert' : 'status'"
             :aria-live="toast.type === 'error' ? 'assertive' : 'polite'"
             aria-atomic="true"
-            class="relative flex items-start gap-3 overflow-hidden rounded-2xl border border-white/70 bg-white/85 px-3.5 py-3 shadow-lg shadow-slate-900/10 ring-1 ring-slate-900/5 backdrop-blur-xl"
+            class="relative flex gap-2.5 overflow-hidden rounded-xl border border-white/70 bg-white/95 px-3 py-2.5 shadow-lg shadow-slate-900/[0.08] ring-1 ring-slate-900/[0.06] backdrop-blur-xl"
+            :class="toast.description ? 'items-start' : 'items-center'"
           >
-            <!-- Type accent: colored icon disc + matching hairline progress bar -->
             <span
-              class="mt-px grid h-8 w-8 flex-shrink-0 place-items-center rounded-full"
+              class="grid h-6 w-6 flex-shrink-0 place-items-center rounded-full"
               :class="STYLES[toast.type].disc"
             >
-              <component :is="STYLES[toast.type].icon" class="h-[18px] w-[18px]" />
+              <component :is="STYLES[toast.type].icon" class="h-3.5 w-3.5" />
             </span>
 
-            <div class="min-w-0 flex-1 py-0.5">
-              <p class="text-sm font-semibold leading-snug text-slate-900 break-words">
+            <div class="min-w-0 flex-1">
+              <p class="text-[13px] font-semibold leading-snug text-slate-900 line-clamp-2">
                 {{ toast.title }}
               </p>
               <p
                 v-if="toast.description"
-                class="mt-0.5 text-xs leading-relaxed text-slate-500 break-words"
+                class="mt-0.5 text-xs leading-snug text-slate-500 line-clamp-2"
               >
                 {{ toast.description }}
               </p>
@@ -55,7 +75,8 @@
             <!-- Repeat counter, so a hammered action shows "×3" instead of 3 toasts -->
             <span
               v-if="toast.count > 1"
-              class="mt-1 flex-shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-slate-500"
+              class="flex-shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-slate-500"
+              :class="toast.description ? 'mt-0.5' : ''"
             >
               ×{{ toast.count }}
             </span>
@@ -63,28 +84,13 @@
             <button
               v-if="toast.dismissible"
               type="button"
-              class="-mr-1 mt-0.5 grid h-7 w-7 flex-shrink-0 place-items-center rounded-lg text-slate-400 transition-colors duration-200 hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+              class="relative -mr-0.5 grid h-6 w-6 flex-shrink-0 place-items-center rounded-md text-slate-400 transition-colors duration-150 after:absolute after:-inset-2 after:content-[''] hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+              :class="toast.description ? 'mt-px' : ''"
               :aria-label="t('common.actions.close')"
               @click="dismissToast(toast.id)"
             >
-              <X class="h-4 w-4" />
+              <X class="h-3.5 w-3.5" />
             </button>
-
-            <div
-              v-if="toast.duration > 0"
-              class="absolute inset-x-0 bottom-0 h-[3px] overflow-hidden"
-              aria-hidden="true"
-            >
-              <div
-                :key="`${toast.id}-${toast.count}`"
-                class="toast-progress h-full w-full origin-left rounded-full"
-                :class="STYLES[toast.type].bar"
-                :style="{
-                  animationDuration: `${toast.duration}ms`,
-                  animationPlayState: isPaused ? 'paused' : 'running',
-                }"
-              ></div>
-            </div>
           </div>
         </div>
       </TransitionGroup>
@@ -93,24 +99,51 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type Component } from 'vue'
+import { onBeforeUnmount, onMounted, ref, type Component } from 'vue'
 import { CheckCircle, AlertCircle, AlertTriangle, Info, X } from 'lucide-vue-next'
 import { useAppLanguage } from '../composables/useAppLanguage'
 import { useToast, type Toast, type ToastType } from '../composables/useToast'
 
 const { t } = useAppLanguage()
-const { toasts, isPaused, dismissToast, pauseToasts, resumeToasts } = useToast()
+const { toasts, dismissToast, pauseToasts, resumeToasts } = useToast()
 
-const STYLES: Record<ToastType, { icon: Component; disc: string; bar: string }> = {
-  success: { icon: CheckCircle, disc: 'bg-emerald-50 text-emerald-600', bar: 'bg-emerald-500/70' },
-  error: { icon: AlertCircle, disc: 'bg-red-50 text-red-600', bar: 'bg-red-500/70' },
-  warning: { icon: AlertTriangle, disc: 'bg-amber-50 text-amber-600', bar: 'bg-amber-500/70' },
-  info: { icon: Info, disc: 'bg-sky-50 text-sky-600', bar: 'bg-[#1e90ff]/70' },
+// Status colours are DESIGN.md §2.3's, not a palette of the toast's own: green
+// for success (the brand's `#2ecc71` sits in `green`, not `emerald`), red for
+// failure, amber for warning, brand blue for info.
+const STYLES: Record<ToastType, { icon: Component; disc: string }> = {
+  success: { icon: CheckCircle, disc: 'bg-green-50 text-green-600' },
+  error: { icon: AlertCircle, disc: 'bg-red-50 text-red-600' },
+  warning: { icon: AlertTriangle, disc: 'bg-amber-50 text-amber-600' },
+  info: { icon: Info, disc: 'bg-sky-50 text-[#1e90ff]' },
 }
 
+// --- Anchor ------------------------------------------------------------------
+// The stack hangs from the top on a phone and rises from the bottom on a
+// desktop, so "swipe it away" is a different direction on each. Everything that
+// depends on the anchor reads this one flag; the enter/leave transforms mirror
+// it in CSS at the same breakpoint.
+const DESKTOP_QUERY = '(min-width: 1024px)'
+const isBottomAnchored = ref(false)
+let anchorQuery: MediaQueryList | null = null
+
+const syncAnchor = (event: MediaQueryList | MediaQueryListEvent): void => {
+  isBottomAnchored.value = event.matches
+}
+
+onMounted(() => {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
+  anchorQuery = window.matchMedia(DESKTOP_QUERY)
+  syncAnchor(anchorQuery)
+  anchorQuery.addEventListener('change', syncAnchor)
+})
+
+onBeforeUnmount(() => {
+  anchorQuery?.removeEventListener('change', syncAnchor)
+})
+
 // --- Swipe / drag to dismiss -------------------------------------------------
-// The stack is top-anchored, so flicking a toast upward is the natural gesture.
-// Dragging downward rubber-bands instead of moving 1:1.
+// Dismissal always travels away from the anchored edge; dragging back towards
+// it rubber-bands instead of moving 1:1.
 const DISMISS_THRESHOLD = 56
 const FADE_DISTANCE = 120
 
@@ -129,14 +162,16 @@ const onPointerDown = (event: PointerEvent, toast: Toast): void => {
 const onPointerMove = (event: PointerEvent): void => {
   if (!drag.value) return
   const delta = event.clientY - drag.value.startY
-  drag.value.offset = delta < 0 ? delta : delta * 0.2
+  const awayFromAnchor = isBottomAnchored.value ? delta > 0 : delta < 0
+  drag.value.offset = awayFromAnchor ? delta : delta * 0.2
 }
 
 const onPointerEnd = (): void => {
   if (!drag.value) return
   const { id, offset } = drag.value
   drag.value = null
-  if (offset < -DISMISS_THRESHOLD) {
+  const travelled = isBottomAnchored.value ? offset : -offset
+  if (travelled > DISMISS_THRESHOLD) {
     dismissToast(id)
   }
 }
@@ -149,16 +184,41 @@ const dragStyle = (id: string): Record<string, string> => {
     opacity: String(Math.max(1 - Math.abs(offset) / FADE_DISTANCE, 0.2)),
   }
 }
+
+/**
+ * Pin a leaving toast to the spot it already occupies before it drops out of
+ * flow, so the survivors can glide into the gap.
+ *
+ * `position: absolute` alone — the documented TransitionGroup recipe — sends a
+ * flex child to the *container's* start rather than to its own laid-out
+ * position, which is invisible only while the departing toast happens to be the
+ * first one. Swipe the middle of a three-high desktop stack and it would jump
+ * to the top before fading.
+ */
+const onLeave = (el: Element): void => {
+  const node = el as HTMLElement
+  const parent = node.offsetParent as HTMLElement | null
+  if (!parent) return
+  const rect = node.getBoundingClientRect()
+  const parentRect = parent.getBoundingClientRect()
+  node.style.top = `${rect.top - parentRect.top}px`
+  node.style.width = `${rect.width}px`
+}
 </script>
 
 <style scoped>
+/* Strong ease-out — the built-in curve is too soft to read as deliberate. */
+.toast-host {
+  --toast-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
 .toast-item {
   /* Own the vertical gesture so a swipe dismisses instead of scrolling the page. */
   touch-action: none;
   will-change: transform, opacity;
   /* Springs back when a drag is released short of the dismiss threshold. */
   transition:
-    transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+    transform 0.3s var(--toast-ease),
     opacity 0.3s ease;
 }
 
@@ -168,49 +228,44 @@ const dragStyle = (id: string): Record<string, string> => {
   transition: none;
 }
 
-.toast-progress {
-  animation-name: toast-progress;
-  animation-timing-function: linear;
-  animation-fill-mode: forwards;
-}
-
-@keyframes toast-progress {
-  from {
-    transform: scaleX(1);
-  }
-  to {
-    transform: scaleX(0);
-  }
-}
-
-/* Enter/leave: drop in from above, matching the top anchor. */
+/* Enter/leave through the anchored edge, so a swipe-to-dismiss reads as the
+   entrance reversed: down from the top on mobile, up from the bottom on desktop. */
 .toast-enter-active {
   transition:
-    transform 0.38s cubic-bezier(0.32, 0.72, 0, 1),
-    opacity 0.28s ease;
+    transform 0.26s var(--toast-ease),
+    opacity 0.2s ease-out;
 }
 
 .toast-leave-active {
   transition:
-    transform 0.22s cubic-bezier(0.32, 0.72, 0, 1),
-    opacity 0.18s ease;
-  /* Pull the leaving toast out of flow so the survivors glide up smoothly. */
+    transform 0.18s var(--toast-ease),
+    opacity 0.14s ease-out;
+  /* Pull the leaving toast out of flow so the survivors glide into the gap. */
   position: absolute;
-  width: 100%;
 }
 
 .toast-enter-from {
   opacity: 0;
-  transform: translateY(-14px) scale(0.96);
+  transform: translateY(-12px) scale(0.97);
 }
 
 .toast-leave-to {
   opacity: 0;
-  transform: translateY(-8px) scale(0.95);
+  transform: translateY(-8px) scale(0.97);
+}
+
+@media (min-width: 1024px) {
+  .toast-enter-from {
+    transform: translateY(12px) scale(0.97);
+  }
+
+  .toast-leave-to {
+    transform: translateY(8px) scale(0.97);
+  }
 }
 
 .toast-move {
-  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: transform 0.24s var(--toast-ease);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -223,11 +278,6 @@ const dragStyle = (id: string): Record<string, string> => {
   .toast-enter-from,
   .toast-leave-to {
     transform: none;
-  }
-
-  .toast-progress {
-    animation: none;
-    transform: scaleX(1);
   }
 }
 </style>
