@@ -154,7 +154,7 @@
         @click.stop="handleMobileCopyLink"
         class="md:hidden relative px-3 py-1.5 text-xs font-semibold flex-shrink-0 rounded-full transition-all duration-200 after:absolute after:-inset-y-2 after:inset-x-0 after:content-['']"
         :class="showCopiedFeedback
-          ? 'text-emerald-700 bg-emerald-100'
+          ? 'text-green-700 bg-green-100'
           : 'text-slate-600 bg-slate-100 hover:bg-slate-200 active:bg-slate-300'"
       >
         {{ showCopiedFeedback ? t('management.guestGroupsView.guestListItem.copied') : t('management.guestGroupsView.guestListItem.copy') }}
@@ -163,7 +163,7 @@
       <!-- Actions (hidden on mobile; revealed on row hover / keyboard focus on desktop) -->
       <div
         class="hidden md:flex items-center gap-0.5 flex-shrink-0 transition-opacity duration-150"
-        :class="showLinkMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'"
+        :class="showLinkMenu || showCopiedFeedback ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'"
       >
         <!-- Mark Sent (only if not sent) -->
         <button
@@ -175,16 +175,25 @@
           <Send class="w-4 h-4" />
         </button>
 
-        <!-- Copy Link with smart dropdown -->
+        <!-- Copy Link with smart dropdown. After a copy the icon flips to a
+             tick for a beat — the confirmation lands on the control that was
+             pressed instead of as a toast on the far side of the screen. -->
         <div class="relative" ref="linkMenuContainer">
           <button
             ref="linkButton"
             @click.stop="toggleLinkMenu"
-            :title="t('management.guestGroupsView.guestListItem.copyLink')"
-            class="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all"
-            :class="{ 'bg-slate-100 text-slate-700': showLinkMenu }"
+            :title="showCopiedFeedback
+              ? t('management.guestGroupsView.guestListItem.copied')
+              : t('management.guestGroupsView.guestListItem.copyLink')"
+            class="p-2 rounded-xl transition-colors duration-150"
+            :class="showCopiedFeedback
+              ? 'text-green-600 bg-green-50'
+              : showLinkMenu
+                ? 'bg-slate-100 text-slate-700'
+                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'"
           >
-            <Link class="w-4 h-4" />
+            <Check v-if="showCopiedFeedback" class="w-4 h-4" />
+            <Link v-else class="w-4 h-4" />
           </button>
         </div>
 
@@ -293,6 +302,7 @@ import {
   ChevronDown,
 } from 'lucide-vue-next'
 import type { EventGuest, GuestGroup } from '../../services/api'
+import { useActionConfirmation } from '../../composables/useActionConfirmation'
 
 const { t } = useI18n()
 
@@ -339,7 +349,12 @@ const props = defineProps<{
 
 // Emits
 const emit = defineEmits<{
-  'copy-link': [guest: EventGuest, language: 'en' | 'kh']
+  /**
+   * `silent` suppresses the parent's success toast — this row confirms the copy
+   * in place, on the control that was pressed, and a toast on top of that is the
+   * same news twice. Failures still toast: an in-place tick can't report one.
+   */
+  'copy-link': [guest: EventGuest, language: 'en' | 'kh', silent?: boolean]
   'mark-sent': [guest: EventGuest]
   edit: [guest: EventGuest]
   delete: [guest: EventGuest]
@@ -354,7 +369,7 @@ const linkButton = ref<HTMLElement | null>(null)
 const dropdownMenu = ref<HTMLElement | null>(null)
 const dropdownPosition = ref<'top' | 'bottom'>('bottom')
 const dropdownStyle = ref<Record<string, string>>({})
-const showCopiedFeedback = ref(false)
+const { confirmed: showCopiedFeedback, confirm: flashCopied } = useActionConfirmation()
 
 // Inline group-reassignment popover state
 const showGroupPopover = ref(false)
@@ -385,13 +400,14 @@ const handleCardTap = () => {
   emit('edit', props.guest)
 }
 
-// Mobile copy link handler with feedback
+/**
+ * Copying a guest link is the most repeated action on this screen, and the
+ * answer people need — "it went in" — belongs under their finger, not in a bar
+ * somewhere else on the page. Both call sites therefore emit `silent`.
+ */
 const handleMobileCopyLink = () => {
-  emit('copy-link', props.guest, 'kh')
-  showCopiedFeedback.value = true
-  setTimeout(() => {
-    showCopiedFeedback.value = false
-  }, 1500)
+  emit('copy-link', props.guest, 'kh', true)
+  flashCopied()
 }
 
 /**
@@ -598,8 +614,9 @@ const toggleLinkMenu = () => {
 }
 
 const handleCopyLink = (language: 'en' | 'kh') => {
-  emit('copy-link', props.guest, language)
+  emit('copy-link', props.guest, language, true)
   closeDropdown()
+  flashCopied()
 }
 
 // Global click handler to close dropdowns/popovers when clicking outside

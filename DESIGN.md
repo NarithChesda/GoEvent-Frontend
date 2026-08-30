@@ -155,8 +155,8 @@ Weights: `font-bold` for page/section titles, `font-semibold` for card titles an
 | Radius | Components |
 |---|---|
 | `rounded-lg` (8px) | Inputs, small buttons, badges, icon buttons |
-| `rounded-xl` (12px) | Dropdown menus, list rows, large buttons |
-| `rounded-2xl` (16px) | Cards, drawer panels, toasts |
+| `rounded-xl` (12px) | Dropdown menus, list rows, large buttons, toasts |
+| `rounded-2xl` (16px) | Cards, drawer panels |
 | `rounded-3xl` (24px) | Modals, glass section panels, bottom sheets |
 | `rounded-full` | Pills, avatars, FABs, toggles, icon discs |
 
@@ -218,7 +218,7 @@ Full class-by-class recipes live in the [design skill](.claude/skills/goevent-de
 - **Drawers, not modals, for create/edit flows**: full-screen sheet on mobile, floating right panel on desktop, brand-gradient header, sticky footer with gradient submit. Modals are reserved for confirmations and pickers (`rounded-3xl`, centered, destructive confirms use the red icon-disc layout).
 - **Multilingual editing**: per-language stacked cards (base language first), never language tabs.
 - **Dropdowns**: white `rounded-xl shadow-xl` menus with a transparent click-outside overlay; selected item = brand gradient + white text.
-- **Toasts**: one app-wide stack only — `useToast()` feeding `ToastHost` (mounted once in `App.vue`); never render toast markup in a feature component. Light glass cards with a colored icon disc and progress hairline, anchored top-center on mobile and top-right on desktop, auto-dismissing with hover-pause, duplicate coalescing, and swipe-to-dismiss.
+- **Toasts**: one app-wide stack only — `useToast()` feeding `ToastHost` (mounted once in `App.vue`); never render toast markup in a feature component. Compact glass rows with a small colored icon disc and no progress bar, anchored bottom-right on desktop (in the lane beside the FAB column, never over it) and top-center on mobile, capped at three on desktop and **one** below `lg`, auto-dismissing with hover-pause, duplicate coalescing, and swipe-to-dismiss away from the anchored edge. **A toast is the last resort, not the default.** If the result is already on screen (a row appears, a price redraws), say nothing; if the control can answer, flip it to a tick and a past-tense word via `useActionConfirmation` (`Copy → Copied`, `Activate now → Template activated`); only toast what happens away from what the user pressed. Never both. Failures are the exception — they always toast or use an inline banner, because a control returning to idle cannot say why.
 - **Every page ships four states**: loading skeleton (mirrors the real layout with `animate-pulse` slate blocks), populated content, empty state (gradient-tinted icon disc + title + description + optional CTA), and error (red icon disc + friendly message + retry). Auth-gated pages add an unauthenticated state.
 - **Icons**: `lucide-vue-next` only — `w-4 h-4` inline/buttons, `w-5 h-5` nav/toasts, `w-6 h-6` FABs; larger only inside icon discs.
 

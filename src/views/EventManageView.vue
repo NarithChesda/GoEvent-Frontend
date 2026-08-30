@@ -876,7 +876,9 @@ const handleTemplateUpdated = (template: any) => {
     event.value.event_template = template.id
     event.value.event_template_details = template // Set template details for immediate use
     event.value.event_template_enabled = false // Keep for backward compatibility
-    showMessage('success', 'Template selected successfully!')
+    // No toast: the modal's confirm button already flipped to "Template
+    // applied" while it closed, and the studio underneath is repainting in the
+    // new template. Announcing it a third time is the noise, not the news.
   }
 }
 

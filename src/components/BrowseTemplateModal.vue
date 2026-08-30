@@ -424,13 +424,14 @@
                   <button
                     ref="confirmButtonRef"
                     @click="handleConfirmSelection"
-                    :disabled="selecting"
+                    :disabled="selecting || confirmed"
                     :class="BTN_PRIMARY_BAR"
                     type="button"
                   >
-                    <Loader2 v-if="selecting" class="w-4 h-4 animate-spin" />
-                    <span class="hidden sm:inline">{{ selecting ? t('management.browseTemplateModal.footer.applying') : t('management.browseTemplateModal.footer.useTemplate') }}</span>
-                    <span class="sm:hidden">{{ selecting ? t('management.browseTemplateModal.footer.applyingShort') : t('management.browseTemplateModal.footer.use') }}</span>
+                    <Check v-if="confirmed" class="w-4 h-4" />
+                    <Loader2 v-else-if="selecting" class="w-4 h-4 animate-spin" />
+                    <span class="hidden sm:inline">{{ confirmLabel }}</span>
+                    <span class="sm:hidden">{{ confirmLabelShort }}</span>
                   </button>
                 </div>
               </Transition>
@@ -452,6 +453,7 @@ import type { TemplateAssets } from '../composables/useEventShowcase'
 import { useTemplateApi } from '../composables/useTemplateApi'
 import { useTemplateFiltering } from '../composables/useTemplateFiltering'
 import { useTemplateSelection } from '../composables/useTemplateSelection'
+import { useActionConfirmation } from '../composables/useActionConfirmation'
 import { useAuthStore } from '../stores/auth'
 
 // Import child components
@@ -861,13 +863,36 @@ const stagePreview = async (templateId: number): Promise<void> => {
   }
 }
 
-// Constants for timeout values
+/**
+ * How long the modal stays up after the server has agreed, so the studio behind
+ * it can repaint before the curtain lifts.
+ *
+ * That beat used to be spent still spinning "Applying…" on a request that had
+ * already returned, with the actual confirmation arriving as a toast *after*
+ * the modal was gone. Now the button carries it — `confirmed` flips it to a
+ * tick and "Template applied" for exactly this long, then the follow-up fires.
+ * Same wait, and the control the user pressed is the thing that answers.
+ */
 const SELECTION_DELAY_SAME = 1000
 const SELECTION_DELAY_NEW = 2000
 
+const { confirmed, confirm } = useActionConfirmation(SELECTION_DELAY_NEW)
+
+const confirmLabel = computed(() => {
+  if (confirmed.value) return t('management.browseTemplateModal.footer.applied')
+  if (selecting.value) return t('management.browseTemplateModal.footer.applying')
+  return t('management.browseTemplateModal.footer.useTemplate')
+})
+
+const confirmLabelShort = computed(() => {
+  if (confirmed.value) return t('management.browseTemplateModal.footer.appliedShort')
+  if (selecting.value) return t('management.browseTemplateModal.footer.applyingShort')
+  return t('management.browseTemplateModal.footer.use')
+})
+
 const handleConfirmSelection = async (): Promise<void> => {
   const template = activeSelectedTemplate.value
-  if (!template || selecting.value) return
+  if (!template || selecting.value || confirmed.value) return
 
   // Partner template: use the select-template endpoint directly
   if (selectedPartnerTemplate.value) {
@@ -878,10 +903,10 @@ const handleConfirmSelection = async (): Promise<void> => {
         selectedPartnerTemplate.value.id,
       )
       if (response.success) {
-        setTimeout(() => {
+        confirm(() => {
           emit('template-selected', selectedPartnerTemplate.value as unknown as EventTemplate)
           handleModalClose()
-        }, SELECTION_DELAY_NEW)
+        })
       }
     } finally {
       selecting.value = false
@@ -895,7 +920,7 @@ const handleConfirmSelection = async (): Promise<void> => {
 
   if (result.success && result.template) {
     const delay = result.template === selectedTemplate.value ? SELECTION_DELAY_SAME : SELECTION_DELAY_NEW
-    setTimeout(() => {
+    confirm(() => {
       emit('template-selected', result.template!)
       handleModalClose()
     }, delay)
