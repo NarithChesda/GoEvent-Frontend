@@ -799,7 +799,10 @@ const handleEventUpdatedFromDrawer = (updatedEvent: Event) => {
       organizer_details: updatedEvent.organizer_details || event.value.organizer_details,
       category_details: updatedEvent.category_details || event.value.category_details,
     }
-    showMessage('success', 'Event updated successfully!')
+    // No toast: the drawer holds its own "Saved" tick before it slides away,
+    // and the merge above has already repainted the page behind it with the new
+    // values. The bar was the third telling — and the one the user asked to
+    // stop seeing.
   }
 }
 
@@ -876,7 +879,9 @@ const handleTemplateUpdated = (template: any) => {
     event.value.event_template = template.id
     event.value.event_template_details = template // Set template details for immediate use
     event.value.event_template_enabled = false // Keep for backward compatibility
-    showMessage('success', 'Template selected successfully!')
+    // No toast: the modal's confirm button already flipped to "Template
+    // applied" while it closed, and the studio underneath is repainting in the
+    // new template. Announcing it a third time is the noise, not the news.
   }
 }
 

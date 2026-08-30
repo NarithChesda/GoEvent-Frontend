@@ -5,7 +5,7 @@
       <div
         v-if="modelValue"
         class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
-        @click="closeDrawer()"
+        @click="requestClose()"
       />
     </Transition>
 
@@ -22,8 +22,9 @@
             <!-- Left: Close button & Title -->
             <div class="flex items-center gap-2 min-w-0">
               <button
-                @click="closeDrawer"
-                class="p-1.5 hover:bg-white/20 rounded-lg drawer-close flex-shrink-0"
+                :disabled="isBusy"
+                @click="requestClose"
+                class="p-1.5 hover:bg-white/20 rounded-lg drawer-close flex-shrink-0 disabled:opacity-40 disabled:pointer-events-none"
                 :title="t('management.editEventDrawer.header.closeTitle')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
@@ -35,7 +36,7 @@
             <button
               v-if="event"
               @click="showDeleteConfirm = true"
-              :disabled="isSubmitting || isDeleting"
+              :disabled="isBusy || isDeleting"
               class="p-1.5 hover:bg-white/20 rounded-lg drawer-close disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
               :title="t('management.editEventDrawer.header.deleteTitle')"
             >
@@ -500,20 +501,35 @@
         <!-- Footer with Action Buttons -->
         <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
           <div class="flex items-center justify-between">
+            <!-- The three states share one grid cell, so the button measures to
+                 the widest of them once and never resizes as they swap. Same
+                 face-swap the create drawer runs — one stylesheet, so saving an
+                 event and creating one feel like the same act. -->
             <button
               @click="handleSubmit"
-              :disabled="isSubmitting"
-              class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 drawer-action shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              :disabled="isBusy"
+              :class="['action-btn', isComplete ? 'is-complete' : '']"
+              class="grid px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 shadow-md"
             >
-              <Loader v-if="isSubmitting" class="w-4 h-4 animate-spin" />
-              <Save v-else class="w-4 h-4" />
-              <span>{{ isSubmitting ? t('management.editEventDrawer.footer.saving') : t('management.editEventDrawer.footer.saveBtn') }}</span>
+              <span class="action-face" :data-on="!isSubmitting && !isComplete">
+                <Save class="w-4 h-4" />
+                <span>{{ t('management.editEventDrawer.footer.saveBtn') }}</span>
+              </span>
+              <span class="action-face" :data-on="isSubmitting">
+                <Loader class="w-4 h-4 animate-spin" />
+                <span>{{ t('management.editEventDrawer.footer.saving') }}</span>
+              </span>
+              <span class="action-face" :data-on="isComplete" aria-live="polite">
+                <Check class="w-4 h-4" />
+                <span>{{ t('management.editEventDrawer.footer.saved') }}</span>
+              </span>
             </button>
 
             <button
               type="button"
+              :disabled="isBusy"
               @click="closeDrawer"
-              class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors"
+              class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:pointer-events-none"
             >
               {{ t('management.editEventDrawer.footer.cancel') }}
             </button>
@@ -539,7 +555,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed, onUnmounted } from 'vue'
+import { ref, reactive, watch, computed, nextTick, onUnmounted } from 'vue'
 import {
   X,
   Loader,
@@ -548,6 +564,7 @@ import {
   Video,
   Link2,
   Save,
+  Check,
   ArrowRight,
   Trash2,
   Globe,
@@ -572,6 +589,7 @@ import { TIMEZONE_OPTIONS, getUserTimezone } from '../utils/timezones'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
 import { useToast } from '@/composables/useToast'
+import { useActionConfirmation } from '@/composables/useActionConfirmation'
 
 interface Props {
   modelValue: boolean
@@ -595,6 +613,12 @@ const event = ref<Event | null>(null)
 const categories = ref<EventCategory[]>([])
 const loading = ref(false)
 const isSubmitting = ref(false)
+// Held on screen after a successful save, long enough to be seen: the face swap
+// alone costs ~280ms, so a shorter hold would close on a tick that never
+// finished arriving. Same figure as the create drawer's.
+const { confirmed: isComplete, confirm: holdConfirmation, reset: resetConfirmation } =
+  useActionConfirmation(900)
+const isBusy = computed(() => isSubmitting.value || isComplete.value)
 const isDeleting = ref(false)
 const showDeleteConfirm = ref(false)
 const error = ref<string | null>(null)
@@ -875,9 +899,11 @@ const handleSubmit = async () => {
     }
   }
 
-  // If nothing changed, inform user and return early
+  // Nothing changed: the answer to "save this" is still "it's saved", so the
+  // button says so and the drawer closes exactly as it would have. A green
+  // toast reading "No changes to save" was reporting a non-event as a success.
   if (Object.keys(updateData).length === 0) {
-    showMessage('success', 'No changes to save')
+    holdConfirmation(() => closeDrawer())
     return
   }
 
@@ -887,22 +913,34 @@ const handleSubmit = async () => {
     const response = await eventsService.patchEvent(event.value.id, updateData)
 
     if (response.success && response.data) {
-      showMessage('success', 'Event updated successfully!')
       emit('updated', response.data)
       // Update original form to reflect saved state
       originalForm.value = { ...form }
-      setTimeout(() => {
-        closeDrawer()
-      }, 1000)
-    } else {
-      showMessage('error', response.message || 'Failed to update event')
+
+      // Let the parent's merge and re-render land before the swap starts. That
+      // merge rebuilds the whole event object behind the drawer, and starting a
+      // 280ms transition in the same tick means its opening frames compete with
+      // that work — the create drawer refreshes its list before handing back for
+      // the same reason.
+      await nextTick()
+
+      // The button then holds its own tick and closes, where this used to toast
+      // and sit for a second with the button back on "Update Event", as if the
+      // press had been forgotten.
+      isSubmitting.value = false
+      holdConfirmation(() => closeDrawer())
+      return
     }
+
+    showMessage('error', response.message || 'Failed to update event')
   } catch (err) {
     console.error('Error updating event:', err)
     showMessage('error', 'An error occurred while updating the event')
-  } finally {
-    isSubmitting.value = false
   }
+
+  // Every failing path lands here: the drawer stays open with the user's edits
+  // intact, and the error toast is something they can act on.
+  isSubmitting.value = false
 }
 
 const { showToast } = useToast()
@@ -913,6 +951,16 @@ const showMessage = (type: 'success' | 'error', text: string) => {
 
 const closeDrawer = () => {
   emit('update:modelValue', false)
+}
+
+/**
+ * The dismissal affordances (backdrop, header close, Escape) go through this;
+ * the confirmation follow-up calls `closeDrawer` directly. A save in flight, or
+ * a tick still being read, is not a moment to yank the drawer away.
+ */
+const requestClose = () => {
+  if (isBusy.value) return
+  closeDrawer()
 }
 
 // Handle delete confirmation
@@ -944,7 +992,7 @@ const getScrollbarWidth = (): number => {
 }
 
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape') closeDrawer()
+  if (e.key === 'Escape' && !isBusy.value) closeDrawer()
 }
 
 // Watch for drawer open/close
@@ -963,6 +1011,10 @@ watch(
       }
       document.addEventListener('keydown', handleKeydown)
     } else {
+      // Dismissed mid-confirmation (backdrop, Esc): drop the held state without
+      // running its follow-up, so reopening doesn't start on a stale tick.
+      resetConfirmation()
+      isSubmitting.value = false
       // Defer body style resets until after transition completes (350ms)
       // to prevent layout recalculation during animation
       setTimeout(() => {
@@ -990,3 +1042,5 @@ onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
 })
 </script>
+
+<style scoped src="./common/actionButton.css"></style>

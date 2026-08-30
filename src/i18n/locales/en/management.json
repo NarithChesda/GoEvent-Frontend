@@ -1290,6 +1290,7 @@
     "footer": {
       "saving": "Saving...",
       "saveBtn": "Update Event",
+      "saved": "Event updated",
       "cancel": "Cancel"
     },
     "deleteModal": {
@@ -1460,7 +1461,9 @@
       "useTemplate": "Use this template",
       "use": "Use",
       "applying": "Applying...",
-      "applyingShort": "..."
+      "applyingShort": "...",
+      "applied": "Template applied",
+      "appliedShort": "Applied"
     },
     "empty": {
       "title": "No Templates Found",

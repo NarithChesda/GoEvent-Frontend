@@ -1290,6 +1290,7 @@
     "footer": {
       "saving": "កំពុងរក្សាទុក...",
       "saveBtn": "អាប់ដេតព្រឹត្តិការណ៍",
+      "saved": "បានអាប់ដេតព្រឹត្តិការណ៍",
       "cancel": "បោះបង់"
     },
     "deleteModal": {
@@ -1460,7 +1461,9 @@
       "useTemplate": "ប្រើគំរូនេះ",
       "use": "ប្រើ",
       "applying": "កំពុងអនុវត្ត...",
-      "applyingShort": "..."
+      "applyingShort": "...",
+      "applied": "បានអនុវត្តគំរូ",
+      "appliedShort": "បានអនុវត្ត"
     },
     "empty": {
       "title": "រកមិនឃើញគំរូទេ",

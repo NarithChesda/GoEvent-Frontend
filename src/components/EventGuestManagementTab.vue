@@ -455,12 +455,17 @@ const handleInlineUpdateGuestGroup = async (guest: EventGuest, groupId: number) 
 }
 
 // Quick-add row (fast single-guest capture without opening the Add Guest drawer)
+//
+// No success toast: the store unshifts the guest optimistically, so the row
+// lands at the top of the list — directly under the quick-add row that was just
+// typed into — before the request even returns. A bar announcing what is
+// already on screen, one line below where the user is looking, is the same news
+// twice. The failure path keeps its toast: a rollback removes the row again,
+// and nothing left on screen would explain why.
 const handleQuickAddGuest = async (name: string, groupId: number) => {
   const response = await createGuest(name, groupId)
 
-  if (response.success && response.data) {
-    showMessage('success', t('management.guestManagementTab.toast.guestAdded', { name: response.data.name }))
-  } else {
+  if (!response.success) {
     showMessage('error', response.message || t('management.guestManagementTab.toast.guestAddFailed'))
   }
 }
@@ -717,14 +722,24 @@ const getGuestShowcaseUrl = (guest: EventGuest, language: 'en' | 'kh' = 'kh') =>
  * - Detects social media bots and serves SSR meta tags
  * - Redirects real users to frontend showcase
  * - Tracks analytics (clicks, invitation status)
+ *
+ * `silent` comes from the guest row, whose copy control confirms in place —
+ * a toast on top of that says the same thing twice, and copying a link is the
+ * most repeated action on this screen. Failures always toast: an in-place tick
+ * has no way to report one.
  */
-const copyShowcaseLink = (guest: EventGuest, language: 'en' | 'kh') => {
+const copyShowcaseLink = (guest: EventGuest, language: 'en' | 'kh', silent = false) => {
+  const announceCopied = () => {
+    if (silent) return
+    showMessage('success', t('management.guestManagementTab.toast.linkCopied', { lang: language.toUpperCase(), name: guest.name }))
+  }
+
   // Validate short_url availability
   if (!guest.short_url) {
     console.warn('[copyShowcaseLink] No short_url for guest, using fallback URL:', guest.id)
     const fallbackUrl = getGuestShowcaseUrl(guest, language)
     navigator.clipboard.writeText(fallbackUrl)
-      .then(() => showMessage('success', t('management.guestManagementTab.toast.linkCopied', { lang: language.toUpperCase(), name: guest.name })))
+      .then(announceCopied)
       .catch(() => showMessage('error', t('management.guestManagementTab.toast.linkCopyFailed')))
     return
   }
@@ -734,9 +749,7 @@ const copyShowcaseLink = (guest: EventGuest, language: 'en' | 'kh') => {
 
   navigator.clipboard
     .writeText(fullShortLink)
-    .then(() => {
-      showMessage('success', t('management.guestManagementTab.toast.linkCopied', { lang: language.toUpperCase(), name: guest.name }))
-    })
+    .then(announceCopied)
     .catch((error) => {
       console.error('[copyShowcaseLink] Clipboard API failed:', error)
       showMessage('error', t('management.guestManagementTab.toast.linkCopyFailed'))

@@ -502,7 +502,9 @@ const handleEventCreate = async (formData: EventFormData, done: (ok: boolean) =>
       // confirmation over a list that is already correct, so when it slides
       // away the new event is simply there — no skeleton flash in between.
       await loadEvents('my', {}, false, true)
-      showMessage('success', t('events.messages.createSuccess'))
+      // No success toast. The drawer holds its own "Created" tick before it
+      // slides away, and it slides away onto a list that already has the event
+      // in it — a bar arriving on top of both is the third telling.
       done(true)
       return
     } else {

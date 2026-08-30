@@ -257,18 +257,18 @@
             <button
               @click="handleSubmit"
               :disabled="isBusy"
-              :class="['submit-btn', isComplete ? 'is-complete' : '']"
-              class="grid px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg rounded-lg hover:opacity-90 shadow-md disabled:cursor-not-allowed"
+              :class="['action-btn', isComplete ? 'is-complete' : '']"
+              class="grid px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 shadow-md"
             >
-              <span class="submit-face" :data-on="!isSubmitting && !isComplete">
+              <span class="action-face" :data-on="!isSubmitting && !isComplete">
                 <Save class="w-4 h-4" />
                 <span>{{ t('events.createDrawer.actions.create') }}</span>
               </span>
-              <span class="submit-face" :data-on="isSubmitting">
+              <span class="action-face" :data-on="isSubmitting">
                 <Loader class="w-4 h-4 animate-spin" />
                 <span>{{ t('events.createDrawer.actions.creating') }}</span>
               </span>
-              <span class="submit-face" :data-on="isComplete" aria-live="polite">
+              <span class="action-face" :data-on="isComplete" aria-live="polite">
                 <Check class="w-4 h-4" />
                 <span>{{ t('events.createDrawer.actions.created') }}</span>
               </span>
@@ -294,6 +294,7 @@ import { ref, computed, reactive, watch, onMounted, onUnmounted } from 'vue'
 import { ArrowRight, Loader, Save, Check, ClipboardList, Globe, Lock, Sparkles } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useToast } from '@/composables/useToast'
+import { useActionConfirmation } from '@/composables/useActionConfirmation'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
 import DateTimePickerField from '@/components/common/DateTimePickerField.vue'
 import SelectField, { type SelectFieldOption } from '@/components/common/SelectField.vue'
@@ -362,12 +363,12 @@ const descriptionEditor = ref<HTMLElement>()
 const panel = ref<HTMLElement>()
 const titleInput = ref<HTMLInputElement>()
 const isSubmitting = ref(false)
-// Held on screen after a successful create, long enough to be seen.
-const isComplete = ref(false)
+// Held on screen after a successful create, long enough to be seen: the face
+// swap alone costs ~280ms, so a shorter hold would close on a tick that never
+// finished arriving.
+const { confirmed: isComplete, confirm: holdConfirmation, reset: resetConfirmation } =
+  useActionConfirmation(900)
 const isBusy = computed(() => isSubmitting.value || isComplete.value)
-// The confirmation is the point of the beat, so it outlasts a glance.
-const SUCCESS_HOLD_MS = 620
-let successTimer: number | undefined
 const categories = ref<EventCategory[]>([])
 
 // Form data
@@ -540,11 +541,7 @@ const onSubmitSettled = (ok: boolean) => {
   // the reason, and the user is one edit away from retrying.
   if (!ok) return
 
-  isComplete.value = true
-  successTimer = window.setTimeout(() => {
-    successTimer = undefined
-    emit('close')
-  }, SUCCESS_HOLD_MS)
+  holdConfirmation(() => emit('close'))
 }
 
 // Calculate scrollbar width to prevent layout shift
@@ -590,10 +587,8 @@ watch(
     if (isVisible) {
       // Reset form when drawer opens
       resetForm()
-      if (successTimer) window.clearTimeout(successTimer)
-      successTimer = undefined
+      resetConfirmation()
       isSubmitting.value = false
-      isComplete.value = false
 
       // Prevent body scroll when drawer is open
       const scrollbarWidth = getScrollbarWidth()
@@ -690,62 +685,15 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (successTimer) window.clearTimeout(successTimer)
   document.body.style.overflow = ''
   document.body.style.paddingRight = ''
   document.removeEventListener('keydown', handleKeydown)
 })
 </script>
 
+<style scoped src="./common/actionButton.css"></style>
+
 <style scoped>
-/* Three-state submit button: idle -> working -> confirmed.
-   All three faces occupy the same grid cell, so the button sizes to the widest
-   of them once and never resizes as they swap. */
-.submit-btn {
-  transition:
-    opacity 0.15s ease-out,
-    transform 0.15s ease-out,
-    filter 0.2s ease-out;
-}
-
-.submit-btn:active:not(:disabled) {
-  transform: scale(0.95);
-}
-
-.submit-btn:disabled {
-  cursor: not-allowed;
-}
-
-/* Working reads as held, not broken — it is still the same live control. */
-.submit-btn:disabled:not(.is-complete) {
-  opacity: 0.75;
-}
-
-.submit-face {
-  grid-column: 1;
-  grid-row: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  /* Blur bridges the two faces so the swap reads as one label transforming
-     rather than two labels overlapping. */
-  filter: blur(3px);
-  opacity: 0;
-  transform: scale(0.96);
-  transition:
-    opacity 0.18s ease-out,
-    filter 0.18s ease-out,
-    transform 0.18s cubic-bezier(0.23, 1, 0.32, 1);
-  pointer-events: none;
-}
-
-.submit-face[data-on='true'] {
-  filter: blur(0);
-  opacity: 1;
-  transform: scale(1);
-}
-
 /* The form stays visible but stops accepting edits while the create is in
    flight, so nothing the user types can be silently dropped. */
 .form-busy {
@@ -813,21 +761,7 @@ onUnmounted(() => {
   .toggle-row:active {
     transform: none;
   }
-
-  .submit-btn:active:not(:disabled) {
-    transform: none;
-  }
-
-  .submit-face {
-    transition-duration: 0.01ms;
-    filter: none;
-    transform: none;
-  }
-
-  .submit-face[data-on='true'] {
-    filter: none;
-    transform: none;
-  }}
+}
 
 /* Custom scrollbar for modal content */
 .overflow-y-auto::-webkit-scrollbar {

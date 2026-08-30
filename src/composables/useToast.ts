@@ -30,8 +30,26 @@ const DEFAULT_DURATION: Record<ToastType, number> = {
   error: 6000,
 }
 
-/** Older toasts are evicted past this, so the stack never grows without bound. */
-const MAX_VISIBLE = 3
+/**
+ * Older toasts are evicted past this, so the stack never grows without bound.
+ *
+ * A phone shows **one**. Two 44px bars over a list that is already only ~380px
+ * wide read as a takeover, not a confirmation — and the pair that actually
+ * happens (add a guest, then copy their link) arrives seconds apart, so the
+ * second one is the only one still worth reading. Desktop has the room for a
+ * short stack, and its toasts sit in the corner rather than over the content.
+ */
+const MAX_VISIBLE_DESKTOP = 3
+const DESKTOP_QUERY = '(min-width: 1024px)'
+
+const maxVisibleToasts = (): number => {
+  if (typeof window === 'undefined') return MAX_VISIBLE_DESKTOP
+  const isDesktop =
+    typeof window.matchMedia === 'function'
+      ? window.matchMedia(DESKTOP_QUERY).matches
+      : window.innerWidth >= 1024
+  return isDesktop ? MAX_VISIBLE_DESKTOP : 1
+}
 
 // ---------------------------------------------------------------------------
 // Module-level state: one queue for the whole app, rendered once by ToastHost.
@@ -158,7 +176,7 @@ const pushToast = (
   }
 
   toasts.value.push(toast)
-  while (toasts.value.length > MAX_VISIBLE) {
+  while (toasts.value.length > maxVisibleToasts()) {
     dismissToast(toasts.value[0].id)
   }
 

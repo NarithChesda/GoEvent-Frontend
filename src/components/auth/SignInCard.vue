@@ -91,10 +91,14 @@
           <button
             type="button"
             @click="handleTelegramBotLogin"
-            :disabled="isTelegramBotLoading"
-            :class="socialButtonClasses"
+            :disabled="isTelegramBotLoading || confirmedVia('telegram-bot')"
+            :class="recommendedButtonClasses"
           >
-            <Loader2 v-if="isTelegramBotLoading" class="h-5 w-5 animate-spin text-slate-400" />
+            <!-- Same three beats as the email submit, expressed in this row's
+                 own shape: the provider mark is the idle face, so it swaps in
+                 place rather than stacking. -->
+            <Check v-if="confirmedVia('telegram-bot')" class="h-5 w-5 text-slate-700" />
+            <Loader2 v-else-if="isTelegramBotLoading" class="h-5 w-5 animate-spin text-slate-400" />
             <!-- Telegram's own mark, so it reads as branded as the Google G beside it -->
             <svg v-else class="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
               <defs>
@@ -110,20 +114,40 @@
                 d="M17.61 7.02c.24-.11.5.1.45.36l-1.83 8.63c-.13.6-.49.75-.99.47l-2.73-2.01-1.31 1.26c-.15.15-.27.27-.55.27l.2-2.79 5.08-4.59c.22-.2-.05-.31-.34-.11l-6.28 3.95-2.7-.84c-.59-.19-.6-.59.12-.87l10.88-4.2Z"
               />
             </svg>
-            {{ isTelegramBotLoading ? t('auth.signIn.telegramOpening') : t('auth.signIn.telegram') }}
-            <span class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-              {{ t('auth.signIn.recommended') }}
-            </span>
+            {{ telegramButtonLabel }}
+
+            <!--
+              Absolutely positioned, so the mark sits at the row's edge without
+              taking part in the centring — the label lines up with Google's
+              below instead of being pushed left by a trailing word.
+
+              A bolt rather than a tick or a star: the reason this row is the
+              one to take is that it is *instant* — no password, no popup — and
+              that is what the glyph should say. Only rendered while the row is
+              still a choice; once it is spinning or signed in, guidance about
+              which to pick has no job left. The word survives for screen
+              readers, which cannot see a hairline border being a shade bluer.
+            -->
+            <template v-if="!isTelegramBotLoading && !confirmedVia('telegram-bot')">
+              <span
+                class="absolute right-3 grid h-5 w-5 place-items-center rounded-full bg-[#1e90ff]/10 text-[#1e90ff]"
+                :title="t('auth.signIn.recommended')"
+              >
+                <Zap class="h-3 w-3" aria-hidden="true" />
+              </span>
+              <span class="sr-only">{{ t('auth.signIn.recommended') }}</span>
+            </template>
           </button>
 
           <button
             v-if="shouldShowGoogleLogin"
             type="button"
             @click="handleGoogleLogin"
-            :disabled="isGoogleLoading"
+            :disabled="isGoogleLoading || confirmedVia('google')"
             :class="socialButtonClasses"
           >
-            <Loader2 v-if="isGoogleLoading" class="h-5 w-5 animate-spin text-slate-400" />
+            <Check v-if="confirmedVia('google')" class="h-5 w-5 text-slate-700" />
+            <Loader2 v-else-if="isGoogleLoading" class="h-5 w-5 animate-spin text-slate-400" />
             <svg v-else class="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 fill="#4285F4"
@@ -142,7 +166,7 @@
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            {{ isGoogleLoading ? t('auth.signIn.signingIn') : t('auth.signIn.google') }}
+            {{ googleButtonLabel }}
           </button>
         </div>
       </div>
@@ -237,13 +261,32 @@
                 </p>
               </div>
 
+              <!-- Three faces in one grid cell, as the drawers' primary actions
+                   do. This one is `w-full`, so the equal-label-length rule that
+                   governs a width-fitted button doesn't bind here. -->
               <button
                 type="submit"
-                :disabled="isEmailSubmitting || !isFormValid"
-                class="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+                :disabled="isEmailSubmitting || confirmedVia('email') || !isFormValid"
+                :class="[
+                  'action-btn',
+                  confirmedVia('email') ? 'is-complete' : '',
+                  // An unfilled form is genuinely unavailable, not busy — it
+                  // should not borrow the held look the working state uses.
+                  isFormValid ? '' : 'is-unavailable',
+                ]"
+                class="grid w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:cursor-not-allowed disabled:shadow-none"
               >
-                <Loader2 v-if="isEmailSubmitting" class="h-4 w-4 animate-spin" />
-                {{ isEmailSubmitting ? t('auth.signIn.signingIn') : t('auth.signIn.submit') }}
+                <span class="action-face" :data-on="!isEmailSubmitting && !confirmedVia('email')">
+                  {{ t('auth.signIn.submit') }}
+                </span>
+                <span class="action-face" :data-on="isEmailSubmitting">
+                  <Loader2 class="h-4 w-4 animate-spin" />
+                  {{ t('auth.signIn.signingIn') }}
+                </span>
+                <span class="action-face" :data-on="confirmedVia('email')" aria-live="polite">
+                  <Check class="h-4 w-4" />
+                  {{ t('auth.signIn.signedIn') }}
+                </span>
               </button>
             </form>
           </div>
@@ -273,6 +316,7 @@ export type SignInMethod = 'email' | 'google' | 'telegram-bot'
 import { computed, nextTick, onMounted, onUnmounted, ref, useId, useTemplateRef, watch } from 'vue'
 import {
   AlertCircle,
+  Check,
   ChevronDown,
   Eye,
   EyeOff,
@@ -281,6 +325,7 @@ import {
   Mail,
   Send,
   X,
+  Zap,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { googleTokenLogin } from 'vue3-google-login'
@@ -288,6 +333,7 @@ import { inputValidator, validationRules } from '@/utils/inputValidation'
 import { isDesktopDevice, isNormalBrowser } from '@/utils/browserDetection'
 import { useTelegramBotLogin } from '@/composables/useTelegramBotLogin'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useActionConfirmation } from '@/composables/useActionConfirmation'
 
 interface Props {
   /** Overrides the default "Welcome to GoEvent" heading. */
@@ -334,13 +380,72 @@ const isEmailSubmitting = ref(false)
 const isGoogleLoading = ref(false)
 const isTelegramBotLoading = ref(false)
 
+/**
+ * The beat between "your credentials were accepted" and the parent taking you
+ * somewhere else.
+ *
+ * Every provider used to drop its button straight back to idle on success and
+ * leave the redirect to happen off-screen, so a slow route chunk looked exactly
+ * like a sign-in that hadn't finished — the spinner covered the API call *and*
+ * the navigation, and the two are different things to be waiting on. The tick
+ * separates them: credentials accepted, now loading your workspace.
+ *
+ * 550ms, against the drawers' 900ms. A drawer has to be seen closing; a sign-in
+ * is a gate, and every millisecond spent here is a toll on someone trying to get
+ * through it. The face swap settles at ~320ms, so this is the shortest hold that
+ * still lands the tick rather than flashing it — and it is the *whole* cost,
+ * because the tick then stays up for free while the route resolves.
+ */
+const SIGNED_IN_HOLD_MS = 550
+const { confirmed: isSignedIn, confirm: holdSignedIn } = useActionConfirmation(SIGNED_IN_HOLD_MS)
+const signedInMethod = ref<SignInMethod | null>(null)
+
+/** Only one provider can be in flight, so one flag serves all three buttons. */
+const confirmedVia = (method: SignInMethod): boolean =>
+  isSignedIn.value && signedInMethod.value === method
+
+const completeSignIn = (method: SignInMethod): void => {
+  signedInMethod.value = method
+  holdSignedIn(() => emit('authenticated', method))
+}
+
+const telegramButtonLabel = computed(() => {
+  if (confirmedVia('telegram-bot')) return t('auth.signIn.signedIn')
+  return isTelegramBotLoading.value
+    ? t('auth.signIn.telegramOpening')
+    : t('auth.signIn.telegram')
+})
+
+const googleButtonLabel = computed(() => {
+  if (confirmedVia('google')) return t('auth.signIn.signedIn')
+  return isGoogleLoading.value ? t('auth.signIn.signingIn') : t('auth.signIn.google')
+})
+
 // Google's popup flow can't complete inside messaging-app browsers
 const shouldShowGoogleLogin = computed(
   () => isNormalBrowser() && (!props.hideGoogleOnMobile || isDesktopDevice()),
 )
 
-const socialButtonClasses =
-  'flex w-full items-center justify-center gap-2.5 rounded-xl border border-slate-200/80 bg-white/70 px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300/80 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1e90ff]/30 disabled:cursor-not-allowed disabled:opacity-50'
+/**
+ * The two provider rows, and the one difference between them.
+ *
+ * Telegram is the route we want people to take — it needs no password and it is
+ * the one that works inside the messaging-app browsers a lot of invitations are
+ * opened in. That preference used to be carried entirely by the word
+ * RECOMMENDED in `text-slate-400`: the palest thing in the card, arguing for
+ * something while looking like the least important text on screen, and long
+ * enough that it shunted the label off the optical centre the Google row keeps.
+ *
+ * Preference is a matter of weight, not annotation, so it is spent on the
+ * button itself — solid white against the other's `white/70`, and a brand-blue
+ * hairline where the other has slate. The badge is only the confirming mark.
+ */
+const socialButtonBase =
+  'relative flex w-full items-center justify-center gap-2.5 rounded-xl border px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1e90ff]/30 disabled:cursor-not-allowed disabled:opacity-50'
+
+const socialButtonClasses = `${socialButtonBase} border-slate-200/80 bg-white/70 hover:border-slate-300/80 hover:bg-white`
+
+const recommendedButtonClasses = `${socialButtonBase} border-[#1e90ff]/30 bg-white ring-1 ring-[#1e90ff]/[0.08] hover:border-[#1e90ff]/50 hover:ring-[#1e90ff]/15`
 
 // Real-time validation
 const emailValidation = computed(() =>
@@ -438,7 +543,7 @@ watch(telegramBotStatus, async (newStatus) => {
     )
 
     if (result.success) {
-      emit('authenticated', 'telegram-bot')
+      completeSignIn('telegram-bot')
     } else {
       errorMessage.value = result.error || t('auth.errors.telegramFailed')
       resetTelegramBotLogin()
@@ -509,7 +614,7 @@ const handleSignIn = async () => {
 
     if (result.success) {
       inputValidator.clearRateLimit(`signin_${clientId}`)
-      emit('authenticated', 'email')
+      completeSignIn('email')
     } else {
       errorMessage.value = result.error || t('auth.errors.loginFailed')
     }
@@ -534,7 +639,7 @@ const handleGoogleLogin = async () => {
       const result = await authStore.googleLogin(response.access_token)
 
       if (result.success) {
-        emit('authenticated', 'google')
+        completeSignIn('google')
       } else {
         errorMessage.value = result.error || t('auth.errors.googleFailed')
         console.error('Backend error:', result)
@@ -631,3 +736,5 @@ onUnmounted(stopCountdown)
   }
 }
 </style>
+
+<style scoped src="../common/actionButton.css"></style>

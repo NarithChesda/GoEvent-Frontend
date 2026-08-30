@@ -83,6 +83,9 @@ withDefaults(defineProps<Props>(), {
                 the pad a scrolling page needs so its last row clears the pill
   --fab-bottom  the bottom edge of the primary floating action above it
   --fab-stack-2 the slot above that one, for a secondary FAB
+  --toast-right the lane those FABs occupy, measured from the right edge — what
+                the desktop toast stack sits to the left of so it can share the
+                FAB's baseline without ever covering a button
 
   Zero on desktop, where there is no pill and the FABs sit on the page edge.
 */
@@ -94,6 +97,10 @@ withDefaults(defineProps<Props>(), {
   --fab-bottom: calc(var(--nav-inset) + 0.75rem);
   /* Clears the 3rem mobile FAB below, plus the same 0.75rem gap again. */
   --fab-stack-2: calc(var(--fab-bottom) + 3.75rem);
+  /* right-6 + the 3.5rem desktop FAB + a 1rem gap. Only ever read above the
+     nav breakpoint — mobile toasts hang from the top, where there is no lane
+     to dodge. */
+  --toast-right: 6rem;
 }
 
 .nav-inset-none {

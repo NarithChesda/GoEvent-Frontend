@@ -572,7 +572,7 @@
             :guest="guest"
             :selected="isGuestSelected(guest.id)"
             :groups="groups"
-            @copy-link="(guest, lang) => $emit('copy-link', guest, lang)"
+            @copy-link="(guest, lang, silent) => $emit('copy-link', guest, lang, silent)"
             @mark-sent="$emit('mark-sent', $event)"
             @edit="$emit('edit-guest', $event)"
             @delete="$emit('delete-guest', $event)"
@@ -802,7 +802,8 @@ const { t } = useI18n()
 const emit = defineEmits<{
   'add-guest': []
   'toggle-group': [groupId: number]
-  'copy-link': [guest: EventGuest, language: 'en' | 'kh']
+  /** `silent` = the row already confirmed the copy in place; skip the toast. */
+  'copy-link': [guest: EventGuest, language: 'en' | 'kh', silent?: boolean]
   'mark-sent': [guest: EventGuest]
   'edit-guest': [guest: EventGuest]
   'delete-guest': [guest: EventGuest]

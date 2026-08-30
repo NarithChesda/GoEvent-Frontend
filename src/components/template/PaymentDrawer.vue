@@ -317,13 +317,18 @@
       >
         {{ error }}
       </p>
+      <!-- Stays enabled-looking while confirming: the drawer is about to close
+           on its own, and greying the button out at the moment it reports
+           success reads as the action having been revoked. -->
       <button
         type="button"
-        :disabled="submittingPayment || !isFormValid"
-        class="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2"
+        :disabled="submittingPayment || confirmed || !isFormValid"
+        class="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:opacity-90 disabled:cursor-not-allowed disabled:hover:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2"
+        :class="confirmed ? 'disabled:opacity-100 disabled:hover:opacity-100' : 'disabled:opacity-50'"
         @click="submitPayment"
       >
-        <Loader v-if="submittingPayment" class="h-4 w-4 animate-spin" aria-hidden="true" />
+        <Check v-if="confirmed" class="h-4 w-4" aria-hidden="true" />
+        <Loader v-else-if="submittingPayment" class="h-4 w-4 animate-spin" aria-hidden="true" />
         <Zap v-else-if="payingWithCredit" class="h-4 w-4" aria-hidden="true" />
         <CheckCircle v-else class="h-4 w-4" aria-hidden="true" />
         <span>{{ submitLabel }}</span>
@@ -356,10 +361,11 @@
  */
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { CheckCircle, ChevronDown, Landmark, Loader, Tag, X, Zap } from 'lucide-vue-next'
+import { Check, CheckCircle, ChevronDown, Landmark, Loader, Tag, X, Zap } from 'lucide-vue-next'
 import { apiService, partnerCreditsService } from '../../services/api'
 import type { ActivationOptions } from '../../services/api'
 import { useNotifications } from '../../composables/useNotifications'
+import { useActionConfirmation } from '../../composables/useActionConfirmation'
 import { usePlatformPaymentMethods } from '../../composables/usePlatformPaymentMethods'
 import CheckoutDrawer from '../payment/CheckoutDrawer.vue'
 import CheckoutSummary from '../payment/CheckoutSummary.vue'
@@ -416,7 +422,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { success: showSuccess, error: showError } = useNotifications()
+const { error: showError } = useNotifications()
 
 const { paymentMethods, loadingMethods, ensurePaymentMethods } = usePlatformPaymentMethods()
 
@@ -544,7 +550,24 @@ const isFormValid = computed(() => {
   return payingWithCredit.value || Boolean(selectedMethod.value)
 })
 
+/**
+ * The outcome the button reports while the drawer holds open, before closing.
+ *
+ * A fully-covered payment activates on the spot; a partially-covered one is
+ * only lodged and still needs an admin — so this is the one thing about the
+ * result that genuinely differs, and the button says which. It used to be a
+ * toast fired as the drawer closed; the drawer now stays up long enough to say
+ * it itself, and the activation card behind it carries the status from there.
+ */
+const submittedOutcome = ref<'activated' | 'pending' | null>(null)
+const { confirmed, confirm, reset: resetConfirmation } = useActionConfirmation()
+
 const submitLabel = computed(() => {
+  if (confirmed.value) {
+    return submittedOutcome.value === 'activated'
+      ? t('management.templatePaymentTab.paymentDrawer.creditSuccessTitle')
+      : t('management.templatePaymentTab.paymentDrawer.submitSuccessTitle')
+  }
   if (submittingPayment.value) {
     return payingWithCredit.value
       ? t('management.templatePaymentTab.paymentDrawer.activating')
@@ -665,10 +688,9 @@ const validatePromoCode = async (): Promise<void> => {
       }
       promoCodeInput.value = ''
       showPromoField.value = false
-      showSuccess(
-        t('management.templatePaymentTab.paymentDrawer.promoAppliedTitle'),
-        t('management.templatePaymentTab.paymentDrawer.promoAppliedMessage', { code }),
-      )
+      // No toast: the field collapses into a chip carrying the code, and the
+      // summary right beside it redraws with the discount. The toast said the
+      // same code back to the user while both were already on screen.
     } else {
       // These strings are written for end users by the backend — render verbatim.
       promoCodeError.value =
@@ -749,21 +771,10 @@ const activateWithCredit = async (): Promise<void> => {
   }
 
   // A fully-covered payment confirms on the spot; a partially-covered one still
-  // needs proof and an admin, so the success message follows the status rather
-  // than assuming the happy path.
+  // needs proof and an admin, so the outcome follows the status rather than
+  // assuming the happy path.
   const payment = unwrapPayment(response.data)
-
-  if (payment?.status === 'confirmed') {
-    showSuccess(
-      t('management.templatePaymentTab.paymentDrawer.creditSuccessTitle'),
-      t('management.templatePaymentTab.paymentDrawer.creditSuccessMessage'),
-    )
-  } else {
-    showSuccess(
-      t('management.templatePaymentTab.paymentDrawer.submitSuccessTitle'),
-      t('management.templatePaymentTab.paymentDrawer.submitSuccessMessage'),
-    )
-  }
+  submittedOutcome.value = payment?.status === 'confirmed' ? 'activated' : 'pending'
 }
 
 const submitByTransfer = async (): Promise<void> => {
@@ -821,18 +832,7 @@ const submitByTransfer = async (): Promise<void> => {
   }
 
   const payment = unwrapPayment(response.data)
-
-  if (payment?.status === 'confirmed') {
-    showSuccess(
-      t('management.templatePaymentTab.paymentDrawer.creditSuccessTitle'),
-      t('management.templatePaymentTab.paymentDrawer.creditSuccessMessage'),
-    )
-  } else {
-    showSuccess(
-      t('management.templatePaymentTab.paymentDrawer.submitSuccessTitle'),
-      t('management.templatePaymentTab.paymentDrawer.submitSuccessMessage'),
-    )
-  }
+  submittedOutcome.value = payment?.status === 'confirmed' ? 'activated' : 'pending'
 }
 
 /** The create endpoint answers with the payment either bare or under `payment`. */
@@ -843,7 +843,7 @@ const unwrapPayment = (data: Payment | { payment: Payment } | undefined): Paymen
 }
 
 const submitPayment = async (): Promise<void> => {
-  if (submittingPayment.value) return
+  if (submittingPayment.value || confirmed.value) return
 
   if (!isFormValid.value || !props.templatePackage) {
     error.value = t('management.templatePaymentTab.paymentDrawer.selectMethodError')
@@ -886,9 +886,15 @@ const submitPayment = async (): Promise<void> => {
       await submitByTransfer()
     }
 
-    resetForm()
-    emit('submitted')
-    emit('close')
+    // Report the outcome on the button, then close. `submitted` fires with the
+    // close so the activation card behind repaints as the drawer clears, rather
+    // than under it while the confirmation is still being read.
+    confirm(() => {
+      resetForm()
+      submittedOutcome.value = null
+      emit('submitted')
+      emit('close')
+    })
   } catch (err) {
     const errorMessage =
       err instanceof Error
@@ -916,6 +922,10 @@ watch(
       loadActivationOptions()
     } else {
       resetForm()
+      // Dismissed mid-confirmation (backdrop, Esc): drop the held state without
+      // running its follow-up, so reopening doesn't start on a stale tick.
+      resetConfirmation()
+      submittedOutcome.value = null
     }
   },
 )

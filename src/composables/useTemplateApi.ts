@@ -188,7 +188,10 @@ export function useTemplateApi() {
       const response = await eventTemplateService.selectEventTemplate(eventId, templateId)
 
       if (response.success && response.data) {
-        showMessage('success', 'Template selected successfully!')
+        // No success message. The caller confirms on its own confirm button and
+        // the studio behind the modal is already re-rendering with the chosen
+        // template — a banner here only pushed the footer around while that
+        // happened. Failures below still use it: they need the room to explain.
         return { success: true, template: selectedTemplate }
       } else {
         // Log in development only
