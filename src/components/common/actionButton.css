@@ -1,0 +1,188 @@
+/*
+  Three-state action button: idle -> working -> confirmed.
+
+  The shape a primary action takes when it answers for itself instead of handing
+  off to a toast (see DESIGN.md 9 and `useActionConfirmation`) — the create and
+  edit drawers' footers, and the sign-in card's submit. All three
+  faces occupy the same grid cell, so the button measures to the widest of them
+  once and never resizes as they swap — a button that jumps width mid-save is
+  the single loudest thing you can do to a footer.
+
+  That fixed width puts a requirement on the copy: **write the three labels to
+  roughly the same length.** "Update Event" (109px) paired with "Saved" (62px)
+  left 47px of dead fill around two glyphs and read as an empty slab, which is
+  the failure this is warning you away from. "Update Event" / "Saving…" /
+  "Event updated" measures 109 / 76 / 116 and every state fills the button, so
+  the width that never moves looks deliberate rather than left over. Past tense
+  of the whole action, not a bare participle.
+
+  Pulled out of EventCreateDrawer so every one of them renders the identical
+  motion rather than a near-miss of it. Import per component with
+  `<style scoped src="../components/common/actionButton.css">`; Vue compiles a
+  separate scoped copy for each, so the keyframes below stay resolvable (their
+  names are mangled together with the rule that references them).
+
+  Markup contract:
+
+    <button class="action-btn" :class="{ 'is-complete': done }" disabled=...>
+      <span class="action-face" :data-on="idle">…</span>
+      <span class="action-face" :data-on="working">…</span>
+      <span class="action-face" :data-on="done" aria-live="polite">…</span>
+    </button>
+
+  plus `grid` on the button itself (Tailwind) for the stacking.
+*/
+
+/*
+  The button keeps the brand gradient in every state, including confirmed.
+
+  An earlier cut cross-faded a flat success green over it, on the theory that a
+  confirmed control should read as a different kind of object. On screen it did
+  the opposite: a saturated slab in the footer at the exact moment the drawer is
+  about to leave, fighting the gradient header two hundred pixels above it, and
+  wearing a hairline of the old gradient around its antialiased edge that took
+  a two-pixel overhang to suppress. The tick and the past-tense label already
+  say "done" without repainting the control that is about to disappear.
+*/
+.action-btn {
+  transition:
+    background-color 0.2s ease,
+    opacity 0.15s ease-out,
+    transform 0.15s ease-out;
+}
+
+/*
+  One rise and settle as it lands — no bounce back past the start. Creating or
+  saving an event is a rare, deliberate act, which is the one place a moment of
+  delight is earned; a control pressed dozens of times a day would get nothing.
+  Keyframes rather than a transition because this state cannot be interrupted —
+  there is no un-creating an event — and the up-then-settle shape needs a
+  midpoint a transition has no way to express.
+*/
+@keyframes action-btn-land {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.035);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.action-btn.is-complete {
+  animation: action-btn-land 460ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.action-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.action-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 4px #bae6fd;
+}
+
+.action-btn:disabled {
+  cursor: not-allowed;
+}
+
+/* Working reads as held, not broken — it is still the same live control. The
+   confirmed face is exempt: it has just succeeded, and dimming a button at the
+   moment it reports success reads as the action being revoked. */
+.action-btn:disabled:not(.is-complete) {
+  opacity: 0.75;
+}
+
+/*
+  A button that is *also* disabled for reasons other than being busy — an
+  invalid form, nothing selected yet — opts into looking plainly unavailable.
+  The held 0.75 above is only the right reading while the action is in flight;
+  a form you have not filled in yet should not look like it is thinking.
+*/
+.action-btn.is-unavailable:disabled {
+  opacity: 0.4;
+}
+
+/* A quicker spin than Tailwind's 1s makes the same wait feel shorter. */
+.action-btn .animate-spin {
+  animation-duration: 0.7s;
+}
+
+.action-face {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  pointer-events: none;
+
+  /*
+    Resting (off) state, and where a face both arrives from and departs to.
+    Blur is what makes the swap read as one label transforming rather than two
+    labels crossing: without it the eye resolves two distinct words overlapping.
+  */
+  opacity: 0;
+  filter: blur(4px);
+  transform: translateY(2px) scale(0.94);
+  transition:
+    opacity 0.16s linear,
+    filter 0.13s ease-out,
+    transform 0.16s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/*
+  Opacity is the one property here that must NOT be staggered, and it is the
+  only one that is not.
+
+  Two stacked faces are a crossfade, so what the eye reads is the *sum* of their
+  opacities. Give them different curves, durations or delays and that sum dips
+  below 1 — an earlier cut here ran the outgoing face out on ease-out over 130ms
+  while the incoming one eased in over 220ms starting 60ms late, and the label
+  measured 0.35 opacity at the 89ms mark: a hole punched in the middle of the
+  swap. Equal duration, `linear`, no delay on either side keeps the sum at
+  exactly 1 for every frame.
+
+  The asymmetry that makes the swap feel like one object settling rather than
+  two labels trading places lives in blur and transform instead, where a dip
+  costs nothing: the outgoing face gives up its blur and offset in ~130-160ms,
+  the incoming one takes 220-280ms and starts 40ms late.
+*/
+.action-face[data-on='true'] {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 0.16s linear,
+    filter 0.22s ease-out 0.04s,
+    transform 0.28s cubic-bezier(0.23, 1, 0.32, 1) 0.04s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-btn,
+  .action-face,
+  .action-face[data-on='true'] {
+    transition-duration: 0.01ms;
+    transition-delay: 0ms;
+  }
+
+  /* The label and icon swap survives — it carries the meaning. The movement
+     around it does not. */
+  .action-btn.is-complete {
+    animation: none;
+  }
+
+  .action-btn:active:not(:disabled) {
+    transform: none;
+  }
+
+  .action-face,
+  .action-face[data-on='true'] {
+    filter: none;
+    transform: none;
+  }
+}

@@ -1290,6 +1290,7 @@
     "footer": {
       "saving": "Saving...",
       "saveBtn": "Update Event",
+      "saved": "Event updated",
       "cancel": "Cancel"
     },
     "deleteModal": {

@@ -100,7 +100,7 @@
     },
     "actions": {
       "creating": "Creating...",
-      "created": "Created",
+      "created": "Event created",
       "create": "Create Event",
       "cancel": "Cancel"
     }
