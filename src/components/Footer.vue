@@ -52,6 +52,11 @@
               >
             </li>
             <li>
+              <RouterLink to="/partners" class="text-xs sm:text-sm md:text-base text-slate-600 hover:text-[#2ecc71] transition-colors duration-200 inline-block py-1"
+                >{{ t('partners.nav') }}</RouterLink
+              >
+            </li>
+            <li>
               <a href="#" class="text-xs sm:text-sm md:text-base text-slate-600 hover:text-[#2ecc71] transition-colors duration-200 inline-block py-1">Templates</a>
             </li>
             <li>
@@ -115,6 +120,12 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Facebook, Instagram } from 'lucide-vue-next'
 import LogoPng from '@/assets/logo.png'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+// Only the Partners link is translated so far — the rest of this footer is
+// still hardcoded English and predates the i18n layer. New strings go through
+// `t()` regardless; the existing ones are a separate cleanup.
+const { t } = useAppLanguage()
 
 const currentYear = computed(() => new Date().getFullYear())
 </script>

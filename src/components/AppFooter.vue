@@ -34,6 +34,12 @@
             {{ t('common.footer.aboutUs') }}
           </RouterLink>
           <RouterLink
+            to="/partners"
+            class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
+          >
+            {{ t('partners.nav') }}
+          </RouterLink>
+          <RouterLink
             to="/home#pricing"
             class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
           >

@@ -15,6 +15,7 @@ import management from '../locales/kh/management.json'
 import settings from '../locales/kh/settings.json'
 import categories from '../locales/kh/categories.json'
 import services from '../locales/kh/services.json'
+import partners from '../locales/kh/partners.json'
 
 export default {
   common,
@@ -25,4 +26,5 @@ export default {
   settings,
   categories,
   services,
+  partners,
 }

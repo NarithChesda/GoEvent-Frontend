@@ -53,6 +53,18 @@ const router = createRouter({
       meta: { title: 'About - GoEvent' },
     },
     {
+      /**
+       * The partner offer, as a link a salesperson can send. Deliberately
+       * public: its whole audience is people who are not partners yet, and
+       * every CTA on it points at `/credits`, which is where the auth guard
+       * and the application form already live.
+       */
+      path: '/partners',
+      name: 'partners',
+      component: () => import('../views/PartnerProgramView.vue'),
+      meta: { title: 'Partner Programme - GoEvent' },
+    },
+    {
       path: '/signin',
       name: 'signin',
       component: () => import('../views/SignInView.vue'),

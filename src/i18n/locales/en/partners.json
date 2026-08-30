@@ -1,0 +1,197 @@
+{
+  "nav": "Partners",
+  "hero": {
+    "eyebrow": "Partner programme",
+    "titleLead": "Buy invitations at wholesale,",
+    "titleAccent": "sell at your own price.",
+    "subtitle": "You set the invitation up for your customer and charge whatever you decide. Your shop's logo sits beside ours at the foot of every invitation you produce — and your customer never needs an account.",
+    "ctaPrimary": "Request partner access",
+    "ctaSecondary": "See the numbers",
+    "proof": {
+      "payg": "Your first two events are free — nothing to buy to find out",
+      "fee": "No monthly fee, and no commission on what you charge",
+      "review": "Applications reviewed by hand, usually within two working days"
+    },
+    "imageAlt": "A GoEvent invitation open on a phone beside the organiser dashboard on a laptop"
+  },
+  "steps": {
+    "title": "How the partnership works",
+    "subtitle": "Three things happen, in this order. Nothing else is asked of you.",
+    "open": {
+      "title": "Open your partner account",
+      "body": "Tell us about your shop. Once you are approved your first two events are free; after that you can pay per event with nothing up front, or buy credits in bulk for a lower rate."
+    },
+    "build": {
+      "title": "Build the invitation",
+      "body": "You create the event and set it up on your customer's behalf — photos, agenda, guest list, the lot. They appear as the host. You stay the owner."
+    },
+    "sell": {
+      "title": "Activate, and get paid",
+      "body": "Spend one credit and the invitation goes live immediately — nothing to upload, nobody to wait for. What your customer pays you is yours."
+    }
+  },
+  "pricing": {
+    "eyebrow": "Wholesale pricing — Basic package",
+    "title": "The more you take, the more you make",
+    "subtitle": "A Basic invitation retails at $60–85. Here is what a pack costs you, and what is left when you have sold it.",
+    "profitLabel": "Your profit",
+    "payUpfront": "Pay up front",
+    "costEach": "Cost each",
+    "keepEach": "You keep each",
+    "invitationCount": "{n} invitation | {n} invitations",
+    "eventCount": "{n} event | {n} events",
+    "packProfitCaption": "selling all {n} at {retail}",
+    "cta": "Request partner access",
+    "scrollLabel": "Wholesale packs",
+    "tiers": {
+      "trial": {
+        "name": "Free trial",
+        "credits": "2 events, on us",
+        "badge": "Try it first",
+        "profit": "$120–170",
+        "profitCaption": "selling both at $60–85",
+        "upfront": "Nothing",
+        "costEach": "Free",
+        "keepEach": "$60–85",
+        "note": "Set up two real invitations for real customers before you pay us anything. Whatever you charge for them is yours."
+      },
+      "payg": {
+        "name": "Pay as you go",
+        "credits": "Pay per event",
+        "badge": "Nothing up front",
+        "profit": "$30–42",
+        "profitCaption": "on every event you sell",
+        "upfront": "Nothing",
+        "costEach": "Half of retail",
+        "keepEach": "$30–42",
+        "note": "Half the package price, every time. The way to start while your volume is still uncertain."
+      },
+      "shop": {
+        "name": "25 credits",
+        "credits": "25 invitations",
+        "badge": "Most shops start here",
+        "profit": "$825–1,450",
+        "profitCaption": "selling all 25 at $60–85",
+        "upfront": "$675",
+        "costEach": "$27",
+        "keepEach": "$33–58",
+        "note": "The pack most invitation shops re-order."
+      },
+      "volume": {
+        "name": "50 credits",
+        "credits": "50 invitations",
+        "badge": "Lowest rate",
+        "profit": "$1,800–3,050",
+        "profitCaption": "selling all 50 at $60–85",
+        "upfront": "$1,200",
+        "costEach": "$24",
+        "keepEach": "$36–61",
+        "note": "For a busy season, when the work is already on the books."
+      }
+    },
+    "footnote": "These are Basic package rates. The Standard package retails at $120–150 per event and has wholesale rates of its own — ask when we open your account. Credits are scoped to the plan you buy them for and can be spent on any event category on that plan: a wedding, a birthday, a funeral. Profit assumes you sell every invitation in the pack; what you charge your own customer is your decision. Prices in USD."
+  },
+  "product": {
+    "eyebrow": "What you are selling",
+    "title": "An invitation your customer could not make themselves",
+    "subtitle": "This is what lands on their guests' phones — and the reason it is worth what you charge for it.",
+    "cinematic": {
+      "title": "A cinematic invitation",
+      "body": "A cover that opens, a film, and a story that unfolds as the guest scrolls. Not a picture, not a PDF."
+    },
+    "bilingual": {
+      "title": "Khmer and English",
+      "body": "Every word written in both, switched by the guest on the invitation itself."
+    },
+    "rsvp": {
+      "title": "RSVP built in",
+      "body": "Guests reply on the invitation. Every answer lands in one list your customer can read."
+    },
+    "wishes": {
+      "title": "Wishes and comments, no login",
+      "body": "Guests write their blessing straight onto the invitation from their own link. No app, no account, nothing to install."
+    },
+    "notify": {
+      "title": "Live alerts on Telegram",
+      "body": "Every RSVP, wish, cash gift and check-in arrives as a Telegram message the moment it happens."
+    },
+    "guests": {
+      "title": "Guest list and seating",
+      "body": "Groups, table plans and seat numbers — and each guest is shown their own seat."
+    },
+    "checkin": {
+      "title": "Check-in on the day",
+      "body": "Scan guests in at the door from a phone. No printed list, no crossing out names."
+    },
+    "media": {
+      "title": "Their photos, music and map",
+      "body": "Gallery, background film, venue map, dress code and gift details, all in one link."
+    }
+  },
+  "partner": {
+    "eyebrow": "What you get",
+    "title": "Built for shops, not for resellers of a link",
+    "branding": {
+      "title": "Your logo on every invitation",
+      "body": "Your shop's logo sits beside ours at the foot of every invitation you produce, so every guest who opens one sees who made it."
+    },
+    "ownership": {
+      "title": "You own the event",
+      "body": "Your customer needs no account and no password. Nothing about the invitation depends on them logging in."
+    },
+    "instant": {
+      "title": "Activation is instant",
+      "body": "A credit activates the template on the spot — no proof to upload, no waiting on our team, even at midnight."
+    },
+    "locked": {
+      "title": "Your credits cannot be stolen",
+      "body": "A credit code only works from your own account. Sharing it with a customer will not spend your balance, and a leak cannot cost you anything."
+    },
+    "studio": {
+      "title": "Publish your own templates",
+      "body": "Approved partners design and publish templates in the studio — your own covers, fonts, colours and decorations."
+    },
+    "topup": {
+      "title": "Top up whenever you like",
+      "body": "Your balance, every batch you have bought and every order you have placed sit on one page in your account."
+    }
+  },
+  "faq": {
+    "eyebrow": "Before you ask",
+    "title": "The questions shops actually ask",
+    "unsold": {
+      "q": "What happens if I do not sell them all?",
+      "a": "Credits sit in your account until you spend them. Each batch carries its own validity, shown on your credits page, and nothing is lost while it is valid. If your volume is still uncertain, use your two free events, then stay on pay as you go and move to a pack once the work is steady — there is no penalty either way."
+    },
+    "price": {
+      "q": "Can I set my own price?",
+      "a": "Yes. Wholesale is what you pay us. What you charge your customer is entirely your decision, and we take no share of it."
+    },
+    "domain": {
+      "q": "Is the invitation under my own brand?",
+      "a": "Your shop's logo appears beside ours at the foot of every invitation you produce, so your customer and their guests see who made it. The invitation itself is hosted on goevent.online — which is what keeps it fast, always online, and nothing for you to maintain. There is no custom domain."
+    },
+    "plans": {
+      "q": "Do credits work on any template?",
+      "a": "Credits are scoped to the plan you bought them for. A Basic credit activates any Basic template, on any event category — but it cannot be spent on a Standard one. This page shows Basic rates; Standard has its own, which we will go through when we open your account."
+    },
+    "payment": {
+      "q": "How do I pay for a pack?",
+      "a": "Bank transfer or QR. Place the order, upload your proof of payment, and we issue the credits once it is confirmed — usually the same working day."
+    },
+    "customer": {
+      "q": "Does my customer need an account?",
+      "a": "No. You create and own the event; they appear on it as the host. Their guests only ever open a link — no app, no sign-up, nothing to install."
+    },
+    "apply": {
+      "q": "How do I become a partner?",
+      "a": "Send a request with your shop's name, a number we can reach you on, and roughly how many events you take on each month. We read every request by hand and normally come back within two working days."
+    }
+  },
+  "closing": {
+    "title": "Add digital invitations to what your shop sells",
+    "subtitle": "Tell us about your shop. If it is a fit, we will open your account and go through the rates with you.",
+    "cta": "Request partner access",
+    "telegram": "Message us on Telegram"
+  }
+}

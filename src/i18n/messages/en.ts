@@ -16,6 +16,7 @@ import management from '../locales/en/management.json'
 import settings from '../locales/en/settings.json'
 import categories from '../locales/en/categories.json'
 import services from '../locales/en/services.json'
+import partners from '../locales/en/partners.json'
 
 export default {
   common,
@@ -26,4 +27,5 @@ export default {
   settings,
   categories,
   services,
+  partners,
 }
