@@ -120,6 +120,8 @@ export type {
   SparkShape,
   SparkColorSource,
   SparkFieldConfig,
+  StageMode,
+  StageModesConfig,
 } from './api/types/template.types'
 
 export {

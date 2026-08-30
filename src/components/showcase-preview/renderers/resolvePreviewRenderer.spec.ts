@@ -90,4 +90,54 @@ describe('the Event Video frame gate', () => {
     expect(frame.isVisible?.(ctx)).toBe(false)
     expect(frame.isApplicable?.(ctx)).toBe(false)
   })
+
+  // The frame list follows the template's declared middle beat, not the videos
+  // that happen to be uploaded. Both directions matter: a template with a cover
+  // video that declares an animated beat must lose this frame, and one with no
+  // cover video that declares a film must gain it.
+  it('appears for a template with no cover video that declares a film', () => {
+    const ctx = context({
+      templateAssets: {
+        stage_modes: { transition: 'video' },
+        standard_transition_video: '/media/templates/mid.mp4',
+      },
+    })
+    expect(eventVideoFrame().isVisible?.(ctx)).toBe(true)
+  })
+
+  it('disappears for a cover-video template that declares an animated beat', () => {
+    const ctx = context({
+      templateAssets: {
+        ...standard,
+        stage_modes: { transition: 'animation' },
+        standard_transition_video: '/media/templates/mid.mp4',
+      },
+    })
+    const frame = eventVideoFrame()
+    expect(frame.isVisible?.(ctx)).toBe(false)
+    expect(frame.isApplicable?.(ctx)).toBe(false)
+  })
+})
+
+describe('the Transition frame gate', () => {
+  const transitionFrame = () => {
+    const frame = resolvePreviewRenderer(context()).frames.find((f) => f.id === 'transition')
+    if (!frame) throw new Error('the V1 renderer no longer declares a transition frame')
+    return frame
+  }
+
+  // No longer gated on the event's category — a stage's shape is the
+  // template's decision, and the frame list must agree with the showcase.
+  it('appears whenever the template declares the animated beat', () => {
+    const ctx = context({
+      templateAssets: { stage_modes: { transition: 'animation' } },
+      hasFeaturedPhoto: true,
+    })
+    expect(transitionFrame().isVisible?.(ctx)).toBe(true)
+  })
+
+  it('appears for a template with no videos that declares nothing', () => {
+    const ctx = context({ templateAssets: {}, hasFeaturedPhoto: true })
+    expect(transitionFrame().isVisible?.(ctx)).toBe(true)
+  })
 })

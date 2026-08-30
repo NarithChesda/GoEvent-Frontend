@@ -13,6 +13,7 @@ import type {
   InfoCardDesignConfig,
   SaveTheDateDesignConfig,
   SparkFieldConfig,
+  StageModesConfig,
 } from '../services/api/types/template.types'
 import type { StoredMusicStartStage } from '../services/api/types/event.types'
 
@@ -207,6 +208,12 @@ export interface TemplateAssets {
    * already-published template renders unchanged.
    */
   save_the_date_design?: SaveTheDateDesignConfig | null
+  /**
+   * Which stages animate and which play a film. Absent falls back to the
+   * legacy asset/category inference that read a package plan out of the
+   * uploaded videos — see resolveStageModes.
+   */
+  stage_modes?: StageModesConfig | null
   display_liquid_glass_background?: boolean
   guest_title_frame_left?: string | null
   guest_title_frame_mid?: string | null

@@ -27,14 +27,10 @@ interface VideoEmits {
   playBackgroundVideo: []
 }
 
-export type DisplayMode = 'basic' | 'standard'
-
 interface VideoProps extends VideoUrls {
   currentShowcaseStage?: ShowcaseStage
   shouldSkipToMainContent?: boolean
   videoStatePreserved?: boolean
-  templateAssets?: { standard_cover_video?: string; basic_decoration_photo?: string } | null
-  displayMode?: DisplayMode
 }
 
 export function useCoverStageVideo(

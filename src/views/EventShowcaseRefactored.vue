@@ -114,7 +114,7 @@
         :falling-effect="event.template_assets?.falling_effect"
         :sparks="event.template_assets?.sparks"
         :transition-owns-falling-field="showTransitionStage && isDoorTransition"
-        :use-transition-stage="isBasicWedding"
+        :stage-modes="stageModes"
         :get-media-url="getMediaUrl"
         @open-envelope="openEnvelopeWithVideoSync"
         @cover-stage-ready="handleCoverStageReady"
@@ -248,6 +248,7 @@ import { useEventShowcase } from '../composables/useEventShowcase'
 import { useAuthStore } from '../stores/auth'
 import { useAssetProtection } from '../composables/showcase/useAssetProtection'
 import { DOOR_CLEARED_MS } from '../composables/showcase/useDoorAnimation'
+import { resolveStageModesForEvent } from '../composables/showcase/useStageModes'
 import { getPendingLogin } from '../composables/useTelegramBotLogin'
 
 // Meta tags utility
@@ -384,24 +385,28 @@ const handleCommentSubmitted = () => {
   markMainContentSeen()
 }
 
-// Check if this is a wedding event with basic template (needs transition stage).
-// "Basic mode" mirrors CoverStage's own definition: template exists but has no
-// standard_cover_video. This covers both the decoration-photo variant and the
-// background-photo/video variant (basic_background_photo + standard_background_video)
-// which intentionally omits basic_decoration_photo.
-const isBasicWedding = computed(() => {
-  if (!templateAssets.value) return false
-  const isBasicMode = !templateAssets.value.standard_cover_video
-  const categoryName = (event.value.category_details?.name || event.value.category_name || '').toLowerCase()
-  return isBasicMode && categoryName === 'wedding'
-})
+/**
+ * Which stage animates and which plays a film — the template's own declaration,
+ * with the legacy asset/category inference standing in for whatever it leaves
+ * unset (see resolveStageModes).
+ *
+ * This replaces the `isBasicWedding` check that used to gate the middle beat:
+ * the showcase read a package plan out of whether a `standard_cover_video`
+ * happened to be uploaded, and then handed the animated beat only to weddings.
+ * Neither fact is the template's actual intent, and neither could be changed
+ * without uploading or deleting a video.
+ */
+const stageModes = computed(() => resolveStageModesForEvent(event.value))
+
+/** The middle beat is the Save the Date card over the featured photo. */
+const usesTransitionStage = computed(() => stageModes.value.transition === 'animation')
 
 const hasFeaturedPhoto = computed(() => {
   return eventPhotos.value?.some((p) => p.is_featured) ?? false
 })
 
 const showTransitionStage = computed(
-  () => isTransitionStage.value && isBasicWedding.value && hasFeaturedPhoto.value,
+  () => isTransitionStage.value && usesTransitionStage.value && hasFeaturedPhoto.value,
 )
 
 // Which of the two transition stages this template gets. Mirrors how CoverStage
@@ -428,7 +433,7 @@ const isDoorTransition = computed(
  * way it always did.
  */
 watch(
-  () => (isBasicWedding.value ? (eventPhotos.value?.find((p) => p.is_featured)?.image ?? null) : null),
+  () => (usesTransitionStage.value ? (eventPhotos.value?.find((p) => p.is_featured)?.image ?? null) : null),
   (image) => {
     if (!image) return
     const warm = new Image()
@@ -523,8 +528,9 @@ const coverExitDurationMs = (): number => {
 
 // Override the openEnvelope function to include video synchronization
 const openEnvelopeWithVideoSync = async () => {
-  // For basic wedding events with a featured photo, use the transition stage
-  if (isBasicWedding.value && hasFeaturedPhoto.value) {
+  // The animated middle beat, with a photograph to show: hand over to the
+  // transition stage and let it decide when the invitation appears.
+  if (usesTransitionStage.value && hasFeaturedPhoto.value) {
     await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined, {
       useTransitionStage: true,
       musicLoopStart: musicStartTime.value,
@@ -539,9 +545,10 @@ const openEnvelopeWithVideoSync = async () => {
     return
   }
 
-  // For basic wedding events without a featured photo, still use transition stage
-  // so the door/decoration animation plays, then auto-complete after animation finishes
-  if (isBasicWedding.value) {
+  // The animated beat with nothing to show. The stage still runs, so the
+  // door/decoration animation plays, and completes itself once the cover has
+  // cleared.
+  if (usesTransitionStage.value) {
     await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined, {
       useTransitionStage: true,
       musicLoopStart: musicStartTime.value,
@@ -570,12 +577,14 @@ const openEnvelopeWithVideoSync = async () => {
     musicStartStage: musicStartStage.value,
   })
 
-  // Determine display mode: basic mode has basic_decoration_photo, standard mode doesn't
-  const isBasicMode = Boolean(templateAssets.value?.basic_decoration_photo)
-
-  // Then trigger the video playback ONLY in standard mode
-  // In basic mode, skip directly to main content without playing any videos
-  if (!isBasicMode && coverStageRef.value && eventVideoUrl.value) {
+  // Roll the film, if the film is what this template's middle beat is. The
+  // condition used to be "no basic_decoration_photo", a third way of spelling
+  // "standard package" that disagreed with the other two: a template carrying
+  // both a cover video and a decoration photo started nothing on the tap and
+  // sat on its cover forever, while a basic template carrying neither started a
+  // video that CoverStage cut off 500ms later on its way to main content.
+  // Asking the stage what it is answers both.
+  if (stageModes.value.transition === 'video' && coverStageRef.value && eventVideoUrl.value) {
     coverStageRef.value.startEventVideo()
   }
 }

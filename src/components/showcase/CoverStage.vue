@@ -14,6 +14,8 @@
       :event-video-url="eventVideoUrl"
       :background-video-url="backgroundVideoUrl"
       :is-cover-video-playing="videoState.isCoverVideoPlaying.value"
+      :cover-mode="coverMode"
+      :background-mode="backgroundMode"
       :current-video-phase="videoState.currentVideoPhase.value"
       :get-media-url="getMediaUrl"
       :is-content-hidden="videoState.isContentHidden.value"
@@ -143,13 +145,12 @@ import type {
 } from '@/services/api/types/template.types'
 import { sparkFieldKeyOf } from '@/composables/showcase/useSparkField'
 import type { ShowcaseAnimationType } from '@/composables/showcase/useShowcaseAnimation'
+import { resolveStageModes, type ResolvedStageModes } from '@/composables/showcase/useStageModes'
 import { useCoverStageLayout } from '@/composables/showcase/useCoverStageLayout'
 import VideoContainer from './VideoContainer.vue'
 import CoverContentOverlay from './CoverContentOverlay.vue'
 import FallingEffect from './FallingEffect.vue'
 import CoverSparks from './cover/CoverSparks.vue'
-
-export type DisplayMode = 'basic' | 'standard'
 
 // Local interface for template assets used by this component
 interface CoverStageTemplateAssets {
@@ -224,8 +225,17 @@ interface Props {
   /** True while a transition stage that runs its OWN falling field is on
    *  screen, so this one yields to it instead of drawing over the top. */
   transitionOwnsFallingField?: boolean
-  /** When true, basic mode will only animate decorations out without transitioning to main content */
-  useTransitionStage?: boolean
+  /**
+   * Which stage animates and which plays a film, already resolved by
+   * resolveStageModes. Drives three separate things that used to be inferred
+   * from `standard_cover_video` alone: which backdrop VideoContainer draws
+   * (`cover`), what the envelope tap hands over to (`transition`), and what
+   * sits behind the invitation (`background`).
+   *
+   * Optional so a caller that has not resolved them still renders: the getters
+   * below fall back to the same legacy inference.
+   */
+  stageModes?: ResolvedStageModes | null
   /** Manage-page preview only: always block the open-envelope tap/swipe so
    *  the cover renders as a static "what it looks like" view instead of
    *  being interactive. Never set on the live showcase. */
@@ -254,10 +264,26 @@ const emit = defineEmits<{
 // Template ref for video container
 const videoContainerRef = ref<InstanceType<typeof VideoContainer> | null>(null)
 
-// Display mode based on whether standard_cover_video exists
-const displayMode = computed<DisplayMode>(() => {
-  return props.templateAssets?.standard_cover_video ? 'standard' : 'basic'
-})
+/**
+ * The three stage modes, resolved. The prop is the normal path — the live
+ * showcase and the preview frames both resolve them once, from the template
+ * plus the event category — and the fallback covers a caller that only knows
+ * the assets, by running the same legacy inference on them.
+ */
+const stageModes = computed<ResolvedStageModes>(
+  () => props.stageModes ?? resolveStageModes({ assets: props.templateAssets }),
+)
+
+const coverMode = computed(() => stageModes.value.cover)
+const transitionMode = computed(() => stageModes.value.transition)
+const backgroundMode = computed(() => stageModes.value.background)
+
+/**
+ * True while the middle beat is a stage of its own that owns the hand-off to
+ * the invitation — the Save the Date card over the featured photo. The cover
+ * then only animates itself out and waits, instead of revealing main content.
+ */
+const usesTransitionStage = computed(() => transitionMode.value === 'animation')
 
 // Animation type from prop with fallback to 'decoration'
 const animationType = computed<ShowcaseAnimationType>(() => {
@@ -278,8 +304,6 @@ const videoState = useCoverStageVideo(
     currentShowcaseStage: props.currentShowcaseStage,
     shouldSkipToMainContent: props.shouldSkipToMainContent,
     videoStatePreserved: props.videoStatePreserved,
-    templateAssets: props.templateAssets,
-    displayMode: displayMode.value,
   },
   (event, ...args) => {
     (emit as any)(event, ...args)
@@ -312,7 +336,7 @@ const preRevealMainContent = () => {
 // the stage unmounts.
 const keepDecorationBackground = computed(() => {
   return (
-    props.useTransitionStage &&
+    usesTransitionStage.value &&
     props.currentShowcaseStage === 'transition' &&
     !isMainContentPreRevealed.value
   )
@@ -321,7 +345,7 @@ const keepDecorationBackground = computed(() => {
 // Skip slide-up animation for decoration photo when using transition stage
 // (after transition completes, hide instantly instead of sliding up)
 const skipDecorationSlideUp = computed(() => {
-  return props.useTransitionStage === true
+  return usesTransitionStage.value
 })
 
 // Computed visibility flags
@@ -346,7 +370,7 @@ const shouldShowMainContent = computed(() => {
   // sits at z-35 above CoverStage (z-10) but starts transparent, so main content
   // would show through it as the door opens; the door-mode stage renders in the
   // `transition` slot above, which likewise has nothing to reveal yet.
-  if (props.useTransitionStage && isDoorAnimationInProgress.value) return false
+  if (usesTransitionStage.value && isDoorAnimationInProgress.value) return false
   return videoState.currentVideoPhase.value === 'background'
     || props.shouldSkipToMainContent
     || isDoorAnimationInProgress.value
@@ -406,50 +430,51 @@ const fallingEffectKey = computed(() => fallingEffectKeyOf(props.fallingEffect))
 // sparkFieldKeyOf. Excludes the palette for the same reason the falling key does.
 const sparkFieldKey = computed(() => sparkFieldKeyOf(props.sparks))
 
-// Disable envelope interaction in standard mode until event video is ready
-// (or unconditionally, when the manage-page preview just wants to show what
-// the cover looks like without letting it be opened/animated away).
+// Only the film beat has anything to wait on: the tap hands straight over to
+// the video, so letting the guest open the envelope before it can play would
+// cut from the cover to a stalled frame. (Or unconditionally, when the
+// manage-page preview just wants to show what the cover looks like without
+// letting it be opened/animated away.)
 const isEnvelopeInteractionDisabled = computed(() => {
   if (props.disableEnvelopeInteraction) return true
-  if (displayMode.value === 'basic') {
-    return false
-  }
+  if (transitionMode.value !== 'video') return false
   return props.eventVideoUrl ? !videoState.eventVideoReady.value : false
 })
 
-// Handle envelope opening - different behavior based on display mode and animation type
+/**
+ * The envelope tap. The cover's own exit is decided by `animationType`; what it
+ * hands over to is decided by the middle beat's mode — which is why this reads
+ * `transitionMode` and not the cover's.
+ *
+ * Neither branch reveals main content itself. A filmed beat is started by the
+ * parent (startEventVideo) and the video state machine carries it through; an
+ * animated one is owned by the transition stage, which decides when the
+ * invitation appears — and when the event has no featured photo for it to draw,
+ * the parent completes it once the cover has cleared.
+ */
 const handleOpenEnvelope = () => {
   emit('openEnvelope')
 
   if (isDoorAnimation.value) {
-    // Door animation: set content hidden to trigger door opening animation
+    // The doors swing on both modes; only what they reveal differs.
     videoState.isContentHidden.value = true
     startDoorAnimation()
 
-    if (displayMode.value === 'basic') {
-      if (!props.useTransitionStage) {
-        videoState.skipToMainContent()
-      }
-    } else {
-      clearAfterTimeout()
-    }
-  } else {
-    // Decoration animation behavior differs by display mode
-    if (displayMode.value === 'basic') {
-      // Basic mode: set content hidden immediately to animate decorations out
-      videoState.isContentHidden.value = true
-
-      // When using transition stage, only animate decorations out
-      // Do NOT skip to main content — the transition stage handles timing
-      if (!props.useTransitionStage) {
-        videoState.skipToMainContent()
-      }
-    }
-    // Standard mode: DO NOT set isContentHidden here!
-    // The video will be started by parent via startEventVideo(), and
-    // isContentHidden will be set AFTER the video starts playing
-    // to ensure smooth animation with no visual gap
+    // The film is started by the parent, so the door state needs its own timer
+    // to clear. The animated beat clears itself when the stage completes.
+    if (transitionMode.value === 'video') clearAfterTimeout()
+    return
   }
+
+  if (transitionMode.value === 'video') {
+    // DO NOT hide the content here! The parent starts the video via
+    // startEventVideo(), and isContentHidden is set only once it is actually
+    // playing, so there is no visual gap between cover and first frame.
+    return
+  }
+
+  // Decorations slide out on the tap.
+  videoState.isContentHidden.value = true
 }
 
 // Expose methods for parent component

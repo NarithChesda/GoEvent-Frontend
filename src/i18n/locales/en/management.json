@@ -2873,6 +2873,23 @@
       "video": "Video",
       "videoHint": "Plays after the cover, before the invitation appears. Used only when the event has no video of its own."
     },
+    "stageModes": {
+      "animation": "Artwork",
+      "video": "Video",
+      "coverHint": {
+        "animation": "The cover is a still backdrop that animates away on the tap — decorations sliding off, or the doors swinging open.",
+        "video": "The cover is a looping film, playing full-bleed behind the guest name."
+      },
+      "transitionGroup": "Middle Stage",
+      "transitionHint": {
+        "animation": "The Save the Date card over the event's featured photograph. Events with no featured photo go straight from the cover to the invitation.",
+        "video": "A film playing full screen between the cover and the invitation — the event's own video, or the one uploaded below."
+      },
+      "backgroundHint": {
+        "animation": "A still photograph behind the invitation, falling back to the template colour.",
+        "video": "A looping film behind the invitation."
+      }
+    },
     "guestFrame": {
       "styles": {
         "split": "3-Piece",

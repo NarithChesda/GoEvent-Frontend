@@ -608,8 +608,15 @@
                   <h5 :class="SECTION_HEADING">
                     {{ t('management.partnerTemplateForm.coverDecorations.backdropGroup') }}
                   </h5>
+                  <!-- What the cover is: artwork that animates away, or a film.
+                       It picks the backdrop slot below, because the stage draws
+                       one or the other and never both. -->
+                  <TemplateFormChoice v-model="coverModeModel" :options="stageModeOptions" />
+                  <p :class="FIELD_HINT">
+                    {{ t(`management.partnerTemplateForm.stageModes.coverHint.${form.stage_mode_cover}`) }}
+                  </p>
                   <FileUploadField
-                    v-if="isBasicPlan"
+                    v-if="form.stage_mode_cover === 'animation'"
                     :label="t('management.partnerTemplateForm.coverDecorations.coverBackground')"
                     accept="image/*"
                     :file-name="form.basic_decoration_photo?.name"
@@ -618,7 +625,7 @@
                     @clear="clearAssetField('basic_decoration_photo')"
                   />
                   <FileUploadField
-                    v-if="isStandardPlan"
+                    v-else
                     :label="t('management.partnerTemplateForm.coverDecorations.coverBackground')"
                     accept="video/*"
                     :file-name="form.standard_cover_video?.name"
@@ -626,7 +633,9 @@
                     @change="handleFileChange('standard_cover_video', $event)"
                     @clear="clearAssetField('standard_cover_video')"
                   />
-                  <div v-if="isBasicPlan" class="grid grid-cols-2 gap-2.5">
+                  <!-- Cover artwork, so it follows the cover's mode rather
+                       than the plan: a filmed cover has nothing to frame. -->
+                  <div v-if="form.stage_mode_cover === 'animation'" class="grid grid-cols-2 gap-2.5">
                     <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverTop')" accept="image/*" :file-name="form.cover_top_decoration?.name" :has-existing-file="hasSavedAsset('cover_top_decoration')" @change="handleFileChange('cover_top_decoration', $event)" @clear="clearAssetField('cover_top_decoration')" />
                     <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverBottom')" accept="image/*" :file-name="form.cover_bottom_decoration?.name" :has-existing-file="hasSavedAsset('cover_bottom_decoration')" @change="handleFileChange('cover_bottom_decoration', $event)" @clear="clearAssetField('cover_bottom_decoration')" />
                     <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverLeft')" accept="image/*" :file-name="form.cover_left_decoration?.name" :has-existing-file="hasSavedAsset('cover_left_decoration')" @change="handleFileChange('cover_left_decoration', $event)" @clear="clearAssetField('cover_left_decoration')" />
@@ -1006,10 +1015,9 @@
                so opening it points the preview at that stage instead of leaving
                the partner editing one screen while looking at another.
 
-               Shown on both plans, because the animation below is what picks
-               this stage's shape on either one. Only the film is standard-only:
-               the basic flow's middle stage is built from the event's own
-               featured photo, with no template artwork to configure. -->
+               What this stage *is* — a Save the Date card over the event's
+               featured photo, or a film — is the mode control below, on every
+               plan. -->
           <template v-else-if="activeSection === 'transition'">
             <!-- One control, two stages: it chooses the cover's exit animation
                  *and* the transition that plays under it — decorations sliding
@@ -1025,13 +1033,25 @@
               </p>
             </section>
 
-            <!-- The title card that plays over the featured photo on whichever
-                 stage the control above picked. Directly under it because the
-                 two are the transition beat between them, and because the
-                 default option here — match the transition — only means
-                 anything next to the control it matches. Not plan-gated: this
-                 is a composition, not an asset slot. -->
+            <!-- What the beat itself is. Above the two shapes it chooses
+                 between, and below the animation control, because that control
+                 still governs the cover's own exit whichever shape is picked. -->
             <section :class="[PANEL, 'p-4 space-y-3']">
+              <h5 :class="SECTION_HEADING">
+                {{ t('management.partnerTemplateForm.stageModes.transitionGroup') }}
+              </h5>
+              <TemplateFormChoice v-model="transitionModeModel" :options="stageModeOptions" />
+              <p :class="FIELD_HINT">
+                {{ t(`management.partnerTemplateForm.stageModes.transitionHint.${form.stage_mode_transition}`) }}
+              </p>
+            </section>
+
+            <!-- The title card that plays over the featured photo on whichever
+                 stage the animation control picked — so it shows only when the
+                 beat is that card. Its own default option, match the transition,
+                 only means anything next to the control it matches. Not
+                 plan-gated: this is a composition, not an asset slot. -->
+            <section v-if="form.stage_mode_transition === 'animation'" :class="[PANEL, 'p-4 space-y-3']">
               <h5 :class="SECTION_HEADING">
                 {{ t('management.partnerTemplateForm.saveTheDateDesign.sectionTitle') }}
               </h5>
@@ -1041,7 +1061,7 @@
 
             <PlanRequiredNotice v-if="!form.package_plan_id" @pick="selectSection('basics')" />
             <section
-              v-else-if="isStandardPlan"
+              v-else-if="form.stage_mode_transition === 'video'"
               :class="[PANEL, 'p-4 space-y-3']"
             >
               <h5 :class="SECTION_HEADING">
@@ -1411,16 +1431,20 @@
                behind two clicks apart even though both only ever show on this
                one stage. -->
           <template v-else-if="activeSection === 'content'">
-            <!-- Plan-gated on its own, unlike the rest of this section: which
-                 backdrop field even applies (photo vs video) is decided by the
-                 plan, while card width, glass and the block designs are not. -->
+            <!-- Still asks for a plan first, because a template needs one to
+                 be saved at all — but the plan no longer decides which backdrop
+                 is on offer. That is the mode's call. -->
             <PlanRequiredNotice v-if="!form.package_plan_id" @pick="selectSection('basics')" />
             <section v-else :class="[PANEL, 'p-4 space-y-3']">
               <h5 :class="SECTION_HEADING">
                 {{ t('management.partnerTemplateForm.backgroundStage.sectionTitle') }}
               </h5>
+              <TemplateFormChoice v-model="backgroundModeModel" :options="stageModeOptions" />
+              <p :class="FIELD_HINT">
+                {{ t(`management.partnerTemplateForm.stageModes.backgroundHint.${form.stage_mode_background}`) }}
+              </p>
               <FileUploadField
-                v-if="isBasicPlan"
+                v-if="form.stage_mode_background === 'animation'"
                 :label="t('management.partnerTemplateForm.backgroundStage.backgroundPhoto')"
                 accept="image/*"
                 :file-name="form.basic_background_photo?.name"
@@ -1429,7 +1453,7 @@
                 @clear="clearAssetField('basic_background_photo')"
               />
               <FileUploadField
-                v-if="isStandardPlan"
+                v-else
                 :label="t('management.partnerTemplateForm.backgroundStage.backgroundVideo')"
                 accept="video/*"
                 :file-name="form.standard_background_video?.name"
@@ -1437,7 +1461,11 @@
                 @change="handleFileChange('standard_background_video', $event)"
                 @clear="clearAssetField('standard_background_video')"
               />
-              <div v-if="isBasicPlan" class="grid grid-cols-2 gap-2.5">
+              <!-- Drawn over the invitation whatever is behind it, so unlike
+                   the backdrop slot above these do not follow the mode — and
+                   they never followed the plan either, beyond it having been
+                   the only gate available. -->
+              <div class="grid grid-cols-2 gap-2.5">
                 <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.topDecoration')" accept="image/*" :file-name="form.top_decoration?.name" :has-existing-file="hasSavedAsset('top_decoration')" @change="handleFileChange('top_decoration', $event)" @clear="clearAssetField('top_decoration')" />
                 <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.bottomDecoration')" accept="image/*" :file-name="form.bottom_decoration?.name" :has-existing-file="hasSavedAsset('bottom_decoration')" @change="handleFileChange('bottom_decoration', $event)" @clear="clearAssetField('bottom_decoration')" />
                 <FileUploadField :label="t('management.partnerTemplateForm.backgroundStage.leftDecoration')" accept="image/*" :file-name="form.left_decoration?.name" :has-existing-file="hasSavedAsset('left_decoration')" @change="handleFileChange('left_decoration', $event)" @clear="clearAssetField('left_decoration')" />
@@ -1696,7 +1724,10 @@ import type {
   SparkFieldConfig,
   SparkShape,
   SparkColorSource,
+  StageMode,
+  StageModesConfig,
 } from '../../services/api'
+import { resolveStageModes } from '@/composables/showcase/useStageModes'
 import PartnerTemplateFileField from './PartnerTemplateFileField.vue'
 import PartnerTemplatePreview from './PartnerTemplatePreview.vue'
 import TemplateSlotField from './TemplateSlotField.vue'
@@ -1817,13 +1848,6 @@ function isPlanStandard(plan: PackagePlan): boolean {
   const name = plan.name.toLowerCase()
   return name.includes('standard')
 }
-
-const selectedPlan = computed(() =>
-  availablePlans.value.find((p) => p.id === form.package_plan_id) ?? null,
-)
-
-const isBasicPlan = computed(() => selectedPlan.value ? isPlanBasic(selectedPlan.value) : false)
-const isStandardPlan = computed(() => selectedPlan.value ? isPlanStandard(selectedPlan.value) : false)
 
 async function fetchPlans(): Promise<void> {
   if (availablePlans.value.length > 0) return
@@ -1977,6 +2001,18 @@ interface FormState {
    * can't silently pin it to a design its partner never chose.
    */
   save_the_date_design_type: SaveTheDateDesignType | 'auto'
+  /**
+   * Which shape each of the three stages takes: built from artwork, or a film.
+   * Independent of the package plan, which prices the template and decides
+   * nothing about how it renders — any plan may put any mode on any stage.
+   *
+   * A template saved before this field existed has no stored value, so the form
+   * seeds these from `resolveStageModes` on its own assets: the pickers open on
+   * what the template already does, and saving pins exactly that.
+   */
+  stage_mode_cover: StageMode
+  stage_mode_transition: StageMode
+  stage_mode_background: StageMode
 }
 
 const defaultFallingEffect = (): FallingEffectFormState => ({
@@ -2050,6 +2086,9 @@ const defaultForm = (): FormState => ({
   host_couple_ornament: 'none',
   info_card_design_type: 'glass',
   save_the_date_design_type: 'auto',
+  stage_mode_cover: 'animation',
+  stage_mode_transition: 'animation',
+  stage_mode_background: 'animation',
 })
 
 const CREATURE_TYPES: AmbientCreatureEffectType[] = ['butterfly', 'dove', 'firefly', 'dragonfly', 'balloon', 'hummingbird']
@@ -2702,6 +2741,49 @@ const buildSaveTheDateDesignPayload = (): SaveTheDateDesignConfig | null =>
     ? null
     : { type: form.save_the_date_design_type }
 
+// ---------------------------------------------------------------------------
+// Per-stage modes — which stage is built from artwork and which plays a film.
+//
+// Deliberately free of the package plan. The plan prices the template; it does
+// not decide how the template renders, so every option is offered on every plan
+// and a basic template can put a film on its middle stage. Before this, one plan
+// answered the question for all three stages at once — picking standard turned
+// the cover, the middle beat and the invitation's backdrop to video together —
+// and the animated middle beat was additionally a wedding-only accident of
+// having uploaded no cover film.
+// ---------------------------------------------------------------------------
+
+const stageModeOptions = computed(() => [
+  { value: 'animation', label: t('management.partnerTemplateForm.stageModes.animation'), icon: Sparkles },
+  { value: 'video', label: t('management.partnerTemplateForm.stageModes.video'), icon: Clapperboard },
+])
+
+const coverModeModel = computed<string>({
+  get: () => form.stage_mode_cover,
+  set: (value) => { form.stage_mode_cover = value as StageMode },
+})
+const transitionModeModel = computed<string>({
+  get: () => form.stage_mode_transition,
+  set: (value) => { form.stage_mode_transition = value as StageMode },
+})
+const backgroundModeModel = computed<string>({
+  get: () => form.stage_mode_background,
+  set: (value) => { form.stage_mode_background = value as StageMode },
+})
+
+/**
+ * All three stages, always. There is no "leave it to the system" option — the
+ * pickers were seeded from what the template already renders, so persisting
+ * every one of them states the current behaviour rather than changing it, and
+ * from then on the template says what it is instead of being read out of its
+ * uploaded files.
+ */
+const buildStageModesPayload = (): StageModesConfig => ({
+  cover: form.stage_mode_cover,
+  transition: form.stage_mode_transition,
+  background: form.stage_mode_background,
+})
+
 const fallingTypeModel = computed<string>({
   get: () => form.falling_effect.type,
   set: (value) => { form.falling_effect.type = value as FallingEffectType },
@@ -2881,19 +2963,18 @@ interface SectionDescriptor {
    * on. A function where the answer depends on the plan — the two flows draw
    * their middle stage from different sources, so they are two different frames.
    */
-  stage: string | ((standard: boolean) => string)
+  stage: string | ((transition: StageMode) => string)
 }
 
 const SECTION_DESCRIPTORS: SectionDescriptor[] = [
   { id: 'basics', icon: Info, stage: 'cover' },
   { id: 'brand', icon: Palette, stage: 'cover' },
   { id: 'cover', icon: ImageIcon, stage: 'cover' },
-  // The middle stage. Standard plays the template's own film (`event_video`
-  // frame); basic composes the event's featured photo (`transition` frame).
-  // Both plans get the tab, because the opening animation inside it is what
-  // picks that stage's shape on either one — only the film upload is
-  // standard-only, and it gates itself inside the section.
-  { id: 'transition', icon: Clapperboard, stage: (standard) => (standard ? 'event_video' : 'transition') },
+  // The middle stage, in whichever shape this template declared: a film
+  // (`event_video` frame) or the featured photo composed under a title card
+  // (`transition` frame). The opening animation inside this tab governs the
+  // cover's exit whichever shape is picked.
+  { id: 'transition', icon: Clapperboard, stage: (transition) => (transition === 'video' ? 'event_video' : 'transition') },
   { id: 'content', icon: AlignLeft, stage: 'main' },
   // Last, and pointed at the cover: the effects sit on top of both stages, and
   // two of the three (creatures, sparks) show there. The preview's own stage
@@ -2934,9 +3015,11 @@ function countAssets(fields: PartnerTemplateAssetField[]): number {
   return fields.filter((field) => form[field] instanceof File || !!props.existingTemplate?.[field]).length
 }
 
-/** Fixed for every section but the middle stage, whose frame follows the plan. */
+/** Fixed for every section but the middle stage, whose frame follows its mode. */
 function resolveStage(section: SectionDescriptor): string {
-  return typeof section.stage === 'function' ? section.stage(isStandardPlan.value) : section.stage
+  return typeof section.stage === 'function'
+    ? section.stage(form.stage_mode_transition)
+    : section.stage
 }
 
 const sections = computed(() =>
@@ -2965,10 +3048,11 @@ const sections = computed(() =>
         break
       }
       case 'transition': {
-        // Only the film is countable, and only standard plans have one. A
-        // template demoted to basic keeps the uploaded file on the server, so
-        // count it only where the tab actually offers the slot.
-        const count = isStandardPlan.value ? countAssets(TRANSITION_ASSET_FIELDS) : 0
+        // Only the film is countable, and only a filmed beat has one. A
+        // template switched back to the animated beat keeps the uploaded file
+        // on the server, so count it only where the tab offers the slot.
+        const count =
+          form.stage_mode_transition === 'video' ? countAssets(TRANSITION_ASSET_FIELDS) : 0
         if (count) badge = String(count)
         break
       }
@@ -3022,13 +3106,16 @@ function selectSection(id: SectionId): void {
 }
 
 /**
- * Every section shows on both plans, so a plan switch can no longer take the
- * open one away — but it can move the middle stage's preview frame under it, and
- * the preview would otherwise sit on a frame the new plan doesn't render.
+ * Switching the middle stage's mode moves its preview frame — `transition` and
+ * `event_video` are different frames — and the preview would otherwise sit on
+ * a frame this template no longer renders.
  */
-watch(isStandardPlan, () => {
-  if (activeSection.value === 'transition') selectSection('transition')
-})
+watch(
+  () => form.stage_mode_transition,
+  () => {
+    if (activeSection.value === 'transition') selectSection('transition')
+  },
+)
 
 // --- Colors handlers ---
 async function fetchColors(): Promise<void> {
@@ -3521,6 +3608,15 @@ watch(
       // transition stage keeps its own default — which is what every template
       // saved before this field existed has.
       form.save_the_date_design_type = template.save_the_date_design?.type ?? 'auto'
+      // Hydrate the per-stage modes. Anything this template hasn't declared
+      // is seeded from the same fallback the showcase resolves it with, so the
+      // pickers open on what the template already renders rather than on a
+      // guess — and each key is independent, so a template may have declared
+      // only its middle beat.
+      const inferredModes = resolveStageModes({ assets: template })
+      form.stage_mode_cover = template.stage_modes?.cover ?? inferredModes.cover
+      form.stage_mode_transition = template.stage_modes?.transition ?? inferredModes.transition
+      form.stage_mode_background = template.stage_modes?.background ?? inferredModes.background
       // Hydrate ambient creatures
       if (template.ambient_creatures) {
         form.ambient_creatures_enabled = true
@@ -3789,6 +3885,7 @@ async function handleSave(): Promise<void> {
       host_info_design: buildHostInfoDesignPayload(),
       info_card_design: { type: form.info_card_design_type },
       save_the_date_design: buildSaveTheDateDesignPayload(),
+      stage_modes: buildStageModesPayload(),
     }
 
     // Add file fields that have been set. The asset list is shared with the
@@ -4099,6 +4196,7 @@ const previewDraft = computed<PartnerTemplateDraft>(() => {
     host_info_design: buildHostInfoDesignPayload(),
     info_card_design: { type: form.info_card_design_type },
     save_the_date_design: buildSaveTheDateDesignPayload(),
+    stage_modes: buildStageModesPayload(),
     colors: previewColors.value,
     fonts: previewFonts.value,
     files,

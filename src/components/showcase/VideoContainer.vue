@@ -51,7 +51,7 @@
     <!-- COVER STAGE BACKGROUND (when decoration is visible, i.e., NOT isContentHidden) -->
     <!-- Background Color Layer for Cover Stage - templateColor or white fallback -->
     <div
-      v-if="(!isContentHidden || keepDecorationBackground) && !templateAssets?.standard_cover_video"
+      v-if="(!isContentHidden || keepDecorationBackground) && isAnimatedCover"
       class="absolute inset-0"
       :style="{ backgroundColor: decorationBackgroundColor, zIndex: -2 }"
     />
@@ -61,7 +61,7 @@
     <!-- When keepDecorationBackground is true (transition stage), keep decoration photo visible -->
     <!-- When skipDecorationSlideUp is true (after transition stage), hide instantly without slide-up -->
     <div
-      v-if="decorationPhotoUrl && !templateAssets?.standard_cover_video"
+      v-if="decorationPhotoUrl && isAnimatedCover"
       class="absolute inset-0 decoration-backdrop"
       :class="{
         'swipe-up-hidden': isContentHidden && isDecorationAnimation && !keepDecorationBackground && !skipDecorationSlideUp,
@@ -85,7 +85,7 @@
     <!-- Not shown when keepDecorationBackground is true (transition stage keeps decoration photo) -->
     <!-- Background Photo Layer (optimized via ImageKit) for Main Content Stage -->
     <div
-      v-if="isContentHidden && !keepDecorationBackground && backgroundPhotoUrl && !templateAssets?.standard_cover_video"
+      v-if="isContentHidden && !keepDecorationBackground && backgroundPhotoUrl && isArtworkBackground"
       class="absolute inset-0"
       style="z-index: -1"
     >
@@ -101,14 +101,14 @@
 
     <!-- Fallback 1: Template Color for Main Content Stage when no background photo -->
     <div
-      v-if="isContentHidden && !keepDecorationBackground && !backgroundPhotoUrl && templateColor && !templateAssets?.standard_cover_video"
+      v-if="isContentHidden && !keepDecorationBackground && !backgroundPhotoUrl && templateColor && isArtworkBackground"
       class="absolute inset-0"
       :style="{ backgroundColor: templateColor, zIndex: -1 }"
     />
 
     <!-- Fallback 2: Use Decoration Photo when no background photo AND no templateColor -->
     <div
-      v-if="isContentHidden && !keepDecorationBackground && !backgroundPhotoUrl && !templateColor && decorationPhotoUrl && !templateAssets?.standard_cover_video"
+      v-if="isContentHidden && !keepDecorationBackground && !backgroundPhotoUrl && !templateColor && decorationPhotoUrl && isArtworkBackground"
       class="absolute inset-0"
       style="z-index: -1"
     >
@@ -124,18 +124,14 @@
 
     <!-- Fallback 3: White color when no background photo, no templateColor, and no decoration photo -->
     <div
-      v-if="isContentHidden && !keepDecorationBackground && !backgroundPhotoUrl && !templateColor && !decorationPhotoUrl && !templateAssets?.standard_cover_video"
+      v-if="isContentHidden && !keepDecorationBackground && !backgroundPhotoUrl && !templateColor && !decorationPhotoUrl && isArtworkBackground"
       class="absolute inset-0"
       style="background-color: #ffffff; z-index: -1"
     />
 
     <!-- Standard Cover Video Loop - Only show when not in event/background phase and no decoration photo -->
     <video
-      v-if="
-        templateAssets?.standard_cover_video &&
-        isCoverVideoPlaying &&
-        !templateAssets?.basic_decoration_photo
-      "
+      v-if="!isAnimatedCover && isCoverVideoPlaying && templateAssets?.standard_cover_video"
       ref="coverVideoElement"
       v-bind="videoProtectionAttrs"
       :src="getMediaUrl(templateAssets.standard_cover_video)"
@@ -156,6 +152,7 @@ import { ref, computed } from 'vue'
 import { useOptimizedBackgrounds } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
 import { getAnimationType, type ShowcaseAnimationType } from '../../composables/showcase/useShowcaseAnimation'
+import type { StageMode } from '../../composables/showcase/useStageModes'
 
 // Asset protection (production-only)
 const { protectionAttrs, videoProtectionAttrs } = useAssetProtection()
@@ -192,12 +189,41 @@ interface Props {
   keepDecorationBackground?: boolean
   /** When true, skip the slide-up animation for decoration photo (instant hide instead) */
   skipDecorationSlideUp?: boolean
+  /**
+   * How the cover presents itself. `animation` draws the decoration photo over
+   * its colour ground; `video` loops `standard_cover_video` instead. Absent
+   * falls back to the asset, which is exactly what this used to read.
+   */
+  coverMode?: StageMode
+  /**
+   * What sits behind the invitation. `animation` walks the artwork ladder below
+   * (background photo → template colour → decoration photo → white); `video`
+   * draws none of it and lets `standard_background_video` — or, with no file,
+   * the showcase wrapper's own colour — show through.
+   */
+  backgroundMode?: StageMode
 }
 
 const props = defineProps<Props>()
 
 // Animation type detection - only apply swipe-up for decoration animation
 const isDecorationAnimation = computed(() => getAnimationType(props.animationType) === 'decoration')
+
+/**
+ * Which backdrop each stage gets.
+ *
+ * Every one of these layers used to be gated on `!standard_cover_video`, which
+ * meant one uploaded file decided all three stages at once: a template could not
+ * have a video cover and a photographed invitation backdrop, or the reverse. The
+ * two modes split that decision in half. Both default to the old inference so a
+ * template that declares nothing renders unchanged.
+ */
+const isAnimatedCover = computed(
+  () => (props.coverMode ?? (props.templateAssets?.standard_cover_video ? 'video' : 'animation')) === 'animation',
+)
+const isArtworkBackground = computed(
+  () => (props.backgroundMode ?? (props.templateAssets?.standard_cover_video ? 'video' : 'animation')) === 'animation',
+)
 
 // Optimized background/decoration photo URLs using reactive window dimensions
 const { optimizedDecorationPhotoUrl, optimizedBackgroundPhotoUrl } = useOptimizedBackgrounds(
