@@ -7,11 +7,11 @@ Index of project documentation. The two root-level docs are the entry points:
 
 ## Design system
 
-| Doc | Purpose |
-|---|---|
-| [../DESIGN.md](../DESIGN.md) | Brand identity, logos, colors, typography, layout, motion — the standard |
-| [../.claude/skills/goevent-design/SKILL.md](../.claude/skills/goevent-design/SKILL.md) | Component-by-component Tailwind recipes (auto-loaded by Claude Code for UI work) |
-| [../src/components/invitation/DROPDOWN_STYLING_GUIDE.md](../src/components/invitation/DROPDOWN_STYLING_GUIDE.md) | Detailed dropdown styling reference |
+| Doc                                                                                                              | Purpose                                                                          |
+| ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [../DESIGN.md](../DESIGN.md)                                                                                     | Brand identity, logos, colors, typography, layout, motion — the standard         |
+| [../.claude/skills/goevent-design/SKILL.md](../.claude/skills/goevent-design/SKILL.md)                           | Component-by-component Tailwind recipes (auto-loaded by Claude Code for UI work) |
+| [../src/components/invitation/DROPDOWN_STYLING_GUIDE.md](../src/components/invitation/DROPDOWN_STYLING_GUIDE.md) | Detailed dropdown styling reference                                              |
 
 ## Backend API references ([backend-api/](backend-api/))
 
@@ -67,6 +67,7 @@ Deployment, workflow, and subsystem how-tos:
 
 - [CLOUDFLARE_DEPLOYMENT_GUIDE.md](guides/CLOUDFLARE_DEPLOYMENT_GUIDE.md) / [FRONTEND_DEPLOYMENT_GUIDE.md](guides/FRONTEND_DEPLOYMENT_GUIDE.md) / [LOCAL_WORKFLOW_GUIDE.md](guides/LOCAL_WORKFLOW_GUIDE.md) — deployment & dev workflow
 - [PLAYWRIGHT.md](guides/PLAYWRIGHT.md) — E2E testing setup, fixtures, and why `npx playwright install` must never be run
+- [PARTNER_PAGE_SCREENSHOTS.md](guides/PARTNER_PAGE_SCREENSHOTS.md) — recapturing the `/partners` invitation and guest-list screenshots
 - [API_SERVICE_TECHNICAL_REFERENCE.md](guides/API_SERVICE_TECHNICAL_REFERENCE.md) — API core internals (SecureLogger, type guards)
 - [VIDEO_MEMORY_MANAGEMENT.md](guides/VIDEO_MEMORY_MANAGEMENT.md) — showcase video memory system
 - [REDIRECT_SYSTEM_IMPLEMENTATION.md](guides/REDIRECT_SYSTEM_IMPLEMENTATION.md) — showcase redirect state

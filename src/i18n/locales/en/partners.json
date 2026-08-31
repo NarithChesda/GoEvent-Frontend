@@ -6,7 +6,7 @@
     "eyebrow": "Partner programme",
     "titleLead": "Free to start.",
     "titleAccent": "Cheaper by the pack.",
-    "subtitle": "You set the invitation up for your customer and charge whatever you decide. The first two events are on us; after that, pay only when you sell one — or buy credits in bulk and pay less for every one.",
+    "subtitle": "Set the invitation up for your customer and charge what you like. Two events free, then pay per sale — or buy a pack and pay less.",
     "ctaPrimary": "Request partner access",
     "ctaSecondary": "See the numbers",
     "proof": {
@@ -14,22 +14,22 @@
       "fee": "No monthly fee, and no commission on what you charge",
       "review": "Applications reviewed by hand, usually within two working days"
     },
-    "imageAlt": "A GoEvent invitation open on a phone beside the organiser dashboard on a laptop"
+    "imageAlt": "Three GoEvent invitations open on phones: a gold Khmer design, a blush rose one, and a deep red one"
   },
   "steps": {
     "title": "How the partnership works",
     "subtitle": "Three things happen, in this order. Nothing else is asked of you.",
     "open": {
       "title": "Open your partner account",
-      "body": "Tell us about your shop. Once you are approved your first two events are free; after that you can pay per event with nothing up front, or buy credits in bulk for a lower rate."
+      "body": "Tell us about your shop. Approved partners get two free events, then pay per event or by the pack."
     },
     "build": {
       "title": "Build the invitation",
-      "body": "You create the event and set it up on your customer's behalf — photos, agenda, guest list, the lot. They appear as the host. You stay the owner."
+      "body": "You set it up on your customer's behalf — photos, agenda, guest list. They appear as the host; you stay the owner."
     },
     "sell": {
       "title": "Activate, and get paid",
-      "body": "Spend one credit and the invitation goes live immediately — nothing to upload, nobody to wait for. What your customer pays you is yours."
+      "body": "Spend one credit and the invitation goes live immediately. What your customer pays you is yours."
     }
   },
   "pricing": {
@@ -76,46 +76,53 @@
         "badge": "Lowest rate"
       }
     },
-    "footnote": "These are Basic package rates. The Standard package retails at $120–150 per event and has wholesale rates of its own — ask when we open your account. Credits are scoped to the plan you buy them for and can be spent on any event category on that plan: a wedding, a birthday, a funeral. Profit assumes you sell every invitation in the pack; what you charge your own customer is your decision. Prices in USD."
+    "footnote": "Basic package rates. The Standard package retails at $120–150 per event and has wholesale rates of its own — ask when we open your account. Profit assumes you sell every invitation in the pack; what you charge your own customer is your decision. Prices in USD."
   },
   "product": {
     "eyebrow": "What you are selling",
     "title": "An invitation your customer could not make themselves",
-    "subtitle": "This is what lands on their guests' phones — and the reason it is worth what you charge for it.",
+    "subtitle": "This is what lands on their guests' phones.",
     "cinematic": {
-      "title": "A cinematic invitation",
-      "body": "A cover that opens, a film, and a story that unfolds as the guest scrolls. Not a picture, not a PDF."
+      "title": "A cinematic invitation"
     },
     "bilingual": {
-      "title": "Khmer and English",
-      "body": "Every word written in both, switched by the guest on the invitation itself."
+      "title": "Khmer and English"
     },
     "rsvp": {
-      "title": "RSVP built in",
-      "body": "Guests reply on the invitation. Every answer lands in one list your customer can read."
+      "title": "RSVP built in"
     },
     "wishes": {
-      "title": "Wishes and comments, no login",
-      "body": "Guests write their blessing straight onto the invitation from their own link. No app, no account, nothing to install."
+      "title": "Wishes and comments, no login"
     },
     "notify": {
-      "title": "Live alerts on Telegram",
-      "body": "Every RSVP, wish, cash gift and check-in arrives as a Telegram message the moment it happens."
+      "title": "Live alerts on Telegram"
     },
     "guests": {
-      "title": "Guest list and seating",
-      "body": "Groups, table plans and seat numbers — and each guest is shown their own seat."
+      "title": "Guest list and seating"
     },
     "checkin": {
-      "title": "Check-in on the day",
-      "body": "Scan guests in at the door from a phone. No printed list, no crossing out names."
+      "title": "Check-in on the day"
     },
     "media": {
-      "title": "Their photos, music and map",
-      "body": "Gallery, background film, venue map, dress code and gift details, all in one link."
+      "title": "Their photos, music and map"
     },
     "previewCta": "Browse every design",
-    "previewHint": "Opens the live catalogue — pick a design and read the whole invitation it produces."
+    "previewHint": "Pick a design and read the whole invitation it produces.",
+    "screensLabel": "Which screen to show",
+    "screens": {
+      "cover": {
+        "label": "The opening",
+        "body": "A cover that opens on the guest's own name."
+      },
+      "schedule": {
+        "label": "The day",
+        "body": "Ceremony times, venue and map, what to wear."
+      },
+      "rsvp": {
+        "label": "The reply",
+        "body": "Countdown, RSVP and gift details — nothing to install."
+      }
+    }
   },
   "templates": {
     "eyebrow": "Live preview",
@@ -144,31 +151,31 @@
     "title": "Built for shops, not for resellers of a link",
     "branding": {
       "title": "Your logo on every invitation",
-      "body": "Your shop's logo sits beside ours at the foot of every invitation you produce, so every guest who opens one sees who made it."
+      "body": "Your logo sits beside ours at the foot of every invitation you produce."
     },
     "listing": {
       "title": "Your shop in our services directory",
-      "body": "List what you do on GoEvent's services page — your work, your photos, your prices — where people already planning an event come looking. The shops we feature at the top of it are chosen from our partners."
+      "body": "List your shop on GoEvent's services page, where people planning an event already look."
     },
     "ownership": {
       "title": "You own the event",
-      "body": "Your customer needs no account and no password. Nothing about the invitation depends on them logging in."
+      "body": "Your customer needs no account and no password."
     },
     "instant": {
       "title": "Activation is instant",
-      "body": "A credit activates the template on the spot — no proof to upload, no waiting on our team, even at midnight."
+      "body": "A credit activates the template on the spot — no proof to upload, no waiting."
     },
     "locked": {
       "title": "Your credits cannot be stolen",
-      "body": "A credit code only works from your own account. Sharing it with a customer will not spend your balance, and a leak cannot cost you anything."
+      "body": "A credit code only works from your own account. A leak costs you nothing."
     },
     "studio": {
       "title": "Publish your own templates",
-      "body": "Approved partners design and publish templates in the studio — your own covers, fonts, colours and decorations."
+      "body": "Approved partners design and publish their own templates in the studio."
     },
     "topup": {
       "title": "Top up whenever you like",
-      "body": "Your balance, every batch you have bought and every order you have placed sit on one page in your account."
+      "body": "Balance, batches and orders on one page in your account."
     }
   },
   "faq": {
@@ -176,7 +183,7 @@
     "title": "The questions shops actually ask",
     "unsold": {
       "q": "What happens if I do not sell them all?",
-      "a": "Credits sit in your account until you spend them. Each batch carries its own validity, shown on your credits page, and nothing is lost while it is valid. If your volume is still uncertain, use your two free events, then stay on pay as you go and move to a pack once the work is steady — there is no penalty either way."
+      "a": "Credits sit in your account until you spend them. Each batch carries its own validity, shown on your credits page. If your volume is uncertain, use your two free events, stay on pay as you go, and move to a pack once the work is steady."
     },
     "price": {
       "q": "Can I set my own price?",
@@ -184,11 +191,11 @@
     },
     "domain": {
       "q": "Is the invitation under my own brand?",
-      "a": "Your shop's logo appears beside ours at the foot of every invitation you produce, so your customer and their guests see who made it. The invitation itself is hosted on goevent.online — which is what keeps it fast, always online, and nothing for you to maintain. There is no custom domain."
+      "a": "Your shop's logo appears beside ours at the foot of every invitation. The invitation itself is hosted on goevent.online, which is what keeps it fast and nothing for you to maintain. There is no custom domain."
     },
     "plans": {
       "q": "Do credits work on any template?",
-      "a": "Credits are scoped to the plan you bought them for. A Basic credit activates any Basic template, on any event category — but it cannot be spent on a Standard one. This page shows Basic rates; Standard has its own, which we will go through when we open your account."
+      "a": "Credits are scoped to the plan you bought them for. A Basic credit activates any Basic template, on any event category — but not a Standard one. This page shows Basic rates."
     },
     "payment": {
       "q": "How do I pay for a pack?",
@@ -208,5 +215,15 @@
     "subtitle": "Tell us about your shop. If it is a fit we will open your account, and you can set up two real invitations before you pay us anything.",
     "cta": "Request partner access",
     "telegram": "Message us on Telegram"
+  },
+  "runday": {
+    "eyebrow": "And the day itself",
+    "title": "One screen holds the whole guest list",
+    "imageAlt": "The GoEvent guest list, showing each guest with their group, RSVP, cash gift and table",
+    "points": {
+      "replies": "RSVPs land here as guests answer",
+      "seating": "Tables and seat numbers, assigned by drag",
+      "gifts": "Cash gifts recorded against the name"
+    }
   }
 }
