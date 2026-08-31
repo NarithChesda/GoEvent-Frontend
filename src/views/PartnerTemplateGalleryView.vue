@@ -359,13 +359,20 @@
 /**
  * The public design catalogue.
  *
- * The Design Studio's live preview with the event and the editing taken out:
- * this page's audience is people with no account, so there is nothing to sign
- * in to and nothing of theirs to render. It embeds the same
- * <PreviewFrame>/<InertIframe> pair against a route that draws a bundled sample
- * invitation instead (TemplateShowcasePreviewFrameView + useDemoShowcase), and
- * resolves which stages exist through the same renderer registry — so a stage
- * shown here is a stage a guest gets.
+ * The Design Studio's live preview with the editing taken out: this page's
+ * audience is people with no account, so there is nothing to sign in to and
+ * nothing of theirs to render. It embeds the same <PreviewFrame>/<InertIframe>
+ * pair against a route that draws somebody else's invitation instead
+ * (TemplateShowcasePreviewFrameView), and resolves which stages exist through
+ * the same renderer registry — so a stage shown here is a stage a guest gets.
+ *
+ * The invitation is a real published event, flagged for the job on the backend
+ * and picked to MATCH the design's own event type — a funeral design has to be
+ * judged on a funeral. The page picks one per category and hands the same id to
+ * every frame (useTemplatePreviewEvents); three frames choosing for themselves
+ * would show three different weddings, which reads as three different designs.
+ * Nothing published for a category falls back to the bundled sample, so the
+ * catalogue is never empty.
  *
  * A page rather than a section on `/partners`, which is where it started: three
  * phone frames plus a catalogue is a full screen's worth of furniture, and it
@@ -406,6 +413,7 @@ import {
   type PreviewFrameDescriptor,
 } from '@/components/showcase-preview/renderers/resolvePreviewRenderer'
 import { eventTemplateService, packagePlanService } from '@/services/api'
+import { useTemplatePreviewEvents } from '@/composables/showcase-preview/useTemplatePreviewEvents'
 import type { PackagePlan, PublicEventTemplate } from '@/services/api'
 // The showcase's own TemplateAssets, not the API types' flat one: this is the
 // shape the preview bridge and the renderer registry both speak.
@@ -477,6 +485,9 @@ const planFor = (template: PublicEventTemplate): PackagePlan | undefined =>
 
 const categoryNameFor = (template: PublicEventTemplate): string =>
   planFor(template)?.category?.name ?? ''
+
+/** The roster of real events the frames may be drawn through. See the composable. */
+const { loadTemplatePreviewEvents, previewEventFor } = useTemplatePreviewEvents()
 
 // ---------------------------------------------------------------------------
 // Axis 1 — event type, as a filter
@@ -692,6 +703,29 @@ const selectTemplate = (templateId: number) => {
   activeTemplateId.value = templateId
   void loadTemplateData(templateId)
 }
+
+// ---------------------------------------------------------------------------
+// Which invitation the design is drawn through
+// ---------------------------------------------------------------------------
+
+const activeTemplate = computed(
+  () => templates.value.find((template) => template.id === activeTemplateId.value) ?? null,
+)
+
+/**
+ * The event every frame draws, chosen for the design on screen.
+ *
+ * The category comes from the same place both of the catalogue's axes do — the
+ * template's package plan — so a design filed under Funeral is previewed on a
+ * funeral, not on the wedding that used to stand in for everything. `null` is a
+ * normal answer (nothing published for that type, or the backend flag not live
+ * yet) and means "the bundled sample", which is what the frames did before.
+ */
+const previewEventId = computed(() => {
+  const template = activeTemplate.value
+  if (!template) return null
+  return previewEventFor(planFor(template)?.category?.id ?? null)
+})
 
 // ---------------------------------------------------------------------------
 // Which stages this template has — the same registry the studio resolves from,
@@ -961,7 +995,18 @@ const mountQueue = computed(() =>
     : visibleFrames.value,
 )
 
+/**
+ * Nothing boots until the catalogue, the plans AND the preview roster are in.
+ *
+ * Selecting a design is enough to change which stages exist, which wakes the
+ * mount queue — so without this a frame could come up before the plans named
+ * its design's category, be seeded with the wrong invitation, and reload to
+ * correct itself in front of the visitor.
+ */
+const studioReady = ref(false)
+
 const mountNextFrame = () => {
+  if (!studioReady.value) return
   if (frameMountTimer) clearTimeout(frameMountTimer)
   frameMountTimer = null
 
@@ -1014,6 +1059,10 @@ const frameUrl = (frame: PreviewFrameDescriptor): string => {
   const cached = frameSrcCache.get(frame.id)
   if (cached) return cached
   const params = new URLSearchParams({ stage: frame.id, lang: previewLanguage.value })
+  // Seeded for the same reason the language is: a frame that mounts already
+  // knowing its event paints once instead of painting the sample and reloading.
+  // It is left to the bridge from then on — see pushPreviewEventToFrames.
+  if (previewEventId.value) params.set('eventId', previewEventId.value)
   const url = `/template-showcase-preview-frame?${params.toString()}`
   frameSrcCache.set(frame.id, url)
   return url
@@ -1026,13 +1075,31 @@ const pushTemplateToFrames = () => {
 }
 
 /**
+ * Every mounted frame draws the same invitation, always.
+ *
+ * Over the bridge rather than through the URL, because changing an iframe's
+ * `src` re-navigates it — three designs into a browse that is nine full app
+ * boots. A frame that is already on this event ignores the message.
+ */
+const pushPreviewEventToFrames = () => {
+  for (const frame of frameRefs.values()) frame.postPreviewEvent(previewEventId.value)
+}
+
+watch(previewEventId, pushPreviewEventToFrames)
+
+/**
  * A frame's listener is now live — the only safe moment to hand it anything,
  * since postMessage does not queue. It gets the current template, and the queue
  * moves on to the next frame.
  */
 const onFrameReady = (frameId: string) => {
+  const frame = frameRefs.get(frameId)
   const templateData = activeTemplateData.value
-  if (templateData) frameRefs.get(frameId)?.postTemplatePreview(templateData)
+  if (templateData) frame?.postTemplatePreview(templateData)
+  // Unconditional, and cheap: a frame booted on this event ignores it. It
+  // covers the one ordering the seeded URL cannot — a frame still mounting
+  // while the visitor moves to a design of another category.
+  frame?.postPreviewEvent(previewEventId.value)
   mountNextFrame()
 }
 
@@ -1072,11 +1139,15 @@ onMounted(() => {
   window.addEventListener('resize', onWindowResize)
   document.addEventListener('keydown', onKeydown)
 
-  void loadPlans()
-  void loadCatalogue().then(() => {
+  // All three before the first frame boots, and the plans are no longer
+  // fire-and-forget: a frame's `src` is frozen at mount, and the plan is what
+  // names the design's category — so a frame that comes up before the plans do
+  // is seeded with the wrong invitation and has to reload to correct itself.
+  void Promise.all([loadCatalogue(), loadPlans(), loadTemplatePreviewEvents()]).then(() => {
     // The first CARD, not the first row of the response — see orderedTemplates.
     const first = orderedTemplates.value[0]
     if (first) selectTemplate(first.id)
+    studioReady.value = true
     mountNextFrame()
   })
 })

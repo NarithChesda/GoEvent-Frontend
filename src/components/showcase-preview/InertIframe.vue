@@ -38,6 +38,7 @@ import {
   postEventPatchToFrame,
   postTemplatePreviewToFrame,
   postSetLanguageToFrame,
+  postPreviewEventToFrame,
   postCoverLayoutSelection,
   type EventFieldPatch,
   type ParentToFrameType,
@@ -113,6 +114,8 @@ defineExpose({
     postTemplatePreviewToFrame(iframeRef.value?.contentWindow, templateData),
   postSetLanguage: (language: string) =>
     postSetLanguageToFrame(iframeRef.value?.contentWindow, language),
+  postPreviewEvent: (eventId: string | null) =>
+    postPreviewEventToFrame(iframeRef.value?.contentWindow, eventId),
   postCoverLayoutSelect: (elementId: CoverElementId | null) =>
     postCoverLayoutSelection(iframeRef.value?.contentWindow, elementId),
 })

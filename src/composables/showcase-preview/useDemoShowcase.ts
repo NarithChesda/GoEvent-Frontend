@@ -171,6 +171,30 @@ export async function loadDemoShowcase(language: string): Promise<ShowcaseData> 
   } as unknown as ShowcaseData
 }
 
+/**
+ * The placeholder shop whose mark sits at the foot of the sample invitation.
+ *
+ * Exported because the public catalogue draws REAL events now, and a real event
+ * carries a real shop's referrer — while the caption under those frames promises
+ * the visitor that the logo down there will be theirs. A page selling to shop
+ * owners must not stamp a competitor's mark on that promise, so the preview
+ * substitutes this one over whatever the event came with (see
+ * loadTemplatePreviewShowcase). It is the only part of the sample that survives
+ * into a real preview.
+ */
+export function demoPreviewPartner(): {
+  referrer: number | null
+  referrer_details: Record<string, unknown> | null
+} {
+  return hydrateStrings(
+    {
+      referrer: (source.event.referrer ?? null) as number | null,
+      referrer_details: (source.event.referrer_details ?? null) as Record<string, unknown> | null,
+    },
+    resolveDemoYear(),
+  )
+}
+
 /** The languages the sample invitation is authored in. */
 export function demoShowcaseLanguages(): string[] {
   return (source.meta.available_languages ?? []).map((entry) => entry.code)

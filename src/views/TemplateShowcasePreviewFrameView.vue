@@ -19,17 +19,20 @@
 
 <script setup lang="ts">
 /**
- * One stage of the sample invitation, rendered against a chosen template.
+ * One stage of a sample invitation, rendered against a chosen design.
  *
  * The sibling of ShowcasePreviewFrameView, and deliberately a separate route
- * rather than a flag on it: that one is an EVENT's preview — it takes an event
- * id, fetches that event's showcase, and carries the whole inline-editing
- * apparatus for the person who owns it. This one has no event and no viewer
- * with permissions. It renders the bundled sample invitation (see
- * useDemoShowcase.ts) against a template picked by id from the public
- * catalogue, so it can be embedded on the public partner page with nothing
- * signed in. Read-only by construction: no edit contexts are provided here, so
- * there is no `?editable=1` to hand-craft.
+ * rather than a flag on it: that one is an EVENT's preview — it takes the event
+ * being managed and carries the whole inline-editing apparatus for the person
+ * who owns it. This one belongs to nobody: the event it draws is one the
+ * catalogue page chose on its behalf (`?eventId=`, and `preview-event` when the
+ * choice changes), a real published invitation flagged for the job, and it is
+ * fetched through the same public showcase endpoint a guest's link uses. With
+ * no such event — none published for that category, or the flag not live yet —
+ * it falls back to the bundled sample (see useTemplatePreviewShowcase.ts). That
+ * is what lets it be embedded on the public partner page with nothing signed
+ * in. Read-only by construction: no edit contexts are provided here, so there
+ * is no `?editable=1` to hand-craft.
  *
  * The path keeps the `showcase-preview-frame` segment on purpose — that is what
  * `isPreviewFrameDocument()` matches, and it is what lets these iframes skip
@@ -40,7 +43,7 @@ import { computed, onMounted, onUnmounted, provide, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useEventShowcase, type TemplateAssets } from '@/composables/useEventShowcase'
 import { eventTemplateService } from '@/services/api'
-import { loadDemoShowcase } from '@/composables/showcase-preview/useDemoShowcase'
+import { loadTemplatePreviewShowcase } from '@/composables/showcase-preview/useTemplatePreviewShowcase'
 import { PreviewFrameKey } from '@/components/showcase-preview/previewContext'
 import {
   parsePreviewBridgeMessage,
@@ -54,30 +57,46 @@ import ErrorDisplay from '@/components/showcase/ErrorDisplay.vue'
 
 const route = useRoute()
 
-const stage = computed(() => {
-  const raw = route.query.stage
+/**
+ * One query value, first-wins on the repeated form. A frame's URL is frozen for
+ * its whole lifetime — everything that varies afterwards travels over the
+ * bridge — so reading it once, at setup, is enough.
+ */
+const routeParam = (name: string): string | null => {
+  const raw = route.query[name]
   const value = Array.isArray(raw) ? raw[0] : raw
-  return value || 'cover'
-})
+  return value ? String(value) : null
+}
+
+const stage = computed(() => routeParam('stage') || 'cover')
 
 const previewTemplateId = computed(() => {
-  const raw = route.query.templateId
-  const value = Array.isArray(raw) ? raw[0] : raw
-  const parsed = value ? Number(value) : NaN
+  const parsed = Number(routeParam('templateId'))
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null
 })
 
-// The sample id the demo data carries. Never fetched — it only keys this
-// instance's request de-duplication — but it must match the JSON so anything
-// reading `event.id` (the comment section's own fetch, which simply comes back
-// empty) sees one consistent event.
+// The bundled sample's own id, used only while there is no real preview event
+// to draw. Never fetched — it keys this instance's request de-duplication — but
+// it must match the JSON so anything reading `event.id` (the comment section's
+// own fetch, which simply comes back empty) sees one consistent event.
 const DEMO_EVENT_ID = '11111111-2222-4333-8444-555555555555'
 
+/**
+ * The invitation on screen, chosen by the catalogue page.
+ *
+ * Seeded from the URL so a frame that mounts already knowing it paints the
+ * right event without waiting for a message, and swapped in place afterwards
+ * over the bridge — never by rewriting `src`, which would re-navigate the frame.
+ */
+const previewEventId = ref<string | null>(routeParam('eventId'))
+
 const showcase = useEventShowcase({
-  eventId: DEMO_EVENT_ID,
+  // A getter, because the id above changes when the catalogue moves to a design
+  // of another category: request keys have to follow it.
+  eventId: () => previewEventId.value ?? DEMO_EVENT_ID,
   skipMetaTags: true,
   useDefaultGuestName: true,
-  dataSource: loadDemoShowcase,
+  dataSource: (language) => loadTemplatePreviewShowcase(previewEventId.value, language),
 })
 
 const {
@@ -112,11 +131,22 @@ provide(PreviewFrameKey, true)
 const replayKey = ref(0)
 
 /**
+ * The design currently being previewed, kept because it has to survive an event
+ * swap.
+ *
+ * Swapping the invitation reloads the showcase, and a reload replaces exactly
+ * the fields a try-on overlays — so without re-applying it here the frame would
+ * quietly fall back to whatever template that event really uses, which is not
+ * the design the visitor clicked.
+ */
+const stagedTemplate = ref<TemplateAssets | null>(null)
+
+/**
  * The template on screen, by id.
  *
- * `applyPreviewTemplateFallback` on the first one (the sample event has no
- * template of its own, so there is nothing to overwrite) and
- * `setStagedTemplatePreview` on every one after — that is the same live try-on
+ * `applyPreviewTemplateFallback` when the event carries no template of its own
+ * (nothing to overwrite) and `setStagedTemplatePreview` when it does — that is
+ * the same live try-on
  * the templates modal uses, and it swaps assets, colours and fonts in place
  * without reloading the frame. Reloading would mean a new iframe navigation per
  * click on the template menu.
@@ -129,19 +159,37 @@ const applyTemplate = async (templateId: number) => {
     const templateData = (response.data as unknown as { template_data?: TemplateAssets } | null)
       ?.template_data
     if (!response.success || !templateData) return
+    stagedTemplate.value = templateData
     if (event.value?.template_assets) setStagedTemplatePreview(templateData)
     else applyPreviewTemplateFallback(templateData)
   } catch {
-    // Non-fatal — the sample renders in the showcase's own default look.
+    // Non-fatal — the invitation renders in the showcase's own default look.
   }
 }
 
-/** Only this frame knows which languages the sample carries. See the bridge. */
+/** Only this frame knows which languages this invitation carries. See the bridge. */
 const publishLanguages = () => {
   postShowcaseLanguagesToParent(
     availableLanguages.value.map((lang) => lang.language),
     currentLanguage.value,
   )
+}
+
+/**
+ * Draw a different invitation, in place.
+ *
+ * A full `loadShowcase` rather than the silent refresh: this is another event
+ * entirely — its own photographs, hosts and stages — and the stage machinery has
+ * to be initialised for it. The language is passed explicitly, because without a
+ * forced one the load falls back to the `lang` frozen into this frame's URL and
+ * would undo a language the visitor has switched to since.
+ */
+const swapPreviewEvent = async (eventId: string | null) => {
+  if (eventId === previewEventId.value) return
+  previewEventId.value = eventId
+  await loadShowcase(currentLanguage.value)
+  if (stagedTemplate.value) setStagedTemplatePreview(stagedTemplate.value)
+  publishLanguages()
 }
 
 const onFrameMessage = (msg: MessageEvent) => {
@@ -153,7 +201,13 @@ const onFrameMessage = (msg: MessageEvent) => {
   }
   // The parent pushes a template it has already fetched, so switching templates
   // costs one request for the whole row of frames rather than one per frame.
-  if (parsed.type === 'preview-template') setStagedTemplatePreview(parsed.templateData)
+  if (parsed.type === 'preview-template') {
+    stagedTemplate.value = parsed.templateData
+    setStagedTemplatePreview(parsed.templateData)
+  }
+  // A design of another category is being previewed, so the invitation under it
+  // changes too — the page picks the event, every frame is told the same one.
+  if (parsed.type === 'preview-event') void swapPreviewEvent(parsed.eventId)
 }
 
 onMounted(() => {

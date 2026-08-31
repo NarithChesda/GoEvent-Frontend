@@ -370,8 +370,14 @@ export interface ShowcaseError extends Error {
 export interface UseEventShowcaseOptions {
   /** Explicit event id, bypassing route-param resolution. Used when embedding
    *  the showcase data pipeline outside the `/events/:id/showcase` route (e.g.
-   *  the manage-page live preview tab). */
-  eventId?: string
+   *  the manage-page live preview tab).
+   *
+   *  A getter is accepted for previews whose event can change without this
+   *  composable being recreated — the public design catalogue swaps the sample
+   *  invitation when the design on screen belongs to another category. The id is
+   *  read per call, so the request-deduplication keys follow the swap instead of
+   *  matching a load that is still in flight for the previous event. */
+  eventId?: string | (() => string | undefined)
   /** Skip the document.title / <meta> / JSON-LD mutation loadShowcase() performs.
    *  Default false (unchanged behavior) — set true when embedding in a page that
    *  owns its own document head (e.g. the manage page). */
@@ -385,11 +391,12 @@ export interface UseEventShowcaseOptions {
   /**
    * Answer showcase requests from here instead of the events endpoint.
    *
-   * For previews that have no event to fetch — the public template preview on
-   * the partner page renders a bundled sample invitation (see
-   * `loadDemoShowcase`). The contract is the endpoint's own: one call returns
-   * ONE language's content, so the initial load, the silent refresh and the
-   * in-place language switch below all keep working unchanged.
+   * For previews that resolve their own event — the public design catalogue
+   * draws each design through a real event of that design's category, and falls
+   * back to a bundled sample when nothing is published for it (see
+   * `loadTemplatePreviewShowcase`). The contract is the endpoint's own: one call
+   * returns ONE language's content, so the initial load, the silent refresh and
+   * the in-place language switch below all keep working unchanged.
    */
   dataSource?: (language: string) => Promise<ShowcaseData>
 }
@@ -397,8 +404,10 @@ export interface UseEventShowcaseOptions {
 export function useEventShowcase(options?: UseEventShowcaseOptions) {
   const route = useRoute()
 
-  const resolveEventId = (): string | undefined =>
-    options?.eventId || (route.params.id as string | undefined)
+  const resolveEventId = (): string | undefined => {
+    const explicit = typeof options?.eventId === 'function' ? options.eventId() : options?.eventId
+    return explicit || (route.params.id as string | undefined)
+  }
 
   // ============================
   // External Composables

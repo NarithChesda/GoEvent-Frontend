@@ -61,6 +61,7 @@ export type {
   EventComment,
   CreateCommentRequest,
   CommentFilters,
+  TemplatePreviewEvent,
 } from './api/types/event.types'
 
 // Template types
