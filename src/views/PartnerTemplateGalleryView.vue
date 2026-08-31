@@ -9,7 +9,7 @@
   <div class="tpl-page">
     <header class="tpl-page__head">
       <RouterLink to="/partners" class="tpl-back">
-        <ArrowLeft class="h-4 w-4" aria-hidden="true" />
+        <ArrowLeft class="h-4 w-4 flex-none" aria-hidden="true" />
         {{ t('partners.templates.back') }}
       </RouterLink>
 
@@ -1166,6 +1166,21 @@ onUnmounted(() => {
    built-in CSS easings are too weak to read as intentional at these durations. */
 .tpl-page {
   --tpl-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  /* One duration for every hover on the page. Three near-identical numbers
+     (200 / 220 / 250) for the same kind of feedback is not a decision anyone
+     made; it is drift, and side by side the pills read as slightly out of
+     step with each other. Presses stay faster — feedback should land under
+     the finger, not after it. */
+  --tpl-dur: 200ms;
+  --tpl-press: 160ms;
+  /* Every control's focus ring, defined once. The white inner band is what
+     keeps it legible against a card's own artwork; on the page's white ground
+     it simply reads as a ring floating clear of the control. */
+  --tpl-focus: 0 0 0 2px #fff, 0 0 0 4px rgb(56 189 248);
+  /* One control height for the whole page: the back link, the view pill, the
+     stage picker, the filter and the action all land on 40px, which is also a
+     touch target that survives a thumb. */
+  --tpl-control-h: 2.5rem;
   /* The catalogue column. In px, not rem: the app runs a reduced root font at
      laptop widths, and this column holding two 9:16 cards is exactly where that
      shrink is least welcome. */
@@ -1232,20 +1247,22 @@ onUnmounted(() => {
 .tpl-back {
   display: inline-flex;
   flex: none;
+  min-height: var(--tpl-control-h);
   align-items: center;
+  justify-content: center;
   gap: 0.375rem;
   border-radius: 9999px;
   border: 1px solid rgb(226 232 240);
   background: #fff;
-  padding: 0.4375rem 0.875rem 0.4375rem 0.75rem;
+  padding: 0 0.9375rem 0 0.8125rem;
   font-size: 0.8125rem;
   font-weight: 500;
   color: rgb(51 65 85);
   transition:
-    color 200ms var(--tpl-ease-out),
-    border-color 200ms var(--tpl-ease-out),
-    background-color 200ms var(--tpl-ease-out),
-    transform 160ms var(--tpl-ease-out);
+    color var(--tpl-dur) var(--tpl-ease-out),
+    border-color var(--tpl-dur) var(--tpl-ease-out),
+    background-color var(--tpl-dur) var(--tpl-ease-out),
+    transform var(--tpl-press) var(--tpl-ease-out);
 }
 
 .tpl-back:hover {
@@ -1260,7 +1277,7 @@ onUnmounted(() => {
 
 .tpl-back:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgb(186 230 253);
+  box-shadow: var(--tpl-focus);
 }
 
 .tpl-page__headline {
@@ -1278,7 +1295,13 @@ onUnmounted(() => {
     flex-basis: auto;
     display: flex;
     align-items: baseline;
-    gap: 0.875rem;
+    /* Space, not a rule. The divider that used to sit here was pinned to the
+       caption's own box, which under baseline alignment starts well below the
+       title's cap — so it drew a short line down the middle of the heading and
+       stopped short of both ends of it. The size, weight and colour step
+       already separates the two; a wider gap finishes the job with no chrome
+       to misalign. */
+    gap: 1.25rem;
   }
 }
 
@@ -1308,13 +1331,17 @@ onUnmounted(() => {
   .tpl-page__subtitle {
     display: block;
     /* Beside a heading it is a caption, and a caption that runs the width of a
-       1900px screen is unreadable. */
-    max-width: 34rem;
-    border-left: 1px solid rgb(226 232 240);
-    padding-left: 0.875rem;
+       1900px screen is unreadable. Narrower than it used to be, and the string
+       behind it is half the length: at 34rem the old copy ran to three lines
+       that the title's single line then hung off, and the whole header grew a
+       row the phones underneath were paying for. Two lines is a caption; four
+       is a paragraph that has wandered into a header. */
+    max-width: 26rem;
+    min-width: 0;
     font-size: 0.875rem;
     line-height: 1.6;
     color: rgb(100 116 139);
+    text-wrap: pretty;
   }
 }
 
@@ -1398,7 +1425,7 @@ onUnmounted(() => {
 
 .tpl-filter__trigger {
   display: flex;
-  min-height: 36px;
+  min-height: var(--tpl-control-h);
   align-items: center;
   gap: 0.5rem;
   border-radius: 0.5rem;
@@ -1410,11 +1437,15 @@ onUnmounted(() => {
   color: rgb(51 65 85);
   max-width: 11rem;
   transition:
-    border-color 200ms var(--tpl-ease-out),
-    background-color 200ms var(--tpl-ease-out),
-    transform 160ms var(--tpl-ease-out);
+    border-color var(--tpl-dur) var(--tpl-ease-out),
+    background-color var(--tpl-dur) var(--tpl-ease-out),
+    transform var(--tpl-press) var(--tpl-ease-out);
 }
 
+/* The mint hover is the house filter recipe (goevent-design §9), not a local
+   invention — it is the same control the guest-group filters use, and matching
+   the product it sits inside is what makes it read as familiar rather than as
+   a one-off built for this page. */
 .tpl-filter__trigger:hover {
   border-color: rgb(110 231 183);
   background: rgb(236 253 245);
@@ -1424,18 +1455,35 @@ onUnmounted(() => {
   transform: scale(0.97);
 }
 
+.tpl-filter__trigger:focus-visible {
+  outline: none;
+  box-shadow: var(--tpl-focus);
+}
+
 .tpl-filter__scrim {
   position: fixed;
   inset: 0;
   z-index: 90;
 }
 
+/*
+  Never narrower than the control it opened from, and never wider than it needs
+  to be. It used to be a flat 13rem against an 11rem trigger and anchored to the
+  right, so it hung a third of an inch past the trigger's leading edge with
+  nothing above that overhang — a popover that does not line up with its own
+  trigger reads as belonging to something else on the page.
+
+  `min-width: 100%` resolves against .tpl-filter, which is exactly the trigger's
+  box; `max-content` then grows it for a long event-type name, up to a cap.
+*/
 .tpl-filter__menu {
   position: absolute;
   top: calc(100% + 0.5rem);
   right: 0;
   z-index: 100;
-  min-width: 13rem;
+  min-width: 100%;
+  width: max-content;
+  max-width: 15rem;
   max-height: 22rem;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -1467,17 +1515,25 @@ onUnmounted(() => {
 .tpl-filter__item {
   display: flex;
   width: 100%;
+  min-height: var(--tpl-control-h);
   align-items: center;
   gap: 0.625rem;
   padding: 0.625rem 0.875rem;
   font-size: 0.8125rem;
   font-weight: 500;
   color: rgb(51 65 85);
-  transition: background-color 200ms var(--tpl-ease-out);
+  transition: background-color var(--tpl-dur) var(--tpl-ease-out);
 }
 
 .tpl-filter__item:hover {
   background: rgb(248 250 252);
+}
+
+/* Inset, because the row runs the full width of a clipping scroller — an
+   outset ring would be cut off on both sides and read as two stray marks. */
+.tpl-filter__item:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgb(56 189 248);
 }
 
 .tpl-filter__item.is-active {
@@ -1524,6 +1580,19 @@ onUnmounted(() => {
     flex: 1;
     min-height: 0;
     max-height: none;
+    /*
+      The column ends where the window does, and it ended on a hard horizontal
+      cut through whatever card was there — which reads as a rendering fault
+      rather than as "there is more below". The top edge already dissolves
+      (the sticky heading's masked band); this is the same idea at the other
+      end, and it is the cheapest possible scroll affordance: no gradient
+      overlay to keep in sync with the ground, no element to position.
+
+      Vertical only, so a card's selection ring and hover lift still reach the
+      full width of the scroller.
+    */
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 2rem), transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 2rem), transparent 100%);
   }
 }
 
@@ -1606,31 +1675,51 @@ onUnmounted(() => {
   display: none;
 }
 
+/* Not uppercased. These are product names — "Free Basic", "Standard" — and
+   credits are plan-scoped, so the name is the thing a partner has to read
+   exactly; setting it in caps restyles a name into a label. It also buys the
+   legibility back that lets the row sit at a thumb-sized 36px instead of the
+   23px it was, which on the one layout where these ARE the navigation was the
+   smallest tap target on the page. */
 .tpl-plan {
   display: inline-flex;
   flex: none;
+  min-height: 2.25rem;
   align-items: center;
   gap: 0.375rem;
   border-radius: 9999px;
   border: 1px solid rgb(226 232 240);
   background: #fff;
-  padding: 0.3125rem 0.6875rem;
-  font-size: 0.6875rem;
+  padding: 0 0.875rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   white-space: nowrap;
   color: rgb(71 85 105);
   transition:
-    background-color 220ms var(--tpl-ease-out),
-    border-color 220ms var(--tpl-ease-out),
-    color 220ms var(--tpl-ease-out),
-    box-shadow 220ms var(--tpl-ease-out),
-    transform 160ms var(--tpl-ease-out);
+    background-color var(--tpl-dur) var(--tpl-ease-out),
+    border-color var(--tpl-dur) var(--tpl-ease-out),
+    color var(--tpl-dur) var(--tpl-ease-out),
+    box-shadow var(--tpl-dur) var(--tpl-ease-out),
+    transform var(--tpl-press) var(--tpl-ease-out);
+}
+
+/* Pointer only: on touch, :hover latches on tap and the unchosen shelf is left
+   looking half-chosen next to the one that actually is. */
+@media (hover: hover) and (pointer: fine) {
+  .tpl-plan:hover:not(.is-active) {
+    border-color: rgb(203 213 225);
+    background: rgb(248 250 252);
+    color: rgb(15 23 42);
+  }
 }
 
 .tpl-plan:active {
   transform: scale(0.97);
+}
+
+.tpl-plan:focus-visible {
+  outline: none;
+  box-shadow: var(--tpl-focus);
 }
 
 .tpl-plan.is-active {
@@ -1641,7 +1730,7 @@ onUnmounted(() => {
 }
 
 .tpl-plan__count {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
   opacity: 0.7;
 }
@@ -1650,17 +1739,28 @@ onUnmounted(() => {
   margin-top: 1.25rem;
 }
 
+/*
+  Sentence case, and a step up in size and colour from the "Designs" label
+  above it.
+
+  Two uppercase micro-labels stacked directly on top of one another — DESIGNS
+  · 12, then FREE BASIC · 3 — is an eyebrow over an eyebrow: at the same size,
+  weight and colour neither one separates anything, and the column opens on
+  two rows of the same texture before a single design is visible. One eyebrow
+  names the column; the shelves under it are named the way their plan is
+  actually written, which is also the only form a partner can match against
+  what they are buying.
+*/
 .tpl-menu-group__head {
   position: sticky;
   top: -0.25rem;
   z-index: 2;
   margin-bottom: 0.375rem;
   padding: 0.5rem 0 0.875rem;
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: rgb(100 116 139);
+  letter-spacing: -0.01em;
+  color: rgb(30 41 59);
 }
 
 /*
@@ -1740,9 +1840,7 @@ onUnmounted(() => {
 
 .tpl-card:focus-visible {
   outline: none;
-  box-shadow:
-    0 0 0 2px #fff,
-    0 0 0 4px rgb(56 189 248);
+  box-shadow: var(--tpl-focus);
 }
 
 .tpl-card.is-active {
@@ -1846,10 +1944,18 @@ onUnmounted(() => {
 
 /* --- The stage ------------------------------------------------------------ */
 
-/* §5 segmented control: one glass pill, gradient on the chosen segment.
-   `margin-left: auto` is what pins it to the header's trailing corner — on a
-   phone against the back link, on desktop against the headline that grew into
-   the space between them. */
+/*
+  §5 segmented control: one glass pill, gradient on the chosen segment.
+
+  Padded to land on the page's control height, so it and the back link across
+  the row are the same object seen twice rather than a 42px pill beside a 32px
+  one — a ten-pixel difference between two things sitting on the same centre
+  line is the kind of fault that is seen long before it is named.
+
+  `margin-left: auto` is what pins it to the trailing corner — on a phone
+  against the back link, on desktop against the headline that grew into the
+  space between them.
+*/
 .tpl-seg {
   display: inline-flex;
   flex: none;
@@ -1859,7 +1965,7 @@ onUnmounted(() => {
   border-radius: 9999px;
   border: 1px solid rgba(255, 255, 255, 0.6);
   background: rgba(255, 255, 255, 0.75);
-  padding: 0.25rem;
+  padding: 0.1875rem;
   backdrop-filter: blur(12px);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 }
@@ -1868,6 +1974,7 @@ onUnmounted(() => {
   display: inline-flex;
   min-height: 2rem;
   align-items: center;
+  justify-content: center;
   gap: 0.375rem;
   border-radius: 9999px;
   padding: 0.375rem 0.625rem;
@@ -1875,10 +1982,10 @@ onUnmounted(() => {
   font-weight: 600;
   color: rgb(71 85 105);
   transition:
-    background-color 250ms var(--tpl-ease-out),
-    color 250ms var(--tpl-ease-out),
-    box-shadow 250ms var(--tpl-ease-out),
-    transform 160ms var(--tpl-ease-out);
+    background-color var(--tpl-dur) var(--tpl-ease-out),
+    color var(--tpl-dur) var(--tpl-ease-out),
+    box-shadow var(--tpl-dur) var(--tpl-ease-out),
+    transform var(--tpl-press) var(--tpl-ease-out);
 }
 
 .tpl-seg__btn:hover {
@@ -1887,6 +1994,13 @@ onUnmounted(() => {
 
 .tpl-seg__btn:active {
   transform: scale(0.97);
+}
+
+/* Inset: the pill clips its segments to a 3px pad, so an outset ring would be
+   drawn half underneath its own container. */
+.tpl-seg__btn:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgb(56 189 248);
 }
 
 .tpl-seg__btn.is-active {
@@ -1941,23 +2055,30 @@ onUnmounted(() => {
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 }
 
+/* The scroller clips to its padding box, so a step's ring has to be drawn
+   inside it — and no step can grow a hit area past the pill's own edge, which
+   is why the height below is honest rather than extended by a pseudo-element. */
+
 .tpl-steps::-webkit-scrollbar {
   display: none;
 }
 
 .tpl-step {
+  display: inline-flex;
   flex: none;
+  min-height: 2rem;
+  align-items: center;
   border-radius: 9999px;
-  padding: 0.3125rem 0.6875rem;
-  font-size: 0.6875rem;
+  padding: 0 0.75rem;
+  font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
   color: rgb(71 85 105);
   transition:
-    background-color 250ms var(--tpl-ease-out),
-    color 250ms var(--tpl-ease-out),
-    box-shadow 250ms var(--tpl-ease-out),
-    transform 160ms var(--tpl-ease-out);
+    background-color var(--tpl-dur) var(--tpl-ease-out),
+    color var(--tpl-dur) var(--tpl-ease-out),
+    box-shadow var(--tpl-dur) var(--tpl-ease-out),
+    transform var(--tpl-press) var(--tpl-ease-out);
 }
 
 .tpl-step:hover {
@@ -1970,7 +2091,7 @@ onUnmounted(() => {
 
 .tpl-step:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgb(186 230 253);
+  box-shadow: inset 0 0 0 2px rgb(56 189 248);
 }
 
 .tpl-step.is-active {
@@ -2036,10 +2157,14 @@ onUnmounted(() => {
 
 /* --- Loading + empty ------------------------------------------------------ */
 
+/* 390x844, the phone the frame actually is — not the 2:3 box this used to be.
+   A skeleton in the wrong proportion means the page settles into a different
+   shape the moment it loads, which is the one thing a skeleton exists to
+   prevent. */
 .tpl-skeleton-frame {
-  height: 30rem;
   width: 100%;
-  max-width: 320px;
+  max-width: 300px;
+  aspect-ratio: 390 / 844;
   border-radius: 1.5rem;
   background: rgba(226, 232, 240, 0.7);
   animation: tpl-pulse 1.6s ease-in-out infinite;
@@ -2098,6 +2223,11 @@ onUnmounted(() => {
 
 .tpl-empty__cta:active {
   transform: scale(0.97);
+}
+
+.tpl-empty__cta:focus-visible {
+  outline: none;
+  box-shadow: var(--tpl-focus);
 }
 
 /* Reduced motion keeps the opacity changes that aid comprehension and drops the
