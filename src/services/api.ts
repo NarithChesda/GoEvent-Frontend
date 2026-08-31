@@ -71,6 +71,7 @@ export type {
   EventTemplatePackagePlan,
   PackagePlan,
   EventTemplate,
+  PublicEventTemplate,
   TemplateAssets,
   CoverStageLayout,
   CoverLayoutMode,

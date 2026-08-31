@@ -2,9 +2,9 @@
   "nav": "Partners",
   "hero": {
     "eyebrow": "Partner programme",
-    "titleLead": "Buy invitations at wholesale,",
-    "titleAccent": "sell at your own price.",
-    "subtitle": "You set the invitation up for your customer and charge whatever you decide. Your shop's logo sits beside ours at the foot of every invitation you produce — and your customer never needs an account.",
+    "titleLead": "Free to start.",
+    "titleAccent": "Cheaper by the pack.",
+    "subtitle": "You set the invitation up for your customer and charge whatever you decide. The first two events are on us; after that, pay only when you sell one — or buy credits in bulk and pay less for every one.",
     "ctaPrimary": "Request partner access",
     "ctaSecondary": "See the numbers",
     "proof": {
@@ -33,7 +33,7 @@
   "pricing": {
     "eyebrow": "Wholesale pricing — Basic package",
     "title": "The more you take, the more you make",
-    "subtitle": "A Basic invitation retails at $60–85. Here is what a pack costs you, and what is left when you have sold it.",
+    "subtitle": "A Basic invitation retails at $60–85. Your first two events cost you nothing; after that, pay per event with nothing up front, or buy a pack and pay less for every one.",
     "profitLabel": "Your profit",
     "payUpfront": "Pay up front",
     "costEach": "Cost each",
@@ -111,7 +111,30 @@
     "media": {
       "title": "Their photos, music and map",
       "body": "Gallery, background film, venue map, dress code and gift details, all in one link."
-    }
+    },
+    "previewCta": "Browse every design",
+    "previewHint": "Opens the live catalogue — pick a design and read the whole invitation it produces."
+  },
+  "templates": {
+    "eyebrow": "Live preview",
+    "title": "Open a design and read the whole invitation",
+    "subtitle": "Not screenshots. Choose a design and the real invitation opens with it — cover, save-the-date and the invitation itself, in English and Khmer.",
+    "menuLabel": "Designs",
+    "viewControlsLabel": "Preview controls",
+    "viewSingle": "Show one screen",
+    "viewAll": "Show all screens side by side",
+    "switchLanguage": "Switch preview language",
+    "stageLabel": "Which screen to show",
+    "note": "Sample wedding, sample photographs. Every word, picture, colour and language is set per event — and the logo at the foot of the invitation is your shop’s, beside ours.",
+    "empty": {
+      "title": "The design catalogue is not loading",
+      "body": "It is there — this page just could not reach it. Message us and we will walk you through the designs directly.",
+      "cta": "Message us on Telegram"
+    },
+    "back": "Partner programme",
+    "filterLabel": "Event type",
+    "allCategories": "Every event type",
+    "otherPlan": "Other designs"
   },
   "partner": {
     "eyebrow": "What you get",
@@ -174,8 +197,8 @@
     }
   },
   "closing": {
-    "title": "Add digital invitations to what your shop sells",
-    "subtitle": "Tell us about your shop. If it is a fit, we will open your account and go through the rates with you.",
+    "title": "Your first two invitations are on us",
+    "subtitle": "Tell us about your shop. If it is a fit we will open your account, and you can set up two real invitations before you pay us anything.",
     "cta": "Request partner access",
     "telegram": "Message us on Telegram"
   }

@@ -6,7 +6,9 @@
 import { apiClient } from '../core/ApiClient'
 import type {
   ApiResponse,
+  PaginatedResponse,
   EventTemplate,
+  PublicEventTemplate,
   TemplateAssets,
   BrowseTemplatesResponse,
   PackagePlan,
@@ -31,6 +33,25 @@ export const eventTemplateService = {
   async browseTemplates(): Promise<ApiResponse<BrowseTemplatesResponse>> {
     return apiClient.get<BrowseTemplatesResponse>(
       '/api/core-data/event-templates/browse_templates/',
+    )
+  },
+
+  /**
+   * The approved template catalogue, without auth.
+   *
+   * `browse_templates/` above is the signed-in organizer's list and answers 401
+   * to everyone else; this is the plain list endpoint, which is public. Used by
+   * the partner programme page, whose whole audience is people with no account
+   * yet. The rows are the template records themselves — colours and fonts are
+   * NOT included, so anything rendering one still fetches
+   * `getPublicTemplateAssets` for it.
+   */
+  async listPublicTemplates(
+    params?: { page?: number },
+  ): Promise<ApiResponse<PaginatedResponse<PublicEventTemplate>>> {
+    return apiClient.getPublic<PaginatedResponse<PublicEventTemplate>>(
+      '/api/core-data/event-templates/',
+      params?.page ? { page: params.page } : undefined,
     )
   },
 

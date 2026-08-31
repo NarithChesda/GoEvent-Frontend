@@ -382,6 +382,16 @@ export interface UseEventShowcaseOptions {
    *  guest context to carry a real name, so the invite text + guest name
    *  cover rows (gated on `guestName` being truthy) still render. */
   useDefaultGuestName?: boolean
+  /**
+   * Answer showcase requests from here instead of the events endpoint.
+   *
+   * For previews that have no event to fetch — the public template preview on
+   * the partner page renders a bundled sample invitation (see
+   * `loadDemoShowcase`). The contract is the endpoint's own: one call returns
+   * ONE language's content, so the initial load, the silent refresh and the
+   * in-place language switch below all keep working unchanged.
+   */
+  dataSource?: (language: string) => Promise<ShowcaseData>
 }
 
 export function useEventShowcase(options?: UseEventShowcaseOptions) {
@@ -750,6 +760,32 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
   // ============================
   // Core Methods
   // ============================
+
+  /**
+   * One showcase response, from whichever source this instance was given.
+   *
+   * The three callers below (initial load, silent refresh, language switch) all
+   * go through here so a `dataSource` preview follows exactly the same merge
+   * and font paths as a real event — see UseEventShowcaseOptions.dataSource.
+   */
+  const fetchShowcase = async (
+    eventId: string,
+    params: { lang?: string; guest_name?: string },
+    failureMessage: string,
+  ): Promise<ShowcaseData> => {
+    if (options?.dataSource) {
+      return await options.dataSource(params.lang || currentLanguage.value)
+    }
+
+    const showcaseResponse = await eventsService.getEventShowcase(eventId, params)
+
+    if (!showcaseResponse.success || !showcaseResponse.data) {
+      throw new Error(showcaseResponse.message || failureMessage)
+    }
+
+    return showcaseResponse.data as ShowcaseData
+  }
+
   const loadShowcase = async (forceLanguage?: string) => {
     const eventId = resolveEventId()
     if (!eventId) {
@@ -784,13 +820,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
           params.guest_name = resolvedGuestName.value as string
         }
 
-        const showcaseResponse = await eventsService.getEventShowcase(eventId, params)
-
-        if (!showcaseResponse.success || !showcaseResponse.data) {
-          throw new Error(showcaseResponse.message || 'Failed to load event invitation')
-        }
-
-        return showcaseResponse.data as ShowcaseData
+        return await fetchShowcase(eventId, params, 'Failed to load event invitation')
       })
 
       showcaseData.value = data
@@ -892,11 +922,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
       }
 
       const data: ShowcaseData = await deduplicateRequest<ShowcaseData>(requestKey, async (): Promise<ShowcaseData> => {
-        const showcaseResponse = await eventsService.getEventShowcase(eventId, params)
-        if (!showcaseResponse.success || !showcaseResponse.data) {
-          throw new Error(showcaseResponse.message || 'Failed to refresh event content')
-        }
-        return showcaseResponse.data as ShowcaseData
+        return await fetchShowcase(eventId, params, 'Failed to refresh event content')
       })
 
       if (showcaseData.value) {
@@ -1140,13 +1166,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
       }
 
       const data: ShowcaseData = await deduplicateRequest<ShowcaseData>(requestKey, async (): Promise<ShowcaseData> => {
-        const showcaseResponse = await eventsService.getEventShowcase(eventId, params)
-
-        if (!showcaseResponse.success || !showcaseResponse.data) {
-          throw new Error(showcaseResponse.message || 'Failed to load event content')
-        }
-
-        return showcaseResponse.data as ShowcaseData
+        return await fetchShowcase(eventId, params, 'Failed to load event content')
       })
 
       // Update only the content-related parts of showcaseData

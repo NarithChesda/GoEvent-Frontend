@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img">
+<g fill="none" stroke="#c9a227" stroke-width="3" stroke-linecap="round">
+<circle cx="200" cy="200" r="150" stroke-opacity="0.5"/>
+<circle cx="200" cy="200" r="140" stroke-opacity="0.28" stroke-dasharray="2 9"/>
+<path d="M126 300q-46-44-46-100t46-100" stroke-opacity="0.45"/>
+<path d="M274 300q46-44 46-100t-46-100" stroke-opacity="0.45"/>
+<g stroke-width="2.4" stroke-opacity="0.75">
+<path d="M170 92q14-22 30-30 4 20-6 34t-24 18Z"/>
+<path d="M230 92q-14-22-30-30-4 20 6 34t24 18Z"/>
+<path d="M200 62v22"/>
+</g>
+</g>
+<text x="200" y="232" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="104" fill="#c9a227" letter-spacing="4">S&#8202;&amp;&#8202;V</text>
+</svg>

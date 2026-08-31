@@ -12,6 +12,20 @@
         beside ours in the footer (MainContentStage renders `referrer_details`
         that way) and a price they set themselves — so the promise here is
         wholesale and margin, never white-label.
+
+        The headline is a ladder rather than a price: free to start, better
+        the more you commit. It opens on the free events because cost is the
+        first objection a shop raises, and lands on the pack because that is
+        the upside — which is also the order the pricing rail is built in.
+        Everything else the old headline carried (your own price, your logo,
+        no account for the customer) is one step down, in the subtitle and in
+        "What you get".
+
+        Each of the two spans has to fit on ONE line, or the hero reads as a
+        paragraph in display type. The budget is ~18 characters, not ~22: the
+        narrowest the headline column ever gets is `lg`, where it is 6/12 of
+        max-w-6xl (~456px) — narrower than the whole of a 375px phone — which
+        is why the 5xl step waits for `xl` and its 7/12 of a wider container.
       -->
       <section class="relative overflow-hidden pt-10 sm:pt-14 lg:pt-20">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
@@ -31,7 +45,7 @@
               <h1
                 data-reveal
                 style="--reveal-delay: 60ms"
-                class="type-display mt-5 text-balance text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl 2xl:text-6xl"
+                class="type-display mt-5 text-balance text-3xl font-bold tracking-tight sm:text-4xl xl:text-5xl 2xl:text-6xl"
               >
                 <span class="block text-slate-500">{{ t('partners.hero.titleLead') }}</span>
                 <span class="block text-slate-900">{{ t('partners.hero.titleAccent') }}</span>
@@ -459,6 +473,32 @@
               </p>
             </li>
           </ul>
+
+          <!--
+            The way to see it rather than read about it. A link, not a section:
+            the live preview is a catalogue column plus three phone frames, which
+            is a screen's worth of furniture and three boots of the whole app —
+            too much to put in the middle of a page whose job is to make an
+            argument, and it earns its own page instead (/partners/templates).
+
+            Slate, not the brand gradient: the page's gradient objects are its
+            three "Request partner access" CTAs, and a fourth here would compete
+            with the one directly below it in the next section.
+          -->
+          <div data-reveal class="mt-10 sm:mt-12">
+            <RouterLink
+              to="/partners/templates"
+              class="group inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3.5 text-sm font-semibold text-white transition-[transform,background-color] duration-200 ease-out hover:bg-slate-800 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2 sm:text-base"
+            >
+              <Eye class="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+              {{ t('partners.product.previewCta') }}
+              <ArrowRight
+                class="h-4 w-4 flex-shrink-0 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
+            </RouterLink>
+            <p class="mt-2.5 text-sm text-slate-500">{{ t('partners.product.previewHint') }}</p>
+          </div>
         </div>
       </section>
 
@@ -635,6 +675,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
+  Eye,
   Film,
   Images,
   KeyRound,

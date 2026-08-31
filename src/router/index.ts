@@ -65,6 +65,18 @@ const router = createRouter({
       meta: { title: 'Partner Programme - GoEvent' },
     },
     {
+      /**
+       * The design catalogue, previewed live against a bundled sample
+       * invitation. Public for the same reason `/partners` is: its audience is
+       * people who are not partners yet, and everything it reads (the template
+       * list, each template's public assets, the pricing plans) is public too.
+       */
+      path: '/partners/templates',
+      name: 'partner-templates',
+      component: () => import('../views/PartnerTemplateGalleryView.vue'),
+      meta: { title: 'Invitation Designs - GoEvent' },
+    },
+    {
       path: '/signin',
       name: 'signin',
       component: () => import('../views/SignInView.vue'),
@@ -147,6 +159,19 @@ const router = createRouter({
       meta: { title: 'Event Showcase Preview - GoEvent' },
     },
     {
+      // The same idea for a template with no event behind it: one showcase
+      // stage of the bundled sample invitation, rendered against
+      // ?templateId=<public template>. Embedded by the public partner page's
+      // template preview; public, because everything it reads is.
+      //
+      // The path keeps the `showcase-preview-frame` segment because that is
+      // what isPreviewFrameDocument() matches — see previewFrameContext.ts.
+      path: '/template-showcase-preview-frame',
+      name: 'template-showcase-preview-frame',
+      component: () => import('../views/TemplateShowcasePreviewFrameView.vue'),
+      meta: { title: 'Template Preview - GoEvent' },
+    },
+    {
       path: '/settings',
       name: 'settings',
       component: () => import('../views/SettingsView.vue'),
@@ -217,6 +242,7 @@ const router = createRouter({
 const SHOWCASE_SCALE_ROUTES = new Set([
   'event-showcase',
   'event-showcase-preview-frame',
+  'template-showcase-preview-frame',
 ])
 
 const applyRootScaleClasses = (routeName: unknown) => {
