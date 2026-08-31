@@ -1,5 +1,7 @@
 {
   "nav": "Partners",
+  "backToEvents": "My events",
+  "switchLanguage": "Switch to {lang}",
   "hero": {
     "eyebrow": "Partner programme",
     "titleLead": "Free to start.",
@@ -143,6 +145,10 @@
     "branding": {
       "title": "Your logo on every invitation",
       "body": "Your shop's logo sits beside ours at the foot of every invitation you produce, so every guest who opens one sees who made it."
+    },
+    "listing": {
+      "title": "Your shop in our services directory",
+      "body": "List what you do on GoEvent's services page — your work, your photos, your prices — where people already planning an event come looking. The shops we feature at the top of it are chosen from our partners."
     },
     "ownership": {
       "title": "You own the event",

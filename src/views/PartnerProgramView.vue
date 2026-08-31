@@ -1,6 +1,55 @@
 <template>
-  <MainLayout>
-    <div ref="pageRef" class="min-h-screen">
+  <!--
+    No top bar and no tab bar. Everything the app's chrome carries — the nav,
+    the search, the account menu — belongs to a product the reader of this page
+    does not have an account for yet, and what it costs is the first screen,
+    which is the only one a sales page is guaranteed to get. MainLayout stays
+    for the ground it paints and for the bottom-chrome vars the contact button
+    positions against.
+  -->
+  <MainLayout hide-top-nav hide-mobile-tab-bar>
+    <div ref="pageRef" class="partner-page min-h-screen">
+      <!--
+        The language toggle, in the FAB lane above the contact button.
+
+        It exists here and on no other page because this page hides both the top
+        bar and the tab pill, and the app's only language controls live in them —
+        so a Khmer-reading shop owner who lands on /partners has, without this,
+        no way to read it in Khmer at all. Every other page still carries its
+        chrome, where a second control would be a duplicate.
+
+        `--fab-stack-2` is the shared slot above the contact FAB, defined in
+        MainLayout against the tab pill's real footprint; the offset is never
+        restated here. Everything else is ContactUsFAB's — the circle's two
+        sizes, the shadow, the hover lift, the desktop-only tooltip — so the two
+        read as one stack rather than as a button and a stray control beside it.
+        The brand gradient rather than that one's Telegram blue: the blue is the
+        destination's own colour and means "this opens Telegram".
+
+        The face carries the language code, not an icon, because the code is the
+        one thing a glance needs — which language you are reading now — and the
+        tooltip names the one the press switches *to*.
+
+        First in the DOM, not last: language is the choice that precedes reading
+        the page, so it should be the first thing a keyboard reaches. Being
+        `fixed`, its position in the flow costs the layout nothing.
+      -->
+      <button
+        type="button"
+        class="group fixed bottom-[var(--fab-stack-2)] right-4 z-[55] flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-110 hover:from-[#27ae60] hover:to-[#1873cc] hover:shadow-emerald-600/40 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2 lg:right-6 lg:h-14 lg:w-14"
+        :aria-label="switchLanguageLabel"
+        @click="toggleLanguage"
+      >
+        <span class="text-xs font-semibold tracking-wide lg:text-base">
+          {{ locale.toUpperCase() }}
+        </span>
+        <span
+          class="pointer-events-none absolute right-full mr-4 hidden whitespace-nowrap rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100 lg:block"
+        >
+          {{ switchLanguageLabel }}
+        </span>
+      </button>
+
       <!--
         1. HERO — split. The one gradient object here is the primary CTA, so the
         headline gets its emphasis from the slate ladder instead (500 → 900)
@@ -27,24 +76,48 @@
         max-w-6xl (~456px) — narrower than the whole of a 375px phone — which
         is why the 5xl step waits for `xl` and its 7/12 of a wider container.
       -->
-      <section class="relative overflow-hidden pt-10 sm:pt-14 lg:pt-20">
+      <section class="relative overflow-hidden pt-8 sm:pt-12 lg:pt-16">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
           <div class="grid items-center gap-10 lg:grid-cols-12 lg:gap-12">
             <div class="lg:col-span-6 xl:col-span-7">
-              <p
-                data-reveal
-                class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600 ring-1 ring-slate-900/5 sm:text-[0.8125rem]"
-              >
-                <Store class="h-3.5 w-3.5" aria-hidden="true" />
-                {{ t('partners.hero.eyebrow') }}
-              </p>
+              <!--
+                The way off the page and the badge that names it share one row.
+                The link takes the corner the app's logo held before the bar came
+                off, and the eyebrow — already the hero's first line — keeps its
+                place beside it, so losing the bar costs the hero no height.
+
+                The link alone has no `data-reveal`: everything else here is
+                content and may arrive, but the one way out is chrome and is
+                never worth waiting for. It wraps only below ~320px, where a
+                second line beats a row that overflows.
+              -->
+              <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                <RouterLink
+                  to="/events"
+                  class="group inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-slate-200 bg-white/70 px-3.5 py-2 text-[0.8125rem] font-medium text-slate-700 backdrop-blur transition-[color,border-color,background-color,transform] duration-200 ease-out hover:border-slate-300 hover:bg-white hover:text-slate-900 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 sm:text-sm"
+                >
+                  <ArrowLeft
+                    class="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-x-0.5"
+                    aria-hidden="true"
+                  />
+                  {{ t('partners.backToEvents') }}
+                </RouterLink>
+
+                <p
+                  data-reveal
+                  class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600 ring-1 ring-slate-900/5 sm:text-[0.8125rem]"
+                >
+                  <Store class="h-3.5 w-3.5" aria-hidden="true" />
+                  {{ t('partners.hero.eyebrow') }}
+                </p>
+              </div>
 
               <!-- Two blocks, not two inline spans: an inline space between
                    them is collapsed away by Vue's whitespace handling, and the
                    accent reads stronger on its own line anyway. -->
               <h1
                 data-reveal
-                style="--reveal-delay: 60ms"
+                style="--reveal-delay: calc(var(--stagger) * 1)"
                 class="type-display mt-5 text-balance text-3xl font-bold tracking-tight sm:text-4xl xl:text-5xl 2xl:text-6xl"
               >
                 <span class="block text-slate-500">{{ t('partners.hero.titleLead') }}</span>
@@ -53,7 +126,7 @@
 
               <p
                 data-reveal
-                style="--reveal-delay: 120ms"
+                style="--reveal-delay: calc(var(--stagger) * 2)"
                 class="mt-5 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg"
               >
                 {{ t('partners.hero.subtitle') }}
@@ -61,7 +134,7 @@
 
               <div
                 data-reveal
-                style="--reveal-delay: 180ms"
+                style="--reveal-delay: calc(var(--stagger) * 3)"
                 class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center"
               >
                 <RouterLink
@@ -90,7 +163,7 @@
                    a fourth shape in a viewport that already has two buttons. -->
               <ul
                 data-reveal
-                style="--reveal-delay: 240ms"
+                style="--reveal-delay: calc(var(--stagger) * 4)"
                 class="mt-8 max-w-xl space-y-2.5 border-t border-slate-200 pt-6"
               >
                 <li
@@ -104,7 +177,15 @@
               </ul>
             </div>
 
-            <div data-reveal style="--reveal-delay: 300ms" class="lg:col-span-6 xl:col-span-5">
+            <!-- The one element that travels further than the rest: 24px against
+                 the copy’s 14, because it is the near thing in the frame and near
+                 things move more. It is also last in the ladder, so the hero
+                 assembles as a sentence and then the picture lands under it. -->
+            <div
+              data-reveal
+              style="--reveal-delay: calc(var(--stagger) * 5); --reveal-lift: 24px"
+              class="lg:col-span-6 xl:col-span-5"
+            >
               <img
                 :src="HeroDevicesImg"
                 :alt="t('partners.hero.imageAlt')"
@@ -153,7 +234,7 @@
                 v-for="(key, i) in STEPS"
                 :key="key"
                 data-reveal
-                :style="{ '--reveal-delay': `${i * 80}ms` }"
+                :style="{ '--reveal-delay': `calc(var(--stagger) * ${i})` }"
                 class="relative"
               >
                 <!-- The numeral is the step label. A "Step one" eyebrow beside a
@@ -235,7 +316,7 @@
                 v-for="(tier, i) in tiers"
                 :key="tier.key"
                 data-reveal
-                :style="{ '--reveal-delay': `${Math.min(i, 4) * 70}ms` }"
+                :style="{ '--reveal-delay': `calc(var(--stagger) * ${Math.min(i, 4)})` }"
                 class="flex w-[17.5rem] flex-none snap-start flex-col rounded-2xl p-6 sm:w-[19.5rem] sm:p-7"
                 :class="
                   tier.featured
@@ -458,7 +539,7 @@
               v-for="(item, i) in PRODUCT_FEATURES"
               :key="item.key"
               data-reveal
-              :style="{ '--reveal-delay': `${(i % 3) * 60}ms` }"
+              :style="{ '--reveal-delay': `calc(var(--stagger) * ${i % 3})` }"
             >
               <span
                 class="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 text-slate-700"
@@ -527,7 +608,7 @@
                 v-for="(item, i) in PARTNER_BENEFITS"
                 :key="item.key"
                 data-reveal
-                :style="{ '--reveal-delay': `${(i % 2) * 60}ms` }"
+                :style="{ '--reveal-delay': `calc(var(--stagger) * ${i % 2})` }"
                 class="border-t border-slate-200 pt-5"
               >
                 <div class="flex items-center gap-2.5">
@@ -549,7 +630,33 @@
         </div>
       </section>
 
-      <!-- 6. FAQ — the only interactive section, so it earns a shape of its own. -->
+      <!--
+        6. FAQ — the last informative section and the only interactive one, so
+        it earns a shape of its own: a single panel lifted off the page's tinted
+        ground, with full-bleed rows inside it.
+
+        One card, not seven. The set is one object — a reader opens it, works
+        down it and leaves — so the panel is the card and the questions are its
+        contents. Seven bordered boxes would be seven objects to separate from
+        each other before reading any of them, which is chrome charged for
+        nothing. The panel clips its own corners (`overflow-hidden`) so a row's
+        hover ground and focus ring can run edge to edge without any row having
+        to know whether it is the first or the last.
+
+        Rows open independently, and the first is open on arrival.
+
+        Independently, because single-open moved the row out from under the
+        reader's own cursor: opening the fifth question while the first was open
+        collapses ~90px above it, so the row they just pressed slid upward as
+        its answer arrived. With every row its own toggle the pressed row never
+        moves — only what is below it does, which is what a reader expects. The
+        wall of text single-open was guarding against is now the reader's own
+        choice, which on a page whose job is to inform is the right place for it.
+
+        Open on arrival, because seven headings over an empty section reads as a
+        section with nothing in it. One open row gives the section its body and
+        teaches that the rows open, without spending a line of copy saying so.
+      -->
       <section class="border-t border-slate-200 py-16 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <header data-reveal class="text-center">
@@ -563,31 +670,74 @@
             </h2>
           </header>
 
-          <div data-reveal class="mt-10 divide-y divide-slate-200 border-y border-slate-200">
-            <div v-for="key in FAQ_KEYS" :key="key">
+          <div
+            class="mt-10 divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5 sm:mt-12"
+          >
+            <div
+              v-for="(key, i) in FAQ_KEYS"
+              :key="key"
+              data-reveal
+              :style="{ '--reveal-delay': `calc(var(--stagger) * ${Math.min(i, 5)})` }"
+            >
               <h3>
+                <!--
+                  The row's hover had nothing to land on before: the button set
+                  `hover:text-slate-600`, and both of its children — the question
+                  at `text-slate-900`, the chevron at `text-slate-400` — set
+                  their own colour, so the hover inherited onto nothing and the
+                  only interactive section on the page answered the pointer with
+                  silence. The ground moves now, and the marker with it.
+                -->
                 <button
                   type="button"
-                  class="flex w-full min-h-[56px] items-center justify-between gap-4 py-4 text-left transition-colors duration-200 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-                  :aria-expanded="openFaq === key"
+                  class="group flex min-h-[64px] w-full items-center justify-between gap-5 px-5 py-4 text-left transition-colors duration-200 ease-out hover:bg-slate-50 focus:outline-none focus-visible:bg-slate-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-300 sm:px-6"
+                  :aria-expanded="isFaqOpen(key)"
                   :aria-controls="`faq-panel-${key}`"
                   @click="toggleFaq(key)"
                 >
-                  <span class="text-base font-semibold text-slate-900 sm:text-lg">
+                  <span
+                    class="text-base font-semibold text-slate-900 transition-colors duration-200 ease-out sm:text-lg"
+                  >
                     {{ t(`partners.faq.${key}.q`) }}
                   </span>
-                  <ChevronDown
-                    class="h-5 w-5 flex-shrink-0 text-slate-400 transition-transform duration-300 ease-out"
-                    :class="{ 'rotate-180': openFaq === key }"
-                    aria-hidden="true"
-                  />
+
+                  <!--
+                    The marker is a disc rather than a bare chevron so the open
+                    state can be read from across the panel — an inverted circle
+                    is visible in peripheral vision, a rotated 16px glyph is
+                    not. It is also the row's only moving part on press: scaling
+                    a full-bleed row would deform the panel, scaling the disc
+                    says the same thing inside 32px.
+                  -->
+                  <span
+                    class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border transition-[background-color,border-color,color,transform] duration-200 ease-out group-active:scale-90"
+                    :class="
+                      isFaqOpen(key)
+                        ? 'border-slate-900 bg-slate-900 text-white'
+                        : 'border-slate-200 bg-white text-slate-400 group-hover:border-slate-300 group-hover:text-slate-600'
+                    "
+                  >
+                    <ChevronDown
+                      class="h-4 w-4 transition-transform duration-200 ease-out"
+                      :class="{ 'rotate-180': isFaqOpen(key) }"
+                      aria-hidden="true"
+                    />
+                  </span>
                 </button>
               </h3>
 
               <Transition name="collapse">
-                <div v-if="openFaq === key" :id="`faq-panel-${key}`" class="grid grid-rows-[1fr]">
+                <div v-if="isFaqOpen(key)" :id="`faq-panel-${key}`" class="grid grid-rows-[1fr]">
                   <div class="min-h-0 overflow-hidden">
-                    <p class="pb-5 pr-10 text-sm leading-relaxed text-slate-600 sm:text-base">
+                    <!-- The right inset only clears the disc column from `sm` up.
+                         On a phone the answer takes the full measure instead: the
+                         disc column is 56px of a 390px screen, and paying that for
+                         symmetry with the question above cuts the answer to about
+                         thirty characters a line. Nothing sits to the right of the
+                         answer to align with anyway. -->
+                    <p
+                      class="pb-5 pl-5 pr-6 text-sm leading-relaxed text-slate-600 sm:pb-6 sm:pl-6 sm:pr-20 sm:text-base"
+                    >
                       {{ t(`partners.faq.${key}.a`) }}
                     </p>
                   </div>
@@ -598,50 +748,90 @@
         </div>
       </section>
 
-      <!-- 7. CLOSING — the page's third and last gradient object, alone in its
-           viewport, carrying the same CTA label as the other two. -->
-      <section class="px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8 lg:pb-28">
+      <!--
+        7. CLOSING — the page's third and last gradient object, and now also its
+        end. `AppFooter` is gone from here for the reason the top bar is: its
+        nav, its social row and its "explore the app" link all belong to a
+        product this reader has no account for, and on a page that is a pitch
+        they are five ways to leave before the ask. So everything the reader
+        still needs lands in this section or nowhere — the ask, a person to talk
+        to, and the way back.
+      -->
+      <section class="px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
         <div class="mx-auto max-w-4xl lg:max-w-6xl 2xl:max-w-7xl">
           <div
             data-reveal
-            class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-6 py-12 text-center sm:px-10 sm:py-16 lg:py-20"
+            class="relative isolate overflow-hidden rounded-3xl bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-6 py-14 text-center shadow-xl shadow-slate-900/10 sm:px-10 sm:py-16 lg:py-20"
           >
-            <h2
-              class="type-display-sm mx-auto max-w-2xl text-balance text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl"
-            >
-              {{ t('partners.closing.title') }}
-            </h2>
-            <p class="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-white/90 sm:text-base">
-              {{ t('partners.closing.subtitle') }}
-            </p>
+            <!-- Light inside the one gradient object rather than a second one:
+                 two soft radial washes give the band a lit corner and a shaded
+                 one, so at this size it reads as a surface and not a swatch. -->
+            <div class="cta-sheen pointer-events-none absolute inset-0" aria-hidden="true"></div>
 
-            <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <RouterLink
-                to="/credits"
-                class="group inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-slate-900 shadow-lg shadow-slate-900/10 transition-[transform,background-color] duration-200 ease-out hover:bg-slate-50 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1e90ff] sm:w-auto sm:text-base"
+            <div class="relative">
+              <h2
+                class="type-display-sm mx-auto max-w-2xl text-balance text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl"
               >
-                {{ t('partners.closing.cta') }}
-                <ArrowRight
-                  class="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
-                  aria-hidden="true"
-                />
-              </RouterLink>
+                {{ t('partners.closing.title') }}
+              </h2>
+              <p class="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-white/90 sm:text-base">
+                {{ t('partners.closing.subtitle') }}
+              </p>
 
-              <a
-                :href="TELEGRAM_URL"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-medium text-white/90 transition-colors duration-200 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white sm:text-base"
-              >
-                <MessageCircle class="h-4 w-4" aria-hidden="true" />
-                {{ t('partners.closing.telegram') }}
-              </a>
+              <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <RouterLink
+                  to="/credits"
+                  class="group inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-slate-900 shadow-lg shadow-slate-900/10 transition-[transform,background-color] duration-200 ease-out hover:bg-slate-50 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent sm:w-auto sm:text-base"
+                >
+                  {{ t('partners.closing.cta') }}
+                  <ArrowRight
+                    class="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+                    aria-hidden="true"
+                  />
+                </RouterLink>
+
+                <!--
+                  Given a shape, because it was a ghost: white-on-gradient text
+                  with no edge is the weakest thing in the panel, and this is
+                  the one control for a shop owner who would rather ask a person
+                  than fill in a form. It stays quieter than the primary by fill
+                  — a translucent wash against solid white — rather than by
+                  having no outline at all.
+                -->
+                <a
+                  :href="TELEGRAM_URL"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full border border-white/40 bg-white/10 px-6 py-3.5 text-sm font-medium text-white backdrop-blur-sm transition-[transform,background-color,border-color] duration-200 ease-out hover:border-white/60 hover:bg-white/20 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent sm:w-auto sm:text-base"
+                >
+                  <MessageCircle class="h-4 w-4" aria-hidden="true" />
+                  {{ t('partners.closing.telegram') }}
+                </a>
+              </div>
             </div>
+          </div>
+
+          <!--
+            The way back, at the end of the page rather than in a footer. The
+            hero's copy of this link is the escape a reader takes on arrival;
+            this one is for the reader who has finished and now has to decide.
+            One link on the page's own ground, deliberately not a bar with a
+            rule over it — that would be the footer again, rebuilt by hand.
+          -->
+          <div data-reveal class="mt-8 flex justify-center sm:mt-10">
+            <RouterLink
+              to="/events"
+              class="group inline-flex min-h-[44px] items-center gap-2 rounded-full px-4 text-sm font-medium text-slate-500 transition-colors duration-200 ease-out hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+            >
+              <ArrowLeft
+                class="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-x-0.5"
+                aria-hidden="true"
+              />
+              {{ t('partners.backToEvents') }}
+            </RouterLink>
           </div>
         </div>
       </section>
-
-      <AppFooter />
     </div>
   </MainLayout>
 </template>
@@ -663,10 +853,11 @@
  * signed-out prospect, the applicant and the approved partner without this page
  * knowing which it is talking to.
  */
-import { ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { computed, ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
 import {
   ArrowDown,
+  ArrowLeft,
   ArrowRight,
   BadgeCheck,
   BellRing,
@@ -690,7 +881,6 @@ import {
   Zap,
 } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
-import AppFooter from '@/components/AppFooter.vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import {
   usePartnerPricingTiers,
@@ -698,7 +888,25 @@ import {
 } from '@/composables/usePartnerPricingTiers'
 import HeroDevicesImg from '@/assets/hero-devices.webp'
 
-const { t } = useAppLanguage()
+const { t, locale, setLocale, availableLocales } = useAppLanguage()
+
+/**
+ * Two locales today, so pressing the button is a swap — but written as a cycle
+ * so a third one added to `availableLocales` needs nothing here. The label
+ * names the language being switched *to*, which is the only unambiguous way to
+ * read a control whose face shows the current one.
+ */
+const nextLocale = computed(() => {
+  const options = availableLocales.value
+  const i = options.findIndex((option) => option.code === locale.value)
+  return options[(i + 1) % options.length]
+})
+
+const switchLanguageLabel = computed(() =>
+  t('partners.switchLanguage', { lang: nextLocale.value.name }),
+)
+
+const toggleLanguage = () => setLocale(nextLocale.value.code)
 
 const TELEGRAM_URL = 'https://t.me/goeventkh'
 
@@ -789,6 +997,7 @@ const PRODUCT_FEATURES = [
 
 const PARTNER_BENEFITS = [
   { key: 'branding', icon: BadgeCheck },
+  { key: 'listing', icon: Store },
   { key: 'ownership', icon: ShieldCheck },
   { key: 'instant', icon: Zap },
   { key: 'locked', icon: KeyRound },
@@ -796,10 +1005,23 @@ const PARTNER_BENEFITS = [
   { key: 'topup', icon: PlusCircle },
 ] as const
 
-/** Single-open, so the page never grows a wall of text mid-scroll. */
-const openFaq = ref<string | null>(null)
+/**
+ * Which answers are open. A set rather than one key, and seeded with the first
+ * question rather than empty — see the section's own comment for both reasons;
+ * the short version is that single-open slid the pressed row out from under the
+ * pointer, and an all-closed accordion opens on a section with no body in it.
+ *
+ * Replaced rather than mutated on toggle: a `ref` holding a Set does track its
+ * own mutations through Vue's collection handlers, but every read here is a
+ * `.has()` inside a `v-for`, and a fresh Set makes the dependency unambiguous
+ * at the cost of seven pointer copies.
+ */
+const openFaqs = ref<ReadonlySet<string>>(new Set([FAQ_KEYS[0]]))
+const isFaqOpen = (key: string) => openFaqs.value.has(key)
 const toggleFaq = (key: string) => {
-  openFaq.value = openFaq.value === key ? null : key
+  const next = new Set(openFaqs.value)
+  if (!next.delete(key)) next.add(key)
+  openFaqs.value = next
 }
 
 const pricingRef = ref<HTMLElement | null>(null)
@@ -848,14 +1070,34 @@ const seen = new WeakSet<Element>()
 let pending: Element[] = []
 let frame = 0
 
-/** Matches the old observer's `-10%` bottom margin: reveal just before the top edge lands. */
+/**
+ * Two lines, not one.
+ *
+ * `REVEAL_LINE` is where an element animates — the old observer's `-10%`
+ * bottom margin, so it starts just before its top edge lands.
+ *
+ * `ARM_LINE` is where it is *told* it is about to, one viewport earlier, and
+ * exists only to place `will-change` (see the CSS for why that must not sit in
+ * the base state). One sweep resolves both, so the second line costs a
+ * comparison rather than a second listener — and an element scrolled past in a
+ * single jump skips the arming and reveals anyway, because the promotion is an
+ * optimisation and never a step the reveal depends on.
+ */
 const REVEAL_LINE = 0.9
+const ARM_LINE = 1.9
 
 function sweep() {
   frame = 0
-  const line = window.innerHeight * REVEAL_LINE
+  const viewport = window.innerHeight
+  const revealAt = viewport * REVEAL_LINE
+  const armAt = viewport * ARM_LINE
   pending = pending.filter((el) => {
-    if (el.getBoundingClientRect().top > line) return true
+    const { top } = el.getBoundingClientRect()
+    if (top > armAt) return true
+    if (top > revealAt) {
+      el.classList.add('reveal-arm')
+      return true
+    }
     // Once only — a section that re-animates on every pass is ambient motion,
     // which spends attention and returns nothing.
     el.classList.add('reveal-in')
@@ -908,18 +1150,63 @@ onBeforeUnmount(stopSweeping)
 
 <style scoped>
 /*
-  Reveal. Enters from a small offset rather than from nothing: 14px and a 0.94
-  floor on nothing else, because an element that appears from zero has no
-  real-world equivalent. `ease-out` so the movement is over before the reader
-  has decided to look at it.
+  ---------------------------------------------------------------------------
+  The page's motion vocabulary, in four numbers
+  ---------------------------------------------------------------------------
+  Declared once and read by everything below, because a landing page is one
+  performance and eight sections each cascading at their own rate read as eight
+  pages stapled together. That was literally true here: 80ms between two steps,
+  70ms between two pricing cards, 60ms between two feature tiles, 45ms between
+  two questions, and no reader could have recovered a reason for any of it. One
+  constant now, so the page keeps one pulse and changing that pulse is one edit.
+
+  `--stagger` is 60ms. A cascade reads as a cascade between roughly 30ms and
+  80ms and as a queue outside that; 60 puts a three-item row 120ms end to end,
+  which is a sequence nobody has to wait for.
+
+  `--reveal-duration` is 600ms against the 300ms ceiling that governs every
+  other transition on this page, and the gap between them is the point: 300ms is
+  the budget for *interface*, where someone is waiting on the result of their
+  own press. Nothing waits on a reveal. Under `--ease-reveal` the element is
+  90% of the way home inside 180ms anyway — the remaining 420ms is settle, and
+  settle is what keeps eight sections in a row from reading as a slideshow.
+
+  `--reveal-lift` is a variable rather than a fixed 14px so one element can
+  travel further than its neighbours. The hero image does, at 24px: near things
+  move more, and that is the whole of the parallax on this page.
+*/
+.partner-page {
+  --ease-reveal: cubic-bezier(0.23, 1, 0.32, 1);
+  --reveal-duration: 600ms;
+  --reveal-lift: 14px;
+  --stagger: 60ms;
+}
+
+/*
+  Reveal. Enters from a small offset rather than from nothing, because an
+  element that appears out of nothing has no real-world equivalent. Ease-out, so
+  the movement is over before the reader has decided to look at it.
 */
 [data-reveal] {
   opacity: 0;
-  transform: translateY(14px);
+  transform: translateY(var(--reveal-lift));
   transition:
-    opacity 600ms cubic-bezier(0.23, 1, 0.32, 1),
-    transform 600ms cubic-bezier(0.23, 1, 0.32, 1);
+    opacity var(--reveal-duration) var(--ease-reveal),
+    transform var(--reveal-duration) var(--ease-reveal);
   transition-delay: var(--reveal-delay, 0ms);
+}
+
+/*
+  `will-change` is a promise the browser keeps by handing the element its own
+  compositor layer, and it holds that layer for exactly as long as the
+  declaration stands. In the base state that meant all forty `[data-reveal]`
+  elements on this page were promoted at first paint — most of them screens
+  below the fold, several of them never reached at all. That is the case
+  DESIGN.md §7 is naming when it says to add `will-change` only to elements that
+  actually animate. Armed one viewport out instead, and released in the very
+  rule that hands the transition over.
+*/
+[data-reveal].reveal-arm {
   will-change: opacity, transform;
 }
 
@@ -950,8 +1237,12 @@ onBeforeUnmount(stopSweeping)
   32px band is deliberately short: enough to say "continues", not enough to make
   a card's price unreadable.
 
-  The transition is on `mask-image`, which is not compositor-friendly, but it
-  runs once per edge crossing on a user-driven scroll rather than every frame.
+  The fade appears and disappears without a transition, and should stay that
+  way: `mask-image` does not interpolate on the compositor, and the one frame
+  where a transition would show is the frame in which the reader has just
+  started dragging a rail of cards across — the edge is the least moving thing
+  on screen. An earlier version of this comment claimed a transition that was
+  never actually declared.
 */
 /*
   Pointer-only, written as a media query rather than a Tailwind arbitrary
@@ -994,6 +1285,23 @@ onBeforeUnmount(stopSweeping)
     #000 calc(100% - 3rem),
     transparent 100%
   );
+}
+
+/*
+  The closing panel's inner light. Two radial washes over the brand gradient,
+  not a second gradient object: white at low alpha, so whatever the band's own
+  colour is underneath, this only lifts it. Authored here rather than as two
+  arbitrary `bg-[radial-gradient(...)]` values because the commas and spaces a
+  two-stop radial needs are exactly what Tailwind's arbitrary-value parser
+  makes unreadable.
+
+  Painted, not blurred: a `blur-3xl` disc would be the same picture at the cost
+  of a 64px filter pass over a full-width panel on every paint.
+*/
+.cta-sheen {
+  background:
+    radial-gradient(58% 78% at 12% 0%, rgb(255 255 255 / 0.22), transparent 68%),
+    radial-gradient(52% 72% at 92% 100%, rgb(255 255 255 / 0.14), transparent 70%);
 }
 
 /* The sanctioned collapse: grid-template-rows 0fr↔1fr, never max-height. */
