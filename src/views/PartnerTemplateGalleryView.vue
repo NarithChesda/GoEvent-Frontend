@@ -107,27 +107,24 @@
       -->
       <div class="tpl-studio__stage">
         <!--
-          Stage picker BESIDE the frame, not above it. Above, it was a row of
-          chrome that only one of the two views paid for, so the single frame
-          rendered shorter than the three beside it — the same phone, two
-          different sizes depending on how you were looking at it. Moved into
-          the row, it costs width (of which the single view has plenty, having
-          just given up two frames) instead of height, and `framesTop` is now
-          identical in both views.
+          Stage picker ABOVE the frame, centred on it: three moments of one
+          flow, and the phone they belong to directly under them. One row,
+          never two — it wraps to nothing and scrolls sideways instead, because
+          a second row would come straight off the height of the phone below.
 
-          Vertical suits it anyway: three moments of one flow, read top to
-          bottom, which is also the direction a guest moves through them.
+          It costs nothing net, because the frame's own caption comes off when
+          the picker is up (see :label below): the picker already names the
+          stage, and two labels for one screen is one too many.
         -->
-        <div class="tpl-stage-row">
+        <div class="tpl-stage">
           <div
             v-if="showStagePicker"
             class="tpl-steps"
             role="group"
-            aria-orientation="vertical"
             :aria-label="t('partners.templates.stageLabel')"
           >
             <button
-              v-for="(frame, index) in visibleFrames"
+              v-for="frame in visibleFrames"
               :key="frame.id"
               type="button"
               class="tpl-step"
@@ -135,11 +132,7 @@
               :aria-pressed="activeFrameId === frame.id"
               @click="activeFrameId = frame.id"
             >
-              <span class="tpl-step__track" aria-hidden="true">
-                <span class="tpl-step__dot" />
-                <span v-if="index < visibleFrames.length - 1" class="tpl-step__line" />
-              </span>
-              <span class="tpl-step__label">{{ t(frame.labelKey) }}</span>
+              {{ t(frame.labelKey) }}
             </button>
           </div>
 
@@ -149,7 +142,7 @@
               :key="frame.id"
               v-show="isSingleView ? activeFrameId === frame.id : true"
               :ref="(el) => setPreviewFrameRef(frame.id, el)"
-              :label="t(frame.labelKey)"
+              :label="frameLabel(frame)"
               :fit-height="false"
               :max-width="frameMaxWidth"
               :width-override="sharedColumnWidth"
@@ -189,7 +182,19 @@
         and the expensive shelf visible at once).
       -->
       <aside class="tpl-studio__menu">
-        <div class="tpl-menu__head">
+        <!--
+          Desktop only. On a phone the shelf tabs below already carry both jobs
+          this row was doing — they name what you are looking at and they count
+          it — so the row was a heading for a heading, and ~48px of it came off
+          the invitation underneath.
+
+          It takes the event-type filter with it, which is a real loss: a phone
+          visitor now browses every type and reads the type off each card. The
+          shelves are short enough to flick through that it is a fair trade, but
+          if it stops being one, the place to put it back is inside the tab
+          strip — not above it, where this row was.
+        -->
+        <div v-if="!isNarrow" class="tpl-menu__head">
           <p class="tpl-menu__label">
             {{ t('partners.templates.menuLabel') }}
             <span class="text-slate-400">· {{ filteredTemplates.length }}</span>
@@ -249,14 +254,46 @@
           </div>
         </div>
 
-        <div class="tpl-menu__scroll">
+        <!--
+          On a phone the shelves become tabs and only one is open. Stacked, the
+          catalogue was three or four rows of cards deep and pushed the
+          invitation — the thing the page exists to show — most of a screen
+          below the fold. One plan, one row, and every card in it reachable by a
+          sideways flick: the same catalogue, at a third of the height.
+
+          Not rendered above `lg`, where the column is tall and narrow and the
+          shelves read better all at once, under their own headings.
+        -->
+        <div
+          v-if="isNarrow && groupedTemplates.length > 1"
+          class="tpl-plans"
+          role="tablist"
+          :aria-label="t('partners.templates.planLabel')"
+        >
+          <button
+            v-for="group in groupedTemplates"
+            :key="group.key"
+            type="button"
+            role="tab"
+            class="tpl-plan"
+            :class="{ 'is-active': group.key === visibleGroupKey }"
+            :aria-selected="group.key === visibleGroupKey"
+            @click="selectGroup(group.key, $event)"
+          >
+            <span class="tpl-plan__name">{{ group.label }}</span>
+            <span class="tpl-plan__count">{{ group.templates.length }}</span>
+          </button>
+        </div>
+
+        <div class="tpl-menu__scroll" :class="{ 'is-rail': isNarrow }">
           <section
             v-for="group in groupedTemplates"
+            v-show="!isNarrow || group.key === visibleGroupKey"
             :key="group.key"
             class="tpl-menu-group"
             :aria-label="group.label"
           >
-            <h2 class="tpl-menu-group__head">
+            <h2 v-if="!isNarrow" class="tpl-menu-group__head">
               {{ group.label }}
               <span class="text-slate-400">· {{ group.templates.length }}</span>
             </h2>
@@ -301,7 +338,10 @@
                        is none — so the label is legible either way. -->
                   <span class="tpl-card__label" :class="{ 'is-plain': !thumbnailFor(template) }">
                     <span class="tpl-card__name">{{ template.name }}</span>
-                    <span v-if="!activeCategory && categoryNameFor(template)" class="tpl-card__meta">
+                    <span
+                      v-if="!activeCategory && categoryNameFor(template)"
+                      class="tpl-card__meta"
+                    >
                       {{ categoryNameFor(template) }}
                     </span>
                   </span>
@@ -497,6 +537,9 @@ const filteredTemplates = computed(() =>
 const selectCategory = (value: string) => {
   activeCategory.value = value
   categoryMenuOpen.value = false
+  // The shelves are rebuilt from the survivors, so an earlier tap is a claim
+  // about a list that no longer exists. Fall back to following the selection.
+  activeGroupKey.value = ''
 }
 
 // ---------------------------------------------------------------------------
@@ -548,6 +591,42 @@ const groupedTemplates = computed<TemplateGroup[]>(() => {
  */
 const orderedTemplates = computed(() => groupedTemplates.value.flatMap((group) => group.templates))
 
+/**
+ * Which shelf is open, on the phone layout where only one is.
+ *
+ * Derived from the selected design rather than stored outright, so the tab and
+ * the tick can never disagree: whatever the catalogue lands on — first load, a
+ * filter change, a template retired by one — the shelf holding it is the shelf
+ * that opens. An explicit tap wins while it still names a shelf that exists.
+ */
+const activeGroupKey = ref('')
+
+/**
+ * Opening a shelf also brings its tab fully into the strip.
+ *
+ * The strip scrolls sideways, so the tab you just chose is often the one half
+ * off the edge — tapping it and watching it stay clipped reads as the tap not
+ * having landed, even though the rail below it changed.
+ */
+const selectGroup = (key: string, event: MouseEvent) => {
+  activeGroupKey.value = key
+  ;(event.currentTarget as HTMLElement | null)?.scrollIntoView({
+    inline: 'center',
+    block: 'nearest',
+    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+  })
+}
+
+const visibleGroupKey = computed(() => {
+  const groups = groupedTemplates.value
+  if (!groups.length) return ''
+  if (groups.some((group) => group.key === activeGroupKey.value)) return activeGroupKey.value
+  const holding = groups.find((group) =>
+    group.templates.some((template) => template.id === activeTemplateId.value),
+  )
+  return (holding ?? groups[0]).key
+})
+
 // Filtering can retire the design on screen; land on the first one that survived
 // rather than previewing something no longer in the list.
 watch(orderedTemplates, (list) => {
@@ -570,9 +649,7 @@ watch(orderedTemplates, (list) => {
 const brokenThumbnails = ref(new Set<number>())
 
 const thumbnailFor = (template: PublicEventTemplate): string | null =>
-  template.preview_image && !brokenThumbnails.value.has(template.id)
-    ? template.preview_image
-    : null
+  template.preview_image && !brokenThumbnails.value.has(template.id) ? template.preview_image : null
 
 const onThumbnailError = (templateId: number) => {
   brokenThumbnails.value = new Set(brokenThumbnails.value).add(templateId)
@@ -698,6 +775,15 @@ const showLayoutSegments = computed(() => !isNarrow.value && visibleFrames.value
 /** Only one frame on screen, and somewhere else to go from it. */
 const showStagePicker = computed(() => isSingleView.value && visibleFrames.value.length > 1)
 
+/**
+ * The caption above a frame — blank while the stage picker is up, because the
+ * picker sits directly over the phone and already says which screen this is.
+ * Two labels for one screen is one too many, and the row it gives back is
+ * roughly what the picker costs, so the phone renders the same size either way.
+ */
+const frameLabel = (frame: PreviewFrameDescriptor): string =>
+  showStagePicker.value ? '' : t(frame.labelKey)
+
 /** The pill is a container: with nothing to put in it, it is a stray blob. */
 const hasViewControls = computed(
   () =>
@@ -763,11 +849,6 @@ const studioTop = ref(96)
 
 const studioStyle = computed(() => ({
   '--tpl-studio-top': `${studioTop.value}px`,
-  // Published so the single-frame row can be exactly as wide as the phone in
-  // it — see .tpl-frames--single. Safe to feed back into layout because
-  // `frameMaxWidth` is derived from the window's height, never from this width,
-  // so there is no measurement loop.
-  '--tpl-frame-w': `${frameMaxWidth.value}px`,
 }))
 
 /** Both measurements the frames need, taken from the container that holds them. */
@@ -821,7 +902,30 @@ const remeasure = () => {
     for (const instance of previewFrameRefs.values()) instance.measure()
   })
 }
+
+/**
+ * The box measurement AND the frames' own, in that order.
+ *
+ * `framesObserver` catches the frames box changing *size*; nothing catches it
+ * changing *position*, which is what every one of these does — the catalogue
+ * arriving under a skeleton, a shelf of five swapped for a shelf of one, the
+ * picker appearing. `framesTop` then keeps the value it had when the page was
+ * still empty, `frameMaxWidth` is computed from a top that is hundreds of
+ * pixels too high, and the phone is drawn too large to fit the window it was
+ * supposed to fit — which is the whole point of measuring.
+ *
+ * It settles in one pass: `framesTop` is where the frames box *starts*, and
+ * nothing above it is sized from the frame, so re-measuring cannot move it.
+ */
+const refit = () => {
+  void nextTick(() => {
+    if (framesRef.value) measureFrameBox(framesRef.value)
+    for (const instance of previewFrameRefs.values()) instance.measure()
+  })
+}
+
 watch([isSingleView, activeFrameId, frameMaxWidth], remeasure)
+watch([loading, isNarrow, showStagePicker, groupedTemplates, visibleGroupKey], refit)
 
 const onWindowResize = () => {
   viewportHeight.value = window.innerHeight
@@ -995,6 +1099,11 @@ onUnmounted(() => {
      laptop widths, and this column holding two 9:16 cards is exactly where that
      shrink is least welcome. */
   --tpl-menu-w: 356px;
+  /* What the page paints under the catalogue column, as a flat colour. The
+     ground is a horizontal gradient, but across the 356px this column occupies
+     it moves by under two levels out of 255 — so a solid stand-in is
+     indistinguishable, and it is the only thing a sticky band can be cut from. */
+  --tpl-ground: #fafdfb;
 
   min-height: 100vh;
   /* The page paints its own ground now that it has no app shell around it. */
@@ -1347,6 +1456,57 @@ onUnmounted(() => {
   }
 }
 
+/*
+  Phone: one shelf, one row, flicked sideways.
+
+  Bounding the stacked grid at 21rem still cost a third of the screen and still
+  buried the invitation. A rail is the whole shelf in ~10rem, and a card cut off
+  at the edge says there is more of it without any control saying so.
+*/
+.tpl-menu__scroll.is-rail {
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+}
+
+.is-rail .tpl-card-grid {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  /* Room for the selection ring and the hover lift, which a scroll container
+     clips to its padding box. */
+  padding: 0.25rem 0.5rem 0.5rem;
+  scroll-padding-left: 0.5rem;
+}
+
+.is-rail .tpl-card-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.is-rail .tpl-card {
+  flex: 0 0 var(--tpl-rail-w, 86px);
+  scroll-snap-align: start;
+}
+
+@media (min-width: 640px) {
+  .is-rail .tpl-card {
+    --tpl-rail-w: 104px;
+  }
+}
+
+/* At rail size the name is all that fits and all that is needed — the event
+   type is already the filter above. */
+.is-rail .tpl-card__name {
+  font-size: 0.625rem;
+}
+
+.is-rail .tpl-card__meta {
+  display: none;
+}
+
 .tpl-menu__scroll::-webkit-scrollbar {
   width: 6px;
 }
@@ -1360,6 +1520,61 @@ onUnmounted(() => {
   background: rgb(148 163 184);
 }
 
+/* --- The shelves, as tabs (phone only) ------------------------------------ */
+
+.tpl-plans {
+  display: flex;
+  gap: 0.375rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 0.125rem;
+  margin-bottom: 0.5rem;
+}
+
+.tpl-plans::-webkit-scrollbar {
+  display: none;
+}
+
+.tpl-plan {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 9999px;
+  border: 1px solid rgb(226 232 240);
+  background: #fff;
+  padding: 0.3125rem 0.6875rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgb(71 85 105);
+  transition:
+    background-color 220ms var(--tpl-ease-out),
+    border-color 220ms var(--tpl-ease-out),
+    color 220ms var(--tpl-ease-out),
+    box-shadow 220ms var(--tpl-ease-out),
+    transform 160ms var(--tpl-ease-out);
+}
+
+.tpl-plan:active {
+  transform: scale(0.97);
+}
+
+.tpl-plan.is-active {
+  border-color: transparent;
+  background: linear-gradient(to right, #2ecc71, #1e90ff);
+  color: #fff;
+  box-shadow: 0 4px 6px -1px rgba(46, 204, 113, 0.2);
+}
+
+.tpl-plan__count {
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
 .tpl-menu-group + .tpl-menu-group {
   margin-top: 1.25rem;
 }
@@ -1368,16 +1583,37 @@ onUnmounted(() => {
   position: sticky;
   top: -0.25rem;
   z-index: 2;
-  margin-bottom: 0.5rem;
-  padding: 0.375rem 0;
+  margin-bottom: 0.375rem;
+  padding: 0.5rem 0 0.875rem;
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgb(100 116 139);
-  /* Opaque enough that cards do not read through it as they pass under. */
-  background: rgba(252, 253, 254, 0.94);
-  backdrop-filter: blur(8px);
+}
+
+/*
+  The band the heading rides on, and the reason it is a pseudo-element.
+
+  It used to be the heading's own background: a 94%-opaque strip with a hard
+  bottom edge, which is two visible faults at once — the artwork ghosts through
+  it, and a card sliding under it is cut off by a straight line across the
+  design. Both are the kind of thing you see without being able to name.
+
+  Solid where the words are, dissolving below them: a card fades out as it
+  reaches the heading instead of meeting an edge. The fade is a mask rather
+  than a gradient in `background`, because it also has to take the band's own
+  bottom edge with it — and it bleeds sideways into the scroller's padding, so
+  a card's selection ring has nowhere to peek out.
+*/
+.tpl-menu-group__head::before {
+  content: '';
+  position: absolute;
+  inset: -0.5rem -0.5rem 0;
+  z-index: -1;
+  background: var(--tpl-ground);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 68%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 68%, transparent 100%);
 }
 
 .tpl-card-grid {
@@ -1598,122 +1834,78 @@ onUnmounted(() => {
   background: rgb(226 232 240);
 }
 
-/* The row the picker and the frame share. Centred, so the picker reads as a
-   small index alongside the phone rather than a heading stranded at its top. */
-.tpl-stage-row {
+/* The stage: the picker, then the phone it names, on one centre line. */
+.tpl-stage {
   display: flex;
   width: 100%;
   min-width: 0;
-  /* Top-aligned while the frame is taller than the window: centred on a phone
-     put the picker halfway down a 520px phone, which is below the fold — you
-     would scroll past the thing you were choosing to reach the chooser. */
-  align-items: flex-start;
-  justify-content: center;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-@media (min-width: 640px) {
-  .tpl-stage-row {
-    gap: 1.5rem;
-  }
-}
+/*
+  §5 segmented control, the same pill as the view controls in the header —
+  because it is the same kind of question asked about the same thing.
 
-@media (min-width: 1024px) {
-  /* Here the whole frame is on screen, so the picker reads best as a small
-     index level with the middle of it rather than clinging to its top edge. */
-  .tpl-stage-row {
-    align-items: center;
-  }
-}
-
-/* Three up, the frames claim the whole row and space themselves across it. */
-.tpl-stage-row > .tpl-frames {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-/* One up, they do not. The picker and the phone are a single object and are
-   centred together — left to claim the row, the frames box centred its one
-   phone inside ~1100px and stranded the picker a third of a screen away from
-   the thing it controls. Sized to the phone instead (see --tpl-frame-w). */
-.tpl-stage-row > .tpl-frames--single {
-  flex: 0 0 auto;
-  width: var(--tpl-frame-w, 340px);
-  max-width: 100%;
-}
-
+  One row, always. `nowrap` plus a sideways scroll rather than a wrap: a second
+  row of chrome comes straight off the height of the phone under it, and the
+  three Khmer labels are within ~30px of fitting a 390px screen as it is.
+*/
 .tpl-steps {
   display: flex;
   flex: none;
-  flex-direction: column;
-  align-items: stretch;
-  /* No gap: the rows' own padding does the spacing, which is what lets each
-     connector run exactly from one dot's centre to the next one's. */
-  gap: 0;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.125rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.75);
+  padding: 0.1875rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.tpl-steps::-webkit-scrollbar {
+  display: none;
 }
 
 .tpl-step {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4375rem 0;
-  text-align: left;
-}
-
-.tpl-step__track {
-  position: relative;
-  display: flex;
   flex: none;
-  /* Stretched to the row, so a connector pinned at 50% and one row tall lands
-     dead on the next dot whatever the label's line height turns out to be. */
-  align-self: stretch;
-  width: 0.75rem;
-  align-items: center;
-  justify-content: center;
-}
-
-.tpl-step__dot {
-  position: relative;
-  z-index: 1;
-  height: 0.5rem;
-  width: 0.5rem;
   border-radius: 9999px;
-  background: rgb(203 213 225);
-  transition:
-    height 250ms var(--tpl-ease-out),
-    width 250ms var(--tpl-ease-out),
-    background 250ms var(--tpl-ease-out),
-    box-shadow 250ms var(--tpl-ease-out);
-}
-
-.tpl-step.is-active .tpl-step__dot {
-  height: 0.625rem;
-  width: 0.625rem;
-  background: linear-gradient(to right, #2ecc71, #1e90ff);
-  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.15);
-}
-
-.tpl-step__line {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  height: 100%;
-  width: 1px;
-  transform: translateX(-50%);
-  background: rgb(226 232 240);
-}
-
-.tpl-step__label {
+  padding: 0.3125rem 0.6875rem;
   font-size: 0.6875rem;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
-  color: rgb(100 116 139);
-  transition: color 200ms var(--tpl-ease-out);
+  color: rgb(71 85 105);
+  transition:
+    background-color 250ms var(--tpl-ease-out),
+    color 250ms var(--tpl-ease-out),
+    box-shadow 250ms var(--tpl-ease-out),
+    transform 160ms var(--tpl-ease-out);
 }
 
-.tpl-step.is-active .tpl-step__label {
+.tpl-step:hover {
   color: rgb(15 23 42);
-  font-weight: 600;
+}
+
+.tpl-step:active {
+  transform: scale(0.97);
+}
+
+.tpl-step:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(186 230 253);
+}
+
+.tpl-step.is-active {
+  background: linear-gradient(to right, #2ecc71, #1e90ff);
+  color: #fff;
+  box-shadow: 0 4px 6px -1px rgba(46, 204, 113, 0.2);
 }
 
 .tpl-frames {
@@ -1873,6 +2065,8 @@ onUnmounted(() => {
   .tpl-back:active,
   .tpl-filter__trigger:active,
   .tpl-seg__btn:active,
+  .tpl-step:active,
+  .tpl-plan:active,
   .tpl-empty__cta:active {
     transform: none;
   }
