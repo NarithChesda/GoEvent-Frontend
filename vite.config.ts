@@ -86,7 +86,11 @@ export default defineConfig(({ mode }) => {
         // showcase URL with `guest_name` + `g` query params attached. The dev
         // backend must be configured to redirect to http://localhost:5173 (not
         // the production host) for this to land back in Vite.
-        '/g': {
+        // NB: the trailing slash is load-bearing. Vite matches proxy string keys
+        // as plain prefixes, so a bare '/g' also swallows every route whose path
+        // merely starts with a g -- '/guest-list/:code' among them, which then
+        // reached Django and 404'd instead of rendering the SPA.
+        '/g/': {
           target: env.VITE_API_BASE_URL || 'http://127.0.0.1:8000',
           changeOrigin: true,
           followRedirects: false,

@@ -7,6 +7,15 @@ export { agendaService } from './agenda.service'
 export { hostsService } from './hosts.service'
 export { mediaService } from './media.service'
 export { guestService, guestGroupService } from './guests.service'
+// Shareable guest-list links: the organizer's management half, and the
+// code-authenticated half the recipient's account-less page runs on.
+export {
+  guestListShareService,
+  sharedGuestListService,
+  ownerGuestTransport,
+  createSharedGuestTransport,
+} from './guest-share.service'
+export type { GuestDataTransport } from './guest-share.service'
 export { tablesService } from './tables.service'
 export { paymentMethodsService } from './payments.service'
 export { eventTemplateService } from './templates.service'

@@ -11,7 +11,22 @@
       <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
     </div>
 
-    <!-- Empty State - Add Guest Card -->
+    <!-- Empty State - Add Guest Card.
+         On a view-only share the same dashed card would be an invitation to do
+         the one thing the link forbids, so it states the fact instead: there is
+         no list yet, and the person who can make one is not the viewer. -->
+    <div
+      v-else-if="groups.length === 0 && !canEdit"
+      class="bg-slate-50/50 border border-slate-200 rounded-3xl p-12"
+    >
+      <div class="flex flex-col items-center justify-center text-center">
+        <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
+          <Users class="w-8 h-8 text-slate-400" />
+        </div>
+        <h4 class="font-semibold text-slate-600">{{ t('management.guestGroupsView.emptyState.readOnlyTitle') }}</h4>
+        <p class="text-sm text-slate-400 mt-1">{{ t('management.guestGroupsView.emptyState.readOnlySubtitle') }}</p>
+      </div>
+    </div>
     <div
       v-else-if="groups.length === 0"
       @click="$emit('add-guest')"
@@ -206,6 +221,7 @@
                           <span class="text-xs tabular-nums text-slate-400">{{ group.guest_count }}</span>
                         </button>
                         <button
+                          v-if="canEdit"
                           type="button"
                           @click.stop="startEditGroup(group)"
                           :title="t('management.guestGroupsView.filterBar.editGroup')"
@@ -214,6 +230,7 @@
                           <Edit2 class="w-3.5 h-3.5" />
                         </button>
                         <button
+                          v-if="canEdit"
                           type="button"
                           @click.stop="startDeleteGroup(group)"
                           :title="t('management.guestGroupsView.filterBar.deleteGroup')"
@@ -224,18 +241,20 @@
                       </div>
                     </template>
 
-                    <!-- Divider before create-group -->
-                    <div class="my-1.5 border-t border-slate-100"></div>
+                    <!-- Divider before create-group. Group management is the
+                         organizer's, so on a view-only share the dropdown ends
+                         at the filters it exists for. -->
+                    <div v-if="canEdit" class="my-1.5 border-t border-slate-100"></div>
 
                     <!-- Inline create-group form -->
                     <InlineGroupForm
-                      v-if="showCreateGroupForm"
+                      v-if="canEdit && showCreateGroupForm"
                       mode="create"
                       @submit="submitCreateGroup"
                       @cancel="showCreateGroupForm = false"
                     />
                     <button
-                      v-else
+                      v-else-if="canEdit"
                       type="button"
                       @click.stop="showCreateGroupForm = true"
                       class="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-lg hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 transition-all"
@@ -353,6 +372,7 @@
                         <Check v-if="activeFilter === group.id.toString()" class="w-5 h-5 text-[#2ecc71] flex-shrink-0" />
                       </button>
                       <button
+                        v-if="canEdit"
                         type="button"
                         @click.stop="startEditGroup(group)"
                         :title="t('management.guestGroupsView.filterBar.editGroup')"
@@ -361,6 +381,7 @@
                         <Edit2 class="w-4 h-4" />
                       </button>
                       <button
+                        v-if="canEdit"
                         type="button"
                         @click.stop="startDeleteGroup(group)"
                         :title="t('management.guestGroupsView.filterBar.deleteGroup')"
@@ -371,18 +392,18 @@
                     </div>
                   </template>
 
-                  <div class="mx-5 my-1 border-t border-slate-100"></div>
+                  <div v-if="canEdit" class="mx-5 my-1 border-t border-slate-100"></div>
 
                   <!-- Inline create-group -->
                   <InlineGroupForm
-                    v-if="showCreateGroupForm"
+                    v-if="canEdit && showCreateGroupForm"
                     mode="create"
                     class="mx-3 my-1"
                     @submit="submitCreateGroup"
                     @cancel="showCreateGroupForm = false"
                   />
                   <button
-                    v-else
+                    v-else-if="canEdit"
                     type="button"
                     @click.stop="showCreateGroupForm = true"
                     class="mx-3 my-2 w-[calc(100%-1.5rem)] flex items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-lg hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 transition-all"
@@ -459,6 +480,7 @@
                    sibling expense tab spends it on its *inline* quick-add
                    for exactly this reason. -->
               <button
+                v-if="canEdit"
                 @click="$emit('add-guest')"
                 class="flex items-center justify-center gap-2 w-12 h-12 sm:w-auto sm:h-auto sm:px-3.5 sm:py-2.5 bg-slate-100 hover:bg-slate-200 active:scale-[0.97] text-slate-700 text-sm font-medium rounded-xl transition-[background-color,transform] duration-150 ease-out flex-shrink-0"
                 :aria-label="t('management.guestGroupsView.filterBar.addGuestAriaLabel')"
@@ -480,7 +502,7 @@
                  the only moment it means anything. -->
             <Transition name="selection-bar">
               <div
-                v-if="hasSelection"
+                v-if="canEdit && hasSelection"
                 class="absolute inset-x-3 top-3 bottom-3 sm:inset-x-4 sm:top-4 sm:bottom-4 flex items-center gap-1 rounded-xl bg-sky-50 ring-1 ring-sky-100 pl-2 pr-1.5"
               >
                 <label
@@ -560,7 +582,7 @@
           class="space-y-2 p-3 sm:p-4 sm:max-h-[37.5rem] sm:overflow-y-auto custom-scrollbar"
         >
           <QuickAddGuestRow
-            v-if="groups.length > 0"
+            v-if="canEdit && groups.length > 0"
             :groups="groups"
             :default-group-id="quickAddDefaultGroupId"
             @quick-add="(name, groupId) => $emit('quick-add-guest', name, groupId)"
@@ -572,6 +594,7 @@
             :guest="guest"
             :selected="isGuestSelected(guest.id)"
             :groups="groups"
+            :can-edit="canEdit"
             @copy-link="(guest, lang, silent) => $emit('copy-link', guest, lang, silent)"
             @mark-sent="$emit('mark-sent', $event)"
             @edit="$emit('edit-guest', $event)"
@@ -600,7 +623,7 @@
         <!-- Empty State -->
         <div v-else class="p-4 sm:p-6">
           <QuickAddGuestRow
-            v-if="groups.length > 0"
+            v-if="canEdit && groups.length > 0"
             :groups="groups"
             :default-group-id="quickAddDefaultGroupId"
             class="mb-4"
@@ -793,9 +816,21 @@ interface Props {
   // RSVP summary — sources the per-status counts in the filter dropdown.
   // The stats themselves live in the Analytics tab, not here.
   rsvpSummary: GuestRsvpSummary | null
+  /**
+   * Whether the viewer may change the list. `false` on a view-only guest-list
+   * share, where the holder is here to *work from* the list — read it, search
+   * it, copy each guest's invitation link — and not to change it.
+   *
+   * Everything that writes is removed rather than disabled: a panel of greyed
+   * controls reads as something broken, while a panel that simply has no
+   * quick-add row and no bulk bar reads as a list. Search, the group filter,
+   * the RSVP filter, the stats band and the copy control all stay, because
+   * none of them writes and all of them are why the link was sent.
+   */
+  canEdit?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { canEdit: true })
 
 const { t } = useI18n()
 

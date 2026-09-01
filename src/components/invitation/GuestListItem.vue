@@ -8,11 +8,16 @@
       : 'ring-1 ring-slate-900/5 hover:ring-slate-900/10 hover:shadow-sm'"
   >
     <div
-      class="flex items-center gap-3 px-4 py-3 rounded-2xl active:bg-slate-50 md:active:bg-transparent transition-colors"
+      class="flex items-center gap-3 px-4 py-3 rounded-2xl md:active:bg-transparent transition-colors"
+      :class="canEdit ? 'active:bg-slate-50' : ''"
       @click="handleCardTap"
     >
-      <!-- Checkbox (desktop only — mobile selects via the avatar) -->
+      <!-- Checkbox (desktop only — mobile selects via the avatar).
+           Selection only exists to feed the bulk actions, so it goes with them
+           on a view-only share rather than leaving a control whose every
+           outcome has been removed. -->
       <input
+        v-if="canEdit"
         type="checkbox"
         :checked="selected"
         @change="$emit('toggle-select', guest)"
@@ -26,15 +31,16 @@
            back, and flipping here too put *two* ticks on one row — so the
            avatar keeps its initials and the checkbox alone carries the state.
            ::after pad extends the touch target to ~44px. -->
-      <button
-        type="button"
-        @click.stop="$emit('toggle-select', guest)"
+      <component
+        :is="canEdit ? 'button' : 'span'"
+        :type="canEdit ? 'button' : undefined"
+        @click.stop="canEdit && $emit('toggle-select', guest)"
         class="relative flex w-8 h-8 sm:w-9 sm:h-9 rounded-full items-center justify-center text-[11px] sm:text-xs font-bold flex-shrink-0 select-none transition-[background-color,color] duration-150 ease-out after:absolute after:-inset-1.5 after:content-[''] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
         :style="{ backgroundColor: `${avatarColor}1a`, color: avatarColor }"
         :class="selected ? 'max-md:!bg-sky-500 max-md:!text-white' : ''"
-        :aria-pressed="selected"
-        :title="t('management.guestGroupsView.guestListItem.selectHint')"
-        :aria-label="`${t('management.guestGroupsView.guestListItem.selectHint')} - ${guest.name}`"
+        :aria-pressed="canEdit ? selected : undefined"
+        :title="canEdit ? t('management.guestGroupsView.guestListItem.selectHint') : undefined"
+        :aria-label="canEdit ? `${t('management.guestGroupsView.guestListItem.selectHint')} - ${guest.name}` : undefined"
       >
         <Check v-if="selected" class="w-4 h-4 md:hidden" />
         <span :class="selected ? 'hidden md:inline' : ''">{{ guestInitials }}</span>
@@ -53,7 +59,7 @@
           :class="invitationDot.dotClass"
           aria-hidden="true"
         ></span>
-      </button>
+      </component>
 
       <!-- Guest Info (grows to fill space; part of the card's tap target —
            renaming happens in the edit modal).
@@ -78,13 +84,15 @@
         <!-- Badges: under the name on a phone, on the same line from `lg` -->
         <div class="flex items-center gap-1.5 mt-1 flex-wrap lg:mt-0 lg:ml-auto lg:flex-nowrap lg:flex-shrink-0">
           <!-- Group badge (click/tap to reassign) -->
-          <button
+          <component
+            :is="canEdit ? 'button' : 'span'"
             v-if="guest.group_details"
             ref="groupBadgeRef"
-            type="button"
-            @click.stop="toggleGroupPopover"
-            class="relative inline-flex items-center gap-1.5 px-2 py-1 md:py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] md:after:hidden"
-            :title="t('management.guestGroupsView.guestListItem.changeGroupHint')"
+            :type="canEdit ? 'button' : undefined"
+            @click.stop="canEdit && toggleGroupPopover()"
+            class="relative inline-flex items-center gap-1.5 px-2 py-1 md:py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 transition-colors after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] md:after:hidden"
+            :class="canEdit ? 'hover:bg-slate-200' : ''"
+            :title="canEdit ? t('management.guestGroupsView.guestListItem.changeGroupHint') : undefined"
           >
             <span
               class="w-1.5 h-1.5 rounded-full flex-shrink-0"
@@ -93,8 +101,8 @@
             <!-- Tighter cap below `md`, where the badge row has ~217px to
                  hold the group and the RSVP reply on one line. -->
             <span class="truncate max-w-[72px] md:max-w-[80px]">{{ guest.group_details.name }}</span>
-            <ChevronDown class="w-2.5 h-2.5 text-slate-400 flex-shrink-0" />
-          </button>
+            <ChevronDown v-if="canEdit" class="w-2.5 h-2.5 text-slate-400 flex-shrink-0" />
+          </component>
 
           <!-- Sent status badge. Desktop only — on mobile this is the avatar's
                corner dot above, which is what keeps the badge row to one line. -->
@@ -163,11 +171,13 @@
       <!-- Actions (hidden on mobile; revealed on row hover / keyboard focus on desktop) -->
       <div
         class="hidden md:flex items-center gap-0.5 flex-shrink-0 transition-opacity duration-150"
-        :class="showLinkMenu || showCopiedFeedback ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'"
+        :class="!canEdit || showLinkMenu || showCopiedFeedback
+          ? 'opacity-100'
+          : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'"
       >
         <!-- Mark Sent (only if not sent) -->
         <button
-          v-if="guest.invitation_status === 'not_sent'"
+          v-if="canEdit && guest.invitation_status === 'not_sent'"
           @click.stop="$emit('mark-sent', guest)"
           :title="t('management.guestGroupsView.guestListItem.markAsSent')"
           class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
@@ -199,6 +209,7 @@
 
         <!-- Edit -->
         <button
+          v-if="canEdit"
           @click.stop="$emit('edit', guest)"
           :title="t('management.guestGroupsView.guestListItem.editGuest')"
           class="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
@@ -208,6 +219,7 @@
 
         <!-- Delete -->
         <button
+          v-if="canEdit"
           @click.stop="$emit('delete', guest)"
           :title="t('management.guestGroupsView.guestListItem.deleteGuest')"
           class="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
@@ -341,11 +353,22 @@ class DropdownManager {
 }
 
 // Props
-const props = defineProps<{
-  guest: EventGuest
-  selected?: boolean
-  groups: GuestGroup[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    guest: EventGuest
+    selected?: boolean
+    groups: GuestGroup[]
+    /**
+     * Whether this row may be changed. `false` on a view-only share link,
+     * where the holder is working *from* the list rather than on it: the name
+     * stays readable, the copy control stays (that is the whole point of a
+     * view link), and everything that writes is gone rather than disabled —
+     * a row of dead icons reads as a bug, not as a permission.
+     */
+    canEdit?: boolean
+  }>(),
+  { canEdit: true },
+)
 
 // Emits
 const emit = defineEmits<{
@@ -395,7 +418,11 @@ const guestInitials = computed(() =>
 // Mobile: tapping the card (outside the inline-edit/badge/copy targets, which
 // stop propagation) opens the full edit modal — replaces the old chevron button.
 // Desktop keeps its hover action icons, so the card itself stays inert there.
+// On a view-only share the modal it opens has nothing to offer and no way to
+// save, so the card is inert there — the copy button beside it is the row's
+// whole purpose in that mode.
 const handleCardTap = () => {
+  if (!props.canEdit) return
   if (window.matchMedia('(min-width: 768px)').matches) return
   emit('edit', props.guest)
 }

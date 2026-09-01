@@ -172,6 +172,24 @@ const router = createRouter({
       meta: { title: 'Template Preview - GoEvent' },
     },
     {
+      /**
+       * The guest list, delegated. Public by construction: the code in the path
+       * is the credential, exactly as `?g=<shortcode>` is on a private event's
+       * RSVP and guestbook. Its audience — the family member collecting names,
+       * the planner, the shop's staff — has no GoEvent account and should not
+       * need one to copy an invitation link or add a guest, so an auth guard
+       * here would defeat the whole feature.
+       *
+       * What the holder may actually do is decided server-side per code and
+       * echoed back in the share context; the page renders read-only or
+       * editable from that, never from anything the URL claims.
+       */
+      path: '/guest-list/:code',
+      name: 'shared-guest-list',
+      component: () => import('../views/SharedGuestListView.vue'),
+      meta: { title: 'Guest List - GoEvent' },
+    },
+    {
       path: '/settings',
       name: 'settings',
       component: () => import('../views/SettingsView.vue'),
