@@ -262,14 +262,57 @@ const teardownScrollListener = () => {
   disposers.clear()
 }
 
-// Initialize loading states for all photos
+/**
+ * The photo's `<img>`, if it is in the document.
+ *
+ * Queried rather than kept in a ref map because the loading state is keyed by
+ * photo id, which is exactly what `data-photo-id` carries — the retry path
+ * below already finds its element the same way.
+ */
+const photoImageEl = (photoId: string | number): HTMLImageElement | null =>
+  document.querySelector<HTMLImageElement>(`img[data-photo-id="${photoId}"]`)
+
+/** An image that has already decoded will never fire `load` again. */
+const isImageDecoded = (photoId: string | number): boolean => {
+  const img = photoImageEl(photoId)
+  return !!img?.complete && img.naturalWidth > 0
+}
+
+/**
+ * Initialize loading states for all photos.
+ *
+ * The spinner is only for the four eager images, and only while a `load` event
+ * is still coming for them. Arming it for an image that has ALREADY decoded is
+ * a deadlock: `v-show` takes that `<img>` out of the layout, Vue reuses the
+ * same element across the re-render (same key, same src) so no second `load`
+ * ever fires, and the donut spins for the rest of the session.
+ *
+ * That is not a corner case — it is what the live preview does routinely. This
+ * runs again whenever the `photos` array changes identity, and `eventPhotos`
+ * upstream is `[...photos].sort(...)`, a fresh array on every recompute of the
+ * showcase data: a save's silent refresh, a language switch, a template try-on.
+ * Each one used to bury the first four photographs under a permanent spinner.
+ */
 const initializeImageStates = () => {
   props.photos.forEach((photo, index) => {
     // Only show loading state for eagerly loaded images (first 4)
     // Lazy images will be handled by browser's native lazy loading
-    imageLoadingStates[photo.id] = index < 4
+    imageLoadingStates[photo.id] = index < 4 && !isImageDecoded(photo.id)
     imageErrorStates[photo.id] = false
     imageRetryCount[photo.id] = 0
+  })
+  // Second pass, after the patch: an <img> that Vue has only just created is
+  // not in the document above, and one served from cache can be decoded before
+  // the next frame. Neither will fire `load` for us to catch.
+  void nextTick(clearDecodedImageStates)
+}
+
+/** Drop the spinner from anything already on screen. Safe to call any time. */
+const clearDecodedImageStates = () => {
+  props.photos.forEach((photo) => {
+    if (imageLoadingStates[photo.id] && isImageDecoded(photo.id)) {
+      imageLoadingStates[photo.id] = false
+    }
   })
 }
 
@@ -277,6 +320,13 @@ const initializeImageStates = () => {
 const handleImageLoad = (photoId: string) => {
   imageLoadingStates[photoId] = false
   imageErrorStates[photoId] = false
+  // The item just grew from the placeholder's fixed height to the photograph's
+  // own. Nothing else tells the shared scroll registry that, and it only
+  // measures on scroll — so without this the photo keeps the progress it had
+  // while it was a 250px box, which for anything that was below the fold means
+  // `opacity: 0.55` until the reader happens to scroll again: a washed-out
+  // photograph that reads as still loading.
+  refreshScrollProgress()
 }
 
 // Handle image load error with retry mechanism
@@ -300,6 +350,7 @@ const handleImageError = (photoId: string) => {
     // Max retries reached, show error state
     imageLoadingStates[photoId] = false
     imageErrorStates[photoId] = true
+    refreshScrollProgress()
   }
 }
 
@@ -341,6 +392,15 @@ const setupLazyImageObserver = () => {
             // Image is in viewport, show loading state if not already loaded
             const img = entry.target as HTMLImageElement
             if (!img.complete) {
+              // Promote it out of lazy loading FIRST. The spinner below hides
+              // this <img> with `v-show`, and a lazy image with no layout box
+              // is one the browser will never get around to fetching — so a
+              // fetch that had not started yet would never start, and the
+              // spinner would never end. Most likely exactly where this is most
+              // visible: inside a preview iframe that is scaled or partly off
+              // screen, where the browser defers lazy loads while this observer
+              // (rooted on the card's own scroller) fires regardless.
+              img.loading = 'eager'
               imageLoadingStates[photoId] = true
             }
           }
