@@ -1066,6 +1066,13 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
   } | null = null
 
   /**
+   * The try-on currently on screen, kept because a later fetch can answer with
+   * the EVENT's own template and quietly overwrite it — see
+   * updateLanguageContent, which merges a fresh response over the loaded data.
+   */
+  let stagedPreviewTemplate: TemplateAssets | null = null
+
+  /**
    * A try-on pushed in before this instance had any showcase data to overlay it
    * onto. The preview tab posts a staged template into a frame the moment the
    * iframe's `load` event fires, and that event doesn't wait on the frame's own
@@ -1082,6 +1089,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
       return
     }
     pendingStagedPreview = null
+    stagedPreviewTemplate = templateData
     if (!stagedPreviewSnapshot) {
       stagedPreviewSnapshot = {
         template_assets: showcaseData.value.event.template_assets,
@@ -1102,6 +1110,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     // Cancelling also cancels a try-on still waiting on the initial load —
     // otherwise it would be applied after the user already backed out of it.
     pendingStagedPreview = null
+    stagedPreviewTemplate = null
     if (!stagedPreviewSnapshot || !showcaseData.value) return
     const snapshot = stagedPreviewSnapshot
     stagedPreviewSnapshot = null
@@ -1143,6 +1152,9 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
    */
   const commitStagedTemplatePreview = () => {
     stagedPreviewSnapshot = null
+    // No longer a try-on: these fields are the event's real template now, and
+    // committedPreviewTemplate is what puts them back after a refetch.
+    stagedPreviewTemplate = null
     committedPreviewTemplate = showcaseData.value?.event.template_assets ?? null
   }
 
@@ -1194,6 +1206,24 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
         // Combine: texts from other languages + new texts for current language
         const mergedEventTexts = [...textsFromOtherLanguages, ...newTexts]
 
+        // A live try-on has to survive a language switch. This response carries
+        // the EVENT's own template for the new language, and taking it would put
+        // that template's assets — decorations, background image, cover artwork —
+        // back on screen underneath the try-on's colours, which are not part of
+        // this merge and so stay where they were. That mix of two designs is
+        // what the public catalogue rendered on every press of its language
+        // button. Keep the try-on on top instead, and move the revert snapshot
+        // onto the real fields as just answered, so cancelling it restores this
+        // language's template rather than the previous language's.
+        const staged = stagedPreviewTemplate
+        if (staged && stagedPreviewSnapshot) {
+          stagedPreviewSnapshot = {
+            template_assets: data.event.template_assets ?? stagedPreviewSnapshot.template_assets,
+            template_colors: data.event.template_colors ?? stagedPreviewSnapshot.template_colors,
+            template_fonts: data.event.template_fonts ?? stagedPreviewSnapshot.template_fonts,
+          }
+        }
+
         showcaseData.value = {
           ...showcaseData.value,
           event: {
@@ -1208,8 +1238,13 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
             available_languages:
               data.event.available_languages || showcaseData.value.event.available_languages,
             // Update template fonts for the new language
-            template_fonts: data.event.template_fonts || showcaseData.value.event.template_fonts,
-            template_assets: data.event.template_assets || showcaseData.value.event.template_assets,
+            template_fonts:
+              staged?.fonts || data.event.template_fonts || showcaseData.value.event.template_fonts,
+            template_assets:
+              staged || data.event.template_assets || showcaseData.value.event.template_assets,
+            // Only a try-on writes colours here; without a staged template this
+            // key is absent and the spread above keeps whatever was loaded.
+            ...(staged?.colors ? { template_colors: staged.colors } : {}),
           },
           meta: {
             ...showcaseData.value.meta,

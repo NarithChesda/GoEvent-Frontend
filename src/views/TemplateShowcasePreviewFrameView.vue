@@ -111,7 +111,6 @@ const {
   loadShowcase,
   updateLanguageContent,
   availableLanguages,
-  applyPreviewTemplateFallback,
   setStagedTemplatePreview,
 } = showcase
 
@@ -144,12 +143,15 @@ const stagedTemplate = ref<TemplateAssets | null>(null)
 /**
  * The template on screen, by id.
  *
- * `applyPreviewTemplateFallback` when the event carries no template of its own
- * (nothing to overwrite) and `setStagedTemplatePreview` when it does — that is
- * the same live try-on
- * the templates modal uses, and it swaps assets, colours and fonts in place
- * without reloading the frame. Reloading would mean a new iframe navigation per
- * click on the template menu.
+ * Always staged, never merely filled in: `setStagedTemplatePreview` is the same
+ * live try-on the templates modal uses, and it swaps assets, colours and fonts
+ * in place without reloading the frame. Reloading would mean a new iframe
+ * navigation per click on the template menu.
+ *
+ * The plain `applyPreviewTemplateFallback` was wrong here even for an event
+ * carrying no template of its own: it leaves the composable with no record that
+ * a design is being tried on, and every later fetch — the language switch above
+ * all — then answers with that event's own template and overwrites it.
  */
 const applyTemplate = async (templateId: number) => {
   try {
@@ -160,8 +162,7 @@ const applyTemplate = async (templateId: number) => {
       ?.template_data
     if (!response.success || !templateData) return
     stagedTemplate.value = templateData
-    if (event.value?.template_assets) setStagedTemplatePreview(templateData)
-    else applyPreviewTemplateFallback(templateData)
+    setStagedTemplatePreview(templateData)
   } catch {
     // Non-fatal — the invitation renders in the showcase's own default look.
   }
