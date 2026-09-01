@@ -726,42 +726,66 @@
           </div>
 
           <!--
-            The way to see all of them rather than these three. A link, not a
-            section: the live preview is a catalogue column plus three phone
-            frames, which is a screen's worth of furniture and three boots of
-            the whole app — too much to put in the middle of a page whose job is
-            to make an argument, and it earns its own page instead
+            THE CODA — the way to see all of them rather than these three.
+
+            A link, not a section: the live preview is a catalogue column plus
+            three phone frames, which is a screen's worth of furniture and three
+            boots of the whole app — too much to put in the middle of a page
+            whose job is to make an argument, and it earns its own page instead
             (/partners/templates).
 
-            Four covers sit beside it, small, because "browse every design" is a
-            claim and four visibly different designs are the evidence. Slate on
-            the button, not the brand gradient: the gradient object in this
-            neighbourhood is the CTA in the next section.
+            IT IS CENTRED, AND IT HAS NO RULE ACROSS THE CONTAINER. It had one,
+            and that was the whole problem: a full-bleed hairline is the
+            strongest "new topic" signal a page owns, so the rule said "this is
+            a section" while the shared slate ground said "this is the same
+            one" — and a reader resolves that contradiction as one badly-centred
+            section. It is not a section, so it does not get a section's
+            furniture. Space separates it, and it resolves on the container's
+            own centre line, which is an axis the two-column grid above never
+            uses. A change of alignment is what makes a coda read as a coda, and
+            it costs no ink.
+
+            Nor does it get an eyebrow or a heading of its own. One band, one
+            heading; a second one here would be the same claim to sectionhood in
+            words rather than in a line.
+
+            EVIDENCE → LINE → ACTION, which is the order the whole band already
+            reads in (show, then say, then do). Four covers, because "browse
+            every design" is a claim and four visibly different designs are the
+            evidence; then what pressing does; then the press. Ending the band
+            on the button rather than on its caption leaves the last thing in
+            the section as the thing to do.
+
+            Slate on the button, not the brand gradient: the gradient object in
+            this neighbourhood is the CTA in the next section. Centring it gives
+            it prominence by position, which is the cheaper of the two ways to
+            promote a control and the one that does not spend the brand colour.
           -->
           <div
             data-reveal
-            class="mt-12 flex flex-col gap-6 border-t border-slate-200 pt-10 sm:mt-14 sm:flex-row sm:items-center sm:gap-8"
+            class="catalogue mt-14 flex flex-col items-center gap-5 text-center sm:mt-16 lg:mt-20"
           >
-            <ul class="flex flex-shrink-0 items-center gap-2.5" aria-hidden="true">
+            <ul class="flex items-center justify-center gap-2 sm:gap-2.5" aria-hidden="true">
               <li v-for="cover in COVER_STRIP" :key="cover.src">
                 <img :src="cover.src" alt="" class="cover-chip" loading="lazy" decoding="async" />
               </li>
             </ul>
 
-            <div class="min-w-0">
-              <RouterLink
-                to="/partners/templates"
-                class="group inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3.5 text-sm font-semibold text-white transition-[transform,background-color] duration-200 ease-out hover:bg-slate-800 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2 sm:text-base"
-              >
-                <Eye class="h-4 w-4 flex-shrink-0" aria-hidden="true" />
-                {{ t('partners.product.previewCta') }}
-                <ArrowRight
-                  class="h-4 w-4 flex-shrink-0 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
-                  aria-hidden="true"
-                />
-              </RouterLink>
-              <p class="mt-2.5 text-sm text-slate-500">{{ t('partners.product.previewHint') }}</p>
-            </div>
+            <p class="max-w-md text-balance text-sm leading-relaxed text-slate-600 sm:text-base">
+              {{ t('partners.product.previewHint') }}
+            </p>
+
+            <RouterLink
+              to="/partners/templates"
+              class="group inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3.5 text-sm font-semibold text-white transition-[transform,background-color] duration-200 ease-out hover:bg-slate-800 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2 sm:text-base"
+            >
+              <Eye class="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+              {{ t('partners.product.previewCta') }}
+              <ArrowRight
+                class="h-4 w-4 flex-shrink-0 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
+            </RouterLink>
           </div>
         </div>
       </section>
@@ -2262,21 +2286,75 @@ onBeforeUnmount(stopSweeping)
   mask-image: linear-gradient(to bottom, #000 90%, transparent 100%);
 }
 
-/* The four covers beside "Browse every design" — small enough to read as a
-   sample rather than as four more things to look at. */
+/*
+  The four covers over "Browse every design".
+
+  They were 44px and hung at the left edge of the band, where four thumbnails
+  that size read as noise beside a dark pill. Centred, they are the coda's
+  anchor — the object that holds the axis and stands in for the section rule
+  that used to be here — so they are sized to be looked at: ~52px, ~64px from
+  `sm`. Still a sample, not a gallery; the gallery is a page away.
+*/
 .cover-chip {
   display: block;
-  width: 2.75rem;
+  width: 3.25rem;
   border-radius: 0.5rem;
   outline: 1px solid rgb(15 23 42 / 0.08);
   outline-offset: -1px;
   box-shadow: 0 6px 14px -8px rgb(15 23 42 / 0.4);
+  transition:
+    transform 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out);
 }
 
 @media (min-width: 640px) {
   .cover-chip {
-    width: 3.25rem;
+    width: 4rem;
     border-radius: 0.625rem;
+  }
+}
+
+/*
+  The covers answer the button, because they are what is behind it.
+
+  `:has()` rather than a `group` on the wrapper: the wrapper is the full
+  container width, so hovering it would mean hovering the empty air either side
+  of a centred object — motion with no cause. Keyed off the link itself, the
+  lift only ever fires when the reader is actually over the thing that opens the
+  catalogue, and it says "these four are what is through here" without a word.
+
+  Pointer-only, because a touch device fires `:hover` on tap and would leave
+  four covers held 3px up until the reader pressed somewhere else. Seen once per
+  visit, so it is allowed to be decorative — but the ripple is 30ms a step, not
+  60: four covers 12px apart are one object, and the page's `--stagger` is
+  tuned for rows of cards a reader's eye travels between.
+*/
+@media (hover: hover) and (pointer: fine) {
+  .catalogue:has(a:hover) .cover-chip {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 22px -10px rgb(15 23 42 / 0.45);
+  }
+
+  .catalogue li:nth-child(2) .cover-chip {
+    transition-delay: 30ms;
+  }
+
+  .catalogue li:nth-child(3) .cover-chip {
+    transition-delay: 60ms;
+  }
+
+  .catalogue li:nth-child(4) .cover-chip {
+    transition-delay: 90ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover-chip {
+    transition: box-shadow 200ms var(--ease-out);
+  }
+
+  .catalogue:has(a:hover) .cover-chip {
+    transform: none;
   }
 }
 
