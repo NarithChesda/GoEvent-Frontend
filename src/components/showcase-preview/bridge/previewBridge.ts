@@ -20,6 +20,9 @@ import type { CoverElementBoxes, CoverElementId } from '@/services/api/types/tem
  *                      re-mount flicker. See previewRefreshScope.ts for which
  *                      fields qualify),
  *                    preview-template (live, non-destructive template try-on),
+ *                    preview-event (swap which event the PUBLIC template
+ *                      preview is drawn through — see
+ *                      postPreviewEventToFrame),
  *                    preview-template-clear (cancel a try-on and restore the
  *                      frame's own real template fields — purely local, no
  *                      refetch, since the try-on never touched the backend),
@@ -62,6 +65,12 @@ export type PreviewBridgeMessage =
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'patch-event'; fields: EventFieldPatch }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'frame-ready' }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'set-language'; language: string }
+  | {
+      source: typeof PREVIEW_BRIDGE_SOURCE
+      type: 'preview-event'
+      /** `null` falls the frame back to its bundled sample invitation. */
+      eventId: string | null
+    }
   | {
       source: typeof PREVIEW_BRIDGE_SOURCE
       type: 'showcase-languages'
@@ -158,6 +167,28 @@ export function postSetLanguageToFrame(
 ): void {
   frameWindow?.postMessage(
     { source: PREVIEW_BRIDGE_SOURCE, type: 'set-language', language } satisfies PreviewBridgeMessage,
+    window.location.origin,
+  )
+}
+
+/**
+ * Parent side: swap which event the public template preview frame draws.
+ *
+ * The design catalogue previews each design through a real event of that
+ * design's own category (see useTemplatePreviewEvents), so picking a funeral
+ * design after a wedding one changes the invitation as well as the template.
+ * A message rather than a new `?eventId=` on the iframe's `src`, for the same
+ * reason the language is one: any change to `src` re-navigates the frame, and
+ * with three frames on screen that is three full app boots per click. The frame
+ * reloads its showcase data in place and re-applies the template it is
+ * currently showing.
+ */
+export function postPreviewEventToFrame(
+  frameWindow: Window | null | undefined,
+  eventId: string | null,
+): void {
+  frameWindow?.postMessage(
+    { source: PREVIEW_BRIDGE_SOURCE, type: 'preview-event', eventId } satisfies PreviewBridgeMessage,
     window.location.origin,
   )
 }

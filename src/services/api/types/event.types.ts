@@ -5,6 +5,25 @@
 import type { QueryParams } from './api.types'
 import type { BackgroundMusic } from './core-data.types'
 
+/**
+ * One event the PUBLIC design catalogue may preview a template through.
+ *
+ * Deliberately tiny: the page only has to pick one, and the invitation itself
+ * then arrives from the public showcase endpoint like any guest's would.
+ * `category` is the axis it picks on — a funeral design must not be judged on
+ * a wedding — and `null` there marks the catch-all, the event that answers for
+ * every type nothing else covers.
+ *
+ * Pending backend endpoint — see
+ * docs/backend-api-requirements/template-preview-events.md
+ */
+export interface TemplatePreviewEvent {
+  id: string
+  title?: string
+  category: number | null
+  category_name?: string | null
+}
+
 export interface EventCategory {
   id: number
   name: string
@@ -98,6 +117,14 @@ export interface Event {
   youtube_embed_link?: string | null
   event_template?: number | null
   event_template_enabled?: boolean
+  /**
+   * Whether this event may stand in as the sample invitation the PUBLIC design
+   * catalogue renders a template through. Staff-set, never organizer-set.
+   *
+   * Pending backend field — see
+   * docs/backend-api-requirements/template-preview-events.md
+   */
+  is_template_preview?: boolean
   referrer?: number | null
   referrer_details?: {
     id: number

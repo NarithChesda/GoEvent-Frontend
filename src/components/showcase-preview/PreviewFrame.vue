@@ -1,6 +1,9 @@
 <template>
   <div class="preview-frame">
-    <div class="preview-frame__label">{{ label }}</div>
+    <!-- Skipped when the caller names the stage elsewhere (the gallery's stage
+         picker sits above the frame and already says which screen this is) — an
+         empty label box would still cost the column's 0.75rem gap. -->
+    <div v-if="label" class="preview-frame__label">{{ label }}</div>
     <div ref="frameWrapRef" class="preview-frame__frame-wrap">
       <!-- Anchor is sized to exactly match the scaler's own box (not the
            wider, centered frame-wrap column) so the leading slot's

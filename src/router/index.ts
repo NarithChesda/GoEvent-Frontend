@@ -53,6 +53,30 @@ const router = createRouter({
       meta: { title: 'About - GoEvent' },
     },
     {
+      /**
+       * The partner offer, as a link a salesperson can send. Deliberately
+       * public: its whole audience is people who are not partners yet, and
+       * every CTA on it points at `/credits`, which is where the auth guard
+       * and the application form already live.
+       */
+      path: '/partners',
+      name: 'partners',
+      component: () => import('../views/PartnerProgramView.vue'),
+      meta: { title: 'Partner Programme - GoEvent' },
+    },
+    {
+      /**
+       * The design catalogue, previewed live against a bundled sample
+       * invitation. Public for the same reason `/partners` is: its audience is
+       * people who are not partners yet, and everything it reads (the template
+       * list, each template's public assets, the pricing plans) is public too.
+       */
+      path: '/partners/templates',
+      name: 'partner-templates',
+      component: () => import('../views/PartnerTemplateGalleryView.vue'),
+      meta: { title: 'Invitation Designs - GoEvent' },
+    },
+    {
       path: '/signin',
       name: 'signin',
       component: () => import('../views/SignInView.vue'),
@@ -135,6 +159,37 @@ const router = createRouter({
       meta: { title: 'Event Showcase Preview - GoEvent' },
     },
     {
+      // The same idea for a template with no event behind it: one showcase
+      // stage of the bundled sample invitation, rendered against
+      // ?templateId=<public template>. Embedded by the public partner page's
+      // template preview; public, because everything it reads is.
+      //
+      // The path keeps the `showcase-preview-frame` segment because that is
+      // what isPreviewFrameDocument() matches — see previewFrameContext.ts.
+      path: '/template-showcase-preview-frame',
+      name: 'template-showcase-preview-frame',
+      component: () => import('../views/TemplateShowcasePreviewFrameView.vue'),
+      meta: { title: 'Template Preview - GoEvent' },
+    },
+    {
+      /**
+       * The guest list, delegated. Public by construction: the code in the path
+       * is the credential, exactly as `?g=<shortcode>` is on a private event's
+       * RSVP and guestbook. Its audience — the family member collecting names,
+       * the planner, the shop's staff — has no GoEvent account and should not
+       * need one to copy an invitation link or add a guest, so an auth guard
+       * here would defeat the whole feature.
+       *
+       * What the holder may actually do is decided server-side per code and
+       * echoed back in the share context; the page renders read-only or
+       * editable from that, never from anything the URL claims.
+       */
+      path: '/guest-list/:code',
+      name: 'shared-guest-list',
+      component: () => import('../views/SharedGuestListView.vue'),
+      meta: { title: 'Guest List - GoEvent' },
+    },
+    {
       path: '/settings',
       name: 'settings',
       component: () => import('../views/SettingsView.vue'),
@@ -205,6 +260,7 @@ const router = createRouter({
 const SHOWCASE_SCALE_ROUTES = new Set([
   'event-showcase',
   'event-showcase-preview-frame',
+  'template-showcase-preview-frame',
 ])
 
 const applyRootScaleClasses = (routeName: unknown) => {

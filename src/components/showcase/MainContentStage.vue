@@ -343,7 +343,10 @@
                   ref="videoSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
-                  <EditableRegion v-if="event.youtube_embed_link" :intent="{ kind: 'youtubeEmbed' }">
+                  <EditableRegion
+                    v-if="event.youtube_embed_link"
+                    :intent="{ kind: 'youtubeEmbed' }"
+                  >
                     <YouTubeVideoSection
                       :youtube-embed-link="event.youtube_embed_link"
                       :primary-color="primaryColor"
@@ -490,7 +493,7 @@
                 >
                   <!-- Footer Card with Conditional Styling -->
                   <div
-                    class="footer-card-container w-full rounded-none px-6 pt-6 pb-4 text-center transition-all duration-300 relative overflow-hidden"
+                    class="footer-card-container relative w-full overflow-hidden rounded-none px-6 py-6 text-center transition-all duration-300"
                     :class="{ 'backdrop-blur-16': showLiquidGlass }"
                     :style="
                       showLiquidGlass
@@ -518,238 +521,64 @@
                       }"
                     ></div>
 
-                    <div class="space-y-4 lg:space-y-2">
-                      <!-- Thank You Message -->
-
-                      <!-- Logo Section with Collaboration Display -->
-                      <div class="space-y-3 lg:space-y-1.5">
-                        <!-- Show collaboration if referrer exists and is partner -->
-                        <div
-                          v-if="event.referrer_details?.is_partner && event.referrer_details?.logo"
-                        >
-                          <!-- Logos Container with increased vertical spacing -->
-                          <div class="flex items-center justify-center gap-3 sm:gap-6 py-2">
-                            <!-- Referrer Logo -->
-                            <div
-                              class="transition-transform hover:scale-105 flex-shrink-0 max-w-[40%]"
-                            >
-                              <img
-                                :src="getMediaUrl(event.referrer_details.logo)"
-                                :alt="event.referrer_details.first_name || 'Partner'"
-                                class="w-full h-auto object-contain max-h-[64px] lg:max-h-[72px]"
-                                :class="showLiquidGlass ? 'brightness-110' : ''"
-                                :style="{
-                                  height: 'clamp(44px, 5.6vh, 64px)',
-                                  maxWidth: '100%',
-                                  filter: showLiquidGlass
-                                    ? 'drop-shadow(0 2px 8px rgba(0,0,0,0.15))'
-                                    : `drop-shadow(0 2px 8px ${primaryColor}40)`,
-                                }"
-                              />
-                            </div>
-
-                            <!-- Divider with "×" symbol -->
-                            <div class="flex items-center justify-center opacity-60 flex-shrink-0">
-                              <span
-                                class="text-xl sm:text-2xl font-light"
-                                :class="showLiquidGlass ? 'text-white' : ''"
-                                :style="{
-                                  fontFamily: primaryFont || currentFont,
-                                  color: showLiquidGlass ? undefined : primaryColor,
-                                }"
-                                >×</span
-                              >
-                            </div>
-
-                            <!-- GoEvent Logo -->
-                            <a
-                              href="/"
-                              class="transition-transform hover:scale-105 flex-shrink-0 max-w-[40%]"
-                            >
-                              <svg
-                                v-if="showLiquidGlass"
-                                viewBox="0 0 222.09 69.13"
-                                class="w-full h-auto max-h-[64px] lg:max-h-[72px]"
-                                :style="{
-                                  height: 'clamp(44px, 5.6vh, 64px)',
-                                  maxWidth: '100%',
-                                  filter: 'drop-shadow(0 2px 8px rgba(255,255,255,0.25))',
-                                }"
-                              >
-                                <g :fill="'#ffffff'">
-                                  <g>
-                                    <path
-                                      d="m22.12,44.61l-1.97,5.42c.1.01,8.13.02,16.93.03v.02c-2.32,5.37-8.06,8.94-14.44,7.93-6.32-1-11.27-6.28-11.78-12.66-.68-8.24,5.84-15.16,13.94-15.16h22.63c3.37,0,6.39-2.08,7.58-5.23l2.1-5.56H24.8C10.68,19.4-.73,31.26.04,45.55c.63,11.63,9.48,21.38,20.99,23.14,13.09,2,24.65-6.62,27.31-18.55h0s.02-.07.02-.07c2.2,0,4.23,0,5.95,0,3.36,0,6.38-2.09,7.57-5.24l2.11-5.56H29.73c-3.41,0-6.45,2.14-7.61,5.34Z"
-                                    />
-                                    <path
-                                      d="m54.3,10.8c3.37,0,6.39-2.08,7.58-5.24l2.11-5.57H29.74c-3.41,0-6.45,2.13-7.62,5.34l-1.97,5.43c.19.03.39.04.58.04h33.58Z"
-                                    />
-                                  </g>
-                                  <path
-                                    d="m126.05,42.59c-1.44-1.1-3.4-1.8-5.87-2.13-1.06-.15-2.22-.21-3.47-.21-4.17,0-7.29.77-9.35,2.34-2.06,1.55-3.1,3.74-3.1,6.53v1.02c0,1.66,1.34,3,3,3h5.33s0,0,0,0h1.56c.85,0,1.61-.53,1.9-1.33h0s.4-1.11.4-1.11l.84-2.33h-4.67c.1-.76.43-1.36.97-1.83.68-.57,1.72-.86,3.1-.86.56,0,1.07.05,1.52.14.65.14,1.18.38,1.58.72.67.57,1.01,1.37,1.01,2.4v1.19c0,1.66,1.34,3,3,3h5.33v-4.03c0-2.79-1.04-4.98-3.11-6.53Zm-13.45,6.95h0s0-.59,0-.59c0-.01,0-.02,0-.03v.62Z"
-                                  />
-                                  <path
-                                    d="m125.46,56.22h-4.65v4.2c0,1.02-.33,1.82-1.01,2.39-.67.58-1.71.86-3.09.86s-2.42-.28-3.1-.86c-.68-.57-1.01-1.37-1.01-2.39v-.51c0-2.05-1.66-3.7-3.7-3.7h-4.64v4.03c0,2.8,1.04,4.98,3.1,6.54,2.06,1.55,5.18,2.34,9.35,2.34s7.28-.78,9.35-2.34c2.06-1.56,3.1-3.74,3.1-6.54v-.33c0-2.05-1.66-3.7-3.7-3.7Z"
-                                  />
-                                  <path
-                                    d="m154.22,60.63v8.49h4.7c2.43,0,4.41-1.97,4.41-4.41v-8.49h-4.7c-2.43,0-4.41,1.97-4.41,4.41Z"
-                                  />
-                                  <path
-                                    d="m159.37,5.6h-2.79v5.09h-.25c-.7-.94-1.6-1.8-2.7-2.58-1.1-.76-2.38-1.38-3.82-1.83-1.44-.45-3.06-.68-4.84-.68-3.03,0-5.36.71-7.02,2.1-1.65,1.4-2.48,3.2-2.48,5.41,0,2.05.72,3.58,2.17,4.59,1.45,1.01,3.58,1.51,6.39,1.51h20v-8.95c0-2.58-2.09-4.66-4.66-4.66Zm-12.73,9.65c-.83,0-1.44-.15-1.83-.44-.39-.3-.6-.7-.6-1.22,0-.56.22-.98.65-1.3.43-.32,1.18-.48,2.21-.48s2.05.17,3.16.5c1.13.34,2.17.77,3.17,1.27,1,.52,1.76,1.06,2.3,1.66h-9.07Z"
-                                  />
-                                  <path
-                                    d="m187.1,19.21v-1.84c0-1.85-.57-3.67-1.67-5.16,0,0-.02-.02-.02-.03-.78-1.07-1.76-2.10-2.93-3.11-1.18-1.01-2.5-1.84-3.96-2.48-1.47-.65-3.07-.98-4.8-.98-2.55,0-4.45.73-5.69,2.19-1.24,1.46-1.87,3.25-1.87,5.39,0,2.01.53,3.52,1.59,4.53,1.05,1.01,2.63,1.51,4.69,1.51h14.66Zm-13.51-7.07c.32-.34.76-.5,1.3-.5.51,0,1.06.1,1.66.29.6.2,1.18.47,1.76.81.58.33,1.12.72,1.63,1.15.51.43.93.87,1.27,1.30h-6.48c-.52,0-.91-.15-1.2-.48-.29-.31-.43-.72-.43-1.24,0-.55.16-.99.48-1.33Z"
-                                  />
-                                  <path
-                                    d="m196.47,39.93c1.63,1,3.61,1.84,5.91,2.51,2.31.67,4.9,1.22,7.78,1.65v2.13c0,.94-.34,1.68-1.01,2.21-.63.51-1.43.76-2.4.8h-5.18c0-.29-.04-.58-.1-.85-.1-.54-.31-1.04-.58-1.5h0c-.22-.39-.48-.72-.78-1.02-.16-.17-.35-.33-.54-.48-.19-.15-.39-.27-.61-.39-.14-.07-.3-.14-.44-.21-.15-.06-.31-.12-.47-.17-.47-.14-.97-.23-1.49-.23h-4.45v7.42c0,2.11,1.71,3.83,3.83,3.83h5.64s4.21,0,4.21,0c0,0,0,0,0,0h8.49c1.2-.37,2.23-.93,3.09-1.66,1.39-1.18,2.25-2.75,2.54-4.70.09-.53.13-1.10.13-1.68v-8.58c-3.71-.39-6.96-.86-9.76-1.39-2.8-.53-4.99-1.32-6.56-2.37-1.58-1.05-2.37-2.49-2.37-4.35,0-1.5.46-2.66,1.38-3.49.93-.83,2.16-1.25,3.7-1.25,1.3,0,2.31.24,3.04.72.27.18.51.38.68.6.28.35.42.77.42,1.22s-.16.86-.48,1.16c-.07.06-.14.12-.21.17-.65.43-1.07,1.13-1.34,1.87l-1.11,3.06v.02s.02,0,.02,0c.43.15,1.05.29,1.84.41.81.11,1.63.18,2.45.18,1.55,0,2.89-.2,4.05-.59.87-.29,1.63-.68,2.28-1.19,1.55-1.18,2.31-2.98,2.31-5.38,0-3-1.23-5.29-3.7-6.86-1.08-.69-2.34-1.23-3.8-1.62-1.88-.5-4.07-.75-6.59-.75-4.45,0-8.05.93-10.79,2.78-2.74,1.85-4.11,4.75-4.11,8.70,0,2.13.43,3.95,1.30,5.47.87,1.52,2.12,2.78,3.76,3.79Z"
-                                  />
-                                  <path
-                                    d="m113.67,29.22c3.05,0,5.1,1.55,5.1,3.86,0,2,1.38,3.79,3.34,4.18,2.42.48,4.41,1.33,6.04,2.56.23.17.45.35.66.54v-7.28c0-7.92-6.51-13.9-15.14-13.9h-8.3c-7.68,0-13.9,6.23-13.9,13.9v19.07c0,1.57-1.28,2.85-2.85,2.85h-5.49c-1.57,0-2.85-1.28-2.85-2.85v-27.83c0-2.77-2.25-5.02-5.02-5.02h-5.02v32.85c0,7.12,5.77,12.89,12.89,12.89h5.49c5.63,0,10.43-3.63,12.18-8.67.46-1.32.71-2.74.71-4.22v-19.08c0-2.13,1.73-3.86,3.86-3.86h8.3Z"
-                                  />
-                                  <path
-                                    d="m145.57,27.42c0-2.77-2.25-5.02-5.02-5.02h-5.03v42.39c.78.18,1.64.27,2.6.27,2.8,0,4.74-.36,5.82-1.09,1.09-.73,1.63-1.7,1.63-2.93v-15.29h2.96c1.33,0,2.51-.83,2.96-2.08l2.47-6.81h-8.4s0-5.26,0-9.44Z"
-                                  />
-                                  <path
-                                    d="m159.01,22.4h-5.04v14.45h0v6.15h0v9.88c.78.18,1.64.27,2.6.27,2.92,0,4.89-.38,5.92-1.15,1.02-.77,1.54-1.72,1.54-2.87v-19.92s0-.76,0-1.78c0-2.77-2.25-5.02-5.02-5.02Z"
-                                  />
-                                  <path
-                                    d="m185.09,41.1c0-1.38-.45-2.51-1.36-3.4-.91-.89-2.31-1.57-4.20-2.04v-1.69c0-.71.32-1.06.95-1.06h.36l2.49.59h.53c1.02,0,1.82-.27,2.4-.8.57-.53.86-1.33.86-2.4v-2.88c0-2.77-2.25-5.02-5.02-5.02h-3.5v3.11h-3.85c-2.25,0-3.37,1.32-3.37,3.96v7.9c.75.16,1.4.38,1.95.68.55.3.98.67,1.27,1.13.30.45.45,1.01.45,1.69v5.24c-2.86,0-5.17,2.36-5.09,5.25.08,2.79,2.51,4.93,5.30,4.93h3.42c4.28-.14,6.42-1.47,6.42-4.02v-11.16Z"
-                                  />
-                                  <path
-                                    d="m173.05,63.68h1.92c.5,0,.94-.31,1.12-.77l.28-.74h-3.39c-2.11,0-3.79,1.89-3.43,4.07.23,1.4,1.33,2.54,2.72,2.83,2.18.44,4.1-1.22,4.1-3.32v-.78h-2.79c-.5,0-.94.31-1.12.77l-.27.71s.01.02.02.04h2.49c-.29.67-.95,1.14-1.73,1.14-1.13,0-2.04-.95-1.96-2.1.07-1.04.98-1.83,2.03-1.83Z"
-                                  />
-                                  <path
-                                    d="m184.78,65.76c.07.36.41.61.77.61h2.81c.47,0,.9-.3,1.06-.74l.28-.78h-4.18c-.47,0-.84.42-.74.91Z"
-                                  />
-                                  <path
-                                    d="m190.4,62.94l.28-.78h-5.15c-.47,0-.84.42-.74.91.07.36.41.61.77.61h3.78c.47,0,.9-.3,1.06-.74Z"
-                                  />
-                                  <path
-                                    d="m185.53,67.61c-.47,0-.84.43-.74.91.07.36.41.61.77.61h4.27c.47,0,.89-.29,1.06-.73l.28-.76s-.01-.02-.02-.03h-5.62Z"
-                                  />
-                                  <path
-                                    d="m180.57,62.16c-.06,0-.14,0-.20,0-1.10.06-2.08.64-2.67,1.51-.39.56-.61,1.23-.61,1.96,0,1.92,1.56,3.48,3.48,3.48s3.49-1.56,3.49-3.48-1.56-3.49-3.49-3.49Zm0,5.45c-1.08,0-1.96-.89-1.96-1.96s.88-1.96,1.96-1.96,1.97.88,1.97,1.96-.89,1.96-1.97,1.96Z"
-                                  />
-                                  <path
-                                    d="m200.53,65.76c.07.36.41.61.77.61h2.81c.47,0,.9-.3,1.06-.74l.28-.78h-4.18c-.47,0-.84.42-.74.91Z"
-                                  />
-                                  <path
-                                    d="m206.14,62.94l.28-.78h-5.15c-.47,0-.84.42-.74.91.07.36.41.61.77.61h3.78c.47,0,.9-.3,1.06-.74Z"
-                                  />
-                                  <path
-                                    d="m201.27,67.61c-.47,0-.84.43-.74.91.07.36.41.61.77.61h4.27c.47,0,.89-.29,1.06-.73l.28-.76s-.01-.02-.02-.03h-5.62Z"
-                                  />
-                                  <path
-                                    d="m198.58,62.15c-.45,0-.85.25-1.05.65l-1.3,2.6-.64,1.27-1.93-3.87c-.2-.4-.61-.65-1.05-.65h-.97v.02s.56,1.10.56,1.10l2.72,5.43c.13.26.39.42.68.42,0,0,0,0,0,0,.03,0,.06,0,.08,0,.26-.03.48-.19.6-.42l3.22-6.44s-.03-.05-.06-.09h-.86Z"
-                                  />
-                                  <path
-                                    d="m222.06,62.16h-5.03c-.49,0-.93.31-1.10.77l-.27.75s0,0,0,0h2.47v4.66c0,.37.25.70.61.77.48.09.91-.28.91-.74v-4.69h.95c.57,0,1.08-.36,1.28-.90l.21-.57s-.02-.03-.04-.05Z"
-                                  />
-                                  <path
-                                    d="m213.45,63.43c0,1.29,0,3.11,0,3.11l-1.99-1.99h0s-2.15-2.15-2.15-2.15c-.15-.15-.34-.23-.54-.23-.11,0-.22.02-.33.07-.28.13-.44.43-.44.74v6.14s0,0,0,0h.24c.71,0,1.28-.57,1.28-1.28v-3.10l2.13,2.13,2.02,2.02c.15.14.34.22.53.22.14,0,.27-.04.40-.11.24-.14.37-.41.37-.69v-6.17h-.24c-.71,0-1.28.57-1.28,1.28Z"
-                                  />
-                                </g>
-                              </svg>
-
-                              <svg
-                                v-else
-                                viewBox="0 0 222.09 69.13"
-                                class="w-full h-auto max-h-[64px] lg:max-h-[72px]"
-                                :style="{
-                                  height: 'clamp(44px, 5.6vh, 64px)',
-                                  maxWidth: '100%',
-                                  filter: `drop-shadow(0 2px 8px ${primaryColor}40)`,
-                                }"
-                              >
-                                <g :fill="primaryColor">
-                                  <g>
-                                    <path
-                                      d="m22.12,44.61l-1.97,5.42c.1.01,8.13.02,16.93.03v.02c-2.32,5.37-8.06,8.94-14.44,7.93-6.32-1-11.27-6.28-11.78-12.66-.68-8.24,5.84-15.16,13.94-15.16h22.63c3.37,0,6.39-2.08,7.58-5.23l2.1-5.56H24.8C10.68,19.4-.73,31.26.04,45.55c.63,11.63,9.48,21.38,20.99,23.14,13.09,2,24.65-6.62,27.31-18.55h0s.02-.07.02-.07c2.2,0,4.23,0,5.95,0,3.36,0,6.38-2.09,7.57-5.24l2.11-5.56H29.73c-3.41,0-6.45,2.14-7.61,5.34Z"
-                                    />
-                                    <path
-                                      d="m54.3,10.8c3.37,0,6.39-2.08,7.58-5.24l2.11-5.57H29.74c-3.41,0-6.45,2.13-7.62,5.34l-1.97,5.43c.19.03.39.04.58.04h33.58Z"
-                                    />
-                                  </g>
-                                  <path
-                                    d="m126.05,42.59c-1.44-1.1-3.4-1.8-5.87-2.13-1.06-.15-2.22-.21-3.47-.21-4.17,0-7.29.77-9.35,2.34-2.06,1.55-3.1,3.74-3.1,6.53v1.02c0,1.66,1.34,3,3,3h5.33s0,0,0,0h1.56c.85,0,1.61-.53,1.9-1.33h0s.4-1.11.4-1.11l.84-2.33h-4.67c.1-.76.43-1.36.97-1.83.68-.57,1.72-.86,3.1-.86.56,0,1.07.05,1.52.14.65.14,1.18.38,1.58.72.67.57,1.01,1.37,1.01,2.4v1.19c0,1.66,1.34,3,3,3h5.33v-4.03c0-2.79-1.04-4.98-3.11-6.53Zm-13.45,6.95h0s0-.59,0-.59c0-.01,0-.02,0-.03v.62Z"
-                                  />
-                                  <path
-                                    d="m125.46,56.22h-4.65v4.2c0,1.02-.33,1.82-1.01,2.39-.67.58-1.71.86-3.09.86s-2.42-.28-3.1-.86c-.68-.57-1.01-1.37-1.01-2.39v-.51c0-2.05-1.66-3.7-3.7-3.7h-4.64v4.03c0,2.8,1.04,4.98,3.1,6.54,2.06,1.55,5.18,2.34,9.35,2.34s7.28-.78,9.35-2.34c2.06-1.56,3.1-3.74,3.1-6.54v-.33c0-2.05-1.66-3.7-3.7-3.7Z"
-                                  />
-                                  <path
-                                    d="m154.22,60.63v8.49h4.7c2.43,0,4.41-1.97,4.41-4.41v-8.49h-4.7c-2.43,0-4.41,1.97-4.41,4.41Z"
-                                  />
-                                  <path
-                                    d="m159.37,5.6h-2.79v5.09h-.25c-.7-.94-1.6-1.8-2.7-2.58-1.1-.76-2.38-1.38-3.82-1.83-1.44-.45-3.06-.68-4.84-.68-3.03,0-5.36.71-7.02,2.1-1.65,1.4-2.48,3.2-2.48,5.41,0,2.05.72,3.58,2.17,4.59,1.45,1.01,3.58,1.51,6.39,1.51h20v-8.95c0-2.58-2.09-4.66-4.66-4.66Zm-12.73,9.65c-.83,0-1.44-.15-1.83-.44-.39-.3-.6-.7-.6-1.22,0-.56.22-.98.65-1.3.43-.32,1.18-.48,2.21-.48s2.05.17,3.16.5c1.13.34,2.17.77,3.17,1.27,1,.52,1.76,1.06,2.3,1.66h-9.07Z"
-                                  />
-                                  <path
-                                    d="m187.1,19.21v-1.84c0-1.85-.57-3.67-1.67-5.16,0,0-.02-.02-.02-.03-.78-1.07-1.76-2.10-2.93-3.11-1.18-1.01-2.5-1.84-3.96-2.48-1.47-.65-3.07-.98-4.8-.98-2.55,0-4.45.73-5.69,2.19-1.24,1.46-1.87,3.25-1.87,5.39,0,2.01.53,3.52,1.59,4.53,1.05,1.01,2.63,1.51,4.69,1.51h14.66Zm-13.51-7.07c.32-.34.76-.5,1.3-.5.51,0,1.06.1,1.66.29.6.2,1.18.47,1.76.81.58.33,1.12.72,1.63,1.15.51.43.93.87,1.27,1.30h-6.48c-.52,0-.91-.15-1.2-.48-.29-.31-.43-.72-.43-1.24,0-.55.16-.99.48-1.33Z"
-                                  />
-                                  <path
-                                    d="m196.47,39.93c1.63,1,3.61,1.84,5.91,2.51,2.31.67,4.9,1.22,7.78,1.65v2.13c0,.94-.34,1.68-1.01,2.21-.63.51-1.43.76-2.4.8h-5.18c0-.29-.04-.58-.1-.85-.1-.54-.31-1.04-.58-1.5h0c-.22-.39-.48-.72-.78-1.02-.16-.17-.35-.33-.54-.48-.19-.15-.39-.27-.61-.39-.14-.07-.3-.14-.44-.21-.15-.06-.31-.12-.47-.17-.47-.14-.97-.23-1.49-.23h-4.45v7.42c0,2.11,1.71,3.83,3.83,3.83h5.64s4.21,0,4.21,0c0,0,0,0,0,0h8.49c1.2-.37,2.23-.93,3.09-1.66,1.39-1.18,2.25-2.75,2.54-4.70.09-.53.13-1.10.13-1.68v-8.58c-3.71-.39-6.96-.86-9.76-1.39-2.8-.53-4.99-1.32-6.56-2.37-1.58-1.05-2.37-2.49-2.37-4.35,0-1.5.46-2.66,1.38-3.49.93-.83,2.16-1.25,3.7-1.25,1.3,0,2.31.24,3.04.72.27.18.51.38.68.6.28.35.42.77.42,1.22s-.16.86-.48,1.16c-.07.06-.14.12-.21.17-.65.43-1.07,1.13-1.34,1.87l-1.11,3.06v.02s.02,0,.02,0c.43.15,1.05.29,1.84.41.81.11,1.63.18,2.45.18,1.55,0,2.89-.2,4.05-.59.87-.29,1.63-.68,2.28-1.19,1.55-1.18,2.31-2.98,2.31-5.38,0-3-1.23-5.29-3.7-6.86-1.08-.69-2.34-1.23-3.8-1.62-1.88-.5-4.07-.75-6.59-.75-4.45,0-8.05.93-10.79,2.78-2.74,1.85-4.11,4.75-4.11,8.70,0,2.13.43,3.95,1.30,5.47.87,1.52,2.12,2.78,3.76,3.79Z"
-                                  />
-                                  <path
-                                    d="m113.67,29.22c3.05,0,5.1,1.55,5.1,3.86,0,2,1.38,3.79,3.34,4.18,2.42.48,4.41,1.33,6.04,2.56.23.17.45.35.66.54v-7.28c0-7.92-6.51-13.9-15.14-13.9h-8.3c-7.68,0-13.9,6.23-13.9,13.9v19.07c0,1.57-1.28,2.85-2.85,2.85h-5.49c-1.57,0-2.85-1.28-2.85-2.85v-27.83c0-2.77-2.25-5.02-5.02-5.02h-5.02v32.85c0,7.12,5.77,12.89,12.89,12.89h5.49c5.63,0,10.43-3.63,12.18-8.67.46-1.32.71-2.74.71-4.22v-19.08c0-2.13,1.73-3.86,3.86-3.86h8.3Z"
-                                  />
-                                  <path
-                                    d="m145.57,27.42c0-2.77-2.25-5.02-5.02-5.02h-5.03v42.39c.78.18,1.64.27,2.6.27,2.8,0,4.74-.36,5.82-1.09,1.09-.73,1.63-1.7,1.63-2.93v-15.29h2.96c1.33,0,2.51-.83,2.96-2.08l2.47-6.81h-8.4s0-5.26,0-9.44Z"
-                                  />
-                                  <path
-                                    d="m159.01,22.4h-5.04v14.45h0v6.15h0v9.88c.78.18,1.64.27,2.6.27,2.92,0,4.89-.38,5.92-1.15,1.02-.77,1.54-1.72,1.54-2.87v-19.92s0-.76,0-1.78c0-2.77-2.25-5.02-5.02-5.02Z"
-                                  />
-                                  <path
-                                    d="m185.09,41.1c0-1.38-.45-2.51-1.36-3.4-.91-.89-2.31-1.57-4.20-2.04v-1.69c0-.71.32-1.06.95-1.06h.36l2.49.59h.53c1.02,0,1.82-.27,2.4-.8.57-.53.86-1.33.86-2.4v-2.88c0-2.77-2.25-5.02-5.02-5.02h-3.5v3.11h-3.85c-2.25,0-3.37,1.32-3.37,3.96v7.9c.75.16,1.4.38,1.95.68.55.3.98.67,1.27,1.13.30.45.45,1.01.45,1.69v5.24c-2.86,0-5.17,2.36-5.09,5.25.08,2.79,2.51,4.93,5.30,4.93h3.42c4.28-.14,6.42-1.47,6.42-4.02v-11.16Z"
-                                  />
-                                  <path
-                                    d="m173.05,63.68h1.92c.5,0,.94-.31,1.12-.77l.28-.74h-3.39c-2.11,0-3.79,1.89-3.43,4.07.23,1.4,1.33,2.54,2.72,2.83,2.18.44,4.1-1.22,4.1-3.32v-.78h-2.79c-.5,0-.94.31-1.12.77l-.27.71s.01.02.02.04h2.49c-.29.67-.95,1.14-1.73,1.14-1.13,0-2.04-.95-1.96-2.10.07-1.04.98-1.83,2.03-1.83Z"
-                                  />
-                                  <path
-                                    d="m184.78,65.76c.07.36.41.61.77.61h2.81c.47,0,.9-.3,1.06-.74l.28-.78h-4.18c-.47,0-.84.42-.74.91Z"
-                                  />
-                                  <path
-                                    d="m190.4,62.94l.28-.78h-5.15c-.47,0-.84.42-.74.91.07.36.41.61.77.61h3.78c.47,0,.9-.3,1.06-.74Z"
-                                  />
-                                  <path
-                                    d="m185.53,67.61c-.47,0-.84.43-.74.91.07.36.41.61.77.61h4.27c.47,0,.89-.29,1.06-.73l.28-.76s-.01-.02-.02-.03h-5.62Z"
-                                  />
-                                  <path
-                                    d="m180.57,62.16c-.06,0-.14,0-.20,0-1.10.06-2.08.64-2.67,1.51-.39.56-.61,1.23-.61,1.96,0,1.92,1.56,3.48,3.48,3.48s3.49-1.56,3.49-3.48-1.56-3.49-3.49-3.49Zm0,5.45c-1.08,0-1.96-.89-1.96-1.96s.88-1.96,1.96-1.96,1.97.88,1.97,1.96-.89,1.96-1.97,1.96Z"
-                                  />
-                                  <path
-                                    d="m200.53,65.76c.07.36.41.61.77.61h2.81c.47,0,.9-.3,1.06-.74l.28-.78h-4.18c-.47,0-.84.42-.74.91Z"
-                                  />
-                                  <path
-                                    d="m206.14,62.94l.28-.78h-5.15c-.47,0-.84.42-.74.91.07.36.41.61.77.61h3.78c.47,0,.9-.3,1.06-.74Z"
-                                  />
-                                  <path
-                                    d="m201.27,67.61c-.47,0-.84.43-.74.91.07.36.41.61.77.61h4.27c.47,0,.89-.29,1.06-.73l.28-.76s-.01-.02-.02-.03h-5.62Z"
-                                  />
-                                  <path
-                                    d="m198.58,62.15c-.45,0-.85.25-1.05.65l-1.3,2.6-.64,1.27-1.93-3.87c-.2-.4-.61-.65-1.05-.65h-.97v.02s.56,1.10.56,1.10l2.72,5.43c.13.26.39.42.68.42,0,0,0,0,0,0,.03,0,.06,0,.08,0,.26-.03.48-.19.6-.42l3.22-6.44s-.03-.05-.06-.09h-.86Z"
-                                  />
-                                  <path
-                                    d="m222.06,62.16h-5.03c-.49,0-.93.31-1.10.77l-.27.75s0,0,0,0h2.47v4.66c0,.37.25.70.61.77.48.09.91-.28.91-.74v-4.69h.95c.57,0,1.08-.36,1.28-.90l.21-.57s-.02-.03-.04-.05Z"
-                                  />
-                                  <path
-                                    d="m213.45,63.43c0,1.29,0,3.11,0,3.11l-1.99-1.99h0s-2.15-2.15-2.15-2.15c-.15-.15-.34-.23-.54-.23-.11,0-.22.02-.33.07-.28.13-.44.43-.44.74v6.14s0,0,0,0h.24c.71,0,1.28-.57,1.28-1.28v-3.10l2.13,2.13,2.02,2.02c.15.14.34.22.53.22.14,0,.27-.04.40-.11.24-.14.37-.41.37-.69v-6.17h-.24c-.71,0-1.28.57-1.28,1.28Z"
-                                  />
-                                </g>
-                              </svg>
-                            </a>
-                          </div>
+                    <!-- One centred group: the marks, the social row and the address
+                         read as a single object rather than three stacked bands. Every
+                         gap is vh-clamped so a short phone tightens the whole lockup
+                         together instead of one band collapsing before the others. -->
+                    <div
+                      class="footer-lockup flex flex-col items-center justify-center gap-[clamp(14px,2.6vh,22px)]"
+                    >
+                      <!-- The marks: partner above the collaboration sign above ours.
+                           Every row is --fm-w wide — the social row's own width — so the
+                           lockup has one measure and one centre line top to bottom.
+                           Gaps here are tighter than the group's, so the rows bind into
+                           one lockup instead of reading as three. -->
+                      <div class="flex flex-col items-center gap-[clamp(5px,1vh,10px)]">
+                        <!-- Partner mark: the box is ours, the ratio is theirs -->
+                        <div v-if="hasPartnerLogo" class="footer-mark partner-mark">
+                          <img
+                            :src="getMediaUrl(event.referrer_details!.logo!)"
+                            :alt="event.referrer_details!.first_name || 'Partner'"
+                            :class="showLiquidGlass ? 'brightness-110' : ''"
+                            :style="{
+                              filter: showLiquidGlass
+                                ? 'drop-shadow(0 2px 8px rgba(0,0,0,0.15))'
+                                : `drop-shadow(0 2px 8px ${primaryColor}40)`,
+                            }"
+                          />
                         </div>
 
-                        <!-- Show only GoEvent logo if no referrer or referrer is not partner -->
+                        <!-- Collaboration sign: drawn, not typed. The font here is
+                             template-driven, and a display or Khmer face renders "×" at
+                             an unpredictable size and baseline offset — so it would sit
+                             off-centre in its row under some templates and not others.
+                             A path is the same mark everywhere and centres on its own
+                             geometry rather than on a baseline. -->
+                        <svg
+                          v-if="hasPartnerLogo"
+                          class="collab-sign"
+                          viewBox="0 0 12 12"
+                          fill="none"
+                          :style="{ color: showLiquidGlass ? '#ffffff' : primaryColor }"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M2.6 2.6 9.4 9.4M9.4 2.6 2.6 9.4"
+                            stroke="currentColor"
+                            stroke-width="1.1"
+                            stroke-linecap="round"
+                          />
+                        </svg>
+
+                        <!-- GoEvent mark -->
                         <a
-                          v-else
                           href="/"
-                          class="inline-flex items-center justify-center transition-transform hover:scale-105"
+                          class="footer-mark inline-flex max-w-full items-center justify-center"
                         >
                           <svg
                             viewBox="0 0 222.09 69.13"
-                            class="w-auto max-h-[64px] lg:max-h-[72px]"
+                            class="goevent-mark"
                             :style="{
-                              height: 'clamp(44px, 5.6vh, 64px)',
                               fill: showLiquidGlass ? '#ffffff' : primaryColor,
                               filter: showLiquidGlass
                                 ? 'drop-shadow(0 2px 8px rgba(255,255,255,0.25))'
@@ -831,24 +660,15 @@
                             </g>
                           </svg>
                         </a>
-
-                        <p
-                          class="text-xs opacity-90"
-                          :class="showLiquidGlass ? 'text-white' : ''"
-                          :style="{
-                            fontFamily: secondaryFont || currentFont,
-                            color: showLiquidGlass ? undefined : primaryColor,
-                          }"
-                        ></p>
                       </div>
 
                       <!-- Social Media Buttons -->
-                      <div class="flex flex-wrap items-center justify-center gap-2.5 lg:gap-2 xl:gap-2.5">
+                      <div class="social-row flex flex-wrap items-center justify-center">
                         <a
                           href="https://t.me/goeventkh"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="w-[34px] h-[34px] lg:w-[24px] lg:h-[24px] xl:w-[34px] xl:h-[34px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
+                          class="social-btn flex items-center justify-center rounded-full"
                           :class="
                             showLiquidGlass ? 'bg-white bg-opacity-20 hover:bg-opacity-30' : ''
                           "
@@ -856,7 +676,6 @@
                           aria-label="Telegram"
                         >
                           <svg
-                            class="w-[17px] h-[17px] lg:w-[12px] lg:h-[12px] xl:w-[17px] xl:h-[17px]"
                             :class="showLiquidGlass ? 'text-white' : ''"
                             :style="{ fill: showLiquidGlass ? undefined : primaryColor }"
                             fill="currentColor"
@@ -871,7 +690,7 @@
                           href="https://www.facebook.com/profile.php?id=61581851850221"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="w-[34px] h-[34px] lg:w-[24px] lg:h-[24px] xl:w-[34px] xl:h-[34px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
+                          class="social-btn flex items-center justify-center rounded-full"
                           :class="
                             showLiquidGlass ? 'bg-white bg-opacity-20 hover:bg-opacity-30' : ''
                           "
@@ -879,7 +698,6 @@
                           aria-label="Facebook"
                         >
                           <svg
-                            class="w-[17px] h-[17px] lg:w-[12px] lg:h-[12px] xl:w-[17px] xl:h-[17px]"
                             :class="showLiquidGlass ? 'text-white' : ''"
                             :style="{ fill: showLiquidGlass ? undefined : primaryColor }"
                             fill="currentColor"
@@ -894,7 +712,7 @@
                           href="https://www.instagram.com/goevent.online/"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="w-[34px] h-[34px] lg:w-[24px] lg:h-[24px] xl:w-[34px] xl:h-[34px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
+                          class="social-btn flex items-center justify-center rounded-full"
                           :class="
                             showLiquidGlass ? 'bg-white bg-opacity-20 hover:bg-opacity-30' : ''
                           "
@@ -902,7 +720,6 @@
                           aria-label="Instagram"
                         >
                           <svg
-                            class="w-[17px] h-[17px] lg:w-[12px] lg:h-[12px] xl:w-[17px] xl:h-[17px]"
                             :class="showLiquidGlass ? 'text-white' : ''"
                             :style="{ fill: showLiquidGlass ? undefined : primaryColor }"
                             fill="currentColor"
@@ -917,7 +734,7 @@
                           href="https://www.tiktok.com/@goevent.online"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="w-[34px] h-[34px] lg:w-[24px] lg:h-[24px] xl:w-[34px] xl:h-[34px] rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 social-btn"
+                          class="social-btn flex items-center justify-center rounded-full"
                           :class="
                             showLiquidGlass ? 'bg-white bg-opacity-20 hover:bg-opacity-30' : ''
                           "
@@ -925,7 +742,6 @@
                           aria-label="TikTok"
                         >
                           <svg
-                            class="w-[17px] h-[17px] lg:w-[12px] lg:h-[12px] xl:w-[17px] xl:h-[17px]"
                             :class="showLiquidGlass ? 'text-white' : ''"
                             :style="{ fill: showLiquidGlass ? undefined : primaryColor }"
                             fill="currentColor"
@@ -938,18 +754,17 @@
                         </a>
                       </div>
 
-                      <!-- Contact Info -->
-                      <div class="space-y-2 lg:space-y-1">
-                        <div
-                          class="footer-website-link inline-flex items-center justify-center text-md lg:text-xs xl:text-md px-2 opacity-90"
-                          :class="showLiquidGlass ? 'text-white' : ''"
-                          :style="{
-                            fontFamily: secondaryFont || currentFont,
-                            color: showLiquidGlass ? undefined : primaryColor,
-                          }"
-                        >
-                          www.goevent.online
-                        </div>
+                      <!-- Address -->
+                      <div
+                        class="inline-flex items-center justify-center px-2 leading-none opacity-90"
+                        :class="showLiquidGlass ? 'text-white' : ''"
+                        :style="{
+                          fontFamily: secondaryFont || currentFont,
+                          fontSize: 'clamp(12px, 1.9vh, 16px)',
+                          color: showLiquidGlass ? undefined : primaryColor,
+                        }"
+                      >
+                        www.goevent.online
                       </div>
                     </div>
                   </div>
@@ -974,7 +789,7 @@ import type {
 } from '../../composables/useEventShowcase'
 import type { EventComment, DressCode } from '../../types/showcase'
 import type { EventPaymentMethod } from '../../services/api'
-import type { } from '../../utils/translations'
+import type {} from '../../utils/translations'
 import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
@@ -1077,7 +892,7 @@ const { t: tApp } = useAppLanguage()
 // Main stage layout configuration (decoration z-indexes + welcome header visibility)
 const { decorationZIndexes, layout: mainStageLayoutResolved } = useCoverStageLayout(
   computed(() => props.mainStageLayout),
-  computed(() => undefined)
+  computed(() => undefined),
 )
 
 // Template-controlled: whether HostInfo renders the welcome header row
@@ -1112,7 +927,7 @@ const decorationAnimationClasses = computed(() => ({
 
 // Animation class for main card based on animation type
 const cardAnimationClass = computed(() =>
-  isDoorAnimation.value ? 'animate-fadeInUp' : 'animate-slideUp'
+  isDoorAnimation.value ? 'animate-fadeInUp' : 'animate-slideUp',
 )
 
 // Optimized decoration image URLs using reactive window dimensions
@@ -1151,12 +966,18 @@ const cardWidthClass = computed(() => (isWideContent.value ? 'liquid-glass-card-
 const contentPaddingClasses = computed(() =>
   isWideContent.value
     ? 'py-6 sm:py-6 md:py-4 laptop-sm:py-5 laptop-md:py-5 laptop-lg:py-6 desktop:py-5 px-3 sm:px-3 md:px-2 laptop-sm:px-3 laptop-md:px-3 laptop-lg:px-4 desktop:px-3'
-    : 'p-6 sm:p-6 md:p-4 laptop-sm:p-5 laptop-md:p-5 laptop-lg:p-6 desktop:p-5'
+    : 'p-6 sm:p-6 md:p-4 laptop-sm:p-5 laptop-md:p-5 laptop-lg:p-6 desktop:p-5',
 )
 const footerMarginClasses = computed(() =>
   isWideContent.value
     ? '-mx-3 sm:-mx-3 md:-mx-2 laptop-sm:-mx-3 laptop-md:-mx-3 laptop-lg:-mx-4 desktop:-mx-3'
-    : '-mx-6 sm:-mx-6 md:-mx-4 laptop-sm:-mx-5 laptop-md:-mx-5 laptop-lg:-mx-6 desktop:-mx-5'
+    : '-mx-6 sm:-mx-6 md:-mx-4 laptop-sm:-mx-5 laptop-md:-mx-5 laptop-lg:-mx-6 desktop:-mx-5',
+)
+
+// The footer stacks the partner's mark above ours; both the stack and our own
+// logo's size depend on whether there is a partner mark to sit under.
+const hasPartnerLogo = computed(() =>
+  Boolean(props.event.referrer_details?.is_partner && props.event.referrer_details?.logo),
 )
 
 // Computed property for language-aware logo selection
@@ -1194,7 +1015,10 @@ const containerClasses = computed(() => [
 
 // Inject video resource manager from parent showcase using Vue's provide/inject
 // Must be called at top level of setup, not inside lifecycle hooks
-const injectedVideoResourceManager = inject<VideoResourceManager | null>('videoResourceManager', null)
+const injectedVideoResourceManager = inject<VideoResourceManager | null>(
+  'videoResourceManager',
+  null,
+)
 
 const videoResourceManager = ref<VideoResourceManager | null>(null)
 
@@ -1220,35 +1044,32 @@ onMounted(async () => {
   const observerConfig = showcaseRevealObserverInit()
 
   // Create the IntersectionObserver directly
-  revealObserver.value = new IntersectionObserver(
-    (entries) => {
-      // IntersectionObserver does NOT guarantee entries in document order, so a
-      // batch has to be sorted before it can be staggered — otherwise the cascade
-      // can run bottom-to-top on first paint.
-      const intersecting = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((a, b) =>
-          a.target.compareDocumentPosition(b.target) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1,
-        )
+  revealObserver.value = new IntersectionObserver((entries) => {
+    // IntersectionObserver does NOT guarantee entries in document order, so a
+    // batch has to be sorted before it can be staggered — otherwise the cascade
+    // can run bottom-to-top on first paint.
+    const intersecting = entries
+      .filter((entry) => entry.isIntersecting)
+      .sort((a, b) =>
+        a.target.compareDocumentPosition(b.target) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1,
+      )
 
-      intersecting.forEach((entry, i) => {
-        const el = entry.target as HTMLElement
-        // Stagger when multiple sections fire in the same batch (initial load).
-        // Single scroll-triggered reveals get no delay so they feel instant.
-        // transition-delay rather than setTimeout: it rides the compositor's
-        // clock, retargets if the reveal is re-triggered, and can't drift or
-        // fire late under main-thread load the way a timer does.
-        const staggerDelay = intersecting.length > 1 ? i * REVEAL_STAGGER_MS : 0
-        revealSection(el, staggerDelay)
+    intersecting.forEach((entry, i) => {
+      const el = entry.target as HTMLElement
+      // Stagger when multiple sections fire in the same batch (initial load).
+      // Single scroll-triggered reveals get no delay so they feel instant.
+      // transition-delay rather than setTimeout: it rides the compositor's
+      // clock, retargets if the reveal is re-triggered, and can't drift or
+      // fire late under main-thread load the way a timer does.
+      const staggerDelay = intersecting.length > 1 ? i * REVEAL_STAGGER_MS : 0
+      revealSection(el, staggerDelay)
 
-        if (revealObserver.value) {
-          revealObserver.value.unobserve(entry.target)
-          observedElements.value.delete(entry.target)
-        }
-      })
-    },
-    observerConfig,
-  )
+      if (revealObserver.value) {
+        revealObserver.value.unobserve(entry.target)
+        observedElements.value.delete(entry.target)
+      }
+    })
+  }, observerConfig)
 
   // Initialize animations with the properly configured observer
   initializeRevealAnimations()
@@ -1405,8 +1226,6 @@ watch(
   },
 )
 
-
-
 // Memoized event text object lookup map for O(1) access
 const eventTextMap = computed(() => {
   const map = new Map<string, EventText>()
@@ -1419,7 +1238,6 @@ const eventTextMap = computed(() => {
   }
   return map
 })
-
 
 /**
  * Find event text by type - optimized with O(1) map lookup
@@ -1437,7 +1255,6 @@ const getDescriptionText = (): string | undefined => findEventText('description'
 const getDescriptionTitle = (): string | undefined => findEventText('description')?.title
 const getInstructionText = (): string | undefined => findEventText('instructions')?.content
 
-
 // Computed property to check if host message section should be displayed
 // Checks for messages in ANY language to ensure section shows with fallback content
 const showHostMessage = computed(() => {
@@ -1447,13 +1264,9 @@ const showHostMessage = computed(() => {
 
   // Check if thank you message or sorry message exists in ANY language
   // This ensures the section shows even when switching to a language without messages
-  const hasThankYouMessage = props.eventTexts.some(
-    (text) => text.text_type === 'thank_you_message',
-  )
+  const hasThankYouMessage = props.eventTexts.some((text) => text.text_type === 'thank_you_message')
 
-  const hasSorryMessage = props.eventTexts.some(
-    (text) => text.text_type === 'sorry_message',
-  )
+  const hasSorryMessage = props.eventTexts.some((text) => text.text_type === 'sorry_message')
 
   return hasThankYouMessage || hasSorryMessage
 })
@@ -1548,7 +1361,7 @@ const handleReminder = () => {
   const title = sanitizeText(props.event.title, 200)
   const description = sanitizeText(
     props.event.description || props.event.short_description || '',
-    500 // Shorter limit for description to prevent mobile URL issues
+    500, // Shorter limit for description to prevent mobile URL issues
   )
 
   // Sanitize location
@@ -1567,7 +1380,7 @@ const handleReminder = () => {
     `dates=${formatDateForGoogle(startDate)}/${formatDateForGoogle(endDate)}`,
     `details=${encodeURIComponent(description)}`,
     `location=${encodeURIComponent(location)}`,
-    'trp=false'
+    'trp=false',
   ].join('&')
 
   window.open(`${baseUrl}?${params}`, '_blank')
@@ -1608,7 +1421,9 @@ onUnmounted(() => {
   border-radius: 9999px;
   box-shadow: 0 1px 6px rgba(15, 23, 42, 0.12);
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 /* Gated: touch devices fire a sticky false hover on tap, leaving the button
@@ -1944,22 +1759,100 @@ onUnmounted(() => {
   }
 }
 
-/* Footer proportions on mobile: social buttons and website link scale with
-   viewport height like the logo does (clamp on 5.6vh). Short screens such as
-   Galaxy S8 (360×740) shrink them slightly so the logo stays visually
-   dominant; taller screens like S20 (360×800) stay at today's sizes. */
-@media (max-width: 1023px) {
-  .social-btn {
-    width: clamp(26px, 4.2vh, 34px);
-    height: clamp(26px, 4.2vh, 34px);
+/* The footer lockup has one width, and the social row is what sets it: four
+   buttons and three gaps. Our mark is then set to exactly that width rather
+   than to a height of its own, so the two can never drift apart — every value
+   below falls out of the same two tokens. The vh clamps only bite on short
+   screens, so the lockup is one size on every desktop. */
+.footer-lockup {
+  --fm-btn: clamp(28px, 4.2vh, 34px);
+  --fm-gap: clamp(8px, 1.2vh, 10px);
+  --fm-w: calc(4 * var(--fm-btn) + 3 * var(--fm-gap));
+  /* Our wordmark's height falls out of its own aspect at that width. */
+  --fm-mark-h: calc(var(--fm-w) / 3.2127);
+  /* A partner's mark can be stacked or square where ours is a wide wordmark,
+     so it gets half again the height to work with — otherwise a square logo
+     reads as a third the size of ours at the same height. */
+  --fm-partner-h: calc(var(--fm-mark-h) * 1.5);
+}
+
+.footer-lockup .goevent-mark {
+  width: var(--fm-w);
+  height: auto;
+  /* Belt and braces for the intrinsic height Safari derives from the viewBox. */
+  aspect-ratio: 222.09 / 69.13;
+}
+
+/* The partner's mark is theirs — a stacked badge, a square, a wide wordmark —
+   so only the box is ours. Both axes are auto so it keeps its own ratio, and it
+   shrinks to fit whichever cap it meets first. The wrapper is the full measure
+   and centres it, so a mark narrower than the box still sits on the lockup's
+   axis rather than wherever its own width happens to leave it. */
+.footer-lockup .partner-mark {
+  display: flex;
+  justify-content: center;
+  width: var(--fm-w);
+}
+
+.footer-lockup .partner-mark img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: var(--fm-partner-h);
+}
+
+/* Square, so the two strokes cross on the box's centre. */
+.footer-lockup .collab-sign {
+  width: calc(var(--fm-btn) * 0.42);
+  height: calc(var(--fm-btn) * 0.42);
+  opacity: 0.5;
+}
+
+.footer-lockup .social-row {
+  gap: var(--fm-gap);
+}
+
+.footer-lockup .social-btn {
+  width: var(--fm-btn);
+  height: var(--fm-btn);
+  transition:
+    transform 200ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.footer-lockup .social-btn svg {
+  width: calc(var(--fm-btn) * 0.5);
+  height: calc(var(--fm-btn) * 0.5);
+}
+
+/* The footer marks lift under a real pointer only. On touch, :hover fires on
+   tap and stays stuck after the finger lifts, which leaves the logo sitting
+   5% large for the rest of the visit. */
+.footer-mark {
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .footer-mark:hover {
+    transform: scale(1.05);
   }
-  .social-btn svg {
-    width: clamp(13px, 2.1vh, 17px);
-    height: clamp(13px, 2.1vh, 17px);
+
+  .footer-lockup .social-btn:hover {
+    transform: scale(1.1);
   }
-  .footer-website-link {
-    font-size: clamp(0.75rem, 2vh, 1rem);
-  }
+}
+
+/* After the hover block on purpose: a press fires :hover and :active together
+   on a mouse, and these two rules tie on specificity, so the press has to come
+   last to win. */
+.footer-lockup .social-btn:active {
+  transform: scale(0.95);
+}
+
+/* The anchor only: the partner's mark is not a link, and a press response on
+   something that does not respond to a press is a false affordance. */
+a.footer-mark:active {
+  transform: scale(0.97);
 }
 
 /* ===================

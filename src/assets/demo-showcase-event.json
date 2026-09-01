@@ -1,0 +1,470 @@
+{
+  "_comment": "The sample invitation the public template preview is drawn around (see src/composables/showcase-preview/useDemoShowcase.ts). Shaped exactly like one GET /api/events/:id/showcase/ response, because that is what it stands in for — `event` is the English baseline plus every language's `event_texts`, and `translations.<lang>` overlays only the fields a real backend would return translated. Every optional section the showcase can render is populated on purpose: a partner judging a template has to see what the template does to a host row, a two-day agenda, a gallery, a payment card and a dress code, not just a cover. Dates carry `{year}`; the loader rolls the calendar year forward so the countdown never runs out, and substitutes the same year into the authored date lines. Media points at /demo-showcase/*.svg (public/), resolved to absolute URLs by the loader so the showcase's getMediaUrl leaves them alone.",
+
+  "meta": {
+    "language": "en",
+    "guest_name": null,
+    "template_enabled": true,
+    "available_languages": [
+      { "code": "en", "display": "English" },
+      { "code": "kh", "display": "Khmer" }
+    ]
+  },
+
+  "event": {
+    "id": "11111111-2222-4333-8444-555555555555",
+    "title": "Sophea & Vichea",
+    "slug": "sophea-and-vichea",
+    "short_description": "The wedding of Sophea Chan and Vichea Pen",
+    "description": "A wedding celebration at Sofitel Phnom Penh Phokeethra.",
+    "start_date": "{year}-12-12T02:00:00Z",
+    "end_date": "{year}-12-12T14:00:00Z",
+    "timezone": "Asia/Phnom_Penh",
+    "location": "Sofitel Phnom Penh Phokeethra, Koh Pich, Phnom Penh",
+    "is_virtual": false,
+    "virtual_link": null,
+    "privacy": "public",
+    "status": "published",
+    "banner_image": "/demo-showcase/featured.svg",
+    "logo_one": "/demo-showcase/monogram.svg",
+    "logo_two": "/demo-showcase/monogram.svg",
+    "event_video": null,
+    "music": null,
+    "music_start_time": 0,
+    "music_end_time": null,
+    "music_start_stage": null,
+    "google_map_embed_link": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d977!2d104.9334649!3d11.5462128!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sSofitel%20Phnom%20Penh%20Phokeethra!5e0!3m2!1sen!2skh!4v1700000000000",
+    "youtube_embed_link": "https://www.youtube.com/embed/-CAfVOujQIM",
+    "registration_required": false,
+    "rsvp_enabled": true,
+    "comments_enabled": true,
+    "countdown_enabled": true,
+    "category": 1,
+    "category_name": "Wedding",
+    "category_details": {
+      "id": 1,
+      "name": "Wedding",
+      "description": "Weddings and engagement ceremonies",
+      "color": "#c9a227",
+      "icon": "heart"
+    },
+
+    "organizer": 1,
+    "organizer_details": {
+      "id": 1,
+      "email": "sample@goevent.online",
+      "username": "sample-shop",
+      "first_name": "Your",
+      "last_name": "Shop",
+      "is_verified": true,
+      "is_partner": true,
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z"
+    },
+    "referrer": 1,
+    "referrer_details": {
+      "id": 1,
+      "email": "sample@goevent.online",
+      "username": "sample-shop",
+      "first_name": "Your",
+      "last_name": "Shop",
+      "is_verified": true,
+      "is_partner": true,
+      "logo": "/demo-showcase/partner-logo.svg",
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z"
+    },
+
+    "available_languages": [
+      { "id": 1, "language": "en", "language_display": "English" },
+      { "id": 2, "language": "kh", "language_display": "Khmer" }
+    ],
+
+    "hosts": [
+      {
+        "id": 1,
+        "name": "Sophea Chan",
+        "title": "Bride",
+        "bio": "Daughter of Mr. Chan Sovann and Mrs. Ly Chanthou.",
+        "profile_image": "/demo-showcase/host-bride.svg",
+        "parent_a_name": "Mr. Chan Sovann",
+        "parent_b_name": "Mrs. Ly Chanthou",
+        "order": 0
+      },
+      {
+        "id": 2,
+        "name": "Vichea Pen",
+        "title": "Groom",
+        "bio": "Son of Mr. Pen Samnang and Mrs. Kim Sreymom.",
+        "profile_image": "/demo-showcase/host-groom.svg",
+        "parent_a_name": "Mr. Pen Samnang",
+        "parent_b_name": "Mrs. Kim Sreymom",
+        "order": 1
+      }
+    ],
+
+    "agenda_items": [
+      {
+        "id": 1,
+        "title": "Groom's Procession",
+        "description": "The groom's family arrives with the traditional offerings.",
+        "date": "{year}-12-11",
+        "date_text": "Day 1",
+        "start_time_text": "7:00 AM",
+        "end_time_text": "8:30 AM",
+        "color": "#c9a227",
+        "order": 0,
+        "icon": {
+          "id": 1,
+          "name": "procession",
+          "svg_code": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#c9a227\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 20h16\"/><path d=\"M7 20V9l5-5 5 5v11\"/><path d=\"M10 20v-5h4v5\"/></svg>"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Monks' Blessing",
+        "description": "A blessing ceremony for the couple and both families.",
+        "date": "{year}-12-11",
+        "date_text": "Day 1",
+        "start_time_text": "9:00 AM",
+        "end_time_text": "10:30 AM",
+        "color": "#a9b7a4",
+        "order": 1,
+        "icon": {
+          "id": 2,
+          "name": "blessing",
+          "svg_code": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#c9a227\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 21s-6.5-4.3-8.5-8A5 5 0 0 1 12 7a5 5 0 0 1 8.5 6c-2 3.7-8.5 8-8.5 8Z\"/></svg>"
+        }
+      },
+      {
+        "id": 3,
+        "title": "Hair-Cutting Ceremony",
+        "description": "Family and friends offer their wishes to the couple.",
+        "date": "{year}-12-11",
+        "date_text": "Day 1",
+        "start_time_text": "11:00 AM",
+        "end_time_text": "12:00 PM",
+        "color": "#e6c8bd",
+        "order": 2,
+        "icon": {
+          "id": 3,
+          "name": "flowers",
+          "svg_code": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#c9a227\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"9\" r=\"2.5\"/><path d=\"M12 6.5c0-2 1.5-3.5 3-3.5 0 2-1.5 3.5-3 3.5Z\"/><path d=\"M12 6.5c0-2-1.5-3.5-3-3.5 0 2 1.5 3.5 3 3.5Z\"/><path d=\"M14.5 9c2 0 3.5 1.5 3.5 3-2 0-3.5-1.5-3.5-3Z\"/><path d=\"M9.5 9C7.5 9 6 10.5 6 12c2 0 3.5-1.5 3.5-3Z\"/><path d=\"M12 11.5V21\"/></svg>"
+        }
+      },
+      {
+        "id": 4,
+        "title": "Welcome Reception",
+        "description": "Drinks and photographs in the garden foyer.",
+        "date": "{year}-12-12",
+        "date_text": "Day 2",
+        "start_time_text": "5:00 PM",
+        "end_time_text": "6:00 PM",
+        "color": "#a9b7a4",
+        "order": 3,
+        "icon": {
+          "id": 4,
+          "name": "reception",
+          "svg_code": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#c9a227\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 3h14l-6 8v7h3v3H8v-3h3v-7Z\"/></svg>"
+        }
+      },
+      {
+        "id": 5,
+        "title": "Dinner & Toast",
+        "description": "Seated dinner, followed by the toast to the couple.",
+        "date": "{year}-12-12",
+        "date_text": "Day 2",
+        "start_time_text": "6:30 PM",
+        "end_time_text": "8:30 PM",
+        "color": "#c9a227",
+        "order": 4,
+        "icon": {
+          "id": 5,
+          "name": "dinner",
+          "svg_code": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#c9a227\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 3v8a2 2 0 0 0 4 0V3\"/><path d=\"M8 11v10\"/><path d=\"M17 3c-1.5 2-2 4-2 6h4c0-2-.5-4-2-6Z\"/><path d=\"M17 9v12\"/></svg>"
+        }
+      },
+      {
+        "id": 6,
+        "title": "First Dance",
+        "description": "The couple opens the floor; dancing until late.",
+        "date": "{year}-12-12",
+        "date_text": "Day 2",
+        "start_time_text": "9:00 PM",
+        "end_time_text": "11:00 PM",
+        "color": "#e6c8bd",
+        "order": 5,
+        "icon": {
+          "id": 6,
+          "name": "music",
+          "svg_code": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#c9a227\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 18V5l10-2v13\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><circle cx=\"16\" cy=\"16\" r=\"3\"/></svg>"
+        }
+      }
+    ],
+
+    "photos": [
+      {
+        "id": 1,
+        "event": "11111111-2222-4333-8444-555555555555",
+        "image": "/demo-showcase/featured.svg",
+        "caption": "Save the date",
+        "order": 0,
+        "is_featured": true,
+        "created_at": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": 2,
+        "event": "11111111-2222-4333-8444-555555555555",
+        "image": "/demo-showcase/gallery-1.svg",
+        "caption": "The proposal",
+        "order": 1,
+        "is_featured": false,
+        "created_at": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": 3,
+        "event": "11111111-2222-4333-8444-555555555555",
+        "image": "/demo-showcase/gallery-2.svg",
+        "caption": "Engagement day",
+        "order": 2,
+        "is_featured": false,
+        "created_at": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": 4,
+        "event": "11111111-2222-4333-8444-555555555555",
+        "image": "/demo-showcase/gallery-3.svg",
+        "caption": "Family blessing",
+        "order": 3,
+        "is_featured": false,
+        "created_at": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": 5,
+        "event": "11111111-2222-4333-8444-555555555555",
+        "image": "/demo-showcase/gallery-4.svg",
+        "caption": "Pre-wedding shoot",
+        "order": 4,
+        "is_featured": false,
+        "created_at": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": 6,
+        "event": "11111111-2222-4333-8444-555555555555",
+        "image": "/demo-showcase/gallery-5.svg",
+        "caption": "Evening in Siem Reap",
+        "order": 5,
+        "is_featured": false,
+        "created_at": "2026-01-01T00:00:00Z"
+      }
+    ],
+
+    "payment_methods": [
+      {
+        "id": 1,
+        "event": "11111111-2222-4333-8444-555555555555",
+        "name": "Wedding Gift",
+        "payment_type": "gift",
+        "payment_method": "bank_transfer",
+        "currency": "USD",
+        "is_active": true,
+        "bank_name": "ABA Bank",
+        "account_name": "SOPHEA CHAN",
+        "account_number": "000 123 456",
+        "qr_code_image": "/demo-showcase/payment-qr.svg",
+        "payment_url": "",
+        "description": "Scan with any Cambodian banking app.",
+        "order": 0
+      },
+      {
+        "id": 2,
+        "event": "11111111-2222-4333-8444-555555555555",
+        "name": "Honeymoon Fund",
+        "payment_type": "gift",
+        "payment_method": "payment_link",
+        "currency": "USD",
+        "is_active": true,
+        "bank_name": "",
+        "account_name": "",
+        "account_number": "",
+        "qr_code_image": null,
+        "payment_url": "https://goevent.online",
+        "description": "Contribute towards the honeymoon.",
+        "order": 1
+      }
+    ],
+
+    "dress_codes": [
+      {
+        "id": 1,
+        "event": "11111111-2222-4333-8444-555555555555",
+        "dress_code_type": "traditional",
+        "dress_code_type_display": "Traditional",
+        "time_period": "morning",
+        "time_period_display": "Morning",
+        "gender": "all",
+        "gender_display": "All guests",
+        "title": "Traditional Khmer",
+        "description": "Sampot and silk in gold, cream or soft green for the morning ceremonies.",
+        "color": "#c9a227",
+        "image": null,
+        "order": 0,
+        "is_active": true,
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": 2,
+        "event": "11111111-2222-4333-8444-555555555555",
+        "dress_code_type": "formal",
+        "dress_code_type_display": "Formal",
+        "time_period": "evening",
+        "time_period_display": "Evening",
+        "gender": "all",
+        "gender_display": "All guests",
+        "title": "Evening Formal",
+        "description": "Cocktail dress or a dark suit for the reception. Blush and sage are welcome.",
+        "color": "#a9b7a4",
+        "image": null,
+        "order": 1,
+        "is_active": true,
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z"
+      }
+    ],
+
+    "event_texts": [
+      { "id": 1, "text_type": "cover_header", "language": "en", "title": "", "content": "Together with our families", "order": 0 },
+      { "id": 2, "text_type": "invite_text", "language": "en", "title": "", "content": "We joyfully invite", "order": 0 },
+      { "id": 3, "text_type": "welcome_message", "language": "en", "title": "", "content": "Two families, one celebration — and a seat kept for you.", "order": 0 },
+      { "id": 4, "text_type": "description", "language": "en", "title": "We are honoured", "content": "to invite you to share in the beginning of our life together.\nYour presence at our wedding would mean the world to us and to our families.", "order": 0 },
+      { "id": 5, "text_type": "date_text", "language": "en", "title": "", "content": "12 December {year}", "order": 0 },
+      { "id": 6, "text_type": "time_text", "language": "en", "title": "", "content": "Reception from 5:00 PM", "order": 0 },
+      { "id": 7, "text_type": "location_text", "language": "en", "title": "", "content": "Sofitel Phnom Penh Phokeethra\nKoh Pich, Phnom Penh", "order": 0 },
+      { "id": 8, "text_type": "instructions", "language": "en", "title": "", "content": "Parking is available beneath the hotel. Please arrive fifteen minutes early.", "order": 0 },
+      { "id": 9, "text_type": "gallery_header", "language": "en", "title": "", "content": "Our Story in Pictures", "order": 0 },
+      { "id": 10, "text_type": "dress_code_header", "language": "en", "title": "", "content": "What to Wear", "order": 0 },
+      { "id": 11, "text_type": "dress_code_description", "language": "en", "title": "", "content": "Two ceremonies, two moods — dress for whichever you can join.", "order": 0 },
+      { "id": 12, "text_type": "thank_you_message", "language": "en", "title": "Thank you", "content": "Thank you for celebrating with us. We cannot wait to see you there.", "order": 0 },
+      { "id": 13, "text_type": "sorry_message", "language": "en", "title": "With regret", "content": "We are sorry to miss you — thank you all the same for your kind wishes.", "order": 0 },
+
+      { "id": 21, "text_type": "cover_header", "language": "kh", "title": "", "content": "ដោយមានការគាំទ្រពីគ្រួសារទាំងសងខាង", "order": 0 },
+      { "id": 22, "text_type": "invite_text", "language": "kh", "title": "", "content": "សូមគោរពអញ្ជើញ", "order": 0 },
+      { "id": 23, "text_type": "welcome_message", "language": "kh", "title": "", "content": "គ្រួសារពីរ ពិធីបុណ្យតែមួយ និងកន្លែងអង្គុយមួយដែលរង់ចាំលោកអ្នក។", "order": 0 },
+      { "id": 24, "text_type": "description", "language": "kh", "title": "ដោយសេចក្តីគោរព", "content": "សូមគោរពអញ្ជើញលោកអ្នកចូលរួមក្នុងការចាប់ផ្តើមជីវិតរួមគ្នារបស់យើងខ្ញុំ។\nវត្តមានរបស់លោកអ្នកគឺជាកិត្តិយសដ៏ធំធេងសម្រាប់យើងខ្ញុំ និងគ្រួសារទាំងសងខាង។", "order": 0 },
+      { "id": 25, "text_type": "date_text", "language": "kh", "title": "", "content": "ថ្ងៃទី ១២ ខែ ធ្នូ ឆ្នាំ {yearKh}", "order": 0 },
+      { "id": 26, "text_type": "time_text", "language": "kh", "title": "", "content": "ពិធីជប់លៀង ចាប់ពីម៉ោង ៥ រសៀល", "order": 0 },
+      { "id": 27, "text_type": "location_text", "language": "kh", "title": "", "content": "សណ្ឋាគារ សូហ្វីតែល ភ្នំពេញ ភូគីត្រា\nកោះពេជ្រ រាជធានីភ្នំពេញ", "order": 0 },
+      { "id": 28, "text_type": "instructions", "language": "kh", "title": "", "content": "មានកន្លែងចតរថយន្តនៅក្រោមសណ្ឋាគារ។ សូមអញ្ជើញមកមុនម៉ោង ១៥ នាទី។", "order": 0 },
+      { "id": 29, "text_type": "gallery_header", "language": "kh", "title": "", "content": "រូបភាពនៃដំណើររឿងរបស់យើង", "order": 0 },
+      { "id": 30, "text_type": "dress_code_header", "language": "kh", "title": "", "content": "ការស្លៀកពាក់", "order": 0 },
+      { "id": 31, "text_type": "dress_code_description", "language": "kh", "title": "", "content": "ពិធីពីរវេន ស្ទីលពីរបែប សូមស្លៀកពាក់តាមវេនដែលលោកអ្នកអាចចូលរួម។", "order": 0 },
+      { "id": 32, "text_type": "thank_you_message", "language": "kh", "title": "សូមអរគុណ", "content": "សូមអរគុណដែលបានចូលរួមអបអរជាមួយយើងខ្ញុំ។ យើងខ្ញុំទន្ទឹងរង់ចាំជួបលោកអ្នក។", "order": 0 },
+      { "id": 33, "text_type": "sorry_message", "language": "kh", "title": "សូមអភ័យទោស", "content": "យើងខ្ញុំសោកស្តាយដែលមិនបានជួបលោកអ្នក។ សូមអរគុណចំពោះការជូនពរដ៏ថ្លៃថ្លា។", "order": 0 }
+    ]
+  },
+
+  "translations": {
+    "kh": {
+      "event": {
+        "title": "សុភា និង វិជ្ជា",
+        "short_description": "ពិធីមង្គលការ សុភា និង វិជ្ជា",
+        "location": "សណ្ឋាគារ សូហ្វីតែល ភ្នំពេញ ភូគីត្រា កោះពេជ្រ ភ្នំពេញ"
+      },
+      "hosts": {
+        "1": {
+          "name": "ចាន់ សុភា",
+          "title": "កូនស្រី",
+          "bio": "កូនស្រីរបស់លោក ចាន់ សុវណ្ណ និងលោកស្រី លី ចន្ថូ។",
+          "parent_a_name": "លោក ចាន់ សុវណ្ណ",
+          "parent_b_name": "លោកស្រី លី ចន្ថូ"
+        },
+        "2": {
+          "name": "ប៉ែន វិជ្ជា",
+          "title": "កូនប្រុស",
+          "bio": "កូនប្រុសរបស់លោក ប៉ែន សំណាង និងលោកស្រី គីម ស្រីមុំ។",
+          "parent_a_name": "លោក ប៉ែន សំណាង",
+          "parent_b_name": "លោកស្រី គីម ស្រីមុំ"
+        }
+      },
+      "agenda_items": {
+        "1": {
+          "title": "ក្បួនហែកូនកម្លោះ",
+          "description": "គ្រួសារខាងកូនប្រុសអញ្ជើញមកដល់ជាមួយចំណីជំនូន។",
+          "date_text": "ថ្ងៃទី ១",
+          "start_time_text": "ម៉ោង ៧ ព្រឹក",
+          "end_time_text": "ម៉ោង ៨:៣០ ព្រឹក"
+        },
+        "2": {
+          "title": "ពិធីសូត្រមន្តជ័យតោ",
+          "description": "ពិធីជូនពរដល់គូស្វាមីភរិយា និងគ្រួសារទាំងសងខាង។",
+          "date_text": "ថ្ងៃទី ១",
+          "start_time_text": "ម៉ោង ៩ ព្រឹក",
+          "end_time_text": "ម៉ោង ១០:៣០ ព្រឹក"
+        },
+        "3": {
+          "title": "ពិធីកាត់សក់",
+          "description": "សាច់ញាតិ និងមិត្តភក្តិជូនពរដល់គូស្វាមីភរិយា។",
+          "date_text": "ថ្ងៃទី ១",
+          "start_time_text": "ម៉ោង ១១ ព្រឹក",
+          "end_time_text": "ម៉ោង ១២ ថ្ងៃត្រង់"
+        },
+        "4": {
+          "title": "ពិធីទទួលភ្ញៀវ",
+          "description": "ភេសជ្ជៈ និងការថតរូបនៅសួនច្បារខាងមុខ។",
+          "date_text": "ថ្ងៃទី ២",
+          "start_time_text": "ម៉ោង ៥ រសៀល",
+          "end_time_text": "ម៉ោង ៦ ល្ងាច"
+        },
+        "5": {
+          "title": "ពិធីជប់លៀង",
+          "description": "អាហារពេលល្ងាច និងការជូនពរដល់គូស្វាមីភរិយា។",
+          "date_text": "ថ្ងៃទី ២",
+          "start_time_text": "ម៉ោង ៦:៣០ ល្ងាច",
+          "end_time_text": "ម៉ោង ៨:៣០ យប់"
+        },
+        "6": {
+          "title": "របាំដំបូង",
+          "description": "គូស្វាមីភរិយាបើករបាំ ហើយបន្តរាំរហូតដល់យប់ជ្រៅ។",
+          "date_text": "ថ្ងៃទី ២",
+          "start_time_text": "ម៉ោង ៩ យប់",
+          "end_time_text": "ម៉ោង ១១ យប់"
+        }
+      },
+      "dress_codes": {
+        "1": {
+          "dress_code_type_display": "ប្រពៃណី",
+          "time_period_display": "ពេលព្រឹក",
+          "gender_display": "ភ្ញៀវទាំងអស់",
+          "title": "សម្លៀកបំពាក់ប្រពៃណីខ្មែរ",
+          "description": "សំពត់ និងសូត្រពណ៌មាស ក្រែម ឬបៃតងស្រាល សម្រាប់ពិធីពេលព្រឹក។"
+        },
+        "2": {
+          "dress_code_type_display": "ផ្លូវការ",
+          "time_period_display": "ពេលល្ងាច",
+          "gender_display": "ភ្ញៀវទាំងអស់",
+          "title": "សម្លៀកបំពាក់ផ្លូវការ",
+          "description": "រ៉ូបខ្លី ឬឈុតពណ៌ខ្មៅសម្រាប់ពិធីជប់លៀង។ ពណ៌ផ្កាឈូក និងបៃតងស្រាលក៏សមរម្យដែរ។"
+        }
+      },
+      "payment_methods": {
+        "1": {
+          "name": "អំណោយមង្គលការ",
+          "description": "ស្កេនជាមួយកម្មវិធីធនាគារណាមួយក្នុងប្រទេសកម្ពុជា។"
+        },
+        "2": {
+          "name": "មូលនិធិទស្សនកិច្ចទឹកឃ្មុំ",
+          "description": "ចូលរួមវិភាគទានសម្រាប់ដំណើរកម្សាន្តទឹកឃ្មុំ។"
+        }
+      },
+      "photos": {
+        "1": { "caption": "រក្សាទុកកាលបរិច្ឆេទ" },
+        "2": { "caption": "ថ្ងៃស្នើសុំ" },
+        "3": { "caption": "ថ្ងៃភ្ជាប់ពាក្យ" },
+        "4": { "caption": "ពរជ័យពីគ្រួសារ" },
+        "5": { "caption": "ការថតរូបមុនអាពាហ៍ពិពាហ៍" },
+        "6": { "caption": "ល្ងាចនៅសៀមរាប" }
+      }
+    }
+  }
+}

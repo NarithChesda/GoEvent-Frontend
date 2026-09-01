@@ -1684,7 +1684,9 @@
     },
     "emptyState": {
       "title": "Add First Guest",
-      "subtitle": "Start building your guest list for the event"
+      "subtitle": "Start building your guest list for the event",
+      "readOnlyTitle": "No guests yet",
+      "readOnlySubtitle": "The event organizer has not added anyone to this list."
     },
     "filterBar": {
       "searchPlaceholder": "Search guests...",
@@ -3617,6 +3619,83 @@
       "bulkMarkSentFailed": "Failed to mark guests as sent",
       "bulkDeleted": "Deleted {count} guest(s)",
       "bulkDeleteFailed": "Failed to delete guests"
+    }
+  },
+  "shareGuestList": {
+    "openCta": "Share list",
+    "title": "Share guest list",
+    "subtitle": "A link that opens this list without a GoEvent account.",
+    "close": "Close",
+    "accessLabel": "What can they do?",
+    "access": {
+      "view": {
+        "label": "Can view",
+        "description": "Read the list and copy each guest’s invitation link."
+      },
+      "edit": {
+        "label": "Can edit",
+        "description": "Everything above, plus add, rename, move and remove guests."
+      }
+    },
+    "labelLabel": "Label (optional)",
+    "labelPlaceholder": "e.g. Mum, wedding planner",
+    "expiryLabel": "Stops working",
+    "expiry": {
+      "never": "Never",
+      "week": "In 7 days",
+      "month": "In 30 days"
+    },
+    "createCta": "Create link",
+    "existingHeader": "Links you have created",
+    "empty": "No share links yet.",
+    "untitled": "Untitled link",
+    "copyLink": "Copy link",
+    "revoke": "Revoke link",
+    "deleteLink": "Delete link",
+    "status": {
+      "revoked": "Revoked",
+      "expired": "Expired",
+      "expiresOn": "Stops working {date}",
+      "noExpiry": "No expiry",
+      "opened": "Opened {count}×"
+    },
+    "toast": {
+      "created": "Share link created",
+      "createdAndCopied": "Share link created and copied",
+      "createFailed": "Could not create the share link",
+      "revoked": "Share link revoked",
+      "revokeFailed": "Could not revoke the link",
+      "deleteFailed": "Could not delete the link",
+      "copyFailed": "Could not copy the link"
+    }
+  },
+  "sharedGuestList": {
+    "documentTitle": "{event} guest list - GoEvent",
+    "badge": {
+      "view": "View only",
+      "edit": "Can edit"
+    },
+    "sharedBy": "Shared by {name}",
+    "expiresOn": "Link stops working {date}",
+    "poweredBy": "Guest list powered by GoEvent",
+    "retry": "Try again",
+    "error": {
+      "notFound": {
+        "title": "This link does not work",
+        "body": "Check that you copied the whole link. If it still fails, ask whoever sent it for a new one."
+      },
+      "revoked": {
+        "title": "This link has been turned off",
+        "body": "The event organizer revoked it. Ask them for a new link if you still need the guest list."
+      },
+      "expired": {
+        "title": "This link has expired",
+        "body": "It was set to stop working after a while. Ask the event organizer for a fresh link."
+      },
+      "network": {
+        "title": "Could not open the guest list",
+        "body": "Something went wrong reaching GoEvent. Check your connection and try again."
+      }
     }
   }
 }

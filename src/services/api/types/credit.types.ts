@@ -7,7 +7,10 @@
  * checkout.
  *
  * Source: PARTNER_CREDIT_API_DOCS.md. Everything below lives under
- * `/api/payment/` and is JWT-authenticated.
+ * `/api/payment/` and is JWT-authenticated - **except the catalogue**
+ * (`GET /credit-packs/`), which has been public since 2026-08-30 so the offer
+ * page can pitch to prospects. Sending a token there still changes the answer:
+ * a partner or staff member also sees packs with `is_public: false`.
  */
 
 export type CreditPackOrderStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled'
@@ -64,6 +67,29 @@ export interface CreditPack {
   requires_approval: boolean
   /** Trial packs - a second order returns 400. */
   once_per_vendor: boolean
+  /**
+   * The "most popular" highlight, and nothing more.
+   *
+   * Presentation only: it never changes price, eligibility, what a credit
+   * unlocks, or where the pack sits - position is `display_order` alone. It
+   * does not decide whether a pack is listed either; that is `is_public`.
+   *
+   * Nothing stops staff flagging several. A page built for one highlight
+   * honours the first featured pack and treats the rest as ordinary, rather
+   * than badging four cards at once.
+   */
+  is_featured: boolean
+  /**
+   * Whether the pack is part of the public offer. Ships **on**.
+   *
+   * An unauthenticated response is all-public by definition, so this is only
+   * worth reading once a partner is signed in: `false` marks a bespoke or
+   * negotiated rate that the public catalogue does not carry. Show it as
+   * *their* rate - never as the standard offer, and never on a page a prospect
+   * can read. (Suspending a pack outright is `is_active`, which hides it from
+   * everyone including partners, so such a pack never reaches this type.)
+   */
+  is_public: boolean
   display_order: number
 }
 

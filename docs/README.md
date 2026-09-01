@@ -7,11 +7,11 @@ Index of project documentation. The two root-level docs are the entry points:
 
 ## Design system
 
-| Doc | Purpose |
-|---|---|
-| [../DESIGN.md](../DESIGN.md) | Brand identity, logos, colors, typography, layout, motion — the standard |
-| [../.claude/skills/goevent-design/SKILL.md](../.claude/skills/goevent-design/SKILL.md) | Component-by-component Tailwind recipes (auto-loaded by Claude Code for UI work) |
-| [../src/components/invitation/DROPDOWN_STYLING_GUIDE.md](../src/components/invitation/DROPDOWN_STYLING_GUIDE.md) | Detailed dropdown styling reference |
+| Doc                                                                                                              | Purpose                                                                          |
+| ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [../DESIGN.md](../DESIGN.md)                                                                                     | Brand identity, logos, colors, typography, layout, motion — the standard         |
+| [../.claude/skills/goevent-design/SKILL.md](../.claude/skills/goevent-design/SKILL.md)                           | Component-by-component Tailwind recipes (auto-loaded by Claude Code for UI work) |
+| [../src/components/invitation/DROPDOWN_STYLING_GUIDE.md](../src/components/invitation/DROPDOWN_STYLING_GUIDE.md) | Detailed dropdown styling reference                                              |
 
 ## Backend API references ([backend-api/](backend-api/))
 
@@ -49,6 +49,8 @@ Frontend-authored design requests for backend changes (the reverse direction of 
 - [standard-transition-video.md](backend-api-requirements/standard-transition-video.md) — nullable `standard_transition_video` file field on the event template: the film the standard flow plays between cover and invitation when the event has no `event_video` of its own, so a general-purpose standard template can ship its own transition instead of skipping the beat
 - [vendor-cover-image.md](backend-api-requirements/vendor-cover-image.md) — **delivered** — exposes the `cover_image` field in the vendor **brief** serializer so the featured-vendor spotlight can use a vendor's own banner instead of borrowing (and mis-cropping) a listing photo; also removes up to six extra requests per services-page load
 - [font-metric-normalization.md](backend-api-requirements/font-metric-normalization.md) — `size_adjust`/`ascent_override`/`descent_override`/`line_gap_override` on the **font library** record plus `size_scale` on the **template font row**, so a partner's font choice no longer lands too big in one showcase section and too small in another. The two multiply into one CSS `size-adjust`, which resizes glyphs inside the em box and leaves all ~400 hard-coded `font-size` declarations untouched. Everything defaults to unadjusted, so the frontend ships inert until the fields land
+- [guest-list-share.md](backend-api-requirements/guest-list-share.md) — a `GuestListShare` model plus `/api/events/{id}/guest-list-shares/` (organizer, JWT) and an unauthenticated `/api/guest-share/{code}/…` mirror of the guest and guest-group endpoints, so an organizer can hand the guest list to somebody with no account — read-only to copy invitation links, or editable to add and correct guests. The code in the URL is the whole credential, exactly as `?g=<shortcode>` already is on a private event's RSVP and guestbook; `404`/`403`/`410` distinguish unknown, revoked and expired
+- [template-preview-events.md](backend-api-requirements/template-preview-events.md) — `is_template_preview` on the Event model plus a public `GET /api/events/template-previews/`, so the public design catalogue previews each design through a real published event **of that design's own event type** instead of one bundled wedding JSON for everything. Curation, mostly: the frontend picks at random among the flagged events matching the category, falls back to the bundled sample when none exists, and substitutes its own placeholder shop over the event's partner branding
 
 ## Feature plans & implementation records ([features/](features/))
 
@@ -66,6 +68,7 @@ Deployment, workflow, and subsystem how-tos:
 
 - [CLOUDFLARE_DEPLOYMENT_GUIDE.md](guides/CLOUDFLARE_DEPLOYMENT_GUIDE.md) / [FRONTEND_DEPLOYMENT_GUIDE.md](guides/FRONTEND_DEPLOYMENT_GUIDE.md) / [LOCAL_WORKFLOW_GUIDE.md](guides/LOCAL_WORKFLOW_GUIDE.md) — deployment & dev workflow
 - [PLAYWRIGHT.md](guides/PLAYWRIGHT.md) — E2E testing setup, fixtures, and why `npx playwright install` must never be run
+- [PARTNER_PAGE_SCREENSHOTS.md](guides/PARTNER_PAGE_SCREENSHOTS.md) — recapturing the `/partners` invitation and guest-list screenshots
 - [API_SERVICE_TECHNICAL_REFERENCE.md](guides/API_SERVICE_TECHNICAL_REFERENCE.md) — API core internals (SecureLogger, type guards)
 - [VIDEO_MEMORY_MANAGEMENT.md](guides/VIDEO_MEMORY_MANAGEMENT.md) — showcase video memory system
 - [REDIRECT_SYSTEM_IMPLEMENTATION.md](guides/REDIRECT_SYSTEM_IMPLEMENTATION.md) — showcase redirect state

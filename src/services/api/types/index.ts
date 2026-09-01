@@ -8,6 +8,7 @@ export * from './api.types'
 // Domain-specific types
 export * from './event.types'
 export * from './guest.types'
+export * from './guest-share.types'
 export * from './expense.types'
 export * from './payment.types'
 export * from './donation.types'

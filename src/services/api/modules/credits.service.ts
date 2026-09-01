@@ -32,6 +32,12 @@ import type {
 
 export const partnerCreditsService = {
   /** The wholesale catalogue. Partner-only - non-partners get 403, not []. */
+  /**
+   * The wholesale catalogue. **Public** - no token needed, and no `403` to
+   * branch on any more. `apiClient.get` sends the Authorization header only
+   * when there is one, which is exactly right here: a signed-out visitor gets
+   * the public packs, a partner additionally gets their `is_public: false` ones.
+   */
   async getPacks(): Promise<ApiResponse<PaginatedResponse<CreditPack>>> {
     return apiClient.get<PaginatedResponse<CreditPack>>('/api/payment/credit-packs/')
   },

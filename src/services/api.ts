@@ -61,6 +61,7 @@ export type {
   EventComment,
   CreateCommentRequest,
   CommentFilters,
+  TemplatePreviewEvent,
 } from './api/types/event.types'
 
 // Template types
@@ -71,6 +72,7 @@ export type {
   EventTemplatePackagePlan,
   PackagePlan,
   EventTemplate,
+  PublicEventTemplate,
   TemplateAssets,
   CoverStageLayout,
   CoverLayoutMode,
@@ -155,6 +157,17 @@ export type {
   BulkAssignTableRequest,
   BulkAssignTableResponse,
 } from './api/types/guest.types'
+
+// Shareable guest-list link types
+export type {
+  GuestShareAccess,
+  GuestListShare,
+  CreateGuestListShareRequest,
+  UpdateGuestListShareRequest,
+  GuestShareContext,
+  GuestShareErrorReason,
+  SharedGuestListFilters,
+} from './api/types/guest-share.types'
 
 // Payment types
 export type {
@@ -296,6 +309,10 @@ export { eventTemplateService, packagePlanService, partnerTemplateService, custo
 
 // Guest services
 export { guestService, guestGroupService } from './api/modules/guests.service'
+export {
+  guestListShareService,
+  sharedGuestListService,
+} from './api/modules/guest-share.service'
 
 // Table seating service
 export { tablesService } from './api/modules/tables.service'

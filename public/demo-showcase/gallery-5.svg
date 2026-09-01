@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1125" width="900" height="1125" role="img">
+<defs>
+<linearGradient id="gmrj4gx" x1="0" y1="0" x2="0.25" y2="1"><stop offset="0.00" stop-color="#8f7f74"/><stop offset="1.00" stop-color="#3b3631"/></linearGradient>
+<radialGradient id="vmrj4gx" cx="0.5" cy="0.42" r="0.78">
+<stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+<stop offset="1" stop-color="#000" stop-opacity="0.5"/>
+</radialGradient>
+<filter id="bmrj4gx" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="100"/></filter>
+<filter id="nmrj4gx" x="0" y="0" width="100%" height="100%">
+<feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/>
+<feColorMatrix type="saturate" values="0"/>
+</filter>
+</defs>
+<rect width="900" height="1125" fill="url(#gmrj4gx)"/>
+<g filter="url(#bmrj4gx)"><ellipse cx="480" cy="620" rx="380" ry="340" fill="#c9a227" opacity="0.45"/><ellipse cx="200" cy="260" rx="260" ry="240" fill="#d9a89c" opacity="0.55"/><ellipse cx="760" cy="960" rx="260" ry="240" fill="#7d8f79" opacity="0.4"/></g>
+<rect width="900" height="1125" fill="url(#vmrj4gx)"/>
+<rect width="900" height="1125" filter="url(#nmrj4gx)" opacity="0.55" style="mix-blend-mode:overlay"/>
+</svg>

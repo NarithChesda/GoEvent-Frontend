@@ -1,0 +1,247 @@
+{
+  "nav": "Partners",
+  "backToEvents": "My events",
+  "switchLanguage": "Switch to {lang}",
+  "hero": {
+    "eyebrow": "Partner programme",
+    "titleLead": "Free to start.",
+    "titleAccent": "Profit more in a pack.",
+    "subtitle": "You build the invitation for your customer and set your own price. Your first two events are free. After that, pay for each event — or buy a pack and pay less.",
+    "ctaPrimary": "Request partner access",
+    "ctaSecondary": "See the prices",
+    "proof": {
+      "payg": "Your first two events are free — you buy nothing to try it",
+      "fee": "No monthly fee, and we take no share of what you charge",
+      "review": "We read every request ourselves, usually within two working days"
+    },
+    "imageAlt": "Three GoEvent invitations open on phones: a gold Khmer design, a soft pink one, and a deep red one"
+  },
+  "steps": {
+    "title": "How it works",
+    "subtitle": "Three steps, in this order. We ask nothing else of you.",
+    "open": {
+      "title": "Open your partner account",
+      "body": "Tell us about your shop. Once you are approved, your first two events are free. After that, pay for each event or buy a pack."
+    },
+    "build": {
+      "title": "Build the invitation",
+      "body": "You make it for your customer — photos, schedule, guest list. Their names go on the invitation as the hosts. The account stays yours."
+    },
+    "sell": {
+      "title": "Turn it on, and get paid",
+      "body": "Use one credit and the invitation goes live straight away. Whatever your customer pays you, you keep."
+    }
+  },
+  "pricing": {
+    "eyebrow": "Partner pricing — Basic package",
+    "title": "Buy more, keep more",
+    "subtitle": "Shops sell a Basic invitation for $60–85. Your first two events cost you nothing. After that, pay for each event with nothing up front, or buy a pack and pay less for every one.",
+    "profitLabel": "Your profit",
+    "payUpfront": "Pay up front",
+    "costEach": "You pay each",
+    "keepEach": "You keep each",
+    "forPlan": "For {plan}",
+    "invitationCount": "{n} invitation | {n} invitations",
+    "eventCount": "{n} event | {n} events",
+    "packProfitCaption": "if you sell all {n} at {retail}",
+    "cta": "Request partner access",
+    "scrollLabel": "Credit packs",
+    "tiers": {
+      "trial": {
+        "name": "Free trial",
+        "credits": "2 free events",
+        "badge": "Try it first",
+        "profit": "$120–170",
+        "profitCaption": "if you sell both at $60–85",
+        "upfront": "Nothing",
+        "costEach": "Free",
+        "keepEach": "$60–85",
+        "note": "Make two real invitations for two real customers before you pay us anything. Whatever you charge for them, you keep."
+      },
+      "payg": {
+        "name": "Pay as you go",
+        "credits": "Pay per event",
+        "badge": "Nothing up front",
+        "profit": "$30–42",
+        "profitCaption": "on every event you sell",
+        "upfront": "Nothing",
+        "costEach": "Half price",
+        "keepEach": "$30–42",
+        "note": "You pay half the package price, every time. A good way to start while you are still not sure how many events you will get."
+      },
+      "shop": {
+        "badge": "Most shops start here"
+      },
+      "volume": {
+        "badge": "Cheapest per event"
+      }
+    },
+    "footnote": "These are Basic package prices. The Standard package sells for $120–150 per event and has its own partner prices — ask us when we open your account. The profit shown assumes you sell every invitation in the pack. What you charge your own customer is up to you. Prices in US dollars."
+  },
+  "product": {
+    "eyebrow": "What you are selling",
+    "title": "An invitation your customer could not make themselves",
+    "subtitle": "This is what their guests see on their phone.",
+    "cinematic": {
+      "title": "Opens like a short film"
+    },
+    "bilingual": {
+      "title": "Khmer and English"
+    },
+    "rsvp": {
+      "title": "Guests reply with one tap"
+    },
+    "wishes": {
+      "title": "Wishes, no account needed"
+    },
+    "notify": {
+      "title": "Instant alerts on Telegram"
+    },
+    "guests": {
+      "title": "Guest list and seating"
+    },
+    "checkin": {
+      "title": "Check guests in on the day"
+    },
+    "media": {
+      "title": "Their photos, music and map"
+    },
+    "previewCta": "Browse every design",
+    "previewHint": "Pick a design and read the whole invitation it makes.",
+    "screensLabel": "Which screen to show",
+    "screens": {
+      "cover": {
+        "label": "The opening",
+        "body": "One link, sent in the chat app they already use."
+      },
+      "rsvp": {
+        "label": "The reply",
+        "body": "Countdown, reply button and gift details — nothing to install."
+      },
+      "wishes": {
+        "label": "The wishes",
+        "body": "The messages guests leave, collected as they come in."
+      }
+    }
+  },
+  "templates": {
+    "eyebrow": "Live preview",
+    "title": "Open a design and read the whole invitation",
+    "subtitle": "Pick a design and the real invitation opens with it — in English and Khmer.",
+    "menuLabel": "Designs",
+    "viewControlsLabel": "Preview controls",
+    "viewSingle": "Show one screen",
+    "viewAll": "Show all screens side by side",
+    "switchLanguage": "Switch preview language",
+    "stageLabel": "Which screen to show",
+    "note": "This is a real invitation, shown as a sample. Every word, picture, colour and language is set for each event — and the logo at the bottom of the invitation is your shop’s, next to ours.",
+    "empty": {
+      "title": "The designs are not loading",
+      "body": "They are there — this page just could not reach them. Message us and we will show you the designs ourselves.",
+      "cta": "Message us on Telegram"
+    },
+    "back": "Partner programme",
+    "planLabel": "Package",
+    "filterLabel": "Event type",
+    "allCategories": "Every event type",
+    "otherPlan": "Other designs"
+  },
+  "partner": {
+    "eyebrow": "What you get",
+    "title": "Your name, your customer, your credits",
+    "branding": {
+      "title": "Your logo on every invitation",
+      "body": "Your logo sits next to ours at the bottom of every invitation you make."
+    },
+    "listing": {
+      "title": "Your shop in our services directory",
+      "body": "List your shop on GoEvent's services page, where people planning an event are already looking."
+    },
+    "ownership": {
+      "title": "You own the event",
+      "body": "Your customer needs no account and no password."
+    },
+    "instant": {
+      "title": "It turns on straight away",
+      "body": "One credit opens the design at once — nothing to upload, no waiting."
+    },
+    "locked": {
+      "title": "Nobody else can use your credits",
+      "body": "Credits only work from your own account. If the code gets out, it costs you nothing."
+    },
+    "studio": {
+      "title": "Make your own designs",
+      "body": "Approved partners can design their own invitations and publish them."
+    },
+    "topup": {
+      "title": "Buy more credits any time",
+      "body": "Your balance, your packs and your orders, all on one page in your account."
+    }
+  },
+  "faq": {
+    "eyebrow": "Before you ask",
+    "title": "The questions shops actually ask",
+    "unsold": {
+      "q": "What happens if I do not sell them all?",
+      "a": "Your credits stay in your account until you use them. Each pack has its own expiry date, shown on your credits page. If you are not sure how many events you will get, use your two free events, pay per event for a while, and buy a pack once the work is steady."
+    },
+    "price": {
+      "q": "Can I set my own price?",
+      "a": "Yes. The prices on this page are what you pay us. What you charge your customer is completely up to you, and we take none of it."
+    },
+    "domain": {
+      "q": "Is the invitation under my own brand?",
+      "a": "Your shop's logo appears next to ours at the bottom of every invitation. The invitation itself lives on goevent.online, which is what keeps it fast and leaves you nothing to look after. You cannot put it on your own web address."
+    },
+    "plans": {
+      "q": "Do credits work on any design?",
+      "a": "Credits only work on the package you bought them for. A Basic credit opens any Basic design, for any kind of event — but not a Standard one. This page shows Basic prices."
+    },
+    "payment": {
+      "q": "How do I pay for a pack?",
+      "a": "Bank transfer or QR. Order the pack, upload your payment slip, and we add the credits once we have checked it — usually the same working day."
+    },
+    "customer": {
+      "q": "Does my customer need an account?",
+      "a": "No. You create and own the event; their names appear on it as the hosts. Their guests only ever open a link — no app, no sign-up, nothing to install."
+    },
+    "apply": {
+      "q": "How do I become a partner?",
+      "a": "Send us a request with your shop's name, a number we can call you on, and roughly how many events you take on each month. We read every request ourselves and normally reply within two working days."
+    }
+  },
+  "closing": {
+    "title": "Your first two invitations are on us",
+    "subtitle": "Tell us about your shop. If it is a good fit we will open your account, and you can make two real invitations before you pay us anything.",
+    "cta": "Request partner access",
+    "telegram": "Message us on Telegram"
+  },
+  "runday": {
+    "eyebrow": "And the day itself",
+    "title": "Your whole guest list, and the totals that come with it",
+    "subtitle": "One place for the guest list, the replies and the gift money. No spreadsheet, and no counting the same gift twice.",
+    "imageAlt": "The GoEvent guest list, showing each guest with their group, reply, cash gift and table",
+    "beats": {
+      "list": {
+        "label": "Everything about a guest, on one row",
+        "body": "Group, invitation sent, reply, extra guests, gift money, table and seat. Change any of it right where you see it — there is no second list to keep up to date."
+      },
+      "totals": {
+        "label": "And the numbers people ask you for",
+        "body": "The same list, added up for you. It updates the moment a guest replies, so the number you say on the phone is the number on the screen."
+      }
+    },
+    "points": {
+      "replies": "Replies arrive here as guests answer",
+      "seating": "Give a guest a table and seat by dragging them",
+      "gifts": "Gift money saved next to the guest's name",
+      "totals": "Replies, headcount and gift totals, added up for you",
+      "chase": "See the names of guests who have not replied yet",
+      "bygroup": "Gift totals for each guest group"
+    },
+    "shots": {
+      "rsvp": "The replies card: 61% of 186 guests have replied, 96 coming, 148 expected once extra guests are counted, and the guests still to ask",
+      "gifts": "The cash gift card: 84 of 186 guests gave, 3,860 USD in total, split by guest group"
+    }
+  }
+}

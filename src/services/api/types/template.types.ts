@@ -97,6 +97,27 @@ export interface EventTemplatePackagePlan {
   }
 }
 
+/**
+ * A row of the public template catalogue (`GET /api/core-data/event-templates/`,
+ * no auth). Deliberately narrower than `EventTemplate`: that one is the
+ * signed-in browse response and carries `template_colors`/`template_fonts`,
+ * which this endpoint does not return — a caller that needs a template's look
+ * fetches `public_template_assets` for it.
+ *
+ * `package_plan` is an id here, not the expanded object.
+ */
+export interface PublicEventTemplate {
+  id: number
+  name: string
+  template_type: 'system' | 'partner'
+  status: string
+  package_plan: number | null
+  preview_image: string | null
+  youtube_preview_url?: string | null
+  /** 'v1' | 'v2' — which showcase rendering model the template is built for. */
+  showcase_template_version?: string | null
+}
+
 export interface EventTemplate {
   id: number
   name: string

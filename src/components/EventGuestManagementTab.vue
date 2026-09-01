@@ -62,7 +62,11 @@
 
     <!-- Content Area -->
     <div v-else class="min-h-[25rem]">
-      <!-- Sub-navigation -->
+      <!-- Sub-navigation.
+           Sharing rides on this row rather than inside the guest panel: it is a
+           fact about who may reach the whole list, not one more thing you can do
+           to it, and the panel's toolbar is already the busiest row on the tab.
+           Only on the guest list — a share link does not carry seating. -->
       <div class="flex items-center gap-2 mb-6 border-b border-slate-200/70">
         <button
           v-for="tab in subTabs"
@@ -75,6 +79,16 @@
         >
           <component :is="tab.icon" class="w-4 h-4" />
           {{ tab.label }}
+        </button>
+
+        <button
+          v-if="props.canEdit && activeSubTab === 'guests'"
+          @click="openShareModal"
+          class="ml-auto flex items-center gap-1.5 px-3 py-1.5 mb-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
+          :title="t('management.shareGuestList.openCta')"
+        >
+          <Link2 class="w-4 h-4" />
+          <span class="hidden sm:inline">{{ t('management.shareGuestList.openCta') }}</span>
         </button>
       </div>
 
@@ -173,6 +187,21 @@
       @delete-group="handleDeleteGroupFromAddGuest"
     />
 
+    <!-- Share Guest List -->
+    <ShareGuestListModal
+      :show="showShareModal"
+      :shares="shares"
+      :loading="loadingShares"
+      :creating="creatingShare"
+      :busy-share-id="busyShareId"
+      :error-message="shareErrorMessage"
+      @close="showShareModal = false"
+      @create="handleCreateShare"
+      @revoke="handleRevokeShare"
+      @delete="handleDeleteShare"
+      @copy-failed="showMessage('error', t('management.shareGuestList.toast.copyFailed'))"
+    />
+
     <!-- Edit Guest Modal -->
     <EditGuestModal
       ref="editGuestModalRef"
@@ -200,6 +229,7 @@ import {
   Mail,
   UserPlus,
   Armchair,
+  Link2,
 } from 'lucide-vue-next'
 import { useNotifications } from '@/composables/useNotifications'
 import { usePaymentTemplateIntegration } from '../composables/usePaymentTemplateIntegration'
@@ -218,6 +248,13 @@ import AddGuestModal from './invitation/AddGuestModal.vue'
 import EditGuestModal from './invitation/EditGuestModal.vue'
 import GuestGroupsView from './invitation/GuestGroupsView.vue'
 import SeatingTablesView from './invitation/SeatingTablesView.vue'
+import ShareGuestListModal from './invitation/ShareGuestListModal.vue'
+import {
+  useGuestListShares,
+  resolveExpiry,
+  type ShareExpiryPreset,
+} from '../composables/invitation/useGuestListShares'
+import type { GuestListShare, GuestShareAccess } from '../services/api'
 
 // Props
 const props = defineProps<{
@@ -363,6 +400,73 @@ const editGuestModalRef = ref<InstanceType<typeof EditGuestModal> | null>(null)
 const showDeleteModal = ref(false)
 const deletingGuest = ref(false)
 const deleteTargetGuest = ref<EventGuest | null>(null)
+
+// ---------------------------------------------------------------------------
+// Share links
+// ---------------------------------------------------------------------------
+// Loaded lazily on first open rather than with the tab: most sessions here are
+// about the guest list itself and never touch sharing, and this is a request
+// that would otherwise be paid on every visit.
+const showShareModal = ref(false)
+const {
+  shares,
+  loading: loadingShares,
+  creating: creatingShare,
+  busyShareId,
+  errorMessage: shareErrorMessage,
+  hasLoaded: hasLoadedShares,
+  loadShares,
+  createShare,
+  revokeShare,
+  deleteShare,
+} = useGuestListShares(props.eventId)
+
+const openShareModal = () => {
+  showShareModal.value = true
+  if (!hasLoadedShares.value) loadShares()
+}
+
+const handleCreateShare = async (
+  access: GuestShareAccess,
+  label: string,
+  expiry: ShareExpiryPreset,
+) => {
+  const response = await createShare({
+    access,
+    label: label || undefined,
+    expires_at: resolveExpiry(expiry),
+  })
+
+  if (response.success && response.data) {
+    // The link is minted to be sent, so it goes to the clipboard in the same
+    // gesture. The row it lands in stays copyable, so a clipboard failure here
+    // is worth a sentence and not a rollback.
+    try {
+      await navigator.clipboard.writeText(response.data.url)
+      showMessage('success', t('management.shareGuestList.toast.createdAndCopied'))
+    } catch {
+      showMessage('success', t('management.shareGuestList.toast.created'))
+    }
+  } else {
+    showMessage('error', response.message || t('management.shareGuestList.toast.createFailed'))
+  }
+}
+
+const handleRevokeShare = async (share: GuestListShare) => {
+  const response = await revokeShare(share.id)
+  if (response.success) {
+    showMessage('success', t('management.shareGuestList.toast.revoked'))
+  } else {
+    showMessage('error', response.message || t('management.shareGuestList.toast.revokeFailed'))
+  }
+}
+
+const handleDeleteShare = async (share: GuestListShare) => {
+  const response = await deleteShare(share.id)
+  if (!response.success) {
+    showMessage('error', response.message || t('management.shareGuestList.toast.deleteFailed'))
+  }
+}
 
 // Bulk delete modal state
 const showBulkDeleteModal = ref(false)
@@ -839,6 +943,11 @@ const showMessage = (type: 'success' | 'error', text: string) => {
 
 // Lifecycle
 onMounted(() => {
+  // The store is a singleton and the shared guest-list page points it at a
+  // share code. It resets on unmount, but claiming the organizer's own
+  // transport here means a page that failed to unmount cleanly cannot leave
+  // this screen reading somebody's share link.
+  store.useOwnerTransport()
   loadPayments()
 })
 

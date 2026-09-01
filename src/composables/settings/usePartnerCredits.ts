@@ -11,6 +11,11 @@
  * as `isPartnerGated` so the tab can explain that instead of showing an error
  * state - see PARTNER_CREDIT_API_DOCS §1. The backend used to require a vendor
  * profile too; since 2026-08-23 it checks only the account's partner flag.
+ *
+ * Since 2026-08-30 the **catalogue** is public and never answers `403`, so the
+ * gate is now decided by `my-credits` and the order list alone. That needs no
+ * code change - a non-partner still gets `403` from those two - but do not read
+ * the packs request as evidence of anything: it succeeds for everyone.
  */
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'

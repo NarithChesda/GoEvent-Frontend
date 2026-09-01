@@ -14,14 +14,17 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import {
-  guestService,
-  guestGroupService,
   type EventGuest,
   type GuestGroup,
   type GuestStats,
   type UpdateGuestRequest,
   type CreateGuestGroupRequest,
 } from '../services/api'
+import {
+  ownerGuestTransport,
+  createSharedGuestTransport,
+  type GuestDataTransport,
+} from '../services/api/modules/guest-share.service'
 
 // Constants
 const PAGE_SIZE = 20
@@ -41,6 +44,37 @@ interface PaginationState {
 }
 
 export const useGuestManagementStore = defineStore('guestManagement', () => {
+  // ============================================================================
+  // TRANSPORT
+  // ============================================================================
+
+  /**
+   * How this store reaches guest data.
+   *
+   * Two audiences read the same list through the same pagination, caching and
+   * optimistic-update logic: the signed-in organizer on the manage screen, and
+   * whoever holds a guest-list share link — an account-less helper whose only
+   * credential is the code in their URL. What differs between them is the URL
+   * the requests go to, and nothing else, so the transport is the one thing
+   * that swaps. Every action below therefore calls `transport.value.*` rather
+   * than a service directly.
+   *
+   * `eventId` is still threaded through every action even on a share, where the
+   * code already names the event and the transport discards the argument —
+   * keeping it means neither the actions nor their callers fork.
+   */
+  const transport = ref<GuestDataTransport>(ownerGuestTransport)
+
+  /** Route every subsequent request through a share code. */
+  function useShareTransport(code: string) {
+    transport.value = createSharedGuestTransport(code)
+  }
+
+  /** Back to the signed-in organizer's own endpoints. */
+  function useOwnerTransport() {
+    transport.value = ownerGuestTransport
+  }
+
   // ============================================================================
   // STATE
   // ============================================================================
@@ -170,7 +204,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
   async function loadGroups(eventId: string) {
     loadingGroups.value = true
     try {
-      const response = await guestGroupService.getGroups(eventId)
+      const response = await transport.value.groups.getGroups(eventId)
       if (response.success && response.data) {
         const groupsArray = Array.isArray(response.data)
           ? response.data
@@ -192,7 +226,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
    */
   async function createGroup(eventId: string, data: CreateGuestGroupRequest) {
     try {
-      const response = await guestGroupService.createGroup(eventId, data)
+      const response = await transport.value.groups.createGroup(eventId, data)
 
       if (response.success && response.data) {
         groups.value.push(response.data)
@@ -214,7 +248,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
    */
   async function updateGroup(eventId: string, groupId: number, data: Partial<CreateGuestGroupRequest>) {
     try {
-      const response = await guestGroupService.updateGroup(eventId, groupId, data)
+      const response = await transport.value.groups.updateGroup(eventId, groupId, data)
 
       if (response.success && response.data) {
         const index = groups.value.findIndex((g) => g.id === groupId)
@@ -238,7 +272,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
       const group = groups.value.find((g) => g.id === groupId)
       const guestCount = group?.guest_count || 0
 
-      const response = await guestGroupService.deleteGroup(eventId, groupId)
+      const response = await transport.value.groups.deleteGroup(eventId, groupId)
 
       if (response.success) {
         groups.value = groups.value.filter((g) => g.id !== groupId)
@@ -303,7 +337,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
     }
 
     try {
-      const response = await guestService.getGuests(eventId, {
+      const response = await transport.value.guests.getGuests(eventId, {
         group: groupId,
         ordering: 'name',
         page: page,
@@ -355,7 +389,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
     }
 
     try {
-      const response = await guestService.getGuests(eventId, {
+      const response = await transport.value.guests.getGuests(eventId, {
         ordering: 'name',
         page: page,
         page_size: PAGE_SIZE,
@@ -393,7 +427,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
   async function loadGuestStats(eventId: string) {
     loadingStats.value = true
     try {
-      const response = await guestService.getGuestStats(eventId)
+      const response = await transport.value.guests.getGuestStats(eventId)
       if (response.success && response.data) {
         stats.value = response.data
       }
@@ -442,7 +476,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
     updateStats(1)
 
     try {
-      const response = await guestService.createGuest(eventId, {
+      const response = await transport.value.guests.createGuest(eventId, {
         name: trimmedName,
         group: groupId,
         // Backend currently requires this on create even though the guest
@@ -495,7 +529,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
    */
   async function updateGuest(eventId: string, guestId: number, groupId: number, data: UpdateGuestRequest) {
     try {
-      const response = await guestService.updateGuest(eventId, guestId, data)
+      const response = await transport.value.guests.updateGuest(eventId, guestId, data)
 
       if (response.success && response.data) {
         const updatedGuest = response.data
@@ -560,7 +594,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
     updateStats(-1, { from: guestStatus, to: undefined })
 
     try {
-      const response = await guestService.deleteGuest(eventId, guestId)
+      const response = await transport.value.guests.deleteGuest(eventId, guestId)
 
       if (!response.success) {
         // Rollback optimistic update on failure
@@ -615,7 +649,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
     updateStats(0, { from: 'not_sent', to: 'sent' })
 
     try {
-      const response = await guestService.markInvitationSent(eventId, guestId)
+      const response = await transport.value.guests.markInvitationSent(eventId, guestId)
 
       if (!response.success) {
         // Rollback optimistic update on failure
@@ -649,7 +683,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
    */
   async function bulkMarkGuestsAsSent(eventId: string, guestIds: number[]) {
     try {
-      const response = await guestService.bulkMarkInvitationSent(eventId, guestIds)
+      const response = await transport.value.guests.bulkMarkInvitationSent(eventId, guestIds)
 
       if (response.success && response.data) {
         const count = response.data.count
@@ -711,7 +745,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
         }
       })
 
-      const response = await guestService.bulkDeleteGuests(eventId, guestIds)
+      const response = await transport.value.guests.bulkDeleteGuests(eventId, guestIds)
 
       if (response.success && response.data) {
         const count = response.data.count
@@ -765,7 +799,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
    */
   async function bulkImportGuests(eventId: string, groupId: number, file: File) {
     try {
-      const response = await guestGroupService.bulkImportToGroup(eventId, groupId, file)
+      const response = await transport.value.groups.bulkImportToGroup(eventId, groupId, file)
 
       if (response.success && response.data) {
         const createdCount = response.data.created || 0
@@ -803,7 +837,7 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
     let hasMore = true
 
     while (hasMore) {
-      const response = await guestService.getGuests(eventId, {
+      const response = await transport.value.guests.getGuests(eventId, {
         group: groupId,
         page: page,
         page_size: PAGE_SIZE,
@@ -952,6 +986,10 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
    * Reset all state (useful when switching events or unmounting)
    */
   function $reset() {
+    // The transport goes back with the data. The store is a singleton, so a
+    // share code left behind by the shared page would otherwise still be
+    // routing requests when the organizer next opens their own manage screen.
+    transport.value = ownerGuestTransport
     groups.value = []
     loadingGroups.value = false
     expandedGroupIds.value.clear()
@@ -986,6 +1024,10 @@ export const useGuestManagementStore = defineStore('guestManagement', () => {
   // ============================================================================
 
   return {
+    // Transport
+    useShareTransport,
+    useOwnerTransport,
+
     // State
     groups: sortedGroups,
     loadingGroups,

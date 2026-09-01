@@ -115,16 +115,58 @@
         <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': isLoading }" aria-hidden="true" />
         {{ t('settings.credits.tryAgain') }}
       </button>
+
+      <!--
+        The same destination as the header link on the other half of this page,
+        because this is the half whose reader has not read the pitch yet. Bare
+        rather than pilled: it sits under a primary CTA, and someone who is not
+        a partner needs the application first and the sales page second. The
+        wrapper is what puts it on its own line — the CTAs above are inline-flex
+        inside a centred column, so a bare sibling would sit beside them.
+      -->
+      <div class="mt-5">
+        <RouterLink
+          to="/partners"
+          class="inline-flex min-h-[40px] items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-slate-500 transition-[color,transform] duration-200 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 active:scale-[0.97]"
+        >
+          {{ t('settings.credits.programmeLink') }}
+          <ArrowRight class="h-4 w-4 flex-none" aria-hidden="true" />
+        </RouterLink>
+      </div>
     </div>
 
     <template v-else>
-      <header class="mb-6 min-w-0">
-        <h2 class="text-2xl font-bold text-slate-900 sm:text-3xl">
-          {{ t('settings.credits.title') }}
-        </h2>
-        <p class="mt-1.5 max-w-xl text-sm leading-relaxed text-slate-500">
-          {{ t('settings.credits.subtitle') }}
-        </p>
+      <!--
+        The title, and beside it the way back to the argument this page is the
+        answer to. `basis-64` on the text column is what decides when the two
+        stop being one row: below ~16rem the link wraps under the subtitle
+        rather than squeezing the heading into two lines to make room for it.
+        Top-aligned, so the link sits on the heading's line and not in the
+        middle of a two-line block.
+      -->
+      <header class="mb-6 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+        <div class="min-w-0 flex-1 basis-64">
+          <h2 class="text-2xl font-bold text-slate-900 sm:text-3xl">
+            {{ t('settings.credits.title') }}
+          </h2>
+          <p class="mt-1.5 max-w-xl text-sm leading-relaxed text-slate-500">
+            {{ t('settings.credits.subtitle') }}
+          </p>
+        </div>
+
+        <!--
+          An outline pill, not a filled one: it leaves the page, and the only
+          filled controls here are the ones that spend money. The arrow trails
+          the label because it points at where you land, and the padding is
+          uneven to sit the glyph optically inside the pill's end.
+        -->
+        <RouterLink
+          to="/partners"
+          class="inline-flex min-h-[40px] flex-none items-center gap-1.5 rounded-full border border-slate-200 bg-white pl-3.5 pr-3 text-[13px] font-medium text-slate-700 shadow-sm transition-[color,background-color,border-color,transform] duration-200 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 active:scale-[0.97]"
+        >
+          {{ t('settings.credits.programmeLink') }}
+          <ArrowRight class="h-4 w-4 flex-none" aria-hidden="true" />
+        </RouterLink>
       </header>
 
       <!--
@@ -398,8 +440,10 @@
  */
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
 import {
   AlertTriangle,
+  ArrowRight,
   Check,
   ChevronRight,
   Clock,

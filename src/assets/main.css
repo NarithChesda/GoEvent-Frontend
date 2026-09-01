@@ -1,7 +1,7 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
-@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&family=Kantumruy+Pro:wght@300;400;500;600;700&family=Noto+Serif+Khmer:wght@500;600;700&display=swap');
 @import './picker-panel.css';
 @import './drawer-panel.css';
 
@@ -257,4 +257,124 @@ body,
     transition: opacity 0.15s ease;
     transform: none;
   }
+}
+
+/* ---------------------------------------------------------------------------
+ * Script-aware type: Khmer
+ *
+ * Every size, leading and tracking value in this app was chosen against
+ * Figtree. Khmer is not a heavier Latin — it stacks: a vowel sign sits above
+ * the consonant, a coeng subscript hangs below it, and a single cluster can
+ * occupy roughly 1.4× the em box a Latin word does. So the Latin ladder is not
+ * merely tight for Khmer, it *collides*: at `leading-[1.2]` the coeng of
+ * ក្នុង on one line lands on the ា of the next.
+ *
+ * Corrections are keyed off `:lang(km)`, which i18n/index.ts already stamps on
+ * <html> whenever the app locale is `kh`. They are applied through the same
+ * `leading-*` / `tracking-*` utilities the design system already writes, so a
+ * component keeps saying what it means once and gets the right number in both
+ * scripts — no per-string overrides, no `v-if="isKhmer"`.
+ *
+ * `leading-none` is deliberately NOT re-tuned. Its two uses here are numeric
+ * (the pricing figure, tabular-nums), where a re-tuned ratio would visibly
+ * loosen a block that has no Khmer in it.
+ * ------------------------------------------------------------------------- */
+:lang(km) .leading-tight {
+  line-height: 1.35;
+}
+
+:lang(km) .leading-snug {
+  line-height: 1.45;
+}
+
+:lang(km) .leading-normal {
+  line-height: 1.65;
+}
+
+/* The design system's body class (DESIGN.md §3.2). One rule, and every
+ * paragraph, list item and description in the app stops crowding itself. */
+:lang(km) .leading-relaxed {
+  line-height: 1.85;
+}
+
+:lang(km) .leading-loose {
+  line-height: 2.05;
+}
+
+/* Khmer writes without spaces between words, so the reader finds boundaries by
+ * cluster shape. Negative tracking blurs those shapes together and wide
+ * tracking pulls them apart into an even picket fence — both cost more than
+ * they cost Latin. Neutralised rather than removed from the markup: the
+ * English rendering of the same component still wants them. */
+:lang(km) .tracking-tighter,
+:lang(km) .tracking-tight {
+  letter-spacing: normal;
+}
+
+:lang(km) .tracking-wide,
+:lang(km) .tracking-wider,
+:lang(km) .tracking-widest {
+  letter-spacing: 0.01em;
+}
+
+/* ---------------------------------------------------------------------------
+ * `.type-display` — a marketing headline that has to hold both scripts.
+ *
+ * The leading lives here and not in a `leading-*` class because Tailwind's
+ * `text-*` utilities ship their own `line-height` and sort *after* every
+ * `leading-*` in the stylesheet. So `text-3xl leading-[1.2] lg:text-5xl` is
+ * 1.2 on a phone and silently 1.0 from `lg:` up — `text-5xl` carries
+ * `line-height: 1`. That was live on both hero headlines, in English too. This
+ * block is emitted after Tailwind's utilities, so it wins at every breakpoint
+ * without an `!important` or a responsive variant per size.
+ *
+ * Khmer additionally swaps to a display face. Figtree has no Khmer glyphs, so
+ * today's Khmer headline is Kantumruy Pro Bold falling out of the stack — a UI
+ * face at 700, where the counters close up and the coengs mass into a bar.
+ * Noto Serif Khmer is drawn for setting, not for chrome: it has stroke
+ * modulation, open counters, and its marks are engineered tighter to the
+ * baseline, which is what lets the leading come back down to 1.45. Latin is
+ * untouched — Figtree still wins for anything in its own unicode range.
+ * ------------------------------------------------------------------------- */
+:root {
+  --font-khmer-display: 'Noto Serif Khmer', 'Kantumruy Pro', 'Figtree', system-ui, serif;
+}
+
+.type-display {
+  line-height: 1.14;
+}
+
+:lang(km) .type-display {
+  font-family: var(--font-khmer-display);
+  line-height: 1.45;
+  letter-spacing: normal;
+}
+
+/* Section headings sit a tier down and wrap more often, so they get the same
+ * treatment with a touch more air between the lines. */
+.type-display-sm {
+  line-height: 1.2;
+}
+
+:lang(km) .type-display-sm {
+  font-family: var(--font-khmer-display);
+  line-height: 1.5;
+  letter-spacing: normal;
+}
+
+/* ---------------------------------------------------------------------------
+ * `.clip-text-safe` — for a run of text filled by `background-clip: text`.
+ *
+ * The gradient is painted only inside the element's own background box, so any
+ * ink that falls outside it gets no paint at all and, the text being
+ * transparent, simply vanishes. Latin descenders stay inside a normal line box
+ * and never show this; a Khmer coeng hangs below one and does — the ្ត of
+ * ផ្តើម was rendering as a half-erased stub on the /events headline.
+ *
+ * Pad the paint box, then pull exactly that padding back off the layout, so
+ * the box the gradient fills grows while nothing moves.
+ * ------------------------------------------------------------------------- */
+.clip-text-safe {
+  padding-block: 0.16em 0.26em;
+  margin-block: -0.16em -0.26em;
 }

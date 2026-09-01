@@ -14,6 +14,7 @@ import type {
   MyEventsResponse,
   EventPhoto,
   EventLikeResponse,
+  TemplatePreviewEvent,
 } from '../types'
 
 export const eventsService = {
@@ -196,6 +197,27 @@ export const eventsService = {
   // Remove collaborator
   async removeCollaborator(eventId: string, collaboratorId: number): Promise<ApiResponse<void>> {
     return apiClient.delete(`/api/events/${eventId}/collaborators/${collaboratorId}/`)
+  },
+
+  /**
+   * The events staff have flagged as sample invitations for the PUBLIC design
+   * catalogue (`is_template_preview`), for the page to pick one from.
+   *
+   * Public, like the catalogue it serves: that page has no signed-in visitor and
+   * nothing of theirs to render. The rows are deliberately thin — id and
+   * category — because the invitation itself comes from `getEventShowcase`
+   * below, exactly as a guest's does.
+   *
+   * PENDING backend endpoint (docs/backend-api-requirements/template-preview-events.md).
+   * A 404 is read by the caller as "none published yet", which is the same
+   * screen as "the endpoint isn't there", so this ships inert.
+   */
+  async listTemplatePreviewEvents(): Promise<
+    ApiResponse<PaginatedResponse<TemplatePreviewEvent>>
+  > {
+    return apiClient.getPublic<PaginatedResponse<TemplatePreviewEvent>>(
+      '/api/events/template-previews/',
+    )
   },
 
   // Get event showcase data (public endpoint for invitations)

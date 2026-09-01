@@ -430,6 +430,7 @@
   "credits": {
     "title": "Partner credits",
     "subtitle": "Buy credits at wholesale, then spend one to activate each event you set up for a customer.",
+    "programmeLink": "Partner programme",
     "errorTitle": "Couldn't load your credits",
     "tryAgain": "Try again",
     "balanceLabel": "credits available",
