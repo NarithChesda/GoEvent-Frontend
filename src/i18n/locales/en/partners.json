@@ -112,15 +112,15 @@
     "screens": {
       "cover": {
         "label": "The opening",
-        "body": "A cover that opens on the guest's own name."
-      },
-      "schedule": {
-        "label": "The day",
-        "body": "Ceremony times, venue and map, what to wear."
+        "body": "One link, in the chat they already use."
       },
       "rsvp": {
         "label": "The reply",
         "body": "Countdown, RSVP and gift details — nothing to install."
+      },
+      "wishes": {
+        "label": "The wishes",
+        "body": "The notes guests leave, collected as they arrive."
       }
     }
   },

@@ -1,38 +1,58 @@
 # Regenerating the partner page screenshots
 
 `/partners` ([src/views/PartnerProgramView.vue](../../src/views/PartnerProgramView.vue)) makes its
-argument with seven checked-in screenshots in [src/assets/partners/](../../src/assets/partners/).
-They are captured from the running app, not drawn, and this is how to capture them again when the
-showcase or the guest list changes shape.
+argument with nine checked-in screenshots in [src/assets/partners/](../../src/assets/partners/).
+They are captured from the running app or a phone, not drawn, and this is how to capture them again
+when the showcase or the guest list changes shape.
 
 ## Why they are checked in rather than fetched live
 
 The page's whole audience is people who are **not** partners yet. Every endpoint that could produce
 these views live is either behind `is_partner` or costs three full app boots (that is what
 `/partners/templates` does, and why it is a page of its own). A landing page cannot spend that on
-its first screen, so the pictures ship with the bundle. Total weight is ~800 KB of WebP, all of it
+its first screen, so the pictures ship with the bundle. Total weight is ~390 KB of WebP, all of it
 `loading="lazy"` except the three hero covers.
 
 ## The assets
 
-| File                          | What it is                               | Capture size |
-| ----------------------------- | ---------------------------------------- | ------------ |
-| `invite-cover-blush.webp`     | Template 17 cover — blush rose           | 780 × 1688   |
-| `invite-cover-khmer.webp`     | Template 16 cover — ivory + Khmer gold   | 780 × 1688   |
-| `invite-cover-crimson.webp`   | Template 10 cover — deep red damask      | 780 × 1688   |
-| `invite-cover-royal.webp`     | Template 5 cover — royal blue + gold     | 500 × 1082   |
-| `invite-agenda.webp`          | Main stage, scrolled to the schedule     | 780 × 1688   |
-| `invite-rsvp.webp`            | Main stage, scrolled to countdown + RSVP | 780 × 1688   |
-| `dashboard-guests.webp`       | Guest list, desktop layout               | 1500 wide    |
-| `dashboard-guests-phone.webp` | Guest list, phone layout                 | 700 wide     |
+| File                          | What it is                                      | Size       |
+| ----------------------------- | ----------------------------------------------- | ---------- |
+| `invite-cover-blush.webp`     | Cover — ivory, dark red border, Khmer gold      | 328 × 717  |
+| `invite-cover-khmer.webp`     | Cover — ivory + Khmer gold, chandeliers         | 330 × 717  |
+| `invite-cover-crimson.webp`   | Cover — white + gold ribbon                     | 327 × 716  |
+| `invite-cover-royal.webp`     | Cover — deep red + gold, "SN" monogram          | 318 × 690  |
+| `the-opening.webp`            | The shared link, as a guest receives it in chat | 587 × 1256 |
+| `invite-rsvp.webp`            | Main stage, scrolled to countdown + RSVP        | 325 × 718  |
+| `invite-wish.webp`            | Main stage, guest wishes and comments           | 329 × 716  |
+| `dashboard-guests.webp`       | Guest list, desktop layout                      | 1500 wide  |
+| `dashboard-guests-phone.webp` | Guest list, phone layout                        | 700 wide   |
 
-The first three are the hero fan **and** three of the four covers in the "Browse every design"
-strip — deliberately the same files, so a reader recognises them and the fourth reads as "and more".
+The four covers are the hero fan **and** the "Browse every design" strip — deliberately the same
+files, so a reader recognises three of them and the fourth reads as "and more".
+
+**The cover filenames no longer describe their artwork.** They were replaced on 2026-09-01 with a
+different set of designs, and only `khmer` still matches its name: `blush` is no longer blush rose,
+`crimson` is now white and gold, `royal` is no longer royal blue. The names survive because each is
+imported by name in the view and used twice. Rename them together with those imports, or leave
+them — but do not trust them to tell you what you are looking at.
+
+**Sizes are the source's, not a capture spec.** The covers and the two main-stage shots were
+supplied as ~330px-wide exports rather than captured at `deviceScaleFactor: 2`, so they are roughly
+1.2× for a slot that renders at up to ~275px — under-resolved on any retina screen. Re-export at
+the capture settings below if they need to be sharp. `the-opening.webp` is the exception at 587px
+(~2.1×).
 
 ## Capturing the invitation screenshots
 
-These need no login. The public template-preview frame route renders one stage of a real published
-event against a chosen design:
+**`the-opening.webp` is not one of these.** It is a phone screenshot of a real messaging app
+showing the shortlink as a guest receives it — link preview, thumbnail and all — so no route
+renders it and the recipe below does not apply. Reshoot it by sending a real invitation link to a
+chat and capturing the thread. Two things to check before shipping the result: the shortlinks in
+frame are **live URLs anyone can open**, and the names in the thread are real. Use a disposable
+event and invented names, the same rule the guest list is held to.
+
+The rest need no login. The public template-preview frame route renders one stage of a real
+published event against a chosen design:
 
 ```
 /template-showcase-preview-frame?stage=<cover|transition|main>&templateId=<id>&lang=<en|kh>
@@ -109,8 +129,9 @@ and phone numbers must never end up in these files.
 
 ## Converting to WebP
 
-There is no `sharp` or ImageMagick in this repo, and adding one for eight images would be a
-dependency the build carries forever. Convert inside Chromium instead:
+There is no `sharp` or ImageMagick in this repo, and adding one for nine images would be a
+dependency the build carries forever. Convert inside Chromium instead, or install `sharp` somewhere
+outside the repo and drive it from there:
 
 ```js
 const c = document.createElement('canvas')

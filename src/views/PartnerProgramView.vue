@@ -1130,7 +1130,6 @@ import {
   ArrowRight,
   BadgeCheck,
   BellRing,
-  CalendarDays,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -1171,8 +1170,9 @@ import HeroFanLeftImg from '@/assets/partners/invite-cover-khmer.webp'
 import HeroFanLeadImg from '@/assets/partners/invite-cover-blush.webp'
 import HeroFanRightImg from '@/assets/partners/invite-cover-crimson.webp'
 import CoverRoyalImg from '@/assets/partners/invite-cover-royal.webp'
-import ScreenAgendaImg from '@/assets/partners/invite-agenda.webp'
+import ScreenOpeningImg from '@/assets/partners/the-opening.webp'
 import ScreenRsvpImg from '@/assets/partners/invite-rsvp.webp'
+import ScreenWishImg from '@/assets/partners/invite-wish.webp'
 import DashboardGuestsImg from '@/assets/partners/dashboard-guests.webp'
 import DashboardGuestsPhoneImg from '@/assets/partners/dashboard-guests-phone.webp'
 
@@ -1274,16 +1274,24 @@ onBeforeUnmount(() => window.removeEventListener('resize', updateRailEdges))
 
 /**
  * The three screens the invitation is judged on, in the order a guest meets
- * them: the cover they are handed, the day it describes, the reply it asks for.
+ * them: the link they are sent, the reply it asks for, the wish they leave
+ * afterwards. The arc is the guest's, not the product's — it starts before the
+ * invitation is open and ends after it is answered.
+ *
+ * The opening is deliberately a *messaging app*, not the cover itself. The
+ * cover is already the hero's fan and the design strip below; showing it a
+ * third time argues nothing new, whereas the thread does the one job neither
+ * can — it answers "how does this reach my customer's guests?" with the
+ * ordinary chat they already send everything else through, no app to install.
  *
  * Three and not eight. Every extra screen costs a file the reader downloads and
  * a decision they have to make, and the fourth-best screenshot of an invitation
  * argues less well than the third-best one does on its own.
  */
 const SCREENS = [
-  { key: 'cover', icon: Sparkles, src: HeroFanLeadImg },
-  { key: 'schedule', icon: CalendarDays, src: ScreenAgendaImg },
+  { key: 'cover', icon: Sparkles, src: ScreenOpeningImg },
   { key: 'rsvp', icon: ClipboardCheck, src: ScreenRsvpImg },
+  { key: 'wishes', icon: MessageCircle, src: ScreenWishImg },
 ] as const
 
 const activeScreen = ref<(typeof SCREENS)[number]['key']>('cover')
