@@ -148,7 +148,7 @@
   },
   "partner": {
     "eyebrow": "What you get",
-    "title": "Built for shops, not for resellers of a link",
+    "title": "Your name, your customer, your credits",
     "branding": {
       "title": "Your logo on every invitation",
       "body": "Your logo sits beside ours at the foot of every invitation you produce."
@@ -218,12 +218,30 @@
   },
   "runday": {
     "eyebrow": "And the day itself",
-    "title": "One screen holds the whole guest list",
+    "title": "The whole guest list, and what it adds up to",
+    "subtitle": "One back office for the list, the replies and the envelopes. No spreadsheet, and no counting the same gift twice.",
     "imageAlt": "The GoEvent guest list, showing each guest with their group, RSVP, cash gift and table",
+    "beats": {
+      "list": {
+        "label": "Everything about a guest, on one row",
+        "body": "Group, invitation sent, reply, plus-ones, cash gift, table and seat. Change any of it where you see it — there is no second copy to keep in step."
+      },
+      "totals": {
+        "label": "And the numbers you get asked for",
+        "body": "The same list, counted. Recalculated the moment a guest answers, so the figure you quote on the phone is the figure on the screen."
+      }
+    },
     "points": {
       "replies": "RSVPs land here as guests answer",
       "seating": "Tables and seat numbers, assigned by drag",
-      "gifts": "Cash gifts recorded against the name"
+      "gifts": "Cash gifts recorded against the name",
+      "totals": "Response rate, headcount and gift totals, added up for you",
+      "chase": "The guests still to answer, listed by name",
+      "bygroup": "Gift totals split by guest group"
+    },
+    "shots": {
+      "rsvp": "The RSVP card: 61% of 186 guests replied, 96 going, 148 expected once plus-ones are counted, and the guests still to chase",
+      "gifts": "The cash gift card: 84 of 186 guests gave, 3,860 USD in total, broken down by guest group"
     }
   }
 }

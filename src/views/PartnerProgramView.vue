@@ -36,7 +36,7 @@
       -->
       <button
         type="button"
-        class="group fixed bottom-[var(--fab-stack-2)] right-4 z-[55] flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-110 hover:from-[#27ae60] hover:to-[#1873cc] hover:shadow-emerald-600/40 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2 lg:right-6 lg:h-14 lg:w-14"
+        class="fab-lang group fixed bottom-[var(--fab-stack-2)] right-4 z-[55] flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg shadow-emerald-500/25 hover:from-[#27ae60] hover:to-[#1873cc] hover:shadow-emerald-600/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2 lg:right-6 lg:h-14 lg:w-14"
         :aria-label="switchLanguageLabel"
         @click="toggleLanguage"
       >
@@ -44,7 +44,7 @@
           {{ locale.toUpperCase() }}
         </span>
         <span
-          class="pointer-events-none absolute right-full mr-4 hidden whitespace-nowrap rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100 lg:block"
+          class="pointer-events-none absolute right-full mr-4 hidden whitespace-nowrap rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white opacity-0 transition-opacity duration-150 ease-out group-hover:opacity-100 lg:block"
         >
           {{ switchLanguageLabel }}
         </span>
@@ -770,79 +770,268 @@
         5. THE DAY ITSELF — the other half of what a credit buys, and the half
         no screenshot of an invitation can carry.
 
-        One picture, three lines. A shop owner selling a wedding does not want
-        to read that there is guest management; they want to see whether it
-        looks like something they could hand to a customer's family, and one
-        real screen answers that faster than the seven sentences that used to
-        be scattered through "What you get".
+        Pictures, not sentences. A shop owner selling a wedding does not want to
+        read that there is guest management; they want to see whether it looks
+        like something they could hand to a customer's family, and a real screen
+        answers that faster than the seven sentences that used to be scattered
+        through "What you get".
 
-        In a browser frame rather than bare: the invitation is a phone thing and
-        the back office is a desk thing, and the two frames are what say so
-        without a word. The frame is drawn, not photographed — a real Chrome
-        chrome would date the page and would be someone else's brand.
+        Cards, not screenshots. Every capture here is one panel of the app —
+        `#guests-panel`, the RSVP card, the cash gift card — lifted out of its
+        page with the sidebar, the tab bar and the page heading left behind. A
+        full-window screenshot spends most of its pixels on furniture the reader
+        is not buying, and next to a cropped card it reads as the untidy one. It
+        also retires the drawn browser frame: that chrome existed to say "this
+        one is a desk thing" around a full window, and there is no longer a
+        window to frame.
+
+        TWO BEATS, NOT THREE PICTURES. The heading promises two things — the
+        whole list, and what it adds up to — so the section delivers them in
+        that order, each with its own claim beside its own evidence. Stacked
+        full-bleed instead, the guest panel arrived at almost native size and
+        took a whole screen before the reader had been told what they were
+        looking at, and the two analytics cards under it read as two more
+        pictures rather than as the answer to the first one. Four ticks in a row
+        underneath were then the only words in the section, arriving after all
+        the evidence they were meant to introduce.
+
+        The text column stays on the LEFT in both beats rather than alternating.
+        Zig-zag rows are the reflex here and they are wrong for two beats: with
+        no third row there is no rhythm to establish, only a crossing the eye has
+        to make. A fixed left rail lets someone read claim, then claim, straight
+        down while the evidence changes beside them — one argument in two steps,
+        which is what this is.
+
+        THE DETAIL THAT MAKES IT LOOK DESIGNED: every capture is taken at a
+        width proportional to the width it is displayed at, so the app's own
+        14px type renders at the same physical size in all three cards. The
+        guest panel is shot at 960px CSS and shown across `col-span-8`; the
+        analytics are shot at 488 and shown two-up inside that same span. From
+        `lg` up those land within ~4% of each other (0.74 against 0.71), and
+        below `lg` the panel goes full width at 0.75 — so moving it out of
+        full bleed and into a column costs it almost nothing. Capture them all
+        at one width instead and the wide card's text comes out half the size of
+        its neighbours', which is the thing that makes a set of screenshots look
+        thrown together even when the grid is perfect.
       -->
       <section class="py-16 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
-          <div class="grid items-center gap-10 lg:grid-cols-12 lg:gap-14">
-            <header data-reveal class="lg:col-span-4">
-              <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                {{ t('partners.runday.eyebrow') }}
-              </p>
-              <h2
-                class="type-display-sm mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
-              >
-                {{ t('partners.runday.title') }}
-              </h2>
+          <header data-reveal class="max-w-2xl">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              {{ t('partners.runday.eyebrow') }}
+            </p>
+            <h2
+              class="type-display-sm mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+            >
+              {{ t('partners.runday.title') }}
+            </h2>
+            <p class="mt-4 text-pretty text-base leading-relaxed text-slate-600 sm:text-lg">
+              {{ t('partners.runday.subtitle') }}
+            </p>
+          </header>
 
-              <ul class="mt-6 space-y-2.5">
+          <!--
+            BEAT ONE — the list. EVIDENCE LEFT, WORDS RIGHT.
+
+            This is the beat that turns, and which one turns is decided by the
+            section above it, not inside this one. "What you are selling" ends
+            with its phone on the right; a guest panel on the right immediately
+            after would be the third picture in a row on the same side. So the
+            list goes left, the totals return to the right, and the page
+            alternates on every row from the product section through to the
+            full-width band in "What you get" — where the two-column machine
+            stops entirely.
+
+            Leading with the picture also suits this beat specifically: the
+            guest panel is the widest, most legible screenshot on the page, and
+            in a left-to-right read it now arrives before its caption rather
+            than after it.
+
+            Done with `lg:col-start` + `lg:row-start`, NOT by reordering the
+            markup — the same technique the product section uses. DOM order
+            stays words-then-picture because that is the order below `lg`, where
+            the grid collapses to one column and the claim has to arrive before
+            the evidence it introduces. Both children need an explicit
+            `lg:row-start-1`: grid auto-placement never backtracks, so the
+            second child asking for column 1 would otherwise be pushed to a
+            second row instead of sliding in beside the first.
+
+            The copy stays LEFT-aligned in a right-hand column. Ragged-right is
+            for the margin, not the reading edge — right-aligning a paragraph
+            plus a tick list would hang every tick off a different x and cost
+            more than the symmetry is worth.
+
+            `data-reveal` on the column, not on each claim: three rows stacked
+            10px apart cascading one after another is motion nobody can read as
+            a sequence.
+
+            THE CASCADE FOLLOWS THE EYE, WHICH MEANS IT MIRRORS WITH THE SIDES.
+            The rule for both beats is "leading column at 0, trailing column one
+            `--stagger` behind" — so here, with the picture on the left, the
+            picture leads and the words follow; in beat two, with the words on
+            the left, the words lead. Keeping a fixed words-then-evidence order
+            through the flip would have played this row right-to-left, which is
+            a ripple against the reading direction and the one thing a 60ms
+            stagger is guaranteed to make visible.
+
+            Below `lg` the two stack and the delay stops mattering rather than
+            becoming wrong: a stagger only reads as a cascade when both elements
+            cross the reveal line in the same frame, and stacked they are ~250px
+            of scroll apart on a phone. The value is therefore tuned for the
+            two-column case and is inert in the one-column one — which is why it
+            needs no media query.
+
+            `lg:gap-10 xl:gap-14`: the tighter gutter exists for the one
+            breakpoint that needs it. At `lg` exactly, the container is 960px
+            and every pixel of gutter is a pixel the guest panel does not have;
+            the page's usual 56px rhythm returns at `xl`, where there is room to
+            pay for it.
+
+            `lg:items-start`, not centred. Centring a 260px column against a
+            620px picture floats the words in the middle of nowhere and opens a
+            second, larger gap under the section heading than the one the
+            heading's own margin set. Top-aligned, each beat's words start on
+            the same line as its evidence — which is what holds the two beats
+            together once they no longer share a side.
+
+            `max-w-lg` below `lg`, where the column is the container: the body
+            is `text-sm`, and at the 720px of a tablet that is a 95-character
+            measure. Released at `lg`, where `col-span-4` is already narrower
+            than the cap.
+          -->
+          <div
+            class="mt-12 grid gap-8 sm:mt-14 lg:mt-16 lg:grid-cols-12 lg:items-start lg:gap-10 xl:gap-14"
+          >
+            <div
+              data-reveal
+              style="--reveal-delay: calc(var(--stagger) * 1)"
+              class="max-w-lg lg:col-span-4 lg:col-start-9 lg:row-start-1 lg:max-w-none"
+            >
+              <h3 class="text-lg font-semibold tracking-tight text-slate-900">
+                {{ t('partners.runday.beats.list.label') }}
+              </h3>
+              <p class="mt-2.5 text-sm leading-relaxed text-slate-600">
+                {{ t('partners.runday.beats.list.body') }}
+              </p>
+              <ul class="mt-5 space-y-2.5">
                 <li
-                  v-for="key in RUN_DAY_POINTS"
+                  v-for="key in RUN_DAY_LIST_POINTS"
                   :key="key"
-                  class="flex items-start gap-2.5 text-sm leading-relaxed text-slate-600 sm:text-base"
+                  class="flex items-start gap-2.5 text-sm leading-relaxed text-slate-600"
                 >
                   <Check class="mt-0.5 h-4 w-4 flex-shrink-0 text-[#2ecc71]" aria-hidden="true" />
                   {{ t(`partners.runday.points.${key}`) }}
                 </li>
               </ul>
-            </header>
+            </div>
 
             <!--
-              Two captures of the same screen, and the breakpoint picks one.
+              The guest panel, and the breakpoint that picks its capture.
 
-              A 1500px-wide desktop screenshot fitted into a 340px phone column
-              renders its guest names at about two pixels: it proves a screen
-              exists and communicates nothing else, which on a page read mostly
-              on phones — this is Cambodia, and the reader is a shop owner
-              between customers — is the whole audience getting the weaker
-              picture. So below `sm` the page shows the app's own phone layout
-              instead, at a size where "Going +2", "50 USD" and "Table 1 · 3"
-              can actually be read.
+              Below `sm` the page shows the app's own phone layout: the 960px
+              capture rendered into a 358px column puts its guest names at about
+              five pixels, and on a page read mostly on phones — this is
+              Cambodia, and the reader is a shop owner between customers — that
+              would be the whole audience getting the unreadable picture.
 
-              The browser chrome goes with the desktop capture and not with the
-              phone one, because its only job is to say "desk thing"; drawn
-              around a phone screenshot it would be saying the opposite.
+              `<picture>` rather than a pair of plain images and `sm:hidden`,
+              which is what this was: a lazily-loaded image inside a
+              `display: none` box is still fetched, so every reader was
+              downloading both captures and using one. A `<source>` with a media
+              query is resolved before the fetch, so exactly one crosses the
+              wire.
+
+              `width`/`height` on the source and the image rather than a CSS
+              `aspect-ratio`: the browser derives the box from the attributes of
+              whichever one it picked, so a lazy image reserves its own space
+              before it decodes and the two captures can have different shapes
+              without either one needing a rule. Update them with the captures —
+              a stale pair reserves the wrong height and the row below jumps.
             -->
-            <div data-reveal style="--reveal-lift: 20px" class="lg:col-span-8">
-              <figure class="browser hidden sm:block">
-                <div class="browser__bar" aria-hidden="true">
-                  <span class="browser__dot"></span>
-                  <span class="browser__dot"></span>
-                  <span class="browser__dot"></span>
-                  <span class="browser__url">goevent.online</span>
-                </div>
+            <figure
+              data-reveal
+              style="--reveal-lift: 20px"
+              class="app-card app-card--continues lg:col-span-8 lg:col-start-1 lg:row-start-1"
+            >
+              <picture>
+                <source
+                  :srcset="DashboardGuestsImg"
+                  media="(min-width: 640px)"
+                  width="1500"
+                  height="1052"
+                />
                 <img
-                  :src="DashboardGuestsImg"
+                  :src="DashboardGuestsPhoneImg"
                   :alt="t('partners.runday.imageAlt')"
+                  width="796"
+                  height="1726"
                   class="block w-full"
                   loading="lazy"
                   decoding="async"
                 />
-              </figure>
+              </picture>
+            </figure>
+          </div>
 
-              <figure class="dashboard-phone sm:hidden">
+          <!--
+            BEAT TWO — what the list comes to.
+
+            Ruled off from the first beat rather than only spaced apart: the
+            page already uses a hairline to mean "same argument, next part" (the
+            benefits list, the browse-designs footer), and a long page separated
+            only by whitespace loses its joints.
+
+            `md:grid-cols-2` rather than `sm:`: at `sm` the two analytics cards
+            side by side are 288px each, which renders the app's 14px type at
+            about 8px. One card per row up to `md` is bigger, not smaller — the
+            pair only splits once the row is wide enough to keep both legible.
+
+            `items-start`: the two captures are a few percent apart in aspect
+            ratio, and a stretched grid item would pad the shorter card with a
+            strip of empty white below its image.
+
+            Words left, evidence right — the page's default handedness, which
+            this beat returns to after the first one turns it (see BEAT ONE).
+            The alternation is what the two beats have instead of a repeat.
+          -->
+          <div
+            class="mt-12 grid gap-8 border-t border-slate-200 pt-12 sm:mt-14 sm:pt-14 lg:mt-16 lg:grid-cols-12 lg:items-start lg:gap-10 lg:pt-16 xl:gap-14"
+          >
+            <div data-reveal class="max-w-lg lg:col-span-4 lg:max-w-none">
+              <h3 class="text-lg font-semibold tracking-tight text-slate-900">
+                {{ t('partners.runday.beats.totals.label') }}
+              </h3>
+              <p class="mt-2.5 text-sm leading-relaxed text-slate-600">
+                {{ t('partners.runday.beats.totals.body') }}
+              </p>
+              <ul class="mt-5 space-y-2.5">
+                <li
+                  v-for="key in RUN_DAY_TOTAL_POINTS"
+                  :key="key"
+                  class="flex items-start gap-2.5 text-sm leading-relaxed text-slate-600"
+                >
+                  <Check class="mt-0.5 h-4 w-4 flex-shrink-0 text-[#2ecc71]" aria-hidden="true" />
+                  {{ t(`partners.runday.points.${key}`) }}
+                </li>
+              </ul>
+            </div>
+
+            <div class="grid items-start gap-3 sm:gap-4 md:grid-cols-2 lg:col-span-8">
+              <figure
+                v-for="(shot, i) in RUN_DAY_SHOTS"
+                :key="shot.key"
+                data-reveal
+                :style="{
+                  '--reveal-delay': `calc(var(--stagger) * ${i + 1})`,
+                  '--reveal-lift': '20px',
+                }"
+                class="app-card"
+              >
                 <img
-                  :src="DashboardGuestsPhoneImg"
-                  :alt="t('partners.runday.imageAlt')"
+                  :src="shot.src"
+                  :alt="t(`partners.runday.shots.${shot.key}`)"
+                  :width="shot.w"
+                  :height="shot.h"
                   class="block w-full"
                   loading="lazy"
                   decoding="async"
@@ -857,45 +1046,64 @@
         ruled off at the top and carries no icon disc, so it reads as terms
         rather than as marketing, which is the register a business audience
         trusts at this point in the page.
+
+        FULL WIDTH, NOT A LEFT RAIL. This was a `col-span-4` heading beside a
+        `col-span-8` list, and it was the fourth consecutive row on the page to
+        put words on the left and content on the right — after the product
+        section and both beats of the guest list. That run is what made the
+        page feel like one layout repeated rather than seven sections.
+
+        Handedness was not the thing to fix, though. Measured at 1440x900, the
+        left column here was 248px wide and 29% full: an eyebrow, a three-line
+        heading, and then 71% of the row's height as white. The page has no
+        subtitle to put under that heading, so the column had nothing left to
+        say. What the eye tracked down the second half of the page was not a
+        repeating layout but a repeating *hole* — which is why alternating the
+        sides would have mirrored the problem rather than solved it.
+
+        Full width costs the heading nothing (it was never wider than
+        `max-w-2xl` anyway) and pays the list: at two columns of the whole
+        container the items go from ~251px to ~393px, so no title wraps any
+        more, and seven items land as 4 + 3 with no orphan. Three columns would
+        have fitted the width and returned the items to their old 251px measure
+        for nothing, with a single stranded item on the last row.
       -->
       <section class="py-16 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
-          <div class="grid gap-10 lg:grid-cols-12 lg:gap-12">
-            <header data-reveal class="lg:col-span-4">
-              <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                {{ t('partners.partner.eyebrow') }}
-              </p>
-              <h2
-                class="type-display-sm mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
-              >
-                {{ t('partners.partner.title') }}
-              </h2>
-            </header>
+          <header data-reveal class="max-w-2xl">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              {{ t('partners.partner.eyebrow') }}
+            </p>
+            <h2
+              class="type-display-sm mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+            >
+              {{ t('partners.partner.title') }}
+            </h2>
+          </header>
 
-            <ul class="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:col-span-8">
-              <li
-                v-for="(item, i) in PARTNER_BENEFITS"
-                :key="item.key"
-                data-reveal
-                :style="{ '--reveal-delay': `calc(var(--stagger) * ${i % 2})` }"
-                class="border-t border-slate-200 pt-5"
-              >
-                <div class="flex items-center gap-2.5">
-                  <component
-                    :is="item.icon"
-                    class="h-4 w-4 flex-shrink-0 text-slate-400"
-                    aria-hidden="true"
-                  />
-                  <h3 class="text-base font-semibold text-slate-900">
-                    {{ t(`partners.partner.${item.key}.title`) }}
-                  </h3>
-                </div>
-                <p class="mt-2 text-sm leading-relaxed text-slate-600">
-                  {{ t(`partners.partner.${item.key}.body`) }}
-                </p>
-              </li>
-            </ul>
-          </div>
+          <ul class="mt-10 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:mt-12 lg:gap-x-16">
+            <li
+              v-for="(item, i) in PARTNER_BENEFITS"
+              :key="item.key"
+              data-reveal
+              :style="{ '--reveal-delay': `calc(var(--stagger) * ${i % 2})` }"
+              class="border-t border-slate-200 pt-5"
+            >
+              <div class="flex items-center gap-2.5">
+                <component
+                  :is="item.icon"
+                  class="h-4 w-4 flex-shrink-0 text-slate-400"
+                  aria-hidden="true"
+                />
+                <h3 class="text-base font-semibold text-slate-900">
+                  {{ t(`partners.partner.${item.key}.title`) }}
+                </h3>
+              </div>
+              <p class="mt-2 text-sm leading-relaxed text-slate-600">
+                {{ t(`partners.partner.${item.key}.body`) }}
+              </p>
+            </li>
+          </ul>
         </div>
       </section>
 
@@ -1175,6 +1383,8 @@ import ScreenRsvpImg from '@/assets/partners/invite-rsvp.webp'
 import ScreenWishImg from '@/assets/partners/invite-wish.webp'
 import DashboardGuestsImg from '@/assets/partners/dashboard-guests.webp'
 import DashboardGuestsPhoneImg from '@/assets/partners/dashboard-guests-phone.webp'
+import DashboardRsvpImg from '@/assets/partners/dashboard-rsvp.webp'
+import DashboardGiftsImg from '@/assets/partners/dashboard-gifts.webp'
 
 const { t, locale, setLocale, availableLocales } = useAppLanguage()
 
@@ -1310,7 +1520,34 @@ const COVER_STRIP = [
   { src: CoverRoyalImg },
 ] as const
 
-const RUN_DAY_POINTS = ['replies', 'seating', 'gifts'] as const
+/**
+ * The claims, split between the two beats and sitting beside the picture that
+ * proves each one, rather than pooled into one strip under all three pictures.
+ * A tick under a screenshot is a caption; a tick beside it is a claim with its
+ * evidence in view, which is the only reason to write one.
+ *
+ * Three and three, not four and two. `gifts` belongs to the list — a cash gift
+ * is recorded against a name, on a row — and the totals beat needed a second
+ * and third line of its own, which the analytics cards were already showing and
+ * the page had never said out loud.
+ */
+const RUN_DAY_LIST_POINTS = ['replies', 'seating', 'gifts'] as const
+const RUN_DAY_TOTAL_POINTS = ['totals', 'chase', 'bygroup'] as const
+
+/**
+ * RSVP first, gifts second — the order the two questions actually arrive in.
+ * A shop owner is asked "how many are coming?" weeks before anyone asks "how
+ * much came in?". (The app's own Analytics tab happens to stack them the other
+ * way round; that is a screen being managed, this is an argument being made.)
+ *
+ * The intrinsic size travels with the file so the image element can reserve
+ * its box before it decodes. Update both numbers together with the capture —
+ * a stale pair reserves the wrong height and the row below it jumps.
+ */
+const RUN_DAY_SHOTS = [
+  { key: 'rsvp', src: DashboardRsvpImg, w: 976, h: 1318 },
+  { key: 'gifts', src: DashboardGiftsImg, w: 976, h: 1386 },
+] as const
 
 const PRODUCT_FEATURES = [
   { key: 'cinematic', icon: Film },
@@ -1504,7 +1741,15 @@ onBeforeUnmount(stopSweeping)
   move more, and that is the whole of the parallax on this page.
 */
 .partner-page {
-  --ease-reveal: cubic-bezier(0.23, 1, 0.32, 1);
+  /*
+    One curve, two names. `--ease-out` is the page's UI easing — anything a
+    reader is waiting on the result of. `--ease-reveal` is an alias rather than
+    a second value, because a scroll reveal wants exactly the same shape and a
+    page with two nearly-identical curves is a page whose motion nobody can
+    keep in tune. Extend this pair; never write a fourth cubic-bezier inline.
+  */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-reveal: var(--ease-out);
   --reveal-duration: 600ms;
   --reveal-lift: 14px;
   --stagger: 60ms;
@@ -1605,6 +1850,53 @@ onBeforeUnmount(stopSweeping)
 @media (hover: hover) and (pointer: fine) {
   .rail-arrows {
     display: flex;
+  }
+}
+
+/*
+  The language FAB's transform states.
+
+  In scoped CSS rather than Tailwind because the hover lift has to be gated on a
+  real pointer — a touch device fires `:hover` on tap, so an ungated
+  `hover:scale-110` leaves the button sitting 10% large under the reader's
+  finger until they tap elsewhere. The press feedback is deliberately NOT gated:
+  `:active` is for everybody, and it is the whole reason the control feels heard.
+
+  This replaces a `transition-all duration-300`, which animated every property
+  the element has (and every one it might gain) on Tailwind's default
+  ease-in-out, at 300ms, against a page where every other control answers in
+  200ms on `--ease-out`. Naming the three properties also stops the transition
+  from firing on `bottom`, which is a `var(--fab-stack-2)` that changes with the
+  viewport.
+
+  `:active` sits after the media query so it wins the tie on source order — the
+  two selectors have identical specificity, and a press must override a hover.
+*/
+.fab-lang {
+  transition:
+    transform 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out),
+    background-image 200ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .fab-lang:hover {
+    transform: scale(1.1);
+  }
+}
+
+.fab-lang:active {
+  transform: scale(0.95);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fab-lang {
+    transition: box-shadow 200ms var(--ease-out);
+  }
+
+  .fab-lang:hover,
+  .fab-lang:active {
+    transform: none;
   }
 }
 
@@ -1916,56 +2208,21 @@ onBeforeUnmount(stopSweeping)
 }
 
 /*
-  The browser frame around the back-office screenshot. Its whole job is to say
-  "this one is a desk thing" next to a phone that said "this one is a pocket
-  thing" — so it is three dots and a domain, and deliberately not a replica of
-  any particular browser's chrome.
+  The frame every back-office capture sits in. One class for all three, because
+  they are three panels of one app and anything that framed them differently
+  would be saying they are not.
+
+  Not a device bezel and not a browser chrome. The reader is holding the bezel,
+  and the drawn browser bar that used to sit here existed to frame a full-window
+  screenshot; the captures are cropped to the panel now, so the frame's whole
+  job is to give the picture an edge and lift it off the page.
+
+  The captures themselves are taken with their own radius, border, ring and
+  shadow switched off (see docs/guides/PARTNER_PAGE_SCREENSHOTS.md), so this
+  rounding is the only one in play — a baked-in corner would show the app's
+  background as four tinted nubs just inside this border.
 */
-.browser {
-  overflow: hidden;
-  border-radius: 1rem;
-  border: 1px solid rgb(226 232 240);
-  background: #fff;
-  box-shadow:
-    0 24px 50px -24px rgb(15 23 42 / 0.35),
-    0 2px 6px rgb(15 23 42 / 0.05);
-}
-
-@media (min-width: 640px) {
-  .browser {
-    border-radius: 1.25rem;
-  }
-}
-
-.browser__bar {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  border-bottom: 1px solid rgb(241 245 249);
-  background: rgb(248 250 252);
-  padding: 0.625rem 0.875rem;
-}
-
-.browser__dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 9999px;
-  background: rgb(203 213 225);
-}
-
-.browser__url {
-  margin-inline-start: 0.5rem;
-  border-radius: 9999px;
-  background: #fff;
-  padding: 0.125rem 0.625rem;
-  font-size: 0.6875rem;
-  color: rgb(100 116 139);
-  box-shadow: inset 0 0 0 1px rgb(226 232 240);
-}
-
-/* The phone-width capture of the same screen, below `sm`. A plain card, not a
-   device bezel: the phone the reader is holding is already the bezel. */
-.dashboard-phone {
+.app-card {
   overflow: hidden;
   border-radius: 1rem;
   border: 1px solid rgb(226 232 240);
@@ -1973,6 +2230,36 @@ onBeforeUnmount(stopSweeping)
   box-shadow:
     0 18px 40px -22px rgb(15 23 42 / 0.35),
     0 2px 6px rgb(15 23 42 / 0.05);
+}
+
+@media (min-width: 640px) {
+  .app-card {
+    border-radius: 1.25rem;
+  }
+}
+
+/*
+  The guest capture ends part-way through a row, because a guest list does. Left
+  hard, that crop is the one genuinely untidy edge in the section — a name
+  sliced through the middle by a card border, which reads as a mistake rather
+  than as a list that carries on past the frame. The fade turns it into the
+  claim the heading is already making: this is *the whole* guest list, and it
+  does not stop at eight.
+
+  A mask, not a white overlay, for the reason the rail's edge fades give: the
+  capture's own ground is near-white but not white, so an opaque wash would be a
+  pale bar sitting on top of it rather than a dissolve. A mask takes the pixels
+  out.
+
+  The band is a percentage so it holds its proportion across both captures and
+  every column width — the cut row is ~7% of the desktop capture's height, so
+  10% covers it with a little feather and never eats the row above. Only on the
+  card that continues: a fade over an edge with nothing past it reads as
+  clipping, and both analytics captures end on their own last line.
+*/
+.app-card--continues img {
+  -webkit-mask-image: linear-gradient(to bottom, #000 90%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 90%, transparent 100%);
 }
 
 /* The four covers beside "Browse every design" — small enough to read as a
@@ -1993,12 +2280,29 @@ onBeforeUnmount(stopSweeping)
   }
 }
 
-/* The sanctioned collapse: grid-template-rows 0fr↔1fr, never max-height. */
-.collapse-enter-active,
+/*
+  The sanctioned collapse: grid-template-rows 0fr↔1fr, never max-height.
+
+  The curve was `cubic-bezier(0.4, 0, 0.2, 1)` — Material's standard easing,
+  inlined here and nowhere else on the page, which is the exact shape of the
+  "familiar-looking curve typed from memory" mistake. It is also an ease-in-out,
+  and an answer opening is an entrance: it should start fast.
+
+  Faster out than in. 250ms to open is the reader's own press being answered;
+  180ms to close is the page getting out of the way of the next question, and a
+  panel that takes as long to leave as to arrive reads as reluctant. Both sit
+  under the 300ms ceiling the rest of the page's interface keeps.
+*/
+.collapse-enter-active {
+  transition:
+    grid-template-rows 250ms var(--ease-out),
+    opacity 200ms var(--ease-out);
+}
+
 .collapse-leave-active {
   transition:
-    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease;
+    grid-template-rows 180ms var(--ease-out),
+    opacity 120ms var(--ease-out);
 }
 
 .collapse-enter-from,
