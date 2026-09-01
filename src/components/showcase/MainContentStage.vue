@@ -254,12 +254,14 @@
                   />
                 </div>
 
-                <!-- Dress Code Section (also rendered when empty inside the
-                     editable manage-page preview, so the first dress code can
-                     be added from there — editIntentCtx is never provided on
-                     the public showcase) -->
+                <!-- Dress Code Section. Also rendered when empty inside any
+                     preview frame: in the editable manage-page one so the first
+                     dress code can be added from there, and in the partner
+                     catalogue's so a design is judged on every section it
+                     draws. Neither context is provided on the public showcase,
+                     where a guest must not see an empty section. -->
                 <div
-                  v-if="dressCodes.length > 0 || editIntentCtx"
+                  v-if="dressCodes.length > 0 || editIntentCtx || previewFrameCtx"
                   id="dress-code-section"
                   ref="dressCodeSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
@@ -402,12 +404,12 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
-                <!-- Payment Section (also rendered when empty inside the
-                     editable manage-page preview, so a payment method can be
-                     added from there — editIntentCtx is never provided on
-                     the public showcase) -->
+                <!-- Payment Section. Empty-but-rendered in a preview frame for
+                     the same two reasons as the dress code above: somewhere to
+                     add the first method from, and a section a partner has to
+                     be able to see their design render. -->
                 <div
-                  v-if="paymentMethods.length > 0 || editIntentCtx"
+                  v-if="paymentMethods.length > 0 || editIntentCtx || previewFrameCtx"
                   id="payment-section"
                   ref="paymentSectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
@@ -817,6 +819,7 @@ import PhotoGallery from './PhotoGallery.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import SectionDisplayToggle from '@/components/showcase-preview/edit/SectionDisplayToggle.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
+import { PreviewFrameKey } from '@/components/showcase-preview/previewContext'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import CommentSection from './CommentSection.vue'
 import PaymentSection from './PaymentSection.vue'
@@ -887,6 +890,11 @@ const props = defineProps<Props>()
 // Only provided by the editable manage-page preview frame — undefined on the
 // public showcase, so the empty-agenda add affordance can never leak there.
 const editIntentCtx = inject(EditIntentKey, undefined)
+
+// Provided by every preview frame, editable or not — see previewContext.ts. The
+// wider of the two gates: "show a section that has no content yet", which is
+// true of the read-only partner catalogue preview as much as of the studio.
+const previewFrameCtx = inject(PreviewFrameKey, undefined)
 const { t: tApp } = useAppLanguage()
 
 // Main stage layout configuration (decoration z-indexes + welcome header visibility)
