@@ -10,7 +10,7 @@ when the showcase, the guest list or the analytics change shape.
 The page's whole audience is people who are **not** partners yet. Every endpoint that could produce
 these views live is either behind `is_partner` or costs three full app boots (that is what
 `/partners/templates` does, and why it is a page of its own). A landing page cannot spend that on
-its first screen, so the pictures ship with the bundle. Total weight is ~515 KB of WebP, all of it
+its first screen, so the pictures ship with the bundle. Total weight is ~555 KB of WebP, all of it
 `loading="lazy"` except the three hero covers — and the two guest-list captures are alternatives
 inside one `<picture>`, so no reader downloads both.
 
@@ -23,8 +23,8 @@ inside one `<picture>`, so no reader downloads both.
 | `invite-cover-crimson.webp`   | Cover — white + gold ribbon                     | 327 × 716   |
 | `invite-cover-royal.webp`     | Cover — deep red + gold, "SN" monogram          | 318 × 690   |
 | `the-opening.webp`            | The shared link, as a guest receives it in chat | 587 × 1256  |
-| `invite-rsvp.webp`            | Main stage, scrolled to countdown + RSVP        | 325 × 718   |
-| `invite-wish.webp`            | Main stage, guest wishes and comments           | 329 × 716   |
+| `invite-rsvp.webp`            | Main stage, scrolled to countdown + RSVP        | 526 × 1116  |
+| `invite-wish.webp`            | Main stage, guest wishes and comments           | 529 × 1117  |
 | `dashboard-guests.webp`       | Guest list panel, `2xl` one-row header          | 1500 × 1052 |
 | `dashboard-guests-phone.webp` | Guest list panel, phone layout                  | 796 × 1726  |
 | `dashboard-rsvp.webp`         | RSVP analytics card                             | 976 × 1318  |
@@ -39,11 +39,11 @@ different set of designs, and only `khmer` still matches its name: `blush` is no
 imported by name in the view and used twice. Rename them together with those imports, or leave
 them — but do not trust them to tell you what you are looking at.
 
-**Sizes are the source's, not a capture spec.** The covers and the two main-stage shots were
-supplied as ~330px-wide exports rather than captured at `deviceScaleFactor: 2`, so they are roughly
-1.2× for a slot that renders at up to ~275px — under-resolved on any retina screen. Re-export at
-the capture settings below if they need to be sharp. `the-opening.webp` is the exception at 587px
-(~2.1×).
+**Sizes are the source's, not a capture spec.** The four covers were supplied as ~330px-wide
+exports rather than captured at `deviceScaleFactor: 2`, so they are roughly 1.2× for a slot that
+renders at up to ~275px — under-resolved on any retina screen. Re-export at the capture settings
+below if they need to be sharp. The two main-stage shots were re-exported on 2026-09-01 at ~527px
+(~1.9×) and no longer have this problem; `the-opening.webp` never did, at 587px (~2.1×).
 
 ## Capturing the invitation screenshots
 
