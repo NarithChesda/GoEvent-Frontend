@@ -7,6 +7,7 @@ import { apiClient } from '../core/ApiClient'
 import type {
   ApiResponse,
   PaginatedResponse,
+  QueryParams,
   EventTemplate,
   PublicEventTemplate,
   TemplateAssets,
@@ -105,11 +106,58 @@ const TEMPLATE_FILE_FIELDS: Array<keyof PartnerTemplateCreatePayload> = [
   'open_envelope_button',
 ]
 
-// Partner template service (requires is_partner=true)
+/** How many pages `listEditableTemplates` will walk before giving up.
+ *  A guard against a server that keeps answering with a `next`, not a real
+ *  ceiling — at PAGE_SIZE 20 this is 1000 templates. */
+const TEMPLATE_PAGE_LIMIT = 50
+
+// Partner template editor service. Reaching it needs `is_partner` OR
+// `is_staff` — the backend gate is `IsPartnerOrStaff`. What the caller gets
+// back differs by role: a partner sees only templates they created, staff see
+// the whole catalogue (every system template and every partner's work,
+// drafts included), and creating one stamps `system`/`approved` for staff
+// against `partner`/`draft` for a partner. No endpoint differs.
 export const partnerTemplateService = {
-  // List the authenticated partner's own templates
-  async listMyTemplates(): Promise<ApiResponse<PartnerTemplate[]>> {
-    return apiClient.get<PartnerTemplate[]>('/api/core-data/partner-templates/')
+  // One page of the templates this account may edit.
+  async listMyTemplates(
+    params?: QueryParams,
+  ): Promise<ApiResponse<PaginatedResponse<PartnerTemplate> | PartnerTemplate[]>> {
+    return apiClient.get<PaginatedResponse<PartnerTemplate> | PartnerTemplate[]>(
+      '/api/core-data/partner-templates/',
+      params,
+    )
+  },
+
+  /**
+   * Every template this account may edit, pages followed to the end.
+   *
+   * The list endpoint is paginated at PAGE_SIZE 20. That was invisible while
+   * every caller was a partner with a handful of drafts, but staff receive the
+   * entire catalogue — so reading `results` once shows the first 20 with no
+   * signal that the rest exist. Paged by number rather than by following
+   * `next` verbatim: `next` is an absolute URL built from the server's own
+   * host, which need not match the configured API base (and `apiClient` takes
+   * paths, not URLs).
+   */
+  async listEditableTemplates(): Promise<ApiResponse<PartnerTemplate[]>> {
+    const all: PartnerTemplate[] = []
+    for (let page = 1; page <= TEMPLATE_PAGE_LIMIT; page++) {
+      const response = await this.listMyTemplates(page === 1 ? undefined : { page })
+      if (!response.success || !response.data) {
+        // A later page failing is still worth surfacing — a partial catalogue
+        // silently missing its tail is the bug this method exists to fix.
+        return { success: false, message: response.message, status: response.status }
+      }
+      const body = response.data
+      // A server that answers with a bare array has no pages to follow.
+      if (Array.isArray(body)) {
+        all.push(...body)
+        break
+      }
+      all.push(...body.results)
+      if (!body.next) break
+    }
+    return { success: true, data: all }
   },
 
   // Get a single partner template

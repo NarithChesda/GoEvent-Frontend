@@ -47,9 +47,20 @@
         <span class="text-[0.625rem] font-medium text-slate-400">{{ t('management.partnerTemplatesPanel.card.noPreview') }}</span>
       </div>
 
-      <!-- Status Badge -->
+      <!-- Type / status badge. A system template is born approved and stays
+           there, so its status badge would read the same word on every card and
+           tell a staff author nothing; the useful fact is that it is the public
+           catalogue they're looking at. Partner rows keep the status badge,
+           which is the one thing that does vary across them. -->
       <div class="absolute top-2 left-2 z-10">
-        <span :class="['inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-bold shadow-lg', statusClass]">
+        <span
+          v-if="isSystem"
+          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-bold shadow-lg bg-slate-900/85 text-white backdrop-blur-sm"
+        >
+          <Globe class="w-3 h-3" />
+          {{ t('management.partnerTemplatesPanel.card.systemBadge') }}
+        </span>
+        <span v-else :class="['inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-bold shadow-lg', statusClass]">
           <component :is="statusIcon" class="w-3 h-3" />
           {{ template.status_display }}
         </span>
@@ -82,6 +93,18 @@
         >
           {{ template.name }}
         </h4>
+        <!-- Whose work this is. Only staff ever see a list holding more than
+             one author's templates, and only partner rows have an author worth
+             naming — a system template's is the staff account itself. -->
+        <p
+          v-if="showAuthor && !isSystem && template.created_by_name"
+          :class="[
+            'text-[0.625rem] truncate',
+            hasImage ? 'text-white/75' : 'text-slate-500',
+          ]"
+        >
+          {{ t('management.partnerTemplatesPanel.card.byAuthor', { name: template.created_by_name }) }}
+        </p>
         <!-- Same plan chip the browse grid uses, so a partner's own templates
              and the catalogue read as one shelf. It was plain grey text here
              and a coloured pill there. -->
@@ -144,16 +167,22 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ImageOff, Check, Crown, Pencil, Send, Sparkles, Trash2, Clock, CheckCircle, XCircle, FileEdit, type LucideIcon } from 'lucide-vue-next'
+import { ImageOff, Check, Crown, Globe, Pencil, Send, Sparkles, Trash2, Clock, CheckCircle, XCircle, FileEdit, type LucideIcon } from 'lucide-vue-next'
 import type { PartnerTemplate } from '../../services/api'
 import { BTN_GHOST_SM, BTN_ICON_MICRO } from './templateUi'
 
 interface Props {
   template: PartnerTemplate
   isSelected?: boolean
+  /**
+   * Name the author on partner rows. Set by the panel when the viewer is
+   * staff, whose list mixes the system catalogue with every partner's work in
+   * progress; a partner's own list is all theirs, so the line would be noise.
+   */
+  showAuthor?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), { isSelected: false })
+const props = withDefaults(defineProps<Props>(), { isSelected: false, showAuthor: false })
 
 const emit = defineEmits<{
   select: [template: PartnerTemplate]
@@ -170,6 +199,7 @@ const imageError = ref(false)
 const hasImage = computed(() => !!props.template.preview_image && !imageError.value)
 
 const isApproved = computed(() => props.template.status === 'approved')
+const isSystem = computed(() => props.template.template_type === 'system')
 const isStandardPlan = computed(() =>
   (props.template.package_plan?.name ?? '').toLowerCase().includes('standard'),
 )

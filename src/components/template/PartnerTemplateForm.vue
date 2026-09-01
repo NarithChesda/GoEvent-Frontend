@@ -236,12 +236,12 @@
               <div v-if="plansLoading" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div v-for="n in 2" :key="n" class="h-16 rounded-xl bg-slate-100 animate-pulse" />
               </div>
-              <p v-else-if="availablePlans.length === 0" class="text-xs text-slate-500 p-3 bg-slate-50 ring-1 ring-slate-200 rounded-xl">
+              <p v-else-if="planOptions.length === 0" class="text-xs text-slate-500 p-3 bg-slate-50 ring-1 ring-slate-200 rounded-xl">
                 {{ t('management.partnerTemplateForm.fields.planEmpty') }}
               </p>
               <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-2" role="radiogroup" :aria-label="t('management.partnerTemplateForm.fields.planLabel')">
                 <button
-                  v-for="plan in availablePlans"
+                  v-for="plan in planOptions"
                   :key="plan.id"
                   type="button"
                   role="radio"
@@ -1692,6 +1692,7 @@ import type {
   PartnerTemplate,
   PartnerTemplateCreatePayload,
   PackagePlan,
+  EventTemplatePackagePlan,
   CoverStageLayout,
   CoverElementBox,
   CoverElementBoxes,
@@ -1839,15 +1840,43 @@ const isEditing = computed(() => !!props.existingTemplate)
 const plansLoading = ref(false)
 const availablePlans = ref<PackagePlan[]>([])
 
-function isPlanBasic(plan: PackagePlan): boolean {
+// Named by the plan's name rather than its type, so they answer for a plan
+// from either shape — the catalogue's `PackagePlan` and the leaner
+// `EventTemplatePackagePlan` a template carries. See `planOptions`.
+function isPlanBasic(plan: { name: string }): boolean {
   const name = plan.name.toLowerCase()
   return name.includes('basic')
 }
 
-function isPlanStandard(plan: PackagePlan): boolean {
+function isPlanStandard(plan: { name: string }): boolean {
   const name = plan.name.toLowerCase()
   return name.includes('standard')
 }
+
+/**
+ * The plans the picker draws: everything on offer, plus whatever this template
+ * is already on.
+ *
+ * `fetchPlans` keeps free plans out of the *choices* deliberately — a template
+ * on an active zero-price plan becomes eligible for automatic assignment to
+ * every newly created event, which is not a shelf anyone should publish onto by
+ * accident. But a template can already be on one, and now routinely is: the
+ * free plan's system template is exactly what new events pick up, and system
+ * templates are what staff edit through this form.
+ *
+ * Filtering out the plan a template already carries left the picker with
+ * nothing highlighted — which reads as "you have not chosen a plan" on a
+ * template that has one, and invites a click that quietly moves a live public
+ * template onto a paid shelf. Showing it costs nothing: it is still not a plan
+ * anyone can newly select, because it only appears when it is already selected.
+ */
+const planOptions = computed<EventTemplatePackagePlan[]>(() => {
+  const current = props.existingTemplate?.package_plan
+  if (!current || availablePlans.value.some((plan) => plan.id === current.id)) {
+    return availablePlans.value
+  }
+  return [current, ...availablePlans.value]
+})
 
 async function fetchPlans(): Promise<void> {
   if (availablePlans.value.length > 0) return

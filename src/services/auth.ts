@@ -18,6 +18,13 @@ export interface User {
   is_active: boolean
   is_verified?: boolean
   is_partner?: boolean
+  /**
+   * Django staff. Widens the template editor to the system catalogue (see
+   * `canAuthorTemplates` in BrowseTemplateModal) — deliberately `is_staff`
+   * and not `is_superuser`, which is the same flag every other staff check
+   * in the API reads. Read-only: PATCHing it at /auth/profile/ is ignored.
+   */
+  is_staff?: boolean
   phone_number?: string
   telegram_link?: string
   payment_link?: string

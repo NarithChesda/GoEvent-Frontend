@@ -1439,7 +1439,9 @@
       "browse": "Browse",
       "browseAll": "Browse All",
       "mine": "Mine",
-      "myTemplates": "My Templates"
+      "myTemplates": "My Templates",
+      "all": "All",
+      "allTemplates": "All Templates"
     },
     "sidebar": {
       "packageLabel": "Package",
@@ -2594,7 +2596,12 @@
     "empty": {
       "title": "No templates yet",
       "description": "Create your first custom template and submit it for review. Once approved, you can use it for your events.",
-      "createFirst": "Create your first template"
+      "createFirst": "Create your first template",
+      "staffDescription": "Create a system template and it is public the moment you save it — no review step.",
+      "staffCreateFirst": "Create a system template",
+      "filteredTitle": "Nothing in this shelf",
+      "filteredDescription": "No templates match this filter yet.",
+      "filteredReset": "Show all"
     },
     "status": {
       "approved": "approved",
@@ -2626,7 +2633,16 @@
       "submit": "Submit",
       "submitTitle": "Submit for review",
       "deleteTitle": "Delete template",
-      "adminNote": "Admin note:"
+      "adminNote": "Admin note:",
+      "systemBadge": "System",
+      "byAuthor": "by {name}"
+    },
+    "staffTitle": "Template catalogue",
+    "filter": {
+      "all": "All",
+      "system": "System",
+      "partner": "Partner",
+      "ariaLabel": "Filter templates by author"
     }
   },
   "templateSlots": {
