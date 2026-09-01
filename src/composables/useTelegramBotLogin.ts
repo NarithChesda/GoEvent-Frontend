@@ -29,6 +29,7 @@ export interface TelegramBotLoginUser {
   bio: string
   is_verified: boolean
   is_partner: boolean
+  is_staff?: boolean
   phone_number: string | null
   payment_link: string | null
   telegram_link: string | null

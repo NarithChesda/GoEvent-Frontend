@@ -970,7 +970,13 @@ export interface PartnerTemplate {
   id: number
   name: string
   package_plan: EventTemplatePackagePlan | null
-  template_type: 'partner'
+  /**
+   * Who authored it, stamped once at creation and never editable afterwards.
+   * Staff create `system` templates (public, born `approved`); partners create
+   * `partner` ones (private to their author until review passes). A staff PATCH
+   * of a partner's template leaves this alone.
+   */
+  template_type: 'partner' | 'system'
   status: PartnerTemplateStatus
   status_display: string
   created_by: number

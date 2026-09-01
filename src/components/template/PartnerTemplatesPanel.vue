@@ -7,10 +7,17 @@
          where a second row costs less than the width would. -->
     <Teleport v-if="headerSlot && useSharedHeader" :to="headerSlot">
       <div class="ml-auto flex items-center gap-2 flex-shrink-0">
-        <span v-for="stat in statusStats" :key="stat.status" :class="[STAT_CHIP, stat.class]">
-          <component :is="stat.icon" class="w-3 h-3" />
-          {{ stat.count }} {{ stat.label }}
-        </span>
+        <TemplateTypeFilter
+          v-if="isStaff"
+          v-model="typeFilter"
+          :options="typeFilterOptions"
+        />
+        <template v-else>
+          <span v-for="stat in statusStats" :key="stat.status" :class="[STAT_CHIP, stat.class]">
+            <component :is="stat.icon" class="w-3 h-3" />
+            {{ stat.count }} {{ stat.label }}
+          </span>
+        </template>
         <button type="button" @click="openForm(null)" :class="BTN_PRIMARY_BAR">
           <Plus class="w-4 h-4" />
           {{ t('management.partnerTemplatesPanel.newTemplate') }}
@@ -25,7 +32,13 @@
          teleport target lands (it happens under the modal's own enter
          transition anyway). -->
     <div v-if="!useSharedHeader" class="flex-shrink-0 flex items-center justify-between gap-3 px-4 sm:px-6 py-3 bg-white">
-      <div class="flex gap-1.5 flex-wrap min-w-0">
+      <TemplateTypeFilter
+        v-if="isStaff"
+        v-model="typeFilter"
+        :options="typeFilterOptions"
+        class="flex-wrap min-w-0"
+      />
+      <div v-else class="flex gap-1.5 flex-wrap min-w-0">
         <span v-for="stat in statusStats" :key="stat.status" :class="[STAT_CHIP, stat.class]">
           <component :is="stat.icon" class="w-3 h-3" />
           {{ stat.count }} {{ stat.label }}
@@ -55,28 +68,46 @@
         </button>
       </div>
 
-      <!-- Empty State -->
+      <!-- Empty State. Staff get their own copy: a system template is public
+           the moment it saves, so promising review would describe a step they
+           never take. -->
       <div v-else-if="templates.length === 0" class="flex flex-col items-center justify-center py-16 text-center">
         <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
           <LayoutTemplate class="w-8 h-8 text-slate-400" />
         </div>
         <h4 class="text-base font-semibold text-slate-700 mb-1">{{ t('management.partnerTemplatesPanel.empty.title') }}</h4>
         <p class="text-sm text-slate-500 max-w-xs">
-          {{ t('management.partnerTemplatesPanel.empty.description') }}
+          {{ isStaff ? t('management.partnerTemplatesPanel.empty.staffDescription') : t('management.partnerTemplatesPanel.empty.description') }}
         </p>
         <button type="button" @click="openForm(null)" :class="[BTN_PRIMARY, 'mt-5']">
           <Plus class="w-4 h-4" />
-          {{ t('management.partnerTemplatesPanel.empty.createFirst') }}
+          {{ isStaff ? t('management.partnerTemplatesPanel.empty.staffCreateFirst') : t('management.partnerTemplatesPanel.empty.createFirst') }}
+        </button>
+      </div>
+
+      <!-- The filter emptied the shelf, not the catalogue -->
+      <div v-else-if="visibleTemplates.length === 0" class="flex flex-col items-center justify-center py-16 text-center">
+        <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+          <LayoutTemplate class="w-8 h-8 text-slate-400" />
+        </div>
+        <h4 class="text-base font-semibold text-slate-700 mb-1">{{ t('management.partnerTemplatesPanel.empty.filteredTitle') }}</h4>
+        <p class="text-sm text-slate-500 max-w-xs">
+          {{ t('management.partnerTemplatesPanel.empty.filteredDescription') }}
+        </p>
+        <button type="button" @click="typeFilter = 'all'" :class="[BTN_SECONDARY, 'mt-5']">
+          <RotateCcw class="w-4 h-4 text-slate-400" />
+          {{ t('management.partnerTemplatesPanel.empty.filteredReset') }}
         </button>
       </div>
 
       <!-- Templates Grid -->
       <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
         <PartnerTemplateCard
-          v-for="template in templates"
+          v-for="template in visibleTemplates"
           :key="template.id"
           :template="template"
           :is-selected="selectedTemplateId === template.id && template.status === 'approved'"
+          :show-author="isStaff"
           @select="handleSelect"
           @edit="handleEdit"
           @submit="handleSubmit"
@@ -150,10 +181,12 @@ import { useToast } from '../../composables/useToast'
 import { useMediaQuery } from '../../composables/useMediaQuery'
 import { TEMPLATES_HEADER_SLOT } from './templatesHeaderSlot'
 import { BTN_DANGER, BTN_PRIMARY, BTN_PRIMARY_BAR, BTN_SECONDARY, STAT_CHIP } from './templateUi'
+import { useAuthStore } from '../../stores/auth'
 import { partnerTemplateService } from '../../services/api'
 import type { Event, PartnerTemplate } from '../../services/api'
 import PartnerTemplateCard from './PartnerTemplateCard.vue'
 import PartnerTemplateForm from './PartnerTemplateForm.vue'
+import TemplateTypeFilter, { type TemplateTypeFilterOption, type TemplateTypeValue } from './TemplateTypeFilter.vue'
 
 const { t } = useI18n()
 // There is exactly one toast stack in the app (§12) — this panel used to render
@@ -180,6 +213,18 @@ const emit = defineEmits<{
   'form-closed': []
 }>()
 
+/**
+ * Staff reach this panel through the same gate a partner does — the backend
+ * permission is `IsPartnerOrStaff` and there is not one endpoint of their own —
+ * but the list that comes back is a different object: every system template
+ * plus every partner's work in progress, drafts included, rather than their own
+ * handful. So the panel swaps its status roll-up for a filter across the two
+ * authors, and names the author on partner rows, without which the two kinds
+ * are indistinguishable.
+ */
+const authStore = useAuthStore()
+const isStaff = computed(() => !!authStore.user?.is_staff)
+
 const loading = ref(false)
 const loadError = ref(false)
 const deleting = ref(false)
@@ -195,6 +240,30 @@ const templateToDelete = ref<PartnerTemplate | null>(null)
 const headerSlot = inject(TEMPLATES_HEADER_SLOT, ref(null))
 const isDesktop = useMediaQuery('(min-width: 1024px)')
 const useSharedHeader = computed(() => isDesktop.value && !showForm.value)
+
+const typeFilter = ref<TemplateTypeValue>('all')
+
+const visibleTemplates = computed(() =>
+  typeFilter.value === 'all'
+    ? templates.value
+    : templates.value.filter((tpl) => tpl.template_type === typeFilter.value),
+)
+
+/**
+ * The filter carries its own counts, which is why staff see it *instead of* the
+ * status summary rather than beside it: one control answering both questions.
+ * The summary would have little to say to them anyway — a staff template is
+ * `approved` from birth, so most of their list collapses into one chip.
+ */
+const typeFilterOptions = computed((): TemplateTypeFilterOption[] => {
+  let system = 0
+  for (const tpl of templates.value) if (tpl.template_type === 'system') system++
+  return [
+    { value: 'all', label: t('management.partnerTemplatesPanel.filter.all'), count: templates.value.length },
+    { value: 'system', label: t('management.partnerTemplatesPanel.filter.system'), count: system },
+    { value: 'partner', label: t('management.partnerTemplatesPanel.filter.partner'), count: templates.value.length - system },
+  ]
+})
 
 const statusStats = computed(() => {
   const counts = { draft: 0, pending_review: 0, approved: 0, rejected: 0 }
@@ -213,19 +282,13 @@ async function loadTemplates(): Promise<void> {
   loading.value = true
   loadError.value = false
   try {
-    const response = await partnerTemplateService.listMyTemplates()
+    // Paged to the end by the service. A partner rarely fills one page, so the
+    // pagination was invisible while every caller was one; staff receive the
+    // whole catalogue against a page size of 20, and reading `results` once
+    // would show them the first 20 with no signal that the rest exist.
+    const response = await partnerTemplateService.listEditableTemplates()
     if (response.success && response.data) {
-      // Handle both flat array and paginated response formats
-      const data = response.data
-      if (Array.isArray(data)) {
-        templates.value = data
-      } else if (data && typeof data === 'object' && 'results' in data) {
-        // Paginated response: { count, results: [...] }
-        templates.value = (data as { results: PartnerTemplate[] }).results
-      } else {
-        console.warn('[PartnerTemplatesPanel] Unexpected response format:', data)
-        templates.value = []
-      }
+      templates.value = response.data
     } else {
       console.warn('[PartnerTemplatesPanel] API error:', response.message)
       loadError.value = true
@@ -299,6 +362,12 @@ async function confirmDelete(): Promise<void> {
 
 function handleSaved(template: PartnerTemplate): void {
   const wasEditing = !!editingTemplate.value
+  // Don't save a card into a shelf that isn't showing. Staff always author
+  // system templates, so anyone who left the filter on Partner would watch the
+  // success toast fire over an unchanged grid.
+  if (typeFilter.value !== 'all' && template.template_type !== typeFilter.value) {
+    typeFilter.value = 'all'
+  }
   const idx = templates.value.findIndex((tpl) => tpl.id === template.id)
   if (idx !== -1) {
     templates.value[idx] = template

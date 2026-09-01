@@ -106,7 +106,7 @@
                 <!-- Tab Switcher Row (partner users only). Hidden while the
                      template editor is open — it has its own header, and tab
                      switching mid-edit isn't a thing. -->
-                <div v-if="isPartner && !isPartnerFormOpen" class="flex items-center gap-3 px-4 pt-4 pb-2">
+                <div v-if="canAuthorTemplates && !isPartnerFormOpen" class="flex items-center gap-3 px-4 pt-4 pb-2">
                   <TemplateSegmented
                     :model-value="activeTab"
                     :options="mobileTabOptions"
@@ -130,7 +130,7 @@
                   :class="activeTab === 'browse' ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'"
                 >
                   <!-- Search Row: search input + package/category filter icon buttons -->
-                  <div class="flex items-center gap-2 px-4 pb-3" :class="isPartner ? 'pt-1' : 'pt-4'">
+                  <div class="flex items-center gap-2 px-4 pb-3" :class="canAuthorTemplates ? 'pt-1' : 'pt-4'">
                     <div class="relative flex-1">
                       <Search class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden="true" />
                       <input
@@ -172,7 +172,7 @@
 
                     <!-- Close button lives here only when there is no tab row above -->
                     <button
-                      v-if="!isPartner"
+                      v-if="!canAuthorTemplates"
                       @click="handleModalClose"
                       :class="[BTN_ICON, 'w-10 h-10']"
                       :aria-label="t('management.browseTemplateModal.closeModal')"
@@ -200,7 +200,7 @@
 
                 <!-- Same control as the mobile row, same component -->
                 <TemplateSegmented
-                  v-if="isPartner && !isPartnerFormOpen"
+                  v-if="canAuthorTemplates && !isPartnerFormOpen"
                   :model-value="activeTab"
                   :options="desktopTabOptions"
                   :aria-label="t('management.browseTemplateModal.title')"
@@ -367,7 +367,7 @@
               <Transition :name="tabTransitionName" mode="out-in">
                 <!-- My Templates Panel (partner users, my-templates tab) -->
                 <PartnerTemplatesPanel
-                  v-if="isPartner && activeTab === 'my-templates'"
+                  v-if="canAuthorTemplates && activeTab === 'my-templates'"
                   class="flex-1 overflow-hidden"
                   :event-id="eventId"
                   :event-data="eventData"
@@ -526,9 +526,24 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-// Auth store for partner check
 const authStore = useAuthStore()
-const isPartner = computed(() => !!authStore.user?.is_partner)
+
+/**
+ * Who gets the editor tab. Partners author their own templates; staff author
+ * the public system catalogue through the same screens — the backend gate is
+ * one permission (`IsPartnerOrStaff`) over the same endpoints, with no staff
+ * route of its own, so there is nothing here to fork either.
+ *
+ * `is_staff` and not `is_superuser`: every other staff check in the API reads
+ * that flag, so honouring `is_superuser` alone would produce an account that
+ * can author system templates but not approve a partner's submission.
+ */
+const canAuthorTemplates = computed(
+  () => !!authStore.user?.is_partner || !!authStore.user?.is_staff,
+)
+
+/** What the second tab holds — their own work, or everyone's. */
+const isStaffAuthor = computed(() => !!authStore.user?.is_staff)
 
 // Active tab: 'browse' | 'my-templates'
 const activeTab = ref<'browse' | 'my-templates'>('browse')
@@ -552,7 +567,9 @@ const desktopTabOptions = computed((): TemplateSegmentedOption[] => [
   { value: 'browse', label: t('management.browseTemplateModal.tabs.browse') },
   {
     value: 'my-templates',
-    label: t('management.browseTemplateModal.tabs.mine'),
+    label: isStaffAuthor.value
+      ? t('management.browseTemplateModal.tabs.all')
+      : t('management.browseTemplateModal.tabs.mine'),
     icon: LayoutTemplate,
   },
 ])
@@ -561,7 +578,9 @@ const mobileTabOptions = computed((): TemplateSegmentedOption[] => [
   { value: 'browse', label: t('management.browseTemplateModal.tabs.browseAll') },
   {
     value: 'my-templates',
-    label: t('management.browseTemplateModal.tabs.myTemplates'),
+    label: isStaffAuthor.value
+      ? t('management.browseTemplateModal.tabs.allTemplates')
+      : t('management.browseTemplateModal.tabs.myTemplates'),
     icon: LayoutTemplate,
   },
 ])
