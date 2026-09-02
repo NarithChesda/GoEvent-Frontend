@@ -149,7 +149,8 @@
     "filterLabel": "Event type",
     "allCategories": "Every event type",
     "otherPlan": "Other designs",
-    "noteLabel": "About this preview"
+    "noteLabel": "About this preview",
+    "browseLabel": "Browse designs"
   },
   "partner": {
     "eyebrow": "What you get",
