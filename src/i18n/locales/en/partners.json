@@ -18,14 +18,15 @@
   },
   "steps": {
     "title": "How it works",
-    "subtitle": "Three steps, in this order. Easy to get started.",
+    "subtitle": "Three steps, in this order. The middle one is the only real work — and it is done in one sitting.",
     "open": {
       "title": "Open your partner account",
       "body": "Tell us about your shop. Once you are approved, your first two events are free. After that, pay for each event or buy a pack."
     },
     "build": {
       "title": "Build the invitation",
-      "body": "You make it for your customer — photos, schedule, guest list. Their names go on the invitation as the hosts. The account stays yours."
+      "time": "15 min",
+      "body": "You build it on our platform — the event details, the photos, the schedule, the guest list. It all goes in one place."
     },
     "sell": {
       "title": "Send it out",
@@ -81,7 +82,10 @@
   "product": {
     "eyebrow": "What you are selling",
     "title": "An invitation your customer could not make themselves",
-    "subtitle": "This is what their guests see on their phone.",
+    "subtitle": "This is what their guests see — each one opens a link of their own, with their name already on the invitation.",
+    "personal": {
+      "title": "Their own link, with their name on it"
+    },
     "cinematic": {
       "title": "Opens like a short film"
     },
@@ -89,7 +93,7 @@
       "title": "Khmer and English"
     },
     "rsvp": {
-      "title": "Guests reply with one tap"
+      "title": "One-tap replies, under the right name"
     },
     "wishes": {
       "title": "Wishes, no account needed"
@@ -103,6 +107,9 @@
     "checkin": {
       "title": "Check guests in on the day"
     },
+    "agenda": {
+      "title": "Schedule and dress code"
+    },
     "media": {
       "title": "Their photos, music and map"
     },
@@ -111,8 +118,8 @@
     "screensLabel": "Which screen to show",
     "screens": {
       "cover": {
-        "label": "The opening",
-        "body": "One link, sent in the chat app they already use."
+        "label": "The personal link",
+        "body": "One per guest, with their name on it — sent in the chat app they already use."
       },
       "rsvp": {
         "label": "The reply",

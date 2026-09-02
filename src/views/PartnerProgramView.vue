@@ -280,9 +280,35 @@
                   {{ i + 1 }}
                 </span>
 
-                <h3 class="mt-5 text-lg font-semibold text-slate-900 sm:text-xl">
-                  {{ t(`partners.steps.${key}.title`) }}
-                </h3>
+                <!-- Heading and, on the one step that has one, how long it
+                   takes — on the same line, because the number *is* the claim
+                   about that step and reading the paragraph should not be the
+                   price of finding it.
+
+                   Inverted to `bg-slate-900` rather than tinted: this section
+                   has no colour at all, and the pricing grid below already uses
+                   the dark fill to mean "look here" (see its comment). A pill
+                   is the loudest thing available here and it is spent once on
+                   the page's best fact about the work.
+
+                   `flex-wrap` + `gap-y-2` because the row is two languages
+                   wide: at `md` the column is ~260px and the Khmer heading and
+                   label are both longer, so the pill drops under the heading
+                   instead of squeezing it. `whitespace-nowrap` keeps the pill
+                   itself from ever breaking across two lines. -->
+                <div class="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <h3 class="text-lg font-semibold text-slate-900 sm:text-xl">
+                    {{ t(`partners.steps.${key}.title`) }}
+                  </h3>
+                  <span
+                    v-if="stepTimingKey(key)"
+                    class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-slate-900 px-2.5 py-1 text-xs font-semibold leading-5 tabular-nums text-white"
+                  >
+                    <Clock class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    {{ t(stepTimingKey(key)) }}
+                  </span>
+                </div>
+
                 <p class="mt-2 text-sm leading-relaxed text-slate-600 sm:text-base">
                   {{ t(`partners.steps.${key}.body`) }}
                 </p>
@@ -557,7 +583,7 @@
         one job is to make someone want to sell that invitation. A drawing of a
         film reel is a placeholder for a picture of the thing. So the argument
         is now made by three real screenshots of a real invitation, and the
-        eight features are demoted to the checklist under them — their existing
+        features are demoted to the checklist under them — their existing
         titles, which were already short, with the paragraphs deleted. Show,
         then list; never list what you have just shown.
 
@@ -576,13 +602,13 @@
             alone that left roughly 400px of nothing next to the invitation, and
             the section read as a screenshot with a little text stranded beside
             it. The fix is to give that column more to hold rather than to
-            shrink the phone: header, picker and the eight features stack down
+            shrink the phone: header, picker and the feature list stack down
             the left in two grid rows while the phone spans both on the right,
             which brings the two sides within a few pixels of each other.
 
             **DOM order is the mobile order, and it is header → phone → picker.**
             Stacked, the desktop source order would put the picker under the
-            eight features — 230px below the thing it controls, so pressing
+            feature list — 230px below the thing it controls, so pressing
             "The day" changes nothing you can see. Explicit `col-start` /
             `row-start` at `lg` means the source can be ordered for the phone
             without `order` utilities having to undo it.
@@ -698,9 +724,9 @@
               </ul>
 
               <!--
-                The eight features, as a list under the picker rather than eight
+                The ten features, as a list under the picker rather than ten
                 tiles of their own. No gradient discs: the page's gradient
-                objects are its three "Request partner access" CTAs, and eight
+                objects are its three "Request partner access" CTAs, and ten
                 more in one grid spent the brand's one saturated colour on a
                 caption.
               -->
@@ -1362,11 +1388,13 @@ import {
   ArrowRight,
   BadgeCheck,
   BellRing,
+  CalendarDays,
   Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   ClipboardCheck,
+  Clock,
   Eye,
   Film,
   Images,
@@ -1380,6 +1408,7 @@ import {
   ShieldCheck,
   Sparkles,
   Store,
+  UserCheck,
   Users,
   Zap,
 } from 'lucide-vue-next'
@@ -1435,6 +1464,23 @@ const TELEGRAM_URL = 'https://t.me/goeventkh'
 
 const HERO_PROOF = ['payg', 'fee', 'review'] as const
 const STEPS = ['open', 'build', 'sell'] as const
+
+/**
+ * How long a step takes, where that is worth saying — which is exactly one of
+ * them. A shop owner weighing this up is really asking how much of their day
+ * each customer costs, and the honest answer to that is the middle step's:
+ * setting an invitation up is a quarter of an hour's work, an hour for a big
+ * wedding with a long guest list. The other two have no useful number — step 1
+ * waits on our review, step 3 is a click — so they carry none rather than a
+ * padded one. That is also what lets the badge be loud: one dark pill in the
+ * row is a fact, three would be a label pattern and would say nothing.
+ */
+const STEP_TIMINGS: Partial<Record<(typeof STEPS)[number], string>> = {
+  build: 'partners.steps.build.time',
+}
+
+const stepTimingKey = (key: (typeof STEPS)[number]) => STEP_TIMINGS[key] ?? ''
+
 const FAQ_KEYS = [
   'unsold',
   'price',
@@ -1592,7 +1638,21 @@ const RUN_DAY_SHOTS = [
   { key: 'gifts', src: DashboardGiftsImg, w: 976, h: 1386 },
 ] as const
 
+/**
+ * `personal` leads, because it is the one thing on this list a customer cannot
+ * approximate with a poster and a group chat: the guest list issues a link per
+ * guest, the name is already written on the invitation when it opens, and the
+ * reply that comes back is attached to that guest rather than to a stranger who
+ * typed a name into a form. The screenshot above it has always shown this —
+ * two chat messages, two links, two different names — and until now nothing
+ * said so.
+ *
+ * Ten and not nine: at `sm` the list is two columns, so a tenth costs no
+ * height (it fills the row the ninth opens) and `agenda` was a real part of
+ * the invitation that the list had simply never mentioned.
+ */
 const PRODUCT_FEATURES = [
+  { key: 'personal', icon: UserCheck },
   { key: 'cinematic', icon: Film },
   { key: 'bilingual', icon: Languages },
   { key: 'rsvp', icon: ClipboardCheck },
@@ -1600,6 +1660,7 @@ const PRODUCT_FEATURES = [
   { key: 'notify', icon: BellRing },
   { key: 'guests', icon: Users },
   { key: 'checkin', icon: QrCode },
+  { key: 'agenda', icon: CalendarDays },
   { key: 'media', icon: Images },
 ] as const
 
