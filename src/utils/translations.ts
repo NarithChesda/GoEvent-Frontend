@@ -424,7 +424,7 @@ export const rsvpTranslations: Record<
     // Main headers
     rsvp_header: 'តើលោកអ្នកនឹងចូលរួមពិធីអាពាហ៍ពិពាហ៍របស់យើងខ្ញុំទេ?',
     rsvp_header_birthday: 'តើលោកអ្នកនឹងចូលរួមពិធីជប់លៀងខួបកំណើតរបស់យើងខ្ញុំទេ?',
-    rsvp_header_default: 'តើលោកអ្នកនឹងចូលរួមព្រឹត្តិការណ៍របស់យើងខ្ញុំទេ?',
+    rsvp_header_default: 'តើលោកអ្នកនឹងចូលរួមកម្មវិធីរបស់យើងខ្ញុំទេ?',
     invite_text: 'សូមគោរពអញ្ជើញ',
     default_guest_name: 'ភ្ញៀវកិត្តិយស',
 
@@ -458,7 +458,7 @@ export const rsvpTranslations: Record<
     rsvp_status_live: 'Live',
     rsvp_status_ended: 'Ended',
     rsvp_thank_you: 'សូមអរគុណចំពោះការឆ្លើយតប',
-    rsvp_sign_in: 'សូមចូលគណនី ដើម្បីធ្វើ RSVP សម្រាប់ព្រឹត្តិការណ៍នេះ',
+    rsvp_sign_in: 'សូមចូលគណនី ដើម្បីធ្វើ RSVP សម្រាប់កម្មវិធីនេះ',
 
     // Loading and action states
     rsvp_loading_status: 'កំពុងផ្ទុកស្ថានភាព RSVP របស់អ្នក...',
@@ -552,7 +552,7 @@ export const rsvpTranslations: Record<
     comment_no_comments: 'សារជូនពរដ៏មានអត្ថន័យ',
     comment_loading: 'កំពុងនីមតិយោបល់...',
     comment_already_commented: 'អ្នកបានជូនពររួចហើយ',
-    comment_one_per_user: 'អ្នកប្រើប្រាស់ម្នាក់អាចមតិយោបល់បានជំនាញសម្រាប់ព្រឹត្តិការណ៍មួយ',
+    comment_one_per_user: 'អ្នកប្រើប្រាស់ម្នាក់អាចមតិយោបល់បានជំនាញសម្រាប់កម្មវិធីមួយ',
     comment_you_badge: 'You',
     comment_invite_only_prompt: 'នេះជាកម្មវិធីឯកជន។ សូមបើកតំណរអញ្ជើញរបស់អ្នក ដើម្បីផ្ញើសារ។',
     comment_commenting_as: 'ជូនពរក្នុងនាម',
