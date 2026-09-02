@@ -38,7 +38,7 @@
     "title": "Buy more, keep more",
     "subtitle": "Shops sell a Basic invitation for $60–85. Your first two events cost you nothing. After that, pay for each event with nothing up front, or buy a pack and pay less for every one.",
     "profitLabel": "Your profit",
-    "payUpfront": "Pay up front",
+    "payUpfront": "Cost",
     "costEach": "You pay each",
     "keepEach": "You keep each",
     "forPlan": "For {plan}",
@@ -95,9 +95,6 @@
     "rsvp": {
       "title": "One-tap replies, under the right name"
     },
-    "wishes": {
-      "title": "Wishes, no account needed"
-    },
     "notify": {
       "title": "Instant alerts on Telegram"
     },
@@ -133,7 +130,7 @@
   },
   "templates": {
     "eyebrow": "Live preview",
-    "title": "Open a design and read the whole invitation",
+    "title": "Invitation Templates",
     "subtitle": "Pick a design and the real invitation opens with it — in English and Khmer.",
     "menuLabel": "Designs",
     "viewControlsLabel": "Preview controls",
@@ -147,7 +144,7 @@
       "body": "They are there — this page just could not reach them. Message us and we will show you the designs ourselves.",
       "cta": "Message us on Telegram"
     },
-    "back": "Partner programme",
+    "back": "",
     "planLabel": "Package",
     "filterLabel": "Event type",
     "allCategories": "Every event type",
@@ -164,29 +161,17 @@
       "title": "Your shop in our services directory",
       "body": "List your shop on GoEvent's services page, where people planning an event are already looking."
     },
-    "ownership": {
-      "title": "You own the event",
-      "body": "Your customer needs no account and no password."
-    },
     "share": {
       "title": "Your customer fills in their own guest list",
       "body": "Send them a link — no account needed. Give them view-only, or let them add and correct names, and switch the link off whenever you want."
-    },
-    "instant": {
-      "title": "It turns on straight away",
-      "body": "One credit opens the design at once — nothing to upload, no waiting."
-    },
-    "locked": {
-      "title": "Nobody else can use your credits",
-      "body": "Credits only work from your own account. If the code gets out, it costs you nothing."
     },
     "studio": {
       "title": "Make your own designs",
       "body": "Approved partners can design their own invitations and publish them."
     },
-    "topup": {
-      "title": "Buy more credits any time",
-      "body": "Your balance, your packs and your orders, all on one page in your account."
+    "freeStart": {
+      "title": "It costs nothing to start",
+      "body": "Your first two invitations are free. Buy a pack only once the work is steady."
     }
   },
   "faq": {

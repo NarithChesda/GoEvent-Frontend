@@ -724,9 +724,9 @@
               </ul>
 
               <!--
-                The ten features, as a list under the picker rather than ten
+                The nine features, as a list under the picker rather than nine
                 tiles of their own. No gradient discs: the page's gradient
-                objects are its three "Request partner access" CTAs, and ten
+                objects are its three "Request partner access" CTAs, and nine
                 more in one grid spent the brand's one saturated colour on a
                 caption.
               -->
@@ -1114,9 +1114,9 @@
         Full width costs the heading nothing (it was never wider than
         `max-w-2xl` anyway) and pays the list: at two columns of the whole
         container the items go from ~251px to ~393px, so no title wraps any
-        more, and eight items land as 4 + 4 with no orphan. Three columns would
-        have fitted the width and returned the items to their old 251px measure
-        for nothing, with a single stranded item on the last row.
+        more, and five items land as 2 + 2 + 1. Three columns would have fitted
+        the width too, and returned the items to their old 251px measure for
+        nothing.
       -->
       <section class="py-16 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
@@ -1397,20 +1397,17 @@ import {
   Clock,
   Eye,
   Film,
+  Gift,
   Images,
-  KeyRound,
   Languages,
   Link2,
   MessageCircle,
   Palette,
-  PlusCircle,
   QrCode,
-  ShieldCheck,
   Sparkles,
   Store,
   UserCheck,
   Users,
-  Zap,
 } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -1647,16 +1644,16 @@ const RUN_DAY_SHOTS = [
  * two chat messages, two links, two different names — and until now nothing
  * said so.
  *
- * Ten and not nine: at `sm` the list is two columns, so a tenth costs no
- * height (it fills the row the ninth opens) and `agenda` was a real part of
- * the invitation that the list had simply never mentioned.
+ * Nine and not ten: the wishes line is gone, because the wishes are already
+ * the third screenshot on the glass beside this list — a tick that repeats a
+ * picture in view argues nothing the picture has not already made. `agenda`
+ * stays; it is a real part of the invitation the list had never mentioned.
  */
 const PRODUCT_FEATURES = [
   { key: 'personal', icon: UserCheck },
   { key: 'cinematic', icon: Film },
   { key: 'bilingual', icon: Languages },
   { key: 'rsvp', icon: ClipboardCheck },
-  { key: 'wishes', icon: MessageCircle },
   { key: 'notify', icon: BellRing },
   { key: 'guests', icon: Users },
   { key: 'checkin', icon: QrCode },
@@ -1665,21 +1662,19 @@ const PRODUCT_FEATURES = [
 ] as const
 
 /**
- * Order is load-bearing at `sm`, where the grid fills row-wise in pairs:
- * `share` sits immediately after `ownership` so the two halves of the same
- * promise land side by side on one row. `ownership` says the customer needs no
- * account; `share` is how they still do the one job that is theirs — their own
- * guest list — without one.
+ * Order is load-bearing at `sm`, where the grid fills row-wise in pairs: the
+ * first row is what the partner's own name gets out of this, the second pairs
+ * the job they hand back to the customer with the one they can take on
+ * themselves. Five is deliberately odd — `freeStart` is left alone on the last
+ * row, where an orphan reads as the offer the closing section repeats rather
+ * than as a gap.
  */
 const PARTNER_BENEFITS = [
   { key: 'branding', icon: BadgeCheck },
   { key: 'listing', icon: Store },
-  { key: 'ownership', icon: ShieldCheck },
   { key: 'share', icon: Link2 },
-  { key: 'instant', icon: Zap },
-  { key: 'locked', icon: KeyRound },
   { key: 'studio', icon: Palette },
-  { key: 'topup', icon: PlusCircle },
+  { key: 'freeStart', icon: Gift },
 ] as const
 
 /**
