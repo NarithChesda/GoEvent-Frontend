@@ -8,10 +8,105 @@
   -->
   <div class="tpl-page">
     <header class="tpl-page__head">
-      <RouterLink to="/partners" class="tpl-back">
-        <ArrowLeft class="h-4 w-4 flex-none" aria-hidden="true" />
-        {{ t('partners.templates.back') }}
-      </RouterLink>
+      <!--
+        The catalogue's column, and everything that steers it. The header bar is
+        divided by the same two columns as the body below, so each side's chrome
+        sits over the side it belongs to: leaving this track to the back link
+        alone put one round arrow in 356px of nothing, while the catalogue
+        underneath carried a second row of chrome of its own.
+      -->
+      <div class="tpl-page__nav">
+        <!--
+          The label is allowed to be empty — in English it is, and the link is
+          then the arrow alone, in a circle. An empty label is not an empty
+          name, though: with the icon hidden from the tree there would be
+          nothing left to announce, so the accessible name falls back to the
+          generic one.
+        -->
+        <RouterLink
+          to="/partners"
+          class="tpl-back"
+          :class="{ 'is-icon': !backLabel }"
+          :aria-label="backLabel || t('common.actions.back')"
+        >
+          <ArrowLeft class="h-4 w-4 flex-none" aria-hidden="true" />
+          {{ backLabel }}
+        </RouterLink>
+
+        <!--
+          Event-type filter (§9 dropdown), over the column it filters and wide
+          enough to fill it — a control that spans its list reads as belonging
+          to it, where a 167px pill floating beside a label read as a leftover.
+          It carries the running count itself, so the separate "Designs · 47"
+          heading is gone: the number belongs on the control that changes it,
+          and the shelf headings below already count their own.
+
+          Only when there is more than one type to choose between, and never on
+          a phone — there the shelf tabs carry both jobs this row was doing, and
+          a visitor browses every type and reads the type off each card. The
+          shelves are short enough to flick through that it is a fair trade; if
+          it stops being one, the place to put the filter back is inside the tab
+          strip, not above it.
+        -->
+        <div v-if="showCategoryFilter" class="tpl-filter">
+          <button
+            type="button"
+            class="tpl-filter__trigger"
+            :aria-expanded="categoryMenuOpen"
+            aria-haspopup="listbox"
+            @click="categoryMenuOpen = !categoryMenuOpen"
+          >
+            <Filter class="h-3.5 w-3.5 flex-none text-slate-400" aria-hidden="true" />
+            <span class="flex-1 truncate text-left">{{ activeCategoryLabel }}</span>
+            <span class="tpl-filter__count">{{ filteredTemplates.length }}</span>
+            <ChevronDown
+              class="h-4 w-4 flex-none text-slate-400 transition-transform duration-200"
+              :class="{ 'rotate-180': categoryMenuOpen }"
+              aria-hidden="true"
+            />
+          </button>
+
+          <div
+            v-if="categoryMenuOpen"
+            class="tpl-filter__scrim"
+            @click="categoryMenuOpen = false"
+          />
+          <Transition name="tpl-dropdown">
+            <div
+              v-if="categoryMenuOpen"
+              class="tpl-filter__menu"
+              role="listbox"
+              :aria-label="t('partners.templates.filterLabel')"
+            >
+              <button
+                v-for="option in categoryOptions"
+                :key="option.value"
+                type="button"
+                role="option"
+                :aria-selected="option.value === activeCategory"
+                class="tpl-filter__item"
+                :class="{ 'is-active': option.value === activeCategory }"
+                @click="selectCategory(option.value)"
+              >
+                <span
+                  class="tpl-filter__dot"
+                  :style="{ backgroundColor: option.color }"
+                  aria-hidden="true"
+                />
+                <span class="flex-1 truncate text-left">{{ option.label }}</span>
+                <span class="tpl-filter__count">{{ option.count }}</span>
+              </button>
+            </div>
+          </Transition>
+        </div>
+
+        <!-- One event type, nothing to filter: the count still names the
+             column, which is what the heading did before it moved. -->
+        <p v-else-if="!isNarrow" class="tpl-menu__label">
+          {{ t('partners.templates.menuLabel') }}
+          <span class="text-slate-400">· {{ filteredTemplates.length }}</span>
+        </p>
+      </div>
 
       <div class="tpl-page__headline">
         <h1 class="tpl-page__title type-display-sm">{{ t('partners.templates.title') }}</h1>
@@ -181,79 +276,10 @@
         the grouping (there are two or three, and a partner wants the cheap shelf
         and the expensive shelf visible at once).
       -->
-      <aside class="tpl-studio__menu">
-        <!--
-          Desktop only. On a phone the shelf tabs below already carry both jobs
-          this row was doing — they name what you are looking at and they count
-          it — so the row was a heading for a heading, and ~48px of it came off
-          the invitation underneath.
-
-          It takes the event-type filter with it, which is a real loss: a phone
-          visitor now browses every type and reads the type off each card. The
-          shelves are short enough to flick through that it is a fair trade, but
-          if it stops being one, the place to put it back is inside the tab
-          strip — not above it, where this row was.
-        -->
-        <div v-if="!isNarrow" class="tpl-menu__head">
-          <p class="tpl-menu__label">
-            {{ t('partners.templates.menuLabel') }}
-            <span class="text-slate-400">· {{ filteredTemplates.length }}</span>
-          </p>
-
-          <!-- Event-type filter (§9 dropdown). Rendered only when the catalogue
-               actually spans more than one type. -->
-          <div v-if="categories.length > 1" class="tpl-filter">
-            <button
-              type="button"
-              class="tpl-filter__trigger"
-              :aria-expanded="categoryMenuOpen"
-              aria-haspopup="listbox"
-              @click="categoryMenuOpen = !categoryMenuOpen"
-            >
-              <Filter class="h-3.5 w-3.5 flex-none text-slate-400" aria-hidden="true" />
-              <span class="flex-1 truncate text-left">{{ activeCategoryLabel }}</span>
-              <ChevronDown
-                class="h-4 w-4 flex-none text-slate-400 transition-transform duration-200"
-                :class="{ 'rotate-180': categoryMenuOpen }"
-                aria-hidden="true"
-              />
-            </button>
-
-            <div
-              v-if="categoryMenuOpen"
-              class="tpl-filter__scrim"
-              @click="categoryMenuOpen = false"
-            />
-            <Transition name="tpl-dropdown">
-              <div
-                v-if="categoryMenuOpen"
-                class="tpl-filter__menu"
-                role="listbox"
-                :aria-label="t('partners.templates.filterLabel')"
-              >
-                <button
-                  v-for="option in categoryOptions"
-                  :key="option.value"
-                  type="button"
-                  role="option"
-                  :aria-selected="option.value === activeCategory"
-                  class="tpl-filter__item"
-                  :class="{ 'is-active': option.value === activeCategory }"
-                  @click="selectCategory(option.value)"
-                >
-                  <span
-                    class="tpl-filter__dot"
-                    :style="{ backgroundColor: option.color }"
-                    aria-hidden="true"
-                  />
-                  <span class="flex-1 truncate text-left">{{ option.label }}</span>
-                  <span class="tpl-filter__count">{{ option.count }}</span>
-                </button>
-              </div>
-            </Transition>
-          </div>
-        </div>
-
+      <!-- Named by the heading that used to sit inside it: the landmark keeps
+           its name in the accessibility tree now that the visible row has moved
+           into the header. -->
+      <aside class="tpl-studio__menu" :aria-label="t('partners.templates.menuLabel')">
         <!--
           On a phone the shelves become tabs and only one is open. Stacked, the
           catalogue was three or four rows of cards deep and pushed the
@@ -424,6 +450,14 @@ const { t, locale } = useAppLanguage()
 
 const TELEGRAM_URL = 'https://t.me/goeventkh'
 
+/**
+ * The back link's label, which a locale is allowed to leave empty — English
+ * does, and the link is then the arrow alone. Read once because three separate
+ * things turn on it: what it says, what it is called in the accessibility tree,
+ * and what shape it is.
+ */
+const backLabel = computed(() => t('partners.templates.back'))
+
 // ---------------------------------------------------------------------------
 // The catalogue
 // ---------------------------------------------------------------------------
@@ -538,6 +572,13 @@ const activeCategoryLabel = computed(
     categoryOptions.value.find((option) => option.value === activeCategory.value)?.label ??
     t('partners.templates.allCategories'),
 )
+
+/**
+ * The filter is desktop-only chrome AND only earns its place when there is more
+ * than one event type in the catalogue — one condition, asked in two places
+ * (the control, and the heading that stands in for it).
+ */
+const showCategoryFilter = computed(() => !isNarrow.value && categories.value.length > 1)
 
 const filteredTemplates = computed(() =>
   activeCategory.value
@@ -1181,6 +1222,20 @@ onUnmounted(() => {
      stage picker, the filter and the action all land on 40px, which is also a
      touch target that survives a thumb. */
   --tpl-control-h: 2.5rem;
+  /* One material for every floating control on the page. The view pill and the
+     stage picker were glass; the back link and the event-type filter were
+     bordered white stationery — two families on one row, which is what read as
+     "the dropdown belongs to another page". Defined here rather than written
+     out at each of the four, so a fifth control cannot quietly start a third
+     family, and so the four can never drift apart by a hundredth of an alpha. */
+  --tpl-glass: rgba(255, 255, 255, 0.75);
+  /* Hover tints toward slate rather than toward opaque white: over a ground
+     that is already near-white, going whiter is no feedback at all. Still
+     translucent and still blurred, so the control answers without leaving the
+     material — which is what the old solid slate-50 fill could not do. */
+  --tpl-glass-hover: rgba(248, 250, 252, 0.95);
+  --tpl-glass-edge: rgba(255, 255, 255, 0.6);
+  --tpl-glass-lift: 0 1px 2px rgba(15, 23, 42, 0.06);
   /* The catalogue column. In px, not rem: the app runs a reduced root font at
      laptop widths, and this column holding two 9:16 cards is exactly where that
      shrink is least welcome. */
@@ -1222,9 +1277,9 @@ onUnmounted(() => {
    -------------------------------------------------------------------------- */
 
 /* One bar: navigation at the leading edge, view controls at the trailing one,
-   the headline between them. On a phone the headline wraps to a second line and
-   the two controls keep the first — which is the row people reach for, and the
-   only one that has to survive a 390px screen. */
+   the headline centred between them. On a phone the headline wraps to a second
+   line and the two controls keep the first — which is the row people reach for,
+   and the only one that has to survive a 390px screen. */
 .tpl-page__head {
   display: flex;
   flex-wrap: wrap;
@@ -1235,13 +1290,63 @@ onUnmounted(() => {
 
 @media (min-width: 1024px) {
   .tpl-page__head {
-    /* The headline sits beside the back link rather than under it: two stacked
-       blocks cost ~40px of height that the phones want, and there is width to
-       spare now that the page is full bleed. */
-    flex-wrap: nowrap;
-    gap: 1.25rem;
+    /* Four tracks, and the first is the catalogue column, repeated from the
+       studio below with the same width and the same gutter. That is what makes
+       the header look aligned rather than merely centred: the back link lands
+       directly over the catalogue's own heading, and the remaining three tracks
+       divide exactly the region the frames occupy — so the headline sits on the
+       same centre line as the three phones, their labels and the caption under
+       them. Centring on the *page* instead put it over the seam between the two
+       columns, which is aligned to nothing.
+
+       The two `1fr` gutters are what centre it. They are equal by definition,
+       and the column gaps fall on both sides of the middle track and cancel, so
+       the pill on the right never pushes the title off centre however wide it
+       grows. The trailing gutter is floored at `max-content` so that pill is
+       never squeezed into wrapping; the leading one is empty, so its floor is
+       zero and it simply mirrors whatever the trailing one takes.
+
+       Every item is placed by hand. Grid items stretch to their track by
+       default, and `flex: none` stops meaning anything the moment the parent is
+       not a flex container — left to itself the back link inflates to the full
+       width of the catalogue column, and auto-placement drops the view pill
+       into the leading gutter. */
+    display: grid;
+    grid-template-columns:
+      minmax(0, var(--tpl-menu-w))
+      minmax(max-content, 1fr)
+      auto
+      minmax(max-content, 1fr);
+    column-gap: 1.75rem;
     margin-bottom: 1.25rem;
   }
+
+  .tpl-page__nav {
+    grid-column: 1;
+    /* Inset to the catalogue's own edges, not to the column box. The scroller
+       below pads itself by 8px so a card's selection ring and hover lift are
+       not clipped away, so every card, shelf heading and count in that column
+       starts 8px in — and a bordered pill sitting flush to the column box
+       instead is 8px adrift of all of them. */
+    padding-inline: 0.5rem;
+  }
+
+  .tpl-seg {
+    grid-column: 4;
+    justify-self: end;
+  }
+}
+
+/* The back link and the catalogue's filter, in one row. On a phone it is only
+   the back link — down there the filter belongs to a catalogue that has become
+   a sideways rail — so the row shrink-wraps and the view pill keeps the far end
+   of the bar. */
+.tpl-page__nav {
+  display: flex;
+  flex: none;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .tpl-back {
@@ -1252,23 +1357,34 @@ onUnmounted(() => {
   justify-content: center;
   gap: 0.375rem;
   border-radius: 9999px;
-  border: 1px solid rgb(226 232 240);
-  background: #fff;
+  border: 1px solid var(--tpl-glass-edge);
+  background: var(--tpl-glass);
+  box-shadow: var(--tpl-glass-lift);
+  backdrop-filter: blur(12px);
   padding: 0 0.9375rem 0 0.8125rem;
   font-size: 0.8125rem;
   font-weight: 500;
   color: rgb(51 65 85);
   transition:
     color var(--tpl-dur) var(--tpl-ease-out),
-    border-color var(--tpl-dur) var(--tpl-ease-out),
     background-color var(--tpl-dur) var(--tpl-ease-out),
     transform var(--tpl-press) var(--tpl-ease-out);
 }
 
+/* No label, no reason for the lopsided pill the label's padding makes: the
+   arrow gets a circle of the page's own control height and sits dead centre of
+   it, rather than 1px right of centre in a 46x40 lozenge. */
+.tpl-back.is-icon {
+  width: var(--tpl-control-h);
+  padding: 0;
+}
+
+/* The glass goes more opaque and the ink darkens. Hardening the border to slate
+   instead would put the stationery outline back on hover — the control would
+   change family under the cursor. */
 .tpl-back:hover {
   color: rgb(15 23 42);
-  border-color: rgb(203 213 225);
-  background: rgb(248 250 252);
+  background: var(--tpl-glass-hover);
 }
 
 .tpl-back:active {
@@ -1282,26 +1398,28 @@ onUnmounted(() => {
 
 .tpl-page__headline {
   /* Second row on a phone: `order` moves it past the two controls, and a full
-     basis makes it claim a line of its own. */
+     basis makes it claim a line of its own — centred over the pair, since it
+     owns the whole width of that line. */
   order: 3;
   flex-basis: 100%;
   min-width: 0;
+  text-align: center;
 }
 
 @media (min-width: 1024px) {
   .tpl-page__headline {
+    /* Stacked, not side by side. Centred over the stage, a caption hung off the
+       title's right-hand baseline reads as two objects that happen to be near
+       each other; over and under reads as one lockup. It is also why the
+       divider that once sat between them could never be aligned — under
+       baseline alignment the caption's box starts well below the title's cap,
+       so the rule drew a short line down the middle of the heading.
+
+       Stacking usually costs ~40px of header height, which the phones
+       underneath pay for. Here it costs about six, because the caption is given
+       the width to stay on one line. */
     order: 0;
-    flex: 1 1 auto;
-    flex-basis: auto;
-    display: flex;
-    align-items: baseline;
-    /* Space, not a rule. The divider that used to sit here was pinned to the
-       caption's own box, which under baseline alignment starts well below the
-       title's cap — so it drew a short line down the middle of the heading and
-       stopped short of both ends of it. The size, weight and colour step
-       already separates the two; a wider gap finishes the job with no chrome
-       to misalign. */
-    gap: 1.25rem;
+    grid-column: 3;
   }
 }
 
@@ -1330,18 +1448,20 @@ onUnmounted(() => {
 @media (min-width: 1024px) {
   .tpl-page__subtitle {
     display: block;
-    /* Beside a heading it is a caption, and a caption that runs the width of a
-       1900px screen is unreadable. Narrower than it used to be, and the string
-       behind it is half the length: at 34rem the old copy ran to three lines
-       that the title's single line then hung off, and the whole header grew a
-       row the phones underneath were paying for. Two lines is a caption; four
-       is a paragraph that has wandered into a header. */
-    max-width: 26rem;
-    min-width: 0;
+    /* Under the title it is a caption, and a caption that runs the width of a
+       1900px screen is unreadable. Wide enough to hold this string on one line
+       at desktop widths and fall to two at the narrow end of them — never the
+       four it ran to at 34rem, which is a paragraph that has wandered into a
+       header. `balance` is what keeps that second line from being two words
+       long, which is loud under a centred title; and the box needs centring in
+       its own right, since `text-align` centres the lines inside it but leaves
+       a 32rem box sitting wherever it was placed. */
+    max-width: 32rem;
+    margin: 0.125rem auto 0;
     font-size: 0.875rem;
-    line-height: 1.6;
+    line-height: 1.5;
     color: rgb(100 116 139);
-    text-wrap: pretty;
+    text-wrap: balance;
   }
 }
 
@@ -1401,14 +1521,7 @@ onUnmounted(() => {
   }
 }
 
-.tpl-menu__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
+/* Only the single-event-type fallback still renders this — see the header. */
 .tpl-menu__label {
   font-size: 0.75rem;
   font-weight: 600;
@@ -1419,8 +1532,12 @@ onUnmounted(() => {
 
 /* --- Event-type filter (§9) ---------------------------------------------- */
 
+/* Fills whatever the back link leaves of the catalogue column, so the row has
+   a flush trailing edge over a column of flush-edged cards. */
 .tpl-filter {
   position: relative;
+  flex: 1;
+  min-width: 0;
 }
 
 .tpl-filter__trigger {
@@ -1428,27 +1545,43 @@ onUnmounted(() => {
   min-height: var(--tpl-control-h);
   align-items: center;
   gap: 0.5rem;
-  border-radius: 0.5rem;
-  border: 1px solid rgb(226 232 240);
-  background: #fff;
-  padding: 0.375rem 0.625rem;
+  /* Full-round, like the back link to its left, the view pill across the row
+     and the stage picker below. An 8px radius on a 40px control is the shape of
+     a form field, and one form field among four pills is the loudest single
+     thing about this bar. */
+  border-radius: 9999px;
+  border: 1px solid var(--tpl-glass-edge);
+  background: var(--tpl-glass);
+  box-shadow: var(--tpl-glass-lift);
+  backdrop-filter: blur(12px);
+  /* Round ends eat their own inline space, so the pill needs more of it than
+     the rounded rectangle did. The trailing side gets a shade less, the chevron
+     carrying whitespace of its own. */
+  padding: 0 0.6875rem 0 0.8125rem;
+  width: 100%;
   font-size: 0.8125rem;
   font-weight: 500;
   color: rgb(51 65 85);
-  max-width: 11rem;
   transition:
-    border-color var(--tpl-dur) var(--tpl-ease-out),
+    color var(--tpl-dur) var(--tpl-ease-out),
     background-color var(--tpl-dur) var(--tpl-ease-out),
     transform var(--tpl-press) var(--tpl-ease-out);
 }
 
-/* The mint hover is the house filter recipe (goevent-design §9), not a local
-   invention — it is the same control the guest-group filters use, and matching
-   the product it sits inside is what makes it read as familiar rather than as
-   a one-off built for this page. */
+/* Not §9's mint hover, which is the recipe for a dropdown standing on a white
+   list page inside the app. This one stands in a toolbar over a stage, between
+   a back link and a glass pill, on a page that deliberately ships without the
+   app shell — so it takes §5's toggle-group material and hovers the way the
+   back link beside it does. The mint was the one colour on this bar that
+   appeared nowhere else on the page, and it arrived on the control furthest
+   from anything else green.
+
+   The menu it opens is still §9 to the letter — white, rounded-xl, gradient on
+   the selected row. A popover is a popover, and it was never the part that
+   looked borrowed. */
 .tpl-filter__trigger:hover {
-  border-color: rgb(110 231 183);
-  background: rgb(236 253 245);
+  color: rgb(15 23 42);
+  background: var(--tpl-glass-hover);
 }
 
 .tpl-filter__trigger:active {
@@ -1474,7 +1607,10 @@ onUnmounted(() => {
   trigger reads as belonging to something else on the page.
 
   `min-width: 100%` resolves against .tpl-filter, which is exactly the trigger's
-  box; `max-content` then grows it for a long event-type name, up to a cap.
+  box; `max-content` then grows it for a long event-type name, and `max-width`
+  hands it straight back — the trigger now spans its whole column, so matching
+  it is both the floor and the ceiling, and a long name truncates in the row
+  rather than pushing the popover wider than the control it belongs to.
 */
 .tpl-filter__menu {
   position: absolute;
@@ -1483,7 +1619,7 @@ onUnmounted(() => {
   z-index: 100;
   min-width: 100%;
   width: max-content;
-  max-width: 15rem;
+  max-width: 100%;
   max-height: 22rem;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -1556,6 +1692,15 @@ onUnmounted(() => {
   font-size: 0.6875rem;
   opacity: 0.7;
   font-variant-numeric: tabular-nums;
+}
+
+/* In the menu, `opacity` is right — it is what turns the count translucent
+   white on the gradient-filled selected row. In the trigger there is no such
+   row to inherit from, and a dimmed number beside a truncating label reads as
+   the tail of that label rather than as its own value. Colour it outright. */
+.tpl-filter__trigger .tpl-filter__count {
+  opacity: 1;
+  color: rgb(148 163 184);
 }
 
 /* --- The catalogue -------------------------------------------------------- */
@@ -1963,11 +2108,11 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.125rem;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--tpl-glass-edge);
+  background: var(--tpl-glass);
   padding: 0.1875rem;
   backdrop-filter: blur(12px);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--tpl-glass-lift);
 }
 
 .tpl-seg__btn {
@@ -2048,11 +2193,11 @@ onUnmounted(() => {
   overscroll-behavior-x: contain;
   scrollbar-width: none;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--tpl-glass-edge);
+  background: var(--tpl-glass);
   padding: 0.1875rem;
   backdrop-filter: blur(12px);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--tpl-glass-lift);
 }
 
 /* The scroller clips to its padding box, so a step's ring has to be drawn
