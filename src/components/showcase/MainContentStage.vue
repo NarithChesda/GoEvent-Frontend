@@ -514,8 +514,7 @@
                      what turns the block from space you wade through into a page you
                      land on. -->
                 <div
-                  ref="footerSectionRef"
-                  class="footer-page min-h-[calc(85dvh-2rem)] flex flex-col items-center justify-center animate-reveal"
+                  class="footer-page min-h-[calc(85dvh-2rem)] flex flex-col items-center justify-center"
                   :class="footerMarginClasses"
                 >
                   <!-- Footer Card with Conditional Styling -->
@@ -553,6 +552,7 @@
                          gap is vh-clamped so a short phone tightens the whole lockup
                          together instead of one band collapsing before the others. -->
                     <div
+                      ref="footerLockupRef"
                       class="footer-lockup flex flex-col items-center justify-center gap-[clamp(14px,2.6vh,22px)]"
                     >
                       <!-- The marks: partner above the collaboration sign above ours.
@@ -802,7 +802,7 @@
 
                       <!-- Address -->
                       <div
-                        class="inline-flex items-center justify-center px-2 leading-none opacity-90"
+                        class="footer-address inline-flex items-center justify-center px-2 leading-none opacity-90"
                         :class="showLiquidGlass ? 'text-white' : ''"
                         :style="{
                           fontFamily: secondaryFont || currentFont,
@@ -1192,7 +1192,7 @@ const sectionRefs = {
   paymentSection: ref<HTMLElement>(),
   paymentComponent: ref<InstanceType<typeof PaymentSection> | null>(null),
   commentSection: ref<HTMLElement>(),
-  footerSection: ref<HTMLElement>(),
+  footerLockup: ref<HTMLElement>(),
 }
 
 // Extract individual refs for template usage
@@ -1209,7 +1209,7 @@ const {
   paymentSection: paymentSectionRef,
   paymentComponent: paymentComponentRef,
   commentSection: commentSectionRef,
-  footerSection: footerSectionRef,
+  footerLockup: footerLockupRef,
 } = sectionRefs
 
 /**
@@ -1258,7 +1258,7 @@ const initializeRevealAnimations = () => {
     [gallerySectionRef, 'gallery-section'],
     [paymentSectionRef, 'payment-section'],
     [commentSectionRef, 'comment-section'],
-    [footerSectionRef, 'footer-section'],
+    [footerLockupRef, 'footer-lockup'],
   ]
 
   animationConfig.forEach(([elementRef, elementId]) => {
@@ -1840,6 +1840,87 @@ onUnmounted(() => {
   scroll-snap-align: center;
 }
 
+/* The lockup fades in as one object while its rows rise in a wave.
+
+   Why the lockup carries this and not the page it sits on. The footer page is
+   now a full scrollport tall with its content centred, so an observer watching
+   the PAGE fires the moment the page's top edge crosses in - roughly half a
+   screen before the mark is on screen at all. The reveal was finishing while
+   the reader still had empty space in front of them, and by the time they
+   reached the mark it had simply always been there. Watching the lockup puts
+   this where every other section's reveal is: 60px of the thing being revealed
+   is showing, and then it arrives.
+
+   Curve and durations are `.animate-reveal`'s, to the millisecond. This is the
+   last section of the same document and it should land the way the eleven
+   before it did.
+
+   Opacity belongs to the lockup, transform to the rows. That split is what
+   keeps the reveal from fighting the lockup's existing model: the ornament
+   rests at 0.55 and the address at 0.9, so a per-row opacity would have to know
+   each row's resting value, and both `.footer-mark` rows already own
+   `transform` for their hover lift. Moving only the inner elements - the image,
+   the svg, the rows that carry no hover of their own - leaves both alone. */
+.footer-lockup {
+  --rv-y: 18px;
+  opacity: 0;
+  transition: opacity 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.footer-lockup.is-visible {
+  opacity: 1;
+}
+
+.footer-lockup .partner-mark > *,
+.footer-lockup .collab-ornament,
+.footer-lockup .goevent-mark,
+.footer-lockup .social-row,
+.footer-lockup .footer-address {
+  transform: translateY(var(--rv-y));
+  transition: transform 0.48s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.footer-lockup.is-visible .partner-mark > *,
+.footer-lockup.is-visible .collab-ornament,
+.footer-lockup.is-visible .goevent-mark,
+.footer-lockup.is-visible .social-row,
+.footer-lockup.is-visible .footer-address {
+  transform: translateY(0);
+}
+
+/* The wave, in reading order. 70ms apart: close enough that five rows read as
+   one gesture rather than five events, which is what the lockup's own
+   construction is for. */
+.footer-lockup .collab-ornament {
+  transition-delay: 70ms;
+}
+
+/* Our mark travels further than anything around it, so it settles where the
+   others slide - the one place in this reveal where the brand gets more
+   presence than the furniture. A beat of its own would have been too much. */
+.footer-lockup .goevent-mark {
+  --rv-y: 26px;
+  transition-delay: 140ms;
+}
+
+.footer-lockup .social-row {
+  transition-delay: 210ms;
+}
+
+.footer-lockup .footer-address {
+  transition-delay: 260ms;
+}
+
+@media (max-width: 640px) {
+  .footer-lockup {
+    --rv-y: 12px;
+  }
+
+  .footer-lockup .goevent-mark {
+    --rv-y: 18px;
+  }
+}
+
 /* The footer lockup has one width, and the social row is what sets it: four
    buttons and three gaps. Our mark is then set to exactly that width rather
    than to a height of its own, so the two can never drift apart — every value
@@ -2019,6 +2100,22 @@ a.footer-mark:active {
   .animate-reveal {
     transition: opacity 0.25s ease;
     transform: none !important;
+  }
+
+  /* The lockup keeps its fade - it still says "this arrived" - but nothing
+     travels and nothing waits its turn. */
+  .footer-lockup {
+    transition: opacity 0.25s ease;
+  }
+
+  .footer-lockup .partner-mark > *,
+  .footer-lockup .collab-ornament,
+  .footer-lockup .goevent-mark,
+  .footer-lockup .social-row,
+  .footer-lockup .footer-address {
+    transform: none !important;
+    transition: none;
+    transition-delay: 0ms !important;
   }
 
   .animate-slideUp {
