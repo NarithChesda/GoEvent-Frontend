@@ -148,7 +148,8 @@
     "planLabel": "Package",
     "filterLabel": "Event type",
     "allCategories": "Every event type",
-    "otherPlan": "Other designs"
+    "otherPlan": "Other designs",
+    "noteLabel": "About this preview"
   },
   "partner": {
     "eyebrow": "What you get",
