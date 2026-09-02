@@ -7,15 +7,145 @@
     navigation the page needs.
   -->
   <div class="tpl-page">
-    <header class="tpl-page__head">
-      <RouterLink to="/partners" class="tpl-back">
-        <ArrowLeft class="h-4 w-4 flex-none" aria-hidden="true" />
-        {{ t('partners.templates.back') }}
-      </RouterLink>
+    <header ref="headRef" class="tpl-page__head">
+      <!--
+        The catalogue's column, and everything that steers it. The header bar is
+        divided by the same two columns as the body below, so each side's chrome
+        sits over the side it belongs to: leaving this track to the back link
+        alone put one round arrow in 356px of nothing, while the catalogue
+        underneath carried a second row of chrome of its own.
+      -->
+      <div class="tpl-page__nav">
+        <!--
+          The label is allowed to be empty — in English it is, and the link is
+          then the arrow alone, in a circle. An empty label is not an empty
+          name, though: with the icon hidden from the tree there would be
+          nothing left to announce, so the accessible name falls back to the
+          generic one.
+        -->
+        <RouterLink
+          to="/partners"
+          class="tpl-back"
+          :class="{ 'is-icon': !backLabel }"
+          :aria-label="backLabel || t('common.actions.back')"
+        >
+          <ArrowLeft class="h-4 w-4 flex-none" aria-hidden="true" />
+          <!-- In a span so a phone can drop it: up there the title names the
+               page a step to the right, the arrow's own accessible name still
+               says where it goes, and in Khmer the label is a 110px pill that
+               pushed the language and info controls onto a second row. -->
+          <span v-if="backLabel" class="tpl-back__label">{{ backLabel }}</span>
+        </RouterLink>
+
+        <!--
+          Event-type filter (§9 dropdown), over the column it filters and wide
+          enough to fill it — a control that spans its list reads as belonging
+          to it, where a 167px pill floating beside a label read as a leftover.
+          It carries the running count itself, so the separate "Designs · 47"
+          heading is gone: the number belongs on the control that changes it,
+          and the shelf headings below already count their own.
+
+          Only when there is more than one type to choose between, and never on
+          a phone — there the shelf tabs carry both jobs this row was doing, and
+          a visitor browses every type and reads the type off each card. The
+          shelves are short enough to flick through that it is a fair trade; if
+          it stops being one, the place to put the filter back is inside the tab
+          strip, not above it.
+        -->
+        <div v-if="showCategoryFilter" class="tpl-filter">
+          <button
+            type="button"
+            class="tpl-filter__trigger"
+            :aria-expanded="categoryMenuOpen"
+            aria-haspopup="listbox"
+            @click="categoryMenuOpen = !categoryMenuOpen"
+          >
+            <Filter class="h-3.5 w-3.5 flex-none text-slate-400" aria-hidden="true" />
+            <span class="flex-1 truncate text-left">{{ activeCategoryLabel }}</span>
+            <span class="tpl-filter__count">{{ filteredTemplates.length }}</span>
+            <ChevronDown
+              class="h-4 w-4 flex-none text-slate-400 transition-transform duration-200"
+              :class="{ 'rotate-180': categoryMenuOpen }"
+              aria-hidden="true"
+            />
+          </button>
+
+          <div
+            v-if="categoryMenuOpen"
+            class="tpl-filter__scrim"
+            @click="categoryMenuOpen = false"
+          />
+          <Transition name="tpl-dropdown">
+            <div
+              v-if="categoryMenuOpen"
+              class="tpl-filter__menu"
+              role="listbox"
+              :aria-label="t('partners.templates.filterLabel')"
+            >
+              <button
+                v-for="option in categoryOptions"
+                :key="option.value"
+                type="button"
+                role="option"
+                :aria-selected="option.value === activeCategory"
+                class="tpl-filter__item"
+                :class="{ 'is-active': option.value === activeCategory }"
+                @click="selectCategory(option.value)"
+              >
+                <span
+                  class="tpl-filter__dot"
+                  :style="{ backgroundColor: option.color }"
+                  aria-hidden="true"
+                />
+                <span class="flex-1 truncate text-left">{{ option.label }}</span>
+                <span class="tpl-filter__count">{{ option.count }}</span>
+              </button>
+            </div>
+          </Transition>
+        </div>
+
+        <!-- One event type, nothing to filter: the count still names the
+             column, which is what the heading did before it moved. -->
+        <p v-else-if="!isNarrow" class="tpl-menu__label">
+          {{ t('partners.templates.menuLabel') }}
+          <span class="text-slate-400">· {{ filteredTemplates.length }}</span>
+        </p>
+      </div>
 
       <div class="tpl-page__headline">
         <h1 class="tpl-page__title type-display-sm">{{ t('partners.templates.title') }}</h1>
         <p class="tpl-page__subtitle">{{ t('partners.templates.subtitle') }}</p>
+      </div>
+
+      <!--
+        The caveat about whose invitation this is — the one thing up here that
+        is about the sample rather than about the preview's own controls, which
+        live together over the frame instead.
+
+        A button because on a phone it was three lines of prose under the frame,
+        costing more height than a sentence read once is worth. Held behind a
+        mark it costs a disc, and stays one tap away for as long as it is wanted.
+      -->
+      <div v-if="isNarrow" class="tpl-topbar">
+        <div class="tpl-info">
+          <button
+            type="button"
+            class="tpl-icon-btn"
+            :class="{ 'is-open': noteOpen }"
+            :aria-expanded="noteOpen"
+            :aria-label="t('partners.templates.noteLabel')"
+            @click="noteOpen = !noteOpen"
+          >
+            <Info class="h-4 w-4" aria-hidden="true" />
+          </button>
+
+          <div v-if="noteOpen" class="tpl-filter__scrim" @click="noteOpen = false" />
+          <Transition name="tpl-dropdown">
+            <p v-if="noteOpen" class="tpl-info__panel" role="status">
+              {{ t('partners.templates.note') }}
+            </p>
+          </Transition>
+        </div>
       </div>
 
       <!--
@@ -74,9 +204,16 @@
       <div class="tpl-studio__stage">
         <div class="tpl-skeleton-frame" />
       </div>
+      <!-- `is-rail` for the same reason the real catalogue takes it on a phone:
+           the dock is one shelf deep down there, and a two-row grid of
+           skeletons would draw a placeholder twice the height of the thing it
+           is standing in for — so the page would visibly resettle the moment it
+           loaded, which is the one job a skeleton has. -->
       <div class="tpl-studio__menu">
-        <div class="tpl-card-grid">
-          <div v-for="n in 6" :key="n" class="tpl-skeleton-card" />
+        <div class="tpl-menu__scroll" :class="{ 'is-rail': isNarrow }">
+          <div class="tpl-card-grid">
+            <div v-for="n in 6" :key="n" class="tpl-skeleton-card" />
+          </div>
         </div>
       </div>
     </div>
@@ -115,24 +252,44 @@
           It costs nothing net, because the frame's own caption comes off when
           the picker is up (see :label below): the picker already names the
           stage, and two labels for one screen is one too many.
+
+          On a phone the language toggle joins it, and the pair becomes the
+          preview's own control bar. Both answer the same question — what is on
+          the screen below — where the dock beneath answers a different one,
+          which design to put there. Grouping them costs one row and puts every
+          control that repaints the phone directly over the phone.
         -->
         <div class="tpl-stage">
-          <div
-            v-if="showStagePicker"
-            class="tpl-steps"
-            role="group"
-            :aria-label="t('partners.templates.stageLabel')"
-          >
-            <button
-              v-for="frame in visibleFrames"
-              :key="frame.id"
-              type="button"
-              class="tpl-step"
-              :class="{ 'is-active': activeFrameId === frame.id }"
-              :aria-pressed="activeFrameId === frame.id"
-              @click="activeFrameId = frame.id"
+          <div v-if="showStagePicker || showStageLanguage" class="tpl-stagebar">
+            <div
+              v-if="showStagePicker"
+              class="tpl-steps"
+              role="group"
+              :aria-label="t('partners.templates.stageLabel')"
             >
-              {{ t(frame.labelKey) }}
+              <button
+                v-for="frame in visibleFrames"
+                :key="frame.id"
+                type="button"
+                class="tpl-step"
+                :class="{ 'is-active': activeFrameId === frame.id }"
+                :aria-pressed="activeFrameId === frame.id"
+                @click="activeFrameId = frame.id"
+              >
+                {{ t(frame.labelKey) }}
+              </button>
+            </div>
+
+            <button
+              v-if="showStageLanguage"
+              type="button"
+              class="tpl-lang"
+              :title="t('partners.templates.switchLanguage')"
+              :aria-label="t('partners.templates.switchLanguage')"
+              @click="cycleLanguage"
+            >
+              <Languages class="h-3.5 w-3.5" aria-hidden="true" />
+              <span>{{ previewLanguage.toUpperCase() }}</span>
             </button>
           </div>
 
@@ -147,13 +304,20 @@
               :max-width="frameMaxWidth"
               :width-override="sharedColumnWidth"
             >
+              <!-- Swipeable on a phone only, where the frame is most of the
+                   screen and the three stages are the page's main navigation:
+                   the biggest thing on screen becomes the way through them,
+                   and the pill above turns into the map rather than the only
+                   road. Nothing to swipe to in the three-up row. -->
               <InertIframe
                 v-if="mountedFrameIds.has(frame.id)"
                 :ref="(el) => setFrameRef(frame.id, el)"
                 :src="frameUrl(frame)"
                 :click-message="frame.clickMessage"
+                :swipeable="isNarrow && visibleFrames.length > 1"
                 @ready="onFrameReady(frame.id)"
                 @languages="onFrameLanguages"
+                @swipe="onFrameSwipe"
               />
               <div v-else class="tpl-frame-pending">
                 <div class="tpl-spinner" />
@@ -181,79 +345,10 @@
         the grouping (there are two or three, and a partner wants the cheap shelf
         and the expensive shelf visible at once).
       -->
-      <aside class="tpl-studio__menu">
-        <!--
-          Desktop only. On a phone the shelf tabs below already carry both jobs
-          this row was doing — they name what you are looking at and they count
-          it — so the row was a heading for a heading, and ~48px of it came off
-          the invitation underneath.
-
-          It takes the event-type filter with it, which is a real loss: a phone
-          visitor now browses every type and reads the type off each card. The
-          shelves are short enough to flick through that it is a fair trade, but
-          if it stops being one, the place to put it back is inside the tab
-          strip — not above it, where this row was.
-        -->
-        <div v-if="!isNarrow" class="tpl-menu__head">
-          <p class="tpl-menu__label">
-            {{ t('partners.templates.menuLabel') }}
-            <span class="text-slate-400">· {{ filteredTemplates.length }}</span>
-          </p>
-
-          <!-- Event-type filter (§9 dropdown). Rendered only when the catalogue
-               actually spans more than one type. -->
-          <div v-if="categories.length > 1" class="tpl-filter">
-            <button
-              type="button"
-              class="tpl-filter__trigger"
-              :aria-expanded="categoryMenuOpen"
-              aria-haspopup="listbox"
-              @click="categoryMenuOpen = !categoryMenuOpen"
-            >
-              <Filter class="h-3.5 w-3.5 flex-none text-slate-400" aria-hidden="true" />
-              <span class="flex-1 truncate text-left">{{ activeCategoryLabel }}</span>
-              <ChevronDown
-                class="h-4 w-4 flex-none text-slate-400 transition-transform duration-200"
-                :class="{ 'rotate-180': categoryMenuOpen }"
-                aria-hidden="true"
-              />
-            </button>
-
-            <div
-              v-if="categoryMenuOpen"
-              class="tpl-filter__scrim"
-              @click="categoryMenuOpen = false"
-            />
-            <Transition name="tpl-dropdown">
-              <div
-                v-if="categoryMenuOpen"
-                class="tpl-filter__menu"
-                role="listbox"
-                :aria-label="t('partners.templates.filterLabel')"
-              >
-                <button
-                  v-for="option in categoryOptions"
-                  :key="option.value"
-                  type="button"
-                  role="option"
-                  :aria-selected="option.value === activeCategory"
-                  class="tpl-filter__item"
-                  :class="{ 'is-active': option.value === activeCategory }"
-                  @click="selectCategory(option.value)"
-                >
-                  <span
-                    class="tpl-filter__dot"
-                    :style="{ backgroundColor: option.color }"
-                    aria-hidden="true"
-                  />
-                  <span class="flex-1 truncate text-left">{{ option.label }}</span>
-                  <span class="tpl-filter__count">{{ option.count }}</span>
-                </button>
-              </div>
-            </Transition>
-          </div>
-        </div>
-
+      <!-- Named by the heading that used to sit inside it: the landmark keeps
+           its name in the accessibility tree now that the visible row has moved
+           into the header. -->
+      <aside ref="menuRef" class="tpl-studio__menu" :aria-label="t('partners.templates.menuLabel')">
         <!--
           On a phone the shelves become tabs and only one is open. Stacked, the
           catalogue was three or four rows of cards deep and pushed the
@@ -401,6 +496,7 @@ import {
   ChevronDown,
   Filter,
   ImageOff,
+  Info,
   LayoutGrid,
   Languages,
   Palette,
@@ -423,6 +519,14 @@ import { useAppLanguage } from '@/composables/useAppLanguage'
 const { t, locale } = useAppLanguage()
 
 const TELEGRAM_URL = 'https://t.me/goeventkh'
+
+/**
+ * The back link's label, which a locale is allowed to leave empty — English
+ * does, and the link is then the arrow alone. Read once because three separate
+ * things turn on it: what it says, what it is called in the accessibility tree,
+ * and what shape it is.
+ */
+const backLabel = computed(() => t('partners.templates.back'))
 
 // ---------------------------------------------------------------------------
 // The catalogue
@@ -538,6 +642,13 @@ const activeCategoryLabel = computed(
     categoryOptions.value.find((option) => option.value === activeCategory.value)?.label ??
     t('partners.templates.allCategories'),
 )
+
+/**
+ * The filter is desktop-only chrome AND only earns its place when there is more
+ * than one event type in the catalogue — one condition, asked in two places
+ * (the control, and the heading that stands in for it).
+ */
+const showCategoryFilter = computed(() => !isNarrow.value && categories.value.length > 1)
 
 const filteredTemplates = computed(() =>
   activeCategory.value
@@ -810,6 +921,41 @@ const showLayoutSegments = computed(() => !isNarrow.value && visibleFrames.value
 const showStagePicker = computed(() => isSingleView.value && visibleFrames.value.length > 1)
 
 /**
+ * The language toggle sits with the stage picker on a phone, and with the
+ * one-vs-all segments in the header everywhere else.
+ *
+ * Both of those are groupings by what a control *does*: down here it is one of
+ * the two things that repaint the phone below, up there it is one of the two
+ * things that change how the page is being viewed. The desktop header has room
+ * for the pair; a phone's header does not, and the frame does.
+ */
+const showStageLanguage = computed(() => isNarrow.value && frameLanguages.value.length > 1)
+
+/**
+ * The sample-invitation caveat, held behind a mark on a phone.
+ *
+ * It reads once and matters once, and in the flow under the frame it was three
+ * lines of prose permanently occupying a band the preview wanted. Desktop keeps
+ * it in place, where the room exists and there is nothing to trade it against.
+ */
+const noteOpen = ref(false)
+
+/**
+ * A swipe across the phone moves one stage, in the direction the finger went —
+ * dragging left brings the next screen in from the right, which is the way a
+ * pager has always read. It stops at the ends rather than wrapping: three
+ * stages are a sequence with a beginning and an end, not a carousel, and
+ * looping from Main Content back to Cover would undo the picker's own story.
+ */
+const onFrameSwipe = (direction: 'left' | 'right') => {
+  const frames = visibleFrames.value
+  const index = frames.findIndex((frame) => frame.id === activeFrameId.value)
+  if (index === -1) return
+  const next = frames[index + (direction === 'left' ? 1 : -1)]
+  if (next) activeFrameId.value = next.id
+}
+
+/**
  * The caption above a frame — blank while the stage picker is up, because the
  * picker sits directly over the phone and already says which screen this is.
  * Two labels for one screen is one too many, and the row it gives back is
@@ -818,11 +964,17 @@ const showStagePicker = computed(() => isSingleView.value && visibleFrames.value
 const frameLabel = (frame: PreviewFrameDescriptor): string =>
   showStagePicker.value ? '' : t(frame.labelKey)
 
-/** The pill is a container: with nothing to put in it, it is a stray blob. */
+/**
+ * The pill is a container: with nothing to put in it, it is a stray blob. On a
+ * phone it is always empty — the layout segments never show there and the
+ * language toggle has moved down to the frame — so the header keeps only the
+ * back link and the title.
+ */
 const hasViewControls = computed(
   () =>
     !loading.value &&
     templates.value.length > 0 &&
+    !isNarrow.value &&
     (showLayoutSegments.value || frameLanguages.value.length > 1),
 )
 
@@ -832,6 +984,8 @@ const hasViewControls = computed(
 
 /** Room kept below the phones for the sample-content note. */
 const FRAME_BOTTOM_RESERVE = 72
+/** Air between the phone and the dock it stands on. */
+const DOCK_CLEARANCE = 14
 const FRAME_ASPECT = 390 / 844
 const NATIVE_FRAME_WIDTH = 390
 /** Never so small that the invitation stops being readable; the page scrolls. */
@@ -852,12 +1006,26 @@ const framesTop = ref(320)
  * the same answer at any scroll position, and this page opens at the top, which
  * is where the fit has to be right.
  */
+/**
+ * What sits below the phone and may not be drawn over.
+ *
+ * On a phone that is the dock, fixed to the bottom of the window, and it has to
+ * be measured because it is not a constant: the plan tabs come and go with the
+ * catalogue, and the rail's cards change size with the screen. Elsewhere it is
+ * the caption under the frames, which does not.
+ */
+const frameBottomReserve = computed(() =>
+  isNarrow.value ? dockHeight.value + DOCK_CLEARANCE : FRAME_BOTTOM_RESERVE,
+)
+
 const frameMaxWidth = computed(() =>
   Math.max(
     MIN_FRAME_WIDTH,
     Math.min(
       NATIVE_FRAME_WIDTH,
-      Math.round((viewportHeight.value - framesTop.value - FRAME_BOTTOM_RESERVE) * FRAME_ASPECT),
+      Math.round(
+        (viewportHeight.value - framesTop.value - frameBottomReserve.value) * FRAME_ASPECT,
+      ),
     ),
   ),
 )
@@ -881,8 +1049,31 @@ let framesObserver: ResizeObserver | null = null
 const studioRef = ref<HTMLElement | null>(null)
 const studioTop = ref(96)
 
+/**
+ * How tall the dock is, published to CSS so the stage can keep clear of it and
+ * the stage picker can float directly above it.
+ *
+ * Measured rather than assumed for the same reason the header's own top is: it
+ * is built from a rail whose cards resize with the screen and a row of plan tabs
+ * that is not always there, so any constant would be wrong on some catalogue.
+ * The seed is a fair guess at a three-part dock, used only for the first frame
+ * before the observer reports.
+ */
+const dockHeight = ref(200)
+
+/**
+ * And how tall the top bar is, for the control bar that sticks below it.
+ *
+ * Also not a constant: the title clamps to two lines in Khmer and one in
+ * English, so the bar is 64px in one locale and 60 in the other, and a guess
+ * would leave a 4px seam of invitation showing through between the two.
+ */
+const headHeight = ref(60)
+
 const studioStyle = computed(() => ({
   '--tpl-studio-top': `${studioTop.value}px`,
+  '--tpl-dock-h': `${dockHeight.value}px`,
+  '--tpl-head-h': `${headHeight.value}px`,
 }))
 
 /** Both measurements the frames need, taken from the container that holds them. */
@@ -901,6 +1092,50 @@ watch(framesRef, (element) => {
   measureFrameBox(element)
   framesObserver = new ResizeObserver(() => measureFrameBox(element))
   framesObserver.observe(element)
+})
+
+/**
+ * The dock's height, watched rather than read once.
+ *
+ * It changes under the page's feet — the plan tabs appear when a filter widens,
+ * the rail's cards grow at `sm` — and every one of those changes moves the floor
+ * the phone is fitted to. `refit` then has to run, because the frame is sized
+ * from a number that has just moved.
+ */
+const menuRef = ref<HTMLElement | null>(null)
+const headRef = ref<HTMLElement | null>(null)
+let dockObserver: ResizeObserver | null = null
+let headObserver: ResizeObserver | null = null
+
+/** One shape for both bands: watch the element, publish its height, re-fit. */
+const observeHeight = (
+  element: HTMLElement,
+  target: typeof dockHeight,
+  onChange?: () => void,
+): ResizeObserver => {
+  const measure = () => {
+    const next = Math.round(element.getBoundingClientRect().height)
+    if (next && next !== target.value) {
+      target.value = next
+      onChange?.()
+    }
+  }
+  measure()
+  const observer = new ResizeObserver(measure)
+  observer.observe(element)
+  return observer
+}
+
+watch(menuRef, (element) => {
+  dockObserver?.disconnect()
+  dockObserver = element ? observeHeight(element, dockHeight, remeasure) : null
+})
+
+// No re-fit: the top bar is above the frames, so its height already reaches
+// `frameMaxWidth` through `framesTop`, which the frames box reports itself.
+watch(headRef, (element) => {
+  headObserver?.disconnect()
+  headObserver = element ? observeHeight(element, headHeight) : null
 })
 
 /**
@@ -981,16 +1216,26 @@ const FRAME_HANDSHAKE_TIMEOUT_MS = 4000
 let frameMountTimer: ReturnType<typeof setTimeout> | null = null
 
 /**
- * Which frames are worth booting.
+ * Which frames are worth booting: all of them, but not all at once.
  *
- * On a wide screen, all of them: even in single view the other two are one dot
- * click away, and having them warm is what makes that click instant. On a phone,
- * only the one on screen — the others are hidden behind the same dots, and two
- * extra boots of the whole app is not a cost to put on a visitor who may never
- * tap them. They come up on demand instead.
+ * On a wide screen they can start together (in the queue's own order) — every
+ * frame is on screen or one click away, and having them warm is what makes that
+ * click instant. On a phone the first one is on its own until it is up, so the
+ * invitation the visitor is actually looking at never races two hidden app
+ * boots for the network and the main thread.
+ *
+ * Afterwards the phone warms the rest too, which it deliberately did not before.
+ * Booting on demand made every first tap of a stage — and every swipe — turn the
+ * page's whole payload black for as long as an app takes to start, which on a
+ * phone connection is seconds. That is the worst possible moment to spend them:
+ * the visitor has just asked for something. Two boots of a page whose entire
+ * purpose is previewing is the cheaper half of that trade, and by then they cost
+ * nothing visible.
  */
+const framesWarmed = ref(false)
+
 const mountQueue = computed(() =>
-  isNarrow.value
+  isNarrow.value && !framesWarmed.value
     ? visibleFrames.value.filter((frame) => frame.id === activeFrameId.value)
     : visibleFrames.value,
 )
@@ -1096,6 +1341,10 @@ const onFrameReady = (frameId: string) => {
   const frame = frameRefs.get(frameId)
   const templateData = activeTemplateData.value
   if (templateData) frame?.postTemplatePreview(templateData)
+  // The first frame is up, so the phone may now warm the rest behind it — see
+  // mountQueue. Latched rather than recomputed: once a stage has been booted it
+  // stays booted, and a later frame reporting in must not reopen the question.
+  framesWarmed.value = true
   // Unconditional, and cheap: a frame booted on this event ignores it. It
   // covers the one ordering the seeded URL cannot — a frame still mounting
   // while the visitor moves to a design of another category.
@@ -1129,7 +1378,9 @@ const cycleLanguage = () => {
 // ---------------------------------------------------------------------------
 
 const onKeydown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') categoryMenuOpen.value = false
+  if (event.key !== 'Escape') return
+  categoryMenuOpen.value = false
+  noteOpen.value = false
 }
 
 onMounted(() => {
@@ -1155,6 +1406,8 @@ onMounted(() => {
 onUnmounted(() => {
   if (frameMountTimer) clearTimeout(frameMountTimer)
   framesObserver?.disconnect()
+  dockObserver?.disconnect()
+  headObserver?.disconnect()
   narrowQuery?.removeEventListener('change', onNarrowChange)
   window.removeEventListener('resize', onWindowResize)
   document.removeEventListener('keydown', onKeydown)
@@ -1181,6 +1434,20 @@ onUnmounted(() => {
      stage picker, the filter and the action all land on 40px, which is also a
      touch target that survives a thumb. */
   --tpl-control-h: 2.5rem;
+  /* One material for every floating control on the page. The view pill and the
+     stage picker were glass; the back link and the event-type filter were
+     bordered white stationery — two families on one row, which is what read as
+     "the dropdown belongs to another page". Defined here rather than written
+     out at each of the four, so a fifth control cannot quietly start a third
+     family, and so the four can never drift apart by a hundredth of an alpha. */
+  --tpl-glass: rgba(255, 255, 255, 0.75);
+  /* Hover tints toward slate rather than toward opaque white: over a ground
+     that is already near-white, going whiter is no feedback at all. Still
+     translucent and still blurred, so the control answers without leaving the
+     material — which is what the old solid slate-50 fill could not do. */
+  --tpl-glass-hover: rgba(248, 250, 252, 0.95);
+  --tpl-glass-edge: rgba(255, 255, 255, 0.6);
+  --tpl-glass-lift: 0 1px 2px rgba(15, 23, 42, 0.06);
   /* The catalogue column. In px, not rem: the app runs a reduced root font at
      laptop widths, and this column holding two 9:16 cards is exactly where that
      shrink is least welcome. */
@@ -1190,8 +1457,16 @@ onUnmounted(() => {
      it moves by under two levels out of 255 — so a solid stand-in is
      indistinguishable, and it is the only thing a sticky band can be cut from. */
   --tpl-ground: #fafdfb;
+  /* The page's own side inset, named so the two horizontal rails below can pay
+     it back and run to the screen's edge. Kept in step with `padding` by hand,
+     which is why they sit together. */
+  --tpl-pad: 1rem;
 
+  /* `dvh`, not `vh`: on a phone `100vh` is the tallest the viewport ever gets,
+     so with the URL bar showing the page claims more height than the window
+     has and adds a scrollbar to a screen that would otherwise have none. */
   min-height: 100vh;
+  min-height: 100dvh;
   /* The page paints its own ground now that it has no app shell around it. */
   background: linear-gradient(
     to right,
@@ -1199,12 +1474,17 @@ onUnmounted(() => {
     #fff 45%,
     rgba(30, 144, 255, 0.03)
   );
-  padding: 1rem 1rem 2rem;
+  /* No bottom runway on a phone: the dock is fixed over the last 200px of the
+     window, so anything the page reserved down there was scroll the visitor
+     could take and see nothing for. The stage reserves what the dock needs
+     itself, in its own padding. */
+  padding: 0.75rem var(--tpl-pad) 0;
 }
 
 @media (min-width: 640px) {
   .tpl-page {
-    padding: 1.25rem 1.5rem 2.5rem;
+    --tpl-pad: 1.5rem;
+    padding: 1.25rem var(--tpl-pad) 0;
   }
 }
 
@@ -1221,27 +1501,100 @@ onUnmounted(() => {
    Header — a back link and a title, and nothing else
    -------------------------------------------------------------------------- */
 
-/* One bar: navigation at the leading edge, view controls at the trailing one,
-   the headline between them. On a phone the headline wraps to a second line and
-   the two controls keep the first — which is the row people reach for, and the
-   only one that has to survive a 390px screen. */
+/*
+  One bar: navigation at the leading edge, controls at the trailing one, the
+  headline between them.
+
+  On a phone it is the viewer's top chrome and stays put — the page can still
+  scroll on a short screen, and the two things this bar holds (what language the
+  invitation is in, and whose invitation it is) are asked from wherever the
+  visitor has got to. Full bleed, so the band it paints reaches the glass rather
+  than stopping at the page's own inset with content sliding through the strip
+  either side of it.
+*/
 .tpl-page__head {
+  position: sticky;
+  top: 0;
+  z-index: 40;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 0.625rem;
+  margin: -0.75rem calc(var(--tpl-pad) * -1) 0.375rem;
+  padding: 0.75rem var(--tpl-pad) 0.5rem;
+  /* Near-solid rather than blurred glass, deliberately: `backdrop-filter` makes
+     an element the containing block for every fixed descendant, and the note's
+     full-window scrim is one — under a blurred bar it would cover the bar and
+     nothing else, so a tap anywhere on the page would fall straight through to
+     what is behind the panel. Little passes under this band in any case. */
+  background: #fff;
 }
 
 @media (min-width: 1024px) {
   .tpl-page__head {
-    /* The headline sits beside the back link rather than under it: two stacked
-       blocks cost ~40px of height that the phones want, and there is width to
-       spare now that the page is full bleed. */
-    flex-wrap: nowrap;
-    gap: 1.25rem;
-    margin-bottom: 1.25rem;
+    /* Four tracks, and the first is the catalogue column, repeated from the
+       studio below with the same width and the same gutter. That is what makes
+       the header look aligned rather than merely centred: the back link lands
+       directly over the catalogue's own heading, and the remaining three tracks
+       divide exactly the region the frames occupy — so the headline sits on the
+       same centre line as the three phones, their labels and the caption under
+       them. Centring on the *page* instead put it over the seam between the two
+       columns, which is aligned to nothing.
+
+       The two `1fr` gutters are what centre it. They are equal by definition,
+       and the column gaps fall on both sides of the middle track and cancel, so
+       the pill on the right never pushes the title off centre however wide it
+       grows. The trailing gutter is floored at `max-content` so that pill is
+       never squeezed into wrapping; the leading one is empty, so its floor is
+       zero and it simply mirrors whatever the trailing one takes.
+
+       Every item is placed by hand. Grid items stretch to their track by
+       default, and `flex: none` stops meaning anything the moment the parent is
+       not a flex container — left to itself the back link inflates to the full
+       width of the catalogue column, and auto-placement drops the view pill
+       into the leading gutter. */
+    /* Back to an ordinary header: nothing scrolls under it up here, and the
+       band it painted on a phone would cut across the catalogue column. */
+    position: static;
+    background: none;
+    backdrop-filter: none;
+    display: grid;
+    grid-template-columns:
+      minmax(0, var(--tpl-menu-w))
+      minmax(max-content, 1fr)
+      auto
+      minmax(max-content, 1fr);
+    column-gap: 1.75rem;
+    padding: 0;
+    margin: 0 0 1.25rem;
   }
+
+  .tpl-page__nav {
+    grid-column: 1;
+    /* Inset to the catalogue's own edges, not to the column box. The scroller
+       below pads itself by 8px so a card's selection ring and hover lift are
+       not clipped away, so every card, shelf heading and count in that column
+       starts 8px in — and a bordered pill sitting flush to the column box
+       instead is 8px adrift of all of them. */
+    padding-inline: 0.5rem;
+  }
+
+  .tpl-seg {
+    grid-column: 4;
+    justify-self: end;
+  }
+}
+
+/* The back link and the catalogue's filter, in one row. On a phone it is only
+   the back link — down there the filter belongs to a catalogue that has become
+   a sideways rail — so the row shrink-wraps and the view pill keeps the far end
+   of the bar. */
+.tpl-page__nav {
+  display: flex;
+  flex: none;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .tpl-back {
@@ -1252,23 +1605,51 @@ onUnmounted(() => {
   justify-content: center;
   gap: 0.375rem;
   border-radius: 9999px;
-  border: 1px solid rgb(226 232 240);
-  background: #fff;
+  border: 1px solid var(--tpl-glass-edge);
+  background: var(--tpl-glass);
+  box-shadow: var(--tpl-glass-lift);
+  backdrop-filter: blur(12px);
   padding: 0 0.9375rem 0 0.8125rem;
   font-size: 0.8125rem;
   font-weight: 500;
   color: rgb(51 65 85);
   transition:
     color var(--tpl-dur) var(--tpl-ease-out),
-    border-color var(--tpl-dur) var(--tpl-ease-out),
     background-color var(--tpl-dur) var(--tpl-ease-out),
     transform var(--tpl-press) var(--tpl-ease-out);
 }
 
+/* No label, no reason for the lopsided pill the label's padding makes: the
+   arrow gets a circle of the page's own control height and sits dead centre of
+   it, rather than 1px right of centre in a 46x40 lozenge. On a phone that is
+   every locale — the label is hidden there, see the span. */
+.tpl-back.is-icon,
+.tpl-back {
+  width: var(--tpl-control-h);
+  padding: 0;
+}
+
+.tpl-back__label {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .tpl-back:not(.is-icon) {
+    width: auto;
+    padding: 0 0.9375rem 0 0.8125rem;
+  }
+
+  .tpl-back__label {
+    display: inline;
+  }
+}
+
+/* The glass goes more opaque and the ink darkens. Hardening the border to slate
+   instead would put the stationery outline back on hover — the control would
+   change family under the cursor. */
 .tpl-back:hover {
   color: rgb(15 23 42);
-  border-color: rgb(203 213 225);
-  background: rgb(248 250 252);
+  background: var(--tpl-glass-hover);
 }
 
 .tpl-back:active {
@@ -1280,42 +1661,76 @@ onUnmounted(() => {
   box-shadow: var(--tpl-focus);
 }
 
+/* Between the back link and the controls, on the one row a phone's top bar
+   gets. It shrinks before either of them does — they are fixed-size targets and
+   this is text, which can take a second line when a locale needs one (Khmer's
+   title is twice English's). Wrapping costs the bar 20px; giving the title a
+   row of its own cost it 36 and left a lone arrow on the line above. */
 .tpl-page__headline {
-  /* Second row on a phone: `order` moves it past the two controls, and a full
-     basis makes it claim a line of its own. */
-  order: 3;
-  flex-basis: 100%;
+  /* Basis zero, not `auto`: the title must never *ask* for the width its text
+     wants, or a long locale claims the row and pushes the two controls onto a
+     second one — which is what Khmer did, at 110px of header for a page whose
+     scarce dimension is height. With a zero basis it takes what the fixed-size
+     targets leave and wraps inside that. */
+  flex: 1 1 0;
   min-width: 0;
+  text-align: center;
 }
 
 @media (min-width: 1024px) {
   .tpl-page__headline {
+    /* Stacked, not side by side. Centred over the stage, a caption hung off the
+       title's right-hand baseline reads as two objects that happen to be near
+       each other; over and under reads as one lockup. It is also why the
+       divider that once sat between them could never be aligned — under
+       baseline alignment the caption's box starts well below the title's cap,
+       so the rule drew a short line down the middle of the heading.
+
+       Stacking usually costs ~40px of header height, which the phones
+       underneath pay for. Here it costs about six, because the caption is given
+       the width to stay on one line. */
+    flex: none;
     order: 0;
-    flex: 1 1 auto;
-    flex-basis: auto;
-    display: flex;
-    align-items: baseline;
-    /* Space, not a rule. The divider that used to sit here was pinned to the
-       caption's own box, which under baseline alignment starts well below the
-       title's cap — so it drew a short line down the middle of the heading and
-       stopped short of both ends of it. The size, weight and colour step
-       already separates the two; a wider gap finishes the job with no chrome
-       to misalign. */
-    gap: 1.25rem;
+    grid-column: 3;
   }
 }
 
+/* Smaller on a phone than the 1.25rem it was, because it now shares the row
+   with three controls rather than owning a line. It is a name, not a headline —
+   the page's argument is made on `/partners`, and by the time a visitor is here
+   they came to look at designs. */
 .tpl-page__title {
-  font-size: 1.25rem;
+  /* Two lines at most. Khmer's title is a sentence where English's is a name,
+     and left alone it ran to three — every one of them taken off the height the
+     invitation below is fitted into. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  font-size: 1.0625rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  line-height: 1.3;
   color: rgb(15 23 42);
   text-wrap: balance;
 }
 
 @media (min-width: 640px) {
   .tpl-page__title {
+    font-size: 1.1875rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .tpl-page__title {
+    /* Unclamped: the header has a whole track to itself here, and a heading
+       that can silently lose its last word is only worth it where height is
+       the scarce thing. */
+    display: block;
+    overflow: visible;
     font-size: 1.5rem;
+    line-height: 1.2;
   }
 }
 
@@ -1330,18 +1745,20 @@ onUnmounted(() => {
 @media (min-width: 1024px) {
   .tpl-page__subtitle {
     display: block;
-    /* Beside a heading it is a caption, and a caption that runs the width of a
-       1900px screen is unreadable. Narrower than it used to be, and the string
-       behind it is half the length: at 34rem the old copy ran to three lines
-       that the title's single line then hung off, and the whole header grew a
-       row the phones underneath were paying for. Two lines is a caption; four
-       is a paragraph that has wandered into a header. */
-    max-width: 26rem;
-    min-width: 0;
+    /* Under the title it is a caption, and a caption that runs the width of a
+       1900px screen is unreadable. Wide enough to hold this string on one line
+       at desktop widths and fall to two at the narrow end of them — never the
+       four it ran to at 34rem, which is a paragraph that has wandered into a
+       header. `balance` is what keeps that second line from being two words
+       long, which is loud under a centred title; and the box needs centring in
+       its own right, since `text-align` centres the lines inside it but leaves
+       a 32rem box sitting wherever it was placed. */
+    max-width: 32rem;
+    margin: 0.125rem auto 0;
     font-size: 0.875rem;
-    line-height: 1.6;
+    line-height: 1.5;
     color: rgb(100 116 139);
-    text-wrap: pretty;
+    text-wrap: balance;
   }
 }
 
@@ -1349,9 +1766,13 @@ onUnmounted(() => {
    The studio
    -------------------------------------------------------------------------- */
 
+/* Stacked, the gap is between the catalogue and the invitation it chooses, and
+   every pixel of it comes off the phone's own height further down the column —
+   so it is the smallest gap that still separates two bands. Side by side it is
+   a column gutter and can afford to be generous (below). */
 .tpl-studio {
   display: grid;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 @media (min-width: 1024px) {
@@ -1363,35 +1784,69 @@ onUnmounted(() => {
   }
 }
 
+/*
+  The phone, and nothing else on the screen with it.
+
+  It used to sit under a catalogue in the flow above, which cost ~200px of the
+  window and still left the invitation's own bottom edge below the fold. The
+  catalogue is a dock now (below), so the stage owns the whole band between the
+  top bar and it: payload in the middle, controls on the two edges a thumb
+  reaches without the phone moving in the hand.
+
+  The padding is the dock's height handed back to the document. A window too
+  short to fit the whole invitation can then scroll its last inch clear of the
+  dock, instead of parking it permanently underneath.
+*/
 .tpl-studio__stage {
   display: flex;
   min-width: 0;
   flex-direction: column;
   align-items: center;
   gap: 0.875rem;
-  /* Second when stacked. The catalogue is bounded to ~250px, so putting it
-     first leaves the top of the invitation on screen underneath it — tap a card
-     and you watch it change. Frames first would put the catalogue an entire
-     phone-height below, so every choice would be made blind. */
-  order: 2;
+  order: 1;
+  padding-bottom: var(--tpl-dock-h, 200px);
 }
 
+/*
+  The catalogue as a dock — every control for choosing a design, fixed to the
+  bottom of the window.
+
+  Full bleed, paying the page's own inset back as padding, so the two rails
+  inside start and end exactly where they would in a page-width column: they
+  each escape that inset again to reach the glass (see their margin/padding
+  pair), and an inset applied twice would strand them 32px in.
+*/
 .tpl-studio__menu {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 30;
   min-width: 0;
-  order: 1;
+  order: 2;
+  padding: 0.625rem var(--tpl-pad) calc(0.375rem + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
 }
 
 @media (min-width: 1024px) {
-  /* Side by side, the same order as stacked: choose on the left, look on the
-     right. Keeping one reading direction across both layouts is what stops the
-     page feeling like two different screens. */
+  /* Side by side, and the reading direction flips back: choose on the left,
+     look on the right. A column, not a dock — there is height here to spend. */
   .tpl-studio__stage {
     order: 2;
+    padding-bottom: 0;
   }
 
   .tpl-studio__menu {
     order: 1;
     position: sticky;
+    inset-inline: auto;
+    bottom: auto;
+    z-index: auto;
+    padding: 0;
+    background: none;
+    backdrop-filter: none;
+    border-top: 0;
     top: 1rem;
     /* Its own top, measured — see studioTop. Falls back to a guess for the
        frame before the measurement lands. */
@@ -1401,14 +1856,98 @@ onUnmounted(() => {
   }
 }
 
-.tpl-menu__head {
-  display: flex;
+/* --- The phone's top-bar controls ---------------------------------------- */
+
+/* Pinned to the trailing edge the way the view pill is on a desktop, so the
+   bar reads the same either way: navigation left, name centred, controls right. */
+.tpl-topbar {
+  display: inline-flex;
+  flex: none;
+  margin-left: auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  gap: 0.375rem;
 }
 
+/* The same glass, the same round, one control height narrower than a labelled
+   pill because it holds a single glyph. */
+.tpl-icon-btn {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  height: var(--tpl-control-h);
+  width: var(--tpl-control-h);
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid var(--tpl-glass-edge);
+  background: var(--tpl-glass);
+  box-shadow: var(--tpl-glass-lift);
+  backdrop-filter: blur(12px);
+  color: rgb(71 85 105);
+  transition:
+    color var(--tpl-dur) var(--tpl-ease-out),
+    background-color var(--tpl-dur) var(--tpl-ease-out),
+    transform var(--tpl-press) var(--tpl-ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tpl-icon-btn:hover {
+    color: rgb(15 23 42);
+    background: var(--tpl-glass-hover);
+  }
+}
+
+.tpl-icon-btn:active {
+  transform: scale(0.94);
+}
+
+.tpl-icon-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--tpl-focus);
+}
+
+/* Held open: the mark stays lit for as long as the panel it opened is up, so
+   there is never a floating paragraph with nothing pointing at it. */
+.tpl-icon-btn.is-open {
+  border-color: transparent;
+  background: linear-gradient(to right, #2ecc71, #1e90ff);
+  color: #fff;
+}
+
+.tpl-info {
+  position: relative;
+}
+
+/*
+  The caveat, on demand.
+
+  Anchored under the mark and to the screen's trailing edge rather than the
+  button's, because at 40px wide the button has no width to hang a paragraph
+  from — a popover narrower than its own first word is not a popover. It scales
+  out of the corner it belongs to all the same.
+*/
+.tpl-info__panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 100;
+  width: max-content;
+  max-width: min(20rem, calc(100vw - 2 * var(--tpl-pad)));
+  border-radius: 0.75rem;
+  border: 1px solid rgb(226 232 240);
+  background: #fff;
+  box-shadow:
+    0 20px 25px -5px rgba(15, 23, 42, 0.12),
+    0 8px 10px -6px rgba(15, 23, 42, 0.08);
+  padding: 0.75rem 0.875rem;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: rgb(71 85 105);
+  text-align: left;
+  transform-origin: top right;
+}
+
+/* Only the single-event-type fallback still renders this — see the header. */
 .tpl-menu__label {
   font-size: 0.75rem;
   font-weight: 600;
@@ -1419,8 +1958,12 @@ onUnmounted(() => {
 
 /* --- Event-type filter (§9) ---------------------------------------------- */
 
+/* Fills whatever the back link leaves of the catalogue column, so the row has
+   a flush trailing edge over a column of flush-edged cards. */
 .tpl-filter {
   position: relative;
+  flex: 1;
+  min-width: 0;
 }
 
 .tpl-filter__trigger {
@@ -1428,27 +1971,43 @@ onUnmounted(() => {
   min-height: var(--tpl-control-h);
   align-items: center;
   gap: 0.5rem;
-  border-radius: 0.5rem;
-  border: 1px solid rgb(226 232 240);
-  background: #fff;
-  padding: 0.375rem 0.625rem;
+  /* Full-round, like the back link to its left, the view pill across the row
+     and the stage picker below. An 8px radius on a 40px control is the shape of
+     a form field, and one form field among four pills is the loudest single
+     thing about this bar. */
+  border-radius: 9999px;
+  border: 1px solid var(--tpl-glass-edge);
+  background: var(--tpl-glass);
+  box-shadow: var(--tpl-glass-lift);
+  backdrop-filter: blur(12px);
+  /* Round ends eat their own inline space, so the pill needs more of it than
+     the rounded rectangle did. The trailing side gets a shade less, the chevron
+     carrying whitespace of its own. */
+  padding: 0 0.6875rem 0 0.8125rem;
+  width: 100%;
   font-size: 0.8125rem;
   font-weight: 500;
   color: rgb(51 65 85);
-  max-width: 11rem;
   transition:
-    border-color var(--tpl-dur) var(--tpl-ease-out),
+    color var(--tpl-dur) var(--tpl-ease-out),
     background-color var(--tpl-dur) var(--tpl-ease-out),
     transform var(--tpl-press) var(--tpl-ease-out);
 }
 
-/* The mint hover is the house filter recipe (goevent-design §9), not a local
-   invention — it is the same control the guest-group filters use, and matching
-   the product it sits inside is what makes it read as familiar rather than as
-   a one-off built for this page. */
+/* Not §9's mint hover, which is the recipe for a dropdown standing on a white
+   list page inside the app. This one stands in a toolbar over a stage, between
+   a back link and a glass pill, on a page that deliberately ships without the
+   app shell — so it takes §5's toggle-group material and hovers the way the
+   back link beside it does. The mint was the one colour on this bar that
+   appeared nowhere else on the page, and it arrived on the control furthest
+   from anything else green.
+
+   The menu it opens is still §9 to the letter — white, rounded-xl, gradient on
+   the selected row. A popover is a popover, and it was never the part that
+   looked borrowed. */
 .tpl-filter__trigger:hover {
-  border-color: rgb(110 231 183);
-  background: rgb(236 253 245);
+  color: rgb(15 23 42);
+  background: var(--tpl-glass-hover);
 }
 
 .tpl-filter__trigger:active {
@@ -1474,7 +2033,10 @@ onUnmounted(() => {
   trigger reads as belonging to something else on the page.
 
   `min-width: 100%` resolves against .tpl-filter, which is exactly the trigger's
-  box; `max-content` then grows it for a long event-type name, up to a cap.
+  box; `max-content` then grows it for a long event-type name, and `max-width`
+  hands it straight back — the trigger now spans its whole column, so matching
+  it is both the floor and the ceiling, and a long name truncates in the row
+  rather than pushing the popover wider than the control it belongs to.
 */
 .tpl-filter__menu {
   position: absolute;
@@ -1483,7 +2045,7 @@ onUnmounted(() => {
   z-index: 100;
   min-width: 100%;
   width: max-content;
-  max-width: 15rem;
+  max-width: 100%;
   max-height: 22rem;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -1558,6 +2120,15 @@ onUnmounted(() => {
   font-variant-numeric: tabular-nums;
 }
 
+/* In the menu, `opacity` is right — it is what turns the count translucent
+   white on the gradient-filled selected row. In the trigger there is no such
+   row to inherit from, and a dimmed number beside a truncating label reads as
+   the tail of that label rather than as its own value. Colour it outright. */
+.tpl-filter__trigger .tpl-filter__count {
+  opacity: 1;
+  color: rgb(148 163 184);
+}
+
 /* --- The catalogue -------------------------------------------------------- */
 
 .tpl-menu__scroll {
@@ -1609,6 +2180,15 @@ onUnmounted(() => {
   padding: 0;
 }
 
+/*
+  Full bleed, and the page's inset paid back as padding.
+
+  A rail that stops at the page's 16px margin ends on a clean vertical line with
+  a card sliced down it, which reads as the edge of a layout — the one thing a
+  scroller must not say. Running to the glass instead, a card leaves the screen
+  the way a card leaves a screen, and the shelf gains 32px of usable width on a
+  phone, which is most of another card.
+*/
 .is-rail .tpl-card-grid {
   display: flex;
   gap: 0.5rem;
@@ -1617,23 +2197,26 @@ onUnmounted(() => {
   scroll-snap-type: x proximity;
   scrollbar-width: none;
   /* Room for the selection ring and the hover lift, which a scroll container
-     clips to its padding box. */
-  padding: 0.25rem 0.5rem 0.5rem;
-  scroll-padding-left: 0.5rem;
+     clips to its padding box — and, inline, the page inset given back. */
+  margin-inline: calc(var(--tpl-pad) * -1);
+  padding: 0.25rem var(--tpl-pad) 0.5rem;
+  scroll-padding-inline: var(--tpl-pad);
 }
 
 .is-rail .tpl-card-grid::-webkit-scrollbar {
   display: none;
 }
 
-.is-rail .tpl-card {
-  flex: 0 0 var(--tpl-rail-w, 86px);
+.is-rail .tpl-card,
+.is-rail .tpl-skeleton-card {
+  flex: 0 0 var(--tpl-rail-w, 72px);
   scroll-snap-align: start;
 }
 
 @media (min-width: 640px) {
-  .is-rail .tpl-card {
-    --tpl-rail-w: 104px;
+  .is-rail .tpl-card,
+  .is-rail .tpl-skeleton-card {
+    --tpl-rail-w: 88px;
   }
 }
 
@@ -1662,13 +2245,19 @@ onUnmounted(() => {
 
 /* --- The shelves, as tabs (phone only) ------------------------------------ */
 
+/* Full bleed for the same reason the card rail is — see there. The two
+   scrollers sit directly on top of each other and must start and end on the
+   same two lines, or the shelf looks inset from its own tabs. */
 .tpl-plans {
   display: flex;
   gap: 0.375rem;
   overflow-x: auto;
   scrollbar-width: none;
+  margin-inline: calc(var(--tpl-pad) * -1);
+  padding-inline: var(--tpl-pad);
+  scroll-padding-inline: var(--tpl-pad);
   padding-bottom: 0.125rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.375rem;
 }
 
 .tpl-plans::-webkit-scrollbar {
@@ -1684,7 +2273,7 @@ onUnmounted(() => {
 .tpl-plan {
   display: inline-flex;
   flex: none;
-  min-height: 2.25rem;
+  min-height: 2rem;
   align-items: center;
   gap: 0.375rem;
   border-radius: 9999px;
@@ -1735,7 +2324,21 @@ onUnmounted(() => {
   opacity: 0.7;
 }
 
-.tpl-menu-group + .tpl-menu-group {
+/*
+  Air between two shelves — which only the stacked catalogue has.
+
+  Scoped to it, because the sibling combinator reads the DOM and not `display`:
+  in the dock the shelves are tabs and exactly one is ever on screen, but the
+  hidden sections before it still qualify it as an adjacent sibling. So choosing
+  any shelf other than the FIRST handed the dock a 20px margin the first one
+  never paid (14px net — the rest collapses into the tab row's own bottom
+  margin), and the dock's height is precisely what the phone above is fitted to.
+  The gap came straight off the invitation: 273x591 on the opening shelf, then
+  266x576 on every other. A partner switching shelves to compare two designs
+  watched the product resize under them, which is the one thing a comparison
+  must not do.
+*/
+.tpl-menu__scroll:not(.is-rail) .tpl-menu-group + .tpl-menu-group {
   margin-top: 1.25rem;
 }
 
@@ -1963,11 +2566,11 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.125rem;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--tpl-glass-edge);
+  background: var(--tpl-glass);
   padding: 0.1875rem;
   backdrop-filter: blur(12px);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--tpl-glass-lift);
 }
 
 .tpl-seg__btn {
@@ -2019,14 +2622,104 @@ onUnmounted(() => {
   background: rgb(226 232 240);
 }
 
-/* The stage: the picker, then the phone it names, on one centre line. */
+/* The stage: the controls, then the phone they act on, on one centre line. */
 .tpl-stage {
   display: flex;
   width: 100%;
   min-width: 0;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
+}
+
+/*
+  Which screen, and in which language — the two questions about what is on the
+  phone, asked in one row directly over it.
+
+  Sticky under the top bar on a phone, at that bar's measured height. On the
+  common screen nothing scrolls and it never engages; where the invitation is
+  taller than the window it is what stops the stage switcher scrolling away from
+  the stage. `top` has to come off a measurement because the bar is 60px in
+  English and 64 in Khmer, and a guess shows a seam of invitation through the gap.
+*/
+.tpl-stagebar {
+  position: sticky;
+  top: var(--tpl-head-h, 60px);
+  z-index: 20;
+  display: flex;
+  max-width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+@media (min-width: 1024px) {
+  /* Nothing scrolls under it here, and the language half lives in the header
+     with the one-vs-all segments — so it is just the picker, in place. */
+  .tpl-stagebar {
+    position: static;
+    z-index: auto;
+  }
+}
+
+/* Which screen, and in which language — one row, directly over the phone both
+   questions are about. The picker takes what it needs and gives way first: it
+   scrolls sideways inside its own pill, where the language pill is two
+   characters and an icon and has nothing to give. */
+.tpl-stagebar {
+  display: flex;
+  max-width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/*
+  The header's language segment, standing on its own.
+
+  Same material, same height and the same 12px cap as the steps beside it, so
+  the pair reads as one control split in two rather than as a pill that has
+  wandered down from the header. It keeps `--tpl-control-h` for the same reason
+  everything else on the page does: a thumb.
+*/
+.tpl-lang {
+  display: inline-flex;
+  flex: none;
+  min-height: var(--tpl-control-h);
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 9999px;
+  border: 1px solid var(--tpl-glass-edge);
+  background: var(--tpl-glass);
+  padding: 0 0.8125rem;
+  backdrop-filter: blur(12px);
+  box-shadow: var(--tpl-glass-lift);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgb(71 85 105);
+  transition:
+    color var(--tpl-dur) var(--tpl-ease-out),
+    background-color var(--tpl-dur) var(--tpl-ease-out),
+    transform var(--tpl-press) var(--tpl-ease-out);
+}
+
+/* Pointer only: on touch `:hover` latches after the tap and leaves the pill
+   looking pressed for as long as the finger stays away. */
+@media (hover: hover) and (pointer: fine) {
+  .tpl-lang:hover {
+    color: rgb(15 23 42);
+    background: var(--tpl-glass-hover);
+  }
+}
+
+.tpl-lang:active {
+  transform: scale(0.97);
+}
+
+.tpl-lang:focus-visible {
+  outline: none;
+  box-shadow: var(--tpl-focus);
 }
 
 /*
@@ -2048,11 +2741,33 @@ onUnmounted(() => {
   overscroll-behavior-x: contain;
   scrollbar-width: none;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--tpl-glass-edge);
+  background: var(--tpl-glass);
   padding: 0.1875rem;
   backdrop-filter: blur(12px);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--tpl-glass-lift);
+}
+
+/* It shares its row with the language pill on a phone, and it is the half that
+   can absorb a squeeze — it scrolls sideways inside its own pill, where two
+   characters and an icon have nothing to give. */
+@media (max-width: 1023px) {
+  .tpl-steps {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  /* Opaque, and lifted. Once this bar sticks it stands over the invitation
+     rather than over the page ground, and the page glass — 75% white — let a
+     chandelier through the middle of the word it was labelling. Nothing else
+     on the page has to be legible against arbitrary artwork. */
+  .tpl-steps,
+  .tpl-lang {
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow:
+      var(--tpl-glass-lift),
+      0 6px 16px -8px rgba(15, 23, 42, 0.28);
+  }
 }
 
 /* The scroller clips to its padding box, so a step's ring has to be drawn
@@ -2145,14 +2860,26 @@ onUnmounted(() => {
   }
 }
 
-/* Wide and small, so it costs one or two lines rather than three. Everything it
-   takes vertically comes straight off the height of the phones above it. */
+/*
+  Wide and small, so it costs one or two lines rather than three. Everything it
+  takes vertically comes straight off the height of the phones above it — which
+  on a phone is the whole argument for not showing it here at all: three lines
+  of prose that reads once, standing permanently in the band the invitation
+  wants. Up there it is behind the mark in the top bar instead.
+*/
 .tpl-note {
-  max-width: min(100%, 60rem);
-  text-align: center;
-  font-size: 0.75rem;
-  line-height: 1.55;
-  color: rgb(100 116 139);
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .tpl-note {
+    display: block;
+    max-width: min(100%, 60rem);
+    text-align: center;
+    font-size: 0.75rem;
+    line-height: 1.55;
+    color: rgb(100 116 139);
+  }
 }
 
 /* --- Loading + empty ------------------------------------------------------ */
@@ -2267,6 +2994,8 @@ onUnmounted(() => {
   .tpl-filter__trigger:active,
   .tpl-seg__btn:active,
   .tpl-step:active,
+  .tpl-lang:active,
+  .tpl-icon-btn:active,
   .tpl-plan:active,
   .tpl-empty__cta:active {
     transform: none;
