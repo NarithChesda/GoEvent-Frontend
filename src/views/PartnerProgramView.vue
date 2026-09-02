@@ -1088,7 +1088,7 @@
         Full width costs the heading nothing (it was never wider than
         `max-w-2xl` anyway) and pays the list: at two columns of the whole
         container the items go from ~251px to ~393px, so no title wraps any
-        more, and seven items land as 4 + 3 with no orphan. Three columns would
+        more, and eight items land as 4 + 4 with no orphan. Three columns would
         have fitted the width and returned the items to their old 251px measure
         for nothing, with a single stranded item on the last row.
       -->
@@ -1154,7 +1154,7 @@
         wall of text single-open was guarding against is now the reader's own
         choice, which on a page whose job is to inform is the right place for it.
 
-        Open on arrival, because seven headings over an empty section reads as a
+        Open on arrival, because eight headings over an empty section reads as a
         section with nothing in it. One open row gives the section its body and
         teaches that the rows open, without spending a line of copy saying so.
       -->
@@ -1372,6 +1372,7 @@ import {
   Images,
   KeyRound,
   Languages,
+  Link2,
   MessageCircle,
   Palette,
   PlusCircle,
@@ -1434,7 +1435,16 @@ const TELEGRAM_URL = 'https://t.me/goeventkh'
 
 const HERO_PROOF = ['payg', 'fee', 'review'] as const
 const STEPS = ['open', 'build', 'sell'] as const
-const FAQ_KEYS = ['unsold', 'price', 'domain', 'plans', 'payment', 'customer', 'apply'] as const
+const FAQ_KEYS = [
+  'unsold',
+  'price',
+  'domain',
+  'plans',
+  'payment',
+  'customer',
+  'names',
+  'apply',
+] as const
 
 /**
  * The pricing row: the live credit-pack catalogue where it can be read, the
@@ -1550,12 +1560,21 @@ const COVER_STRIP = [
  * A tick under a screenshot is a caption; a tick beside it is a claim with its
  * evidence in view, which is the only reason to write one.
  *
- * Three and three, not four and two. `gifts` belongs to the list — a cash gift
+ * Four and three, not five and two. `gifts` belongs to the list — a cash gift
  * is recorded against a name, on a row — and the totals beat needed a second
  * and third line of its own, which the analytics cards were already showing and
  * the page had never said out loud.
+ *
+ * `share` is the one claim here whose evidence is NOT in view, and it is a
+ * deliberate exception rather than a lapse: `dashboard-guests.webp` predates
+ * the Share control, so the capture shows the list but not the handing over of
+ * it. It closes the list beat because the first objection a shop owner raises
+ * to running somebody else's guest list is that they would have to type it —
+ * so the answer belongs beside the list, not three sections later. Re-capture
+ * the guest panel with the Share button in frame and this becomes an ordinary
+ * tick again (docs/guides/PARTNER_PAGE_SCREENSHOTS.md).
  */
-const RUN_DAY_LIST_POINTS = ['replies', 'seating', 'gifts'] as const
+const RUN_DAY_LIST_POINTS = ['replies', 'seating', 'gifts', 'share'] as const
 const RUN_DAY_TOTAL_POINTS = ['totals', 'chase', 'bygroup'] as const
 
 /**
@@ -1584,10 +1603,18 @@ const PRODUCT_FEATURES = [
   { key: 'media', icon: Images },
 ] as const
 
+/**
+ * Order is load-bearing at `sm`, where the grid fills row-wise in pairs:
+ * `share` sits immediately after `ownership` so the two halves of the same
+ * promise land side by side on one row. `ownership` says the customer needs no
+ * account; `share` is how they still do the one job that is theirs — their own
+ * guest list — without one.
+ */
 const PARTNER_BENEFITS = [
   { key: 'branding', icon: BadgeCheck },
   { key: 'listing', icon: Store },
   { key: 'ownership', icon: ShieldCheck },
+  { key: 'share', icon: Link2 },
   { key: 'instant', icon: Zap },
   { key: 'locked', icon: KeyRound },
   { key: 'studio', icon: Palette },

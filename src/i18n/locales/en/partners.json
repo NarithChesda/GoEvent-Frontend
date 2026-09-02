@@ -18,7 +18,7 @@
   },
   "steps": {
     "title": "How it works",
-    "subtitle": "Three steps, in this order. We ask nothing else of you.",
+    "subtitle": "Three steps, in this order. Easy to get started.",
     "open": {
       "title": "Open your partner account",
       "body": "Tell us about your shop. Once you are approved, your first two events are free. After that, pay for each event or buy a pack."
@@ -28,8 +28,8 @@
       "body": "You make it for your customer — photos, schedule, guest list. Their names go on the invitation as the hosts. The account stays yours."
     },
     "sell": {
-      "title": "Turn it on, and get paid",
-      "body": "Use one credit and the invitation goes live straight away. Whatever your customer pays you, you keep."
+      "title": "Send it out",
+      "body": "Pick a design and use one credit — the invitation is live the same minute. Send your customer the link for their guests list, and they can start inviting immediately."
     }
   },
   "pricing": {
@@ -161,6 +161,10 @@
       "title": "You own the event",
       "body": "Your customer needs no account and no password."
     },
+    "share": {
+      "title": "Your customer fills in their own guest list",
+      "body": "Send them a link — no account needed. Give them view-only, or let them add and correct names, and switch the link off whenever you want."
+    },
     "instant": {
       "title": "It turns on straight away",
       "body": "One credit opens the design at once — nothing to upload, no waiting."
@@ -205,6 +209,10 @@
       "q": "Does my customer need an account?",
       "a": "No. You create and own the event; their names appear on it as the hosts. Their guests only ever open a link — no app, no sign-up, nothing to install."
     },
+    "names": {
+      "q": "Do I have to type in all my customer's guests?",
+      "a": "No. Send your customer a link to the guest list and they fill it in themselves — no account, no app, nothing to install. You decide whether the link only lets them read the list and copy each guest's invitation, or add and correct names too, and you can switch it off once the event is over."
+    },
     "apply": {
       "q": "How do I become a partner?",
       "a": "Send us a request with your shop's name, a number we can call you on, and roughly how many events you take on each month. We read every request ourselves and normally reply within two working days."
@@ -219,12 +227,12 @@
   "runday": {
     "eyebrow": "And the day itself",
     "title": "Your whole guest list, and the totals that come with it",
-    "subtitle": "One place for the guest list, the replies and the gift money. No spreadsheet, and no counting the same gift twice.",
+    "subtitle": "One place for the guest list, the replies and the Cash Gift Journal. No spreadsheet, and no counting the same gift twice.",
     "imageAlt": "The GoEvent guest list, showing each guest with their group, reply, cash gift and table",
     "beats": {
       "list": {
         "label": "Everything about a guest, on one row",
-        "body": "Group, invitation sent, reply, extra guests, gift money, table and seat. Change any of it right where you see it — there is no second list to keep up to date."
+        "body": "Group, invitation sent, reply, extra guests, cash gift, table and seat. Change any of it right where you see it — there is no second list to keep up to date."
       },
       "totals": {
         "label": "And the numbers people ask you for",
@@ -232,12 +240,13 @@
       }
     },
     "points": {
-      "replies": "Replies arrive here as guests answer",
-      "seating": "Give a guest a table and seat by dragging them",
-      "gifts": "Gift money saved next to the guest's name",
-      "totals": "Replies, headcount and gift totals, added up for you",
+      "replies": "Guests tap reply on their phone, and their row updates by itself",
+      "seating": "Drag guests onto a table — they see their seat when they reply",
+      "gifts": "The Cash Gift Journal: quick entry, and totals for each guest group",
+      "share": "Share the list with a link — your customer adds their own guests",
+      "totals": "Replies, headcount and cash gift totals, added up for you",
       "chase": "See the names of guests who have not replied yet",
-      "bygroup": "Gift totals for each guest group"
+      "bygroup": "Cash gift totals for each guest group"
     },
     "shots": {
       "rsvp": "The replies card: 61% of 186 guests have replied, 96 coming, 148 expected once extra guests are counted, and the guests still to ask",
