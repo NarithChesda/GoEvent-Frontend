@@ -124,7 +124,9 @@
                  Without it, reaching the end of the invitation chains scroll to
                  the outer container and the whole glass card slides — a visible
                  break in the middle of the primary gesture. -->
-            <div class="relative z-10 h-full overflow-y-auto overscroll-contain custom-scrollbar">
+            <div
+              class="stage-scroll relative z-10 h-full overflow-y-auto overscroll-contain custom-scrollbar"
+            >
               <div :class="contentPaddingClasses">
                 <!-- Host Information (now includes welcome header) -->
                 <div ref="hostInfoRef" class="animate-reveal">
@@ -470,6 +472,13 @@
                     :event-type="eventType"
                     @comment-submitted="(comment: any) => handleCommentSubmitted(comment)"
                   />
+
+                  <!-- Comment Section Divider: the invitation's closing mark. Every
+                       other boundary in this card carries one, and the comments were
+                       the only section that ended into nothing - so the footer's
+                       blank page below read as content that had failed to load
+                       rather than as the end of the invitation. -->
+                  <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
                 <!-- Registration Button -->
@@ -485,12 +494,27 @@
                   </button>
                 </div>
 
-                <!-- Footer Section - its own full-height, centered "page" so scrolling
-                     to the bottom clears the previous section (e.g. comments) out of
-                     view instead of showing both at once -->
+                <!-- Footer Section - its own page, so that at the bottom of the
+                     scroll the mark is alone and centred. Two things make that true.
+
+                     The height is the card's own 85dvh less 2rem. The block's bottom
+                     edge is pinned by the content container's bottom padding rather
+                     than by the scrollport, so subtracting a little over one padding
+                     is what lands the lockup on the scrollport's centre line - a hair
+                     above it across the padding breakpoints, which is where a logo
+                     wants to sit. It must also stay SHORTER than the scrollport: at a
+                     flat 85dvh (plus mt-8, plus the container's padding) it was taller
+                     than the box it sits in, and a page taller than its own page has
+                     no scroll position at which it is the only thing on screen.
+
+                     The other is the snap below. Height alone cannot stop a reader
+                     resting halfway up this block's blank upper half with the tail of
+                     the comments still hanging at the top of the frame - that is what
+                     made the ending read as broken. `scroll-snap-align: center` is
+                     what turns the block from space you wade through into a page you
+                     land on. -->
                 <div
-                  ref="footerSectionRef"
-                  class="mt-8 min-h-[85dvh] flex flex-col items-center justify-center animate-reveal"
+                  class="footer-page min-h-[calc(85dvh-2rem)] flex flex-col items-center justify-center"
                   :class="footerMarginClasses"
                 >
                   <!-- Footer Card with Conditional Styling -->
@@ -528,6 +552,7 @@
                          gap is vh-clamped so a short phone tightens the whole lockup
                          together instead of one band collapsing before the others. -->
                     <div
+                      ref="footerLockupRef"
                       class="footer-lockup flex flex-col items-center justify-center gap-[clamp(14px,2.6vh,22px)]"
                     >
                       <!-- The marks: partner above the collaboration sign above ours.
@@ -550,27 +575,46 @@
                           />
                         </div>
 
-                        <!-- Collaboration sign: drawn, not typed. The font here is
-                             template-driven, and a display or Khmer face renders "×" at
-                             an unpredictable size and baseline offset — so it would sit
-                             off-centre in its row under some templates and not others.
-                             A path is the same mark everywhere and centres on its own
-                             geometry rather than on a baseline. -->
-                        <svg
-                          v-if="hasPartnerLogo"
-                          class="collab-sign"
-                          viewBox="0 0 12 12"
-                          fill="none"
+                        <!-- ...or the slot that mark will fill. A shop reading a
+                             preview is being sold this exact spot, so it has to be on
+                             screen before they have uploaded anything - but a guest
+                             opening a real invitation must never meet a placeholder,
+                             so the empty state is preview-only. -->
+                        <div v-else-if="showPartnerLogoSlot" class="partner-mark">
+                          <svg
+                            class="partner-slot-mark"
+                            viewBox="0 0 200 44"
+                            :style="{ fill: showLiquidGlass ? '#ffffff' : primaryColor }"
+                          >
+                            <text
+                              x="100"
+                              y="33"
+                              text-anchor="middle"
+                              font-size="42"
+                              lengthAdjust="spacing"
+                              :textLength="appLocale === 'kh' ? undefined : 200"
+                              :style="{ fontFamily: secondaryFont || currentFont }"
+                            >
+                              {{ tApp('management.showcasePreview.editors.partnerLogoSlot') }}
+                            </text>
+                          </svg>
+                        </div>
+
+                        <!-- The mark that joins the two. Drawn, not typed: the font
+                             here is template-driven, and a display or Khmer face
+                             renders a glyph at an unpredictable size and baseline
+                             offset, so it would sit off-centre in its row under some
+                             templates and not others. Geometry centres on itself. -->
+                        <div
+                          v-if="showPartnerRow"
+                          class="collab-ornament"
                           :style="{ color: showLiquidGlass ? '#ffffff' : primaryColor }"
                           aria-hidden="true"
                         >
-                          <path
-                            d="M2.6 2.6 9.4 9.4M9.4 2.6 2.6 9.4"
-                            stroke="currentColor"
-                            stroke-width="1.1"
-                            stroke-linecap="round"
-                          />
-                        </svg>
+                          <span class="collab-rule collab-rule--left"></span>
+                          <span class="collab-gem"></span>
+                          <span class="collab-rule collab-rule--right"></span>
+                        </div>
 
                         <!-- GoEvent mark -->
                         <a
@@ -758,7 +802,7 @@
 
                       <!-- Address -->
                       <div
-                        class="inline-flex items-center justify-center px-2 leading-none opacity-90"
+                        class="footer-address inline-flex items-center justify-center px-2 leading-none opacity-90"
                         :class="showLiquidGlass ? 'text-white' : ''"
                         :style="{
                           fontFamily: secondaryFont || currentFont,
@@ -895,7 +939,7 @@ const editIntentCtx = inject(EditIntentKey, undefined)
 // wider of the two gates: "show a section that has no content yet", which is
 // true of the read-only partner catalogue preview as much as of the studio.
 const previewFrameCtx = inject(PreviewFrameKey, undefined)
-const { t: tApp } = useAppLanguage()
+const { t: tApp, locale: appLocale } = useAppLanguage()
 
 // Main stage layout configuration (decoration z-indexes + welcome header visibility)
 const { decorationZIndexes, layout: mainStageLayoutResolved } = useCoverStageLayout(
@@ -987,6 +1031,22 @@ const footerMarginClasses = computed(() =>
 const hasPartnerLogo = computed(() =>
   Boolean(props.event.referrer_details?.is_partner && props.event.referrer_details?.logo),
 )
+
+// A partner with no logo yet is a normal steady state, and on a real invitation
+// it simply draws nothing: a guest must never meet a placeholder. In a preview
+// it draws the slot instead, because the shop reading that preview is being sold
+// this exact spot and cannot be sold a gap.
+//
+// PreviewFrameKey, not EditIntentKey. The partner-template preview IS a preview
+// but cannot edit (`canEdit: false`), so gating on the edit context would hide
+// the slot from the one audience it exists for - the trap the host avatar row
+// fell into. See previewContext.ts.
+const showPartnerLogoSlot = computed(
+  () => !hasPartnerLogo.value && Boolean(previewFrameCtx || editIntentCtx),
+)
+
+// The ornament joins two marks, so it needs a mark above it to join to.
+const showPartnerRow = computed(() => hasPartnerLogo.value || showPartnerLogoSlot.value)
 
 // Computed property for language-aware logo selection
 const logoUrl = computed(() => {
@@ -1132,7 +1192,7 @@ const sectionRefs = {
   paymentSection: ref<HTMLElement>(),
   paymentComponent: ref<InstanceType<typeof PaymentSection> | null>(null),
   commentSection: ref<HTMLElement>(),
-  footerSection: ref<HTMLElement>(),
+  footerLockup: ref<HTMLElement>(),
 }
 
 // Extract individual refs for template usage
@@ -1149,7 +1209,7 @@ const {
   paymentSection: paymentSectionRef,
   paymentComponent: paymentComponentRef,
   commentSection: commentSectionRef,
-  footerSection: footerSectionRef,
+  footerLockup: footerLockupRef,
 } = sectionRefs
 
 /**
@@ -1198,7 +1258,7 @@ const initializeRevealAnimations = () => {
     [gallerySectionRef, 'gallery-section'],
     [paymentSectionRef, 'payment-section'],
     [commentSectionRef, 'comment-section'],
-    [footerSectionRef, 'footer-section'],
+    [footerLockupRef, 'footer-lockup'],
   ]
 
   animationConfig.forEach(([elementRef, elementId]) => {
@@ -1767,6 +1827,100 @@ onUnmounted(() => {
   }
 }
 
+/* The invitation is one long scroll with exactly one snap target: the footer
+   page. `proximity` leaves every other section scrolling freely and only catches
+   a gesture that comes to rest near the mark; `mandatory` would fight the long
+   scroll through the gallery and the comments and make the whole invitation feel
+   sticky. One target, so nothing else on the page changes behaviour. */
+.stage-scroll {
+  scroll-snap-type: y proximity;
+}
+
+.footer-page {
+  scroll-snap-align: center;
+}
+
+/* The lockup fades in as one object while its rows rise in a wave.
+
+   Why the lockup carries this and not the page it sits on. The footer page is
+   now a full scrollport tall with its content centred, so an observer watching
+   the PAGE fires the moment the page's top edge crosses in - roughly half a
+   screen before the mark is on screen at all. The reveal was finishing while
+   the reader still had empty space in front of them, and by the time they
+   reached the mark it had simply always been there. Watching the lockup puts
+   this where every other section's reveal is: 60px of the thing being revealed
+   is showing, and then it arrives.
+
+   Curve and durations are `.animate-reveal`'s, to the millisecond. This is the
+   last section of the same document and it should land the way the eleven
+   before it did.
+
+   Opacity belongs to the lockup, transform to the rows. That split is what
+   keeps the reveal from fighting the lockup's existing model: the ornament
+   rests at 0.55 and the address at 0.9, so a per-row opacity would have to know
+   each row's resting value, and both `.footer-mark` rows already own
+   `transform` for their hover lift. Moving only the inner elements - the image,
+   the svg, the rows that carry no hover of their own - leaves both alone. */
+.footer-lockup {
+  --rv-y: 18px;
+  opacity: 0;
+  transition: opacity 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.footer-lockup.is-visible {
+  opacity: 1;
+}
+
+.footer-lockup .partner-mark > *,
+.footer-lockup .collab-ornament,
+.footer-lockup .goevent-mark,
+.footer-lockup .social-row,
+.footer-lockup .footer-address {
+  transform: translateY(var(--rv-y));
+  transition: transform 0.48s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.footer-lockup.is-visible .partner-mark > *,
+.footer-lockup.is-visible .collab-ornament,
+.footer-lockup.is-visible .goevent-mark,
+.footer-lockup.is-visible .social-row,
+.footer-lockup.is-visible .footer-address {
+  transform: translateY(0);
+}
+
+/* The wave, in reading order. 70ms apart: close enough that five rows read as
+   one gesture rather than five events, which is what the lockup's own
+   construction is for. */
+.footer-lockup .collab-ornament {
+  transition-delay: 70ms;
+}
+
+/* Our mark travels further than anything around it, so it settles where the
+   others slide - the one place in this reveal where the brand gets more
+   presence than the furniture. A beat of its own would have been too much. */
+.footer-lockup .goevent-mark {
+  --rv-y: 26px;
+  transition-delay: 140ms;
+}
+
+.footer-lockup .social-row {
+  transition-delay: 210ms;
+}
+
+.footer-lockup .footer-address {
+  transition-delay: 260ms;
+}
+
+@media (max-width: 640px) {
+  .footer-lockup {
+    --rv-y: 12px;
+  }
+
+  .footer-lockup .goevent-mark {
+    --rv-y: 18px;
+  }
+}
+
 /* The footer lockup has one width, and the social row is what sets it: four
    buttons and three gaps. Our mark is then set to exactly that width rather
    than to a height of its own, so the two can never drift apart — every value
@@ -1809,11 +1963,70 @@ onUnmounted(() => {
   max-height: var(--fm-partner-h);
 }
 
-/* Square, so the two strokes cross on the box's centre. */
-.footer-lockup .collab-sign {
-  width: calc(var(--fm-btn) * 0.42);
-  height: calc(var(--fm-btn) * 0.42);
-  opacity: 0.5;
+/* The slot the partner's mark will fill, drawn only inside a preview: our own
+   mark's colour, our own mark's width, and nothing else. No box - nothing else
+   in this lockup has one, and a dashed rectangle is admin-panel vocabulary in
+   the middle of a gold-leaf invitation.
+
+   It is SVG rather than styled text because the width has to be OUR mark's
+   width exactly, and the font here is template-driven: any font-size that fills
+   the measure in one face overshoots or falls short in the next. `textLength`
+   over a viewBox scaled to --fm-w pins the span at the measure whatever the
+   face - the same reason the ornament below is drawn geometry and not a glyph.
+   42 units in a 200-unit box sits close to the natural width of a normal serif,
+   so the adjustment is usually a few units of tracking; at a smaller size the
+   stretch needed to reach the measure scatters the letters and "Your Logo"
+   stops reading as two words. */
+.footer-lockup .partner-slot-mark {
+  display: block;
+  width: var(--fm-w);
+  height: auto;
+}
+
+/* The mark that joins the two logos. It was a drawn "x" - the fashion-
+   collaboration sign, which is a register this footer does not sit in: it
+   prints on funeral and memorial invitations too, and at this size two crossed
+   strokes are also the web's most common "dismiss" glyph.
+
+   This is instead the ornament the invitation already uses for a soft break -
+   the rule under the comment section's heading - so the footer says the same
+   thing in the same voice, on every event type. Its hairlines fade outward
+   rather than ending, because these rows are meant to bind into one object and
+   a rule that terminates cuts them into two; and it is narrower than --fm-w for
+   the same reason, so it joins the marks rather than underlining one of them. */
+.footer-lockup .collab-ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--fm-btn) * 0.26);
+  width: calc(var(--fm-w) * 0.62);
+  opacity: 0.55;
+}
+
+.footer-lockup .collab-rule {
+  flex: 1;
+  height: 1px;
+  background: currentColor;
+}
+
+.footer-lockup .collab-rule--left {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000);
+  mask-image: linear-gradient(90deg, transparent, #000);
+}
+
+.footer-lockup .collab-rule--right {
+  -webkit-mask-image: linear-gradient(90deg, #000, transparent);
+  mask-image: linear-gradient(90deg, #000, transparent);
+}
+
+/* A square on its corner, sized off the button so it holds its proportion to
+   the lockup at every viewport height. */
+.footer-lockup .collab-gem {
+  width: calc(var(--fm-btn) * 0.16);
+  height: calc(var(--fm-btn) * 0.16);
+  flex-shrink: 0;
+  background: currentColor;
+  transform: rotate(45deg);
 }
 
 .footer-lockup .social-row {
@@ -1887,6 +2100,22 @@ a.footer-mark:active {
   .animate-reveal {
     transition: opacity 0.25s ease;
     transform: none !important;
+  }
+
+  /* The lockup keeps its fade - it still says "this arrived" - but nothing
+     travels and nothing waits its turn. */
+  .footer-lockup {
+    transition: opacity 0.25s ease;
+  }
+
+  .footer-lockup .partner-mark > *,
+  .footer-lockup .collab-ornament,
+  .footer-lockup .goevent-mark,
+  .footer-lockup .social-row,
+  .footer-lockup .footer-address {
+    transform: none !important;
+    transition: none;
+    transition-delay: 0ms !important;
   }
 
   .animate-slideUp {

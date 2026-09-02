@@ -419,6 +419,7 @@
       "controls": "ការគ្រប់គ្រងការមើលជាមុន"
     },
     "editors": {
+      "partnerLogoSlot": "ឡូហ្គោរបស់អ្នក",
       "replaceLogo": "ប្តូរឡូហ្គោ",
       "editMap": "កែផែនទី",
       "addMap": "បន្ថែមផែនទី Google",

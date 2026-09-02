@@ -419,6 +419,7 @@
       "controls": "Preview controls"
     },
     "editors": {
+      "partnerLogoSlot": "Your Logo",
       "replaceLogo": "Replace logo",
       "editMap": "Edit map",
       "addMap": "Add Google Map",

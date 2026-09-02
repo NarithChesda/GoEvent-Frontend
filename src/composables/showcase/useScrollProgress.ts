@@ -62,14 +62,30 @@ let listening = false
 /**
  * Bind (or re-bind) the scroll listener to the showcase's scroll container.
  *
- * The root is re-resolved on every scheduled frame while it is still missing,
- * because the first element can register before the liquid-glass card exists.
- * Latching `window` permanently in that case would measure against the wrong
- * rectangle for the rest of the session.
+ * The root is re-resolved while it is missing OR while the bound one has left
+ * the document, because neither state is permanent:
+ *
+ * - The first element can register before the liquid-glass card exists.
+ *   Latching `window` permanently in that case would measure against the wrong
+ *   rectangle for the rest of the session.
+ * - The whole showcase subtree is rebuilt under the live preview: CoverStage is
+ *   keyed on its video URLs, so staging a template into an already-mounted
+ *   frame (the partner catalogue's core gesture, and the studio's late backfill
+ *   of an unpaid template's assets) tears down the glass card and mounts a new
+ *   one. The replacement's elements register BEFORE the outgoing ones are
+ *   disposed — Vue sets template refs as a post-flush job at id -1 and runs
+ *   onUnmounted hooks after it — so `elements` never empties and
+ *   `stopListening` never runs. A registry that re-resolved only a *null* root
+ *   therefore stayed bound to the detached scroller, whose scroll events no
+ *   longer arrive and whose rect measures 0 — which bails `measure` out at the
+ *   zero-height guard before it writes anything. Every agenda card and photo
+ *   then sits at progress 0 (opacity .55, scale .94) for the rest of the
+ *   session: the reveal frozen half-transparent, exactly what the preview
+ *   showed and the live showcase never did, because there the card mounts once.
  */
 const bindRoot = () => {
   const found = document.querySelector<HTMLElement>(SCROLL_ROOT_SELECTOR)
-  if (found === scrollRoot && listening) return
+  if (found === scrollRoot && listening && (!scrollRoot || scrollRoot.isConnected)) return
 
   if (listening) {
     const previous: EventTarget = scrollRoot ?? window
@@ -83,7 +99,7 @@ const bindRoot = () => {
 const measure = () => {
   rafId = null
   if (elements.size === 0) return
-  if (!scrollRoot) bindRoot()
+  if (!scrollRoot?.isConnected) bindRoot()
 
   // --- read phase: container first, then every element ---
   let viewportTop = 0
@@ -124,8 +140,11 @@ const schedule = () => {
 }
 
 const startListening = () => {
-  if (listening) return
+  // Always re-resolve: a registration arriving after the subtree was replaced
+  // is the only signal the registry gets that its root is stale. bindRoot()
+  // no-ops when the root is unchanged and still connected.
   bindRoot()
+  if (listening) return
   window.addEventListener('resize', schedule, { passive: true })
   listening = true
 }
