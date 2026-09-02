@@ -2324,7 +2324,21 @@ onUnmounted(() => {
   opacity: 0.7;
 }
 
-.tpl-menu-group + .tpl-menu-group {
+/*
+  Air between two shelves — which only the stacked catalogue has.
+
+  Scoped to it, because the sibling combinator reads the DOM and not `display`:
+  in the dock the shelves are tabs and exactly one is ever on screen, but the
+  hidden sections before it still qualify it as an adjacent sibling. So choosing
+  any shelf other than the FIRST handed the dock a 20px margin the first one
+  never paid (14px net — the rest collapses into the tab row's own bottom
+  margin), and the dock's height is precisely what the phone above is fitted to.
+  The gap came straight off the invitation: 273x591 on the opening shelf, then
+  266x576 on every other. A partner switching shelves to compare two designs
+  watched the product resize under them, which is the one thing a comparison
+  must not do.
+*/
+.tpl-menu__scroll:not(.is-rail) .tpl-menu-group + .tpl-menu-group {
   margin-top: 1.25rem;
 }
 
