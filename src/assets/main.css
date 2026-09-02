@@ -135,11 +135,31 @@ html.showcase-viewport-locked #app {
  * cross-section size matches between RSVP, comments and payment — is preserved
  * by construction instead of having to be re-tuned per component.
  *
- * 3.883vw = 16px ÷ 412px. Capped at 1em so viewports ≥412px render exactly as
- * before (only narrower phones change at all) and floored at 0.75em so a
- * ~280px folded phone stops shrinking. Expressed in `em`, not `px`, so a
- * user's own browser font-size preference still scales the result (a11y) —
- * same reasoning as the `75%` in the laptop block above.
+ * 3.883vw = 16px ÷ 412px. Capped at 16px so viewports ≥412px render exactly as
+ * before (only narrower phones change at all) and floored at 12px so a ~280px
+ * folded phone stops shrinking.
+ *
+ * All three terms are `px`, and they have to stay in one unit space. They were
+ * `0.75em`/`1em` around the same `3.883vw` middle term, on the reasoning used
+ * for the `75%` in the laptop block above — but that reasoning does not carry
+ * here. `em` on the root resolves against the *browser's own default font
+ * size*, which the `vw` term knows nothing about, so a raised default did not
+ * scale this design: it lifted the floor out from under it while the `85vw`
+ * containers stayed exactly where they were. Measured on a 412px viewport, a
+ * 24px browser default (Android's "Large" font size, and every in-app browser
+ * that inherits the system font scale — which is how most guests open an
+ * invitation) pinned the root to an 18px floor instead of the 16px the
+ * viewport asked for: every radius, padding and gap grew 12.5% inside a card
+ * that had not moved. That is the "neat in the preview, bulky on the phone"
+ * mismatch — Chrome's device emulation keeps the desktop's 16px default, so
+ * the floor never bites there and the preview always looks right.
+ *
+ * Dropping the preference is the correct trade *on this surface only*. The
+ * showcase is a fixed canvas: it pins the root scroll (see
+ * `showcase-viewport-locked` above), so type that outgrows its box cannot be
+ * scrolled to — enlarging it clipped the invitation rather than opening it up.
+ * The escape hatch a fixed canvas is supposed to have is pinch-zoom, and that
+ * is intact: index.html sets `initial-scale=1.0` with no `user-scalable=no`.
  *
  * Scoped to `.showcase-scale` (showcase + preview-frame routes, see
  * applyRootScaleClasses() in src/router/index.ts). The rest of the app lays
@@ -148,7 +168,7 @@ html.showcase-viewport-locked #app {
  * ------------------------------------------------------------------------ */
 @media (max-width: 639px) {
   html.showcase-scale {
-    font-size: clamp(0.75em, 3.883vw, 1em);
+    font-size: clamp(12px, 3.883vw, 16px);
   }
 }
 

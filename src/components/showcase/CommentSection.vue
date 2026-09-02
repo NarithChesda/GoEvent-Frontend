@@ -34,6 +34,7 @@
     <div
       ref="commentFormRef"
       class="comment-form-liquid mb-3 animate-form-reveal"
+      :class="{ 'is-collapsed': composerCollapsed }"
       :style="{
         backgroundColor: `${backgroundColor}20`,
         border: `1px solid ${backgroundColor}40`,
@@ -82,6 +83,42 @@
         </p>
       </div>
 
+      <!-- Collapsed composer.
+
+           Expanded, the form is a textarea, a counter and a button: about
+           200px, and it sat above the wishes, so the first screen of the
+           guestbook was an empty box asking a guest to write before they had
+           read anything. On a wedding the wishes are the reason the section
+           exists; writing one is what a guest does *after* being moved by
+           them. Collapsed it costs one row, and it opens on tap into exactly
+           the form that was there before.
+
+           It opens by default when there is nothing to read - with no wishes
+           yet, composing is the only thing this section can offer, and asking
+           for a second tap to reach it would be perverse. -->
+      <button
+        v-else-if="canShowCommentForm && composerCollapsed"
+        type="button"
+        class="composer-trigger w-full flex items-center gap-2.5 text-left"
+        :style="{ color: primaryColor }"
+        @click="openComposer"
+      >
+        <span
+          class="composer-trigger__mark flex-shrink-0 flex items-center justify-center rounded-full"
+          :style="{
+            backgroundColor: `${backgroundColor}22`,
+            boxShadow: `0 0 0 1px ${backgroundColor}30`,
+          }"
+        >
+          <PenLine class="w-3.5 h-3.5" :style="{ color: primaryColor, opacity: 0.75 }" />
+        </span>
+        <span
+          class="text-sm truncate"
+          :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+          :style="{ opacity: 0.75, fontFamily: secondaryFont || currentFont }"
+        >{{ commentComposeCtaText }}</span>
+      </button>
+
       <!-- Comment Form (visible whenever the form can be shown) -->
       <form v-else-if="canShowCommentForm" @submit.prevent="submitComment">
         <!-- "Commenting as <guestName>" hint for guest authors -->
@@ -99,6 +136,7 @@
         <!-- Comment Textarea -->
         <div class="mb-3">
           <textarea
+            ref="composerTextareaRef"
             v-model="newComment.message"
             :placeholder="commentPlaceholderText"
             rows="3"
@@ -124,8 +162,13 @@
               {{ commentValidation.errors[0] }}
             </div>
             <div v-else></div>
-            <!-- Character Count -->
-            <div :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }">
+            <!-- Character Count: only once it is close enough to matter. At
+                 0/500 it is a rule the guest has not come near, printed under
+                 an empty box. -->
+            <div
+              v-if="newComment.message.length >= 400"
+              :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
+            >
               {{ newComment.message.length }}/500
             </div>
           </div>
@@ -151,14 +194,19 @@
       </form>
     </div>
 
-    <!-- Comments List -->
+    <!-- Comments List
+
+         Flows with the page rather than scrolling inside itself. It was a
+         fixed `h-[26rem]` overflow box, which on a phone bought two problems
+         and no benefit: it is a third nested scroller (inside .stage-scroll,
+         inside the card wrapper), so a flick over the wishes moved the list
+         and not the invitation; and it reserved 394px of an 844px viewport
+         whatever the content, so an event with one wish rendered that wish
+         followed by a third of a screen of nothing. Length is now handled
+         where it actually comes from - the number of wishes - by showing the
+         most recent few and letting the guest ask for the rest. -->
     <div class="relative">
-      <div
-        ref="commentsContainer"
-        class="h-[26rem] overflow-y-auto space-y-3 comments-scrollbar comments-scroll"
-        :class="{ 'can-scroll-up': canScrollUp, 'can-scroll-down': canScrollDown }"
-        @scroll="handleScroll"
-      >
+      <div ref="commentsContainer" class="space-y-3">
         <!-- Loading State -->
         <div
           v-if="loadingComments"
@@ -218,31 +266,25 @@
         <!-- Comments -->
         <div v-else>
           <div
-            v-for="(comment, index) in comments"
+            v-for="(comment, index) in visibleComments"
             :key="comment.id"
             :ref="(el) => setupCommentAnimation(el, `comment-${comment.id}`, index)"
-            class="comment-card-liquid p-4 mb-3 last:mb-0 animate-comment-reveal relative"
-            :class="{ 'mt-6': index === 0 }"
-            :style="
-              isUserCommentOwner(comment)
-                ? {
-                    backgroundColor: `${backgroundColor}25`,
-                    border: `1px solid ${backgroundColor}60`,
-                    transform: 'translateY(-2px)',
-                  }
-                : {
-                    backgroundColor: `${backgroundColor}15`,
-                    border: `1px solid ${backgroundColor}40`,
-                  }
-            "
+            class="comment-card-liquid wish-card p-3.5 mb-3 last:mb-0 animate-comment-reveal relative"
+            :style="{
+              '--wish-index': index,
+              '--wish-rule': `${backgroundColor}80`,
+              '--wish-rule-fade': `${backgroundColor}1F`,
+              backgroundColor: `${backgroundColor}${isUserCommentOwner(comment) ? '25' : '15'}`,
+              border: `1px solid ${backgroundColor}${isUserCommentOwner(comment) ? '60' : '40'}`,
+            }"
           >
-            <!-- Quote Mark -->
-            <div
-              class="absolute top-2 left-3 text-4xl leading-none select-none pointer-events-none opacity-40"
-              :style="{ color: backgroundColor, fontFamily: 'Georgia, serif' }"
-            >
-              "
-            </div>
+            <!-- Quotation is marked by a rule down the message, not by a
+                 glyph. The 4xl Georgia quote that was here sat at 40% over the
+                 first line and forced a 28px left inset - 9% of the measure on
+                 a 390px phone, which Khmer cannot spare: it does not hyphenate
+                 and `word-break: keep-all` means a lost column becomes a lost
+                 line. The rule reads as a pull-quote, costs 10px, and overlaps
+                 nothing. -->
 
             <!-- Options Button (only for comment owner) - Top Right -->
             <div
@@ -265,8 +307,8 @@
             <!-- Comment Message (Read Mode) -->
             <p
               v-if="editingCommentId !== comment.id"
-              class="text-sm leading-relaxed pl-7 mb-3 pt-1"
-              :class="isUserCommentOwner(comment) ? 'pr-8' : 'pr-2'"
+              class="wish-message text-sm leading-relaxed mb-2.5"
+              :class="isUserCommentOwner(comment) ? 'pr-7' : 'pr-1'"
               :style="{
                 color: primaryColor,
                 fontFamily: secondaryFont || currentFont,
@@ -277,7 +319,7 @@
             </p>
 
             <!-- Comment Message (Edit Mode) -->
-            <div v-else class="space-y-3 pl-7 pr-8 mb-4 pt-1">
+            <div v-else class="wish-message space-y-3 pr-7 mb-3">
               <textarea
                 v-model="editCommentText"
                 class="liquid-glass-textarea w-full px-3 py-2 text-sm focus:outline-none resize-none"
@@ -346,7 +388,7 @@
             </div>
 
             <!-- Author Signature (Bottom) -->
-            <div class="comment-author-row relative flex items-center gap-2.5 pl-2 pr-2 pt-3">
+            <div class="comment-author-row relative flex items-center gap-2.5 pt-2.5">
               <!-- Gradient hairline divider -->
               <div
                 class="absolute top-0 left-0 right-0 h-px pointer-events-none"
@@ -357,7 +399,7 @@
 
               <!-- User Avatar -->
               <div
-                class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center"
+                class="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center"
                 :style="{
                   backgroundColor: `${backgroundColor}25`,
                   boxShadow: `0 0 0 2px ${backgroundColor}35`,
@@ -390,7 +432,7 @@
                   </p>
                   <span
                     v-if="isUserCommentOwner(comment)"
-                    class="text-[0.625rem] px-1.5 py-0.5 rounded-full text-white font-medium flex-shrink-0"
+                    class="text-[0.6875rem] px-1.5 py-0.5 rounded-full text-white font-medium flex-shrink-0"
                     :style="{
                       backgroundColor: backgroundColor + '80',
                       fontFamily: secondaryFont || currentFont,
@@ -400,10 +442,10 @@
                   </span>
                 </div>
                 <p
-                  class="text-xs leading-tight mt-0.5"
+                  class="text-xs leading-tight mt-px"
                   :style="{
                     color: primaryColor,
-                    opacity: 0.55,
+                    opacity: 0.5,
                     fontFamily: secondaryFont || currentFont,
                   }"
                 >
@@ -412,6 +454,33 @@
               </div>
             </div>
           </div>
+
+          <!-- The list's own length control. Infinite scroll was the right
+               answer only while the box scrolled inside itself; with the list
+               on the page, an explicit ask is both cheaper (nothing loads
+               until a guest wants it) and honest about how many wishes there
+               are, which on a wedding is a number the couple wants seen. -->
+          <button
+            v-if="canRevealMoreWishes"
+            type="button"
+            class="wish-more-button w-full text-xs font-medium"
+            :style="{
+              color: primaryColor,
+              borderColor: `${backgroundColor}38`,
+              fontFamily: secondaryFont || currentFont,
+            }"
+            @click="revealMoreWishes"
+          >
+            <span
+              class="wish-more-rule"
+              :style="{ background: `linear-gradient(90deg, transparent, ${backgroundColor}45)` }"
+            ></span>
+            <span class="wish-more-label">{{ showAllWishesText }}</span>
+            <span
+              class="wish-more-rule"
+              :style="{ background: `linear-gradient(90deg, ${backgroundColor}45, transparent)` }"
+            ></span>
+          </button>
 
           <!-- Loading More Indicator -->
           <div
@@ -514,7 +583,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, onUnmounted, watch, type ComponentPublicInstance } from 'vue'
-import { MessageCircle, Edit, Trash2, MoreVertical } from 'lucide-vue-next'
+import { MessageCircle, Edit, Trash2, MoreVertical, PenLine } from 'lucide-vue-next'
 import { useAuthStore } from '../../stores/auth'
 import { commentsService, type EventComment, apiService } from '../../services/api'
 import DeleteConfirmModal from '../DeleteConfirmModal.vue'
@@ -640,6 +709,14 @@ const commentSigninPromptText = computed(() =>
 const commentSigninButtonText = computed(() =>
   getTextContent('comment_signin_button', 'Sign In to Comment'),
 )
+// The collapsed composer's label. Short enough to sit in one row beside its
+// mark at 390px, in both languages.
+const commentComposeCtaText = computed(() => {
+  if (props.eventType?.toLowerCase() === 'funeral') {
+    return getTextContent('comment_compose_cta_funeral', 'Leave a message')
+  }
+  return getTextContent('comment_compose_cta', 'Write your wish')
+})
 const commentPostButtonText = computed(() => getTextContent('comment_post_button', 'Post Comment'))
 const commentPostingButtonText = computed(() =>
   getTextContent('comment_posting_button', 'Posting...'),
@@ -682,11 +759,14 @@ const totalComments = ref(0)
 const currentPage = ref(1)
 const commentsPerPage = 20 // Match API default
 const commentsContainer = ref<HTMLElement | null>(null)
-// Which edges of the fixed-height list still have comments beyond them. The
-// list's scrollbar is hidden, so without these the box hard-clips a card
-// mid-height and reads as a rendering fault rather than as more to read.
-const canScrollUp = ref(false)
-const canScrollDown = ref(false)
+const composerTextareaRef = ref<HTMLTextAreaElement | null>(null)
+
+// How many wishes are on the page. Three is what fits under the composer on a
+// 390px phone without the section running past a screen, which is the length
+// at which a guest still reads them rather than scrolls them.
+const WISHES_PER_REVEAL = 3
+const visibleWishCount = ref(WISHES_PER_REVEAL)
+const composerOpenedByGuest = ref(false)
 const commentFormRef = ref<HTMLElement | null>(null)
 const hasMoreComments = ref(true)
 const errorMessage = ref('')
@@ -772,11 +852,65 @@ const commentAuthMode = computed<'guest' | 'user' | null>(() => {
 })
 
 const canShowCommentForm = computed(() => commentAuthMode.value !== null)
+
+// The wishes actually on the page, and whether there are more to ask for -
+// either still in the buffer, or on a page the API has not been asked for yet.
+const visibleComments = computed(() => comments.value.slice(0, visibleWishCount.value))
+const canRevealMoreWishes = computed(
+  () =>
+    !loadingComments.value &&
+    !loadingMoreComments.value &&
+    (visibleWishCount.value < comments.value.length || hasMoreComments.value),
+)
+const showAllWishesText = computed(() => {
+  const label = getTextContent('comment_show_all', 'Read all wishes')
+  const total = totalComments.value || comments.value.length
+  return total > visibleWishCount.value ? `${label} (${total})` : label
+})
+
+// Collapsed unless the guest asked for it, or there is nothing else to do here.
+//
+// Guarded on the same conditions the <form> branch is, not just on
+// canShowCommentForm: the shell also carries the sign-in, invite-only and
+// already-commented notices, and those are one short paragraph each. Cropping
+// their padding to composer height reads as a clipped card, and there is
+// nothing to expand into anyway.
+const composerCollapsed = computed(
+  () =>
+    canShowCommentForm.value &&
+    !showsComposerNotice.value &&
+    !composerOpenedByGuest.value &&
+    comments.value.length > 0,
+)
+
+const openComposer = async () => {
+  composerOpenedByGuest.value = true
+  await nextTick()
+  composerTextareaRef.value?.focus()
+}
+
+// Reveals the next few from the buffer, and only asks the API for another page
+// once the buffer is spent - so the first tap is always instant.
+const revealMoreWishes = async () => {
+  if (visibleWishCount.value < comments.value.length) {
+    visibleWishCount.value += WISHES_PER_REVEAL
+    return
+  }
+  if (hasMoreComments.value) {
+    await loadMoreComments()
+    visibleWishCount.value += WISHES_PER_REVEAL
+  }
+}
 const showInviteOnlyPrompt = computed(
   () => isPrivateEvent.value && !hasGuestCredential.value,
 )
 const showLoginPrompt = computed(
   () => !isPrivateEvent.value && !isUserAuthenticated.value,
+)
+
+// The shell is showing a notice rather than the composer.
+const showsComposerNotice = computed(
+  () => showInviteOnlyPrompt.value || showLoginPrompt.value || hasAlreadyCommented.value,
 )
 
 // Methods
@@ -1291,41 +1425,16 @@ const loadMoreComments = async () => {
   }
 }
 
-// Which edges the list can still travel toward. The 2px slack absorbs the
-// sub-pixel scrollTop a fractional device pixel ratio leaves at either end,
-// which would otherwise hold a fade lit against an edge already reached.
-const updateScrollEdges = () => {
-  const el = commentsContainer.value
-  if (!el) return
-  canScrollUp.value = el.scrollTop > 2
-  canScrollDown.value = el.scrollTop + el.clientHeight < el.scrollHeight - 2
-}
-
-// Handle infinite scroll
-const handleScroll = () => {
-  updateScrollEdges()
-
-  if (!commentsContainer.value) return
-
-  // Only trigger load more if we can load more
-  if (canLoadMore.value) {
-    const container = commentsContainer.value
-    const scrollPosition = container.scrollTop + container.clientHeight
-    const scrollHeight = container.scrollHeight
-
-    // Load more when user is within 100px of bottom
-    if (scrollPosition >= scrollHeight - 100) {
-      loadMoreComments()
-    }
-  }
-}
-
-// The list's own height is fixed, so only its content can change whether there
-// is anything past an edge - posting, deleting and each infinite-scroll page all
-// land here without a scroll event of their own.
+// A wish the guest just posted has to be on the page, or posting reads as
+// having failed. The list is capped, so growing the cap alongside the buffer is
+// what keeps the newest one visible.
 watch(
   () => comments.value.length,
-  () => nextTick(updateScrollEdges),
+  (len, prev) => {
+    if (len > prev && visibleWishCount.value < WISHES_PER_REVEAL) {
+      visibleWishCount.value = WISHES_PER_REVEAL
+    }
+  },
 )
 
 // Watchers
@@ -1411,22 +1520,11 @@ onMounted(async () => {
   // Check if user should be redirected to comment section (after login)
   checkForCommentRedirect()
 
-  // Ensure container is scrollable if there's not much content
-  await nextTick()
-  if (commentsContainer.value) {
-    // Add scroll listener regardless of initial comment count
-    commentsContainer.value.addEventListener('scroll', handleScroll, { passive: true })
-    updateScrollEdges()
-  }
-
   // Add click outside listener to close menus
   document.addEventListener('click', handleClickOutside)
 })
 
 onUnmounted(() => {
-  if (commentsContainer.value) {
-    commentsContainer.value.removeEventListener('scroll', handleScroll)
-  }
   document.removeEventListener('click', handleClickOutside)
 })
 </script>
@@ -1440,15 +1538,23 @@ onUnmounted(() => {
   backdrop-filter: blur(20px);
   position: relative;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    padding 220ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
   margin-bottom: 0.75rem;
   box-sizing: border-box;
 }
 
-.comment-form-liquid:hover {
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
-  transform: translateY(-1px);
+/* Every lift in this file is gated on a real pointer. On a touch screen :hover
+   latches after a tap and does not release until something else is tapped, so
+   an ungated lift leaves a card sitting 1px high with a heavier blur for as
+   long as the guest keeps reading. */
+@media (hover: hover) and (pointer: fine) {
+  .comment-form-liquid:hover {
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+    transform: translateY(-1px);
+  }
 }
 
 .comment-form-liquid::before {
@@ -1502,14 +1608,16 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-.liquid-glass-button:hover::after {
-  left: 100%;
-}
+@media (hover: hover) and (pointer: fine) {
+  .liquid-glass-button:hover::after {
+    left: 100%;
+  }
 
-.liquid-glass-button:hover {
-  transform: translateY(-1px);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
+  .liquid-glass-button:hover {
+    transform: translateY(-1px);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+  }
 }
 
 /* Liquid Glass Textarea */
@@ -1531,7 +1639,6 @@ onUnmounted(() => {
 .liquid-glass-textarea:focus {
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
-  transform: translateY(-1px);
 }
 
 /* Comment Card Liquid Glass */
@@ -1541,14 +1648,16 @@ onUnmounted(() => {
   backdrop-filter: blur(16px);
   position: relative;
   overflow: visible;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
   box-sizing: border-box;
 }
 
-.comment-card-liquid:hover {
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  transform: translateY(-1px) !important;
+@media (hover: hover) and (pointer: fine) {
+  .comment-card-liquid:hover {
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    transform: translateY(-1px) !important;
+  }
 }
 
 .comment-card-liquid::before {
@@ -1639,90 +1748,112 @@ textarea:focus {
   box-shadow: 0 0 0 2px rgba(var(--tw-ring-color), var(--tw-ring-opacity));
 }
 
-/* The list is a fixed 26rem box with its scrollbar hidden, so at either end of
-   its travel it used to slice a comment card in half against nothing - a hard
-   horizontal edge that reads as a rendering fault, not as more to read. A mask
-   fades the content itself rather than painting a gradient over it, which is the
-   only option that works here: the backdrop behind this list is whatever colour
-   and glassiness the template chose, so an overlay would have to match a colour
-   this component is never told.
+/* ---------------------------------------------------------------------------
+ * The wish card
+ *
+ * A wedding guestbook on a 390px phone has about 318px of card and, in Khmer,
+ * roughly 26 characters of line. Everything drawn on that card is taken out of
+ * the message, so each piece of chrome has to earn its width: the rule marks
+ * the quotation, the hairline separates the message from who signed it, and
+ * the avatar says who. Nothing else is drawn.
+ * ------------------------------------------------------------------------ */
 
-   Registered as real <length> properties so the fades can transition. An
-   unregistered custom property is a token, not a value, and jumps between
-   states - the fade would pop in the moment a finger leaves the list. */
-@property --comment-fade-top {
-  syntax: '<length>';
-  inherits: false;
-  initial-value: 0px;
+/* The rule runs the height of the message, not the card - it marks the quote,
+   and the signature underneath is not part of the quote. */
+.wish-message {
+  position: relative;
+  padding-left: 0.75rem;
 }
 
-@property --comment-fade-bottom {
-  syntax: '<length>';
-  inherits: false;
-  initial-value: 0px;
-}
-
-.comments-scroll {
-  --comment-fade-top: 0px;
-  --comment-fade-bottom: 0px;
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0,
-    #000 var(--comment-fade-top),
-    #000 calc(100% - var(--comment-fade-bottom)),
-    transparent 100%
+.wish-message::before {
+  content: '';
+  position: absolute;
+  inset-block: 0.15em 0.15em;
+  left: 0;
+  width: 2px;
+  border-radius: 1px;
+  background: linear-gradient(
+    180deg,
+    var(--wish-rule, currentColor) 0%,
+    var(--wish-rule-fade, transparent) 100%
   );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0,
-    #000 var(--comment-fade-top),
-    #000 calc(100% - var(--comment-fade-bottom)),
-    transparent 100%
-  );
-  transition:
-    --comment-fade-top 220ms cubic-bezier(0.23, 1, 0.32, 1),
-    --comment-fade-bottom 220ms cubic-bezier(0.23, 1, 0.32, 1);
+  pointer-events: none;
 }
 
-.comments-scroll.can-scroll-up {
-  --comment-fade-top: 2.25rem;
+/* Wishes settle in sequence rather than all at once - a guestbook is read one
+   entry at a time, and 60ms is short enough that the last one is still
+   arriving as the eye reaches it. Capped at six steps: past that the delay
+   stops reading as rhythm and starts reading as lag. */
+.wish-card {
+  animation: wishIn 380ms cubic-bezier(0.23, 1, 0.32, 1) backwards;
+  animation-delay: calc(min(var(--wish-index, 0), 6) * 60ms);
 }
 
-.comments-scroll.can-scroll-down {
-  --comment-fade-bottom: 2.25rem;
-}
-
-/* The fade is an affordance, not decoration - it says there is more to read.
-   Holding it still is fine; removing it would hide that fact. */
-@media (prefers-reduced-motion: reduce) {
-  .comments-scroll {
-    transition: none;
+@keyframes wishIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
 }
 
-/* Hidden scrollbar for comments container */
-.comments-scrollbar::-webkit-scrollbar {
-  width: 0px;
-  background: transparent;
+/* ---------------------------------------------------------------------------
+ * "Read all wishes"
+ *
+ * A rule with a label in it rather than a button with a fill: it is a way to
+ * continue reading, not a second action competing with Post.
+ * ------------------------------------------------------------------------ */
+.wish-more-button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 0.25rem;
+  margin-top: 0.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 160ms ease-out;
 }
 
-.comments-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+.wish-more-rule {
+  flex: 1;
+  height: 1px;
+  min-width: 1.5rem;
 }
 
-.comments-scrollbar::-webkit-scrollbar-thumb {
-  background: transparent;
+.wish-more-label {
+  opacity: 0.8;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
-.comments-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: transparent;
+.wish-more-button:active {
+  opacity: 0.6;
 }
 
-/* For Firefox - hide scrollbar */
-.comments-scrollbar {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+/* ---------------------------------------------------------------------------
+ * Collapsed composer
+ * ------------------------------------------------------------------------ */
+.comment-form-liquid.is-collapsed {
+  padding: 0.6875rem 0.875rem;
 }
+
+.composer-trigger {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.composer-trigger:active {
+  transform: scale(0.985);
+}
+
+.composer-trigger__mark {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
 
 /* Custom scrollbar for textarea */
 textarea::-webkit-scrollbar {
@@ -1757,22 +1888,43 @@ textarea::-webkit-scrollbar-thumb:hover {
   will-change: opacity, transform;
 }
 
-/* Enhanced form interactions */
+/* The textarea used to lift and scale to 1.01 on focus. On a phone, focus and
+   the keyboard's own slide-up land in the same frames, so the field moved
+   twice at once; and a transform on a focused text field resamples its glyphs,
+   which is visible on Khmer diacritics at this size. The blur alone says
+   "focused" without moving anything. */
 .liquid-glass-textarea:focus {
-  transform: scale(1.01);
   -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
 }
 
+.liquid-glass-button {
+  transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
 .liquid-glass-button:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 /* Reduce motion for accessibility - Let useAdvancedAnimations handle this */
 @media (prefers-reduced-motion: reduce) {
   .liquid-glass-textarea:focus,
-  .liquid-glass-button:active {
+  .liquid-glass-button:active,
+  .composer-trigger:active {
     transform: none !important;
+  }
+
+  /* The wishes still fade in - that is what says a new one arrived - but they
+     no longer travel, and they arrive together rather than in sequence. */
+  .wish-card {
+    animation: wishFade 200ms ease-out backwards;
+    animation-delay: 0ms;
+  }
+
+  @keyframes wishFade {
+    from {
+      opacity: 0;
+    }
   }
 }
 
