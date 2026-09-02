@@ -155,7 +155,8 @@
     <div class="relative">
       <div
         ref="commentsContainer"
-        class="h-[26rem] overflow-y-auto space-y-3 comments-scrollbar"
+        class="h-[26rem] overflow-y-auto space-y-3 comments-scrollbar comments-scroll"
+        :class="{ 'can-scroll-up': canScrollUp, 'can-scroll-down': canScrollDown }"
         @scroll="handleScroll"
       >
         <!-- Loading State -->
@@ -681,6 +682,11 @@ const totalComments = ref(0)
 const currentPage = ref(1)
 const commentsPerPage = 20 // Match API default
 const commentsContainer = ref<HTMLElement | null>(null)
+// Which edges of the fixed-height list still have comments beyond them. The
+// list's scrollbar is hidden, so without these the box hard-clips a card
+// mid-height and reads as a rendering fault rather than as more to read.
+const canScrollUp = ref(false)
+const canScrollDown = ref(false)
 const commentFormRef = ref<HTMLElement | null>(null)
 const hasMoreComments = ref(true)
 const errorMessage = ref('')
@@ -1285,8 +1291,20 @@ const loadMoreComments = async () => {
   }
 }
 
+// Which edges the list can still travel toward. The 2px slack absorbs the
+// sub-pixel scrollTop a fractional device pixel ratio leaves at either end,
+// which would otherwise hold a fade lit against an edge already reached.
+const updateScrollEdges = () => {
+  const el = commentsContainer.value
+  if (!el) return
+  canScrollUp.value = el.scrollTop > 2
+  canScrollDown.value = el.scrollTop + el.clientHeight < el.scrollHeight - 2
+}
+
 // Handle infinite scroll
 const handleScroll = () => {
+  updateScrollEdges()
+
   if (!commentsContainer.value) return
 
   // Only trigger load more if we can load more
@@ -1301,6 +1319,14 @@ const handleScroll = () => {
     }
   }
 }
+
+// The list's own height is fixed, so only its content can change whether there
+// is anything past an edge - posting, deleting and each infinite-scroll page all
+// land here without a scroll event of their own.
+watch(
+  () => comments.value.length,
+  () => nextTick(updateScrollEdges),
+)
 
 // Watchers
 watch(
@@ -1390,6 +1416,7 @@ onMounted(async () => {
   if (commentsContainer.value) {
     // Add scroll listener regardless of initial comment count
     commentsContainer.value.addEventListener('scroll', handleScroll, { passive: true })
+    updateScrollEdges()
   }
 
   // Add click outside listener to close menus
@@ -1610,6 +1637,67 @@ input:focus,
 textarea:focus {
   --tw-ring-opacity: 0.5;
   box-shadow: 0 0 0 2px rgba(var(--tw-ring-color), var(--tw-ring-opacity));
+}
+
+/* The list is a fixed 26rem box with its scrollbar hidden, so at either end of
+   its travel it used to slice a comment card in half against nothing - a hard
+   horizontal edge that reads as a rendering fault, not as more to read. A mask
+   fades the content itself rather than painting a gradient over it, which is the
+   only option that works here: the backdrop behind this list is whatever colour
+   and glassiness the template chose, so an overlay would have to match a colour
+   this component is never told.
+
+   Registered as real <length> properties so the fades can transition. An
+   unregistered custom property is a token, not a value, and jumps between
+   states - the fade would pop in the moment a finger leaves the list. */
+@property --comment-fade-top {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --comment-fade-bottom {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+.comments-scroll {
+  --comment-fade-top: 0px;
+  --comment-fade-bottom: 0px;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--comment-fade-top),
+    #000 calc(100% - var(--comment-fade-bottom)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--comment-fade-top),
+    #000 calc(100% - var(--comment-fade-bottom)),
+    transparent 100%
+  );
+  transition:
+    --comment-fade-top 220ms cubic-bezier(0.23, 1, 0.32, 1),
+    --comment-fade-bottom 220ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.comments-scroll.can-scroll-up {
+  --comment-fade-top: 2.25rem;
+}
+
+.comments-scroll.can-scroll-down {
+  --comment-fade-bottom: 2.25rem;
+}
+
+/* The fade is an affordance, not decoration - it says there is more to read.
+   Holding it still is fine; removing it would hide that fact. */
+@media (prefers-reduced-motion: reduce) {
+  .comments-scroll {
+    transition: none;
+  }
 }
 
 /* Hidden scrollbar for comments container */
