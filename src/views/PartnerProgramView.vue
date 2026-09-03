@@ -1351,11 +1351,11 @@
         it earns a shape of its own: a single panel lifted off the page's tinted
         ground, with full-bleed rows inside it.
 
-        One card, not seven. The set is one object — a reader opens it, works
-        down it and leaves — so the panel is the card and the questions are its
-        contents. Seven bordered boxes would be seven objects to separate from
-        each other before reading any of them, which is chrome charged for
-        nothing. The panel clips its own corners (`overflow-hidden`) so a row's
+        One card, however many questions. The set is one object — a reader opens
+        it, works down it and leaves — so the panel is the card and the questions
+        are its contents. A bordered box per question would be a dozen objects to
+        separate from each other before reading any of them, which is chrome
+        charged for nothing. The panel clips its own corners (`overflow-hidden`) so a row's
         hover ground and focus ring can run edge to edge without any row having
         to know whether it is the first or the last.
 
@@ -1369,8 +1369,8 @@
         wall of text single-open was guarding against is now the reader's own
         choice, which on a page whose job is to inform is the right place for it.
 
-        Open on arrival, because eight headings over an empty section reads as a
-        section with nothing in it. One open row gives the section its body and
+        Open on arrival, because a stack of headings over an empty section reads
+        as a section with nothing in it. One open row gives the section its body and
         teaches that the rows open, without spending a line of copy saying so.
       -->
       <section class="border-t border-slate-200 py-12 sm:py-20 lg:py-28">
@@ -1589,6 +1589,7 @@ import {
   Gift,
   Images,
   Languages,
+  LifeBuoy,
   Link2,
   MessageCircle,
   Palette,
@@ -1597,6 +1598,7 @@ import {
   Store,
   UserCheck,
   Users,
+  Wrench,
 } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -1669,8 +1671,11 @@ const stepTimingKey = (key: (typeof STEPS)[number]) => STEP_TIMINGS[key] ?? ''
 
 const FAQ_KEYS = [
   'unsold',
+  'future',
   'price',
   'domain',
+  'lifetime',
+  'exclusive',
   'plans',
   'payment',
   'customer',
@@ -1854,15 +1859,19 @@ const PRODUCT_FEATURES = [
  * Order is load-bearing at `sm`, where the grid fills row-wise in pairs: the
  * first row is what the partner's own name gets out of this, the second pairs
  * the job they hand back to the customer with the one they can take on
- * themselves. Five is deliberately odd — `freeStart` is left alone on the last
- * row, where an orphan reads as the offer the closing section repeats rather
- * than as a gap.
+ * themselves, and the third is what we carry so the shop does not have to — the
+ * platform and the person behind it. The count is deliberately odd — `freeStart`
+ * is left alone on the last row, where an orphan reads as the offer the closing
+ * section repeats rather than as a gap. Adding one more item closes that row and
+ * turns the orphan back into a hole; add them two at a time.
  */
 const PARTNER_BENEFITS = [
   { key: 'branding', icon: BadgeCheck },
   { key: 'listing', icon: Store },
   { key: 'share', icon: Link2 },
   { key: 'studio', icon: Palette },
+  { key: 'upkeep', icon: Wrench },
+  { key: 'support', icon: LifeBuoy },
   { key: 'freeStart', icon: Gift },
 ] as const
 
