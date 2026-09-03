@@ -142,6 +142,9 @@ export const rsvpTranslations: Record<
     comment_you_badge: string
     comment_invite_only_prompt: string
     comment_commenting_as: string
+    comment_compose_cta: string
+    comment_compose_cta_funeral: string
+    comment_show_all: string
 
     // Payment section
     payment_wedding_gift: string
@@ -349,6 +352,9 @@ export const rsvpTranslations: Record<
     comment_you_badge: 'You',
     comment_invite_only_prompt: 'This is a private event. Please open your invitation link to leave a message.',
     comment_commenting_as: 'Commenting as',
+    comment_compose_cta: 'Write your wish',
+    comment_compose_cta_funeral: 'Leave a message',
+    comment_show_all: 'Read all wishes',
 
     // Payment section
     payment_wedding_gift: 'Wedding Gift',
@@ -556,6 +562,9 @@ export const rsvpTranslations: Record<
     comment_you_badge: 'You',
     comment_invite_only_prompt: 'នេះជាកម្មវិធីឯកជន។ សូមបើកតំណរអញ្ជើញរបស់អ្នក ដើម្បីផ្ញើសារ។',
     comment_commenting_as: 'ជូនពរក្នុងនាម',
+    comment_compose_cta: 'សរសេរសារជូនពរ',
+    comment_compose_cta_funeral: 'ផ្ញើសាររំលែកទុក្ខ',
+    comment_show_all: 'អានសារជូនពរទាំងអស់',
 
     // Payment section
     payment_wedding_gift: 'ចំណងដៃ',
@@ -763,6 +772,9 @@ export const rsvpTranslations: Record<
     comment_you_badge: '您',
     comment_invite_only_prompt: '这是一个私密活动。请打开您的邀请链接以留言。',
     comment_commenting_as: '以此身份留言：',
+    comment_compose_cta: '写下您的祝福',
+    comment_compose_cta_funeral: '留下悼念',
+    comment_show_all: '阅读全部祝福',
 
     // Payment section
     payment_wedding_gift: '结婚礼品',

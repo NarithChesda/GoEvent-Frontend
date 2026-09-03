@@ -109,14 +109,19 @@ const { displayFont, bodyFont, showCaptions, activeCodeOf } = useDressCodeDesign
 
 /* The ground is a wash of the template's ink, never of the dress code's colour:
    a pale garment needs a ground it contrasts with, and a ground tinted by the
-   garment is the one colour guaranteed not to give it one. */
+   garment is the one colour guaranteed not to give it one. `--dcd-ground` is
+   that wash lit from above with a contact pool at the hem — see the note on it
+   in dress-code-base.css. */
 .prt-figure {
   width: 100%;
   aspect-ratio: 4 / 5;
   border-radius: 1.125rem;
   overflow: hidden;
-  background: var(--dcd-wash);
-  box-shadow: inset 0 0 0 1px var(--dcd-hairline-soft);
+  background: var(--dcd-ground);
+  box-shadow:
+    var(--dcd-plate-edge),
+    inset 0 0 0 1px var(--dcd-hairline-soft),
+    var(--dcd-plate-lift);
 }
 
 .prt--solo .prt-figure {

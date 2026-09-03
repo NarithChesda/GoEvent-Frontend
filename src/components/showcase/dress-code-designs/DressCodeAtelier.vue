@@ -115,17 +115,22 @@ const { displayFont, bodyFont, showCaptions, activeCodeOf } = useDressCodeDesign
   aspect-ratio: 3 / 4;
   border-radius: 50% 50% 0.5rem 0.5rem / 37.5% 37.5% 2% 2%;
   overflow: hidden;
-  background: var(--dcd-wash);
+  background: var(--dcd-ground);
   /* Two rings with a mount between them: the outer is the frame, the inner is
      the mount board. One ring reads as a border; two read as framed. Inset
      shadows paint front to back, so the 1px hairline sits on top, the 6px wash
      paints behind it filling the band, and the 7px soft ring shows only in the
      1px the wash leaves. A `transparent` middle layer paints nothing and gives
-     one thick ring instead — which is what this looked like at first. */
+     one thick ring instead — which is what this looked like at first.
+
+     The mount stays the FLAT `--dcd-wash`: it is a board the arch is cut into,
+     and a lit gradient inside a 6px band would only read as a smudge. The lit
+     ground goes behind it, where the garment stands. */
   box-shadow:
     inset 0 0 0 1px var(--dcd-hairline),
     inset 0 0 0 6px var(--dcd-wash),
-    inset 0 0 0 7px var(--dcd-hairline-soft);
+    inset 0 0 0 7px var(--dcd-hairline-soft),
+    var(--dcd-plate-lift);
 }
 
 /* A short centred rule between the arch and the type name. Fixed width rather
