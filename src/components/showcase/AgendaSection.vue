@@ -10,7 +10,10 @@
     <div class="text-center mb-4 sm:mb-5 laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-6 desktop:mb-5">
       <h2
         :class="[
-          'leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular mb-3 sm:mb-4 md:mb-6 laptop-sm:mb-2 laptop-md:mb-2 desktop:mb-2 capitalize agenda-header',
+          // Size and leading come from `.agenda-header` below, on the one
+          // `--agd-s` scale — not from a Tailwind step ladder that the laptop
+          // tiers then had to override.
+          'font-regular mb-3 sm:mb-4 md:mb-6 laptop-sm:mb-2 laptop-md:mb-2 desktop:mb-2 capitalize agenda-header',
           currentLanguage === 'kh' && 'khmer-text-fix',
         ]"
         :style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
@@ -29,14 +32,19 @@
            what a wedding shows. -->
       <p
         v-if="subHeaderWords.length"
-        :class="['text-sm sm:text-base md:text-lg opacity-80', currentLanguage === 'kh' && 'khmer-text-fix']"
+        :class="[
+          'text-sm sm:text-base md:text-lg opacity-80',
+          currentLanguage === 'kh' && 'khmer-text-fix',
+        ]"
         :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
       >
         <span
           v-for="(word, index) in subHeaderWords"
           :key="`subdesc-${currentLanguage}-${index}`"
           class="bounce-word"
-          :style="{ animationDelay: `${animationDelays.subDescription + wordCascadeDelay(index)}s` }"
+          :style="{
+            animationDelay: `${animationDelays.subDescription + wordCascadeDelay(index)}s`,
+          }"
           >{{ word }}{{ index < subHeaderWords.length - 1 ? ' ' : '' }}</span
         >
       </p>
@@ -49,17 +57,39 @@
            for editing. -->
       <div
         v-if="agendaTabs.length > 0"
+        ref="tabScrollRef"
         class="tab-bar-scroll-wrapper bounce-in-element"
         :style="{ animationDelay: `${animationDelays.tabs}s` }"
       >
-        <div class="tab-bar" data-preview-safe>
+        <div
+          ref="tabBarRef"
+          class="tab-bar"
+          :class="{ 'has-glide': glide.armed, 'is-gliding': glideMoves }"
+          data-preview-safe
+          role="tablist"
+          :aria-label="headerText"
+        >
+          <!-- One pill that travels, not a background that cross-fades on each
+               button. A day is a position in a row, and moving the selection
+               *along* the row is what says which way you went — two pills
+               swapping opacity says only that something changed. Absolutely
+               positioned and measured off the active button, so it is a single
+               `transform` regardless of how many days there are. -->
+          <span class="tab-glide" :style="glideStyle" aria-hidden="true"></span>
           <button
-            v-for="date in agendaTabs"
+            v-for="(date, index) in agendaTabs"
+            :id="tabId(date)"
             :key="date"
+            :ref="(el) => setTabRef(el, index)"
             class="tab-button"
             :class="{ active: activeTab === date }"
-            :style="getTabStyle(date)"
+            :style="{ fontFamily: primaryFont || currentFont }"
+            role="tab"
+            :aria-selected="activeTab === date"
+            :aria-controls="panelId"
+            :tabindex="activeTab === date ? 0 : -1"
             @click="activeTab = date"
+            @keydown="onTabKeydown($event, index)"
           >
             <span
               v-if="getTabWeekday(date)"
@@ -92,18 +122,30 @@
       </div>
 
       <div class="tab-content-area" :class="{ 'content-hidden': !hasRevealed }">
-        <div v-if="activeTab" :key="activeTab" class="tab-panel">
+        <div
+          v-if="activeTab"
+          :id="panelId"
+          :key="activeTab"
+          class="tab-panel"
+          role="tabpanel"
+          :aria-labelledby="tabId(activeTab)"
+        >
           <!-- The first activity's description, used as the day's own line -->
           <div v-if="firstDescriptionWords.length" class="text-center mb-4 px-2">
             <h4
-              :class="['font-semibold text-sm sm:text-base', currentLanguage === 'kh' && 'khmer-text-fix']"
+              :class="[
+                'font-semibold text-sm sm:text-base',
+                currentLanguage === 'kh' && 'khmer-text-fix',
+              ]"
               :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }"
             >
               <span
                 v-for="(word, index) in firstDescriptionWords"
                 :key="`desc-${currentLanguage}-${index}`"
                 class="bounce-word"
-                :style="{ animationDelay: `${animationDelays.description + wordCascadeDelay(index)}s` }"
+                :style="{
+                  animationDelay: `${animationDelays.description + wordCascadeDelay(index)}s`,
+                }"
                 >{{ word }}{{ index < firstDescriptionWords.length - 1 ? ' ' : '' }}</span
               >
             </h4>
@@ -153,7 +195,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, inject, nextTick, onMounted, onUnmounted, ref, useId, watch } from 'vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
@@ -308,9 +350,9 @@ const categoryCopy = computed(
   () => CATEGORY_COPY[props.eventType?.toLowerCase() || ''] ?? { header: 'agenda_header' },
 )
 
-const headerWords = computed(() =>
-  splitToWords(getTextContent(categoryCopy.value.header, 'Event Schedule')),
-)
+const headerText = computed(() => getTextContent(categoryCopy.value.header, 'Event Schedule'))
+
+const headerWords = computed(() => splitToWords(headerText.value))
 
 const subHeaderWords = computed(() =>
   categoryCopy.value.sub ? splitToWords(getTextContent(categoryCopy.value.sub)) : [],
@@ -398,18 +440,140 @@ const getTabWeekday = (dateString: string): string => {
   }
 }
 
-// Inline styles only carry the active state + fonts; resting/hover looks live
-// in CSS so the tray pills can color-mix against --primary-color.
-const getTabStyle = (date: string) => {
-  const base = { fontFamily: props.primaryFont || props.currentFont }
-  if (activeTab.value !== date) return base
-  return {
-    ...base,
-    backgroundColor: props.primaryColor,
-    color: '#ffffff',
-    boxShadow: `0 10px 22px -10px ${props.primaryColor}b3, inset 0 1px 0 rgba(255, 255, 255, 0.25)`,
-  }
+// ---------------------------------------------------------------------------
+// The travelling pill
+//
+// The selection used to be a background on whichever button was active, so
+// changing day cross-faded one filled pill out and another in — the two ends of
+// the move, with nothing between them. One pill that slides says which
+// direction the selection went, which is the whole point of laying the days out
+// in a row.
+//
+// It is measured, never computed from an index: the buttons are content-sized
+// (a weekday eyebrow over a localized date, in the template's own face), so
+// their widths differ per day, per language and per font — and the face is
+// loaded asynchronously, which is why `document.fonts.ready` re-measures.
+//
+// `armed` gates two things: the transition (so the pill does not slide in from
+// the origin on first paint) and the CSS fallback (`.tab-bar:not(.has-glide)`
+// keeps the old per-button fill, so a measurement that never lands still leaves
+// the active day legible rather than white-on-transparent).
+// ---------------------------------------------------------------------------
+
+// Unique per instance: the manage-page preview can mount this component beside
+// the live one, and two tablists sharing an id would cross-wire aria-controls.
+const uid = useId()
+const panelId = `agenda-panel-${uid}`
+const tabId = (date: string) => `agenda-tab-${uid}-${date.replace(/[^a-zA-Z0-9]/g, '')}`
+
+const tabScrollRef = ref<HTMLElement | null>(null)
+const tabBarRef = ref<HTMLElement | null>(null)
+// Indexed by position through a function ref rather than collected with
+// `ref="…"` on the v-for: Vue does not guarantee that a template-ref array
+// matches the source order, and the pill is looked up by index.
+const tabButtonRefs = ref<(HTMLElement | null)[]>([])
+const setTabRef = (el: unknown, index: number) => {
+  tabButtonRefs.value[index] = (el as HTMLElement | null) ?? null
 }
+
+const glide = ref({ x: 0, w: 0, h: 0, armed: false })
+const glideMoves = ref(false)
+
+const glideStyle = computed(() => ({
+  width: `${glide.value.w}px`,
+  height: `${glide.value.h}px`,
+  transform: `translate3d(${glide.value.x}px, 0, 0)`,
+  backgroundColor: props.primaryColor,
+  boxShadow: `0 10px 22px -10px ${props.primaryColor}b3, inset 0 1px 0 rgba(255, 255, 255, 0.25)`,
+  opacity: glide.value.armed ? 1 : 0,
+}))
+
+const activeTabIndex = computed(() =>
+  activeTab.value ? agendaTabs.value.indexOf(activeTab.value) : -1,
+)
+
+const measureGlide = () => {
+  tabButtonRefs.value.length = agendaTabs.value.length
+  const btn = tabButtonRefs.value[activeTabIndex.value]
+  if (!btn || !tabBarRef.value) return
+  const first = !glide.value.armed
+  // offsetLeft is relative to the tray (position: relative), so it is already
+  // in the pill's own coordinate space and survives the wrapper being scrolled.
+  glide.value = { x: btn.offsetLeft, w: btn.offsetWidth, h: btn.offsetHeight, armed: true }
+  // The first measurement is where the pill *is*, not somewhere it travelled
+  // from — so the transition is only turned on a frame later, otherwise the
+  // pill grows out of the tray's leading edge on arrival.
+  if (first) requestAnimationFrame(() => (glideMoves.value = true))
+}
+
+/**
+ * Keep the chosen day on screen when the tray overflows its wrapper.
+ *
+ * Measured with rects rather than `offsetLeft`: the button's offset parent is
+ * the tray, not the scroller, and the tray carries `margin-inline: auto` — so
+ * the two only agree in the case where the tray happens to be flush left.
+ */
+const scrollActiveIntoView = () => {
+  const btn = tabButtonRefs.value[activeTabIndex.value]
+  const wrapper = tabScrollRef.value
+  if (!btn || !wrapper || wrapper.scrollWidth <= wrapper.clientWidth) return
+  const b = btn.getBoundingClientRect()
+  const w = wrapper.getBoundingClientRect()
+  const delta = b.left - w.left - (w.width - b.width) / 2
+  if (Math.abs(delta) < 1) return
+  wrapper.scrollTo({
+    left: wrapper.scrollLeft + delta,
+    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+  })
+}
+
+/**
+ * Roving tabindex: a tablist is one stop in the tab order and the arrow keys
+ * move within it. Without this the `role="tab"` markup would promise a keyboard
+ * contract the tabs don't honour.
+ */
+const onTabKeydown = (event: KeyboardEvent, index: number) => {
+  const tabs = agendaTabs.value
+  if (tabs.length < 2) return
+  const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key]
+  let next: number | null = null
+  if (step !== undefined) next = (index + step + tabs.length) % tabs.length
+  else if (event.key === 'Home') next = 0
+  else if (event.key === 'End') next = tabs.length - 1
+  if (next === null) return
+  event.preventDefault()
+  activeTab.value = tabs[next]
+  nextTick(() => tabButtonRefs.value[next]?.focus())
+}
+
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+let trayObserver: ResizeObserver | null = null
+
+/**
+ * (Re)attach the tray observer.
+ *
+ * Must be callable more than once: the section root carries
+ * `:key="agenda-${currentLanguage}"`, so switching language destroys and
+ * rebuilds the whole subtree while this component instance lives on — an
+ * observer bound in `onMounted` would be left watching a detached tray, and the
+ * pill would never move again.
+ */
+const attachTrayObserver = () => {
+  trayObserver?.disconnect()
+  trayObserver = null
+  if (typeof ResizeObserver === 'undefined' || !tabBarRef.value) return
+  trayObserver = new ResizeObserver(() => measureGlide())
+  trayObserver.observe(tabBarRef.value)
+}
+
+const syncTabs = () => {
+  measureGlide()
+  scrollActiveIntoView()
+}
+
+watch([activeTab, agendaTabs], () => nextTick(syncTabs))
 
 const requestDateChange = () => {
   if (!activeTab.value) return
@@ -491,11 +655,26 @@ const clearRevealTimer = () => {
   }
 }
 
-onMounted(setupObserver)
+onMounted(() => {
+  setupObserver()
+
+  // The tray relays out on rotation, on the laptop scale steps, and whenever a
+  // day tab's own text changes width — one observer covers all three, so there
+  // is no window resize listener to debounce.
+  attachTrayObserver()
+  nextTick(syncTabs)
+
+  // The tab labels are set in the template's own face, which arrives after
+  // first paint — the pill measured against the fallback face would sit a few
+  // pixels off the button it is meant to be under.
+  document.fonts?.ready?.then(() => measureGlide()).catch(() => {})
+})
 
 onUnmounted(() => {
   observer?.disconnect()
   observer = null
+  trayObserver?.disconnect()
+  trayObserver = null
   clearRevealTimer()
 })
 
@@ -509,6 +688,8 @@ watch(
     isInitialReveal.value = false
     clearRevealTimer()
     await nextTick()
+    attachTrayObserver()
+    syncTabs()
     setTimeout(() => {
       setupObserver()
       // Already on screen after the swap: nothing will scroll to trigger the
@@ -529,56 +710,148 @@ watch(
 <style src="./agenda-designs/agenda-base.css"></style>
 
 <style scoped>
+/* ===========================================================================
+ * The agenda's chrome — the day tray, the reveal clock, the edit affordances.
+ * The list itself is drawn by whichever composition the template picked; its
+ * shared rules live in agenda-designs/agenda-base.css.
+ *
+ * Sizing is mobile-first and scaled by ONE number, `--agd-s`, the same way the
+ * guestbook's `--wb-s` and the gift page's `--pay-s` work. The showcase card is
+ * 85vh, so on a 13–15" laptop every section renders at roughly two-thirds size;
+ * that used to be two blocks of `!important` overrides here, one per element,
+ * drifting from the values they were meant to track. Now the two laptop media
+ * queries set `--agd-s` and nothing else.
+ * ======================================================================== */
+
+.agenda-section {
+  --agd-s: 1;
+  --agd-ease: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
 .agenda-body {
   width: 100%;
 }
+
+/* ---------------------------------------------------------------------------
+ * Heading
+ * ------------------------------------------------------------------------ */
+
+.agenda-header {
+  font-size: calc(1.5rem * var(--agd-s));
+  line-height: 1.25;
+  /* Tracking is size-specific: display type reads too loose as it grows, so the
+     heading tightens where the day labels below take a positive bump. */
+  letter-spacing: -0.01em;
+}
+
+@media (min-width: 640px) {
+  .agenda-header {
+    font-size: calc(1.875rem * var(--agd-s));
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * The day tray
+ * ------------------------------------------------------------------------ */
 
 .tab-bar-scroll-wrapper {
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  margin-bottom: 1.5rem;
+  margin-bottom: calc(1.5rem * var(--agd-s));
   display: flex;
-  /* Breathing room so the active pill's shadow isn't clipped */
+  /* Breathing room so the travelling pill's shadow isn't clipped */
   padding: 0.25rem 0.125rem;
+  /* The tray is its own scroller inside the invitation's scroller; without this
+     reaching its end drags the whole card sideways-then-down. */
+  overscroll-behavior-x: contain;
 }
 
 .tab-bar-scroll-wrapper::-webkit-scrollbar {
   display: none;
 }
 
-/* Glass tray holding the date pills; auto margins keep it centered while still
-   allowing full scroll reach when it overflows on small screens */
+/* The tray is glass, cut from the same recipe as the guestbook sheet and the
+   gift page — lighter, because it is a control strip rather than a page: less
+   tint, a shorter blur, but the same light top edge, which is what makes it
+   read as a material rather than as a grey box. */
 .tab-bar {
+  position: relative;
   display: flex;
-  gap: 0.25rem;
+  gap: calc(0.25rem * var(--agd-s));
   margin-inline: auto;
   min-width: min-content;
-  padding: 0.3125rem;
+  padding: calc(0.3125rem * var(--agd-s));
   border-radius: 9999px;
-  background: color-mix(in srgb, var(--primary-color) 6%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 14%, transparent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--primary-color) 9%, transparent),
+    color-mix(in srgb, var(--primary-color) 4%, transparent)
+  );
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 14%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 10px 30px -20px color-mix(in srgb, var(--primary-color) 70%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
 }
 
-/* Collapse the tray chrome when there is only a single date */
+/* Collapse the tray chrome when there is only a single date: one immovable pill
+   in a tray is a control that cannot be operated, drawn as though it could. */
 .tab-bar:has(.tab-button:only-child) {
   padding: 0;
   background: transparent;
   box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
-/* Tab pills: weekday eyebrow over the date */
+/* ---------------------------------------------------------------------------
+ * The travelling pill
+ *
+ * Geometry and colour come in from the component (measured off the active
+ * button); this only says how it moves. `transform` + `width` rather than
+ * `left`: the transform is the part that travels and it is the part that can be
+ * composited, and width changes only because the days are different lengths.
+ * ------------------------------------------------------------------------ */
+
+.tab-glide {
+  position: absolute;
+  top: calc(0.3125rem * var(--agd-s));
+  left: 0;
+  border-radius: 9999px;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.tab-bar.is-gliding .tab-glide {
+  transition:
+    transform 420ms var(--agd-ease),
+    width 420ms var(--agd-ease),
+    opacity 200ms ease;
+}
+
+.tab-bar:has(.tab-button:only-child) .tab-glide {
+  top: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Day pills: weekday eyebrow over the date
+ * ------------------------------------------------------------------------ */
+
 .tab-button {
+  position: relative;
+  /* Above the pill, so the label is never painted over by the thing that is
+     meant to be behind it. */
+  z-index: 1;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0.125rem;
-  padding: 0.5rem 1.5rem;
+  padding: calc(0.5rem * var(--agd-s)) calc(1.5rem * var(--agd-s));
   border-radius: 9999px;
   border: none;
   outline: none;
@@ -588,7 +861,7 @@ watch(
     background-color 0.3s ease,
     color 0.3s ease,
     box-shadow 0.3s ease,
-    transform 0.16s cubic-bezier(0.23, 1, 0.32, 1);
+    transform 0.16s var(--agd-ease);
   cursor: pointer;
   white-space: nowrap;
 }
@@ -601,12 +874,29 @@ watch(
 
 @media (min-width: 640px) {
   .tab-button {
-    padding: 0.625rem 1.875rem;
+    padding: calc(0.625rem * var(--agd-s)) calc(1.875rem * var(--agd-s));
   }
 }
 
-.tab-button:not(.active):hover {
-  background-color: color-mix(in srgb, var(--primary-color) 9%, transparent);
+/* Fallback for the frame in which the pill has not measured yet, and for the
+   case where it never can (no ResizeObserver, JS measurement failing): the
+   active day keeps a fill of its own, so it can never end up white-on-nothing.
+   `.has-glide` hands the job over the moment real geometry exists. */
+.tab-bar:not(.has-glide) .tab-button.active {
+  background-color: var(--primary-color);
+  box-shadow:
+    0 10px 22px -10px color-mix(in srgb, var(--primary-color) 70%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.tab-button.active {
+  color: #ffffff;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tab-button:not(.active):hover {
+    background-color: color-mix(in srgb, var(--primary-color) 9%, transparent);
+  }
 }
 
 .tab-button:focus-visible {
@@ -616,26 +906,27 @@ watch(
 
 .tab-weekday {
   display: block;
-  font-size: 0.5625rem;
+  font-size: calc(0.5625rem * var(--agd-s));
   line-height: 1.1;
+  /* Small type wants a positive bump — the inverse of what the heading wants. */
   letter-spacing: 0.22em;
   text-transform: uppercase;
   opacity: 0.75;
 }
 
 .tab-date {
-  font-size: 0.875rem;
+  font-size: calc(0.875rem * var(--agd-s));
   line-height: 1.2;
   white-space: nowrap;
 }
 
 @media (min-width: 640px) {
   .tab-weekday {
-    font-size: 0.625rem;
+    font-size: calc(0.625rem * var(--agd-s));
   }
 
   .tab-date {
-    font-size: 1rem;
+    font-size: calc(1rem * var(--agd-s));
   }
 }
 
@@ -648,6 +939,10 @@ watch(
   margin-bottom: 0 !important;
 }
 
+/* ---------------------------------------------------------------------------
+ * The day's list
+ * ------------------------------------------------------------------------ */
+
 .tab-content-area {
   position: relative;
   transition: opacity 0.4s ease;
@@ -656,6 +951,16 @@ watch(
 .tab-content-area.content-hidden {
   opacity: 0;
   pointer-events: none;
+}
+
+.tab-content-area h4 {
+  font-size: calc(0.875rem * var(--agd-s));
+}
+
+@media (min-width: 640px) {
+  .tab-content-area h4 {
+    font-size: calc(1rem * var(--agd-s));
+  }
 }
 
 .tab-panel {
@@ -736,7 +1041,10 @@ watch(
   -webkit-hyphens: none !important;
 }
 
-/* Manage-page preview edit chrome only — production renders none of this */
+/* ---------------------------------------------------------------------------
+ * Manage-page preview edit chrome only — production renders none of this
+ * ------------------------------------------------------------------------ */
+
 .edit-date-chip-row {
   display: flex;
   justify-content: center;
@@ -802,80 +1110,41 @@ watch(
   background: rgba(30, 144, 255, 0.08);
 }
 
-/* Small laptops 13-inch (1024px-1365px) */
+/* ---------------------------------------------------------------------------
+ * Laptops — the whole section on one number
+ *
+ * These are the two values the rest of the showcase uses (the guestbook's
+ * `--wb-s`, the gift page's `--pay-s`); at 1536px and above `--agd-s` stays 1.
+ * ------------------------------------------------------------------------ */
+
 @media (min-width: 1024px) and (max-width: 1365px) {
-  .agenda-header {
-    font-size: 1.25rem !important;
-    line-height: 1.25 !important;
-    padding-top: 0 !important;
-    padding-bottom: 0.3375rem !important;
-  }
-
-  .tab-content-area h4 {
-    font-size: 0.75rem !important;
-  }
-
-  .tab-bar {
-    gap: 0.1875rem !important;
-    padding: 0.25rem !important;
-  }
-
-  .tab-button {
-    padding: 0.3125rem 0.875rem !important;
-  }
-
-  .tab-weekday {
-    font-size: 0.4375rem !important;
-  }
-
-  .tab-date {
-    font-size: 0.5625rem !important;
+  .agenda-section {
+    --agd-s: 0.68;
   }
 }
 
-/* Medium laptops 14-15 inch (1366px-1535px) */
 @media (min-width: 1366px) and (max-width: 1535px) {
-  .agenda-header {
-    font-size: 1.25rem !important;
-    line-height: 1.25 !important;
-    padding-top: 0 !important;
-    padding-bottom: 0.375rem !important;
-  }
-
-  .tab-content-area h4 {
-    font-size: 0.8125rem !important;
-  }
-
-  .tab-bar {
-    gap: 0.25rem !important;
-    padding: 0.25rem !important;
-  }
-
-  .tab-button {
-    padding: 0.375rem 1rem !important;
-  }
-
-  .tab-weekday {
-    font-size: 0.5rem !important;
-  }
-
-  .tab-date {
-    font-size: 0.625rem !important;
+  .agenda-section {
+    --agd-s: 0.76;
   }
 }
 
-/* Desktop (1536px+) */
-@media (min-width: 1536px) {
-  .agenda-header {
-    font-size: 1.875rem !important;
-  }
-}
+/* ---------------------------------------------------------------------------
+ * Accessibility
+ * ------------------------------------------------------------------------ */
 
 @media (prefers-reduced-motion: reduce) {
+  /* Written against `.animate-active` on purpose. The entrance rules that put
+     the animations on are `.animate-active .bounce-word` — two classes — so a
+     bare `.bounce-word { animation: none }` here loses the cascade and the
+     word-by-word reveal kept running with reduced motion set. Measured: the
+     spans sat at 0.93/0.96 opacity mid-animation with the preference on. */
   .tab-button,
+  .tab-panel,
   .bounce-word,
   .bounce-in-element,
-  .tab-panel {
+  .animate-active .bounce-word,
+  .animate-active .bounce-in-element {
     animation: none;
     opacity: 1;
     transform: none;
@@ -885,9 +1154,35 @@ watch(
     transform: none;
   }
 
+  /* The pill still marks the chosen day — it just arrives there instead of
+     travelling, which is the vestibular half of the effect. */
+  .tab-bar.is-gliding .tab-glide {
+    transition: opacity 200ms ease;
+  }
+
   .tab-content-area.content-hidden {
     opacity: 1;
     pointer-events: auto;
+  }
+}
+
+/* Frostier, not blurrier: the tray keeps the template's colour but stops being
+   a window. */
+@media (prefers-reduced-transparency: reduce) {
+  .tab-bar {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: color-mix(in srgb, var(--primary-color) 12%, #ffffff);
+  }
+}
+
+@media (prefers-contrast: more) {
+  .tab-bar {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 55%, transparent);
+  }
+
+  .tab-weekday {
+    opacity: 1;
   }
 }
 </style>

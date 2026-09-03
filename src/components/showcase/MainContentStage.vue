@@ -424,6 +424,7 @@
                     :primary-color="primaryColor"
                     :secondary-color="secondaryColor || undefined"
                     :accent-color="accentColor"
+                    :background-color="backgroundColor"
                     :current-font="currentFont"
                     :primary-font="primaryFont || currentFont"
                     :secondary-font="secondaryFont || currentFont"

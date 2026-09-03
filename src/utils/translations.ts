@@ -151,6 +151,12 @@ export const rsvpTranslations: Record<
     payment_birthday_gift: string
     payment_funeral_gift: string
     payment_pay_now: string
+    payment_gift: string
+    payment_scan_to_pay: string
+    payment_qr_pending: string
+    payment_copy_account: string
+    payment_copied: string
+    payment_none: string
 
     // Footer section
     footer_thank_you: string
@@ -361,6 +367,12 @@ export const rsvpTranslations: Record<
     payment_birthday_gift: 'Birthday Gift',
     payment_funeral_gift: 'Condolence Contribution',
     payment_pay_now: 'Send',
+    payment_gift: 'Gift',
+    payment_scan_to_pay: 'Scan to pay',
+    payment_qr_pending: 'QR coming soon',
+    payment_copy_account: 'Tap to copy',
+    payment_copied: 'Copied',
+    payment_none: 'No payment details yet',
 
     // Footer section
     footer_thank_you: 'Thank you for celebrating with us',
@@ -571,6 +583,12 @@ export const rsvpTranslations: Record<
     payment_birthday_gift: 'អំណោយ',
     payment_funeral_gift: 'ថវិកាចូលបុណ្យ',
     payment_pay_now: 'បញ្ជូន',
+    payment_gift: 'ចំណងដៃ',
+    payment_scan_to_pay: 'ស្កេនដើម្បីផ្ញើ',
+    payment_qr_pending: 'QR នឹងមានឆាប់ៗ',
+    payment_copy_account: 'ចុចដើម្បីចម្លង',
+    payment_copied: 'បានចម្លង',
+    payment_none: 'មិនទាន់មានព័ត៌មានទូទាត់',
 
     // Footer section
     footer_thank_you: 'អរគុណសម្រាប់ការចូលរួមអបអរសាទរជាមួយយើង',
@@ -781,6 +799,12 @@ export const rsvpTranslations: Record<
     payment_birthday_gift: '生日礼品',
     payment_funeral_gift: '慰问捐款',
     payment_pay_now: '发送',
+    payment_gift: '礼金',
+    payment_scan_to_pay: '扫码支付',
+    payment_qr_pending: '二维码即将推出',
+    payment_copy_account: '点击复制',
+    payment_copied: '已复制',
+    payment_none: '暂无支付信息',
 
     // Footer section
     footer_thank_you: '感谢您与我们一同庆祝',

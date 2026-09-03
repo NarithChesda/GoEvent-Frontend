@@ -1,364 +1,189 @@
 <template>
-  <div class="mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6">
-    <!-- Payment Section Header - "{Bank} QR" (same pattern for all languages) -->
-    <div class="text-center laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-5 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
+  <!--
+    The gift page.
+
+    Not a checkout. A guest opens this to send a gift to the couple, and what
+    they actually need is three facts — which bank, which account, and a code
+    to scan — so this is a page of details, not a list of payment products.
+
+    One glass sheet, tinted in the template's own colour, exactly the material
+    the guestbook is drawn on; methods are separated by a hairline rather than
+    each boxed in glass of its own.
+
+    What that replaced, and why: every method used to be its own bordered card
+    running its own `backdrop-filter: blur(16px)`, holding a second translucent
+    panel, holding translucent pills — three blurred layers deep, which is where
+    legibility collapses and where a phone starts paying a compositor pass per
+    method. The account number was masked to its last four digits *and* the copy
+    it wrote to the clipboard was the full one, so a guest could neither read
+    what they had nor check what they were about to paste into a banking app.
+  -->
+  <div class="pay" :style="payVars">
+    <!-- ══ Heading ══════════════════════════════════════════════════════
+         A sibling of the Agenda and guestbook headings: same size ladder, same
+         ornament, same face (the template's primary, bound inline). -->
+    <header v-if="paymentSectionTitle" class="pay-head">
       <h2
-        v-if="paymentSectionTitle"
-        :class="[
-          'leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 uppercase',
-          currentLanguage === 'kh' && 'khmer-text-fix',
-        ]"
-        :style="{
-          fontFamily: primaryFont || currentFont,
-          color: primaryColor,
-        }"
+        class="pay-title"
+        :class="{ 'khmer-text-fix': currentLanguage === 'kh' }"
+        :style="{ fontFamily: primaryFont || currentFont }"
       >
         {{ paymentSectionTitle }}
       </h2>
-    </div>
+      <span class="pay-orn" aria-hidden="true">
+        <span class="pay-orn__rule"></span>
+        <span class="pay-orn__gem"></span>
+        <span class="pay-orn__rule"></span>
+      </span>
+    </header>
 
-    <!-- Payment Methods -->
-    <div class="space-y-3">
+    <!-- ══ The sheet ════════════════════════════════════════════════════
+         One surface, blurred once, holding every method. -->
+    <div v-if="paymentMethods.length > 0" class="pay-sheet">
       <component
         :is="canEditPayments ? EditableRegion : 'div'"
         v-for="method in paymentMethods"
         :key="method.id"
-        v-bind="canEditPayments ? { intent: { kind: 'paymentItem', paymentMethodId: method.id } } : {}"
-        class="payment-method-section mb-3 last:mb-0"
+        v-bind="
+          canEditPayments ? { intent: { kind: 'paymentItem', paymentMethodId: method.id } } : {}
+        "
+        class="pay-method"
       >
-        <!-- Payment Method Card - Unified Design -->
-        <div
-          class="payment-card-container transition-all duration-300"
-          :style="{
-            backgroundColor: `${primaryColor}15`,
-            boxShadow: `
-              0 12px 36px -6px ${primaryColor}25,
-              0 6px 24px -3px ${primaryColor}20,
-              0 3px 12px -1px ${primaryColor}15,
-              inset 0 1px 2px rgba(255, 255, 255, 0.12)
-            `,
-            border: `1px solid ${primaryColor}40`,
-            backdropFilter: 'blur(16px)',
-          }"
+        <!--
+          The disclosure row exists only when there is something to disclose.
+          With a single method the section heading already names the bank, the
+          card is open on arrival and can never usefully be closed — so the row
+          would be a control over nothing, printed under its own caption.
+        -->
+        <button
+          v-if="isCollapsible"
+          type="button"
+          class="pay-row"
+          :aria-expanded="isCardExpanded(method)"
+          :aria-controls="panelId(method)"
+          @click="toggleCard(method)"
         >
-          <!-- Collapsible Card Header - Always Visible -->
-          <div
-            class="payment-card-header cursor-pointer transition-all duration-300 hover:translateY(-1px)"
-            @click="toggleCard(method)"
-          >
-            <div class="flex items-center justify-between p-4">
-              <!-- Method Info -->
-              <div class="flex items-center space-x-3">
-                <div class="p-2 rounded-xl" :style="{ backgroundColor: `${primaryColor}08` }">
-                  <svg
-                    class="w-5 h-5"
-                    :style="{ color: primaryColor }"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v2H4V6zm0 4h12v4H4v-4z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3
-                    class="font-regular text-sm sm:text-base"
-                    :style="{
-                      fontFamily: secondaryFont || currentFont,
-                      color: primaryColor,
-                    }"
-                  >
-                    {{ capitalizeText(method.bank_name || method.name) }}
-                  </h3>
-                  <div
-                    class="flex items-center space-x-2 text-xs mt-1"
-                    :style="{ color: primaryColor, opacity: '0.7' }"
-                  >
-                    <span v-if="method.currency">{{ method.currency }}</span>
-                  </div>
-                </div>
-              </div>
+          <span class="pay-row__mark" aria-hidden="true">
+            <Landmark class="pay-row__mark-icon" :stroke-width="1.5" />
+          </span>
+          <span class="pay-row__id">
+            <span class="pay-row__name" :style="{ fontFamily: secondaryFont || currentFont }">
+              {{ method.bank_name || method.name }}
+            </span>
+            <span v-if="method.currency" class="pay-row__cur">{{ method.currency }}</span>
+          </span>
+          <ChevronDown class="pay-row__chev" aria-hidden="true" :stroke-width="2" />
+        </button>
 
-              <!-- Expand/Collapse Arrow -->
-              <div
-                class="transition-transform duration-300"
-                :class="{ 'rotate-180': isCardExpanded(method) }"
-              >
-                <svg
-                  class="w-5 h-5"
-                  :style="{ color: primaryColor, opacity: '0.6' }"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 9l-7 7-7-7"
+        <!--
+          Height, not a guessed maximum. This used to animate `max-height: 0 →
+          800px` over 500ms; a real method is ~320px tall, so the motion was
+          over in the first 40% and the remaining 300ms was the card sitting
+          still while the transition ran out. A `0fr → 1fr` grid row animates
+          the height the content actually has, which also means opening and
+          closing travel the same path at the same rate.
+        -->
+        <div
+          :id="panelId(method)"
+          class="pay-reveal"
+          :class="{ 'is-open': isCardExpanded(method) }"
+          :inert="isCardExpanded(method) ? undefined : true"
+        >
+          <div class="pay-reveal__inner">
+            <div class="pay-body">
+              <!-- ── The code ──────────────────────────────────────────── -->
+              <div v-if="showsQr(method)" class="pay-qr">
+                <div v-if="method.qr_code_image" class="pay-qr__plate">
+                  <img
+                    :src="getMediaUrl(method.qr_code_image)"
+                    :alt="`${method.bank_name || method.name} QR`"
+                    class="pay-qr__img"
+                    loading="lazy"
+                    decoding="async"
+                    @error="onImageError"
                   />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <!-- Expandable Content -->
-          <div
-            class="payment-card-content overflow-hidden transition-all duration-500 ease-in-out"
-            :class="isCardExpanded(method) ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'"
-          >
-            <div class="p-4 sm:p-6">
-              <!-- Payment Method Card Content -->
-
-              <!-- Single Row Payment Layout -->
-              <div
-                class="payment-row-container flex flex-col items-center justify-center gap-1"
-              >
-                <!-- QR Code Section -->
-                <div class="flex-shrink-0 text-center w-full">
-                  <!-- QR Code exists -->
-                  <div v-if="method.qr_code_image" class="relative">
-                    <!-- Seamless QR container with depth -->
-                    <div
-                      class="qr-simple-container relative transition-all duration-300 hover:scale-[1.02] group"
-                      :style="{
-                        backgroundColor: `${primaryColor}04`,
-                      }"
-                    >
-                      <img
-                        :src="getMediaUrl(method.qr_code_image)"
-                        :alt="`QR Code for ${method.name}`"
-                        class="w-28 h-28 sm:w-32 sm:h-32 laptop-sm:w-24 laptop-sm:h-24 2xl:w-48 2xl:h-48 mx-auto shadow-md transition-all duration-300"
-                        @error="onImageError"
-                      />
-                      <!-- Subtle scan line animation overlay -->
-                      <div
-                        class="absolute inset-4 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                        :style="{
-                          background: `linear-gradient(90deg, transparent 0%, ${primaryColor}20 50%, transparent 100%)`,
-                          animation: 'scan-line 2s ease-in-out infinite',
-                        }"
-                      ></div>
-                    </div>
-                    <p
-                      class="text-xs mt-0.5 sm:mt-1 font-medium tracking-wide text-center"
-                      :style="{ color: primaryColor, opacity: '0.8' }"
-                    >
-                      Scan to pay
-                    </p>
-                  </div>
-
-                  <!-- QR Code Fallback -->
-                  <div v-else class="relative">
-                    <!-- Seamless fallback container -->
-                    <div
-                      class="qr-simple-container relative p-2 sm:p-4"
-                      :style="{
-                        backgroundColor: `${primaryColor}04`,
-                        border: `1px dashed ${primaryColor}20`,
-                      }"
-                    >
-                      <div
-                        class="w-28 h-28 sm:w-32 sm:h-32 mx-auto rounded-2xl flex items-center justify-center"
-                        :style="{ backgroundColor: `${primaryColor}05` }"
-                      >
-                        <div class="text-center">
-                          <svg
-                            class="w-12 h-12 mx-auto mb-2"
-                            :style="{ color: primaryColor, opacity: '0.4' }"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="1.5"
-                              d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h4M4 4h4m0 0V2m0 2h2m0 0V2m0 2v2M2 2h4m16 0h4M6 18H4m0 0v2m0-2h2m0 0v2m0-2h2m8 0v2m-2-2h2m0 0h2"
-                            />
-                          </svg>
-                          <div
-                            class="w-6 h-0.5 mx-auto rounded-full animate-pulse"
-                            :style="{ backgroundColor: `${primaryColor}40` }"
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-                    <p
-                      class="text-xs mt-0.5 sm:mt-1 font-medium tracking-wide text-center"
-                      :style="{ color: primaryColor, opacity: '0.6' }"
-                    >
-                      QR coming soon
-                    </p>
-                  </div>
                 </div>
-
-                <!-- Payment Info Panel - Grouped Bank Info + Payment Button -->
-                <div
-                  v-if="hasVisibleBankInfo(method) || method.payment_url"
-                  class="flex-shrink-0 w-full"
-                >
-                  <div
-                    class="payment-info-simple p-4 backdrop-blur-md transition-all duration-200"
-                    :style="{
-                      backgroundColor: `${primaryColor}04`,
-                    }"
-                  >
-                    <!-- Bank Info -->
-                    <div v-if="hasVisibleBankInfo(method)" class="space-y-2 sm:space-y-3 lg:space-y-1.5 xl:space-y-1.5 mb-3 sm:mb-4">
-                      <div v-if="method.account_name" class="text-center px-2">
-                        <div
-                          class="bank-info-pill inline-flex items-center justify-center px-3 py-2 backdrop-blur-sm font-medium text-xs min-h-[36px] max-w-full"
-                          :style="{
-                            backgroundColor: `${primaryColor}08`,
-                            color: primaryColor,
-                            opacity: '0.9',
-                            boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.08), 0 2px 6px ${primaryColor}12`,
-                          }"
-                        >
-                          <svg
-                            class="w-4 h-4 mr-2 flex-shrink-0"
-                            :style="{ color: primaryColor }"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                            />
-                          </svg>
-                          <span class="text-center break-words leading-relaxed">{{ capitalizeText(method.account_name) }}</span>
-                        </div>
-                      </div>
-
-                      <div v-if="method.account_number" class="text-center px-2">
-                        <div
-                          class="bank-info-pill inline-flex items-center justify-center px-3 py-2 backdrop-blur-sm font-mono text-xs min-h-[36px] group cursor-pointer transition-all hover:shadow-lg max-w-full"
-                          :style="{
-                            backgroundColor: `${primaryColor}10`,
-                            color: primaryColor,
-                            opacity: '0.9',
-                            boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.08), 0 2px 6px ${primaryColor}12`,
-                          }"
-                          @click="copyToClipboard(method.account_number!)"
-                          title="Click to copy full account number"
-                        >
-                          <svg
-                            class="w-4 h-4 mr-2 flex-shrink-0"
-                            :style="{ color: primaryColor }"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                            />
-                          </svg>
-                          <span class="text-center break-words leading-relaxed">•••• {{ method.account_number.slice(-4) }}</span>
-                          <svg
-                            class="w-4 h-4 ml-2 flex-shrink-0 transition-transform group-hover:scale-110"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Payment Button -->
-                    <div v-if="method.payment_url" class="text-center">
-                      <a
-                        :href="method.payment_url"
-                        class="payment-link-minimalist group inline-flex items-center justify-center w-full"
-                        :style="{
-                          fontFamily: secondaryFont || currentFont,
-                          background: primaryColor,
-                          color: '#ffffff',
-                          boxShadow: `
-                        0 8px 32px -4px ${primaryColor}50,
-                        0 4px 16px -2px ${primaryColor}30,
-                        inset 0 2px 4px rgba(255, 255, 255, 0.2),
-                        inset 0 -1px 2px ${primaryColor}20
-                      `,
-                        }"
-                      >
-                        <span class="font-regular">{{ paymentButtonLabel }}</span>
-                      </a>
-                    </div>
-                  </div>
+                <div v-else class="pay-qr__plate pay-qr__plate--empty">
+                  <QrCode class="pay-qr__glyph" :stroke-width="1.25" aria-hidden="true" />
                 </div>
-              </div>
-
-              <!-- Description (if exists, keep minimal) -->
-              <div v-if="method.description" class="text-center mt-4 px-2">
-                <p
-                  class="text-xs leading-relaxed"
-                  :style="{
-                    fontFamily: secondaryFont || currentFont,
-                    color: primaryColor,
-                    opacity: '0.6',
-                  }"
-                >
-                  {{ method.description }}
+                <p class="pay-qr__cap">
+                  {{ method.qr_code_image ? scanToPayText : qrPendingText }}
                 </p>
               </div>
+
+              <!-- ── The details ───────────────────────────────────────── -->
+              <div v-if="hasVisibleBankInfo(method)" class="pay-facts">
+                <p
+                  v-if="method.account_name"
+                  class="pay-fact"
+                  :style="{ fontFamily: secondaryFont || currentFont }"
+                >
+                  {{ method.account_name }}
+                </p>
+
+                <!--
+                  The whole number, in the order the organizer typed it. It was
+                  masked to `•••• 1234`, which helps nobody: this is an account
+                  published on an invitation so that guests can pay into it, and
+                  the one thing a guest does with it is read it across into a
+                  banking app. No regrouping either — a digit group is part of
+                  how an account is written, and inventing one misquotes it.
+                -->
+                <button
+                  v-if="method.account_number"
+                  type="button"
+                  class="pay-copy"
+                  :class="{ 'is-copied': copiedId === String(method.id) }"
+                  :aria-label="`${method.account_number} — ${copyAccountText}`"
+                  @click.stop="copyToClipboard(method)"
+                >
+                  <span class="pay-copy__num">{{ method.account_number }}</span>
+                  <span class="pay-copy__icon" aria-hidden="true">
+                    <Check v-if="copiedId === String(method.id)" :stroke-width="2.25" />
+                    <Copy v-else :stroke-width="1.75" />
+                  </span>
+                </button>
+
+                <!-- Announced, not drawn: the tick above already says it to
+                     anyone who can see the button. -->
+                <p class="pay-live" role="status" aria-live="polite">
+                  {{ copiedId === String(method.id) ? copiedText : '' }}
+                </p>
+              </div>
+
+              <!-- ── The one action ────────────────────────────────────── -->
+              <a
+                v-if="method.payment_url"
+                :href="method.payment_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="pay-cta"
+                :style="{ fontFamily: secondaryFont || currentFont }"
+              >
+                {{ paymentButtonLabel }}
+              </a>
+
+              <p
+                v-if="method.description"
+                class="pay-note"
+                :style="{ fontFamily: secondaryFont || currentFont }"
+              >
+                {{ method.description }}
+              </p>
             </div>
           </div>
         </div>
       </component>
     </div>
 
-    <!-- No Payment Methods Message -->
-    <div
-      v-if="paymentMethods.length === 0"
-      class="text-center py-8 sm:py-12 rounded-2xl"
-      :style="{
-        backgroundColor: `${primaryColor}08`,
-        border: `1px solid ${primaryColor}20`,
-      }"
-    >
-      <div
-        class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-        :style="{ backgroundColor: `${primaryColor}20` }"
-      >
-        <svg
-          class="w-8 h-8"
-          :style="{ color: primaryColor }"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-          />
-        </svg>
-      </div>
-      <p
-        class="text-base font-medium"
-        :style="{
-          fontFamily: secondaryFont || currentFont,
-          color: primaryColor,
-          opacity: '0.8',
-        }"
-      >
-        {{ paymentLocked ? tApp('management.showcasePreview.editors.paymentLocked') : 'No payment methods available' }}
+    <!-- ══ Nothing to show ══════════════════════════════════════════════
+         One line on the same sheet, not a bordered box around an icon: an
+         empty state that is bigger than a filled one reads as an error. -->
+    <div v-else class="pay-sheet pay-sheet--empty">
+      <p class="pay-empty" :style="{ fontFamily: secondaryFont || currentFont }">
+        {{
+          paymentLocked ? tApp('management.showcasePreview.editors.paymentLocked') : noPaymentText
+        }}
       </p>
     </div>
 
@@ -380,7 +205,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, inject } from 'vue'
+import { computed, ref, watch, inject, onUnmounted } from 'vue'
+import { Landmark, ChevronDown, QrCode, Copy, Check } from 'lucide-vue-next'
 import type { EventPaymentMethod } from '../../services/api'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
@@ -398,6 +224,10 @@ interface Props {
   primaryColor: string
   secondaryColor?: string
   accentColor: string
+  /** The template's own background colour — what the sheet is tinted in, so
+   *  this section and the guestbook are cut from the same material. Falls back
+   *  to the primary, as it does there. */
+  backgroundColor?: string
   currentFont: string
   primaryFont: string
   secondaryFont: string
@@ -429,40 +259,99 @@ const canEditPayments = computed(() => !!editIntentCtx && !props.paymentLocked)
 
 // State
 const expandedCards = ref<Set<string>>(new Set())
+const copiedId = ref<string | null>(null)
+let copiedTimer: number | null = null
 
-// Auto-expand the card when there's only a single payment method
+/**
+ * The three colours the whole sheet is drawn from, published once on the root
+ * rather than bound inline on every node.
+ *
+ * Same contract as the guestbook's `--wb-*`: every surface below is a
+ * `color-mix` of `--pay-tone` so the glass carries the template rather than a
+ * neutral grey, and every piece of copy is a mix of `--pay-ink`. Binding those
+ * per element is what produced ~40 inline style objects in this file.
+ */
+const payVars = computed<Record<string, string>>(() => ({
+  '--pay-ink': props.primaryColor,
+  '--pay-tone': props.backgroundColor || props.primaryColor,
+  '--pay-accent': props.accentColor || props.primaryColor,
+}))
+
+const lang = computed<SupportedLanguage>(() => (props.currentLanguage as SupportedLanguage) || 'en')
+
+const scanToPayText = computed(() => translateRSVP('payment_scan_to_pay', lang.value))
+const qrPendingText = computed(() => translateRSVP('payment_qr_pending', lang.value))
+const copyAccountText = computed(() => translateRSVP('payment_copy_account', lang.value))
+const copiedText = computed(() => translateRSVP('payment_copied', lang.value))
+const noPaymentText = computed(() => translateRSVP('payment_none', lang.value))
+
+/** Generic, user-friendly payment button label (translated, same for every method) */
+const paymentButtonLabel = computed(() => translateRSVP('payment_pay_now', lang.value))
+
+/**
+ * The section heading.
+ *
+ * With one method it stays `"{Bank} QR"` — what every live event with a single
+ * payment method already reads, and an accurate label for a page that holds
+ * exactly that bank's code.
+ *
+ * With more than one it can't be: naming the section after whichever method
+ * happens to sort first tells a guest the other banks are something else. The
+ * category's own gift wording takes over there — copy that already existed in
+ * the translation table and had no caller.
+ */
+const paymentSectionTitle = computed(() => {
+  const methods = props.paymentMethods
+  if (methods.length === 0) return giftLabel.value
+  if (methods.length === 1) {
+    const bankName = methods[0].bank_name || methods[0].name
+    return bankName ? `${bankName} QR` : 'QR'
+  }
+  return giftLabel.value
+})
+
+const giftLabel = computed(() => {
+  const category = (props.eventCategoryName || props.eventCategoryDetails?.name || '').toLowerCase()
+  if (category.includes('wedding')) return translateRSVP('payment_wedding_gift', lang.value)
+  if (category.includes('birthday')) return translateRSVP('payment_birthday_gift', lang.value)
+  if (category.includes('funeral')) return translateRSVP('payment_funeral_gift', lang.value)
+  return translateRSVP('payment_gift', lang.value)
+})
+
+/** A lone method is always open, so it needs no disclosure row. */
+const isCollapsible = computed(() => props.paymentMethods.length > 1)
+
+/**
+ * The first method is open on arrival, however many there are.
+ *
+ * Closed-by-default left the section as two named rows and a chevron: a guest
+ * who scrolled to the gift page saw no code, no account and no button, and had
+ * to guess that tapping a bank name would produce one. Opening the first shows
+ * what the section is for while the rest stay one tap away — and it is the same
+ * thing the quick menu's Gift action already does through `expandFirstCard`.
+ */
 watch(
   () => props.paymentMethods,
   (methods) => {
-    if (methods.length === 1) {
-      expandedCards.value = new Set([methods[0].id.toString()])
-    }
+    if (methods.length === 0) return
+    const ids = methods.map((m) => String(m.id))
+    // Re-seed only when the guest has no live choice — the array identity
+    // changes on every refetch inside the manage-page preview, and collapsing a
+    // panel someone had just opened is the section rearranging itself under them.
+    const stillOpen = [...expandedCards.value].some((id) => ids.includes(id))
+    if (!stillOpen) expandedCards.value = new Set([ids[0]])
   },
   { immediate: true },
 )
 
-// Section header: "{Bank} QR" from the first payment method (same pattern for all languages)
-const paymentSectionTitle = computed(() => {
-  const firstMethod = props.paymentMethods[0]
-  if (!firstMethod) return ''
-
-  const bankName = firstMethod.bank_name || firstMethod.name
-  return bankName ? `${bankName} QR` : 'QR'
-})
-
-// Generic, user-friendly payment button label (translated, same for every method)
-const paymentButtonLabel = computed(() => {
-  const currentLang = (props.currentLanguage as SupportedLanguage) || 'en'
-  return translateRSVP('payment_pay_now', currentLang)
-})
-
 // Methods
-const isCardExpanded = (method: EventPaymentMethod): boolean => {
-  return expandedCards.value.has(method.id.toString())
-}
+const panelId = (method: EventPaymentMethod): string => `pay-panel-${method.id}`
+
+const isCardExpanded = (method: EventPaymentMethod): boolean =>
+  !isCollapsible.value || expandedCards.value.has(String(method.id))
 
 const toggleCard = (method: EventPaymentMethod) => {
-  const id = method.id.toString()
+  const id = String(method.id)
   if (expandedCards.value.has(id)) {
     // If clicking on already expanded card, just collapse it
     expandedCards.value.delete(id)
@@ -478,39 +367,541 @@ const hasVisibleBankInfo = (method: EventPaymentMethod): boolean => {
   return !!(method.bank_name || method.account_name || method.account_number)
 }
 
-const copyToClipboard = async (text: string) => {
+/**
+ * Whether to draw the code slot at all.
+ *
+ * A method that carries a payment link and no QR is not a method whose QR is
+ * missing — it is a link. Drawing the "QR coming soon" plate for it spends the
+ * tallest element in the panel on a promise nobody made, directly above the
+ * button that is the actual way to pay.
+ *
+ * The placeholder survives for the one case it was for: a method with no code
+ * AND no link, where the slot is the only thing saying a code is on its way
+ * rather than the section being broken.
+ */
+const showsQr = (method: EventPaymentMethod): boolean =>
+  !!method.qr_code_image || !method.payment_url
+
+/**
+ * A copy with nothing to show for it is a copy the guest has to test by
+ * pasting. The button holds the confirmed state itself — the icon becomes a
+ * tick and the pill lights in the accent — for long enough to be read, and the
+ * live region says the same thing for a screen reader.
+ */
+const copyToClipboard = async (method: EventPaymentMethod) => {
+  const value = method.account_number
+  if (!value) return
   try {
-    await navigator.clipboard.writeText(text)
-    // Text copied successfully
+    await navigator.clipboard.writeText(value)
   } catch {
-    // Failed to copy - could show user feedback here
+    // Clipboard blocked (insecure context, permission denied): say nothing
+    // rather than claim a copy that did not happen.
+    return
   }
+  copiedId.value = String(method.id)
+  if (copiedTimer !== null) clearTimeout(copiedTimer)
+  copiedTimer = window.setTimeout(() => {
+    copiedId.value = null
+    copiedTimer = null
+  }, 1800)
 }
 
 const onImageError = () => {
   // QR code image failed to load - could set fallback here
 }
 
-// Expose method to expand first card
+// Expose method to expand first card (the quick-menu's "gift" action)
 const expandFirstCard = () => {
   if (props.paymentMethods.length > 0) {
     expandedCards.value.clear()
-    expandedCards.value.add(props.paymentMethods[0].id.toString())
+    expandedCards.value.add(String(props.paymentMethods[0].id))
   }
 }
 
 defineExpose({ expandFirstCard })
 
-const capitalizeText = (text: string | undefined): string => {
-  if (!text) return ''
-  return text.toUpperCase()
-}
+onUnmounted(() => {
+  if (copiedTimer !== null) clearTimeout(copiedTimer)
+})
 </script>
 
 <style scoped>
-/* Manage-page preview edit chrome: add-payment-method affordance. Rendered
-   only when the edit-intent context exists (and payments aren't locked),
-   never in production. */
+/* ===========================================================================
+ * The gift page
+ *
+ * One glass sheet, tinted in the template's own colour, with the payment
+ * details written on it. Three custom properties come in from the component
+ * (`--pay-ink`, `--pay-tone`, `--pay-accent`) and everything below is a mix of
+ * them, so a template's palette reaches every surface without a single inline
+ * style.
+ *
+ * Sizing is mobile-first and scaled by ONE number, `--pay-s`, matching the
+ * guestbook's `--wb-s`. The showcase card is 85vh, so on a 13–15" laptop every
+ * section has to render at roughly two-thirds size; that used to be ~500 lines
+ * of `!important` overrides here — several of them redefining bare Tailwind
+ * utility names (`.text-xs`, `.w-32`, `.space-y-3`) and one redefining `h2`.
+ * Now the two laptop media queries set `--pay-s` and nothing else.
+ * ======================================================================== */
+
+.pay {
+  --pay-s: 1;
+  --pay-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --pay-hair: color-mix(in srgb, var(--pay-tone) 24%, transparent);
+  --pay-hair-soft: color-mix(in srgb, var(--pay-tone) 13%, transparent);
+
+  color: var(--pay-ink);
+  margin-bottom: calc(1.5rem * var(--pay-s));
+}
+
+/* ---------------------------------------------------------------------------
+ * Heading
+ * ------------------------------------------------------------------------ */
+
+.pay-head {
+  text-align: center;
+  margin-bottom: calc(1.125rem * var(--pay-s));
+}
+
+.pay-title {
+  font-size: calc(1.5rem * var(--pay-s));
+  line-height: 1.25;
+  font-weight: 400;
+  /* Tracking is size-specific: at display size the letters read too far apart,
+     so the heading tightens where the body copy below stays at 0. */
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  padding-block: calc(0.25rem * var(--pay-s));
+  color: var(--pay-ink);
+}
+
+/* The section's one ornament — the guestbook's, at the same weight, so the two
+   sheets read as pages of the same book. */
+.pay-orn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.pay-orn__rule {
+  height: 1px;
+  width: calc(2.5rem * var(--pay-s));
+  background: linear-gradient(90deg, transparent, var(--pay-hair));
+}
+
+.pay-orn__rule:last-child {
+  background: linear-gradient(90deg, var(--pay-hair), transparent);
+}
+
+.pay-orn__gem {
+  flex: 0 0 auto;
+  width: calc(0.375rem * var(--pay-s));
+  height: calc(0.375rem * var(--pay-s));
+  transform: rotate(45deg);
+  background: color-mix(in srgb, var(--pay-tone) 45%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+ * The sheet
+ *
+ * The one element in this section that is really glass — same recipe as the
+ * guestbook's `.wb-panel`, deliberately identical rather than merely similar:
+ * they sit two sections apart in the same scroller and any drift between them
+ * reads as one of the two being wrong.
+ *
+ * The blur is not decorative: when a template turns the card's own glass off
+ * (`display_liquid_glass_background: false`), this sheet is all that stands
+ * between an account number and a playing background video.
+ * ------------------------------------------------------------------------ */
+
+.pay-sheet {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  padding: calc(0.875rem * var(--pay-s)) calc(1rem * var(--pay-s));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pay-tone) 9%, transparent),
+    color-mix(in srgb, var(--pay-tone) 4%, transparent)
+  );
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--pay-tone) 14%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 10px 30px -20px color-mix(in srgb, var(--pay-tone) 70%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  contain: layout style paint;
+}
+
+/* ---------------------------------------------------------------------------
+ * Seams between methods
+ *
+ * A hairline that fades out at both ends, exactly as the guestbook separates
+ * one wish from the next — never a border box per method.
+ * ------------------------------------------------------------------------ */
+
+.pay-method + .pay-method {
+  position: relative;
+  margin-top: calc(0.25rem * var(--pay-s));
+  padding-top: calc(0.25rem * var(--pay-s));
+}
+
+.pay-method + .pay-method::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--pay-hair-soft) 18%,
+    var(--pay-hair-soft) 82%,
+    transparent
+  );
+}
+
+/* ---------------------------------------------------------------------------
+ * The disclosure row
+ * ------------------------------------------------------------------------ */
+
+.pay-row {
+  display: flex;
+  align-items: center;
+  gap: calc(0.625rem * var(--pay-s));
+  width: 100%;
+  /* 44px on a phone: this row is the only way into a method, so it is a touch
+     target before it is a label. */
+  min-height: calc(2.75rem * var(--pay-s));
+  padding: calc(0.375rem * var(--pay-s)) 0;
+  background: none;
+  border: 0;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  /* The press is answered on pointer-down, not on the click that follows —
+     the panel below takes ~340ms to open and the row cannot be silent for it. */
+  transition: transform 140ms var(--pay-ease);
+}
+
+.pay-row:active {
+  transform: scale(0.99);
+}
+
+.pay-row:focus-visible {
+  outline: 2px solid var(--pay-ink);
+  outline-offset: 3px;
+  border-radius: 0.75rem;
+}
+
+.pay-row__mark {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(1.875rem * var(--pay-s));
+  height: calc(1.875rem * var(--pay-s));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pay-tone) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pay-tone) 20%, transparent);
+}
+
+.pay-row__mark-icon {
+  width: calc(0.875rem * var(--pay-s));
+  height: calc(0.875rem * var(--pay-s));
+  opacity: 0.75;
+}
+
+.pay-row__id {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: calc(0.5rem * var(--pay-s));
+}
+
+.pay-row__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: calc(0.875rem * var(--pay-s));
+  font-weight: 500;
+  color: var(--pay-ink);
+}
+
+.pay-row__cur {
+  flex: 0 0 auto;
+  font-size: calc(0.6875rem * var(--pay-s));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--pay-ink) 52%, transparent);
+}
+
+.pay-row__chev {
+  flex: 0 0 auto;
+  width: calc(1rem * var(--pay-s));
+  height: calc(1rem * var(--pay-s));
+  color: color-mix(in srgb, var(--pay-ink) 55%, transparent);
+  transition: transform 340ms var(--pay-ease);
+}
+
+.pay-row[aria-expanded='true'] .pay-row__chev {
+  transform: rotate(180deg);
+}
+
+/* Every hover state in this file is gated on a real pointer. On a touch screen
+   :hover latches after a tap and does not release until something else is
+   tapped, so an ungated one leaves a control lit for as long as the guest
+   keeps reading. */
+@media (hover: hover) and (pointer: fine) {
+  .pay-row:hover .pay-row__chev {
+    color: var(--pay-ink);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * The reveal
+ * ------------------------------------------------------------------------ */
+
+.pay-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 340ms var(--pay-ease),
+    opacity 220ms ease;
+}
+
+.pay-reveal.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+/* `min-height: 0` is what lets the 0fr row actually collapse — without it the
+   track floors at the content's min-content height and the panel never closes. */
+.pay-reveal__inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pay-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(0.875rem * var(--pay-s));
+  padding-block: calc(0.75rem * var(--pay-s)) calc(0.5rem * var(--pay-s));
+}
+
+/* ---------------------------------------------------------------------------
+ * The code
+ *
+ * A plate, not a third pane of glass. A QR has to be read by a camera through
+ * whatever the phone's screen is doing, so the one surface in this section that
+ * must not be translucent is this one.
+ * ------------------------------------------------------------------------ */
+
+.pay-qr {
+  text-align: center;
+}
+
+.pay-qr__plate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(0.625rem * var(--pay-s));
+  border-radius: calc(1rem * var(--pay-s));
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--pay-tone) 12%, transparent),
+    0 8px 24px -16px color-mix(in srgb, var(--pay-tone) 80%, transparent);
+}
+
+.pay-qr__img {
+  display: block;
+  width: calc(9rem * var(--pay-s));
+  height: calc(9rem * var(--pay-s));
+  border-radius: calc(0.375rem * var(--pay-s));
+}
+
+.pay-qr__plate--empty {
+  background: color-mix(in srgb, var(--pay-tone) 5%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pay-tone) 16%, transparent);
+}
+
+.pay-qr__glyph {
+  width: calc(9rem * var(--pay-s));
+  height: calc(9rem * var(--pay-s));
+  color: color-mix(in srgb, var(--pay-ink) 22%, transparent);
+}
+
+/* Micro-caption: small type wants slightly positive tracking, the inverse of
+   what the heading above wants. */
+.pay-qr__cap {
+  margin-top: calc(0.5rem * var(--pay-s));
+  font-size: calc(0.6875rem * var(--pay-s));
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--pay-ink) 55%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+ * The details
+ * ------------------------------------------------------------------------ */
+
+.pay-facts {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(0.5rem * var(--pay-s));
+}
+
+.pay-fact {
+  max-width: 100%;
+  font-size: calc(0.875rem * var(--pay-s));
+  line-height: 1.6;
+  text-align: center;
+  overflow-wrap: break-word;
+  color: color-mix(in srgb, var(--pay-ink) 82%, transparent);
+}
+
+/* The one interactive detail, so the one that gets a pill. */
+.pay-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(0.5rem * var(--pay-s));
+  max-width: 100%;
+  min-height: calc(2.75rem * var(--pay-s));
+  padding: calc(0.5rem * var(--pay-s)) calc(0.875rem * var(--pay-s));
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--pay-ink);
+  background: color-mix(in srgb, var(--pay-tone) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pay-tone) 20%, transparent);
+  transition:
+    transform 140ms var(--pay-ease),
+    background-color 200ms ease,
+    box-shadow 200ms ease,
+    color 200ms ease;
+}
+
+.pay-copy:active {
+  transform: scale(0.98);
+}
+
+.pay-copy:focus-visible {
+  outline: 2px solid var(--pay-ink);
+  outline-offset: 3px;
+}
+
+.pay-copy__num {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: calc(0.9375rem * var(--pay-s));
+  font-weight: 500;
+  /* Digits of equal width, and a touch of tracking: this is the one string on
+     the page a guest reads across character by character into another app. */
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+.pay-copy__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+}
+
+.pay-copy__icon :deep(svg) {
+  width: calc(0.9375rem * var(--pay-s));
+  height: calc(0.9375rem * var(--pay-s));
+}
+
+/* Confirmed. This is the only place the accent is spent in the section — a
+   confirmation the guest has to hunt for is the same as no confirmation. */
+.pay-copy.is-copied {
+  color: var(--pay-accent);
+  background: color-mix(in srgb, var(--pay-accent) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pay-accent) 42%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pay-copy:hover:not(.is-copied) {
+    background: color-mix(in srgb, var(--pay-tone) 16%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pay-tone) 32%, transparent);
+  }
+}
+
+/* Screen-reader only: the visible tick already carries this. */
+.pay-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+ * The one action
+ * ------------------------------------------------------------------------ */
+
+.pay-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: calc(2.75rem * var(--pay-s));
+  padding: calc(0.625rem * var(--pay-s)) 1rem;
+  border-radius: 999px;
+  background: var(--pay-tone);
+  color: #ffffff;
+  font-size: calc(0.875rem * var(--pay-s));
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 8px 20px -12px color-mix(in srgb, var(--pay-tone) 90%, transparent);
+  transition: transform 140ms var(--pay-ease);
+}
+
+.pay-cta:active {
+  transform: scale(0.98);
+}
+
+.pay-cta:focus-visible {
+  outline: 2px solid var(--pay-ink);
+  outline-offset: 3px;
+}
+
+.pay-note {
+  font-size: calc(0.75rem * var(--pay-s));
+  line-height: 1.7;
+  text-align: center;
+  color: color-mix(in srgb, var(--pay-ink) 58%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+ * Nothing to show
+ * ------------------------------------------------------------------------ */
+
+.pay-empty {
+  padding-block: calc(0.75rem * var(--pay-s));
+  font-size: calc(0.8125rem * var(--pay-s));
+  line-height: 1.7;
+  text-align: center;
+  color: color-mix(in srgb, var(--pay-ink) 62%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+ * Manage-page preview edit chrome: add-payment-method affordance. Rendered
+ * only when the edit-intent context exists (and payments aren't locked),
+ * never in production.
+ * ------------------------------------------------------------------------ */
+
 .add-payment-row {
   display: flex;
   justify-content: center;
@@ -535,7 +926,9 @@ const capitalizeText = (text: string | undefined): string => {
   border-radius: 9999px;
   box-shadow: 0 1px 6px rgba(15, 23, 42, 0.12);
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 .add-payment-btn:hover {
@@ -543,845 +936,101 @@ const capitalizeText = (text: string | undefined): string => {
   background: rgba(30, 144, 255, 0.08);
 }
 
-/* Liquid Glass Container - Seamless unified surface */
-.liquid-glass-container {
-  border-radius: 2rem;
-  overflow: hidden;
-  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  position: relative;
-}
+/* ---------------------------------------------------------------------------
+ * Larger phones and tablets
+ * ------------------------------------------------------------------------ */
 
-.liquid-glass-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  pointer-events: none;
-}
-
-/* Payment method sections - No horizontal padding to match comment section */
-.payment-method-section {
-  position: relative;
-}
-
-.payment-method-section:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-}
-
-/* QR Code simple container - Clean design */
-.qr-simple-container {
-  border-radius: 1.5rem;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Payment info simple panel - Clean design */
-.payment-info-simple {
-  border-radius: 1.5rem;
-  position: relative;
-}
-
-/* Legacy payment info glass panel */
-.payment-info-glass {
-  border-radius: 1.5rem;
-  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  position: relative;
-}
-
-.payment-info-glass::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
-  pointer-events: none;
-}
-
-/* Legacy bank info glass panel */
-.bank-info-glass {
-  border-radius: 1.5rem;
-  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  position: relative;
-}
-
-.bank-info-glass::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
-  pointer-events: none;
-}
-
-/* Bank info pills - Subtle embedded elements */
-.bank-info-pill {
-  border-radius: 1rem;
-  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  transition: all 0.2s ease;
-  position: relative;
-  word-wrap: break-word;
-  word-break: break-word;
-  hyphens: auto;
-  max-width: 98%;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.bank-info-pill span {
-  display: inline-block;
-  max-width: 100%;
-  word-wrap: break-word;
-  word-break: break-word;
-  line-height: 1.4;
-}
-
-.bank-info-pill:hover {
-  transform: translateY(-1px);
-}
-
-/* Minimalist payment link */
-.payment-link-minimalist {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.625rem 1rem;
-  border-radius: 1rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  min-height: 36px;
-  position: relative;
-  overflow: hidden;
-}
-
-.payment-link-minimalist::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-  pointer-events: none;
-}
-
-.payment-link-minimalist:hover {
-  transform: translateY(-1px);
-  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-}
-
-.payment-link-minimalist:active {
-  transform: translateY(0);
-  transition: transform 0.1s ease;
-}
-
-/* Legacy liquid glass payment button */
-.payment-link-liquid {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem 2rem;
-  border-radius: 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  min-height: 52px;
-  position: relative;
-  overflow: hidden;
-}
-
-.payment-link-liquid::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  pointer-events: none;
-}
-
-.payment-link-liquid::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-  transition: left 0.5s ease;
-  pointer-events: none;
-}
-
-.payment-link-liquid:hover::after {
-  left: 100%;
-}
-
-.payment-link-liquid:hover {
-  transform: translateY(-2px);
-  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-}
-
-.payment-link-liquid:active {
-  transform: translateY(-1px);
-  transition: transform 0.1s ease;
-}
-
-/* Payment fallback - Consistent styling */
-.payment-fallback {
-  border-radius: 1rem;
-  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-}
-
-/* Scan line animation for QR code */
-@keyframes scan-line {
-  0%,
-  100% {
-    transform: translateX(-100%);
-    opacity: 0;
+@media (min-width: 640px) {
+  .pay-title {
+    font-size: calc(1.875rem * var(--pay-s));
   }
-  50% {
-    transform: translateX(0);
-    opacity: 0.7;
+
+  .pay-orn__rule {
+    width: calc(3.5rem * var(--pay-s));
+  }
+
+  .pay-sheet {
+    padding: calc(1.125rem * var(--pay-s)) calc(1.375rem * var(--pay-s));
+  }
+
+  .pay-qr__img,
+  .pay-qr__glyph {
+    width: calc(10rem * var(--pay-s));
+    height: calc(10rem * var(--pay-s));
   }
 }
 
-/* Payment row container - Single row layout */
-.payment-row-container {
-  padding: 0.5rem;
-  align-items: center;
-}
-
-/* Glass content section - Legacy unified spacing */
-.glass-content-section {
-  padding: 0.5rem;
-}
-
-/* Mobile-first responsive design */
-@media (max-width: 639px) {
-  .payment-method-section {
-    /* No padding - matches comment section */
-  }
-
-  .payment-row-container {
-    padding: 0.25rem;
-    gap: 0.5rem;
-  }
-
-  .qr-simple-container {
-    padding: 0.5rem !important;
-  }
-
-  .payment-info-simple {
-    padding: 0.5rem;
-  }
-
-  .payment-info-glass {
-    padding: 0.75rem;
-  }
-
-  .bank-info-glass {
-    padding: 0.75rem;
-  }
-
-  .bank-info-pill {
-    max-width: 98%;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 0.375rem 0.625rem;
-    min-height: 32px;
-    font-size: 0.6875rem;
-  }
-
-  .bank-info-pill span {
-    line-height: 1.4;
-  }
-
-  .payment-link-minimalist {
-    padding: 0.5rem 0.875rem;
-    font-size: 0.825rem;
-    min-height: 34px;
-  }
-
-  .payment-link-liquid {
-    padding: 0.875rem 1.5rem;
-    font-size: 0.925rem;
-    min-height: 48px;
+@media (min-width: 1024px) {
+  /* Matches the event info card's shell radius above 1024px, so the sheet
+     reads as part of the same card system. */
+  .pay-sheet {
+    border-radius: 1.5rem;
   }
 }
 
-/* Tablet adjustments */
-@media (min-width: 640px) and (max-width: 1023px) {
-  .payment-method-section {
-    /* No padding - matches comment section */
-  }
+/* ---------------------------------------------------------------------------
+ * Laptops — the whole section on one number
+ *
+ * The showcase card is 85vh, so on a short laptop screen every section renders
+ * at roughly two-thirds size. These are the two values the rest of the showcase
+ * uses (the guestbook, the agenda, RSVP); at 1536px and above `--pay-s` stays 1.
+ * ------------------------------------------------------------------------ */
 
-  .payment-row-container {
-    gap: 1.5rem;
-  }
-
-  .payment-info-simple {
-    padding: 1rem;
-  }
-
-  .payment-info-glass {
-    padding: 1rem;
-  }
-
-  .payment-link-minimalist {
-    padding: 0.625rem 1rem;
-    min-height: 38px;
-  }
-
-  .payment-link-liquid {
-    padding: 1rem 1.75rem;
-    min-height: 50px;
-  }
-}
-
-/* Unified payment card container */
-.payment-card-container {
-  border-radius: 1.5rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.payment-card-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
-  pointer-events: none;
-}
-
-/* Mobile (<1024px) - match the event info card shell radius (EventInfo.vue's
-   .gradient-stroke-container is 1.25rem below 1024px), and keep the panels
-   nested inside the card a step smaller than the shell. */
-@media (max-width: 1023px) {
-  .payment-card-container {
-    border-radius: 1.25rem;
-  }
-
-  .qr-simple-container,
-  .payment-info-simple {
-    border-radius: 1rem;
-  }
-}
-
-/* Payment card header - no separate styling */
-.payment-card-header {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.payment-card-header:hover {
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-}
-
-.payment-card-content {
-  transition:
-    max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease-in-out;
-  will-change: max-height, opacity;
-  transform-origin: top;
-}
-
-/* Small laptops 13-inch (1024px-1365px) - Mobile view applied */
 @media (min-width: 1024px) and (max-width: 1365px) {
-  /* Payment card container - consistent border radius matching mobile */
-  .payment-card-container {
-    border-radius: 1rem !important;
-    overflow: hidden !important;
-  }
-
-  /* Remove any left margin on QR code section */
-  .xl\:ml-8 {
-    margin-left: 0 !important;
-  }
-
-  /* QR Code section - centered like mobile, full width */
-  .payment-row-container > div:first-child {
-    text-align: center !important;
-    width: 100% !important;
-    margin-left: 0 !important;
-  }
-
-  /* QR Code - compact sizing for laptop */
-  .qr-simple-container {
-    padding: 0.5rem !important;
-    border-radius: 1.5rem !important;
-  }
-
-  .qr-simple-container img {
-    width: 6rem !important; /* 96px - smaller for laptop */
-    height: 6rem !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    border-radius: 0 !important;
-  }
-
-  /* Prevent large laptop sizing */
-  .lg\:w-36,
-  .lg\:h-36 {
-    width: 8rem !important;
-    height: 8rem !important;
-  }
-
-  /* Override w-32 and h-32 classes */
-  .w-32 {
-    width: 8rem !important;
-  }
-
-  .h-32 {
-    height: 8rem !important;
-  }
-
-  /* Payment info - compact padding for laptop */
-  .payment-info-simple {
-    padding: 0.5rem !important;
-    border-radius: 1.5rem !important;
-  }
-
-  .payment-info-glass {
-    padding: 0.5rem !important;
-    border-radius: 1.5rem !important;
-  }
-
-  /* Bank info - center alignment like mobile */
-  .payment-info-simple .space-y-2 > div,
-  .payment-info-simple .space-y-3 > div {
-    text-align: center !important;
-  }
-
-  /* Override lg:text-left to maintain center alignment */
-  .lg\:text-left {
-    text-align: center !important;
-  }
-
-  /* Bank info pills - compact sizing for laptop with wrapping support */
-  .bank-info-pill {
-    padding: 0.375rem 0.625rem !important;
-    font-size: 0.55rem !important; /* Smaller for laptop */
-    min-height: 32px !important;
-    border-radius: 0.75rem !important;
-    max-width: 98% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-
-  .bank-info-pill span {
-    line-height: 1.35 !important;
-    font-size: 0.55rem !important;
-  }
-
-  .bank-info-pill svg.w-4 {
-    width: 0.75rem !important;
-    height: 0.75rem !important;
-  }
-
-  /* Payment button - mobile sizing */
-  .payment-link-minimalist {
-    padding: 0.5rem 0.875rem !important;
-    font-size: 0.825rem !important;
-    min-height: 34px !important;
-    width: 100% !important;
-    border-radius: 1rem !important;
-  }
-
-  /* Override lg:w-auto for button */
-  .payment-link-minimalist.lg\:w-auto {
-    width: 100% !important;
-  }
-
-  .payment-link-liquid {
-    padding: 0.875rem 1.5rem !important;
-    font-size: 0.925rem !important;
-    min-height: 48px !important;
-    border-radius: 1.5rem !important;
-  }
-
-  /* Payment row - compact layout for laptop */
-  .payment-row-container {
-    padding: 0.25rem !important;
-    gap: 0.25rem !important;
-    flex-direction: column !important;
-    align-items: center !important;
-  }
-
-  /* Override lg:flex-row to keep column layout */
-  .payment-row-container.lg\:flex-row {
-    flex-direction: column !important;
-  }
-
-  /* Override lg:items-center to use stretch for consistency */
-  .payment-row-container.lg\:items-center {
-    align-items: stretch !important;
-  }
-
-  /* Force mobile full width layout */
-  .payment-row-container > div {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  /* Override lg:w-auto */
-  .payment-row-container > .lg\:w-auto {
-    width: 100% !important;
-  }
-
-  /* Override lg:max-w-sm */
-  .lg\:max-w-sm {
-    max-width: 100% !important;
-  }
-
-  /* Text sizing - mobile view */
-  .text-lg {
-    font-size: 1rem !important;
-    line-height: 1.5 !important;
-  }
-
-  .text-base {
-    font-size: 0.875rem !important;
-    line-height: 1.5 !important;
-  }
-
-  .text-sm {
-    font-size: 0.875rem !important;
-    line-height: 1.5 !important;
-  }
-
-  .text-xs {
-    font-size: 0.55rem !important;
-    line-height: 1.5 !important;
-  }
-
-  /* Scan to pay text - smaller for laptop */
-  .qr-simple-container + p {
-    font-size: 0.55rem !important;
-  }
-
-  /* Header text - mobile size reduced by 15% for collapse state */
-  h3.text-sm,
-  h3.sm\:text-base {
-    font-size: 0.875rem !important;
-  }
-
-  /* Collapse state text - reduced by 15% */
-  .payment-card-header h3.text-sm,
-  .payment-card-header h3.sm\:text-base {
-    font-size: 0.74375rem !important; /* 0.875rem * 0.85 */
-  }
-
-  .payment-card-header .text-xs {
-    font-size: 0.6375rem !important; /* 0.75rem * 0.85 */
-  }
-
-  /* Currency and description text - mobile size */
-  .text-xs {
-    font-size: 0.75rem !important;
-  }
-
-  /* Icons - mobile sizing */
-  svg.w-5 {
-    width: 1rem !important; /* Smaller for laptop */
-    height: 1rem !important;
-  }
-
-  svg.w-4 {
-    width: 0.75rem !important; /* Smaller for laptop */
-    height: 0.75rem !important;
-  }
-
-  svg.w-12,
-  svg.lg\:w-16 {
-    width: 3rem !important; /* 48px */
-    height: 3rem !important;
-  }
-
-  /* Expandable content padding - compact for laptop */
-  .payment-card-content > div {
-    padding: 0.75rem !important;
-  }
-
-  /* Override sm:p-6 to use compact padding */
-  .p-4.sm\:p-6 {
-    padding: 0.75rem !important;
-  }
-
-  /* Card header padding - reduced for compact collapse state */
-  .payment-card-header .flex {
-    padding: 0.5rem !important;
-  }
-
-  /* Override p-4 class in header */
-  .payment-card-header .p-4 {
-    padding: 0.5rem !important;
-  }
-
-  /* Icon background in header - compact sizing and alignment */
-  .payment-card-header .p-2 {
-    padding: 0.25rem !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  .payment-card-header .rounded-xl {
-    border-radius: 0.5rem !important;
-  }
-
-  /* Reduce icon sizes in header for compact collapse state */
-  .payment-card-header svg.w-5 {
-    width: 1rem !important; /* Reduced from 1.25rem */
-    height: 1rem !important;
-  }
-
-  /* Force proper vertical alignment in header */
-  .payment-card-header .flex.items-center {
-    align-items: center !important;
-    display: flex !important;
-  }
-
-  /* Main header container - ensure proper centering */
-  .payment-card-header > div {
-    align-items: center !important;
-    display: flex !important;
-  }
-
-  /* Space utilities - mobile view */
-  .space-y-3 > * + * {
-    margin-top: 0.75rem !important;
-  }
-
-  .space-y-2 > * + * {
-    margin-top: 0.5rem !important;
-  }
-
-  /* Tighter spacing in header - compact for laptop */
-  .payment-card-header .space-x-3 > * + * {
-    margin-left: 0.375rem !important;
-  }
-
-  .payment-card-header .space-x-2 > * + * {
-    margin-left: 0.25rem !important;
-  }
-
-  /* Method name and details container - proper alignment */
-  .payment-card-header .flex.items-center.space-x-3 {
-    align-items: center !important;
-    display: flex !important;
-  }
-
-  /* Method info container (icon + text) - ensure vertical centering */
-  .payment-card-header .flex.items-center.space-x-3 > div {
-    display: flex !important;
-    align-items: center !important;
-  }
-
-  /* Method name and details spacing - reset margins */
-  .payment-card-header h3 {
-    margin: 0 !important;
-    line-height: 1.3 !important;
-    padding: 0 !important;
-  }
-
-  .payment-card-header .mt-1 {
-    margin-top: 0.25rem !important;
-  }
-
-  /* Currency text alignment */
-  .payment-card-header .text-xs {
-    line-height: 1.3 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  /* Arrow icon container - proper centering */
-  .payment-card-header > .flex > div:last-child {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  /* Text content container inside method info */
-  .payment-card-header .flex.items-center.space-x-3 > div:last-child {
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: flex-start !important;
-  }
-
-  /* Header text - scaled to 67.5% matching AgendaSection */
-  h2 {
-    font-size: 1.265625rem !important; /* 1.875rem * 0.675 - exact mobile ratio */
-    line-height: 1.25 !important; /* Match mobile leading-tight */
-    padding-top: 0rem !important; /* Removed top padding to reduce space */
-    padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+  .pay {
+    --pay-s: 0.68;
   }
 }
 
-/* Medium laptops 14-15 inch (1366px-1535px) - Scaled to 75% matching AgendaSection */
 @media (min-width: 1366px) and (max-width: 1535px) {
-  /* Payment card container - consistent border radius */
-  .payment-card-container {
-    border-radius: 1rem !important;
-    overflow: hidden !important;
-  }
-
-  .payment-method-section {
-    /* No padding - matches comment section */
-  }
-
-  .payment-row-container {
-    padding: 0.75rem;
-    gap: 0.25rem;
-  }
-
-  /* QR Code - compact sizing for medium laptop */
-  .qr-simple-container {
-    padding: 0.5rem !important;
-    border-radius: 1.5rem !important;
-  }
-
-  .qr-simple-container img {
-    width: 6rem !important; /* 96px - smaller for laptop */
-    height: 6rem !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    border-radius: 0 !important;
-  }
-
-  .payment-info-simple {
-    padding: 1.25rem;
-  }
-
-  .payment-info-glass {
-    padding: 1.25rem;
-  }
-
-  /* Bank info pills - compact sizing for medium laptop */
-  .bank-info-pill {
-    font-size: 0.55rem !important;
-  }
-
-  .bank-info-pill span {
-    font-size: 0.55rem !important;
-  }
-
-  .bank-info-pill svg.w-4 {
-    width: 0.75rem !important;
-    height: 0.75rem !important;
-  }
-
-  .payment-link-minimalist {
-    padding: 0.75rem 1.25rem;
-    min-height: 40px;
-  }
-
-  .glass-content-section {
-    padding: 0.75rem;
-  }
-
-  /* Text sizing for medium laptop */
-  .text-xs {
-    font-size: 0.55rem !important;
-  }
-
-  /* Scan to pay text - smaller for medium laptop */
-  .qr-simple-container + p {
-    font-size: 0.55rem !important;
-  }
-
-  /* Icons - smaller for medium laptop */
-  svg.w-5 {
-    width: 1rem !important;
-    height: 1rem !important;
-  }
-
-  svg.w-4 {
-    width: 0.75rem !important;
-    height: 0.75rem !important;
-  }
-
-  /* Header text - scaled to 75% matching AgendaSection */
-  h2 {
-    font-size: 1.40625rem !important; /* 1.875rem * 0.75 - exact mobile ratio */
-    line-height: 1.25 !important; /* Match mobile leading-tight */
-    padding-top: 0rem !important; /* Removed top padding to reduce space */
-    padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+  .pay {
+    --pay-s: 0.76;
   }
 }
 
-/* Large laptops and desktops (1536px+) - Desktop styles */
-@media (min-width: 1536px) {
-  .payment-method-section {
-    /* No padding - matches comment section */
+/* ---------------------------------------------------------------------------
+ * Accessibility
+ * ------------------------------------------------------------------------ */
+
+/* The panel still opens and closes — that is the whole interaction — but it
+   cross-fades in place instead of growing, and nothing scales under a press. */
+@media (prefers-reduced-motion: reduce) {
+  .pay-reveal {
+    transition: opacity 180ms ease;
   }
 
-  .payment-row-container {
-    padding: 0.75rem;
-    gap: 0.25rem;
+  .pay-row__chev {
+    transition: none;
   }
 
+  .pay-row:active,
+  .pay-copy:active,
+  .pay-cta:active {
+    transform: none;
+  }
+}
 
-  .payment-info-simple {
-    padding: 1.25rem;
+/* Frostier, not blurrier: the sheet keeps the template's colour but stops
+   being a window. */
+@media (prefers-reduced-transparency: reduce) {
+  .pay-sheet {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: color-mix(in srgb, var(--pay-tone) 12%, #ffffff);
+  }
+}
+
+@media (prefers-contrast: more) {
+  .pay-sheet {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pay-tone) 55%, transparent);
   }
 
-  .payment-info-glass {
-    padding: 1.25rem;
-  }
-
-  .payment-link-minimalist {
-    padding: 0.75rem 1.25rem;
-    min-height: 40px;
-  }
-
-  .glass-content-section {
-    padding: 0.75rem;
-  }
-
-  /* Header text - desktop size */
-  h2 {
-    font-size: 1.875rem !important; /* 30px - text-3xl */
+  .pay-fact,
+  .pay-note,
+  .pay-empty,
+  .pay-qr__cap,
+  .pay-row__cur {
+    color: var(--pay-ink);
   }
 }
 
