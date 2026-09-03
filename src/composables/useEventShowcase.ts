@@ -6,6 +6,7 @@ import { useRoute } from 'vue-router'
 import { eventsService, type EventPaymentMethod } from '../services/api'
 import type {
   AgendaDesignConfig,
+  DressCodeDesignConfig,
   AmbientCreaturesConfig,
   CoverStageLayout,
   FallingEffectConfig,
@@ -209,6 +210,12 @@ export interface TemplateAssets {
    * this field existed, when the look was inferred from the event category.
    */
   agenda_design?: AgendaDesignConfig | null
+  /**
+   * Dress code block design (portrait | atelier | spread | palette | ledger).
+   * Absent falls back to `portrait` — the one composition every dress code
+   * section rendered before this field existed.
+   */
+  dress_code_design?: DressCodeDesignConfig | null
   /**
    * Transition-stage Save the Date composition. Absent falls back per stage —
    * `script` on the decoration transition, `engraved` on the door — so every

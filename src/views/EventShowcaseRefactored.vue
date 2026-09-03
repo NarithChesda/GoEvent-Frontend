@@ -159,6 +159,7 @@
             :host-info-design="event.template_assets?.host_info_design"
             :info-card-design="event.template_assets?.info_card_design"
             :agenda-design="event.template_assets?.agenda_design"
+            :dress-code-design="event.template_assets?.dress_code_design"
             @open-map="openGoogleMap"
             @open-photo="openPhotoModal"
             @register="registerForEvent"

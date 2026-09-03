@@ -3131,6 +3131,17 @@
         "stack": "Stack (tinted cards, time pill)"
       }
     },
+    "dressCodeDesign": {
+      "sectionTitle": "Dress Code Design",
+      "designHint": "How the attire block is drawn. Every design lays out each time of day and each gender rather than hiding them behind tabs, and draws the outfit as a garment in the colour the organizer picked — so a dress code with no photograph still looks finished.",
+      "types": {
+        "portrait": "Portrait (framed figures side by side) — the safe default",
+        "atelier": "Atelier (hairline arch, tracked type name) — formal",
+        "spread": "Spread (unframed figure beside its copy) — long descriptions",
+        "palette": "Palette (a row of colour discs) — birthdays, themed",
+        "ledger": "Ledger (one line per code, nothing hidden)"
+      }
+    },
     "hostInfoDesign": {
       "sectionTitle": "Host Info Design",
       "designHint": "Controls how the host information is displayed in the showcase.",

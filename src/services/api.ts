@@ -116,6 +116,8 @@ export type {
   InfoCardDesignConfig,
   AgendaDesignType,
   AgendaDesignConfig,
+  DressCodeDesignType,
+  DressCodeDesignConfig,
   SaveTheDateDesignType,
   SaveTheDateDesignConfig,
   AmbientCreatureEffectType,

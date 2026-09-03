@@ -1,0 +1,347 @@
+/**
+ * Shared base for every dress code design on the main content stage.
+ *
+ * Same arrangement as agenda-base.css and save-the-date-base.css, and the same
+ * split: the designs are *compositions*; the ink they are drawn in, the faces
+ * they set in and the ground they sit on belong to the section hosting them.
+ * All of it arrives through this contract, which DressCodeSection.vue sets on
+ * the root it hands each design:
+ *
+ *   --dcd-ink        the copy and rule colour — the template's primary.
+ *   --dcd-accent     the template's accent, for the one mark a design spends it
+ *                    on. Most designs ignore it; none use it for body copy.
+ *   --dcd-ease-out   the showcase's strong ease-out. Declared here rather than
+ *                    inherited so designs render identically inside the
+ *                    manage-page preview frame, which mounts sections outside
+ *                    `.showcase-container`.
+ *
+ * NOT part of the contract, deliberately:
+ *
+ *   - **Faces.** Each design binds `fontFamily` inline on the exact elements
+ *     that need it, because a title and a caption set in different faces and
+ *     inheritance cannot tell them apart.
+ *   - **The dress code's own colour.** That belongs to the *code*, not to the
+ *     section, and it is a fill rather than an ink — it reaches the garment
+ *     through GarmentFigure's own `--gf-*` variables, whose detail colours are
+ *     derived from it rather than from the template. A section showing a
+ *     black-tie code and an ivory one is showing two colour systems at once,
+ *     and only one of them is the template's.
+ *
+ * Loaded UNSCOPED, once, from DressCodeSection.vue — Vue rewrites `@keyframes`
+ * names inside a scoped block per component, so a scoped copy per design would
+ * give each one a differently-mangled `dcdRise` and none would resolve. Every
+ * selector is under `.dcd`.
+ */
+
+.dcd {
+  --dcd-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --dcd-hairline: color-mix(in srgb, var(--dcd-ink) 32%, transparent);
+  --dcd-hairline-soft: color-mix(in srgb, var(--dcd-ink) 17%, transparent);
+  /* The ground a drawn garment stands on. The main content card is already a
+     pale glass panel; below about 7% the frame is invisible on it and the
+     garment floats in white space, which is the failure the frames prevent. */
+  --dcd-wash: color-mix(in srgb, var(--dcd-ink) 8%, transparent);
+
+  width: 100%;
+  color: var(--dcd-ink);
+}
+
+/* --------------------------------------------------------------------------
+   Copy (DressCodeCopy.vue)
+   -------------------------------------------------------------------------- */
+
+.dcd-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dcd-copy--center {
+  align-items: center;
+  text-align: center;
+}
+
+.dcd-copy--start {
+  align-items: flex-start;
+  text-align: start;
+}
+
+/* The type name, where a design shows it. Tracked and small — it is a
+   classification, and classification set at reading size competes with the
+   organizer's own words for the same job. */
+.dcd-eyebrow {
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 0.375rem;
+}
+
+.dcd-title {
+  margin: 0;
+  color: var(--dcd-ink);
+  font-weight: 400;
+  font-size: 1.0625rem;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+}
+
+/* Khmer leading is set per element rather than once for `.dcd-title`, because a
+   design's own title rule would outrank anything a shared class writes for it —
+   the trap agenda-base.css documents. No design currently overrides these, so
+   they are live; keep it that way. */
+.dcd-title.is-khmer {
+  font-size: 1rem;
+  line-height: 1.85;
+}
+
+.dcd-desc {
+  margin: 0.375rem 0 0;
+  color: var(--dcd-ink);
+  opacity: 0.76;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  white-space: pre-line;
+  overflow-wrap: break-word;
+}
+
+.dcd-desc.is-khmer {
+  line-height: 1.9;
+}
+
+/* --------------------------------------------------------------------------
+   Gender caption
+   --------------------------------------------------------------------------
+   What the gender pills became. A caption over a figure states which figure is
+   whose, which is all the tab row ever communicated — but it states it for
+   every figure at once instead of hiding all but one behind a control. Drawn
+   only when there is more than one group; over the single `all` group it would
+   be labelling nothing. */
+
+.dcd-caption {
+  display: block;
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  line-height: 1.2;
+}
+
+/* --------------------------------------------------------------------------
+   Colour options (DressCodeSwatches.vue)
+   -------------------------------------------------------------------------- */
+
+.dcd-swatches {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.4375rem;
+}
+
+.dcd-copy--start + .dcd-swatches,
+.dcd-swatches--start {
+  justify-content: flex-start;
+}
+
+/* The chip is the colour and nothing else — no border of its own, because a
+   border in the template's ink around every chip turns a row of colours into a
+   row of buttons. Selection is a detached ring, which adds a mark without
+   altering the colour or the size of any chip. */
+.dcd-swatch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.625rem;
+  height: 1.625rem;
+  padding: 0;
+  border: none;
+  background: var(--dcd-swatch-fill);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dcd-ink) 20%, transparent);
+  cursor: pointer;
+  transition:
+    box-shadow 0.2s var(--dcd-ease-out),
+    transform 0.14s var(--dcd-ease-out);
+}
+
+.dcd-swatch--disc {
+  border-radius: 9999px;
+}
+
+.dcd-swatch--tile {
+  border-radius: 0.3125rem;
+}
+
+.dcd-swatch.is-active {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--dcd-ink) 20%, transparent),
+    0 0 0 2px var(--dcd-ink);
+}
+
+.dcd-swatch:active {
+  transform: scale(0.94);
+}
+
+.dcd-swatch:focus-visible {
+  outline: 2px solid var(--dcd-ink);
+  outline-offset: 4px;
+}
+
+/* The pip keeps the selected chip legible when the ring and the fill are close
+   in value (a primary-coloured dress code inside a primary ring). Drawn in the
+   chip's own contrast ink rather than a blend mode, so it is a known colour on
+   white and on black alike. It scales in — nothing arrives from nothing. */
+.dcd-swatch__pip {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+  background: var(--dcd-swatch-pip);
+  opacity: 0;
+  transform: scale(0.4);
+  transition:
+    opacity 0.18s var(--dcd-ease-out),
+    transform 0.18s var(--dcd-ease-out);
+}
+
+.dcd-swatch.is-active .dcd-swatch__pip {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dcd-swatch:not(.is-active):hover {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--dcd-ink) 20%, transparent),
+      0 0 0 2px var(--dcd-hairline);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   The copy swap
+   --------------------------------------------------------------------------
+   Choosing a colour option changes the title and the description under the
+   figure. The figure itself does NOT swap — it recolours in place (see
+   GarmentFigure) — so this is the only thing that crossfades, and it carries no
+   scale: text re-rendered at a fractional scale is visibly soft, and at this
+   size the softness is more noticeable than the motion buys.
+
+   Transitions, not keyframes: a guest tapping along a row of four colours
+   retargets this several times a second, and keyframes restart from zero. */
+
+.dcd-copy-enter-active {
+  transition:
+    opacity 0.22s var(--dcd-ease-out),
+    transform 0.22s var(--dcd-ease-out);
+}
+
+.dcd-copy-leave-active {
+  transition: opacity 0.1s var(--dcd-ease-out);
+}
+
+.dcd-copy-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.dcd-copy-leave-to {
+  opacity: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Entrance
+   --------------------------------------------------------------------------
+   Figures rise on mount, staggered by `--dcd-delay`. Short travel and a short
+   stagger: this is a section a guest scrolls past once, so it may have motion,
+   but a long cascade on two or three figures reads as the page assembling
+   itself rather than as an invitation. */
+
+.dcd-rise {
+  animation: dcdRise 0.44s var(--dcd-ease-out) var(--dcd-delay, 0s) both;
+}
+
+@keyframes dcdRise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Laptop density (1024–1535px)
+   --------------------------------------------------------------------------
+   The main content stage is a phone-shaped column inside a much wider frame on
+   laptops, and every showcase section compacts here rather than scaling up.
+   Held in one block for all five designs so they cannot drift apart at the one
+   width nobody develops at. */
+
+@media (min-width: 1024px) and (max-width: 1535px) {
+  .dcd-eyebrow,
+  .dcd-caption {
+    font-size: 0.5rem;
+    letter-spacing: 0.14em;
+  }
+
+  .dcd-eyebrow {
+    margin-bottom: 0.25rem;
+  }
+
+  .dcd-title {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .dcd-title.is-khmer {
+    font-size: 0.8125rem;
+    line-height: 1.7;
+  }
+
+  .dcd-desc {
+    margin-top: 0.25rem;
+    font-size: 0.6875rem;
+    line-height: 1.5;
+  }
+
+  .dcd-swatches {
+    gap: 0.3125rem;
+  }
+
+  .dcd-swatch {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .dcd-swatch__pip {
+    width: 0.25rem;
+    height: 0.25rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion
+   --------------------------------------------------------------------------
+   Opacity is kept and movement dropped: the crossfade is what tells a guest the
+   copy under the figure changed, and removing it outright would make a swatch
+   tap look like nothing happened. */
+
+@media (prefers-reduced-motion: reduce) {
+  .dcd-rise {
+    animation: none;
+  }
+
+  .dcd-copy-enter-from {
+    transform: none;
+  }
+
+  .dcd-swatch,
+  .dcd-swatch__pip {
+    transition-duration: 0.01ms;
+  }
+
+  .dcd-swatch:active {
+    transform: none;
+  }
+}

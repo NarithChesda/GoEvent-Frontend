@@ -1,6 +1,7 @@
 import type { TemplateAssets, TemplateColor, TemplateFont } from '@/composables/useEventShowcase'
 import type {
   AgendaDesignConfig,
+  DressCodeDesignConfig,
   AmbientCreaturesConfig,
   CoverStageLayout,
   EventDetailsDesignConfig,
@@ -63,6 +64,7 @@ export interface PartnerTemplateDraft {
   host_info_design: HostInfoDesignConfig
   info_card_design: InfoCardDesignConfig
   agenda_design: AgendaDesignConfig
+  dress_code_design: DressCodeDesignConfig
   save_the_date_design: SaveTheDateDesignConfig | null
   /** Per-stage animation/video modes. Null = the legacy asset/category inference. */
   stage_modes: StageModesConfig | null
@@ -248,6 +250,7 @@ export function partnerTemplateDraftToAssets(
     host_info_design: draft.host_info_design,
     info_card_design: draft.info_card_design,
     agenda_design: draft.agenda_design,
+    dress_code_design: draft.dress_code_design,
     save_the_date_design: draft.save_the_date_design,
     stage_modes: draft.stage_modes,
     display_liquid_glass_background: draft.display_liquid_glass_background,

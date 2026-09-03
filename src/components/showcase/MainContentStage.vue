@@ -280,6 +280,7 @@
                     :primary-font="primaryFont"
                     :secondary-font="secondaryFont"
                     :get-media-url="getMediaUrl"
+                    :dress-code-design="dressCodeDesign"
                   />
 
                   <!-- Dress Code Section Divider -->
@@ -843,6 +844,7 @@ import { useAssetProtection } from '../../composables/showcase/useAssetProtectio
 import { useCoverStageLayout } from '../../composables/showcase/useCoverStageLayout'
 import type {
   AgendaDesignConfig,
+  DressCodeDesignConfig,
   CoverStageLayout,
   EventDetailsDesignConfig,
   HostInfoDesignConfig,
@@ -931,6 +933,7 @@ interface Props {
   infoCardDesign?: InfoCardDesignConfig | null
   /** Agenda list design from template (rail | thread | milestone | ledger | stack) */
   agendaDesign?: AgendaDesignConfig | null
+  dressCodeDesign?: DressCodeDesignConfig | null
 }
 
 const props = defineProps<Props>()

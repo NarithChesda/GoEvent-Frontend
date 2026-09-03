@@ -1598,6 +1598,22 @@
               <TemplateFormChoice v-model="agendaDesignModel" :options="agendaDesignOptions" :columns="1" />
               <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.agendaDesign.designHint') }}</p>
             </section>
+
+            <!-- What the guest is asked to wear. Before this there was one
+                 composition, and its most common state was broken: a dress code
+                 carries a colour and an OPTIONAL photograph, and with no
+                 photograph the section drew a flat square of that colour with a
+                 generic person glyph over it. Every design here draws the
+                 garment instead, in the dress code's own colour — so this
+                 picker chooses a layout, never whether the block looks
+                 finished. -->
+            <section :class="[PANEL, 'p-4 space-y-3']">
+              <h5 :class="SECTION_HEADING">
+                {{ t('management.partnerTemplateForm.dressCodeDesign.sectionTitle') }}
+              </h5>
+              <TemplateFormChoice v-model="dressCodeDesignModel" :options="dressCodeDesignOptions" :columns="1" />
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.dressCodeDesign.designHint') }}</p>
+            </section>
           </template>
 
         </div>
@@ -1703,6 +1719,8 @@ import {
   Frame,
   Clapperboard,
   GitCommitVertical,
+  Columns2,
+  PanelLeft,
   Waypoints,
   Milestone,
   LayoutList,
@@ -1740,6 +1758,7 @@ import type {
   HostInfoDesignConfig,
   InfoCardDesignType,
   AgendaDesignType,
+  DressCodeDesignType,
   SaveTheDateDesignType,
   HostFrameStyle,
   CoupleOrnament,
@@ -2042,6 +2061,7 @@ interface FormState {
   /** Host info block design rendered in the showcase (standard | simple). */
   host_info_design_type: HostInfoDesignType
   agenda_design_type: AgendaDesignType
+  dress_code_design_type: DressCodeDesignType
   /** Frame chrome shared by the host title and avatar. `none` is the pre-frames look. */
   host_frame_style: HostFrameStyle
   /** Motif between the two hosts in the grid's centre column. */
@@ -2138,6 +2158,7 @@ const defaultForm = (): FormState => ({
   event_details_marker_custom_color: '#B3261E',
   host_info_design_type: 'standard',
   agenda_design_type: 'rail',
+  dress_code_design_type: 'portrait',
   host_frame_style: 'none',
   host_couple_ornament: 'none',
   info_card_design_type: 'glass',
@@ -2293,6 +2314,14 @@ const agendaDesignOptions = computed(() => [
   { value: 'milestone', label: t('management.partnerTemplateForm.agendaDesign.types.milestone'), icon: Milestone },
   { value: 'ledger', label: t('management.partnerTemplateForm.agendaDesign.types.ledger'), icon: Rows3 },
   { value: 'stack', label: t('management.partnerTemplateForm.agendaDesign.types.stack'), icon: LayoutList },
+])
+
+const dressCodeDesignOptions = computed(() => [
+  { value: 'portrait', label: t('management.partnerTemplateForm.dressCodeDesign.types.portrait'), icon: Columns2 },
+  { value: 'atelier', label: t('management.partnerTemplateForm.dressCodeDesign.types.atelier'), icon: Frame },
+  { value: 'spread', label: t('management.partnerTemplateForm.dressCodeDesign.types.spread'), icon: PanelLeft },
+  { value: 'palette', label: t('management.partnerTemplateForm.dressCodeDesign.types.palette'), icon: Palette },
+  { value: 'ledger', label: t('management.partnerTemplateForm.dressCodeDesign.types.ledger'), icon: Rows3 },
 ])
 
 // The engraved option is built to sit under the calendar / flanked / arch date
@@ -2790,6 +2819,11 @@ const buildHostInfoDesignPayload = (): HostInfoDesignConfig => ({
 const agendaDesignModel = computed<string>({
   get: () => form.agenda_design_type,
   set: (value) => { form.agenda_design_type = value as AgendaDesignType },
+})
+
+const dressCodeDesignModel = computed<string>({
+  get: () => form.dress_code_design_type,
+  set: (value) => { form.dress_code_design_type = value as DressCodeDesignType },
 })
 
 const infoCardDesignModel = computed<string>({
@@ -3682,6 +3716,9 @@ watch(
       // field, which is exactly 'rail' - the one composition every agenda
       // rendered back when the look came from the event category.
       form.agenda_design_type = template.agenda_design?.type ?? 'rail'
+      // Absent means the template predates the field, which is exactly
+      // 'portrait' - the one composition every dress code section rendered.
+      form.dress_code_design_type = template.dress_code_design?.type ?? 'portrait'
       // Hydrate the Save the Date design. No stored value means 'auto' — each
       // transition stage keeps its own default — which is what every template
       // saved before this field existed has.
@@ -3963,6 +4000,7 @@ async function handleSave(): Promise<void> {
       host_info_design: buildHostInfoDesignPayload(),
       info_card_design: { type: form.info_card_design_type },
       agenda_design: { type: form.agenda_design_type },
+      dress_code_design: { type: form.dress_code_design_type },
       save_the_date_design: buildSaveTheDateDesignPayload(),
       stage_modes: buildStageModesPayload(),
     }
@@ -4275,6 +4313,7 @@ const previewDraft = computed<PartnerTemplateDraft>(() => {
     host_info_design: buildHostInfoDesignPayload(),
     info_card_design: { type: form.info_card_design_type },
     agenda_design: { type: form.agenda_design_type },
+    dress_code_design: { type: form.dress_code_design_type },
     save_the_date_design: buildSaveTheDateDesignPayload(),
     stage_modes: buildStageModesPayload(),
     colors: previewColors.value,
