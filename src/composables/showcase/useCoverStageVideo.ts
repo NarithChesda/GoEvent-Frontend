@@ -1,5 +1,5 @@
 import { ref, computed, onUnmounted, nextTick, watch, readonly } from 'vue'
-import { useVideoResourceManager } from './useVideoResourceManager'
+import { useVideoResourceManager, type RegisterVideoOptions } from './useVideoResourceManager'
 import { isInMemoryMediaUrl, resolveMediaUrl } from '@/utils/mediaUrl'
 
 export type VideoPhase = 'none' | 'event' | 'background'
@@ -79,8 +79,12 @@ export function useCoverStageVideo(
   }
 
   // Register video elements with the resource manager
-  const registerVideoForCleanup = (video: HTMLVideoElement, identifier?: string) => {
-    videoResourceManager.registerVideo(video, identifier)
+  const registerVideoForCleanup = (
+    video: HTMLVideoElement,
+    identifier?: string,
+    options?: RegisterVideoOptions,
+  ) => {
+    videoResourceManager.registerVideo(video, identifier, options)
   }
 
   // Simplified video element management using resource manager
@@ -116,6 +120,14 @@ export function useCoverStageVideo(
 
   const cleanupAllVideoResources = async () => {
     try {
+      // Timers this composable owns outlive the elements they poll — a keyed
+      // remount (every template switch in the preview) would otherwise leave
+      // the outgoing instance's readiness poll and stall watchdog running
+      // against a detached <video>.
+      clearBackgroundStallTimer()
+      backgroundPlaybackManager?.dispose()
+      backgroundPlaybackManager = null
+
       // Use the enhanced resource manager for comprehensive cleanup
       await videoResourceManager.cleanupAllVideos()
 
@@ -254,6 +266,49 @@ export function useCoverStageVideo(
     }
   }
 
+  /**
+   * How long a background video may make NO progress at all before it is worth
+   * starting its download over.
+   *
+   * Deliberately long, and deliberately the only reload there is. `load()` runs
+   * the media load algorithm, which ABORTS the in-flight fetch and resets
+   * readyState to 0 — so every reload throws away everything downloaded so far.
+   * On a fast link that is invisible; on a slow one it is the difference
+   * between a video that eventually plays and one that can never finish. This
+   * file previously reloaded from three separate places (a 500ms readyState
+   * check, a 3s `suspend` timer that re-armed itself, and a play-failure
+   * counter), which on a phone connection restarted the same download every few
+   * seconds, forever.
+   */
+  const BACKGROUND_STALL_RECOVERY_MS = 20000
+
+  let backgroundStallTimer: ReturnType<typeof setTimeout> | null = null
+  let backgroundReloadUsed = false
+
+  const clearBackgroundStallTimer = () => {
+    if (backgroundStallTimer) clearTimeout(backgroundStallTimer)
+    backgroundStallTimer = null
+  }
+
+  /**
+   * The one recovery reload, armed once per source.
+   *
+   * Only fires when NOTHING has arrived — no readyState, no buffered range. A
+   * video that is slowly filling its buffer is working, and restarting it is
+   * strictly worse than waiting.
+   */
+  const armBackgroundStallRecovery = (bgVideo: HTMLVideoElement) => {
+    if (backgroundReloadUsed) return
+    clearBackgroundStallTimer()
+    backgroundStallTimer = setTimeout(() => {
+      backgroundStallTimer = null
+      if (backgroundReloadUsed) return
+      if (bgVideo.readyState > 0 || bgVideo.buffered.length > 0) return
+      backgroundReloadUsed = true
+      bgVideo.load()
+    }, BACKGROUND_STALL_RECOVERY_MS)
+  }
+
   // Background video loading with progressive streaming and resource management
   const loadBackgroundVideo = async () => {
     if (!props.backgroundVideoUrl) return
@@ -261,8 +316,9 @@ export function useCoverStageVideo(
     const bgVideo = videoRefs.backgroundVideoElement()
     if (!bgVideo) return
 
-    // Register video with resource manager
-    registerVideoForCleanup(bgVideo, 'background-video')
+    // Registered, but never auto-torn-down: this is the one video with no
+    // fallback behind it (see RegisterVideoOptions).
+    registerVideoForCleanup(bgVideo, 'background-video', { autoTeardownOnFailure: false })
 
     // Check if already loading or loaded
     if (bgVideo.src && bgVideo.readyState > 0) {
@@ -289,14 +345,13 @@ export function useCoverStageVideo(
     bgVideo.src = fullUrl
     bgVideo.load()
 
-    // Safari doesn't need forced reload, but keep it for other browsers
-    if (!isSafari && !isIOS) {
-      setTimeout(() => {
-        if (bgVideo.readyState === 0) {
-          bgVideo.load()
-        }
-      }, 500)
-    }
+    // A single bounded recovery, and only if nothing arrives at all. There used
+    // to be an unconditional `load()` here at 500ms: on any connection slower
+    // than a desk, readyState is ALWAYS still 0 at 500ms for a multi-megabyte
+    // file, so that reload fired every time and restarted the download from
+    // zero — worst of all against an MP4 whose moov atom sits at the end, where
+    // readyState cannot reach 1 until nearly the whole file has arrived.
+    armBackgroundStallRecovery(bgVideo)
   }
 
   // Event video preloading handlers
@@ -311,12 +366,26 @@ export function useCoverStageVideo(
     // Background video is already loading in parallel, no need to start here
   }
 
+  /**
+   * Whether this showcase will ever play the middle-stage film.
+   *
+   * A stage that starts at the invitation has already passed that beat and will
+   * never go back to it — yet `startParallelVideoLoading` used to `fetch()` the
+   * whole file into a blob regardless. On the catalogue's Main Content frame
+   * that is an entire video downloaded to memory, never decoded, never shown,
+   * competing for the same connection as the background video the frame does
+   * need; with several frames mounted at once it is several of them. On a slow
+   * link that alone can keep the background video from arriving.
+   */
+  const willPlayEventVideo = (): boolean =>
+    !props.shouldSkipToMainContent && props.currentShowcaseStage !== 'main_content'
+
   // Enhanced parallel video loading with mobile resource management
   const startParallelVideoLoading = async () => {
     const loadPromises: Promise<void>[] = []
 
-    // Load event video if available
-    if (props.eventVideoUrl) {
+    // Load event video if available, and if this stage can still reach it
+    if (props.eventVideoUrl && willPlayEventVideo()) {
       const eventLoadPromise = (async () => {
         try {
           emit('eventVideoLoadStarted')
@@ -415,9 +484,12 @@ export function useCoverStageVideo(
     videoManager.setupForPlayback(videoToUse, isMobile, false) // Mobile needs muted start
     videoManager.setVisibility(videoToUse, true, '10')
 
-    // Set source if using sequential container
-    if (videoToUse === videoRefs.sequentialVideoContainer() && props.eventVideoUrl) {
-      videoToUse.src = props.eventVideoUrl
+    // Set source if using sequential container, or if the preloader was never
+    // given one — a stage that did not expect to reach this beat skips the
+    // preload entirely (see willPlayEventVideo), so falling back to streaming
+    // the URL directly is what keeps that decision safe rather than load-bearing.
+    if (!videoToUse.src && props.eventVideoUrl) {
+      videoToUse.src = resolveVideoUrl(props.eventVideoUrl)
     }
 
     // Fallback timeout in case timeupdate doesn't fire (edge cases)
@@ -484,6 +556,26 @@ export function useCoverStageVideo(
     let playAttempts = 0
     const maxPlayAttempts = 10
     let debugInterval: number | null = null
+    /**
+     * Bounds the "not enough data yet, look again shortly" poll.
+     *
+     * It used to be unbounded: `playAttempts` is only incremented on the branch
+     * that actually calls `play()`, so a video that never cleared the readiness
+     * bar re-armed this timer every 800ms for the life of the page — a timer
+     * leak, and one that kept a dead video looking like a pending one.
+     *
+     * A deadline rather than a call count, because this branch is reached from
+     * the media events too (`progress` alone can fire several times a second
+     * for the whole of a long download), and a count would be spent by a video
+     * that is downloading perfectly well. Ten minutes is far more than any real
+     * connection needs and still terminates. Giving up stops only the polling —
+     * `loadedmetadata` and `canplay` still call straight through to `play()`,
+     * which is the primary path; this was always the fallback for events that
+     * never arrive.
+     */
+    const POLL_DEADLINE_MS = 600000
+    let pollDeadline = 0
+    let readinessTimer: ReturnType<typeof setTimeout> | null = null
 
     const hideEventVideos = () => {
       videoManager.setVisibility(videoRefs.eventVideoPreloader(), false)
@@ -529,7 +621,15 @@ export function useCoverStageVideo(
       // HAVE_CURRENT_DATA (2) - current frame loaded
       // HAVE_FUTURE_DATA (3) - enough data to play a bit
       // HAVE_ENOUGH_DATA (4) - enough data to play through
-      const minReadyState = isMobile ? 2 : 1 // Higher threshold for mobile
+      //
+      // HAVE_METADATA everywhere, phones included. Mobile used to demand
+      // HAVE_CURRENT_DATA — a decoded frame — which is a bar a slow connection
+      // can take a long time to clear, and while it waited nothing was on
+      // screen but the flat background. `play()` is allowed to be called at
+      // HAVE_METADATA and is what buffering was designed for: the browser
+      // fetches what it needs and starts when it can, instead of this poll
+      // guessing when that moment arrived.
+      const minReadyState = 1
 
       if (bgVideo.readyState >= minReadyState) {
         playAttempts++
@@ -546,21 +646,27 @@ export function useCoverStageVideo(
             hideEventVideos()
           })
           .catch((_error) => {
-            // More aggressive retry strategy for problematic browsers
+            // Retry the PLAY, never the download. A rejected play() is an
+            // autoplay-policy or transient-state failure and says nothing about
+            // the bytes; the `bgVideo.load()` that used to fire here after the
+            // third attempt threw away the whole buffer to fix a problem that
+            // was never in the buffer. Genuine "nothing is arriving" is handled
+            // once, by armBackgroundStallRecovery.
             const retryDelay = isMobile ? 1500 : 1000
             setTimeout(() => {
-              if (!hasStartedPlaying) {
-                // Force reload if multiple attempts failed
-                if (playAttempts > 3 && bgVideo.src) {
-                  bgVideo.load()
-                }
-                tryPlayBackgroundVideo()
-              }
+              if (!hasStartedPlaying) tryPlayBackgroundVideo()
             }, retryDelay)
           })
       } else {
+        if (!pollDeadline) pollDeadline = Date.now() + POLL_DEADLINE_MS
+        if (Date.now() >= pollDeadline) {
+          clearDebugInterval()
+          return
+        }
         const checkDelay = isMobile ? 800 : 500
-        setTimeout(() => {
+        if (readinessTimer) clearTimeout(readinessTimer)
+        readinessTimer = setTimeout(() => {
+          readinessTimer = null
           if (!hasStartedPlaying) {
             tryPlayBackgroundVideo()
           }
@@ -575,6 +681,12 @@ export function useCoverStageVideo(
       hasStartedPlaying: () => hasStartedPlaying,
       setStartedPlaying: (value: boolean) => {
         hasStartedPlaying = value
+      },
+      /** Every timer this manager owns, for unmount. */
+      dispose: () => {
+        clearDebugInterval()
+        if (readinessTimer) clearTimeout(readinessTimer)
+        readinessTimer = null
       },
     }
   }
@@ -611,6 +723,13 @@ export function useCoverStageVideo(
         }, 2000)
       },
 
+      handleProgressBytes: (bgVideo: HTMLVideoElement) => {
+        // Bytes are arriving, so the "nothing at all has come back" watchdog
+        // is answered and must not fire — it would abort a download that is
+        // working.
+        if (bgVideo.buffered.length > 0) clearBackgroundStallTimer()
+      },
+
       handleWaiting: () => {
         // Background video waiting for data
       },
@@ -626,13 +745,23 @@ export function useCoverStageVideo(
         playbackManager.clearDebugInterval()
       },
 
-      handleSuspend: (bgVideo: HTMLVideoElement) => {
-        setTimeout(() => {
-          if (!playbackManager.hasStartedPlaying() && bgVideo.paused) {
-            bgVideo.load()
-            playbackManager.tryPlay()
-          }
-        }, 3000)
+      /**
+       * `suspend` means the browser has stopped fetching for now — which it
+       * does routinely while buffering a large file on a constrained link, and
+       * again every time `load()` is called.
+       *
+       * This used to reload the video 3 seconds later whenever playback had not
+       * started. That was a self-sustaining loop: the reload aborted the
+       * in-flight fetch, reset readyState to 0, and eventually fired another
+       * `suspend`, which armed the next reload. On a fast connection playback
+       * began before the first timer and nobody ever saw it; on a slow one the
+       * download restarted every few seconds and could never finish, so the
+       * invitation rendered over a bare background forever. That is the whole
+       * bug. Try to PLAY — which is free and may be exactly what a suspended,
+       * partially-buffered video is waiting for — and never re-fetch.
+       */
+      handleSuspend: (_bgVideo: HTMLVideoElement) => {
+        if (!playbackManager.hasStartedPlaying()) playbackManager.tryPlay()
       },
     }
   }
@@ -640,6 +769,11 @@ export function useCoverStageVideo(
   // Guards the one deferred retry below so a genuinely absent element can't
   // schedule an unbounded nextTick loop.
   let backgroundPlayDeferred = false
+
+  /** The single playback manager for this composable's background video. */
+  let backgroundPlaybackManager: ReturnType<
+    typeof createBackgroundVideoPlaybackManager
+  > | null = null
 
   const playBackgroundVideo = () => {
     if (!props.backgroundVideoUrl) {
@@ -672,8 +806,21 @@ export function useCoverStageVideo(
       loadBackgroundVideo()
     }
 
+    // One manager per element, ever. This function is reachable from four
+    // places — initializeVideoState, both immediate watchers, and the event
+    // video ending — and each call used to build a fresh manager and register a
+    // second, third, fourth full set of listeners on the same <video>. Every
+    // duplicate `progress` and `suspend` then drove its own retry schedule
+    // against the same element, multiplying exactly the traffic this change
+    // exists to stop.
+    if (backgroundPlaybackManager) {
+      backgroundPlaybackManager.tryPlay()
+      return
+    }
+
     // Create playback manager and event handlers
     const playbackManager = createBackgroundVideoPlaybackManager(bgVideo)
+    backgroundPlaybackManager = playbackManager
     const eventHandlers = createBackgroundVideoEventHandlers(playbackManager)
 
     // Try to play immediately if video is ready
@@ -687,12 +834,16 @@ export function useCoverStageVideo(
     addVideoEventListener(bgVideo, 'loadedmetadata', eventHandlers.handleLoadedMetadata)
     addVideoEventListener(bgVideo, 'canplay', eventHandlers.handleCanPlay)
     addVideoEventListener(bgVideo, 'canplaythrough', eventHandlers.handleCanPlayThrough)
-    addVideoEventListener(bgVideo, 'progress', eventHandlers.handleProgress)
+    addVideoEventListener(bgVideo, 'progress', () => {
+      eventHandlers.handleProgressBytes(bgVideo)
+      eventHandlers.handleProgress()
+    })
     addVideoEventListener(bgVideo, 'stalled', eventHandlers.handleStalled)
     addVideoEventListener(bgVideo, 'suspend', () => eventHandlers.handleSuspend(bgVideo))
     addVideoEventListener(bgVideo, 'waiting', eventHandlers.handleWaiting)
     addVideoEventListener(bgVideo, 'playing', () => {
       eventHandlers.handlePlaying()
+      clearBackgroundStallTimer()
       playbackManager.clearDebugInterval()
     })
     addVideoEventListener(bgVideo, 'error', (e) => {

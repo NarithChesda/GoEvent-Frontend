@@ -22,12 +22,18 @@
  *                  the stage keeps its clock: the decoration stage's copy starts
  *                  the moment its footer scrim rises (0ms), the door's waits for
  *                  the leaves to gather and the frame to draw (1000ms).
- *   --std-date-font  optional face for the date lines. Falls back to the
- *                  design's own display face, which is the door's behaviour —
- *                  its cartouche is deliberately not template-driven.
  *
  * A design never reads a template colour or a stage class directly. It reads
  * these, plus its own `is-revealed` root class.
+ *
+ * There is deliberately no font in this contract. A stage supplies the ground
+ * and the clock; the TYPOGRAPHY is the design's own, and `--std-display` below
+ * is where it lives. There used to be a `--std-date-font` escape hatch, and the
+ * decoration stage filled it with the template's `primaryFont` — which is
+ * resolved per language, so the date's typeface changed whenever a guest
+ * switched language. On text that is formatted `en-US` in every language, at
+ * that: a Khmer face applied to Latin numerals and month names. The door stage
+ * never passed one and was always correct, so this is now what both do.
  */
 
 .std {
@@ -198,7 +204,7 @@
    wrapped to two lines and snapped back to one partway through any settle,
    jerking everything above it down and back up. */
 .std-longdate {
-  font-family: var(--std-date-font, var(--std-display));
+  font-family: var(--std-display);
   font-size: calc(var(--std-w) * 0.0298);
   letter-spacing: 0.2em;
   padding-left: 0.2em;

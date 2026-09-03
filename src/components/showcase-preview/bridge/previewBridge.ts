@@ -64,6 +64,7 @@ export type PreviewBridgeMessage =
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'preview-template'; templateData: TemplateAssets }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'patch-event'; fields: EventFieldPatch }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'frame-ready' }
+  | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'frame-loaded' }
   | { source: typeof PREVIEW_BRIDGE_SOURCE; type: 'set-language'; language: string }
   | {
       source: typeof PREVIEW_BRIDGE_SOURCE
@@ -120,6 +121,31 @@ export function postFrameReadyToParent(): void {
   if (window.parent === window) return
   window.parent.postMessage(
     { source: PREVIEW_BRIDGE_SOURCE, type: 'frame-ready' } satisfies PreviewBridgeMessage,
+    window.location.origin,
+  )
+}
+
+/**
+ * Frame side: this frame has finished loading its showcase and has something on
+ * screen.
+ *
+ * Deliberately separate from `frame-ready`, because they answer different
+ * questions at very different moments. `frame-ready` means "my listener is
+ * attached, you may push state to me" and fires at mount, while the showcase
+ * fetch, the stage chunk and every image and video are still in flight.
+ * `frame-loaded` means "I am actually showing an invitation".
+ *
+ * A parent that boots frames in sequence needs the second one. Advancing the
+ * queue on `frame-ready` let the next frame start booting a few milliseconds
+ * after the previous one mounted, so all of them competed for the connection
+ * anyway and the queue bought nothing — which is most visible on the one frame
+ * the visitor is actually looking at, and worst on the slow connections the
+ * staggering exists for.
+ */
+export function postFrameLoadedToParent(): void {
+  if (window.parent === window) return
+  window.parent.postMessage(
+    { source: PREVIEW_BRIDGE_SOURCE, type: 'frame-loaded' } satisfies PreviewBridgeMessage,
     window.location.origin,
   )
 }

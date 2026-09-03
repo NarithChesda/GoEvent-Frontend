@@ -56,6 +56,24 @@ export interface VideoError extends Error {
   src?: string
 }
 
+export interface RegisterVideoOptions {
+  /**
+   * Whether this element may be torn down automatically when it errors or
+   * stalls — clearing its `src` and setting `preload: 'none'`, which no code
+   * path here ever undoes.
+   *
+   * True (the default) for a video whose failure the showcase can absorb: the
+   * event video's stage falls through to the next one, the cover's loop leaves
+   * the artwork cover it was drawn over. **False for the background video**,
+   * which has no fallback at all — `background: 'video'` mode draws none of
+   * VideoContainer's artwork ladder, so tearing that element down leaves the
+   * invitation over a flat colour permanently, with nothing left to retry. A
+   * stall on a slow connection is a temporary fact about the network, and the
+   * previous unconditional teardown answered it by making the failure final.
+   */
+  autoTeardownOnFailure?: boolean
+}
+
 /**
  * Video Resource Manager Composable
  *
@@ -129,7 +147,11 @@ export function useVideoResourceManager() {
   /**
    * Enhanced video registration with mobile-specific resource management
    */
-  const registerVideo = (video: HTMLVideoElement, identifier?: string): void => {
+  const registerVideo = (
+    video: HTMLVideoElement,
+    identifier?: string,
+    options?: RegisterVideoOptions,
+  ): void => {
     // Security validation
     if (!validateVideoElement(video)) {
       console.warn('Invalid video element, skipping registration:', identifier)
@@ -146,6 +168,8 @@ export function useVideoResourceManager() {
     }
 
     managedVideoElements.value.add(video)
+
+    if (options?.autoTeardownOnFailure === false) return
 
     // Enhanced error handling with mobile considerations
     const errorHandler = (event: Event) => {

@@ -118,6 +118,24 @@
           <component :is="isStandardPlan ? Crown : Sparkles" class="w-3 h-3 flex-shrink-0" />
           {{ template.package_plan.name }}
         </span>
+
+        <!-- Menu position, shown only when it has been moved off the default.
+             This panel is sorted newest-first by the API and `order` only
+             takes effect in the browse menu, so without this the arrangement
+             is invisible from the studio and checking one template's place
+             means opening its form. On every template it would be the same
+             number on every card, which is why it is gated. -->
+        <span
+          v-if="isPinned"
+          :class="[
+            'inline-flex items-center gap-1 mt-1 ml-1 text-[0.625rem] sm:text-[0.6875rem] font-medium tabular-nums px-2 py-0.5 rounded-full',
+            hasImage ? 'bg-white/20 text-white/95 backdrop-blur-sm' : 'bg-slate-100 text-slate-600',
+          ]"
+          :title="t('management.partnerTemplatesPanel.card.orderTitle')"
+        >
+          <ArrowUpNarrowWide class="w-3 h-3 flex-shrink-0" />
+          {{ template.order }}
+        </span>
       </div>
     </div>
 
@@ -167,8 +185,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ImageOff, Check, Crown, Globe, Pencil, Send, Sparkles, Trash2, Clock, CheckCircle, XCircle, FileEdit, type LucideIcon } from 'lucide-vue-next'
+import { ImageOff, Check, Crown, Globe, Pencil, Send, Sparkles, Trash2, Clock, CheckCircle, XCircle, FileEdit, ArrowUpNarrowWide, type LucideIcon } from 'lucide-vue-next'
 import type { PartnerTemplate } from '../../services/api'
+import { TEMPLATE_MENU_ORDER_DEFAULT } from '../../services/api'
 import { BTN_GHOST_SM, BTN_ICON_MICRO } from './templateUi'
 
 interface Props {
@@ -200,6 +219,11 @@ const hasImage = computed(() => !!props.template.preview_image && !imageError.va
 
 const isApproved = computed(() => props.template.status === 'approved')
 const isSystem = computed(() => props.template.template_type === 'system')
+/** Deliberately `!= null` first: a server predating the field sends nothing,
+ *  and `undefined !== 100` would badge every card with an empty number. */
+const isPinned = computed(
+  () => props.template.order != null && props.template.order !== TEMPLATE_MENU_ORDER_DEFAULT,
+)
 const isStandardPlan = computed(() =>
   (props.template.package_plan?.name ?? '').toLowerCase().includes('standard'),
 )

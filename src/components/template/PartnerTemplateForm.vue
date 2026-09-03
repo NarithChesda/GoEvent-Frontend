@@ -180,6 +180,35 @@
                   />
                   <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.fields.previewUrlHint') }}</p>
                 </div>
+
+                <!-- Where this design sits in the browse menu. A bare number
+                     rather than a slider: nothing on the phone beside it moves
+                     when the value changes, so there is nothing to drag
+                     against. The hint carries the whole meaning of the number,
+                     so it sits beside the box rather than under it — at this
+                     width, underneath it would wrap to five lines. -->
+                <div class="space-y-1.5">
+                  <label :for="orderFieldId" :class="FIELD_LABEL">
+                    {{ t('management.partnerTemplateForm.fields.orderLabel') }}
+                  </label>
+                  <div class="flex items-center gap-2.5">
+                    <input
+                      :id="orderFieldId"
+                      ref="orderInputEl"
+                      :value="form.order"
+                      type="number"
+                      inputmode="numeric"
+                      min="0"
+                      step="1"
+                      :class="[FIELD, 'w-20 flex-shrink-0 text-center tabular-nums']"
+                      @input="onOrderInput"
+                      @blur="onOrderBlur"
+                    />
+                    <p :class="[FIELD_HINT, 'min-w-0']">
+                      {{ t('management.partnerTemplateForm.fields.orderHint', { default: TEMPLATE_MENU_ORDER_DEFAULT }) }}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <!-- Gallery thumbnail. Sits here, in Basics, rather than beside the
@@ -1726,7 +1755,7 @@ import {
   LayoutList,
   type LucideIcon,
 } from 'lucide-vue-next'
-import { partnerTemplateService, packagePlanService, customFontsService, FONT_TYPE_LABELS, LANGUAGE_CODE_LABELS } from '../../services/api'
+import { partnerTemplateService, packagePlanService, customFontsService, FONT_TYPE_LABELS, LANGUAGE_CODE_LABELS, TEMPLATE_MENU_ORDER_DEFAULT } from '../../services/api'
 import type {
   // Aliased: this file's file-input handlers take the DOM `Event`, which an
   // unaliased import would shadow.
@@ -1851,6 +1880,8 @@ const FileUploadField = PartnerTemplateFileField
 
 const nameFieldId = useId()
 const previewUrlFieldId = useId()
+const orderFieldId = useId()
+const orderInputEl = ref<HTMLInputElement | null>(null)
 const fontUploadNameId = useId()
 const fontUploadLicenseId = useId()
 /** Base for the per-row ids of the ambient-creature number fields. */
@@ -2018,6 +2049,8 @@ interface SparkFieldFormState {
 
 interface FormState {
   name: string
+  /** Menu position, lower first. See TEMPLATE_MENU_ORDER_DEFAULT. */
+  order: number
   package_plan_id: number | null
   youtube_preview_url: string
   display_liquid_glass_background: boolean
@@ -2119,6 +2152,7 @@ const defaultSparkField = (): SparkFieldFormState => ({
 
 const defaultForm = (): FormState => ({
   name: '',
+  order: TEMPLATE_MENU_ORDER_DEFAULT,
   package_plan_id: null,
   youtube_preview_url: '',
   display_liquid_glass_background: true,
@@ -2214,6 +2248,27 @@ const hasSavedAsset = (field: ClearableAssetField): boolean =>
 const hasPreviewImage = computed(
   () => !!previewImagePreview.value || hasSavedAsset('preview_image'),
 )
+
+/**
+ * Menu position, kept a valid number at all times.
+ *
+ * An empty box mid-edit must not blank `form.order` — the save path would then
+ * send `order=` and the server would reject the whole template — so an
+ * unparseable value leaves the last good one in place, and blur puts that
+ * number back on screen so the field never rests looking empty. Same contract
+ * as TemplateFormNumber's number box.
+ */
+function onOrderInput(event: Event): void {
+  const raw = (event.target as HTMLInputElement).value
+  if (raw === '') return
+  const value = Number(raw)
+  if (!Number.isFinite(value) || value < 0) return
+  form.order = Math.round(value)
+}
+
+function onOrderBlur(): void {
+  if (orderInputEl.value) orderInputEl.value.value = String(form.order)
+}
 
 const canSave = computed(() => !!form.name.trim() && !!form.package_plan_id)
 
@@ -3665,6 +3720,9 @@ watch(
     error.value = null
     if (template) {
       form.name = template.name
+      // `?? default` rather than `|| default`: 0 is the top of the menu, and
+      // a server that has not shipped the field yet sends nothing at all.
+      form.order = template.order ?? TEMPLATE_MENU_ORDER_DEFAULT
       form.package_plan_id = template.package_plan?.id ?? null
       form.youtube_preview_url = template.youtube_preview_url || ''
       form.display_liquid_glass_background = template.display_liquid_glass_background
@@ -3989,6 +4047,7 @@ async function handleSave(): Promise<void> {
   try {
     const payload: PartnerTemplateCreatePayload = {
       name: form.name,
+      order: form.order,
       package_plan_id: form.package_plan_id,
       youtube_preview_url: form.youtube_preview_url || undefined,
       display_liquid_glass_background: form.display_liquid_glass_background,

@@ -98,7 +98,7 @@ const lines = computed(() => {
 }
 
 .poster-date {
-  font-family: var(--std-date-font, var(--std-display));
+  font-family: var(--std-display);
   font-size: calc(var(--std-w) * 0.034);
   letter-spacing: 0.3em;
   padding-left: 0.3em;

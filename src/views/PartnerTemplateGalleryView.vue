@@ -299,6 +299,7 @@
                 :click-message="frame.clickMessage"
                 :swipeable="isNarrow && visibleFrames.length > 1"
                 @ready="onFrameReady(frame.id)"
+                @loaded="onFrameLoaded"
                 @languages="onFrameLanguages"
                 @swipe="onFrameSwipe"
               />
@@ -1471,7 +1472,18 @@ const onWindowResize = () => {
 // ---------------------------------------------------------------------------
 
 const mountedFrameIds = ref(new Set<string>())
-const FRAME_HANDSHAKE_TIMEOUT_MS = 4000
+/**
+ * Only a safety valve, so it is sized as one.
+ *
+ * The queue advances on `frame-loaded` — a frame with an invitation actually on
+ * screen — not on the mount-time handshake, and on a slow connection that can
+ * legitimately take many seconds. At the old 4s this timer, not the frame,
+ * decided when the next boot began, which reintroduced exactly the contention
+ * the queue exists to prevent on exactly the connections that need it most. It
+ * has one job: stop a frame that died before reporting from stalling the queue
+ * for good.
+ */
+const FRAME_HANDSHAKE_TIMEOUT_MS = 20000
 let frameMountTimer: ReturnType<typeof setTimeout> | null = null
 
 /**
@@ -1572,6 +1584,19 @@ const frameUrl = (frame: PreviewFrameDescriptor): string => {
   return url
 }
 
+/**
+ * Push the chosen design into every mounted frame, immediately — including the
+ * ones held off screen by `v-show` in single view.
+ *
+ * Deferring the off-screen ones was tried and reverted. It does save real work
+ * — a template push re-keys the video pipeline, so each frame that receives one
+ * remounts its stage and re-downloads — but `v-show` reveals a frame on the
+ * same tick the tab is tapped, while the deferred push, the remount and the
+ * video load all land after it. So switching stages showed the PREVIOUS
+ * design's video first and swapped it out a moment later, which on the Event
+ * Video frame is the entire screen changing under the visitor. A catalogue may
+ * not show the wrong design for even a moment; that is the one thing it is for.
+ */
 const pushTemplateToFrames = () => {
   const templateData = activeTemplateData.value
   if (!templateData) return
@@ -1593,21 +1618,33 @@ watch(previewEventId, pushPreviewEventToFrames)
 
 /**
  * A frame's listener is now live — the only safe moment to hand it anything,
- * since postMessage does not queue. It gets the current template, and the queue
- * moves on to the next frame.
+ * since postMessage does not queue.
+ *
+ * State delivery only. This fires at the frame's MOUNT, while its showcase
+ * fetch and stage chunk are still in flight, so it says nothing about whether
+ * the frame is up; advancing the boot queue from here started every frame
+ * within a few milliseconds of the last and made the staggering ornamental.
+ * That is `onFrameLoaded`'s job now.
  */
 const onFrameReady = (frameId: string) => {
   const frame = frameRefs.get(frameId)
   const templateData = activeTemplateData.value
   if (templateData) frame?.postTemplatePreview(templateData)
-  // The first frame is up, so the phone may now warm the rest behind it — see
-  // mountQueue. Latched rather than recomputed: once a stage has been booted it
-  // stays booted, and a later frame reporting in must not reopen the question.
-  framesWarmed.value = true
   // Unconditional, and cheap: a frame booted on this event ignores it. It
   // covers the one ordering the seeded URL cannot — a frame still mounting
   // while the visitor moves to a design of another category.
   frame?.postPreviewEvent(previewEventId.value)
+}
+
+/**
+ * A frame has an invitation on screen. Only now is the connection free enough
+ * to be worth handing to the next one.
+ */
+const onFrameLoaded = () => {
+  // The first frame is up, so the phone may now warm the rest behind it — see
+  // mountQueue. Latched rather than recomputed: once a stage has been booted it
+  // stays booted, and a later frame reporting in must not reopen the question.
+  framesWarmed.value = true
   mountNextFrame()
 }
 

@@ -169,6 +169,11 @@ export const partnerTemplateService = {
   async createTemplate(payload: PartnerTemplateCreatePayload): Promise<ApiResponse<PartnerTemplate>> {
     const formData = new FormData()
     formData.append('name', payload.name)
+    // Menu position. `0` is a legitimate value — the top of the menu — so this
+    // tests for null/undefined rather than falsiness.
+    if (payload.order != null) {
+      formData.append('order', String(payload.order))
+    }
     if (payload.package_plan_id != null) {
       formData.append('package_plan_id', String(payload.package_plan_id))
     }
@@ -240,6 +245,11 @@ export const partnerTemplateService = {
   ): Promise<ApiResponse<PartnerTemplate>> {
     const formData = new FormData()
     if (payload.name) formData.append('name', payload.name)
+    // Menu position. `0` is a legitimate value — the top of the menu — so this
+    // tests for null/undefined rather than falsiness.
+    if (payload.order != null) {
+      formData.append('order', String(payload.order))
+    }
     if (payload.package_plan_id != null) {
       formData.append('package_plan_id', String(payload.package_plan_id))
     }

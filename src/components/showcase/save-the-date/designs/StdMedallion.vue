@@ -143,7 +143,7 @@ const inkClass = computed(() => (props.ink === 'metal' ? 'std-metal' : 'std-soli
 
 .med-day {
   position: relative;
-  font-family: var(--std-date-font, var(--std-display));
+  font-family: var(--std-display);
   font-size: calc(var(--std-w) * 0.13);
   line-height: 1;
   font-weight: 500;
@@ -169,7 +169,7 @@ const inkClass = computed(() => (props.ink === 'metal' ? 'std-metal' : 'std-soli
 }
 
 .med-monthyear {
-  font-family: var(--std-date-font, var(--std-display));
+  font-family: var(--std-display);
   font-size: calc(var(--std-w) * 0.042);
   letter-spacing: 0.22em;
   padding-left: 0.22em;

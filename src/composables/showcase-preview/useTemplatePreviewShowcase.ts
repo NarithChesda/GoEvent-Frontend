@@ -22,7 +22,7 @@ import type { ShowcaseData } from '@/composables/useEventShowcase'
 import { demoPreviewPartner, loadDemoShowcase } from './useDemoShowcase'
 
 /**
- * The three things a preview does not take from the event it draws.
+ * The four things a preview does not take from the event it draws.
  *
  * Everything else — the wording, the agenda, the photographs, the hosts — is
  * the event exactly as a guest would receive it, which is the whole point of
@@ -37,7 +37,19 @@ import { demoPreviewPartner, loadDemoShowcase } from './useDemoShowcase'
  *    be seen here (CoverContentRows resolves event logo → sample_logo_1 →
  *    recoloured stand-in). A real couple's monogram says nothing about the
  *    design, and it hides the one thing that does.
- * 3. **Gift details and dress code stand in from the sample when the event has
+ * 3. **The event's own film goes**, for exactly the reason the logos do, and
+ *    with more at stake. `eventVideoUrl` resolves `event.event_video` FIRST and
+ *    only then the template's `standard_transition_video` — right on a live
+ *    invitation, where the organizer's own film is the whole point of that
+ *    stage, and wrong here, where the organizer is a stranger and the template
+ *    is what is being sold. Left in, the Event Video frame played some other
+ *    couple's wedding video under a design that had nothing to do with it, and
+ *    the one asset the partner uploaded to be judged — their transition film —
+ *    was the one thing it could never show. Dropping it makes the frame fall
+ *    through to the template's own, which is also what the catalogue page
+ *    already assumes when it decides that frame exists at all (`event_video:
+ *    null` in its rendererContext).
+ * 4. **Gift details and dress code stand in from the sample when the event has
  *    none.** These are the two sections a real invitation most often leaves
  *    empty, and a design is being judged on how it renders them: without a
  *    stand-in the partner gets an empty-state card and a bare heading. Only
@@ -69,6 +81,9 @@ async function applyPreviewSubstitutions(
       // tests it for truthiness before falling through to the sample logo.
       logo_one: undefined,
       logo_two: undefined,
+      // Same reason, same shape — `eventVideoUrl` tests it for truthiness
+      // before falling through to the template's standard_transition_video.
+      event_video: undefined,
       ...(needsPayments && sample ? { payment_methods: sample.payment_methods } : {}),
       ...(needsDressCodes && sample ? { dress_codes: sample.dress_codes } : {}),
     },
