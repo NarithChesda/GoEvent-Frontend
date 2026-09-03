@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router'
 // Imports - Services & API
 import { eventsService, type EventPaymentMethod } from '../services/api'
 import type {
+  AgendaDesignConfig,
   AmbientCreaturesConfig,
   CoverStageLayout,
   FallingEffectConfig,
@@ -202,6 +203,12 @@ export interface TemplateAssets {
   host_info_design?: HostInfoDesignConfig | null
   /** Info card (venue/map/countdown/RSVP) design (glass | engraved). Defaults to `glass`. */
   info_card_design?: InfoCardDesignConfig | null
+  /**
+   * Agenda list design (rail | thread | milestone | ledger | stack). Absent
+   * falls back to `rail` — the one composition every agenda rendered before
+   * this field existed, when the look was inferred from the event category.
+   */
+  agenda_design?: AgendaDesignConfig | null
   /**
    * Transition-stage Save the Date composition. Absent falls back per stage —
    * `script` on the decoration transition, `engraved` on the door — so every

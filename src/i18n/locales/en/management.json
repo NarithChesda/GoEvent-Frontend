@@ -3120,6 +3120,17 @@
         "poster": "Poster (large stacked type)"
       }
     },
+    "agendaDesign": {
+      "sectionTitle": "Agenda Design",
+      "designHint": "How the schedule under the invitation is drawn. The event category still picks the wording — a funeral shows a Ceremony Schedule — so this is purely the look.",
+      "types": {
+        "rail": "Rail (spine, medallions) — the current look",
+        "thread": "Thread (alternating sides, dotted line)",
+        "milestone": "Milestone (centred stops, best for long titles)",
+        "ledger": "Ledger (time column, hairline rules, most compact)",
+        "stack": "Stack (tinted cards, time pill)"
+      }
+    },
     "hostInfoDesign": {
       "sectionTitle": "Host Info Design",
       "designHint": "Controls how the host information is displayed in the showcase.",

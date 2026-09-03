@@ -1493,6 +1493,52 @@
               />
             </section>
 
+            <!-- Who is inviting — the first block on the stage, and the first
+                 design decision here, because these sections are ordered to
+                 match MainContentStage's own render order: backdrop, then the
+                 card it draws on, then hosts, then the date, then the card
+                 under the date, then the schedule. A partner scrolling this
+                 panel is walking down the invitation. -->
+            <section :class="[PANEL, 'p-4 space-y-3']">
+              <h5 :class="SECTION_HEADING">
+                {{ t('management.partnerTemplateForm.hostInfoDesign.sectionTitle') }}
+              </h5>
+              <TemplateFormChoice v-model="hostInfoDesignModel" :options="hostInfoDesignOptions" :columns="1" />
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.designHint') }}</p>
+
+              <!-- The frame is one choice drawn twice — around the title and
+                   around the avatar — so the pair can never be mismatched. Only
+                   the grid designs draw it, so it collapses away on the two that
+                   don't: arch brings its own frames and simple has neither a
+                   title nor an avatar to frame. -->
+              <Transition name="collapse">
+                <div
+                  v-if="form.host_info_design_type === 'standard' || form.host_info_design_type === 'portrait'"
+                  class="grid grid-rows-[1fr]"
+                >
+                  <div class="min-h-0 overflow-hidden">
+                    <div class="space-y-3 pt-1">
+                      <TemplateFormChoice
+                        v-model="hostFrameStyleModel"
+                        :label="t('management.partnerTemplateForm.hostInfoDesign.frameLabel')"
+                        :options="hostFrameStyleOptions"
+                        :columns="1"
+                      />
+                      <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.frameHint') }}</p>
+
+                      <TemplateFormChoice
+                        v-model="hostCoupleOrnamentModel"
+                        :label="t('management.partnerTemplateForm.hostInfoDesign.ornamentLabel')"
+                        :options="hostCoupleOrnamentOptions"
+                        :columns="1"
+                      />
+                      <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.ornamentHint') }}</p>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
+            </section>
+
             <section :class="[PANEL, 'p-4 space-y-3']">
               <h5 :class="SECTION_HEADING">
                 {{ t('management.partnerTemplateForm.eventDetailsDesign.sectionTitle') }}
@@ -1539,44 +1585,18 @@
               <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.infoCardDesign.designHint') }}</p>
             </section>
 
+            <!-- The schedule under the invitation. Until this existed the
+                 agenda picked its look from the event's *category*, so a
+                 partner selling a wedding design and a birthday design shipped
+                 the same list in both and could change neither. The category
+                 still decides the wording (a funeral's is a Ceremony Schedule);
+                 this decides how it is drawn. -->
             <section :class="[PANEL, 'p-4 space-y-3']">
               <h5 :class="SECTION_HEADING">
-                {{ t('management.partnerTemplateForm.hostInfoDesign.sectionTitle') }}
+                {{ t('management.partnerTemplateForm.agendaDesign.sectionTitle') }}
               </h5>
-              <TemplateFormChoice v-model="hostInfoDesignModel" :options="hostInfoDesignOptions" :columns="1" />
-              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.designHint') }}</p>
-
-              <!-- The frame is one choice drawn twice — around the title and
-                   around the avatar — so the pair can never be mismatched. Only
-                   the grid designs draw it, so it collapses away on the two that
-                   don't: arch brings its own frames and simple has neither a
-                   title nor an avatar to frame. -->
-              <Transition name="collapse">
-                <div
-                  v-if="form.host_info_design_type === 'standard' || form.host_info_design_type === 'portrait'"
-                  class="grid grid-rows-[1fr]"
-                >
-                  <div class="min-h-0 overflow-hidden">
-                    <div class="space-y-3 pt-1">
-                      <TemplateFormChoice
-                        v-model="hostFrameStyleModel"
-                        :label="t('management.partnerTemplateForm.hostInfoDesign.frameLabel')"
-                        :options="hostFrameStyleOptions"
-                        :columns="1"
-                      />
-                      <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.frameHint') }}</p>
-
-                      <TemplateFormChoice
-                        v-model="hostCoupleOrnamentModel"
-                        :label="t('management.partnerTemplateForm.hostInfoDesign.ornamentLabel')"
-                        :options="hostCoupleOrnamentOptions"
-                        :columns="1"
-                      />
-                      <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.ornamentHint') }}</p>
-                    </div>
-                  </div>
-                </div>
-              </Transition>
+              <TemplateFormChoice v-model="agendaDesignModel" :options="agendaDesignOptions" :columns="1" />
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.agendaDesign.designHint') }}</p>
             </section>
           </template>
 
@@ -1682,6 +1702,10 @@ import {
   RectangleHorizontal,
   Frame,
   Clapperboard,
+  GitCommitVertical,
+  Waypoints,
+  Milestone,
+  LayoutList,
   type LucideIcon,
 } from 'lucide-vue-next'
 import { partnerTemplateService, packagePlanService, customFontsService, FONT_TYPE_LABELS, LANGUAGE_CODE_LABELS } from '../../services/api'
@@ -1715,6 +1739,7 @@ import type {
   HostInfoDesignType,
   HostInfoDesignConfig,
   InfoCardDesignType,
+  AgendaDesignType,
   SaveTheDateDesignType,
   HostFrameStyle,
   CoupleOrnament,
@@ -2016,6 +2041,7 @@ interface FormState {
   event_details_marker_custom_color: string
   /** Host info block design rendered in the showcase (standard | simple). */
   host_info_design_type: HostInfoDesignType
+  agenda_design_type: AgendaDesignType
   /** Frame chrome shared by the host title and avatar. `none` is the pre-frames look. */
   host_frame_style: HostFrameStyle
   /** Motif between the two hosts in the grid's centre column. */
@@ -2111,6 +2137,7 @@ const defaultForm = (): FormState => ({
   event_details_marker_color_source: 'accent',
   event_details_marker_custom_color: '#B3261E',
   host_info_design_type: 'standard',
+  agenda_design_type: 'rail',
   host_frame_style: 'none',
   host_couple_ornament: 'none',
   info_card_design_type: 'glass',
@@ -2253,6 +2280,19 @@ const hostCoupleOrnamentOptions = computed(() => [
   { value: 'rings', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.rings'), icon: CircleDashed },
   { value: 'knot', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.knot'), icon: InfinityIcon },
   { value: 'bloom', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.bloom'), icon: Flower2 },
+])
+
+// Ordered by how much furniture each adds, which is also roughly how loud they
+// are: `rail` leads because it is what every existing template renders, so the
+// picker opens on no change. `stack` closes it — the only one with a surface of
+// its own, and the birthday answer. The event's category still picks the header
+// copy; none of these five knows what kind of event it is drawing.
+const agendaDesignOptions = computed(() => [
+  { value: 'rail', label: t('management.partnerTemplateForm.agendaDesign.types.rail'), icon: GitCommitVertical },
+  { value: 'thread', label: t('management.partnerTemplateForm.agendaDesign.types.thread'), icon: Waypoints },
+  { value: 'milestone', label: t('management.partnerTemplateForm.agendaDesign.types.milestone'), icon: Milestone },
+  { value: 'ledger', label: t('management.partnerTemplateForm.agendaDesign.types.ledger'), icon: Rows3 },
+  { value: 'stack', label: t('management.partnerTemplateForm.agendaDesign.types.stack'), icon: LayoutList },
 ])
 
 // The engraved option is built to sit under the calendar / flanked / arch date
@@ -2745,6 +2785,11 @@ const buildHostInfoDesignPayload = (): HostInfoDesignConfig => ({
   type: form.host_info_design_type,
   frame_style: form.host_frame_style,
   couple_ornament: form.host_couple_ornament,
+})
+
+const agendaDesignModel = computed<string>({
+  get: () => form.agenda_design_type,
+  set: (value) => { form.agenda_design_type = value as AgendaDesignType },
 })
 
 const infoCardDesignModel = computed<string>({
@@ -3633,6 +3678,10 @@ watch(
       form.host_couple_ornament = template.host_info_design?.couple_ornament ?? 'none'
       // Hydrate info card design (glass | engraved)
       form.info_card_design_type = template.info_card_design?.type ?? 'glass'
+      // Hydrate the agenda design. Absent means the template predates the
+      // field, which is exactly 'rail' - the one composition every agenda
+      // rendered back when the look came from the event category.
+      form.agenda_design_type = template.agenda_design?.type ?? 'rail'
       // Hydrate the Save the Date design. No stored value means 'auto' — each
       // transition stage keeps its own default — which is what every template
       // saved before this field existed has.
@@ -3913,6 +3962,7 @@ async function handleSave(): Promise<void> {
       event_details_design: buildEventDetailsDesignPayload(),
       host_info_design: buildHostInfoDesignPayload(),
       info_card_design: { type: form.info_card_design_type },
+      agenda_design: { type: form.agenda_design_type },
       save_the_date_design: buildSaveTheDateDesignPayload(),
       stage_modes: buildStageModesPayload(),
     }
@@ -4224,6 +4274,7 @@ const previewDraft = computed<PartnerTemplateDraft>(() => {
     event_details_design: buildEventDetailsDesignPayload(),
     host_info_design: buildHostInfoDesignPayload(),
     info_card_design: { type: form.info_card_design_type },
+    agenda_design: { type: form.agenda_design_type },
     save_the_date_design: buildSaveTheDateDesignPayload(),
     stage_modes: buildStageModesPayload(),
     colors: previewColors.value,

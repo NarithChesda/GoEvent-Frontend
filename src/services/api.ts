@@ -114,6 +114,8 @@ export type {
   CoupleOrnament,
   InfoCardDesignType,
   InfoCardDesignConfig,
+  AgendaDesignType,
+  AgendaDesignConfig,
   SaveTheDateDesignType,
   SaveTheDateDesignConfig,
   AmbientCreatureEffectType,

@@ -667,6 +667,67 @@ export interface InfoCardDesignConfig {
 }
 
 /**
+ * Composition used for the **agenda** — the list of activities under the day
+ * tabs on the main content stage.
+ *
+ * Before this existed the agenda picked its look from the *event category*:
+ * four near-identical layout components (wedding / birthday / funeral /
+ * default) that differed in a container class name, a header translation key
+ * and some copy-pasted comment drift, and rendered the exact same card. A
+ * template therefore could not choose how its own schedule looked, and a
+ * partner selling a wedding design and a birthday design shipped the same
+ * agenda in both. That inference is what this config replaces: the **category
+ * still decides the words** (`agenda_header_wedding` vs `agenda_header_funeral`
+ * are copy, and live events keep theirs), the **template decides the look**.
+ *
+ * The five designs are distinct *compositions*, not restyles — they differ in
+ * whether items are connected, which axis they are aligned on, and whether the
+ * item sits on the page or in a card:
+ *
+ * - `rail`      — **the default, and what every agenda renders today.** A
+ *                 continuous hairline spine down the leading edge with an icon
+ *                 medallion on it per item, the time as a tracked overline with
+ *                 a fading rule, the title beneath. Left-aligned, borderless.
+ * - `thread`    — items alternate sides down the page, each one an icon roundel
+ *                 and its copy mirrored against the row before it, joined by a
+ *                 dotted thread that swings between the two roundels. Borderless
+ *                 and the most decorative; the widest vertical rhythm.
+ * - `milestone` — every item centred on one axis: the roundel, then the time as
+ *                 a tracked eyebrow, then the title, with a short hairline drop
+ *                 between stops. Nothing competes for horizontal space, so it is
+ *                 the design that gives a long title — or Khmer, which sets
+ *                 wide — the whole column.
+ * - `ledger`    — an order of service: the time set in tabular numerals in a
+ *                 fixed leading column, the title beside it under a hairline
+ *                 rule per row, the icon reduced to a small glyph ahead of the
+ *                 title. No medallion, no connector; the quietest and by far
+ *                 the densest, so a twelve-item schedule still fits a phone.
+ * - `stack`     — each item a soft-tinted rounded card with a filled icon
+ *                 roundel and the time on a pill chip. The only design with a
+ *                 material of its own; rounder and warmer than the rest, which
+ *                 is what makes it the birthday option.
+ *
+ * When the field is absent / `null` the showcase renders `rail`, so every
+ * already-published template is unchanged and no migration is needed.
+ *
+ * Selected per template via `template_assets.agenda_design` and flows through
+ * the showcase exactly like `host_info_design`.
+ */
+export type AgendaDesignType = 'rail' | 'thread' | 'milestone' | 'ledger' | 'stack'
+
+/**
+ * Configuration for the agenda list on the showcase.
+ *
+ * Mirrors the `HostInfoDesignConfig` pattern: a small JSON object sent inside
+ * the template package and forwarded down to AgendaSection.vue. When omitted
+ * the showcase falls back to the `rail` design.
+ */
+export interface AgendaDesignConfig {
+  /** Which agenda composition to render. Defaults to `rail`. */
+  type: AgendaDesignType
+}
+
+/**
  * Composition used for the **Save the Date** title card on the transition
  * stage — the block that carries the label and the event date over the
  * featured photograph, between the cover and the invitation.
@@ -993,6 +1054,8 @@ export interface PartnerTemplate {
   event_details_design: EventDetailsDesignConfig | null
   host_info_design: HostInfoDesignConfig | null
   info_card_design: InfoCardDesignConfig | null
+  /** Agenda list design. Null = the `rail` design every agenda renders today. */
+  agenda_design: AgendaDesignConfig | null
   save_the_date_design: SaveTheDateDesignConfig | null
   /** Per-stage animation/video modes. Null = infer from assets + category. */
   stage_modes: StageModesConfig | null
@@ -1070,6 +1133,8 @@ export interface PartnerTemplateCreatePayload {
   host_info_design?: HostInfoDesignConfig | null
   /** Info card (venue/map/countdown/RSVP) design. Pass `null` to fall back to `glass`. */
   info_card_design?: InfoCardDesignConfig | null
+  /** Agenda list design. Pass `null` to fall back to the `rail` design. */
+  agenda_design?: AgendaDesignConfig | null
   /** Transition-stage Save the Date design. Pass `null` to keep each stage's own default. */
   save_the_date_design?: SaveTheDateDesignConfig | null
   /** Per-stage animation/video modes. Pass `null` to fall back to the legacy inference. */
