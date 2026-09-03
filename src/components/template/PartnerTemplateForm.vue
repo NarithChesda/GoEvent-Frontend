@@ -192,18 +192,26 @@
                     {{ t('management.partnerTemplateForm.fields.orderLabel') }}
                   </label>
                   <div class="flex items-center gap-2.5">
-                    <input
-                      :id="orderFieldId"
-                      ref="orderInputEl"
-                      :value="form.order"
-                      type="number"
-                      inputmode="numeric"
-                      min="0"
-                      step="1"
-                      :class="[FIELD, 'w-20 flex-shrink-0 text-center tabular-nums']"
-                      @input="onOrderInput"
-                      @blur="onOrderBlur"
-                    />
+                    <!-- The width lives on the wrapper, not the input: FIELD
+                         leads with `w-full`, and a `w-20` written beside it in
+                         the class list loses to stylesheet order — the same
+                         trap FIELD_NUM's note describes. On the input it did
+                         nothing, so the box filled the column and squeezed the
+                         hint into a one-word-wide stripe. -->
+                    <div class="w-20 flex-shrink-0">
+                      <input
+                        :id="orderFieldId"
+                        ref="orderInputEl"
+                        :value="form.order"
+                        type="number"
+                        inputmode="numeric"
+                        min="0"
+                        step="1"
+                        :class="[FIELD, 'text-center tabular-nums']"
+                        @input="onOrderInput"
+                        @blur="onOrderBlur"
+                      />
+                    </div>
                     <p :class="[FIELD_HINT, 'min-w-0']">
                       {{ t('management.partnerTemplateForm.fields.orderHint', { default: TEMPLATE_MENU_ORDER_DEFAULT }) }}
                     </p>
@@ -1605,7 +1613,10 @@
                  becomes, this is the block that sits under it (venue, map,
                  countdown, RSVP). `engraved` is the set drawn in the same
                  hairline language as the calendar / flanked / arch dates, so
-                 the two read as one sheet instead of type stacked on glass. -->
+                 the two read as one sheet instead of type stacked on glass.
+                 `frosted` keeps the card, but in the material the guestbook
+                 and the gift page below it are already made of — `glass` was
+                 drawn before those and is the heavier of the two glasses. -->
             <section :class="[PANEL, 'p-4 space-y-3']">
               <h5 :class="SECTION_HEADING">
                 {{ t('management.partnerTemplateForm.infoCardDesign.sectionTitle') }}
@@ -2384,6 +2395,7 @@ const dressCodeDesignOptions = computed(() => [
 // ticket designs it still renders, it just has nothing above it to rhyme with.
 const infoCardDesignOptions = computed(() => [
   { value: 'glass', label: t('management.partnerTemplateForm.infoCardDesign.types.glass'), icon: Droplets },
+  { value: 'frosted', label: t('management.partnerTemplateForm.infoCardDesign.types.frosted'), icon: Snowflake },
   { value: 'engraved', label: t('management.partnerTemplateForm.infoCardDesign.types.engraved'), icon: PenLine },
 ])
 

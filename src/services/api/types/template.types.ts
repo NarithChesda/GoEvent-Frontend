@@ -663,11 +663,20 @@ export interface HostInfoDesignConfig {
  *                plate. Built to sit under the `calendar` / `flanked` / `arch`
  *                date designs, which are drawn in the same language — the glass
  *                panel reads as a different material stacked under them.
+ * - `frosted`  — one translucent sheet in the template's own tone, drawn to the
+ *                same recipe as the guestbook's `.wb-panel` and the gift page's
+ *                `.pay-sheet`: a single blurred layer, hairline seams that fade
+ *                at both ends rather than drawn dividers, and ink rather than
+ *                white type. `glass` predates both of those sections and is a
+ *                heavier material than either — a 2px white border over a
+ *                60%-alpha fill — so a showcase using it renders the info card
+ *                in one material and the two sections below it in another. This
+ *                is the same card rebuilt in the material they settled on.
  *
  * Selected per template via `template_assets.info_card_design` and flows through
  * the showcase exactly like `event_details_design`.
  */
-export type InfoCardDesignType = 'glass' | 'engraved'
+export type InfoCardDesignType = 'glass' | 'engraved' | 'frosted'
 
 /**
  * Configuration for the venue / map / countdown / RSVP card on the showcase.

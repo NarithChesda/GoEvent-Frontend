@@ -6,6 +6,7 @@
     :class="{
       'animate-active': isVisible,
       'is-engraved': isEngraved,
+      'is-frosted': isFrosted,
       'is-khmer': currentLanguage === 'kh',
       'joins-date-mark': engravedJoinsDateMark,
     }"
@@ -423,44 +424,26 @@
 
     <!-- Event Details Block -->
     <div class="space-y-3">
-      <!-- Two treatments of the same content. `glass` is the original: a
+      <!-- Three treatments of the same content. `glass` is the original: a
            2px-white-bordered, tinted, blurred panel with white type throughout.
            `engraved` throws the panel away and sets the block as ink on the
-           page ground, bounded by the same hairline rules the calendar uses —
-           see the .engraved-sheet block in <style>. -->
+           page ground, bounded by the same hairline rules the calendar uses.
+           `frosted` keeps a card but rebuilds it in the guestbook's and the
+           gift page's material — one blurred sheet, ink type, fading seams —
+           so all three sections on the scroll are the same glass. See the
+           .engraved-sheet and .frosted-sheet blocks in <style>.
+
+           The class and style for both layers are computed rather than written
+           as nested ternaries here: three treatments × two layers is six
+           branches, and the glass branch's Tailwind utility string has to stay
+           *off* the other two (the breakpoint blocks below redefine .px-4 and
+           friends with !important). -->
       <div
         class="block relative bounce-in-element"
-        :class="isEngraved ? 'engraved-sheet' : 'gradient-stroke-container'"
-        :style="
-          isEngraved
-            ? {
-                color: primaryColor,
-                '--engraved-ink': primaryColor,
-                '--engraved-paper': engravedPaper,
-                '--details-marker-color': detailsMarkerColor,
-                animationDelay: `${animationDelays.card}s`,
-              }
-            : {
-                background: `${backgroundColor || primaryColor}60`,
-                padding: '2px',
-                borderRadius: '2rem',
-                animationDelay: `${animationDelays.card}s`,
-              }
-        "
+        :class="infoShellClass"
+        :style="infoShellStyle"
       >
-        <div
-          class="relative"
-          :class="isEngraved ? 'engraved-inner' : 'px-4 pt-3 pb-4 backdrop-blur-sm space-y-1'"
-          :style="
-            isEngraved
-              ? {}
-              : {
-                  borderRadius: 'calc(2rem - 2px)',
-                  border: '2px solid white',
-                  background: `${backgroundColor || primaryColor}60`,
-                }
-          "
-        >
+        <div class="relative" :class="infoInnerClass" :style="infoInnerStyle">
           <!-- Location header for every design that delegates its venue here
                (calendar, flanked, arch — see locationInMapCard): centered above
                the map frame, replacing the panel design's location card. -->
@@ -485,7 +468,7 @@
           <div
             v-if="hasGoogleMap && googleMapEmbedLink"
             class="pt-2 bounce-in-element"
-            :class="{ 'engraved-map': isEngraved }"
+            :class="{ 'engraved-map': isEngraved, 'frosted-map': isFrosted }"
             :style="{ animationDelay: `${animationDelays.map}s` }"
           >
             <EditableRegion :intent="{ kind: 'gmapEmbed' }">
@@ -495,11 +478,11 @@
                    stationery. Glass keeps the soft rounded window. -->
               <div
                 class="aspect-video overflow-hidden"
-                :class="{ 'engraved-plate': isEngraved }"
+                :class="{ 'engraved-plate': isEngraved, 'frosted-plate': isFrosted }"
                 :style="
-                  isEngraved
-                    ? {}
-                    : { border: '1px solid rgba(255, 255, 255, 0.3)', borderRadius: '1rem' }
+                  isGlassCard
+                    ? { border: '1px solid rgba(255, 255, 255, 0.3)', borderRadius: '1rem' }
+                    : {}
                 "
               >
                 <iframe
@@ -550,7 +533,7 @@
                 :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
                 :style="{
                   fontFamily: secondaryFont || currentFont,
-                  ...(isEngraved ? {} : { color: 'white' }),
+                  ...(isGlassCard ? { color: 'white' } : {}),
                 }"
               >
                 {{ countdownHeader }}
@@ -577,12 +560,14 @@
                   </div>
                 </div>
 
-                <!-- Separator. Glass sets the two figures as one clock, so it
-                     needs a colon between them. Engraved sets them as two
-                     captioned figures, each measured by its own rule — there is
-                     nothing between them to separate, so nothing is drawn
-                     there. This also retires the Khmer colon baseline hack for
-                     that design, since no glyph sits between the columns. -->
+                <!-- Separator. Glass and frosted set the two figures as one
+                     clock, so both need a colon between them. Engraved sets
+                     them as two captioned figures, each measured by its own
+                     rule — there is nothing between them to separate, so
+                     nothing is drawn there. This also retires the Khmer colon
+                     baseline hack for that design, since no glyph sits between
+                     the columns. (Frosted retires it differently: see
+                     .is-frosted .countdown-separator.) -->
                 <div
                   v-if="!isEngraved"
                   class="countdown-separator"
@@ -614,9 +599,12 @@
             </div>
           </div>
 
-          <!-- Divider between Countdown and RSVP -->
+          <!-- Divider between Countdown and RSVP. Glass only: engraved's bands
+               are separated by their own rhythm, and frosted draws the seam on
+               the RSVP band itself (one rule for every boundary in the sheet,
+               rather than a drawn line here and a hairline everywhere else). -->
           <div
-            v-if="!isEngraved && countdown && isCountdownActive && (showCountdown || editIntentCtx) && (showRsvp || editIntentCtx)"
+            v-if="isGlassCard && countdown && isCountdownActive && (showCountdown || editIntentCtx) && (showRsvp || editIntentCtx)"
             class="countdown-divider bounce-in-element"
             :style="{ animationDelay: `${animationDelays.divider}s` }"
           >
@@ -700,9 +688,11 @@ interface Props {
    * Treatment of the card below the date — venue, map, countdown and RSVP.
    * Defaults to 'glass' (the liquid-glass panel), so every existing template
    * renders unchanged. 'engraved' redraws the same content in the calendar's
-   * hairline language: no panel, no white, ink on the page ground.
+   * hairline language: no panel, no white, ink on the page ground. 'frosted'
+   * keeps the card but rebuilds it as one blurred sheet in the guestbook's and
+   * the gift page's material, with ink type and fading hairline seams.
    */
-  infoCardDesign?: 'glass' | 'engraved'
+  infoCardDesign?: 'glass' | 'engraved' | 'frosted'
   /**
    * Colour slot the design's accent mark draws from — the calendar's heart ring
    * + day-number tint, the flanked rules, the arch outline, the ticket
@@ -824,6 +814,18 @@ const isCalendarDesign = computed(() => activeDesign.value === 'calendar')
 // primaryColor, which is what lets it read as the same sheet as the calendar /
 // flanked / arch date marks rather than a second material stacked under them.
 const isEngraved = computed(() => props.infoCardDesign === 'engraved')
+
+// 'frosted' keeps the card — it is still a bounded object with a map and a form
+// inside it — but rebuilds it out of the material the guestbook and the gift
+// page settled on: one blurred layer, tinted with the template's own
+// background, ink type, and seams that fade out at both ends. The original
+// 'glass' is a heavier material than either of those sections, so a showcase
+// that uses it shows the reader two different kinds of glass on one scroll.
+const isFrosted = computed(() => props.infoCardDesign === 'frosted')
+
+// The original panel. Named rather than derived at each use site so the three
+// treatments read as one closed set wherever the template branches on them.
+const isGlassCard = computed(() => !isEngraved.value && !isFrosted.value)
 
 // The engraved card is one continuous sheet with the date mark above it, so the
 // mark gives up its own closing rule and lets the card's opening rule serve as
@@ -1135,10 +1137,11 @@ const countdownHoursDisplay = computed(() => {
 // Rajdhani has no Khmer glyphs — fall back to the showcase primary font so
 // the Khmer numerals render consistently with the rest of the card.
 const countdownNumberFont = computed(() => {
-  // Engraved sets the count in the template's own display face — the same one
-  // the calendar heading uses. Rajdhani is a condensed UI face chosen to fill
-  // the glass panel; on the engraved sheet it reads as a different document.
-  if (isEngraved.value) return props.primaryFont || props.currentFont
+  // Engraved and frosted both set the count in the template's own display face
+  // — the same one the calendar heading uses. Rajdhani is a condensed UI face
+  // chosen to fill the glass panel at 8rem; at the calmer size the other two
+  // set the count in, it reads as a different document.
+  if (isEngraved.value || isFrosted.value) return props.primaryFont || props.currentFont
   return props.currentLanguage === 'kh'
     ? props.primaryFont || props.currentFont
     : `'Rajdhani', sans-serif`
@@ -1175,9 +1178,10 @@ const contrastRatio = (a: string, b: string): number => {
 }
 
 /**
- * Paper colour behind the engraved ink — used for the text of the one filled
- * control the set allows (the RSVP submit / selected option), which inverts to
- * ink-on-paper.
+ * A colour that is readable *against* the template's ink — used for the text of
+ * the one filled control each inked design allows (the RSVP submit / selected
+ * option), which inverts to ink-on-paper. Engraved reads it as the paper its
+ * type is printed on; frosted as the label on its one solid capsule.
  *
  * It cannot simply *be* the template's background. `useTemplateProcessor`
  * already substitutes the primary colour for any template that declares no
@@ -1187,7 +1191,7 @@ const contrastRatio = (a: string, b: string): number => {
  * while it stays readable against the ink; otherwise pick whichever of the two
  * papers contrasts better, the way InlineEditableText picks its backing plate.
  */
-const engravedPaper = computed(() => {
+const paperOnInk = computed(() => {
   const ink = toHex6(props.primaryColor)
   if (!ink) {
     /* Unmeasurable ink (a named colour, an rgb()/hsl() string, an 8-digit
@@ -1207,7 +1211,84 @@ const engravedPaper = computed(() => {
     ? PAPER_LIGHT
     : PAPER_DARK
 })
+
+/* ---------------------------------------------------------------------------
+ * The info card's two layers, resolved once per design.
+ *
+ * The outer element carries the material (frame, fill, blur, shadow) and the
+ * inner one carries the padding — an arrangement `glass` needs, because its
+ * frame is a 2px gradient stroke drawn as padding on the outer box. The other
+ * two designs have nothing between the layers, so they hand the outer element
+ * everything and flatten the inner one to a plain flow container.
+ *
+ * Written as computeds rather than as ternaries in the template for one
+ * concrete reason: the glass branch's inner class is a *Tailwind utility
+ * string* (`px-4 pt-3 pb-4 …`), and the six breakpoint blocks at the bottom of
+ * this file redefine those very utility names with `!important`. Any design
+ * that borrows the string inherits ~500 lines of overrides written for a
+ * different card, so the string has to stay on exactly one branch — which is
+ * much easier to see here than inside a nested ternary.
+ * ------------------------------------------------------------------------ */
+
+const infoShellClass = computed(() => {
+  if (isEngraved.value) return 'engraved-sheet'
+  if (isFrosted.value) return 'frosted-sheet'
+  return 'gradient-stroke-container'
+})
+
+const infoShellStyle = computed(() => {
+  /* Filled rather than returned per branch: three object literals of different
+     shapes widen to a union whose keys are all optional, and an optional key
+     does not satisfy a style object's `string` index signature. */
+  const style: Record<string, string> = {
+    animationDelay: `${animationDelays.value.card}s`,
+  }
+
+  if (isEngraved.value) {
+    style.color = props.primaryColor
+    style['--engraved-ink'] = props.primaryColor
+    style['--engraved-paper'] = paperOnInk.value
+    style['--details-marker-color'] = detailsMarkerColor.value
+    return style
+  }
+
+  if (isFrosted.value) {
+    /* Three colours feed the whole sheet, the same three the guestbook and the
+       gift page take: the ink every piece of copy is mixed from, the tone every
+       surface and hairline is mixed from, and the paper for the one solid
+       control. Binding them here is what keeps the stylesheet below free of
+       inline colour. */
+    style.color = props.primaryColor
+    style['--fr-ink'] = props.primaryColor
+    style['--fr-tone'] = props.backgroundColor || props.primaryColor
+    style['--fr-paper'] = paperOnInk.value
+    style['--details-marker-color'] = detailsMarkerColor.value
+    return style
+  }
+
+  style.background = `${props.backgroundColor || props.primaryColor}60`
+  style.padding = '2px'
+  style.borderRadius = '2rem'
+  return style
+})
+
+const infoInnerClass = computed(() => {
+  if (isEngraved.value) return 'engraved-inner'
+  if (isFrosted.value) return 'frosted-inner'
+  return 'px-4 pt-3 pb-4 backdrop-blur-sm space-y-1'
+})
+
+const infoInnerStyle = computed(() => {
+  const style: Record<string, string> = {}
+  if (!isGlassCard.value) return style
+
+  style.borderRadius = 'calc(2rem - 2px)'
+  style.border = '2px solid white'
+  style.background = `${props.backgroundColor || props.primaryColor}60`
+  return style
+})
 </script>
+
 
 <style scoped>
 /* Stylish event details card — two-column panel framed with top+bottom borders.
@@ -3666,6 +3747,674 @@ const engravedPaper = computed(() => {
   font-size: 0.6875rem !important;
 }
 
+/* ============================================================
+   FROSTED INFO CARD  (info_card_design.type === 'frosted')
+
+   Why this exists: `glass` is the oldest material in the
+   showcase. It was drawn before the guestbook and the gift page
+   were rebuilt, and it is heavier than either — a 2px solid
+   white border around a 60%-alpha fill, with white type on it.
+   Those two sections now share one recipe (`.wb-panel`,
+   `.pay-sheet`): a single blurred layer tinted with the
+   template's own background, ink instead of white, and hairlines
+   that fade out at both ends instead of drawn dividers. Scrolled
+   past in one pass, the invitation therefore shows two different
+   kinds of glass, and the older one reads as the mistake.
+
+   So this is the same card — venue, map, countdown, RSVP —
+   rebuilt to that recipe, deliberately identical to it rather
+   than merely similar. Three colours come in from the component
+   (`--fr-ink`, `--fr-tone`, `--fr-paper`) and everything below is
+   a mix of them.
+
+   What changes, and why:
+
+     · one material, one blur — the sheet is the only element
+       here that filters what is behind it. A translucent surface
+       stacked on a translucent surface is the one thing the
+       material rules forbid outright, so the map, the countdown
+       and the reply sit *on* the sheet rather than in cards of
+       their own
+     · ink, never white — over a light translucent surface white
+       type has nothing holding it. Vibrancy instead: full-ink
+       copy, a weight step up on small text, and tracking rather
+       than a grey
+     · seams, not dividers — every boundary inside the sheet is
+       one hairline that fades out at both ends, the gift page's
+       seam
+     · one accent — --details-marker-color, spent on the
+       countdown numerals exactly as engraved spends it
+     · size-specific tracking — the count tightens as it grows,
+       the captions open up as they shrink
+
+   Sizing is mobile-first and scaled by ONE number, `--fr-s`,
+   matching the guestbook's `--wb-s` and the gift page's
+   `--pay-s`. The six breakpoint blocks above size the *glass*
+   card and reach these class names too, so the rules here carry
+   `!important` wherever one of those does.
+   ============================================================ */
+
+.frosted-sheet {
+  --fr-s: 1;
+  --fr-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --fr-hair-soft: color-mix(in srgb, var(--fr-tone) 13%, transparent);
+  /* The sheet's own padding, and therefore the inset every band
+     shares. Named because the map's corner radius is derived
+     from it — see .frosted-plate. */
+  --fr-pad: calc(0.875rem * var(--fr-s));
+
+  /* Full width of the content column, deliberately unlike
+     .engraved-sheet and .calendar-card, which are capped at 420px
+     so the mark and the sheet under it read as one piece of
+     stationery. This is a card, and the objects it has to agree
+     with are the agenda, the gift page and the guestbook below
+     it — all of which run the column's full width. Capping it
+     would leave the one sheet built to match them narrower than
+     every one of them, on a card that is 85vw wide. */
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--fr-pad);
+  /* 1.25rem is the guestbook's and the gift page's radius, not a
+     number chosen here: three sheets in one scroller with three
+     different corner radii is the drift this design exists to
+     remove. */
+  border-radius: 1.25rem;
+  color: var(--fr-ink);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--fr-tone) 9%, transparent),
+    color-mix(in srgb, var(--fr-tone) 4%, transparent)
+  );
+  /* Hairline ring, a bright top edge where light catches the
+     material, and a shadow deeper than a chip's because the
+     surface is bigger. */
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--fr-tone) 14%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 10px 30px -20px color-mix(in srgb, var(--fr-tone) 70%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+}
+
+.frosted-inner {
+  padding: 0;
+}
+
+/* --- Entrance ---------------------------------------------------
+   The shared .bounce-in-element lands every block on this stage
+   with a 15px rise and an overshoot. Overshoot is momentum, and
+   nothing threw this card — it appeared because the reader
+   scrolled to it — so the sheet settles instead: critically
+   damped, no bounce, and a scale alongside the rise so the
+   material reads as arriving rather than as fading up.
+
+   The delay stays inline (animationDelays.card); an inline
+   longhand outranks this shorthand's implicit reset of it. */
+.animate-active .frosted-sheet {
+  animation: frostedSettle 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes frostedSettle {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* --- Seams ------------------------------------------------------
+   One boundary mark for the whole sheet: a hairline that fades
+   out at both ends, drawn on the band it opens rather than as an
+   element between two bands. The gift page separates one payment
+   method from the next with exactly this rule.
+
+   :first-child suppresses it when a band opens the sheet — the
+   countdown does when the event has no venue line and no map.
+   Vue renders a comment node for a false v-if and :first-child
+   ignores comment nodes, so this stays correct however the
+   sections are toggled. */
+.is-frosted .countdown-container::before,
+.is-frosted .rsvp-toggle-container::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--fr-hair-soft) 18%,
+    var(--fr-hair-soft) 82%,
+    transparent
+  );
+}
+
+.is-frosted .frosted-inner > :first-child::before {
+  content: none;
+}
+
+/* --- Venue ------------------------------------------------------
+   Vibrancy, not grey: over a translucent surface the way to set
+   a line back is weight and size, because a grey borrows
+   whatever is drifting behind the sheet. This one is not set
+   back at all — it is the fact the map is a picture of. */
+.is-frosted .map-location-header {
+  color: inherit;
+  font-size: calc(0.9375rem * var(--fr-s));
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  line-height: 1.4;
+  padding: calc(0.125rem * var(--fr-s)) calc(0.25rem * var(--fr-s))
+    calc(0.7rem * var(--fr-s));
+}
+
+/* --- Map window -------------------------------------------------
+   A window in the sheet, not a plate on it: the sheet's own
+   corner radius less its padding, which is how a rounded frame
+   and the rounded hole inside it stay concentric. Rounded up an
+   eighth from the exact figure, because a 16:9 window at 0.375rem
+   reads as a square hole punched in a soft card.
+
+   The hairline is a border rather than an inset shadow: the
+   iframe is content and paints over an inset shadow, which would
+   delete three of the four edges. Preflight's border-box keeps
+   the bordered window at the band's width. */
+.is-frosted .frosted-map {
+  padding: 0 0 calc(0.85rem * var(--fr-s)) !important;
+}
+
+.is-frosted .frosted-plate {
+  border: 1px solid color-mix(in srgb, var(--fr-tone) 22%, transparent);
+  border-radius: calc(1.25rem - var(--fr-pad) + 0.125rem);
+  background: transparent;
+}
+
+.is-frosted .frosted-plate iframe {
+  display: block;
+}
+
+/* --- Countdown --------------------------------------------------
+   The glass card sets the count as a scoreboard: two numerals at
+   up to 8rem in a condensed UI face, white, with a drop shadow
+   under them to survive whatever video is playing behind. None
+   of that is needed on a sheet that carries its own ground, and
+   at 8rem the count out-shouts the venue above it and the reply
+   below — the two things the card is actually for.
+
+   So it comes down to a size the sheet can hold and the type
+   does the work instead: the numerals tighten (letters read too
+   far apart as they grow), the captions open up and take a
+   weight step (small text over translucency needs both), and the
+   accent lands on the figures — the sheet's one point of colour.
+
+   The colon stays. Two figures with a colon is a *time*, which
+   is what a countdown is; engraved dropped it only because it
+   sets the two halves as separately measured figures. */
+.is-frosted .countdown-container {
+  padding: calc(1.1rem * var(--fr-s)) 0 calc(1rem * var(--fr-s)) !important;
+}
+
+/* Manage-preview only. The band's own padding above outranks the
+   shared clearance rule (same specificity, later in the file), so
+   the clearance is restated here at a higher one. */
+.is-frosted .countdown-container.has-display-toggle {
+  padding-top: 2.25rem !important;
+}
+
+.is-frosted .countdown-wrapper {
+  gap: 0 !important;
+}
+
+.is-frosted .countdown-header {
+  color: inherit;
+  /* A step below the unit labels: three tiers of identical small
+     caps would leave the band with hierarchy only in the
+     numerals. */
+  opacity: 0.6;
+  font-size: calc(0.6875rem * var(--fr-s)) !important;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  margin-bottom: calc(0.85rem * var(--fr-s));
+}
+
+/* Top-aligned, which is what retires the colon's hand-fitted
+   offset — see the separator below. */
+.is-frosted .countdown-time-row {
+  align-items: flex-start;
+  gap: calc(0.7rem * var(--fr-s));
+}
+
+.is-frosted .countdown-number {
+  color: var(--details-marker-color, currentColor);
+  font-size: calc(clamp(2.75rem, 13vw, 4.25rem) * var(--fr-s)) !important;
+  font-weight: 600;
+  line-height: 1;
+  /* Tracking is size-specific: at display size the letters read
+     too far apart, so the count tightens where the captions
+     below open up. */
+  letter-spacing: -0.03em;
+  /* Tracking is trailing width; the indent hands it back so the
+     numeral sits on its column's centre. Same trade the engraved
+     plate makes, in the other direction. */
+  text-indent: -0.03em;
+  text-shadow: none;
+}
+
+/* The glass card centres the colon by hanging a margin under it,
+   hand-fitted to the label's height — which is wrong the moment
+   the label changes size or language, and needed a second,
+   separately hand-fitted correction for Khmer.
+
+   A colon sits mid-em in every face. Give it the numerals' own
+   font-size and line-height and align the three boxes at the
+   top, and it lands on the digits' centre by construction, in
+   any face and either script. Both corrections are cancelled
+   here rather than re-tuned, so nothing is left fitted to a size
+   this design does not use. The .is-khmer selector is repeated
+   because the base one carries the same specificity and sits in
+   a later media query. */
+.is-frosted .countdown-separator,
+.is-frosted .countdown-separator.is-khmer {
+  color: color-mix(in srgb, currentColor 38%, transparent);
+  font-size: calc(clamp(2.75rem, 13vw, 4.25rem) * var(--fr-s)) !important;
+  font-weight: 600;
+  line-height: 1;
+  align-self: flex-start;
+  margin-bottom: 0 !important;
+  transform: none;
+  text-shadow: none;
+}
+
+.is-frosted .countdown-unit-label {
+  color: inherit;
+  opacity: 0.62;
+  font-size: calc(0.6875rem * var(--fr-s)) !important;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  margin-top: calc(0.5rem * var(--fr-s));
+}
+
+/* --- The reply --------------------------------------------------
+   The RSVP form is slotted in from MainContentStage, so its
+   white-on-glass styling is re-toned from here rather than
+   forked into two copies of an 1,800-line component — the same
+   arrangement the engraved set uses, and for the same reason.
+
+   Unlike engraved, the composition is left alone. The status
+   options stay a wrap of capsules and the actions stay a pill:
+   engraved rebuilt both as a ruled list because a sheet with no
+   border has nothing to absorb a ragged edge. This sheet has a
+   border. Only the colours, the material and the touch targets
+   change.
+
+   `!important` appears only where the source sets colour as an
+   *inline* style and nothing else can outrank it. */
+.is-frosted .rsvp-toggle-container {
+  padding: calc(1.2rem * var(--fr-s)) 0 calc(0.35rem * var(--fr-s));
+  color: inherit;
+}
+
+.is-frosted .rsvp-toggle-container.has-display-toggle {
+  padding-top: 2.25rem;
+}
+
+.is-frosted .rsvp-toggle-container :deep(.rsvp-title),
+.is-frosted .rsvp-toggle-container :deep(.step-prompt),
+.is-frosted .rsvp-toggle-container :deep(.stepper-value),
+.is-frosted .rsvp-toggle-container :deep(.stepper-label),
+.is-frosted .rsvp-toggle-container :deep(.toggle-label),
+.is-frosted .rsvp-toggle-container :deep(.confirmation-text),
+.is-frosted .rsvp-toggle-container :deep(.confirmation-code-text),
+.is-frosted .rsvp-toggle-container :deep(.seat-stat-value),
+.is-frosted .rsvp-toggle-container :deep(.link-btn),
+.is-frosted .rsvp-toggle-container :deep(.message-text),
+.is-frosted .rsvp-toggle-container :deep(.label-error),
+.is-frosted .rsvp-toggle-container :deep(.required-star),
+.is-frosted .rsvp-toggle-container :deep(.text-white) {
+  color: inherit;
+}
+
+/* Secondary copy is set back in the ink, never in a grey. */
+.is-frosted .rsvp-toggle-container :deep(.step-hint),
+.is-frosted .rsvp-toggle-container :deep(.rsvp-placeholder),
+.is-frosted .rsvp-toggle-container :deep(.responded-at),
+.is-frosted .rsvp-toggle-container :deep(.message-text.success),
+.is-frosted .rsvp-toggle-container :deep(.seat-stat-label) {
+  color: color-mix(in srgb, currentColor 62%, transparent);
+}
+
+.is-frosted .rsvp-toggle-container :deep(.message-text.error) {
+  font-weight: 600;
+}
+
+/* The inactive half of the attend/decline pair is dimmed by an
+   *inline* opacity: 0.6, tuned for white on a saturated panel.
+   The same factor on ink over a pale sheet is a whisper, so the
+   dimming moves into the colour and the inline opacity is
+   cancelled. */
+.is-frosted .rsvp-toggle-container :deep(.toggle-label) {
+  opacity: 1 !important;
+  color: color-mix(in srgb, currentColor 60%, transparent);
+}
+
+.is-frosted
+  .rsvp-toggle-container
+  :deep(.toggle-container:has(.toggle-switch:not(.active)) .toggle-label:first-child),
+.is-frosted
+  .rsvp-toggle-container
+  :deep(.toggle-container:has(.toggle-switch.active) .toggle-label:last-child) {
+  color: inherit;
+  font-weight: 600;
+}
+
+/* Unselected controls are the sheet's own material one shade up:
+   a hairline ring over a faint tint, never a white box. */
+.is-frosted .rsvp-toggle-container :deep(.chip),
+.is-frosted .rsvp-toggle-container :deep(.status-option),
+.is-frosted .rsvp-toggle-container :deep(.edit-btn) {
+  border: 1px solid color-mix(in srgb, var(--fr-tone) 26%, transparent);
+  background: color-mix(in srgb, var(--fr-tone) 8%, transparent) !important;
+  color: inherit !important;
+  box-shadow: none;
+  transition:
+    background 0.18s var(--fr-ease),
+    border-color 0.18s var(--fr-ease),
+    color 0.18s var(--fr-ease),
+    transform 0.12s var(--fr-ease);
+}
+
+/* 44px is the floor for anything answered with a thumb, and the
+   status options carry the whole question. */
+.is-frosted .rsvp-toggle-container :deep(.status-option) {
+  min-height: 2.75rem;
+}
+
+/* The guest's own marks — solid ink, with the label in the one
+   colour measured to survive on it (paperOnInk). The template's
+   background cannot be used here: it is substituted with the
+   primary colour whenever a template declares none, which would
+   print the label in its own fill. */
+.is-frosted .rsvp-toggle-container :deep(.chip.active),
+.is-frosted .rsvp-toggle-container :deep(.status-option.active) {
+  border-color: var(--fr-ink, currentColor);
+  background: var(--fr-ink, currentColor) !important;
+  color: var(--fr-paper, #fff) !important;
+}
+
+/* Press feedback lands on pointer-down, not on the state change,
+   and a wide control reads a given scale as more movement than a
+   small one — so the capsules press further than the pill. */
+.is-frosted .rsvp-toggle-container :deep(.chip:active),
+.is-frosted .rsvp-toggle-container :deep(.status-option:active) {
+  transform: scale(0.97);
+}
+
+/* The one primary action, whichever flow drew it: the wizard's
+   next/submit and the public form's sign-in. Emphasis is a solid
+   fill on a sheet where everything else is a hairline — and a
+   44px target, which the ~24px pill was not. */
+.is-frosted .rsvp-toggle-container :deep(.nav-btn.next),
+.is-frosted .rsvp-toggle-container :deep(.nav-btn.submit),
+.is-frosted .rsvp-toggle-container :deep(.rsvp-btn-signin) {
+  min-height: 2.75rem;
+  padding: 0.5rem 1.35rem;
+  border: none;
+  background: var(--fr-ink, currentColor) !important;
+  color: var(--fr-paper, #fff) !important;
+  font-weight: 600;
+  box-shadow: 0 6px 18px -12px color-mix(in srgb, var(--fr-ink) 90%, transparent);
+  transition:
+    box-shadow 0.2s var(--fr-ease),
+    background 0.2s var(--fr-ease),
+    transform 0.12s var(--fr-ease);
+}
+
+/* Disabled is a lighter impression, not a faded one: the base
+   rule's opacity: 0.5 over a translucent sheet reads as a
+   rendering fault. The fill stays, set back in the ink, so the
+   band's call to action is still legible while it is inert. */
+.is-frosted .rsvp-toggle-container :deep(.nav-btn.next:disabled),
+.is-frosted .rsvp-toggle-container :deep(.nav-btn.submit:disabled) {
+  opacity: 1;
+  background: color-mix(in srgb, var(--fr-ink) 32%, transparent) !important;
+  box-shadow: none;
+}
+
+/* The retreat is not a second primary action. */
+.is-frosted .rsvp-toggle-container :deep(.nav-btn.back) {
+  min-height: 2.75rem;
+  border: 1px solid color-mix(in srgb, var(--fr-tone) 26%, transparent);
+  background: transparent !important;
+  color: color-mix(in srgb, currentColor 68%, transparent) !important;
+  box-shadow: none;
+}
+
+.is-frosted .rsvp-toggle-container :deep(.nav-btn:active:not(:disabled)),
+.is-frosted .rsvp-toggle-container :deep(.rsvp-btn-signin:active) {
+  transform: scale(0.985);
+}
+
+/* A translucent surface has no fixed colour behind it, so a hover
+   cannot be a lighter tint of one — it is the same material one
+   step denser. */
+@media (hover: hover) and (pointer: fine) {
+  .is-frosted .rsvp-toggle-container :deep(.chip:hover:not(.active)),
+  .is-frosted .rsvp-toggle-container :deep(.status-option:hover:not(.active)),
+  .is-frosted .rsvp-toggle-container :deep(.edit-btn:hover),
+  .is-frosted .rsvp-toggle-container :deep(.nav-btn.back:hover) {
+    background: color-mix(in srgb, var(--fr-tone) 16%, transparent) !important;
+    border-color: color-mix(in srgb, var(--fr-tone) 42%, transparent);
+    color: inherit !important;
+  }
+
+  .is-frosted
+    .rsvp-toggle-container
+    :deep(.nav-btn.next:hover:not(:disabled):not(:active)),
+  .is-frosted
+    .rsvp-toggle-container
+    :deep(.nav-btn.submit:hover:not(:disabled):not(:active)),
+  .is-frosted .rsvp-toggle-container :deep(.rsvp-btn-signin:hover:not(:active)) {
+    transform: none;
+    box-shadow: 0 10px 24px -12px color-mix(in srgb, var(--fr-ink) 90%, transparent);
+  }
+
+  /* The public form's counter sets `border-color: white`, which on
+     this sheet deletes the button at exactly the moment the
+     pointer is on it. */
+  .is-frosted .rsvp-toggle-container :deep(.stepper-btn:hover:not(:disabled)) {
+    border-color: var(--fr-ink, currentColor);
+    background: color-mix(in srgb, var(--fr-tone) 16%, transparent);
+    transform: none;
+  }
+}
+
+/* The glass card's focus ring is white, which on this sheet is no
+   ring. */
+.is-frosted .rsvp-toggle-container :deep(.status-option:focus-visible),
+.is-frosted .rsvp-toggle-container :deep(.chip:focus-visible),
+.is-frosted .rsvp-toggle-container :deep(.stepper-btn:focus-visible),
+.is-frosted .rsvp-toggle-container :deep(.nav-btn:focus-visible),
+.is-frosted .rsvp-toggle-container :deep(.edit-btn:focus-visible),
+.is-frosted .rsvp-toggle-container :deep(.link-btn:focus-visible),
+.is-frosted .rsvp-toggle-container :deep(.rsvp-btn-signin:focus-visible) {
+  outline: 2px solid var(--fr-ink, currentColor);
+  outline-offset: 2px;
+}
+
+/* The counter's two buttons are ~1.55-1.75rem, well under a
+   thumb. An invisible expander takes the target to ~44px without
+   moving anything — the layout is still driven by the drawn
+   circle. */
+.is-frosted .rsvp-toggle-container :deep(.stepper-btn) {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--fr-tone) 26%, transparent);
+  background: color-mix(in srgb, var(--fr-tone) 8%, transparent);
+  color: inherit;
+}
+
+.is-frosted .rsvp-toggle-container :deep(.stepper-btn)::after {
+  content: '';
+  position: absolute;
+  inset: -0.6rem;
+}
+
+.is-frosted .rsvp-toggle-container :deep(.line-input),
+.is-frosted .rsvp-toggle-container :deep(.line-textarea) {
+  color: inherit;
+  border-bottom-color: color-mix(in srgb, var(--fr-tone) 30%, transparent);
+}
+
+.is-frosted .rsvp-toggle-container :deep(.line-input::placeholder),
+.is-frosted .rsvp-toggle-container :deep(.line-textarea::placeholder) {
+  color: color-mix(in srgb, currentColor 45%, transparent);
+}
+
+.is-frosted .rsvp-toggle-container :deep(.line-input:focus),
+.is-frosted .rsvp-toggle-container :deep(.line-textarea:focus) {
+  border-bottom-color: var(--fr-ink, currentColor);
+}
+
+/* The progress bar is the one place the glass card uses a glow.
+   Here it is a hairline track with a solid fill — a glow needs a
+   dark ground to bloom against, and this sheet has none. */
+.is-frosted .rsvp-toggle-container :deep(.wizard-progress) {
+  background: var(--fr-hair-soft);
+}
+
+.is-frosted .rsvp-toggle-container :deep(.wizard-progress-fill) {
+  background: var(--fr-ink, currentColor);
+  box-shadow: none;
+}
+
+.is-frosted .rsvp-toggle-container :deep(.rsvp-title-check),
+.is-frosted .rsvp-toggle-container :deep(.confirmation-chip),
+.is-frosted .rsvp-toggle-container :deep(.seat-ticket) {
+  border-color: color-mix(in srgb, var(--fr-tone) 26%, transparent);
+  background: color-mix(in srgb, var(--fr-tone) 8%, transparent);
+  color: inherit;
+}
+
+.is-frosted .rsvp-toggle-container :deep(.toggle-switch) {
+  border: 1px solid color-mix(in srgb, var(--fr-tone) 30%, transparent);
+  background: color-mix(in srgb, var(--fr-tone) 10%, transparent) !important;
+}
+
+.is-frosted .rsvp-toggle-container :deep(.toggle-thumb) {
+  background: var(--fr-ink, currentColor) !important;
+}
+
+.is-frosted .rsvp-toggle-container :deep(.spinner-white),
+.is-frosted .rsvp-toggle-container :deep(.spinner-inline) {
+  border-color: color-mix(in srgb, currentColor 25%, transparent);
+  border-top-color: currentColor;
+}
+
+.is-frosted .rsvp-toggle-container :deep(.seat-ticket-divider) {
+  background: var(--fr-hair-soft);
+}
+
+/* Manage-preview only: the dashed add-map affordance, re-toned so
+   the partner sees the frosted sheet rather than a white dashed
+   box. It stands in for the map, so it takes the map's box — same
+   radius, same closing gap. */
+.is-frosted .add-map-placeholder {
+  border-color: color-mix(in srgb, var(--fr-tone) 34%, transparent);
+  border-radius: calc(1.25rem - var(--fr-pad) + 0.125rem);
+  background: color-mix(in srgb, var(--fr-tone) 8%, transparent);
+  color: color-mix(in srgb, var(--fr-ink) 75%, transparent);
+  margin: 0 0 calc(0.85rem * var(--fr-s));
+}
+
+/* --- Khmer ------------------------------------------------------
+   Khmer runs wider than Latin at the same size and its clusters
+   break under tracking, so the small caps give theirs back and
+   relax their leading rather than tightening the type. Latin caps
+   carry at 0.6875rem because the caps are the whole glyph; a
+   Khmer cluster at that size loses its subscripts, so it takes
+   back the step the Latin type gave up. The two scripts are
+   matched by legibility, not by number. */
+.is-frosted .countdown-header.khmer-text-fix,
+.is-frosted .countdown-unit-label.khmer-text-fix {
+  letter-spacing: 0;
+  line-height: 1.35;
+  font-size: calc(0.75rem * var(--fr-s)) !important;
+}
+
+/* Khmer numerals carry no tracking of their own to tighten, and
+   the count is set in the template's display face for them. */
+.is-frosted.is-khmer .countdown-number,
+.is-frosted.is-khmer .countdown-separator {
+  letter-spacing: 0;
+  text-indent: 0;
+}
+
+/* --- Laptop scale -----------------------------------------------
+   The showcase card is 85vh, so on a 13-15" laptop every section
+   renders at roughly two-thirds size. These two blocks set
+   `--fr-s` and nothing else — the same two steps the guestbook
+   and the gift page take. */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .frosted-sheet {
+    --fr-s: 0.68;
+  }
+}
+
+@media (min-width: 1366px) and (max-width: 1535px) {
+  .frosted-sheet {
+    --fr-s: 0.76;
+  }
+}
+
+/* --- Accessibility ----------------------------------------------
+   Translucency and contrast are preferences separate from motion,
+   and a blurred surface has to answer both. Neither fallback can
+   be built on the *tone*, which is the obvious choice for "this
+   material, made solid": `useTemplateProcessor` substitutes the
+   primary colour for any template that declares no background, so
+   for most templates a solid tone is the ink itself, and the sheet
+   would print its own copy in its own fill. Even mixing a little
+   tone into the paper is not safe — in that same case it is ink
+   being mixed in, and it eats the contrast paperOnInk was measured
+   to guarantee, on a sheet carrying 0.6875rem captions.
+
+   So both fallbacks are the measured paper, and they differ only
+   in what bounds the sheet. */
+@media (prefers-reduced-transparency: reduce) {
+  .frosted-sheet {
+    background: var(--fr-paper);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .frosted-sheet {
+    background: var(--fr-paper);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: inset 0 0 0 1px var(--fr-ink);
+  }
+
+  /* Everything set back by opacity comes back to full ink — a
+     near-solid ground is only half of what this preference asks
+     for. */
+  .is-frosted .countdown-header,
+  .is-frosted .countdown-unit-label,
+  .is-frosted .rsvp-toggle-container :deep(.step-hint),
+  .is-frosted .rsvp-toggle-container :deep(.rsvp-placeholder),
+  .is-frosted .rsvp-toggle-container :deep(.responded-at),
+  .is-frosted .rsvp-toggle-container :deep(.message-text.success),
+  .is-frosted .rsvp-toggle-container :deep(.seat-stat-label),
+  .is-frosted .rsvp-toggle-container :deep(.toggle-label) {
+    opacity: 1;
+    color: inherit;
+  }
+}
+
 /* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   /* The .animate-active variants are load-bearing: the rules that start
@@ -3679,7 +4428,11 @@ const engravedPaper = computed(() => {
   .bounce-word,
   .animate-active .bounce-word,
   .bounce-in-element,
-  .animate-active .bounce-in-element {
+  .animate-active .bounce-in-element,
+  /* Frosted replaces the shared bounce on its own sheet, so it needs
+     naming here too — the replacement carries the same specificity and
+     would otherwise be decided by source order alone. */
+  .animate-active .frosted-sheet {
     animation: none;
     opacity: 1;
     transform: none;

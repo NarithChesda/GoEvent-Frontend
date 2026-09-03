@@ -3104,9 +3104,10 @@
     },
     "infoCardDesign": {
       "sectionTitle": "Info Card Design",
-      "designHint": "Controls how the venue, map, countdown and RSVP block is presented. Engraved is drawn in the same hairline language as the calendar, flanked and arch date designs.",
+      "designHint": "Controls how the venue, map, countdown and RSVP block is presented. Frosted is the same material as the guestbook and gift sections further down the page. Engraved is drawn in the same hairline language as the calendar, flanked and arch date designs.",
       "types": {
         "glass": "Glass (rounded panel, white text)",
+        "frosted": "Frosted (blurred sheet, coloured text)",
         "engraved": "Engraved (hairline rules, inked type)"
       }
     },

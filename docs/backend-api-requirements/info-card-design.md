@@ -8,8 +8,9 @@
 ## Overview
 
 Below the event date, the showcase renders one block carrying the **venue, the
-Google Map, the countdown and the RSVP form**. It now has two visual treatments,
-chosen per **template** by a small JSON config named `info_card_design`, sent
+Google Map, the countdown and the RSVP form**. It now has three visual
+treatments, chosen per **template** by a small JSON config named
+`info_card_design`, sent
 inside the template package and forwarded to the showcase exactly like the
 existing `event_details_design` / `host_info_design` / `falling_effect` configs.
 
@@ -18,18 +19,26 @@ JSON field to the partner-template model, accept it on create/update (sent as a
 JSON-encoded string inside `multipart/form-data`), return it on read, and
 surface it inside the event's `template_assets` payload.
 
-Two designs exist today:
+Three designs exist today:
 
-| `type`     | Description                                                                                                                                                 |
-|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `glass`    | **Default.** The original liquid-glass panel: 2rem radius, 2px white border, tinted translucent fill, backdrop blur, white type, large condensed countdown.   |
-| `engraved` | The same content set as ink on the page ground: hairline rules instead of a card frame, everything in the template's primary colour, map mounted as a plate. |
+| `type`     | Description                                                                                                                                                     |
+|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `glass`    | **Default.** The original liquid-glass panel: 2rem radius, 2px white border, tinted translucent fill, backdrop blur, white type, large condensed countdown.       |
+| `frosted`  | The same card in the material the guestbook and gift sections use: one blurred sheet tinted with the template's background, ink type, hairline seams that fade out at both ends. |
+| `engraved` | The same content set as ink on the page ground: hairline rules instead of a card frame, everything in the template's primary colour, map mounted as a plate.     |
 
 `engraved` exists because the `calendar` / `flanked` / `arch` date designs are
 drawn as *type on paper* (hairline rules, inked letterforms) while the glass
 card is a *material*, and stacking the two makes them read as two documents.
 It is selectable under any date design; the ones that draw their own top/bottom
 rules additionally give theirs up so the two blocks share one seam.
+
+`frosted` exists for the opposite reason: `glass` predates the guestbook and
+gift-page rebuilds, which settled on a lighter shared recipe (one blurred layer,
+ink instead of white, seams instead of dividers). A showcase using `glass`
+therefore shows two different kinds of glass on one scroll. `frosted` is the
+same card drawn to that recipe. Like `engraved`, it is selectable under any date
+design; unlike `engraved`, it changes nothing outside the card.
 
 When the field is absent / `null`, the frontend falls back to `glass`, so this
 is fully backward compatible.
@@ -48,7 +57,7 @@ is fully backward compatible.
 
 | Field  | Type   | Required | Allowed values           | Notes                         |
 |--------|--------|----------|--------------------------|-------------------------------|
-| `type` | string | yes      | `"glass"`, `"engraved"`  | Reject any other value (400). |
+| `type` | string | yes      | `"glass"`, `"frosted"`, `"engraved"` | Reject any other value (400). |
 
 The whole `info_card_design` field may also be `null` (meaning "use the default
 `glass`"). It is **not** a file and carries no images — `type` is the only key.
@@ -76,7 +85,7 @@ No default needs to be stored — `null` already means `glass` on the client.
 On create and update, validate the field when present:
 
 - Accept `null` (clears the field → frontend uses `glass`).
-- When an object is provided, require `type` ∈ {`glass`, `engraved`}.
+- When an object is provided, require `type` ∈ {`glass`, `frosted`, `engraved`}.
 - Reject unknown `type` values with a `400` and a field-specific error under
   `info_card_design`.
 
@@ -84,7 +93,7 @@ On create and update, validate the field when present:
 {
   "success": false,
   "errors": {
-    "info_card_design": ["type must be one of: glass, engraved"]
+    "info_card_design": ["type must be one of: glass, frosted, engraved"]
   }
 }
 ```
@@ -186,9 +195,10 @@ defaults to `glass` either way.
   field's model definition, serializer handling, form-data parsing, and
   `template_assets` assembly, you've covered everything here.
 - No new endpoints, no file handling, no images.
-- The only enum to enforce is `type ∈ {glass, engraved}`.
-- **Frontend rendering scope (FYI, not a backend task):** `engraved` re-inks the
-  slotted RSVP form (`RSVPSection` / `GuestRSVPSection`) from the info card's own
-  stylesheet, so it applies to both the public and private RSVP flows without
-  either component needing to know about the setting. The map iframe is Google's
-  and keeps its own colours; only its frame changes.
+- The only enum to enforce is `type ∈ {glass, frosted, engraved}`.
+- **Frontend rendering scope (FYI, not a backend task):** `engraved` and
+  `frosted` both re-colour the slotted RSVP form (`RSVPSection` /
+  `GuestRSVPSection`) from the info card's own stylesheet, so each applies to
+  both the public and private RSVP flows without either component needing to
+  know about the setting. The map iframe is Google's and keeps its own colours;
+  only its frame changes.
