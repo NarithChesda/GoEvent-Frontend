@@ -44,7 +44,7 @@
       <div v-if="showInviteOnlyPrompt" class="text-center py-4">
         <p
           class="text-sm"
-          :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
+          :style="{ color: primaryColor }"
         >
           {{ commentInviteOnlyPromptText }}
         </p>
@@ -54,7 +54,7 @@
       <div v-else-if="showLoginPrompt" class="text-center py-4">
         <p
           class="text-sm mb-3"
-          :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
+          :style="{ color: primaryColor }"
         >
           {{ commentSigninPromptText }}
         </p>
@@ -67,9 +67,7 @@
             border: `1px solid ${backgroundColor}60`,
           }"
         >
-          <span :style="{ fontFamily: secondaryFont || currentFont }">{{
-            commentSigninButtonText
-          }}</span>
+          <span>{{ commentSigninButtonText }}</span>
         </button>
       </div>
 
@@ -77,7 +75,7 @@
       <div v-else-if="hasAlreadyCommented" class="text-center py-4">
         <p
           class="text-sm"
-          :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
+          :style="{ color: primaryColor }"
         >
           {{ commentAlreadyCommentedText }}
         </p>
@@ -115,7 +113,7 @@
         <span
           class="text-sm truncate"
           :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
-          :style="{ opacity: 0.75, fontFamily: secondaryFont || currentFont }"
+          :style="{ opacity: 0.75 }"
         >{{ commentComposeCtaText }}</span>
       </button>
 
@@ -128,7 +126,6 @@
           :style="{
             color: primaryColor,
             opacity: 0.85,
-            fontFamily: secondaryFont || currentFont,
           }"
         >
           {{ commentCommentingAsText }} <strong>{{ guestName }}</strong>
@@ -147,7 +144,6 @@
               '--tw-ring-color': backgroundColor + '80',
               color: primaryColor,
               border: `1px solid ${commentValidation.isValid ? backgroundColor + '30' : '#dc262630'}`,
-              fontFamily: secondaryFont || currentFont,
             }"
             @input="handleCommentInput"
             @blur="validateCommentOnBlur"
@@ -167,7 +163,7 @@
                  an empty box. -->
             <div
               v-if="newComment.message.length >= 400"
-              :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
+              :style="{ color: primaryColor }"
             >
               {{ newComment.message.length }}/500
             </div>
@@ -187,9 +183,7 @@
             border: `1px solid ${backgroundColor}60`,
           }"
         >
-          <span :style="{ fontFamily: secondaryFont || currentFont }">{{
-            isSubmittingComment ? commentPostingButtonText : commentPostButtonText
-          }}</span>
+          <span>{{ isSubmittingComment ? commentPostingButtonText : commentPostButtonText }}</span>
         </button>
       </form>
     </div>
@@ -226,7 +220,6 @@
               :style="{
                 color: primaryColor,
                 opacity: '0.8',
-                fontFamily: secondaryFont || currentFont,
               }"
               >{{ commentLoadingText }}</span
             >
@@ -256,7 +249,6 @@
             :style="{
               color: primaryColor,
               opacity: '0.8',
-              fontFamily: secondaryFont || currentFont,
             }"
           >
             {{ commentNoCommentsText }}
@@ -311,7 +303,6 @@
               :class="isUserCommentOwner(comment) ? 'pr-7' : 'pr-1'"
               :style="{
                 color: primaryColor,
-                fontFamily: secondaryFont || currentFont,
                 lineHeight: '1.8',
               }"
             >
@@ -328,7 +319,6 @@
                   boxShadow: `inset 0 2px 4px ${backgroundColor}15, 0 2px 8px ${backgroundColor}10`,
                   '--tw-ring-color': backgroundColor + '60',
                   color: primaryColor,
-                  fontFamily: secondaryFont || currentFont,
                 }"
                 rows="3"
                 maxlength="500"
@@ -337,7 +327,7 @@
               <div class="flex items-center justify-between">
                 <div
                   class="text-xs"
-                  :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
+                  :style="{ color: primaryColor }"
                 >
                   {{ editCommentText.length }}/500
                 </div>
@@ -350,7 +340,6 @@
                       color: primaryColor,
                       opacity: '0.8',
                       boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.08), 0 2px 6px ${backgroundColor}10`,
-                      fontFamily: secondaryFont || currentFont,
                     }"
                     :disabled="isUpdatingComment"
                   >
@@ -372,7 +361,6 @@
                         inset 0 2px 4px rgba(255, 255, 255, 0.1),
                         inset 0 -1px 2px ${backgroundColor}10
                       `,
-                      fontFamily: secondaryFont || currentFont,
                     }"
                   >
                     <span v-if="!isUpdatingComment">Save</span>
@@ -426,17 +414,14 @@
                 <div class="flex items-center gap-1.5 min-w-0">
                   <p
                     class="text-sm font-medium truncate"
-                    :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }"
+                    :style="{ color: primaryColor }"
                   >
                     {{ getCommentDisplayName(comment) }}
                   </p>
                   <span
                     v-if="isUserCommentOwner(comment)"
                     class="text-[0.6875rem] px-1.5 py-0.5 rounded-full text-white font-medium flex-shrink-0"
-                    :style="{
-                      backgroundColor: backgroundColor + '80',
-                      fontFamily: secondaryFont || currentFont,
-                    }"
+                    :style="{ backgroundColor: backgroundColor + '80' }"
                   >
                     {{ commentYouBadgeText }}
                   </span>
@@ -446,7 +431,6 @@
                   :style="{
                     color: primaryColor,
                     opacity: 0.5,
-                    fontFamily: secondaryFont || currentFont,
                   }"
                 >
                   {{ formatCommentDate(comment.created_at) }}
@@ -467,7 +451,6 @@
             :style="{
               color: primaryColor,
               borderColor: `${backgroundColor}38`,
-              fontFamily: secondaryFont || currentFont,
             }"
             @click="revealMoreWishes"
           >
@@ -500,7 +483,6 @@
                 :style="{
                   color: primaryColor,
                   opacity: '0.7',
-                  fontFamily: secondaryFont || currentFont,
                 }"
                 >Loading more comments...</span
               >
@@ -522,7 +504,7 @@
     >
       <p
         class="text-sm"
-        :style="{ color: '#dc2626', opacity: 0.9, fontFamily: secondaryFont || currentFont }"
+        :style="{ color: '#dc2626', opacity: 0.9 }"
       >
         {{ errorMessage }}
       </p>
@@ -563,7 +545,7 @@
       <button
         @click="handleEditFromMenu(getCommentById(openMenuId))"
         class="w-full px-3 py-1.5 text-left text-xs flex items-center gap-2 transition-colors hover:bg-white/10"
-        :style="{ color: '#ffffff', fontFamily: secondaryFont || currentFont }"
+        :style="{ color: '#ffffff' }"
       >
         <Edit class="w-3 h-3" />
         Edit
@@ -571,7 +553,7 @@
       <button
         @click="handleDeleteFromMenu(getCommentById(openMenuId))"
         class="w-full px-3 py-1.5 text-left text-xs flex items-center gap-2 transition-colors hover:bg-white/10"
-        :style="{ color: '#ffffff', fontFamily: secondaryFont || currentFont }"
+        :style="{ color: '#ffffff' }"
         :disabled="isDeletingComment === openMenuId"
       >
         <Trash2 class="w-3 h-3" />
@@ -622,9 +604,9 @@ interface Props {
   secondaryColor?: string | null
   accentColor: string
   backgroundColor?: string | null
+  /** Heading only. The wishes below set their own type - see the guestbook rule in the unscoped style block. */
   currentFont?: string
   primaryFont?: string
-  secondaryFont?: string
   eventTexts?: EventText[]
   currentLanguage?: string
   eventType?: string
@@ -2392,6 +2374,45 @@ textarea::-webkit-scrollbar-thumb:hover {
 </style>
 
 <style>
+/* ---------------------------------------------------------------------------
+ * The guestbook's own type.
+ *
+ * Every other section of this card is set in the template's fonts, because it
+ * carries the couple's voice. A wish does not. It is the guest's, it arrives in
+ * whatever script that guest writes in, and its language has nothing to do with
+ * the language picker at the top of the invitation - one Cambodian wedding's
+ * list holds Khmer and English wishes side by side. So no per-language switch
+ * can be right here: the family has to resolve per *glyph*, not per selection.
+ *
+ * Karla covers Latin and carries no Khmer, so a Khmer cluster falls through to
+ * Kantumruy Pro on its own - inside the same paragraph where a wish is mixed.
+ * Both are already loaded (index.html, main.css), and Karla is what the V2
+ * showcase already sets its body copy in, so the guestbook reads in the
+ * showcase's own text voice rather than in a display face drawn for a name at
+ * 40px.
+ *
+ * What this replaced: secondaryFont || currentFont on roughly thirty
+ * elements here. A template whose secondary face is Latin-only (Great Vibes,
+ * Cormorant) left every Khmer wish to the operating system - Khmer UI on
+ * Windows, Noto Sans Khmer on Android, Khmer Sangam MN on iOS. One wish, three
+ * faces, none of them chosen by anyone. A Khmer display face failed the same
+ * way in reverse, and neither is drawn for a 300-character paragraph at 14px.
+ *
+ * The heading is deliberately NOT included. It is a sibling of the Agenda and
+ * RSVP headings and keeps primaryFont through its own inline style, which
+ * outranks this rule - making it the one section heading in a different face
+ * would trade this inconsistency for a worse one.
+ *
+ * Unscoped for the same reason the menu rules below are: the options menu is
+ * teleported to <body>, and the guest's own name renders inside it.
+ * ------------------------------------------------------------------------- */
+#comment-section,
+#comment-section :is(input, textarea, button, select),
+.comment-dropdown-menu,
+.comment-dropdown-menu button {
+  font-family: 'Karla', 'Kantumruy Pro', system-ui, sans-serif;
+}
+
 /* Teleported dropdown menu styles - must be unscoped to affect teleported content */
 .comment-dropdown-menu {
   backdrop-filter: blur(16px);

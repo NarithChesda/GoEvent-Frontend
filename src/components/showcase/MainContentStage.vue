@@ -468,7 +468,6 @@
                     :background-color="backgroundColor"
                     :current-font="currentFont"
                     :primary-font="primaryFont"
-                    :secondary-font="secondaryFont"
                     :event-texts="eventTexts"
                     :current-language="currentLanguage"
                     :event-type="eventType"
