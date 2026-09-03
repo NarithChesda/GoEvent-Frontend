@@ -1,12 +1,13 @@
 <template>
-  <div class="dress-code-section mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6">
-    <!-- Section Header -->
-    <div class="section-header text-center mb-6 sm:mb-8 laptop-sm:mb-3 laptop-md:mb-4 laptop-lg:mb-5 desktop:mb-4 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
+  <div
+    class="dress-code-section mb-4 sm:mb-5 laptop-sm:mb-5 laptop-md:mb-6 laptop-lg:mb-7 desktop:mb-6"
+  >
+    <!-- Header -->
+    <div
+      class="section-header text-center mb-5 sm:mb-6 laptop-sm:mb-3 laptop-md:mb-3 laptop-lg:mb-4 desktop:mb-4"
+    >
       <h2
-        :style="{
-          color: primaryColor,
-          fontFamily: primaryFont || currentFont,
-        }"
+        :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }"
         class="leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular mb-3 sm:mb-4 md:mb-6 laptop-sm:mb-2 laptop-md:mb-2 desktop:mb-2 capitalize dress-code-header"
         :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
       >
@@ -14,191 +15,55 @@
       </h2>
       <p
         v-if="sectionDescription"
-        :style="{
-          color: accentColor,
-          fontFamily: secondaryFont || currentFont,
-        }"
-        class="text-sm sm:text-base md:text-lg opacity-80"
+        :style="{ color: accentColor, fontFamily: secondaryFont || currentFont }"
+        class="text-sm sm:text-base md:text-lg opacity-80 dress-code-subheader"
         :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
       >
         {{ sectionDescription }}
       </p>
     </div>
 
-    <!-- Time Period Tabs (data-preview-safe: still clickable in the manage-page
-         preview's edit mode so every dress code stays reachable for editing) -->
-    <div
-      v-if="timePeriodGroups.length > 0"
-      data-preview-safe
-      class="time-period-tabs flex justify-center gap-2 sm:gap-3 mb-4 sm:mb-4 laptop-sm:mb-4 laptop-md:mb-4 desktop:mb-4 flex-wrap"
-    >
-      <button
-        v-for="(timePeriod, index) in timePeriodGroups"
-        :key="timePeriod.time_period"
-        @click="activeTimePeriod = index"
-        :class="[
-          'time-tab px-5 sm:px-7 py-2.5 sm:py-3 rounded-full transition-all duration-300',
-          'text-sm sm:text-base font-semibold',
-          activeTimePeriod === index ? 'tab-active' : 'tab-inactive',
-        ]"
-        :style="getTimePeriodTabStyle(index)"
-      >
-        {{ translateTimePeriod(timePeriod.time_period) }}
-      </button>
-    </div>
-
-    <!-- Main Content -->
-    <transition v-if="timePeriodGroups.length > 0" name="fade" mode="out-in">
-      <div :key="activeTimePeriod" class="dress-code-content w-full">
-        <!-- Row 1: Image Preview (Full Width) -->
-        <div class="image-section w-full p-1 sm:p-2 mb-4">
-          <transition name="fade-scale" mode="out-in">
-            <div :key="activeGender" class="dress-code-image">
-              <EditableRegion
-                :intent="{ kind: 'dressCodeItem', dressCodeId: getCurrentDressCodeForActiveGender().id }"
-              >
-                <div class="image-wrapper flex justify-center">
-                  <div
-                    v-if="getCurrentDressCodeForActiveGender().image"
-                    class="image-container w-full aspect-square max-w-xs rounded-2xl overflow-hidden shadow-md"
-                    :style="{ backgroundColor: `${primaryColor}20` }"
-                  >
-                    <img
-                      :src="getMediaUrl(getCurrentDressCodeForActiveGender().image || '')"
-                      :alt="getCurrentDressCodeForActiveGender().dress_code_type_display"
-                      class="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
-
-                  <!-- Color Display (if no image) -->
-                  <div
-                    v-else
-                    class="color-display w-full aspect-square max-w-xs rounded-2xl flex items-center justify-center shadow-md"
-                    :style="{ backgroundColor: getCurrentDressCodeForActiveGender().color }"
-                  >
-                    <svg
-                      class="w-24 h-24 sm:w-32 sm:h-32 text-white opacity-30"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="1.5"
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </EditableRegion>
-            </div>
-          </transition>
-        </div>
-
-        <!-- Row 2: Gender Tabs -->
-        <div data-preview-safe class="gender-tabs-section w-full p-1 sm:p-2 flex items-center justify-center mb-4 laptop-sm:mb-1 laptop-md:mb-1 desktop:mb-1">
-          <div class="gender-tabs flex gap-2 flex-nowrap justify-center">
-            <button
-              v-for="(genderGroup, index) in currentTimePeriodGenders"
-              :key="genderGroup.gender"
-              @click="activeGender = index"
-              :class="[
-                'gender-tab px-5 py-2.5 rounded-full transition-all duration-300',
-                'text-sm sm:text-base font-semibold text-center flex-shrink-0',
-                activeGender === index ? 'tab-active' : 'tab-inactive',
-              ]"
-              :style="getGenderTabStyle(index)"
-            >
-              {{ translateGender(genderGroup.gender) }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Row 3: Title and Description -->
-        <transition name="fade-scale" mode="out-in">
-          <div :key="`${activeGender}-${getActiveGenderGroup().activeIndex}`" class="dress-code-info-section px-4 sm:px-6 py-1 text-center">
-            <InlineEditableText
-              :value="getCurrentDressCodeForActiveGender().title"
-              :target="{ kind: 'dressCode', dressCodeId: getCurrentDressCodeForActiveGender().id, field: 'title' }"
-              :input-style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
-            >
-              <h4
-                :style="{
-                  color: primaryColor,
-                  fontFamily: primaryFont || currentFont,
-                }"
-                class="text-lg sm:text-xl font-regular mb-1 dress-code-title"
-                :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
-              >
-                {{ getCurrentDressCodeForActiveGender().title || translateDressCodeType(getCurrentDressCodeForActiveGender().dress_code_type) }}
-              </h4>
-            </InlineEditableText>
-
-            <InlineEditableText
-              v-if="getCurrentDressCodeForActiveGender().description"
-              :value="getCurrentDressCodeForActiveGender().description"
-              :target="{ kind: 'dressCode', dressCodeId: getCurrentDressCodeForActiveGender().id, field: 'description' }"
-              :multiline="true"
-              :input-style="{ fontFamily: secondaryFont || currentFont, color: accentColor }"
-            >
-              <p
-                :style="{
-                  color: accentColor,
-                  fontFamily: secondaryFont || currentFont,
-                  whiteSpace: 'pre-line',
-                }"
-                class="text-sm sm:text-base opacity-80 leading-relaxed dress-code-description mb-0"
-                :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
-              >
-                {{ getCurrentDressCodeForActiveGender().description }}
-              </p>
-            </InlineEditableText>
-          </div>
-        </transition>
-
-        <!-- Row 4: Color Circle Navigation -->
-        <transition name="fade-scale" mode="out-in">
-          <div
-            v-if="getActiveGenderGroup().codes.length > 0"
-            :key="`colors-${activeGender}`"
-            class="color-navigation-section px-4 sm:px-6 py-1 pb-2 flex justify-center"
-            data-preview-safe
+    <!-- One band per time period, stacked. Morning attire and evening attire
+         both apply to the guest reading this, so neither is hidden behind the
+         other: the period is a heading, not a control. -->
+    <div class="dress-code-body" :style="{ '--primary-color': primaryColor }">
+      <section v-for="period in timePeriodGroups" :key="period.timePeriod" class="dcd-band">
+        <!-- Drawn only when there is more than one period. Over a single
+             `All Day` band it would label the only thing on screen. -->
+        <div v-if="timePeriodGroups.length > 1" class="dcd-band__head">
+          <span class="dcd-band__rule" aria-hidden="true" />
+          <span
+            class="dcd-band__label"
+            :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
           >
-            <div class="color-navigation flex gap-3">
-              <button
-                v-for="(code, index) in getActiveGenderGroup().codes"
-                :key="code.id"
-                @click="selectDressCode(getActiveGenderGroup(), index)"
-                :class="[
-                  'color-circle w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-all duration-300',
-                  'border-2 shadow-md hover:scale-110 focus:outline-none',
-                  getActiveGenderGroup().activeIndex === index ? 'scale-110' : 'opacity-60 hover:opacity-100',
-                ]"
-                :style="{
-                  backgroundColor: code.color,
-                  borderColor: getActiveGenderGroup().activeIndex === index ? primaryColor : 'transparent',
-                }"
-                :aria-label="`View ${code.dress_code_type_display}`"
-              >
-                <!-- Active indicator -->
-                <span
-                  v-if="getActiveGenderGroup().activeIndex === index"
-                  class="inline-block w-3 h-3 rounded-full"
-                  :style="{ backgroundColor: primaryColor }"
-                ></span>
-              </button>
-            </div>
-          </div>
-        </transition>
-      </div>
-    </transition>
+            {{ period.label }}
+          </span>
+          <span class="dcd-band__rule" aria-hidden="true" />
+        </div>
+
+        <component
+          :is="designComponent"
+          class="dcd"
+          :style="contractStyle"
+          :groups="period.genderGroups"
+          :primary-color="primaryColor"
+          :accent-color="accentColor"
+          :current-font="currentFont"
+          :primary-font="primaryFont"
+          :secondary-font="secondaryFont"
+          :current-language="currentLanguage"
+          :get-media-url="getMediaUrl"
+          :select-code="
+            (gender: string, index: number) => selectCode(period.timePeriod, gender, index)
+          "
+        />
+      </section>
+    </div>
 
     <!-- Add-dress-code affordance — only inside the editable manage-page
          preview (editIntentCtx is never provided on the public showcase).
-         Always shown in edit mode, including when there are no dress codes
-         yet, so the first one can be added from here. -->
+         Outside the design so every composition gets it, including when the
+         event has no dress codes at all and nothing else renders. -->
     <div v-if="editIntentCtx" class="add-dress-code-row">
       <button
         type="button"
@@ -212,13 +77,66 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, reactive, inject } from 'vue'
+import { computed, inject, reactive } from 'vue'
 import type { DressCode } from '../../types/showcase'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
-import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
-import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import type {
+  DressCodeDesignConfig,
+  DressCodeDesignType,
+} from '@/services/api/types/template.types'
+import type { DressCodeDesignItem, DressCodeGenderGroup } from './dress-code-designs/types'
+
+import DressCodePortrait from './dress-code-designs/DressCodePortrait.vue'
+import DressCodeAtelier from './dress-code-designs/DressCodeAtelier.vue'
+import DressCodeSpread from './dress-code-designs/DressCodeSpread.vue'
+import DressCodePalette from './dress-code-designs/DressCodePalette.vue'
+import DressCodeLedger from './dress-code-designs/DressCodeLedger.vue'
+
+/**
+ * The dress code section: the header, the time period bands, the grouping,
+ * every translated string and the one piece of selection state. How the outfits
+ * themselves are drawn is the template's call
+ * (`template_assets.dress_code_design`), exactly as `agenda_design` picks an
+ * agenda composition and `host_info_design` picks a host layout.
+ *
+ * ## The principle this is built on
+ *
+ * The block carries three axes and they are not the same kind of thing:
+ *
+ *   time period   morning AND evening — both apply to the guest reading it.
+ *   gender        his AND hers — both apply, to different people at one table.
+ *   the codes     black tie OR midnight blue — pick one, wear it.
+ *
+ * The first two are **conjunctive**; the third is **disjunctive**. Conjunctive
+ * axes get laid out, the disjunctive one keeps a selector. That single rule is
+ * what removed two thirds of this section's chrome.
+ *
+ * What was here before navigated all three: a segmented tray of time periods, a
+ * second row of gender pills beneath it, and a row of colour dots beneath that.
+ * Three levels of control sat on top of what is typically two to four facts,
+ * and two of those levels hid information rather than offering a choice — a
+ * guest who never noticed the gender pills simply never learned what half the
+ * party was asked to wear. The tray is now a heading and the pills are captions.
+ *
+ * **What replaced the empty state.** A dress code carries a colour and an
+ * *optional* photograph; with no photograph the block used to paint a 288px
+ * square of flat colour with a generic person glyph at 30% white on it — a
+ * failed-upload look on a dark colour, an empty rectangle on a pale one, and
+ * the state most dress codes are actually in. Every design now draws a traced
+ * garment — resolved by `dress-code-designs/garmentPaths.ts` — in the code's
+ * own colour.
+ *
+ * **The category decides nothing here.** Unlike the agenda, the dress code has
+ * no per-category copy to resolve, so this section never sees an event type at
+ * all: a template that wants the birthday palette or the ceremony arch says so.
+ */
+interface EventText {
+  text_type: string
+  language: string
+  content: string
+}
 
 interface Props {
   dressCodes: DressCode[]
@@ -229,9 +147,11 @@ interface Props {
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
-  eventTexts?: any[]
+  eventTexts?: EventText[]
   currentLanguage?: string
   getMediaUrl: (url: string) => string
+  /** The template's chosen composition. Absent / unknown falls back to `portrait`. */
+  dressCodeDesign?: DressCodeDesignConfig | null
 }
 
 const props = defineProps<Props>()
@@ -241,191 +161,210 @@ const props = defineProps<Props>()
 const editIntentCtx = inject(EditIntentKey, undefined)
 const { t: tApp } = useAppLanguage()
 
-interface GenderGroup {
-  gender: string
-  gender_display: string
-  codes: DressCode[]
-  activeIndex: number
+// ---------------------------------------------------------------------------
+// Design selection
+// ---------------------------------------------------------------------------
+
+const DESIGNS = {
+  portrait: DressCodePortrait,
+  atelier: DressCodeAtelier,
+  spread: DressCodeSpread,
+  palette: DressCodePalette,
+  ledger: DressCodeLedger,
+} as const
+
+/**
+ * `portrait` for anything absent or unrecognised — the most neutral of the five
+ * and the one closest to what this block has always looked like, so a template
+ * that has never set the field and one naming a design this build doesn't ship
+ * both render something sensible rather than nothing.
+ */
+const designType = computed<DressCodeDesignType>(() => {
+  const type = props.dressCodeDesign?.type
+  return type && type in DESIGNS ? type : 'portrait'
+})
+
+const designComponent = computed(() => DESIGNS[designType.value])
+
+/** The CSS contract documented at the top of dress-code-base.css. */
+const contractStyle = computed(() => ({
+  '--dcd-ink': props.primaryColor,
+  '--dcd-accent': props.accentColor,
+}))
+
+// ---------------------------------------------------------------------------
+// Copy
+// ---------------------------------------------------------------------------
+
+const findText = (textType: string): string | null => {
+  const text = props.eventTexts?.find(
+    (entry) => entry.text_type === textType && entry.language === props.currentLanguage,
+  )
+  return text?.content || null
+}
+
+const lang = computed(() => (props.currentLanguage as SupportedLanguage) || 'en')
+
+const sectionTitle = computed(
+  () => findText('dress_code_header') || translateRSVP('dress_code_header', lang.value),
+)
+
+const sectionDescription = computed(
+  () => findText('dress_code_description') || translateRSVP('dress_code_description', lang.value),
+)
+
+type RsvpKey = keyof typeof import('../../utils/translations').rsvpTranslations.en
+
+const DRESS_CODE_TYPE_KEYS: Record<string, RsvpKey> = {
+  white_tie: 'dress_code_white_tie',
+  black_tie: 'dress_code_black_tie',
+  black_tie_optional: 'dress_code_black_tie_optional',
+  formal: 'dress_code_formal',
+  cocktail: 'dress_code_cocktail',
+  semi_formal: 'dress_code_semi_formal',
+  business_formal: 'dress_code_business_formal',
+  business_casual: 'dress_code_business_casual',
+  smart_casual: 'dress_code_smart_casual',
+  casual: 'dress_code_casual',
+  beach_formal: 'dress_code_beach_formal',
+  beach_casual: 'dress_code_beach_casual',
+  festive: 'dress_code_festive',
+  traditional: 'dress_code_traditional',
+  themed: 'dress_code_themed',
+  custom: 'dress_code_custom',
+}
+
+const TIME_PERIOD_KEYS: Record<string, RsvpKey> = {
+  all_day: 'time_period_all_day',
+  morning: 'time_period_morning',
+  afternoon: 'time_period_afternoon',
+  evening: 'time_period_evening',
+  night: 'time_period_night',
+}
+
+const GENDER_KEYS: Record<string, RsvpKey> = {
+  all: 'gender_all',
+  male: 'gender_male',
+  female: 'gender_female',
+}
+
+/**
+ * `dress_code_type_display` / `gender_display` from the API are the server's
+ * English labels. They are used only where this build has no translation for
+ * the value — a type the backend adds after this frontend ships then shows the
+ * server's own words rather than a raw `beach_black_tie` slug.
+ */
+const translateOr = (map: Record<string, RsvpKey>, value: string, fallback: string): string => {
+  const key = map[value]
+  return key ? translateRSVP(key, lang.value) : fallback || value
+}
+
+// ---------------------------------------------------------------------------
+// Grouping: time period → gender → codes
+// ---------------------------------------------------------------------------
+
+const TIME_PERIOD_ORDER: Record<string, number> = {
+  all_day: 0,
+  morning: 1,
+  afternoon: 2,
+  evening: 3,
+  night: 4,
 }
 
 interface TimePeriodGroup {
-  time_period: string
-  time_period_display: string
-  genderGroups: GenderGroup[]
+  timePeriod: string
+  label: string
+  genderGroups: DressCodeGenderGroup[]
 }
 
-const activeTimePeriod = ref(0)
-const activeGender = ref(0)
+/**
+ * The only selection state left in the section: which colour option each gender
+ * group is showing.
+ *
+ * Keyed by *value* rather than by index, because the data changes underneath: a
+ * guest switching language re-renders every label, an organizer editing in the
+ * preview can delete the very code that was selected, and the manage-page
+ * preview re-fetches the whole list on every save. Keyed by time period and
+ * gender, a selection survives all three and simply clamps if the group got
+ * shorter.
+ */
+const codeByGroup = reactive<Record<string, number>>({})
 
-// Get section title from event texts or use default
-const sectionTitle = computed(() => {
-  const titleText = props.eventTexts?.find(
-    (t) => t.text_type === 'dress_code_header' && t.language === props.currentLanguage,
-  )
-  return titleText?.content || translateRSVP('dress_code_header', props.currentLanguage as SupportedLanguage)
-})
+const groupKey = (timePeriod: string, gender: string) => `${timePeriod}::${gender}`
 
-// Get section description from event texts
-const sectionDescription = computed(() => {
-  const descText = props.eventTexts?.find(
-    (t) => t.text_type === 'dress_code_description' && t.language === props.currentLanguage,
-  )
-  return descText?.content || translateRSVP('dress_code_description', props.currentLanguage as SupportedLanguage)
-})
-
-// Helper function to translate dress code type
-const translateDressCodeType = (dressCodeType: string): string => {
-  const typeMap: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
-    white_tie: 'dress_code_white_tie',
-    black_tie: 'dress_code_black_tie',
-    black_tie_optional: 'dress_code_black_tie_optional',
-    formal: 'dress_code_formal',
-    cocktail: 'dress_code_cocktail',
-    semi_formal: 'dress_code_semi_formal',
-    business_formal: 'dress_code_business_formal',
-    business_casual: 'dress_code_business_casual',
-    smart_casual: 'dress_code_smart_casual',
-    casual: 'dress_code_casual',
-    beach_formal: 'dress_code_beach_formal',
-    beach_casual: 'dress_code_beach_casual',
-    festive: 'dress_code_festive',
-    traditional: 'dress_code_traditional',
-    themed: 'dress_code_themed',
-    custom: 'dress_code_custom',
-  }
-  const key = typeMap[dressCodeType]
-  return key ? translateRSVP(key, props.currentLanguage as SupportedLanguage) : dressCodeType
-}
-
-// Helper function to translate time period
-const translateTimePeriod = (timePeriod: string): string => {
-  const periodMap: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
-    all_day: 'time_period_all_day',
-    morning: 'time_period_morning',
-    afternoon: 'time_period_afternoon',
-    evening: 'time_period_evening',
-    night: 'time_period_night',
-  }
-  const key = periodMap[timePeriod]
-  return key ? translateRSVP(key, props.currentLanguage as SupportedLanguage) : timePeriod
-}
-
-// Helper function to translate gender
-const translateGender = (gender: string): string => {
-  const genderMap: Record<string, keyof typeof import('../../utils/translations').rsvpTranslations.en> = {
-    all: 'gender_all',
-    male: 'gender_male',
-    female: 'gender_female',
-  }
-  const key = genderMap[gender]
-  return key ? translateRSVP(key, props.currentLanguage as SupportedLanguage) : gender
-}
-
-// Helper function to get time period sort order
-const getTimePeriodOrder = (timePeriod: string): number => {
-  const order: Record<string, number> = {
-    all_day: 0,
-    morning: 1,
-    afternoon: 2,
-    evening: 3,
-    night: 4,
-  }
-  return order[timePeriod] ?? 999
-}
-
-// Group dress codes by time period, then by gender
 const timePeriodGroups = computed<TimePeriodGroup[]>(() => {
-  const timePeriodMap = new Map<string, TimePeriodGroup>()
+  const byPeriod = new Map<string, TimePeriodGroup>()
 
   props.dressCodes
-    .filter((dc) => dc.is_active)
+    .filter((code) => code.is_active)
+    .slice()
     .sort((a, b) => a.order - b.order)
-    .forEach((dc) => {
-      // Create time period group if it doesn't exist
-      if (!timePeriodMap.has(dc.time_period)) {
-        timePeriodMap.set(dc.time_period, {
-          time_period: dc.time_period,
-          time_period_display: dc.time_period_display,
+    .forEach((code) => {
+      let period = byPeriod.get(code.time_period)
+      if (!period) {
+        period = {
+          timePeriod: code.time_period,
+          label: translateOr(TIME_PERIOD_KEYS, code.time_period, code.time_period_display),
           genderGroups: [],
-        })
+        }
+        byPeriod.set(code.time_period, period)
       }
 
-      const timePeriodGroup = timePeriodMap.get(dc.time_period)!
-
-      // Find or create gender group within this time period
-      let genderGroup = timePeriodGroup.genderGroups.find((g) => g.gender === dc.gender)
-      if (!genderGroup) {
-        genderGroup = reactive({
-          gender: dc.gender,
-          gender_display: dc.gender_display,
+      let group = period.genderGroups.find((entry) => entry.gender === code.gender)
+      if (!group) {
+        group = {
+          gender: code.gender,
+          genderLabel: translateOr(GENDER_KEYS, code.gender, code.gender_display),
           codes: [],
           activeIndex: 0,
-        })
-        timePeriodGroup.genderGroups.push(genderGroup)
+        }
+        period.genderGroups.push(group)
       }
 
-      genderGroup.codes.push(dc)
+      const typeLabel = translateOr(
+        DRESS_CODE_TYPE_KEYS,
+        code.dress_code_type,
+        code.dress_code_type_display,
+      )
+
+      group.codes.push({
+        id: code.id,
+        // The organizer's own title wins; the translated type name is what a
+        // dress code is called when they didn't name it.
+        title: code.title || typeLabel,
+        description: code.description || '',
+        color: code.color || '',
+        image: code.image || null,
+        typeLabel,
+        dressCodeType: code.dress_code_type,
+      } satisfies DressCodeDesignItem)
     })
 
-  // Sort time periods by chronological order
-  return Array.from(timePeriodMap.values()).sort(
-    (a, b) => getTimePeriodOrder(a.time_period) - getTimePeriodOrder(b.time_period)
+  // Resolve each group's selected index, clamped — the list can shrink under us
+  // at any time.
+  const periods = Array.from(byPeriod.values())
+  periods.forEach((period) => {
+    period.genderGroups.forEach((group) => {
+      const stored = codeByGroup[groupKey(period.timePeriod, group.gender)] ?? 0
+      group.activeIndex = Math.min(stored, Math.max(0, group.codes.length - 1))
+    })
+  })
+
+  return periods.sort(
+    (a, b) => (TIME_PERIOD_ORDER[a.timePeriod] ?? 999) - (TIME_PERIOD_ORDER[b.timePeriod] ?? 999),
   )
 })
 
-// Get gender groups for the current active time period
-const currentTimePeriodGenders = computed(() => {
-  if (timePeriodGroups.value.length === 0) return []
-  return timePeriodGroups.value[activeTimePeriod.value]?.genderGroups || []
-})
-
-// Get active gender group
-const getActiveGenderGroup = (): GenderGroup => {
-  if (currentTimePeriodGenders.value.length === 0) {
-    return {
-      gender: 'all',
-      gender_display: 'All',
-      codes: [],
-      activeIndex: 0,
-    }
-  }
-  return currentTimePeriodGenders.value[activeGender.value] || currentTimePeriodGenders.value[0]
-}
-
-// Get current dress code for active gender
-const getCurrentDressCodeForActiveGender = (): DressCode => {
-  const genderGroup = getActiveGenderGroup()
-  return genderGroup.codes[genderGroup.activeIndex] || genderGroup.codes[0]
-}
-
-// Select a dress code within a gender group
-const selectDressCode = (genderGroup: GenderGroup, index: number) => {
-  genderGroup.activeIndex = index
-}
-
-// Style helpers
-const getTimePeriodTabStyle = (index: number) => {
-  const isActive = activeTimePeriod.value === index
-  return {
-    backgroundColor: isActive ? props.primaryColor : `${props.primaryColor}10`,
-    color: isActive ? '#ffffff' : props.primaryColor,
-    fontFamily: props.primaryFont || props.currentFont,
-    transform: isActive ? 'scale(1.05)' : 'scale(1)',
-    boxShadow: isActive ? `0 4px 12px ${props.primaryColor}30` : 'none',
-  }
-}
-
-const getGenderTabStyle = (index: number) => {
-  const isActive = activeGender.value === index
-  return {
-    backgroundColor: isActive ? props.primaryColor : `${props.primaryColor}10`,
-    color: isActive ? '#ffffff' : props.primaryColor,
-    fontFamily: props.primaryFont || props.currentFont,
-    transform: isActive ? 'scale(1.05)' : 'scale(1)',
-    boxShadow: isActive ? `0 4px 12px ${props.primaryColor}30` : 'none',
-  }
+const selectCode = (timePeriod: string, gender: string, index: number) => {
+  codeByGroup[groupKey(timePeriod, gender)] = index
 }
 </script>
+
+<!-- Loaded unscoped, once, for the same reason agenda-base.css is: Vue rewrites
+     @keyframes names inside a scoped block per component, so a scoped copy in
+     each design would give five differently-mangled names and none would
+     resolve. Every selector is under .dcd. -->
+<style src="./dress-code-designs/dress-code-base.css"></style>
 
 <style scoped>
 .dress-code-section {
@@ -433,12 +372,55 @@ const getGenderTabStyle = (index: number) => {
   max-width: 100%;
 }
 
+.dress-code-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* --------------------------------------------------------------------------
+   The time period band
+   --------------------------------------------------------------------------
+   What the segmented tray became. A tracked label between two hairlines is a
+   heading — it says "this part is for the evening" and moves on — where the
+   tray was a control that hid the morning behind it. It is also the same
+   stationery language the `atelier` design and the info-card `engraved` set
+   already speak, rather than app chrome dropped onto an invitation. */
+
+.dcd-band {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dcd-band__head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dcd-band__rule {
+  flex: 1;
+  height: 1px;
+  background: color-mix(in srgb, var(--primary-color, currentColor) 22%, transparent);
+}
+
+.dcd-band__label {
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.72;
+  white-space: nowrap;
+}
+
 /* Manage-page preview edit chrome: add-dress-code affordance. Rendered only
    when the edit-intent context exists, never in production. */
 .add-dress-code-row {
   display: flex;
   justify-content: center;
-  margin: 0.25rem 0 1rem;
+  margin: 1.25rem 0 0.25rem;
 }
 
 .add-dress-code-btn {
@@ -459,7 +441,9 @@ const getGenderTabStyle = (index: number) => {
   border-radius: 9999px;
   box-shadow: 0 1px 6px rgba(15, 23, 42, 0.12);
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 .add-dress-code-btn:hover {
@@ -467,411 +451,61 @@ const getGenderTabStyle = (index: number) => {
   background: rgba(30, 144, 255, 0.08);
 }
 
-/* Enhanced Khmer font rendering */
+/* Khmer rendering. Kept on the section's own header only — a design's copy sets
+   its Khmer leading against its own font size, and a shared value here would be
+   silently outranked. */
 .khmer-text-fix {
   line-height: 1.8 !important;
   padding-top: 0.3em !important;
   padding-bottom: 0.3em !important;
   margin-top: 0.2em;
   margin-bottom: 0.2em;
-  /* Safari-specific: Prevent breaking Khmer characters */
+  /* Safari-specific: prevent breaking Khmer clusters mid-word */
   word-break: keep-all !important;
   overflow-wrap: anywhere !important;
   hyphens: none !important;
   -webkit-hyphens: none !important;
 }
 
-/* Reduce extra spacing for Khmer in gender header */
-.gender-header .khmer-text-fix {
-  line-height: 1.4 !important;
-  padding-top: 0.1em !important;
-  padding-bottom: 0.1em !important;
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-.time-tab {
-  cursor: pointer;
-  border: none;
-  outline: none;
-  white-space: nowrap;
-}
-
-.time-tab:hover {
-  transform: scale(1.05) !important;
-}
-
-.time-tab:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-
-/* Main Content Layout */
-.dress-code-content {
-  transition: all 0.4s ease;
-}
-
-/* Gender Tabs */
-.gender-tab {
-  cursor: pointer;
-  border: none;
-  outline: none;
-  white-space: nowrap;
-}
-
-.gender-tab:hover {
-  transform: scale(1.05) !important;
-}
-
-.gender-tab:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-
-.image-container img {
-  transition: transform 0.4s ease;
-}
-
-.image-container:hover img {
-  transform: scale(1.05);
-}
-
-.color-display {
-  transition: transform 0.4s ease;
-}
-
-.color-display:hover {
-  transform: scale(1.02);
-}
-
-.color-circle {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.color-circle:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 4px;
-}
-
-/* Transition animations */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.fade-scale-enter-active,
-.fade-scale-leave-active {
-  transition: all 0.3s ease;
-}
-
-.fade-scale-enter-from {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-.fade-scale-leave-to {
-  opacity: 0;
-  transform: scale(1.05);
-}
-
-/* Small laptops 13-inch (laptop-sm: 1024px) - Aligned with HostInfoWedding header */
-@media (min-width: 1024px) and (max-width: 1365px) {
-  /* Header text - match HostInfoWedding welcome header exactly */
+/* Laptop density — the main content stage is a phone-shaped column inside a
+   much wider frame here, so every showcase section compacts rather than scales. */
+@media (min-width: 1024px) and (max-width: 1535px) {
   .dress-code-header {
-    font-size: 1.25rem !important; /* 20px - match HostInfoWedding header */
-    line-height: 1.25 !important; /* Match mobile leading-tight */
-    padding-top: 0rem !important; /* Removed top padding to reduce space */
-    padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+    font-size: 1.25rem !important;
+    line-height: 1.25 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0.34rem !important;
   }
 
-  /* Section description - larger size for better readability */
-  .section-header p {
-    font-size: 0.75rem !important; /* 12px - increased for better readability */
+  .dress-code-subheader {
+    font-size: 0.75rem !important;
   }
 
-  /* Time period tabs - compact mobile sizing like AgendaWedding */
-  .time-period-tabs {
-    gap: 0.5rem; /* Match mobile gap */
-    margin-bottom: 0.5rem !important; /* Match spacing below photo (to gender tabs) */
+  .dress-code-body {
+    gap: 1rem;
   }
 
-  .time-tab {
-    padding: 0.625rem 1.25rem !important; /* Compact mobile sizing */
-    font-size: 0.625rem !important; /* 10px - reduced for laptop */
-    line-height: 1.2 !important; /* Match AgendaWedding tab-date */
-  }
-
-  /* Gender tabs - compact mobile sizing like AgendaWedding */
-  .gender-tab {
-    padding: 0.625rem 1.25rem !important; /* Compact mobile sizing */
-    font-size: 0.625rem !important; /* 10px - reduced for laptop */
-    line-height: 1.2 !important; /* Match AgendaWedding tab-date */
-  }
-
-  /* Reduce spacing above and below gender tabs */
-  .gender-tabs-section {
-    margin-bottom: 0rem !important; /* Remove spacing below (to title) */
-    margin-top: 0.25rem !important; /* Small spacing above (from photo) */
-    padding-top: 0.125rem !important; /* Minimal top padding */
-    padding-bottom: 0.125rem !important; /* Minimal bottom padding */
-  }
-
-  /* Even spacing around photo/image section */
-  .image-section {
-    margin-top: 0.25rem !important; /* Match spacing from time tabs */
-    margin-bottom: 0.5rem !important; /* Small spacing below photo */
-  }
-
-  /* Reduce spacing for title and description section */
-  .dress-code-info-section {
-    padding-top: 0rem !important; /* Remove top padding */
-    padding-bottom: 0rem !important; /* Remove bottom padding */
-    margin-top: 0rem !important; /* Remove top margin */
-    margin-bottom: 0rem !important; /* Remove bottom margin */
-  }
-
-  /* Reduce spacing for title text */
-  .dress-code-title {
-    margin-bottom: 0.125rem !important; /* Minimal spacing below title */
-  }
-
-  /* Reduce spacing for color navigation section */
-  .color-navigation-section {
-    padding-top: 0rem !important; /* Remove top padding */
-    padding-bottom: 0.25rem !important; /* Minimal bottom padding */
-    margin-top: 0rem !important; /* Remove top margin */
-  }
-
-  /* Color circles - reduce by 50% on laptop */
-  .color-circle {
-    width: 1.25rem !important; /* 50% of 2.5rem (w-10) */
-    height: 1.25rem !important; /* 50% of 2.5rem (h-10) */
-  }
-
-  .color-circle span {
-    width: 0.375rem !important; /* 50% of 0.75rem (w-3) */
-    height: 0.375rem !important; /* 50% of 0.75rem (h-3) */
-  }
-
-  .color-navigation {
-    gap: 0.375rem !important; /* 50% of 0.75rem (gap-3) */
-  }
-
-  /* Gender header text - scaled to 77.625% from mobile sm:text-base (1rem) */
-  .gender-header-text {
-    font-size: 0.77625rem !important; /* 1rem * 0.77625 */
-  }
-
-  /* Gender header padding - scaled to 77.625% */
-  .gender-header {
-    padding-top: 0.388125rem !important; /* 0.5rem * 0.77625 (py-2) */
-    padding-bottom: 0.48515625rem !important; /* 0.625rem * 0.77625 (py-2.5) */
-    padding-left: 1.164375rem !important; /* 1.5rem * 0.77625 (px-6) */
-    padding-right: 1.164375rem !important; /* 1.5rem * 0.77625 (px-6) */
-  }
-
-  /* Card body padding - scaled to 77.625% */
-  .card-body {
-    padding: 1.164375rem !important; /* 1.5rem * 0.77625 (p-6) */
-  }
-
-  /* Dress code title - scaled to 77.625% from mobile sm:text-base (1rem) */
-  .dress-code-title {
-    font-size: 0.77625rem !important; /* 1rem * 0.77625 */
-    margin-bottom: 0.582rem !important; /* 0.75rem * 0.77625 (mb-3) */
-  }
-
-  /* Dress code description - scaled to 77.625% from mobile sm:text-sm (0.875rem) */
-  .dress-code-description {
-    font-size: 0.67921875rem !important; /* 0.875rem * 0.77625 */
-  }
-
-  /* Dress code info margin - scaled to 77.625% - only when color navigation exists */
-  .dress-code-info.mb-6 {
-    margin-bottom: 1.164375rem !important; /* 1.5rem * 0.77625 (mb-6) */
-  }
-}
-
-/* Medium laptops 14-15 inch (laptop-md: 1366px+) - Aligned with HostInfoWedding header */
-@media (min-width: 1366px) and (max-width: 1535px) {
-  /* Header text - match HostInfoWedding welcome header exactly */
-  .dress-code-header {
-    font-size: 1.25rem !important; /* 20px - match HostInfoWedding header */
-    line-height: 1.25 !important; /* Match mobile leading-tight */
-    padding-top: 0rem !important; /* Removed top padding to reduce space */
-    padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
-  }
-
-  /* Section description - larger size for better readability */
-  .section-header p {
-    font-size: 0.75rem !important; /* 12px - increased for better readability */
-  }
-
-  /* Time period tabs - mobile sizing with larger gap like AgendaWedding sm breakpoint */
-  .time-period-tabs {
-    gap: 0.75rem; /* 640px+ gap */
-    margin-bottom: 0.5rem !important; /* Match spacing below photo (to gender tabs) */
-  }
-
-  .time-tab {
-    padding: 0.75rem 1.75rem !important; /* 640px+ sizing */
-    font-size: 0.625rem !important; /* 10px - reduced for laptop */
-  }
-
-  /* Gender tabs - mobile sizing with larger gap like AgendaWedding sm breakpoint */
-  .gender-tab {
-    padding: 0.625rem 1.25rem !important; /* Maintain base mobile sizing */
-    font-size: 0.625rem !important; /* 10px - reduced for laptop */
-  }
-
-  /* Reduce spacing above and below gender tabs */
-  .gender-tabs-section {
-    margin-bottom: 0rem !important; /* Remove spacing below (to title) */
-    margin-top: 0.25rem !important; /* Small spacing above (from photo) */
-    padding-top: 0.125rem !important; /* Minimal top padding */
-    padding-bottom: 0.125rem !important; /* Minimal bottom padding */
-  }
-
-  /* Even spacing around photo/image section */
-  .image-section {
-    margin-top: 0.25rem !important; /* Match spacing from time tabs */
-    margin-bottom: 0.5rem !important; /* Small spacing below photo */
-  }
-
-  /* Reduce spacing for title and description section */
-  .dress-code-info-section {
-    padding-top: 0rem !important; /* Remove top padding */
-    padding-bottom: 0rem !important; /* Remove bottom padding */
-    margin-top: 0rem !important; /* Remove top margin */
-    margin-bottom: 0rem !important; /* Remove bottom margin */
-  }
-
-  /* Reduce spacing for title text */
-  .dress-code-title {
-    margin-bottom: 0.125rem !important; /* Minimal spacing below title */
-  }
-
-  /* Reduce spacing for color navigation section */
-  .color-navigation-section {
-    padding-top: 0rem !important; /* Remove top padding */
-    padding-bottom: 0.25rem !important; /* Minimal bottom padding */
-    margin-top: 0rem !important; /* Remove top margin */
-  }
-
-  /* Color circles - reduce by 50% on laptop */
-  .color-circle {
-    width: 1.5rem !important; /* 50% of 3rem (sm:w-12) */
-    height: 1.5rem !important; /* 50% of 3rem (sm:h-12) */
-  }
-
-  .color-circle span {
-    width: 0.375rem !important; /* 50% of 0.75rem (w-3) */
-    height: 0.375rem !important; /* 50% of 0.75rem (h-3) */
-  }
-
-  .color-navigation {
-    gap: 0.375rem !important; /* 50% of 0.75rem (gap-3) */
-  }
-
-  /* Gender header text - scaled to 86.25% from mobile sm:text-base (1rem) */
-  .gender-header-text {
-    font-size: 0.8625rem !important; /* 1rem * 0.8625 */
-  }
-
-  /* Gender header padding - scaled to 86.25% */
-  .gender-header {
-    padding-top: 0.43125rem !important; /* 0.5rem * 0.8625 (py-2) */
-    padding-bottom: 0.53906250rem !important; /* 0.625rem * 0.8625 (py-2.5) */
-    padding-left: 1.29375rem !important; /* 1.5rem * 0.8625 (px-6) */
-    padding-right: 1.29375rem !important; /* 1.5rem * 0.8625 (px-6) */
-  }
-
-  /* Card body padding - scaled to 86.25% */
-  .card-body {
-    padding: 1.29375rem !important; /* 1.5rem * 0.8625 (p-6) */
-  }
-
-  /* Dress code title - scaled to 86.25% from mobile sm:text-base (1rem) */
-  .dress-code-title {
-    font-size: 0.8625rem !important; /* 1rem * 0.8625 */
-    margin-bottom: 0.647rem !important; /* 0.75rem * 0.8625 (mb-3) */
-  }
-
-  /* Dress code description - scaled to 86.25% from mobile sm:text-sm (0.875rem) */
-  .dress-code-description {
-    font-size: 0.75468750rem !important; /* 0.875rem * 0.8625 */
-  }
-
-  /* Dress code info margin - scaled to 86.25% - only when color navigation exists */
-  .dress-code-info.mb-6 {
-    margin-bottom: 1.29375rem !important; /* 1.5rem * 0.8625 (mb-6) */
-  }
-}
-
-/* Desktop (1536px+) - Simple, clean desktop styles */
-@media (min-width: 1536px) {
-  .dress-code-header {
-    font-size: 1.875rem !important; /* 30px - text-3xl */
-  }
-}
-
-/* Responsive adjustments */
-@media (max-width: 640px) {
-  .time-period-tabs {
+  .dcd-band {
     gap: 0.5rem;
   }
 
-  .time-tab {
-    font-size: 0.875rem;
-    padding: 0.625rem 1.25rem;
+  .dcd-band__head {
+    gap: 0.5rem;
   }
 
-  .gender-tab {
-    font-size: 0.875rem;
+  .dcd-band__label {
+    font-size: 0.5rem;
+    letter-spacing: 0.16em;
   }
 
-  .color-navigation {
-    gap: 0.75rem;
-  }
-
-  .color-circle {
-    width: 2.5rem;
-    height: 2.5rem;
+  .add-dress-code-row {
+    margin-top: 0.75rem;
   }
 }
 
-/* Accessibility */
-@media (prefers-reduced-motion: reduce) {
-  .dress-code-content,
-  .time-tab,
-  .gender-tab,
-  .image-container img,
-  .color-display,
-  .color-circle,
-  .fade-enter-active,
-  .fade-leave-active,
-  .fade-scale-enter-active,
-  .fade-scale-leave-active {
-    transition: none;
-  }
-
-  .time-tab:hover,
-  .gender-tab:hover {
-    transform: none !important;
-  }
-
-  .image-container:hover img,
-  .color-display:hover {
-    transform: none;
+@media (min-width: 1536px) {
+  .dress-code-header {
+    font-size: 1.875rem !important;
   }
 }
 </style>

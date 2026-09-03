@@ -280,6 +280,7 @@
                     :primary-font="primaryFont"
                     :secondary-font="secondaryFont"
                     :get-media-url="getMediaUrl"
+                    :dress-code-design="dressCodeDesign"
                   />
 
                   <!-- Dress Code Section Divider -->
@@ -308,6 +309,7 @@
                     :primary-font="primaryFont"
                     :secondary-font="secondaryFont"
                     :event-type="eventType"
+                    :agenda-design="agendaDesign"
                   />
 
                   <!-- Agenda Section Divider -->
@@ -841,6 +843,8 @@ import { useOptimizedDecorations } from '../../composables/showcase/useOptimized
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
 import { useCoverStageLayout } from '../../composables/showcase/useCoverStageLayout'
 import type {
+  AgendaDesignConfig,
+  DressCodeDesignConfig,
   CoverStageLayout,
   EventDetailsDesignConfig,
   HostInfoDesignConfig,
@@ -927,6 +931,9 @@ interface Props {
   hostInfoDesign?: HostInfoDesignConfig | null
   /** Info card (venue/map/countdown/RSVP) design from template (glass | engraved) */
   infoCardDesign?: InfoCardDesignConfig | null
+  /** Agenda list design from template (rail | thread | milestone | ledger | stack) */
+  agendaDesign?: AgendaDesignConfig | null
+  dressCodeDesign?: DressCodeDesignConfig | null
 }
 
 const props = defineProps<Props>()

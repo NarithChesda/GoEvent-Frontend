@@ -667,6 +667,141 @@ export interface InfoCardDesignConfig {
 }
 
 /**
+ * Composition used for the **agenda** — the list of activities under the day
+ * tabs on the main content stage.
+ *
+ * Before this existed the agenda picked its look from the *event category*:
+ * four near-identical layout components (wedding / birthday / funeral /
+ * default) that differed in a container class name, a header translation key
+ * and some copy-pasted comment drift, and rendered the exact same card. A
+ * template therefore could not choose how its own schedule looked, and a
+ * partner selling a wedding design and a birthday design shipped the same
+ * agenda in both. That inference is what this config replaces: the **category
+ * still decides the words** (`agenda_header_wedding` vs `agenda_header_funeral`
+ * are copy, and live events keep theirs), the **template decides the look**.
+ *
+ * The five designs are distinct *compositions*, not restyles — they differ in
+ * whether items are connected, which axis they are aligned on, and whether the
+ * item sits on the page or in a card:
+ *
+ * - `rail`      — **the default, and what every agenda renders today.** A
+ *                 continuous hairline spine down the leading edge with an icon
+ *                 medallion on it per item, the time as a tracked overline with
+ *                 a fading rule, the title beneath. Left-aligned, borderless.
+ * - `thread`    — items alternate sides down the page, each one an icon roundel
+ *                 and its copy mirrored against the row before it, joined by a
+ *                 dotted thread that swings between the two roundels. Borderless
+ *                 and the most decorative; the widest vertical rhythm.
+ * - `milestone` — every item centred on one axis: the roundel, then the time as
+ *                 a tracked eyebrow, then the title, with a short hairline drop
+ *                 between stops. Nothing competes for horizontal space, so it is
+ *                 the design that gives a long title — or Khmer, which sets
+ *                 wide — the whole column.
+ * - `ledger`    — an order of service: the time set in tabular numerals in a
+ *                 fixed leading column, the title beside it under a hairline
+ *                 rule per row, the icon reduced to a small glyph ahead of the
+ *                 title. No medallion, no connector; the quietest and by far
+ *                 the densest, so a twelve-item schedule still fits a phone.
+ * - `stack`     — each item a soft-tinted rounded card with a filled icon
+ *                 roundel and the time on a pill chip. The only design with a
+ *                 material of its own; rounder and warmer than the rest, which
+ *                 is what makes it the birthday option.
+ *
+ * When the field is absent / `null` the showcase renders `rail`, so every
+ * already-published template is unchanged and no migration is needed.
+ *
+ * Selected per template via `template_assets.agenda_design` and flows through
+ * the showcase exactly like `host_info_design`.
+ */
+export type AgendaDesignType = 'rail' | 'thread' | 'milestone' | 'ledger' | 'stack'
+
+/**
+ * Configuration for the agenda list on the showcase.
+ *
+ * Mirrors the `HostInfoDesignConfig` pattern: a small JSON object sent inside
+ * the template package and forwarded down to AgendaSection.vue. When omitted
+ * the showcase falls back to the `rail` design.
+ */
+export interface AgendaDesignConfig {
+  /** Which agenda composition to render. Defaults to `rail`. */
+  type: AgendaDesignType
+}
+
+/**
+ * Composition used for the **dress code** block on the main content stage — the
+ * outfits under the invitation, grouped by time of day and by gender.
+ *
+ * ## What this replaced
+ *
+ * One composition, whose most common state was broken and whose navigation hid
+ * most of what it held.
+ *
+ * A dress code carries a colour and an *optional* photograph. With no
+ * photograph the block painted a flat square of that colour with a generic
+ * person glyph at 30% white over it — a failed-upload look on a dark colour,
+ * an empty rectangle on a pale one, and the state most dress codes are actually
+ * in. Every design now draws a **garment silhouette** filled with the code's own
+ * colour instead, so the colour is *worn* rather than used as a backdrop and the
+ * shape says which kind of outfit before a word is read. That part is a fix, not
+ * a setting — it applies to all five.
+ *
+ * On top of that sat three levels of control: a segmented tray of time periods,
+ * a row of gender pills, and a row of colour dots. Two of those hid information
+ * rather than offering a choice. The block now follows one rule:
+ *
+ *   time period and gender are **conjunctive** — morning AND evening, his AND
+ *   hers, all of it applies to the guest reading it, so all of it is laid out;
+ *   the codes within one group are **disjunctive** — black tie OR midnight blue,
+ *   so that alone keeps a selector.
+ *
+ * The tray became a heading and the pills became captions. No design has a tab.
+ *
+ * ## The five designs
+ *
+ * - `portrait` — **the default.** Every outfit in the period stands in its own
+ *                soft square, side by side, captioned with who wears it; title,
+ *                description and colour chips beneath. One group widens to a
+ *                single centred square and drops the caption. Universal.
+ * - `atelier`  — the formal one: a tall hairline arch on a mount board, the type
+ *                name tracked in small caps under a short rule, squared-off
+ *                colour tiles. The same hairline language as the `calendar` /
+ *                `arch` dates and the `engraved` info card, so it reads as part
+ *                of one sheet. Weddings, ceremonies, funerals.
+ * - `spread`   — the editorial one: the garment stands **unframed** at the
+ *                leading edge of a full-width band with its copy beside it,
+ *                divided by a vertical hairline, one band per person. The only
+ *                design that gives the description room to be a sentence.
+ * - `palette`  — the colours are the subject: a row of large discs, one per
+ *                code, each with its garment outlined on it, and the discs *are*
+ *                the selector. For events that instruct a palette rather than a
+ *                formality — birthdays, housewarmings, themed parties.
+ * - `ledger`   — every code on one line: colour badge, title, full description,
+ *                hairline rules between. No selector at all, because nothing is
+ *                hidden. The answer when the description carries the actual rule
+ *                ("no white", "shoes you can take off").
+ *
+ * When the field is absent / `null` the showcase renders `portrait`, and an
+ * unrecognised value falls back to it too, so a value written by a newer
+ * frontend than the one serving a guest degrades safely.
+ *
+ * Selected per template via `template_assets.dress_code_design` and flows
+ * through the showcase exactly like `agenda_design`.
+ */
+export type DressCodeDesignType = 'portrait' | 'atelier' | 'spread' | 'palette' | 'ledger'
+
+/**
+ * Configuration for the dress code block on the showcase.
+ *
+ * An object rather than a bare string, matching `agenda_design` and
+ * `host_info_design`, so a future per-design option (a figure shape, a colour
+ * source) can be added as a sibling key without a breaking change.
+ */
+export interface DressCodeDesignConfig {
+  /** Which dress code composition to render. Defaults to `portrait`. */
+  type: DressCodeDesignType
+}
+
+/**
  * Composition used for the **Save the Date** title card on the transition
  * stage — the block that carries the label and the event date over the
  * featured photograph, between the cover and the invitation.
@@ -993,6 +1128,10 @@ export interface PartnerTemplate {
   event_details_design: EventDetailsDesignConfig | null
   host_info_design: HostInfoDesignConfig | null
   info_card_design: InfoCardDesignConfig | null
+  /** Agenda list design. Null = the `rail` design every agenda renders today. */
+  agenda_design: AgendaDesignConfig | null
+  /** Dress code block design. Null = the `portrait` design every event renders today. */
+  dress_code_design: DressCodeDesignConfig | null
   save_the_date_design: SaveTheDateDesignConfig | null
   /** Per-stage animation/video modes. Null = infer from assets + category. */
   stage_modes: StageModesConfig | null
@@ -1070,6 +1209,10 @@ export interface PartnerTemplateCreatePayload {
   host_info_design?: HostInfoDesignConfig | null
   /** Info card (venue/map/countdown/RSVP) design. Pass `null` to fall back to `glass`. */
   info_card_design?: InfoCardDesignConfig | null
+  /** Agenda list design. Pass `null` to fall back to the `rail` design. */
+  agenda_design?: AgendaDesignConfig | null
+  /** Dress code block design. Pass `null` to fall back to the `portrait` design. */
+  dress_code_design?: DressCodeDesignConfig | null
   /** Transition-stage Save the Date design. Pass `null` to keep each stage's own default. */
   save_the_date_design?: SaveTheDateDesignConfig | null
   /** Per-stage animation/video modes. Pass `null` to fall back to the legacy inference. */

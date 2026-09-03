@@ -208,6 +208,12 @@ export const partnerTemplateService = {
     if (payload.info_card_design !== undefined) {
       formData.append('info_card_design', JSON.stringify(payload.info_card_design))
     }
+    if (payload.agenda_design !== undefined) {
+      formData.append('agenda_design', JSON.stringify(payload.agenda_design))
+    }
+    if (payload.dress_code_design !== undefined) {
+      formData.append('dress_code_design', JSON.stringify(payload.dress_code_design))
+    }
     if (payload.save_the_date_design !== undefined) {
       formData.append('save_the_date_design', JSON.stringify(payload.save_the_date_design))
     }
@@ -272,6 +278,12 @@ export const partnerTemplateService = {
     }
     if (payload.info_card_design !== undefined) {
       formData.append('info_card_design', JSON.stringify(payload.info_card_design))
+    }
+    if (payload.agenda_design !== undefined) {
+      formData.append('agenda_design', JSON.stringify(payload.agenda_design))
+    }
+    if (payload.dress_code_design !== undefined) {
+      formData.append('dress_code_design', JSON.stringify(payload.dress_code_design))
     }
     if (payload.save_the_date_design !== undefined) {
       formData.append('save_the_date_design', JSON.stringify(payload.save_the_date_design))

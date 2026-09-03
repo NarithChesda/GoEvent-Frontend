@@ -1,0 +1,222 @@
+/**
+ * Shared base for every agenda design on the main content stage.
+ *
+ * The designs are *compositions*; the ink they are drawn in, the faces they set
+ * in and the clock they run against belong to the section hosting them. All
+ * three come in through this contract, which AgendaSection.vue sets on the list
+ * root it hands to the design:
+ *
+ *   --agd-ink        the copy and rule colour — the template's primary.
+ *   --agd-accent     the template's accent, for the one mark a design spends it
+ *                    on (the thread's dots, the stack's chip). Most designs
+ *                    ignore it; none of them use it for body copy.
+ *   (Faces are NOT part of this contract: each design binds fontFamily inline on
+ *   the exact elements that need it, because a title and a time set in different
+ *   faces and inheritance cannot tell them apart.)
+ *   --agd-icon-color what an uploaded activity SVG is recoloured to. A design
+ *                    that draws its roundel filled sets this to the roundel's
+ *                    own contrast colour rather than to the ink.
+ *   --agd-ease-out   the showcase's strong ease-out. Declared here rather than
+ *                    inherited so designs render identically inside the
+ *                    manage-page preview frame, which mounts sections outside
+ *                    `.showcase-container`.
+ *
+ * A design never reads a template colour, an event category or a stage class
+ * directly. It reads these, plus the per-item `--agd-delay` the frame sets.
+ *
+ * Loaded UNSCOPED, once, from AgendaSection.vue — the same arrangement
+ * save-the-date-base.css uses, and for the same two reasons: a scoped copy per
+ * design would give each one a differently-mangled `@keyframes` name, and the
+ * icon rules below have to reach `v-html` content, which carries no scope
+ * attribute. Every selector is under `.agd`.
+ */
+
+.agd {
+  --agd-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --agd-hairline: color-mix(in srgb, var(--agd-ink) 28%, transparent);
+  --agd-hairline-soft: color-mix(in srgb, var(--agd-ink) 14%, transparent);
+  --agd-icon-color: var(--agd-ink);
+
+  width: 100%;
+  color: var(--agd-ink);
+}
+
+/* --------------------------------------------------------------------------
+   Per-item frame (AgendaItemFrame.vue)
+   -------------------------------------------------------------------------- */
+
+/* The scroll-driven zoom/fade every design shares, matched to PhotoGallery so
+   agenda items and photos read as one page. The range is deliberately narrow: a
+   0.68→1 scale re-rasterizes the card's text at a fractional scale for most of
+   its time on screen (visibly soft), and because the mapping is symmetric, an
+   item at the top edge shrank away while it was still being read.
+   No `will-change`: these live in a long list, and promoting every one of them
+   costs more than the transform saves. */
+.agd-item {
+  --scroll-progress: 0;
+  position: relative;
+  opacity: calc(0.55 + 0.45 * var(--scroll-progress));
+  transform: scale(calc(0.94 + 0.06 * var(--scroll-progress)));
+  transform-origin: center center;
+}
+
+/* Reveal-only transition: kept for the first ~600ms after mount so the item
+   eases from progress 0 to its real scroll progress (for items already in view
+   on a tab switch). Removed afterwards so live scrolling stays instant. */
+.agd-item.is-revealing {
+  transition:
+    opacity 0.5s var(--agd-ease-out),
+    transform 0.5s var(--agd-ease-out);
+}
+
+/* On the public showcase there are no arrows and the item is a plain block, so
+   a design's own display (grid, flex, whatever it needs) is untouched. Inside
+   the editable preview the item becomes a row with the arrows at its trailing
+   edge, which costs every composition the gutter below. A design whose connector
+   spans the whole list has to leave the same gutter — see --agd-gutter. */
+.agd--editing {
+  --agd-gutter: 2.125rem;
+}
+
+.agd--editing .agd-item {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.agd-item__body {
+  flex: 1;
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Activity icon
+   Uploaded SVGs carry their own fills, so they are rewritten inline by
+   recolorAgendaIcon (useAgendaDesign.ts) AND overridden here — this half is what reaches the
+   v-html content, which has no scope attribute for a design's scoped block.
+   -------------------------------------------------------------------------- */
+
+.agd-icon {
+  display: block;
+}
+
+.agd-icon svg {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.agd-icon svg,
+.agd-icon svg * {
+  fill: var(--agd-icon-color) !important;
+  stroke: var(--agd-icon-color) !important;
+  color: var(--agd-icon-color) !important;
+}
+
+/* The fallback Calendar renders as an outline, never a solid block. */
+.agd-icon--fallback,
+.agd-icon--fallback svg,
+.agd-icon--fallback svg * {
+  color: var(--agd-icon-color) !important;
+  fill: none !important;
+  stroke: var(--agd-icon-color) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Khmer
+   Only the wrapping rules live here. The LEADING deliberately does not: every
+   design sets its own `.<x>-title` line-height at higher specificity than
+   anything this file can write for a shared `.agd-title`, so a value here would
+   be silently overridden and the coeng subscripts would clip. Each design pairs
+   its Khmer font-size with its own line-height instead.
+   -------------------------------------------------------------------------- */
+
+.agd :where(.agd-title).is-khmer {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  hyphens: none;
+  -webkit-hyphens: none;
+}
+
+/* --------------------------------------------------------------------------
+   Manage-page preview edit chrome: reorder arrows at the item's trailing edge.
+   Rendered only when the edit-intent context exists, never in production.
+   -------------------------------------------------------------------------- */
+
+.agd-item-region {
+  /* Keep the hover "Edit activity" badge clear of the reorder arrows
+     (arrow button width + inset + breathing room). */
+  --edit-badge-right: 2.4rem;
+}
+
+.agd-reorder {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.agd-reorder__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.625rem;
+  height: 1.625rem;
+  padding: 0;
+  color: #1e90ff;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1.5px dashed rgba(30, 144, 255, 0.5);
+  border-radius: 9999px;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.18);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.agd-reorder__btn:hover:not(:disabled) {
+  border-color: rgba(30, 144, 255, 0.9);
+  background: rgba(30, 144, 255, 0.08);
+}
+
+.agd-reorder__btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.agd-reorder__btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.agd-reorder__icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion
+   Fewer and gentler, not none: the scroll-driven scale and every entrance
+   translate go, the items stay legible and fully opaque.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .agd-item {
+    --scroll-progress: 1;
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .agd *,
+  .agd *::before,
+  .agd *::after {
+    animation: none !important;
+  }
+
+  .agd .agd-draws-in {
+    opacity: 1 !important;
+    clip-path: none !important;
+    transform: none !important;
+  }
+}
