@@ -424,6 +424,7 @@
                     :primary-color="primaryColor"
                     :secondary-color="secondaryColor || undefined"
                     :accent-color="accentColor"
+                    :background-color="backgroundColor"
                     :current-font="currentFont"
                     :primary-font="primaryFont || currentFont"
                     :secondary-font="secondaryFont || currentFont"
@@ -468,7 +469,6 @@
                     :background-color="backgroundColor"
                     :current-font="currentFont"
                     :primary-font="primaryFont"
-                    :secondary-font="secondaryFont"
                     :event-texts="eventTexts"
                     :current-language="currentLanguage"
                     :event-type="eventType"
@@ -1040,17 +1040,15 @@ const hasPartnerLogo = computed(() =>
 )
 
 // A partner with no logo yet is a normal steady state, and on a real invitation
-// it simply draws nothing: a guest must never meet a placeholder. In a preview
-// it draws the slot instead, because the shop reading that preview is being sold
-// this exact spot and cannot be sold a gap.
+// it simply draws nothing: a guest must never meet a placeholder.
 //
-// PreviewFrameKey, not EditIntentKey. The partner-template preview IS a preview
-// but cannot edit (`canEdit: false`), so gating on the edit context would hide
-// the slot from the one audience it exists for - the trap the host avatar row
-// fell into. See previewContext.ts.
-const showPartnerLogoSlot = computed(
-  () => !hasPartnerLogo.value && Boolean(previewFrameCtx || editIntentCtx),
-)
+// The slot is an argument, not a placeholder for missing content, so it is drawn
+// for the one audience that argument is aimed at: the shop owner reading the
+// public catalogue, who is being sold this exact spot and cannot be sold a gap.
+// Every other preview is a studio — the organizer or the partner previewing
+// their own work already knows whose mark goes here, so the slot is only noise
+// in a frame they are reading to judge the design.
+const showPartnerLogoSlot = computed(() => !hasPartnerLogo.value && previewFrameCtx === 'catalogue')
 
 // The ornament joins two marks, so it needs a mark above it to join to.
 const showPartnerRow = computed(() => hasPartnerLogo.value || showPartnerLogoSlot.value)

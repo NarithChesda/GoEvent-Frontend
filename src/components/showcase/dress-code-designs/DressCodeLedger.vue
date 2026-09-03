@@ -168,7 +168,7 @@ const rowsOf = (group: DressCodeGenderGroup) =>
   height: 2.75rem;
   border-radius: 0.875rem;
   background: var(--ldg-fill);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dcd-ink) 16%, transparent);
+  box-shadow: var(--dcd-bead);
 }
 
 .ldg-copy {

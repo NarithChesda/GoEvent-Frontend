@@ -125,7 +125,9 @@ const renderer = computed(() =>
 
 // This is a preview, so slots the template defines but the sample has not
 // filled still render. Never an editor — no InlineEditKey / EditIntentKey here.
-provide(PreviewFrameKey, true)
+// `catalogue`: the visitor has no account and is being sold the design, which is
+// what earns the footer's "Your Logo" slot here and nowhere else.
+provide(PreviewFrameKey, 'catalogue')
 
 const replayKey = ref(0)
 

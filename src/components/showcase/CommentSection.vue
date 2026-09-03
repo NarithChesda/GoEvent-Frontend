@@ -1,532 +1,253 @@
 <template>
-  <div id="comment-section" class="mb-8">
-    <div class="text-center laptop-sm:mb-6 laptop-md:mb-8 laptop-lg:mb-10 desktop:mb-8 laptop-sm:-mt-2 laptop-md:-mt-2 laptop-lg:-mt-3">
+  <!--
+    The guestbook.
+
+    Not a comment thread. A guest writes one blessing, signs it, and everyone
+    who opens the invitation reads it — so this is a signed page, not a feed:
+    one glass sheet tinted in the template's own colour, wishes separated by a
+    hairline rather than each boxed on its own, and every entry closed by a
+    signature rather than opened by an avatar.
+
+    What that replaced, and why: each wish used to be its own bordered card
+    carrying a 28px avatar disc, an inner hairline, a name row and a relative
+    time — four pieces of chrome around two facts, stacked N deep inside a card
+    that is itself glass. On a 390px phone that is roughly a third of the
+    section spent on frames, and the frames read as a comment app. Each card
+    also ran its own `backdrop-filter`, so a list of wishes cost N compositor
+    passes on the phone least able to pay them; the sheet blurs once.
+  -->
+  <div id="comment-section" class="wb" :style="wbVars">
+    <!-- ══ Heading ══════════════════════════════════════════════════════
+         A sibling of the Agenda and RSVP headings: same size ladder, same
+         ornament, and it keeps the template's primary face through its own
+         inline style (see the guestbook type rule in the unscoped block). -->
+    <header class="wb-head">
       <h2
-        :class="[
-          'leading-tight py-2 text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize',
-          currentLanguage === 'kh' && 'khmer-text-fix',
-        ]"
-        :style="{
-          fontFamily: primaryFont || currentFont,
-          color: primaryColor,
-        }"
+        class="wb-title"
+        :class="{ 'khmer-text-fix': currentLanguage === 'kh' }"
+        :style="{ fontFamily: primaryFont || currentFont }"
       >
         {{ commentHeaderText }}
       </h2>
-      <!-- Ornamental divider under heading -->
-      <div class="flex items-center justify-center gap-2 -mt-1 mb-1">
-        <span
-          class="h-px w-10 sm:w-14"
-          :style="{ background: `linear-gradient(90deg, transparent, ${primaryColor}66)` }"
-        ></span>
-        <span
-          class="w-1.5 h-1.5 rotate-45 flex-shrink-0"
-          :style="{ backgroundColor: `${primaryColor}59` }"
-        ></span>
-        <span
-          class="h-px w-10 sm:w-14"
-          :style="{ background: `linear-gradient(90deg, ${primaryColor}66, transparent)` }"
-        ></span>
-      </div>
-    </div>
+      <span class="wb-orn" aria-hidden="true">
+        <span class="wb-orn__rule"></span>
+        <span class="wb-orn__gem"></span>
+        <span class="wb-orn__rule"></span>
+      </span>
+    </header>
 
-    <!-- Comment Form -->
-    <div
-      ref="commentFormRef"
-      class="comment-form-liquid mb-3 animate-form-reveal"
-      :class="{ 'is-collapsed': composerCollapsed }"
-      :style="{
-        backgroundColor: `${backgroundColor}20`,
-        border: `1px solid ${backgroundColor}40`,
-      }"
-    >
-      <!-- Private event without an invitation link -->
-      <div v-if="showInviteOnlyPrompt" class="text-center py-4">
-        <p
-          class="text-sm"
-          :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
-        >
+    <!-- ══ The book ═════════════════════════════════════════════════════
+         One surface. Everything below — the composer, its notices, the
+         wishes, the ask for more — lives on it, separated by hairlines. -->
+    <div ref="panelRef" class="wb-panel" :class="{ 'is-revealed': isRevealed }">
+      <!-- ── Where a guest signs ────────────────────────────────────────
+           Kept above the wishes and collapsed to a single row: expanded it
+           is a textarea, a counter and a button, and an empty box asking a
+           guest to write before they have read anything is the wrong first
+           screen. It opens by default when there is nothing to read, since
+           composing is then the only thing this section can offer. -->
+      <div class="wb-compose">
+        <!-- Private event opened without an invitation link -->
+        <p v-if="showInviteOnlyPrompt" class="wb-note">
           {{ commentInviteOnlyPromptText }}
         </p>
-      </div>
 
-      <!-- Sign In Prompt for Unauthenticated Users on PUBLIC events -->
-      <div v-else-if="showLoginPrompt" class="text-center py-4">
-        <p
-          class="text-sm mb-3"
-          :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
-        >
-          {{ commentSigninPromptText }}
+        <!-- Public event, signed out -->
+        <div v-else-if="showLoginPrompt" class="wb-note-stack">
+          <p class="wb-note">{{ commentSigninPromptText }}</p>
+          <button type="button" class="wb-submit" @click="handleSignInClick">
+            {{ commentSigninButtonText }}
+          </button>
+        </div>
+
+        <!-- Already signed. One quiet line: their wish is at the top of the
+             list below, marked as theirs, so a padded block restating it is
+             chrome over an answer the page already gives. -->
+        <p v-else-if="hasAlreadyCommented" class="wb-note wb-note--done">
+          <Check class="wb-note__tick" aria-hidden="true" />
+          <span>{{ commentAlreadyCommentedText }}</span>
         </p>
-        <button
-          @click="handleSignInClick"
-          class="liquid-glass-button w-full text-sm font-medium transition-all duration-300 hover:scale-[1.02]"
-          :style="{
-            background: backgroundColor,
-            color: '#ffffff',
-            border: `1px solid ${backgroundColor}60`,
-          }"
-        >
-          <span :style="{ fontFamily: secondaryFont || currentFont }">{{
-            commentSigninButtonText
-          }}</span>
+
+        <!-- Collapsed composer -->
+        <button v-else-if="composerCollapsed" type="button" class="wb-trigger" @click="openComposer">
+          <span class="wb-trigger__mark" aria-hidden="true">
+            <PenLine class="wb-trigger__pen" />
+          </span>
+          <span class="wb-trigger__label">{{ commentComposeCtaText }}</span>
         </button>
-      </div>
 
-      <!-- Already Commented Message -->
-      <div v-else-if="hasAlreadyCommented" class="text-center py-4">
-        <p
-          class="text-sm"
-          :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
-        >
-          {{ commentAlreadyCommentedText }}
-        </p>
-      </div>
+        <!-- Open composer -->
+        <form v-else-if="canShowCommentForm" class="wb-form" @submit.prevent="submitComment">
+          <p v-if="commentAuthMode === 'guest' && guestName" class="wb-form__as">
+            {{ commentCommentingAsText }} <strong>{{ guestName }}</strong>
+          </p>
 
-      <!-- Collapsed composer.
-
-           Expanded, the form is a textarea, a counter and a button: about
-           200px, and it sat above the wishes, so the first screen of the
-           guestbook was an empty box asking a guest to write before they had
-           read anything. On a wedding the wishes are the reason the section
-           exists; writing one is what a guest does *after* being moved by
-           them. Collapsed it costs one row, and it opens on tap into exactly
-           the form that was there before.
-
-           It opens by default when there is nothing to read - with no wishes
-           yet, composing is the only thing this section can offer, and asking
-           for a second tap to reach it would be perverse. -->
-      <button
-        v-else-if="canShowCommentForm && composerCollapsed"
-        type="button"
-        class="composer-trigger w-full flex items-center gap-2.5 text-left"
-        :style="{ color: primaryColor }"
-        @click="openComposer"
-      >
-        <span
-          class="composer-trigger__mark flex-shrink-0 flex items-center justify-center rounded-full"
-          :style="{
-            backgroundColor: `${backgroundColor}22`,
-            boxShadow: `0 0 0 1px ${backgroundColor}30`,
-          }"
-        >
-          <PenLine class="w-3.5 h-3.5" :style="{ color: primaryColor, opacity: 0.75 }" />
-        </span>
-        <span
-          class="text-sm truncate"
-          :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
-          :style="{ opacity: 0.75, fontFamily: secondaryFont || currentFont }"
-        >{{ commentComposeCtaText }}</span>
-      </button>
-
-      <!-- Comment Form (visible whenever the form can be shown) -->
-      <form v-else-if="canShowCommentForm" @submit.prevent="submitComment">
-        <!-- "Commenting as <guestName>" hint for guest authors -->
-        <p
-          v-if="commentAuthMode === 'guest' && guestName"
-          class="text-xs mb-2"
-          :style="{
-            color: primaryColor,
-            opacity: 0.85,
-            fontFamily: secondaryFont || currentFont,
-          }"
-        >
-          {{ commentCommentingAsText }} <strong>{{ guestName }}</strong>
-        </p>
-        <!-- Comment Textarea -->
-        <div class="mb-3">
+          <!-- Set in the size and leading the wish itself will be shown in, so
+               a guest writes into the shape they are about to appear in. -->
           <textarea
             ref="composerTextareaRef"
             v-model="newComment.message"
+            class="wb-field"
+            :class="{
+              'is-khmer': isKhmer(newComment.message),
+              'is-invalid': !commentValidation.isValid,
+            }"
             :placeholder="commentPlaceholderText"
             rows="3"
             maxlength="500"
-            class="liquid-glass-textarea w-full px-3 py-2 text-sm focus:outline-none resize-none"
-            :style="{
-              backgroundColor: `${backgroundColor}25`,
-              '--tw-ring-color': backgroundColor + '80',
-              color: primaryColor,
-              border: `1px solid ${commentValidation.isValid ? backgroundColor + '30' : '#dc262630'}`,
-              fontFamily: secondaryFont || currentFont,
-            }"
+            required
             @input="handleCommentInput"
             @blur="validateCommentOnBlur"
-            required
           />
-          <div class="text-xs text-right mt-1 flex justify-between items-center">
-            <!-- Validation Errors -->
-            <div
-              v-if="!commentValidation.isValid && commentValidation.errors.length > 0"
-              class="text-red-500 text-xs"
-            >
-              {{ commentValidation.errors[0] }}
-            </div>
-            <div v-else></div>
-            <!-- Character Count: only once it is close enough to matter. At
-                 0/500 it is a rule the guest has not come near, printed under
-                 an empty box. -->
-            <div
-              v-if="newComment.message.length >= 400"
-              :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
-            >
-              {{ newComment.message.length }}/500
-            </div>
-          </div>
-        </div>
 
-        <!-- Submit Button -->
-        <button
-          type="submit"
-          :disabled="
-            isSubmittingComment || !newComment.message.trim() || !commentValidation.isValid
-          "
-          class="liquid-glass-button w-full text-sm font-medium transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-          :style="{
-            background: backgroundColor,
-            color: '#ffffff',
-            border: `1px solid ${backgroundColor}60`,
-          }"
-        >
-          <span :style="{ fontFamily: secondaryFont || currentFont }">{{
-            isSubmittingComment ? commentPostingButtonText : commentPostButtonText
-          }}</span>
-        </button>
-      </form>
-    </div>
-
-    <!-- Comments List
-
-         Flows with the page rather than scrolling inside itself. It was a
-         fixed `h-[26rem]` overflow box, which on a phone bought two problems
-         and no benefit: it is a third nested scroller (inside .stage-scroll,
-         inside the card wrapper), so a flick over the wishes moved the list
-         and not the invitation; and it reserved 394px of an 844px viewport
-         whatever the content, so an event with one wish rendered that wish
-         followed by a third of a screen of nothing. Length is now handled
-         where it actually comes from - the number of wishes - by showing the
-         most recent few and letting the guest ask for the rest. -->
-    <div class="relative">
-      <div ref="commentsContainer" class="space-y-3">
-        <!-- Loading State -->
-        <div
-          v-if="loadingComments"
-          class="liquid-glass-state text-center py-8"
-          :style="{
-            backgroundColor: `${backgroundColor}18`,
-            border: `1px solid ${backgroundColor}40`,
-          }"
-        >
-          <div class="inline-flex items-center gap-2">
-            <div
-              class="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin"
-              :style="{ borderColor: `${primaryColor}60`, borderTopColor: 'transparent' }"
-            ></div>
-            <span
-              class="text-sm"
-              :style="{
-                color: primaryColor,
-                opacity: '0.8',
-                fontFamily: secondaryFont || currentFont,
-              }"
-              >{{ commentLoadingText }}</span
-            >
-          </div>
-        </div>
-
-        <!-- No Comments State -->
-        <div
-          v-else-if="comments.length === 0"
-          class="liquid-glass-state text-center py-8"
-          :style="{
-            backgroundColor: `${backgroundColor}18`,
-            border: `1px solid ${backgroundColor}40`,
-          }"
-        >
-          <div
-            class="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center"
-            :style="{
-              backgroundColor: `${backgroundColor}15`,
-              boxShadow: `0 0 0 1px ${backgroundColor}30, 0 0 0 6px ${backgroundColor}0D`,
-            }"
-          >
-            <MessageCircle class="w-6 h-6" :style="{ color: primaryColor, opacity: '0.6' }" />
-          </div>
+          <!-- The count appears only once it is close enough to matter. At
+               0/500 it is a rule the guest has not come near, printed under an
+               empty box. -->
           <p
-            class="text-sm"
-            :style="{
-              color: primaryColor,
-              opacity: '0.8',
-              fontFamily: secondaryFont || currentFont,
-            }"
+            v-if="!commentValidation.isValid && commentValidation.errors.length > 0"
+            class="wb-form__hint is-error"
           >
-            {{ commentNoCommentsText }}
+            {{ commentValidation.errors[0] }}
           </p>
-        </div>
+          <p v-else-if="newComment.message.length >= 400" class="wb-form__hint">
+            {{ newComment.message.length }}/500
+          </p>
 
-        <!-- Comments -->
-        <div v-else>
-          <div
-            v-for="(comment, index) in visibleComments"
-            :key="comment.id"
-            :ref="(el) => setupCommentAnimation(el, `comment-${comment.id}`, index)"
-            class="comment-card-liquid wish-card p-3.5 mb-3 last:mb-0 animate-comment-reveal relative"
-            :style="{
-              '--wish-index': index,
-              '--wish-rule': `${backgroundColor}80`,
-              '--wish-rule-fade': `${backgroundColor}1F`,
-              backgroundColor: `${backgroundColor}${isUserCommentOwner(comment) ? '25' : '15'}`,
-              border: `1px solid ${backgroundColor}${isUserCommentOwner(comment) ? '60' : '40'}`,
-            }"
+          <button
+            type="submit"
+            class="wb-submit"
+            :disabled="
+              isSubmittingComment || !newComment.message.trim() || !commentValidation.isValid
+            "
           >
-            <!-- Quotation is marked by a rule down the message, not by a
-                 glyph. The 4xl Georgia quote that was here sat at 40% over the
-                 first line and forced a 28px left inset - 9% of the measure on
-                 a 390px phone, which Khmer cannot spare: it does not hyphenate
-                 and `word-break: keep-all` means a lost column becomes a lost
-                 line. The rule reads as a pull-quote, costs 10px, and overlaps
-                 nothing. -->
+            {{ isSubmittingComment ? commentPostingButtonText : commentPostButtonText }}
+          </button>
+        </form>
+      </div>
 
-            <!-- Options Button (only for comment owner) - Top Right -->
-            <div
+      <div class="wb-seam" aria-hidden="true"></div>
+
+      <!-- ── The wishes ─────────────────────────────────────────────────
+           Flows with the page rather than scrolling inside itself: a fixed
+           overflow box is a third nested scroller on a phone, and it reserves
+           its height whether or not there is anything to put in it. Length is
+           handled where it comes from — the number of wishes. -->
+      <div v-if="loadingComments" class="wb-quiet">
+        <span class="wb-spinner" aria-hidden="true"></span>
+        <span>{{ commentLoadingText }}</span>
+      </div>
+
+      <div v-else-if="comments.length === 0" class="wb-empty">
+        <span class="wb-orn wb-orn--sm" aria-hidden="true">
+          <span class="wb-orn__rule"></span>
+          <span class="wb-orn__gem"></span>
+          <span class="wb-orn__rule"></span>
+        </span>
+        <p class="wb-empty__text">{{ commentNoCommentsText }}</p>
+      </div>
+
+      <div v-else class="wb-list">
+        <article
+          v-for="(comment, index) in visibleComments"
+          :key="comment.id"
+          class="wb-wish"
+          :class="{ 'is-mine': isUserCommentOwner(comment) }"
+          :style="{ '--wish-index': index }"
+        >
+          <!-- The wish is the loudest thing on the sheet: set larger than
+               anything around it and given its own leading, which is the only
+               emphasis it needs. Line breaks the guest typed are kept — a
+               blessing is often written in short lines. -->
+          <p
+            v-if="editingCommentId !== comment.id"
+            class="wb-wish__text"
+            :class="{ 'is-khmer': isKhmer(comment.comment_text) }"
+          >{{ capitalizeFirstLetter(comment.comment_text) }}</p>
+
+          <div v-else class="wb-edit">
+            <textarea
+              v-model="editCommentText"
+              class="wb-field"
+              :class="{ 'is-khmer': isKhmer(editCommentText) }"
+              rows="3"
+              maxlength="500"
+              :placeholder="commentPlaceholderText"
+            />
+            <div class="wb-edit__foot">
+              <span class="wb-edit__count">{{ editCommentText.length }}/500</span>
+              <span class="wb-edit__actions">
+                <button
+                  type="button"
+                  class="wb-ghost"
+                  :disabled="isUpdatingComment"
+                  @click="cancelEditComment"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  class="wb-solid"
+                  :disabled="
+                    isUpdatingComment ||
+                    !editCommentText.trim() ||
+                    editCommentText === comment.comment_text
+                  "
+                  @click="updateComment(comment.id)"
+                >
+                  {{ isUpdatingComment ? 'Saving…' : 'Save' }}
+                </button>
+              </span>
+            </div>
+          </div>
+
+          <!-- The signature. Right-aligned and dashed, the way a card is
+               signed rather than the way a comment is attributed — which is
+               what lets the avatar, the name row and the inner hairline all go
+               and gives the message its full measure back. -->
+          <footer class="wb-sign">
+            <span class="wb-sign__name">— {{ getCommentDisplayName(comment) }}</span>
+            <span v-if="isUserCommentOwner(comment)" class="wb-sign__you">
+              {{ commentYouBadgeText }}
+            </span>
+            <span class="wb-sign__sep" aria-hidden="true">·</span>
+            <time class="wb-sign__time" :datetime="comment.created_at">
+              {{ formatCommentDate(comment.created_at) }}
+            </time>
+            <span
               v-if="isUserCommentOwner(comment)"
-              class="absolute top-2 right-2 z-10 comment-options-menu"
               :ref="(el) => setMenuButtonRef(el, comment.id)"
+              class="wb-sign__menu comment-options-menu"
             >
               <button
+                type="button"
+                class="wb-sign__menu-btn"
+                aria-label="Options"
                 @click.stop="toggleCommentMenu(comment.id)"
-                class="p-1.5 rounded-full transition-all duration-200 hover:scale-110 hover:bg-white/10"
-                :style="{
-                  color: primaryColor,
-                }"
-                title="Options"
               >
-                <MoreVertical class="w-4 h-4" />
+                <MoreVertical class="wb-sign__menu-icon" />
               </button>
-            </div>
+            </span>
+          </footer>
+        </article>
 
-            <!-- Comment Message (Read Mode) -->
-            <p
-              v-if="editingCommentId !== comment.id"
-              class="wish-message text-sm leading-relaxed mb-2.5"
-              :class="isUserCommentOwner(comment) ? 'pr-7' : 'pr-1'"
-              :style="{
-                color: primaryColor,
-                fontFamily: secondaryFont || currentFont,
-                lineHeight: '1.8',
-              }"
-            >
-              {{ capitalizeFirstLetter(comment.comment_text) }}
-            </p>
+        <!-- The list's own length control. An explicit ask is cheaper than
+             infinite scroll (nothing loads until a guest wants it) and honest
+             about how many wishes there are, which on a wedding is a number
+             the couple wants seen. -->
+        <button v-if="canRevealMoreWishes" type="button" class="wb-more" @click="revealMoreWishes">
+          <span class="wb-more__rule"></span>
+          <span class="wb-more__label">{{ showAllWishesText }}</span>
+          <span class="wb-more__rule"></span>
+        </button>
 
-            <!-- Comment Message (Edit Mode) -->
-            <div v-else class="wish-message space-y-3 pr-7 mb-3">
-              <textarea
-                v-model="editCommentText"
-                class="liquid-glass-textarea w-full px-3 py-2 text-sm focus:outline-none resize-none"
-                :style="{
-                  backgroundColor: `${backgroundColor}08`,
-                  boxShadow: `inset 0 2px 4px ${backgroundColor}15, 0 2px 8px ${backgroundColor}10`,
-                  '--tw-ring-color': backgroundColor + '60',
-                  color: primaryColor,
-                  fontFamily: secondaryFont || currentFont,
-                }"
-                rows="3"
-                maxlength="500"
-                placeholder="Edit your comment..."
-              />
-              <div class="flex items-center justify-between">
-                <div
-                  class="text-xs"
-                  :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
-                >
-                  {{ editCommentText.length }}/500
-                </div>
-                <div class="flex items-center gap-2">
-                  <button
-                    @click="cancelEditComment"
-                    class="liquid-glass-edit-button px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:scale-105"
-                    :style="{
-                      backgroundColor: `${backgroundColor}06`,
-                      color: primaryColor,
-                      opacity: '0.8',
-                      boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.08), 0 2px 6px ${backgroundColor}10`,
-                      fontFamily: secondaryFont || currentFont,
-                    }"
-                    :disabled="isUpdatingComment"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    @click="updateComment(comment.id)"
-                    :disabled="
-                      isUpdatingComment ||
-                      !editCommentText.trim() ||
-                      editCommentText === comment.comment_text
-                    "
-                    class="liquid-glass-edit-button px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                    :style="{
-                      background: `${backgroundColor}12`,
-                      color: primaryColor,
-                      boxShadow: `
-                        0 4px 16px -2px ${backgroundColor}20,
-                        inset 0 2px 4px rgba(255, 255, 255, 0.1),
-                        inset 0 -1px 2px ${backgroundColor}10
-                      `,
-                      fontFamily: secondaryFont || currentFont,
-                    }"
-                  >
-                    <span v-if="!isUpdatingComment">Save</span>
-                    <span v-else class="flex items-center gap-1">
-                      <div
-                        class="w-3 h-3 border border-white/50 border-t-white rounded-full animate-spin"
-                      ></div>
-                      Saving...
-                    </span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Author Signature (Bottom) -->
-            <div class="comment-author-row relative flex items-center gap-2.5 pt-2.5">
-              <!-- Gradient hairline divider -->
-              <div
-                class="absolute top-0 left-0 right-0 h-px pointer-events-none"
-                :style="{
-                  background: `linear-gradient(90deg, ${backgroundColor}50, ${backgroundColor}15, transparent)`,
-                }"
-              ></div>
-
-              <!-- User Avatar -->
-              <div
-                class="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center"
-                :style="{
-                  backgroundColor: `${backgroundColor}25`,
-                  boxShadow: `0 0 0 2px ${backgroundColor}35`,
-                }"
-              >
-                <img
-                  v-if="getCommentAvatarUrl(comment) && !isAvatarError(comment.id)"
-                  :src="getCommentAvatarUrl(comment)!"
-                  :alt="getCommentDisplayName(comment)"
-                  class="w-full h-full object-cover"
-                  @error="() => setAvatarError(comment.id)"
-                />
-                <div
-                  v-else
-                  class="w-full h-full flex items-center justify-center text-white text-xs font-semibold"
-                  :style="{ backgroundColor: backgroundColor }"
-                >
-                  {{ getCommentInitial(comment) }}
-                </div>
-              </div>
-
-              <!-- Name + Date (stacked so long names never wrap) -->
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-1.5 min-w-0">
-                  <p
-                    class="text-sm font-medium truncate"
-                    :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }"
-                  >
-                    {{ getCommentDisplayName(comment) }}
-                  </p>
-                  <span
-                    v-if="isUserCommentOwner(comment)"
-                    class="text-[0.6875rem] px-1.5 py-0.5 rounded-full text-white font-medium flex-shrink-0"
-                    :style="{
-                      backgroundColor: backgroundColor + '80',
-                      fontFamily: secondaryFont || currentFont,
-                    }"
-                  >
-                    {{ commentYouBadgeText }}
-                  </span>
-                </div>
-                <p
-                  class="text-xs leading-tight mt-px"
-                  :style="{
-                    color: primaryColor,
-                    opacity: 0.5,
-                    fontFamily: secondaryFont || currentFont,
-                  }"
-                >
-                  {{ formatCommentDate(comment.created_at) }}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- The list's own length control. Infinite scroll was the right
-               answer only while the box scrolled inside itself; with the list
-               on the page, an explicit ask is both cheaper (nothing loads
-               until a guest wants it) and honest about how many wishes there
-               are, which on a wedding is a number the couple wants seen. -->
-          <button
-            v-if="canRevealMoreWishes"
-            type="button"
-            class="wish-more-button w-full text-xs font-medium"
-            :style="{
-              color: primaryColor,
-              borderColor: `${backgroundColor}38`,
-              fontFamily: secondaryFont || currentFont,
-            }"
-            @click="revealMoreWishes"
-          >
-            <span
-              class="wish-more-rule"
-              :style="{ background: `linear-gradient(90deg, transparent, ${backgroundColor}45)` }"
-            ></span>
-            <span class="wish-more-label">{{ showAllWishesText }}</span>
-            <span
-              class="wish-more-rule"
-              :style="{ background: `linear-gradient(90deg, ${backgroundColor}45, transparent)` }"
-            ></span>
-          </button>
-
-          <!-- Loading More Indicator -->
-          <div
-            v-if="loadingMoreComments"
-            class="liquid-glass-state text-center py-4 mt-2"
-            :style="{
-              backgroundColor: `${backgroundColor}04`,
-            }"
-          >
-            <div class="inline-flex items-center gap-2">
-              <div
-                class="w-3 h-3 border-2 border-t-transparent rounded-full animate-spin"
-                :style="{ borderColor: `${primaryColor}60`, borderTopColor: 'transparent' }"
-              ></div>
-              <span
-                class="text-xs"
-                :style="{
-                  color: primaryColor,
-                  opacity: '0.7',
-                  fontFamily: secondaryFont || currentFont,
-                }"
-                >Loading more comments...</span
-              >
-            </div>
-          </div>
+        <div v-if="loadingMoreComments" class="wb-quiet wb-quiet--sm">
+          <span class="wb-spinner" aria-hidden="true"></span>
+          <span>{{ commentLoadingText }}</span>
         </div>
       </div>
     </div>
 
-    <!-- Error Message -->
-    <div
-      v-if="errorMessage"
-      class="liquid-glass-error mt-3 p-3"
-      :style="{
-        backgroundColor: '#dc262620',
-        boxShadow: '0 4px 16px -2px #dc262615, inset 0 1px 0 rgba(255, 255, 255, 0.08)',
-        border: '1px solid #dc262640',
-      }"
-    >
-      <p
-        class="text-sm"
-        :style="{ color: '#dc2626', opacity: 0.9, fontFamily: secondaryFont || currentFont }"
-      >
-        {{ errorMessage }}
-      </p>
-    </div>
+    <p v-if="errorMessage" class="wb-error" role="alert">{{ errorMessage }}</p>
   </div>
 
   <!-- Delete Confirmation Modal -->
@@ -563,7 +284,7 @@
       <button
         @click="handleEditFromMenu(getCommentById(openMenuId))"
         class="w-full px-3 py-1.5 text-left text-xs flex items-center gap-2 transition-colors hover:bg-white/10"
-        :style="{ color: '#ffffff', fontFamily: secondaryFont || currentFont }"
+        :style="{ color: '#ffffff' }"
       >
         <Edit class="w-3 h-3" />
         Edit
@@ -571,7 +292,7 @@
       <button
         @click="handleDeleteFromMenu(getCommentById(openMenuId))"
         class="w-full px-3 py-1.5 text-left text-xs flex items-center gap-2 transition-colors hover:bg-white/10"
-        :style="{ color: '#ffffff', fontFamily: secondaryFont || currentFont }"
+        :style="{ color: '#ffffff' }"
         :disabled="isDeletingComment === openMenuId"
       >
         <Trash2 class="w-3 h-3" />
@@ -583,14 +304,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, onUnmounted, watch, type ComponentPublicInstance } from 'vue'
-import { MessageCircle, Edit, Trash2, MoreVertical, PenLine } from 'lucide-vue-next'
+import { Check, Edit, Trash2, MoreVertical, PenLine } from 'lucide-vue-next'
 import { useAuthStore } from '../../stores/auth'
-import { commentsService, type EventComment, apiService } from '../../services/api'
+import { commentsService, type EventComment } from '../../services/api'
 import DeleteConfirmModal from '../DeleteConfirmModal.vue'
 import AuthModal from '../AuthModal.vue'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
-import { useStaggerAnimation } from '../../composables/useAdvancedAnimations'
-import { ANIMATION_CONSTANTS } from '../../composables/useScrollAnimations'
+import { showcaseRevealObserverInit } from '../../composables/showcase/useScrollProgress'
 import { useAuthModal } from '../../composables/useAuthModal'
 import {
   sanitizeComment,
@@ -622,9 +342,9 @@ interface Props {
   secondaryColor?: string | null
   accentColor: string
   backgroundColor?: string | null
+  /** Heading only. The wishes below set their own type - see the guestbook rule in the unscoped style block. */
   currentFont?: string
   primaryFont?: string
-  secondaryFont?: string
   eventTexts?: EventText[]
   currentLanguage?: string
   eventType?: string
@@ -635,15 +355,6 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   commentSubmitted: [EventComment]
 }>()
-
-// Animation setup for comment reveals
-const { observeStaggerElement } = useStaggerAnimation({
-  animationType: 'slideLeft',
-  duration: ANIMATION_CONSTANTS.DURATION.NORMAL,
-  staggerDelay: 100,
-  easing: ANIMATION_CONSTANTS.EASING.EXPO,
-  threshold: 0.2,
-})
 
 // Enhanced translation function that combines database content with frontend translations
 const getTextContent = (textType: string, fallback = ''): string => {
@@ -680,6 +391,9 @@ const getTextContent = (textType: string, fallback = ''): string => {
     comment_you_badge: 'comment_you_badge',
     comment_invite_only_prompt: 'comment_invite_only_prompt',
     comment_commenting_as: 'comment_commenting_as',
+    comment_compose_cta: 'comment_compose_cta',
+    comment_compose_cta_funeral: 'comment_compose_cta_funeral',
+    comment_show_all: 'comment_show_all',
   }
 
   const translationKey = keyMap[textType]
@@ -758,7 +472,6 @@ const loadingMoreComments = ref(false)
 const totalComments = ref(0)
 const currentPage = ref(1)
 const commentsPerPage = 20 // Match API default
-const commentsContainer = ref<HTMLElement | null>(null)
 const composerTextareaRef = ref<HTMLTextAreaElement | null>(null)
 
 // How many wishes are on the page. Three is what fits under the composer on a
@@ -767,7 +480,6 @@ const composerTextareaRef = ref<HTMLTextAreaElement | null>(null)
 const WISHES_PER_REVEAL = 3
 const visibleWishCount = ref(WISHES_PER_REVEAL)
 const composerOpenedByGuest = ref(false)
-const commentFormRef = ref<HTMLElement | null>(null)
 const hasMoreComments = ref(true)
 const errorMessage = ref('')
 const hasAlreadyCommented = ref(false)
@@ -783,9 +495,6 @@ const isDeletingComment = ref<number | null>(null)
 const showDeleteModal = ref(false)
 const commentToDelete = ref<number | null>(null)
 const commentToDeleteName = ref<string>('')
-
-// Avatar error tracking
-const avatarErrors = ref<Set<number>>(new Set())
 
 // Dropdown menu positioning for Teleport
 const menuButtonRefs = ref<Map<number, HTMLElement>>(new Map())
@@ -812,6 +521,37 @@ const canLoadMore = computed(() => hasMoreComments.value && !loadingMoreComments
 
 // Background color with fallback to primaryColor
 const backgroundColor = computed(() => props.backgroundColor || props.primaryColor)
+
+/**
+ * The three colours the whole sheet is drawn from, published once on the root
+ * rather than bound inline on every node.
+ *
+ * Every surface below is a `color-mix` of `--wb-tone` (the template's own
+ * colour) so the glass carries the template rather than a neutral grey, and
+ * every piece of copy is a mix of `--wb-ink`. Binding those per element is what
+ * produced ~40 inline style objects here, several of them re-evaluated for each
+ * wish in the list.
+ */
+const wbVars = computed<Record<string, string>>(() => ({
+  '--wb-ink': props.primaryColor,
+  '--wb-tone': backgroundColor.value,
+  '--wb-accent': props.accentColor || props.primaryColor,
+}))
+
+/**
+ * Khmer is detected per wish, from the wish itself — never from the language
+ * picker at the top of the invitation.
+ *
+ * A guest writes in whatever script they write in, and one Cambodian wedding's
+ * guestbook holds Khmer and English wishes side by side; the picker says which
+ * language the *couple's* copy is in, which is a different question. The face
+ * already resolves per glyph (Karla carries no Khmer, so a Khmer cluster falls
+ * through to Kantumruy Pro on its own) — this is the leading and the wrapping
+ * doing the same, since coeng subscripts clip at Latin leading and Khmer does
+ * not hyphenate.
+ */
+const KHMER_SCRIPT = /\p{Script=Khmer}/u
+const isKhmer = (text: string | null | undefined): boolean => KHMER_SCRIPT.test(text || '')
 
 // Helper function to process comments
 const processComments = (comments: EventComment[]): EventComment[] => {
@@ -950,40 +690,6 @@ const getCommentDisplayName = (comment: EventComment): string => {
   }
 
   return 'Guest'
-}
-
-const getCommentInitial = (comment: EventComment): string => {
-  const displayName = getCommentDisplayName(comment)
-  return displayName.charAt(0).toUpperCase()
-}
-
-const getCommentAvatarUrl = (comment: EventComment): string | null => {
-  // Guest comments have no avatar — render initials placeholder.
-  if (comment.guest) return null
-
-  // Backend now ships an absolute URL for the user's avatar.
-  if (comment.author_avatar) return comment.author_avatar
-
-  // If this is the current user's comment, try to use auth store profile picture
-  if (authStore.isAuthenticated && authStore.user && comment.user === authStore.user.id) {
-    if (authStore.user.profile_picture) {
-      return apiService.getProfilePictureUrl(authStore.user.profile_picture)
-    }
-  }
-
-  if (comment.user_info?.profile_picture) {
-    return comment.user_info.profile_picture
-  }
-
-  return null
-}
-
-const isAvatarError = (commentId: number): boolean => {
-  return avatarErrors.value.has(commentId)
-}
-
-const setAvatarError = (commentId: number) => {
-  avatarErrors.value.add(commentId)
 }
 
 const isUserCommentOwner = (comment: EventComment): boolean => {
@@ -1337,8 +1043,6 @@ const submitComment = async () => {
 const loadComments = async () => {
   loadingComments.value = true
   errorMessage.value = ''
-  // Clear avatar errors when loading fresh comments
-  avatarErrors.value.clear()
 
   try {
     // Load comments from API
@@ -1497,13 +1201,41 @@ const checkForCommentRedirect = () => {
   }
 }
 
-// Setup comment animation for staggered reveals
-const setupCommentAnimation = (el: any, id: string, _index: number) => {
-  if (el && typeof el === 'object' && 'tagName' in el) {
-    nextTick(() => {
-      observeStaggerElement(el, id, 'comments')
-    })
+/**
+ * The wishes settle in sequence when the sheet comes into view.
+ *
+ * One observer on the panel, not one per wish: the stagger is a CSS delay keyed
+ * off each entry's own `--wish-index`, so the only thing JavaScript has to
+ * decide is *when the page has been reached*. It replaced a per-element stagger
+ * observer that wrote inline `opacity`/`transform` on every card while the CSS
+ * keyframe animated the same two properties — two entrance systems on one
+ * element, with the winner decided by which finished last.
+ *
+ * `showcaseRevealObserverInit()` is the showcase's shared config; its root is
+ * the liquid-glass card's own scroller, which is where all scrolling actually
+ * happens.
+ */
+const panelRef = ref<HTMLElement | null>(null)
+const isRevealed = ref(false)
+let revealObserver: IntersectionObserver | null = null
+
+const setupRevealObserver = () => {
+  // No observer support (or no element to watch) must never leave the wishes
+  // hidden — they are the content this section exists for.
+  if (!panelRef.value || typeof IntersectionObserver === 'undefined') {
+    isRevealed.value = true
+    return
   }
+
+  revealObserver = new IntersectionObserver((entries) => {
+    if (entries.some((entry) => entry.isIntersecting)) {
+      isRevealed.value = true
+      revealObserver?.disconnect()
+      revealObserver = null
+    }
+  }, showcaseRevealObserverInit())
+
+  revealObserver.observe(panelRef.value)
 }
 
 // Click outside handler to close menu
@@ -1516,6 +1248,8 @@ const handleClickOutside = (event: MouseEvent) => {
 
 // Lifecycle
 onMounted(async () => {
+  setupRevealObserver()
+
   await loadComments()
   // Check if user should be redirected to comment section (after login)
   checkForCommentRedirect()
@@ -1525,275 +1259,561 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  revealObserver?.disconnect()
+  revealObserver = null
   document.removeEventListener('click', handleClickOutside)
 })
 </script>
 
 <style scoped>
-/* Liquid Glass Container - Comment Form */
-.comment-form-liquid {
-  border-radius: 1.5rem;
-  padding: 1rem;
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  position: relative;
-  overflow: hidden;
-  transition:
-    padding 220ms cubic-bezier(0.23, 1, 0.32, 1),
-    transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
-  margin-bottom: 0.75rem;
-  box-sizing: border-box;
-}
+/* ===========================================================================
+ * The guestbook
+ *
+ * One glass sheet, tinted in the template's own colour, with the wishes written
+ * on it. Three custom properties come in from the component (`--wb-ink`,
+ * `--wb-tone`, `--wb-accent`) and everything below is a mix of them, so a
+ * template's palette reaches every surface without a single inline style.
+ *
+ * Sizing is mobile-first and scaled by ONE number, `--wb-s`. The showcase card
+ * is 85vh, so on a 13–15" laptop every section has to render at roughly
+ * two-thirds size; that used to be ~200 lines of `!important` overrides here,
+ * one per element, drifting from the values they were meant to track. Now the
+ * two laptop media queries set `--wb-s` and nothing else.
+ * ======================================================================== */
 
-/* Every lift in this file is gated on a real pointer. On a touch screen :hover
-   latches after a tap and does not release until something else is tapped, so
-   an ungated lift leaves a card sitting 1px high with a heavier blur for as
-   long as the guest keeps reading. */
-@media (hover: hover) and (pointer: fine) {
-  .comment-form-liquid:hover {
-    -webkit-backdrop-filter: blur(24px);
-    backdrop-filter: blur(24px);
-    transform: translateY(-1px);
-  }
-}
+.wb {
+  --wb-s: 1;
+  --wb-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --wb-hair: color-mix(in srgb, var(--wb-tone) 24%, transparent);
+  --wb-hair-soft: color-mix(in srgb, var(--wb-tone) 13%, transparent);
 
-.comment-form-liquid::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  pointer-events: none;
-}
-
-/* Liquid Glass Button */
-.liquid-glass-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1.5rem;
-  border-radius: 1rem;
-  font-weight: 600;
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  position: relative;
-  overflow: hidden;
-  border: none;
-  cursor: pointer;
-  box-sizing: border-box;
-}
-
-.liquid-glass-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  pointer-events: none;
-}
-
-.liquid-glass-button::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-  transition: left 0.5s ease;
-  pointer-events: none;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .liquid-glass-button:hover::after {
-    left: 100%;
-  }
-
-  .liquid-glass-button:hover {
-    transform: translateY(-1px);
-    -webkit-backdrop-filter: blur(20px);
-    backdrop-filter: blur(20px);
-  }
-}
-
-/* Liquid Glass Textarea */
-.liquid-glass-textarea {
-  border-radius: 1rem;
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border: none;
-  position: relative;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
-}
-
-.liquid-glass-textarea::placeholder {
-  opacity: 0.8;
-  color: inherit;
-}
-
-.liquid-glass-textarea:focus {
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-}
-
-/* Comment Card Liquid Glass */
-.comment-card-liquid {
-  border-radius: 1.5rem;
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  position: relative;
-  overflow: visible;
-  transition: transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
-  box-sizing: border-box;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .comment-card-liquid:hover {
-    -webkit-backdrop-filter: blur(20px);
-    backdrop-filter: blur(20px);
-    transform: translateY(-1px) !important;
-  }
-}
-
-.comment-card-liquid::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
-  pointer-events: none;
-}
-
-/* Liquid Glass Action Buttons */
-.liquid-glass-action-button {
-  border-radius: 0.75rem;
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border: none;
-  cursor: pointer;
-  position: relative;
-}
-
-.liquid-glass-action-button:hover {
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-}
-
-/* Liquid Glass Edit Buttons */
-.liquid-glass-edit-button {
-  border-radius: 0.75rem;
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border: none;
-  cursor: pointer;
-  position: relative;
-}
-
-.liquid-glass-edit-button:hover {
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-}
-
-/* Liquid Glass State Containers */
-.liquid-glass-state {
-  border-radius: 1.5rem;
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  position: relative;
-  overflow: hidden;
-}
-
-.liquid-glass-state::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  pointer-events: none;
-}
-
-/* Liquid Glass Error Container */
-.liquid-glass-error {
-  border-radius: 1rem;
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  position: relative;
-  overflow: hidden;
-}
-
-.liquid-glass-error::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  pointer-events: none;
-}
-
-/* Focus ring color */
-input:focus,
-textarea:focus {
-  --tw-ring-opacity: 0.5;
-  box-shadow: 0 0 0 2px rgba(var(--tw-ring-color), var(--tw-ring-opacity));
+  color: var(--wb-ink);
+  margin-bottom: calc(2rem * var(--wb-s));
 }
 
 /* ---------------------------------------------------------------------------
- * The wish card
- *
- * A wedding guestbook on a 390px phone has about 318px of card and, in Khmer,
- * roughly 26 characters of line. Everything drawn on that card is taken out of
- * the message, so each piece of chrome has to earn its width: the rule marks
- * the quotation, the hairline separates the message from who signed it, and
- * the avatar says who. Nothing else is drawn.
+ * Heading
  * ------------------------------------------------------------------------ */
 
-/* The rule runs the height of the message, not the card - it marks the quote,
-   and the signature underneath is not part of the quote. */
-.wish-message {
-  position: relative;
-  padding-left: 0.75rem;
+.wb-head {
+  text-align: center;
+  margin-bottom: calc(1.125rem * var(--wb-s));
 }
 
-.wish-message::before {
-  content: '';
-  position: absolute;
-  inset-block: 0.15em 0.15em;
-  left: 0;
-  width: 2px;
-  border-radius: 1px;
+.wb-title {
+  font-size: calc(1.5rem * var(--wb-s));
+  line-height: 1.25;
+  font-weight: 400;
+  text-transform: capitalize;
+  padding-block: calc(0.25rem * var(--wb-s));
+  color: var(--wb-ink);
+}
+
+/* The section's one ornament, reused rather than reinvented: under the heading
+   at full width, and once more (shortened) in the empty state, which is the
+   only other place a mark is earned. */
+.wb-orn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.wb-orn__rule {
+  height: 1px;
+  width: calc(2.5rem * var(--wb-s));
+  background: linear-gradient(90deg, transparent, var(--wb-hair));
+}
+
+.wb-orn__rule:last-child {
+  background: linear-gradient(90deg, var(--wb-hair), transparent);
+}
+
+.wb-orn__gem {
+  flex: 0 0 auto;
+  width: calc(0.375rem * var(--wb-s));
+  height: calc(0.375rem * var(--wb-s));
+  transform: rotate(45deg);
+  background: color-mix(in srgb, var(--wb-tone) 45%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+ * The sheet
+ *
+ * The one element in this section that is really glass. It sits inside the
+ * main content card, which is itself translucent — so the tint stays low and
+ * the light top edge, not a border, is what makes it read as a material.
+ *
+ * The blur is not decorative: when a template turns the card's own glass off
+ * (`display_liquid_glass_background: false`), this sheet is all that stands
+ * between the wishes and a playing background video.
+ * ------------------------------------------------------------------------ */
+
+.wb-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  padding: calc(0.875rem * var(--wb-s)) calc(1rem * var(--wb-s));
   background: linear-gradient(
     180deg,
-    var(--wish-rule, currentColor) 0%,
-    var(--wish-rule-fade, transparent) 100%
+    color-mix(in srgb, var(--wb-tone) 9%, transparent),
+    color-mix(in srgb, var(--wb-tone) 4%, transparent)
   );
-  pointer-events: none;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--wb-tone) 14%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 10px 30px -20px color-mix(in srgb, var(--wb-tone) 70%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  contain: layout style paint;
 }
 
-/* Wishes settle in sequence rather than all at once - a guestbook is read one
-   entry at a time, and 60ms is short enough that the last one is still
-   arriving as the eye reaches it. Capped at six steps: past that the delay
-   stops reading as rhythm and starts reading as lag. */
-.wish-card {
-  animation: wishIn 380ms cubic-bezier(0.23, 1, 0.32, 1) backwards;
-  animation-delay: calc(min(var(--wish-index, 0), 6) * 60ms);
+/* ---------------------------------------------------------------------------
+ * Where a guest signs
+ * ------------------------------------------------------------------------ */
+
+.wb-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  /* 44px on a phone: this row is the only way into the composer, so it is a
+     touch target before it is a label. */
+  min-height: calc(2.75rem * var(--wb-s));
+  padding: 0;
+  background: none;
+  border: 0;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 140ms var(--wb-ease);
 }
 
-@keyframes wishIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+.wb-trigger:active {
+  transform: scale(0.99);
+}
+
+.wb-trigger__mark {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(1.875rem * var(--wb-s));
+  height: calc(1.875rem * var(--wb-s));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--wb-tone) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wb-tone) 20%, transparent);
+}
+
+.wb-trigger__pen {
+  width: calc(0.875rem * var(--wb-s));
+  height: calc(0.875rem * var(--wb-s));
+  opacity: 0.75;
+}
+
+.wb-trigger__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: calc(0.875rem * var(--wb-s));
+  color: color-mix(in srgb, var(--wb-ink) 72%, transparent);
+}
+
+.wb-form__as {
+  margin-bottom: calc(0.5rem * var(--wb-s));
+  font-size: calc(0.75rem * var(--wb-s));
+  color: color-mix(in srgb, var(--wb-ink) 72%, transparent);
+}
+
+/* An inset well rather than another pane of glass: a translucent field on a
+   translucent sheet is where legibility collapses, and a well also says
+   "write here" without a label. */
+.wb-field {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: calc(0.875rem * var(--wb-s));
+  padding: calc(0.75rem * var(--wb-s));
+  font-size: calc(0.9375rem * var(--wb-s));
+  line-height: 1.75;
+  color: var(--wb-ink);
+  background: color-mix(in srgb, var(--wb-tone) 7%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wb-tone) 16%, transparent);
+  resize: none;
+  transition: box-shadow 200ms ease;
+}
+
+.wb-field::placeholder {
+  color: color-mix(in srgb, var(--wb-ink) 42%, transparent);
+}
+
+/* Focus is said with light, not movement. The field used to lift and scale on
+   focus, which on a phone lands in the same frames as the keyboard's own
+   slide-up — the field moved twice at once — and a transform on a focused text
+   field resamples its glyphs, visible on Khmer diacritics at this size. */
+.wb-field:focus {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--wb-tone) 46%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--wb-tone) 12%, transparent);
+}
+
+.wb-field.is-khmer {
+  font-size: calc(0.875rem * var(--wb-s));
+  line-height: 2;
+}
+
+.wb-field.is-invalid {
+  box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.45);
+}
+
+.wb-form__hint {
+  margin-top: calc(0.375rem * var(--wb-s));
+  font-size: calc(0.6875rem * var(--wb-s));
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--wb-ink) 50%, transparent);
+}
+
+.wb-form__hint.is-error {
+  text-align: left;
+  color: #dc2626;
+}
+
+.wb-submit {
+  display: block;
+  width: 100%;
+  margin-top: calc(0.75rem * var(--wb-s));
+  min-height: calc(2.75rem * var(--wb-s));
+  padding: calc(0.625rem * var(--wb-s)) 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--wb-tone);
+  color: #ffffff;
+  font-size: calc(0.875rem * var(--wb-s));
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 8px 20px -12px color-mix(in srgb, var(--wb-tone) 90%, transparent);
+  transition:
+    transform 140ms var(--wb-ease),
+    opacity 160ms ease;
+}
+
+.wb-submit:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.wb-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ---------------------------------------------------------------------------
+ * Notices — one line each, never a padded block
+ * ------------------------------------------------------------------------ */
+
+.wb-note {
+  padding-block: calc(0.5rem * var(--wb-s));
+  font-size: calc(0.8125rem * var(--wb-s));
+  line-height: 1.7;
+  text-align: center;
+  color: color-mix(in srgb, var(--wb-ink) 75%, transparent);
+}
+
+.wb-note--done {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+}
+
+.wb-note__tick {
+  flex: 0 0 auto;
+  width: calc(0.875rem * var(--wb-s));
+  height: calc(0.875rem * var(--wb-s));
+  opacity: 0.7;
+}
+
+.wb-note-stack .wb-note {
+  padding-bottom: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Seams
+ * ------------------------------------------------------------------------ */
+
+.wb-seam {
+  height: 1px;
+  margin-block: calc(0.75rem * var(--wb-s));
+  background: linear-gradient(90deg, transparent, var(--wb-hair), transparent);
+}
+
+/* ---------------------------------------------------------------------------
+ * Loading and empty
+ * ------------------------------------------------------------------------ */
+
+.wb-quiet {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-block: calc(1.25rem * var(--wb-s));
+  font-size: calc(0.8125rem * var(--wb-s));
+  color: color-mix(in srgb, var(--wb-ink) 65%, transparent);
+}
+
+.wb-quiet--sm {
+  padding-block: calc(0.75rem * var(--wb-s));
+}
+
+.wb-spinner {
+  flex: 0 0 auto;
+  width: calc(0.875rem * var(--wb-s));
+  height: calc(0.875rem * var(--wb-s));
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, var(--wb-ink) 32%, transparent);
+  border-top-color: transparent;
+  animation: wbSpin 0.7s linear infinite;
+}
+
+@keyframes wbSpin {
+  to {
+    transform: rotate(360deg);
   }
+}
+
+.wb-empty {
+  text-align: center;
+  padding-block: calc(0.75rem * var(--wb-s)) calc(1.25rem * var(--wb-s));
+}
+
+.wb-orn--sm {
+  margin-bottom: calc(0.625rem * var(--wb-s));
+}
+
+.wb-orn--sm .wb-orn__rule {
+  width: calc(1.75rem * var(--wb-s));
+}
+
+.wb-empty__text {
+  font-size: calc(0.8125rem * var(--wb-s));
+  line-height: 1.7;
+  color: color-mix(in srgb, var(--wb-ink) 62%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+ * A wish
+ *
+ * No box, no border, no avatar: an entry on a page, separated from the next by
+ * a hairline that fades out at both ends the way the heading's ornament does.
+ * Everything drawn here is taken out of the message — on a 390px phone a wish
+ * has about 26 Khmer characters of line — so the only two things drawn are the
+ * message and the signature.
+ * ------------------------------------------------------------------------ */
+
+.wb-wish {
+  position: relative;
+  padding-block: calc(1rem * var(--wb-s));
+}
+
+.wb-wish:first-child {
+  padding-top: calc(0.25rem * var(--wb-s));
+}
+
+.wb-wish:last-child {
+  padding-bottom: calc(0.25rem * var(--wb-s));
+}
+
+.wb-wish + .wb-wish::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--wb-hair-soft) 18%,
+    var(--wb-hair-soft) 82%,
+    transparent
+  );
+}
+
+.wb-wish__text {
+  font-size: calc(0.9375rem * var(--wb-s));
+  line-height: 1.8;
+  color: var(--wb-ink);
+  overflow-wrap: break-word;
+  /* A blessing is often written in short lines. Keeping the guest's own breaks
+     costs nothing and is the difference between a verse and a paragraph. */
+  white-space: pre-line;
+}
+
+.wb-wish__text.is-khmer {
+  font-size: calc(0.875rem * var(--wb-s));
+  line-height: 2.05;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  hyphens: none;
+  -webkit-hyphens: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * The signature
+ * ------------------------------------------------------------------------ */
+
+.wb-sign {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.125rem 0.375rem;
+  margin-top: calc(0.5rem * var(--wb-s));
+}
+
+.wb-sign__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: calc(0.8125rem * var(--wb-s));
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, var(--wb-ink) 80%, transparent);
+}
+
+/* The guest's own wish is the only thing the accent is spent on in this
+   section, and it is spent on the name rather than on a tinted band — a band
+   would put the box back that this design just removed. */
+.wb-wish.is-mine .wb-sign__name {
+  color: var(--wb-accent);
+}
+
+.wb-sign__you {
+  flex: 0 0 auto;
+  padding: 0.1em 0.5em;
+  border-radius: 999px;
+  font-size: calc(0.625rem * var(--wb-s));
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wb-accent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wb-accent) 38%, transparent);
+}
+
+.wb-sign__sep,
+.wb-sign__time {
+  flex: 0 0 auto;
+  color: color-mix(in srgb, var(--wb-ink) 46%, transparent);
+}
+
+.wb-sign__time {
+  font-size: calc(0.6875rem * var(--wb-s));
+  font-variant-numeric: tabular-nums;
+}
+
+/* At the trailing edge of the signature, not floating over the message: the
+   old top-right position cost every wish a 28px right inset whether or not the
+   guest owned it. */
+.wb-sign__menu {
+  flex: 0 0 auto;
+  display: inline-flex;
+  margin-right: calc(-0.5rem * var(--wb-s));
+}
+
+.wb-sign__menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(2.25rem * var(--wb-s));
+  height: calc(2.25rem * var(--wb-s));
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+  color: color-mix(in srgb, var(--wb-ink) 55%, transparent);
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.wb-sign__menu-icon {
+  width: calc(1rem * var(--wb-s));
+  height: calc(1rem * var(--wb-s));
+}
+
+/* Every hover state in this file is gated on a real pointer. On a touch screen
+   :hover latches after a tap and does not release until something else is
+   tapped, so an ungated one leaves a control lit for as long as the guest
+   keeps reading. */
+@media (hover: hover) and (pointer: fine) {
+  .wb-sign__menu-btn:hover {
+    background: color-mix(in srgb, var(--wb-tone) 12%, transparent);
+    color: var(--wb-ink);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Editing your own wish
+ * ------------------------------------------------------------------------ */
+
+.wb-edit__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: calc(0.5rem * var(--wb-s));
+}
+
+.wb-edit__count {
+  font-size: calc(0.6875rem * var(--wb-s));
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--wb-ink) 46%, transparent);
+}
+
+.wb-edit__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.wb-ghost,
+.wb-solid {
+  border: 0;
+  border-radius: 999px;
+  padding: calc(0.4rem * var(--wb-s)) calc(0.875rem * var(--wb-s));
+  font-size: calc(0.75rem * var(--wb-s));
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    opacity 160ms ease,
+    transform 140ms var(--wb-ease);
+}
+
+.wb-ghost {
+  background: none;
+  color: color-mix(in srgb, var(--wb-ink) 65%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wb-tone) 22%, transparent);
+}
+
+.wb-solid {
+  background: var(--wb-tone);
+  color: #ffffff;
+}
+
+.wb-ghost:active:not(:disabled),
+.wb-solid:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.wb-ghost:disabled,
+.wb-solid:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 /* ---------------------------------------------------------------------------
@@ -1802,596 +1822,236 @@ textarea:focus {
  * A rule with a label in it rather than a button with a fill: it is a way to
  * continue reading, not a second action competing with Post.
  * ------------------------------------------------------------------------ */
-.wish-more-button {
+
+.wb-more {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.875rem 0.25rem;
-  margin-top: 0.25rem;
+  width: 100%;
+  margin-top: calc(0.25rem * var(--wb-s));
+  padding: calc(0.875rem * var(--wb-s)) 0.25rem calc(0.25rem * var(--wb-s));
   background: none;
-  border: none;
+  border: 0;
   cursor: pointer;
-  transition: opacity 160ms ease-out;
+  color: var(--wb-ink);
+  font-size: calc(0.75rem * var(--wb-s));
+  transition: opacity 160ms ease;
 }
 
-.wish-more-rule {
+.wb-more__rule {
   flex: 1;
-  height: 1px;
   min-width: 1.5rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--wb-hair));
 }
 
-.wish-more-label {
-  opacity: 0.8;
-  letter-spacing: 0.04em;
+.wb-more__rule:last-child {
+  background: linear-gradient(90deg, var(--wb-hair), transparent);
+}
+
+.wb-more__label {
   white-space: nowrap;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  opacity: 0.78;
 }
 
-.wish-more-button:active {
+.wb-more:active {
   opacity: 0.6;
 }
 
 /* ---------------------------------------------------------------------------
- * Collapsed composer
+ * Error
  * ------------------------------------------------------------------------ */
-.comment-form-liquid.is-collapsed {
-  padding: 0.6875rem 0.875rem;
+
+.wb-error {
+  margin-top: calc(0.75rem * var(--wb-s));
+  padding: calc(0.625rem * var(--wb-s)) calc(0.875rem * var(--wb-s));
+  border-radius: calc(0.875rem * var(--wb-s));
+  background: rgba(220, 38, 38, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.25);
+  color: #b91c1c;
+  font-size: calc(0.8125rem * var(--wb-s));
+  line-height: 1.6;
 }
 
-.composer-trigger {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
+/* ---------------------------------------------------------------------------
+ * Arrival
+ *
+ * Wishes settle in sequence rather than all at once — a guestbook is read one
+ * entry at a time, and 70ms is short enough that the last one is still arriving
+ * as the eye reaches it. Capped at six steps: past that the delay stops reading
+ * as rhythm and starts reading as lag.
+ * ------------------------------------------------------------------------ */
+
+.wb-panel .wb-wish {
+  opacity: 0;
 }
 
-.composer-trigger:active {
-  transform: scale(0.985);
+.wb-panel.is-revealed .wb-wish {
+  animation: wbWishIn 420ms var(--wb-ease) both;
+  animation-delay: calc(min(var(--wish-index, 0), 6) * 70ms);
 }
 
-.composer-trigger__mark {
-  width: 1.75rem;
-  height: 1.75rem;
+@keyframes wbWishIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
+/* ---------------------------------------------------------------------------
+ * Larger phones and tablets
+ * ------------------------------------------------------------------------ */
 
-/* Custom scrollbar for textarea */
-textarea::-webkit-scrollbar {
-  width: 4px;
-}
-
-textarea::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 2px;
-}
-
-textarea::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 2px;
-}
-
-textarea::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.6);
-}
-/* Animation Styles for Comments - Start visible, let animations enhance */
-.animate-form-reveal {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
-  will-change: opacity, transform;
-}
-
-.animate-comment-reveal {
-  opacity: 1;
-  transform: translateX(0);
-  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-  will-change: opacity, transform;
-}
-
-/* The textarea used to lift and scale to 1.01 on focus. On a phone, focus and
-   the keyboard's own slide-up land in the same frames, so the field moved
-   twice at once; and a transform on a focused text field resamples its glyphs,
-   which is visible on Khmer diacritics at this size. The blur alone says
-   "focused" without moving anything. */
-.liquid-glass-textarea:focus {
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
-}
-
-.liquid-glass-button {
-  transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-.liquid-glass-button:active {
-  transform: scale(0.97);
-}
-
-/* Reduce motion for accessibility - Let useAdvancedAnimations handle this */
-@media (prefers-reduced-motion: reduce) {
-  .liquid-glass-textarea:focus,
-  .liquid-glass-button:active,
-  .composer-trigger:active {
-    transform: none !important;
+@media (min-width: 640px) {
+  .wb-title {
+    font-size: calc(1.875rem * var(--wb-s));
   }
 
-  /* The wishes still fade in - that is what says a new one arrived - but they
-     no longer travel, and they arrive together rather than in sequence. */
-  .wish-card {
-    animation: wishFade 200ms ease-out backwards;
+  .wb-orn__rule {
+    width: calc(3.5rem * var(--wb-s));
+  }
+
+  .wb-panel {
+    padding: calc(1.125rem * var(--wb-s)) calc(1.375rem * var(--wb-s));
+  }
+
+  .wb-wish__text {
+    font-size: calc(1rem * var(--wb-s));
+  }
+
+  .wb-wish__text.is-khmer {
+    font-size: calc(0.9375rem * var(--wb-s));
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Matches the event info card's shell radius above 1024px, so the sheet
+     reads as part of the same card system. */
+  .wb-panel {
+    border-radius: 1.5rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Laptops — the whole section on one number
+ *
+ * The showcase card is 85vh, so on a short laptop screen every section renders
+ * at roughly two-thirds size. These are the two values the rest of the showcase
+ * uses (AgendaSection, RSVPSection); at 1536px and above `--wb-s` stays 1.
+ * ------------------------------------------------------------------------ */
+
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .wb {
+    --wb-s: 0.68;
+  }
+}
+
+@media (min-width: 1366px) and (max-width: 1535px) {
+  .wb {
+    --wb-s: 0.76;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Accessibility
+ * ------------------------------------------------------------------------ */
+
+/* The wishes still fade in — that is what says one arrived — but they no
+   longer travel, and they arrive together rather than in sequence. */
+@media (prefers-reduced-motion: reduce) {
+  .wb-panel.is-revealed .wb-wish {
+    animation: wbFadeIn 200ms ease-out both;
     animation-delay: 0ms;
   }
 
-  @keyframes wishFade {
+  .wb-trigger:active,
+  .wb-submit:active,
+  .wb-ghost:active,
+  .wb-solid:active,
+  .wb-more:active {
+    transform: none;
+  }
+
+  @keyframes wbFadeIn {
     from {
       opacity: 0;
+    }
+    to {
+      opacity: 1;
     }
   }
 }
 
-/* Performance optimizations */
-.comment-card-liquid {
-  contain: layout style paint;
-  transform: translateZ(0);
-}
-
-.liquid-glass-button,
-.liquid-glass-textarea {
-  backface-visibility: hidden;
-}
-
-/* Khmer text fix now defined globally in src/assets/main.css */
-
-/* Laptop responsive styles - Match mobile sizing and spacing for all laptops */
-
-/* Small laptops 13-inch (1024px-1365px) - Scaled to 67.5% matching mobile exactly */
-@media (min-width: 1024px) and (max-width: 1365px) {
-  /* Header text - scaled to 67.5% from mobile md:text-3xl (1.875rem) */
-  h2 {
-    font-size: 1.265625rem !important; /* 1.875rem * 0.675 - exact mobile ratio matching AgendaSection */
-    line-height: 1.25 !important; /* Match mobile leading-tight */
-    padding-top: 0rem !important; /* Removed top padding to reduce space */
-    padding-bottom: 0.3375rem !important; /* 0.5rem * 0.675 (py-2) */
+/* Frostier, not blurrier: the sheet keeps the template's colour but stops
+   being a window. */
+@media (prefers-reduced-transparency: reduce) {
+  .wb-panel {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: color-mix(in srgb, var(--wb-tone) 12%, #ffffff);
   }
 }
 
-/* Medium laptops 14-15 inch (1366px-1535px) - Scaled to 75% matching mobile exactly */
-@media (min-width: 1366px) and (max-width: 1535px) {
-  /* Header text - scaled to 75% from mobile md:text-3xl (1.875rem) */
-  h2 {
-    font-size: 1.40625rem !important; /* 1.875rem * 0.75 - exact mobile ratio matching AgendaSection */
-    line-height: 1.25 !important; /* Match mobile leading-tight */
-    padding-top: 0rem !important; /* Removed top padding to reduce space */
-    padding-bottom: 0.375rem !important; /* 0.5rem * 0.75 (py-2) */
+@media (prefers-contrast: more) {
+  .wb-panel {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wb-tone) 55%, transparent);
+  }
+
+  .wb-sign__name,
+  .wb-sign__time,
+  .wb-note,
+  .wb-empty__text {
+    color: var(--wb-ink);
   }
 }
-
-/* Desktop (1536px+) - Clean desktop styles */
-@media (min-width: 1536px) {
-  h2 {
-    font-size: 1.875rem !important; /* 30px - text-3xl matching AgendaSection */
-  }
-}
-
-/* Mobile (<1024px) - match the event info card shell radius (EventInfo.vue's
-   .gradient-stroke-container is 1.25rem below 1024px) so the comment cards read
-   as part of the same card system. */
-@media (max-width: 1023px) {
-  .comment-form-liquid,
-  .comment-card-liquid,
-  .liquid-glass-state {
-    border-radius: 1.25rem;
-  }
-}
-
-/* Small laptops 13-inch (1024px-1365px) - scaled to 67.5% matching RSVPSection */
-@media (min-width: 1024px) and (max-width: 1365px) {
-  /* Comment form container - 67.5% scale */
-  .comment-form-liquid {
-    border-radius: 1.01rem !important; /* 1.5rem * 0.675 */
-    padding: 0.675rem !important; /* 1rem * 0.675 */
-    margin-bottom: 0.5rem !important;
-  }
-
-  /* Text sizing - 67.5% scale */
-  .text-sm {
-    font-size: 0.6rem !important; /* Match RSVPSection location text size */
-  }
-
-  .text-xs {
-    font-size: 0.5rem !important; /* 8px */
-  }
-
-  /* Sign-in button - Match RSVPSection exactly */
-  .liquid-glass-button {
-    padding: 0.5rem 1rem !important; /* Match RSVPSection */
-    border-radius: 1.2rem !important; /* Match RSVPSection */
-    font-size: 0.7rem !important; /* 11.2px - Match RSVPSection */
-  }
-
-  /* Textarea sizing - 67.5% scale */
-  .liquid-glass-textarea {
-    border-radius: 0.675rem !important; /* 1rem * 0.675 */
-    padding: 0.34rem 0.5rem !important; /* Scaled down */
-    font-size: 0.6rem !important; /* Match text-sm */
-  }
-
-  /* Comment text content */
-  .comment-card-liquid p {
-    font-size: 0.5rem !important; /* 8px */
-  }
-
-  /* Comment cards - 67.5% scale */
-  .comment-card-liquid {
-    border-radius: 1.01rem !important; /* 1.5rem * 0.675 */
-    padding: 0.5rem !important; /* Reduced */
-    margin-bottom: 0.4rem !important;
-  }
-
-  /* Action buttons */
-  .liquid-glass-action-button {
-    padding: 0.2rem !important;
-    border-radius: 0.4rem !important;
-  }
-
-  .liquid-glass-edit-button {
-    padding: 0.2rem 0.5rem !important;
-    font-size: 0.5rem !important; /* 8px */
-    border-radius: 0.4rem !important;
-  }
-
-  /* Edit mode container */
-  .comment-card-liquid .space-y-3 {
-    padding-left: 0.4rem !important;
-    padding-right: 0.4rem !important;
-    margin-bottom: 0.4rem !important;
-    padding-top: 0.2rem !important;
-  }
-
-  /* Edit mode textarea */
-  .comment-card-liquid .space-y-3 .liquid-glass-textarea {
-    font-size: 0.5rem !important; /* 8px */
-  }
-
-  .comment-card-liquid .space-y-3 > * + * {
-    margin-top: 0.4rem !important;
-  }
-
-  /* Edit mode buttons container */
-  .comment-card-liquid .space-y-3 .flex.items-center.gap-2 {
-    gap: 0.3rem !important;
-  }
-
-  /* Character counter in edit mode */
-  .comment-card-liquid .space-y-3 .text-xs {
-    font-size: 0.4rem !important; /* 6.4px */
-  }
-
-  /* Avatar sizing - 67.5% scale */
-  .w-8.h-8 {
-    width: 1.35rem !important; /* 2rem * 0.675 */
-    height: 1.35rem !important;
-  }
-
-  /* Author signature row - 67.5% scale */
-  .comment-author-row {
-    gap: 0.3rem !important;
-    padding-left: 0.3rem !important;
-    padding-right: 0.3rem !important;
-    padding-top: 0.4rem !important;
-  }
-
-  /* Quote mark sizing - 67.5% scale */
-  .comment-card-liquid .text-4xl {
-    font-size: 1.5rem !important; /* 2.25rem * 0.675 */
-  }
-
-  /* User name sizing */
-  .comment-card-liquid .text-sm.font-medium {
-    font-size: 0.5rem !important; /* 8px */
-  }
-
-  /* "You" badge sizing */
-  .comment-card-liquid .text-\[0\.625rem\] {
-    font-size: 0.4rem !important; /* 6.4px */
-    padding: 0.05rem 0.2rem !important;
-  }
-
-  /* Timestamp sizing */
-  .comment-card-liquid .text-xs {
-    font-size: 0.4rem !important; /* 6.4px */
-  }
-
-  /* State containers - 67.5% scale */
-  .liquid-glass-state {
-    border-radius: 1.01rem !important;
-    padding: 1.35rem !important; /* 2rem * 0.675 */
-  }
-
-  .liquid-glass-error {
-    border-radius: 0.675rem !important;
-    padding: 0.5rem !important;
-  }
-
-  /* Icons sizing - 67.5% scale */
-  svg.w-6 {
-    width: 1.01rem !important; /* 1.5rem * 0.675 */
-    height: 1.01rem !important;
-  }
-
-  svg.w-4 {
-    width: 0.675rem !important; /* 1rem * 0.675 */
-    height: 0.675rem !important;
-  }
-
-  svg.w-3\.5 {
-    width: 0.59rem !important;
-    height: 0.59rem !important;
-  }
-
-  svg.w-3 {
-    width: 0.5rem !important;
-    height: 0.5rem !important;
-  }
-
-  /* Comments container height - 67.5% scale */
-  .h-\[26rem\] {
-    height: 17.55rem !important; /* 26rem * 0.675 */
-  }
-
-  /* Overall comment section spacing */
-  #comment-section.mb-8 {
-    margin-bottom: 1.35rem !important; /* 2rem * 0.675 */
-  }
-
-  /* Character counter and validation messages */
-  .text-right.mt-1 {
-    margin-top: 0.2rem !important;
-  }
-
-  /* Loading spinner sizing - 67.5% scale */
-  .w-4.h-4 {
-    width: 0.675rem !important;
-    height: 0.675rem !important;
-  }
-
-  .w-12.h-12 {
-    width: 2rem !important; /* 3rem * 0.675 */
-    height: 2rem !important;
-  }
-
-  /* Sign-in prompt text in form */
-  .comment-form-liquid .text-center.py-4 {
-    padding-top: 0.675rem !important; /* 1rem * 0.675 */
-    padding-bottom: 0.675rem !important;
-  }
-
-  .comment-form-liquid .text-center .mb-3 {
-    margin-bottom: 0.5rem !important;
-  }
-
-  /* Options menu button - keep visible */
-  .comment-options-menu {
-    top: 0.4rem !important;
-    right: 0.4rem !important;
-    z-index: 50 !important;
-  }
-
-  .comment-options-menu button.p-1\.5 {
-    padding: 0.25rem !important;
-  }
-
-  .comment-options-menu button.p-1\.5 svg {
-    width: 0.75rem !important;
-    height: 0.75rem !important;
-  }
-}
-
-/* Medium laptops 14-15 inch (1366px-1535px) - scaled to 75% */
-@media (min-width: 1366px) and (max-width: 1535px) {
-  /* Comment form container - 75% scale */
-  .comment-form-liquid {
-    border-radius: 1.125rem !important; /* 1.5rem * 0.75 */
-    padding: 0.75rem !important; /* 1rem * 0.75 */
-    margin-bottom: 0.56rem !important;
-  }
-
-  /* Text sizing - 75% scale */
-  .text-sm {
-    font-size: 0.66rem !important; /* Match RSVPSection proportions */
-  }
-
-  .text-xs {
-    font-size: 0.56rem !important;
-  }
-
-  /* Sign-in button - Match RSVPSection proportions for medium laptop */
-  .liquid-glass-button {
-    padding: 0.56rem 1.125rem !important; /* 75% scale */
-    border-radius: 1.125rem !important;
-    font-size: 0.75rem !important; /* 12px */
-  }
-
-  /* Textarea sizing - 75% scale */
-  .liquid-glass-textarea {
-    border-radius: 0.75rem !important;
-    padding: 0.375rem 0.56rem !important;
-    font-size: 0.66rem !important;
-  }
-
-  /* Comment text content */
-  .comment-card-liquid p {
-    font-size: 0.56rem !important;
-  }
-
-  /* Comment cards - 75% scale */
-  .comment-card-liquid {
-    border-radius: 1.125rem !important;
-    padding: 0.56rem !important;
-    margin-bottom: 0.45rem !important;
-  }
-
-  /* Action buttons */
-  .liquid-glass-action-button {
-    padding: 0.225rem !important;
-    border-radius: 0.45rem !important;
-  }
-
-  .liquid-glass-edit-button {
-    padding: 0.225rem 0.56rem !important;
-    font-size: 0.56rem !important;
-    border-radius: 0.45rem !important;
-  }
-
-  /* Edit mode container */
-  .comment-card-liquid .space-y-3 {
-    padding-left: 0.45rem !important;
-    padding-right: 0.45rem !important;
-    margin-bottom: 0.45rem !important;
-    padding-top: 0.225rem !important;
-  }
-
-  /* Edit mode textarea */
-  .comment-card-liquid .space-y-3 .liquid-glass-textarea {
-    font-size: 0.56rem !important;
-  }
-
-  .comment-card-liquid .space-y-3 > * + * {
-    margin-top: 0.45rem !important;
-  }
-
-  /* Edit mode buttons container */
-  .comment-card-liquid .space-y-3 .flex.items-center.gap-2 {
-    gap: 0.34rem !important;
-  }
-
-  /* Character counter in edit mode */
-  .comment-card-liquid .space-y-3 .text-xs {
-    font-size: 0.45rem !important;
-  }
-
-  /* Avatar sizing - 75% scale */
-  .w-8.h-8 {
-    width: 1.5rem !important; /* 2rem * 0.75 */
-    height: 1.5rem !important;
-  }
-
-  /* Author signature row - 75% scale */
-  .comment-author-row {
-    gap: 0.34rem !important;
-    padding-left: 0.34rem !important;
-    padding-right: 0.34rem !important;
-    padding-top: 0.45rem !important;
-  }
-
-  /* Quote mark sizing - 75% scale */
-  .comment-card-liquid .text-4xl {
-    font-size: 1.7rem !important; /* 2.25rem * 0.75 */
-  }
-
-  /* User name sizing */
-  .comment-card-liquid .text-sm.font-medium {
-    font-size: 0.56rem !important;
-  }
-
-  /* "You" badge sizing */
-  .comment-card-liquid .text-\[0\.625rem\] {
-    font-size: 0.45rem !important;
-    padding: 0.06rem 0.225rem !important;
-  }
-
-  /* Timestamp sizing */
-  .comment-card-liquid .text-xs {
-    font-size: 0.45rem !important;
-  }
-
-  /* State containers - 75% scale */
-  .liquid-glass-state {
-    border-radius: 1.125rem !important;
-    padding: 1.5rem !important; /* 2rem * 0.75 */
-  }
-
-  .liquid-glass-error {
-    border-radius: 0.75rem !important;
-    padding: 0.56rem !important;
-  }
-
-  /* Icons sizing - 75% scale */
-  svg.w-6 {
-    width: 1.125rem !important;
-    height: 1.125rem !important;
-  }
-
-  svg.w-4 {
-    width: 0.75rem !important;
-    height: 0.75rem !important;
-  }
-
-  svg.w-3\.5 {
-    width: 0.66rem !important;
-    height: 0.66rem !important;
-  }
-
-  svg.w-3 {
-    width: 0.56rem !important;
-    height: 0.56rem !important;
-  }
-
-  /* Comments container height - 75% scale */
-  .h-\[26rem\] {
-    height: 19.5rem !important; /* 26rem * 0.75 */
-  }
-
-  /* Overall comment section spacing */
-  #comment-section.mb-8 {
-    margin-bottom: 1.5rem !important;
-  }
-
-  /* Character counter and validation messages */
-  .text-right.mt-1 {
-    margin-top: 0.225rem !important;
-  }
-
-  /* Loading spinner sizing - 75% scale */
-  .w-4.h-4 {
-    width: 0.75rem !important;
-    height: 0.75rem !important;
-  }
-
-  .w-12.h-12 {
-    width: 2.25rem !important;
-    height: 2.25rem !important;
-  }
-
-  /* Sign-in prompt text in form */
-  .comment-form-liquid .text-center.py-4 {
-    padding-top: 0.75rem !important;
-    padding-bottom: 0.75rem !important;
-  }
-
-  .comment-form-liquid .text-center .mb-3 {
-    margin-bottom: 0.56rem !important;
-  }
-
-  /* Options menu button - keep visible */
-  .comment-options-menu {
-    top: 0.45rem !important;
-    right: 0.45rem !important;
-  }
-
-  .comment-options-menu button.p-1\.5 {
-    padding: 0.28rem !important;
-  }
-
-  .comment-options-menu button.p-1\.5 svg {
-    width: 0.8rem !important;
-    height: 0.8rem !important;
-  }
-}
-
-/* Teleported dropdown menu - global styles (not scoped) */
 </style>
 
 <style>
+/* ---------------------------------------------------------------------------
+ * The guestbook's own type.
+ *
+ * Every other section of this card is set in the template's fonts, because it
+ * carries the couple's voice. A wish does not. It is the guest's, it arrives in
+ * whatever script that guest writes in, and its language has nothing to do with
+ * the language picker at the top of the invitation - one Cambodian wedding's
+ * list holds Khmer and English wishes side by side. So no per-language switch
+ * can be right here: the family has to resolve per *glyph*, not per selection.
+ *
+ * Karla covers Latin and carries no Khmer, so a Khmer cluster falls through to
+ * Kantumruy Pro on its own - inside the same paragraph where a wish is mixed.
+ * Both are already loaded (index.html, main.css), and Karla is what the V2
+ * showcase already sets its body copy in, so the guestbook reads in the
+ * showcase's own text voice rather than in a display face drawn for a name at
+ * 40px.
+ *
+ * What this replaced: secondaryFont || currentFont on roughly thirty
+ * elements here. A template whose secondary face is Latin-only (Great Vibes,
+ * Cormorant) left every Khmer wish to the operating system - Khmer UI on
+ * Windows, Noto Sans Khmer on Android, Khmer Sangam MN on iOS. One wish, three
+ * faces, none of them chosen by anyone. A Khmer display face failed the same
+ * way in reverse, and neither is drawn for a 300-character paragraph at 14px.
+ *
+ * The heading is deliberately NOT included. It is a sibling of the Agenda and
+ * RSVP headings and keeps primaryFont through its own inline style, which
+ * outranks this rule - making it the one section heading in a different face
+ * would trade this inconsistency for a worse one.
+ *
+ * Unscoped for the same reason the menu rules below are: the options menu is
+ * teleported to <body>, and the guest's own name renders inside it.
+ * ------------------------------------------------------------------------- */
+#comment-section,
+#comment-section :is(input, textarea, button, select),
+.comment-dropdown-menu,
+.comment-dropdown-menu button {
+  font-family: 'Karla', 'Kantumruy Pro', system-ui, sans-serif;
+}
+
 /* Teleported dropdown menu styles - must be unscoped to affect teleported content */
 .comment-dropdown-menu {
   backdrop-filter: blur(16px);

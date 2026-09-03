@@ -142,12 +142,21 @@ export const rsvpTranslations: Record<
     comment_you_badge: string
     comment_invite_only_prompt: string
     comment_commenting_as: string
+    comment_compose_cta: string
+    comment_compose_cta_funeral: string
+    comment_show_all: string
 
     // Payment section
     payment_wedding_gift: string
     payment_birthday_gift: string
     payment_funeral_gift: string
     payment_pay_now: string
+    payment_gift: string
+    payment_scan_to_pay: string
+    payment_qr_pending: string
+    payment_copy_account: string
+    payment_copied: string
+    payment_none: string
 
     // Footer section
     footer_thank_you: string
@@ -349,12 +358,21 @@ export const rsvpTranslations: Record<
     comment_you_badge: 'You',
     comment_invite_only_prompt: 'This is a private event. Please open your invitation link to leave a message.',
     comment_commenting_as: 'Commenting as',
+    comment_compose_cta: 'Write your wish',
+    comment_compose_cta_funeral: 'Leave a message',
+    comment_show_all: 'Read all wishes',
 
     // Payment section
     payment_wedding_gift: 'Wedding Gift',
     payment_birthday_gift: 'Birthday Gift',
     payment_funeral_gift: 'Condolence Contribution',
     payment_pay_now: 'Send',
+    payment_gift: 'Gift',
+    payment_scan_to_pay: 'Scan to pay',
+    payment_qr_pending: 'QR coming soon',
+    payment_copy_account: 'Tap to copy',
+    payment_copied: 'Copied',
+    payment_none: 'No payment details yet',
 
     // Footer section
     footer_thank_you: 'Thank you for celebrating with us',
@@ -556,12 +574,21 @@ export const rsvpTranslations: Record<
     comment_you_badge: 'You',
     comment_invite_only_prompt: 'នេះជាកម្មវិធីឯកជន។ សូមបើកតំណរអញ្ជើញរបស់អ្នក ដើម្បីផ្ញើសារ។',
     comment_commenting_as: 'ជូនពរក្នុងនាម',
+    comment_compose_cta: 'សរសេរសារជូនពរ',
+    comment_compose_cta_funeral: 'ផ្ញើសាររំលែកទុក្ខ',
+    comment_show_all: 'អានសារជូនពរទាំងអស់',
 
     // Payment section
     payment_wedding_gift: 'ចំណងដៃ',
     payment_birthday_gift: 'អំណោយ',
     payment_funeral_gift: 'ថវិកាចូលបុណ្យ',
     payment_pay_now: 'បញ្ជូន',
+    payment_gift: 'ចំណងដៃ',
+    payment_scan_to_pay: 'ស្កេនដើម្បីផ្ញើ',
+    payment_qr_pending: 'QR នឹងមានឆាប់ៗ',
+    payment_copy_account: 'ចុចដើម្បីចម្លង',
+    payment_copied: 'បានចម្លង',
+    payment_none: 'មិនទាន់មានព័ត៌មានទូទាត់',
 
     // Footer section
     footer_thank_you: 'អរគុណសម្រាប់ការចូលរួមអបអរសាទរជាមួយយើង',
@@ -763,12 +790,21 @@ export const rsvpTranslations: Record<
     comment_you_badge: '您',
     comment_invite_only_prompt: '这是一个私密活动。请打开您的邀请链接以留言。',
     comment_commenting_as: '以此身份留言：',
+    comment_compose_cta: '写下您的祝福',
+    comment_compose_cta_funeral: '留下悼念',
+    comment_show_all: '阅读全部祝福',
 
     // Payment section
     payment_wedding_gift: '结婚礼品',
     payment_birthday_gift: '生日礼品',
     payment_funeral_gift: '慰问捐款',
     payment_pay_now: '发送',
+    payment_gift: '礼金',
+    payment_scan_to_pay: '扫码支付',
+    payment_qr_pending: '二维码即将推出',
+    payment_copy_account: '点击复制',
+    payment_copied: '已复制',
+    payment_none: '暂无支付信息',
 
     // Footer section
     footer_thank_you: '感谢您与我们一同庆祝',

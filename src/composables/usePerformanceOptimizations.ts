@@ -112,7 +112,7 @@ export function usePerformanceOptimizations() {
   const applyCSSContainment = () => {
     const containers = [
       '.liquid-glass-card',
-      '.comment-card-liquid',
+      '.wb-panel',
       '.agenda-card-container',
       '.photo-card',
       '.enhanced-photo-card',

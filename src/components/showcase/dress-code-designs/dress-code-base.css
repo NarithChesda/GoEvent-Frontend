@@ -39,8 +39,78 @@
   --dcd-hairline-soft: color-mix(in srgb, var(--dcd-ink) 17%, transparent);
   /* The ground a drawn garment stands on. The main content card is already a
      pale glass panel; below about 7% the frame is invisible on it and the
-     garment floats in white space, which is the failure the frames prevent. */
+     garment floats in white space, which is the failure the frames prevent.
+
+     Kept as a flat COLOUR, not a gradient, because `atelier` spends it as a
+     `box-shadow` ring colour — a shadow cannot take an image. `--dcd-ground`
+     below is the painted version of the same idea. */
   --dcd-wash: color-mix(in srgb, var(--dcd-ink) 8%, transparent);
+
+  /* --------------------------------------------------------------------
+     The lit ground
+     --------------------------------------------------------------------
+     What the flat wash became. A garment is drawn as a single line in the
+     dress code's own colour, and a line reads only as well as the ground
+     behind it lets it: a uniform 8% tint gives the same weak separation
+     everywhere, so a pale champagne outline and a deep burgundy one are
+     equally faint, and the plate itself reads as a placeholder rectangle.
+
+     Three layers, none of them tinted by the dress code — the invariant this
+     block has always held is that the ground is the TEMPLATE's ink, never the
+     garment's colour, because a ground tinted by the garment is the one colour
+     guaranteed not to contrast with it:
+
+       1. a contact pool at the hem, so the figure stands on the plate
+       2. light from above, which is what makes it a surface rather than a fill
+       3. the wash itself, deepened toward the bottom
+
+     The result is a vertical range instead of one value, so the garment's line
+     crosses light near the shoulders and shadow near the hem, and BOTH a pale
+     and a dark code find contrast somewhere along it.
+
+     The range is spent DOWNWARD from the old flat 8%, never upward. The first
+     attempt lit the top to well above it, and a champagne gown — already the
+     hardest code to draw, and a common one — lost its shoulders into the
+     highlight: brighter is not the same as more contrast when the subject is
+     itself pale. So the sheen is a whisper (30% white, and gone by the upper
+     third) sitting on 7% ink, which is a hair lighter than the wash it
+     replaced, while the hem reaches 16% plus the pool. Nothing on this plate
+     is now lighter than it was before. */
+  --dcd-ground:
+    radial-gradient(
+      58% 13% at 50% 93%,
+      color-mix(in srgb, var(--dcd-ink) 24%, transparent) 0%,
+      transparent 72%
+    ),
+    radial-gradient(115% 74% at 50% -6%, rgba(255, 255, 255, 0.3) 0%, transparent 56%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--dcd-ink) 7%, transparent) 0%,
+      color-mix(in srgb, var(--dcd-ink) 16%, transparent) 100%
+    );
+
+  /* Light catching the top edge of a plate, and the plate's own lift off the
+     card. Both are the same statement — this is a surface, not a rectangle. */
+  --dcd-plate-edge: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  --dcd-plate-lift: 0 12px 26px -20px color-mix(in srgb, var(--dcd-ink) 75%, transparent);
+
+  /* --------------------------------------------------------------------
+     The bead
+     --------------------------------------------------------------------
+     Every object whose whole content IS the dress code's colour — the palette
+     disc, the ledger badge, a swatch chip — carries this and nothing else. A
+     flat fill with a hairline reads as a colour *sample*; the same fill under a
+     light source reads as a physical token, and a colour with a highlight on it
+     looks more saturated than the identical colour without one.
+
+     It changes no hue: the highlight is white at 24% along the top edge only,
+     and the lift is cast outside the shape entirely. The hairline is the one
+     that was already there, unified at 18% — it was drifting between 16%, 18%
+     and 20% across three files describing the same object. */
+  --dcd-bead:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 0 0 1px color-mix(in srgb, var(--dcd-ink) 18%, transparent),
+    0 2px 6px -2px color-mix(in srgb, var(--dcd-ink) 42%, transparent);
 
   width: 100%;
   color: var(--dcd-ink);
@@ -157,7 +227,7 @@
   padding: 0;
   border: none;
   background: var(--dcd-swatch-fill);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dcd-ink) 20%, transparent);
+  box-shadow: var(--dcd-bead);
   cursor: pointer;
   transition:
     box-shadow 0.2s var(--dcd-ease-out),
@@ -174,7 +244,7 @@
 
 .dcd-swatch.is-active {
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--dcd-ink) 20%, transparent),
+    var(--dcd-bead),
     0 0 0 2px var(--dcd-ink);
 }
 
@@ -211,7 +281,7 @@
 @media (hover: hover) and (pointer: fine) {
   .dcd-swatch:not(.is-active):hover {
     box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, var(--dcd-ink) 20%, transparent),
+      var(--dcd-bead),
       0 0 0 2px var(--dcd-hairline);
   }
 }

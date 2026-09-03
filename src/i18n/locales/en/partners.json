@@ -168,8 +168,16 @@
       "body": "Send them a link — no account needed. Give them view-only, or let them add and correct names, and switch the link off whenever you want."
     },
     "studio": {
-      "title": "Make your own designs",
-      "body": "Approved partners can design their own invitations and publish them."
+      "title": "Designs no other shop can sell",
+      "body": "Approved partners can build their own invitation designs in the studio. Once we approve one it is yours alone — it never enters the shared catalogue."
+    },
+    "upkeep": {
+      "title": "The platform is our job, not yours",
+      "body": "No hosting, no developer, no updates to install. GoEvent is the only thing we build, and new designs and features keep arriving — the credits you already hold open them too."
+    },
+    "support": {
+      "title": "A real person, in Khmer",
+      "body": "Message us on Telegram when you are stuck — setting an event up, or the night before one. You get someone who knows the platform, not a form."
     },
     "freeStart": {
       "title": "It costs nothing to start",
@@ -183,6 +191,10 @@
       "q": "What happens if I do not sell them all?",
       "a": "Your credits stay in your account until you use them. Each pack has its own expiry date, shown on your credits page. If you are not sure how many events you will get, use your two free events, pay per event for a while, and buy a pack once the work is steady."
     },
+    "future": {
+      "q": "Will the platform still be good in a year?",
+      "a": "GoEvent is the only thing we build. New designs and new features ship continuously, and everything we add works with the credits you already hold — there is no upgrade to buy and no version to install. A pack you buy today opens more than it did on the day you bought it."
+    },
     "price": {
       "q": "Can I set my own price?",
       "a": "Yes. The prices on this page are what you pay us. What you charge your customer is completely up to you, and we take none of it."
@@ -190,6 +202,14 @@
     "domain": {
       "q": "Is the invitation under my own brand?",
       "a": "Your shop's logo appears next to ours at the bottom of every invitation. The invitation itself lives on goevent.online, which is what keeps it fast and leaves you nothing to look after. You cannot put it on your own web address."
+    },
+    "lifetime": {
+      "q": "How long does the invitation stay online?",
+      "a": "For as long as you keep the event. There is no expiry date on a live invitation — guests can open their link months after the day, and families often do. It only comes down if you delete the event yourself."
+    },
+    "exclusive": {
+      "q": "Will other shops get the designs I make?",
+      "a": "No. A design you build in the studio is yours alone once we approve it — no other partner can use it. The shared catalogue is open to everyone, but what your shop makes stays with your shop."
     },
     "plans": {
       "q": "Do credits work on any design?",

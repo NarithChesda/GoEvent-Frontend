@@ -1,5 +1,5 @@
 <template>
-  <div class="floating-action-menu">
+  <div class="floating-action-menu" :style="menuVars">
     <!-- Blur Overlay -->
     <div v-if="isMenuOpen || showLanguageModal" class="blur-overlay" @click="closeAllMenus"></div>
 
@@ -25,10 +25,9 @@
         <div v-if="displayLanguages.length > 1" class="menu-item">
           <button
             @click="handleLanguageToggle"
-            class="menu-button glass-section"
-            :style="menuButtonStyle"
+            class="menu-button"
           >
-            <Languages :size="20" :color="themeColor" />
+            <Languages :size="20" />
             <span class="menu-text">{{ translations.language }}</span>
           </button>
         </div>
@@ -37,14 +36,12 @@
         <div class="menu-item">
           <button
             @click="handleMusicToggle"
-            class="menu-button glass-section"
+            class="menu-button"
             :class="{ active: props.isMusicPlaying }"
-            :style="menuButtonStyle"
           >
             <component
               :is="props.isMusicPlaying ? VolumeX : Volume2"
               :size="20"
-              :color="themeColor"
             />
             <span class="menu-text">{{
               props.isMusicPlaying ? translations.musicOff : translations.musicOn
@@ -56,10 +53,9 @@
         <div v-if="props.hasRsvp" class="menu-item">
           <button
             @click="handleRSVPWithLocation"
-            class="menu-button glass-section"
-            :style="menuButtonStyle"
+            class="menu-button"
           >
-            <UserCheck :size="20" :color="themeColor" />
+            <UserCheck :size="20" />
             <span class="menu-text">{{ translations.rsvp }}</span>
           </button>
         </div>
@@ -68,10 +64,9 @@
         <div class="menu-item">
           <button
             @click="handleReminder"
-            class="menu-button glass-section"
-            :style="menuButtonStyle"
+            class="menu-button"
           >
-            <Bell :size="20" :color="themeColor" />
+            <Bell :size="20" />
             <span class="menu-text">{{ translations.reminder }}</span>
           </button>
         </div>
@@ -80,10 +75,9 @@
         <div class="menu-item">
           <button
             @click="handleAgenda"
-            class="menu-button glass-section"
-            :style="menuButtonStyle"
+            class="menu-button"
           >
-            <Calendar :size="20" :color="themeColor" />
+            <Calendar :size="20" />
             <span class="menu-text">{{ translations.agenda }}</span>
           </button>
         </div>
@@ -92,10 +86,9 @@
         <div v-if="props.hasVideo" class="menu-item">
           <button
             @click="handleVideo"
-            class="menu-button glass-section"
-            :style="menuButtonStyle"
+            class="menu-button"
           >
-            <Play :size="20" :color="themeColor" />
+            <Play :size="20" />
             <span class="menu-text">{{ translations.video }}</span>
           </button>
         </div>
@@ -104,10 +97,9 @@
         <div v-if="props.hasGallery" class="menu-item">
           <button
             @click="handleGallery"
-            class="menu-button glass-section"
-            :style="menuButtonStyle"
+            class="menu-button"
           >
-            <Image :size="20" :color="themeColor" />
+            <Image :size="20" />
             <span class="menu-text">{{ translations.gallery }}</span>
           </button>
         </div>
@@ -116,10 +108,9 @@
         <div v-if="props.hasPayment" class="menu-item">
           <button
             @click="handleGift"
-            class="menu-button glass-section"
-            :style="menuButtonStyle"
+            class="menu-button"
           >
-            <Gift :size="20" :color="themeColor" />
+            <Gift :size="20" />
             <span class="menu-text">{{ translations.gift }}</span>
           </button>
         </div>
@@ -128,10 +119,9 @@
         <div v-if="props.hasComments" class="menu-item">
           <button
             @click="handleComment"
-            class="menu-button glass-section"
-            :style="menuButtonStyle"
+            class="menu-button"
           >
-            <MessageCircle :size="20" :color="themeColor" />
+            <MessageCircle :size="20" />
             <span class="menu-text">{{ translations.comment }}</span>
           </button>
         </div>
@@ -142,13 +132,13 @@
     <!-- Language Selection Modal -->
     <Transition name="modal">
       <div v-if="showLanguageModal" class="modal-overlay" @click="closeLanguageModal">
-        <div class="language-modal glass-section" @click.stop>
+        <div class="language-modal" @click.stop>
           <div class="modal-header">
-            <h3 class="modal-title" :style="modalTitleStyle">
+            <h3 class="modal-title">
               {{ translations.selectLanguage }}
             </h3>
             <button @click="closeLanguageModal" class="close-button">
-              <X :size="20" :color="themeColor" />
+              <X :size="20" />
             </button>
           </div>
           <div class="language-options">
@@ -156,12 +146,8 @@
               v-for="lang in displayLanguages"
               :key="lang.code"
               @click="selectLanguage(lang.code)"
-              class="language-option glass-inner"
+              class="language-option"
               :class="{ active: currentLanguage === lang.code }"
-              :style="{
-                borderColor: currentLanguage === lang.code ? themeColor : 'transparent',
-                color: currentLanguage === lang.code ? themeColor : 'white',
-              }"
             >
               <span class="language-flag">{{ lang.flag }}</span>
               <span class="language-name">{{ lang.name }}</span>
@@ -295,12 +281,20 @@ const fabButtonStyle = computed(() => ({
   borderRight: 'none',
 }))
 
-const menuButtonStyle = computed(() => ({
-  borderColor: themeColor.value,
-}))
-
-const modalTitleStyle = computed(() => ({
-  color: themeColor.value,
+/**
+ * The one colour the menu's material is tinted with.
+ *
+ * It is published as a custom property rather than bound per button because
+ * the template's colour now reaches the menu as *light in the glass* — a wash
+ * over a dark base — instead of as ink on the foreground. Icons and labels
+ * used to be drawn in it directly, on a 10%-white pane over whatever the
+ * background video happened to be showing: a deep template colour on that is
+ * a dark mark on an unknown ground, which is the one combination that can
+ * disappear completely. Colour belongs on a solid layer, contrast on the
+ * foreground.
+ */
+const menuVars = computed<Record<string, string>>(() => ({
+  '--fam-tint': themeColor.value,
 }))
 
 const toggleMenu = () => {
@@ -489,7 +483,7 @@ const handleComment = () => {
   }
 
   .menu-container {
-    gap: 0.4rem !important;
+    gap: 0.125rem !important;
     min-width: 144px !important;
     max-height: 70vh !important;
   }
@@ -574,7 +568,7 @@ const handleComment = () => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: box-shadow 0.2s ease, opacity 0.25s ease, transform 0.25s ease;
+  transition: box-shadow 0.2s ease, opacity 0.25s ease, transform 0.18s cubic-bezier(0.23, 1, 0.32, 1);
   will-change: transform;
   touch-action: manipulation;
   position: relative;
@@ -687,9 +681,42 @@ const handleComment = () => {
   }
 }
 
-.fab-button:hover {
-  opacity: 0.9;
+/* Pointer-gated: on a touch screen :hover latches after a tap and does not
+   release, which left the button sitting at 90% opacity for the rest of the
+   session. */
+@media (hover: hover) and (pointer: fine) {
+  .fab-button:hover {
+    opacity: 0.92;
+  }
 }
+
+/* The press, on every device. */
+.fab-button:active {
+  transform: scale(0.94);
+}
+
+/* ---------------------------------------------------------------------------
+ * The menu is ONE material, not nine.
+ *
+ * Every row used to be its own glass chip: `rgba(255,255,255,0.1)` with its own
+ * `backdrop-filter` and a border in the template's colour. Three problems, all
+ * of them the same problem — a light translucent surface with nothing solid
+ * behind it:
+ *
+ *  - Legibility. White labels and template-coloured icons sat on 10% white over
+ *    whatever frame of the background video happened to be underneath. On a
+ *    pale frame the white text vanished; on a dark one the coloured icons did.
+ *  - Cost. Nine backdrop-filters is nine compositor passes, on a phone, over a
+ *    playing video.
+ *  - Reading. Nine floating chips read as nine unrelated objects; a menu is one
+ *    object with rows in it.
+ *
+ * So the panel is the material — dark base, template colour as a wash *in* the
+ * glass, one blur — and the rows are plain elements drawn on it. The dark base
+ * is what makes the foreground safe for any template palette and any video
+ * frame, and it is heavier than the sheets inside the invitation on purpose:
+ * this floats above everything, and weight is what says so.
+ * ------------------------------------------------------------------------ */
 
 .menu-container {
   position: absolute;
@@ -699,11 +726,30 @@ const handleComment = () => {
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.125rem;
   min-width: 180px;
   max-height: 70vh;
+  padding: 0.375rem;
+  border-radius: 1.125rem;
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--fam-tint, #3b82f6) 26%, transparent),
+      color-mix(in srgb, var(--fam-tint, #3b82f6) 11%, transparent)
+    ),
+    rgba(18, 18, 20, 0.58);
+  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  backdrop-filter: blur(30px) saturate(180%);
+  box-shadow:
+    /* light catching the top edge of the material */
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    /* a big surface reads as thick: deeper shadow than any chip would carry */
+    0 26px 60px -24px rgba(0, 0, 0, 0.7);
   z-index: 10001;
 }
 
@@ -711,7 +757,7 @@ const handleComment = () => {
    is hidden while the menu is open, so it no longer needs to reserve space) */
 @media (min-width: 640px) {
   .menu-container {
-    gap: 0.625rem;
+    gap: 0.125rem;
     min-width: 190px;
     max-height: 75vh;
   }
@@ -719,7 +765,7 @@ const handleComment = () => {
 
 @media (min-width: 768px) {
   .menu-container {
-    gap: 0.75rem;
+    gap: 0.125rem;
     min-width: 200px;
     max-height: 80vh;
   }
@@ -728,7 +774,7 @@ const handleComment = () => {
 /* 13" Laptops - Compact menu */
 @media (min-width: 1280px) and (max-width: 1439px) {
   .menu-container {
-    gap: 0.625rem;
+    gap: 0.125rem;
     min-width: 200px;
     max-height: 80vh;
   }
@@ -737,7 +783,7 @@ const handleComment = () => {
 /* 15" Laptops - Balanced menu */
 @media (min-width: 1440px) and (max-width: 1679px) {
   .menu-container {
-    gap: 0.75rem;
+    gap: 0.125rem;
     min-width: 220px;
     max-height: 85vh;
   }
@@ -746,7 +792,7 @@ const handleComment = () => {
 /* 17" Laptops - Enhanced menu */
 @media (min-width: 1680px) and (max-width: 1919px) {
   .menu-container {
-    gap: 0.875rem;
+    gap: 0.125rem;
     min-width: 240px;
     max-height: 85vh;
   }
@@ -755,70 +801,90 @@ const handleComment = () => {
 /* Desktop - Original positioning */
 @media (min-width: 1920px) {
   .menu-container {
-    gap: 0.75rem;
+    gap: 0.125rem;
     min-width: 200px;
     max-height: 85vh;
   }
 }
 
+/* The rows arrive after the panel, in sequence, from the edge the panel came
+   from. The steps were 10ms apart — eleven rows inside 100ms, which is not a
+   stagger, it is one frame of noise; 26ms is short enough to stay a single
+   gesture and long enough to read as a sweep. */
 .menu-item {
-  transform: translateX(10px);
+  transform: translateX(8px);
   opacity: 0;
-  animation: slideFromRight 0.15s ease-out forwards;
-  will-change: transform, opacity;
+  animation: slideFromRight 0.22s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 .menu-item:nth-child(1) {
-  animation-delay: 0s;
-}
-.menu-item:nth-child(2) {
-  animation-delay: 0.01s;
-}
-.menu-item:nth-child(3) {
-  animation-delay: 0.02s;
-}
-.menu-item:nth-child(4) {
-  animation-delay: 0.03s;
-}
-.menu-item:nth-child(5) {
   animation-delay: 0.04s;
 }
+.menu-item:nth-child(2) {
+  animation-delay: 0.066s;
+}
+.menu-item:nth-child(3) {
+  animation-delay: 0.092s;
+}
+.menu-item:nth-child(4) {
+  animation-delay: 0.118s;
+}
+.menu-item:nth-child(5) {
+  animation-delay: 0.144s;
+}
 .menu-item:nth-child(6) {
-  animation-delay: 0.05s;
+  animation-delay: 0.17s;
 }
 .menu-item:nth-child(7) {
-  animation-delay: 0.06s;
+  animation-delay: 0.196s;
 }
 .menu-item:nth-child(8) {
-  animation-delay: 0.07s;
+  animation-delay: 0.222s;
 }
 .menu-item:nth-child(9) {
-  animation-delay: 0.08s;
+  animation-delay: 0.248s;
 }
 .menu-item:nth-child(10) {
-  animation-delay: 0.09s;
+  animation-delay: 0.274s;
 }
 .menu-item:nth-child(11) {
-  animation-delay: 0.1s;
+  animation-delay: 0.3s;
 }
 
+/* A row on the panel, not an object of its own: no border, no fill at rest and
+   no blur — the panel behind it is already the material. Icons inherit
+   `currentColor`, so the label and the glyph are guaranteed the same contrast
+   as each other on every template. */
 .menu-button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1px solid;
+  border: 0;
   border-radius: 0.75rem;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease;
-  background: rgba(255, 255, 255, 0.1);
-  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background: transparent;
+  color: #ffffff;
+  transition:
+    background-color 0.18s ease,
+    transform 0.12s cubic-bezier(0.23, 1, 0.32, 1);
   min-height: 44px;
-  will-change: transform;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Feedback lands on the press, not on release — and it is the only state a
+   touch guest ever sees, since :hover latches on a touch screen and would
+   leave a row lit until something else is tapped. */
+.menu-button:active {
+  background-color: rgba(255, 255, 255, 0.22);
+  transform: scale(0.985);
+}
+
+.menu-button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: -2px;
 }
 
 /* Responsive menu button sizing - mobile-first approach */
@@ -874,19 +940,26 @@ const handleComment = () => {
   }
 }
 
-.menu-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateX(4px);
+@media (hover: hover) and (pointer: fine) {
+  .menu-button:hover {
+    background-color: rgba(255, 255, 255, 0.13);
+  }
 }
 
+/* Music playing. A brighter white fill rather than the template colour: the
+   tint can be any hue at any lightness, and a state that is unreadable on some
+   templates is not a state. */
 .menu-button.active {
-  background: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
+/* Vibrancy: over a translucent material, weight and a touch of tracking carry
+   legibility that a flat grey never could. */
 .menu-text {
-  color: white;
+  color: #ffffff;
   font-size: 0.875rem;
   font-weight: 500;
+  letter-spacing: 0.01em;
   white-space: nowrap;
 }
 
@@ -944,15 +1017,27 @@ const handleComment = () => {
   backdrop-filter: blur(4px);
 }
 
+/* Same material as the menu — a modal that arrived in a different substance
+   from the menu that opened it reads as a different app. */
 .language-modal {
   width: 90%;
   max-width: 400px;
   max-height: 80vh;
-  border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.15);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
+  border-radius: 1.25rem;
+  border: 0;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--fam-tint, #3b82f6) 24%, transparent),
+      color-mix(in srgb, var(--fam-tint, #3b82f6) 10%, transparent)
+    ),
+    rgba(18, 18, 20, 0.62);
+  -webkit-backdrop-filter: blur(34px) saturate(180%);
+  backdrop-filter: blur(34px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 32px 70px -26px rgba(0, 0, 0, 0.75);
   overflow: hidden;
   z-index: 10003;
   position: relative;
@@ -963,12 +1048,14 @@ const handleComment = () => {
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 .modal-title {
   font-size: 1.25rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #ffffff;
   margin: 0;
 }
 
@@ -979,15 +1066,25 @@ const handleComment = () => {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.1);
+  border: 0;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+  color: #ffffff;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition:
+    background-color 0.18s ease,
+    transform 0.12s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.close-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.1);
+.close-button:active {
+  background: rgba(255, 255, 255, 0.28);
+  transform: scale(0.94);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .close-button:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
 }
 
 .language-options {
@@ -1005,21 +1102,38 @@ const handleComment = () => {
   gap: 0.75rem;
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid transparent;
-  border-radius: 0.5rem;
+  border: 0;
+  border-radius: 0.625rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  background: transparent;
+  transition:
+    background-color 0.18s ease,
+    transform 0.12s cubic-bezier(0.23, 1, 0.32, 1);
+  -webkit-tap-highlight-color: transparent;
 }
 
-.language-option:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateX(4px);
+.language-option:active {
+  transform: scale(0.985);
+  background-color: rgba(255, 255, 255, 0.22);
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .language-option:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* The chosen language. A white fill plus a check-weight label, for the same
+   reason the menu's active row is white: the template colour is unknown and
+   may be invisible on this material. */
 .language-option.active {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: currentColor;
+  background-color: rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+
+.language-option.active .language-name {
+  font-weight: 600;
 }
 
 .language-flag {
@@ -1051,18 +1165,31 @@ const handleComment = () => {
 /* Menu swipes in from the edge where the FAB sits (Samsung edge-panel
    style) - a slide + gentle scale, not a bounce, so it reads as smooth
    rather than springy. */
+/* The panel materializes rather than fading: the blur comes up with the scale,
+   so it reads as a pane of glass arriving in front of the invitation instead of
+   a rectangle whose opacity changed. */
 .menu-enter-active {
-  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.28s ease;
+  transition:
+    transform 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.28s ease,
+    -webkit-backdrop-filter 0.32s ease,
+    backdrop-filter 0.32s ease;
 }
 
 .menu-leave-active {
-  transition: transform 0.22s cubic-bezier(0.4, 0, 0.6, 1), opacity 0.18s ease;
+  transition:
+    transform 0.22s cubic-bezier(0.4, 0, 0.6, 1),
+    opacity 0.18s ease,
+    -webkit-backdrop-filter 0.18s ease,
+    backdrop-filter 0.18s ease;
 }
 
 .menu-enter-from,
 .menu-leave-to {
   opacity: 0;
   transform: translateY(-50%) translateX(24px) scale(0.96);
+  -webkit-backdrop-filter: blur(0px) saturate(100%);
+  backdrop-filter: blur(0px) saturate(100%);
 }
 
 /* FAB tucks away toward the edge right as the menu swipes out */
@@ -1088,10 +1215,32 @@ const handleComment = () => {
   .menu-enter-from,
   .menu-leave-to {
     transform: translateY(-50%);
+    /* The material stays formed; only the cross-fade is left. */
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    backdrop-filter: blur(30px) saturate(180%);
   }
 
   .fab-enter-from,
   .fab-leave-to {
+    transform: none;
+  }
+
+  /* The rows still fade, together, and no longer travel. */
+  .menu-item {
+    transform: none;
+    animation: fadeIn 0.15s ease-out forwards;
+    animation-delay: 0s !important;
+  }
+
+  .menu-button:active,
+  .language-option:active,
+  .close-button:active,
+  .fab-button:active {
+    transform: none;
+  }
+
+  .modal-enter-from .language-modal,
+  .modal-leave-to .language-modal {
     transform: none;
   }
 }
@@ -1167,27 +1316,34 @@ const handleComment = () => {
   -ms-overflow-style: none;
 }
 
-/* Glass section styles */
-.glass-section {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+/* The `.glass-section` / `.glass-inner` / `.glass-button-primary` utilities that
+   used to live here are gone with the light-glass look they described. They
+   were also a cascade trap: defined at the very end of the file at the same
+   specificity as the component rules above, so whichever surface carried one
+   silently won the argument about its own background. */
+
+@media (prefers-reduced-transparency: reduce) {
+  .menu-container,
+  .language-modal {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: color-mix(in srgb, var(--fam-tint, #3b82f6) 22%, rgb(18, 18, 20));
+  }
+
+  .blur-overlay {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(0, 0, 0, 0.72);
+  }
 }
 
-.glass-inner {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  /* Safari/iOS compatibility: -webkit prefix MUST come BEFORE standard property */
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-}
-
-.glass-button-primary {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+@media (prefers-contrast: more) {
+  .menu-container,
+  .language-modal {
+    background: color-mix(in srgb, var(--fam-tint, #3b82f6) 18%, rgb(10, 10, 12));
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.45),
+      0 26px 60px -24px rgba(0, 0, 0, 0.8);
+  }
 }
 </style>

@@ -4,7 +4,11 @@
     :class="{ 'preview-editable-mode': isEditable, 'preview-hints-on': isEditable && editHintsOn }"
     :style="{ backgroundColor: backgroundColor || primaryColor || '#000' }"
   >
-    <LoadingSpinner v-if="loading" :primary-color="primaryColor" message="Loading event invitation..." />
+    <LoadingSpinner
+      v-if="loading"
+      :primary-color="primaryColor"
+      message="Loading event invitation..."
+    />
 
     <ErrorDisplay v-else-if="error" :message="error" :show-retry="true" @retry="loadShowcase" />
 
@@ -97,7 +101,9 @@ const isEditable = computed(() => route.query.editable === '1')
 // this is a preview frame whether or not the viewer can edit. Components use it
 // to decide whether to render slots that have no content yet — a question every
 // preview answers "yes" and the live showcase answers "no". See previewContext.
-provide(PreviewFrameKey, true)
+// `studio`: this frame previews an event or a template its viewer owns — never
+// the public catalogue.
+provide(PreviewFrameKey, 'studio')
 
 if (route.query.editable === '1') {
   const { save } = useShowcaseEditSaves({ event, showcaseData, currentLanguage })
@@ -309,7 +315,14 @@ onUnmounted(() => {
    rule, killing every data-preview-safe region (dress-code + agenda day tabs)
    in edit mode. Keeping the exclusion here makes the whitelist order- and
    specificity-independent. */
-.preview-editable-mode :deep(:is(a, button, input, textarea, select, iframe, [role='button'], audio, video):not(.inline-edit-control, .edit-region-control, [data-preview-safe] *)) {
+.preview-editable-mode
+  :deep(
+    :is(a, button, input, textarea, select, iframe, [role='button'], audio, video):not(
+        .inline-edit-control,
+        .edit-region-control,
+        [data-preview-safe] *
+      )
+  ) {
   pointer-events: none !important;
 }
 

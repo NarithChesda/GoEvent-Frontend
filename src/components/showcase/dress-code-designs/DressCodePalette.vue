@@ -142,8 +142,10 @@ const discStyle = (code: DressCodeDesignItem) => ({
   cursor: pointer;
   /* The hairline is inset rather than a border so it never changes the disc's
      size — a row of colours where the selected one is a pixel wider reads as a
-     rendering bug. Selection adds a detached ring outside it. */
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dcd-ink) 18%, transparent);
+     rendering bug. Selection adds a detached ring outside it. Both live inside
+     `--dcd-bead`, with the highlight that makes the disc a token rather than a
+     sample. */
+  box-shadow: var(--dcd-bead);
   transition:
     box-shadow 0.2s var(--dcd-ease-out),
     transform 0.16s var(--dcd-ease-out);
@@ -159,7 +161,7 @@ const discStyle = (code: DressCodeDesignItem) => ({
 
 .pal-disc.is-active {
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--dcd-ink) 18%, transparent),
+    var(--dcd-bead),
     0 0 0 2px var(--dcd-ink);
 }
 
@@ -183,7 +185,7 @@ const discStyle = (code: DressCodeDesignItem) => ({
 @media (hover: hover) and (pointer: fine) {
   .pal-disc:not(.is-active):hover {
     box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, var(--dcd-ink) 18%, transparent),
+      var(--dcd-bead),
       0 0 0 2px var(--dcd-hairline);
   }
 
