@@ -7,16 +7,24 @@
     for the ground it paints and for the bottom-chrome vars the contact button
     positions against.
   -->
-  <MainLayout hide-top-nav hide-mobile-tab-bar>
+  <MainLayout hide-top-nav hide-mobile-tab-bar has-custom-bottom-bar>
     <div ref="pageRef" class="partner-page min-h-screen">
       <!--
-        The language toggle, in the FAB lane above the contact button.
+        The language toggle — ON DESKTOP ONLY. Its phone half lives in the
+        action pill below, and the two are one control in two places rather
+        than two controls.
 
-        It exists here and on no other page because this page hides both the top
-        bar and the tab pill, and the app's only language controls live in them —
-        so a Khmer-reading shop owner who lands on /partners has, without this,
-        no way to read it in Khmer at all. Every other page still carries its
-        chrome, where a second control would be a duplicate.
+        It exists on this page and on no other because this page hides both the
+        top bar and the tab pill, and the app's only language controls live in
+        them — so a Khmer-reading shop owner who lands on /partners has, without
+        this, no way to read it in Khmer at all. Every other page still carries
+        its chrome, where a second control would be a duplicate.
+
+        Why it is not simply left floating on phones too: below `lg` the page
+        now renders its own bottom bar, and a third fixed circle above a bar and
+        a contact FAB is three floating objects competing for the same corner of
+        a 375px screen. The bar is page chrome and so is the language, so the
+        language goes in the bar and the corner keeps one FAB.
 
         `--fab-stack-2` is the shared slot above the contact FAB, defined in
         MainLayout against the tab pill's real footprint; the offset is never
@@ -36,7 +44,7 @@
       -->
       <button
         type="button"
-        class="fab-lang group fixed bottom-[var(--fab-stack-2)] right-4 z-[55] flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg shadow-emerald-500/25 hover:from-[#27ae60] hover:to-[#1873cc] hover:shadow-emerald-600/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2 lg:right-6 lg:h-14 lg:w-14"
+        class="fab-lang group fixed bottom-[var(--fab-stack-2)] right-4 z-[55] hidden h-10 w-10 items-center justify-center rounded-full lg:flex bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-lg shadow-emerald-500/25 hover:from-[#27ae60] hover:to-[#1873cc] hover:shadow-emerald-600/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2 lg:right-6 lg:h-14 lg:w-14"
         :aria-label="switchLanguageLabel"
         @click="toggleLanguage"
       >
@@ -49,6 +57,82 @@
           {{ switchLanguageLabel }}
         </span>
       </button>
+
+      <!--
+        THE ACTION PILL — the phone's bottom chrome, and the reason the mobile
+        page can afford to be long.
+
+        On a desktop the whole offer is three or four screens and the CTA is
+        never more than a scroll away. On a 375px phone this page is nine, and
+        the ask appeared at screen one, screen four and screen nine — with five
+        screens of evidence in between during which a reader who had just been
+        convinced had nothing to press. That is the actual mobile failure of a
+        sales page: not that it looks wrong, but that it argues you into a
+        decision and then makes you hunt for the button.
+
+        Built as the mobile tab pill this page hides, not as a flat bar over it.
+        `.glass-pill` plus `rounded-full border border-white/50 p-1.5` around an
+        `h-10` row is the shared recipe (main.css) — the same material and the
+        same footprint, so `--nav-inset` and the FAB slots above it are correct
+        by construction and the contact FAB lands exactly one gap above this,
+        never on top of it. `has-custom-bottom-bar` on MainLayout is what keeps
+        those vars at full height now that the tab bar is gone.
+
+        It carries the two things a reader wants at any point on this page and
+        nothing else: the language, because the page hides the chrome that would
+        otherwise offer it, and the ask. No "see the prices" third button — a
+        pill with three controls is a tab bar, and the reader is not navigating,
+        they are deciding.
+
+        IT IS NOT ON SCREEN FOR THE WHOLE PAGE. It arrives once the hero's own
+        CTA has scrolled away and leaves again when the closing panel — which is
+        nothing but this same button at full size — comes into view. Two copies
+        of one control on screen at once is the reader being shouted at, and a
+        bar that is simply always there stops being noticed by the time it is
+        needed. Held out of the DOM entirely until first shown, so it costs a
+        reader who never scrolls nothing at all.
+
+        The pricing section's CTA is deliberately NOT a third boundary, even
+        though it is the same button. Those two are the page's bookends — before
+        the first there is no argument yet, after the second there is nothing
+        left to say — whereas the pricing CTA is an inline control the reader
+        scrolls past in a second or two. A bar that withdrew and returned for it
+        would flicker in the corner of the eye every time somebody read the
+        packs, which costs more attention than the brief duplicate does.
+      -->
+      <div
+        v-if="actionBarMounted"
+        class="fixed inset-x-0 bottom-0 z-[70] pointer-events-none lg:hidden"
+        role="region"
+        :aria-label="t('partners.hero.ctaPrimary')"
+      >
+        <div class="pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div
+            class="action-pill glass-pill pointer-events-auto mx-auto flex w-fit max-w-[calc(100vw-1.5rem)] items-center gap-1.5 rounded-full border border-white/50 p-1.5"
+            :class="{ 'is-in': showActionBar }"
+          >
+            <button
+              type="button"
+              class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold tracking-wide text-slate-600 transition-colors duration-200 ease-out active:scale-95 hover:bg-white/70 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+              :aria-label="switchLanguageLabel"
+              @click="toggleLanguage"
+            >
+              {{ locale.toUpperCase() }}
+            </button>
+
+            <RouterLink
+              to="/credits"
+              class="group flex h-10 min-w-0 flex-shrink items-center gap-1.5 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 text-sm font-semibold text-white transition-[transform,background-image] duration-200 ease-out hover:from-[#27ae60] hover:to-[#1873cc] active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+            >
+              <span class="truncate">{{ t('partners.hero.ctaPrimary') }}</span>
+              <ArrowRight
+                class="h-4 w-4 flex-shrink-0 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
+            </RouterLink>
+          </div>
+        </div>
+      </div>
 
       <!--
         1. HERO — split. The one gradient object here is the primary CTA, so the
@@ -78,8 +162,8 @@
       -->
       <section class="relative overflow-hidden pt-8 sm:pt-12 lg:pt-16">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
-          <div class="grid items-center gap-10 lg:grid-cols-12 lg:gap-12">
-            <div class="lg:col-span-6 xl:col-span-7">
+          <div class="grid items-center gap-7 sm:gap-9 lg:grid-cols-12 lg:gap-x-12 lg:gap-y-0">
+            <div class="lg:col-span-6 lg:col-start-1 lg:row-start-1 xl:col-span-7">
               <!--
                 The way off the page and the badge that names it share one row.
                 The link takes the corner the app's logo held before the bar came
@@ -131,50 +215,6 @@
               >
                 {{ t('partners.hero.subtitle') }}
               </p>
-
-              <div
-                data-reveal
-                style="--reveal-delay: calc(var(--stagger) * 3)"
-                class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center"
-              >
-                <RouterLink
-                  to="/credits"
-                  class="group inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-[transform,box-shadow,background-image] duration-200 ease-out hover:from-[#27ae60] hover:to-[#1873cc] hover:shadow-xl hover:shadow-emerald-600/30 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2 sm:text-base"
-                >
-                  {{ t('partners.hero.ctaPrimary') }}
-                  <ArrowRight
-                    class="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
-                    aria-hidden="true"
-                  />
-                </RouterLink>
-
-                <button
-                  type="button"
-                  class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-slate-100 px-6 py-3.5 text-sm font-medium text-slate-700 transition-[transform,background-color] duration-200 ease-out hover:bg-slate-200 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 sm:text-base"
-                  @click="scrollToPricing"
-                >
-                  {{ t('partners.hero.ctaSecondary') }}
-                  <ArrowDown class="h-4 w-4" aria-hidden="true" />
-                </button>
-              </div>
-
-              <!-- The three objections a shop owner raises before reading on,
-                   answered in one line each. A list, not chips: chips would be
-                   a fourth shape in a viewport that already has two buttons. -->
-              <ul
-                data-reveal
-                style="--reveal-delay: calc(var(--stagger) * 4)"
-                class="mt-8 max-w-xl space-y-2.5 border-t border-slate-200 pt-6"
-              >
-                <li
-                  v-for="key in HERO_PROOF"
-                  :key="key"
-                  class="flex items-start gap-2.5 text-sm leading-relaxed text-slate-600"
-                >
-                  <Check class="mt-0.5 h-4 w-4 flex-shrink-0 text-[#2ecc71]" aria-hidden="true" />
-                  {{ t(`partners.hero.proof.${key}`) }}
-                </li>
-              </ul>
             </div>
 
             <!--
@@ -192,13 +232,28 @@
 
               It is also the one element that travels further than the rest on
               reveal — 24px against the copy's 14 — because it is the near thing
-              in the frame, and it is last in the ladder, so the hero assembles
-              as a sentence and then the picture lands under it.
+              in the frame.
+
+              WHERE IT SITS IS THE HERO'S ONE REAL DIFFERENCE BETWEEN THE TWO
+              LAYOUTS. Beside the copy on a desktop it is last in the ladder, so
+              the hero assembles as a sentence and then the picture lands under
+              it. Stacked on a phone it goes between the subtitle and the
+              buttons — because there it is not beside the argument, it is *in*
+              it, and left at the end of the column the one thing this page is
+              selling started 700px below the fold, behind two buttons and three
+              lines of small print. First screen on a phone is now headline,
+              product, ask. That is the whole reason the copy column is split in
+              two: `order` can only move the fan around the whole column, and
+              what it needs is to land in the middle of it.
+
+              The cascade follows the eye and therefore changes with the order —
+              see `.hero-fan-slot` / `.hero-cta-slot` in the styles, which is
+              where the two ladders live. A fixed delay here would have played
+              the phone's hero bottom-to-top.
             -->
             <div
               data-reveal
-              style="--reveal-delay: calc(var(--stagger) * 5); --reveal-lift: 24px"
-              class="lg:col-span-6 xl:col-span-5"
+              class="hero-fan-slot lg:col-span-6 lg:col-start-7 lg:row-span-2 lg:row-start-1 xl:col-span-5 xl:col-start-8"
             >
               <div class="hero-fan">
                 <img
@@ -229,6 +284,53 @@
                 />
               </div>
             </div>
+
+            <div
+              ref="heroCtaRef"
+              class="hero-cta-slot lg:col-span-6 lg:col-start-1 lg:row-start-2 xl:col-span-7"
+            >
+              <div
+                data-reveal
+                class="hero-cta-slot__row flex flex-col gap-3 sm:flex-row sm:items-center"
+              >
+                <RouterLink
+                  to="/credits"
+                  class="group inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-[transform,box-shadow,background-image] duration-200 ease-out hover:from-[#27ae60] hover:to-[#1873cc] hover:shadow-xl hover:shadow-emerald-600/30 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2 sm:text-base"
+                >
+                  {{ t('partners.hero.ctaPrimary') }}
+                  <ArrowRight
+                    class="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+                    aria-hidden="true"
+                  />
+                </RouterLink>
+
+                <button
+                  type="button"
+                  class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-slate-100 px-6 py-3.5 text-sm font-medium text-slate-700 transition-[transform,background-color] duration-200 ease-out hover:bg-slate-200 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 sm:text-base"
+                  @click="scrollToPricing"
+                >
+                  {{ t('partners.hero.ctaSecondary') }}
+                  <ArrowDown class="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+
+              <!-- The three objections a shop owner raises before reading on,
+                   answered in one line each. A list, not chips: chips would be
+                   a fourth shape in a viewport that already has two buttons. -->
+              <ul
+                data-reveal
+                class="hero-proof mt-7 max-w-xl space-y-2.5 border-t border-slate-200 pt-5 sm:mt-8 sm:pt-6"
+              >
+                <li
+                  v-for="key in HERO_PROOF"
+                  :key="key"
+                  class="flex items-start gap-2.5 text-sm leading-relaxed text-slate-600"
+                >
+                  <Check class="mt-0.5 h-4 w-4 flex-shrink-0 text-[#2ecc71]" aria-hidden="true" />
+                  {{ t(`partners.hero.proof.${key}`) }}
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -238,7 +340,7 @@
         so a card would be chrome; the oversized slate-200 numerals and a single
         hairline carry the sequence instead.
       -->
-      <section id="how-it-works" class="scroll-mt-20 py-16 sm:py-20 lg:py-28">
+      <section id="how-it-works" class="scroll-mt-20 py-12 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
           <header data-reveal class="max-w-2xl">
             <h2
@@ -257,30 +359,53 @@
                Faded at both ends rather than inset by a computed percentage, so
                it needs no arithmetic against the column and gap widths and
                still never hard-stops in mid-air. It passes *behind* the
-               markers, which are opaque. Desktop only; stacked, the steps
-               already read as a sequence. -->
+               markers, which are opaque.
+
+               This one is the ROW's thread and is drawn from `md` up, where the
+               three steps sit side by side. Stacked, the sequence runs downward
+               instead, so each step draws its own segment down to the next (see
+               the `li`) — one thread turned through ninety degrees, not a
+               second idea. Stacked steps used to have no thread at all on the
+               grounds that the stack already reads as a sequence; on a phone
+               that left three pale slate-300 numerals floating in a column with
+               nothing joining them, which reads as three unrelated cards. -->
             <div
               class="pointer-events-none absolute inset-x-0 top-7 hidden h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent md:block"
               aria-hidden="true"
             ></div>
 
-            <ol class="grid gap-10 md:grid-cols-3 md:gap-8 lg:gap-10">
+            <ol class="grid gap-7 md:grid-cols-3 md:gap-8 lg:gap-10">
               <li
                 v-for="(key, i) in STEPS"
                 :key="key"
                 data-reveal
                 :style="{ '--reveal-delay': `calc(var(--stagger) * ${i})` }"
-                class="relative"
+                class="relative flex gap-4 md:block"
               >
-                <!-- The numeral is the step label. A "Step one" eyebrow beside a
-                   "1" restates it, and it collided with the thread. -->
+                <!-- The stacked thread's own segment: numeral to numeral, drawn
+                     by every step but the last. `bottom` is the negative of the
+                     list's row gap, so the line crosses the gap and lands on the
+                     next marker rather than stopping in the white. -->
                 <span
-                  class="relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white text-2xl font-bold tabular-nums text-slate-300 ring-1 ring-slate-200"
+                  v-if="i < STEPS.length - 1"
+                  class="absolute left-[1.375rem] top-11 bottom-[-1.75rem] w-px bg-slate-200 md:hidden"
+                  aria-hidden="true"
+                ></span>
+
+                <!-- The numeral is the step label. A "Step one" eyebrow beside a
+                   "1" restates it, and it collided with the thread.
+
+                   `flex-none` matters: in the stacked row it is a flex child
+                   beside text that wants every pixel, and without it a Khmer
+                   heading squeezes the circle into an ellipse. -->
+                <span
+                  class="relative z-10 flex h-11 w-11 flex-none items-center justify-center rounded-full bg-white text-xl font-bold tabular-nums text-slate-300 ring-1 ring-slate-200 md:h-14 md:w-14 md:text-2xl"
                 >
                   {{ i + 1 }}
                 </span>
 
-                <!-- Heading and, on the one step that has one, how long it
+                <div class="min-w-0 flex-1 md:contents">
+                  <!-- Heading and, on the one step that has one, how long it
                    takes — on the same line, because the number *is* the claim
                    about that step and reading the paragraph should not be the
                    price of finding it.
@@ -296,22 +421,23 @@
                    label are both longer, so the pill drops under the heading
                    instead of squeezing it. `whitespace-nowrap` keeps the pill
                    itself from ever breaking across two lines. -->
-                <div class="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
-                  <h3 class="text-lg font-semibold text-slate-900 sm:text-xl">
-                    {{ t(`partners.steps.${key}.title`) }}
-                  </h3>
-                  <span
-                    v-if="stepTimingKey(key)"
-                    class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-slate-900 px-2.5 py-1 text-xs font-semibold leading-5 tabular-nums text-white"
-                  >
-                    <Clock class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                    {{ t(stepTimingKey(key)) }}
-                  </span>
-                </div>
+                  <div class="flex flex-wrap items-center gap-x-3 gap-y-2 pt-2 md:mt-5 md:pt-0">
+                    <h3 class="text-lg font-semibold text-slate-900 sm:text-xl">
+                      {{ t(`partners.steps.${key}.title`) }}
+                    </h3>
+                    <span
+                      v-if="stepTimingKey(key)"
+                      class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-slate-900 px-2.5 py-1 text-xs font-semibold leading-5 tabular-nums text-white"
+                    >
+                      <Clock class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      {{ t(stepTimingKey(key)) }}
+                    </span>
+                  </div>
 
-                <p class="mt-2 text-sm leading-relaxed text-slate-600 sm:text-base">
-                  {{ t(`partners.steps.${key}.body`) }}
-                </p>
+                  <p class="mt-2 text-sm leading-relaxed text-slate-600 sm:text-base">
+                    {{ t(`partners.steps.${key}.body`) }}
+                  </p>
+                </div>
               </li>
             </ol>
           </div>
@@ -330,7 +456,7 @@
       <section
         id="pricing"
         ref="pricingRef"
-        class="scroll-mt-20 border-y border-slate-200 bg-white/60 py-16 sm:py-20 lg:py-28"
+        class="scroll-mt-20 border-y border-slate-200 bg-white/60 py-12 sm:py-20 lg:py-28"
       >
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
           <header data-reveal class="max-w-2xl">
@@ -533,6 +659,25 @@
               itself is focusable and arrow-key scrollable: a keyboard user
               already has a better path than tabbing through two buttons, and
               announcing them would only add noise.
+
+              HOW FAR THEY HANG OUT MUST NEVER EXCEED THE GUTTER THEY HANG INTO,
+              and that gutter changes with the breakpoint while the offset used
+              not to. The rail's container is `px-4` below `sm`, so a flat
+              `-ml-5` put the left arrow's edge at 16 - 20 = -4px: four pixels
+              past the left edge of the screen, and the same on the right, so
+              the whole page scrolled sideways by four pixels at every width
+              under 640.
+
+              It went unnoticed for as long as it did because the arrows are
+              `display: none` under `(hover: hover) and (pointer: fine)` — a real
+              phone never draws them, so the bug is invisible on the device the
+              layout is for and appears the moment anyone checks the mobile view
+              by narrowing a desktop window. It is not only a testing artefact
+              though: a touch laptop, a Windows tablet or an Android with a mouse
+              all report a fine pointer at these widths and really do scroll.
+
+              12px against the 16px gutter, back to 20 from `sm` where the gutter
+              is 24. Keep the two in step if either ever changes.
             -->
             <div
               v-if="railOverflows"
@@ -546,7 +691,7 @@
                 tabindex="-1"
                 :disabled="dir < 0 ? !canScrollBack : !canScrollOn"
                 class="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white/90 text-slate-600 shadow-lg backdrop-blur-sm transition-[transform,opacity,background-color] duration-200 ease-out hover:bg-white hover:text-slate-900 active:scale-95 disabled:pointer-events-none disabled:opacity-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-                :class="dir < 0 ? '-ml-5' : '-mr-5'"
+                :class="dir < 0 ? '-ml-3 sm:-ml-5' : '-mr-3 sm:-mr-5'"
                 @click="scrollRail(dir)"
               >
                 <ChevronLeft v-if="dir < 0" class="h-5 w-5" />
@@ -591,7 +736,7 @@
         three phones side by side: three phones make the reader compare three
         designs, and these are three parts of the *same* invitation.
       -->
-      <section class="bg-slate-50 py-16 sm:py-20 lg:py-28">
+      <section class="bg-slate-50 py-12 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
           <!--
             Three blocks, placed explicitly, so the desktop grid and the mobile
@@ -612,8 +757,27 @@
             "The day" changes nothing you can see. Explicit `col-start` /
             `row-start` at `lg` means the source can be ordered for the phone
             without `order` utilities having to undo it.
+
+            `grid-cols-1` IS LOAD-BEARING AND MUST NOT BE DROPPED as "the
+            default anyway". A bare `grid` below `lg` has one *auto* track,
+            which is sized to the widest child's min-content and cannot shrink
+            below it — and grid items carry `min-width: auto` besides. The
+            picker column contains the chip rail, whose min-content is the three
+            chips laid end to end because they are `nowrap` and `flex-none`:
+            332px. On a 360px phone the container is 328, so the track came out
+            at 332 and, with the section's own `px-4`, the whole document became
+            364px wide and the page scrolled sideways by four pixels.
+
+            The rail being `overflow-x: auto` did not save it, which is the part
+            worth remembering: a scroll container zeroes its *automatic minimum
+            size* only where that applies to itself — as a flex or grid item.
+            Here it is a plain block child one level down, so its min-content
+            propagates up through the wrapper and lands on the grid item, where
+            `min-width: auto` adopts it. `grid-cols-1` is `minmax(0, 1fr)`,
+            which pins the track's floor at zero and lets the rail do what it
+            was built to do: scroll.
           -->
-          <div class="grid items-start gap-8 lg:grid-cols-12 lg:gap-12 xl:gap-16">
+          <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-12 lg:gap-12 xl:gap-16">
             <header data-reveal class="lg:col-span-6 lg:col-start-1 lg:row-start-1">
               <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
                 {{ t('partners.product.eyebrow') }}
@@ -661,12 +825,38 @@
               <!--
                 The picker, and the caption for whatever is on the glass.
 
+                ONE MARKUP, TWO SHAPES. From `sm` up it is three rows, each
+                carrying its own body line — the desktop design, unchanged, and
+                the right one for a column that has 400px of height to spend
+                beside a phone. Below `sm` the same three become a chip rail and
+                the body line moves out to a single caption underneath.
+
+                The reason is not width, it is height and honesty. Three
+                two-line cards are 230px of a 812px screen spent restating a
+                choice, and only one of those three bodies is ever true of what
+                is on the glass — the other two describe screens the reader
+                cannot see. Stacked, that is three captions for one picture. As
+                a chip rail with one caption it is a control and its answer,
+                which is what it always was.
+
+                The rail bleeds to the viewport edge and pays the padding back
+                inside, the same way the pricing rail does, so a fourth screen
+                added later scrolls off the edge rather than wrapping into a
+                ragged second row. Three fit a 375px phone in English today and
+                scroll in Khmer, which is exactly the behaviour we want and not
+                a case anyone has to remember to check.
+
+                The state is a `data-active` attribute read by scoped CSS, not
+                two conditional class strings: the chip's chosen state is a
+                filled dark pill and the card's is a white card with a dark
+                border and a filled disc, and those cannot be expressed as one
+                Tailwind ternary that also has to change at a breakpoint.
+
                 Buttons with `aria-pressed`, not a tablist: a tablist owes the
                 reader roving arrow-key focus and a labelled panel, and this is
                 three toggles over one picture — Tab reaches each of them, the
                 pressed state is announced, and nothing is hidden behind a key
-                nobody thinks to press. The row's own body line changes with the
-                choice, so the picker never becomes three words with no answer.
+                nobody thinks to press.
 
                 `data-reveal` is on the list, not on each button. Three rows
                 stacked 10px apart cascading one after another is motion nobody
@@ -676,52 +866,51 @@
               <ul
                 data-reveal
                 style="--reveal-delay: calc(var(--stagger) * 1)"
-                class="space-y-2"
+                class="screen-pick scrollbar-hide -mx-4 flex gap-1.5 overflow-x-auto px-4 sm:mx-0 sm:block sm:space-y-2 sm:overflow-visible sm:px-0"
                 :aria-label="t('partners.product.screensLabel')"
               >
-                <li v-for="screen in SCREENS" :key="screen.key">
+                <li v-for="screen in SCREENS" :key="screen.key" class="flex-none sm:flex-auto">
                   <button
                     type="button"
-                    class="group w-full rounded-xl border px-4 py-3 text-left transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
-                    :class="
-                      activeScreen === screen.key
-                        ? 'border-slate-900 bg-white shadow-sm shadow-slate-900/5'
-                        : 'border-slate-200 bg-white/60 hover:border-slate-300 hover:bg-white'
-                    "
+                    class="screen-pick__btn"
+                    :data-active="activeScreen === screen.key"
                     :aria-pressed="activeScreen === screen.key"
                     @click="activeScreen = screen.key"
                   >
-                    <span class="flex items-center gap-2.5">
+                    <span class="screen-pick__head">
                       <!-- The marker is a filled disc rather than a tick: a tick
                            says "done", and nothing here is completed — one of
-                           three is simply the one on the glass. -->
-                      <span
-                        class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border transition-[background-color,border-color] duration-200 ease-out"
-                        :class="
-                          activeScreen === screen.key
-                            ? 'border-slate-900 bg-slate-900'
-                            : 'border-slate-300 bg-white'
-                        "
-                        aria-hidden="true"
-                      >
-                        <component
-                          :is="screen.icon"
-                          class="h-2.5 w-2.5"
-                          :class="activeScreen === screen.key ? 'text-white' : 'text-slate-400'"
-                        />
+                           three is simply the one on the glass. It is dropped on
+                           the chip, where the whole pill fills instead and a
+                           disc inside it would be the same fact said twice in
+                           24px. -->
+                      <span class="screen-pick__disc" aria-hidden="true">
+                        <component :is="screen.icon" class="h-2.5 w-2.5" />
                       </span>
-                      <span class="text-[0.9375rem] font-semibold text-slate-900">
+                      <span class="screen-pick__label">
                         {{ t(`partners.product.screens.${screen.key}.label`) }}
                       </span>
                     </span>
-                    <span
-                      class="mt-1 block pl-[1.875rem] text-[0.8125rem] leading-snug text-slate-600"
-                    >
+                    <span class="screen-pick__body">
                       {{ t(`partners.product.screens.${screen.key}.body`) }}
                     </span>
                   </button>
                 </li>
               </ul>
+
+              <!--
+                The chip rail's answer. `min-height` holds two lines so the
+                feature list below never shifts as the caption changes under a
+                reader's own thumb — the caption is the one part of this section
+                that changes on press, and it must not move anything else.
+
+                `aria-live` is deliberately absent: the button already announces
+                its pressed state, and a live region would read the same change
+                a second time.
+              -->
+              <p class="mt-3 min-h-[2.5rem] text-[0.8125rem] leading-snug text-slate-600 sm:hidden">
+                {{ t(`partners.product.screens.${activeScreen}.body`) }}
+              </p>
 
               <!--
                 The nine features, as a list under the picker rather than nine
@@ -864,7 +1053,7 @@
         its neighbours', which is the thing that makes a set of screenshots look
         thrown together even when the grid is perfect.
       -->
-      <section class="py-16 sm:py-20 lg:py-28">
+      <section class="py-12 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
           <header data-reveal class="max-w-2xl">
             <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -1001,7 +1190,7 @@
             <figure
               data-reveal
               style="--reveal-lift: 20px"
-              class="app-card app-card--continues lg:col-span-8 lg:col-start-1 lg:row-start-1"
+              class="app-card app-card--continues app-card--crop app-card--crop-tall lg:col-span-8 lg:col-start-1 lg:row-start-1"
             >
               <picture>
                 <source
@@ -1075,7 +1264,7 @@
                   '--reveal-delay': `calc(var(--stagger) * ${i + 1})`,
                   '--reveal-lift': '20px',
                 }"
-                class="app-card"
+                class="app-card app-card--crop"
               >
                 <img
                   :src="shot.src"
@@ -1118,7 +1307,7 @@
         the width too, and returned the items to their old 251px measure for
         nothing.
       -->
-      <section class="py-16 sm:py-20 lg:py-28">
+      <section class="py-12 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
           <header data-reveal class="max-w-2xl">
             <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -1184,7 +1373,7 @@
         section with nothing in it. One open row gives the section its body and
         teaches that the rows open, without spending a line of copy saying so.
       -->
-      <section class="border-t border-slate-200 py-16 sm:py-20 lg:py-28">
+      <section class="border-t border-slate-200 py-12 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <header data-reveal class="text-center">
             <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -1284,7 +1473,7 @@
         still needs lands in this section or nowhere — the ask, a person to talk
         to, and the way back.
       -->
-      <section class="px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
+      <section ref="closingRef" class="px-4 pb-12 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
         <div class="mx-auto max-w-4xl lg:max-w-6xl 2xl:max-w-7xl">
           <div
             data-reveal
@@ -1705,6 +1894,66 @@ const scrollToPricing = () => {
 }
 
 /**
+ * ---------------------------------------------------------------------------
+ * The phone action pill's window
+ * ---------------------------------------------------------------------------
+ * Two boundaries, both measured from real elements rather than from a scroll
+ * fraction: the pill arrives once the hero's own CTA row has left the top of
+ * the screen, and leaves again as the closing panel — the same button at full
+ * size — comes up. A page fraction would drift the moment the catalogue adds a
+ * pack or a translation runs longer.
+ *
+ * Rect reads, not an IntersectionObserver, and for the reason set out at
+ * length above `sweep()`: an observer only reports a *change between two
+ * samples*, so a single-frame jump — pressing "See the prices", landing on an
+ * anchor, dragging a scrollbar — can carry an element from below the viewport
+ * to above it without ever delivering an entry. For a one-shot reveal that
+ * leaves content invisible; for a persistent piece of chrome it would leave the
+ * bar stuck in whichever state it was last in. A position check has no such
+ * blind spot, and two `getBoundingClientRect` calls a frame is nothing.
+ *
+ * `actionBarMounted` latches on and never off. Until the reader has scrolled
+ * past the hero there is no bar in the DOM at all — a visitor who reads the
+ * first screen and leaves pays nothing for it — and once it exists it is
+ * cheaper to leave it there and animate than to unmount a fixed element the
+ * reader is likely to scroll back into.
+ *
+ * The 0.9 on the closing test is the same fold line `REVEAL_LINE` uses, so the
+ * pill withdraws on exactly the frame the closing panel starts revealing rather
+ * than a moment after it is already legible.
+ */
+const heroCtaRef = ref<HTMLElement | null>(null)
+const closingRef = ref<HTMLElement | null>(null)
+const actionBarMounted = ref(false)
+const showActionBar = ref(false)
+let barFrame = 0
+
+function measureActionBar() {
+  barFrame = 0
+  const hero = heroCtaRef.value
+  const closing = closingRef.value
+  if (!hero || !closing) return
+
+  const wanted =
+    hero.getBoundingClientRect().bottom < 0 &&
+    closing.getBoundingClientRect().top > window.innerHeight * REVEAL_LINE
+
+  if (wanted && !actionBarMounted.value) {
+    actionBarMounted.value = true
+    // Mounted hidden, shown on the next frame — an element created with its
+    // final transform already applied has nothing to transition from, and the
+    // pill would appear in place instead of rising into the band.
+    nextTick(() => requestAnimationFrame(() => (showActionBar.value = wanted)))
+    return
+  }
+  showActionBar.value = wanted
+}
+
+function scheduleActionBar() {
+  barFrame ||= requestAnimationFrame(measureActionBar)
+}
+
+/**
  * Scroll reveal: the transition is CSS, the trigger is one rAF-throttled sweep.
  *
  * The repo's `useRevealAnimations` was not reused: it writes `opacity: 0` from
@@ -1811,13 +2060,33 @@ function scanReveals() {
   schedule()
 }
 
-onMounted(scanReveals)
+onMounted(() => {
+  scanReveals()
+  // Both listeners stay for the life of the page rather than detaching the way
+  // the reveal sweep's do: the pill's window has two edges and a reader crosses
+  // them in both directions, so there is no point at which the answer stops
+  // being able to change.
+  window.addEventListener('scroll', scheduleActionBar, { passive: true })
+  window.addEventListener('resize', scheduleActionBar, { passive: true })
+  scheduleActionBar()
+})
 
 // The live catalogue lands after mount and swaps the cards out, so the new ones
-// have to be picked up once Vue has patched the DOM.
-watch(tiers, () => nextTick(scanReveals))
+// have to be picked up once Vue has patched the DOM. It also changes the page's
+// height, which moves both of the pill's boundaries.
+watch(tiers, () =>
+  nextTick(() => {
+    scanReveals()
+    scheduleActionBar()
+  }),
+)
 
-onBeforeUnmount(stopSweeping)
+onBeforeUnmount(() => {
+  stopSweeping()
+  window.removeEventListener('scroll', scheduleActionBar)
+  window.removeEventListener('resize', scheduleActionBar)
+  if (barFrame) cancelAnimationFrame(barFrame)
+})
 </script>
 
 <style scoped>
@@ -1925,6 +2194,64 @@ onBeforeUnmount(stopSweeping)
 }
 
 /*
+  ---------------------------------------------------------------------------
+  The hero's reveal ladder — which is not the same ladder in the two layouts
+  ---------------------------------------------------------------------------
+  The rule for the whole page is that the cascade follows the eye, and the hero
+  is the one place where the eye takes two different paths: beside the copy on a
+  desktop the fan is the last thing to land, so the hero assembles as a sentence
+  and then the picture arrives under it; stacked on a phone the fan sits between
+  the subtitle and the buttons, and a fixed delay would have played that column
+  bottom-to-top — the buttons and the small print arriving before the picture
+  above them, which is a ripple against the reading direction and the one thing
+  a 60ms stagger is guaranteed to make visible.
+
+  So the three delays swap at `lg`, in CSS rather than in three `:style`
+  bindings, because that is the only place that knows about the breakpoint.
+  Every step is still one `--stagger`; nothing here invents a second pulse.
+
+  `--reveal-lift` rides along on the fan for the same reason it always did — it
+  is the near thing in the frame, so it travels further than the copy.
+*/
+.hero-fan-slot {
+  --reveal-delay: calc(var(--stagger) * 3);
+  --reveal-lift: 24px;
+}
+
+.hero-cta-slot__row {
+  --reveal-delay: calc(var(--stagger) * 4);
+}
+
+.hero-proof {
+  --reveal-delay: calc(var(--stagger) * 5);
+}
+
+@media (min-width: 1024px) {
+  .hero-fan-slot {
+    --reveal-delay: calc(var(--stagger) * 5);
+  }
+
+  .hero-cta-slot__row {
+    --reveal-delay: calc(var(--stagger) * 3);
+  }
+
+  .hero-proof {
+    --reveal-delay: calc(var(--stagger) * 4);
+  }
+
+  /*
+    The hero grid's row gap is what separates subtitle → fan → buttons on a
+    phone, so at `lg` — where the copy is one column again and the fan has
+    moved out beside it — the gap is zeroed and this margin puts the buttons
+    back where they were. Splitting the copy into two grid rows must not cost
+    the desktop hero a pixel of its old spacing.
+  */
+  .hero-cta-slot {
+    margin-top: 2rem;
+  }
+}
+
+/*
   The rail's edge fades.
 
   `mask-image`, not a gradient overlay: the section sits on a tinted ground
@@ -2004,6 +2331,64 @@ onBeforeUnmount(stopSweeping)
   .fab-lang:hover,
   .fab-lang:active {
     transform: none;
+  }
+}
+
+/*
+  ---------------------------------------------------------------------------
+  The phone action pill's arrival
+  ---------------------------------------------------------------------------
+  It rises out of the band it lives in rather than fading in place: the bar is
+  a physical object entering from off-screen, and `translateY(100%)` plus the
+  inset it floats above is exactly how far off-screen that is — a percentage,
+  so the distance is the pill's own height whatever the label inside it does to
+  that height in either language.
+
+  Faster out than in, which is this page's rule everywhere (see `.collapse-*`):
+  220ms to arrive is chrome presenting itself, 160ms to leave is chrome getting
+  out of the way of the closing panel it is handing over to. Both under the
+  300ms interface ceiling.
+
+  `visibility` rather than `aria-hidden` + `inert` bindings on the element: it
+  takes the pill out of the accessibility tree AND out of hit-testing in one
+  declaration that cannot drift from the visual state, since both are driven by
+  the same class. It is transitioned at 0s with a delay so it flips only after
+  the pill has finished leaving — without the delay the bar would vanish on the
+  first frame of its own exit.
+*/
+.action-pill {
+  transform: translateY(calc(100% + 1.5rem));
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform 160ms var(--ease-out),
+    opacity 140ms var(--ease-out),
+    visibility 0s linear 160ms;
+}
+
+.action-pill.is-in {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    transform 220ms var(--ease-out),
+    opacity 180ms var(--ease-out),
+    visibility 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-pill {
+    transform: none;
+    transition:
+      opacity 140ms linear,
+      visibility 0s linear 140ms;
+  }
+
+  .action-pill.is-in {
+    transform: none;
+    transition:
+      opacity 180ms linear,
+      visibility 0s;
   }
 }
 
@@ -2096,13 +2481,36 @@ onBeforeUnmount(stopSweeping)
   opacity and lift, the cards do the spread — because `[data-reveal]` already
   owns `transform` on the element it is placed on.
 */
+/*
+  THE PHONE'S DECK IS FLATTER, WHICH IS WHAT PAYS FOR IT BEING BIGGER.
+
+  The fan's footprint is not lead + 2 x spread (see above); at the desktop's 30%
+  and 8 degrees it measures about 1.93 x the lead. Closing that to 21% and 5.5
+  degrees brings the multiplier down to ~1.65 — measured, not derived — and the
+  width that buys goes back into the card: 185px against 164px on a 375px
+  screen, with the same three covers still visibly a deck.
+
+  The percentage guard stays and is still the thing that makes this safe at any
+  viewport; only its ceiling moves, because a stacked column is not a 6/12 grid
+  cell and 48% of it was a rule inherited from a layout that is not on screen.
+  54% x 1.65 = 89% of the column, so the deck sits inside the text measure at
+  every phone width — 320, 375 and 412 all measured — rather than relying on the
+  section's `overflow-hidden` to quietly cut a card in half.
+
+  THE SIZE IS SET BY WHERE THE FOLD LANDS, not by how big the covers could be.
+  At 54% the primary CTA's top edge sits at 793px on the 812px screen this page
+  is mostly read on: the deck gets the screen, and the button breaks the bottom
+  edge by just enough to say there is more below it. Every step larger pushed
+  that button entirely off-screen and turned the hero into a picture with no
+  visible way out of it.
+*/
 .hero-fan {
-  --fan-x: 30%;
-  --fan-r: 8deg;
+  --fan-x: 21%;
+  --fan-r: 5.5deg;
 
   position: relative;
   width: 100%;
-  max-width: min(12rem, 48%);
+  max-width: min(13.5rem, 54%);
   margin-inline: auto;
   /*
     Room for the cards' own shadow inside the clip.
@@ -2315,6 +2723,172 @@ onBeforeUnmount(stopSweeping)
 }
 
 /*
+  ---------------------------------------------------------------------------
+  The screen picker, in its two shapes
+  ---------------------------------------------------------------------------
+  Below `sm` it is a chip: a pill with a label and nothing else, chosen by
+  filling it. From `sm` up it is the card it has always been: a rounded box
+  with a marker disc, the label, and its own body line, chosen by a dark border
+  and a filled disc on a white ground.
+
+  Authored here rather than as Tailwind ternaries because the chosen state is a
+  *different design* in the two shapes — dark fill against white fill — and a
+  class binding cannot say "this ternary, but only above 640px". The markup
+  carries `data-active` and this file decides what that looks like, which also
+  keeps the button's template down to the four elements it actually has.
+
+  Everything the chip does not use is `display: none` rather than absent from
+  the markup, so there is exactly one button in the DOM at any width and the
+  pressed state, the focus ring and the tab order can never differ between the
+  two shapes.
+*/
+.screen-pick__btn {
+  display: block;
+  width: 100%;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 0.6);
+  /*
+    THE CHIP'S PADDING IS SIZED SO THAT THREE OF THEM FIT A REAL PHONE, and
+    that is the whole of the reasoning. Measured with the English labels, which
+    are the long ones — Khmer's fit at every width including 320 — the set needs
+    the row it is given from 344px up at 12px of padding and 6px of gap, and
+    overflows by 22px at 320.
+
+    Those two numbers were picked over the roomier 15px/8px for one reason: the
+    roomier pair overflowed by FOUR pixels at 360 and two at 344, and four
+    pixels of a clipped pill at the edge of the screen does not read as a rail
+    that continues — it reads as a bug. An overflow is either comfortably
+    invisible or comfortably obvious; the sizes here put every current phone in
+    the first case and the 320px stragglers in the second, where the rail bleeds
+    to the viewport edge and a 22px slice of the third chip says what it should.
+
+    Both values are mobile-only by construction — the `sm` block below resets
+    the padding for the card shape, and the gap lives on a flex row that becomes
+    `display: block` at the same breakpoint.
+  */
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  white-space: nowrap;
+  transition:
+    background-color 200ms var(--ease-out),
+    border-color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+}
+
+/* The press is a real one on the chip — a 44px pill can afford 3% — and stays
+   the old hairline on the card, where a full-width row scaling by 3% would
+   visibly shove its neighbours. */
+.screen-pick__btn:active {
+  transform: scale(0.97);
+}
+
+.screen-pick__btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(125 211 252);
+}
+
+.screen-pick__btn[data-active='true'] {
+  border-color: rgb(15 23 42);
+  background: rgb(15 23 42);
+}
+
+.screen-pick__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(15 23 42);
+  transition: color 200ms var(--ease-out);
+}
+
+.screen-pick__btn[data-active='true'] .screen-pick__label {
+  color: #fff;
+}
+
+/* The card's two extra parts, off in the chip. */
+.screen-pick__disc,
+.screen-pick__body {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .screen-pick__btn:not([data-active='true']):hover {
+    border-color: rgb(203 213 225);
+    background: #fff;
+  }
+}
+
+@media (min-width: 640px) {
+  .screen-pick__btn {
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    white-space: normal;
+  }
+
+  .screen-pick__btn:active {
+    transform: scale(0.99);
+  }
+
+  .screen-pick__btn[data-active='true'] {
+    border-color: rgb(15 23 42);
+    background: #fff;
+    box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.05);
+  }
+
+  .screen-pick__head {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  .screen-pick__disc {
+    display: flex;
+    height: 1.25rem;
+    width: 1.25rem;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 1px solid rgb(203 213 225);
+    background: #fff;
+    color: rgb(148 163 184);
+    transition:
+      background-color 200ms var(--ease-out),
+      border-color 200ms var(--ease-out),
+      color 200ms var(--ease-out);
+  }
+
+  .screen-pick__btn[data-active='true'] .screen-pick__disc {
+    border-color: rgb(15 23 42);
+    background: rgb(15 23 42);
+    color: #fff;
+  }
+
+  .screen-pick__label {
+    font-size: 0.9375rem;
+  }
+
+  .screen-pick__btn[data-active='true'] .screen-pick__label {
+    color: rgb(15 23 42);
+  }
+
+  .screen-pick__body {
+    display: block;
+    margin-top: 0.25rem;
+    padding-left: 1.875rem;
+    font-size: 0.8125rem;
+    line-height: 1.375;
+    color: rgb(71 85 105);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen-pick__btn:active {
+    transform: none;
+  }
+}
+
+/*
   The frame every back-office capture sits in. One class for all three, because
   they are three panels of one app and anything that framed them differently
   would be saying they are not.
@@ -2367,6 +2941,70 @@ onBeforeUnmount(stopSweeping)
 .app-card--continues img {
   -webkit-mask-image: linear-gradient(to bottom, #000 90%, transparent 100%);
   mask-image: linear-gradient(to bottom, #000 90%, transparent 100%);
+}
+
+/*
+  ---------------------------------------------------------------------------
+  On a phone the captures are cropped, not shrunk
+  ---------------------------------------------------------------------------
+  This is the section that broke worst on a phone, and the numbers say why: the
+  three back-office captures came to 2,150px of a 812px screen — two and a half
+  screens of pictures inside a section that is three and a half — because an
+  image with `width: 100%` and a fixed aspect ratio gets *taller* the narrower
+  the column is. The guest panel alone was 743px. Nobody scrolls through that;
+  they scroll past it, which means the strongest evidence on the page was the
+  part a phone reader skipped.
+
+  Shrinking them was the obvious fix and the wrong one. These are captures of a
+  real interface at a real type size, and the ratio between the column and the
+  capture is exactly what decides whether the app's own 14px renders as
+  something or as grey texture — halving the box halves the type with it. So
+  the box is cut instead: fixed height, image at its natural scale, anchored to
+  the top. The reader sees less of each panel at the size it was meant to be
+  read rather than all of it at a size nobody can.
+
+  ANCHORED TOP because these three captures are all top-loaded by construction —
+  a guest list starts with its header and first rows, and both analytics panels
+  open on the figure they exist to report (61% replied, 45% gift participation).
+  The bottom of each is the long tail that repeats the same shape.
+
+  The fade is what makes a cut read as "continues" instead of "clipped", which
+  is the same argument `--continues` already makes for the guest panel at every
+  width; here it is extended to all three, but only while they are cropped. At
+  `sm` and above nothing applies and every capture is whole again, including
+  the two analytics ones, which end on their own last line and must never be
+  faded — a fade over an edge with nothing past it reads as a mistake.
+
+  It must sit AFTER `--continues` in source order: the two selectors have the
+  same specificity, and this one has to win for the card that carries both.
+*/
+@media (max-width: 639.98px) {
+  .app-card--crop {
+    height: 13.5rem;
+  }
+
+  /* The guest list is the beat's whole subject and is shot in the app's own
+     phone layout, so it is legible here in a way the two desktop analytics
+     panels are not — it earns roughly twice the height. */
+  .app-card--crop-tall {
+    height: 26rem;
+  }
+
+  /* `<picture>` is inline by default, which would leave the image measuring
+     against a line box instead of the card. */
+  .app-card--crop picture {
+    display: block;
+    height: 100%;
+  }
+
+  .app-card--crop img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: top center;
+    -webkit-mask-image: linear-gradient(to bottom, #000 86%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 86%, transparent 100%);
+  }
 }
 
 /*
