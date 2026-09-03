@@ -85,3 +85,85 @@ describe('background video URL resolution', () => {
     wrapper.unmount()
   })
 })
+
+/**
+ * How the background video behaves while its bytes are slow to arrive.
+ *
+ * `HTMLMediaElement.load()` runs the media load algorithm, which ABORTS the
+ * in-flight fetch and resets readyState to 0 — so every reload throws away
+ * everything downloaded so far. This file used to reload from three separate
+ * places, one of which (`suspend`, fired routinely while buffering a large file
+ * on a constrained link, and again by `load()` itself) re-armed itself. On a
+ * fast connection playback began before the first timer and none of it showed;
+ * on a slow one the download restarted every few seconds and could never
+ * finish, leaving the invitation over a bare background forever — a
+ * `background: 'video'` template draws none of VideoContainer's artwork ladder,
+ * so there is nothing else back there.
+ *
+ * These pin the rule that came out of that: exactly ONE reload, only after a
+ * long wait, and only when nothing has arrived at all.
+ */
+describe('background video slow-network behaviour', () => {
+  beforeEach(() => {
+    window.matchMedia = vi
+      .fn()
+      .mockReturnValue({ matches: false }) as unknown as typeof window.matchMedia
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.clearAllTimers()
+    vi.useRealTimers()
+    document.body.innerHTML = ''
+  })
+
+  /** Reloads only — the initial `load()` that sets the source is not one. */
+  const reloadCount = (bgVideo: HTMLVideoElement) =>
+    (bgVideo.load as unknown as { mock: { calls: unknown[] } }).mock.calls.length - 1
+
+  it('does not re-fetch when the browser suspends a buffering download', () => {
+    const { bgVideo, wrapper } = mountWithBackgroundVideo('/media/templates/bg.mp4')
+
+    // The loop: each suspend armed a reload 3s later, and each reload
+    // eventually produced another suspend. Kept inside the stall watchdog's own
+    // window, so this measures the suspend handler and nothing else.
+    for (let i = 0; i < 5; i++) {
+      bgVideo.dispatchEvent(new Event('suspend'))
+      vi.advanceTimersByTime(3500)
+    }
+
+    expect(reloadCount(bgVideo)).toBe(0)
+    wrapper.unmount()
+  })
+
+  it('leaves a slowly-buffering download alone rather than restarting it', () => {
+    const { bgVideo, wrapper } = mountWithBackgroundVideo('/media/templates/bg.mp4')
+
+    // Bytes ARE arriving, just slowly — the case a reload hurts most.
+    Object.defineProperty(bgVideo, 'buffered', {
+      configurable: true,
+      get: () => ({ length: 1 }) as unknown as TimeRanges,
+    })
+    bgVideo.dispatchEvent(new Event('progress'))
+
+    vi.advanceTimersByTime(60000)
+
+    expect(reloadCount(bgVideo)).toBe(0)
+    wrapper.unmount()
+  })
+
+  it('reloads once, and only once, when nothing arrives at all', () => {
+    const { bgVideo, wrapper } = mountWithBackgroundVideo('/media/templates/bg.mp4')
+
+    // readyState 0 and no buffered range for the whole watchdog window.
+    vi.advanceTimersByTime(21000)
+    expect(reloadCount(bgVideo)).toBe(1)
+
+    // Still nothing: the recovery is spent, so the download is left to finish
+    // rather than being restarted forever.
+    vi.advanceTimersByTime(120000)
+    expect(reloadCount(bgVideo)).toBe(1)
+
+    wrapper.unmount()
+  })
+})

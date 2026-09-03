@@ -73,6 +73,10 @@ const emit = defineEmits<{
    *  staged template, edit hints) can finally be delivered. Anything posted
    *  before this is dropped silently — postMessage does not queue. */
   ready: []
+  /** This frame has finished loading its showcase and is showing an
+   *  invitation — which `ready` does not imply, it fires at mount. A parent
+   *  booting frames in sequence should wait for this one. */
+  loaded: []
   /** The frame reported which languages this event has and which one it is
    *  currently showing — after its initial load, and after every language
    *  switch. Parents can't derive this themselves (see
@@ -101,6 +105,7 @@ const onWindowMessage = (event: MessageEvent) => {
   const parsed = parsePreviewBridgeMessage(event)
   if (!parsed) return
   if (parsed.type === 'frame-ready') emit('ready')
+  if (parsed.type === 'frame-loaded') emit('loaded')
   if (parsed.type === 'showcase-languages') emit('languages', parsed.languages, parsed.currentLanguage)
   if (parsed.type === 'cover-layout-change') emit('coverLayoutChange', parsed.elements, parsed.commit)
   if (parsed.type === 'cover-layout-select') emit('coverLayoutSelect', parsed.elementId)

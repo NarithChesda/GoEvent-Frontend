@@ -48,7 +48,7 @@ const inkClass = computed(() => (props.ink === 'metal' ? 'std-metal' : 'std-soli
 /* Long enough that the widest en-US date still fits a 390px phone without
    wrapping: at 0.052 that measures ~330px, inside the block's own padding. */
 .min-date {
-  font-family: var(--std-date-font, var(--std-display));
+  font-family: var(--std-display);
   font-size: calc(var(--std-w) * 0.052);
   letter-spacing: 0.02em;
   line-height: 1.25;

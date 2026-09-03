@@ -84,7 +84,7 @@ const inkClass = computed(() => (props.ink === 'metal' ? 'std-metal' : 'std-soli
   align-items: center;
   gap: 0 calc(var(--std-w) * 0.038);
   width: 100%;
-  font-family: var(--std-date-font, var(--std-display));
+  font-family: var(--std-display);
 
   /* Lining figures, not the display serif's default old-style ones. Old-style
      is right for figures set *inside* running text and wrong for a date set

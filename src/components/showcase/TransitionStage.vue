@@ -134,7 +134,15 @@
          stage supplies is the ground it is drawn on — flat primary ink over the
          pale vellum band, plus the halo that separates the two — and the clock
          it runs against. `script` is the design this stage shipped with, so a
-         template that has never set the field renders exactly as before. -->
+         template that has never set the field renders exactly as before.
+
+         Note what is NOT passed: a font. This stage used to hand the template's
+         per-language `primaryFont` down as the date face, which made the date's
+         typeface change when a guest switched language — on text that is
+         formatted `en-US` in every language (see SaveTheDate.vue), so a Khmer
+         face was being applied to Latin numerals and month names. The design
+         owns its own typography, and `--std-display` already pairs a Latin
+         serif with Kantumruy Pro for any Khmer that does appear. -->
     <div class="cloud-footer" :class="{ 'show': isContentVisible }">
       <SaveTheDate
         :design="saveTheDateDesign"
@@ -146,7 +154,6 @@
         :ink-light-color="gleamColor"
         :hot-color="gleamCoreColor"
         :halo="copyHalo"
-        :date-font="primaryFont || currentFont"
       />
     </div>
   </div>
@@ -181,9 +188,12 @@ interface Props {
    *  the same slot the door transition's printed chrome uses. Defaults to white
    *  upstream, which is the intended look for the band. */
   blurEffectColor?: string
-  currentFont: string
-  primaryFont?: string
-  secondaryFont?: string
+  // No font props. This stage draws no copy of its own — the only text on it is
+  // the Save the Date block, whose typography belongs to the design it renders
+  // (see save-the-date-base.css). `currentFont`/`primaryFont`/`secondaryFont`
+  // lived here solely to be handed down as the date face, which is exactly what
+  // made the date change typeface on a language switch. TransitionStageDoor has
+  // never declared them.
   getMediaUrl: (url: string) => string
   /** Falling particle effect config from template_assets. */
   fallingEffect?: FallingEffectConfig | null

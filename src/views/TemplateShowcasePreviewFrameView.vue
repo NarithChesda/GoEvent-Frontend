@@ -47,6 +47,7 @@ import { loadTemplatePreviewShowcase } from '@/composables/showcase-preview/useT
 import { PreviewFrameKey } from '@/components/showcase-preview/previewContext'
 import {
   parsePreviewBridgeMessage,
+  postFrameLoadedToParent,
   postFrameReadyToParent,
   postShowcaseLanguagesToParent,
 } from '@/components/showcase-preview/bridge/previewBridge'
@@ -220,6 +221,11 @@ onMounted(() => {
   loadShowcase()
     .then(() => (previewTemplateId.value ? applyTemplate(previewTemplateId.value) : undefined))
     .then(publishLanguages)
+    // Only now is there an invitation on screen. The parent boots frames one at
+    // a time and waits for this, not for the mount-time `frame-ready` above —
+    // see postFrameLoadedToParent. `finally`, because a frame that failed still
+    // has to release the queue behind it.
+    .finally(postFrameLoadedToParent)
 })
 
 onUnmounted(() => {

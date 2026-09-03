@@ -65,8 +65,6 @@ interface Props {
    * and its frame has only just drawn (1000ms).
    */
   startDelayMs?: number
-  /** Optional face for the date lines. Unset keeps the design's display serif. */
-  dateFont?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -75,7 +73,6 @@ const props = withDefaults(defineProps<Props>(), {
   label: 'Save the Date',
   halo: null,
   startDelayMs: 0,
-  dateFont: null,
 })
 
 const DESIGNS = {
@@ -172,7 +169,6 @@ const contractStyle = computed<Record<string, string>>(() => {
     '--std-halo': props.halo ?? 'none',
     '--std-t0': reducedMotion.value ? '0ms' : `${props.startDelayMs}ms`,
   }
-  if (props.dateFont) style['--std-date-font'] = props.dateFont
   return style
 })
 
