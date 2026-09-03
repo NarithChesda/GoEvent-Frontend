@@ -98,6 +98,17 @@ export interface EventTemplatePackagePlan {
 }
 
 /**
+ * Position in the template menu — lower comes first.
+ *
+ * The default is 100, not 0, so one edit moves a template either way: a number
+ * below 100 lifts it above everything untouched, above 100 sinks it below.
+ * Templates sharing a number keep the sort they had before the field existed —
+ * cheapest package plan first on the browse menu, name elsewhere — so leaving
+ * it alone changes nothing about a template's position.
+ */
+export const TEMPLATE_MENU_ORDER_DEFAULT = 100
+
+/**
  * A row of the public template catalogue (`GET /api/core-data/event-templates/`,
  * no auth). Deliberately narrower than `EventTemplate`: that one is the
  * signed-in browse response and carries `template_colors`/`template_fonts`,
@@ -109,6 +120,8 @@ export interface EventTemplatePackagePlan {
 export interface PublicEventTemplate {
   id: number
   name: string
+  /** Menu position, lower first. See TEMPLATE_MENU_ORDER_DEFAULT. */
+  order?: number
   template_type: 'system' | 'partner'
   status: string
   package_plan: number | null
@@ -121,6 +134,8 @@ export interface PublicEventTemplate {
 export interface EventTemplate {
   id: number
   name: string
+  /** Menu position, lower first. See TEMPLATE_MENU_ORDER_DEFAULT. */
+  order?: number
   package_plan: EventTemplatePackagePlan
   preview_image: string
   youtube_preview_url?: string
@@ -1104,6 +1119,14 @@ export type PartnerTemplateStatus = 'draft' | 'pending_review' | 'approved' | 'r
 export interface PartnerTemplate {
   id: number
   name: string
+  /**
+   * Menu position, lower first. See TEMPLATE_MENU_ORDER_DEFAULT.
+   *
+   * Optional because the field is newer than this client: a backend that has
+   * not deployed it yet sends nothing, and every reader must fall back to the
+   * default rather than render an empty position.
+   */
+  order?: number
   package_plan: EventTemplatePackagePlan | null
   /**
    * Who authored it, stamped once at creation and never editable afterwards.
@@ -1174,6 +1197,8 @@ type TemplateFileUpload = File | ''
 
 export interface PartnerTemplateCreatePayload {
   name: string
+  /** Menu position, lower first. Omit to leave the server's default of 100. */
+  order?: number
   package_plan_id?: number | null
   preview_image?: TemplateFileUpload
   youtube_preview_url?: string

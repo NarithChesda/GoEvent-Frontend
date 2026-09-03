@@ -2636,7 +2636,8 @@
       "deleteTitle": "Delete template",
       "adminNote": "Admin note:",
       "systemBadge": "System",
-      "byAuthor": "by {name}"
+      "byAuthor": "by {name}",
+      "orderTitle": "Menu position — lower comes first"
     },
     "staffTitle": "Template catalogue",
     "filter": {
@@ -2804,6 +2805,8 @@
       "previewImageUpload": "Upload preview",
       "previewImageAspect": "9:16 portrait",
       "previewUrlHint": "A public showcase link partners can share as a sample.",
+      "orderLabel": "Menu Position",
+      "orderHint": "Lower comes first in the template menu. {default} is the default — go below it to lift a design to the front, above it to sink one to the back.",
       "planEmpty": "No package plans are available right now."
     },
     "colors": {

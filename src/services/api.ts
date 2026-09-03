@@ -133,6 +133,7 @@ export type {
 export {
   FONT_TYPE_LABELS,
   LANGUAGE_CODE_LABELS,
+  TEMPLATE_MENU_ORDER_DEFAULT,
 } from './api/types/template.types'
 
 // Guest types
