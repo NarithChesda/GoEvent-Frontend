@@ -141,3 +141,51 @@ describe('the Transition frame gate', () => {
     expect(transitionFrame().isVisible?.(ctx)).toBe(true)
   })
 })
+
+/**
+ * A template that declares it has no middle beat must lose BOTH middle frames,
+ * and neither may leave a hidden-note behind: "this stage isn't being used yet"
+ * is advice for a stage the template has, and this one doesn't. The featured
+ * photo is irrelevant here — that it used to decide this is the reason `none`
+ * exists.
+ */
+describe('a template whose middle beat is none', () => {
+  const middleFrames = () =>
+    resolvePreviewRenderer(context()).frames.filter(
+      (f) => f.id === 'transition' || f.id === 'event_video',
+    )
+
+  const noBeat = (overrides: Partial<PreviewFrameContext> = {}) =>
+    context({
+      templateAssets: {
+        stage_modes: { transition: 'none' },
+        standard_cover_video: '/media/templates/cover.mp4',
+        standard_transition_video: '/media/templates/mid.mp4',
+      },
+      hasFeaturedPhoto: true,
+      ...overrides,
+    })
+
+  it('hides both middle frames, films and photograph notwithstanding', () => {
+    const ctx = noBeat()
+    for (const frame of middleFrames()) {
+      expect(frame.isVisible?.(ctx)).toBe(false)
+      expect(frame.isApplicable?.(ctx)).toBe(false)
+    }
+  })
+
+  it('hides them in edit mode too — there is nothing to fix from the preview', () => {
+    const ctx = noBeat({ canEdit: true })
+    for (const frame of middleFrames()) {
+      expect(frame.isVisible?.(ctx)).toBe(false)
+    }
+  })
+
+  it('leaves the cover and main frames alone', () => {
+    const ctx = noBeat()
+    const shown = resolvePreviewRenderer(ctx)
+      .frames.filter((f) => (f.isVisible ? f.isVisible(ctx) : true))
+      .map((f) => f.id)
+    expect(shown).toEqual(['cover', 'main'])
+  })
+})

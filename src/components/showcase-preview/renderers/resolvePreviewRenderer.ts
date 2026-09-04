@@ -84,6 +84,11 @@ export function previewStageModes(ctx: PreviewFrameContext): ResolvedStageModes 
  * The middle beat is the Save the Date card over the featured photograph. Was
  * `isBasicWeddingShowcase` — the stage used to be reachable only by a template
  * with no cover film, on a wedding event.
+ *
+ * With the two below, this is also what hides *both* middle frames — and their
+ * hidden-notes with them — on a template whose beat is `none`: the stage isn't
+ * unused there, it doesn't exist, so there is nothing to tell the partner to
+ * fix.
  */
 export function hasAnimatedTransition(ctx: PreviewFrameContext): boolean {
   if (!ctx.templateAssets) return false

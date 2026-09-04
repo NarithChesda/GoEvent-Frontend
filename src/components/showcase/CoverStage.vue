@@ -282,6 +282,10 @@ const backgroundMode = computed(() => stageModes.value.background)
  * True while the middle beat is a stage of its own that owns the hand-off to
  * the invitation — the Save the Date card over the featured photo. The cover
  * then only animates itself out and waits, instead of revealing main content.
+ *
+ * False on both the other modes, and for opposite reasons: a film is carried by
+ * the video state machine, and `none` has nothing to hand over to at all — the
+ * cover's exit is the reveal, so the doors part onto the invitation itself.
  */
 const usesTransitionStage = computed(() => transitionMode.value === 'animation')
 

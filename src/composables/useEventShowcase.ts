@@ -25,6 +25,7 @@ import { useFontManager } from './showcase/useFontManager'
 import { useVideoResourceManager } from './showcase/useVideoResourceManager'
 import { useShowcaseStages, normalizeMusicStartStage } from './showcase/useShowcaseStages'
 import { useShowcaseRedirect } from './showcase/useShowcaseRedirect'
+import { resolveStageModesForEvent } from './showcase/useStageModes'
 import { useTemplateProcessor } from './showcase/useTemplateProcessor'
 
 // Imports - Utilities
@@ -713,8 +714,16 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
    * is the prop name the whole video pipeline uses — CoverStage, VideoContainer,
    * useCoverStageVideo and the preview's Event Video frame all speak it, and
    * none of them care where the URL came from.
+   *
+   * `null` on a template whose middle beat is `none`, and that is the single
+   * place the whole video pipeline needs to be told: preloading, the Safari
+   * envelope gate, openEnvelope's video branch and the stage watcher that starts
+   * playback all key off this URL, so a template that declares it has no middle
+   * beat degrades exactly the way `video` with no film already does — rather
+   * than downloading, and then playing, a film its design says it does not show.
    */
   const eventVideoUrl = computed(() => {
+    if (resolveStageModesForEvent(event.value).transition === 'none') return null
     const source =
       event.value?.event_video || event.value?.template_assets?.assets?.standard_transition_video
     return source ? templateProcessor.getMediaUrl(source) : null

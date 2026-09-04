@@ -404,6 +404,23 @@ const hasFeaturedPhoto = computed(() => {
   return eventPhotos.value?.some((p) => p.is_featured) ?? false
 })
 
+/**
+ * There is no middle beat: the cover's own exit is the whole reveal, and the
+ * invitation follows it directly.
+ *
+ * Two ways to arrive here, and they run the same flow. The template may declare
+ * `transition: 'none'` — a birthday or funeral design that never wanted the
+ * beat — or it may ask for the Save the Date card on an event that has no
+ * featured photograph for the card to be drawn over. Only the first is a
+ * design decision; the second is the card degrading, which is exactly why the
+ * declaration exists.
+ */
+const hasNoMiddleBeat = computed(
+  () =>
+    stageModes.value.transition === 'none' ||
+    (usesTransitionStage.value && !hasFeaturedPhoto.value),
+)
+
 const showTransitionStage = computed(
   () => isTransitionStage.value && usesTransitionStage.value && hasFeaturedPhoto.value,
 )
@@ -544,18 +561,24 @@ const openEnvelopeWithVideoSync = async () => {
     return
   }
 
-  // The animated beat with nothing to show. The stage still runs, so the
-  // door/decoration animation plays, and completes itself once the cover has
-  // cleared.
-  if (usesTransitionStage.value) {
+  // No middle beat — declared, or the card with no photograph to draw. The
+  // cover animation is the whole reveal either way.
+  //
+  // Still routed through the transition stage's own flow rather than
+  // openEnvelope's direct branch, even though nothing renders: that branch
+  // reveals the invitation on a fixed 1s timer, which is shorter than either
+  // cover exit, and it never hands the video pipeline the phase change that
+  // retires the cover — so a door template would leave its leaves mounted.
+  // handleTransitionComplete below does both, on the cover's own clock.
+  if (hasNoMiddleBeat.value) {
     await openEnvelope(eventVideoUrl.value || undefined, eventMusicUrl.value || undefined, {
       useTransitionStage: true,
       musicLoopStart: musicStartTime.value,
       musicLoopEnd: musicEndTime.value,
       musicStartStage: musicStartStage.value,
     })
-    // No TransitionStage component renders (no featured photo), so the cover
-    // animation is the whole reveal and main content follows it directly.
+    // No TransitionStage component renders, so the cover animation is the whole
+    // reveal and main content follows it directly.
     // Completing early doesn't buy anything: revealing main content clears
     // isDoorAnimationInProgress, which unmounts the leaves — so a delay shorter
     // than the swing cuts it off mid-flight. Handing off once they've cleared

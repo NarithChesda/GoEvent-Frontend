@@ -2901,6 +2901,7 @@
     "stageModes": {
       "animation": "Artwork",
       "video": "Video",
+      "none": "None",
       "coverHint": {
         "animation": "The cover is a still backdrop that animates away on the tap — decorations sliding off, or the doors swinging open.",
         "video": "The cover is a looping film, playing full-bleed behind the guest name."
@@ -2908,7 +2909,8 @@
       "transitionGroup": "Middle Stage",
       "transitionHint": {
         "animation": "The Save the Date card over the event's featured photograph. Events with no featured photo go straight from the cover to the invitation.",
-        "video": "A film playing full screen between the cover and the invitation — the event's own video, or the one uploaded below."
+        "video": "A film playing full screen between the cover and the invitation — the event's own video, or the one uploaded below.",
+        "none": "There is no middle stage. The cover hands straight over to the invitation, whatever photograph or video the event has."
       },
       "backgroundHint": {
         "animation": "A still photograph behind the invitation, falling back to the template colour.",
@@ -3104,9 +3106,10 @@
     },
     "infoCardDesign": {
       "sectionTitle": "Info Card Design",
-      "designHint": "Controls how the venue, map, countdown and RSVP block is presented. Engraved is drawn in the same hairline language as the calendar, flanked and arch date designs.",
+      "designHint": "Controls how the venue, map, countdown and RSVP block is presented. Frosted is the same material as the guestbook and gift sections further down the page. Engraved is drawn in the same hairline language as the calendar, flanked and arch date designs.",
       "types": {
         "glass": "Glass (rounded panel, white text)",
+        "frosted": "Frosted (blurred sheet, coloured text)",
         "engraved": "Engraved (hairline rules, inked type)"
       }
     },

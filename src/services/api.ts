@@ -128,6 +128,7 @@ export type {
   SparkFieldConfig,
   StageMode,
   StageModesConfig,
+  TransitionStageMode,
 } from './api/types/template.types'
 
 export {
