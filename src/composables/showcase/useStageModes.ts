@@ -1,6 +1,10 @@
-import type { StageMode, StageModesConfig } from '@/services/api/types/template.types'
+import type {
+  StageMode,
+  StageModesConfig,
+  TransitionStageMode,
+} from '@/services/api/types/template.types'
 
-export type { StageMode, StageModesConfig }
+export type { StageMode, StageModesConfig, TransitionStageMode }
 
 /**
  * The three modes, with every "unset" resolved. What the showcase actually
@@ -8,7 +12,7 @@ export type { StageMode, StageModesConfig }
  */
 export interface ResolvedStageModes {
   cover: StageMode
-  transition: StageMode
+  transition: TransitionStageMode
   background: StageMode
 }
 
@@ -36,6 +40,8 @@ export interface StageModesInput {
  * - **cover**: `standard_cover_video` present → `video`, else `animation`.
  * - **transition**: follows the cover. A template built around film played one
  *   in the middle too; a template built from artwork ran the Save the Date card.
+ *   The inference never yields `none` — that is a declaration only, so a
+ *   template that says nothing keeps whichever middle beat it already had.
  * - **background**: a `standard_background_video` means `video`, and so does a
  *   video cover — VideoContainer used to hide every artwork backdrop layer
  *   whenever `standard_cover_video` was set, leaving the showcase wrapper's own
@@ -47,6 +53,12 @@ export interface StageModesInput {
  * raw asset, so a template that declares only `cover` gets the middle beat and
  * backdrop that go with the cover it asked for rather than the ones its leftover
  * files imply.
+ *
+ * `transition: 'none'` is the one value with no asset behind it: the cover
+ * hands straight over to the invitation, whatever the event's photographs say.
+ * It is why "does this design have a middle beat?" is now a question the
+ * template answers rather than one the event's featured photo answers by
+ * accident — see TransitionStageMode.
  *
  * Nothing here reads the event's category. The animated middle beat used to be
  * hard-limited to weddings, which is exactly the coupling this config exists to
@@ -60,7 +72,7 @@ export function resolveStageModes(input: StageModesInput): ResolvedStageModes {
   const cover: StageMode =
     declared?.cover ?? (assets?.standard_cover_video ? 'video' : 'animation')
 
-  const transition: StageMode = declared?.transition ?? cover
+  const transition: TransitionStageMode = declared?.transition ?? cover
 
   const background: StageMode =
     declared?.background ??

@@ -71,6 +71,34 @@ describe('resolveStageModes — templates that declare their stages', () => {
   })
 })
 
+describe('resolveStageModes — a template with no middle beat', () => {
+  it('keeps none as declared, and leaves the other two stages alone', () => {
+    expect(resolveStageModes({ stageModes: { transition: 'none' }, assets: {} })).toEqual({
+      cover: 'animation',
+      transition: 'none',
+      background: 'animation',
+    })
+  })
+
+  it('drops the beat even on a template built around film', () => {
+    expect(
+      resolveStageModes({
+        stageModes: { transition: 'none' },
+        assets: { standard_cover_video: '/media/cover.mp4' },
+      }),
+    ).toEqual({ cover: 'video', transition: 'none', background: 'video' })
+  })
+
+  it('never infers none — an undeclared beat still follows the cover', () => {
+    // The whole backward-compatibility story: 'none' is a declaration and
+    // nothing else, so no template published before it existed can acquire it.
+    expect(resolveStageModes({ stageModes: { cover: 'animation' }, assets: {} }).transition).toBe(
+      'animation',
+    )
+    expect(resolveStageModes({ assets: {} }).transition).toBe('animation')
+  })
+})
+
 describe('resolveStageModesForEvent', () => {
   it('reads the template declaration off the event', () => {
     expect(
@@ -78,6 +106,14 @@ describe('resolveStageModesForEvent', () => {
         template_assets: { stage_modes: { transition: 'video' }, assets: {} },
       }).transition,
     ).toBe('video')
+  })
+
+  it('reads a removed middle beat off the event', () => {
+    expect(
+      resolveStageModesForEvent({
+        template_assets: { stage_modes: { transition: 'none' }, assets: {} },
+      }).transition,
+    ).toBe('none')
   })
 
   it('falls back to the animated stages for an event with no template at all', () => {

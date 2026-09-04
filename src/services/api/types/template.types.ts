@@ -903,9 +903,26 @@ export interface SaveTheDateDesignConfig {
  * A stage whose asset is missing degrades rather than breaking: an `animation`
  * middle beat on an event with no featured photo makes the cover's own exit the
  * whole beat, and a `video` one with no film skips it — which is what those
- * events already do today.
+ * events already do today. Both land where `TransitionStageMode`'s `none`
+ * arrives on purpose.
  */
 export type StageMode = 'animation' | 'video'
+
+/**
+ * The middle beat's vocabulary — the two shared modes plus `none`.
+ *
+ * `none` exists on this stage alone. A cover and an invitation backdrop are
+ * always *something*, so "remove this stage" is not a question those two can be
+ * asked; the middle beat is the one stage a template may simply not have. A
+ * birthday or funeral design that wants the cover to hand straight over to the
+ * invitation declares it here, instead of the beat quietly disappearing because
+ * the event happens to have no featured photograph.
+ *
+ * Distinct from an absent key: absent still means *infer* (follow the resolved
+ * cover), and the inference never produces `none` — so no already-published
+ * template loses its middle beat.
+ */
+export type TransitionStageMode = StageMode | 'none'
 
 /**
  * Per-stage presentation modes — which stage is animated and which plays a
@@ -928,6 +945,9 @@ export type StageMode = 'animation' | 'video'
  * | `transition` | follows the resolved cover                                |
  * | `background` | `standard_background_video` present, or cover is `video` → `video`, else `animation` |
  *
+ * The vocabulary is shared for the first two words only: `transition` also
+ * accepts `none` (see `TransitionStageMode`), which the other two stages reject.
+ *
  * See `resolveStageModes` in src/composables/showcase/useStageModes.ts — the
  * one place that table is implemented — and
  * docs/backend-api-requirements/stage-modes.md for the pending backend field.
@@ -935,8 +955,8 @@ export type StageMode = 'animation' | 'video'
 export interface StageModesConfig {
   /** Cover stage. Absent = inferred from `standard_cover_video`. */
   cover?: StageMode | null
-  /** Middle beat. Absent = follows the cover. */
-  transition?: StageMode | null
+  /** Middle beat. Absent = follows the cover; `none` = the template has none. */
+  transition?: TransitionStageMode | null
   /** Main content backdrop. Absent = inferred from `standard_background_video`. */
   background?: StageMode | null
 }

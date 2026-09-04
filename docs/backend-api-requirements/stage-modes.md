@@ -29,8 +29,8 @@ birthday template with the Save the Date beat. The only way to change any of it
 was to upload or delete a video file.
 
 `stage_modes` replaces the guess with a declaration: **one small JSON object on
-the template, with one key per stage, each holding `"animation"` or
-`"video"`.**
+the template, with one key per stage, each holding `"animation"` or `"video"` —
+and, on `transition` only, `"none"`.**
 
 ```json
 {
@@ -60,14 +60,27 @@ plan-based validation, and do not derive a default from the plan.
 
 ### Config object
 
-All three keys are **optional**, each is `"animation"` or `"video"`, and the
-whole field may be `null`.
+All three keys are **optional** and the whole field may be `null`. `cover` and
+`background` take `"animation"` or `"video"`; `transition` takes those plus
+`"none"`.
 
-| Key | Values | `animation` draws | `video` draws |
-|---|---|---|---|
-| `cover` | `animation` \| `video` | `basic_decoration_photo`, exited by the cover animation (`cover_stage_layout.showcaseAnimationType`) | `standard_cover_video`, looping full-bleed |
-| `transition` | `animation` \| `video` | the Save the Date card over the event's featured photograph | the event's `event_video`, else `standard_transition_video`, full screen |
-| `background` | `animation` \| `video` | `basic_background_photo` → template colour → white | `standard_background_video`, looping |
+| Key | Values | `animation` draws | `video` draws | `none` draws |
+|---|---|---|---|---|
+| `cover` | `animation` \| `video` | `basic_decoration_photo`, exited by the cover animation (`cover_stage_layout.showcaseAnimationType`) | `standard_cover_video`, looping full-bleed | *not accepted* |
+| `transition` | `animation` \| `video` \| `none` | the Save the Date card over the event's featured photograph | the event's `event_video`, else `standard_transition_video`, full screen | nothing — the cover hands straight over to the invitation |
+| `background` | `animation` \| `video` | `basic_background_photo` → template colour → white | `standard_background_video`, looping | *not accepted* |
+
+**`none` is transition-only, and that asymmetry is deliberate.** A cover and an
+invitation backdrop are always *something*, so "remove this stage" is not a
+question those two can be asked. The middle beat is the one stage a template may
+simply not have — a birthday or funeral design that goes straight from the cover
+to the invitation — and before this it could only say so by accident, by being
+used on an event that happened to have no featured photograph.
+
+**`null` and `"none"` are different answers.** An absent `transition` key still
+means *infer* (follow the resolved cover); `"none"` means *remove the stage*. The
+inference never produces `"none"`, so no already-published template can acquire
+it, and none loses its middle beat.
 
 Reject any other value with a `400` and a field-specific error under
 `stage_modes`. **Do not reject unknown keys or a partially-filled object** — a
@@ -117,8 +130,10 @@ No default needs to be stored: `null` already means "infer every stage".
 On create and update, validate the field when present:
 
 - Accept `null` (clears the field → every stage inferred).
-- When an object is provided, validate only the keys that are present: `cover`,
-  `transition` and `background` must each be `"animation"` or `"video"`.
+- When an object is provided, validate only the keys that are present. `cover`
+  and `background` must each be `"animation"` or `"video"`; `transition` must be
+  one of `"animation"`, `"video"` or `"none"`. Each stage's error message
+  should read back only the words that stage accepts.
 - An object with **no** keys is valid (equivalent to `null`).
 - Reject an invalid value with `400` and a field-specific error.
 
@@ -126,7 +141,16 @@ On create and update, validate the field when present:
 {
   "success": false,
   "errors": {
-    "stage_modes": ["transition must be one of: animation, video"]
+    "stage_modes": ["cover must be one of: animation, video"]
+  }
+}
+```
+
+```json
+{
+  "success": false,
+  "errors": {
+    "stage_modes": ["transition must be one of: animation, video, none"]
   }
 }
 ```
@@ -235,8 +259,9 @@ wrong.
 |------|-------------------|
 | `cover: "video"` | Cover renders on the template colour with no backdrop. |
 | `cover: "animation"` | Same as today when no decoration photo is set. |
-| `transition: "animation"` | No featured photo on the event → the cover's own exit *is* the beat, then the invitation. There is no separate "no middle beat" mode because this is it. |
+| `transition: "animation"` | No featured photo on the event → the cover's own exit *is* the beat, then the invitation. Indistinguishable from `none`, but arrived at by accident rather than by design — which is what `none` exists to fix. |
 | `transition: "video"` | No `event_video` and no `standard_transition_video` → the beat is skipped. |
+| `transition: "none"` | Has no asset. The cover hands straight over to the invitation, and the frontend resolves no `event_video` at all — a film the design says it does not show is never even downloaded. |
 | `background: "video"` | No `standard_background_video` → the showcase wrapper's own colour shows through. Deliberately **no** fallback to the artwork ladder: that is precisely what standard templates do today, and the fallback would change how every one of them looks. |
 
 ---
@@ -251,6 +276,10 @@ wrong.
       as-is — absent keys are **not** filled in by the backend.
 - [ ] An empty object `{}` is accepted.
 - [ ] Invalid values return `400` with a field-specific error under `stage_modes`.
+- [ ] `{"transition":"none"}` is accepted; `{"cover":"none"}` and
+      `{"background":"none"}` are rejected with `400`.
+- [ ] An absent `transition` key is **not** backfilled with `"none"` (or anything
+      else) — absent means infer, and the two are different states.
 - [ ] No validation couples a mode to the package plan or to the uploaded assets.
 - [ ] Partner-template read endpoints return the field (object or `null`).
 - [ ] Event showcase payload exposes the field at

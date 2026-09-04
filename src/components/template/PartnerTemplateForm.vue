@@ -1077,7 +1077,7 @@
               <h5 :class="SECTION_HEADING">
                 {{ t('management.partnerTemplateForm.stageModes.transitionGroup') }}
               </h5>
-              <TemplateFormChoice v-model="transitionModeModel" :options="stageModeOptions" />
+              <TemplateFormChoice v-model="transitionModeModel" :options="transitionModeOptions" />
               <p :class="FIELD_HINT">
                 {{ t(`management.partnerTemplateForm.stageModes.transitionHint.${form.stage_mode_transition}`) }}
               </p>
@@ -1811,6 +1811,7 @@ import type {
   SparkColorSource,
   StageMode,
   StageModesConfig,
+  TransitionStageMode,
 } from '../../services/api'
 import { resolveStageModes } from '@/composables/showcase/useStageModes'
 import PartnerTemplateFileField from './PartnerTemplateFileField.vue'
@@ -2130,7 +2131,7 @@ interface FormState {
    * what the template already does, and saving pins exactly that.
    */
   stage_mode_cover: StageMode
-  stage_mode_transition: StageMode
+  stage_mode_transition: TransitionStageMode
   stage_mode_background: StageMode
 }
 
@@ -2933,13 +2934,28 @@ const stageModeOptions = computed(() => [
   { value: 'video', label: t('management.partnerTemplateForm.stageModes.video'), icon: Clapperboard },
 ])
 
+/**
+ * The middle stage gets a third option the other two don't: no stage at all.
+ *
+ * A cover and an invitation backdrop are always *something*, so "none" is not a
+ * question they can be asked — which is why this is a separate list rather than
+ * a fourth entry in the shared one. It is also the only picker whose value can
+ * remove a stage, so a birthday or funeral design says outright that it goes
+ * straight from the cover to the invitation, instead of that happening as a
+ * side effect of the event having uploaded no featured photograph.
+ */
+const transitionModeOptions = computed(() => [
+  ...stageModeOptions.value,
+  { value: 'none', label: t('management.partnerTemplateForm.stageModes.none'), icon: Ban },
+])
+
 const coverModeModel = computed<string>({
   get: () => form.stage_mode_cover,
   set: (value) => { form.stage_mode_cover = value as StageMode },
 })
 const transitionModeModel = computed<string>({
   get: () => form.stage_mode_transition,
-  set: (value) => { form.stage_mode_transition = value as StageMode },
+  set: (value) => { form.stage_mode_transition = value as TransitionStageMode },
 })
 const backgroundModeModel = computed<string>({
   get: () => form.stage_mode_background,
@@ -3138,7 +3154,7 @@ interface SectionDescriptor {
    * on. A function where the answer depends on the plan — the two flows draw
    * their middle stage from different sources, so they are two different frames.
    */
-  stage: string | ((transition: StageMode) => string)
+  stage: string | ((transition: TransitionStageMode) => string)
 }
 
 const SECTION_DESCRIPTORS: SectionDescriptor[] = [
@@ -3147,9 +3163,18 @@ const SECTION_DESCRIPTORS: SectionDescriptor[] = [
   { id: 'cover', icon: ImageIcon, stage: 'cover' },
   // The middle stage, in whichever shape this template declared: a film
   // (`event_video` frame) or the featured photo composed under a title card
-  // (`transition` frame). The opening animation inside this tab governs the
-  // cover's exit whichever shape is picked.
-  { id: 'transition', icon: Clapperboard, stage: (transition) => (transition === 'video' ? 'event_video' : 'transition') },
+  // (`transition` frame). A template with no middle stage points at the cover
+  // instead — the tab still owns the opening animation, which governs the
+  // cover's exit whichever shape is picked, and there is no middle frame left
+  // for the preview to land on.
+  {
+    id: 'transition',
+    icon: Clapperboard,
+    stage: (transition) => {
+      if (transition === 'none') return 'cover'
+      return transition === 'video' ? 'event_video' : 'transition'
+    },
+  },
   { id: 'content', icon: AlignLeft, stage: 'main' },
   // Last, and pointed at the cover: the effects sit on top of both stages, and
   // two of the three (creatures, sparks) show there. The preview's own stage
