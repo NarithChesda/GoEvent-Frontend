@@ -464,6 +464,7 @@ import TemplateMessage from './template/TemplateMessage.vue'
 import PartnerTemplatesPanel from './template/PartnerTemplatesPanel.vue'
 import TemplateSegmented, { type TemplateSegmentedOption } from './template/TemplateSegmented.vue'
 import { TEMPLATES_HEADER_SLOT } from './template/templatesHeaderSlot'
+import { partnerTemplateToAssets } from './template/partnerTemplateAssets'
 import {
   BTN_ICON,
   BTN_PRIMARY_BAR,
@@ -514,9 +515,13 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   close: []
   'template-selected': [template: EventTemplate]
-  /** A browse-grid card was picked — callers with a live preview surface
+  /** A template was picked on either tab — callers with a live preview surface
    *  (Design Studio) can broadcast these assets non-destructively before the
-   *  user confirms. Not emitted for partner template selection. */
+   *  user confirms. The browse grid fetches them from
+   *  `public_template_assets`; the Mine tab converts the record it already
+   *  holds (`partnerTemplateToAssets`). It used to fire on the browse tab
+   *  alone, which left picking one of your own designs changing nothing on
+   *  screen. */
   'preview-stage': [templateData: TemplateAssets]
   /** Selection was cleared without confirming (cancel/close/escape/backdrop),
    *  or a confirmed selection just finished applying — either way, any
@@ -679,6 +684,17 @@ const handlePartnerTemplateSelected = (template: PartnerTemplate): void => {
   // Clear any browse template selection
   clearSelection()
   selectedPartnerTemplate.value = template
+  // Stage it the same way a browse pick is staged, or the studio behind the
+  // modal keeps rendering whatever was last tried on — a stale browse template,
+  // or the event's current one — which reads as the tap having done nothing.
+  //
+  // Built from the record instead of fetching `public_template_assets`: a
+  // partner template already carries every colour, font and asset the preview
+  // reads, so the conversion is local, synchronous and cannot fail. (The fetch
+  // would work — PartnerTemplatesPanel only emits a selection for `approved`
+  // templates, which is all that endpoint serves — it is simply a round trip
+  // for data we are already holding.)
+  emit('preview-stage', partnerTemplateToAssets(template))
 }
 
 // Category icon mapping with cache for performance
@@ -947,7 +963,13 @@ const handleConfirmSelection = async (): Promise<void> => {
 }
 
 const resetModalState = (): void => {
-  if (hasSelection.value) emit('preview-clear')
+  // Both kinds of selection stage a preview, so both have to unstage one. This
+  // read `hasSelection` alone, which only knows about the browse list — so
+  // closing after trying on one of your own designs left the studio rendering
+  // a template that was never applied. `activeHasSelection` is not the test:
+  // it reports false while the partner form is open, which is a rule about the
+  // footer rather than about what the preview is showing.
+  if (hasSelection.value || selectedPartnerTemplate.value) emit('preview-clear')
   clearSelection()
   selectedPartnerTemplate.value = null
   isPartnerFormOpen.value = false
