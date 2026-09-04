@@ -97,6 +97,16 @@ export interface PartnerPricingTier {
   keepEach: string
   /** One sentence under the card. Empty renders nothing. */
   note: string
+  /**
+   * Whether this pack's credits only unlock designs the partner made themselves.
+   *
+   * A separate flag rather than a sentence folded into `note`, because `note` is
+   * the pack's own `description` — staff copy that may say anything or nothing —
+   * and this is a fact about the product that has to render either way. False on
+   * the two authored lead cards: pay-as-you-go is a rate rather than a pack, and
+   * the trial has never been sold narrowed.
+   */
+  ownDesignsOnly: boolean
   featured: boolean
 }
 
@@ -208,6 +218,10 @@ export function usePartnerPricingTiers(): {
       costEach: t(`partners.pricing.tiers.${key}.costEach`),
       keepEach: t(`partners.pricing.tiers.${key}.keepEach`),
       note: t(`partners.pricing.tiers.${key}.note`),
+      // The two lead cards are authored, not read from a pack, so neither can
+      // be narrowed — pay-as-you-go is a rate, and no trial has ever been sold
+      // as own-designs-only.
+      ownDesignsOnly: false,
       // The dark card is reserved for a recommendation, and neither way in is
       // one — they are the two things a shop owner can do before deciding.
       featured: false,
@@ -339,6 +353,7 @@ export function usePartnerPricingTiers(): {
         costEach: money(perCredit),
         keepEach: range(Math.max(0, low - perCredit), Math.max(0, high - perCredit)),
         note: pack.description || '',
+        ownDesignsOnly: pack.template_scope === 'own_partner',
         featured: isHighlight,
       }
     })
@@ -369,6 +384,9 @@ export function usePartnerPricingTiers(): {
       costEach: t('partners.pricing.tiers.trial.costEach'),
       keepEach: range(low, high),
       note: pack.description || t('partners.pricing.tiers.trial.note'),
+      // Read from the pack even though no trial is narrowed today: this card is
+      // a real catalogue row, and the flag should follow it if staff ever do.
+      ownDesignsOnly: pack.template_scope === 'own_partner',
       featured: false,
     }
   })

@@ -25,9 +25,13 @@
         </h3>
         <p class="mt-1 text-sm text-slate-600">
           {{
-            t('settings.credits.drawer.issued.subtitle', {
-              plan: issuedCode.applicable_plan_names?.[0] ?? result.pack_name,
-            })
+            issuedCode.template_scope === 'own_partner'
+              ? t('settings.credits.drawer.issued.subtitleOwnDesigns', {
+                  plan: issuedCode.applicable_plan_names?.[0] ?? result.pack_name,
+                })
+              : t('settings.credits.drawer.issued.subtitle', {
+                  plan: issuedCode.applicable_plan_names?.[0] ?? result.pack_name,
+                })
           }}
         </p>
 
@@ -117,6 +121,15 @@
                 {{ pack.pricing_plan_name }}
               </dd>
             </div>
+            <!-- The plan says which tier; this says whose template. They are
+                 independent restrictions and both apply, so a narrowed pack
+                 gets its own row rather than a qualifier tacked onto the plan. -->
+            <div v-if="isOwnDesignsPack" class="flex items-center justify-between gap-3">
+              <dt class="text-slate-500">{{ t('settings.credits.drawer.summary.scope') }}</dt>
+              <dd class="min-w-0 truncate font-medium text-slate-700">
+                {{ t('settings.credits.ownDesignsOnly') }}
+              </dd>
+            </div>
             <div v-if="!isFreePack" class="flex items-center justify-between gap-3">
               <dt class="text-slate-500">{{ t('settings.credits.drawer.summary.perCredit') }}</dt>
               <dd class="font-medium text-slate-700 tabular-nums">${{ pack.price_per_credit }}</dd>
@@ -149,6 +162,26 @@
           t('settings.credits.drawer.awaiting.reference', { reference: order.order_reference })
         "
       />
+
+      <!--
+        Said in full at the one moment it can still change the decision. The row
+        in the summary above names the restriction; this is the part that
+        surprises — that a design of the partner's own still has to have passed
+        review, and that these credits buy nothing on the ticket flow.
+
+        It sits after the two summaries rather than between them: they are one
+        `v-if` / `v-else-if` pair, and an element in the middle severs the
+        `v-else-if` from its `v-if` — the proof summary would never render.
+        `isOwnDesignsPack` is already false without a pack, so this still only
+        ever appears under the buy summary.
+      -->
+      <p
+        v-if="isOwnDesignsPack"
+        class="flex items-start gap-2.5 rounded-2xl bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-600"
+      >
+        <PenTool class="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-slate-400" aria-hidden="true" />
+        <span>{{ t('settings.credits.drawer.ownDesignsExplainer') }}</span>
+      </p>
 
       <!-- Nothing to transfer: a free pack has no payment to prove. -->
       <p
@@ -243,7 +276,7 @@
  */
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Check, Clock, Copy, Loader, Sparkles } from 'lucide-vue-next'
+import { Check, Clock, Copy, Loader, PenTool, Sparkles } from 'lucide-vue-next'
 import CheckoutDrawer from '@/components/payment/CheckoutDrawer.vue'
 import CheckoutSummary from '@/components/payment/CheckoutSummary.vue'
 import PaymentMethodPicker from '@/components/payment/PaymentMethodPicker.vue'
@@ -299,6 +332,13 @@ const detailsDisclosure = ref<InstanceType<typeof PaymentDetailsDisclosure> | nu
 
 /** A `0.00` pack has nothing to verify, so it skips the transfer flow entirely. */
 const isFreePack = computed(() => Boolean(props.pack) && Number(props.pack?.price ?? 0) === 0)
+
+/**
+ * Credits from this pack unlock only templates the partner authored and had
+ * approved. An absent `template_scope` means `any` — the behaviour of every
+ * pack sold before the field existed — so this stays false rather than unknown.
+ */
+const isOwnDesignsPack = computed(() => props.pack?.template_scope === 'own_partner')
 
 /** Retail price of the one event a credit covers, when the server sent one. */
 const retailPrice = computed(() => {

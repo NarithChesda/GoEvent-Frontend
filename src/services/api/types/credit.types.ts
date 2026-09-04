@@ -15,6 +15,28 @@
 
 export type CreditPackOrderStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled'
 
+/**
+ * What a credit may be spent on, beyond its plans.
+ *
+ * - `any` — every template on the pack's plans, house catalogue included. This
+ *   is the default and is exactly how every credit sold before this field
+ *   behaved, so an absent value means `any`, never "unknown".
+ * - `own_partner` — only a template the buying partner **authored themselves**
+ *   and had **approved**. `applicable_plans` cannot express that: a partner
+ *   template and a system template routinely share one pricing plan, so a
+ *   plan-scoped pack sold at a design-your-own rate would also unlock the house
+ *   catalogue and rival partners' work.
+ *
+ * It follows the pack -> order -> code path the way price and credit count do:
+ * chosen on the pack, snapshotted onto the order at purchase, stamped onto the
+ * code at issue. Editing a pack later never rewrites what a partner already
+ * bought.
+ *
+ * The field is optional everywhere below because the backend that introduced it
+ * may not be deployed yet; read a missing value as `any`.
+ */
+export type CreditTemplateScope = 'any' | 'own_partner'
+
 /** One plan a pack's credits may be spent on. */
 export interface CreditPackPlan {
   id: number
@@ -63,6 +85,16 @@ export interface CreditPack {
   max_discount_amount: string | null
   /** Days the issued credits stay redeemable. `null` means they never expire. */
   validity_days: number | null
+  /**
+   * Whose templates this pack's credits unlock. Absent (an older backend) is
+   * `any`. Say it on the buy card: `own_partner` is a materially narrower
+   * product sold at a design-your-own rate, and a partner who only discovers
+   * that at checkout has already paid.
+   */
+  template_scope?: CreditTemplateScope
+  /** The server's own wording for the field above. Ours is better here - the
+   * backend label is admin-facing - so this is only a fallback. */
+  template_scope_display?: string
   /** A free pack still waits on a human when this is set (the trial pack). */
   requires_approval: boolean
   /** Trial packs - a second order returns 400. */
@@ -119,6 +151,9 @@ export interface PartnerCreditCode {
   /** Plans a credit covers. An empty array means all plans. */
   applicable_plans: number[]
   applicable_plan_names: string[]
+  /** Whose templates this batch unlocks - snapshotted at issue. Absent is `any`. */
+  template_scope?: CreditTemplateScope
+  template_scope_display?: string
   created_at: string
 }
 
@@ -133,6 +168,8 @@ export interface CreditPackOrder {
   credit_count: number
   status: CreditPackOrderStatus
   status_display: string
+  /** The scope bought, frozen at purchase - a later edit to the pack can't move it. */
+  template_scope?: CreditTemplateScope
   payment_proof: string | null
   /** Populated once `status` is `confirmed` - this is the issued code. */
   promo_code_detail: PartnerCreditCode | null
@@ -179,14 +216,39 @@ export interface ActivationFundingOption {
   credits_remaining?: number | null
   expires_at?: string | null
   discount_amount?: string
+  /**
+   * What this credit is good for. `own_partner` is worth naming on the option
+   * row - the partner bought a narrower credit and should see which one is
+   * being spent.
+   */
+  template_scope?: CreditTemplateScope
 }
 
-/** GET /activation-options/?pricing_plan_id= - authenticated, not partner-gated. */
+/**
+ * GET /activation-options/?pricing_plan_id=&event_template_id=
+ * Authenticated, not partner-gated.
+ *
+ * **Always send `event_template_id`.** An `own_partner` credit is matched
+ * against the template being unlocked and cannot be identified without one, so
+ * omitting it hides those credits entirely - the response under-reports the
+ * balance rather than offering a credit checkout would then refuse. Safe, but
+ * it reads to the partner as a balance that has gone missing, which is why
+ * checkout runs template-first and then funding.
+ */
 export interface ActivationOptions {
   pricing_plan: { id: number; name: string; price: string }
+  /** Echoes the template the options were resolved against; `null` if none was sent. */
+  event_template_id?: number | null
   is_partner: boolean
   standard: ActivationFundingOption
-  /** `null` -> no credit for this plan (or not a partner): hide the option. */
+  /**
+   * `null` -> no credit is spendable here: hide the option.
+   *
+   * Two different situations collapse into this one value - the account holds
+   * no credit for this plan at all, or it holds an own-designs credit that this
+   * template does not qualify for. Only the second is worth explaining, and the
+   * balance (`/my-credits/`) is the only place to tell them apart.
+   */
   credit: ActivationFundingOption | null
   /** Present when the partner holds a pay-as-you-go code for this plan. */
   partner_rate: ActivationFundingOption | null

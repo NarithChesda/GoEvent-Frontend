@@ -218,6 +218,60 @@ function toShowcaseColors(colors: PartnerTemplateDraft['colors']): TemplateColor
  * @param saved   the template as last persisted, for fields the draft hasn't touched
  * @param resolveFileUrl  turns an unsaved File into a (cached, revocable) blob URL
  */
+/**
+ * The same conversion for a template that is only *saved* — no form open, no
+ * unsaved files, nothing to resolve.
+ *
+ * This is what the browse modal's "Mine" tab needs. A browse template is staged
+ * for live try-on by fetching `public_template_assets`; here the record in hand
+ * already carries every colour, font and asset the preview reads, so the
+ * conversion is local, synchronous and cannot fail. The fetch would also work —
+ * PartnerTemplatesPanel only emits a selection for `approved` templates, which
+ * is all that endpoint serves — but it is a round trip for data already loaded,
+ * and a failed one leaves the preview silently stale.
+ *
+ * Deliberately not implemented by synthesising a `PartnerTemplateDraft` and
+ * delegating: the draft type makes several configs non-null that a saved record
+ * leaves nullable, so the adapter would be inventing defaults. It shares the
+ * field list and the colour/font mappers instead, which is where drift between
+ * the two would actually hurt.
+ */
+export function partnerTemplateToAssets(template: PartnerTemplate): TemplateAssets {
+  const assets: NonNullable<TemplateAssets['assets']> = {}
+  for (const field of PARTNER_TEMPLATE_ASSET_FIELDS) {
+    const url = template[field]
+    if (url) assets[field] = url
+  }
+  if (template.open_envelope_button) assets.open_envelope_button = template.open_envelope_button
+
+  return {
+    template: {
+      id: template.id,
+      name: template.name,
+      preview_image: template.preview_image ?? undefined,
+    },
+    assets,
+    colors: toShowcaseColors(template.template_colors),
+    fonts: toShowcaseFonts(template.template_fonts),
+    cover_stage_layout: template.cover_stage_layout ?? undefined,
+    falling_effect: template.falling_effect,
+    ambient_creatures: template.ambient_creatures,
+    // The mote image is a column of its own on the record rather than a key of
+    // the config, exactly as `resolveSparks` treats it on the draft path.
+    sparks: template.sparks
+      ? { ...template.sparks, custom_image: template.spark_custom_image ?? null }
+      : null,
+    event_details_design: template.event_details_design,
+    host_info_design: template.host_info_design,
+    info_card_design: template.info_card_design,
+    agenda_design: template.agenda_design,
+    dress_code_design: template.dress_code_design,
+    save_the_date_design: template.save_the_date_design,
+    stage_modes: template.stage_modes,
+    display_liquid_glass_background: template.display_liquid_glass_background,
+  }
+}
+
 export function partnerTemplateDraftToAssets(
   draft: PartnerTemplateDraft,
   saved: PartnerTemplate | null,
