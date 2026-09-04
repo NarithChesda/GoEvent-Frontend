@@ -42,6 +42,7 @@
     "costEach": "You pay each",
     "keepEach": "You keep each",
     "forPlan": "For {plan}",
+    "ownDesignsOnly": "Your own designs only",
     "invitationCount": "{n} invitation | {n} invitations",
     "eventCount": "{n} event | {n} events",
     "packProfitCaption": "if you sell all {n} at {retail}",

@@ -1646,6 +1646,8 @@
         "credit": {
           "title": "Use a partner credit",
           "remaining": "{n} credit left | {n} credits left",
+          "ownDesigns": "for your own designs",
+          "withheldOwnDesigns": "You have {n} credit for your own designs. It only works on a design you made and we approved, so this template has to be paid for by transfer. | You have {n} credits for your own designs. They only work on a design you made and we approved, so this template has to be paid for by transfer.",
           "instant": "activates instantly",
           "expires": "Credits expire {date}",
           "cost": "1 credit",

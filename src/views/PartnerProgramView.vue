@@ -564,6 +564,25 @@
                   >
                     {{ t('partners.pricing.forPlan', { plan: tier.plans }) }}
                   </p>
+                  <!--
+                    Whose designs the credits unlock, said next to which plans
+                    they cover — the two restrictions are independent and both
+                    apply. A pack sold at a bring-your-own-design rate is a
+                    different product, and the margins below it are only true
+                    for a shop that designs. Only the narrowed packs speak; the
+                    ordinary ones would otherwise all carry a line saying
+                    nothing.
+                  -->
+                  <p
+                    v-if="tier.ownDesignsOnly"
+                    class="mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.6875rem] font-medium"
+                    :class="
+                      tier.featured ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
+                    "
+                  >
+                    <PenTool class="h-3 w-3 flex-shrink-0 opacity-70" aria-hidden="true" />
+                    {{ t('partners.pricing.ownDesignsOnly') }}
+                  </p>
                 </div>
 
                 <!--
@@ -1593,6 +1612,7 @@ import {
   Link2,
   MessageCircle,
   Palette,
+  PenTool,
   QrCode,
   Sparkles,
   Store,

@@ -448,6 +448,7 @@
     "dayCount": "{n} day | {n} days",
     "perCredit": "${amount} each",
     "forPlan": "For {plan}",
+    "ownDesignsOnly": "Your own designs only",
     "alreadyClaimed": "Already claimed",
     "orderPending": "Order in progress",
     "needsApproval": "Needs approval",
@@ -544,11 +545,13 @@
       "uploadProofBtn": "Upload proof",
       "proofRequired": "Attach your proof of payment first.",
       "notesPlaceholder": "Anything we should know about this payment",
+      "ownDesignsExplainer": "These credits only unlock templates you designed yourself and we have approved. They cannot be used on GoEvent's own designs, another partner's, a design still in review, or on ticket sales.",
       "freeInstant": "Nothing to pay — your credits are issued the moment you claim this pack.",
       "freeNeedsApproval": "Nothing to pay. A member of our team checks these requests by hand, so your credits arrive shortly after review.",
       "summary": {
         "credits": "Credits",
         "plan": "Plan",
+        "scope": "Spendable on",
         "perCredit": "Per credit",
         "retail": "Retail per event",
         "validity": "Valid for"
@@ -556,6 +559,7 @@
       "issued": {
         "title": "{n} credit is yours | {n} credits are yours",
         "subtitle": "Spend them on {plan} templates, one per event.",
+        "subtitleOwnDesigns": "Spend them on your own approved {plan} designs, one per event.",
         "codeLabel": "Your credit code",
         "accountLocked": "This code only works from your own account, so sharing it with a client will not spend your credits — and a leak cannot cost you any."
       },

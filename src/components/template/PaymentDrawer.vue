@@ -204,6 +204,10 @@
                 {{ creditCostLabel }}
               </span>
             </span>
+            <!-- The scope rides in the same clause list as the count rather
+                 than as a chip of its own: this credit has already been matched
+                 against this template, so it is a fact about what is being
+                 spent, not a warning about whether it can be. -->
             <span class="mt-0.5 block text-xs leading-relaxed text-slate-500">
               {{
                 t(
@@ -212,6 +216,10 @@
                   creditOption.credits_remaining ?? 0,
                 )
               }}
+              <template v-if="isOwnDesignsCredit">
+                ·
+                {{ t('management.templatePaymentTab.paymentDrawer.funding.credit.ownDesigns') }}
+              </template>
               <template v-if="creditOption.instant">
                 ·
                 {{ t('management.templatePaymentTab.paymentDrawer.funding.credit.instant') }}
@@ -258,6 +266,35 @@
         </label>
       </div>
     </section>
+
+    <!--
+      A credit the partner holds but cannot spend here.
+
+      This sits where the funding choice would have been, because it is the
+      answer to the question that space raises: the partner knows their balance
+      and no credit was offered. Without it the server's silence — it hides an
+      own-designs credit it cannot match, which is the safe direction — reads as
+      a balance that has gone missing.
+
+      Amber rather than the slate of the note below it: nothing is broken, but
+      something the partner paid for is unavailable, and that is worth a colour.
+    -->
+    <p
+      v-if="showWithheldCreditNote"
+      class="flex items-start gap-2.5 rounded-2xl bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800"
+      role="status"
+    >
+      <Info class="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-500" aria-hidden="true" />
+      <span>
+        {{
+          t(
+            'management.templatePaymentTab.paymentDrawer.funding.credit.withheldOwnDesigns',
+            { n: withheldOwnDesignsCredits },
+            withheldOwnDesignsCredits,
+          )
+        }}
+      </span>
+    </p>
 
     <!--
       Paying with a credit skips everything below: the partner prepaid when
@@ -324,7 +361,9 @@
         type="button"
         :disabled="submittingPayment || confirmed || !isFormValid"
         class="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:opacity-90 disabled:cursor-not-allowed disabled:hover:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2"
-        :class="confirmed ? 'disabled:opacity-100 disabled:hover:opacity-100' : 'disabled:opacity-50'"
+        :class="
+          confirmed ? 'disabled:opacity-100 disabled:hover:opacity-100' : 'disabled:opacity-50'
+        "
         @click="submitPayment"
       >
         <Check v-if="confirmed" class="h-4 w-4" aria-hidden="true" />
@@ -354,6 +393,13 @@
  * validation) — this component never computes a total, because the backend
  * re-validates any `amount` we send and rejects a figure it disagrees with.
  *
+ * **Template first, then funding.** `templateId` reaches `/activation-options/`
+ * and promo-code validation as well as the payment payload, because a credit
+ * from an own-designs pack is scoped to templates the partner authored and had
+ * approved — a restriction that cannot be checked before the template is known.
+ * Both callers open this drawer on an already-chosen template, which is what
+ * makes that ordering hold.
+ *
  * Everything that is not activation-specific — the panel, the header, the
  * method list, the receipt field, the optional fields — is shared with the
  * partner credit-pack order under `components/payment/`, so the two purchases
@@ -361,7 +407,17 @@
  */
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Check, CheckCircle, ChevronDown, Landmark, Loader, Tag, X, Zap } from 'lucide-vue-next'
+import {
+  Check,
+  CheckCircle,
+  ChevronDown,
+  Info,
+  Landmark,
+  Loader,
+  Tag,
+  X,
+  Zap,
+} from 'lucide-vue-next'
 import { apiService, partnerCreditsService } from '../../services/api'
 import type { ActivationOptions } from '../../services/api'
 import { useNotifications } from '../../composables/useNotifications'
@@ -449,6 +505,12 @@ const promoCodeError = ref<string | null>(null)
 // Funding options
 const activationOptions = ref<ActivationOptions | null>(null)
 const fundingChoice = ref<'standard' | 'credit'>('standard')
+/**
+ * Credits the partner holds for this plan that this template does not qualify
+ * for — own-designs credits on a template they did not author, or authored and
+ * we have not approved yet. Zero unless we positively found some.
+ */
+const withheldOwnDesignsCredits = ref(0)
 
 const creditOption = computed(() => activationOptions.value?.credit ?? null)
 const partnerRate = computed(() => activationOptions.value?.partner_rate ?? null)
@@ -534,6 +596,17 @@ const creditOutcomeLabel = computed(() => {
   const left = Math.max(0, remaining - 1)
   return t('management.templatePaymentTab.paymentDrawer.funding.credit.outcome', { n: left })
 })
+
+/** Whether the credit on offer is one of the narrow, own-designs kind. */
+const isOwnDesignsCredit = computed(() => creditOption.value?.template_scope === 'own_partner')
+
+/**
+ * Said only where it is the answer to a question the partner is already asking:
+ * they know they have credits, and none is being offered.
+ */
+const showWithheldCreditNote = computed(
+  () => !creditOption.value && withheldOwnDesignsCredits.value > 0,
+)
 
 const creditExpiryLabel = computed(() => {
   const expiresAt = creditOption.value?.expires_at
@@ -622,14 +695,22 @@ const loadActivationOptions = async (): Promise<void> => {
   const plan = props.templatePackage
   if (!plan) return
 
+  withheldOwnDesignsCredits.value = 0
+
   try {
-    const response = await partnerCreditsService.getActivationOptions(plan.id)
+    // The template id is load-bearing, not decorative: an own-designs credit is
+    // matched against the template being unlocked and is hidden without it.
+    // That is why this drawer only ever opens on an already-chosen template.
+    const response = await partnerCreditsService.getActivationOptions(plan.id, props.templateId)
     if (response.success && response.data) {
       activationOptions.value = response.data
       // A credit is the cheapest and only instant path, so it leads when one
       // exists — but it stays a choice, since a partner may want to keep a
       // credit back and pay for this one event.
       fundingChoice.value = response.data.credit ? 'credit' : 'standard'
+      if (response.data.is_partner && !response.data.credit) {
+        await loadWithheldOwnDesignsCredits(plan.id)
+      }
     } else {
       activationOptions.value = null
       fundingChoice.value = 'standard'
@@ -638,6 +719,40 @@ const loadActivationOptions = async (): Promise<void> => {
     console.error('Error loading activation options:', err)
     activationOptions.value = null
     fundingChoice.value = 'standard'
+  }
+}
+
+/**
+ * Why no credit was offered, when the partner is holding some.
+ *
+ * `credit: null` collapses two situations the partner experiences very
+ * differently — no credit for this plan at all, and an own-designs credit that
+ * this template does not qualify for. The server cannot distinguish them for us
+ * (it hides what it cannot match, which is the safe direction), so the balance
+ * is the only place to look, and it is only worth looking when the account is a
+ * partner and the option came back empty.
+ *
+ * A failure is silent: this only ever adds an explanation, and a checkout that
+ * works must not break because an explanation could not be fetched.
+ */
+const loadWithheldOwnDesignsCredits = async (planId: number): Promise<void> => {
+  try {
+    const response = await partnerCreditsService.getMyCredits()
+    if (!response.success || !response.data) return
+
+    withheldOwnDesignsCredits.value = response.data.codes
+      .filter(
+        (code) =>
+          code.template_scope === 'own_partner' &&
+          code.is_active &&
+          !code.is_expired &&
+          !code.is_usage_limit_reached &&
+          // An empty plan set means every plan, same as everywhere else.
+          (code.applicable_plans.length === 0 || code.applicable_plans.includes(planId)),
+      )
+      .reduce((total, code) => total + (code.remaining_uses ?? 0), 0)
+  } catch (err) {
+    console.error('Error loading partner credit balance:', err)
   }
 }
 
@@ -674,6 +789,10 @@ const validatePromoCode = async (): Promise<void> => {
         code,
         pricing_plan_id: props.templatePackage.id,
         amount: props.templatePackage.price,
+        // A typed code can itself be own-designs-scoped — a partner may paste
+        // their own credit code rather than tick the box — so the template has
+        // to reach validation too, or it passes here and is refused on create.
+        ...(props.templateId != null ? { event_template_id: props.templateId } : {}),
       },
     )
 
@@ -744,6 +863,7 @@ const resetForm = (): void => {
   // credit they cannot actually spend here.
   activationOptions.value = null
   fundingChoice.value = 'standard'
+  withheldOwnDesignsCredits.value = 0
 }
 
 /**
@@ -932,8 +1052,14 @@ watch(
 
 // A different template can mean a different plan, and credits are plan-scoped —
 // so the funding options have to be re-asked, not carried over.
+//
+// The template id is watched alongside the plan rather than folded into it: an
+// own-designs credit is scoped to *whose* template this is, so swapping one
+// design for another on the same plan changes the answer even though the plan
+// did not move. Watching the plan alone would leave a credit offered on a
+// template that can no longer take it, or hidden on one that can.
 watch(
-  () => props.templatePackage?.id,
+  () => [props.templatePackage?.id, props.templateId] as const,
   () => {
     if (props.open) loadActivationOptions()
   },

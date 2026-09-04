@@ -225,6 +225,17 @@
                   }}
                 </p>
                 <p class="mt-0.5 truncate font-mono text-xs text-slate-500">{{ code.code }}</p>
+                <!-- What this batch is good for beyond its plans. Only the
+                     narrow scope says anything, so the unrestricted batches
+                     stay silent rather than all carrying an "any template"
+                     label that distinguishes nothing. -->
+                <p
+                  v-if="isOwnDesignsCode(code)"
+                  class="mt-1 inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 text-[0.6875rem] font-medium text-slate-600 ring-1 ring-slate-900/[0.06]"
+                >
+                  <PenTool class="h-3 w-3 flex-shrink-0 text-slate-400" aria-hidden="true" />
+                  {{ t('settings.credits.ownDesignsOnly') }}
+                </p>
               </div>
 
               <div class="flex-shrink-0 text-right">
@@ -288,6 +299,21 @@
                 {{ t('settings.credits.savePercent', { n: savingsPercent(pack) }) }}
               </span>
             </div>
+
+            <!--
+              What separates this pack from an otherwise identical one, so it
+              sits with the name rather than in the fine print at the foot of
+              the card: an own-designs pack is a different product at a
+              different rate, and finding that out at checkout is finding it out
+              after paying.
+            -->
+            <p
+              v-if="isOwnDesignsPack(pack)"
+              class="mt-2 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[0.6875rem] font-medium text-slate-600"
+            >
+              <PenTool class="h-3 w-3 flex-shrink-0 text-slate-400" aria-hidden="true" />
+              {{ t('settings.credits.ownDesignsOnly') }}
+            </p>
 
             <p class="mt-3 text-2xl font-bold leading-none text-slate-900 tabular-nums">
               {{ Number(pack.price) === 0 ? t('settings.credits.free') : `$${pack.price}` }}
@@ -447,6 +473,7 @@ import {
   Check,
   ChevronRight,
   Clock,
+  PenTool,
   RefreshCw,
   Store,
   Upload,
@@ -625,6 +652,18 @@ const expiryLabel = (code: PartnerCreditCode): string => {
 
 const expiryToneClass = (code: PartnerCreditCode): string =>
   isExpiringSoon(code) ? 'text-amber-600 font-medium' : 'text-slate-500'
+
+/**
+ * Whether a pack or a batch is restricted to the partner's own designs.
+ *
+ * An absent `template_scope` is `any`, not "unknown" — it is what every credit
+ * sold before the field existed was, and the backend defaults it at the column
+ * level. So this only ever reads true on a positively narrowed pack, and a
+ * frontend running ahead of the backend simply says nothing.
+ */
+const isOwnDesignsPack = (pack: CreditPack): boolean => pack.template_scope === 'own_partner'
+
+const isOwnDesignsCode = (code: PartnerCreditCode): boolean => code.template_scope === 'own_partner'
 
 /** The retail price of the one event a credit covers — the thing being beaten. */
 const retailPrice = (pack: CreditPack): string | null => {

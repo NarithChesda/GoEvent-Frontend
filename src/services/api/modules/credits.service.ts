@@ -107,12 +107,20 @@ export const partnerCreditsService = {
    * What the funding options are for one plan. Authenticated but *not*
    * partner-gated, so the shared activation checkout can call it unconditionally
    * - a normal user simply gets `credit: null`.
+   *
+   * **Pass `eventTemplateId` whenever the template is known.** Credits from an
+   * own-designs pack are matched against the template being unlocked, so
+   * without it they are hidden and the partner sees a balance they hold go
+   * unoffered. A bad id is a `400`, not a silent `null`.
    */
   async getActivationOptions(
     pricingPlanId: number | string,
+    eventTemplateId?: number | string | null,
   ): Promise<ApiResponse<ActivationOptions>> {
-    return apiClient.get<ActivationOptions>('/api/payment/activation-options/', {
-      pricing_plan_id: pricingPlanId,
-    })
+    const params: Record<string, string | number> = { pricing_plan_id: pricingPlanId }
+    if (eventTemplateId != null && eventTemplateId !== '') {
+      params.event_template_id = eventTemplateId
+    }
+    return apiClient.get<ActivationOptions>('/api/payment/activation-options/', params)
   },
 }
