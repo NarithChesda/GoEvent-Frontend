@@ -1229,7 +1229,6 @@
       "tryAgain": "ព្យាយាមម្ដងទៀត"
     },
     "basicInfo": {
-      "heading": "ព័ត៌មានជាមូលដ្ឋាន",
       "titleLabel": "ចំណងជើងកម្មវិធី *",
       "titlePlaceholder": "បញ្ចូលចំណងជើងកម្មវិធី",
       "shortDescLabel": "ការពិពណ៌នាខ្លី",
@@ -1241,45 +1240,40 @@
       "categoryPlaceholder": "ជ្រើសរើសប្រភេទ"
     },
     "dateTime": {
-      "heading": "កាលបរិច្ឆេទ និងម៉ោង",
       "startDateTimeLabel": "កាលបរិច្ឆេទ និងម៉ោងចាប់ផ្ដើម *",
       "endDateTimeLabel": "កាលបរិច្ឆេទ និងម៉ោងបញ្ចប់ *",
-      "timezoneLabel": "តំបន់ម៉ោង"
+      "timezoneLabel": "តំបន់ម៉ោង",
+      "starts": "ចាប់ផ្ដើម",
+      "ends": "បញ្ចប់"
     },
     "location": {
-      "heading": "ទីតាំង",
-      "virtualLabel": "កម្មវិធីអនឡាញ",
-      "inPersonLabel": "កម្មវិធីផ្ទាល់ខ្លួន",
-      "virtualDesc": "កម្មវិធីនឹងប្រព្រឹត្តទៅតាមអនឡាញ",
-      "inPersonDesc": "កម្មវិធីនឹងប្រព្រឹត្តទៅនៅទីកន្លែងជាក់លាក់",
       "addressLabel": "អាសយដ្ឋាន",
       "addressPlaceholder": "បញ្ចូលអាសយដ្ឋានទីតាំង",
       "mapMovedHint": "គ្រប់គ្រងការបង្កប់ផែនទីនៅផ្ទាំង Showcase",
-      "virtualLinkLabel": "តំណប្រជុំអនឡាញ"
+      "virtualLinkLabel": "តំណប្រជុំអនឡាញ",
+      "inPersonOption": "ផ្ទាល់",
+      "virtualOption": "អនឡាញ",
+      "modeLabel": "ទីតាំង"
     },
     "privacy": {
-      "heading": "ភាពឯកជន",
-      "publicLabel": "កម្មវិធីសាធារណៈ",
-      "privateLabel": "កម្មវិធីឯកជន",
       "publicDesc": "អ្នកណាក៏អាចមើល និងចុះឈ្មោះបាន",
-      "privateDesc": "មានតែភ្ញៀវដែលត្រូវបានអញ្ជើញប៉ុណ្ណោះ"
+      "privateDesc": "មានតែភ្ញៀវដែលត្រូវបានអញ្ជើញប៉ុណ្ណោះ",
+      "visibilityLabel": "ការមើលឃើញ",
+      "privateOption": "ឯកជន",
+      "publicOption": "សាធារណៈ"
     },
     "registration": {
-      "heading": "ការចុះឈ្មោះ",
       "requireLabel": "តម្រូវឱ្យចុះឈ្មោះ",
       "requireDesc": "អ្នកចូលរួមត្រូវចុះឈ្មោះដើម្បីចូលរួម",
-      "deadlineLabel": "កំណត់ពេលចុះឈ្មោះ",
-      "deadlinePlaceholder": "កំណត់ពេលស្រេចចិត្ត",
-      "deadlineHint": "ទុកឱ្យទទេប្រសិនបើគ្មានកំណត់ពេល",
-      "maxAttendeesLabel": "ចំនួនអ្នកចូលរួមអតិបរមា",
-      "maxAttendeesPlaceholder": "គ្មានដែនកំណត់",
-      "maxAttendeesHint": "ទុកឱ្យទទេប្រសិនបើគ្មានដែនកំណត់"
+      "deadlineLabel": "ថ្ងៃផុតកំណត់",
+      "deadlinePlaceholder": "គ្មានកំណត់",
+      "maxAttendeesLabel": "ចំនួនអ្នកចូលរួមកំណត់",
+      "maxAttendeesPlaceholder": "មិនកំណត់"
     },
     "fundraising": {
-      "heading": "ការប្រមូលទុន",
       "enableLabel": "បើកការប្រមូលទុន",
       "enableDesc": "ទទួលការបរិច្ចាគសម្រាប់កម្មវិធីនេះ",
-      "goalLabel": "គោលដៅប្រមូលទុន",
+      "goalLabel": "គោលដៅ",
       "goalPlaceholder": "ឧ. 10000",
       "goalHint": "ទុកឱ្យទទេប្រសិនបើគ្មានគោលដៅ",
       "currencyLabel": "រូបិយប័ណ្ណ",
@@ -2955,6 +2949,8 @@
       "contentWidth": "ទទឹងខ្លឹមសារចម្បង",
       "contentWidthStandard": "ស្តង់ដារ",
       "contentWidthWide": "ធំទូលាយ (ខ្លឹមសារកាន់តែទូលាយ)",
+      "advancedGroup": "ប្លង់កម្រិតខ្ពស់",
+      "advancedHint": "ស៊ុមខ្លឹមសារ កម្ពស់ជួរ ការកាត់រូបម្ចាស់ផ្ទះ និងលំដាប់តុបតែង",
       "containerPositioning": "ទីតាំងស៊ុម (vh)",
       "contentTop": "ខាងលើខ្លឹមសារ",
       "innerHeight": "កម្ពស់ខាងក្នុង",

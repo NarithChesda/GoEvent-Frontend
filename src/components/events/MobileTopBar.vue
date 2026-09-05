@@ -11,8 +11,8 @@
     top, frosted the moment content starts sliding underneath it.
   -->
   <header
-    class="lg:hidden fixed top-0 left-0 right-0 z-40 gpu-layer glass-header border-b pt-[env(safe-area-inset-top,0px)]"
-    :class="isScrolled ? 'is-scrolled border-white/30 shadow-sm' : 'border-transparent'"
+    ref="headerRef"
+    class="lg:hidden fixed top-0 left-0 right-0 z-40 gpu-layer glass-header pt-[env(safe-area-inset-top,0px)]"
   >
     <!-- `relative` keeps this row above the glass sheet `.glass-header::before`
          lays over the bar — an absolutely-positioned pseudo paints on top of
@@ -25,21 +25,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
+import { useScrollEdge } from '@/composables/useScrollEdge'
 
-const isScrolled = ref(false)
-const handleScroll = () => {
-  isScrolled.value = window.scrollY > 0
-}
-
-onMounted(() => {
-  window.addEventListener('scroll', handleScroll, { passive: true })
-  handleScroll() // A restored scroll position must not start the bar clear.
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-})
+// Same treatment as TopNavBar: the material tracks the scroll continuously
+// through `--nav-edge` rather than flipping at the first pixel.
+const headerRef = ref<HTMLElement>()
+useScrollEdge(headerRef)
 </script>
 
 <style scoped>
@@ -54,21 +46,15 @@ onUnmounted(() => {
 }
 
 /* Transparent at rest, liquid glass once the page scrolls under it — the same
-   treatment as TopNavBar's `.glass-nav`, where the reasoning is written out. */
+   treatment as TopNavBar's `.glass-nav`, where the reasoning is written out.
+   Every value rides `--nav-edge`, the scroll progress `useScrollEdge` writes
+   onto this element, so nothing here transitions and there is no tween for a
+   reversal to have to wait out. */
 .glass-header {
-  background: rgba(255, 255, 255, 0);
-  backdrop-filter: blur(20px) saturate(100%);
-  -webkit-backdrop-filter: blur(20px) saturate(100%);
-  transition:
-    border-color 200ms ease,
-    box-shadow 200ms ease,
-    backdrop-filter 200ms ease,
-    -webkit-backdrop-filter 200ms ease;
-}
-
-.glass-header.is-scrolled {
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  --nav-edge: 0;
+  background: transparent;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .glass-header::before {
@@ -76,8 +62,9 @@ onUnmounted(() => {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 200ms ease;
+  opacity: var(--nav-edge);
+  backdrop-filter: saturate(180%);
+  -webkit-backdrop-filter: saturate(180%);
   background: linear-gradient(
     to bottom,
     rgba(255, 255, 255, 0.42) 0%,
@@ -86,7 +73,42 @@ onUnmounted(() => {
   );
 }
 
-.glass-header.is-scrolled::before {
-  opacity: 1;
+/* A soft scroll edge instead of the hairline and drop shadow: the bar dissolves
+   into the page it is floating over rather than ruling a line across it. */
+.glass-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 1.25rem;
+  pointer-events: none;
+  opacity: var(--nav-edge);
+  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.06), rgba(15, 23, 42, 0));
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass-header {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* Solid, but painted with the page's own gradient stack sized to the
+     viewport — a flat white bar would draw the seam the translucency exists to
+     avoid, since the page's bloom peaks on exactly this strip. */
+  .glass-header::before {
+    opacity: 1;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--premium-bg);
+    background-repeat: no-repeat;
+    background-size: 100vw 100vh;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .glass-header {
+    border-bottom: 1px solid rgb(100 116 139);
+  }
 }
 </style>

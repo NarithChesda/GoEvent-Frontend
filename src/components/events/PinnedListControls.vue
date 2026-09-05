@@ -9,19 +9,43 @@
     below are effectively desktop-only without saying so twice.
   -->
   <div
-    class="flex-shrink-0 flex items-center gap-1.5 sm:gap-2 transition-all duration-200 ease-out"
+    class="flex-shrink-0 flex items-center gap-2 transition-all duration-200 ease-out"
     :class="isPinned ? 'invisible opacity-0 -translate-y-2' : 'visible opacity-100 translate-y-0'"
     :aria-hidden="isPinned"
   >
-    <TimeFilterToggle
-      :model-value="timeFilter"
-      :options="timeOptions"
-      @update:model-value="emit('update:timeFilter', $event)"
-    />
-    <CategoryFilter
-      :model-value="category"
+    <!--
+      Which shape the filters take is decided by the surface they are on, and
+      that boundary is the nav breakpoint — the same one that decides whether
+      this whole row lives in the page or inside the mobile top bar. In the page
+      there is a `text-4xl` title and room to spare, so both axes are on screen
+      at once. In the bar there is one line beside a title, a search button and
+      a language button, so they collapse into one pill that names the current
+      filter and opens one sheet.
+
+      `v-if` rather than a `hidden sm:flex` pair: only one of these is ever the
+      right control, and the sheet has no business being in the DOM on a
+      desktop that will never open it.
+    -->
+    <template v-if="isDesktopNav">
+      <TimeFilterToggle
+        :model-value="timeFilter"
+        :options="timeOptions"
+        @update:model-value="emit('update:timeFilter', $event)"
+      />
+      <CategoryFilter
+        :model-value="category"
+        :categories="categories"
+        @update:model-value="emit('update:category', $event)"
+      />
+    </template>
+    <ListFilterSheet
+      v-else
+      :time-filter="timeFilter"
+      :time-options="timeOptions"
+      :category="category"
       :categories="categories"
-      @update:model-value="emit('update:category', $event)"
+      @update:time-filter="emit('update:timeFilter', $event)"
+      @update:category="emit('update:category', $event)"
     />
   </div>
 
@@ -46,7 +70,7 @@
   -->
   <Teleport defer to="#nav-page-controls">
     <Transition name="absorb">
-      <div v-if="isPinned" class="flex items-center gap-1.5 sm:gap-2">
+      <div v-if="isPinned" class="flex items-center gap-2">
         <TimeFilterToggle
           tone="nav"
           :model-value="timeFilter"
@@ -70,6 +94,7 @@ import { watch, onUnmounted } from 'vue'
 import type { EventCategory } from '@/services/api'
 import TimeFilterToggle, { type FilterOption } from './TimeFilterToggle.vue'
 import CategoryFilter from './CategoryFilter.vue'
+import ListFilterSheet from './ListFilterSheet.vue'
 import { useNavPageControls } from '@/composables/useNavPageControls'
 
 defineProps<{
@@ -89,7 +114,7 @@ const emit = defineEmits<{
 // room for what it is about to hold, and it is set here rather than alongside
 // `pinned` because a page can pin a header without having any filters to hand
 // up — see useNavPageControls.
-const { pinned: isPinned, setAbsorbed } = useNavPageControls()
+const { pinned: isPinned, isDesktopNav, setAbsorbed } = useNavPageControls()
 watch(isPinned, setAbsorbed, { immediate: true })
 
 onUnmounted(() => {

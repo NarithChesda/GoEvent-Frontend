@@ -52,10 +52,12 @@
     slot to the content column's right edge, the exact pixels they left from —
     so the hand-off reads as the bar taking this control in.
 
-    Only the palette changes with the surface (`tone="nav"`): up there the
-    control's neighbours are the Events / Discover / Services links, so it wears
-    their text size and weight at one flat legible tone, instead of the page
-    row's ghost button. Same geometry either way — see listControlTrigger.
+    Only the surface changes with `tone="nav"` — translucent on the page's own
+    wash, opaque in the bar, because the bar is glass with the list running
+    underneath it. Geometry and type are identical either way, and identical to
+    the Events / Discover controls that land in this same slot; the hand-off has
+    to be the same button arriving, not a smaller one appearing. See
+    listControlTrigger.
 
     Below the nav breakpoint the mobile bar is the one that absorbs them, and it
     holds the page's global actions too; ServicesView renders that copy so the

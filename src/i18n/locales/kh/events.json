@@ -27,7 +27,9 @@
     "upcoming": "នឹងមកដល់",
     "past": "កន្លងមក",
     "allCategories": "ប្រភេទទាំងអស់",
-    "filterLabel": "ត្រងកម្មវិធី"
+    "filterLabel": "ត្រងកម្មវិធី",
+    "timeSection": "បង្ហាញ",
+    "done": "រួចរាល់"
   },
   "emptyState": {
     "noUpcomingTitle": "មិនមានកម្មវិធីនឹងមកដល់",
@@ -61,36 +63,26 @@
   },
   "createDrawer": {
     "title": "បង្កើតកម្មវិធីថ្មី",
-    "sections": {
-      "basicInfo": "ព័ត៌មានមូលដ្ឋាន",
-      "dateTime": "កាលបរិច្ឆេទ និងម៉ោង",
-      "privacy": "ភាពឯកជន",
-      "registration": "ការចុះឈ្មោះ",
-      "access": "ការចូលប្រើ និងការចុះឈ្មោះ"
-    },
     "fields": {
       "eventTitle": "ចំណងជើងកម្មវិធី",
       "titlePlaceholder": "បញ្ចូលចំណងជើងកម្មវិធី",
       "category": "ប្រភេទ",
       "categoryPlaceholder": "ជ្រើសរើសប្រភេទ",
-      "startDateTime": "កាលបរិច្ឆេទ & ម៉ោងចាប់ផ្តើម",
-      "endDateTime": "កាលបរិច្ឆេទ & ម៉ោងបញ្ចប់",
-      "aboutEvent": "អំពីកម្មវិធី",
+      "aboutEvent": "អំពីព្រឹត្តិការណ៍នេះ",
       "descriptionPlaceholder": "ការពណ៌នាលម្អិតអំពីកម្មវិធី",
-      "registrationDeadline": "ថ្ងៃផុតកំណត់ចុះឈ្មោះ",
-      "deadlinePlaceholder": "ថ្ងៃផុតកំណត់ជាជម្រើស",
-      "deadlineHint": "ទុកទទេសម្រាប់គ្មានថ្ងៃផុតកំណត់",
-      "maxAttendees": "អ្នកចូលរួមអតិបរមា",
-      "maxAttendeesPlaceholder": "គ្មានដែន",
-      "maxAttendeesHint": "ទុកទទេសម្រាប់គ្មានដែន"
+      "registrationDeadline": "ថ្ងៃផុតកំណត់",
+      "deadlinePlaceholder": "គ្មានកំណត់",
+      "maxAttendees": "ចំនួនអ្នកចូលរួមកំណត់",
+      "maxAttendeesPlaceholder": "មិនកំណត់",
+      "starts": "ចាប់ផ្ដើម",
+      "ends": "បញ្ចប់",
+      "visibility": "ការមើលឃើញ"
     },
     "autoPopulate": {
       "label": "បំពេញទិន្នន័យកម្មវិធីដោយស្វ័យប្រវត្តិ",
       "description": "បំពេញម្ចាស់ផ្ទះ កម្មវិធី & អត្ថបទពីគំរូប្រភេទ"
     },
     "privacyToggle": {
-      "publicLabel": "កម្មវិធីសាធារណៈ",
-      "privateLabel": "កម្មវិធីឯកជន",
       "publicDescription": "អ្នកណាក៏អាចមើល និងចុះឈ្មោះបាន",
       "privateDescription": "តែភ្ញៀវដែលត្រូវបានអញ្ជើញប៉ុណ្ណោះអាចចូលប្រើ"
     },
@@ -103,6 +95,10 @@
       "created": "បង្កើតកម្មវិធីរួច",
       "create": "បង្កើតកម្មវិធី",
       "cancel": "បោះបង់"
+    },
+    "privacyOptions": {
+      "private": "ឯកជន",
+      "public": "សាធារណៈ"
     }
   },
   "tickets": {

@@ -27,16 +27,25 @@
          site is ShowcasePreviewTab), so the event being managed is already the
          obvious sample data — asking the partner to choose one was asking a
          question they had already answered by being here. -->
+    <!-- ONE row, and it must never become two.
+         Stage picker, language and full screen measure ~356px together in
+         English against a column that gives them 296–360px, so `flex-wrap`
+         wrapped them at most widths and at every width in Khmer, where the
+         stage names run half again longer. The second 34px row came out of the
+         phone's height, and at 9:16 out of its width too — the chrome
+         describing the preview was shrinking the preview. Now the two
+         fixed-size controls hold the trailing edge and the stage picker, the
+         only one whose width is unbounded, takes what is left and scrolls. -->
     <div class="tpl-preview__controls">
-      <!-- Stage picker + language, in one glass pill (§5 segmented control).
-           The stage list comes from the preview renderer keyed on the DRAFT's
-           own assets, so switching the plan's background video on/off adds or
-           drops the middle stage here exactly as it would for a real guest. -->
       <div class="tpl-preview__segments">
         <!-- Both pickers are the modal's one view switcher, so they are the
              same component the Browse/Mine and Edit/Preview tabs use — right
              down to the thumb that slides. They used to be hand-rolled pills
-             that snapped, in a modal where the other two switchers slid. -->
+             that snapped, in a modal where the other two switchers slid.
+
+             The stage list comes from the preview renderer keyed on the DRAFT's
+             own assets, so switching the plan's background video on/off adds or
+             drops the middle stage here exactly as it would for a real guest. -->
         <TemplateSegmented
           v-if="visibleFrames.length > 1"
           :model-value="activeFrameId"
@@ -44,6 +53,7 @@
           :aria-label="t('management.partnerTemplatePreview.stageLabel')"
           tone="glass"
           size="sm"
+          scrollable
           @update:model-value="selectFrame"
         />
 
@@ -76,10 +86,18 @@
     </div>
 
     <div ref="bodyRef" class="tpl-preview__body">
+      <!-- No `label`. PreviewFrame draws the stage's name above the phone, and
+           the stage picker two rows up is already that name — with a gradient
+           thumb under it, so the caption was the quieter of two labels saying
+           the same word. PreviewFrame documents this exact case ("skipped when
+           the caller names the stage elsewhere"); the public gallery already
+           passes no label for it and this pane had simply not followed. Worth
+           ~32px of the phone's height, since an empty label box still costs the
+           column's gap. -->
       <PreviewFrame
         v-if="activeFrame"
         ref="previewFrameRef"
-        :label="t(activeFrame.labelKey)"
+        label=""
         :bottom-reserve="bottomReserve"
         :max-width="frameMaxWidth"
         :width-override="bodyWidth || undefined"
@@ -108,10 +126,21 @@
       </Transition>
     </div>
 
-    <!-- In full screen this floats just above the control bar and dims with it,
-         so the way back out is always written down somewhere without costing
-         the frame any height. -->
-    <p class="tpl-preview__hint">
+    <!-- Shown only when it has something to teach: how to place a block, or how
+         to get back out of full screen.
+
+         What it used to say the rest of the time was "Nothing here is saved
+         until you save the template." — permanently true, never changing, and
+         therefore not feedback but texture (apple-design §16: status,
+         completion, warning, error). The same sentence is already on the mobile
+         footer and inside the layout-editing hint, and on desktop it sits a few
+         hundred pixels from the Save button that implies it. A line that is
+         always true earns no permanent strip in the one pane whose whole job is
+         to be a phone.
+
+         In full screen it floats over the frame and dims with the control bar,
+         so the way out is written down without costing the frame any height. -->
+    <p v-if="layoutEditActive || fullscreen" class="tpl-preview__hint">
       {{ layoutEditActive
         ? t('management.coverLayoutEditor.previewHint')
         : t('management.partnerTemplatePreview.hint') }}
@@ -719,10 +748,32 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
+/*
+  `nowrap` is the whole point — see the template. The stage picker is the only
+  child allowed to give up width (it scrolls); the language pill and the
+  full-screen button keep theirs, because a two-letter code and a 34px icon
+  have nothing to give and would truncate to nothing if asked.
+*/
 .tpl-preview__segments {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  align-items: center;
   gap: 0.375rem;
+}
+
+.tpl-preview__langs,
+.tpl-preview__expand {
+  flex-shrink: 0;
+}
+
+/*
+  Pickers lead, the action holds the trailing edge — "which view am I looking
+  at" and "make the view bigger" are different questions and should not read as
+  a run of three equal pills. Collapses to 0 the moment the row is full, so it
+  costs nothing in the case that made this row wrap.
+*/
+.tpl-preview__expand {
+  margin-left: auto;
 }
 
 /* Two-letter codes need the tracking to read as codes rather than as a word. */
@@ -829,11 +880,9 @@ onUnmounted(() => {
   inset: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom));
 }
 
-/* The stage is already named on the segmented control below, and the label
-   costs the frame its own height plus a gap. */
-.tpl-preview.is-fullscreen :deep(.preview-frame__label) {
-  display: none;
-}
+/* The rule that hid `.preview-frame__label` here is gone because the label is
+   gone: full screen used to be the only mode that knew the stage picker had
+   already named the stage, and the docked pane now passes no label at all. */
 
 .tpl-preview.is-fullscreen .tpl-preview__controls {
   position: absolute;
@@ -846,8 +895,15 @@ onUnmounted(() => {
   transition: opacity 0.3s ease;
 }
 
+/* Centred as one group, so the trailing-edge margin the docked pane gives the
+   full-screen button has to come back off — here the bar is shrink-to-fit and
+   the button belongs beside the pickers, not pushed away from them. */
 .tpl-preview.is-fullscreen .tpl-preview__segments {
   justify-content: center;
+}
+
+.tpl-preview.is-fullscreen .tpl-preview__expand {
+  margin-left: 0;
 }
 
 /* Dimmed, never hidden: still the way out, still clickable, just no longer

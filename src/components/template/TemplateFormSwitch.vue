@@ -3,49 +3,46 @@
     type="button"
     role="switch"
     :aria-checked="modelValue"
+    class="list-row"
     @click="emit('update:modelValue', !modelValue)"
-    class="w-full flex items-center justify-between gap-3 p-3 rounded-xl text-left transition-colors duration-200"
-    :class="modelValue ? 'bg-sky-50/70 hover:bg-sky-50' : 'bg-slate-50 hover:bg-slate-100'"
   >
-    <span class="flex items-center gap-3 min-w-0">
-      <span v-if="icon" class="flex-shrink-0 p-2 bg-white rounded-lg shadow-sm">
-        <component :is="icon" class="w-4 h-4" :class="modelValue ? 'text-sky-500' : 'text-slate-400'" />
-      </span>
-      <span class="min-w-0">
-        <span class="block text-sm font-medium text-slate-700">{{ label }}</span>
-        <span v-if="description" class="block text-xs text-slate-500 leading-snug">{{ description }}</span>
-      </span>
+    <span class="list-row__text">
+      <span class="list-row__label">{{ label }}</span>
+      <span v-if="description" class="list-row__hint">{{ description }}</span>
     </span>
-    <span
-      :class="[
-        'relative h-6 w-11 rounded-full flex-shrink-0 transition-colors duration-200',
-        modelValue ? 'bg-sky-500' : 'bg-slate-300',
-      ]"
-      aria-hidden="true"
-    >
-      <span
-        :class="[
-          'absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200',
-          modelValue ? 'translate-x-5' : 'translate-x-0',
-        ]"
-      />
+    <span aria-hidden="true" class="switch-track" :class="{ 'is-on': modelValue }">
+      <span class="switch-knob" />
     </span>
   </button>
 </template>
 
 <script setup lang="ts">
-import type { LucideIcon } from 'lucide-vue-next'
-
 /**
- * The §8 settings toggle row, as a component. The partner template form had this
- * markup copied out five times with slightly different paddings each time.
+ * A settings row whose trailing half is a switch.
+ *
+ * Shares its anatomy with the event drawers rather than restating it: the two
+ * surfaces ask the same kind of question, and a switch that travels a different
+ * distance or highlights a different colour here than it does there is two
+ * systems for one control. `groupedList.css` carries both.
+ *
+ * The row expects to live inside a `.list-group`, which draws the border and
+ * the hairlines between rows — a lone switch is a one-row group, which is
+ * normal, not a special case.
+ *
+ * NO ICON CHIP. This component used to render the label behind a `p-2 bg-white
+ * rounded-lg shadow-sm` disc, which put a card inside a row inside a bordered
+ * panel; with nine switches in the editor the discs read as texture rather than
+ * as nine distinct meanings, and the three that shared the `Sparkles` glyph
+ * actively suggested they did the same thing. Removed here for the same reason
+ * it was removed from both drawers.
  */
 defineProps<{
   modelValue: boolean
   label: string
   description?: string
-  icon?: LucideIcon
 }>()
 
 const emit = defineEmits<{ 'update:modelValue': [boolean] }>()
 </script>
+
+<style scoped src="../common/groupedList.css"></style>

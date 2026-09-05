@@ -297,18 +297,6 @@
   </div>
 </template>
 
-<script lang="ts">
-/**
- * The tab this bar last showed as active, remembered across instances.
- *
- * Has to live out here, not in `<script setup>` — that compiles to a `setup()`
- * body and is re-run for every instance, and a value that resets with the
- * component is exactly the thing this can't be. See the note on `activePath`
- * for why the bar is a new instance on every navigation.
- */
-let lastActivePath: string | null = null
-</script>
-
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
@@ -321,6 +309,7 @@ import { useVendorProfile } from '@/composables/settings/useVendorProfile'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useExclusiveMenu } from '@/composables/useExclusiveMenu'
 import { useCopyToClipboard } from '@/composables/useCopyToClipboard'
+import { useTravellingIndicator } from '@/composables/useTravellingIndicator'
 
 // Copying the signed-in email out of the profile card.
 const { copied, copy } = useCopyToClipboard()
@@ -357,152 +346,41 @@ const toggleLanguage = () => {
   const currentIndex = options.findIndex((opt) => opt.code === locale.value)
   setLocale(options[(currentIndex + 1) % options.length].code)
 }
-
 /* ------------------------------------------------------------------ *
- * Which tab reads as active
+ * Which tab reads as active, and the gradient that travels to it
  *
- * Deliberately not `route.path` directly. Every view renders its own
- * MainLayout, so this bar is torn down and rebuilt on each navigation —
- * the instance that would play the transition is gone before it could,
- * and a freshly mounted bar has nothing to animate *from*: it comes up
- * already showing the destination.
+ * Both live in `useTravellingIndicator`, shared with the desktop bar so
+ * the two can never disagree about how a selection moves. It carries the
+ * cross-instance memory this bar needs (the nav chrome is rebuilt on
+ * every navigation, so there is nothing to animate *from* unless the
+ * outgoing tab is remembered outside the component), the every-frame
+ * re-measure the tabs' own relayout demands, and — new here — a
+ * critically damped spring in place of the fixed 380ms eased tween.
  *
- * So the destination is held back by a frame. `lastActivePath` (module
- * scope, above) outlives the component, the new bar paints once as the
- * page you came from, and only then switches — which is an ordinary
- * class change, and the tabs' own CSS transitions and the indicator's
- * glide run off it normally.
+ * The spring is what makes a redirect mid-flight work: tapping a third
+ * tab while the gradient is still crossing to the second used to restart
+ * the tween, dropping its speed to zero on one frame. Now the target
+ * simply moves and the existing velocity carries through.
  *
- * (The honest fix is for the nav chrome to be a persistent instance
- * above the router view rather than per-page furniture. That is a wider
- * change than this file.)
- * ------------------------------------------------------------------ */
-
-const activePath = ref(lastActivePath ?? route.path)
-// `immediate` matters: on a cold load nothing ever changes this, and without a
-// first write the next bar would come up with no memory of where it came from.
-watch(
-  activePath,
-  (path) => {
-    lastActivePath = path
-  },
-  { immediate: true },
-)
-
-const isActiveRoute = (path: string) => {
-  const current = activePath.value
-  return current === path || current.startsWith(path + '/')
-}
-
-/* ------------------------------------------------------------------ *
- * The travelling indicator
- *
- * The pill's geometry can't be declared: its width is the active tab's
- * width, which depends on the label, the locale and whether the webfont
- * has loaded yet. So it is measured off the tab that carries
- * `aria-current="page"` — an attribute the template already sets, so
- * there is no second source of truth about which tab is active.
+ * It also removes the constant that had to be kept in step with the
+ * tabs' CSS transition by hand — the spring converges on whatever the
+ * layout settles to, whenever it settles.
  * ------------------------------------------------------------------ */
 
 const rowRef = ref<HTMLElement | null>(null)
-const indicator = ref({ x: 0, w: 0, visible: false })
+const {
+  indicator,
+  isActive: isActiveRoute,
+  settle,
+} = useTravellingIndicator({
+  key: 'mobile-tab-bar',
+  row: rowRef,
+  path: computed(() => route.path),
+})
 
-// Matches the tabs' own CSS transition. The two have to agree: the glide
-// finishes by reading the layout the tabs have just finished settling into,
-// and if it ended first it would stop short of the final width.
-const GLIDE_MS = 380
-
-const reducedMotion =
-  typeof window !== 'undefined' && window.matchMedia
-    ? window.matchMedia('(prefers-reduced-motion: reduce)')
-    : null
-
-let frame = 0
-
-/** Where the indicator should be *right now*, or null if no tab is active. */
-const measure = () => {
-  const row = rowRef.value
-  const tab = row?.querySelector<HTMLElement>('[aria-current="page"]')
-  if (!row || !tab) return null
-  const rowBox = row.getBoundingClientRect()
-  const tabBox = tab.getBoundingClientRect()
-  return { x: tabBox.left - rowBox.left, w: tabBox.width }
-}
-
-const cancelGlide = () => {
-  if (frame) cancelAnimationFrame(frame)
-  frame = 0
-}
-
-/** Jump straight to the current geometry — mount, resize, locale change. */
-const settle = () => {
-  cancelGlide()
-  const target = measure()
-  if (!target) {
-    indicator.value = { ...indicator.value, visible: false }
-    return
-  }
-  indicator.value = { ...target, visible: true }
-}
-
-/**
- * Travel to the newly active tab.
- *
- * The destination is still moving while we go: the tabs are mid-transition,
- * the old one giving up its label and the new one taking one, so every tab to
- * the right of the change is sliding too. Measuring once at the start would
- * aim at the *old* layout — the new tab hasn't grown yet — and land short.
- * So the target is re-read every frame and the eased fraction is applied to
- * wherever it has got to, which converges on the settled layout exactly as
- * the tabs' own transition ends.
- */
-const glide = () => {
-  const from = indicator.value.visible ? { x: indicator.value.x, w: indicator.value.w } : null
-  if (!from || reducedMotion?.matches) {
-    settle()
-    return
-  }
-  if (!measure()) {
-    cancelGlide()
-    indicator.value = { ...indicator.value, visible: false }
-    return
-  }
-
-  cancelGlide()
-  const start = performance.now()
-  const step = (now: number) => {
-    const progress = Math.min(1, (now - start) / GLIDE_MS)
-    const eased = 1 - Math.pow(1 - progress, 3)
-    const target = measure()
-    if (!target) {
-      settle()
-      return
-    }
-    indicator.value = {
-      x: from.x + (target.x - from.x) * eased,
-      w: from.w + (target.w - from.w) * eased,
-      visible: true,
-    }
-    if (progress < 1) frame = requestAnimationFrame(step)
-    else settle() // land on the measured value, not the interpolated one
-  }
-  frame = requestAnimationFrame(step)
-}
-
-/** Move to a new tab, animating unless there is nothing to animate from. */
-const goTo = (path: string) => {
-  if (activePath.value === path) return
-  activePath.value = path
-  nextTick(glide)
-}
-
-// A route change is the only thing that should animate. Everything else that
-// moves the tabs — a locale swap relabelling them, the viewport resizing,
-// signing in adding two more — just repositions.
-watch(() => route.path, goTo)
+// A locale swap relabels every tab, so the gradient repositions — it does not
+// travel: nothing navigated.
 watch(locale, () => nextTick(settle))
-
-let resizeObserver: ResizeObserver | null = null
 
 // Profile picture computed property
 const profilePictureError = ref(false)
@@ -560,57 +438,50 @@ const handleLogout = async () => {
   }
 }
 
-// Lifecycle hooks
+// Lifecycle hooks. The indicator's own mount work — the arrived-from frame, the
+// webfont remeasure and the row's ResizeObserver — lives in the composable.
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleKeyDown)
-
-  // Place the indicator on the tab we arrived from, then hand over to the real
-  // route. Two frames: the first commits the starting style, and a class change
-  // in the same frame as the first paint would transition from nothing.
-  settle()
-  requestAnimationFrame(() => requestAnimationFrame(() => goTo(route.path)))
-
-  // The label's width is the webfont's, and on a cold load the first measure
-  // happens against the fallback face.
-  document.fonts?.ready.then(() => {
-    if (!frame) settle()
-  })
-
-  if (rowRef.value && typeof ResizeObserver !== 'undefined') {
-    // Catches the rest: the viewport changing, and tabs appearing or leaving
-    // when the user signs in or out.
-    resizeObserver = new ResizeObserver(() => {
-      if (!frame) settle()
-    })
-    resizeObserver.observe(rowRef.value)
-  }
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleKeyDown)
-  cancelGlide()
-  resizeObserver?.disconnect()
-  resizeObserver = null
 })
 </script>
 
 <style scoped>
-/* SlideUp animations for mobile menu (slides down from above) */
-.slideUp-enter-active,
+/*
+  The menu grows out of the button that opened it and collapses back into it —
+  the profile avatar at the pill's trailing edge — rather than sliding in from
+  a direction nothing pointed at. `transform-origin` is what carries that; the
+  slight scale is what makes it read as arriving from there rather than merely
+  passing through.
+
+  `all` is gone: it dragged the card's backdrop blur, its border and its
+  two-part shadow into every frame of the transition, which is what made this
+  feel heavy to open. Transform and opacity only, on the drawer easing pair
+  from DESIGN.md §7 — spring-like on the way in, quicker and flatter out.
+*/
+.slideUp-enter-active {
+  transform-origin: bottom right;
+  transition:
+    opacity 0.18s ease-out,
+    transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
 .slideUp-leave-active {
-  transition: all 0.3s ease;
+  transform-origin: bottom right;
+  transition:
+    opacity 0.16s ease-in,
+    transform 0.2s cubic-bezier(0.4, 0, 0.6, 1);
 }
 
-.slideUp-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
+.slideUp-enter-from,
 .slideUp-leave-to {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(12px) scale(0.96);
 }
 
 /* The floating pill's surface now lives in main.css as `.glass-pill`, so the
@@ -620,6 +491,11 @@ onUnmounted(() => {
 @media (prefers-reduced-motion: reduce) {
   .glass-pill * {
     transition-duration: 0.01ms !important;
+  }
+
+  .slideUp-enter-from,
+  .slideUp-leave-to {
+    transform: none;
   }
 }
 

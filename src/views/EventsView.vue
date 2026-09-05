@@ -12,7 +12,7 @@
          tab bar) / lg:pt-16 (desktop nav) so the sticky footer lands at the
          viewport bottom without a phantom scrollbar -->
     <div
-      class="flex flex-col bg-gradient-to-r from-[#2ecc71]/[0.02] via-white/0 to-[#1e90ff]/[0.02]"
+      class="flex flex-col"
       :class="
         showLanding
           ? ''
@@ -186,9 +186,12 @@ const showEventDrawer = ref(false)
 const selectedEventId = ref<string | null>(null)
 const selectedEventIndex = ref<number>(-1)
 
-// Use composables
-const { events, loading, loadEvents } = useEventsData(
-  computed(() => authStore.isAuthenticated)
+// Use composables. The cache key opts this tab into the cross-mount list
+// cache — see useEventsData — so coming back from Discover or Services shows
+// the list it was showing rather than a skeleton.
+const { events, loading, restored, loadEvents } = useEventsData(
+  computed(() => authStore.isAuthenticated),
+  'events:my'
 )
 
 // Filter events based on time filter and category
@@ -570,7 +573,10 @@ onMounted(async () => {
   loadCategories()
 
   if (authStore.isAuthenticated) {
-    const result = await loadEvents('my', {})
+    // Silent when the cache already put cards on screen: the list is still
+    // correct, so it is refreshed underneath rather than replaced by a
+    // skeleton for the length of a round trip.
+    const result = await loadEvents('my', {}, false, restored)
     if (!result.success && result.message) {
       showMessage('error', result.message)
     }

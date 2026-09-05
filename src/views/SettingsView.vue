@@ -8,7 +8,7 @@
   -->
   <MainLayout hide-top-nav hide-contact-fab>
     <div
-      class="min-h-screen bg-gradient-to-r from-[#2ecc71]/[0.02] via-white/0 to-[#1e90ff]/[0.02]"
+      class="min-h-screen"
     >
       <!-- Main Content. Taller top padding than the list pages carry, because
          there is no 4rem bar above this one to hold it off the viewport edge. -->

@@ -1,7 +1,20 @@
 <template>
   <div class="space-y-1.5">
     <p v-if="label" :class="FIELD_LABEL">{{ label }}</p>
+
+    <!-- A magnitude: one track, ordered, with the chosen step capped in white. -->
+    <SegmentedField
+      v-if="variant === 'segmented'"
+      :model-value="modelValue"
+      :options="options"
+      :aria-label="label"
+      @update:model-value="emit('update:modelValue', $event)"
+    />
+
+    <!-- A look: the alternatives shown side by side, each able to describe
+         itself. -->
     <div
+      v-else
       class="grid gap-2"
       :class="columns === 3 ? 'grid-cols-3' : columns === 1 ? 'grid-cols-1' : 'grid-cols-2'"
       role="radiogroup"
@@ -44,6 +57,7 @@
 
 <script setup lang="ts">
 import { Check, type LucideIcon } from 'lucide-vue-next'
+import SegmentedField from '../common/SegmentedField.vue'
 import { FIELD_LABEL, optionClass, optionIconClass } from './templateUi'
 
 export interface TemplateFormChoiceOption {
@@ -54,11 +68,28 @@ export interface TemplateFormChoiceOption {
 }
 
 /**
- * Radio cards for the form's short enums (animation type, intensity, design
- * style…). These used to be `<select>`s, which hid every option but one behind a
- * click — for two- and three-way choices that describe a *look*, showing the
- * alternatives side by side is both faster and more honest about what's on offer.
- * Longer lists (fonts, particle types) stay on TemplateFormSelect.
+ * One choice, drawn one of two ways.
+ *
+ * `cards` (the default) is for a choice between *looks* — which host layout,
+ * which agenda composition, artwork cover vs filmed cover. Each option can
+ * carry a description and an icon, and showing them side by side is both faster
+ * and more honest than a `<select>` that hides every alternative behind a
+ * click. Longer lists (fonts, particle types) still belong on
+ * TemplateFormSelect.
+ *
+ * `segmented` is for a choice of *magnitude*: light / normal / heavy, slow /
+ * normal / fast, subtle / normal / bright, none / soft / raised. Eight of these
+ * were drawn as three-across cards, which is the wrong shape for them twice
+ * over — three separate boxes say nothing about the fact that these values are
+ * ordered, and a card whose only content is one word is a card that has nothing
+ * to put in it. A segmented track puts the steps on one line in their own
+ * order, so the control's shape maps to what it changes (apple-design §16,
+ * grouping & mapping).
+ *
+ * The segmented rendering delegates to the drawers' `SegmentedField` rather
+ * than reimplementing a track here: it already carries the sliding cap, the
+ * roving tabindex and the reduced-motion rule, and a second implementation
+ * would be a second set of answers to all three.
  */
 withDefaults(
   defineProps<{
@@ -66,8 +97,9 @@ withDefaults(
     options: TemplateFormChoiceOption[]
     label?: string
     columns?: 1 | 2 | 3
+    variant?: 'cards' | 'segmented'
   }>(),
-  { columns: 2 },
+  { columns: 2, variant: 'cards' },
 )
 
 const emit = defineEmits<{ 'update:modelValue': [string] }>()

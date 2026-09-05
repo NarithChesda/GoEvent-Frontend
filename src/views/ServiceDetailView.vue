@@ -13,7 +13,7 @@
   -->
   <MainLayout hide-mobile-tab-bar has-custom-bottom-bar hide-contact-fab>
     <div
-      class="min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-4rem)] bg-gradient-to-r from-[#2ecc71]/[0.02] via-white/0 to-[#1e90ff]/[0.02]"
+      class="min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-4rem)]"
     >
       <div
         class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto sm:px-6 lg:px-8 lg:py-8 pb-6 lg:pb-8"

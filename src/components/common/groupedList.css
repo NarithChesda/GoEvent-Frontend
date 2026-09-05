@@ -1,0 +1,219 @@
+/*
+  Grouped inset list — the row anatomy shared by a drawer's settings-style
+  controls: switch rows, value rows that disclose an editor, and rows whose
+  trailing half is a bare input.
+
+  One sheet rather than a copy per component, for the reason actionButton.css
+  gives: these rows sit directly on top of each other inside one border, so a
+  two-pixel disagreement about padding or a different press highlight is
+  visible in the same glance. Import with
+  `<style scoped src="./common/groupedList.css">` — Vue compiles a separate
+  scoped copy per component, which is what keeps every selector reachable.
+
+  Markup contract:
+
+    <div class="list-group">
+      <button type="button" role="switch" :aria-checked="on" class="list-row">
+        <span class="list-row__text">
+          <span class="list-row__label">…</span>
+          <span class="list-row__hint">…</span>          <!-- optional -->
+        </span>
+        <span aria-hidden="true" class="switch-track" :class="{ 'is-on': on }">
+          <span class="switch-knob" />
+        </span>
+      </button>
+
+      <div class="list-row">
+        <label class="list-row__label" for="…">…</label>
+        <input id="…" class="list-input" />
+      </div>
+    </div>
+
+  A component whose root element is a row (DateTimeDisclosureRow) imports this
+  too and puts `list-row` on its own button, so a group can hold both kinds.
+*/
+
+.list-group {
+  border: 1px solid rgb(226 232 240); /* slate-200 */
+  border-radius: 0.75rem;
+  background-color: #fff;
+  overflow: hidden;
+}
+
+/* Hairlines between rows only — never around the group's own inner edge. */
+.list-group > * + * {
+  border-top: 1px solid rgb(241 245 249); /* slate-100 */
+}
+
+.list-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  /* ≥ 40px touch target at every root font size (DESIGN.md §5.3). */
+  min-height: 2.75rem;
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+  /* Eased on the way out; instantaneous on the way in — see :active. */
+  transition: background-color 0.18s ease-out;
+}
+
+button.list-row:hover,
+a.list-row:hover {
+  background-color: rgb(248 250 252); /* slate-50 */
+}
+
+/*
+  Press feedback is a row highlight, not a scale.
+
+  The `transform: scale(0.99)` this replaces moved a 560px-wide row by under
+  three pixels at its widest point and by nothing at all at its centre, which
+  is to say it was not feedback. A list row highlights — that is what the
+  platform does, and it is what the finger is covering anyway. `transition:
+  none` so the highlight lands on the same frame as the touch instead of
+  easing in over 180ms, which reads as lag (apple-design §1).
+*/
+button.list-row:active,
+a.list-row:active {
+  transition: none;
+  background-color: rgb(241 245 249); /* slate-100 */
+}
+
+.list-row:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgb(186 230 253); /* sky-200 */
+}
+
+.list-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.list-row__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(51 65 85); /* slate-700 */
+}
+
+.list-row__hint {
+  font-size: 0.75rem;
+  color: rgb(100 116 139); /* slate-500 */
+}
+
+/*
+  Trailing value on a disclosure row. Deliberately declares no `color`: the
+  value's slate step carries meaning (set / unset / active / invalid) and the
+  caller supplies it as a Tailwind class. A `color` here would win — a scoped
+  copy of this rule compiles with the component's data attribute and outranks
+  a bare `.text-slate-400` — and silently flatten all four states into one.
+*/
+.list-row__value {
+  min-width: 0;
+  font-size: 0.875rem;
+}
+
+/*
+  A bare input in the trailing half of a row. It has no border of its own —
+  the group's border is already drawn around it, and a second one inside makes
+  the row read as a card containing a field rather than as a field.
+
+  16px on phones: Mobile Safari zooms the whole page when a focused input
+  measures under 16px, and the drawer cannot be zoomed back out by hand.
+*/
+.list-input {
+  min-width: 0;
+  flex: 1 1 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: right;
+  font-size: 1rem;
+  color: rgb(15 23 42); /* slate-900 */
+}
+
+@media (min-width: 640px) {
+  .list-input {
+    font-size: 0.875rem;
+  }
+}
+
+.list-input::placeholder {
+  color: rgb(148 163 184); /* slate-400 */
+}
+
+.list-input:focus {
+  outline: none;
+}
+
+/*
+  The row carries the focus ring, so it surrounds the whole row rather than a
+  borderless input floating inside one.
+
+  Scoped to `:has(.list-input:focus)` rather than `:focus-within`: a row can
+  also hold a control that draws its own ring — the fundraising currency's
+  segmented buttons — and `:focus-within` put a second ring around the row
+  every time one of them took focus.
+*/
+.list-row:has(.list-input:focus) {
+  box-shadow: inset 0 0 0 2px rgb(186 230 253); /* sky-200 */
+}
+
+/* ── Switch ──────────────────────────────────────────────────────────────── */
+
+.switch-track {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 1.5rem;
+  width: 2.75rem;
+  flex-shrink: 0;
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  background-color: rgb(226 232 240); /* slate-200 */
+  /* The off state reads as an empty slot rather than a flat pill. */
+  box-shadow: inset 0 1px 2px rgb(15 23 42 / 0.06);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.switch-track.is-on {
+  background-color: rgb(14 165 233); /* sky-500 */
+  box-shadow: inset 0 1px 2px rgb(15 23 42 / 0);
+}
+
+.switch-knob {
+  pointer-events: none;
+  display: inline-block;
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 9999px;
+  background-color: #fff;
+  /* Two shadows: a contact shadow directly under the cap and a softer drop
+     below it, so the knob sits on the track instead of being printed on it. */
+  box-shadow:
+    0 1px 1px rgb(15 23 42 / 0.06),
+    0 2px 4px rgb(15 23 42 / 0.15);
+  /* Strong ease-out: the knob should land, not coast. */
+  transition: transform 0.22s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/*
+  The travel is the track's inner width minus the knob, in `rem` so it stays
+  correct under the 75% root-font downscale the app applies on short laptop
+  viewports. The literal `20px` this replaces was right at one root size only.
+*/
+.switch-track.is-on .switch-knob {
+  transform: translateX(1.25rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list-row,
+  .switch-track,
+  .switch-knob {
+    transition-duration: 0.01ms;
+  }
+}

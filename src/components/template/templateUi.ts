@@ -113,6 +113,23 @@ export const OPTION_SELECTED =
 export const OPTION_IDLE =
   'bg-white ring-slate-200 text-slate-600 hover:ring-slate-300 hover:bg-slate-50 hover:text-slate-900'
 
+/**
+ * The same idle state with no ring at rest — for a *rail*, where the options
+ * are stacked edge to edge and a resting ring on every one of them draws six
+ * boxes where the eye wants one list. The ring still arrives on hover, so the
+ * row's edge is there the moment it is asked for.
+ *
+ * Spelled out rather than written as `${OPTION_IDLE} ring-transparent`, which
+ * is what the section rail did. Both set `--tw-ring-color` at the same
+ * specificity, so which one paints is decided by their order in the *generated
+ * stylesheet* and not by the order they appear in the class list — and the
+ * order that made it work was Tailwind's own, with `.ring-transparent` landing
+ * 717 bytes after `.ring-slate-200` in this build. That is a coin toss the rest
+ * of this file exists to avoid (see the BTN_PRIMARY_BAR note).
+ */
+export const OPTION_IDLE_RAIL =
+  'bg-white ring-transparent text-slate-600 hover:ring-slate-300 hover:bg-slate-50 hover:text-slate-900'
+
 /** Shared frame for an option card / radio card / rail item. */
 export const OPTION_BASE =
   'ring-1 transition-[background-color,box-shadow,color] duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1'

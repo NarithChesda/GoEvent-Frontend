@@ -182,13 +182,50 @@ const loadPublicEvents = async (
 }
 
 /**
+ * The last list each tab successfully rendered, kept for the life of the tab.
+ *
+ * Every view builds its own MainLayout, so switching tabs unmounts the page
+ * entirely and the next `useEventsData` starts from an empty array — which is
+ * why Events and Discover used to drop to a full-page skeleton on every switch
+ * and hold it for a whole round trip. The list you were just looking at is
+ * still correct; what it needs is a refresh, not a reload.
+ *
+ * So a keyed instance is seeded from here and reports `restored`, and the
+ * caller's mount fetch runs `silent` — the cards stay on screen and are
+ * replaced in place when the response lands. This is deliberately only the
+ * *mount* path: a filter change still shows the skeleton, because there the
+ * whole list genuinely is being replaced and the tap needs an answer.
+ *
+ * Not a reactive store. Nothing observes it — it is read once at setup and
+ * written after each successful load — and a shared ref would make two mounted
+ * instances fight over one array.
+ */
+const eventListCache = new Map<string, Event[]>()
+
+/**
+ * Drop every cached list. Called on sign-out (see App.vue), because the cache
+ * outlives the session: nothing here triggers a page reload on logout, so
+ * without this the next account to sign in would be seeded with — and would
+ * paint — the previous one's `events:my` titles before its own fetch landed.
+ */
+export function resetEventListCache() {
+  eventListCache.clear()
+}
+
+/**
  * Composable for managing events data across different views
  *
  * @param isAuthenticated - Reactive ref indicating if user is authenticated
+ * @param cacheKey - Opts this tab into the cross-mount list cache above. Must
+ *   be unique per tab: two tabs sharing a key would seed each other with a list
+ *   the other's filters never asked for.
  * @returns Object containing reactive state and methods for event management
  */
-export function useEventsData(isAuthenticated: Ref<boolean>) {
-  const events = ref<Event[]>([])
+export function useEventsData(isAuthenticated: Ref<boolean>, cacheKey?: string) {
+  const cached = cacheKey ? eventListCache.get(cacheKey) : undefined
+  const events = ref<Event[]>(cached ? [...cached] : [])
+  /** Whether this instance came up already showing a list. */
+  const restored = cached !== undefined && cached.length > 0
   const loading = ref(false)
   const currentPage = ref(1)
   const hasMore = ref(true)
@@ -249,6 +286,18 @@ export function useEventsData(isAuthenticated: Ref<boolean>) {
           events.value = [...events.value, ...newEvents]
         } else {
           events.value = newEvents
+        }
+
+        // Cached only when nothing is filtered, because the cache's one job is
+        // to seed the *next mount* and both tabs remount with their filters
+        // cleared (`filters` is a fresh `{}`, `dateFilter` back to its
+        // default). Caching a filtered result would seed the next visit with a
+        // narrowed list under a filter control reading "All" — a wrong list
+        // shown confidently, which is worse than the skeleton this replaces.
+        // Appended pages under no filter are cached, so returning restores the
+        // whole infinite-scrolled list rather than its first page.
+        if (cacheKey && Object.values(filters).every((v) => v === undefined)) {
+          eventListCache.set(cacheKey, events.value)
         }
 
         // Update pagination state
@@ -313,6 +362,7 @@ export function useEventsData(isAuthenticated: Ref<boolean>) {
     // State
     events,
     loading,
+    restored,
     currentPage,
     hasMore,
     isLoadingMore,

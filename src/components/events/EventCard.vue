@@ -407,11 +407,21 @@ const timeRangeSuffix = computed(() => {
  * a 5%-alpha shadow, which left a list of them reading as floating text. It now
  * carries a real edge, and the category accent rides its left side as a rail —
  * the cheapest way to give a column of cards colour rhythm.
+ *
+ * It stays translucent — the 12% of `premium-bg` showing through is what lets
+ * a card near the top of the page pick up the brand bloom — but it carries
+ * **no `backdrop-filter`**, and must not regain one. Blur is a material effect
+ * for chrome that content passes *under*: the top bar, the tab pill, the
+ * sticky date pill. A card sits *on* the ground, and the only thing behind it
+ * is `premium-bg`'s gradient, which has no detail for a blur to soften — the
+ * output of `blur(20px)` over a smooth gradient is that same gradient. So the
+ * effect was invisible while costing a backdrop-root snapshot *per card*, and
+ * a list is twenty to thirty of them. That is what made a tab switch hitch:
+ * mounting the list promoted thirty compositing layers in one frame, and every
+ * subsequent scroll re-sampled all of them.
  */
 .event-card {
   background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(226, 232, 240, 0.9);
   box-shadow:
     inset 3px 0 0 0 var(--accent),

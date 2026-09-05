@@ -78,7 +78,7 @@ A card is **not** justified merely to visually group fields. Cheaper groupings, 
 
 ## 4. Label restraint
 
-The uppercase eyebrow (`text-xs font-semibold text-slate-500 uppercase tracking-wider`) is a sanctioned DESIGN.md token for form section headings — which is exactly why it needs a discipline rule. It appears **188 times across 65 files**; [PartnerTemplateForm.vue](src/components/template/PartnerTemplateForm.vue) alone has 17.
+The uppercase eyebrow (`text-xs font-semibold text-slate-500 uppercase tracking-wider`) is a sanctioned DESIGN.md token for form section headings — which is exactly why it needs a discipline rule. It appears **188 times across 65 files**. [PartnerTemplateForm.vue](src/components/template/PartnerTemplateForm.vue) held 23 of them and now holds 12: the eleven that went were the ones sitting directly on top of a control that already said the same thing — "Cover gilding" over a switch reading *Enable gilding* — or heading a card that contained exactly one field, where the eyebrow was doing a field label's job in a heading's clothes. The twelve that stayed each name a group of three or more slots a partner scrolls between. That ratio is the rule in practice: an eyebrow survives when it names something the control beneath it cannot.
 
 A sanctioned token is not a free one. Every eyebrow costs vertical space and adds a beat to the page's rhythm; when every group has one, they stop separating anything and become texture.
 

@@ -48,7 +48,7 @@
     aria-haspopup="dialog"
     :aria-expanded="showSheet"
     :aria-label="t('categories.filterByCategory')"
-    :class="['sm:hidden active:scale-95', triggerClass]"
+    :class="['sm:hidden', triggerClass]"
   >
     <Shapes class="w-4 h-4 flex-shrink-0" />
   </button>
@@ -147,7 +147,9 @@ const isFiltered = computed(() => props.modelValue !== 'all')
  * Shared by this component's own two triggers — the desktop menu's and the
  * mobile sheet's — so the control looks the same whichever surface it opens,
  * and shared with the sort button beside it via listControlTriggerClass. The
- * recipe keeps the 40px touch target (design standard §17) in every tone.
+ * recipe carries the height (`.lfc-chip`, 2.5rem — 40px at the mobile root
+ * font, so design standard §17's touch target holds) and the press feedback in
+ * every tone; nothing about size or motion is this component's to set.
  */
 const triggerClass = computed(() => listControlTriggerClass(props.tone, isFiltered.value))
 
