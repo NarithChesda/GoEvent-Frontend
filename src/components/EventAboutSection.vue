@@ -1,6 +1,13 @@
 <template>
   <div class="space-y-4 sm:space-y-5 pb-8">
-    <!-- ============ 1. HERO ============ -->
+    <!-- ============ 1. EVENT HEADER ============
+         The hero and "at a glance" are one object, not two. An organizer opening
+         this tab asks a single question — what is this event, and where does it
+         stand — so the answer is one panel with hairline-separated regions. Two
+         glass cards at identical elevation made neither of them the subject, and
+         the stats read as a card inside a card inside a card (tile > icon disc).
+         Here the panel is the only card; the stat strip and the invitation gauge
+         are regions of it, grouped by a rule and space rather than by chrome. -->
     <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl overflow-hidden">
       <!-- Banner Image (shared 1.91:1 banner ratio) -->
       <div v-if="event.banner_image" class="relative w-full aspect-banner bg-slate-100">
@@ -15,7 +22,7 @@
       <div class="p-4 sm:p-6 space-y-4">
         <!-- Title, organizer & category -->
         <div>
-          <h1 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 leading-tight">
             {{ event.title }}
           </h1>
           <div class="mt-2 flex items-center justify-between gap-3">
@@ -42,10 +49,11 @@
           </div>
         </div>
 
-        <!-- Date & Time -->
+        <!-- Date & time. The countdown rides on the line it counts down to rather
+             than heading a section of its own — proximity is the whole mapping. -->
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-xl flex-shrink-0 shadow-md shadow-emerald-900/10 overflow-hidden ring-1 ring-black/5">
-            <div class="h-[38%] bg-gradient-to-r from-emerald-500 to-sky-500 flex items-center justify-center">
+          <div class="w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden ring-1 ring-slate-200 shadow-sm">
+            <div class="h-[38%] bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] flex items-center justify-center">
               <span class="text-[8px] font-bold text-white uppercase tracking-wider">{{ getMonthAbbr(event.start_date) }}</span>
             </div>
             <div class="h-[62%] bg-white flex items-center justify-center">
@@ -54,12 +62,32 @@
           </div>
           <div class="flex-1 min-w-0">
             <p class="font-semibold text-slate-900 text-sm sm:text-base">{{ getFormattedDate(event.start_date) }}</p>
-            <p class="text-xs sm:text-sm text-slate-600">{{ getTimeRange(event.start_date, event.end_date) }}</p>
+            <div class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+              <p class="text-xs sm:text-sm text-slate-600">{{ getTimeRange(event.start_date, event.end_date) }}</p>
+              <span
+                class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold"
+                :class="countdownPillClass"
+              >
+                <span v-if="countdown.state === 'today'" class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" aria-hidden="true" />
+                {{ countdownLabel }}
+              </span>
+            </div>
           </div>
         </div>
 
-        <!-- Location -->
-        <div v-if="event.location || event.is_virtual" class="flex items-center gap-3">
+        <!-- Location. The row is the control: tapping the place opens the place,
+             which is a shorter path than a detached chip repeating its name. The
+             negative inline margin only lets the press fill bleed past the text
+             while the icon stays aligned with the date row above it. -->
+        <component
+          :is="locationAction ? 'button' : 'div'"
+          v-if="event.location || event.is_virtual"
+          :type="locationAction ? 'button' : undefined"
+          :aria-label="locationActionLabel"
+          class="-mx-2 flex w-full items-center gap-3 rounded-xl px-2 py-1 text-left transition-colors"
+          :class="locationAction ? 'hover:bg-slate-50 active:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200' : ''"
+          @click="handleLocationAction"
+        >
           <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
             <Video v-if="event.is_virtual" class="w-5 h-5 text-slate-600" />
             <MapPin v-else class="w-5 h-5 text-slate-600" />
@@ -72,107 +100,83 @@
               {{ event.virtual_link }}
             </p>
           </div>
-        </div>
+          <ExternalLink v-if="locationAction" class="w-4 h-4 text-slate-400 flex-shrink-0" aria-hidden="true" />
+        </component>
 
-        <!-- Quick actions -->
-        <div class="flex flex-wrap items-center gap-2 pt-1">
-          <button
-            @click="showCalendarSheet = true"
-            class="flex items-center gap-1.5 px-3 py-2 min-h-[40px] bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-emerald-300 hover:bg-emerald-50 active:scale-95 transition-all"
-          >
-            <CalendarPlus class="w-4 h-4 text-slate-500" />
-            {{ t('management.overview.calendar.addToCalendar') }}
-          </button>
-          <button
-            v-if="!event.is_virtual && event.location"
-            @click="openMap"
-            class="flex items-center gap-1.5 px-3 py-2 min-h-[40px] bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-emerald-300 hover:bg-emerald-50 active:scale-95 transition-all"
-          >
-            <ExternalLink class="w-4 h-4 text-slate-500" />
-            {{ t('management.overview.location.viewOnMap') }}
-          </button>
-          <button
-            v-if="event.is_virtual && event.virtual_link"
-            @click="$emit('join-virtual')"
-            class="flex items-center gap-1.5 px-3 py-2 min-h-[40px] bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-emerald-300 hover:bg-emerald-50 active:scale-95 transition-all"
-          >
-            <ExternalLink class="w-4 h-4 text-slate-500" />
-            {{ t('management.overview.location.joinVirtual') }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ============ 2. AT A GLANCE (organizer dashboard) ============ -->
-    <div v-if="event.can_edit" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6 space-y-4">
-      <div class="flex items-center justify-between gap-3">
-        <h2 class="text-base font-semibold text-slate-900">{{ t('management.overview.glance.title') }}</h2>
-        <span
-          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold flex-shrink-0"
-          :class="countdownPillClass"
-        >
-          <span v-if="countdown.state === 'today'" class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-          <Clock v-else class="w-3.5 h-3.5" />
-          {{ countdownLabel }}
-        </span>
-      </div>
-
-      <!-- Tappable stat tiles -->
-      <div class="grid grid-cols-3 gap-2 sm:gap-3">
+        <!-- The one explicit action the header carries, and deliberately quiet:
+             it is a convenience, not what this screen is for. -->
         <button
-          v-for="tile in glanceTiles"
-          :key="tile.key"
-          @click="$emit('navigate', tile.tab)"
-          class="group text-left rounded-xl bg-slate-50 ring-1 ring-slate-100 hover:ring-slate-200 hover:bg-slate-100/70 active:scale-95 transition-all p-3"
+          type="button"
+          @click="showCalendarSheet = true"
+          class="w-full flex items-center justify-center gap-2 min-h-[40px] py-2.5 bg-slate-50 hover:bg-slate-100 active:bg-slate-200 rounded-xl text-sm font-medium text-slate-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
         >
-          <div class="flex items-center gap-1.5 min-w-0">
-            <span class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-slate-100">
-              <component :is="tile.icon" class="h-3 w-3 text-slate-500" aria-hidden="true" />
-            </span>
-            <span class="truncate text-[10px] sm:text-xs font-medium text-slate-500">{{ tile.label }}</span>
-          </div>
-          <div class="mt-2 flex items-center justify-between">
-            <span
-              v-if="tile.loading"
-              class="inline-block h-5 w-8 animate-pulse rounded bg-slate-200"
-              aria-hidden="true"
-            />
-            <span v-else class="text-lg sm:text-xl font-bold leading-none text-slate-900 tabular-nums">
-              {{ tile.count === null ? '–' : tile.count }}
-            </span>
-            <ChevronRight class="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500 transition-colors" />
-          </div>
+          <CalendarPlus class="w-4 h-4 text-slate-500" aria-hidden="true" />
+          {{ t('management.overview.calendar.addToCalendar') }}
         </button>
       </div>
 
-      <!-- Invitation progress -->
+      <!-- At a glance. The number is the only thing "at a glance" means, so it is
+           the largest type in the region and everything else recedes: no tile
+           fill, no icon disc, no per-column chevron. The hierarchy is built from
+           type scale and slate value, which is what a one-accent, light-only
+           system actually has to spend. -->
+      <div v-if="event.can_edit" class="grid grid-cols-3 border-t border-slate-200/70 divide-x divide-slate-200/70">
+        <button
+          v-for="tile in glanceTiles"
+          :key="tile.key"
+          type="button"
+          :aria-label="`${tile.label}: ${tile.count === null ? '–' : tile.count}`"
+          class="px-2 py-4 text-center transition-colors hover:bg-slate-50 active:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-200"
+          @click="$emit('navigate', tile.tab)"
+        >
+          <span
+            v-if="tile.loading"
+            class="mx-auto block h-7 w-10 animate-pulse rounded bg-slate-200"
+            aria-hidden="true"
+          />
+          <span v-else class="block text-2xl sm:text-3xl font-semibold leading-none tracking-tight text-slate-900 tabular-nums">
+            {{ tile.count === null ? '–' : tile.count }}
+          </span>
+          <span class="mt-1.5 block truncate text-xs font-medium text-slate-500">{{ tile.label }}</span>
+        </button>
+      </div>
+
+      <!-- Invitations. One gauge in one hue at two intensities: viewed is a subset
+           of sent, so overlapping fills state the containment that two adjacent
+           segments in two unrelated colours only implied. -->
       <button
-        v-if="hasTemplatePayment"
+        v-if="event.can_edit && hasTemplatePayment"
+        type="button"
         @click="$emit('navigate', 'guest-management')"
-        class="w-full text-left space-y-2 rounded-xl p-3 -m-1 hover:bg-slate-50 active:bg-slate-100 transition-colors"
+        class="w-full border-t border-slate-200/70 px-4 sm:px-6 py-3.5 text-left transition-colors hover:bg-slate-50 active:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-200"
       >
         <div class="flex items-center justify-between gap-3">
-          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.overview.glance.invitations') }}</span>
-          <span class="flex items-center gap-0.5 text-xs font-medium text-[#1e90ff]">
+          <span class="text-sm font-medium text-slate-700">{{ t('management.overview.glance.invitations') }}</span>
+          <span class="flex items-center gap-0.5 text-xs font-medium text-[#1e90ff] flex-shrink-0">
             {{ t('management.overview.glance.manageGuests') }}
             <ChevronRight class="w-3.5 h-3.5" />
           </span>
         </div>
         <div
-          class="flex w-full h-2 overflow-hidden rounded-full bg-slate-100"
+          class="relative mt-2.5 h-2 w-full overflow-hidden rounded-full bg-slate-100"
           :class="{ 'animate-pulse': loadingStats }"
           aria-hidden="true"
         >
           <template v-if="!loadingStats">
-            <div class="h-full bg-emerald-500 transition-all duration-700 ease-out" :style="{ width: segmentWidth(invitationViewed) }" />
-            <div class="h-full bg-sky-500 transition-all duration-700 ease-out" :style="{ width: segmentWidth(invitationSent - invitationViewed) }" />
+            <span
+              class="absolute inset-y-0 left-0 rounded-full bg-sky-200 transition-[width] duration-700 ease-out motion-reduce:transition-none"
+              :style="{ width: progressWidth(invitationSent) }"
+            />
+            <span
+              class="absolute inset-y-0 left-0 rounded-full bg-[#1e90ff] transition-[width] duration-700 ease-out motion-reduce:transition-none"
+              :style="{ width: progressWidth(invitationViewed) }"
+            />
           </template>
         </div>
-        <p class="text-xs text-slate-500">
+        <p class="mt-2 text-xs text-slate-500">
           {{ t('management.overview.glance.invitationProgress', { sent: invitationSent, total: invitationTotal, viewed: invitationViewed }) }}
         </p>
       </button>
-
     </div>
 
     <!-- ============ 3. ABOUT ============ -->
@@ -202,17 +206,7 @@
 
     <!-- ============ 4. LOCATION MAP ============ -->
     <div v-if="googleMapEmbedUrl" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
-      <div class="flex items-center justify-between gap-3 mb-3">
-        <h2 class="text-base font-semibold text-slate-900">{{ t('management.overview.sections.location') }}</h2>
-        <button
-          v-if="!event.is_virtual && event.location"
-          @click="openMap"
-          class="flex items-center gap-0.5 text-xs font-medium text-[#1e90ff] hover:text-[#1873cc] transition-colors"
-        >
-          {{ t('management.overview.location.viewOnMap') }}
-          <ChevronRight class="w-3.5 h-3.5" />
-        </button>
-      </div>
+      <h2 class="text-base font-semibold text-slate-900 mb-3">{{ t('management.overview.sections.location') }}</h2>
       <p v-if="event.location" class="text-sm text-slate-600 mb-3 truncate">{{ event.location }}</p>
       <div class="rounded-xl overflow-hidden border border-slate-200">
         <iframe
@@ -278,26 +272,30 @@
       </div>
 
       <template v-if="event.hosts && event.hosts.length > 0">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+        <!-- Rows, not a grid of tinted mini-cards. A host is not a separable object
+             here — it is a line in this event's list of people — and the fills made
+             cards inside a card while giving the section a second layout family
+             immediately below the agenda's. Both are lists; both read as lists. -->
+        <div class="divide-y divide-slate-100">
           <div
             v-for="host in hostsPreview"
             :key="host.id"
-            class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl"
+            class="flex items-center gap-3 py-2.5"
           >
             <img
               v-if="host.profile_image && !hostAvatarErrors[host.id]"
               :src="getProfileUrl(host.profile_image)"
               :alt="host.name"
-              class="w-11 h-11 rounded-full object-cover flex-shrink-0"
+              class="w-10 h-10 rounded-full object-cover flex-shrink-0"
               loading="lazy"
               @error="() => handleHostAvatarError(host.id)"
             />
-            <div v-else class="w-11 h-11 rounded-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
+            <div v-else class="w-10 h-10 rounded-full bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
               {{ getInitials(host.name) }}
             </div>
             <div class="flex-1 min-w-0">
-              <p class="font-semibold text-sm text-slate-900 truncate">{{ host.name }}</p>
-              <p v-if="host.title" class="text-xs sm:text-sm text-slate-500 truncate">{{ host.title }}</p>
+              <p class="text-sm font-medium text-slate-900 truncate">{{ host.name }}</p>
+              <p v-if="host.title" class="text-xs text-slate-500 truncate mt-0.5">{{ host.title }}</p>
             </div>
           </div>
         </div>
@@ -398,13 +396,11 @@ import {
   CalendarDays,
   CalendarPlus,
   ChevronRight,
-  Clock,
   Download,
   ExternalLink,
   FileText,
   Mic,
   Pencil,
-  Users,
 } from 'lucide-vue-next'
 import { type Event, guestService, type GuestStats } from '../services/api'
 import { apiClient } from '../services/api'
@@ -429,7 +425,7 @@ interface Emits {
 
 const props = defineProps<Props>()
 const { t } = useAppLanguage()
-defineEmits<Emits>()
+const emit = defineEmits<Emits>()
 
 // Use payment template integration composable
 const { isTemplateActivated, loadPayments } = usePaymentTemplateIntegration(props.event)
@@ -538,20 +534,21 @@ const countdownLabel = computed(() => {
 const countdownPillClass = computed(() => {
   switch (countdown.value.state) {
     case 'today':
-      return 'bg-emerald-50 text-emerald-600'
+      return 'bg-emerald-50 text-emerald-700'
     case 'ended':
       return 'bg-slate-100 text-slate-500'
     default:
-      return 'bg-sky-50 text-sky-600'
+      // sky-700, not the brand blue: #1e90ff on a sky-50 tint measures ~3.2:1,
+      // under AA for text this size. sky-700 reads the same and passes at ~6.9:1.
+      return 'bg-sky-50 text-sky-700'
   }
 })
 
-// At-a-glance tiles (all tappable, deep-link into their tabs)
+// At-a-glance stats (all tappable, deep-link into their tabs)
 const glanceTiles = computed(() => [
   {
     key: 'guests',
     tab: 'guest-management',
-    icon: Users,
     label: t('management.overview.glance.guests'),
     count: guestStats.value ? guestStats.value.total_guests : null,
     loading: loadingStats.value,
@@ -559,7 +556,6 @@ const glanceTiles = computed(() => [
   {
     key: 'agenda',
     tab: 'agenda',
-    icon: CalendarDays,
     label: t('management.overview.glance.agendaItems'),
     count: props.event.agenda_items?.length ?? 0,
     loading: false,
@@ -567,19 +563,41 @@ const glanceTiles = computed(() => [
   {
     key: 'hosts',
     tab: 'hosts',
-    icon: Mic,
     label: t('management.overview.glance.hosts'),
     count: props.event.hosts?.length ?? 0,
     loading: false,
   },
 ])
 
+
+// The location row is the affordance for the location, so what it does has to be
+// resolvable before it is drawn: a virtual event with no link and a TBD venue are
+// both facts with nowhere to go, and they render as a plain row rather than as a
+// button that answers a press with nothing.
+const locationAction = computed<'map' | 'virtual' | null>(() => {
+  if (props.event.is_virtual) return props.event.virtual_link ? 'virtual' : null
+  return props.event.location ? 'map' : null
+})
+
+const locationActionLabel = computed(() =>
+  locationAction.value === 'virtual'
+    ? t('management.overview.location.joinVirtual')
+    : locationAction.value === 'map'
+      ? t('management.overview.location.viewOnMap')
+      : undefined,
+)
+
+const handleLocationAction = () => {
+  if (locationAction.value === 'virtual') emit('join-virtual')
+  else if (locationAction.value === 'map') openMap()
+}
+
 // Invitation progress
 const invitationTotal = computed(() => guestStats.value?.total_guests ?? 0)
 const invitationSent = computed(() => guestStats.value?.sent ?? 0)
 const invitationViewed = computed(() => guestStats.value?.viewed ?? 0)
 
-const segmentWidth = (count: number) => {
+const progressWidth = (count: number) => {
   if (invitationTotal.value === 0) return '0%'
   const pct = (Math.min(Math.max(count, 0), invitationTotal.value) / invitationTotal.value) * 100
   return `${pct.toFixed(1)}%`

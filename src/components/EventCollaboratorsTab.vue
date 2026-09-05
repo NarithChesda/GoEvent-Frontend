@@ -1,83 +1,68 @@
 <template>
   <div>
-    <!-- Team Panel: stats + organizer + collaborators unified -->
+    <!-- Team Panel: organizer + collaborators as one list.
+         What was here before spent five hues on one panel — red for admin, green
+         for viewer, purple for the organizer, orange for pending, powder blue for
+         editor — and two of them collided with a meaning sitting inches away: red
+         is the remove button in the same row, green is the acceptance line under
+         the same badge. A role is not a status. It is an ordinal privilege level,
+         so it is drawn as one, in slate value alone: organizer > admin > editor >
+         viewer reads as a ladder because it looks like a ladder. That frees the
+         single warm hue in the panel to mean the one thing that is genuinely a
+         status and genuinely actionable — an invitation nobody has accepted. -->
     <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
       <div class="flex items-center justify-between gap-3 mb-3">
         <div class="flex items-center gap-2 min-w-0">
           <h2 class="text-base font-semibold text-slate-900">{{ t('management.collaboratorsTab.team.title') }}</h2>
           <span class="text-sm font-normal text-slate-400">· {{ teamCount }}</span>
         </div>
-        <div class="flex items-center gap-1.5 flex-shrink-0">
-          <button
-            type="button"
-            @click="showRolesInfo = !showRolesInfo"
-            class="p-1.5 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors"
-            :aria-label="t('management.collaboratorsTab.roles.title')"
-            :aria-expanded="showRolesInfo"
-          >
-            <Shield class="w-4 h-4" />
-          </button>
-          <button
-            v-if="canInvite"
-            type="button"
-            @click="toggleInviteForm"
-            class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-full border border-dashed transition-all"
-            :class="
-              showInviteForm
-                ? 'border-emerald-300 text-emerald-700 bg-emerald-50'
-                : 'border-slate-300 text-slate-600 hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50'
-            "
-            :aria-expanded="showInviteForm"
-            :aria-label="t('management.collaboratorsTab.inviteCollaborator')"
-          >
-            <X v-if="showInviteForm" class="w-3.5 h-3.5 flex-shrink-0" />
-            <UserPlus v-else class="w-3.5 h-3.5 flex-shrink-0" />
-            <span class="hidden sm:inline">
-              {{ showInviteForm ? t('management.inviteDrawer.cancel') : t('management.collaboratorsTab.inviteCollaborator') }}
-            </span>
-          </button>
-        </div>
+        <!-- One disclosure control, and it never changes what it says — it either
+             offers to invite or closes what it opened. Its label used to flip to
+             "Cancel" while the form below carried a Cancel of its own, so the
+             panel had two buttons with one word and one job between them. -->
+        <button
+          v-if="canInvite"
+          type="button"
+          @click="toggleInviteForm"
+          class="inline-flex items-center gap-1.5 min-h-[36px] px-3 py-1.5 text-sm font-medium rounded-full border border-dashed border-slate-300 text-slate-600 transition-colors hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 flex-shrink-0"
+          :aria-expanded="showInviteForm"
+          :aria-label="
+            showInviteForm
+              ? t('management.inviteDrawer.cancel')
+              : t('management.collaboratorsTab.inviteCollaborator')
+          "
+        >
+          <X v-if="showInviteForm" class="w-3.5 h-3.5 flex-shrink-0" />
+          <template v-else>
+            <UserPlus class="w-3.5 h-3.5 flex-shrink-0" />
+            <span class="hidden sm:inline">{{ t('management.collaboratorsTab.inviteCollaborator') }}</span>
+          </template>
+        </button>
       </div>
 
-      <!-- Stats -->
-      <div class="grid grid-cols-2 sm:flex sm:items-center gap-x-4 gap-y-2 sm:gap-y-1 text-xs sm:text-sm text-slate-600 pb-3 mb-3 border-b border-slate-100">
-        <span class="inline-flex items-center gap-1.5">
-          <Crown class="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
-          <span class="font-semibold text-slate-900">1</span> {{ t('management.collaboratorsTab.stats.organizer') }}
-        </span>
-        <span class="inline-flex items-center gap-1.5">
-          <Users class="w-3.5 h-3.5 text-[#1e90ff] flex-shrink-0" />
-          <span class="font-semibold text-slate-900">{{ collaborators.length }}</span> {{ t('management.collaboratorsTab.stats.collaborators') }}
-        </span>
-        <span class="inline-flex items-center gap-1.5">
-          <CheckCircle class="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
-          <span class="font-semibold text-slate-900">{{ acceptedCount }}</span> {{ t('management.collaboratorsTab.stats.accepted') }}
-        </span>
-        <span class="inline-flex items-center gap-1.5">
-          <Clock class="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />
-          <span class="font-semibold text-slate-900">{{ pendingCount }}</span> {{ t('management.collaboratorsTab.stats.pending') }}
-        </span>
-      </div>
-
-      <!-- Inline Invite Form -->
+      <!-- Inline Invite Form. No fill, no border, no radius of its own: a form
+           disclosed inside a panel is a region of that panel, and wrapping it in a
+           second rounded surface made a card inside a card. A rule and space say
+           the same thing for nothing. -->
       <Transition name="collapse">
-        <div v-if="showInviteForm" class="grid grid-rows-[1fr] mb-3">
+        <div v-if="showInviteForm" class="grid grid-rows-[1fr]">
           <div class="min-h-0 overflow-hidden">
             <form
               @submit.prevent="submitInvite"
-              class="p-3 sm:p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3"
+              class="border-t border-slate-100 pt-4 mb-4 space-y-4"
             >
               <div>
-                <div class="flex items-center justify-between mb-1.5">
+                <div class="flex items-center justify-between gap-2 mb-1.5">
                   <label for="inviteEmail" class="block text-sm font-medium text-slate-700">
                     {{ t('management.inviteDrawer.email') }} <span class="text-red-500">*</span>
                   </label>
+                  <!-- A 12px icon beside 12px text is decoration at this size; the
+                       words are already the whole control. -->
                   <button
                     type="button"
                     @click="fillAdminHelp"
-                    class="text-xs text-sky-600 hover:text-sky-700 font-medium flex items-center gap-1 transition-colors"
+                    class="text-xs text-sky-700 hover:text-sky-800 font-medium transition-colors"
                   >
-                    <LifeBuoy class="w-3 h-3" />
                     {{ t('management.inviteDrawer.askAdminHelp') }}
                   </button>
                 </div>
@@ -90,7 +75,7 @@
                   @blur="validateInviteEmail"
                   :placeholder="t('management.inviteDrawer.emailPlaceholder')"
                   :class="[
-                    'w-full px-3.5 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 bg-white disabled:opacity-50',
+                    'w-full px-3.5 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 bg-white disabled:opacity-50',
                     inviteEmailError
                       ? 'border-red-300 focus:ring-red-200 focus:border-red-400'
                       : 'border-slate-300 focus:ring-sky-200 focus:border-sky-400'
@@ -99,249 +84,209 @@
                 <p v-if="inviteEmailError" class="mt-1.5 text-xs text-red-600">{{ inviteEmailError }}</p>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label for="inviteRole" class="block text-sm font-medium text-slate-700 mb-1.5">
-                    {{ t('management.inviteDrawer.role') }}
-                  </label>
-                  <div class="relative">
-                    <select
-                      id="inviteRole"
-                      v-model="inviteRole"
-                      :disabled="isInviting"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 appearance-none bg-white pr-10 disabled:opacity-50"
-                    >
-                      <option value="viewer">{{ t('management.inviteDrawer.roles.viewer') }}</option>
-                      <option value="editor">{{ t('management.inviteDrawer.roles.editor') }}</option>
-                      <option value="admin">{{ t('management.inviteDrawer.roles.admin') }}</option>
-                    </select>
-                    <ChevronDown class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                  </div>
-                </div>
-                <div>
-                  <label for="inviteMessage" class="block text-sm font-medium text-slate-700 mb-1.5">
-                    {{ t('management.inviteDrawer.message') }}
-                  </label>
-                  <input
-                    id="inviteMessage"
-                    v-model="inviteMessage"
-                    type="text"
-                    maxlength="500"
-                    :disabled="isInviting"
-                    :placeholder="t('management.inviteDrawer.messagePlaceholder')"
-                    class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white disabled:opacity-50"
-                  />
-                </div>
+              <!-- Role is three named, ordered things, so it is a segmented control
+                   and not a native select behind a drawn chevron — and the chosen
+                   role explains itself right here, which is what retired the
+                   separate "Collaboration Roles" panel this page used to carry. -->
+              <div>
+                <p id="inviteRoleLabel" class="block text-sm font-medium text-slate-700 mb-1.5">
+                  {{ t('management.inviteDrawer.role') }}
+                </p>
+                <SegmentedField
+                  :model-value="inviteRole"
+                  :options="roleOptions"
+                  aria-labelledby="inviteRoleLabel"
+                  @update:model-value="setInviteRole"
+                />
+                <p class="mt-1.5 text-xs text-slate-500 leading-relaxed">{{ roleDescription(inviteRole) }}</p>
               </div>
 
-              <div class="flex items-center gap-2">
-                <button
-                  type="submit"
-                  :disabled="isInviting || !inviteEmail"
-                  class="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white text-sm font-semibold rounded-lg transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <span
-                    v-if="isInviting"
-                    class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
-                  ></span>
-                  <Send v-else class="w-4 h-4" />
-                  {{ isInviting ? t('management.inviteDrawer.sending') : t('management.inviteDrawer.sendInvitation') }}
-                </button>
-                <button
-                  type="button"
-                  @click="closeInviteForm"
+              <div>
+                <label for="inviteMessage" class="block text-sm font-medium text-slate-700 mb-1.5">
+                  {{ t('management.inviteDrawer.message') }}
+                </label>
+                <input
+                  id="inviteMessage"
+                  v-model="inviteMessage"
+                  type="text"
+                  maxlength="500"
                   :disabled="isInviting"
-                  class="flex-1 sm:flex-none text-center px-4 py-2 text-slate-600 hover:bg-slate-200 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
-                >
-                  {{ t('management.inviteDrawer.cancel') }}
-                </button>
+                  :placeholder="t('management.inviteDrawer.messagePlaceholder')"
+                  class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white disabled:opacity-50"
+                />
               </div>
+
+              <!-- No Cancel here: the X in the panel header closes this form and is
+                   on screen the whole time it is open. -->
+              <button
+                type="submit"
+                :disabled="isInviting || !inviteEmail"
+                class="w-full sm:w-auto flex items-center justify-center gap-2 min-h-[40px] px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white text-sm font-semibold rounded-lg transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span
+                  v-if="isInviting"
+                  class="w-4 h-4 animate-spin border-2 border-current border-t-transparent rounded-full"
+                  aria-hidden="true"
+                ></span>
+                <Send v-else class="w-4 h-4" aria-hidden="true" />
+                {{ isInviting ? t('management.inviteDrawer.sending') : t('management.inviteDrawer.sendInvitation') }}
+              </button>
             </form>
           </div>
         </div>
       </Transition>
 
-      <!-- Loading State -->
-      <div v-if="loading" class="flex items-center justify-center py-8">
-        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-[#1e90ff]"></div>
-        <span class="ml-3 text-sm text-slate-600">{{ t('management.collaboratorsTab.loading') }}</span>
+      <!-- Loading. A skeleton in the shape of the rows, not a spinner: the panel
+           can say what is coming, and a shape that matches what arrives does not
+           make the list jump when it does. -->
+      <div v-if="loading" class="divide-y divide-slate-100" aria-hidden="true">
+        <div v-for="n in 2" :key="n" class="flex items-center gap-3 py-3">
+          <div class="w-10 h-10 rounded-full bg-slate-200 animate-pulse flex-shrink-0" />
+          <div class="flex-1 min-w-0 space-y-1.5">
+            <div class="h-3.5 w-32 max-w-full rounded bg-slate-200 animate-pulse" />
+            <div class="h-3 w-44 max-w-full rounded bg-slate-100 animate-pulse" />
+          </div>
+          <div class="h-6 w-16 rounded-full bg-slate-100 animate-pulse flex-shrink-0" />
+        </div>
       </div>
 
       <!-- Error State -->
-      <div v-else-if="loadError" class="text-center py-6">
-        <AlertCircle class="w-8 h-8 text-red-500 mx-auto mb-2" />
-        <p class="text-sm font-medium text-slate-900 mb-1">{{ t('management.collaboratorsTab.error.title') }}</p>
-        <p class="text-xs text-slate-600 mb-3">{{ loadError }}</p>
+      <div v-else-if="loadError" class="text-center py-8">
+        <div class="w-12 h-12 mx-auto rounded-full bg-red-50 flex items-center justify-center">
+          <AlertCircle class="w-6 h-6 text-red-500" />
+        </div>
+        <p class="mt-3 text-sm font-medium text-slate-900">{{ t('management.collaboratorsTab.error.title') }}</p>
+        <p class="mt-1 text-xs text-slate-600">{{ loadError }}</p>
         <button
+          type="button"
           @click="retryLoadCollaborators"
-          class="text-sm font-semibold text-[#1e90ff] hover:underline"
+          class="mt-3 min-h-[40px] px-4 text-sm font-semibold text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors"
         >
           {{ t('management.collaboratorsTab.error.tryAgain') }}
         </button>
       </div>
 
-      <!-- Rows -->
-      <div v-else class="space-y-2">
+      <!-- Rows. Standing is read down one column: organizer, admin, editor, viewer
+           all sit in the same trailing slot, so the privilege ladder is legible in
+           a single glance down the list. The organizer's crown badge is therefore
+           gone — it said "organizer" a second time, an inch from the pill that
+           already says it. The avatar carries one mark and only one: an amber dot
+           for an invitation nobody has accepted, which is the only fact about a
+           member that the role column cannot express. -->
+      <div v-else class="divide-y divide-slate-100">
         <!-- Organizer row -->
-        <div v-if="sanitizedOrganizerDetails" class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-          <div class="relative flex-shrink-0">
-            <div
-              class="w-11 h-11 rounded-full overflow-hidden bg-gradient-to-br from-emerald-600 to-sky-600 flex items-center justify-center"
-            >
-              <img
-                v-if="sanitizedOrganizerDetails.profile_picture"
-                :src="apiClient.getProfilePictureUrl(sanitizedOrganizerDetails.profile_picture ?? undefined) || undefined"
-                :alt="sanitizedOrganizerDetails.first_name + ' ' + sanitizedOrganizerDetails.last_name"
-                class="w-full h-full object-cover"
-              />
-              <span v-else class="text-white text-sm font-bold">
-                {{ getInitials(sanitizedOrganizerDetails.first_name, sanitizedOrganizerDetails.last_name) }}
-              </span>
-            </div>
-            <div
-              class="absolute -bottom-0.5 -right-0.5 w-4 h-4 sm:w-[18px] sm:h-[18px] rounded-full bg-purple-500 border-2 border-white flex items-center justify-center"
-            >
-              <Crown class="w-2 h-2 sm:w-2.5 sm:h-2.5 text-white" />
-            </div>
+        <div v-if="sanitizedOrganizerDetails" class="flex items-center gap-3 py-3">
+          <div
+            class="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center flex-shrink-0"
+          >
+            <img
+              v-if="organizerAvatarUrl"
+              :src="organizerAvatarUrl"
+              :alt="organizerIdentity.name"
+              class="w-full h-full object-cover"
+              @error="organizerAvatarError = true"
+            />
+            <span v-else class="text-white text-sm font-semibold">{{ organizerInitials }}</span>
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm sm:text-base font-semibold text-slate-900 truncate">
-              {{ sanitizedOrganizerDetails.first_name }} {{ sanitizedOrganizerDetails.last_name }}
-            </p>
-            <p class="text-xs sm:text-sm text-slate-500 truncate">
-              @{{ sanitizedOrganizerDetails.username }} · {{ sanitizedOrganizerDetails.email }}
-            </p>
+            <p class="text-sm font-medium text-slate-900 truncate">{{ organizerIdentity.name }}</p>
+            <p v-if="organizerIdentity.secondary" class="text-xs text-slate-500 truncate">{{ organizerIdentity.secondary }}</p>
           </div>
-          <span
-            class="flex-shrink-0 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-purple-100 text-purple-700 text-[10px] sm:text-xs font-medium rounded-full"
-          >
+          <span class="flex-shrink-0 px-2.5 py-1 bg-slate-900 text-white text-xs font-medium rounded-full">
             {{ t('management.collaboratorsTab.organizer.badge') }}
           </span>
         </div>
 
         <!-- Collaborator rows -->
-        <div
-          v-for="collaborator in enrichedCollaborators"
-          :key="collaborator.id"
-          class="flex items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors duration-200"
-        >
-          <div class="flex items-center space-x-3 flex-1 min-w-0">
-            <div
-              class="w-11 h-11 rounded-full overflow-hidden bg-gradient-to-br from-emerald-600 to-sky-600 flex items-center justify-center flex-shrink-0"
-            >
-              <img
-                v-if="collaborator.profileImageUrl"
-                :src="collaborator.profileImageUrl"
-                :alt="
-                  collaborator.sanitizedUserDetails
-                    ? collaborator.sanitizedUserDetails.first_name + ' ' + collaborator.sanitizedUserDetails.last_name
-                    : collaborator.sanitizedEmail
-                "
-                class="w-full h-full object-cover"
-              />
-              <span v-else class="text-white text-xs sm:text-sm font-bold">
-                {{ collaborator.initials }}
+        <div v-for="collaborator in enrichedCollaborators" :key="collaborator.id" class="py-3">
+          <div class="flex items-center gap-3">
+            <div class="relative flex-shrink-0">
+              <div
+                class="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] flex items-center justify-center"
+              >
+                <img
+                  v-if="collaborator.profileImageUrl && !collaboratorAvatarErrors[collaborator.id]"
+                  :src="collaborator.profileImageUrl"
+                  :alt="collaborator.displayName"
+                  class="w-full h-full object-cover"
+                  @error="collaboratorAvatarErrors[collaborator.id] = true"
+                />
+                <span v-else class="text-white text-sm font-semibold">{{ collaborator.initials }}</span>
+              </div>
+              <span
+                v-if="!collaborator.is_accepted"
+                class="absolute -bottom-0.5 -right-0.5 w-[18px] h-[18px] rounded-full bg-amber-400 border-2 border-white"
+                :title="t('management.collaboratorsTab.list.pending')"
+              >
+                <span class="sr-only">{{ t('management.collaboratorsTab.list.pending') }}</span>
               </span>
             </div>
+
             <div class="flex-1 min-w-0">
-              <h4 class="text-sm sm:text-base font-semibold text-slate-800 truncate">
-                <span v-if="collaborator.sanitizedUserDetails">
-                  {{ collaborator.sanitizedUserDetails.first_name }}
-                  {{ collaborator.sanitizedUserDetails.last_name }}
-                </span>
-                <span v-else class="text-slate-500">{{ collaborator.sanitizedEmail }}</span>
-              </h4>
-              <p class="text-xs sm:text-sm text-slate-500 truncate">
-                <span v-if="collaborator.sanitizedUserDetails">
-                  @{{ collaborator.sanitizedUserDetails.username }}
-                </span>
-                <span v-else>{{ collaborator.sanitizedEmail }}</span>
-              </p>
-              <p class="text-[10px] sm:text-xs text-slate-400 mt-0.5 truncate">
+              <p class="text-sm font-medium text-slate-900 truncate">{{ collaborator.displayName }}</p>
+              <p v-if="collaborator.secondaryLine" class="text-xs text-slate-500 truncate">{{ collaborator.secondaryLine }}</p>
+              <!-- Who invited them and when is context for chasing an invitation,
+                   so it is shown on the rows that still need chasing. On an
+                   accepted member it is a third line of history nobody reads. -->
+              <p v-if="!collaborator.is_accepted" class="text-xs text-slate-400 truncate mt-0.5">
                 {{ t('management.collaboratorsTab.list.invitedBy', { name: collaborator.invited_by_name }) }} ·
                 {{ collaborator.formattedInviteDate }}
               </p>
             </div>
-          </div>
-          <div class="flex items-center space-x-2 flex-shrink-0">
-            <div class="text-center">
-              <!-- Role Selection or Display -->
-              <div v-if="canUpdateRole && editingRole === collaborator.id" class="min-w-[80px] sm:min-w-[6.25rem]">
-                <select
-                  v-model="tempRole"
-                  @change="saveRoleUpdate(collaborator)"
-                  @blur="cancelRoleEdit"
-                  @keydown.escape="cancelRoleEdit"
-                  class="px-1.5 py-0.5 sm:px-2 sm:py-1 text-[10px] sm:text-xs font-medium rounded-full border border-slate-300 focus:ring-2 focus:ring-[#1e90ff] focus:border-transparent bg-white"
-                  :class="
-                    getRoleColor(tempRole)
-                      .replace('bg-', 'bg-opacity-20 bg-')
-                      .replace('text-', 'text-')
-                  "
-                >
-                  <option value="viewer">Viewer</option>
-                  <option value="editor">Editor</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              <div v-else class="min-w-[80px] sm:min-w-[6.25rem]">
-                <button
-                  v-if="canUpdateRole"
-                  @click="startRoleEdit(collaborator)"
-                  class="inline-block px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-medium rounded-full hover:ring-2 hover:ring-[#5eb3f6] transition-all duration-200"
-                  :class="collaborator.roleColorClass"
-                  :title="t('management.collaboratorsTab.list.changeRole')"
-                >
-                  {{ collaborator.role }}
-                </button>
-                <span
-                  v-else
-                  class="inline-block px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-medium rounded-full"
-                  :class="collaborator.roleColorClass"
-                >
-                  {{ collaborator.role }}
-                </span>
-              </div>
-              <p
-                class="text-[10px] sm:text-xs mt-0.5 sm:mt-1"
-                :class="collaborator.is_accepted ? 'text-green-600' : 'text-orange-600'"
-              >
-                {{ collaborator.is_accepted ? t('management.collaboratorsTab.list.accepted') : t('management.collaboratorsTab.list.pending') }}
-              </p>
-            </div>
 
-            <!-- Action buttons -->
-            <div class="flex items-center space-x-1 sm:space-x-2">
-              <!-- Save/Cancel buttons for role editing -->
-              <div v-if="editingRole === collaborator.id" class="flex items-center space-x-1">
-                <button
-                  @click="saveRoleUpdate(collaborator)"
-                  :disabled="isUpdatingRole"
-                  class="p-1 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-all duration-200 disabled:opacity-50"
-                  :title="t('management.collaboratorsTab.list.saveRole')"
-                >
-                  <CheckCircle class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                </button>
-                <button
-                  @click="cancelRoleEdit"
-                  class="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded transition-all duration-200"
-                  :title="t('management.collaboratorsTab.list.cancelEdit')"
-                >
-                  <X class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                </button>
-              </div>
-
-              <!-- Remove button - only show for organizers/admins -->
+            <div class="flex items-center gap-1 flex-shrink-0">
               <button
-                v-if="canRemoveCollaborator && editingRole !== collaborator.id"
-                @click="confirmRemoveCollaborator(collaborator)"
-                class="p-1.5 sm:p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
-                :title="t('management.collaboratorsTab.list.removeCollaborator')"
+                v-if="canUpdateRole"
+                type="button"
+                @click="toggleRoleEdit(collaborator)"
+                class="px-2.5 py-1 text-xs font-medium rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+                :class="roleBadgeClass(collaborator.role)"
+                :aria-expanded="editingRole === collaborator.id"
+                :title="t('management.collaboratorsTab.list.changeRole')"
               >
-                <Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                {{ roleLabel(collaborator.role) }}
+              </button>
+              <span
+                v-else
+                class="px-2.5 py-1 text-xs font-medium rounded-full"
+                :class="roleBadgeClass(collaborator.role)"
+              >
+                {{ roleLabel(collaborator.role) }}
+              </span>
+
+              <button
+                v-if="canRemoveCollaborator"
+                type="button"
+                @click="confirmRemoveCollaborator(collaborator)"
+                class="w-10 h-10 -mr-2 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+                :title="t('management.collaboratorsTab.list.removeCollaborator')"
+                :aria-label="t('management.collaboratorsTab.list.removeCollaborator')"
+              >
+                <Trash2 class="w-4 h-4" />
               </button>
             </div>
           </div>
+
+          <!-- Role picker, disclosed in place. One tap is one decision: picking a
+               segment commits it, and picking another reverses it — which is why
+               there is no save/cancel pair any more. The old one was unreachable
+               anyway: the select's @blur cancelled the edit and unmounted both
+               buttons before either could receive its click. -->
+          <Transition name="collapse">
+            <div v-if="editingRole === collaborator.id" class="grid grid-rows-[1fr]">
+              <div class="min-h-0 overflow-hidden">
+                <div class="pt-3">
+                  <SegmentedField
+                    :model-value="tempRole"
+                    :options="roleOptions"
+                    :aria-label="t('management.collaboratorsTab.list.changeRole')"
+                    @update:model-value="(role: string) => chooseRole(collaborator, role)"
+                  />
+                  <p class="mt-1.5 text-xs text-slate-500 leading-relaxed">{{ roleDescription(tempRole) }}</p>
+                </div>
+              </div>
+            </div>
+          </Transition>
         </div>
 
         <!-- Empty state (editable) -->
@@ -365,37 +310,6 @@
           <p class="mt-1.5 sm:mt-2 text-sm text-slate-500">{{ t('management.collaboratorsTab.empty.title') }}</p>
         </div>
       </div>
-
-      <!-- Collapsible Roles Info -->
-      <Transition name="collapse">
-        <div v-if="showRolesInfo" class="grid grid-rows-[1fr]">
-          <div class="min-h-0 overflow-hidden">
-            <div class="pt-3 sm:pt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <div class="bg-slate-50 rounded-lg sm:rounded-xl p-2 sm:p-3">
-                <div class="flex items-center mb-0.5 sm:mb-1">
-                  <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-red-500 rounded-full mr-1.5 sm:mr-2"></div>
-                  <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ t('management.collaboratorsTab.roles.admin') }}</span>
-                </div>
-                <p class="text-[10px] sm:text-xs text-slate-600">{{ t('management.collaboratorsTab.roles.adminDesc') }}</p>
-              </div>
-              <div class="bg-slate-50 rounded-lg sm:rounded-xl p-2 sm:p-3">
-                <div class="flex items-center mb-0.5 sm:mb-1">
-                  <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-[#1e90ff] rounded-full mr-1.5 sm:mr-2"></div>
-                  <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ t('management.collaboratorsTab.roles.editor') }}</span>
-                </div>
-                <p class="text-[10px] sm:text-xs text-slate-600">{{ t('management.collaboratorsTab.roles.editorDesc') }}</p>
-              </div>
-              <div class="bg-slate-50 rounded-lg sm:rounded-xl p-2 sm:p-3">
-                <div class="flex items-center mb-0.5 sm:mb-1">
-                  <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full mr-1.5 sm:mr-2"></div>
-                  <span class="text-xs sm:text-sm font-semibold text-slate-700">{{ t('management.collaboratorsTab.roles.viewer') }}</span>
-                </div>
-                <p class="text-[10px] sm:text-xs text-slate-600">{{ t('management.collaboratorsTab.roles.viewerDesc') }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Transition>
     </div>
 
     <!-- Remove Confirmation Modal -->
@@ -425,15 +339,9 @@ import { useToast } from '@/composables/useToast'
 import {
   Users,
   UserPlus,
-  Crown,
-  CheckCircle,
   AlertCircle,
-  Clock,
-  Shield,
   X,
   Trash2,
-  ChevronDown,
-  LifeBuoy,
   Send,
 } from 'lucide-vue-next'
 import { eventsService, type EventCollaborator } from '../services/api'
@@ -443,6 +351,7 @@ import { inputValidator } from '@/utils/inputValidation'
 import { sanitizePlainText } from '@/utils/sanitize'
 import { useCollaboratorRole } from '@/composables/useCollaboratorRole'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
+import SegmentedField, { type SegmentedOption } from './common/SegmentedField.vue'
 
 interface Props {
   eventId: string
@@ -467,7 +376,6 @@ const collaborators = ref<EventCollaborator[]>([])
 const loading = ref(false)
 const loadError = ref<string | null>(null)
 const showInviteForm = ref(false)
-const showRolesInfo = ref(false)
 const showRemoveModal = ref(false)
 const isInviting = ref(false)
 const isRemoving = ref(false)
@@ -509,6 +417,57 @@ const {
   },
 })
 
+// Roles
+
+type CollaboratorRole = 'admin' | 'editor' | 'viewer'
+
+/** Least privileged first, so the segmented control reads as the ladder it is. */
+const ROLE_ORDER: CollaboratorRole[] = ['viewer', 'editor', 'admin']
+
+const roleLabel = (role: string): string => t(`management.collaboratorsTab.roles.${role}`)
+const roleDescription = (role: string): string => t(`management.collaboratorsTab.roles.${role}Desc`)
+
+const roleOptions = computed<SegmentedOption[]>(() =>
+  ROLE_ORDER.map((value) => ({ value, label: roleLabel(value) })),
+)
+
+/**
+ * A role is an ordinal privilege level, not a status, so it is drawn in slate
+ * value alone — the darker the pill, the more it can do. The previous palette
+ * (admin red, viewer green) collided with the two meanings sitting inches away
+ * in the same row: red is the remove button, green was the acceptance state.
+ */
+const roleBadgeClass = (role: string): string => {
+  switch (role) {
+    case 'admin':
+      return 'bg-slate-700 text-white'
+    case 'editor':
+      return 'bg-slate-200 text-slate-700'
+    default:
+      return 'bg-slate-100 text-slate-500'
+  }
+}
+
+const setInviteRole = (role: string): void => {
+  inviteRole.value = role as CollaboratorRole
+}
+
+const toggleRoleEdit = (collaborator: EventCollaborator): void => {
+  if (editingRole.value === collaborator.id) cancelRoleEdit()
+  else startRoleEdit(collaborator)
+}
+
+/**
+ * One tap is one decision. `saveRoleUpdate` closes the disclosure on success and
+ * on a no-op pick, so there is nothing left for a save/cancel pair to do — and
+ * the pair this replaced was unreachable anyway, since the select's `@blur`
+ * cancelled the edit and unmounted both buttons before either could be clicked.
+ */
+const chooseRole = (collaborator: EventCollaborator, role: string): void => {
+  if (isUpdatingRole.value) return
+  tempRole.value = role as CollaboratorRole
+  void saveRoleUpdate(collaborator)
+}
 // Computed
 
 /**
@@ -552,10 +511,6 @@ const canUpdateRole = computed(() => {
   return role === 'organizer' || role === 'admin'
 })
 
-const acceptedCount = computed(() => collaborators.value.filter((c) => c.is_accepted).length)
-
-const pendingCount = computed(() => collaborators.value.filter((c) => !c.is_accepted).length)
-
 const teamCount = computed(() => collaborators.value.length + (props.organizerDetails ? 1 : 0))
 
 /**
@@ -572,6 +527,49 @@ const sanitizedOrganizerDetails = computed(() => {
     username: sanitizePlainText(props.organizerDetails.username, 30),
     email: sanitizePlainText(props.organizerDetails.email, 254),
   }
+})
+
+/**
+ * A profile picture that 404s is not the same as one that was never set, and the
+ * template's v-if only knew about the second: a dead URL left the browser's
+ * broken-image glyph sitting in the disc forever, because the initials were in
+ * the v-else branch it never reached. Both avatars now fall through to initials
+ * on error, the way the ones on the overview already did.
+ */
+const organizerAvatarError = ref(false)
+const collaboratorAvatarErrors = ref<Record<number, boolean>>({})
+
+const organizerAvatarUrl = computed(() => {
+  const picture = sanitizedOrganizerDetails.value?.profile_picture
+  if (!picture || organizerAvatarError.value) return null
+  return apiClient.getProfilePictureUrl(picture) || null
+})
+
+const organizerInitials = computed(() => {
+  const organizer = sanitizedOrganizerDetails.value
+  if (!organizer) return '?'
+  return getInitials(organizer.first_name, organizer.last_name, organizer.username || organizer.email)
+})
+
+/**
+ * A row names a person once and then shows the next most identifying thing that
+ * is not already the name. Printing "@handle · email" under a name spent two
+ * lines on an account that may have neither, and repeated the email verbatim
+ * under itself for one that has only that.
+ */
+const resolveIdentity = (parts: (string | undefined | null)[]): { name: string; secondary: string } => {
+  const known = parts.map((part) => part?.trim()).filter((part): part is string => Boolean(part))
+  return { name: known[0] ?? '', secondary: known[1] ?? '' }
+}
+
+const organizerIdentity = computed(() => {
+  const organizer = sanitizedOrganizerDetails.value
+  if (!organizer) return { name: '', secondary: '' }
+  return resolveIdentity([
+    `${organizer.first_name ?? ''} ${organizer.last_name ?? ''}`,
+    organizer.username ? `@${organizer.username}` : '',
+    organizer.email,
+  ])
 })
 
 /**
@@ -598,27 +596,36 @@ const enrichedCollaborators = computed(() => {
 
     // Pre-compute initials
     const initials = getInitials(
-      collaborator.user_details?.first_name || '',
-      collaborator.user_details?.last_name || (collaborator.email ? collaborator.email.charAt(0) : '')
+      collaborator.user_details?.first_name,
+      collaborator.user_details?.last_name,
+      collaborator.user_details?.username || collaborator.email,
     )
 
     // Pre-compute formatted invite date
     const formattedInviteDate = formatDate(collaborator.invited_at)
 
-    // Pre-compute role color class
-    const roleColorClass = getRoleColor(collaborator.role)
-
     // Sanitize email (fallback for non-registered users)
     const sanitizedEmail = collaborator.email ? sanitizePlainText(collaborator.email, 254) : ''
+
+    // An invitation sent to an address that has no account yet has no name and no
+    // handle, so the same two <p>s have to hold whatever this person does have.
+    const { name: displayName, secondary: secondaryLine } = resolveIdentity([
+      sanitizedUserDetails
+        ? `${sanitizedUserDetails.first_name ?? ''} ${sanitizedUserDetails.last_name ?? ''}`
+        : '',
+      sanitizedUserDetails?.username ? `@${sanitizedUserDetails.username}` : '',
+      sanitizedEmail,
+    ])
 
     return {
       ...collaborator,
       sanitizedUserDetails,
       sanitizedEmail,
+      displayName,
+      secondaryLine,
       profileImageUrl,
       initials,
       formattedInviteDate,
-      roleColorClass,
     }
   })
 })
@@ -813,25 +820,22 @@ const removeCollaborator = async (): Promise<void> => {
 
 // Role management methods are now handled by the useCollaboratorRole composable
 
-const getRoleColor = (role: string) => {
-  switch (role) {
-    case 'admin':
-      return 'bg-red-100 text-red-700'
-    case 'editor':
-      return 'bg-[#B0E0E6] text-[#1873cc]'
-    case 'viewer':
-      return 'bg-green-100 text-green-700'
-    default:
-      return 'bg-slate-100 text-slate-700'
-  }
-}
-
 /**
- * Get initials from first and last name
- * Used for avatar placeholder when profile picture is not available
+ * Initials for the avatar placeholder.
+ *
+ * This returned an empty string whenever an account had neither a first nor a
+ * last name — which is the common case for an account created through OAuth or
+ * by email alone — so the fallback rendered as a blank gradient disc. It now
+ * walks down to whatever the account does have: a username, then an email, then
+ * a question mark, so the disc is never empty.
  */
-const getInitials = (firstName: string, lastName: string): string => {
-  return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase()
+const getInitials = (firstName?: string, lastName?: string, fallback?: string): string => {
+  const first = firstName?.trim().charAt(0) ?? ''
+  const last = lastName?.trim().charAt(0) ?? ''
+  if (first || last) return `${first}${last}`.toUpperCase()
+
+  const source = fallback?.trim() ?? ''
+  return source ? source.slice(0, 2).toUpperCase() : '?'
 }
 
 const formatDate = (dateString: string): string => {

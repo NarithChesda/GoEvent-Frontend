@@ -1677,10 +1677,6 @@
     }
   },
   "guestGroupsView": {
-    "header": {
-      "title": "ការគ្រប់គ្រងភ្ញៀវ",
-      "subtitle": "គ្រប់គ្រងការអញ្ជើញកម្មវិធី និងការឆ្លើយតបរបស់ភ្ញៀវ"
-    },
     "emptyState": {
       "title": "បន្ថែមភ្ញៀវដំបូង",
       "subtitle": "ចាប់ផ្ដើមបង្កើតបញ្ជីភ្ញៀវរបស់អ្នកសម្រាប់កម្មវិធី",
@@ -1689,6 +1685,7 @@
     },
     "filterBar": {
       "searchPlaceholder": "ស្វែងរកភ្ញៀវ...",
+      "searchPlaceholderShort": "ស្វែងរក",
       "searchAriaLabel": "ស្វែងរកភ្ញៀវតាមឈ្មោះ អ៊ីមែល ឬទូរស័ព្ទ",
       "allGroups": "ក្រុមទាំងអស់",
       "filterByGroup": "ត្រងតាមក្រុម",
@@ -1712,7 +1709,8 @@
       "clearSelection": "សម្អាតការជ្រើសរើស",
       "selected": "បានជ្រើសរើស",
       "markSent": "កំណត់ថាបានផ្ញើ",
-      "delete": "លុប"
+      "delete": "លុប",
+      "pickGuests": "ជ្រើសរើសភ្ញៀវ"
     },
     "guestList": {
       "loadingMore": "កំពុងផ្ទុកភ្ញៀវបន្ថែម...",
@@ -1720,41 +1718,43 @@
       "empty": {
         "title": "រកមិនឃើញភ្ញៀវ",
         "searchHint": "សាកល្បងកែតម្រូវការស្វែងរករបស់អ្នក",
-        "emptyHint": "មិនទាន់មានភ្ញៀវក្នុងក្រុមនេះ"
+        "emptyHint": "មិនទាន់មានភ្ញៀវក្នុងក្រុមនេះ",
+        "firstTitle": "មិនទាន់មានភ្ញៀវទេ",
+        "firstHint": "បន្ថែមភ្ញៀវដំបូងរបស់អ្នកនៅជួរខាងលើ"
       }
     },
     "guestListItem": {
-      "renameHint": "ចុចដើម្បីប្តូរឈ្មោះ",
       "selectHint": "ចុចដើម្បីជ្រើសរើស",
       "changeGroupHint": "ចុចដើម្បីប្តូរក្រុម",
-      "moreDetails": "ព័ត៌មានលម្អិត",
       "invitationViewed": "បានមើលលិខិតអញ្ជើញ",
       "invitationNotSent": "មិនទាន់ផ្ញើលិខិតអញ្ជើញ",
       "invitationSent": "បានផ្ញើលិខិតអញ្ជើញ",
-      "sent": "បានផ្ញើ",
       "copy": "ចម្លង",
       "copied": "បានចម្លង!",
       "markAsSent": "សម្គាល់ថាបានផ្ញើ",
       "copyLink": "ចម្លងតំណលិខិតអញ្ជើញ",
       "editGuest": "កែប្រែភ្ញៀវ",
       "deleteGuest": "លុបភ្ញៀវ",
-      "languageKhmer": "ខ្មែរ",
-      "languageEnglish": "អង់គ្លេស",
       "seatedAt": "អង្គុយនៅ {table}",
       "seatedAtWithSeat": "អង្គុយនៅ {table} កៅអីលេខ {seat}",
       "rsvp": {
         "going": "ចូលរួម",
         "maybe": "ប្រហែល",
         "declined": "បដិសេធ"
-      }
+      },
+      "moreActions": "សកម្មភាពផ្សេងទៀត",
+      "copyLinkKh": "ចម្លងតំណ (ខ្មែរ)",
+      "copyLinkEn": "ចម្លងតំណ (អង់គ្លេស)",
+      "trayEdit": "កែសម្រួល",
+      "trayDelete": "លុប",
+      "changeGroupTitle": "ប្តូរក្រុម",
+      "selectGuests": "ជ្រើសរើសភ្ញៀវ"
     },
     "quickAdd": {
-      "addGuestPill": "+ បន្ថែមភ្ញៀវ",
       "noGroupsHint": "សូមបង្កើតក្រុមមុនសិន",
-      "namePlaceholder": "ឈ្មោះភ្ញៀវ",
+      "namePlaceholder": "បន្ថែមភ្ញៀវ",
       "pickGroup": "ក្រុម",
-      "save": "បន្ថែមភ្ញៀវ",
-      "cancel": "បោះបង់"
+      "save": "បន្ថែមភ្ញៀវ"
     },
     "guideModal": {
       "title": "មគ្គុទ្ទេសក៍ការគ្រប់គ្រងភ្ញៀវ",
@@ -1762,9 +1762,7 @@
       "steps": {
         "addGuests": {
           "title": "បន្ថែមភ្ញៀវ",
-          "descPre": "ចុចលើ",
-          "btnLabel": "បន្ថែមភ្ញៀវ",
-          "descPost": "ដើម្បីបន្ថែមភ្ញៀវម្នាក់ៗជាមួយព័ត៌មានទំនាក់ទំនងរបស់ពួកគេ។"
+          "description": "វាយឈ្មោះនៅជួរបន្ថែមខាងលើបញ្ជី រួចចុច Enter។ ទស្សន៍ទ្រនិចនៅដដែល ដូច្នេះអ្នកអាចបន្ថែមភ្ញៀវជាបន្តបន្ទាប់។"
         },
         "bulkImport": {
           "title": "នាំចូលជាច្រើន",
@@ -1774,21 +1772,17 @@
         },
         "copyLinks": {
           "title": "ចម្លងតំណអញ្ជើញ",
-          "descPre": "ចុចលើ",
-          "btnLabel": "តំណ",
-          "descPost": "នៅលើភ្ញៀវណាមួយ ដើម្បីចម្លងតំណអញ្ជើញផ្ទាល់ខ្លួនរបស់ពួកគេ។",
           "messengerNoteLabel": "ចំណាំ:",
           "messengerNotePre": "នៅពេលចែករំលែកតំណតាម",
           "messengerPlatformLabel": "Facebook Messenger នៅលើកុំព្យូទ័រ",
           "messengerNoteMid": "ការមើលតំណជាមុនប្រហែលមិនបង្ហាញ។ ដើម្បីទទួលបានបទពិសោធន៍ល្អបំផុតជាមួយការ៉ាមើលជាមុន សូមប្រើ",
           "messengerAppLabel": "កម្មវិធី Messenger ចល័ត",
-          "messengerNotePost": "ជំនួសវិញ។"
+          "messengerNotePost": "ជំនួសវិញ។",
+          "description": "ចុចប៊ូតុងតំណនៅជួរភ្ញៀវណាមួយ ដើម្បីចម្លងលិខិតអញ្ជើញផ្ទាល់ខ្លួនរបស់គាត់។ ប្រើម៉ឺនុយ ⋯ របស់ជួរនោះ ដើម្បីចម្លងជាភាសាមួយទៀត។"
         },
         "trackInvitations": {
           "title": "តាមដានការអញ្ជើញ",
-          "descPre": "បន្ទាប់ពីផ្ញើការអញ្ជើញ ចុចលើ",
-          "btnLabel": "កំណត់ថាបានផ្ញើ",
-          "descPost": "ដើម្បីតាមដានថាភ្ញៀវណាខ្លះបានទទួលការអញ្ជើញ។"
+          "description": "បន្ទាប់ពីផ្ញើលិខិតអញ្ជើញរួច សូមកំណត់ថាបានផ្ញើពីម៉ឺនុយ ⋯ របស់ភ្ញៀវ — ចំណុចនៅលើរូបភាពរបស់គាត់បង្ហាញថាបានផ្ញើ និងបានមើលឬនៅ។"
         },
         "cashGift": {
           "title": "កំណត់ហេតុអំណោយសាច់ប្រាក់",
@@ -1798,7 +1792,7 @@
         },
         "bulkActions": {
           "title": "សកម្មភាពជាក្រុម",
-          "description": "ជ្រើសរើសភ្ញៀវជាច្រើនដោយប្រើប្រអប់ធីកដើម្បីអនុវត្តសកម្មភាពជាក្រុមដូចជាការកំណត់ថាបានផ្ញើ ឬលុប។"
+          "description": "ចុចលើរូបភាពរបស់ភ្ញៀវដើម្បីជ្រើសរើស រួចប្រើ «កំណត់ថាបានផ្ញើ» ឬ «លុប» នៅរបារដែលជំនួសប្រអប់ស្វែងរក។"
         }
       },
       "proTip": {
@@ -1808,11 +1802,11 @@
       "closeBtn": "យល់ហើយ"
     },
     "statsCard": {
-      "invitedGuests": "ភ្ញៀវដែលបានអញ្ជើញ",
       "invited": "បានអញ្ជើញ",
       "viewed": "បានមើល",
       "awaiting": "កំពុងរង់ចាំ",
-      "pending": "នៅមិនទាន់ផ្ញើ"
+      "pending": "នៅមិនទាន់ផ្ញើ",
+      "totalLabel": "ភ្ញៀវ | ភ្ញៀវ"
     },
     "addGuestModal": {
       "title": "នាំចូលភ្ញៀវ",
@@ -1826,17 +1820,17 @@
         "createFirstBulk": "សូមបង្កើតក្រុមមុនសិន មុននឹងនាំចូលភ្ញៀវ។",
         "newGroupForm": {
           "title": "ក្រុមថ្មី",
-          "namePlaceholder": "ឈ្មោះក្រុម *",
+          "namePlaceholder": "ឈ្មោះក្រុម",
           "descPlaceholder": "ការពិពណ៌នា (ជាជម្រើស)",
           "creating": "កំពុងបង្កើត...",
-          "createBtn": "បង្កើតក្រុម"
+          "createBtn": "បង្កើត"
         },
         "editGroupForm": {
           "title": "កែប្រែក្រុម",
-          "namePlaceholder": "ឈ្មោះក្រុម *",
+          "namePlaceholder": "ឈ្មោះក្រុម",
           "descPlaceholder": "ការពិពណ៌នា (ជាជម្រើស)",
           "saving": "កំពុងរក្សាទុក...",
-          "saveBtn": "រក្សាទុកការផ្លាស់ប្ដូរ",
+          "saveBtn": "រក្សាទុក",
           "cancelBtn": "បោះបង់"
         },
         "deleteGroupConfirm": {
@@ -1846,7 +1840,8 @@
           "cancelBtn": "បោះបង់",
           "deleting": "កំពុងលុប...",
           "deleteBtn": "លុបក្រុម"
-        }
+        },
+        "customColorLabel": "ពណ៌ផ្ទាល់ខ្លួន"
       },
       "bulkImport": {
         "downloadTemplate": "ទាញយកគំរូ (CSV)",
@@ -1908,8 +1903,8 @@
         "updatedAt": "· បានកែប្រែ {date}",
         "statusLabel": "ស្ថានភាព",
         "maxPlusOnesLabel": "ភ្ញៀវបន្ថែមអតិបរមា",
-        "bringingLabel": "នឹងនាំមក:",
-        "privateNoteLabel": "សារឯកជន:",
+        "bringingLabel": "នឹងនាំមក",
+        "privateNoteLabel": "សារឯកជន",
         "answersTitle": "ចម្លើយ",
         "answersLoading": "កំពុងផ្ទុកចម្លើយ…",
         "answersEmpty": "មិនទាន់មានចម្លើយទេ។",
@@ -1941,8 +1936,6 @@
       "tableSeating": "ការរៀបចំតុ"
     },
     "header": {
-      "title": "ការរៀបចំតុ",
-      "subtitle": "អូសភ្ញៀវទៅដាក់លើតុ ឬចុចជ្រើសរើសភ្ញៀវ រួចចុច «ដាក់អង្គុយទីនេះ» នៅលើតុ",
       "addTable": "បន្ថែមតុ"
     },
     "summary": {
@@ -2583,6 +2576,10 @@
       "deleted": "បានលុបការពិនិត្យដោយជោគជ័យ",
       "deleteFailed": "បរាជ័យក្នុងការលុបការពិនិត្យ",
       "deleteError": "កំហុសបានកើតឡើងពេលលុបការពិនិត្យរបស់អ��នក"
+    },
+    "error": {
+      "title": "មិនអាចផ្ទុកការវាយតម្លៃរបស់អ្នកបានទេ",
+      "tryAgain": "ព្យាយាមម្តងទៀត"
     }
   },
   "partnerTemplatesPanel": {
@@ -3618,6 +3615,7 @@
     }
   },
   "guestManagementTab": {
+    "title": "ការគ្រប់គ្រងភ្ញៀវ",
     "checkingTemplate": "កំពុងពិនិត្យស្ថានភាពគំរូ...",
     "noTemplate": {
       "title": "មិនទាន់បានជ្រើសរើសគំរូ",

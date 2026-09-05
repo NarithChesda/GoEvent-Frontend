@@ -340,7 +340,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { X, Upload, Download, FileText, FileSpreadsheet, CheckCircle, AlertCircle, Trash2, ArrowRight } from 'lucide-vue-next'
 import GroupDropdown from './GroupDropdown.vue'
@@ -403,6 +403,29 @@ const isDeletingGroup = ref(false)
 const getScrollbarWidth = (): number => {
   return window.innerWidth - document.documentElement.clientWidth
 }
+
+/**
+ * Escape closes the drawer (DESIGN.md §8), which it did not before: the only
+ * ways out were the X and Cancel, and a drawer that swallows Escape reads as
+ * stuck when the click lands anywhere else. Bound only while open, so the two
+ * overlays on this screen never both answer one keypress.
+ */
+const handleEscape = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') emit('close')
+}
+
+watch(
+  () => props.show,
+  (open) => {
+    if (typeof document === 'undefined') return
+    if (open) document.addEventListener('keydown', handleEscape)
+    else document.removeEventListener('keydown', handleEscape)
+  },
+)
+
+onUnmounted(() => {
+  if (typeof document !== 'undefined') document.removeEventListener('keydown', handleEscape)
+})
 
 // Reset form when drawer is closed
 watch(() => props.show, (newShow) => {

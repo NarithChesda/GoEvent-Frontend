@@ -1,34 +1,41 @@
 <template>
-  <!-- Slim stats band — the panel's header, sharing a row with the toolbar
-       from `2xl` up. Loading skeleton on first load only; a refetch dims the
-       previous render instead of flashing back to skeleton. -->
+  <!-- Invitation progress, as a fixed-size object that shares the toolbar's
+       row.
+
+       A ring rather than a bar, because a bar's natural size is the width it
+       is given — it only looks right when it can span, and here it cannot: it
+       sits beside a search field. A ring is the opposite, fixed and small, and
+       reading the same at any row width. The total lives in the hole it
+       already leaves, so the whole summary costs about 170px.
+
+       The legend is glyphs, not words. `Viewed 34  Awaiting 0  Pending 4`
+       spends most of its width on three labels that never change, and the
+       glyphs it spends it on instead are the ones the rows below already
+       use — a double tick for opened, a single for sent, an empty ring for
+       not yet — so the legend doubles as the key for the list. The words are
+       on the hover tooltip and in the accessible name. -->
   <div
     v-if="loading && !hasStats"
-    class="flex h-full items-center justify-center gap-3 px-3 py-3 sm:gap-4 sm:px-4 2xl:justify-start"
+    class="flex items-center gap-3"
     aria-hidden="true"
   >
     <div class="h-10 w-10 shrink-0 animate-pulse rounded-full border-[6px] border-slate-100"></div>
-    <div class="flex min-w-0 gap-4">
-      <div v-for="n in 3" :key="n" class="h-2.5 w-20 animate-pulse rounded bg-slate-100"></div>
+    <div class="flex gap-3">
+      <div v-for="n in 3" :key="n" class="h-3 w-8 animate-pulse rounded bg-slate-100"></div>
     </div>
   </div>
 
-  <!-- A ring, not a bar.
-       The two share this row with the search field now, and a meter's natural
-       size is the width it is given — it only looks right when it can span.
-       A ring is the opposite: fixed, small, and it reads the same at any row
-       width. Putting the total *inside* it also folds two things into one, so
-       the whole summary costs about 200px instead of the full half-panel. -->
   <div
     v-else
-    class="flex h-full items-center justify-center gap-3 px-3 py-3 transition-opacity sm:gap-4 sm:px-4 2xl:justify-start"
-    :class="{ 'opacity-60': loading }"
+    class="flex items-center transition-opacity"
+    :class="[compact ? 'gap-2' : 'gap-3', { 'opacity-60': loading }]"
   >
     <!-- Ring + total -->
-    <div class="relative shrink-0">
+    <div class="relative shrink-0" :title="ringLabel">
       <svg
         viewBox="0 0 100 100"
-        class="h-10 w-10 -rotate-90"
+        class="-rotate-90"
+        :class="compact ? 'h-9 w-9' : 'h-10 w-10'"
         role="img"
         :aria-label="ringLabel"
       >
@@ -48,9 +55,9 @@
         />
       </svg>
 
-      <!-- The total lives in the hole the ring already leaves — the clear space
-           inside a 40px ring at this stroke is ~30px, so the size steps down
-           as the digits grow rather than overflowing. -->
+      <!-- The total sits in the clear space inside the ring — ~30px at this
+           stroke — so the size steps down as the digits grow rather than
+           overflowing it. -->
       <p
         class="pointer-events-none absolute inset-0 flex items-center justify-center font-semibold leading-none tabular-nums text-slate-900"
         :class="totalGuests > 999 ? 'text-[9px]' : totalGuests > 99 ? 'text-[10px]' : 'text-xs'"
@@ -60,26 +67,49 @@
       </p>
     </div>
 
-    <!-- Legend. It carries every number, so nothing depends on colour alone.
-         One horizontal strip at every width — the header is a single row, and
-         a ring beside a three-row stack was a two-axis object dropped into it:
-         taller than the search field next to it, and reading as a block rather
-         than as part of the strip. -->
-    <dl class="flex min-w-0 items-center gap-x-3 sm:gap-x-4">
-      <div v-for="segment in segments" :key="segment.key" class="flex min-w-0 items-center gap-1.5">
-        <span class="h-1.5 w-1.5 shrink-0 rounded-full" :class="segment.dotClass" aria-hidden="true"></span>
-        <dt class="truncate text-[11px] font-medium leading-none text-slate-500">
-          {{ segment.label }}
+    <!-- Legend. Every count is a number on screen, so nothing here depends on
+         reading the colour of the glyph beside it. -->
+    <dl v-if="!compact" class="flex items-center gap-x-3">
+      <div
+        v-for="segment in segments"
+        :key="segment.key"
+        class="flex cursor-default items-center gap-1"
+        :title="`${segment.label}: ${segment.count} (${segment.percent}%)`"
+      >
+        <dt class="flex items-center">
+          <component :is="segment.icon" class="h-3.5 w-3.5" :class="segment.iconClass" aria-hidden="true" />
+          <span class="sr-only">{{ segment.label }}</span>
         </dt>
-        <dd class="text-[11px] font-semibold leading-none tabular-nums text-slate-900">
-          {{ segment.count }}
-        </dd>
-        <!-- The share is what the ring already draws, and on a phone it is the
-             difference between a strip that fits and one that wraps, so there
-             the count carries it alone. -->
-        <dd class="hidden text-[10px] font-medium leading-none tabular-nums text-slate-400 sm:block">
-          {{ segment.percent }}%
-        </dd>
+        <dd class="text-xs font-semibold leading-none tabular-nums text-slate-900">{{ segment.count }}</dd>
+      </div>
+    </dl>
+
+    <!-- …and the same legend on a phone, where it has to share its row with
+         the query. Words cost roughly three times the width of the glyphs and
+         the glyphs are already the list's own key — the same double tick, tick
+         and empty ring the rows below carry — so the marks are what a narrow
+         screen gets, and the words go to the accessible name.
+
+         What it does keep from the written version is dropping the states that
+         are *empty*: a list where every invitation has gone out printed a "0"
+         for each of the other two, and on this row that zero is the difference
+         between a usable search field and a cramped one. -->
+    <!-- Below 360px the marks go too and the ring stands alone. It already
+         states the total in its own hole, which is the one number worth a
+         glance; the split is recoverable by filtering. What buys it is a search
+         field that can still print its own placeholder on the row they share. -->
+    <dl v-else class="hidden items-center gap-x-1.5 min-[360px]:flex">
+      <div
+        v-for="segment in wordSegments"
+        :key="segment.key"
+        class="flex cursor-default items-center gap-1"
+        :title="`${segment.label}: ${segment.count} (${segment.percent}%)`"
+      >
+        <dt class="flex items-center">
+          <component :is="segment.icon" class="h-3.5 w-3.5" :class="segment.iconClass" aria-hidden="true" />
+          <span class="sr-only">{{ segment.label }}</span>
+        </dt>
+        <dd class="text-[13px] font-semibold leading-none tabular-nums text-slate-900">{{ segment.count }}</dd>
       </div>
     </dl>
   </div>
@@ -88,15 +118,23 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Check, CheckCheck, Circle } from 'lucide-vue-next'
 import type { GuestStats } from '../../services/api'
 
 interface Props {
   stats: GuestStats | null
   loading?: boolean
+  /**
+   * Show only the states that have guests in them, and tighten the gaps. For a
+   * phone, where this summary shares its row with the search field and a "0
+   * awaiting" is width the query needs more.
+   */
+  compact?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
+  compact: false,
 })
 
 const { t } = useI18n()
@@ -115,10 +153,8 @@ const rawViewed = computed(() => props.stats?.viewed || 0)
 
 // A guest can open an invite that was never marked "sent" (the host shared the
 // link out of band), so `viewed` is not reliably a subset of `sent`. Take
-// whichever is larger as "reached" and clamp to the total, which keeps the three
-// segments mutually exclusive and summing to exactly `total_guests`. The old
-// tiles derived pending straight from `total - sent`, so viewed + awaiting +
-// pending could exceed the total and overflow the ring.
+// whichever is larger as "reached" and clamp to the total, which keeps the
+// three segments mutually exclusive and summing to exactly `total_guests`.
 const reached = computed(() =>
   Math.min(Math.max(rawSent.value, rawViewed.value), totalGuests.value),
 )
@@ -131,42 +167,50 @@ const percentage = (count: number) => {
   return Math.round((count / totalGuests.value) * 100)
 }
 
-interface Segment {
-  key: string
-  label: string
-  count: number
-  percent: number
-  dotClass: string
-  strokeClass: string
-}
-
-// Ordered as the invitation funnel runs, and drawn in this order around the ring.
-const segments = computed<Segment[]>(() => [
+// Ordered as the invitation funnel runs, and drawn in this order around the
+// ring. Each glyph is the one a guest row in that state carries.
+const segments = computed(() => [
   {
     key: 'viewed',
     label: t('management.guestGroupsView.statsCard.viewed'),
     count: viewedInvitations.value,
     percent: percentage(viewedInvitations.value),
-    dotClass: 'bg-emerald-600',
-    strokeClass: 'stroke-emerald-600',
+    icon: CheckCheck,
+    iconClass: 'text-emerald-600',
+    strokeClass: 'stroke-emerald-500',
   },
   {
     key: 'awaiting',
     label: t('management.guestGroupsView.statsCard.awaiting'),
     count: awaitingViewInvitations.value,
     percent: percentage(awaitingViewInvitations.value),
-    dotClass: 'bg-sky-600',
-    strokeClass: 'stroke-sky-600',
+    icon: Check,
+    iconClass: 'text-sky-600',
+    strokeClass: 'stroke-sky-500',
   },
   {
     key: 'pending',
     label: t('management.guestGroupsView.statsCard.pending'),
     count: pendingInvitations.value,
     percent: percentage(pendingInvitations.value),
-    dotClass: 'bg-slate-300',
+    icon: Circle,
+    iconClass: 'text-slate-400',
     strokeClass: 'stroke-slate-300',
   },
 ])
+
+/**
+ * The compact legend, carrying only the states that have guests in them.
+ *
+ * The three counts are mutually exclusive and sum to the total, so at least one
+ * is non-zero whenever there is anybody on the list — and the ring already
+ * states the total in its own hole, so a "0 awaiting" adds nothing but width.
+ * The labels are the same locale strings the glyph legend reads out to a screen
+ * reader, so there is one wording for this per language, not two.
+ */
+const wordSegments = computed(() =>
+  segments.value.filter((segment) => segment.count > 0),
+)
 
 const arcs = computed(() => {
   const total = totalGuests.value
@@ -182,9 +226,6 @@ const arcs = computed(() => {
     const gap = visible.length > 1 ? Math.min(SEGMENT_GAP, length * 0.5) : 0
     const arc = {
       key: segment.key,
-      label: segment.label,
-      count: segment.count,
-      percent: segment.percent,
       strokeClass: segment.strokeClass,
       dash: Math.max(length - gap, 1.5),
       offset: -cursor,
@@ -196,7 +237,7 @@ const arcs = computed(() => {
 
 /** The ring is `role="img"` and its centre number is `aria-hidden`, so this is
  *  the only thing a screen reader gets from the chart — it has to state the
- *  total and the split in words. */
+ *  total and the split in words. It is the hover tooltip too. */
 const ringLabel = computed(
   () =>
     `${t('management.guestGroupsView.statsCard.invited')}: ${totalGuests.value}. ` +

@@ -1677,10 +1677,6 @@
     }
   },
   "guestGroupsView": {
-    "header": {
-      "title": "Guest Management",
-      "subtitle": "Manage event invitations and guest responses"
-    },
     "emptyState": {
       "title": "Add First Guest",
       "subtitle": "Start building your guest list for the event",
@@ -1689,6 +1685,7 @@
     },
     "filterBar": {
       "searchPlaceholder": "Search guests...",
+      "searchPlaceholderShort": "Search",
       "searchAriaLabel": "Search guests by name, email, or phone",
       "allGroups": "All Groups",
       "filterByGroup": "Filter by Group",
@@ -1712,7 +1709,8 @@
       "clearSelection": "Clear selection",
       "selected": "selected",
       "markSent": "Mark Sent",
-      "delete": "Delete"
+      "delete": "Delete",
+      "pickGuests": "Select guests"
     },
     "guestList": {
       "loadingMore": "Loading more guests...",
@@ -1720,41 +1718,43 @@
       "empty": {
         "title": "No Guests Found",
         "searchHint": "Try adjusting your search",
-        "emptyHint": "No guests in this group yet"
+        "emptyHint": "No guests in this group yet",
+        "firstTitle": "No guests yet",
+        "firstHint": "Add your first guest in the row above"
       }
     },
     "guestListItem": {
-      "renameHint": "Click to rename",
       "selectHint": "Tap to select",
       "changeGroupHint": "Click to change group",
-      "moreDetails": "More details",
       "invitationViewed": "Invitation viewed",
       "invitationNotSent": "Invitation not sent yet",
       "invitationSent": "Invitation sent",
-      "sent": "Sent",
       "copy": "Copy",
       "copied": "Copied!",
       "markAsSent": "Mark as sent",
       "copyLink": "Copy invitation link",
       "editGuest": "Edit guest",
       "deleteGuest": "Delete guest",
-      "languageKhmer": "Khmer",
-      "languageEnglish": "English",
       "seatedAt": "Seated at {table}",
       "seatedAtWithSeat": "Seated at {table}, seat {seat}",
       "rsvp": {
         "going": "Going",
         "maybe": "Maybe",
         "declined": "Declined"
-      }
+      },
+      "moreActions": "More actions",
+      "copyLinkKh": "Copy link (Khmer)",
+      "copyLinkEn": "Copy link (English)",
+      "trayEdit": "Edit",
+      "trayDelete": "Delete",
+      "changeGroupTitle": "Change group",
+      "selectGuests": "Select guests"
     },
     "quickAdd": {
-      "addGuestPill": "+ Add guest",
       "noGroupsHint": "Create a group first",
-      "namePlaceholder": "Guest name",
+      "namePlaceholder": "Add a guest",
       "pickGroup": "Group",
-      "save": "Add guest",
-      "cancel": "Cancel"
+      "save": "Add guest"
     },
     "guideModal": {
       "title": "Guest Management Guide",
@@ -1762,9 +1762,7 @@
       "steps": {
         "addGuests": {
           "title": "Add Guests",
-          "descPre": "Click the",
-          "btnLabel": "Add Guest",
-          "descPost": "button to add individual guests with their contact details."
+          "description": "Type a name in the add row at the top of the list and press Enter. The caret stays put, so several guests go in back to back."
         },
         "bulkImport": {
           "title": "Bulk Import",
@@ -1774,21 +1772,17 @@
         },
         "copyLinks": {
           "title": "Copy Invitation Links",
-          "descPre": "Click the",
-          "btnLabel": "Link",
-          "descPost": "icon on any guest to copy their personalized invitation link.",
           "messengerNoteLabel": "Note:",
           "messengerNotePre": "When sharing links via",
           "messengerPlatformLabel": "Facebook Messenger on desktop",
           "messengerNoteMid": ", the link preview may not display. For the best experience with preview cards, use the",
           "messengerAppLabel": "Messenger mobile app",
-          "messengerNotePost": "instead."
+          "messengerNotePost": "instead.",
+          "description": "Press the link button on any guest to copy their personalised invitation. Use the row's ⋯ menu to copy it in the other language."
         },
         "trackInvitations": {
           "title": "Track Invitations",
-          "descPre": "After sending invitations, click",
-          "btnLabel": "Mark Sent",
-          "descPost": "to track which guests have received their invites."
+          "description": "Once you have sent an invitation, mark it sent from the guest's ⋯ menu — the dot on their photo tracks whether it has been sent and opened."
         },
         "cashGift": {
           "title": "Cash Gift Journal",
@@ -1798,7 +1792,7 @@
         },
         "bulkActions": {
           "title": "Bulk Actions",
-          "description": "Select multiple guests using checkboxes to perform bulk actions like marking sent or deleting."
+          "description": "Tap a guest's photo to select them, then use Mark Sent or Delete in the bar that replaces the search field."
         }
       },
       "proTip": {
@@ -1808,11 +1802,11 @@
       "closeBtn": "Got it"
     },
     "statsCard": {
-      "invitedGuests": "Invited Guests",
       "invited": "Invited",
       "viewed": "Viewed",
       "awaiting": "Awaiting",
-      "pending": "Pending"
+      "pending": "Pending",
+      "totalLabel": "guest | guests"
     },
     "addGuestModal": {
       "title": "Import Guests",
@@ -1826,17 +1820,17 @@
         "createFirstBulk": "Please create a group first before importing guests.",
         "newGroupForm": {
           "title": "New Group",
-          "namePlaceholder": "Group name *",
+          "namePlaceholder": "Group name",
           "descPlaceholder": "Description (optional)",
           "creating": "Creating...",
-          "createBtn": "Create Group"
+          "createBtn": "Create"
         },
         "editGroupForm": {
           "title": "Edit Group",
-          "namePlaceholder": "Group name *",
+          "namePlaceholder": "Group name",
           "descPlaceholder": "Description (optional)",
           "saving": "Saving...",
-          "saveBtn": "Save Changes",
+          "saveBtn": "Save",
           "cancelBtn": "Cancel"
         },
         "deleteGroupConfirm": {
@@ -1846,7 +1840,8 @@
           "cancelBtn": "Cancel",
           "deleting": "Deleting...",
           "deleteBtn": "Delete Group"
-        }
+        },
+        "customColorLabel": "Custom color"
       },
       "bulkImport": {
         "downloadTemplate": "Download Template (CSV)",
@@ -1908,8 +1903,8 @@
         "updatedAt": "· updated {date}",
         "statusLabel": "Status",
         "maxPlusOnesLabel": "Max plus-ones",
-        "bringingLabel": "Bringing:",
-        "privateNoteLabel": "Private note:",
+        "bringingLabel": "Bringing",
+        "privateNoteLabel": "Private note",
         "answersTitle": "Answers",
         "answersLoading": "Loading answers…",
         "answersEmpty": "No answers yet.",
@@ -1941,8 +1936,6 @@
       "tableSeating": "Table Seating"
     },
     "header": {
-      "title": "Table Seating",
-      "subtitle": "Drag guests onto a table, or tap guests to select them and tap \"Seat here\" on a table.",
       "addTable": "Add Table"
     },
     "summary": {
@@ -2583,6 +2576,10 @@
       "deleted": "Review deleted successfully",
       "deleteFailed": "Failed to delete review",
       "deleteError": "An error occurred while deleting your review"
+    },
+    "error": {
+      "title": "Couldn't load your review",
+      "tryAgain": "Try Again"
     }
   },
   "partnerTemplatesPanel": {
@@ -3618,6 +3615,7 @@
     }
   },
   "guestManagementTab": {
+    "title": "Guest Management",
     "checkingTemplate": "Checking template status...",
     "noTemplate": {
       "title": "No Template Selected",

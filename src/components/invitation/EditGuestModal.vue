@@ -4,176 +4,169 @@
     <Transition name="fade">
       <div
         v-if="show"
-        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70]"
+        class="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm"
         @click="handleClose"
       />
     </Transition>
 
-    <!-- Drawer Panel -->
+    <!--
+      Guest detail.
+
+      Rebuilt on the grouped inset list the design skill prescribes, so the
+      sheet that opens over the new guest list speaks the list's own language:
+      hairline-divided rows inside one bordered group, the label on the left
+      and the value on the right, and the group's border drawn once instead of
+      a rounded box around every field.
+
+      What went: a header tinted with the guest's group colour and lit by a
+      blurred blob behind it, an `EDIT GUEST` eyebrow above a name that was
+      already the largest thing on screen, and five uppercase section headings
+      over a form of nine fields. The name is the title; the sections that
+      survive each head a group you scroll between.
+    -->
     <Transition name="slide-up">
       <div
         v-if="show"
-        class="fixed inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center w-full md:w-auto z-[71]"
+        class="fixed inset-x-0 bottom-0 z-[71] w-full md:inset-0 md:flex md:w-auto md:items-center md:justify-center"
         @click.self="handleClose"
       >
         <div
           role="dialog"
           aria-modal="true"
           aria-labelledby="edit-guest-modal-title"
-          class="relative w-full md:max-w-md bg-white md:rounded-3xl shadow-2xl ring-1 ring-slate-900/5 overflow-hidden max-h-[85vh] md:max-h-[calc(100vh-100px)] flex flex-col rounded-t-3xl md:rounded-b-3xl"
+          class="relative flex max-h-[85vh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl ring-1 ring-slate-900/5 md:max-h-[calc(100vh-100px)] md:max-w-md md:rounded-3xl"
           @click.stop
         >
           <!-- Header -->
-          <div class="relative flex-shrink-0 overflow-hidden border-b border-slate-100 bg-white z-10">
-            <!-- Tinted backdrop derived from the guest's group color -->
-            <div class="absolute inset-0" :style="headerBackdropStyle"></div>
+          <div class="z-10 flex flex-shrink-0 items-center gap-3 border-b border-slate-100 bg-white px-5 py-4">
             <div
-              class="absolute -top-12 -right-12 w-44 h-44 rounded-full opacity-25 blur-3xl pointer-events-none"
-              :style="{ backgroundColor: accentColor }"
-            ></div>
-
-            <div class="relative px-5 pt-4 pb-4">
-              <button
-                @click="handleClose"
-                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 backdrop-blur hover:bg-white text-slate-500 hover:text-slate-800 flex items-center justify-center shadow-sm ring-1 ring-slate-900/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-                :aria-label="t('management.guestGroupsView.editGuestModal.close')"
-              >
-                <X class="w-4 h-4" />
-              </button>
-
-              <div class="flex items-start gap-3.5 pr-12">
-                <div
-                  class="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 text-white text-sm font-bold select-none"
-                  :style="{ backgroundColor: accentColor, boxShadow: `0 8px 20px -6px ${accentColor}99` }"
-                >
-                  {{ guestInitials || '?' }}
-                </div>
-                <div class="min-w-0 flex-1">
-                  <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                    {{ t('management.guestGroupsView.editGuestModal.title') }}
-                  </p>
-                  <h2 id="edit-guest-modal-title" class="text-lg font-bold text-slate-900 truncate leading-tight">{{ guest?.name }}</h2>
-                  <p v-if="guest?.group_details" class="text-xs text-slate-500 mt-0.5 truncate">
-                    {{ guest.group_details.name }}
-                  </p>
-                </div>
-              </div>
+              class="flex h-10 w-10 flex-shrink-0 select-none items-center justify-center rounded-full text-xs font-bold"
+              :style="{ backgroundColor: `${accentColor}1a`, color: accentColor }"
+              aria-hidden="true"
+            >
+              {{ guestInitials || '?' }}
             </div>
+            <div class="min-w-0 flex-1">
+              <h2 id="edit-guest-modal-title" class="truncate text-base font-semibold leading-tight text-slate-900">
+                {{ guest?.name }}
+              </h2>
+              <p v-if="guest?.group_details" class="mt-0.5 truncate text-xs text-slate-500">
+                {{ guest.group_details.name }}
+              </p>
+            </div>
+            <button
+              @click="handleClose"
+              class="-mr-2 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+              :aria-label="t('management.guestGroupsView.editGuestModal.close')"
+            >
+              <X class="h-4 w-4" />
+            </button>
           </div>
 
           <!-- Form Content -->
           <div class="flex-1 overflow-y-auto overscroll-contain">
-            <form @submit.prevent="handleSubmit" class="p-4 space-y-5 pb-24">
-              <!-- Group Selection -->
+            <form @submit.prevent="handleSubmit" class="space-y-5 p-4">
+              <!-- Who this is. No section heading: it is the subject of the
+                   sheet, and the title bar above already named it. -->
               <div>
-                <label for="editGuestGroup" class="block text-sm font-medium text-slate-700 mb-2">
-                  {{ t('management.guestGroupsView.editGuestModal.group.selectLabel') }} <span class="text-red-500">*</span>
-                </label>
-                <div class="relative">
-                  <select
-                    id="editGuestGroup"
-                    v-model="formData.group"
-                    required
-                    class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all appearance-none pr-10"
-                  >
-                    <option :value="null" disabled>{{ t('management.guestGroupsView.editGuestModal.group.choosePlaceholder') }}</option>
-                    <option v-for="group in groups" :key="group.id" :value="group.id">
-                      {{ group.name }} ({{ group.guest_count }} {{ t('management.guestGroupsView.editGuestModal.group.guestsSuffix') }})
-                    </option>
-                  </select>
-                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <ChevronDown class="w-4 h-4 text-slate-500" />
+                <div class="list-group">
+                  <div class="list-row">
+                    <label class="list-row__label flex-shrink-0" for="editGuestGroup">
+                      {{ t('management.guestGroupsView.editGuestModal.group.selectLabel') }}
+                    </label>
+                    <div class="list-select">
+                      <select id="editGuestGroup" v-model="formData.group" required class="list-select__control">
+                        <option :value="null" disabled>{{ t('management.guestGroupsView.editGuestModal.group.choosePlaceholder') }}</option>
+                        <option v-for="group in groups" :key="group.id" :value="group.id">
+                          {{ group.name }} ({{ group.guest_count }} {{ t('management.guestGroupsView.editGuestModal.group.guestsSuffix') }})
+                        </option>
+                      </select>
+                      <ChevronDown class="list-select__chevron" aria-hidden="true" />
+                    </div>
+                  </div>
+
+                  <div class="list-row">
+                    <label class="list-row__label flex-shrink-0" for="editGuestName">
+                      {{ t('management.guestGroupsView.editGuestModal.guestName.label') }}
+                    </label>
+                    <input
+                      id="editGuestName"
+                      ref="nameInputRef"
+                      v-model="formData.name"
+                      type="text"
+                      required
+                      :placeholder="t('management.guestGroupsView.editGuestModal.guestName.placeholder')"
+                      class="list-input"
+                      :aria-invalid="fieldErrors.name ? 'true' : undefined"
+                      :aria-describedby="fieldErrors.name ? 'edit-guest-name-error' : undefined"
+                    />
                   </div>
                 </div>
+                <p v-if="fieldErrors.name" id="edit-guest-name-error" class="mt-1.5 px-3 text-xs text-red-600">{{ fieldErrors.name }}</p>
               </div>
 
-              <!-- Guest Name -->
+              <!-- Contact. The disclosure row is the section's heading, so it
+                   gets no separate eyebrow over it. -->
               <div>
-                <label for="editGuestName" class="block text-sm font-medium text-slate-700 mb-2">
-                  {{ t('management.guestGroupsView.editGuestModal.guestName.label') }} <span class="text-red-500">*</span>
-                </label>
-                <input
-                  id="editGuestName"
-                  ref="nameInputRef"
-                  v-model="formData.name"
-                  type="text"
-                  required
-                  :placeholder="t('management.guestGroupsView.editGuestModal.guestName.placeholder')"
-                  class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
-                  :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.name }"
-                  :aria-invalid="fieldErrors.name ? 'true' : undefined"
-                  :aria-describedby="fieldErrors.name ? 'edit-guest-name-error' : undefined"
-                />
-                <p v-if="fieldErrors.name" id="edit-guest-name-error" class="mt-1 text-xs text-red-600">{{ fieldErrors.name }}</p>
+                <div class="list-group">
+                  <button
+                    type="button"
+                    @click="isContactInfoExpanded = !isContactInfoExpanded"
+                    :aria-expanded="isContactInfoExpanded"
+                    class="list-row"
+                  >
+                    <span class="list-row__text">
+                      <span class="list-row__label">{{ t('management.guestGroupsView.editGuestModal.contactInfo.title') }}</span>
+                      <span class="list-row__hint">{{ contactSummary }}</span>
+                    </span>
+                    <ChevronDown
+                      class="h-4 w-4 flex-shrink-0 text-slate-400 transition-transform duration-200"
+                      :class="{ 'rotate-180': isContactInfoExpanded }"
+                    />
+                  </button>
+
+                  <Transition name="collapse">
+                    <div v-show="isContactInfoExpanded" class="grid grid-rows-[1fr]">
+                      <div class="min-h-0 overflow-hidden">
+                        <div class="list-row">
+                          <label class="list-row__label flex-shrink-0" for="editGuestEmail">
+                            {{ t('management.guestGroupsView.editGuestModal.contactInfo.emailLabel') }}
+                          </label>
+                          <input
+                            id="editGuestEmail"
+                            v-model="formData.email"
+                            type="email"
+                            :placeholder="t('management.guestGroupsView.editGuestModal.contactInfo.emailPlaceholder')"
+                            class="list-input"
+                            :aria-invalid="fieldErrors.email ? 'true' : undefined"
+                            :aria-describedby="fieldErrors.email ? 'edit-guest-email-error' : undefined"
+                          />
+                        </div>
+                        <div class="list-row">
+                          <label class="list-row__label flex-shrink-0" for="editGuestPhone">
+                            {{ t('management.guestGroupsView.editGuestModal.contactInfo.phoneLabel') }}
+                          </label>
+                          <input
+                            id="editGuestPhone"
+                            v-model="formData.phone_number"
+                            type="tel"
+                            placeholder="+1234567890"
+                            class="list-input"
+                            :aria-invalid="fieldErrors.phone_number ? 'true' : undefined"
+                            :aria-describedby="fieldErrors.phone_number ? 'edit-guest-phone-error' : undefined"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </Transition>
+                </div>
+                <p v-if="fieldErrors.email" id="edit-guest-email-error" class="mt-1.5 px-3 text-xs text-red-600">{{ fieldErrors.email }}</p>
+                <p v-if="fieldErrors.phone_number" id="edit-guest-phone-error" class="mt-1.5 px-3 text-xs text-red-600">{{ fieldErrors.phone_number }}</p>
               </div>
 
-              <!-- Contact Information Section (Collapsible) -->
-              <div class="space-y-3 pt-2">
-                <button
-                  type="button"
-                  @click="isContactInfoExpanded = !isContactInfoExpanded"
-                  class="w-full flex items-center justify-between p-2 -mx-2 rounded-xl hover:bg-slate-50 transition-colors"
-                >
-                  <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                    <Mail class="w-3.5 h-3.5" />
-                    <span>{{ t('management.guestGroupsView.editGuestModal.contactInfo.title') }}</span>
-                    <span class="normal-case tracking-normal font-normal">({{ t('management.guestGroupsView.editGuestModal.contactInfo.optional') }})</span>
-                  </div>
-                  <ChevronDown
-                    class="w-4 h-4 text-slate-400 transition-transform duration-200"
-                    :class="{ 'rotate-180': isContactInfoExpanded }"
-                  />
-                </button>
-
-                <Transition name="collapse">
-                  <div v-show="isContactInfoExpanded" class="grid grid-rows-[1fr]">
-                  <div class="min-h-0 overflow-hidden">
-                  <div class="space-y-4 pl-6 border-l-2 border-slate-200">
-                    <!-- Email -->
-                    <div>
-                      <label for="editGuestEmail" class="block text-sm font-medium text-slate-700 mb-2">
-                        {{ t('management.guestGroupsView.editGuestModal.contactInfo.emailLabel') }}
-                      </label>
-                      <input
-                        id="editGuestEmail"
-                        v-model="formData.email"
-                        type="email"
-                        :placeholder="t('management.guestGroupsView.editGuestModal.contactInfo.emailPlaceholder')"
-                        class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
-                        :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.email }"
-                        :aria-invalid="fieldErrors.email ? 'true' : undefined"
-                        :aria-describedby="fieldErrors.email ? 'edit-guest-email-error' : undefined"
-                      />
-                      <p v-if="fieldErrors.email" id="edit-guest-email-error" class="mt-1 text-xs text-red-600">{{ fieldErrors.email }}</p>
-                    </div>
-
-                    <!-- Phone Number -->
-                    <div>
-                      <label for="editGuestPhone" class="block text-sm font-medium text-slate-700 mb-2">
-                        {{ t('management.guestGroupsView.editGuestModal.contactInfo.phoneLabel') }}
-                      </label>
-                      <input
-                        id="editGuestPhone"
-                        v-model="formData.phone_number"
-                        type="tel"
-                        placeholder="+1234567890"
-                        class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
-                        :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.phone_number }"
-                        :aria-invalid="fieldErrors.phone_number ? 'true' : undefined"
-                        :aria-describedby="fieldErrors.phone_number ? 'edit-guest-phone-error' : undefined"
-                      />
-                      <p v-if="fieldErrors.phone_number" id="edit-guest-phone-error" class="mt-1 text-xs text-red-600">{{ fieldErrors.phone_number }}</p>
-                    </div>
-                  </div>
-                  </div>
-                  </div>
-                </Transition>
-              </div>
-
-              <!-- RSVP Section (private-event response state) -->
-              <div class="space-y-3 pt-2">
-                <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <CalendarCheck class="w-3.5 h-3.5" />
+              <!-- RSVP -->
+              <section>
+                <h3 class="mb-2 flex items-baseline gap-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
                   {{ t('management.guestGroupsView.editGuestModal.rsvp.title') }}
                   <span
                     v-if="guest?.rsvp_responded_at"
@@ -183,48 +176,24 @@
                   </span>
                 </h3>
 
-                <div class="grid grid-cols-2 gap-3">
-                  <!-- RSVP Status -->
-                  <div>
-                    <label
-                      for="editRsvpStatus"
-                      class="block text-sm font-medium text-slate-700 mb-2"
-                    >
+                <div class="list-group">
+                  <div class="list-row">
+                    <label class="list-row__label flex-shrink-0" for="editRsvpStatus">
                       {{ t('management.guestGroupsView.editGuestModal.rsvp.statusLabel') }}
                     </label>
-                    <div class="relative">
-                      <select
-                        id="editRsvpStatus"
-                        v-model="formData.rsvp_status"
-                        class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all appearance-none pr-10"
-                      >
-                        <option value="pending">
-                          {{ t('management.guestGroupsView.editGuestModal.rsvp.statusOptions.pending') }}
-                        </option>
-                        <option value="attending">
-                          {{ t('management.guestGroupsView.editGuestModal.rsvp.statusOptions.attending') }}
-                        </option>
-                        <option value="maybe">
-                          {{ t('management.guestGroupsView.editGuestModal.rsvp.statusOptions.maybe') }}
-                        </option>
-                        <option value="not_attending">
-                          {{ t('management.guestGroupsView.editGuestModal.rsvp.statusOptions.notAttending') }}
-                        </option>
+                    <div class="list-select">
+                      <select id="editRsvpStatus" v-model="formData.rsvp_status" class="list-select__control">
+                        <option value="pending">{{ t('management.guestGroupsView.editGuestModal.rsvp.statusOptions.pending') }}</option>
+                        <option value="attending">{{ t('management.guestGroupsView.editGuestModal.rsvp.statusOptions.attending') }}</option>
+                        <option value="maybe">{{ t('management.guestGroupsView.editGuestModal.rsvp.statusOptions.maybe') }}</option>
+                        <option value="not_attending">{{ t('management.guestGroupsView.editGuestModal.rsvp.statusOptions.notAttending') }}</option>
                       </select>
-                      <div
-                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-                      >
-                        <ChevronDown class="w-4 h-4 text-slate-500" />
-                      </div>
+                      <ChevronDown class="list-select__chevron" aria-hidden="true" />
                     </div>
                   </div>
 
-                  <!-- Max plus-ones (host-controlled cap) -->
-                  <div>
-                    <label
-                      for="editMaxPlusOnes"
-                      class="block text-sm font-medium text-slate-700 mb-2"
-                    >
+                  <div class="list-row">
+                    <label class="list-row__label flex-shrink-0" for="editMaxPlusOnes">
                       {{ t('management.guestGroupsView.editGuestModal.rsvp.maxPlusOnesLabel') }}
                     </label>
                     <input
@@ -233,108 +202,65 @@
                       type="number"
                       min="0"
                       step="1"
-                      class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
+                      class="list-input"
                     />
                   </div>
-                </div>
 
-                <!-- Read-only guest-supplied details -->
-                <div
-                  v-if="hasGuestRsvpDetails"
-                  class="rounded-2xl border border-slate-100 bg-slate-50/70 p-3 space-y-2"
-                >
-                  <div
-                    v-if="(guest?.plus_ones_count ?? 0) > 0"
-                    class="text-xs text-slate-600"
-                  >
-                    <span class="font-medium text-slate-700">
+                  <!-- What the guest themselves said. Read-only, so it sits in
+                       the same group as rows rather than in a tinted box: it
+                       is more of this record, not an aside about it. -->
+                  <div v-if="(guest?.plus_ones_count ?? 0) > 0" class="list-row">
+                    <span class="list-row__label flex-shrink-0">
                       {{ t('management.guestGroupsView.editGuestModal.rsvp.bringingLabel') }}
                     </span>
-                    {{ guest?.plus_ones_count }}
-                    <span v-if="guest?.plus_ones_names">
-                      — {{ guest.plus_ones_names }}
+                    <span class="list-row__value min-w-0 truncate text-right text-slate-900">
+                      {{ guest?.plus_ones_count }}<template v-if="guest?.plus_ones_names"> — {{ guest.plus_ones_names }}</template>
                     </span>
                   </div>
-                  <div
-                    v-if="guest?.private_note_to_host"
-                    class="text-xs text-slate-600"
-                  >
-                    <span class="font-medium text-slate-700">
+                  <div v-if="guest?.private_note_to_host" class="list-row items-start">
+                    <span class="list-row__label flex-shrink-0">
                       {{ t('management.guestGroupsView.editGuestModal.rsvp.privateNoteLabel') }}
                     </span>
-                    <span class="ml-1 italic">"{{ guest.private_note_to_host }}"</span>
+                    <span class="list-row__value min-w-0 text-right italic text-slate-600">
+                      “{{ guest.private_note_to_host }}”
+                    </span>
                   </div>
                 </div>
 
                 <!-- Per-question answers (shown whenever the guest has at least one) -->
-                <div
-                  v-if="showAnswersSection"
-                  class="mt-2"
-                >
-                  <h4 class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                <template v-if="showAnswersSection">
+                  <h4 class="mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
                     {{ t('management.guestGroupsView.editGuestModal.rsvp.answersTitle') }}
                   </h4>
 
-                  <!-- Loading placeholder while the detail fetch is in flight -->
-                  <div
-                    v-if="isLoadingAnswers && !guest?.rsvp_answers"
-                    class="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 flex items-center gap-2"
-                  >
-                    <div class="w-4 h-4 animate-spin border-2 border-slate-400 border-t-transparent rounded-full" />
-                    <span class="text-xs text-slate-500">
-                      {{ t('management.guestGroupsView.editGuestModal.rsvp.answersLoading') }}
-                    </span>
+                  <div v-if="isLoadingAnswers && !guest?.rsvp_answers" class="list-group">
+                    <div class="list-row gap-2">
+                      <span class="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-transparent" aria-hidden="true"></span>
+                      <span class="list-row__hint">{{ t('management.guestGroupsView.editGuestModal.rsvp.answersLoading') }}</span>
+                    </div>
                   </div>
 
-                  <!-- Empty safeguard (count > 0 but detail came back empty) -->
-                  <div
-                    v-else-if="(guest?.rsvp_answers?.length ?? 0) === 0"
-                    class="rounded-2xl border border-slate-100 bg-slate-50/70 p-3"
-                  >
-                    <p class="text-xs text-slate-500">
-                      {{ t('management.guestGroupsView.editGuestModal.rsvp.answersEmpty') }}
-                    </p>
+                  <div v-else-if="(guest?.rsvp_answers?.length ?? 0) === 0" class="list-group">
+                    <p class="list-row list-row__hint">{{ t('management.guestGroupsView.editGuestModal.rsvp.answersEmpty') }}</p>
                   </div>
 
-                  <!-- Answer rows -->
-                  <div
-                    v-else
-                    class="rounded-2xl border border-slate-100 bg-slate-50/70 divide-y divide-slate-100"
-                  >
-                    <div
-                      v-for="answer in sortedAnswers"
-                      :key="answer.question_id"
-                      class="p-3 space-y-1.5"
-                    >
-                      <!-- Question text (muted label) -->
-                      <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 break-words">
-                        {{ answer.question_text }}
-                      </p>
+                  <div v-else class="list-group">
+                    <div v-for="answer in sortedAnswers" :key="answer.question_id" class="space-y-1 px-3 py-2.5">
+                      <p class="break-words text-xs text-slate-500">{{ answer.question_text }}</p>
 
-                      <!-- Text / long_text -->
                       <p
-                        v-if="
-                          (answer.question_type === 'text' ||
-                            answer.question_type === 'long_text') &&
-                          answer.answer_text.trim()
-                        "
-                        class="text-sm text-slate-800 break-words whitespace-pre-wrap italic"
+                        v-if="(answer.question_type === 'text' || answer.question_type === 'long_text') && answer.answer_text.trim()"
+                        class="whitespace-pre-wrap break-words text-sm text-slate-900"
                       >
-                        "{{ answer.answer_text }}"
+                        {{ answer.answer_text }}
                       </p>
 
-                      <!-- Yes / No chip -->
-                      <div
-                        v-else-if="answer.question_type === 'yes_no' && answer.answer_text"
-                        class="flex flex-wrap gap-1.5"
-                      >
+                      <!-- Chips only where the answer is a choice from a set —
+                           a free-text reply is prose and reads as prose. -->
+                      <div v-else-if="answer.question_type === 'yes_no' && answer.answer_text" class="flex flex-wrap gap-1.5">
                         <span
-                          class="px-2.5 py-0.5 rounded-full text-xs font-medium"
-                          :class="
-                            answer.answer_text.toLowerCase() === 'yes'
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : 'bg-rose-100 text-rose-700'
-                          "
+                          class="rounded-full px-2 py-0.5 text-xs font-medium"
+                          :class="answer.answer_text.toLowerCase() === 'yes' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'"
                         >
                           {{
                             answer.answer_text.toLowerCase() === 'yes'
@@ -344,53 +270,38 @@
                         </span>
                       </div>
 
-                      <!-- Single choice chip -->
-                      <div
-                        v-else-if="answer.question_type === 'single_choice' && answer.answer_text"
-                        class="flex flex-wrap gap-1.5"
-                      >
-                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-700">
-                          {{ answer.answer_text }}
-                        </span>
+                      <div v-else-if="answer.question_type === 'single_choice' && answer.answer_text" class="flex flex-wrap gap-1.5">
+                        <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{{ answer.answer_text }}</span>
                       </div>
 
-                      <!-- Multi choice chip list -->
                       <div
-                        v-else-if="
-                          answer.question_type === 'multi_choice' &&
-                          (answer.answer_choices?.length ?? 0) > 0
-                        "
+                        v-else-if="answer.question_type === 'multi_choice' && (answer.answer_choices?.length ?? 0) > 0"
                         class="flex flex-wrap gap-1.5"
                       >
                         <span
                           v-for="choice in answer.answer_choices"
                           :key="choice"
-                          class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-100 text-violet-700"
+                          class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700"
                         >
                           {{ choice }}
                         </span>
                       </div>
 
-                      <!-- No answer fallback -->
-                      <p v-else class="text-xs text-slate-400 italic">
-                        {{ t('management.guestGroupsView.editGuestModal.rsvp.answerMissing') }}
-                      </p>
+                      <p v-else class="text-sm text-slate-400">{{ t('management.guestGroupsView.editGuestModal.rsvp.answerMissing') }}</p>
                     </div>
                   </div>
-                </div>
-              </div>
+                </template>
+              </section>
 
-              <!-- Cash Gift Section -->
-              <div class="space-y-3 pt-2">
-                <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <Coins class="w-3.5 h-3.5" />
+              <!-- Cash gift -->
+              <section>
+                <h3 class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
                   {{ t('management.guestGroupsView.editGuestModal.cashGift.title') }}
                 </h3>
 
-                <div class="grid grid-cols-2 gap-3">
-                  <!-- Cash Gift Amount -->
-                  <div>
-                    <label for="editCashGiftAmount" class="block text-sm font-medium text-slate-700 mb-2">
+                <div class="list-group">
+                  <div class="list-row">
+                    <label class="list-row__label flex-shrink-0" for="editCashGiftAmount">
                       {{ t('management.guestGroupsView.editGuestModal.cashGift.amountLabel') }}
                     </label>
                     <input
@@ -400,110 +311,72 @@
                       step="0.01"
                       min="0"
                       placeholder="0.00"
-                      class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all"
-                      :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.cash_gift_amount }"
+                      class="list-input"
                       :aria-invalid="fieldErrors.cash_gift_amount ? 'true' : undefined"
                       :aria-describedby="fieldErrors.cash_gift_amount ? 'edit-guest-cash-amount-error' : undefined"
                     />
-                    <p v-if="fieldErrors.cash_gift_amount" id="edit-guest-cash-amount-error" class="mt-1 text-xs text-red-600">{{ fieldErrors.cash_gift_amount }}</p>
                   </div>
 
-                  <!-- Cash Gift Currency -->
-                  <div>
-                    <label for="editCashGiftCurrency" class="block text-sm font-medium text-slate-700 mb-2">
+                  <div class="list-row">
+                    <label class="list-row__label flex-shrink-0" for="editCashGiftCurrency">
                       {{ t('management.guestGroupsView.editGuestModal.cashGift.currencyLabel') }}
                     </label>
-                    <div class="relative">
+                    <div class="list-select">
                       <select
                         id="editCashGiftCurrency"
                         v-model="formData.cash_gift_currency"
-                        class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-200 focus:bg-white transition-all appearance-none pr-10"
-                        :class="{ 'border-red-300 focus:ring-red-200 focus:border-red-400': fieldErrors.cash_gift_currency }"
+                        class="list-select__control"
                         :aria-invalid="fieldErrors.cash_gift_currency ? 'true' : undefined"
                         :aria-describedby="fieldErrors.cash_gift_currency ? 'edit-guest-cash-currency-error' : undefined"
                       >
                         <option value="">{{ t('management.guestGroupsView.editGuestModal.cashGift.currencyPlaceholder') }}</option>
-                        <option value="USD">USD - US Dollar</option>
-                        <option value="KHR">KHR - Cambodian Riel</option>
-                        <option value="EUR">EUR - Euro</option>
-                        <option value="GBP">GBP - British Pound</option>
-                        <option value="JPY">JPY - Japanese Yen</option>
-                        <option value="CNY">CNY - Chinese Yuan</option>
-                        <option value="THB">THB - Thai Baht</option>
-                        <option value="VND">VND - Vietnamese Dong</option>
-                        <option value="SGD">SGD - Singapore Dollar</option>
-                        <option value="AUD">AUD - Australian Dollar</option>
-                        <option value="CAD">CAD - Canadian Dollar</option>
+                        <option v-for="code in CURRENCIES" :key="code.value" :value="code.value">{{ code.label }}</option>
                       </select>
-                      <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <ChevronDown class="w-4 h-4 text-slate-500" />
-                      </div>
+                      <ChevronDown class="list-select__chevron" aria-hidden="true" />
                     </div>
-                    <p v-if="fieldErrors.cash_gift_currency" id="edit-guest-cash-currency-error" class="mt-1 text-xs text-red-600">{{ fieldErrors.cash_gift_currency }}</p>
                   </div>
                 </div>
-              </div>
+                <p v-if="fieldErrors.cash_gift_amount" id="edit-guest-cash-amount-error" class="mt-1.5 px-3 text-xs text-red-600">{{ fieldErrors.cash_gift_amount }}</p>
+                <p v-if="fieldErrors.cash_gift_currency" id="edit-guest-cash-currency-error" class="mt-1.5 px-3 text-xs text-red-600">{{ fieldErrors.cash_gift_currency }}</p>
+              </section>
 
               <!-- Error Message -->
-              <div v-if="errorMessage" class="rounded-xl bg-red-50 border border-red-200 p-3">
+              <div v-if="errorMessage" class="rounded-xl border border-red-200 bg-red-50 p-3">
                 <p class="text-sm text-red-800">{{ errorMessage }}</p>
               </div>
 
-              <!-- Quick Actions Section (Mobile Only) -->
-              <div class="md:hidden space-y-3 pt-2">
-                <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <Link class="w-3.5 h-3.5" />
+              <!-- Quick actions, phone only — the row on a wide screen carries
+                   these in its ⋯ menu, which a phone's row does not show. -->
+              <section class="md:hidden">
+                <h3 class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
                   {{ t('management.guestGroupsView.editGuestModal.quickActions.title') }}
                 </h3>
 
-                <div class="space-y-2">
-                  <!-- Copy Link Buttons -->
-                  <div class="flex gap-2">
-                    <button
-                      type="button"
-                      @click="handleCopyLink('kh')"
-                      :disabled="isUpdating"
-                      class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-xl transition-colors disabled:opacity-50"
-                    >
-                      <Globe class="w-4 h-4" />
-                      <span>{{ t('management.guestGroupsView.editGuestModal.quickActions.copyLinkKh') }}</span>
-                    </button>
-                    <button
-                      type="button"
-                      @click="handleCopyLink('en')"
-                      :disabled="isUpdating"
-                      class="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-xl transition-colors disabled:opacity-50"
-                    >
-                      <Globe class="w-4 h-4" />
-                      <span>{{ t('management.guestGroupsView.editGuestModal.quickActions.copyLinkEn') }}</span>
-                    </button>
-                  </div>
-
-                  <!-- Mark as Sent Button -->
+                <div class="list-group">
+                  <button type="button" @click="handleCopyLink('kh')" :disabled="isUpdating" class="list-row disabled:opacity-50">
+                    <span class="list-row__label">{{ t('management.guestGroupsView.editGuestModal.quickActions.copyLinkKh') }}</span>
+                    <Globe class="h-4 w-4 flex-shrink-0 text-slate-400" />
+                  </button>
+                  <button type="button" @click="handleCopyLink('en')" :disabled="isUpdating" class="list-row disabled:opacity-50">
+                    <span class="list-row__label">{{ t('management.guestGroupsView.editGuestModal.quickActions.copyLinkEn') }}</span>
+                    <Globe class="h-4 w-4 flex-shrink-0 text-slate-400" />
+                  </button>
                   <button
                     v-if="guest && guest.invitation_status === 'not_sent'"
                     type="button"
                     @click="handleMarkSent"
                     :disabled="isUpdating"
-                    class="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 border border-emerald-200 rounded-xl transition-colors disabled:opacity-50"
+                    class="list-row disabled:opacity-50"
                   >
-                    <Send class="w-4 h-4" />
-                    <span>{{ t('management.guestGroupsView.editGuestModal.quickActions.markAsSent') }}</span>
+                    <span class="list-row__label text-emerald-700">{{ t('management.guestGroupsView.editGuestModal.quickActions.markAsSent') }}</span>
+                    <Send class="h-4 w-4 flex-shrink-0 text-emerald-600" />
                   </button>
-
-                  <!-- Delete Button -->
-                  <button
-                    v-if="guest"
-                    type="button"
-                    @click="handleDelete"
-                    :disabled="isUpdating"
-                    class="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 active:bg-red-200 border border-red-200 rounded-xl transition-colors disabled:opacity-50"
-                  >
-                    <Trash2 class="w-4 h-4" />
-                    <span>{{ t('management.guestGroupsView.editGuestModal.quickActions.deleteGuest') }}</span>
+                  <button v-if="guest" type="button" @click="handleDelete" :disabled="isUpdating" class="list-row disabled:opacity-50">
+                    <span class="list-row__label text-red-600">{{ t('management.guestGroupsView.editGuestModal.quickActions.deleteGuest') }}</span>
+                    <Trash2 class="h-4 w-4 flex-shrink-0 text-red-500" />
                   </button>
                 </div>
-              </div>
+              </section>
             </form>
           </div>
 
@@ -513,7 +386,7 @@
               <button
                 type="button"
                 @click="handleClose"
-                class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                class="rounded-xl px-5 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
                 :disabled="isUpdating"
               >
                 {{ t('management.guestGroupsView.editGuestModal.actions.cancel') }}
@@ -522,11 +395,11 @@
               <button
                 @click="handleSubmit"
                 :disabled="!isFormValid || isUpdating"
-                class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:from-[#27ae60] hover:to-[#1873cc] hover:shadow-emerald-600/30 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span
                   v-if="isUpdating"
-                  class="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full"
+                  class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
                 ></span>
                 <span>{{ isUpdating ? t('management.guestGroupsView.editGuestModal.actions.updating') : t('management.guestGroupsView.editGuestModal.actions.updateGuest') }}</span>
               </button>
@@ -535,24 +408,13 @@
         </div>
       </div>
     </Transition>
-
   </Teleport>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-  X,
-  Coins,
-  ChevronDown,
-  Mail,
-  Send,
-  Link,
-  Trash2,
-  Globe,
-  CalendarCheck,
-} from 'lucide-vue-next'
+import { X, ChevronDown, Send, Trash2, Globe } from 'lucide-vue-next'
 import type { EventGuest, GuestGroup, GuestRsvpStatusValue } from '../../services/api'
 
 const { t } = useI18n()
@@ -628,12 +490,8 @@ onUnmounted(() => {
   document.body.style.overflow = ''
 })
 
-// ---- Header presentation (mirrors TableDetailModal) ------------------------
+/** Tints the avatar, exactly as the guest's row in the list behind does. */
 const accentColor = computed(() => props.guest?.group_details?.color || '#1e90ff')
-
-const headerBackdropStyle = computed(() => ({
-  background: `linear-gradient(135deg, ${accentColor.value}24 0%, ${accentColor.value}0a 55%, transparent 100%)`,
-}))
 
 /** First letters of up to two name words, e.g. "Sok Dara" → "SD". */
 const guestInitials = computed(() =>
@@ -683,14 +541,34 @@ watch(() => props.guest, (newGuest) => {
   }
 }, { immediate: true })
 
-// Whether to render the read-only guest-supplied details box
-const hasGuestRsvpDetails = computed(() => {
-  if (!props.guest) return false
-  return (
-    (props.guest.plus_ones_count ?? 0) > 0 ||
-    Boolean(props.guest.private_note_to_host?.trim())
-  )
+/**
+ * What the collapsed contact group is hiding, said on its own row.
+ *
+ * A disclosure that only says "Contact information (Optional)" makes you open
+ * it to find out whether there is anything in there. This is what a grouped
+ * list puts in the trailing half of a row that discloses.
+ */
+const contactSummary = computed(() => {
+  const filled = [props.guest?.email, props.guest?.phone_number].filter((v) => v?.trim())
+  return filled.length > 0
+    ? filled.join(' · ')
+    : t('management.guestGroupsView.editGuestModal.contactInfo.optional')
 })
+
+/** Currency options, one place rather than eleven `<option>`s in the template. */
+const CURRENCIES = [
+  { value: 'USD', label: 'USD - US Dollar' },
+  { value: 'KHR', label: 'KHR - Cambodian Riel' },
+  { value: 'EUR', label: 'EUR - Euro' },
+  { value: 'GBP', label: 'GBP - British Pound' },
+  { value: 'JPY', label: 'JPY - Japanese Yen' },
+  { value: 'CNY', label: 'CNY - Chinese Yuan' },
+  { value: 'THB', label: 'THB - Thai Baht' },
+  { value: 'VND', label: 'VND - Vietnamese Dong' },
+  { value: 'SGD', label: 'SGD - Singapore Dollar' },
+  { value: 'AUD', label: 'AUD - Australian Dollar' },
+  { value: 'CAD', label: 'CAD - Canadian Dollar' },
+]
 
 // Show the Answers panel whenever the list endpoint told us the guest has
 // answered at least one question, OR the detail endpoint has already
@@ -811,6 +689,69 @@ defineExpose({
   setErrorMessage,
 })
 </script>
+
+<!-- The shared row anatomy. Imported as a separate scoped block, which is what
+     keeps every selector reachable — Vue compiles one scoped copy per
+     component (see the sheet's own header comment in groupedList.css). -->
+<style scoped src="../common/groupedList.css"></style>
+
+<style scoped>
+/*
+  A `<select>` in the trailing half of a row.
+
+  `groupedList.css` covers text inputs (`.list-input`) but not selects: a
+  select needs its native chevron suppressed and one of our own drawn, and it
+  cannot be given `text-align: right` reliably across engines — so the control
+  is sized to its content and the wrapper is what pushes it to the trailing
+  edge. Same type, colour and focus behaviour as `.list-input` otherwise.
+*/
+.list-select {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.list-select__control {
+  min-width: 0;
+  max-width: 100%;
+  padding: 0 1.25rem 0 0;
+  border: 0;
+  background: transparent;
+  font-size: 1rem;
+  color: rgb(15 23 42); /* slate-900 */
+  text-align: right;
+  text-overflow: ellipsis;
+  appearance: none;
+  cursor: pointer;
+}
+
+.list-select__control:focus {
+  outline: none;
+}
+
+.list-select__chevron {
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  height: 1rem;
+  width: 1rem;
+  color: rgb(148 163 184); /* slate-400 */
+}
+
+/* The row carries the ring, matching `.list-row:has(.list-input:focus)`. */
+.list-row:has(.list-select__control:focus-visible) {
+  box-shadow: inset 0 0 0 2px rgb(186 230 253); /* sky-200 */
+}
+
+@media (min-width: 640px) {
+  .list-select__control {
+    font-size: 0.875rem;
+  }
+}
+</style>
 
 <style scoped>
 /* Fade transition for backdrop */

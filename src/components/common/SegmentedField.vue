@@ -4,6 +4,7 @@
        name would shadow it. -->
   <div
     class="seg"
+    :class="iconOnlyOnMobile ? 'seg--icon-mobile' : ''"
     role="radiogroup"
     :style="{ '--seg-n': String(options.length), '--seg-i': String(activeIndex) }"
   >
@@ -22,7 +23,7 @@
       @keydown="onKeydown"
     >
       <component :is="option.icon" v-if="option.icon" class="w-4 h-4" aria-hidden="true" />
-      <span class="truncate">{{ option.label }}</span>
+      <span class="seg-label truncate">{{ option.label }}</span>
     </button>
   </div>
 </template>
@@ -54,6 +55,14 @@ export interface SegmentedOption {
 interface Props {
   modelValue: string
   options: SegmentedOption[]
+  /**
+   * Below `sm`, drop the labels and keep the icons — for a control that has to
+   * share a row with a title on a phone and its own row's worth of words will
+   * not fit. Every option must carry an `icon` for this to mean anything; the
+   * label stays in the accessible name either way, so nothing is lost to a
+   * screen reader.
+   */
+  iconOnlyOnMobile?: boolean
 }
 
 const props = defineProps<Props>()
@@ -144,6 +153,28 @@ const onKeydown = async (event: KeyboardEvent) => {
   transition:
     color 0.2s ease-out,
     opacity 0.12s ease-out;
+}
+
+/* Icon-only below `sm`: the label is visually gone but still the button's
+   accessible name, so this is `sr-only`, not `display: none`. The icon then
+   sits alone in the padding it already had, which is what makes the cap
+   square-ish rather than a wide pill with a glyph adrift in it. */
+@media (max-width: 639.98px) {
+  .seg--icon-mobile .seg-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .seg--icon-mobile .seg-btn {
+    gap: 0;
+  }
 }
 
 .seg-btn:hover {
