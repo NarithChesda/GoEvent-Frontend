@@ -62,34 +62,49 @@
 
     <!-- Content Area -->
     <div v-else class="min-h-[25rem]">
-      <!-- Sub-navigation.
-           Sharing rides on this row rather than inside the guest panel: it is a
-           fact about who may reach the whole list, not one more thing you can do
-           to it, and the panel's toolbar is already the busiest row on the tab.
-           Only on the guest list — a share link does not carry seating. -->
-      <div class="flex items-center gap-2 mb-6 border-b border-slate-200/70">
-        <button
-          v-for="tab in subTabs"
-          :key="tab.id"
-          @click="activeSubTab = tab.id"
-          class="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px"
-          :class="activeSubTab === tab.id
-            ? 'border-[#1e90ff] text-[#1e90ff]'
-            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-        >
-          <component :is="tab.icon" class="w-4 h-4" />
-          {{ tab.label }}
-        </button>
+      <!-- One header row for the whole tab: the title, the view choice, and
+           sharing.
 
-        <button
-          v-if="props.canEdit && activeSubTab === 'guests'"
-          @click="openShareModal"
-          class="ml-auto flex items-center gap-1.5 px-3 py-1.5 mb-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
-          :title="t('management.shareGuestList.openCta')"
-        >
-          <Link2 class="w-4 h-4" />
-          <span class="hidden sm:inline">{{ t('management.shareGuestList.openCta') }}</span>
-        </button>
+           This screen used to name itself three times over — an underlined tab
+           reading "Guest List", then a `Guest Management` heading under it,
+           then a sentence explaining what a guest list is. The tab bar and the
+           heading were the same label in two type sizes, so the title is said
+           once here and neither child view carries one any more.
+
+           The view choice is a segmented control, not underlined tabs: two
+           named alternatives is exactly what §6 of the design standard hands
+           to a segmented control, and a recessed track with one raised cap
+           shows both options as one object rather than as two links that
+           happen to sit side by side.
+
+           Sharing rides on this row rather than inside the guest panel: it is a
+           fact about who may reach the whole list, not one more thing you can
+           do to it. Only on the guest list — a share link does not carry
+           seating. -->
+      <div class="mb-5 flex flex-wrap items-center gap-x-4 gap-y-3">
+        <h2 class="text-xl font-bold leading-tight tracking-tight text-slate-900 sm:text-2xl">
+          {{ t('management.guestManagementTab.title') }}
+        </h2>
+
+        <div class="flex w-full items-center gap-2 sm:ml-auto sm:w-auto">
+          <SegmentedField
+            v-model="activeSubTab"
+            :options="subTabs"
+            class="min-w-0 flex-1 sm:flex-none"
+            :aria-label="t('management.guestManagementTab.title')"
+          />
+
+          <button
+            v-if="props.canEdit && activeSubTab === 'guests'"
+            @click="openShareModal"
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center gap-1.5 rounded-xl text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 lg:w-auto lg:px-3"
+            :title="t('management.shareGuestList.openCta')"
+            :aria-label="t('management.shareGuestList.openCta')"
+          >
+            <Link2 class="h-4 w-4" />
+            <span class="hidden lg:inline">{{ t('management.shareGuestList.openCta') }}</span>
+          </button>
+        </div>
       </div>
 
       <!-- Guests View (renamed from Guest Groups View) -->
@@ -248,6 +263,7 @@ import AddGuestModal from './invitation/AddGuestModal.vue'
 import EditGuestModal from './invitation/EditGuestModal.vue'
 import GuestGroupsView from './invitation/GuestGroupsView.vue'
 import SeatingTablesView from './invitation/SeatingTablesView.vue'
+import SegmentedField, { type SegmentedOption } from './common/SegmentedField.vue'
 import ShareGuestListModal from './invitation/ShareGuestListModal.vue'
 import {
   useGuestListShares,
@@ -380,10 +396,10 @@ const isCreatingGroup = ref(false)
 const pendingGuestGroupSelection = ref<number | null>(null)
 const groupCardRefs = new Map<number, any>()
 
-// Sub-tabs configuration
-const subTabs = computed(() => [
-  { id: 'guests', label: t('management.seatingView.tabs.guestList'), icon: UserPlus },
-  { id: 'tables', label: t('management.seatingView.tabs.tableSeating'), icon: Armchair },
+// Sub-tabs configuration — shaped for SegmentedField, which keys on `value`.
+const subTabs = computed<SegmentedOption[]>(() => [
+  { value: 'guests', label: t('management.seatingView.tabs.guestList'), icon: UserPlus },
+  { value: 'tables', label: t('management.seatingView.tabs.tableSeating'), icon: Armchair },
 ])
 
 // Guest groups view ref for controlling selection state

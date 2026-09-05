@@ -226,7 +226,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Ban, Check, Copy, Eye, Link2, Pencil, Plus, Trash2, X } from 'lucide-vue-next'
 import type { GuestListShare, GuestShareAccess } from '@/services/api'
@@ -289,6 +289,25 @@ watch(
     copiedShareId.value = null
   },
 )
+
+/** Escape closes the modal (DESIGN.md §8), which it did not before. Bound only
+ *  while open, so no other overlay on this screen answers the same keypress. */
+const handleEscape = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') emit('close')
+}
+
+watch(
+  () => props.show,
+  (open) => {
+    if (typeof document === 'undefined') return
+    if (open) document.addEventListener('keydown', handleEscape)
+    else document.removeEventListener('keydown', handleEscape)
+  },
+)
+
+onUnmounted(() => {
+  if (typeof document !== 'undefined') document.removeEventListener('keydown', handleEscape)
+})
 
 const handleCreate = () => {
   emit('create', draftAccess.value, draftLabel.value.trim(), draftExpiry.value)

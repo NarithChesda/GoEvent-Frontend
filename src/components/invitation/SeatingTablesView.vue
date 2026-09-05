@@ -1,52 +1,49 @@
 <template>
-  <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-start justify-between gap-4">
-      <div>
-        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight tracking-tight">{{ t('management.seatingView.header.title') }}</h2>
-        <p class="text-xs sm:text-sm text-slate-600 mt-1">
-          {{ t('management.seatingView.header.subtitle') }}
-        </p>
-      </div>
+  <div class="space-y-4">
+    <!-- No heading of its own: the tab header above already names this screen,
+         and a second `Table Seating` title under a segment reading "Table
+         Seating" was the same words twice. What is left of the header is the
+         one action and the readout it acts on.
+
+         The three stat tiles this replaces were icon chip + number + caption,
+         which is the same shape the summary strip on the guest list uses for
+         three *shares of one whole* — but seats filled, tables and unassigned
+         are three unrelated magnitudes, so they read here as a plain sentence
+         of values rather than as a chart pretending to be one. -->
+    <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+      <dl class="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-1.5 text-sm">
+        <!-- Value before label, so each pair reads as the phrase it is —
+             "12 tables", not "tables 12". `dd` is source-ordered after its
+             `dt`, so the visual order comes from `flex-row-reverse`, which
+             leaves the definition list itself well-formed for a reader that
+             ignores the styling. -->
+        <div class="flex flex-row-reverse items-center gap-1.5">
+          <dt class="text-slate-500">{{ t('management.seatingView.summary.tableLabel', tables.length) }}</dt>
+          <dd class="font-semibold tabular-nums text-slate-900">{{ tables.length }}</dd>
+          <Armchair class="h-3.5 w-3.5 flex-shrink-0 text-slate-400" aria-hidden="true" />
+        </div>
+        <div class="flex flex-row-reverse items-center gap-1.5">
+          <dt class="text-slate-500">{{ t('management.seatingView.summary.seatsFilled') }}</dt>
+          <dd class="font-semibold tabular-nums text-slate-900">
+            {{ totalSeated }}<span class="font-medium text-slate-400">/{{ totalCapacity }}</span>
+          </dd>
+          <Users class="h-3.5 w-3.5 flex-shrink-0 text-slate-400" aria-hidden="true" />
+        </div>
+        <div class="flex flex-row-reverse items-center gap-1.5">
+          <dt class="text-slate-500">{{ t('management.seatingView.summary.unassigned') }}</dt>
+          <dd class="font-semibold tabular-nums text-slate-900">{{ unassignedPagination.count }}</dd>
+          <UserX class="h-3.5 w-3.5 flex-shrink-0 text-slate-400" aria-hidden="true" />
+        </div>
+      </dl>
+
       <button
         v-if="canEdit"
         @click="openCreateTableModal"
-        class="flex-shrink-0 inline-flex items-center gap-1.5 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 text-sm"
+        class="ml-auto inline-flex flex-shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:from-[#27ae60] hover:to-[#1873cc] hover:shadow-emerald-600/30 sm:px-4"
       >
-        <Plus class="w-4 h-4" />
+        <Plus class="h-4 w-4" />
         <span class="hidden sm:inline">{{ t('management.seatingView.header.addTable') }}</span>
       </button>
-    </div>
-
-    <!-- Summary bar -->
-    <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5 flex flex-wrap items-center gap-x-8 gap-y-3">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-sky-50 text-[#1e90ff] flex items-center justify-center flex-shrink-0">
-          <Armchair class="w-4 h-4" />
-        </div>
-        <div class="leading-tight">
-          <p class="text-base font-bold text-slate-900 tabular-nums">{{ tables.length }}</p>
-          <p class="text-[11px] text-slate-500">{{ t('management.seatingView.summary.tableLabel', tables.length) }}</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
-          <Users class="w-4 h-4" />
-        </div>
-        <div class="leading-tight">
-          <p class="text-base font-bold text-slate-900 tabular-nums">{{ totalSeated }}<span class="text-slate-400 font-semibold">/{{ totalCapacity }}</span></p>
-          <p class="text-[11px] text-slate-500">{{ t('management.seatingView.summary.seatsFilled') }}</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center flex-shrink-0">
-          <UserX class="w-4 h-4" />
-        </div>
-        <div class="leading-tight">
-          <p class="text-base font-bold text-slate-900 tabular-nums">{{ unassignedPagination.count }}</p>
-          <p class="text-[11px] text-slate-500">{{ t('management.seatingView.summary.unassigned') }}</p>
-        </div>
-      </div>
     </div>
 
     <div class="flex flex-col lg:flex-row gap-6 items-start">
