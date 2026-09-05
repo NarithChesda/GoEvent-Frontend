@@ -2583,6 +2583,10 @@
       "deleted": "Review deleted successfully",
       "deleteFailed": "Failed to delete review",
       "deleteError": "An error occurred while deleting your review"
+    },
+    "error": {
+      "title": "Couldn't load your review",
+      "tryAgain": "Try Again"
     }
   },
   "partnerTemplatesPanel": {
