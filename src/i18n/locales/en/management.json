@@ -2949,6 +2949,8 @@
       "contentWidth": "Main Content Width",
       "contentWidthStandard": "Standard",
       "contentWidthWide": "Wide (more content width)",
+      "advancedGroup": "Advanced layout",
+      "advancedHint": "Container box, row heights, host clip and decoration stacking",
       "containerPositioning": "Container Positioning (vh)",
       "contentTop": "Content Top",
       "innerHeight": "Inner Height",

@@ -35,11 +35,18 @@
         {{ t('management.partnerTemplateForm.footer.missingRequired') }}
       </p>
 
-      <!-- Bar variants: this row is the modal's header, and everything else in
-           it is a 40px pill. See BTN_PRIMARY_BAR. -->
-      <button type="button" @click="emit('close')" :class="BTN_GHOST_BAR">
-        {{ t('management.partnerTemplateForm.footer.cancel') }}
-      </button>
+      <!-- No Cancel button.
+           It ran `emit('close')` — byte-identical to the back arrow at the
+           leading edge of this same row — so the bar offered the one action
+           twice under two names, and the modal's own ✕ sits immediately after
+           it, making three dismissals in one strip for two actual outcomes
+           (back to the list, close the modal). The mobile header has always
+           shipped the arrow alone, so removing this is also what makes the two
+           agree about where "get out" lives (apple-design §16.4: the same thing
+           behaves the same way and lives in the same place).
+
+           Bar variant: this row is the modal's header and everything else in it
+           is a 40px pill. See BTN_PRIMARY_BAR. -->
       <button type="button" @click="handleSave" :disabled="saving || !canSave" :class="BTN_PRIMARY_BAR">
         <Loader2 v-if="saving" class="w-4 h-4 animate-spin" />
         {{ saving ? t('management.partnerTemplateForm.footer.saving') : (isEditing ? t('management.partnerTemplateForm.footer.saveChanges') : t('management.partnerTemplateForm.footer.createTemplate')) }}
@@ -96,16 +103,20 @@
         class="lg:row-start-1 lg:col-start-1 bg-white lg:border-r border-b lg:border-b-0 border-slate-200/70 lg:overflow-y-auto custom-scrollbar"
         :aria-label="t('management.partnerTemplateForm.sections.navLabel')"
       >
-        <div class="flex lg:flex-col gap-1 p-2 lg:p-3 overflow-x-auto lg:overflow-x-visible scrollbar-hide">
+        <div
+          ref="railRef"
+          class="flex lg:flex-col gap-1 p-2 lg:p-3 overflow-x-auto lg:overflow-x-visible scrollbar-hide"
+        >
           <button
             v-for="section in sections"
             :key="section.id"
+            :ref="(el) => setRailButtonRef(section.id, el)"
             type="button"
             :aria-current="activeSection === section.id ? 'true' : undefined"
             class="group flex-shrink-0 lg:w-full flex items-center gap-2 lg:gap-2.5 px-3 py-2 rounded-lg text-left"
             :class="[
               OPTION_BASE,
-              activeSection === section.id ? OPTION_SELECTED : `${OPTION_IDLE} ring-transparent`,
+              activeSection === section.id ? OPTION_SELECTED : OPTION_IDLE_RAIL,
             ]"
             @click="selectSection(section.id)"
           >
@@ -236,14 +247,29 @@
                       :alt="t('management.partnerTemplateForm.fields.previewImageLabel')"
                       class="w-full h-full object-cover"
                     />
-                    <div class="absolute inset-0 bg-slate-950/25 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <label class="cursor-pointer px-2.5 py-1.5 bg-white/95 rounded-lg text-[0.6875rem] font-medium text-slate-700 shadow-sm">
+                    <!-- A bar along the bottom edge, always drawn — not a
+                         full-cover overlay revealed by `hover:opacity-100`.
+                         That overlay put Change and Remove behind a gesture
+                         that does not exist on a phone, and this editor has a
+                         phone layout, so an uploaded thumbnail could not be
+                         replaced or cleared there at all. It was invisible to
+                         the keyboard for the same reason: both controls stayed
+                         focusable at `opacity-0`, so tabbing moved focus onto
+                         something no one could see. A bar also leaves the
+                         artwork itself unobscured, which a scrim over the whole
+                         9:16 frame did not. -->
+                    <div
+                      class="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 p-2 bg-gradient-to-t from-slate-950/70 to-transparent"
+                    >
+                      <label
+                        class="cursor-pointer px-2.5 py-1.5 bg-white/95 rounded-lg text-[0.6875rem] font-medium text-slate-700 shadow-sm transition-colors duration-200 hover:bg-white focus-within:ring-2 focus-within:ring-sky-400"
+                      >
                         {{ t('management.partnerTemplateForm.fields.previewImageChange') }}
                         <input type="file" accept="image/*" class="sr-only" @change="handleFileChange('preview_image', $event)" />
                       </label>
                       <button
                         type="button"
-                        class="p-1.5 bg-white/95 rounded-lg text-slate-500 hover:text-red-600 shadow-sm transition-colors"
+                        class="p-1.5 bg-white/95 rounded-lg text-slate-500 shadow-sm transition-colors duration-200 hover:text-red-600 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
                         :aria-label="t('management.partnerTemplateForm.fileField.remove')"
                         :title="t('management.partnerTemplateForm.fileField.remove')"
                         @click="clearAssetField('preview_image')"
@@ -318,11 +344,11 @@
               <p v-if="pendingColors.length === 0" class="text-xs text-slate-400">
                 {{ t('management.partnerTemplateForm.colors.empty') }}
               </p>
-              <ul v-else class="divide-y divide-slate-100 -mx-1">
+              <ul v-else class="list-group">
                 <li
                   v-for="(color, index) in pendingColors"
                   :key="isEditing ? (color as EventTemplateColor).id : index"
-                  class="flex items-center gap-2.5 px-1 py-2"
+                  class="list-row"
                 >
                   <span
                     class="w-7 h-7 rounded-lg ring-1 ring-slate-200 flex-shrink-0"
@@ -405,11 +431,11 @@
               <p v-if="pendingFonts.length === 0" class="text-xs text-slate-400">
                 {{ t('management.partnerTemplateForm.fonts.empty') }}
               </p>
-              <ul v-else class="divide-y divide-slate-100 -mx-1">
+              <ul v-else class="list-group">
                 <li
                   v-for="(f, index) in pendingFonts"
                   :key="isEditing ? (f as EventTemplateLanguageFont).id : index"
-                  class="flex items-center gap-2.5 px-1 py-2"
+                  class="list-row"
                 >
                   <span class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
                     <Type class="w-3.5 h-3.5 text-slate-400" />
@@ -762,26 +788,27 @@
                  it now sits in the Transition tab beside the film it plays into.
                  What is left is lighting for the cover artwork's border: still
                  stored in cover_stage_layout, but about this stage only. -->
-            <section :class="[PANEL, 'p-4 space-y-4']">
-              <h5 :class="SECTION_HEADING">
-                {{ t('management.partnerTemplateForm.coverGilding.sectionTitle') }}
-              </h5>
+            <!-- The eyebrow this panel carried said "Cover gilding" directly
+                 above a switch reading *Enable gilding* — the same words twice,
+                 which is the pattern removed nine times over from the event
+                 drawers. The switch names the feature; the panel is the
+                 feature. -->
+            <section :class="[PANEL, 'overflow-hidden']">
               <TemplateFormSwitch
                 v-model="form.cover_stage_layout.coverGilding.enabled"
-                :icon="Sparkles"
                 :label="t('management.partnerTemplateForm.coverGilding.enableLabel')"
                 :description="t('management.partnerTemplateForm.coverGilding.enableHint')"
               />
 
-              <Transition name="collapse">
-                <div v-if="form.cover_stage_layout.coverGilding.enabled" class="grid grid-rows-[1fr]">
-                  <div class="min-h-0 overflow-hidden">
-                    <div class="space-y-4 pt-1">
+              <TemplateFormDisclosure
+                :open="form.cover_stage_layout.coverGilding.enabled"
+                content-class="px-3 pb-3 pt-3 space-y-4 border-t border-slate-100"
+              >
                       <TemplateFormChoice
                         v-model="gildingIntensityModel"
                         :label="t('management.partnerTemplateForm.coverGilding.intensity')"
                         :options="gildingIntensityOptions"
-                        :columns="3"
+                        variant="segmented"
                       />
 
                       <!-- Acts on the four decoration PNGs rather than on the
@@ -791,7 +818,7 @@
                         v-model="gildingReliefModel"
                         :label="t('management.partnerTemplateForm.coverGilding.relief')"
                         :options="gildingReliefOptions"
-                        :columns="3"
+                        variant="segmented"
                       />
                       <p class="text-[0.6875rem] leading-snug text-slate-500">
                         {{ t('management.partnerTemplateForm.coverGilding.reliefHint') }}
@@ -824,12 +851,13 @@
                         {{ t('management.partnerTemplateForm.coverGilding.bandWarning') }}
                       </p>
 
-                      <TemplateFormSwitch
-                        v-model="form.cover_stage_layout.coverGilding.cornerFlares"
-                        :icon="Sparkles"
-                        :label="t('management.partnerTemplateForm.coverGilding.cornerFlares')"
-                        :description="t('management.partnerTemplateForm.coverGilding.cornerFlaresHint')"
-                      />
+                      <div class="list-group">
+                        <TemplateFormSwitch
+                          v-model="form.cover_stage_layout.coverGilding.cornerFlares"
+                          :label="t('management.partnerTemplateForm.coverGilding.cornerFlares')"
+                          :description="t('management.partnerTemplateForm.coverGilding.cornerFlaresHint')"
+                        />
+                      </div>
                       <!-- The drifting motes used to be configured here. They
                            span every stage rather than sitting on the band, so
                            they now have their own section below. -->
@@ -841,7 +869,7 @@
                         v-model="gildingColorSourceModel"
                         :label="t('management.partnerTemplateForm.coverGilding.colorSource')"
                         :options="gildingColorSourceOptions"
-                        :columns="2"
+                        variant="segmented"
                       />
 
                       <TemplateFormColor
@@ -850,10 +878,7 @@
                         :name="t('management.partnerTemplateForm.colorField.names.gilding')"
                         placeholder="#E0B269"
                       />
-                    </div>
-                  </div>
-                </div>
-              </Transition>
+              </TemplateFormDisclosure>
             </section>
 
             <!-- Placement model. Rows is the original stacked layout; free hands
@@ -962,85 +987,127 @@
                   {{ t('management.coverLayoutEditor.rowsHint') }}
                 </p>
               </div>
-
-              <div class="p-4 space-y-4">
-                <h5 :class="SECTION_HEADING">
-                  {{ t('management.partnerTemplateForm.coverLayout.containerPositioning') }}
-                </h5>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
-                  <!-- Free placement ignores the container box entirely; the swipe
-                       arrow is positioned the same way in both models. -->
-                  <template v-if="!isFreeCoverLayout">
-                    <TemplateFormNumber v-model="form.cover_stage_layout.contentTopPosition" :label="t('management.partnerTemplateForm.coverLayout.contentTop')" :min="0" :max="60" :step="0.5" unit="vh" />
-                    <TemplateFormNumber v-model="form.cover_stage_layout.innerContainerHeight" :label="t('management.partnerTemplateForm.coverLayout.innerHeight')" :min="10" :max="90" :step="0.5" unit="vh" />
-                  </template>
-                  <TemplateFormNumber v-model="form.cover_stage_layout.swipeArrowBottom" :label="t('management.partnerTemplateForm.coverLayout.swipeArrowBottom')" :min="0" :max="20" :step="0.5" unit="vh" />
-                </div>
-              </div>
-
-              <div v-if="!isFreeCoverLayout" class="p-4 space-y-4">
-                <h5 :class="SECTION_HEADING">
-                  {{ t('management.partnerTemplateForm.coverLayout.rowHeights') }}
-                </h5>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
-                  <TemplateFormNumber v-model="form.cover_stage_layout.eventTitleHeight" :label="t('management.partnerTemplateForm.coverLayout.eventTitle')" :min="0" :max="50" :step="0.25" unit="%" />
-                  <TemplateFormNumber v-model="form.cover_stage_layout.logoHeight" :label="t('management.partnerTemplateForm.coverLayout.logo')" :min="0" :max="80" :step="0.25" unit="%" />
-                  <TemplateFormNumber v-model="form.cover_stage_layout.inviteTextHeight" :label="t('management.partnerTemplateForm.coverLayout.inviteText')" :min="0" :max="40" :step="0.25" unit="%" />
-                  <TemplateFormNumber v-model="form.cover_stage_layout.guestNameHeight" :label="t('management.partnerTemplateForm.coverLayout.guestName')" :min="0" :max="50" :step="0.25" unit="%" />
-                  <TemplateFormNumber v-model="form.cover_stage_layout.guestNameMaxWidthPercent" :label="t('management.partnerTemplateForm.coverLayout.guestNameMaxWidthPercent')" :min="10" :max="100" :step="1" unit="%" />
-                </div>
-              </div>
             </section>
 
-            <section :class="[PANEL, 'divide-y divide-slate-200/70']">
-              <div class="p-4 space-y-3">
-                <h5 :class="SECTION_HEADING">
-                  {{ t('management.partnerTemplateForm.coverLayout.visibilityToggles') }}
-                </h5>
-                <div class="space-y-2">
-                  <TemplateFormSwitch
-                    v-model="form.cover_stage_layout.showWelcomeHeaderText"
-                    :label="t('management.partnerTemplateForm.coverLayout.showWelcomeHeaderText')"
-                    :description="t('management.partnerTemplateForm.coverLayout.showWelcomeHeaderTextHint')"
-                  />
-                  <TemplateFormSwitch
-                    v-model="form.cover_stage_layout.showCoverHeaderText"
-                    :label="t('management.partnerTemplateForm.coverLayout.showCoverHeaderText')"
-                    :description="t('management.partnerTemplateForm.coverLayout.showCoverHeaderTextHint')"
-                  />
-                  <TemplateFormSwitch
-                    v-model="form.cover_stage_layout.showHostNameUnderLogo"
-                    :label="t('management.partnerTemplateForm.coverLayout.showHostNameUnderLogo')"
-                    :description="t('management.partnerTemplateForm.coverLayout.showHostNameUnderLogoHint')"
-                  />
-                </div>
-              </div>
+            <!-- What the cover shows. Three switches in one group rather than
+                 three loose rows under an eyebrow reading "Visibility": each row
+                 already begins with the word Show, so the eyebrow was naming the
+                 group after the thing every one of its members says about
+                 itself.
 
-              <div class="p-4 space-y-4">
-                <div>
+                 `divide-y` rather than `.list-group`, because the panel already
+                 draws the border and the radius that class would bring — nesting
+                 the two means immediately turning one of them back off. -->
+            <section :class="[PANEL, 'overflow-hidden divide-y divide-slate-100']">
+              <TemplateFormSwitch
+                v-model="form.cover_stage_layout.showWelcomeHeaderText"
+                :label="t('management.partnerTemplateForm.coverLayout.showWelcomeHeaderText')"
+                :description="t('management.partnerTemplateForm.coverLayout.showWelcomeHeaderTextHint')"
+              />
+              <TemplateFormSwitch
+                v-model="form.cover_stage_layout.showCoverHeaderText"
+                :label="t('management.partnerTemplateForm.coverLayout.showCoverHeaderText')"
+                :description="t('management.partnerTemplateForm.coverLayout.showCoverHeaderTextHint')"
+              />
+              <TemplateFormSwitch
+                v-model="form.cover_stage_layout.showHostNameUnderLogo"
+                :label="t('management.partnerTemplateForm.coverLayout.showHostNameUnderLogo')"
+                :description="t('management.partnerTemplateForm.coverLayout.showHostNameUnderLogoHint')"
+              />
+            </section>
+
+            <!-- Advanced layout.
+                 Fifteen sliders — the container box, the five row heights, the
+                 host clip and the four decoration z-indexes — that were laid out
+                 flat, at the same weight as the artwork slots and the mode
+                 pickers above them. They are the rarest controls in the editor
+                 and the hardest to recover from: a template is designed once,
+                 its rows are tuned once, and its z-indexes are touched when two
+                 decorations overlap wrongly and never again. Behind one row they
+                 stop competing for attention with the work a partner actually
+                 does every time, and they are still exactly one tap away
+                 (apple-design §16.6 — the common path first, the advanced one a
+                 level deeper, which is not the same as hiding it). -->
+            <section :class="[PANEL, 'overflow-hidden']">
+              <button
+                type="button"
+                class="list-row"
+                :aria-expanded="coverAdvancedOpen"
+                @click="coverAdvancedOpen = !coverAdvancedOpen"
+              >
+                <span class="list-row__text">
+                  <span class="list-row__label">
+                    {{ t('management.partnerTemplateForm.coverLayout.advancedGroup') }}
+                  </span>
+                  <span class="list-row__hint">
+                    {{ t('management.partnerTemplateForm.coverLayout.advancedHint') }}
+                  </span>
+                </span>
+                <ChevronDown
+                  class="w-4 h-4 flex-shrink-0 text-slate-400 transition-transform duration-200"
+                  :class="coverAdvancedOpen ? 'rotate-180' : ''"
+                  aria-hidden="true"
+                />
+              </button>
+
+              <TemplateFormDisclosure
+                :open="coverAdvancedOpen"
+                content-class="p-4 space-y-5 border-t border-slate-100"
+              >
+                <div class="space-y-3">
                   <h5 :class="SECTION_HEADING">
-                    {{ t('management.partnerTemplateForm.coverLayout.hostClip') }}
+                    {{ t('management.partnerTemplateForm.coverLayout.containerPositioning') }}
                   </h5>
-                  <p class="text-[0.6875rem] text-slate-400 leading-snug mt-1">{{ t('management.partnerTemplateForm.coverLayout.hostClipHint') }}</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                    <!-- Free placement ignores the container box entirely; the swipe
+                         arrow is positioned the same way in both models. -->
+                    <template v-if="!isFreeCoverLayout">
+                      <TemplateFormNumber v-model="form.cover_stage_layout.contentTopPosition" :label="t('management.partnerTemplateForm.coverLayout.contentTop')" :min="0" :max="60" :step="0.5" unit="vh" />
+                      <TemplateFormNumber v-model="form.cover_stage_layout.innerContainerHeight" :label="t('management.partnerTemplateForm.coverLayout.innerHeight')" :min="10" :max="90" :step="0.5" unit="vh" />
+                    </template>
+                    <TemplateFormNumber v-model="form.cover_stage_layout.swipeArrowBottom" :label="t('management.partnerTemplateForm.coverLayout.swipeArrowBottom')" :min="0" :max="20" :step="0.5" unit="vh" />
+                  </div>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
-                  <TemplateFormNumber v-model="form.cover_stage_layout.hostClipScale" :label="t('management.partnerTemplateForm.coverLayout.hostClipScale')" :min="0" :max="100" :step="1" unit="%" />
-                  <TemplateFormNumber v-model="form.cover_stage_layout.hostClipOffsetX" :label="t('management.partnerTemplateForm.coverLayout.hostClipOffsetX')" :min="0" :max="100" :step="1" unit="%" />
-                  <TemplateFormNumber v-model="form.cover_stage_layout.hostClipOffsetY" :label="t('management.partnerTemplateForm.coverLayout.hostClipOffsetY')" :min="0" :max="100" :step="1" unit="%" />
-                </div>
-              </div>
 
-              <div class="p-4 space-y-4">
-                <h5 :class="SECTION_HEADING">
-                  {{ t('management.partnerTemplateForm.coverLayout.zIndexes') }}
-                </h5>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
-                  <TemplateFormNumber v-model="form.cover_stage_layout.leftDecorationZIndex" :label="t('management.partnerTemplateForm.coverLayout.left')" :min="0" :max="60" :step="1" />
-                  <TemplateFormNumber v-model="form.cover_stage_layout.rightDecorationZIndex" :label="t('management.partnerTemplateForm.coverLayout.right')" :min="0" :max="60" :step="1" />
-                  <TemplateFormNumber v-model="form.cover_stage_layout.topDecorationZIndex" :label="t('management.partnerTemplateForm.coverLayout.top')" :min="0" :max="60" :step="1" />
-                  <TemplateFormNumber v-model="form.cover_stage_layout.bottomDecorationZIndex" :label="t('management.partnerTemplateForm.coverLayout.bottom')" :min="0" :max="60" :step="1" />
+                <div v-if="!isFreeCoverLayout" class="space-y-3">
+                  <h5 :class="SECTION_HEADING">
+                    {{ t('management.partnerTemplateForm.coverLayout.rowHeights') }}
+                  </h5>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                    <TemplateFormNumber v-model="form.cover_stage_layout.eventTitleHeight" :label="t('management.partnerTemplateForm.coverLayout.eventTitle')" :min="0" :max="50" :step="0.25" unit="%" />
+                    <TemplateFormNumber v-model="form.cover_stage_layout.logoHeight" :label="t('management.partnerTemplateForm.coverLayout.logo')" :min="0" :max="80" :step="0.25" unit="%" />
+                    <TemplateFormNumber v-model="form.cover_stage_layout.inviteTextHeight" :label="t('management.partnerTemplateForm.coverLayout.inviteText')" :min="0" :max="40" :step="0.25" unit="%" />
+                    <TemplateFormNumber v-model="form.cover_stage_layout.guestNameHeight" :label="t('management.partnerTemplateForm.coverLayout.guestName')" :min="0" :max="50" :step="0.25" unit="%" />
+                    <TemplateFormNumber v-model="form.cover_stage_layout.guestNameMaxWidthPercent" :label="t('management.partnerTemplateForm.coverLayout.guestNameMaxWidthPercent')" :min="10" :max="100" :step="1" unit="%" />
+                  </div>
                 </div>
-              </div>
+
+                <div class="space-y-3">
+                  <div>
+                    <h5 :class="SECTION_HEADING">
+                      {{ t('management.partnerTemplateForm.coverLayout.hostClip') }}
+                    </h5>
+                    <p class="text-[0.6875rem] text-slate-400 leading-snug mt-1">{{ t('management.partnerTemplateForm.coverLayout.hostClipHint') }}</p>
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                    <TemplateFormNumber v-model="form.cover_stage_layout.hostClipScale" :label="t('management.partnerTemplateForm.coverLayout.hostClipScale')" :min="0" :max="100" :step="1" unit="%" />
+                    <TemplateFormNumber v-model="form.cover_stage_layout.hostClipOffsetX" :label="t('management.partnerTemplateForm.coverLayout.hostClipOffsetX')" :min="0" :max="100" :step="1" unit="%" />
+                    <TemplateFormNumber v-model="form.cover_stage_layout.hostClipOffsetY" :label="t('management.partnerTemplateForm.coverLayout.hostClipOffsetY')" :min="0" :max="100" :step="1" unit="%" />
+                  </div>
+                </div>
+
+                <div class="space-y-3">
+                  <h5 :class="SECTION_HEADING">
+                    {{ t('management.partnerTemplateForm.coverLayout.zIndexes') }}
+                  </h5>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                    <TemplateFormNumber v-model="form.cover_stage_layout.leftDecorationZIndex" :label="t('management.partnerTemplateForm.coverLayout.left')" :min="0" :max="60" :step="1" />
+                    <TemplateFormNumber v-model="form.cover_stage_layout.rightDecorationZIndex" :label="t('management.partnerTemplateForm.coverLayout.right')" :min="0" :max="60" :step="1" />
+                    <TemplateFormNumber v-model="form.cover_stage_layout.topDecorationZIndex" :label="t('management.partnerTemplateForm.coverLayout.top')" :min="0" :max="60" :step="1" />
+                    <TemplateFormNumber v-model="form.cover_stage_layout.bottomDecorationZIndex" :label="t('management.partnerTemplateForm.coverLayout.bottom')" :min="0" :max="60" :step="1" />
+                  </div>
+                </div>
+              </TemplateFormDisclosure>
             </section>
           </template>
 
@@ -1056,66 +1123,82 @@
                featured photo, or a film — is the mode control below, on every
                plan. -->
           <template v-else-if="activeSection === 'transition'">
-            <!-- One control, two stages: it chooses the cover's exit animation
-                 *and* the transition that plays under it — decorations sliding
-                 off into a veil reveal, or the cover splitting into two doors.
-                 It used to sit in Cover, which showed half of what it does. -->
-            <section :class="[PANEL, 'p-4 space-y-3']">
-              <h5 :class="SECTION_HEADING">
-                {{ t('management.partnerTemplateForm.transitionStage.animationGroup') }}
-              </h5>
-              <TemplateFormChoice v-model="animationTypeModel" :options="animationOptions" />
-              <p :class="FIELD_HINT">
-                {{ t('management.partnerTemplateForm.transitionStage.animationHint') }}
-              </p>
+            <!-- One panel, because these are all one question asked in parts:
+                 what happens between the cover and the invitation. They were
+                 four cards, each holding a single control under an uppercase
+                 eyebrow that named it — two levels of heading over one field,
+                 repeated four times, with the panel edges implying the four
+                 were unrelated. The eyebrow is now the control's own label,
+                 which is where a field's name goes everywhere else in this
+                 editor, and the hairlines say "still the same subject" where
+                 the gaps between cards said "new subject". -->
+            <section :class="[PANEL, 'divide-y divide-slate-200/70']">
+              <!-- One control, two stages: it chooses the cover's exit animation
+                   *and* the transition that plays under it — decorations sliding
+                   off into a veil reveal, or the cover splitting into two doors.
+                   It used to sit in Cover, which showed half of what it does. -->
+              <div class="p-4 space-y-2">
+                <TemplateFormChoice
+                  v-model="animationTypeModel"
+                  :label="t('management.partnerTemplateForm.transitionStage.animationGroup')"
+                  :options="animationOptions"
+                />
+                <p :class="FIELD_HINT">
+                  {{ t('management.partnerTemplateForm.transitionStage.animationHint') }}
+                </p>
+              </div>
+
+              <!-- What the beat itself is. Below the animation control, because
+                   that control still governs the cover's own exit whichever
+                   shape is picked. -->
+              <div class="p-4 space-y-2">
+                <TemplateFormChoice
+                  v-model="transitionModeModel"
+                  :label="t('management.partnerTemplateForm.stageModes.transitionGroup')"
+                  :options="transitionModeOptions"
+                />
+                <p :class="FIELD_HINT">
+                  {{ t(`management.partnerTemplateForm.stageModes.transitionHint.${form.stage_mode_transition}`) }}
+                </p>
+              </div>
+
+              <!-- The title card that plays over the featured photo on whichever
+                   stage the animation control picked — so it shows only when the
+                   beat is that card. Its own default option, match the transition,
+                   only means anything next to the control it matches. Not
+                   plan-gated: this is a composition, not an asset slot. -->
+              <div v-if="form.stage_mode_transition === 'animation'" class="p-4 space-y-2">
+                <TemplateFormChoice
+                  v-model="saveTheDateDesignModel"
+                  :label="t('management.partnerTemplateForm.saveTheDateDesign.sectionTitle')"
+                  :options="saveTheDateDesignOptions"
+                  :columns="1"
+                />
+                <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.saveTheDateDesign.designHint') }}</p>
+              </div>
+
+              <!-- The film. Stays inside the panel so the beat's asset sits with
+                   the choice that asked for it, rather than in a card of its own
+                   that appears and disappears as the mode changes. -->
+              <div v-else-if="form.package_plan_id" class="p-4 space-y-2">
+                <FileUploadField
+                  :label="t('management.partnerTemplateForm.transitionStage.video')"
+                  accept="video/*"
+                  :file-name="form.standard_transition_video?.name"
+                  :has-existing-file="hasSavedAsset('standard_transition_video')"
+                  @change="handleFileChange('standard_transition_video', $event)"
+                  @clear="clearAssetField('standard_transition_video')"
+                />
+                <p :class="FIELD_HINT">
+                  {{ t('management.partnerTemplateForm.transitionStage.videoHint') }}
+                </p>
+              </div>
             </section>
 
-            <!-- What the beat itself is. Above the two shapes it chooses
-                 between, and below the animation control, because that control
-                 still governs the cover's own exit whichever shape is picked. -->
-            <section :class="[PANEL, 'p-4 space-y-3']">
-              <h5 :class="SECTION_HEADING">
-                {{ t('management.partnerTemplateForm.stageModes.transitionGroup') }}
-              </h5>
-              <TemplateFormChoice v-model="transitionModeModel" :options="transitionModeOptions" />
-              <p :class="FIELD_HINT">
-                {{ t(`management.partnerTemplateForm.stageModes.transitionHint.${form.stage_mode_transition}`) }}
-              </p>
-            </section>
-
-            <!-- The title card that plays over the featured photo on whichever
-                 stage the animation control picked — so it shows only when the
-                 beat is that card. Its own default option, match the transition,
-                 only means anything next to the control it matches. Not
-                 plan-gated: this is a composition, not an asset slot. -->
-            <section v-if="form.stage_mode_transition === 'animation'" :class="[PANEL, 'p-4 space-y-3']">
-              <h5 :class="SECTION_HEADING">
-                {{ t('management.partnerTemplateForm.saveTheDateDesign.sectionTitle') }}
-              </h5>
-              <TemplateFormChoice v-model="saveTheDateDesignModel" :options="saveTheDateDesignOptions" :columns="1" />
-              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.saveTheDateDesign.designHint') }}</p>
-            </section>
-
-            <PlanRequiredNotice v-if="!form.package_plan_id" @pick="selectSection('basics')" />
-            <section
-              v-else-if="form.stage_mode_transition === 'video'"
-              :class="[PANEL, 'p-4 space-y-3']"
-            >
-              <h5 :class="SECTION_HEADING">
-                {{ t('management.partnerTemplateForm.transitionStage.sectionTitle') }}
-              </h5>
-              <FileUploadField
-                :label="t('management.partnerTemplateForm.transitionStage.video')"
-                accept="video/*"
-                :file-name="form.standard_transition_video?.name"
-                :has-existing-file="hasSavedAsset('standard_transition_video')"
-                @change="handleFileChange('standard_transition_video', $event)"
-                @clear="clearAssetField('standard_transition_video')"
-              />
-              <p :class="FIELD_HINT">
-                {{ t('management.partnerTemplateForm.transitionStage.videoHint') }}
-              </p>
-            </section>
+            <PlanRequiredNotice
+              v-if="!form.package_plan_id && form.stage_mode_transition === 'video'"
+              @pick="selectSection('basics')"
+            />
           </template>
 
           <!-- ============================= EFFECTS ========================== -->
@@ -1129,18 +1212,17 @@
           <template v-else-if="activeSection === 'effects'">
             <!-- Cover stage only: CoverStage hands these to CoverContentOverlay
                  and nothing else renders them. -->
-            <section :class="[PANEL, 'p-4 space-y-4']">
+            <section :class="[PANEL, 'overflow-hidden']">
               <TemplateFormSwitch
                 v-model="form.ambient_creatures_enabled"
-                :icon="Bird"
                 :label="t('management.partnerTemplateForm.ambientCreatures.enableLabel')"
                 :description="t('management.partnerTemplateForm.ambientCreatures.enableHint')"
               />
 
-              <Transition name="collapse">
-                <div v-if="form.ambient_creatures_enabled" class="grid grid-rows-[1fr]">
-                  <div class="min-h-0 overflow-hidden">
-                    <div class="space-y-4 pt-1">
+              <TemplateFormDisclosure
+                :open="form.ambient_creatures_enabled"
+                content-class="px-3 pb-3 pt-3 space-y-4 border-t border-slate-100"
+              >
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
                         <TemplateFormNumber
                           v-model="form.ambient_creatures.count"
@@ -1153,7 +1235,7 @@
                           v-model="creatureSpeedModel"
                           :label="t('management.partnerTemplateForm.ambientCreatures.speed')"
                           :options="speedOptions"
-                          :columns="3"
+                          variant="segmented"
                         />
                       </div>
 
@@ -1161,7 +1243,7 @@
                         v-model="creatureColorSourceModel"
                         :label="t('management.partnerTemplateForm.ambientCreatures.colorSource')"
                         :options="creatureColorSourceOptions"
-                        :columns="3"
+                        variant="segmented"
                       />
 
                       <TemplateFormColor
@@ -1227,26 +1309,22 @@
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              </Transition>
+              </TemplateFormDisclosure>
             </section>
 
             <!-- Main content stage only, see MainContentStage's FallingEffect —
                  never drawn over the cover. -->
-            <section :class="[PANEL, 'p-4 space-y-4']">
+            <section :class="[PANEL, 'overflow-hidden']">
               <TemplateFormSwitch
                 v-model="form.falling_effect_enabled"
-                :icon="Snowflake"
                 :label="t('management.partnerTemplateForm.fallingEffect.enableLabel')"
                 :description="t('management.partnerTemplateForm.fallingEffect.enableHint')"
               />
 
-              <Transition name="collapse">
-                <div v-if="form.falling_effect_enabled" class="grid grid-rows-[1fr]">
-                  <div class="min-h-0 overflow-hidden">
-                    <div class="space-y-4 pt-1">
+              <TemplateFormDisclosure
+                :open="form.falling_effect_enabled"
+                content-class="px-3 pb-3 pt-3 space-y-4 border-t border-slate-100"
+              >
                       <TemplateFormSelect
                         v-model="fallingTypeModel"
                         :label="t('management.partnerTemplateForm.fallingEffect.particleType')"
@@ -1256,7 +1334,7 @@
                         v-model="fallingIntensityModel"
                         :label="t('management.partnerTemplateForm.fallingEffect.intensity')"
                         :options="intensityOptions"
-                        :columns="3"
+                        variant="segmented"
                       />
                       <!-- Speed is separate from intensity on purpose: intensity
                            is how many particles are on screen, this is how fast
@@ -1275,7 +1353,7 @@
                         v-model="fallingColorSourceModel"
                         :label="t('management.partnerTemplateForm.fallingEffect.colorSource')"
                         :options="fallingColorSourceOptions"
-                        :columns="3"
+                        variant="segmented"
                       />
                       <TemplateFormColor
                         v-if="form.falling_effect.color_source === 'custom'"
@@ -1284,63 +1362,32 @@
                         placeholder="#FFD700"
                       />
 
-                      <div class="space-y-1.5">
-                        <span :class="FIELD_LABEL">{{ t('management.partnerTemplateForm.fallingEffect.customImage') }}</span>
-                        <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.fallingEffect.customImageHint') }}</p>
-                        <div
-                          v-if="fallingEffectCustomImagePreview || (existingTemplate?.falling_effect?.custom_image && !form.clear_falling_effect_custom_image)"
-                          class="flex items-center gap-3 p-2 ring-1 ring-slate-200 rounded-xl"
-                        >
-                          <img
-                            :src="fallingEffectCustomImagePreview || existingTemplate?.falling_effect?.custom_image || ''"
-                            :alt="t('management.partnerTemplateForm.fallingEffect.customImage')"
-                            class="w-12 h-12 object-contain bg-slate-100 rounded-lg"
-                          />
-                          <div class="flex-1 min-w-0 text-xs text-slate-600 truncate">
-                            {{ form.falling_effect_custom_image?.name || t('management.partnerTemplateForm.fallingEffect.currentImage') }}
-                          </div>
-                          <label class="cursor-pointer px-2 py-1 rounded-lg text-xs font-medium text-[#1e90ff] hover:bg-sky-50 transition-colors">
-                            {{ t('management.partnerTemplateForm.fallingEffect.replace') }}
-                            <input type="file" accept="image/png,image/svg+xml" class="sr-only" @change="handleFileChange('falling_effect_custom_image', $event)" />
-                          </label>
-                          <button
-                            type="button"
-                            @click="clearFallingEffectCustomImage"
-                            :class="[BTN_ICON_MICRO, 'hover:text-red-600 hover:bg-red-50']"
-                            :aria-label="t('management.partnerTemplateForm.fallingEffect.remove')"
-                          >
-                            <Trash2 class="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                        <label
-                          v-else
-                          class="flex items-center justify-center gap-2 py-3 cursor-pointer border-2 border-dashed border-slate-200 bg-slate-50/60 hover:border-sky-400 hover:bg-sky-50/40 rounded-xl transition-colors"
-                        >
-                          <Upload class="w-4 h-4 text-slate-400" />
-                          <span class="text-xs font-medium text-slate-500">{{ t('management.partnerTemplateForm.fallingEffect.uploadCustom') }}</span>
-                          <input type="file" accept="image/png,image/svg+xml" class="sr-only" @change="handleFileChange('falling_effect_custom_image', $event)" />
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Transition>
+                      <TemplateFormImageField
+                        :label="t('management.partnerTemplateForm.fallingEffect.customImage')"
+                        :hint="t('management.partnerTemplateForm.fallingEffect.customImageHint')"
+                        :upload-label="t('management.partnerTemplateForm.fallingEffect.uploadCustom')"
+                        accept="image/png,image/svg+xml"
+                        :preview="fallingEffectCustomImageSrc"
+                        :file-name="form.falling_effect_custom_image?.name"
+                        @change="handleFileChange('falling_effect_custom_image', $event)"
+                        @clear="clearFallingEffectCustomImage"
+                      />
+              </TemplateFormDisclosure>
             </section>
 
             <!-- Every stage: mounted by CoverStage for the life of the showcase,
                  so one field drifts unbroken from the cover into the main content. -->
-            <section :class="[PANEL, 'p-4 space-y-4']">
+            <section :class="[PANEL, 'overflow-hidden']">
               <TemplateFormSwitch
                 v-model="form.sparks_enabled"
-                :icon="Sparkles"
                 :label="t('management.partnerTemplateForm.sparks.enableLabel')"
                 :description="t('management.partnerTemplateForm.sparks.enableHint')"
               />
 
-              <Transition name="collapse">
-                <div v-if="form.sparks_enabled" class="grid grid-rows-[1fr]">
-                  <div class="min-h-0 overflow-hidden">
-                    <div class="space-y-4 pt-1">
+              <TemplateFormDisclosure
+                :open="form.sparks_enabled"
+                content-class="px-3 pb-3 pt-3 space-y-4 border-t border-slate-100"
+              >
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
                         <TemplateFormNumber
                           v-model="form.sparks.count"
@@ -1399,14 +1446,14 @@
                         v-model="sparkIntensityModel"
                         :label="t('management.partnerTemplateForm.sparks.intensity')"
                         :options="sparkIntensityOptions"
-                        :columns="3"
+                        variant="segmented"
                       />
 
                       <TemplateFormChoice
                         v-model="sparkColorSourceModel"
                         :label="t('management.partnerTemplateForm.sparks.colorSource')"
                         :options="sparkColorSourceOptions"
-                        :columns="2"
+                        variant="segmented"
                       />
 
                       <TemplateFormColor
@@ -1416,47 +1463,17 @@
                         placeholder="#E0B269"
                       />
 
-                      <div class="space-y-1.5">
-                        <span :class="FIELD_LABEL">{{ t('management.partnerTemplateForm.sparks.customImage') }}</span>
-                        <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.sparks.customImageHint') }}</p>
-                        <div
-                          v-if="sparkCustomImagePreview || (existingTemplate?.spark_custom_image && !form.clear_spark_custom_image)"
-                          class="flex items-center gap-3 p-2 ring-1 ring-slate-200 rounded-xl"
-                        >
-                          <img
-                            :src="sparkCustomImagePreview || existingTemplate?.spark_custom_image || ''"
-                            :alt="t('management.partnerTemplateForm.sparks.customImage')"
-                            class="w-12 h-12 object-contain bg-slate-100 rounded-lg"
-                          />
-                          <div class="flex-1 min-w-0 text-xs text-slate-600 truncate">
-                            {{ form.spark_custom_image?.name || t('management.partnerTemplateForm.fallingEffect.currentImage') }}
-                          </div>
-                          <label class="cursor-pointer px-2 py-1 rounded-lg text-xs font-medium text-[#1e90ff] hover:bg-sky-50 transition-colors">
-                            {{ t('management.partnerTemplateForm.fallingEffect.replace') }}
-                            <input type="file" accept="image/png,image/svg+xml" class="sr-only" @change="handleFileChange('spark_custom_image', $event)" />
-                          </label>
-                          <button
-                            type="button"
-                            @click="clearSparkCustomImage"
-                            :class="[BTN_ICON_MICRO, 'hover:text-red-600 hover:bg-red-50']"
-                            :aria-label="t('management.partnerTemplateForm.fallingEffect.remove')"
-                          >
-                            <Trash2 class="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                        <label
-                          v-else
-                          class="flex items-center justify-center gap-2 py-3 cursor-pointer border-2 border-dashed border-slate-200 bg-slate-50/60 hover:border-sky-400 hover:bg-sky-50/40 rounded-xl transition-colors"
-                        >
-                          <Upload class="w-4 h-4 text-slate-400" />
-                          <span class="text-xs font-medium text-slate-500">{{ t('management.partnerTemplateForm.sparks.uploadCustom') }}</span>
-                          <input type="file" accept="image/png,image/svg+xml" class="sr-only" @change="handleFileChange('spark_custom_image', $event)" />
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Transition>
+                      <TemplateFormImageField
+                        :label="t('management.partnerTemplateForm.sparks.customImage')"
+                        :hint="t('management.partnerTemplateForm.sparks.customImageHint')"
+                        :upload-label="t('management.partnerTemplateForm.sparks.uploadCustom')"
+                        accept="image/png,image/svg+xml"
+                        :preview="sparkCustomImageSrc"
+                        :file-name="form.spark_custom_image?.name"
+                        @change="handleFileChange('spark_custom_image', $event)"
+                        @clear="clearSparkCustomImage"
+                      />
+              </TemplateFormDisclosure>
             </section>
           </template>
 
@@ -1516,18 +1533,21 @@
                  what they change is this stage. The glass switch does also govern
                  the cover's own glass panels (see CoverContentOverlay's
                  displayLiquidGlass); it is one switch for both stages. -->
-            <section :class="[PANEL, 'p-4 space-y-4']">
-              <TemplateFormChoice
-                v-model="contentWidthModel"
-                :label="t('management.partnerTemplateForm.coverLayout.contentWidth')"
-                :options="contentWidthOptions"
-              />
-              <TemplateFormSwitch
-                v-model="form.display_liquid_glass_background"
-                :icon="Droplets"
-                :label="t('management.partnerTemplateForm.fields.liquidGlass')"
-                :description="t('management.partnerTemplateForm.fields.liquidGlassHint')"
-              />
+            <section :class="[PANEL, 'overflow-hidden']">
+              <div class="p-4">
+                <TemplateFormChoice
+                  v-model="contentWidthModel"
+                  :label="t('management.partnerTemplateForm.coverLayout.contentWidth')"
+                  :options="contentWidthOptions"
+                />
+              </div>
+              <div class="border-t border-slate-100">
+                <TemplateFormSwitch
+                  v-model="form.display_liquid_glass_background"
+                  :label="t('management.partnerTemplateForm.fields.liquidGlass')"
+                  :description="t('management.partnerTemplateForm.fields.liquidGlassHint')"
+                />
+              </div>
             </section>
 
             <!-- Who is inviting — the first block on the stage, and the first
@@ -1536,123 +1556,136 @@
                  card it draws on, then hosts, then the date, then the card
                  under the date, then the schedule. A partner scrolling this
                  panel is walking down the invitation. -->
-            <section :class="[PANEL, 'p-4 space-y-3']">
-              <h5 :class="SECTION_HEADING">
-                {{ t('management.partnerTemplateForm.hostInfoDesign.sectionTitle') }}
-              </h5>
-              <TemplateFormChoice v-model="hostInfoDesignModel" :options="hostInfoDesignOptions" :columns="1" />
-              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.designHint') }}</p>
+            <!-- The five design pickers, in one panel.
+                 Each was its own card carrying an uppercase eyebrow, a stack of
+                 full-width radio cards and a hint — three levels of chrome over
+                 one question, five times down the page, so scrolling this
+                 section read as five unrelated screens rather than as one walk
+                 down the invitation. They ask the same kind of question about
+                 five consecutive blocks of one stage, so they are one panel
+                 whose hairlines keep that order legible. The eyebrow becomes
+                 the picker's own label, the same way every other field in this
+                 editor is named. -->
+            <section :class="[PANEL, 'divide-y divide-slate-200/70']">
+              <div class="p-4 space-y-2">
+                <TemplateFormChoice
+                  v-model="hostInfoDesignModel"
+                  :label="t('management.partnerTemplateForm.hostInfoDesign.sectionTitle')"
+                  :options="hostInfoDesignOptions"
+                  :columns="1"
+                />
+                <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.designHint') }}</p>
 
-              <!-- The frame is one choice drawn twice — around the title and
-                   around the avatar — so the pair can never be mismatched. Only
-                   the grid designs draw it, so it collapses away on the two that
-                   don't: arch brings its own frames and simple has neither a
-                   title nor an avatar to frame. -->
-              <Transition name="collapse">
-                <div
-                  v-if="form.host_info_design_type === 'standard' || form.host_info_design_type === 'portrait'"
-                  class="grid grid-rows-[1fr]"
+                <!-- The frame is one choice drawn twice — around the title and
+                     around the avatar — so the pair can never be mismatched. Only
+                     the grid designs draw it, so it collapses away on the two that
+                     don't: arch brings its own frames and simple has neither a
+                     title nor an avatar to frame. -->
+                <TemplateFormDisclosure
+                  :open="form.host_info_design_type === 'standard' || form.host_info_design_type === 'portrait'"
+                  content-class="space-y-3 pt-2"
                 >
-                  <div class="min-h-0 overflow-hidden">
-                    <div class="space-y-3 pt-1">
-                      <TemplateFormChoice
-                        v-model="hostFrameStyleModel"
-                        :label="t('management.partnerTemplateForm.hostInfoDesign.frameLabel')"
-                        :options="hostFrameStyleOptions"
-                        :columns="1"
-                      />
-                      <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.frameHint') }}</p>
+                  <TemplateFormChoice
+                    v-model="hostFrameStyleModel"
+                    :label="t('management.partnerTemplateForm.hostInfoDesign.frameLabel')"
+                    :options="hostFrameStyleOptions"
+                    :columns="1"
+                  />
+                  <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.frameHint') }}</p>
 
-                      <TemplateFormChoice
-                        v-model="hostCoupleOrnamentModel"
-                        :label="t('management.partnerTemplateForm.hostInfoDesign.ornamentLabel')"
-                        :options="hostCoupleOrnamentOptions"
-                        :columns="1"
-                      />
-                      <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.ornamentHint') }}</p>
-                    </div>
-                  </div>
-                </div>
-              </Transition>
-            </section>
+                  <TemplateFormChoice
+                    v-model="hostCoupleOrnamentModel"
+                    :label="t('management.partnerTemplateForm.hostInfoDesign.ornamentLabel')"
+                    :options="hostCoupleOrnamentOptions"
+                    :columns="1"
+                  />
+                  <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.ornamentHint') }}</p>
+                </TemplateFormDisclosure>
+              </div>
 
-            <section :class="[PANEL, 'p-4 space-y-3']">
-              <h5 :class="SECTION_HEADING">
-                {{ t('management.partnerTemplateForm.eventDetailsDesign.sectionTitle') }}
-              </h5>
-              <TemplateFormChoice v-model="eventDetailsDesignModel" :options="eventDetailsDesignOptions" :columns="1" />
-              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.eventDetailsDesign.designHint') }}</p>
+              <div class="p-4 space-y-2">
+                <TemplateFormChoice
+                  v-model="eventDetailsDesignModel"
+                  :label="t('management.partnerTemplateForm.eventDetailsDesign.sectionTitle')"
+                  :options="eventDetailsDesignOptions"
+                  :columns="1"
+                />
+                <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.eventDetailsDesign.designHint') }}</p>
 
-              <!-- Every design but panel spends this on exactly one accent mark:
-                   the calendar's circled day, the flanked rules, the arch
-                   outline, the ticket perforation + stub numeral. -->
-              <Transition name="collapse">
-                <div v-if="form.event_details_design_type !== 'panel'" class="grid grid-rows-[1fr]">
-                  <div class="min-h-0 overflow-hidden">
-                    <div class="space-y-3 pt-1">
-                      <TemplateFormChoice
-                        v-model="eventDetailsMarkerColorSourceModel"
-                        :label="t('management.partnerTemplateForm.eventDetailsDesign.markerColorSource')"
-                        :options="eventDetailsMarkerColorOptions"
-                        :columns="2"
-                      />
-                      <TemplateFormColor
-                        v-if="form.event_details_marker_color_source === 'custom'"
-                        v-model="form.event_details_marker_custom_color"
-                        :name="t('management.partnerTemplateForm.colorField.names.calendarMarker')"
-                        placeholder="#B3261E"
-                      />
-                      <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.eventDetailsDesign.markerColorHint') }}</p>
-                    </div>
-                  </div>
-                </div>
-              </Transition>
-            </section>
+                <!-- Every design but panel spends this on exactly one accent mark:
+                     the calendar's circled day, the flanked rules, the arch
+                     outline, the ticket perforation + stub numeral. -->
+                <TemplateFormDisclosure
+                  :open="form.event_details_design_type !== 'panel'"
+                  content-class="space-y-3 pt-2"
+                >
+                  <TemplateFormChoice
+                    v-model="eventDetailsMarkerColorSourceModel"
+                    :label="t('management.partnerTemplateForm.eventDetailsDesign.markerColorSource')"
+                    :options="eventDetailsMarkerColorOptions"
+                    variant="segmented"
+                  />
+                  <TemplateFormColor
+                    v-if="form.event_details_marker_color_source === 'custom'"
+                    v-model="form.event_details_marker_custom_color"
+                    :name="t('management.partnerTemplateForm.colorField.names.calendarMarker')"
+                    placeholder="#B3261E"
+                  />
+                  <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.eventDetailsDesign.markerColorHint') }}</p>
+                </TemplateFormDisclosure>
+              </div>
 
-            <!-- The other half of the date design above: whatever the date
-                 becomes, this is the block that sits under it (venue, map,
-                 countdown, RSVP). `engraved` is the set drawn in the same
-                 hairline language as the calendar / flanked / arch dates, so
-                 the two read as one sheet instead of type stacked on glass.
-                 `frosted` keeps the card, but in the material the guestbook
-                 and the gift page below it are already made of — `glass` was
-                 drawn before those and is the heavier of the two glasses. -->
-            <section :class="[PANEL, 'p-4 space-y-3']">
-              <h5 :class="SECTION_HEADING">
-                {{ t('management.partnerTemplateForm.infoCardDesign.sectionTitle') }}
-              </h5>
-              <TemplateFormChoice v-model="infoCardDesignModel" :options="infoCardDesignOptions" :columns="1" />
-              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.infoCardDesign.designHint') }}</p>
-            </section>
+              <!-- The other half of the date design above: whatever the date
+                   becomes, this is the block that sits under it (venue, map,
+                   countdown, RSVP). `engraved` is the set drawn in the same
+                   hairline language as the calendar / flanked / arch dates, so
+                   the two read as one sheet instead of type stacked on glass.
+                   `frosted` keeps the card, but in the material the guestbook
+                   and the gift page below it are already made of — `glass` was
+                   drawn before those and is the heavier of the two glasses. -->
+              <div class="p-4 space-y-2">
+                <TemplateFormChoice
+                  v-model="infoCardDesignModel"
+                  :label="t('management.partnerTemplateForm.infoCardDesign.sectionTitle')"
+                  :options="infoCardDesignOptions"
+                  :columns="1"
+                />
+                <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.infoCardDesign.designHint') }}</p>
+              </div>
 
-            <!-- The schedule under the invitation. Until this existed the
-                 agenda picked its look from the event's *category*, so a
-                 partner selling a wedding design and a birthday design shipped
-                 the same list in both and could change neither. The category
-                 still decides the wording (a funeral's is a Ceremony Schedule);
-                 this decides how it is drawn. -->
-            <section :class="[PANEL, 'p-4 space-y-3']">
-              <h5 :class="SECTION_HEADING">
-                {{ t('management.partnerTemplateForm.agendaDesign.sectionTitle') }}
-              </h5>
-              <TemplateFormChoice v-model="agendaDesignModel" :options="agendaDesignOptions" :columns="1" />
-              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.agendaDesign.designHint') }}</p>
-            </section>
+              <!-- The schedule under the invitation. Until this existed the
+                   agenda picked its look from the event's *category*, so a
+                   partner selling a wedding design and a birthday design shipped
+                   the same list in both and could change neither. The category
+                   still decides the wording (a funeral's is a Ceremony Schedule);
+                   this decides how it is drawn. -->
+              <div class="p-4 space-y-2">
+                <TemplateFormChoice
+                  v-model="agendaDesignModel"
+                  :label="t('management.partnerTemplateForm.agendaDesign.sectionTitle')"
+                  :options="agendaDesignOptions"
+                  :columns="1"
+                />
+                <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.agendaDesign.designHint') }}</p>
+              </div>
 
-            <!-- What the guest is asked to wear. Before this there was one
-                 composition, and its most common state was broken: a dress code
-                 carries a colour and an OPTIONAL photograph, and with no
-                 photograph the section drew a flat square of that colour with a
-                 generic person glyph over it. Every design here draws the
-                 garment instead, in the dress code's own colour — so this
-                 picker chooses a layout, never whether the block looks
-                 finished. -->
-            <section :class="[PANEL, 'p-4 space-y-3']">
-              <h5 :class="SECTION_HEADING">
-                {{ t('management.partnerTemplateForm.dressCodeDesign.sectionTitle') }}
-              </h5>
-              <TemplateFormChoice v-model="dressCodeDesignModel" :options="dressCodeDesignOptions" :columns="1" />
-              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.dressCodeDesign.designHint') }}</p>
+              <!-- What the guest is asked to wear. Before this there was one
+                   composition, and its most common state was broken: a dress code
+                   carries a colour and an OPTIONAL photograph, and with no
+                   photograph the section drew a flat square of that colour with a
+                   generic person glyph over it. Every design here draws the
+                   garment instead, in the dress code's own colour — so this
+                   picker chooses a layout, never whether the block looks
+                   finished. -->
+              <div class="p-4 space-y-2">
+                <TemplateFormChoice
+                  v-model="dressCodeDesignModel"
+                  :label="t('management.partnerTemplateForm.dressCodeDesign.sectionTitle')"
+                  :options="dressCodeDesignOptions"
+                  :columns="1"
+                />
+                <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.dressCodeDesign.designHint') }}</p>
+              </div>
             </section>
           </template>
 
@@ -1706,12 +1739,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed, inject, onMounted, useId } from 'vue'
+import { ref, reactive, watch, computed, inject, nextTick, onMounted, useId } from 'vue'
+import type { ComponentPublicInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   ArrowLeft,
   Upload,
   AlertCircle,
+  ChevronDown,
   Loader2,
   Info,
   Palette,
@@ -1729,7 +1764,6 @@ import {
   PenLine,
   IdCard,
   Snowflake,
-  Bird,
   Wand2,
   DoorOpen,
   Maximize2,
@@ -1821,6 +1855,8 @@ import TemplateFormSwitch from './TemplateFormSwitch.vue'
 import TemplateFormNumber from './TemplateFormNumber.vue'
 import TemplateFormChoice from './TemplateFormChoice.vue'
 import TemplateFormColor from './TemplateFormColor.vue'
+import TemplateFormDisclosure from './TemplateFormDisclosure.vue'
+import TemplateFormImageField from './TemplateFormImageField.vue'
 import TemplateFormSelect, { type TemplateFormSelectOption } from './TemplateFormSelect.vue'
 import {
   DEFAULT_SIZE_SCALE,
@@ -1832,7 +1868,6 @@ import PlanRequiredNotice from './TemplateFormPlanNotice.vue'
 import TemplateSegmented, { type TemplateSegmentedOption } from './TemplateSegmented.vue'
 import {
   BTN_ADD_DASHED,
-  BTN_GHOST_BAR,
   BTN_GHOST_SM,
   BTN_ICON,
   BTN_ICON_MICRO,
@@ -1846,6 +1881,7 @@ import {
   FIELD_SM,
   OPTION_BASE,
   OPTION_IDLE,
+  OPTION_IDLE_RAIL,
   OPTION_SELECTED,
   PANEL,
   SECTION_HEADING,
@@ -2241,6 +2277,32 @@ const fallingEffectCustomImagePreview = ref<string | null>(null)
 const sparkCustomImagePreview = ref<string | null>(null)
 const saving = ref(false)
 const error = ref<string | null>(null)
+
+/**
+ * What the custom-particle fields actually have to show, in precedence order: a
+ * just-picked file's object URL, else the saved asset — unless the partner has
+ * marked that one for removal, which is the case a bare `?? saved` would render
+ * as still attached.
+ *
+ * Resolved here rather than inside TemplateFormImageField because all three
+ * states belong to this form: the field is handed one URL or null and draws the
+ * two states it can tell apart.
+ */
+const fallingEffectCustomImageSrc = computed<string | null>(
+  () =>
+    fallingEffectCustomImagePreview.value ??
+    (form.clear_falling_effect_custom_image
+      ? null
+      : (props.existingTemplate?.falling_effect?.custom_image ?? null)),
+)
+
+const sparkCustomImageSrc = computed<string | null>(
+  () =>
+    sparkCustomImagePreview.value ??
+    (form.clear_spark_custom_image
+      ? null
+      : (props.existingTemplate?.spark_custom_image ?? null)),
+)
 
 /**
  * Saved assets the partner has asked to remove. Held apart from `form` because
@@ -3184,6 +3246,30 @@ const SECTION_DESCRIPTORS: SectionDescriptor[] = [
 
 const activeSection = ref<SectionId>('basics')
 
+/**
+ * The rail strip and its chips, keyed by section id.
+ *
+ * A Map keyed by id rather than the array a `ref` inside `v-for` produces —
+ * that array holds mount order, not list order, and TemplateSegmented carries
+ * the long version of why.
+ */
+const railRef = ref<HTMLElement | null>(null)
+const railButtonEls = new Map<SectionId, HTMLElement>()
+
+function setRailButtonRef(id: SectionId, el: Element | ComponentPublicInstance | null): void {
+  if (el instanceof HTMLElement) railButtonEls.set(id, el)
+  else railButtonEls.delete(id)
+}
+
+/**
+ * The cover's geometry panel, closed by default and per-session only.
+ *
+ * Deliberately not persisted: a partner who opened it once to nudge a z-index
+ * would find it open on every template afterwards, which is the flat layout
+ * this replaced with an extra click in front of it.
+ */
+const coverAdvancedOpen = ref(false)
+
 const COVER_ASSET_FIELDS: PartnerTemplateAssetField[] = [
   'basic_decoration_photo',
   'standard_cover_video',
@@ -3303,6 +3389,39 @@ function selectSection(id: SectionId): void {
   activeSection.value = id
   const descriptor = SECTION_DESCRIPTORS.find((entry) => entry.id === id)
   if (descriptor) previewStage.value = resolveStage(descriptor)
+  void nextTick(revealRailSection)
+}
+
+/**
+ * Scroll the chosen section's chip into view on the phone rail.
+ *
+ * Below `lg` the rail is a horizontally scrolling strip of six chips with its
+ * scrollbar hidden, and roughly three fit at a time — so a section chosen by
+ * anything other than a tap on the chip itself could land entirely off-screen.
+ * `PlanRequiredNotice` does exactly that: its "choose a plan" button jumps to
+ * Basics, which is the first chip, from Cover or Content, which are not — so
+ * the pane changed under the partner while the rail went on showing the section
+ * they had left, with no highlighted chip anywhere on screen.
+ *
+ * Arithmetic on the strip's own `scrollLeft` rather than `scrollIntoView()`,
+ * which walks up and scrolls every scrollable ancestor it needs to — here that
+ * is the editor pane and the modal body. Same reason TemplateSegmented does it
+ * this way. A no-op at `lg`, where the rail is a vertical list that does not
+ * scroll horizontally.
+ */
+function revealRailSection(): void {
+  const rail = railRef.value
+  const el = railButtonEls.get(activeSection.value)
+  if (!rail || !el || rail.scrollWidth <= rail.clientWidth) return
+
+  const left = el.offsetLeft
+  const right = left + el.offsetWidth
+  const viewLeft = rail.scrollLeft
+  const viewRight = viewLeft + rail.clientWidth
+
+  // The strip's own 8px padding, so a revealed chip doesn't sit flush.
+  if (left < viewLeft) rail.scrollLeft = Math.max(left - 8, 0)
+  else if (right > viewRight) rail.scrollLeft = right - rail.clientWidth + 8
 }
 
 /**
@@ -4436,6 +4555,13 @@ onMounted(() => {
 })
 </script>
 
+<!-- The row anatomy for switch groups and the editor's one disclosure row.
+     Imported rather than restated so the editor and the event drawers cannot
+     disagree about how far a switch knob travels or what a pressed row looks
+     like; Vue compiles a separate scoped copy per component, which is what
+     keeps every selector reachable here. -->
+<style scoped src="../common/groupedList.css"></style>
+
 <style scoped>
 .slide-enter-active {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -4448,18 +4574,9 @@ onMounted(() => {
   transform: translateX(100%);
 }
 
-/* §15 expand/collapse — grid-template-rows, never max-height */
-.collapse-enter-active,
-.collapse-leave-active {
-  transition:
-    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease;
-}
-.collapse-enter-from,
-.collapse-leave-to {
-  grid-template-rows: 0fr;
-  opacity: 0;
-}
+/* The §15 expand/collapse rules that lived here moved to
+   TemplateFormDisclosure, which is now the only thing in this editor that
+   expands. */
 
 /* Thin scrollbar so the modal's rounded corners stay clean */
 .custom-scrollbar {
@@ -4482,8 +4599,6 @@ onMounted(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .collapse-enter-active,
-  .collapse-leave-active,
   .slide-enter-active,
   .slide-leave-active {
     transition: none;

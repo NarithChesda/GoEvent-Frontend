@@ -2,7 +2,11 @@
   <div
     ref="rootRef"
     class="tpl-seg"
-    :class="[`tpl-seg--${tone}`, `tpl-seg--${size}`, { 'tpl-seg--fluid': fluid }]"
+    :class="[
+      `tpl-seg--${tone}`,
+      `tpl-seg--${size}`,
+      { 'tpl-seg--fluid': fluid, 'tpl-seg--scrollable': scrollable },
+    ]"
     role="group"
     :aria-label="ariaLabel"
   >
@@ -68,8 +72,20 @@ const props = withDefaults(
     size?: 'sm' | 'md'
     /** Stretch to fill the row and share width evenly (mobile tab rows). */
     fluid?: boolean
+    /**
+     * Let the track scroll sideways instead of forcing its row to wrap.
+     *
+     * For a picker whose labels are translated and therefore unbounded: the
+     * preview's three stage names measure ~234px in English and half again in
+     * Khmer, in a column that can be 296px wide before the language pill and
+     * the full-screen button take their share. Wrapping was the default answer
+     * and it is the wrong one here — a second 34px row costs the phone beside
+     * it 34px of height, and at 9:16 that is ~19px of width as well, so the
+     * thing being judged shrinks to make room for the chrome describing it.
+     */
+    scrollable?: boolean
   }>(),
-  { tone: 'solid', size: 'md', fluid: false },
+  { tone: 'solid', size: 'md', fluid: false, scrollable: false },
 )
 
 const emit = defineEmits<{ 'update:modelValue': [string] }>()
@@ -105,6 +121,30 @@ const setButtonRef = (value: string, el: Element | ComponentPublicInstance | nul
   else buttonEls.delete(value)
 }
 
+/**
+ * Bring the active segment into view when the track scrolls.
+ *
+ * Written as arithmetic on the root's own `scrollLeft` rather than
+ * `el.scrollIntoView()`: that method walks up and scrolls every scrollable
+ * ancestor it needs to, and this control sits inside the editor's scrolling
+ * preview column — so revealing a segment could scroll the pane behind it. It
+ * is also absent in jsdom, which would take the unit tests with it.
+ */
+const revealActive = (): void => {
+  const root = rootRef.value
+  const el = buttonEls.get(props.modelValue)
+  if (!props.scrollable || !root || !el) return
+
+  const left = el.offsetLeft
+  const right = left + el.offsetWidth
+  const viewLeft = root.scrollLeft
+  const viewRight = viewLeft + root.clientWidth
+
+  // A segment's own 4px track padding, so the revealed edge doesn't sit flush.
+  if (left < viewLeft) root.scrollLeft = Math.max(left - 4, 0)
+  else if (right > viewRight) root.scrollLeft = right - root.clientWidth + 4
+}
+
 const measure = (): void => {
   const el = buttonEls.get(props.modelValue)
   if (!el || !rootRef.value) {
@@ -112,6 +152,7 @@ const measure = (): void => {
     return
   }
   thumb.value = { left: el.offsetLeft, width: el.offsetWidth }
+  revealActive()
 }
 
 const select = (value: string): void => {
@@ -150,6 +191,31 @@ watch([() => props.modelValue, () => props.options], () => void nextTick(measure
   display: flex;
   flex: 1 1 auto;
   min-width: 0;
+}
+
+/*
+  The track itself scrolls — it is not a wider track inside a scrolling box.
+  That keeps the glass ground exactly as wide as what is on screen; a fixed
+  track scrolled by a parent would paint its background past the visible edge
+  and read as a pill that had been cut off.
+
+  `flex-shrink: 1` overrides the base rule, which pins every other segmented
+  control to its natural width.
+*/
+.tpl-seg--scrollable {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow-x: auto;
+  /* The row is 34px tall and a scrollbar would take a third of it. The active
+     segment is scrolled into view on every change, so the control never
+     depends on the bar to be usable. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-x: contain;
+}
+
+.tpl-seg--scrollable::-webkit-scrollbar {
+  display: none;
 }
 
 .tpl-seg--solid {
