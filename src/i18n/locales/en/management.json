@@ -1685,6 +1685,7 @@
     },
     "filterBar": {
       "searchPlaceholder": "Search guests...",
+      "searchPlaceholderShort": "Search",
       "searchAriaLabel": "Search guests by name, email, or phone",
       "allGroups": "All Groups",
       "filterByGroup": "Filter by Group",
@@ -1708,7 +1709,8 @@
       "clearSelection": "Clear selection",
       "selected": "selected",
       "markSent": "Mark Sent",
-      "delete": "Delete"
+      "delete": "Delete",
+      "pickGuests": "Select guests"
     },
     "guestList": {
       "loadingMore": "Loading more guests...",
@@ -1740,7 +1742,11 @@
       },
       "moreActions": "More actions",
       "copyLinkKh": "Copy link (Khmer)",
-      "copyLinkEn": "Copy link (English)"
+      "copyLinkEn": "Copy link (English)",
+      "trayEdit": "Edit",
+      "trayDelete": "Delete",
+      "changeGroupTitle": "Change group",
+      "selectGuests": "Select guests"
     },
     "quickAdd": {
       "noGroupsHint": "Create a group first",

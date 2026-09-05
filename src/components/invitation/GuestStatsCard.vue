@@ -25,10 +25,20 @@
     </div>
   </div>
 
-  <div v-else class="flex items-center gap-3 transition-opacity" :class="{ 'opacity-60': loading }">
+  <div
+    v-else
+    class="flex items-center transition-opacity"
+    :class="[compact ? 'gap-2' : 'gap-3', { 'opacity-60': loading }]"
+  >
     <!-- Ring + total -->
     <div class="relative shrink-0" :title="ringLabel">
-      <svg viewBox="0 0 100 100" class="h-10 w-10 -rotate-90" role="img" :aria-label="ringLabel">
+      <svg
+        viewBox="0 0 100 100"
+        class="-rotate-90"
+        :class="compact ? 'h-9 w-9' : 'h-10 w-10'"
+        role="img"
+        :aria-label="ringLabel"
+      >
         <circle cx="50" cy="50" :r="RADIUS" fill="none" :stroke-width="STROKE" class="stroke-slate-100" />
         <circle
           v-for="arc in arcs"
@@ -59,7 +69,7 @@
 
     <!-- Legend. Every count is a number on screen, so nothing here depends on
          reading the colour of the glyph beside it. -->
-    <dl class="flex items-center gap-x-3">
+    <dl v-if="!compact" class="flex items-center gap-x-3">
       <div
         v-for="segment in segments"
         :key="segment.key"
@@ -71,6 +81,35 @@
           <span class="sr-only">{{ segment.label }}</span>
         </dt>
         <dd class="text-xs font-semibold leading-none tabular-nums text-slate-900">{{ segment.count }}</dd>
+      </div>
+    </dl>
+
+    <!-- …and the same legend on a phone, where it has to share its row with
+         the query. Words cost roughly three times the width of the glyphs and
+         the glyphs are already the list's own key — the same double tick, tick
+         and empty ring the rows below carry — so the marks are what a narrow
+         screen gets, and the words go to the accessible name.
+
+         What it does keep from the written version is dropping the states that
+         are *empty*: a list where every invitation has gone out printed a "0"
+         for each of the other two, and on this row that zero is the difference
+         between a usable search field and a cramped one. -->
+    <!-- Below 360px the marks go too and the ring stands alone. It already
+         states the total in its own hole, which is the one number worth a
+         glance; the split is recoverable by filtering. What buys it is a search
+         field that can still print its own placeholder on the row they share. -->
+    <dl v-else class="hidden items-center gap-x-1.5 min-[360px]:flex">
+      <div
+        v-for="segment in wordSegments"
+        :key="segment.key"
+        class="flex cursor-default items-center gap-1"
+        :title="`${segment.label}: ${segment.count} (${segment.percent}%)`"
+      >
+        <dt class="flex items-center">
+          <component :is="segment.icon" class="h-3.5 w-3.5" :class="segment.iconClass" aria-hidden="true" />
+          <span class="sr-only">{{ segment.label }}</span>
+        </dt>
+        <dd class="text-[13px] font-semibold leading-none tabular-nums text-slate-900">{{ segment.count }}</dd>
       </div>
     </dl>
   </div>
@@ -85,10 +124,17 @@ import type { GuestStats } from '../../services/api'
 interface Props {
   stats: GuestStats | null
   loading?: boolean
+  /**
+   * Show only the states that have guests in them, and tighten the gaps. For a
+   * phone, where this summary shares its row with the search field and a "0
+   * awaiting" is width the query needs more.
+   */
+  compact?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
+  compact: false,
 })
 
 const { t } = useI18n()
@@ -152,6 +198,19 @@ const segments = computed(() => [
     strokeClass: 'stroke-slate-300',
   },
 ])
+
+/**
+ * The compact legend, carrying only the states that have guests in them.
+ *
+ * The three counts are mutually exclusive and sum to the total, so at least one
+ * is non-zero whenever there is anybody on the list — and the ring already
+ * states the total in its own hole, so a "0 awaiting" adds nothing but width.
+ * The labels are the same locale strings the glyph legend reads out to a screen
+ * reader, so there is one wording for this per language, not two.
+ */
+const wordSegments = computed(() =>
+  segments.value.filter((segment) => segment.count > 0),
+)
 
 const arcs = computed(() => {
   const total = totalGuests.value

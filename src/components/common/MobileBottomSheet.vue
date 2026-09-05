@@ -26,9 +26,18 @@
           @touchcancel="onDragEnd"
         >
           <div class="w-10 h-1 rounded-full bg-slate-300 mx-auto mt-3" aria-hidden="true" />
+          <!-- Two title tones, because a sheet is titled by two different
+               kinds of thing. A picker is headed by what it filters — a label,
+               and labels are set as micro-headings. A sheet about one record is
+               headed by that record's *name*, and a name set in tracked
+               uppercase grey reads as a category rather than as the person you
+               just pressed. -->
           <h3
             v-if="title"
-            class="px-5 pt-4 pb-1 text-xs font-semibold text-slate-500 uppercase tracking-wider"
+            class="px-5 pt-4 pb-1"
+            :class="prominentTitle
+              ? 'text-base font-semibold text-slate-900'
+              : 'text-xs font-semibold uppercase tracking-wider text-slate-500'"
           >
             {{ title }}
           </h3>
@@ -48,6 +57,8 @@ import { ref, watch, onUnmounted } from 'vue'
 const props = defineProps<{
   show: boolean
   title?: string
+  /** Set the title as a name rather than as a category label. */
+  prominentTitle?: boolean
 }>()
 
 const emit = defineEmits<{

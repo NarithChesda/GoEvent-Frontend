@@ -58,7 +58,8 @@
            Inside the surface, hairline-separated from the rows, they are the
            list's header: the same left edge as every name, the same right edge
            as every row action, and the whole thing is one card you can point
-           at. It is also what lets the header be sticky if this ever needs it.
+           at. It is also what lets the header stick to the top of a phone
+           screen while the rows run underneath it.
 
            Neither half fills a row on its own — the ring is a fixed ~170px
            object and the query was left holding several hundred pixels of
@@ -69,21 +70,80 @@
         id="guests-panel"
         role="tabpanel"
         :aria-label="`${activeFilter === 'all' ? t('management.guestGroupsView.filterBar.allGroups') : groups.find(g => g.id.toString() === activeFilter)?.name || ''} ${t('management.guestGroupsView.filterBar.guestsPanelSuffix')}`"
-        class="overflow-hidden rounded-2xl bg-white ring-1 ring-slate-900/5"
+        class="rounded-2xl bg-white ring-1 ring-slate-900/5 sm:overflow-hidden"
       >
-      <div class="flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-slate-100 px-3 py-2.5 sm:px-4">
-        <GuestStatsCard class="flex-shrink-0" :stats="guestStats" :loading="loadingStats" />
+      <!-- On a phone this band is a floating layer, not a strip at the top of a
+           card you scroll away from. A guest list is the one screen here that is
+           routinely hundreds of rows long, and the two controls that make it
+           usable — the query and, while a selection is live, the bulk bar —
+           were both several screens above the thumb by the time you needed
+           them.
+
+           It is translucent rather than opaque because the rows have to keep
+           reading as one continuous list running underneath it (§12); the card
+           therefore drops its own clip below `sm` so the band can leave the
+           card's box, and takes the rounding onto this element instead. -->
+      <!-- The slot the band came out of. It stays where the band would be if it
+           were not sticky, so the distance between the two is exactly how far
+           the band has been held back. -->
+      <div ref="toolbarSlotRef" class="h-px" aria-hidden="true"></div>
+      <div
+        ref="toolbarRef"
+        class="sticky top-[var(--guest-toolbar-top,0px)] z-20 -mt-px flex flex-wrap items-center gap-x-0 gap-y-0 rounded-t-2xl border-b border-slate-100 bg-white/[0.92] px-3 py-2.5 backdrop-blur-xl backdrop-saturate-150 sm:static sm:gap-x-5 sm:gap-y-3 sm:rounded-none sm:bg-white sm:px-4 sm:backdrop-blur-none"
+      >
+        <!-- The summary, and the one action that belongs beside it.
+
+             On a phone this shares the band's single row with the query rather
+             than taking a line of its own above it, so the whole band is one
+             row tall — which is the difference between a header you can pin
+             over a list and a header that eats a fifth of the screen. Paying
+             for that: the legend is glyphs rather than words, and Import is the
+             glyph alone.
+
+             It folds *sideways* — you read the ring once and then work the
+             list, so it collapses to nothing the moment the band pins itself or
+             the query is focused, and the field, being the row's only flexible
+             item, takes the width without needing to know why it arrived. On a
+             pointer device neither trigger fires and this never folds. -->
+        <div
+          class="flex min-w-0 flex-shrink-0 items-center gap-1 overflow-hidden pr-1.5 transition-[max-width,opacity,padding] duration-300 ease-out sm:max-w-none sm:gap-3 sm:overflow-visible sm:pr-0 sm:opacity-100"
+          :class="summaryFolded ? 'max-w-0 pr-0 opacity-0' : 'max-w-[15rem] opacity-100'"
+          :aria-hidden="summaryFolded || undefined"
+          :inert="summaryFolded || undefined"
+        >
+          <GuestStatsCard
+            class="flex-none"
+            :stats="guestStats"
+            :loading="loadingStats"
+            :compact="!isDesktop"
+          />
+          <button
+            v-if="canEdit && !isDesktop"
+            @click="$emit('add-guest')"
+            class="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-500 transition-[background-color,transform] duration-150 ease-out after:absolute after:-inset-1.5 after:content-[''] active:scale-[0.94] active:bg-slate-100"
+            :title="t('management.guestGroupsView.filterBar.addGuestAriaLabel')"
+            :aria-label="t('management.guestGroupsView.filterBar.addGuestAriaLabel')"
+          >
+            <Upload class="h-4 w-4" />
+          </button>
+        </div>
 
         <!-- `relative`, because the selection bar sits *over* the tools at the
              same height rather than pushing them down — changing mode must not
              reflow the list under the finger that caused it. It covers only
              this half: the stats stay readable while a selection is live. -->
-        <div class="relative flex min-w-[17rem] flex-1 items-center">
+        <!-- The min-width is what makes the two halves wrap onto separate rows
+             rather than squeezing the field below its own placeholder. It is
+             `sm` and up only: a 272px floor is one a 320px phone cannot meet,
+             and it does not need to — below `sm` the summary folds away rather
+             than wrapping, so the field's narrow state is a deliberate ~170px
+             with a placeholder cut to fit it, not a squeeze. -->
+        <div class="relative flex min-w-0 flex-1 items-center sm:min-w-[17rem]">
         <div
           class="flex w-full items-center gap-2 transition-opacity duration-150 ease-out"
-          :class="hasSelection ? 'pointer-events-none opacity-0' : 'opacity-100'"
-          :aria-hidden="hasSelection"
-          :inert="hasSelection || undefined"
+          :class="selectionMode ? 'pointer-events-none opacity-0' : 'opacity-100'"
+          :aria-hidden="selectionMode"
+          :inert="selectionMode || undefined"
         >
           <!-- Query and filter, one field. The filter narrows exactly the
                result set the query narrows, so they are one control; split
@@ -92,22 +152,45 @@
           <div
             class="flex min-w-0 flex-1 items-center rounded-xl bg-slate-100 ring-1 ring-transparent transition-[background-color,box-shadow] duration-150 ease-out focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-200"
           >
-            <Search class="ml-3 mr-2 h-4 w-4 flex-shrink-0 pointer-events-none text-slate-400" />
+            <!-- The magnifier stands down on a phone once there is a query to
+                 read: the text in the field says what the field is, and the 36px
+                 the glyph costs is the difference between a legible query and a
+                 truncated one. It stays at every desktop width. -->
+            <Search
+              class="ml-3 mr-2 h-4 w-4 flex-shrink-0 pointer-events-none text-slate-400"
+              :class="groupSearchQuery && !isDesktop ? 'hidden' : ''"
+            />
+            <!-- Two placeholders, because the field has two widths. Sharing the
+                 row it is about 170px wide, and an input does not ellipsize its
+                 placeholder — it just cuts it, so "Search guests..." would read
+                 as "Search gue". The full wording comes back with the width.
+                 The accessible name never changes. -->
             <input
               ref="searchInputRef"
               id="guest-search"
               type="text"
+              enterkeyhint="search"
               v-model="groupSearchQuery"
               @input="handleGroupSearch"
-              :placeholder="t('management.guestGroupsView.filterBar.searchPlaceholder')"
+              @focus="searchFocused = true"
+              @blur="searchFocused = false"
+              @keydown.enter.prevent="submitGroupSearch"
+              @keydown.esc.prevent="cancelGroupSearch"
+              :placeholder="isDesktop || searchFocused
+                ? t('management.guestGroupsView.filterBar.searchPlaceholder')
+                : t('management.guestGroupsView.filterBar.searchPlaceholderShort')"
               :aria-label="t('management.guestGroupsView.filterBar.searchAriaLabel')"
-              class="min-w-0 flex-1 border-0 bg-transparent p-0 py-3 text-base text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0 sm:py-2.5 sm:text-sm"
+              class="min-w-0 flex-auto border-0 bg-transparent p-0 py-3 text-base text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0 sm:py-2.5 sm:text-sm"
             />
+            <!-- `mousedown.prevent` keeps the focus on the input, which is what
+                 stops clearing a query from collapsing the field out from under
+                 the thumb that is still typing in it. -->
             <button
               v-if="groupSearchQuery"
+              @mousedown.prevent
               @click="clearGroupSearch"
               :aria-label="t('management.guestGroupsView.filterBar.clearSearch')"
-              class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:text-slate-600 sm:h-9 sm:w-9"
+              class="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors after:absolute after:-inset-1 after:content-[''] hover:text-slate-600 sm:after:hidden"
             >
               <X class="h-4 w-4" />
             </button>
@@ -116,11 +199,18 @@
                  one field, two jobs. -->
             <div class="h-5 w-px flex-shrink-0 bg-slate-200" aria-hidden="true"></div>
 
-            <!-- Filter Dropdown -->
-            <div class="relative flex-shrink-0" ref="tabsContainer">
+            <!-- Filter Dropdown.
+                 `min-w-0`, and deliberately *not* `flex-shrink-0`: with both
+                 axes set this button carries a colour dot, a truncated group
+                 name and an RSVP chip, and pinned at its natural width that is
+                 wider than a 320px phone's whole field — which is exactly how
+                 the toolbar used to push the document sideways. Shrinkable, the
+                 group name gives way first (it is the one part the coloured dot
+                 already states) and nothing leaves the card. -->
+            <div class="relative min-w-0" ref="tabsContainer">
               <button
                 @click="isDropdownOpen = !isDropdownOpen"
-                class="flex h-11 items-center gap-1.5 rounded-r-xl pl-2.5 pr-2.5 text-sm font-medium text-slate-600 transition-[color,background-color] duration-150 ease-out hover:bg-slate-200/60 hover:text-slate-900 sm:h-10 sm:pr-3"
+                class="flex h-11 w-full min-w-0 items-center gap-1.5 rounded-r-xl pl-2.5 pr-3 text-sm font-medium text-slate-600 transition-[color,background-color] duration-150 ease-out hover:bg-slate-200/60 hover:text-slate-900 sm:h-10 sm:pr-3"
                 :aria-expanded="isDropdownOpen"
                 :title="t('management.guestGroupsView.filterBar.filterByGroup')"
                 :aria-label="t('management.guestGroupsView.filterBar.filterByGroup')"
@@ -134,20 +224,24 @@
                   class="h-2.5 w-2.5 flex-shrink-0 rounded-full"
                   :style="{ backgroundColor: groups.find(g => g.id.toString() === activeFilter)?.color || '#3498db' }"
                 ></span>
-                <span v-if="activeFilter !== 'all'" class="hidden max-w-[7.5rem] truncate text-slate-900 sm:inline">
+                <span v-if="activeFilter !== 'all'" class="max-w-[5rem] truncate text-slate-900 sm:max-w-[7.5rem]">
                   {{ groups.find(g => g.id.toString() === activeFilter)?.name || t('management.guestGroupsView.filterBar.select') }}
                 </span>
                 <!-- RSVP status is a second, independent axis, so it gets its
                      own chip rather than replacing the group label. -->
                 <span
                   v-if="activeRsvpOption"
-                  class="flex flex-shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+                  class="flex min-w-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
                   :class="activeRsvpOption.chipClass"
                 >
                   <span class="h-1.5 w-1.5 flex-shrink-0 rounded-full" :class="activeRsvpOption.dotClass" aria-hidden="true"></span>
-                  <span class="hidden sm:inline">{{ activeRsvpOption.label }}</span>
+                  <span class="max-w-[4.5rem] truncate sm:max-w-none">{{ activeRsvpOption.label }}</span>
                 </span>
-                <ChevronDown class="h-4 w-4 flex-shrink-0 text-slate-400 transition-transform duration-150" :class="{ 'rotate-180': isDropdownOpen }" />
+                <!-- No chevron on a phone: the funnel already says what the
+                     button does, and the 22px it costs is the difference
+                     between a field that can print "Search" and one that
+                     prints "Sear". -->
+                <ChevronDown class="hidden h-4 w-4 flex-shrink-0 text-slate-400 transition-transform duration-150 sm:block" :class="{ 'rotate-180': isDropdownOpen }" />
               </button>
 
               <!-- Dropdown Menu (desktop) -->
@@ -437,9 +531,10 @@
           <!-- Import (bulk CSV/Excel). Secondary, not the brand gradient:
                importing a spreadsheet happens roughly once per event, and
                adding a guest happens all day — that lives in the add row at
-               the top of the list. -->
+               the top of the list. On a phone it moves up to the summary line,
+               which leaves this row to the query alone. -->
           <button
-            v-if="canEdit"
+            v-if="canEdit && isDesktop"
             @click="$emit('add-guest')"
             class="flex h-11 w-11 flex-shrink-0 items-center justify-center gap-2 rounded-xl bg-slate-100 text-sm font-medium text-slate-700 transition-[background-color,transform] duration-150 ease-out hover:bg-slate-200 active:scale-[0.97] sm:h-auto sm:w-auto sm:px-3.5 sm:py-2.5"
             :aria-label="t('management.guestGroupsView.filterBar.addGuestAriaLabel')"
@@ -461,33 +556,40 @@
              it means anything. -->
         <Transition name="selection-bar">
           <div
-            v-if="canEdit && hasSelection"
-            class="absolute inset-0 flex items-center gap-1 rounded-xl bg-sky-50 pl-2 pr-1.5 ring-1 ring-sky-100"
+            v-if="canEdit && selectionMode"
+            class="absolute inset-0 flex items-center gap-1 rounded-xl bg-sky-50 pl-1 pr-1.5 ring-1 ring-sky-100 sm:pl-2"
           >
             <label
-              class="flex h-10 w-10 flex-shrink-0 cursor-pointer items-center justify-center"
+              class="flex h-11 w-11 flex-shrink-0 cursor-pointer items-center justify-center sm:h-10 sm:w-10"
               :title="t('management.guestGroupsView.filterBar.selectAllAriaLabel')"
             >
               <input
                 type="checkbox"
                 :checked="isAllCurrentPageSelected"
-                :indeterminate.prop="!isAllCurrentPageSelected"
+                :indeterminate.prop="hasSelection && !isAllCurrentPageSelected"
                 @change="handleToggleSelectAll"
                 :aria-label="t('management.guestGroupsView.filterBar.selectAllAriaLabel')"
                 class="h-4 w-4 cursor-pointer rounded border-slate-300 text-sky-500 transition-colors focus:ring-2 focus:ring-sky-200 focus:ring-offset-0"
               />
             </label>
 
+            <!-- Entering the mode from a hold always brings one guest with it,
+                 so zero is only reachable by unpicking back down to it — where
+                 the bar has to say what it is waiting for rather than count it. -->
             <span class="min-w-0 flex-1 truncate pl-1 text-sm font-medium tabular-nums text-sky-900">
-              <span class="font-semibold">{{ totalSelectedCount }}</span>
-              {{ t('management.guestGroupsView.selectionBar.selected') }}
+              <template v-if="hasSelection">
+                <span class="font-semibold">{{ totalSelectedCount }}</span>
+                {{ t('management.guestGroupsView.selectionBar.selected') }}
+              </template>
+              <template v-else>{{ t('management.guestGroupsView.selectionBar.pickGuests') }}</template>
             </span>
 
             <!-- Ghost buttons, not white pills. A raised pill on a tinted field
                  reads as an object dropped onto the bar. -->
             <button
               @click="handleBulkMarkSent"
-              class="flex h-10 w-10 flex-shrink-0 items-center justify-center gap-1.5 rounded-lg text-sm font-semibold text-emerald-600 transition-[background-color,transform] duration-150 ease-out hover:bg-white active:scale-[0.97] sm:w-auto sm:px-3"
+              :disabled="!hasSelection"
+              class="disabled:pointer-events-none disabled:opacity-40 flex h-11 w-11 flex-shrink-0 items-center justify-center gap-1.5 rounded-lg text-sm font-semibold text-emerald-600 transition-[background-color,transform] duration-150 ease-out hover:bg-white active:scale-[0.92] sm:h-10 sm:w-auto sm:px-3 sm:active:scale-[0.97]"
               :aria-label="t('management.guestGroupsView.selectionBar.markSent')"
               :title="t('management.guestGroupsView.selectionBar.markSent')"
             >
@@ -496,7 +598,8 @@
             </button>
             <button
               @click="handleBulkDelete"
-              class="flex h-10 w-10 flex-shrink-0 items-center justify-center gap-1.5 rounded-lg text-sm font-semibold text-red-600 transition-[background-color,transform] duration-150 ease-out hover:bg-white active:scale-[0.97] sm:w-auto sm:px-3"
+              :disabled="!hasSelection"
+              class="disabled:pointer-events-none disabled:opacity-40 flex h-11 w-11 flex-shrink-0 items-center justify-center gap-1.5 rounded-lg text-sm font-semibold text-red-600 transition-[background-color,transform] duration-150 ease-out hover:bg-white active:scale-[0.92] sm:h-10 sm:w-auto sm:px-3 sm:active:scale-[0.97]"
               :aria-label="t('management.guestGroupsView.selectionBar.delete')"
               :title="t('management.guestGroupsView.selectionBar.delete')"
             >
@@ -511,7 +614,7 @@
 
             <button
               @click="clearSelection"
-              class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors duration-150 ease-out hover:bg-white hover:text-slate-700"
+              class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors duration-150 ease-out hover:bg-white hover:text-slate-700 sm:h-10 sm:w-10"
               :aria-label="t('management.guestGroupsView.selectionBar.clearSelection')"
               :title="t('management.guestGroupsView.selectionBar.clearSelection')"
             >
@@ -529,6 +632,7 @@
           v-if="canEdit && groups.length > 0"
           :groups="groups"
           :default-group-id="quickAddDefaultGroupId"
+          :mobile="!isDesktop"
           class="border-b border-slate-100"
           @quick-add="(name, groupId) => $emit('quick-add-guest', name, groupId)"
           @create-group="(data) => $emit('inline-create-group', data)"
@@ -552,11 +656,14 @@
             :selected="isGuestSelected(guest.id)"
             :groups="groups"
             :can-edit="canEdit"
+            :mobile="!isDesktop"
+            :selection-mode="selectionMode"
             @copy-link="(guest, lang, silent) => $emit('copy-link', guest, lang, silent)"
             @mark-sent="$emit('mark-sent', $event)"
             @edit="$emit('edit-guest', $event)"
             @delete="$emit('delete-guest', $event)"
             @toggle-select="handleToggleSelect"
+            @request-select="handleRequestSelect"
             @update-group="(guest, groupId) => $emit('update-guest-group', guest, groupId)"
           />
 
@@ -935,13 +1042,67 @@ const isFiltering = computed(
 
 const selectRsvpStatus = (status: GuestRsvpStatusValue | null) => {
   activeRsvpStatus.value = status
-  selectedGuestIds.value.clear()
+  clearSelection()
   isDropdownOpen.value = false
 }
 
 // Tab container ref
 const tabsContainer = ref<HTMLElement | null>(null)
 const searchInputRef = ref<HTMLInputElement | null>(null)
+
+// ---------------------------------------------------------------------------
+// Is the phone toolbar pinned?
+// ---------------------------------------------------------------------------
+
+/**
+ * Read off the band's own geometry rather than off a scroll offset: the pin
+ * line is `--guest-toolbar-top`, which is a `calc()` over a variable another
+ * component measures and publishes, and re-deriving that number here would be a
+ * second source of truth for it that goes stale the moment the tab strip's
+ * height changes. A sticky element that has left its slot is simply an element
+ * sitting lower than the slot it came out of — which needs no numbers at all.
+ */
+const toolbarRef = ref<HTMLElement | null>(null)
+const toolbarSlotRef = ref<HTMLElement | null>(null)
+const toolbarStuck = ref(false)
+
+let stuckFrame: number | null = null
+
+const measureStuck = () => {
+  stuckFrame = null
+  const band = toolbarRef.value
+  const slot = toolbarSlotRef.value
+  if (!band || !slot) return
+  // 2px of slack: the slot is a 1px marker and browsers round sticky offsets.
+  toolbarStuck.value = band.getBoundingClientRect().top - slot.getBoundingClientRect().top > 2
+}
+
+const scheduleStuckMeasure = () => {
+  if (stuckFrame !== null) return
+  stuckFrame = requestAnimationFrame(measureStuck)
+}
+
+// ---------------------------------------------------------------------------
+// The phone band's one row: summary, or query
+// ---------------------------------------------------------------------------
+
+/**
+ * Is the query being typed into? Only ever true on a phone in practice, but it
+ * is read through `summaryFolded`, which gates it on the viewport — focusing
+ * the field on a pointer device must not fold a summary that has a whole row
+ * of its own to sit in.
+ */
+const searchFocused = ref(false)
+
+/**
+ * The summary gives its width back to the field on both of the occasions the
+ * field is the only thing that matters: while the band is pinned over a list
+ * you are scrolling, and while you are typing. One flag, so the two states can
+ * never disagree about how wide the field is.
+ */
+const summaryFolded = computed(
+  () => !isDesktop.value && (toolbarStuck.value || searchFocused.value),
+)
 
 // Function to trigger group data loading based on active filter
 const triggerGroupExpansion = () => {
@@ -958,7 +1119,7 @@ const triggerGroupExpansion = () => {
 
 // Watch for active filter changes - clear selections and trigger group expansion
 watch(activeFilter, (newFilter) => {
-  selectedGuestIds.value.clear()
+  clearSelection()
   // Sync the search input with the actual search term from the composable
   if (newFilter === 'all') {
     groupSearchQuery.value = props.allGuestsPagination.searchTerm
@@ -992,6 +1153,12 @@ onMounted(() => {
   // Always trigger expansion on mount to ensure initial data load
   // This handles both cases: when there are groups and when starting fresh
   triggerGroupExpansion()
+
+  // Passive, and coalesced to one measurement per frame — this runs on every
+  // scroll event of a list that can be several hundred rows long.
+  window.addEventListener("scroll", scheduleStuckMeasure, { passive: true })
+  window.addEventListener("resize", scheduleStuckMeasure, { passive: true })
+  scheduleStuckMeasure()
 })
 
 // Computed properties
@@ -1058,10 +1225,31 @@ const totalSelectedCount = computed(() => selectedGuestIds.value.size)
  *  selection bar. Everything that swaps between the two reads this one flag. */
 const hasSelection = computed(() => totalSelectedCount.value > 0)
 
+/**
+ * On a pointer device the mode *is* the selection: hovering a row already
+ * shows you the mark, so picking one is how you enter and unpicking the last
+ * one is how you leave, and nothing else is needed.
+ *
+ * A phone has no hover, so the marks cannot be discovered by moving over them —
+ * they exist only once the mode is declared, by holding a row or from that
+ * row's own sheet. That declaration has to survive dropping to zero selected,
+ * or emptying the selection would throw you out of the mode you are still
+ * working in.
+ */
+const explicitSelectionMode = ref(false)
+const selectionMode = computed(() => hasSelection.value || explicitSelectionMode.value)
+
+/** Hold-to-select, and the sheet's "Select" entry. */
+const handleRequestSelect = (guest: EventGuest) => {
+  explicitSelectionMode.value = true
+  selectedGuestIds.value.add(guest.id)
+}
+
 /** The way out of selection mode. Without it the only exit was deselecting
  *  every guest one at a time. */
 const clearSelection = () => {
   selectedGuestIds.value.clear()
+  explicitSelectionMode.value = false
 }
 
 // Pagination computed properties
@@ -1083,30 +1271,55 @@ const selectFilter = (filterId: string) => {
   isDropdownOpen.value = false
 }
 
+const runGroupSearch = (term: string) => {
+  if (activeFilter.value === 'all') {
+    emit('search-all', term)
+  } else {
+    filteredGroups.value.forEach(group => {
+      emit('search', group.id, term)
+    })
+  }
+}
+
 const handleGroupSearch = () => {
   if (searchTimeout) {
     clearTimeout(searchTimeout)
   }
   searchTimeout = setTimeout(() => {
-    if (activeFilter.value === 'all') {
-      emit('search-all', groupSearchQuery.value)
-    } else {
-      filteredGroups.value.forEach(group => {
-        emit('search', group.id, groupSearchQuery.value)
-      })
-    }
+    searchTimeout = null
+    runGroupSearch(groupSearchQuery.value)
   }, 300)
 }
 
-const clearGroupSearch = () => {
-  groupSearchQuery.value = ''
-  if (activeFilter.value === 'all') {
-    emit('search-all', '')
-  } else {
-    filteredGroups.value.forEach(group => {
-      emit('search', group.id, '')
-    })
+/**
+ * Enter, which on a phone is the "search" key. It ends the typing — flushing
+ * the debounce so the results are the ones the query asked for, then dropping
+ * focus, which is what returns the summary to the band beside the field.
+ */
+const submitGroupSearch = () => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+    searchTimeout = null
   }
+  runGroupSearch(groupSearchQuery.value)
+  searchInputRef.value?.blur()
+}
+
+/** Escape backs out of the query entirely, rather than confirming an empty one. */
+const cancelGroupSearch = () => {
+  if (groupSearchQuery.value) {
+    clearGroupSearch()
+  }
+  searchInputRef.value?.blur()
+}
+
+const clearGroupSearch = () => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+    searchTimeout = null
+  }
+  groupSearchQuery.value = ''
+  runGroupSearch('')
 }
 
 // Watch for guest list changes to remove deleted guest IDs from selection (Issue 2)
@@ -1125,7 +1338,7 @@ watch(
 
 // Watch for search query changes to clear selections (Issue 3)
 watch(groupSearchQuery, () => {
-  selectedGuestIds.value.clear()
+  clearSelection()
 })
 
 const handleToggleSelect = (guest: EventGuest) => {
@@ -1300,6 +1513,9 @@ onUnmounted(() => {
   if (intersectionObserver) {
     intersectionObserver.disconnect()
   }
+  window.removeEventListener("scroll", scheduleStuckMeasure)
+  window.removeEventListener("resize", scheduleStuckMeasure)
+  if (stuckFrame !== null) cancelAnimationFrame(stuckFrame)
 })
 
 // ============================================================================
@@ -1316,7 +1532,7 @@ defineExpose({
    * Used by parent after successful bulk operations
    */
   clearSelection: () => {
-    selectedGuestIds.value.clear()
+    clearSelection()
   },
 
   /**
@@ -1326,6 +1542,8 @@ defineExpose({
   restoreSelection: (ids: number[]) => {
     selectedGuestIds.value.clear()
     ids.forEach(id => selectedGuestIds.value.add(id))
+    // Restoring a non-empty selection restores the mode it belonged to.
+    explicitSelectionMode.value = ids.length > 0
   },
 
   /**
@@ -1339,6 +1557,17 @@ defineExpose({
 </script>
 
 <style scoped>
+/* The phone toolbar is a material, so it answers the transparency preference
+   the way a material should: frostier, not blurrier. The blur is also
+   the expensive half of it, and a device that asked for less transparency is
+   often the device that can least afford to composite it every frame. */
+@media (prefers-reduced-transparency: reduce) {
+  .sticky {
+    background-color: rgb(255 255 255);
+    backdrop-filter: none;
+  }
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;

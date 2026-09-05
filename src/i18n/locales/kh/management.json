@@ -1685,6 +1685,7 @@
     },
     "filterBar": {
       "searchPlaceholder": "ស្វែងរកភ្ញៀវ...",
+      "searchPlaceholderShort": "ស្វែងរក",
       "searchAriaLabel": "ស្វែងរកភ្ញៀវតាមឈ្មោះ អ៊ីមែល ឬទូរស័ព្ទ",
       "allGroups": "ក្រុមទាំងអស់",
       "filterByGroup": "ត្រងតាមក្រុម",
@@ -1708,7 +1709,8 @@
       "clearSelection": "សម្អាតការជ្រើសរើស",
       "selected": "បានជ្រើសរើស",
       "markSent": "កំណត់ថាបានផ្ញើ",
-      "delete": "លុប"
+      "delete": "លុប",
+      "pickGuests": "ជ្រើសរើសភ្ញៀវ"
     },
     "guestList": {
       "loadingMore": "កំពុងផ្ទុកភ្ញៀវបន្ថែម...",
@@ -1740,7 +1742,11 @@
       },
       "moreActions": "សកម្មភាពផ្សេងទៀត",
       "copyLinkKh": "ចម្លងតំណ (ខ្មែរ)",
-      "copyLinkEn": "ចម្លងតំណ (អង់គ្លេស)"
+      "copyLinkEn": "ចម្លងតំណ (អង់គ្លេស)",
+      "trayEdit": "កែសម្រួល",
+      "trayDelete": "លុប",
+      "changeGroupTitle": "ប្តូរក្រុម",
+      "selectGuests": "ជ្រើសរើសភ្ញៀវ"
     },
     "quickAdd": {
       "noGroupsHint": "សូមបង្កើតក្រុមមុនសិន",

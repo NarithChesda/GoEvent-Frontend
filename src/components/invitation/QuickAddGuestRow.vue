@@ -46,7 +46,7 @@
         type="button"
         @click="showGroupDropdown = !showGroupDropdown"
         :aria-expanded="showGroupDropdown"
-        class="flex max-w-[9rem] items-center gap-1.5 rounded-lg px-2 py-1 text-xs transition-colors hover:bg-slate-200/60"
+        class="flex h-9 max-w-[7rem] items-center gap-1.5 rounded-lg px-2 text-xs transition-colors hover:bg-slate-200/60 sm:h-auto sm:max-w-[9rem] sm:py-1"
         :class="selectedGroup ? 'text-slate-600' : 'text-slate-400'"
       >
         <span
@@ -69,7 +69,7 @@
              menu answering for its own clicks is the fix, and it is what the
              row's other popovers already do. -->
         <div
-          v-if="showGroupDropdown"
+          v-if="showGroupDropdown && !mobile"
           @click.stop
           class="absolute right-0 top-full z-[100] mt-1 max-h-[22rem] w-[17rem] overflow-y-auto rounded-xl border border-slate-200/60 bg-white shadow-lg shadow-slate-200/50"
         >
@@ -124,13 +124,67 @@
           </div>
         </div>
       </Transition>
+
+      <!-- The same picker as a sheet on a phone. A 272px popover hung off a
+           chip near the right edge of the row lands wherever that chip happens
+           to be, and its rows are half a thumb tall; worse, it opens *inside*
+           the list's own scroll area, so the first flick that was meant to
+           reach a group scrolls the guests behind it instead. -->
+      <MobileBottomSheet
+        :show="showGroupDropdown && mobile"
+        :title="t('management.guestGroupsView.quickAdd.pickGroup')"
+        @close="closeGroupDropdown"
+      >
+        <div class="pb-2 pt-1">
+          <button
+            v-for="group in groups"
+            :key="`sheet-${group.id}`"
+            type="button"
+            :aria-pressed="group.id === selectedGroupId"
+            @click="selectGroup(group.id)"
+            class="flex w-full items-center gap-3.5 px-5 py-3.5 text-left transition-colors active:bg-slate-50"
+          >
+            <span
+              class="h-3 w-3 flex-shrink-0 rounded-full"
+              :style="{ backgroundColor: group.color || '#64748b' }"
+            ></span>
+            <span
+              class="min-w-0 flex-1 truncate text-[0.9375rem]"
+              :class="group.id === selectedGroupId ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'"
+            >{{ group.name }}</span>
+            <Check v-if="group.id === selectedGroupId" class="h-5 w-5 flex-shrink-0 text-[#2ecc71]" />
+          </button>
+
+          <template v-if="canCreate">
+            <div class="mx-5 my-1 border-t border-slate-100"></div>
+
+            <InlineGroupForm
+              v-if="showCreateGroupForm"
+              mode="create"
+              :is-submitting="isCreatingGroup"
+              class="mx-3 my-1"
+              @submit="handleCreateGroup"
+              @cancel="showCreateGroupForm = false"
+            />
+            <button
+              v-else
+              type="button"
+              @click="showCreateGroupForm = true"
+              class="flex w-full items-center gap-3.5 px-5 py-3.5 text-left text-[0.9375rem] font-medium text-slate-600 transition-colors active:bg-slate-50"
+            >
+              <Plus class="h-[1.125rem] w-[1.125rem] flex-shrink-0 text-slate-400" />
+              <span>{{ t('management.guestGroupsView.filterBar.newGroup') }}</span>
+            </button>
+          </template>
+        </div>
+      </MobileBottomSheet>
     </div>
 
     <!-- The commit appears only once there is something to commit, so the idle
          row is a field and a group and nothing else. It occupies the trailing
          rail the guest rows use — their status slot plus the copy button — so
          nothing shifts sideways when it arrives. -->
-    <div class="flex h-9 w-[3.25rem] flex-shrink-0 items-center justify-center">
+    <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center sm:h-9 sm:w-[3.25rem]">
       <Transition name="commit">
         <button
           v-if="name.trim().length > 0"
@@ -139,7 +193,7 @@
           :disabled="!canSubmit"
           :title="t('management.guestGroupsView.quickAdd.save')"
           :aria-label="t('management.guestGroupsView.quickAdd.save')"
-          class="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white transition-opacity duration-150 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          class="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white transition-[opacity,transform] duration-150 hover:opacity-90 active:scale-[0.92] disabled:cursor-not-allowed disabled:opacity-40 sm:h-9 sm:w-9 sm:rounded-lg sm:active:scale-100"
         >
           <Check class="h-4 w-4" />
         </button>
@@ -153,6 +207,7 @@ import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Plus, ChevronDown, Check } from 'lucide-vue-next'
 import InlineGroupForm from './InlineGroupForm.vue'
+import MobileBottomSheet from '../common/MobileBottomSheet.vue'
 import type { GuestGroup } from '../../services/api'
 
 const { t } = useI18n()
@@ -163,8 +218,10 @@ const props = withDefaults(
     defaultGroupId: number | null
     /** Whether the viewer may make a new group from inside this picker. */
     canCreate?: boolean
+    /** Small-viewport form — the group picker becomes a sheet. */
+    mobile?: boolean
   }>(),
-  { canCreate: true },
+  { canCreate: true, mobile: false },
 )
 
 const emit = defineEmits<{
@@ -283,6 +340,9 @@ const submit = () => {
 }
 
 const handleClickOutside = (event: MouseEvent) => {
+  // The sheet is teleported to `body`, so every press inside it reads as
+  // "outside" this row — it dismisses itself on its own backdrop instead.
+  if (props.mobile) return
   if (
     showGroupDropdown.value &&
     groupPickerRef.value &&

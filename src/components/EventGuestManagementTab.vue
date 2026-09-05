@@ -60,8 +60,15 @@
       </button>
     </div>
 
-    <!-- Content Area -->
-    <div v-else class="min-h-[25rem]">
+    <!-- Content Area.
+         `--guest-toolbar-top` is where the guest list's own toolbar pins itself
+         on a phone: below the app bar and the manage tab strip, both of which
+         are `fixed`. The tab strip publishes its measured height, so this is
+         derived from the same number the page's own spacer uses rather than
+         from a second guess at it. The guest list defaults the variable to 0,
+         which is right wherever it is mounted without fixed chrome above it —
+         the shared-link page, for one. -->
+    <div v-else class="min-h-[25rem]" style="--guest-toolbar-top: calc(4rem + var(--manage-tabbar-h, 52px))">
       <!-- One header row for the whole tab: the title, the view choice, and
            sharing.
 
@@ -81,16 +88,26 @@
            fact about who may reach the whole list, not one more thing you can
            do to it. Only on the guest list — a share link does not carry
            seating. -->
-      <div class="mb-5 flex flex-wrap items-center gap-x-4 gap-y-3">
+      <!-- One row at every width. On a phone the view choice earns its place on
+           it by giving up its labels: two icons on a track is 88px, where the
+           words are most of a row — and the segment that is chosen is drawn as
+           a raised white cap, so which of the two you are on is legible without
+           reading anything. The labels are still the buttons' accessible names. -->
+      <div class="mb-5 flex flex-wrap items-center gap-x-3 gap-y-3">
         <h2 class="text-xl font-bold leading-tight tracking-tight text-slate-900 sm:text-2xl">
           {{ t('management.guestManagementTab.title') }}
         </h2>
 
-        <div class="flex w-full items-center gap-2 sm:ml-auto sm:w-auto">
+        <!-- No `min-w-0` on the title and no truncation, which is what lets the
+             row break rather than shorten "Guest Management" to "Guest
+             Managem…": the title's full width is its flex base, so on a screen
+             too narrow to hold both (below ~344px) these two wrap to a line of
+             their own — still trailing-aligned — instead of eating the words. -->
+        <div class="ml-auto flex flex-shrink-0 items-center gap-2">
           <SegmentedField
             v-model="activeSubTab"
             :options="subTabs"
-            class="min-w-0 flex-1 sm:flex-none"
+            icon-only-on-mobile
             :aria-label="t('management.guestManagementTab.title')"
           />
 
