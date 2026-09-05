@@ -3,25 +3,17 @@
        real public events. The tile field is decorative — it is what the product
        makes, shown rather than described — so it is inert and aria-hidden. -->
   <section class="relative flex-1 flex flex-col min-h-[100dvh] overflow-hidden">
-    <!-- The page's own chrome is hidden for this state (see EventsView), so the
-         landing carries the only thing it needs — a way in — floating over the
-         hero rather than on a bar of its own. No mark up here: the wordmark is
-         already the first thing in the hero, a few hundred pixels below. -->
-    <header
-      class="absolute inset-x-0 top-0 z-20 flex items-center justify-end px-4 sm:px-6 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 sm:pt-4 sm:pb-4"
-    >
-      <!-- A real touch target on a phone (40px), back to the compact desktop
-           pill from `lg` — the same button, not a second style. -->
-      <RouterLink
-        to="/signin?redirect=%2Fevents"
-        class="flex items-center gap-1.5 px-4 py-2 min-h-[40px] lg:px-3.5 lg:py-1.5 lg:min-h-0 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-medium shadow-md shadow-[#2ecc71]/20 lg:shadow-none hover:shadow-md hover:shadow-[#2ecc71]/20 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-        :aria-label="t('common.nav.signIn')"
-      >
-        <User class="w-4 h-4 lg:w-3.5 lg:h-3.5" />
-        <span>{{ t('common.nav.signIn') }}</span>
-      </RouterLink>
-    </header>
-
+    <!-- No sign-in header.
+         This landing used to float a Sign in pill over the top-right corner,
+         because the page's own chrome is hidden in this state (see EventsView).
+         But the hero's primary button is `Create Your First Event`, and for a
+         signed-out visitor `handleCreateEventClick` pushes
+         `/signin?redirect=/events?createEvent=true` — the same sign-in page,
+         and one that carries them on into the thing they came to do. So the
+         pill was the same door, named worse, competing with the one CTA this
+         screen exists to press (goevent-taste: one screen, one primary action).
+         `Discover Events` still reaches the rest of the app, and /explore
+         carries the real nav bar with its own Sign in. -->
     <!-- Desktop tile field: absolute, behind the copy, cropped by the section. -->
     <div
       v-if="artReady"
@@ -159,7 +151,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { ArrowRight, User } from 'lucide-vue-next'
+import { ArrowRight } from 'lucide-vue-next'
 import LogoPng from '@/assets/logo.png'
 import { eventsService } from '@/services/api'
 import { getEventImage } from '@/composables/useEventFormatters'
