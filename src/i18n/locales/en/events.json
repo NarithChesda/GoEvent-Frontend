@@ -61,41 +61,31 @@
   },
   "createDrawer": {
     "title": "Create New Event",
-    "sections": {
-      "basicInfo": "Basic Information",
-      "dateTime": "Date & Time",
-      "privacy": "Privacy",
-      "registration": "Registration",
-      "access": "Access & Registration"
-    },
     "fields": {
       "eventTitle": "Event Title",
       "titlePlaceholder": "Enter event title",
       "category": "Category",
       "categoryPlaceholder": "Select a category",
-      "startDateTime": "Start Date & Time",
-      "endDateTime": "End Date & Time",
-      "aboutEvent": "About Event",
+      "aboutEvent": "About this event",
       "descriptionPlaceholder": "Detailed event description",
-      "registrationDeadline": "Registration Deadline",
-      "deadlinePlaceholder": "Optional deadline",
-      "deadlineHint": "Leave empty for no deadline",
-      "maxAttendees": "Max Attendees",
+      "registrationDeadline": "Deadline",
+      "deadlinePlaceholder": "No deadline",
+      "maxAttendees": "Attendee limit",
       "maxAttendeesPlaceholder": "Unlimited",
-      "maxAttendeesHint": "Leave empty for unlimited"
+      "starts": "Starts",
+      "ends": "Ends",
+      "visibility": "Visibility"
     },
     "autoPopulate": {
-      "label": "Auto-populate event data",
-      "description": "Fill in hosts, agenda & texts from category template"
+      "label": "Auto-fill from template",
+      "description": "Adds hosts, agenda and texts for this category"
     },
     "privacyToggle": {
-      "publicLabel": "Public Event",
-      "privateLabel": "Private Event",
       "publicDescription": "Anyone can view and register",
       "privateDescription": "Only invited guests can access"
     },
     "requireRegistration": {
-      "label": "Require Registration",
+      "label": "Require registration",
       "description": "Attendees must register to join"
     },
     "actions": {
@@ -103,6 +93,10 @@
       "created": "Event created",
       "create": "Create Event",
       "cancel": "Cancel"
+    },
+    "privacyOptions": {
+      "private": "Private",
+      "public": "Public"
     }
   },
   "tickets": {

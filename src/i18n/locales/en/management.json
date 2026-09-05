@@ -1229,7 +1229,6 @@
       "tryAgain": "Try Again"
     },
     "basicInfo": {
-      "heading": "Basic Information",
       "titleLabel": "Event Title *",
       "titlePlaceholder": "Enter event title",
       "shortDescLabel": "Short Description",
@@ -1241,51 +1240,46 @@
       "categoryPlaceholder": "Select a category"
     },
     "dateTime": {
-      "heading": "Date & Time",
       "startDateTimeLabel": "Start Date & Time *",
       "endDateTimeLabel": "End Date & Time *",
-      "timezoneLabel": "Timezone"
+      "timezoneLabel": "Timezone",
+      "starts": "Starts",
+      "ends": "Ends"
     },
     "location": {
-      "heading": "Location",
-      "virtualLabel": "Virtual Event",
-      "inPersonLabel": "In-Person Event",
-      "virtualDesc": "Event will be held online",
-      "inPersonDesc": "Event will be held at a physical location",
       "addressLabel": "Address",
       "addressPlaceholder": "Enter location address",
       "mapMovedHint": "Manage the map embed in the Showcase tab",
-      "virtualLinkLabel": "Virtual Meeting Link"
+      "virtualLinkLabel": "Virtual Meeting Link",
+      "inPersonOption": "In person",
+      "virtualOption": "Online",
+      "modeLabel": "Location"
     },
     "privacy": {
-      "heading": "Privacy",
-      "publicLabel": "Public Event",
-      "privateLabel": "Private Event",
       "publicDesc": "Anyone can view and register",
-      "privateDesc": "Only invited guests can access"
+      "privateDesc": "Only invited guests can access",
+      "visibilityLabel": "Visibility",
+      "privateOption": "Private",
+      "publicOption": "Public"
     },
     "registration": {
-      "heading": "Registration",
-      "requireLabel": "Require Registration",
+      "requireLabel": "Require registration",
       "requireDesc": "Attendees must register to join",
-      "deadlineLabel": "Registration Deadline",
-      "deadlinePlaceholder": "Optional deadline",
-      "deadlineHint": "Leave empty for no deadline",
-      "maxAttendeesLabel": "Max Attendees",
-      "maxAttendeesPlaceholder": "Unlimited",
-      "maxAttendeesHint": "Leave empty for unlimited"
+      "deadlineLabel": "Deadline",
+      "deadlinePlaceholder": "No deadline",
+      "maxAttendeesLabel": "Attendee limit",
+      "maxAttendeesPlaceholder": "Unlimited"
     },
     "fundraising": {
-      "heading": "Fundraising",
-      "enableLabel": "Enable Fundraising",
+      "enableLabel": "Enable fundraising",
       "enableDesc": "Accept donations for this event",
-      "goalLabel": "Fundraising Goal",
+      "goalLabel": "Goal",
       "goalPlaceholder": "e.g., 10000",
       "goalHint": "Leave empty for no goal",
       "currencyLabel": "Currency",
-      "progressLabel": "Show Progress Bar",
+      "progressLabel": "Show progress bar",
       "progressDesc": "Display donation progress publicly",
-      "donorsLabel": "Show Donor List",
+      "donorsLabel": "Show donor list",
       "donorsDesc": "Display verified donors publicly"
     },
     "footer": {

@@ -160,5 +160,11 @@
     "title": "Something failed to load",
     "description": "Part of this page could not be downloaded. Check your connection and reload to try again.",
     "action": "Reload page"
+  },
+  "duration": {
+    "summary": "Lasts {value}",
+    "days": "{n} day | {n} days",
+    "hours": "{n} hour | {n} hours",
+    "minutes": "{n} minute | {n} minutes"
   }
 }

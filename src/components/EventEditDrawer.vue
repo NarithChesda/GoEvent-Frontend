@@ -13,6 +13,7 @@
     <Transition name="drawer-panel">
       <div
         v-if="modelValue"
+        ref="panel"
         class="fixed inset-y-0 right-0 md:top-4 md:bottom-4 md:right-4 w-full md:w-[32.5rem] laptop-sm:w-[35rem] laptop-md:w-[38.75rem] desktop:w-[42.5rem] md:max-w-[calc(100vw-32px)] bg-white md:rounded-2xl shadow-2xl z-[999] flex flex-col overflow-hidden will-change-transform"
         @click.stop
       >
@@ -76,39 +77,51 @@
           </div>
 
           <!-- Edit Form -->
-          <div v-else class="p-3 laptop-sm:p-4 space-y-4 laptop-sm:space-y-5 pb-24">
-            <!-- Basic Information -->
-            <div class="space-y-3">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.basicInfo.heading') }}</h3>
+          <!--
+            No section eyebrows.
 
-              <!-- Title -->
+            There were six ("Basic Information", "Date & Time", "Location",
+            "Privacy", "Registration", "Fundraising"), and every one of them
+            now sits directly above a control that already says the same thing
+            — a switch reading "Require registration", a field labelled
+            "Visibility". That is the case goevent-taste §4 calls a label
+            restating the only thing beneath it.
+
+            The `border-slate-200` rules keep the regions apart instead — the
+            cheaper grouping §3 of the same skill asks for, and one this form
+            has actually earned: it runs three screens, where the create
+            drawer's four groups fit in one and need nothing but space.
+          -->
+          <div v-else class="p-3 laptop-sm:p-4 space-y-4 laptop-sm:space-y-5 pb-24">
+            <!-- What it is -->
+            <div class="space-y-3">
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.basicInfo.titleLabel') }}</label>
+                <label for="edit-title" class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.basicInfo.titleLabel') }}</label>
                 <input
+                  id="edit-title"
                   v-model="form.title"
                   type="text"
                   required
                   :placeholder="t('management.editEventDrawer.basicInfo.titlePlaceholder')"
-                  class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                  class="w-full px-3 py-2 text-base sm:text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                 />
               </div>
 
-              <!-- Short Description -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.basicInfo.shortDescLabel') }}</label>
+                <label for="edit-short-desc" class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.basicInfo.shortDescLabel') }}</label>
                 <input
+                  id="edit-short-desc"
                   v-model="form.short_description"
                   type="text"
                   maxlength="300"
                   :placeholder="t('management.editEventDrawer.basicInfo.shortDescPlaceholder')"
-                  class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                  class="w-full px-3 py-2 text-base sm:text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                 />
                 <p class="text-xs text-slate-500 mt-1">
                   {{ t('management.editEventDrawer.basicInfo.shortDescCount', { count: form.short_description?.length || 0 }) }}
                 </p>
               </div>
 
-              <!-- Description -->
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.basicInfo.fullDescLabel') }}</label>
                 <RichTextEditor
@@ -118,49 +131,51 @@
                 />
               </div>
 
-              <!-- Category -->
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.basicInfo.categoryLabel') }}</label>
                 <SelectField
                   :model-value="form.category ?? ''"
-                  @update:model-value="form.category = $event"
                   :options="categoryOptions"
                   allow-empty
                   :placeholder="t('management.editEventDrawer.basicInfo.categoryPlaceholder')"
                   :title="t('management.editEventDrawer.basicInfo.categoryLabel')"
+                  @update:model-value="form.category = $event"
                 />
               </div>
             </div>
 
-            <!-- Date and Time -->
-            <div class="space-y-3 laptop-sm:space-y-4 border-t border-slate-100 pt-4 laptop-sm:pt-5">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.dateTime.heading') }}</h3>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <!-- Start Date & Time -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.dateTime.startDateTimeLabel') }}</label>
-                  <DateTimePickerField
+            <!-- When -->
+            <div class="space-y-3 border-t border-slate-200 pt-4 laptop-sm:pt-5">
+              <div class="space-y-1.5">
+                <div class="list-group">
+                  <DateTimeDisclosureRow
+                    :label="t('management.editEventDrawer.dateTime.starts')"
                     :model-value="form.start_date"
+                    :expanded="openDateRow === 'start'"
                     @update:model-value="onStartDateChange"
-                    :title="t('management.editEventDrawer.dateTime.startDateTimeLabel')"
+                    @update:expanded="setDateRow('start', $event)"
                   />
-                </div>
-
-                <!-- End Date & Time -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.dateTime.endDateTimeLabel') }}</label>
-                  <DateTimePickerField
+                  <DateTimeDisclosureRow
                     v-model="form.end_date"
+                    :label="t('management.editEventDrawer.dateTime.ends')"
+                    :expanded="openDateRow === 'end'"
                     :min="form.start_date"
                     :error="!!dateError"
-                    :title="t('management.editEventDrawer.dateTime.endDateTimeLabel')"
+                    @update:expanded="setDateRow('end', $event)"
                   />
-                  <p v-if="dateError" class="text-xs text-red-600 mt-1">{{ dateError }}</p>
                 </div>
+                <!-- One slot, two jobs: the duration confirms the pair reads
+                     the way the organizer meant, and the error replaces it when
+                     it does not. Neither ever moves the rows below. -->
+                <p
+                  class="px-1 text-xs"
+                  :class="dateError ? 'text-red-600' : 'text-slate-500'"
+                  :aria-live="dateError ? 'polite' : 'off'"
+                >
+                  {{ dateError || durationLabel }}
+                </p>
               </div>
 
-              <!-- Timezone -->
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.dateTime.timezoneLabel') }}</label>
                 <SelectField
@@ -172,59 +187,39 @@
               </div>
             </div>
 
-            <!-- Location -->
-            <div class="space-y-3 laptop-sm:space-y-4 border-t border-slate-100 pt-4 laptop-sm:pt-5">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.location.heading') }}</h3>
+            <!-- Where. In person and online are two named places, so both are
+                 named: as a switch this flipped its own label between
+                 "In-Person Event" and "Virtual Event", leaving the off state
+                 with no stable meaning. -->
+            <div class="space-y-2 border-t border-slate-200 pt-4 laptop-sm:pt-5">
+              <label class="block text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.location.modeLabel') }}</label>
+              <SegmentedField
+                :model-value="form.is_virtual ? 'virtual' : 'in-person'"
+                :options="locationOptions"
+                :aria-label="t('management.editEventDrawer.location.modeLabel')"
+                @update:model-value="form.is_virtual = $event === 'virtual'"
+              />
 
-              <!-- Virtual Event Toggle -->
-              <div
-                @click="form.is_virtual = !form.is_virtual"
-                class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="p-2 bg-white rounded-lg shadow-sm">
-                    <component :is="form.is_virtual ? Video : MapPin" class="w-4 h-4 text-sky-500" />
-                  </div>
-                  <div>
-                    <p class="text-sm font-medium text-slate-700">{{ form.is_virtual ? t('management.editEventDrawer.location.virtualLabel') : t('management.editEventDrawer.location.inPersonLabel') }}</p>
-                    <p class="text-xs text-slate-500">{{ form.is_virtual ? t('management.editEventDrawer.location.virtualDesc') : t('management.editEventDrawer.location.inPersonDesc') }}</p>
-                  </div>
-                </div>
-                <div
-                  role="switch"
-                  :aria-checked="form.is_virtual"
-                  :class="[
-                    'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                    form.is_virtual ? 'bg-sky-500' : 'bg-slate-200'
-                  ]"
-                >
-                  <span
-                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
-                    :style="{ transform: form.is_virtual ? 'translateX(20px)' : 'translateX(0)' }"
-                  />
-                </div>
-              </div>
-
-              <!-- Location Input (In Person) -->
               <Transition name="drawer-reveal">
-              <div v-if="!form.is_virtual" class="grid grid-rows-[1fr]">
-                <div class="min-h-0 overflow-hidden">
-                  <div class="space-y-3">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.location.addressLabel') }}</label>
+                <div v-if="!form.is_virtual" class="grid grid-rows-[1fr]">
+                  <div class="min-h-0 overflow-hidden">
+                    <div class="pt-1">
+                      <label for="edit-address" class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.location.addressLabel') }}</label>
                       <div class="relative">
                         <MapPin class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                         <input
+                          id="edit-address"
                           v-model="form.location"
                           type="text"
                           :placeholder="t('management.editEventDrawer.location.addressPlaceholder')"
-                          class="w-full pl-9 pr-10 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                          class="w-full pl-9 pr-10 py-2 text-base sm:text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
                         />
                         <button
                           v-if="form.location"
                           type="button"
-                          @click="form.location = ''"
+                          :aria-label="t('common.actions.clear')"
                           class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 bg-slate-200 rounded-full flex items-center justify-center hover:bg-slate-300 transition-colors"
+                          @click="form.location = ''"
                         >
                           <X class="w-3 h-3 text-slate-500" />
                         </button>
@@ -235,130 +230,96 @@
                     </div>
                   </div>
                 </div>
-              </div>
               </Transition>
 
-              <!-- Virtual Link Input -->
               <Transition name="drawer-reveal">
-              <div v-if="form.is_virtual" class="grid grid-rows-[1fr]">
-                <div class="min-h-0 overflow-hidden">
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.location.virtualLinkLabel') }}</label>
-                    <div class="relative">
-                      <Link2 class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <input
-                        v-model="form.virtual_link"
-                        type="url"
-                        placeholder="https://zoom.us/meeting/..."
-                        class="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                      />
+                <div v-if="form.is_virtual" class="grid grid-rows-[1fr]">
+                  <div class="min-h-0 overflow-hidden">
+                    <div class="pt-1">
+                      <label for="edit-virtual-link" class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.location.virtualLinkLabel') }}</label>
+                      <div class="relative">
+                        <Link2 class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          id="edit-virtual-link"
+                          v-model="form.virtual_link"
+                          type="url"
+                          placeholder="https://zoom.us/meeting/..."
+                          class="w-full pl-9 pr-3 py-2 text-base sm:text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
               </Transition>
             </div>
 
-            <!-- Privacy Settings -->
-            <div class="space-y-3 border-t border-slate-100 pt-4 laptop-sm:pt-5">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.privacy.heading') }}</h3>
-
-              <div
-                @click="form.privacy = form.privacy === 'public' ? 'private' : 'public'"
-                class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="p-2 bg-white rounded-lg shadow-sm">
-                    <component :is="form.privacy === 'public' ? Globe : Lock" class="w-4 h-4 text-sky-500" />
-                  </div>
-                  <div>
-                    <p class="text-sm font-medium text-slate-700">{{ form.privacy === 'public' ? t('management.editEventDrawer.privacy.publicLabel') : t('management.editEventDrawer.privacy.privateLabel') }}</p>
-                    <p class="text-xs text-slate-500">{{ form.privacy === 'public' ? t('management.editEventDrawer.privacy.publicDesc') : t('management.editEventDrawer.privacy.privateDesc') }}</p>
-                  </div>
-                </div>
-                <div
-                  role="switch"
-                  :aria-checked="form.privacy === 'public'"
-                  :class="[
-                    'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                    form.privacy === 'public' ? 'bg-sky-500' : 'bg-slate-200'
-                  ]"
-                >
-                  <span
-                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
-                    :style="{ transform: form.privacy === 'public' ? 'translateX(20px)' : 'translateX(0)' }"
-                  />
-                </div>
-              </div>
+            <!-- Who can see it -->
+            <div class="space-y-2 border-t border-slate-200 pt-4 laptop-sm:pt-5">
+              <label class="block text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.privacy.visibilityLabel') }}</label>
+              <SegmentedField
+                :model-value="form.privacy"
+                :options="privacyOptions"
+                :aria-label="t('management.editEventDrawer.privacy.visibilityLabel')"
+                @update:model-value="form.privacy = $event as 'public' | 'private'"
+              />
+              <p class="px-1 text-xs text-slate-500 leading-relaxed">
+                {{
+                  form.privacy === 'public'
+                    ? t('management.editEventDrawer.privacy.publicDesc')
+                    : t('management.editEventDrawer.privacy.privateDesc')
+                }}
+              </p>
             </div>
 
-            <!-- Registration Settings -->
-            <div class="space-y-3 border-t border-slate-100 pt-4 laptop-sm:pt-5">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.registration.heading') }}</h3>
-
-              <!-- Require Registration Toggle -->
-              <div
-                @click="form.registration_required = !form.registration_required"
-                class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="p-2 bg-white rounded-lg shadow-sm">
-                    <ClipboardList class="w-4 h-4 text-sky-500" />
-                  </div>
-                  <div>
-                    <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.registration.requireLabel') }}</p>
-                    <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.registration.requireDesc') }}</p>
-                  </div>
-                </div>
-                <div
+            <!-- Registration. One list that grows: the switch decides whether
+                 the rows under it exist at all, so they live inside the same
+                 border rather than in a second group below it. -->
+            <div class="border-t border-slate-200 pt-4 laptop-sm:pt-5">
+              <div class="list-group">
+                <button
+                  type="button"
                   role="switch"
                   :aria-checked="form.registration_required"
-                  :class="[
-                    'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                    form.registration_required ? 'bg-sky-500' : 'bg-slate-200'
-                  ]"
+                  class="list-row"
+                  @click="form.registration_required = !form.registration_required"
                 >
-                  <span
-                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
-                    :style="{ transform: form.registration_required ? 'translateX(20px)' : 'translateX(0)' }"
-                  />
-                </div>
-              </div>
+                  <span class="list-row__text">
+                    <span class="list-row__label">{{ t('management.editEventDrawer.registration.requireLabel') }}</span>
+                    <span class="list-row__hint">{{ t('management.editEventDrawer.registration.requireDesc') }}</span>
+                  </span>
+                  <span aria-hidden="true" class="switch-track" :class="form.registration_required ? 'is-on' : ''">
+                    <span class="switch-knob" />
+                  </span>
+                </button>
 
-              <!-- Registration Details (shown when registration is required) -->
-              <Transition name="drawer-reveal">
-                <div v-if="form.registration_required" class="grid grid-rows-[1fr]">
-                  <div class="min-h-0 overflow-hidden">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <!-- Registration Deadline -->
-                      <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.registration.deadlineLabel') }}</label>
-                        <DateTimePickerField
-                          v-model="form.registration_deadline"
-                          :max="form.start_date"
-                          clearable
-                          :title="t('management.editEventDrawer.registration.deadlineLabel')"
-                          :placeholder="t('management.editEventDrawer.registration.deadlinePlaceholder')"
-                        />
-                        <p class="text-xs text-slate-500 mt-1">{{ t('management.editEventDrawer.registration.deadlineHint') }}</p>
-                      </div>
-
-                      <!-- Max Attendees -->
-                      <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.registration.maxAttendeesLabel') }}</label>
+                <Transition name="drawer-reveal">
+                  <div v-if="form.registration_required" class="grid grid-rows-[1fr]">
+                    <div class="min-h-0 overflow-hidden">
+                      <DateTimeDisclosureRow
+                        v-model="form.registration_deadline"
+                        :label="t('management.editEventDrawer.registration.deadlineLabel')"
+                        :expanded="openDateRow === 'deadline'"
+                        :max="form.start_date"
+                        clearable
+                        :placeholder="t('management.editEventDrawer.registration.deadlinePlaceholder')"
+                        @update:expanded="setDateRow('deadline', $event)"
+                      />
+                      <div class="list-row border-t border-slate-100">
+                        <label for="edit-max-attendees" class="list-row__label">{{ t('management.editEventDrawer.registration.maxAttendeesLabel') }}</label>
                         <input
+                          id="edit-max-attendees"
                           v-model.number="form.max_attendees"
                           type="number"
+                          inputmode="numeric"
                           min="1"
-                          class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                          class="list-input"
                           :placeholder="t('management.editEventDrawer.registration.maxAttendeesPlaceholder')"
                         />
-                        <p class="text-xs text-slate-500 mt-1">{{ t('management.editEventDrawer.registration.maxAttendeesHint') }}</p>
                       </div>
                     </div>
                   </div>
-                </div>
-              </Transition>
+                </Transition>
+              </div>
             </div>
 
             <!-- Showcase display settings (RSVP / Comments / Countdown) used to
@@ -366,134 +327,90 @@
                  where each section carries its own on/off chip — see
                  components/showcase-preview/edit/SectionDisplayToggle.vue. -->
 
-            <!-- Fundraising Settings -->
-            <div class="space-y-3 border-t border-slate-100 pt-4 laptop-sm:pt-5">
-              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.editEventDrawer.fundraising.heading') }}</h3>
-
-              <!-- Enable Fundraising Toggle -->
-              <div
-                @click="form.is_fundraising = !form.is_fundraising"
-                class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="p-2 bg-white rounded-lg shadow-sm">
-                    <Heart class="w-4 h-4 text-pink-500" />
-                  </div>
-                  <div>
-                    <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.fundraising.enableLabel') }}</p>
-                    <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.fundraising.enableDesc') }}</p>
-                  </div>
-                </div>
-                <div
+            <!-- Fundraising -->
+            <div class="border-t border-slate-200 pt-4 laptop-sm:pt-5">
+              <div class="list-group">
+                <button
+                  type="button"
                   role="switch"
                   :aria-checked="form.is_fundraising"
-                  :class="[
-                    'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                    form.is_fundraising ? 'bg-pink-500' : 'bg-slate-200'
-                  ]"
+                  class="list-row"
+                  @click="form.is_fundraising = !form.is_fundraising"
                 >
-                  <span
-                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
-                    :style="{ transform: form.is_fundraising ? 'translateX(20px)' : 'translateX(0)' }"
-                  />
-                </div>
-              </div>
+                  <span class="list-row__text">
+                    <span class="list-row__label">{{ t('management.editEventDrawer.fundraising.enableLabel') }}</span>
+                    <span class="list-row__hint">{{ t('management.editEventDrawer.fundraising.enableDesc') }}</span>
+                  </span>
+                  <span aria-hidden="true" class="switch-track" :class="form.is_fundraising ? 'is-on' : ''">
+                    <span class="switch-knob" />
+                  </span>
+                </button>
 
-              <!-- Fundraising Details (shown when fundraising is enabled) -->
-              <Transition name="drawer-reveal">
-                <div v-if="form.is_fundraising" class="grid grid-rows-[1fr]">
-                  <div class="min-h-0 overflow-hidden">
-                    <div class="space-y-3">
-                      <!-- Fundraising Goal and Currency -->
-                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <!-- Fundraising Goal -->
-                        <div>
-                          <label class="block text-sm font-medium text-slate-700 mb-1.5">
-                            <div class="flex items-center gap-1.5">
-                              <Target class="w-3.5 h-3.5 text-slate-400" />
-                              <span>{{ t('management.editEventDrawer.fundraising.goalLabel') }}</span>
-                            </div>
-                          </label>
-                          <input
-                            v-model.number="form.fundraising_goal"
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            :placeholder="t('management.editEventDrawer.fundraising.goalPlaceholder')"
-                            class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400 bg-white"
-                          />
-                          <p class="text-xs text-slate-500 mt-1">{{ t('management.editEventDrawer.fundraising.goalHint') }}</p>
-                        </div>
-
-                        <!-- Currency -->
-                        <div>
-                          <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ t('management.editEventDrawer.fundraising.currencyLabel') }}</label>
-                          <SelectField
-                            v-model="form.fundraising_currency"
-                            :options="currencyOptions"
-                            :placeholder="t('management.editEventDrawer.fundraising.currencyLabel')"
-                            :title="t('management.editEventDrawer.fundraising.currencyLabel')"
-                          />
-                        </div>
+                <Transition name="drawer-reveal">
+                  <div v-if="form.is_fundraising" class="grid grid-rows-[1fr]">
+                    <div class="min-h-0 overflow-hidden">
+                      <div class="list-row">
+                        <label for="edit-fundraising-goal" class="list-row__label">{{ t('management.editEventDrawer.fundraising.goalLabel') }}</label>
+                        <input
+                          id="edit-fundraising-goal"
+                          v-model.number="form.fundraising_goal"
+                          type="number"
+                          inputmode="decimal"
+                          min="0"
+                          step="0.01"
+                          :placeholder="t('management.editEventDrawer.fundraising.goalPlaceholder')"
+                          class="list-input"
+                        />
                       </div>
 
-                      <!-- Show Donation Progress Toggle -->
-                      <div
+                      <!-- Two currencies, so both are named rather than hidden
+                           behind a listbox. -->
+                      <div class="list-row border-t border-slate-100">
+                        <span class="list-row__label">{{ t('management.editEventDrawer.fundraising.currencyLabel') }}</span>
+                        <SegmentedField
+                          class="w-[10.5rem] flex-shrink-0"
+                          :model-value="form.fundraising_currency"
+                          :options="currencyOptions"
+                          :aria-label="t('management.editEventDrawer.fundraising.currencyLabel')"
+                          @update:model-value="form.fundraising_currency = $event as 'USD' | 'KHR'"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        role="switch"
+                        :aria-checked="form.show_donation_progress"
+                        class="list-row border-t border-slate-100"
                         @click="form.show_donation_progress = !form.show_donation_progress"
-                        class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
                       >
-                        <div class="flex items-center gap-3">
-                          <TrendingUp class="w-4 h-4 text-slate-500" />
-                          <div>
-                            <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.fundraising.progressLabel') }}</p>
-                            <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.fundraising.progressDesc') }}</p>
-                          </div>
-                        </div>
-                        <div
-                          role="switch"
-                          :aria-checked="form.show_donation_progress"
-                          :class="[
-                            'relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                            form.show_donation_progress ? 'bg-pink-500' : 'bg-slate-200'
-                          ]"
-                        >
-                          <span
-                            class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
-                            :style="{ transform: form.show_donation_progress ? 'translateX(16px)' : 'translateX(0)' }"
-                          />
-                        </div>
-                      </div>
+                        <span class="list-row__text">
+                          <span class="list-row__label">{{ t('management.editEventDrawer.fundraising.progressLabel') }}</span>
+                          <span class="list-row__hint">{{ t('management.editEventDrawer.fundraising.progressDesc') }}</span>
+                        </span>
+                        <span aria-hidden="true" class="switch-track" :class="form.show_donation_progress ? 'is-on' : ''">
+                          <span class="switch-knob" />
+                        </span>
+                      </button>
 
-                      <!-- Show Donor List Toggle -->
-                      <div
+                      <button
+                        type="button"
+                        role="switch"
+                        :aria-checked="form.show_donor_list"
+                        class="list-row border-t border-slate-100"
                         @click="form.show_donor_list = !form.show_donor_list"
-                        class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
                       >
-                        <div class="flex items-center gap-3">
-                          <Users class="w-4 h-4 text-slate-500" />
-                          <div>
-                            <p class="text-sm font-medium text-slate-700">{{ t('management.editEventDrawer.fundraising.donorsLabel') }}</p>
-                            <p class="text-xs text-slate-500">{{ t('management.editEventDrawer.fundraising.donorsDesc') }}</p>
-                          </div>
-                        </div>
-                        <div
-                          role="switch"
-                          :aria-checked="form.show_donor_list"
-                          :class="[
-                            'relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                            form.show_donor_list ? 'bg-pink-500' : 'bg-slate-200'
-                          ]"
-                        >
-                          <span
-                            class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
-                            :style="{ transform: form.show_donor_list ? 'translateX(16px)' : 'translateX(0)' }"
-                          />
-                        </div>
-                      </div>
+                        <span class="list-row__text">
+                          <span class="list-row__label">{{ t('management.editEventDrawer.fundraising.donorsLabel') }}</span>
+                          <span class="list-row__hint">{{ t('management.editEventDrawer.fundraising.donorsDesc') }}</span>
+                        </span>
+                        <span aria-hidden="true" class="switch-track" :class="form.show_donor_list ? 'is-on' : ''">
+                          <span class="switch-knob" />
+                        </span>
+                      </button>
                     </div>
                   </div>
-                </div>
-              </Transition>
+                </Transition>
+              </div>
             </div>
           </div>
         </div>
@@ -569,15 +486,11 @@ import {
   Trash2,
   Globe,
   Lock,
-  ClipboardList,
-  Heart,
-  Target,
-  Users,
-  TrendingUp,
 } from 'lucide-vue-next'
 import RichTextEditor from './RichTextEditor.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
-import DateTimePickerField from '@/components/common/DateTimePickerField.vue'
+import DateTimeDisclosureRow from '@/components/common/DateTimeDisclosureRow.vue'
+import SegmentedField, { type SegmentedOption } from '@/components/common/SegmentedField.vue'
 import SelectField, { type SelectFieldOption } from '@/components/common/SelectField.vue'
 import {
   eventsService,
@@ -590,6 +503,8 @@ import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
 import { useToast } from '@/composables/useToast'
 import { useActionConfirmation } from '@/composables/useActionConfirmation'
+import { useDurationLabel } from '@/composables/useDurationLabel'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 
 interface Props {
   modelValue: boolean
@@ -609,6 +524,7 @@ const { t } = useAppLanguage()
 const { translateEventCategory } = useCategoryTranslation()
 
 // State
+const panel = ref<HTMLElement>()
 const event = ref<Event | null>(null)
 const categories = ref<EventCategory[]>([])
 const loading = ref(false)
@@ -667,16 +583,61 @@ const timezoneOptions = computed<SelectFieldOption[]>(() =>
   TIMEZONE_OPTIONS.map((tz) => ({ value: tz.value, label: tz.label })),
 )
 
-const currencyOptions: SelectFieldOption[] = [
-  { value: 'USD', label: 'USD - US Dollar' },
-  { value: 'KHR', label: 'KHR - Cambodian Riel' },
+/**
+ * Two currencies, so both are named. As a listbox this hid one of exactly two
+ * answers behind a tap, and the currency is what the goal beside it is
+ * denominated in — a fact worth reading without opening anything.
+ */
+const currencyOptions: SegmentedOption[] = [
+  { value: 'USD', label: 'USD' },
+  { value: 'KHR', label: 'KHR' },
 ]
+
+/**
+ * A choice between two named places, not an on/off. As a switch this flipped
+ * its own label between "In-Person Event" and "Virtual Event", so the off
+ * state had no stable meaning and the only way to learn what turning it on did
+ * was to turn it on. Same fault, same fix, as visibility below.
+ */
+const locationOptions = computed<SegmentedOption[]>(() => [
+  {
+    value: 'in-person',
+    label: t('management.editEventDrawer.location.inPersonOption'),
+    icon: MapPin,
+  },
+  {
+    value: 'virtual',
+    label: t('management.editEventDrawer.location.virtualOption'),
+    icon: Video,
+  },
+])
+
+const privacyOptions = computed<SegmentedOption[]>(() => [
+  { value: 'private', label: t('management.editEventDrawer.privacy.privateOption'), icon: Lock },
+  { value: 'public', label: t('management.editEventDrawer.privacy.publicOption'), icon: Globe },
+])
+
+/**
+ * At most one date row shows its calendar. Two open calendars in one group is
+ * two answers to a question the group asks once, and on a phone the second one
+ * pushes the first off the screen it was being read on.
+ */
+const openDateRow = ref<'start' | 'end' | 'deadline' | null>(null)
+const setDateRow = (row: 'start' | 'end' | 'deadline', open: boolean) => {
+  openDateRow.value = open ? row : null
+}
 
 // Live validation: end date must be after start date
 const dateError = computed(() =>
   form.start_date && form.end_date && new Date(form.end_date) <= new Date(form.start_date)
     ? t('events.messages.endDateAfterStart')
     : '',
+)
+
+// How long the event runs, in the slot the error would otherwise occupy.
+const durationLabel = useDurationLabel(
+  () => form.start_date,
+  () => form.end_date,
 )
 
 // When the user picks a new start, shift the end to preserve the chosen duration
@@ -991,8 +952,32 @@ const getScrollbarWidth = (): number => {
   return window.innerWidth - document.documentElement.clientWidth
 }
 
+// Keep Tab inside the drawer — without this the user tabs straight out into the
+// page behind the backdrop, which they can neither see nor click.
+const { trapFocus } = useFocusTrap(panel)
+
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape' && !isBusy.value) closeDrawer()
+  if (e.key === 'Tab') {
+    // The delete confirmation is a sibling of the drawer, not a descendant of
+    // it, so while that modal is up it owns focus and the trap must stand down
+    // — otherwise Tab bounces back into a drawer the user cannot act on.
+    if (!showDeleteConfirm.value) trapFocus(e)
+    return
+  }
+  if (e.key !== 'Escape') return
+
+  // Escape closes the innermost thing on screen, outwards. The confirm modal
+  // has no Escape handling of its own, so without this branch one press
+  // dismissed the drawer *underneath* an open "Delete event?" dialog.
+  if (showDeleteConfirm.value) {
+    if (!isDeleting.value) showDeleteConfirm.value = false
+    return
+  }
+  if (openDateRow.value) {
+    openDateRow.value = null
+    return
+  }
+  if (!isBusy.value) closeDrawer()
 }
 
 // Watch for drawer open/close
@@ -1044,3 +1029,4 @@ onUnmounted(() => {
 </script>
 
 <style scoped src="./common/actionButton.css"></style>
+<style scoped src="./common/groupedList.css"></style>

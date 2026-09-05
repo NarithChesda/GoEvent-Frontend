@@ -20,17 +20,18 @@
         <!-- Header -->
         <div class="flex-shrink-0 sticky top-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] z-10">
           <div class="flex items-center px-3 py-2.5">
-            <!-- Left: Close button & Title -->
             <div class="flex items-center gap-2 min-w-0">
               <button
                 :disabled="isBusy"
-                @click="$emit('close')"
                 class="p-1.5 hover:bg-white/20 active:bg-white/30 disabled:opacity-40 disabled:pointer-events-none rounded-lg drawer-close flex-shrink-0"
                 :title="t('common.actions.close')"
+                @click="$emit('close')"
               >
                 <ArrowRight class="w-5 h-5 text-white" />
               </button>
-              <h2 class="text-base font-semibold text-white truncate">{{ t('events.createDrawer.title') }}</h2>
+              <h2 class="text-base font-semibold text-white truncate">
+                {{ t('events.createDrawer.title') }}
+              </h2>
             </div>
           </div>
         </div>
@@ -38,227 +39,242 @@
         <!-- Content -->
         <div class="flex-1 overflow-y-auto overscroll-contain">
           <form
-            @submit.prevent="handleSubmit"
             class="p-4 space-y-5 pb-6"
             :class="isBusy ? 'form-busy' : ''"
             :inert="isBusy"
+            @submit.prevent="handleSubmit"
           >
-            <div class="space-y-5">
-              <!-- Basic Information -->
-              <div class="space-y-3">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('events.createDrawer.sections.basicInfo') }}</h3>
+            <!--
+              No section eyebrows anywhere in this form.
 
-                <!-- Title and Category Row -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <!-- Title -->
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.eventTitle') }} *</label>
-                    <input
-                      ref="titleInput"
-                      v-model="form.title"
-                      type="text"
-                      required
-                      :placeholder="t('events.createDrawer.fields.titlePlaceholder')"
-                      class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                    />
-                  </div>
+              There were three ("Basic Information", "Date and Time", "Access")
+              over groups of two fields each, which is the failure
+              goevent-taste §4 describes: an eyebrow separates a region a user
+              navigates *to*, and nobody scrolls back to a two-field group.
+              The grouped lists and the space between them do the separating,
+              and every row already names itself.
+            -->
 
-                  <!-- Category -->
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.category') }}</label>
-                    <SelectField
-                      :model-value="form.category ?? ''"
-                      @update:model-value="form.category = $event"
-                      :options="categoryOptions"
-                      allow-empty
-                      :placeholder="t('events.createDrawer.fields.categoryPlaceholder')"
-                      :title="t('events.createDrawer.fields.category')"
-                    />
-                  </div>
-                </div>
+            <!-- What it is -->
+            <div class="space-y-3">
+              <div>
+                <label for="event-title" class="block text-sm font-medium text-slate-700 mb-2">
+                  {{ t('events.createDrawer.fields.eventTitle') }} *
+                </label>
+                <input
+                  id="event-title"
+                  ref="titleInput"
+                  v-model="form.title"
+                  type="text"
+                  required
+                  :placeholder="t('events.createDrawer.fields.titlePlaceholder')"
+                  class="w-full px-3.5 py-2.5 text-base border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
+                />
+              </div>
 
-                <!-- Auto Populate (shown when category is selected) -->
-                <Transition name="drawer-reveal">
-                  <div v-if="form.category && form.category !== ''" class="grid grid-rows-[1fr]">
-                    <div class="min-h-0 overflow-hidden">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                  {{ t('events.createDrawer.fields.category') }}
+                </label>
+                <SelectField
+                  :model-value="form.category ?? ''"
+                  :options="categoryOptions"
+                  allow-empty
+                  :placeholder="t('events.createDrawer.fields.categoryPlaceholder')"
+                  :title="t('events.createDrawer.fields.category')"
+                  @update:model-value="form.category = $event"
+                />
+              </div>
+
+              <!-- Auto-populate belongs to the category, so it appears under it
+                   and only once one is chosen. -->
+              <Transition name="drawer-reveal">
+                <div v-if="hasCategory" class="grid grid-rows-[1fr]">
+                  <div class="min-h-0 overflow-hidden">
+                    <div class="list-group">
                       <button
                         type="button"
                         role="switch"
                         :aria-checked="form.auto_populate"
+                        class="list-row"
                         @click="form.auto_populate = !form.auto_populate"
-                        class="toggle-row rounded-lg bg-slate-50"
                       >
-                        <div class="flex items-center gap-3">
-                          <div class="p-2 bg-white rounded-lg shadow-sm">
-                            <Sparkles class="w-4 h-4 text-sky-500" />
-                          </div>
-                          <div>
-                            <p class="text-sm font-medium text-slate-700">{{ t('events.createDrawer.autoPopulate.label') }}</p>
-                            <p class="text-xs text-slate-500">{{ t('events.createDrawer.autoPopulate.description') }}</p>
-                          </div>
-                        </div>
-                        <div aria-hidden="true" :class="['switch-track', form.auto_populate ? 'bg-sky-500' : 'bg-slate-200']">
-                          <span class="switch-knob" :style="{ transform: form.auto_populate ? 'translateX(20px)' : 'translateX(0)' }" />
-                        </div>
+                        <span class="list-row__text">
+                          <span class="list-row__label">
+                            {{ t('events.createDrawer.autoPopulate.label') }}
+                          </span>
+                          <span class="list-row__hint">
+                            {{ t('events.createDrawer.autoPopulate.description') }}
+                          </span>
+                        </span>
+                        <span
+                          aria-hidden="true"
+                          class="switch-track"
+                          :class="form.auto_populate ? 'is-on' : ''"
+                        >
+                          <span class="switch-knob" />
+                        </span>
                       </button>
                     </div>
                   </div>
-                </Transition>
+                </div>
+              </Transition>
+            </div>
 
+            <!-- When -->
+            <div class="space-y-1.5">
+              <div class="list-group">
+                <DateTimeDisclosureRow
+                  :label="t('events.createDrawer.fields.starts')"
+                  :model-value="form.start_date"
+                  :expanded="openDateRow === 'start'"
+                  :quick-times="commonStartTimes"
+                  @update:model-value="onStartDateChange"
+                  @update:expanded="setDateRow('start', $event)"
+                />
+                <DateTimeDisclosureRow
+                  v-model="form.end_date"
+                  :label="t('events.createDrawer.fields.ends')"
+                  :expanded="openDateRow === 'end'"
+                  :min="form.start_date"
+                  :error="!!dateError"
+                  :quick-times="commonEndTimes"
+                  @update:expanded="setDateRow('end', $event)"
+                />
               </div>
+              <!-- One slot, two jobs: the duration confirms the pair reads the
+                   way the organizer meant, and the error replaces it when it
+                   does not. Neither ever moves the rows below. -->
+              <p
+                class="px-1 text-xs"
+                :class="dateError ? 'text-red-600' : 'text-slate-500'"
+                :aria-live="dateError ? 'polite' : 'off'"
+              >
+                {{ dateError || durationLabel }}
+              </p>
+            </div>
 
-              <!-- Date and Time -->
-              <div class="space-y-3">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('events.createDrawer.sections.dateTime') }}</h3>
+            <!-- Who can see it -->
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                {{ t('events.createDrawer.fields.visibility') }}
+              </label>
+              <SegmentedField
+                :model-value="form.privacy"
+                :options="privacyOptions"
+                :aria-label="t('events.createDrawer.fields.visibility')"
+                @update:model-value="form.privacy = $event as 'public' | 'private'"
+              />
+              <p class="px-1 text-xs text-slate-500 leading-relaxed">
+                {{
+                  isPublic
+                    ? t('events.createDrawer.privacyToggle.publicDescription')
+                    : t('events.createDrawer.privacyToggle.privateDescription')
+                }}
+              </p>
+            </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- The description is public-facing copy, so it belongs to the
+                 visibility choice that creates the audience for it — not to
+                 the registration group it used to sit in. -->
+            <Transition name="drawer-reveal">
+              <div v-if="isPublic" class="grid grid-rows-[1fr]">
+                <div class="min-h-0 overflow-hidden">
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.startDateTime') }} *</label>
-                    <DateTimePickerField
-                      :model-value="form.start_date"
-                      @update:model-value="onStartDateChange"
-                      :title="t('events.createDrawer.fields.startDateTime')"
-                      :quick-times="commonStartTimes"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.endDateTime') }} *</label>
-                    <DateTimePickerField
-                      v-model="form.end_date"
-                      :min="form.start_date"
-                      :error="!!dateError"
-                      :title="t('events.createDrawer.fields.endDateTime')"
-                      :quick-times="commonEndTimes"
-                    />
-                    <Transition name="drawer-reveal">
-                      <div v-if="dateError" class="grid grid-rows-[1fr]">
-                        <div class="min-h-0 overflow-hidden">
-                          <p class="text-xs sm:text-sm text-red-600 pt-1">{{ dateError }}</p>
-                        </div>
-                      </div>
-                    </Transition>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                      {{ t('events.createDrawer.fields.aboutEvent') }}
+                    </label>
+                    <div
+                      ref="descriptionEditor"
+                      contenteditable="true"
+                      role="textbox"
+                      aria-multiline="true"
+                      :aria-label="t('events.createDrawer.fields.aboutEvent')"
+                      class="w-full px-3.5 py-2.5 text-base border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white text-slate-800 leading-relaxed min-h-[8.75rem] max-h-[20rem] overflow-y-auto"
+                      :data-placeholder="
+                        form.description ? '' : t('events.createDrawer.fields.descriptionPlaceholder')
+                      "
+                      @input="handleDescriptionInput"
+                      @blur="handleDescriptionBlur"
+                    ></div>
                   </div>
                 </div>
               </div>
+            </Transition>
 
-              <!-- Access: privacy + registration read as one group of switches -->
-              <div class="space-y-3">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ t('events.createDrawer.sections.access') }}</h3>
+            <!-- Registration. One list that grows: the switch decides whether
+                 the two rows under it exist at all, so they live inside the
+                 same border rather than in a second group below it. -->
+            <div class="list-group">
+              <button
+                type="button"
+                role="switch"
+                :aria-checked="form.registration_required"
+                class="list-row"
+                @click="form.registration_required = !form.registration_required"
+              >
+                <span class="list-row__text">
+                  <span class="list-row__label">
+                    {{ t('events.createDrawer.requireRegistration.label') }}
+                  </span>
+                  <span class="list-row__hint">
+                    {{ t('events.createDrawer.requireRegistration.description') }}
+                  </span>
+                </span>
+                <span
+                  aria-hidden="true"
+                  class="switch-track"
+                  :class="form.registration_required ? 'is-on' : ''"
+                >
+                  <span class="switch-knob" />
+                </span>
+              </button>
 
-                <div class="rounded-lg bg-slate-50 divide-y divide-slate-200/70 overflow-hidden">
-                  <!-- Privacy Toggle -->
-                  <button
-                    type="button"
-                    role="switch"
-                    :aria-checked="form.privacy === 'public'"
-                    @click="form.privacy = form.privacy === 'public' ? 'private' : 'public'"
-                    class="toggle-row"
-                  >
-                    <div class="flex items-center gap-3">
-                      <div class="p-2 bg-white rounded-lg shadow-sm">
-                        <component :is="form.privacy === 'public' ? Globe : Lock" class="w-4 h-4 text-sky-500" />
-                      </div>
-                      <div>
-                        <p class="text-sm font-medium text-slate-700">{{ form.privacy === 'public' ? t('events.createDrawer.privacyToggle.publicLabel') : t('events.createDrawer.privacyToggle.privateLabel') }}</p>
-                        <p class="text-xs text-slate-500">{{ form.privacy === 'public' ? t('events.createDrawer.privacyToggle.publicDescription') : t('events.createDrawer.privacyToggle.privateDescription') }}</p>
-                      </div>
+              <Transition name="drawer-reveal">
+                <div v-if="form.registration_required" class="grid grid-rows-[1fr]">
+                  <div class="min-h-0 overflow-hidden">
+                    <DateTimeDisclosureRow
+                      v-model="form.registration_deadline"
+                      :label="t('events.createDrawer.fields.registrationDeadline')"
+                      :expanded="openDateRow === 'deadline'"
+                      :max="form.start_date"
+                      clearable
+                      :placeholder="t('events.createDrawer.fields.deadlinePlaceholder')"
+                      @update:expanded="setDateRow('deadline', $event)"
+                    />
+                    <div class="list-row border-t border-slate-100">
+                      <label for="max-attendees" class="list-row__label">
+                        {{ t('events.createDrawer.fields.maxAttendees') }}
+                      </label>
+                      <input
+                        id="max-attendees"
+                        v-model.number="form.max_attendees"
+                        type="number"
+                        inputmode="numeric"
+                        min="1"
+                        class="list-input"
+                        :placeholder="t('events.createDrawer.fields.maxAttendeesPlaceholder')"
+                      />
                     </div>
-                    <div aria-hidden="true" :class="['switch-track', form.privacy === 'public' ? 'bg-sky-500' : 'bg-slate-200']">
-                      <span class="switch-knob" :style="{ transform: form.privacy === 'public' ? 'translateX(20px)' : 'translateX(0)' }" />
-                    </div>
-                  </button>
-
-                  <!-- Require Registration Toggle -->
-                  <button
-                    type="button"
-                    role="switch"
-                    :aria-checked="form.registration_required"
-                    @click="form.registration_required = !form.registration_required"
-                    class="toggle-row"
-                  >
-                    <div class="flex items-center gap-3">
-                      <div class="p-2 bg-white rounded-lg shadow-sm">
-                        <ClipboardList class="w-4 h-4 text-sky-500" />
-                      </div>
-                      <div>
-                        <p class="text-sm font-medium text-slate-700">{{ t('events.createDrawer.requireRegistration.label') }}</p>
-                        <p class="text-xs text-slate-500">{{ t('events.createDrawer.requireRegistration.description') }}</p>
-                      </div>
-                    </div>
-                    <div aria-hidden="true" :class="['switch-track', form.registration_required ? 'bg-sky-500' : 'bg-slate-200']">
-                      <span class="switch-knob" :style="{ transform: form.registration_required ? 'translateX(20px)' : 'translateX(0)' }" />
-                    </div>
-                  </button>
+                  </div>
                 </div>
-
-                <!-- Registration Details (shown when registration is required) -->
-                <Transition name="drawer-reveal">
-                  <div v-if="form.registration_required" class="grid grid-rows-[1fr]">
-                    <div class="min-h-0 overflow-hidden">
-                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <!-- Registration Deadline -->
-                        <div>
-                          <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.registrationDeadline') }}</label>
-                          <DateTimePickerField
-                            v-model="form.registration_deadline"
-                            :max="form.start_date"
-                            clearable
-                            :title="t('events.createDrawer.fields.registrationDeadline')"
-                            :placeholder="t('events.createDrawer.fields.deadlinePlaceholder')"
-                          />
-                          <p class="text-xs text-slate-500 mt-1">{{ t('events.createDrawer.fields.deadlineHint') }}</p>
-                        </div>
-
-                        <!-- Max Attendees -->
-                        <div>
-                          <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.maxAttendees') }}</label>
-                          <input
-                            v-model.number="form.max_attendees"
-                            type="number"
-                            min="1"
-                            class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white"
-                            :placeholder="t('events.createDrawer.fields.maxAttendeesPlaceholder')"
-                          />
-                          <p class="text-xs text-slate-500 mt-1">{{ t('events.createDrawer.fields.maxAttendeesHint') }}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Transition>
-
-                <!-- Full Description (public events only) -->
-                <Transition name="drawer-reveal">
-                  <div v-if="form.privacy === 'public'" class="grid grid-rows-[1fr]">
-                    <div class="min-h-0 overflow-hidden">
-                      <div class="pt-1">
-                        <label class="block text-sm font-medium text-slate-700 mb-2">{{ t('events.createDrawer.fields.aboutEvent') }}</label>
-                        <div
-                          contenteditable="true"
-                          ref="descriptionEditor"
-                          @input="handleDescriptionInput"
-                          @blur="handleDescriptionBlur"
-                          class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400 bg-white text-slate-800 min-h-[8.75rem] max-h-[20rem] overflow-y-auto"
-                          :data-placeholder="form.description ? '' : t('events.createDrawer.fields.descriptionPlaceholder')"
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </Transition>
-              </div>
+              </Transition>
             </div>
           </form>
         </div>
 
         <!-- Footer with Action Buttons -->
-        <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)]">
+        <div
+          class="flex-shrink-0 border-t border-slate-200 bg-white px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)]"
+        >
           <div class="flex items-center justify-between">
             <!-- The three states are stacked in one grid cell, so the button's
                  width is the widest of them and never jumps as they swap. -->
             <button
-              @click="handleSubmit"
               :disabled="isBusy"
               :class="['action-btn', isComplete ? 'is-complete' : '']"
               class="grid px-4 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 shadow-md"
+              @click="handleSubmit"
             >
               <span class="action-face" :data-on="!isSubmitting && !isComplete">
                 <Save class="w-4 h-4" />
@@ -277,8 +293,8 @@
             <button
               type="button"
               :disabled="isBusy"
-              @click="$emit('close')"
               class="px-4 py-2 text-slate-600 hover:bg-slate-100 text-sm font-medium rounded-lg transition-[background-color,transform,opacity] duration-150 ease-out active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
+              @click="$emit('close')"
             >
               {{ t('events.createDrawer.actions.cancel') }}
             </button>
@@ -290,21 +306,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, watch, onMounted, onUnmounted } from 'vue'
-import { ArrowRight, Loader, Save, Check, ClipboardList, Globe, Lock, Sparkles } from 'lucide-vue-next'
+import { ref, computed, reactive, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { ArrowRight, Loader, Save, Check, Globe, Lock } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useToast } from '@/composables/useToast'
 import { useActionConfirmation } from '@/composables/useActionConfirmation'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
-import DateTimePickerField from '@/components/common/DateTimePickerField.vue'
+import { useDurationLabel } from '@/composables/useDurationLabel'
+import { useFocusTrap } from '@/composables/useFocusTrap'
+import DateTimeDisclosureRow from '@/components/common/DateTimeDisclosureRow.vue'
+import SegmentedField, { type SegmentedOption } from '@/components/common/SegmentedField.vue'
 import SelectField, { type SelectFieldOption } from '@/components/common/SelectField.vue'
 
 const { t } = useAppLanguage()
 const { showError } = useToast()
 const { translateEventCategory } = useCategoryTranslation()
 
-// Common start/end times for hosted events (weddings, birthdays, housewarmings, etc.)
-// so users can pick a typical slot instead of scrolling the hour/minute selects.
+// Common start/end times for hosted events (weddings, birthdays, housewarmings,
+// etc.) so a typical slot is one tap rather than a scroll of the wheel.
 const commonStartTimes = [8, 10, 12, 14, 17, 18]
 const commonEndTimes = [12, 14, 17, 19, 21, 22]
 import { getUserTimezone } from '../utils/timezones'
@@ -371,6 +390,16 @@ const { confirmed: isComplete, confirm: holdConfirmation, reset: resetConfirmati
 const isBusy = computed(() => isSubmitting.value || isComplete.value)
 const categories = ref<EventCategory[]>([])
 
+/**
+ * At most one date row shows its calendar. Two open calendars in one group is
+ * two answers to a question the group asks once, and on a phone the second one
+ * pushes the first off the screen it was being read on.
+ */
+const openDateRow = ref<'start' | 'end' | 'deadline' | null>(null)
+const setDateRow = (row: 'start' | 'end' | 'deadline', open: boolean) => {
+  openDateRow.value = open ? row : null
+}
+
 // Form data
 const form = reactive<EventFormData>({
   title: '',
@@ -387,6 +416,20 @@ const form = reactive<EventFormData>({
   auto_populate: false,
 })
 
+const isPublic = computed(() => form.privacy === 'public')
+const hasCategory = computed(() => !!form.category && form.category !== '')
+
+/**
+ * A choice between two named things, not an on/off. As a switch this flipped
+ * its own label between "Public Event" and "Private Event", so the off state
+ * had no stable meaning and the only way to learn what turning it on did was
+ * to turn it on.
+ */
+const privacyOptions = computed<SegmentedOption[]>(() => [
+  { value: 'private', label: t('events.createDrawer.privacyOptions.private'), icon: Lock },
+  { value: 'public', label: t('events.createDrawer.privacyOptions.public'), icon: Globe },
+])
+
 // Category options for the select field
 const categoryOptions = computed<SelectFieldOption[]>(() =>
   categories.value.map((category) => ({
@@ -401,6 +444,12 @@ const dateError = computed(() =>
   form.start_date && form.end_date && new Date(form.end_date) <= new Date(form.start_date)
     ? t('events.messages.endDateAfterStart')
     : '',
+)
+
+// How long the event runs, in the slot the error would otherwise occupy.
+const durationLabel = useDurationLabel(
+  () => form.start_date,
+  () => form.end_date,
 )
 
 // Methods
@@ -458,6 +507,7 @@ const resetForm = () => {
     max_attendees: null,
     auto_populate: false,
   })
+  openDateRow.value = null
   // Reset default dates
   setDefaultDates()
 }
@@ -489,9 +539,10 @@ const handleSubmit = async () => {
     // Handle category - convert string to number or set to null
     let categoryValue: number | null = null
     if (formData.category && formData.category !== '') {
-      categoryValue = typeof formData.category === 'string'
-        ? parseInt(formData.category, 10)
-        : formData.category
+      categoryValue =
+        typeof formData.category === 'string'
+          ? parseInt(formData.category, 10)
+          : formData.category
     }
 
     // Handle registration deadline - convert to ISO or null
@@ -501,9 +552,8 @@ const handleSubmit = async () => {
     }
 
     // Handle max attendees - keep as number or null
-    const maxAttendees = formData.registration_required && formData.max_attendees
-      ? formData.max_attendees
-      : null
+    const maxAttendees =
+      formData.registration_required && formData.max_attendees ? formData.max_attendees : null
 
     // Create event data with proper formatting
     const eventData = {
@@ -549,33 +599,18 @@ const getScrollbarWidth = (): number => {
   return window.innerWidth - document.documentElement.clientWidth
 }
 
-const FOCUSABLE =
-  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
-
 // Keep Tab inside the drawer — without this the user tabs straight out into the
 // page behind the backdrop, which they can neither see nor click.
-const trapFocus = (e: KeyboardEvent) => {
-  if (!panel.value) return
-  const items = Array.from(panel.value.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-    (el) => el.offsetParent !== null,
-  )
-  if (!items.length) return
-
-  const first = items[0]
-  const last = items[items.length - 1]
-  const active = document.activeElement as HTMLElement | null
-
-  if (e.shiftKey && (active === first || !panel.value.contains(active))) {
-    e.preventDefault()
-    last.focus()
-  } else if (!e.shiftKey && active === last) {
-    e.preventDefault()
-    first.focus()
-  }
-}
+const { trapFocus } = useFocusTrap(panel)
 
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Escape') {
+    // A disclosed calendar is the innermost thing on screen, so Escape closes
+    // that first — the drawer is not what the user is looking at yet.
+    if (openDateRow.value) {
+      openDateRow.value = null
+      return
+    }
     if (!isBusy.value) emit('close')
   } else if (e.key === 'Tab') trapFocus(e)
 }
@@ -609,6 +644,19 @@ watch(
   },
 )
 
+/**
+ * The editor only exists while the event is public, so a description written
+ * by the category template before that has nowhere to be painted. Without this
+ * the box mounted empty over a `form.description` that was already populated —
+ * and then submitted text the organizer had never seen, or silently wiped it
+ * on the first keystroke.
+ */
+watch(isPublic, async (visible) => {
+  if (!visible) return
+  await nextTick()
+  updateDescriptionEditor()
+})
+
 // Watch for category changes to auto-fill description
 watch(
   () => form.category,
@@ -625,12 +673,15 @@ watch(
     // Auto-fill description if category has a template
     if (newCategory && newCategory !== '') {
       const selectedCategory = categories.value.find(
-        cat => cat.id === (typeof newCategory === 'string' ? parseInt(newCategory) : newCategory)
+        (cat) => cat.id === (typeof newCategory === 'string' ? parseInt(newCategory) : newCategory),
       )
 
       if (selectedCategory) {
         const categoryName = selectedCategory.name.toLowerCase()
-        const templates = eventDescriptionTemplates.templates as Record<string, { description: string }>
+        const templates = eventDescriptionTemplates.templates as Record<
+          string,
+          { description: string }
+        >
 
         // Check if there's a template for this category
         if (templates[categoryName]) {
@@ -639,7 +690,7 @@ watch(
         }
       }
     }
-  }
+  },
 )
 
 // Format a Date as a local datetime-local string (toISOString would shift to UTC)
@@ -692,6 +743,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped src="./common/actionButton.css"></style>
+<style scoped src="./common/groupedList.css"></style>
 
 <style scoped>
 /* The form stays visible but stops accepting edits while the create is in
@@ -700,67 +752,6 @@ onUnmounted(() => {
   pointer-events: none;
   opacity: 0.6;
   transition: opacity 0.2s ease-out;
-}
-
-/* Shared switch-row anatomy (privacy, registration, auto-populate) */
-.toggle-row {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  text-align: left;
-  transition:
-    background-color 0.2s ease,
-    transform 0.15s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-.toggle-row:hover {
-  background-color: rgb(241 245 249 / 0.7);
-}
-
-.toggle-row:active {
-  transform: scale(0.99);
-}
-
-.toggle-row:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 2px rgb(186 230 253);
-}
-
-.switch-track {
-  position: relative;
-  display: inline-flex;
-  height: 1.5rem;
-  width: 2.75rem;
-  flex-shrink: 0;
-  border: 2px solid transparent;
-  border-radius: 9999px;
-  transition: background-color 0.2s ease;
-}
-
-.switch-knob {
-  pointer-events: none;
-  display: inline-block;
-  height: 1.25rem;
-  width: 1.25rem;
-  border-radius: 9999px;
-  background-color: #fff;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-  /* Strong ease-out: the knob should land, not coast. */
-  transition: transform 0.22s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .switch-knob,
-  .toggle-row {
-    transition-duration: 0.01ms;
-  }
-
-  .toggle-row:active {
-    transform: none;
-  }
 }
 
 /* Custom scrollbar for modal content */
@@ -782,20 +773,20 @@ onUnmounted(() => {
 }
 
 /* Rich text editor styling */
-[contenteditable="true"] {
+[contenteditable='true'] {
   outline: none;
   white-space: pre-wrap;
   word-wrap: break-word;
 }
 
-[contenteditable="true"]:empty:before {
+[contenteditable='true']:empty:before {
   content: attr(data-placeholder);
-  color: #9ca3af;
+  color: #94a3b8; /* slate-400 */
   pointer-events: none;
 }
 
 /* Rich text content styling */
-[contenteditable="true"] :deep(h3) {
+[contenteditable='true'] :deep(h3) {
   font-size: 1.125rem;
   font-weight: 600;
   margin-top: 0.75rem;
@@ -803,28 +794,29 @@ onUnmounted(() => {
   color: #1e293b;
 }
 
-[contenteditable="true"] :deep(p) {
+[contenteditable='true'] :deep(p) {
   margin-bottom: 0.5rem;
   line-height: 1.6;
 }
 
-[contenteditable="true"] :deep(ul) {
+[contenteditable='true'] :deep(ul) {
   margin-left: 1.5rem;
   margin-bottom: 0.5rem;
   list-style-type: disc;
 }
 
-[contenteditable="true"] :deep(li) {
+[contenteditable='true'] :deep(li) {
   margin-bottom: 0.25rem;
   line-height: 1.5;
 }
 
-[contenteditable="true"] :deep(strong) {
+[contenteditable='true'] :deep(strong) {
   font-weight: 600;
   color: #1e293b;
 }
 
-[contenteditable="true"] :deep(em) {
+[contenteditable='true'] :deep(em) {
   font-style: italic;
   color: #64748b;
-}</style>
+}
+</style>
