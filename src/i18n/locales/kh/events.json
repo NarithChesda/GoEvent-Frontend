@@ -27,7 +27,9 @@
     "upcoming": "នឹងមកដល់",
     "past": "កន្លងមក",
     "allCategories": "ប្រភេទទាំងអស់",
-    "filterLabel": "ត្រងកម្មវិធី"
+    "filterLabel": "ត្រងកម្មវិធី",
+    "timeSection": "បង្ហាញ",
+    "done": "រួចរាល់"
   },
   "emptyState": {
     "noUpcomingTitle": "មិនមានកម្មវិធីនឹងមកដល់",

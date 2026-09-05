@@ -1,18 +1,12 @@
 <template>
   <!-- Desktop Top Navigation Bar -->
   <header
-    class="fixed top-0 left-0 right-0 h-16 border-b z-50"
-    :class="[
-      'glass-nav',
+    ref="headerRef"
+    class="glass-nav fixed top-0 left-0 right-0 h-16 z-50"
+    :class="
       // The minimal bar is the only chrome signed-out pages get, so it stays on phones too
-      isMinimal ? 'flex' : 'hidden lg:flex',
-      isScrolled ? 'is-scrolled' : '',
-      isScrolled
-        ? isMinimal
-          ? 'border-white/50 shadow-lg shadow-slate-900/5'
-          : 'border-white/30 shadow-lg shadow-[#2ecc71]/5'
-        : 'border-transparent',
-    ]"
+      isMinimal ? 'flex' : 'hidden lg:flex'
+    "
     role="navigation"
     aria-label="Main navigation"
   >
@@ -21,13 +15,13 @@
       <div class="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2">
         <button
           @click="handleLogoClick"
-          class="flex items-center group"
+          class="nav-press flex items-center rounded-lg group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2ecc71]/40"
           aria-label="Go to home page"
         >
           <img
             :src="GLogoPng"
             alt="GoEvent Logo"
-            class="h-7 w-auto max-w-none transition-all duration-300 group-hover:scale-110"
+            class="h-7 w-auto max-w-none transition-transform duration-200 ease-out group-hover:scale-[1.06]"
           />
         </button>
       </div>
@@ -37,18 +31,45 @@
         v-if="!isMinimal"
         class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center gap-2"
       >
-        <nav class="flex items-center">
+        <!--
+          `-ml-3` cancels the first link's own padding so its *text* still lands
+          on the content column's left edge — the alignment the absolute
+          positioning of this row exists to hold. Every link then carries the
+          same `px-3`, which is what lets one capsule sit evenly behind any of
+          them; the old `pr-4` / `px-4` split gave the first tab a lopsided box.
+        -->
+        <nav ref="navRowRef" class="relative flex items-center gap-1 -ml-3">
+          <!--
+            One capsule that travels, measured off `[aria-current="page"]` — the
+            same mechanism as the mobile pill's, shared with it through
+            `useTravellingIndicator`, so the two bars can never disagree about
+            how a selection moves.
+
+            A *material* capsule rather than the brand gradient, and that is a
+            deliberate departure from the mobile pill. This bar is on screen on
+            every desktop page, and DESIGN.md spends the gradient on one object
+            per viewport with the primary action first in line — a permanent
+            gradient here would outrank every page's own CTA. Apple marks
+            toolbar and sidebar selection with a recessed material for the same
+            reason: the accent is saved for the one thing the screen is for.
+          -->
+          <span
+            v-show="indicator.visible"
+            class="nav-capsule absolute inset-y-0 left-0 rounded-xl pointer-events-none will-change-transform"
+            :style="{ width: `${indicator.w}px`, transform: `translateX(${indicator.x}px)` }"
+            aria-hidden="true"
+          ></span>
           <RouterLink
-            v-for="(item, index) in navigationItems"
+            v-for="item in navigationItems"
             :key="item.path"
             :to="item.path"
-            class="flex items-center space-x-2 py-2 rounded-lg text-base font-medium transition-all duration-200"
-            :class="[
+            class="nav-press relative flex items-center gap-2 px-3 py-2 rounded-xl text-base font-medium tracking-[-0.01em] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2ecc71]/40"
+            :class="
               isActiveRoute(item.path)
                 ? 'text-slate-900'
-                : 'text-slate-400 hover:text-slate-700',
-              index === 0 ? 'pr-4' : 'px-4'
-            ]"
+                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-900/[0.035] active:text-slate-900'
+            "
+            :aria-current="isActiveRoute(item.path) ? 'page' : undefined"
           >
             <component
               :is="item.icon"
@@ -93,20 +114,23 @@
             </div>
 
             <!-- Divider -->
-            <div class="h-4 w-px bg-slate-200"></div>
+            <div class="h-4 w-px bg-slate-900/10"></div>
           </div>
         </Transition>
 
         <!-- The same Discover nav item as the full bar, just moved to the right -->
+        <!-- Alone on this bar, so its selection has nowhere to travel from: the
+             same capsule, drawn in place. -->
         <RouterLink
           v-if="isMinimal && discoverItem"
           :to="discoverItem.path"
-          class="flex items-center space-x-2 px-3 py-2 rounded-lg text-base font-medium transition-all duration-200"
+          class="nav-press flex items-center gap-2 px-3 py-2 rounded-xl text-base font-medium tracking-[-0.01em] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2ecc71]/40"
           :class="
             isActiveRoute(discoverItem.path)
-              ? 'text-slate-900'
-              : 'text-slate-400 hover:text-slate-700'
+              ? 'nav-capsule text-slate-900'
+              : 'text-slate-500 hover:text-slate-900 hover:bg-slate-900/[0.035] active:text-slate-900'
           "
+          :aria-current="isActiveRoute(discoverItem.path) ? 'page' : undefined"
         >
           <component :is="discoverItem.icon" class="w-4 h-4" aria-hidden="true" />
           <span>{{ discoverItem.label }}</span>
@@ -119,7 +143,7 @@
           <div v-if="authStore.isAuthenticated && !pageControlsAbsorbed && !isMinimal">
             <RouterLink
               to="/events?createEvent=true"
-              class="block px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-white/60 rounded-lg transition-all duration-200 whitespace-nowrap"
+              class="nav-press block px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-900/[0.045] rounded-lg transition-colors duration-200 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2ecc71]/40"
             >
               {{ t('common.nav.createEvent') }}
             </RouterLink>
@@ -143,7 +167,7 @@
             <button
               v-if="authStore.isAuthenticated"
               @click="toggleSearch"
-              class="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all duration-200"
+              class="nav-press p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-900/[0.045] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2ecc71]/40"
               aria-label="Search"
             >
               <Search class="w-[18px] h-[18px]" />
@@ -157,7 +181,7 @@
             <div v-if="!authStore.isAuthenticated" class="relative">
               <button
                 @click.stop="toggleLanguageMenu"
-                class="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all duration-200"
+                class="nav-press p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-900/[0.045] transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2ecc71]/40"
                 aria-label="Change language"
               >
                 <Globe class="w-[18px] h-[18px]" />
@@ -185,14 +209,14 @@
           </div>
 
           <!-- Divider before Profile -->
-          <div class="h-4 w-px bg-slate-200"></div>
+          <div class="h-4 w-px bg-slate-900/10"></div>
 
           <!-- Profile Button -->
           <div ref="userMenuRef" class="relative">
             <button
               v-if="authStore.isAuthenticated"
               @click.stop="toggleUserMenu"
-              class="flex items-center justify-center w-8 h-8 rounded-full overflow-hidden ring-2 ring-white/80 hover:ring-[#2ecc71]/50 transition-all duration-200"
+              class="nav-press flex items-center justify-center w-8 h-8 rounded-full overflow-hidden ring-2 ring-white/80 hover:ring-[#2ecc71]/50 transition-[box-shadow,transform] duration-200 focus:outline-none focus-visible:ring-[#2ecc71]"
               :aria-expanded="userMenuOpen"
               aria-label="User menu"
             >
@@ -214,7 +238,7 @@
             <RouterLink
               v-else
               :to="signinLink"
-              class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-medium hover:shadow-md hover:shadow-[#2ecc71]/20 transition-all duration-200"
+              class="nav-press flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-medium shadow-sm shadow-[#2ecc71]/20 hover:shadow-md hover:shadow-[#2ecc71]/30 transition-[box-shadow,transform] duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2ecc71]/50 focus-visible:ring-offset-2"
               :aria-label="t('common.nav.signIn')"
             >
               <User class="w-3.5 h-3.5" />
@@ -366,7 +390,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import {
   Ticket,
@@ -391,6 +415,8 @@ import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useExclusiveMenu } from '@/composables/useExclusiveMenu'
 import { useNavPageControls } from '@/composables/useNavPageControls'
 import { useCopyToClipboard } from '@/composables/useCopyToClipboard'
+import { useScrollEdge } from '@/composables/useScrollEdge'
+import { useTravellingIndicator } from '@/composables/useTravellingIndicator'
 import type { AppLocale } from '@/i18n'
 
 interface Props {
@@ -438,7 +464,13 @@ const {
 
 const userMenuRef = ref<HTMLElement>()
 const currentTime = ref('')
-const isScrolled = ref(false)
+
+// The bar's material tracks the scroll rather than flipping at the first pixel
+// — the composable writes `--nav-edge` (0 → 1 over the first 56px) straight
+// onto the header and the style block reads it. See useScrollEdge for why this
+// is not a class toggle.
+const headerRef = ref<HTMLElement>()
+useScrollEdge(headerRef)
 
 // How much of the right edge the bar's fixed furniture occupies, in px, fed to
 // the style block as `--nav-utility-width`. Absorbed page controls stop short of
@@ -464,10 +496,17 @@ const discoverItem = computed(() =>
   navigationItems.value.find((item) => item.path === '/explore'),
 )
 
-// Check if route is active
-const isActiveRoute = (path: string) => {
-  return route.path === path || route.path.startsWith(path + '/')
-}
+// The active route, and the capsule that travels to it. Shared with
+// MobileTabBar so the two bars mark a selection the same way; `isActiveRoute`
+// comes from there rather than reading `route.path` directly, because the bar
+// is rebuilt on every navigation and has to paint one frame as the page it came
+// from before there is anything to glide away from.
+const navRowRef = ref<HTMLElement | null>(null)
+const { indicator, isActive: isActiveRoute, settle: settleIndicator } = useTravellingIndicator({
+  key: 'top-nav',
+  row: navRowRef,
+  path: computed(() => route.path),
+})
 
 // Profile picture state
 const profilePictureError = ref(false)
@@ -576,10 +615,9 @@ const handleKeyDown = (event: KeyboardEvent) => {
   }
 }
 
-// Handle scroll to show/hide border
-const handleScroll = () => {
-  isScrolled.value = window.scrollY > 0
-}
+// A locale swap relabels every tab, so the capsule repositions — it does not
+// travel: nothing navigated.
+watch(locale, () => nextTick(settleIndicator))
 
 // Timer for updating time
 let timeInterval: ReturnType<typeof setInterval>
@@ -589,8 +627,6 @@ onMounted(() => {
   timeInterval = setInterval(updateTime, 1000)
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleKeyDown)
-  window.addEventListener('scroll', handleScroll)
-  handleScroll() // Check initial scroll position
 
   // A ResizeObserver rather than a one-off measurement: the group is still
   // laying out with fallback fonts on the first frame, and the Khmer sign-in
@@ -607,7 +643,6 @@ onUnmounted(() => {
   clearInterval(timeInterval)
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleKeyDown)
-  window.removeEventListener('scroll', handleScroll)
   utilityObserver?.disconnect()
 })
 </script>
@@ -731,50 +766,49 @@ onUnmounted(() => {
   Transparent while the page is at rest, liquid glass once something scrolls
   under it. Any fixed *opaque* fill sits lighter than the page's own wash and
   reads as a band with a hard bottom edge, and an exact match is impossible
-  against a gradient: `premium-bg` now carries a brand bloom across its top
-  edge, which is exactly the strip the bar covers. So the scrolled state stays
+  against a gradient: `premium-bg` carries a brand bloom across its top edge,
+  which is exactly the strip the bar covers. So the scrolled state stays
   translucent and lets the backdrop supply the colour — `saturate` pushes the
   wash and bloom back up to strength after the blur has averaged them out,
   which is what keeps the bar tinted with the page instead of flat white.
 
-  The blur stays on permanently — over a smooth gradient it changes nothing at
-  rest, so leaving it there avoids a mid-scroll pop. The saturation cannot: it
-  filters the backdrop even under a fully transparent bar, so a permanent boost
-  would leave the top strip visibly greener than the page a pixel below it and
-  draw the very edge described above. It rides in on `is-scrolled` instead,
-  from an identity 100%, which is also why the transition is spelled out here
-  rather than left to Tailwind's `transition-colors`.
+  What changed: the material now *materialises with the scroll* rather than
+  tweening on a flag. `useScrollEdge` writes `--nav-edge` (0 → 1 across the
+  first 56px) on this element every frame the page moves, and every value below
+  is that one number — so the bar answers the wheel continuously and reverses
+  the instant the scroll does, instead of committing to a 200ms tween fired by a
+  single pixel of movement. Nothing here transitions, which is the point: there
+  is no timing to interrupt.
 
-  The highlight is a gradient, and `background-image` cannot be transitioned,
-  so it lives on a `::before` sheet whose opacity fades instead.
+  It also gets the saturation off the transition list. `backdrop-filter` was
+  being interpolated from 100% to 180%, which re-runs a full-width blur at a new
+  filter value on every frame of the tween. The blur is now a constant, and the
+  boost rides the `::before` sheet's opacity — an element carrying a
+  backdrop-filter is a backdrop root for its own children, so fading that sheet
+  cross-fades between the saturated and unsaturated backdrop on the compositor.
+
+  The blur itself stays on permanently: over a smooth gradient it changes
+  nothing at rest, and there is no longer a pop it would be hiding.
 
   (MobileTopBar's `.glass-header` is the same treatment.)
 */
 .glass-nav {
-  background: rgba(255, 255, 255, 0);
-  backdrop-filter: blur(20px) saturate(100%);
-  -webkit-backdrop-filter: blur(20px) saturate(100%);
-  transition:
-    border-color 200ms ease,
-    box-shadow 200ms ease,
-    backdrop-filter 200ms ease,
-    -webkit-backdrop-filter 200ms ease;
+  --nav-edge: 0;
+  background: transparent;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
-.glass-nav.is-scrolled {
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-}
-
-/* Light catching the top face of the slab, thinning through the middle and
-   picking up again at the bottom lip. */
+/* The material: light catching the top face of the slab, thinning through the
+   middle and picking up again at the bottom lip, over the saturation boost. */
 .glass-nav::before {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 200ms ease;
+  opacity: var(--nav-edge);
+  backdrop-filter: saturate(180%);
+  -webkit-backdrop-filter: saturate(180%);
   background: linear-gradient(
     to bottom,
     rgba(255, 255, 255, 0.42) 0%,
@@ -783,8 +817,51 @@ onUnmounted(() => {
   );
 }
 
-.glass-nav.is-scrolled::before {
-  opacity: 1;
+/*
+  Apple's scroll edge effect, in place of the `border-b` + drop shadow this used
+  to carry. A 1px rule under a floating bar states a boundary the material has
+  already implied, and pairs a hard light line with a dark falloff a pixel below
+  it — the crispest edge on the page, drawn exactly where the design wants the
+  chrome to dissolve into the content. A short falloff below the bar separates
+  the two without ruling a line between them, and it only appears once there is
+  content down there to separate from.
+*/
+.glass-nav::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 1.25rem;
+  pointer-events: none;
+  opacity: var(--nav-edge);
+  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.06), rgba(15, 23, 42, 0));
+}
+
+/*
+  The desktop selection marker, and the static one the minimal bar's lone link
+  wears. A recessed slate material, not the brand gradient — see the template.
+  The inner top hairline is the light the recess is cut out of; without it the
+  capsule reads as a flat grey rectangle rather than as a surface.
+*/
+.nav-capsule {
+  background: rgba(15, 23, 42, 0.055);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+/*
+  Press feedback lands on pointer-down, where the finger and the cursor expect
+  it — waiting for the click to commit is the latency that makes chrome feel
+  dead. Kept to a compression the eye reads as pressure rather than as movement.
+*/
+.nav-press {
+  transition-property: color, background-color, box-shadow, transform;
+  transition-duration: 200ms;
+}
+
+.nav-press:active {
+  transform: scale(0.96);
+  transition-duration: 80ms;
 }
 
 /* Glass dropdown effect */
@@ -796,5 +873,58 @@ onUnmounted(() => {
   box-shadow:
     0 8px 32px rgba(46, 204, 113, 0.1),
     0 4px 12px rgba(30, 144, 255, 0.08);
+}
+
+/*
+  Accessibility fallbacks the app chrome never carried, though the showcase has
+  had them for a while. Reduced transparency wants a solid bar — but a flat
+  white one would draw the very seam the translucency exists to avoid, since the
+  page's bloom peaks on exactly this strip. So it paints the page's own gradient
+  stack, sized to the viewport, the way `.premium-chrome` does.
+*/
+@media (prefers-reduced-transparency: reduce) {
+  .glass-nav {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .glass-nav::before {
+    opacity: 1;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--premium-bg);
+    background-repeat: no-repeat;
+    background-size: 100vw 100vh;
+  }
+
+  .glass-dropdown {
+    background: #ffffff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  /* The one case where the hairline is right: a defined border is what carries
+     the boundary when the material cannot. */
+  .glass-nav {
+    border-bottom: 1px solid rgb(100 116 139);
+  }
+
+  .nav-capsule {
+    background: rgba(15, 23, 42, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.35);
+  }
+
+  .glass-dropdown {
+    background: #ffffff;
+    border-color: rgb(100 116 139);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-press:active {
+    transform: none;
+  }
 }
 </style>

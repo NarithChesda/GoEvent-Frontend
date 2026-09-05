@@ -70,6 +70,148 @@ html.showcase-viewport-locked #app {
     inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
+/* A viewer who has asked for less transparency gets the material as an opaque
+   surface, not as a thinner version of the same glass. Unlike the top bars,
+   this one floats over content rather than sitting on the page's own wash, so
+   plain white is the right answer here. */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-pill {
+    background: #ffffff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .glass-pill {
+    background: #ffffff;
+    border-color: rgb(100 116 139);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * List filter controls
+ *
+ * The surfaces the Events / Discover header controls are made of — the time
+ * segmented control's track and thumb, the category chip, and the mobile
+ * filter pill. Shared here rather than repeated per component because the
+ * controls sit side by side and any difference in fill reads as a mistake;
+ * they were previously three copies of the same declarations with comments in
+ * each saying "kept identical to the other one".
+ *
+ * Two surfaces, not three. `--page` is the desktop page header, where the
+ * control is a card on the page's own wash. `--nav` is either bar: the mobile
+ * top bar, where the header row *is* the bar's contents, and the desktop nav
+ * once it has absorbed the controls. That one is opaque on purpose — the nav
+ * is liquid glass with the list running underneath it, so a translucent
+ * control laid on it takes its contrast from whatever happens to be scrolling
+ * past, and an event card with a dark banner swallowed the unselected labels
+ * outright. The hairline is what keeps its edge over the pale page wash, and
+ * it is an inset shadow rather than a border so the geometry cannot move: the
+ * control has to land on the pixels it left in the page header.
+ * ------------------------------------------------------------------------- */
+
+.lfc-track,
+.lfc-chip {
+  /* One height for every control in the row, in rem so it follows the laptop
+     root-font scale-down. This is what replaced rebuilding one control's
+     height from the other's padding and border in `calc()`. */
+  height: 2.5rem;
+}
+
+.lfc-surface--page {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6),
+    0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.lfc-surface--nav {
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+}
+
+/*
+  The track is a recessed well and the thumb is a raised white pill — the
+  physical segmented-control metaphor, where the selected option reads as
+  standing proud of the groove. It replaced a brand-gradient thumb, which made
+  a view selector the loudest object on a page whose subject is its content,
+  and which could not animate at all: `background-image` is not interpolable,
+  so the fill popped from one segment to the next instead of travelling.
+*/
+.lfc-track {
+  background: rgba(15, 23, 42, 0.05);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.lfc-thumb {
+  background: #ffffff;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.12),
+    0 0 0 0.5px rgba(15, 23, 42, 0.04);
+}
+
+/* A refinement that is off by default, so it carries no fill until it is set —
+   and then a brand tint rather than the full gradient, which stays with the
+   page's primary action. */
+.lfc-chip--set {
+  background: rgba(46, 204, 113, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(46, 204, 113, 0.25);
+}
+
+.lfc-press:active {
+  transform: scale(0.96);
+}
+
+.lfc-press {
+  transition:
+    color 200ms ease,
+    background-color 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease;
+}
+
+.lfc-press:active {
+  transition-duration: 80ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lfc-press:active {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .lfc-surface--page {
+    background: #ffffff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .lfc-surface--page,
+  .lfc-surface--nav {
+    background: #ffffff;
+    box-shadow: inset 0 0 0 1px rgb(100 116 139);
+  }
+
+  .lfc-track {
+    background: rgba(15, 23, 42, 0.1);
+  }
+
+  .lfc-thumb {
+    box-shadow: 0 0 0 1px rgb(15 23 42);
+  }
+
+  .lfc-chip--set {
+    background: rgba(46, 204, 113, 0.2);
+    box-shadow: inset 0 0 0 1px rgb(16 122 67);
+  }
+}
+
 /* Utility: hide native scrollbars while preserving scroll behaviour.
  * Used by horizontally-scrollable tab bars and similar overflow rows
  * across the app (settings, event-management tabs, guest groups, etc). */

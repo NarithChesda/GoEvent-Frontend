@@ -1,152 +1,95 @@
 <template>
-  <!-- Desktop Dropdown -->
-  <div class="relative category-filter-container hidden sm:block">
-    <!-- `tone` only repaints the trigger: the desktop nav absorbs it at full
-         size once the page header scrolls away, and it has to land on the same
-         pixels it left. Icon-only at every size — the current category is
-         carried by the fill and the tooltip, so the label never has to be on
-         screen. -->
+  <!--
+    The refinement inside the current view, as a chip that states its own value.
+
+    It used to be an icon-only circle whose only account of itself was a
+    `title` tooltip — so on a phone there was no way to learn what it filtered
+    by, and when it *was* set it turned into a gradient disc that said something
+    was filtered without saying what. A filter that cannot name its own state is
+    the one thing a filter must not be.
+
+    It is also deliberately not a peer of the time control beside it. That one
+    picks which set of events you are looking at and always has an answer; this
+    one narrows that set and is off by default. The old pair was sized to match
+    — a circle rebuilt from the segmented control's padding and border in
+    `calc()` — which said they were equals, and cost the label to do it. Here
+    the height is one shared token and the chip earns its width from its
+    content, so the label costs nothing.
+
+    Desktop only, and `tone` repaints it without ever resizing it; see the notes
+    in TimeFilterToggle, whose surface this matches.
+  -->
+  <div class="category-filter-container relative">
     <button
-      @click.stop="toggleMenu"
+      type="button"
+      class="lfc-chip lfc-press flex items-center gap-2 pl-3 pr-2.5 rounded-full text-sm font-medium tracking-[-0.01em] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2ecc71]/40"
+      :class="[
+        modelValue
+          ? 'lfc-chip--set text-slate-900'
+          : [isAbsorbed ? 'lfc-surface--nav' : 'lfc-surface--page', 'text-slate-600 hover:text-slate-900'],
+      ]"
       aria-haspopup="menu"
       :aria-expanded="showMenu"
-      :aria-label="t('categories.filterByCategory')"
-      :title="activeLabel"
-      class="flex items-center justify-center border transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
-      :class="triggerClass"
+      :aria-label="`${t('categories.filterByCategory')}: ${activeLabel}`"
+      @click.stop="showMenu = !showMenu"
     >
-      <ListFilter class="w-5 h-5" />
+      <!-- Set: the category's own colour, the same mark the menu lists it by.
+           Unset: the generic filter glyph, since there is no colour to show. -->
+      <span
+        v-if="modelValue"
+        class="w-2 h-2 rounded-full flex-shrink-0"
+        :style="{ backgroundColor: activeColor }"
+        aria-hidden="true"
+      />
+      <Shapes v-else class="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+
+      <!-- Capped rather than left to grow: "Housewarming Party" and its Khmer
+           equivalent would otherwise push the row into the title beside it. -->
+      <span class="truncate max-w-[8rem]">{{ activeLabel }}</span>
+      <ChevronDown
+        class="w-3.5 h-3.5 flex-shrink-0 opacity-50 transition-transform duration-200"
+        :class="showMenu ? 'rotate-180' : ''"
+        aria-hidden="true"
+      />
     </button>
 
-    <!-- Dropdown Menu -->
     <Transition name="dropdown">
       <div
         v-if="showMenu"
         class="glass-dropdown absolute right-0 top-full mt-2 rounded-xl overflow-hidden overflow-y-auto min-w-[11.25rem] max-h-[60vh] z-[100]"
+        role="menu"
       >
         <button
-          @click="selectCategory('')"
-          class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors"
-          :class="
-            !modelValue
-              ? 'text-[#2ecc71] font-medium bg-[#2ecc71]/5'
-              : 'text-slate-700'
-          "
+          v-for="option in menuOptions"
+          :key="option.value || 'all'"
+          type="button"
+          role="menuitemradio"
+          :aria-checked="modelValue === option.value"
+          class="w-full flex items-center gap-2.5 px-4 py-2.5 text-left text-sm transition-colors hover:bg-slate-50"
+          :class="modelValue === option.value ? 'text-slate-900 font-medium' : 'text-slate-700'"
+          @click="selectCategory(option.value)"
         >
-          {{ t('categories.allCategories') }}
-        </button>
-        <button
-          v-for="category in categories"
-          :key="category.id"
-          @click="selectCategory(category.name)"
-          class="w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors"
-          :class="
-            modelValue === category.name
-              ? 'text-[#2ecc71] font-medium bg-[#2ecc71]/5'
-              : 'text-slate-700'
-          "
-        >
-          {{ translateEventCategory(category.name) }}
+          <span
+            class="w-2 h-2 rounded-full flex-shrink-0"
+            :class="option.value ? '' : 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]'"
+            :style="option.value ? { backgroundColor: option.color } : undefined"
+            aria-hidden="true"
+          />
+          <span class="flex-1 truncate">{{ option.label }}</span>
+          <Check
+            v-if="modelValue === option.value"
+            class="w-4 h-4 flex-shrink-0 text-[#2ecc71]"
+            aria-hidden="true"
+          />
         </button>
       </div>
     </Transition>
   </div>
-
-  <!-- Mobile Filter Chip (opens bottom sheet). Same size and shape wherever the
-       page header lands — only the fill changes. -->
-  <button
-    type="button"
-    @click="showSheet = true"
-    aria-haspopup="dialog"
-    :aria-expanded="showSheet"
-    :aria-label="t('categories.filterByCategory')"
-    class="sm:hidden flex items-center justify-center w-10 h-10 rounded-full border transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
-    :class="
-      modelValue
-        ? 'border-transparent bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
-        : resolvedTone === 'nav'
-          ? 'border-transparent text-slate-600 hover:bg-slate-100'
-          : 'glass-button border-white/50 text-slate-600'
-    "
-  >
-    <ListFilter class="w-5 h-5" />
-  </button>
-
-  <!-- Mobile Category Bottom Sheet -->
-  <Teleport to="body">
-    <Transition name="fade">
-      <div
-        v-if="showSheet"
-        class="sm:hidden fixed inset-0 z-[998] bg-black/40 backdrop-blur-sm"
-        @click="showSheet = false"
-      />
-    </Transition>
-    <Transition name="sheet">
-      <div
-        v-if="showSheet"
-        role="dialog"
-        aria-modal="true"
-        :aria-label="t('categories.filterByCategory')"
-        class="sm:hidden fixed inset-x-0 bottom-0 z-[999] bg-white rounded-t-3xl shadow-2xl pb-[max(env(safe-area-inset-bottom),0.75rem)]"
-      >
-        <div class="w-10 h-1 rounded-full bg-slate-300 mx-auto mt-3" aria-hidden="true" />
-        <h3 class="px-5 pt-4 pb-1 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-          {{ t('categories.filterByCategory') }}
-        </h3>
-        <div class="py-1 max-h-[60vh] overflow-y-auto overscroll-contain">
-          <button
-            type="button"
-            :aria-pressed="!modelValue"
-            @click="selectCategory('')"
-            class="w-full flex items-center gap-3 px-5 py-3 transition-colors active:bg-slate-50"
-          >
-            <span
-              class="w-3 h-3 rounded-full flex-shrink-0 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
-              aria-hidden="true"
-            />
-            <span
-              :class="[
-                'flex-1 text-left text-sm',
-                !modelValue ? 'font-semibold text-slate-900' : 'font-medium text-slate-700',
-              ]"
-            >{{ t('categories.allCategories') }}</span>
-            <Check v-if="!modelValue" class="w-5 h-5 text-[#2ecc71] flex-shrink-0" />
-          </button>
-          <button
-            v-for="category in categories"
-            :key="category.id"
-            type="button"
-            :aria-pressed="modelValue === category.name"
-            @click="selectCategory(category.name)"
-            class="w-full flex items-center gap-3 px-5 py-3 transition-colors active:bg-slate-50"
-          >
-            <span
-              class="w-3 h-3 rounded-full flex-shrink-0"
-              :style="{ backgroundColor: category.color || '#3B82F6' }"
-              aria-hidden="true"
-            />
-            <span
-              :class="[
-                'flex-1 text-left text-sm truncate',
-                modelValue === category.name
-                  ? 'font-semibold text-slate-900'
-                  : 'font-medium text-slate-700',
-              ]"
-            >{{ translateEventCategory(category.name) }}</span>
-            <Check
-              v-if="modelValue === category.name"
-              class="w-5 h-5 text-[#2ecc71] flex-shrink-0"
-            />
-          </button>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { ListFilter, Check } from 'lucide-vue-next'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { Check, ChevronDown, Shapes } from 'lucide-vue-next'
 import type { EventCategory } from '@/services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
@@ -158,82 +101,41 @@ const { translateEventCategory } = useCategoryTranslation()
 const props = defineProps<{
   modelValue: string
   categories: EventCategory[]
-  /**
-   * Palette only — never geometry. `nav` drops the glass card for surfaces that
-   * belong to a bar, so the control reads as part of the chrome instead of a
-   * card floating on it. Left unset it follows where the page header currently
-   * lives — see useHeaderTone.
-   */
+  /** Palette only — never geometry. See TimeFilterToggle. */
   tone?: 'page' | 'nav'
 }>()
-
-const resolvedTone = useHeaderTone(() => props.tone)
-
-// Absorbed by the desktop nav — the one place this control is a guest on
-// someone else's glass, with page content scrolling under it. See the
-// `.nav-surface` note in TimeFilterToggle, whose fill this matches.
-const { isDesktopNav } = useNavPageControls()
-const isAbsorbed = computed(() => resolvedTone.value === 'nav' && isDesktopNav.value)
-
-/** The trigger carries no label, so this is its tooltip. */
-const activeLabel = computed(() =>
-  props.modelValue ? translateEventCategory(props.modelValue) : t('categories.allCategories')
-)
-
-const triggerClass = computed(() => {
-  // TimeFilterToggle's outer height, rebuilt from the same terms: a 2.25rem
-  // segment (`text-sm`'s 1.25rem line box + `py-2`) inside its `p-1`, plus the
-  // 1px border top and bottom. Matching it exactly is the whole point of the
-  // square — the two sit side by side, and a shorter pill beside a taller one
-  // reads as a mistake rather than a pair. A labelled pill can't reach that
-  // height without padding that looks slack, so the label goes and the selected
-  // category is carried by the fill instead.
-  //
-  // In rem, not px: the root font drops to 75% on laptop viewports (see the
-  // root-scale block in src/assets/main.css), and a px size would be the one
-  // thing in this row that doesn't scale with it.
-  const shape = 'w-[calc(2.75rem_+_2px)] h-[calc(2.75rem_+_2px)] rounded-full'
-
-  if (resolvedTone.value === 'nav') {
-    return [
-      shape,
-      'border-transparent',
-      props.modelValue
-        ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-sm shadow-[#2ecc71]/20'
-        : isAbsorbed.value
-          ? 'nav-surface text-slate-600 hover:text-slate-900 hover:bg-white'
-          : 'bg-slate-900/[0.04] text-slate-600 hover:text-slate-900 hover:bg-slate-900/[0.06]',
-    ]
-  }
-
-  // The gradient can't be combined with `glass-button`: its `background`
-  // shorthand wins on specificity and blanks the gradient's background-image.
-  return [
-    shape,
-    props.modelValue
-      ? 'border-transparent bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white shadow-md shadow-[#2ecc71]/20'
-      : 'glass-button border-white/50 text-slate-600',
-  ]
-})
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const showMenu = ref(false)
-const showSheet = ref(false)
+const resolvedTone = useHeaderTone(() => props.tone)
+const { isDesktopNav } = useNavPageControls()
+const isAbsorbed = computed(() => resolvedTone.value === 'nav' && isDesktopNav.value)
 
-const toggleMenu = () => {
-  showMenu.value = !showMenu.value
-}
+const DEFAULT_CATEGORY_COLOR = '#3B82F6'
+
+/** The chip's label, and the menu's first row, are the same one list. */
+const menuOptions = computed(() => [
+  { value: '', label: t('categories.allCategories'), color: '' },
+  ...props.categories.map((category) => ({
+    value: category.name,
+    label: translateEventCategory(category.name),
+    color: category.color || DEFAULT_CATEGORY_COLOR,
+  })),
+])
+
+const activeOption = computed(() => menuOptions.value.find((o) => o.value === props.modelValue))
+const activeLabel = computed(() => activeOption.value?.label ?? t('categories.allCategories'))
+const activeColor = computed(() => activeOption.value?.color || DEFAULT_CATEGORY_COLOR)
+
+const showMenu = ref(false)
 
 const selectCategory = (name: string) => {
   emit('update:modelValue', name)
   showMenu.value = false
-  showSheet.value = false
 }
 
-// Handle click outside to close menu
 const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement
   if (showMenu.value && !target.closest('.category-filter-container')) {
@@ -242,15 +144,8 @@ const handleClickOutside = (event: MouseEvent) => {
 }
 
 const handleKeydown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape' && showSheet.value) {
-    showSheet.value = false
-  }
+  if (event.key === 'Escape') showMenu.value = false
 }
-
-// Lock body scroll while the bottom sheet is open
-watch(showSheet, (open) => {
-  document.body.style.overflow = open ? 'hidden' : ''
-})
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
@@ -260,81 +155,43 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleKeydown)
-  if (showSheet.value) {
-    document.body.style.overflow = ''
-  }
 })
 </script>
 
 <style scoped>
+.dropdown-enter-active {
+  transition:
+    opacity 0.16s ease-out,
+    transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.dropdown-leave-active {
+  transition:
+    opacity 0.14s ease-in,
+    transform 0.18s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+/* Grows out of the chip that opened it, not from its own middle. */
 .dropdown-enter-active,
 .dropdown-leave-active {
-  transition: all 0.2s ease;
+  transform-origin: top right;
 }
 
 .dropdown-enter-from,
 .dropdown-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
-}
-
-/* Bottom sheet: backdrop fade + panel slide-up */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.25s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.sheet-enter-active {
-  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.sheet-leave-active {
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-.sheet-enter-from,
-.sheet-leave-to {
-  transform: translateY(100%);
+  transform: translateY(-8px) scale(0.97);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sheet-enter-active,
-  .sheet-leave-active,
-  .fade-enter-active,
-  .fade-leave-active {
-    transition: none;
+  .dropdown-enter-from,
+  .dropdown-leave-to {
+    transform: none;
   }
 }
 
-/* The absorbed surface — kept identical to TimeFilterToggle's, since the two
-   sit side by side and any difference in fill would read as a mistake. The
-   reasoning for an opaque fill over the desktop nav's glass is written out
-   there. */
-.nav-surface {
-  background-color: rgba(255, 255, 255, 0.94);
-  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
-}
-
-/* Glass effect styles. The border lives in the class list, not here, so both
-   tones carry the same 1px and the control keeps its exact width when the nav
-   absorbs it. */
-.glass-button {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.glass-button:hover {
-  background: rgba(255, 255, 255, 0.75);
-}
-
 .glass-dropdown {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.5);
@@ -364,5 +221,13 @@ onUnmounted(() => {
 
 .glass-dropdown::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass-dropdown {
+    background: #ffffff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 </style>

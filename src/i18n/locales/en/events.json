@@ -27,7 +27,9 @@
     "upcoming": "Upcoming",
     "past": "Past",
     "allCategories": "All Categories",
-    "filterLabel": "Filter events"
+    "filterLabel": "Filter events",
+    "timeSection": "Show",
+    "done": "Done"
   },
   "emptyState": {
     "noUpcomingTitle": "No upcoming events",
