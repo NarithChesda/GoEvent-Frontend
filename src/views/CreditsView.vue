@@ -1,7 +1,7 @@
 <template>
   <MainLayout>
     <div
-      class="min-h-screen bg-gradient-to-r from-[#2ecc71]/[0.02] via-white/0 to-[#1e90ff]/[0.02]"
+      class="min-h-screen"
     >
       <section class="py-6 sm:py-8 lg:py-10">
         <div class="max-w-4xl lg:max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">

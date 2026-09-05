@@ -4,6 +4,8 @@ import { RouterView, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useNotificationsStore } from './stores/notifications'
 import { resetVendorProfileCache } from './composables/settings'
+import { resetEventListCache } from './composables/useEventsData'
+import { resetServicesCache } from './composables/useServices'
 import { secureStorage } from './utils/secureStorage'
 import { isPreviewFrameDocument } from './utils/previewFrameContext'
 import ToastHost from './components/ToastHost.vue'
@@ -61,6 +63,9 @@ if (!isPreviewFrame) {
       } else {
         notificationsStore.reset()
         resetVendorProfileCache()
+        // The tab list caches outlive the session — see resetEventListCache.
+        resetEventListCache()
+        resetServicesCache()
       }
     }
   )

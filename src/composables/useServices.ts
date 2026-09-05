@@ -220,13 +220,48 @@ const SPOTLIGHT_IMAGES_PER_VENDOR = 4
 /**
  * Composable for managing services data
  */
+/**
+ * What the Services tab was last showing, kept for the life of the tab.
+ *
+ * Every view builds its own MainLayout, so leaving the tab unmounts it and the
+ * next `useServices` starts empty — which is why coming back dropped to the
+ * loading skeleton and the featured-vendor rail collapsed, for a whole round
+ * trip, in front of data that was still correct.
+ *
+ * Only the three lists the landing page opens with are cached. The skeleton and
+ * the vendor rail are already gated on `length === 0` in ServicesView, so
+ * seeding them is the entire fix: the refresh still runs on mount, it just runs
+ * underneath the cards instead of in place of them. Everything else here —
+ * filters, pagination, the selected listing — is per-visit state and stays so.
+ *
+ * Not a reactive store: read once at setup, written after each successful
+ * fetch. A shared ref would make two mounted instances fight over one array.
+ */
+const servicesCache: {
+  categories?: ApiServiceCategory[]
+  listings?: Listing[]
+  featuredVendors?: Vendor[]
+} = {}
+
+/**
+ * Drop the cached lists. Called on sign-out (see App.vue) for the same reason
+ * as `resetEventListCache`: the cache outlives the session. These three lists
+ * are public rather than personal, but the listing set can differ by account
+ * (a vendor sees their own drafts), so it is cleared with the rest.
+ */
+export function resetServicesCache() {
+  servicesCache.categories = undefined
+  servicesCache.listings = undefined
+  servicesCache.featuredVendors = undefined
+}
+
 export function useServices() {
   // State - Categories
-  const categories = ref<ApiServiceCategory[]>([])
+  const categories = ref<ApiServiceCategory[]>(servicesCache.categories ?? [])
   const isLoadingCategories = ref(false)
 
   // State - Listings
-  const listings = ref<Listing[]>([])
+  const listings = ref<Listing[]>(servicesCache.listings ?? [])
   const isLoadingListings = ref(false)
   const listingsError = ref(false)
   const currentPage = ref(1)
@@ -234,7 +269,7 @@ export function useServices() {
   const hasMore = ref(false)
 
   // State - Featured Vendors
-  const featuredVendors = ref<Vendor[]>([])
+  const featuredVendors = ref<Vendor[]>(servicesCache.featuredVendors ?? [])
   const isLoadingVendors = ref(false)
 
 
@@ -260,6 +295,7 @@ export function useServices() {
 
       if (response.success && response.data) {
         categories.value = response.data.results
+        servicesCache.categories = categories.value
       } else {
         if (import.meta.env.DEV) {
           console.error('Failed to fetch categories:', response.message)
@@ -332,6 +368,13 @@ export function useServices() {
           listings.value = mappedListings
         } else {
           listings.value = [...listings.value, ...mappedListings]
+        }
+        // Only under the default filters — the tab remounts with
+        // `selectedCategory` back to 'all' and `sortBy` back to 'featured',
+        // so caching a narrowed result would seed the next visit with a list
+        // its own filter controls say it is not showing.
+        if (selectedCategory.value === 'all' && sortBy.value === 'featured') {
+          servicesCache.listings = listings.value
         }
 
         // Update pagination state
@@ -419,6 +462,7 @@ export function useServices() {
 
       if (response.success && response.data) {
         featuredVendors.value = response.data.results.map(mapBriefToVendor)
+        servicesCache.featuredVendors = featuredVendors.value
         hydrateSpotlightImages(featuredVendors.value)
       } else {
         if (import.meta.env.DEV) {
