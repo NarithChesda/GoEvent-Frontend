@@ -44,6 +44,7 @@
             <Transition name="absorb">
               <ServiceListFilters
                 v-if="controlsPinned && !isDesktopNav"
+                tone="nav"
                 :categories="serviceCategories"
                 :selected-category="selectedCategory"
                 :sort-by="sortBy"
