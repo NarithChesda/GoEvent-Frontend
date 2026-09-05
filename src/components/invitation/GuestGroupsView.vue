@@ -20,10 +20,18 @@
       <div class="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"></div>
     </div>
 
-    <!-- Empty State — no groups yet.
-         On a view-only share the same dashed card would be an invitation to do
+    <!-- Empty State — no groups yet, and no way for this viewer to make one.
+         On a view-only share the list's own header would be an invitation to do
          the one thing the link forbids, so it states the fact instead: there is
-         no list yet, and the person who can make one is not the viewer. -->
+         no list yet, and the person who can make one is not the viewer.
+
+         An organizer gets no empty state at all: the list below renders with
+         its header, its query and its add row exactly as it does with a
+         thousand guests, and the first guest goes in on the same line the
+         second one will. A separate "Add First Guest" card was a different
+         screen with a different control on it, so the first add was the one
+         add that worked differently from every later one — and it dead-ended,
+         since the only thing it could open was the bulk importer. -->
     <div
       v-else-if="groups.length === 0 && !canEdit"
       class="rounded-2xl border border-slate-200 bg-white px-6 py-14 text-center"
@@ -34,19 +42,6 @@
       <h4 class="text-base font-semibold text-slate-900">{{ t('management.guestGroupsView.emptyState.readOnlyTitle') }}</h4>
       <p class="mt-1 text-sm text-slate-500">{{ t('management.guestGroupsView.emptyState.readOnlySubtitle') }}</p>
     </div>
-
-    <button
-      v-else-if="groups.length === 0"
-      type="button"
-      @click="$emit('add-guest')"
-      class="w-full rounded-2xl border border-slate-200 bg-white px-6 py-14 text-center transition-colors duration-200 hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-    >
-      <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20">
-        <UserPlus class="h-6 w-6 text-[#2ecc71]" />
-      </div>
-      <span class="block text-base font-semibold text-slate-900">{{ t('management.guestGroupsView.emptyState.title') }}</span>
-      <span class="mt-1 block text-sm text-slate-500">{{ t('management.guestGroupsView.emptyState.subtitle') }}</span>
-    </button>
 
     <template v-else>
       <!-- One object: the list, with its own header band.
@@ -244,13 +239,30 @@
                 <ChevronDown class="hidden h-4 w-4 flex-shrink-0 text-slate-400 transition-transform duration-150 sm:block" :class="{ 'rotate-180': isDropdownOpen }" />
               </button>
 
-              <!-- Dropdown Menu (desktop) -->
-              <Transition name="dropdown">
+              <!-- Dropdown Menu (desktop).
+                   Teleported and positioned in viewport coordinates rather
+                   than hung off the trigger with `absolute`: the list panel
+                   clips its own rounded corners (`sm:overflow-hidden`), so an
+                   in-flow menu was cut off at the bottom of the card — on a
+                   list with one guest that took most of the group management
+                   with it — and the sticky toolbar's stacking context put the
+                   menu underneath the add row's own group picker. Neither is
+                   reachable from `z-index` alone. -->
+              <Teleport to="body">
+                <!-- Click outside to close. In the same teleport as the menu so
+                     the two keep their order wherever they are painted. -->
                 <div
                   v-if="isDropdownOpen && isDesktop"
-                  class="absolute right-0 top-full z-[100] mt-2 max-h-[26.25rem] w-[17.5rem] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-200/50"
-                  @click.stop
-                >
+                  @click="isDropdownOpen = false"
+                  class="fixed inset-0 z-[9998]"
+                ></div>
+                <Transition name="dropdown">
+                  <div
+                    v-if="isDropdownOpen && isDesktop"
+                    :style="filterMenuStyle"
+                    class="custom-scrollbar fixed z-[9999] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-200/50"
+                    @click.stop
+                  >
                   <div class="p-1.5">
                     <!-- All Groups Option -->
                     <button
@@ -366,15 +378,9 @@
                       </span>
                     </button>
                   </div>
-                </div>
-              </Transition>
-
-              <!-- Click outside to close dropdown -->
-              <div
-                v-if="isDropdownOpen && isDesktop"
-                @click="isDropdownOpen = false"
-                class="fixed inset-0 z-[90]"
-              ></div>
+                  </div>
+                </Transition>
+              </Teleport>
 
               <!-- Mobile Group Filter Bottom Sheet (swipe down to close) -->
               <MobileBottomSheet
@@ -629,7 +635,7 @@
              with a few hundred guests loaded the bottom of the list is a long
              way from the intent to add one. -->
         <QuickAddGuestRow
-          v-if="canEdit && groups.length > 0"
+          v-if="canEdit"
           :groups="groups"
           :default-group-id="quickAddDefaultGroupId"
           :mobile="!isDesktop"
@@ -685,11 +691,28 @@
           </div>
         </div>
 
-        <!-- Empty State -->
+        <!-- Empty State.
+             "No Guests Found" is a result about a query, so it is only right
+             when something was asked: an event whose list is simply new has
+             found nothing because nothing has been added yet, and what it
+             needs to say is where the adding happens — the row directly
+             above this. -->
         <div v-else class="px-6 py-12 text-center">
           <Users class="mx-auto mb-3 h-10 w-10 text-slate-300" />
-          <h4 class="text-sm font-semibold text-slate-700">{{ t('management.guestGroupsView.guestList.empty.title') }}</h4>
-          <p class="mt-1 text-sm text-slate-400">{{ groupSearchQuery ? t('management.guestGroupsView.guestList.empty.searchHint') : t('management.guestGroupsView.guestList.empty.emptyHint') }}</p>
+          <h4 class="text-sm font-semibold text-slate-700">
+            {{ isFiltering
+              ? t('management.guestGroupsView.guestList.empty.title')
+              : t('management.guestGroupsView.guestList.empty.firstTitle') }}
+          </h4>
+          <p class="mt-1 text-sm text-slate-400">
+            {{ groupSearchQuery
+              ? t('management.guestGroupsView.guestList.empty.searchHint')
+              : isFiltering
+                ? t('management.guestGroupsView.guestList.empty.emptyHint')
+                : canEdit
+                  ? t('management.guestGroupsView.guestList.empty.firstHint')
+                  : t('management.guestGroupsView.emptyState.readOnlySubtitle') }}
+          </p>
         </div>
       </div>
     </template>
@@ -791,6 +814,7 @@ import GuestStatsCard from './GuestStatsCard.vue'
 import InlineGroupForm from './InlineGroupForm.vue'
 import QuickAddGuestRow from './QuickAddGuestRow.vue'
 import MobileBottomSheet from '../common/MobileBottomSheet.vue'
+import { useAnchoredMenu } from '../../composables/useAnchoredMenu'
 import type {
   GuestGroup,
   EventGuest,
@@ -1049,6 +1073,15 @@ const selectRsvpStatus = (status: GuestRsvpStatusValue | null) => {
 // Tab container ref
 const tabsContainer = ref<HTMLElement | null>(null)
 const searchInputRef = ref<HTMLInputElement | null>(null)
+
+// The filter menu is teleported to `body`; this is what keeps it against the
+// trigger it belongs to. Anchored on the filter's own wrapper rather than the
+// whole query field, so it lines up with the funnel and not with the search
+// box several hundred pixels to its left.
+const { menuStyle: filterMenuStyle } = useAnchoredMenu(isDropdownOpen, tabsContainer, {
+  width: 280,
+  align: 'right',
+})
 
 // ---------------------------------------------------------------------------
 // Is the phone toolbar pinned?

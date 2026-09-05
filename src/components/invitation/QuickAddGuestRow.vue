@@ -24,12 +24,16 @@
       <Plus class="h-4 w-4" />
     </span>
 
+    <!-- Never disabled for want of a group. The row can make one — that is what
+         "New group" in its own picker is for — so refusing the name is
+         refusing the only thing the person came here to type, and the group it
+         will go in is a question this row can ask afterwards. -->
     <input
       ref="nameInputRef"
       v-model="name"
       type="text"
-      :disabled="groups.length === 0"
-      :placeholder="groups.length === 0
+      :disabled="groups.length === 0 && !canCreate"
+      :placeholder="groups.length === 0 && !canCreate
         ? t('management.guestGroupsView.quickAdd.noGroupsHint')
         : t('management.guestGroupsView.quickAdd.namePlaceholder')"
       :aria-label="t('management.guestGroupsView.quickAdd.namePlaceholder')"
@@ -40,8 +44,10 @@
       class="min-w-0 flex-1 border-0 bg-transparent p-0 text-base text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0 disabled:cursor-not-allowed sm:text-sm"
     />
 
-    <!-- Group picker, in the value column the rows below put their group in. -->
-    <div v-if="groups.length > 0" class="relative flex-shrink-0" ref="groupPickerRef">
+    <!-- Group picker, in the value column the rows below put their group in.
+         It stays on an event that has no groups at all, where it is the only
+         way to make the first one. -->
+    <div v-if="groups.length > 0 || canCreate" class="relative flex-shrink-0" ref="groupPickerRef">
       <button
         type="button"
         @click="showGroupDropdown = !showGroupDropdown"
@@ -60,19 +66,27 @@
         <ChevronDown class="h-2.5 w-2.5 flex-shrink-0 text-slate-400" />
       </button>
 
-      <Transition name="dropdown">
-        <!-- `@click.stop`: the create form swaps itself in for the "New group"
-             row, so by the time the document-level click-outside handler sees
-             the event the element it fired on can already be gone from the
-             tree — and a `contains()` test on a detached node says "outside",
-             closing the picker on the very press that opened the form. The
-             menu answering for its own clicks is the fix, and it is what the
-             row's other popovers already do. -->
-        <div
-          v-if="showGroupDropdown && !mobile"
-          @click.stop
-          class="absolute right-0 top-full z-[100] mt-1 max-h-[22rem] w-[17rem] overflow-y-auto rounded-xl border border-slate-200/60 bg-white shadow-lg shadow-slate-200/50"
-        >
+      <!-- Teleported and positioned against the trigger, for the same reason
+           the filter's own menu is: this row sits inside a panel that clips
+           its rounded corners, so an `absolute` menu was cut off at the card's
+           edge — which on a short list is most of it, including the "new
+           group" form. -->
+      <Teleport to="body">
+        <Transition name="dropdown">
+          <!-- `@click.stop`: the create form swaps itself in for the "New group"
+               row, so by the time the document-level click-outside handler sees
+               the event the element it fired on can already be gone from the
+               tree — and a `contains()` test on a detached node says "outside",
+               closing the picker on the very press that opened the form. The
+               menu answering for its own clicks is the fix, and it is what the
+               row's other popovers already do. -->
+          <div
+            v-if="showGroupDropdown && !mobile"
+            ref="groupMenuRef"
+            :style="menuStyle"
+            @click.stop
+            class="custom-scrollbar fixed z-[9999] overflow-y-auto rounded-xl border border-slate-200/60 bg-white shadow-lg shadow-slate-200/50"
+          >
           <div class="p-1">
             <button
               v-for="group in groups"
@@ -122,8 +136,9 @@
               </button>
             </template>
           </div>
-        </div>
-      </Transition>
+          </div>
+        </Transition>
+      </Teleport>
 
       <!-- The same picker as a sheet on a phone. A 272px popover hung off a
            chip near the right edge of the row lands wherever that chip happens
@@ -208,6 +223,7 @@ import { useI18n } from 'vue-i18n'
 import { Plus, ChevronDown, Check } from 'lucide-vue-next'
 import InlineGroupForm from './InlineGroupForm.vue'
 import MobileBottomSheet from '../common/MobileBottomSheet.vue'
+import { useAnchoredMenu } from '../../composables/useAnchoredMenu'
 import type { GuestGroup } from '../../services/api'
 
 const { t } = useI18n()
@@ -238,6 +254,15 @@ const isCreatingGroup = ref(false)
 const pendingGroupName = ref<string | null>(null)
 const nameInputRef = ref<HTMLInputElement | null>(null)
 const groupPickerRef = ref<HTMLElement | null>(null)
+const groupMenuRef = ref<HTMLElement | null>(null)
+
+// Aligned to the trigger's right edge, which is the edge it shares with the
+// guest rows' own group chips below it.
+const { menuStyle } = useAnchoredMenu(showGroupDropdown, groupPickerRef, {
+  width: 272,
+  align: 'right',
+  gap: 4,
+})
 
 /** How long to keep the create form spinning before assuming it failed. */
 const CREATE_TIMEOUT_MS = 8000
@@ -327,7 +352,10 @@ const closeGroupDropdown = () => {
 const submit = () => {
   // A typed name with no group picked is the one case where the row cannot
   // finish the job by itself: open the picker rather than failing silently.
+  // With no groups at all the picker has nothing to offer but the create
+  // form, so it opens on that rather than on an empty list.
   if (name.value.trim().length >= 2 && selectedGroupId.value === null) {
+    if (props.groups.length === 0 && props.canCreate) showCreateGroupForm.value = true
     showGroupDropdown.value = true
     return
   }
@@ -343,10 +371,15 @@ const handleClickOutside = (event: MouseEvent) => {
   // The sheet is teleported to `body`, so every press inside it reads as
   // "outside" this row — it dismisses itself on its own backdrop instead.
   if (props.mobile) return
+  // The menu is teleported to `body`, so a press inside it is "outside" the
+  // picker by containment. It stops its own clicks, and this is the belt to
+  // that brace.
+  const target = event.target as Node
   if (
     showGroupDropdown.value &&
     groupPickerRef.value &&
-    !groupPickerRef.value.contains(event.target as Node)
+    !groupPickerRef.value.contains(target) &&
+    !groupMenuRef.value?.contains(target)
   ) {
     closeGroupDropdown()
   }
@@ -363,6 +396,30 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* The picker scrolls once the room under the trigger runs out, so it gets the
+   same thin bar the guest list itself uses. */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(203 213 225) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgb(203 213 225);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgb(148 163 184);
+}
+
 .dropdown-enter-active,
 .dropdown-leave-active {
   transition:
