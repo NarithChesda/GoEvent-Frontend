@@ -22,17 +22,26 @@
     publishing, which is most of why ten fields read as a long form. They are
     behind one disclosure now; five controls are visible at rest.
 
-    **It does not announce every group.** It used to carry five uppercase
+    **It does not announce any group.** It used to carry five uppercase
     eyebrows, two of them over a single field — "Service Area" above one text
-    input, "Tags" above one more. An eyebrow is earned when the user has to
-    navigate back to a group in a form they scroll (taste §4); over one field it
-    is a caption pretending to be a section. Three remain, each over a region a
-    vendor genuinely scrolls back to.
+    input, "Tags" above one more. The last three went the way the event drawers'
+    nine did: "Pricing" sat directly over a label reading *How you price this*,
+    "Basics" over a field named *Service title*, and "Photos" over a grid of
+    photographs. An eyebrow that repeats the control beneath it is not a section
+    heading (taste §4), and the hairline rules that separated those groups
+    separate them still.
+
+    **It does not keep private copies of shared controls.** The price-type
+    picker, the figures under it and the button that saves are SegmentedField,
+    groupedList.css and actionButton.css — the same three the event create and
+    edit drawers are built from. A local reimplementation of a segmented control
+    is right on the day it is written and a near-miss of the real one a release
+    later.
 
     **It does not colour its controls to mark selection.** The price-type picker
     was three tall bordered tiles that turned emerald when chosen, which made the
     loudest object in the drawer a radio group. It is a segmented control on a
-    slate track now: the selected segment lifts onto white, and the two saturated
+    slate track now: the selected cap slides onto white, and the two saturated
     objects in here stay the header and the button that saves.
 
     **It does not hide the photo controls behind hover.** Set-cover and remove
@@ -44,7 +53,19 @@
     **It does not report failure only at the bottom.** Missing-field errors were
     a single message near the footer naming one field at a time; the field
     causing it could be three screens up. They render under their own inputs
-    now, and the first one is scrolled to.
+    now, and the first one is scrolled to — and a field complains when the
+    vendor *leaves* it, not when they press Create, so the first news that a
+    description is required is not a scroll three screens backwards.
+
+    **It does not lose work to a single keystroke.** The backdrop was made
+    inert for that reason and then Escape and Cancel discarded the same draft
+    silently — one door closed on a risk and two left open. Both now ask, in
+    the footer they were pressed in rather than in a dialog stacked over a
+    dialog, and only when there is something to lose. Removing a photo is the
+    same problem one tap wide: the X sits four pixels from the star, on a tile
+    the vendor may have shot a minute ago. It offers an undo rather than a
+    confirmation, because a confirmation on every tap is what teaches people to
+    tap through them (apple-design §16.2).
   -->
   <Teleport to="body">
     <!-- The backdrop does not close this. Deliberate, and the one place this
@@ -58,7 +79,9 @@
     <Transition name="drawer-panel">
       <div
         v-if="modelValue"
-        class="fixed inset-y-0 right-0 z-[999] flex w-full flex-col overflow-hidden bg-white shadow-2xl will-change-transform md:bottom-4 md:right-4 md:top-4 md:w-[32.5rem] md:max-w-[calc(100vw-32px)] md:rounded-2xl laptop-sm:w-[35rem] laptop-md:w-[38.75rem] desktop:w-[42.5rem]"
+        ref="panel"
+        tabindex="-1"
+        class="fixed inset-y-0 right-0 z-[999] flex w-full flex-col overflow-hidden bg-white shadow-2xl focus:outline-none will-change-transform md:bottom-4 md:right-4 md:top-4 md:w-[32.5rem] md:max-w-[calc(100vw-32px)] md:rounded-2xl laptop-sm:w-[35rem] laptop-md:w-[38.75rem] desktop:w-[42.5rem]"
         role="dialog"
         aria-modal="true"
         :aria-label="
@@ -72,10 +95,11 @@
             <div class="flex min-w-0 items-center gap-2">
               <button
                 type="button"
-                class="rounded-lg p-1.5 transition-colors duration-200 hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                :disabled="isBusy"
+                class="drawer-close rounded-lg p-1.5 hover:bg-white/20 active:bg-white/30 disabled:pointer-events-none disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                 :aria-label="t('services.listingForm.close')"
                 :title="t('services.listingForm.close')"
-                @click="closeDrawer"
+                @click="requestClose"
               >
                 <ArrowRight class="h-5 w-5 text-white" aria-hidden="true" />
               </button>
@@ -91,8 +115,8 @@
             <button
               v-if="isEditMode"
               type="button"
-              :disabled="isSubmitting"
-              class="rounded-lg p-1.5 transition-colors duration-200 hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+              :disabled="isBusy"
+              class="drawer-close rounded-lg p-1.5 hover:bg-white/20 active:bg-white/30 disabled:pointer-events-none disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
               :aria-label="t('services.listingForm.delete')"
               :title="t('services.listingForm.delete')"
               @click="showDeleteConfirm = true"
@@ -116,7 +140,14 @@
             </div>
           </div>
 
-          <form v-else class="space-y-6 p-4 pb-24" novalidate @submit.prevent="handleSubmit">
+          <form
+            v-else
+            class="space-y-6 p-4 pb-24"
+            :class="isBusy ? 'form-busy' : ''"
+            :inert="isBusy"
+            novalidate
+            @submit.prevent="handleSubmit"
+          >
             <!--
               Why it came back, at the top of the thing that fixes it. The note
               only exists on a listing a reviewer sent back, and it is the first
@@ -157,8 +188,6 @@
 
             <!-- Photos ---------------------------------------------------- -->
             <section class="space-y-3 border-t border-slate-100 pt-5">
-              <h3 :class="sectionHeadingClass">{{ t('services.listingForm.sections.photos') }}</h3>
-
               <input
                 ref="galleryFileInput"
                 type="file"
@@ -171,7 +200,7 @@
               <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 <div
                   v-for="(image, index) in form.gallery"
-                  :key="index"
+                  :key="image.key"
                   class="relative aspect-square overflow-hidden rounded-lg bg-slate-100"
                   :class="form.coverIndex === index ? 'ring-2 ring-[#2ecc71] ring-offset-1' : ''"
                 >
@@ -227,19 +256,44 @@
                 </button>
               </div>
 
+              <!-- Undo, not a confirmation. Removing a photo costs nothing to
+                   reverse — the server delete does not happen until save — so
+                   the cheap slip gets a way back rather than every deliberate
+                   tap getting a gate in front of it. -->
+              <Transition name="drawer-reveal">
+                <div v-if="removedPhoto" class="grid grid-rows-[1fr]">
+                  <div class="min-h-0 overflow-hidden">
+                    <div
+                      class="flex items-center justify-between gap-3 rounded-lg bg-slate-100 py-1.5 pl-3 pr-1.5"
+                      role="status"
+                    >
+                      <span class="text-sm text-slate-600">
+                        {{ t('services.listingForm.gallery.removed') }}
+                      </span>
+                      <button
+                        type="button"
+                        class="drawer-action inline-flex min-h-[2.5rem] items-center rounded-lg px-3 text-sm font-semibold text-sky-600 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+                        @click="undoRemoveGalleryImage"
+                      >
+                        {{ t('services.listingForm.gallery.undo') }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
+
               <p :class="hintClass">{{ t('services.listingForm.gallery.hint') }}</p>
             </section>
 
             <!-- Basics ---------------------------------------------------- -->
             <section class="space-y-3 border-t border-slate-100 pt-5">
-              <h3 :class="sectionHeadingClass">{{ t('services.listingForm.sections.basics') }}</h3>
-
               <div>
                 <label :class="labelClass" for="listing-title">
                   {{ t('services.listingForm.fields.title') }} *
                 </label>
                 <input
                   id="listing-title"
+                  ref="titleInput"
                   v-model="form.title"
                   type="text"
                   :placeholder="t('services.listingForm.fields.titlePlaceholder')"
@@ -247,6 +301,7 @@
                   :aria-invalid="!!errors.title"
                   data-field="title"
                   @input="clearError('title')"
+                  @blur="touchField('title')"
                 />
                 <p v-if="errors.title" :class="errorTextClass">{{ errors.title }}</p>
               </div>
@@ -266,7 +321,7 @@
                     ]"
                     :aria-invalid="!!errors.category"
                     data-field="category"
-                    @change="clearError('category')"
+                    @change="touchField('category')"
                   >
                     <option :value="null">
                       {{ t('services.listingForm.fields.categoryPlaceholder') }}
@@ -300,167 +355,122 @@
                   :aria-invalid="!!errors.description"
                   data-field="description"
                   @input="clearError('description')"
+                  @blur="touchField('description')"
                 ></textarea>
                 <p v-if="errors.description" :class="errorTextClass">{{ errors.description }}</p>
               </div>
             </section>
 
-            <!-- Pricing --------------------------------------------------- -->
-            <section class="space-y-3 border-t border-slate-100 pt-5">
-              <h3 :class="sectionHeadingClass">{{ t('services.listingForm.sections.pricing') }}</h3>
+            <!-- Pricing ------------------------------------------------------
 
-              <!-- Segmented control on a slate track. Same geometry as the app's
-                   pill toggles; the flat fill instead of the brand gradient is
-                   deliberate — see the header note. -->
+                 How a service is priced is a choice between three named things,
+                 so all three are named — and by `SegmentedField`, the control
+                 the event drawers use, rather than a local copy of its geometry
+                 that drifts from it a release later.
+
+                 The figures under it are a grouped inset list: label on the
+                 left, a bare right-aligned number on the right, currency as its
+                 own row. That row is what retires the `$` glyph that used to sit
+                 inside the price input — it was drawn for every currency, so a
+                 listing priced in riel showed a dollar sign against the number
+                 the vendor was typing. The symbol still appears, once, in the
+                 preview card at the top of the drawer, where it is the real
+                 price string a client will read.                           -->
+            <section class="space-y-3 border-t border-slate-100 pt-5">
               <div>
                 <span :class="labelClass">{{ t('services.listingForm.fields.priceType') }}</span>
-                <div
-                  class="grid grid-cols-3 gap-1 rounded-lg bg-slate-100 p-1"
-                  role="radiogroup"
+                <SegmentedField
+                  :model-value="form.priceType"
+                  :options="priceTypeOptions"
                   :aria-label="t('services.listingForm.fields.priceType')"
-                >
-                  <button
-                    v-for="option in priceTypeOptions"
-                    :key="option.value"
-                    type="button"
-                    role="radio"
-                    :aria-checked="form.priceType === option.value"
-                    class="flex min-h-[40px] items-center justify-center gap-1.5 rounded-md px-2 text-xs font-medium transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-                    :class="
-                      form.priceType === option.value
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900'
-                    "
-                    @click="selectPriceType(option.value)"
-                  >
-                    <component
-                      :is="option.icon"
-                      class="h-3.5 w-3.5 flex-shrink-0"
-                      aria-hidden="true"
-                    />
-                    <span class="truncate">{{ option.label }}</span>
-                  </button>
-                </div>
+                  @update:model-value="selectPriceType($event as PriceTypeValue)"
+                />
               </div>
 
-              <div v-if="form.priceType === 'fixed'" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
-                  <label :class="labelClass" for="listing-price">
-                    {{ t('services.listingForm.fields.price') }} *
-                  </label>
-                  <div class="relative">
-                    <DollarSign
-                      class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-                      aria-hidden="true"
-                    />
+              <div v-if="form.priceType !== 'quote'" class="space-y-1.5">
+                <div class="list-group" :class="hasPriceError ? 'is-invalid' : ''">
+                  <div v-if="form.priceType === 'fixed'" class="list-row">
+                    <label for="listing-price" class="list-row__label">
+                      {{ t('services.listingForm.fields.price') }} *
+                    </label>
                     <input
                       id="listing-price"
                       v-model.number="form.priceMin"
                       type="number"
+                      inputmode="decimal"
                       min="0"
                       placeholder="0"
-                      :class="[prefixedFieldClass, errors.priceMin ? invalidFieldClass : '']"
+                      class="list-input"
                       :aria-invalid="!!errors.priceMin"
                       data-field="priceMin"
                       @input="clearError('priceMin')"
+                      @blur="touchField('priceMin')"
                     />
                   </div>
-                  <p v-if="errors.priceMin" :class="errorTextClass">{{ errors.priceMin }}</p>
-                </div>
 
-                <div>
-                  <label :class="labelClass" for="listing-currency-fixed">
-                    {{ t('services.listingForm.fields.currency') }}
-                  </label>
-                  <div class="relative">
-                    <select
-                      id="listing-currency-fixed"
-                      v-model="form.currency"
-                      :class="[fieldClass, 'appearance-none pr-10']"
-                    >
-                      <option v-for="c in CURRENCIES" :key="c.value" :value="c.value">
-                        {{ c.label }}
-                      </option>
-                    </select>
-                    <ChevronDown
-                      class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-                      aria-hidden="true"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div v-else-if="form.priceType === 'range'" class="space-y-3">
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div>
-                    <label :class="labelClass" for="listing-price-min">
-                      {{ t('services.listingForm.fields.minPrice') }} *
-                    </label>
-                    <div class="relative">
-                      <DollarSign
-                        class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-                        aria-hidden="true"
-                      />
+                  <template v-else>
+                    <div class="list-row">
+                      <label for="listing-price-min" class="list-row__label">
+                        {{ t('services.listingForm.fields.minPrice') }} *
+                      </label>
                       <input
                         id="listing-price-min"
                         v-model.number="form.priceMin"
                         type="number"
+                        inputmode="decimal"
                         min="0"
                         placeholder="0"
-                        :class="[prefixedFieldClass, errors.priceMin ? invalidFieldClass : '']"
+                        class="list-input"
                         :aria-invalid="!!errors.priceMin"
                         data-field="priceMin"
                         @input="clearError('priceMin')"
+                        @blur="touchField('priceMin')"
                       />
                     </div>
-                    <p v-if="errors.priceMin" :class="errorTextClass">{{ errors.priceMin }}</p>
-                  </div>
 
-                  <div>
-                    <label :class="labelClass" for="listing-price-max">
-                      {{ t('services.listingForm.fields.maxPrice') }} *
-                    </label>
-                    <div class="relative">
-                      <DollarSign
-                        class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-                        aria-hidden="true"
-                      />
+                    <div class="list-row">
+                      <label for="listing-price-max" class="list-row__label">
+                        {{ t('services.listingForm.fields.maxPrice') }} *
+                      </label>
                       <input
                         id="listing-price-max"
                         v-model.number="form.priceMax"
                         type="number"
+                        inputmode="decimal"
                         min="0"
                         placeholder="0"
-                        :class="[prefixedFieldClass, errors.priceMax ? invalidFieldClass : '']"
+                        class="list-input"
                         :aria-invalid="!!errors.priceMax"
                         data-field="priceMax"
                         @input="clearError('priceMax')"
+                        @blur="touchField('priceMax')"
                       />
                     </div>
-                    <p v-if="errors.priceMax" :class="errorTextClass">{{ errors.priceMax }}</p>
-                  </div>
-                </div>
+                  </template>
 
-                <div>
-                  <label :class="labelClass" for="listing-currency-range">
-                    {{ t('services.listingForm.fields.currency') }}
-                  </label>
-                  <div class="relative">
-                    <select
-                      id="listing-currency-range"
-                      v-model="form.currency"
-                      :class="[fieldClass, 'appearance-none pr-10']"
-                    >
-                      <option v-for="c in CURRENCIES" :key="c.value" :value="c.value">
-                        {{ c.label }}
-                      </option>
-                    </select>
-                    <ChevronDown
-                      class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-                      aria-hidden="true"
+                  <div class="list-row">
+                    <span class="list-row__label">
+                      {{ t('services.listingForm.fields.currency') }}
+                    </span>
+                    <SegmentedField
+                      class="w-[11.25rem] flex-shrink-0"
+                      :model-value="form.currency"
+                      :options="currencyOptions"
+                      :aria-label="t('services.listingForm.fields.currency')"
+                      @update:model-value="form.currency = $event"
                     />
                   </div>
                 </div>
+
+                <!-- Under the group rather than under the row, because the row
+                     has no room beside a right-aligned figure and a message
+                     wedged into one would move the rows below it as it appears. -->
+                <p v-if="errors.priceMin" class="px-1 text-xs text-red-600">
+                  {{ errors.priceMin }}
+                </p>
+                <p v-if="errors.priceMax" class="px-1 text-xs text-red-600">
+                  {{ errors.priceMax }}
+                </p>
               </div>
 
               <p v-else class="text-sm leading-relaxed text-slate-500">
@@ -494,7 +504,7 @@
                 {{ t('services.listingForm.moreDetails') }}
               </button>
 
-              <Transition name="collapse">
+              <Transition name="drawer-reveal">
                 <div v-if="showOptional" id="listing-optional-fields" class="grid grid-rows-[1fr]">
                   <div class="min-h-0 overflow-hidden">
                     <div class="space-y-3 pt-4">
@@ -590,26 +600,84 @@
         </div>
 
         <!-- Footer -->
-        <div class="flex-shrink-0 border-t border-slate-200 bg-white px-4 py-3">
-          <div class="flex items-center justify-between gap-3">
-            <button
-              type="button"
-              :disabled="isSubmitting"
-              class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-[#2ecc71]/20 drawer-action duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-              @click="handleSubmit"
-            >
-              <Loader v-if="isSubmitting" class="h-4 w-4 animate-spin" aria-hidden="true" />
-              <Save v-else class="h-4 w-4" aria-hidden="true" />
-              {{ submitLabel }}
-            </button>
+        <div
+          class="flex-shrink-0 border-t border-slate-200 bg-white px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)]"
+        >
+          <!--
+            Two strips in one grid cell, cross-fading. The question "discard
+            this?" is asked in the footer the vendor pressed rather than in a
+            modal stacked over the drawer — a sheet at z-[1001] over a drawer at
+            z-[999] is a modal over a modal, with a second scrim and a second
+            Escape target, and this one has exactly two answers. Both strips are
+            one row of buttons at one height, so the footer never jogs.
 
-            <button
-              type="button"
-              class="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors duration-200 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-              @click="closeDrawer"
-            >
-              {{ t('services.listingForm.actions.cancel') }}
-            </button>
+            The safe answer keeps the primary position and the solid cap; the
+            destructive one is quiet red text where Cancel was. A red slab here
+            would be the loudest object on screen, for the outcome nobody wants.
+          -->
+          <div class="grid">
+            <Transition name="footer-strip">
+              <div
+                v-if="confirmingDiscard"
+                class="footer-strip flex items-center justify-between gap-3"
+              >
+                <button
+                  type="button"
+                  class="drawer-action rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+                  @click="confirmingDiscard = false"
+                >
+                  {{ t('services.listingForm.actions.keepEditing') }}
+                </button>
+
+                <button
+                  type="button"
+                  class="drawer-action rounded-lg px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-200"
+                  @click="discardAndClose"
+                >
+                  {{ t('services.listingForm.actions.discard') }}
+                </button>
+              </div>
+
+              <div v-else class="footer-strip flex items-center justify-between gap-3">
+                <!-- The three states share one grid cell, so the button measures
+                     to the widest of them once and never resizes as they swap —
+                     the same face swap the event drawers run, from the same
+                     stylesheet, so publishing a listing and creating an event
+                     feel like one kind of act. The tick is also why nothing is
+                     toasted on the way out: the control answers for itself, and
+                     the row it wrote is on screen behind the drawer as it
+                     leaves. -->
+                <button
+                  type="button"
+                  :disabled="isBusy"
+                  :class="['action-btn', isComplete ? 'is-complete' : '']"
+                  class="grid rounded-lg bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-[#2ecc71]/20 hover:opacity-90"
+                  @click="handleSubmit"
+                >
+                  <span class="action-face" :data-on="!isSubmitting && !isComplete">
+                    <Save class="h-4 w-4" aria-hidden="true" />
+                    <span>{{ idleLabel }}</span>
+                  </span>
+                  <span class="action-face" :data-on="isSubmitting">
+                    <Loader class="h-4 w-4 animate-spin" aria-hidden="true" />
+                    <span>{{ workingLabel }}</span>
+                  </span>
+                  <span class="action-face" :data-on="isComplete" aria-live="polite">
+                    <Check class="h-4 w-4" aria-hidden="true" />
+                    <span>{{ doneLabel }}</span>
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  :disabled="isBusy"
+                  class="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-[background-color,transform,opacity] duration-150 ease-out hover:bg-slate-100 active:scale-95 disabled:pointer-events-none disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+                  @click="requestClose"
+                >
+                  {{ t('services.listingForm.actions.cancel') }}
+                </button>
+              </div>
+            </Transition>
           </div>
         </div>
       </div>
@@ -631,6 +699,7 @@ import { computed, nextTick, onUnmounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   ArrowRight,
+  Check,
   ChevronDown,
   ChevronRight,
   DollarSign,
@@ -645,9 +714,12 @@ import {
   X,
 } from 'lucide-vue-next'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
+import SegmentedField, { type SegmentedOption } from '@/components/common/SegmentedField.vue'
 import ServiceCard from './ServiceCard.vue'
 import type { Listing, PriceType } from './types'
 import { useToast } from '@/composables/useToast'
+import { useActionConfirmation } from '@/composables/useActionConfirmation'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 import { useCategoryTranslation } from '@/composables/useCategoryTranslation'
 import {
   serviceCategoriesService,
@@ -660,6 +732,14 @@ import {
 } from '@/services/api'
 
 interface GalleryImage {
+  /*
+    Stable identity for the tile, independent of position and of whether the
+    photo exists on the server yet. `:key="index"` made removing one repaint
+    every tile after it into its neighbour's slot instead of moving them, and
+    left the dirty check with no cheap way to compare two galleries — a
+    freshly picked photo's only other identifier is a base64 data URL.
+  */
+  key: number
   id?: number // From the API when editing an existing listing
   url: string
   file?: File // Newly picked, not yet uploaded
@@ -687,10 +767,15 @@ const { translateServiceCategory } = useCategoryTranslation()
 
 const MAX_GALLERY = 10
 
+/*
+  One table, two readers: the segmented picker below and `buildPriceDisplayText`,
+  which used to carry its own `USD ? '$' : EUR ? '€' : '៛'` ternary — a second
+  place to forget a currency.
+*/
 const CURRENCIES = [
-  { value: 'USD', label: 'USD ($)' },
-  { value: 'KHR', label: 'KHR (៛)' },
-  { value: 'EUR', label: 'EUR (€)' },
+  { value: 'USD', symbol: '$' },
+  { value: 'KHR', symbol: '៛' },
+  { value: 'EUR', symbol: '€' },
 ] as const
 
 /* ------------------------------------------------------------------ chrome --
@@ -700,30 +785,69 @@ const CURRENCIES = [
   local because that module is the settings page's own contract and this drawer
   opens from more than one place.
 */
+// `text-base sm:text-sm`: Mobile Safari zooms the whole page when a focused
+// input measures under 16px, and inside a drawer there is no way back out.
+// Desktop keeps the 14px the §8 recipe specifies.
 const FIELD_BASE =
-  'w-full py-2.5 pr-3.5 text-sm text-slate-900 placeholder:text-slate-400 bg-white border border-slate-300 rounded-lg transition-colors duration-200 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400'
+  'w-full py-2.5 pr-3.5 text-base sm:text-sm text-slate-900 placeholder:text-slate-400 bg-white border border-slate-300 rounded-lg transition-colors duration-200 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-400'
 const fieldClass = `${FIELD_BASE} pl-3.5`
 const prefixedFieldClass = `${FIELD_BASE} pl-9`
 const invalidFieldClass = 'border-red-300 focus:border-red-400 focus:ring-red-200'
 const labelClass = 'block text-sm font-medium text-slate-700 mb-2'
 const hintClass = 'mt-1.5 text-xs text-slate-500'
 const errorTextClass = 'mt-1.5 text-xs text-red-600'
-const sectionHeadingClass = 'text-xs font-semibold uppercase tracking-wider text-slate-500'
+// `drawer-action` rather than `transition-colors`: a 40px disc is small enough
+// that a scale reads as a press, which `hover:bg-white` alone cannot do on the
+// phone these photos were taken with.
 const tileButtonClass =
-  'flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-sm ring-1 ring-slate-900/5 backdrop-blur-sm transition-colors duration-200 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200'
+  'drawer-action flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-sm ring-1 ring-slate-900/5 backdrop-blur-sm hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200'
 
 /* ------------------------------------------------------------------- state -- */
 
 const isEditMode = computed(() => !!props.listingId)
 
+const panel = ref<HTMLElement>()
+const titleInput = ref<HTMLInputElement>()
 const scroller = ref<HTMLElement | null>(null)
 const loading = ref(false)
 const isSubmitting = ref(false)
 const showDeleteConfirm = ref(false)
 const isDeleting = ref(false)
 
+/*
+  Held on screen after a successful save, long enough to be seen: the face swap
+  alone costs ~280ms, so a shorter hold would close on a tick that never
+  finished arriving. Same 900ms the event drawers hold.
+*/
+const {
+  confirmed: isComplete,
+  confirm: holdConfirmation,
+  reset: resetConfirmation,
+} = useActionConfirmation(900)
+const isBusy = computed(() => isSubmitting.value || isComplete.value)
+
 const galleryFileInput = ref<HTMLInputElement | null>(null)
 const newTag = ref('')
+
+/** Whether the footer is asking the discard question rather than offering to save. */
+const confirmingDiscard = ref(false)
+
+let nextGalleryKey = 0
+
+/**
+ * The last photo removed, and enough state to put it back exactly where it was.
+ *
+ * Held rather than deleted because the server delete does not happen until
+ * save: until then a removal is entirely local and costs nothing to reverse.
+ */
+const removedPhoto = ref<{ image: GalleryImage; index: number; coverIndex: number } | null>(null)
+let undoTimer: ReturnType<typeof setTimeout> | undefined
+
+const clearRemovedPhoto = () => {
+  if (undoTimer) clearTimeout(undoTimer)
+  undoTimer = undefined
+  removedPhoto.value = null
+}
 
 /**
  * Whether the optional group is open. Closed for a new listing, open whenever
@@ -756,26 +880,84 @@ const form = reactive({
 
 const errors = reactive<Partial<Record<FieldKey, string>>>({})
 
-const priceTypeOptions = computed(() => [
-  { value: 'fixed' as const, label: t('services.listingForm.priceTypes.fixed'), icon: DollarSign },
-  { value: 'range' as const, label: t('services.listingForm.priceTypes.range'), icon: TrendingUp },
-  {
-    value: 'quote' as const,
-    label: t('services.listingForm.priceTypes.quote'),
-    icon: MessageSquare,
-  },
+/*
+  Which fields the vendor has actually left, so a form they are halfway through
+  is never covered in complaints about the parts they have not reached yet.
+  Deliberately a plain Set: it is only ever read inside an event handler, and a
+  reactive one would re-run `errors` consumers for a fact they do not display.
+*/
+const FIELD_ORDER: FieldKey[] = ['title', 'description', 'category', 'priceMin', 'priceMax']
+const touched = new Set<FieldKey>()
+
+/*
+  What the form looked like when it was handed to the vendor — an empty create,
+  or the listing as it was loaded. Comparing against it is what lets Escape and
+  Cancel close instantly when there is nothing to lose: a confirmation on every
+  exit is what teaches people to click through the one that mattered.
+
+  The gallery reduces to its keys, so the comparison never carries a base64
+  data URL, and `priceDisplayText` is left out because nothing in this form can
+  change it.
+*/
+const snapshotForm = (): string =>
+  JSON.stringify({
+    title: form.title,
+    tagline: form.tagline,
+    description: form.description,
+    category: form.category,
+    priceType: form.priceType,
+    priceMin: form.priceMin,
+    priceMax: form.priceMax,
+    currency: form.currency,
+    serviceArea: form.serviceArea,
+    tags: form.tags,
+    gallery: form.gallery.map((image) => image.key),
+    coverIndex: form.coverIndex,
+  })
+
+const baseline = ref('')
+const isDirty = computed(() => snapshotForm() !== baseline.value)
+
+const priceTypeOptions = computed<SegmentedOption[]>(() => [
+  { value: 'fixed', label: t('services.listingForm.priceTypes.fixed'), icon: DollarSign },
+  { value: 'range', label: t('services.listingForm.priceTypes.range'), icon: TrendingUp },
+  { value: 'quote', label: t('services.listingForm.priceTypes.quote'), icon: MessageSquare },
 ])
 
-const submitLabel = computed(() => {
-  if (isSubmitting.value) {
-    return isEditMode.value
-      ? t('services.listingForm.actions.saving')
-      : t('services.listingForm.actions.creating')
-  }
-  return isEditMode.value
+/*
+  Codes, not "USD ($)": three segments share the trailing half of a list row, so
+  the label has to survive a Khmer "រូបិយប័ណ្ណ" beside it on a 375px phone. The
+  symbol is not lost — it is in the preview card at the top of the drawer, in
+  the price string a client will actually read.
+*/
+const currencyOptions: SegmentedOption[] = CURRENCIES.map((c) => ({
+  value: c.value,
+  label: c.value,
+}))
+
+/** Either figure being wrong reddens the group's border; the messages sit under it. */
+const hasPriceError = computed(() => !!(errors.priceMin || errors.priceMax))
+
+/*
+  Three labels, written to roughly one length so the button that never resizes
+  never looks half-empty (see actionButton.css). "Listing created" and "Listing
+  updated" are the strings that used to be toasted; the control says them now.
+*/
+const idleLabel = computed(() =>
+  isEditMode.value
     ? t('services.listingForm.actions.save')
-    : t('services.listingForm.actions.create')
-})
+    : t('services.listingForm.actions.create'),
+)
+const workingLabel = computed(() =>
+  isEditMode.value
+    ? t('services.listingForm.actions.saving')
+    : t('services.listingForm.actions.creating'),
+)
+const doneLabel = computed(() =>
+  isEditMode.value
+    ? t('services.listingForm.messages.updated')
+    : t('services.listingForm.messages.created'),
+)
 
 /** Only shown for a listing a reviewer actually sent back — see the card's note. */
 const reviewNote = computed(() => {
@@ -794,6 +976,60 @@ const clearError = (field: FieldKey) => {
 
 const clearAllErrors = () => {
   for (const key of Object.keys(errors) as FieldKey[]) delete errors[key]
+}
+
+/**
+ * One field's complaint, or '' if it has none. The single source of truth for
+ * both the blur pass and the submit sweep, so the two can never disagree about
+ * what "valid" means.
+ */
+const fieldError = (field: FieldKey): string => {
+  switch (field) {
+    case 'title':
+      return form.title.trim() ? '' : t('services.listingForm.errors.title')
+    case 'description':
+      return form.description.trim() ? '' : t('services.listingForm.errors.description')
+    case 'category':
+      return form.category ? '' : t('services.listingForm.errors.category')
+    case 'priceMin':
+      if (form.priceType === 'fixed') {
+        return form.priceMin ? '' : t('services.listingForm.errors.price')
+      }
+      if (form.priceType === 'range') {
+        return form.priceMin ? '' : t('services.listingForm.errors.minPrice')
+      }
+      return ''
+    case 'priceMax':
+      if (form.priceType !== 'range') return ''
+      if (!form.priceMax) return t('services.listingForm.errors.maxPrice')
+      return form.priceMin && form.priceMax <= form.priceMin
+        ? t('services.listingForm.errors.rangeOrder')
+        : ''
+  }
+}
+
+/** Re-run every field the vendor has already left, and only those. */
+const refreshTouchedErrors = () => {
+  for (const key of FIELD_ORDER) {
+    if (!touched.has(key)) continue
+    const message = fieldError(key)
+    if (message) errors[key] = message
+    else delete errors[key]
+  }
+}
+
+/**
+ * A field the vendor has finished with. Called on blur — and on `change` for
+ * the category, where the commit *is* the change and waiting for blur would
+ * leave a complaint standing over an answered question.
+ *
+ * Every touched field is re-checked, not just this one: the range rule spans
+ * both prices, so leaving the lower one has to be able to clear a complaint
+ * sitting on the upper.
+ */
+const touchField = (field: FieldKey) => {
+  touched.add(field)
+  refreshTouchedErrors()
 }
 
 const selectPriceType = (value: PriceTypeValue) => {
@@ -819,6 +1055,8 @@ const resetForm = () => {
   currentListing.value = null
   newTag.value = ''
   showOptional.value = false
+  touched.clear()
+  clearRemovedPhoto()
   clearAllErrors()
 }
 
@@ -865,6 +1103,7 @@ const populateFormFromListing = (listing: ServiceListing) => {
   showOptional.value = !!(form.tagline || form.serviceArea || form.tags.length)
 
   form.gallery = (listing.media || []).map((media) => ({
+    key: nextGalleryKey++,
     id: media.id,
     url: apiClient.getProfilePictureUrl(media.image) || media.image,
     is_cover: media.is_cover,
@@ -920,6 +1159,7 @@ const handleGalleryFileSelect = (e: Event) => {
     const reader = new FileReader()
     reader.onload = (ev) => {
       form.gallery.push({
+        key: nextGalleryKey++,
         url: ev.target?.result as string,
         file,
         is_cover: isFirstImage && idx === 0, // First photo becomes the cover
@@ -932,14 +1172,39 @@ const handleGalleryFileSelect = (e: Event) => {
   target.value = ''
 }
 
+const UNDO_WINDOW_MS = 8000
+
 const removeGalleryImage = (index: number) => {
-  form.gallery.splice(index, 1)
+  const [image] = form.gallery.splice(index, 1)
+  if (!image) return
+
+  // Stashed before the cover is reshuffled, so undo restores the arrangement
+  // rather than reconstructing it.
+  if (undoTimer) clearTimeout(undoTimer)
+  removedPhoto.value = { image, index, coverIndex: form.coverIndex }
+  undoTimer = setTimeout(clearRemovedPhoto, UNDO_WINDOW_MS)
+
   if (form.coverIndex === index) {
     form.coverIndex = form.gallery.length > 0 ? 0 : -1
     if (form.gallery.length > 0) form.gallery[0].is_cover = true
   } else if (form.coverIndex > index) {
     form.coverIndex--
   }
+}
+
+const undoRemoveGalleryImage = () => {
+  const stash = removedPhoto.value
+  if (!stash) return
+
+  form.gallery.splice(stash.index, 0, stash.image)
+  // Reasserted from the stashed index rather than nudged back: the removal may
+  // have moved the cover onto a different photo, and flipping one flag would
+  // leave two of them claiming it.
+  form.coverIndex = stash.coverIndex
+  form.gallery.forEach((img, idx) => {
+    img.is_cover = idx === stash.coverIndex
+  })
+  clearRemovedPhoto()
 }
 
 const setCoverImage = (index: number) => {
@@ -968,7 +1233,7 @@ const removeTag = (index: number) => {
 const buildPriceDisplayText = (): string => {
   if (form.priceDisplayText) return form.priceDisplayText
 
-  const symbol = form.currency === 'USD' ? '$' : form.currency === 'EUR' ? '€' : '៛'
+  const symbol = CURRENCIES.find((c) => c.value === form.currency)?.symbol ?? '$'
 
   if (form.priceType === 'quote') return 'Contact for Quote'
   if (form.priceType === 'fixed') return `${symbol}${form.priceMin || 0}`
@@ -1045,25 +1310,15 @@ const previewListing = computed<Listing>(() => {
  */
 const validate = (): FieldKey | null => {
   clearAllErrors()
-
-  if (!form.title.trim()) errors.title = t('services.listingForm.errors.title')
-  if (!form.description.trim()) errors.description = t('services.listingForm.errors.description')
-  if (!form.category) errors.category = t('services.listingForm.errors.category')
-
-  if (form.priceType === 'fixed' && !form.priceMin) {
-    errors.priceMin = t('services.listingForm.errors.price')
+  // Everything counts as left once Create has been pressed, so a field the
+  // vendor then fixes clears on its own blur rather than waiting for a second
+  // press to tell it the news.
+  for (const key of FIELD_ORDER) {
+    touched.add(key)
+    const message = fieldError(key)
+    if (message) errors[key] = message
   }
-
-  if (form.priceType === 'range') {
-    if (!form.priceMin) errors.priceMin = t('services.listingForm.errors.minPrice')
-    if (!form.priceMax) errors.priceMax = t('services.listingForm.errors.maxPrice')
-    if (form.priceMin && form.priceMax && form.priceMax <= form.priceMin) {
-      errors.priceMax = t('services.listingForm.errors.rangeOrder')
-    }
-  }
-
-  const order: FieldKey[] = ['title', 'description', 'category', 'priceMin', 'priceMax']
-  return order.find((key) => errors[key]) ?? null
+  return FIELD_ORDER.find((key) => errors[key]) ?? null
 }
 
 const focusField = async (field: FieldKey) => {
@@ -1128,6 +1383,8 @@ const uploadPendingMedia = async (listingId: string): Promise<number | null> => 
 }
 
 const handleSubmit = async () => {
+  if (isBusy.value) return
+
   const firstInvalid = validate()
   if (firstInvalid) {
     focusField(firstInvalid)
@@ -1187,8 +1444,14 @@ const handleSubmit = async () => {
       // Re-read so the parent gets the media changes, not just the field changes
       const refreshed = await serviceListingsService.getListing(props.listingId)
       emit('updated', refreshed.success && refreshed.data ? refreshed.data : response.data)
-      showSuccess(t('services.listingForm.messages.updated'))
-      closeDrawer()
+
+      // Let the parent's merge and re-render land before the swap starts: it
+      // rebuilds the listing behind the drawer, and a 280ms face swap sharing a
+      // tick with that work drops its opening frames.
+      await nextTick()
+
+      isSubmitting.value = false
+      holdConfirmation(() => closeDrawer())
       return
     }
 
@@ -1210,13 +1473,16 @@ const handleSubmit = async () => {
 
     const refreshed = await serviceListingsService.getListing(listingId)
     emit('created', refreshed.success && refreshed.data ? refreshed.data : response.data)
-    showSuccess(t('services.listingForm.messages.created'))
-    closeDrawer()
+    await nextTick()
+    isSubmitting.value = false
+    holdConfirmation(() => closeDrawer())
   } catch (err) {
     console.error('Error saving listing:', err)
     showError(t('services.listingForm.errors.saveFailed'))
   } finally {
-    isSubmitting.value = false
+    // The confirmed hold owns the button from here; clearing the working face
+    // under it would flash the idle label between the spinner and the tick.
+    if (!isComplete.value) isSubmitting.value = false
   }
 }
 
@@ -1248,15 +1514,84 @@ const closeDrawer = () => {
   emit('update:modelValue', false)
 }
 
-// Escape closes the drawer — but only when the confirm modal stacked above it
-// is not the thing on screen, which owns Escape while it is open.
-const onKeydown = (event: KeyboardEvent) => {
-  if (event.key !== 'Escape') return
-  if (showDeleteConfirm.value) {
-    showDeleteConfirm.value = false
+/**
+ * The exit every dismissal that is not a completed save goes through.
+ *
+ * A clean form closes on the spot — asking "discard?" of someone who has
+ * changed nothing is the confirmation that teaches people to click through the
+ * one that mattered. A dirty one turns the footer into the question.
+ */
+const requestClose = () => {
+  if (isBusy.value) return
+  if (isDirty.value) {
+    confirmingDiscard.value = true
     return
   }
   closeDrawer()
+}
+
+const discardAndClose = () => {
+  confirmingDiscard.value = false
+  closeDrawer()
+}
+
+/**
+ * Move focus into the dialog this declares itself to be. Without it focus stays
+ * on the trigger behind the backdrop: a screen reader announces nothing, and
+ * the first Tab has to be rescued by the focus trap.
+ *
+ * The title field only on a pointer, because focusing an input on a phone
+ * throws the keyboard over the sheet before the vendor has seen it. Touch gets
+ * the panel itself — enough to move the AT cursor and announce the dialog,
+ * with no keyboard.
+ */
+const focusOnOpen = async () => {
+  await nextTick()
+  if (!props.modelValue) return
+  // The open sequence awaits two requests, so this can land seconds after the
+  // drawer appeared — by which time the vendor may already be typing in it.
+  // Moving focus is for a dialog nobody is inside yet.
+  if (panel.value?.contains(document.activeElement)) return
+  // Guarded: an unhandled rejection in here would take the open sequence with
+  // it, and a drawer that fails to finish opening is worse than one that opens
+  // without moving focus.
+  const usesPointer =
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(hover: hover) and (pointer: fine)').matches
+  const target = usesPointer ? titleInput.value : undefined
+  ;(target ?? panel.value)?.focus({ preventScroll: true })
+}
+
+// Keep Tab inside the drawer — without this the user tabs straight out into the
+// page behind the backdrop, which they can neither see nor click, and the only
+// way back is a mouse.
+const { trapFocus } = useFocusTrap(panel)
+
+// Escape closes the drawer — but only when the confirm modal stacked above it
+// is not the thing on screen, which owns Escape while it is open.
+const onKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Tab') {
+    // The confirm modal is a sibling of the drawer, not a descendant of it, so
+    // while it is up it owns focus and the trap must stand down — otherwise Tab
+    // bounces back into a drawer the vendor cannot act on.
+    if (!showDeleteConfirm.value) trapFocus(event)
+    return
+  }
+  if (event.key !== 'Escape') return
+  if (showDeleteConfirm.value) {
+    if (!isDeleting.value) showDeleteConfirm.value = false
+    return
+  }
+  // Escape backs out of the discard question rather than answering it. The key
+  // that dismisses things must never be the key that destroys work — pressing
+  // it again simply asks once more.
+  if (confirmingDiscard.value) {
+    confirmingDiscard.value = false
+    return
+  }
+  // A save in flight is not something Escape may cancel: the request is already
+  // out, and closing here would leave the vendor unsure whether it landed.
+  if (!isBusy.value) requestClose()
 }
 
 // The page behind must not scroll, and it must not shift sideways when its
@@ -1285,7 +1620,11 @@ watch(
         until the categories arrived the page behind still scrolled and Escape
         did nothing.
       */
-      if (!props.listingId) resetForm()
+      if (!props.listingId) {
+        resetForm()
+        baseline.value = snapshotForm()
+      }
+      confirmingDiscard.value = false
 
       const scrollbarWidth = getScrollbarWidth()
       document.body.style.overflow = 'hidden'
@@ -1299,9 +1638,21 @@ watch(
       // by the answer to the previous question.
       if (props.listingId && props.modelValue) {
         await fetchListing(props.listingId)
+        // Re-taken once the fields are filled, so "dirty" means the vendor
+        // changed something and never means "the form finished loading".
+        baseline.value = snapshotForm()
       }
+
+      focusOnOpen()
     } else {
       document.removeEventListener('keydown', onKeydown)
+      // Dismissed mid-confirmation (Escape, the cancel button): drop the held
+      // state without running its follow-up, so reopening does not start on a
+      // stale tick.
+      resetConfirmation()
+      isSubmitting.value = false
+      confirmingDiscard.value = false
+      clearRemovedPhoto()
       // Deferred past the leave transition (350ms) so the page behind does not
       // reflow mid-slide.
       setTimeout(() => {
@@ -1315,39 +1666,71 @@ watch(
 watch(
   () => props.listingId,
   async (newListingId) => {
-    if (newListingId && props.modelValue) await fetchListing(newListingId)
+    if (!newListingId || !props.modelValue) return
+    await fetchListing(newListingId)
+    // A different listing is a different form: what counted as unsaved work a
+    // moment ago belongs to a listing this drawer is no longer showing.
+    touched.clear()
+    clearRemovedPhoto()
+    baseline.value = snapshotForm()
   },
 )
 
 onUnmounted(() => {
+  if (undoTimer) clearTimeout(undoTimer)
   document.removeEventListener('keydown', onKeydown)
   document.body.style.overflow = ''
   document.body.style.paddingRight = ''
 })
 </script>
 
-<style scoped>
+<style scoped src="../common/actionButton.css"></style>
+<style scoped src="../common/groupedList.css"></style>
 
-/* Expand/collapse via grid rows, never max-height — §15. Padding lives on the
-   innermost layer so it collapses with the content. */
-.collapse-enter-active,
-.collapse-leave-active {
-  transition:
-    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease;
+<style scoped>
+/* The form stays visible but stops accepting edits while the save is in flight,
+   so nothing the vendor types can be silently dropped. */
+.form-busy {
+  pointer-events: none;
+  opacity: 0.6;
+  transition: opacity 0.2s ease-out;
 }
 
-.collapse-enter-from,
-.collapse-leave-to {
-  grid-template-rows: 0fr;
+/*
+  The two footer strips share one grid cell and cross-fade. No `mode`: with
+  `out-in` the cell empties for a frame and the footer collapses to nothing,
+  which is the one thing a strip of buttons under a form must never do. Both
+  are `grid-area: 1 / 1`, so the footer measures the taller of them — they are
+  the same height — and never jogs.
+*/
+.footer-strip {
+  grid-area: 1 / 1;
+  transition: opacity 0.18s ease-out;
+}
+
+.footer-strip-enter-from,
+.footer-strip-leave-to {
   opacity: 0;
 }
 
+/* The outgoing strip is still on screen for 180ms and must not be clickable:
+   its buttons sit exactly on top of the ones replacing them. */
+.footer-strip-leave-active {
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .collapse-enter-active,
-  .collapse-leave-active {
-    transition: none;
-  }}
+  .footer-strip {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* An invalid figure reddens the group's own border. The rows inside keep their
+   hairlines: it is the pair of prices that is wrong, and the message under the
+   group says which. */
+.list-group.is-invalid {
+  border-color: rgb(252 165 165); /* red-300 */
+}
 
 /* Thin scrollbar, per §10 */
 .overflow-y-auto::-webkit-scrollbar {
@@ -1361,4 +1744,5 @@ onUnmounted(() => {
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}</style>
+}
+</style>

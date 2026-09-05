@@ -91,11 +91,6 @@
     "editTitle": "Edit listing",
     "close": "Close",
     "delete": "Delete listing",
-    "sections": {
-      "basics": "Basics",
-      "pricing": "Pricing",
-      "photos": "Photos"
-    },
     "reviewNoteTitle": "What the reviewer asked for",
     "fields": {
       "title": "Service title",
@@ -131,14 +126,18 @@
       "hint": "Up to 10 photos. The starred one is your cover.",
       "cover": "Cover",
       "setCover": "Set as cover",
-      "remove": "Remove photo"
+      "remove": "Remove photo",
+      "removed": "Photo removed",
+      "undo": "Undo"
     },
     "actions": {
       "create": "Create listing",
       "creating": "Creating…",
       "save": "Save changes",
       "saving": "Saving…",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "discard": "Discard changes",
+      "keepEditing": "Keep editing"
     },
     "errors": {
       "title": "Give this listing a title.",
