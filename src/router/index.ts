@@ -241,6 +241,66 @@ const router = createRouter({
       component: () => import('../views/MyTicketOrderView.vue'),
       meta: { requiresAuth: true, title: 'Ticket Order - GoEvent' },
     },
+    {
+      /**
+       * Staff dashboard. Dynamic imports throughout, including the layout, so
+       * the whole subtree is its own chunk and never ships to a normal user.
+       *
+       * `requiresStaff` implies the token check as well — see the guard below.
+       * It is deliberately not added to the name-based `sensitiveRoutes` list,
+       * which is easy to forget when adding the tenth admin route.
+       */
+      path: '/admin',
+      component: () => import('../components/admin/AdminLayout.vue'),
+      meta: { requiresAuth: true, requiresStaff: true, title: 'Admin - GoEvent' },
+      children: [
+        {
+          path: '',
+          name: 'admin-dashboard',
+          component: () => import('../views/admin/AdminDashboardView.vue'),
+        },
+        {
+          path: 'templates',
+          name: 'admin-templates',
+          component: () => import('../views/admin/AdminTemplateQueueView.vue'),
+        },
+        {
+          path: 'listings',
+          name: 'admin-listings',
+          component: () => import('../views/admin/AdminListingQueueView.vue'),
+        },
+        {
+          path: 'partner-requests',
+          name: 'admin-partner-requests',
+          component: () => import('../views/admin/AdminPartnerRequestQueueView.vue'),
+        },
+        {
+          path: 'payments',
+          name: 'admin-payments',
+          component: () => import('../views/admin/AdminPaymentQueueView.vue'),
+        },
+        {
+          path: 'commissions',
+          name: 'admin-commissions',
+          component: () => import('../views/admin/AdminCommissionQueueView.vue'),
+        },
+        {
+          path: 'credit-orders',
+          name: 'admin-credit-orders',
+          component: () => import('../views/admin/AdminCreditOrderQueueView.vue'),
+        },
+        {
+          path: 'users',
+          name: 'admin-users',
+          component: () => import('../views/admin/AdminUsersView.vue'),
+        },
+        {
+          path: 'actions',
+          name: 'admin-actions',
+          component: () => import('../views/admin/AdminActionsView.vue'),
+        },
+      ],
+    },
   ],
 })
 
@@ -304,6 +364,43 @@ router.beforeEach(async (to, from, next) => {
     if (!authStore.isAuthenticated) {
       console.info('[Router] User not authenticated, redirecting to sign in')
       next(`/signin?redirect=${encodeURIComponent(to.fullPath)}`)
+      return
+    }
+
+    /**
+     * Staff-only subtree. `requiresStaff` implies the token check rather than
+     * relying on the name-based `sensitiveRoutes` list below, which is easy to
+     * forget when adding a route to a nine-page dashboard.
+     *
+     * A non-staff account is sent to `/events`, not to a "forbidden" page —
+     * there is nothing to gain by confirming that `/admin` exists.
+     *
+     * **This guard is UX, not security.** Every `/api/admin/` endpoint enforces
+     * `is_staff` server-side, and nothing may ever conclude "the router blocks
+     * it". Note also that a `403` from that API means "not staff" and must not
+     * trigger a logout — which is why this branch checks the flag itself rather
+     * than reading one out of a failed request.
+     */
+    if (to.meta.requiresStaff) {
+      try {
+        const isTokenValid = await authService.ensureValidToken()
+
+        if (!isTokenValid) {
+          console.warn('[Router] Token validation failed for staff route, logging out')
+          await authStore.logout()
+          next(`/signin?redirect=${encodeURIComponent(to.fullPath)}`)
+          return
+        }
+      } catch (error) {
+        console.warn('[Router] Staff token validation error:', error)
+      }
+
+      if (!authStore.user?.is_staff) {
+        next('/events')
+        return
+      }
+
+      next()
       return
     }
 

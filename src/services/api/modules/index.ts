@@ -47,3 +47,8 @@ export { partnerCreditsService } from './credits.service'
 // and answers 403 without the flag, whereas these two endpoints exist precisely
 // for the accounts that do not have it yet.
 export { partnerRequestsService } from './partner-requests.service'
+
+// Staff dashboard. Every route is gated on `is_staff`, so a 403 here means
+// "not staff" rather than a token problem — see the module's own header.
+export { adminService } from './admin.service'
+export type { AdminRejectExtra } from './admin.service'

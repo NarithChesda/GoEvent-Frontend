@@ -358,6 +358,20 @@
                   >
                     {{ t('common.nav.credits') }}
                   </RouterLink>
+                  <!-- The staff dashboard, for staff only. Unlike the credits
+                       link above, gating this one is right: `/admin` has no
+                       half for anyone else, and the router sends a non-staff
+                       account to /events rather than to a "forbidden" page
+                       precisely so the subtree is not advertised. -->
+                  <RouterLink
+                    v-if="isStaff"
+                    to="/admin"
+                    @click="closeUserMenu"
+                    class="block px-5 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                    role="menuitem"
+                  >
+                    {{ t('common.nav.admin') }}
+                  </RouterLink>
                   <!-- Language — a straight toggle, not a submenu. The menu stays
                        open so the label flips in place and confirms the switch. -->
                   <button
@@ -439,6 +453,9 @@ const authStore = useAuthStore()
 // Vendor profile for showing listings link
 const { vendorState } = useVendorProfile({ autoLoad: true })
 const isVerifiedVendor = computed(() => vendorState.value === 'verified')
+
+/** Django staff. The only gate on the admin dashboard link. */
+const isStaff = computed(() => !!authStore.user?.is_staff)
 
 // Global search
 const { open: openSearch } = useGlobalSearch()
