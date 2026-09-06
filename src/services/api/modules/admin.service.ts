@@ -28,6 +28,13 @@ import type {
   PaginatedResponse,
   QueryParams,
   AdminActionRow,
+  AdminApplicationMove,
+  AdminApplicationRow,
+  AdminApplicationStatus,
+  AdminCatalogue,
+  AdminFieldsResult,
+  AdminTemplateCataloguePayload,
+  AdminTemplateRow,
   AdminDecision,
   AdminFlagsResult,
   AdminMetrics,
@@ -116,6 +123,115 @@ export const adminService = {
       note: note.trim(),
       ...extra,
     })
+  },
+
+  // -------------------------------------------------------------------------
+  // Managed catalogues
+  //
+  // Full CRUD, and generic for the same reason the queues are: six lists that
+  // differ in their fields and not at all in their verbs.
+  //
+  // **Writes take FormData or a plain object.** Three of the six carry a file
+  // (music, fonts, team) and the API accepts multipart *and* JSON, so a
+  // one-field toggle need not be multipart — the caller passes whichever it has
+  // and this picks the matching client method.
+  // -------------------------------------------------------------------------
+
+  async listCatalogue<T>(
+    catalogue: AdminCatalogue,
+    params?: QueryParams,
+  ): Promise<ApiResponse<PaginatedResponse<T>>> {
+    return apiClient.get<PaginatedResponse<T>>(`/api/admin/${catalogue}/`, params)
+  },
+
+  async createCatalogueItem<T>(
+    catalogue: AdminCatalogue,
+    body: FormData | Record<string, unknown>,
+  ): Promise<ApiResponse<T>> {
+    const path = `/api/admin/${catalogue}/`
+    return body instanceof FormData
+      ? apiClient.postFormData<T>(path, body)
+      : apiClient.post<T>(path, body)
+  },
+
+  /**
+   * PATCH, never PUT: a PUT would blank every field the form did not send, and
+   * a catalogue row edited through a single toggle sends one of them.
+   */
+  async updateCatalogueItem<T>(
+    catalogue: AdminCatalogue,
+    id: string | number,
+    body: FormData | Record<string, unknown>,
+  ): Promise<ApiResponse<T>> {
+    const path = `/api/admin/${catalogue}/${id}/`
+    return body instanceof FormData
+      ? apiClient.patchFormData<T>(path, body)
+      : apiClient.patch<T>(path, body)
+  },
+
+  /**
+   * Permanent, and quiet about it. Every catalogue reporting a usage count
+   * reports it because deleting does **not** fail when something is using the
+   * row — the FK is `SET_NULL`, so the content is simply left without its
+   * music, its category, its typeface. Deactivating is nearly always right.
+   */
+  async deleteCatalogueItem(
+    catalogue: AdminCatalogue,
+    id: string | number,
+  ): Promise<ApiResponse<null>> {
+    return apiClient.delete<null>(`/api/admin/${catalogue}/${id}/`)
+  },
+
+  // -------------------------------------------------------------------------
+  // Career applications
+  // -------------------------------------------------------------------------
+
+  async listApplications(
+    params?: QueryParams,
+  ): Promise<ApiResponse<PaginatedResponse<AdminApplicationRow>>> {
+    return apiClient.get<PaginatedResponse<AdminApplicationRow>>(
+      '/api/admin/applications/',
+      params,
+    )
+  },
+
+  /**
+   * Move an application through the pipeline.
+   *
+   * **Not a decision call**, despite the shape. Hiring has no fixed order, so
+   * moves are unguarded: no `409`, no forward-only rule, and a move back to an
+   * earlier state is legitimate. The audit row carrying `{from, to}` is what
+   * replaces the missing state machine.
+   *
+   * A move to the state it is already in writes nothing and answers with
+   * `action_id: null`. That is "no change", not success.
+   */
+  async moveApplication(
+    id: string | number,
+    status: AdminApplicationStatus,
+    note?: string,
+  ): Promise<ApiResponse<AdminApplicationMove>> {
+    return apiClient.post<AdminApplicationMove>(`/api/admin/applications/${id}/status/`, {
+      status,
+      note: note?.trim() || undefined,
+    })
+  },
+
+  /**
+   * The catalogue half of a template — name, order, plan, status, version.
+   *
+   * **Any other key is a `400`**, the design blobs included: rejected rather
+   * than ignored, so a typo cannot look like a successful save. The look is
+   * authored in the partner template editor, not here.
+   */
+  async updateTemplateCatalogue(
+    id: number,
+    payload: AdminTemplateCataloguePayload,
+  ): Promise<ApiResponse<AdminFieldsResult<AdminTemplateRow>>> {
+    return apiClient.post<AdminFieldsResult<AdminTemplateRow>>(
+      `/api/admin/templates/${id}/catalogue/`,
+      payload,
+    )
   },
 
   async listUsers(params?: QueryParams): Promise<ApiResponse<PaginatedResponse<AdminUserRow>>> {

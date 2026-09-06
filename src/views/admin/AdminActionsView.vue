@@ -115,6 +115,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
+  ArrowRightLeft,
   Ban,
   Check,
   ChevronDown,
@@ -146,14 +147,9 @@ const ACTIONS: AdminActionKind[] = [
   'create',
   'update',
   'delete',
+  'status_change',
 ]
 
-/**
- * Includes `music` and `font`, whose surfaces this frontend does not build yet.
- * Staff still reach those catalogues through the API and Django admin, so their
- * rows land in this log — and a filter that cannot name them would make those
- * rows unfindable rather than absent.
- */
 const TARGETS: AdminActionTarget[] = [
   'event',
   'template',
@@ -165,6 +161,11 @@ const TARGETS: AdminActionTarget[] = [
   'user',
   'music',
   'font',
+  'icon',
+  'pricing_plan',
+  'team_member',
+  'category',
+  'application',
 ]
 
 const ACTION_ICON: Partial<Record<AdminActionKind, unknown>> = {
@@ -174,6 +175,7 @@ const ACTION_ICON: Partial<Record<AdminActionKind, unknown>> = {
   cancel: Ban,
   claim: Coins,
   flag_change: ToggleRight,
+  status_change: ArrowRightLeft,
   create: Plus,
   update: Pencil,
   delete: Trash2,
@@ -192,6 +194,7 @@ const ACTION_TONE: Partial<Record<AdminActionKind, string>> = {
   delete: 'bg-red-50 text-red-600',
   claim: 'bg-sky-50 text-[#1e90ff]',
   flag_change: 'bg-slate-100 text-slate-600',
+  status_change: 'bg-sky-50 text-[#1e90ff]',
   create: 'bg-slate-100 text-slate-600',
   update: 'bg-slate-100 text-slate-600',
 }
@@ -236,6 +239,12 @@ const payloadLine = (row: AdminActionRow): string | null => {
     return t('admin.actions.payload.event', {
       privacy: String(payload.privacy),
       status: String(payload.status),
+    })
+  }
+  if ('from' in payload && 'to' in payload) {
+    return t('admin.actions.payload.move', {
+      from: String(payload.from),
+      to: String(payload.to),
     })
   }
   if ('fields' in payload) {

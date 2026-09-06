@@ -5,9 +5,9 @@
       <h2 class="text-base font-semibold text-slate-900">{{ t('admin.dashboard.queuesTitle') }}</h2>
       <p class="mt-1 text-sm text-slate-600">{{ t('admin.dashboard.queuesBody') }}</p>
 
-      <div v-if="adminStore.loading && !adminStore.summary" class="mt-3 grid gap-3 sm:grid-cols-2">
+      <div v-if="adminStore.loading && !adminStore.summary" class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <div
-          v-for="n in 6"
+          v-for="n in 8"
           :key="n"
           class="h-[4.5rem] animate-pulse rounded-2xl border border-slate-200 bg-white"
         />
@@ -20,7 +20,7 @@
         {{ adminStore.error }}
       </p>
 
-      <div v-else class="mt-3 grid gap-3 sm:grid-cols-2">
+      <div v-else class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <RouterLink
           v-for="item in queueItems"
           :key="item.name"
@@ -217,10 +217,15 @@ const metrics = ref<AdminMetrics | null>(null)
 const metricsLoading = ref(false)
 const metricsError = ref<string | null>(null)
 
+/**
+ * The badged destinations, in nav order. Driven off the same registry the
+ * sidebar reads, so a queue can never appear in one and not the other — which
+ * is how `applications` arrived on this page for free.
+ */
 const queueItems = computed(() =>
-  ADMIN_NAV_ITEMS.filter((item) => item.queue).map((item) => ({
+  ADMIN_NAV_ITEMS.filter((item) => item.badge).map((item) => ({
     ...item,
-    count: adminStore.pendingFor(item.queue!) ?? 0,
+    count: adminStore.pendingFor(item.badge!) ?? 0,
   })),
 )
 

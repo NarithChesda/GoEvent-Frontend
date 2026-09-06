@@ -53,6 +53,8 @@ export interface AdminSummary {
     payments: number
     commissions: number
     credit_orders: number
+    /** The hiring pipeline. Counts `new` applications, not open positions. */
+    applications: number
   }
   total_pending: number
 }
@@ -374,6 +376,8 @@ export type AdminActionKind =
   | 'create'
   | 'update'
   | 'delete'
+  /** A career application moved between pipeline states. */
+  | 'status_change'
 
 export type AdminActionTarget =
   | 'event'
@@ -384,14 +388,14 @@ export type AdminActionTarget =
   | 'commission'
   | 'credit_order'
   | 'user'
-  /**
-   * Written by the managed-catalogue endpoints (`/api/admin/music/`,
-   * `/api/admin/fonts/`). Those surfaces are **not built in this frontend yet**,
-   * but staff can reach them through Django admin and the API, so their rows
-   * turn up in this log and the filter has to be able to name them.
-   */
+  /** The managed catalogues, which log full CRUD rather than decisions. */
   | 'music'
   | 'font'
+  | 'icon'
+  | 'pricing_plan'
+  | 'team_member'
+  | 'category'
+  | 'application'
 
 /**
  * One audit row. Read-only everywhere, Django admin included.
@@ -412,4 +416,255 @@ export interface AdminActionRow {
   note: string
   payload: Record<string, unknown>
   created_at: string
+}
+
+// ---------------------------------------------------------------------------
+// Managed catalogues
+//
+// Six staff-authored lists with **full CRUD** and no review workflow — there is
+// no state to guard, so there is no approve/reject and no `409`. What they get
+// from living behind `/api/admin/` is the audit trail, and a usage count so
+// nobody retires an asset that live content still points at.
+//
+// Every one of them is reachable through Django admin too. The dashboard exists
+// because the work is frequent and the record matters, not because it was
+// impossible before.
+// ---------------------------------------------------------------------------
+
+/** The six catalogue endpoints. Also the URL segment. */
+export type AdminCatalogue =
+  | 'music'
+  | 'fonts'
+  | 'icons'
+  | 'pricing-plans'
+  | 'categories'
+  | 'team'
+
+/**
+ * `music` — the background tracks an organizer picks from.
+ *
+ * **`events_using` belongs next to the delete control**, not in a detail panel:
+ * it is how many events would lose their music. `Event.selected_music` is
+ * `SET_NULL`, so a delete does not fail — it silently leaves those events
+ * silent. Deactivating retires the track from the picker while everything that
+ * already chose it keeps playing.
+ */
+export interface AdminMusicRow {
+  id: number
+  name: string
+  description: string
+  audio_file: string | null
+  category: string
+  category_display: string
+  /**
+   * Supplied by the uploader — nothing on the server derives it — and the
+   * showcase sizes its player from it, so the form must require it.
+   */
+  duration_seconds: number
+  duration_display: string
+  is_active: boolean
+  order: number
+  events_using: number
+  uploaded_at: string
+}
+
+/**
+ * `fonts` — the shared type library, staff view.
+ *
+ * Wider than `/api/core-data/custom-fonts/`, which narrows a partner to system
+ * fonts plus their own: this returns **every** font including other partners',
+ * because reviewing someone else's upload is the job here.
+ *
+ * The four metric fields are writable, unlike on the core-data endpoint. They
+ * are measured from the file automatically on upload; anything sent explicitly
+ * is left alone, which is how staff hand-correct a face the measurement gets
+ * wrong. All four coming back `null` means the file could not be measured —
+ * the upload still succeeded, but the font will render at the wrong size
+ * against the rest of a template until someone fills them in.
+ */
+export interface AdminFontRow {
+  id: number
+  name: string
+  font_file: string | null
+  /** Server-set. A font added here is `system` with a null `created_by`. */
+  source: 'system' | 'partner'
+  source_display: string
+  created_by: AdminUserRef | null
+  is_active: boolean
+  license_note: string
+  size_adjust: string | null
+  ascent_override: string | null
+  descent_override: string | null
+  line_gap_override: string | null
+  templates_using: number
+  created_at: string
+}
+
+/** `icons` — agenda icons, stored as inline SVG markup rather than files. */
+export interface AdminIconRow {
+  id: number
+  name: string
+  svg_code: string
+  uploaded_at: string
+}
+
+/**
+ * `pricing-plans` — money.
+ *
+ * `templates_using` has to be on screen before a price edit or a
+ * deactivation: every template on the plan changes what it costs. Editing
+ * `commission` moves what partners earn on **future** payments only —
+ * commissions already created carry their own rate.
+ */
+export interface AdminPricingPlanRow {
+  id: number
+  name: string
+  description: string
+  price: string
+  /** The referrer percentage. */
+  commission: string
+  features: string[]
+  category?: number | null
+  category_name?: string | null
+  is_active: boolean
+  is_best_seller: boolean
+  templates_using: number
+  created_at?: string
+}
+
+/**
+ * `categories` — the one partly **user-generated** list here.
+ *
+ * `/api/core-data/event-categories/` lets any authenticated user create one, so
+ * `created_by` is how staff tell a curated entry from something invented for a
+ * single event.
+ *
+ * Prefer `is_active: false` to `DELETE`: `Event.category` is `SET_NULL`, so
+ * deleting silently uncategorises every event using it, and `events_count`
+ * says how many that would be.
+ */
+export interface AdminCategoryRow {
+  id: number
+  name: string
+  description: string
+  color: string
+  icon: string
+  created_by: AdminUserRef | null
+  is_active: boolean
+  events_count: number
+  templates_count: number
+}
+
+/** `team` — the public About page. */
+export interface AdminTeamRow {
+  id: number
+  name: string
+  role: string
+  bio: string
+  profile_picture: string | null
+  email: string
+  linkedin_url: string
+  twitter_url: string
+  github_url: string
+  order: number
+  is_active: boolean
+  created_at?: string
+}
+
+/** Any managed-catalogue row. */
+export type AdminCatalogueRow =
+  | AdminMusicRow
+  | AdminFontRow
+  | AdminIconRow
+  | AdminPricingPlanRow
+  | AdminCategoryRow
+  | AdminTeamRow
+
+// ---------------------------------------------------------------------------
+// Career applications
+// ---------------------------------------------------------------------------
+
+/**
+ * The eight states of the hiring pipeline.
+ *
+ * Ordered as the pipeline reads, which is presentation only: **moves are not
+ * guarded**. Hiring has no fixed order — a candidate can go back to
+ * `reviewing` after an interview — so there is no `409` here and no
+ * forward-only rule.
+ */
+export type AdminApplicationStatus =
+  | 'new'
+  | 'reviewing'
+  | 'shortlisted'
+  | 'interview'
+  | 'offer'
+  | 'hired'
+  | 'rejected'
+  | 'withdrawn'
+
+/**
+ * `applications` — read-only plus one status action.
+ *
+ * Not an approve/reject queue, so it does not go through the decision drawer.
+ * `notes` is the hiring team's private commentary and is **explicitly not
+ * visible to the applicant**; `resume` is a document link. Both are personal
+ * data, which is why every move here is audited.
+ */
+export interface AdminApplicationRow {
+  id: number | string
+  first_name: string
+  last_name: string
+  email: string
+  phone?: string
+  position?: number | null
+  position_title: string | null
+  position_department?: string | null
+  resume: string | null
+  cover_letter?: string
+  /** Private to the hiring team. Never render this to an applicant. */
+  notes: string
+  status: AdminApplicationStatus
+  status_display: string
+  applied_at: string
+  updated_at?: string
+}
+
+/**
+ * The status-move envelope.
+ *
+ * `action_id` is **null** when the move is a no-op — the application was
+ * already in that state, so nothing was written. Render that as "no change".
+ */
+export interface AdminApplicationMove {
+  ok: boolean
+  message: string
+  item: AdminApplicationRow
+  action_id: string | null
+}
+
+/**
+ * The catalogue half of a template — everything about it except how it looks.
+ *
+ * Accepts only these keys plus an optional `note`. **Any other key is a `400`**,
+ * the design blobs included: rejected rather than ignored, so a typo cannot
+ * look like a successful save. The look is authored in the partner template
+ * editor, which staff can already open for any template.
+ */
+export interface AdminTemplateCataloguePayload {
+  name?: string
+  order?: number
+  package_plan?: number | null
+  status?: string
+  showcase_template_version?: string
+  note?: string
+}
+
+/** Envelope for the catalogue edit and any other multi-field audited write. */
+export interface AdminFieldsResult<T> {
+  ok: boolean
+  message: string
+  item: T
+  /** Empty on a no-op, which wrote no audit row. Render as "no change". */
+  changed: string[]
+  action_ids: string[]
 }

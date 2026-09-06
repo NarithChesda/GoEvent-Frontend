@@ -17,10 +17,17 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { adminService } from '@/services/api'
-import type { AdminQueue, AdminSummary } from '@/services/api'
+import type { AdminSummary } from '@/services/api'
+import type { AdminNavBadge } from '@/components/admin/adminNav'
 
-/** Queue → the key it has in the summary payload (which uses underscores). */
-const SUMMARY_KEY: Record<AdminQueue, keyof AdminSummary['queues']> = {
+/**
+ * Badge key → the key it has in the summary payload (which uses underscores).
+ *
+ * `applications` is not an `AdminQueue` — the hiring pipeline has no
+ * approve/reject and does not go through `listQueue` — but it *is* counted in
+ * the summary, so it badges its nav entry like the rest.
+ */
+const SUMMARY_KEY: Record<AdminNavBadge, keyof AdminSummary['queues']> = {
   events: 'events',
   templates: 'templates',
   listings: 'listings',
@@ -28,6 +35,7 @@ const SUMMARY_KEY: Record<AdminQueue, keyof AdminSummary['queues']> = {
   payments: 'payments',
   commissions: 'commissions',
   'credit-orders': 'credit_orders',
+  applications: 'applications',
 }
 
 export const useAdminStore = defineStore('admin', () => {
@@ -37,9 +45,9 @@ export const useAdminStore = defineStore('admin', () => {
 
   const totalPending = computed(() => summary.value?.total_pending ?? 0)
 
-  /** Pending count for one queue, or `null` while the summary has not landed. */
-  const pendingFor = (queue: AdminQueue): number | null =>
-    summary.value ? summary.value.queues[SUMMARY_KEY[queue]] : null
+  /** Pending count for one badge, or `null` while the summary has not landed. */
+  const pendingFor = (badge: AdminNavBadge): number | null =>
+    summary.value ? summary.value.queues[SUMMARY_KEY[badge]] : null
 
   /**
    * Fetch the counts. Called on entering the admin area and after any decision,
