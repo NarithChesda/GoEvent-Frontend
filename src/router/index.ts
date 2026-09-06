@@ -321,6 +321,19 @@ const router = createRouter({
           name: 'admin-pricing-plans',
           component: () => import('../views/admin/AdminPricingPlansView.vue'),
         },
+        // The commerce catalogues. Same CRUD shape as the ones above, except
+        // that both refuse their dangerous delete rather than orphaning quietly
+        // — what a delete would destroy here is a customer's record.
+        {
+          path: 'credit-packs',
+          name: 'admin-credit-packs',
+          component: () => import('../views/admin/AdminCreditPacksView.vue'),
+        },
+        {
+          path: 'promo-codes',
+          name: 'admin-promo-codes',
+          component: () => import('../views/admin/AdminPromoCodesView.vue'),
+        },
         {
           path: 'categories',
           name: 'admin-categories',

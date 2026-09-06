@@ -163,6 +163,8 @@ const TARGETS: AdminActionTarget[] = [
   'font',
   'icon',
   'pricing_plan',
+  'credit_pack',
+  'promo_code',
   'team_member',
   'category',
   'application',

@@ -100,8 +100,19 @@ const props = withDefaults(
     emptyBody: string
     statusOptions?: AdminSelectOption[]
     orderingOptions?: AdminSelectOption[]
+    /**
+     * Whether a filter the *view* owns is narrowing the list — the `#filters`
+     * slot's own selects, which this component passes through without reading.
+     *
+     * Without it, a catalogue whose defining axis is one of those (promo codes
+     * are filtered by `kind` before anything else) answers an empty filtered
+     * result with "there aren't any yet" instead of "nothing matches", which
+     * reads as a platform with no promo codes rather than as a filter with no
+     * hits.
+     */
+    extraFiltered?: boolean
   }>(),
-  { statusOptions: () => [], orderingOptions: () => [] },
+  { statusOptions: () => [], orderingOptions: () => [], extraFiltered: false },
 )
 
 const emit = defineEmits<{ create: []; edit: [row: T] }>()
@@ -126,7 +137,9 @@ const { rows, count, page, totalPages, loading, error, isEmpty, search, status, 
 const { load, refresh, goToPage } = props.catalogue
 
 /** "Empty" means "no matches" once anything is narrowing the list. */
-const isFiltered = computed(() => Boolean(search.value.trim() || status.value))
+const isFiltered = computed(() =>
+  Boolean(search.value.trim() || status.value || props.extraFiltered),
+)
 
 // The shell owns the first fetch because it owns the list — a view that had to
 // remember to call this itself would be six chances to forget, and forgetting

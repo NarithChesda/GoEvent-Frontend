@@ -31,7 +31,9 @@
     "icons": "Icons",
     "pricingPlans": "Pricing plans",
     "categories": "Categories",
-    "team": "Team"
+    "team": "Team",
+    "creditPacks": "Credit packs",
+    "promoCodes": "Promo codes"
   },
   "pagination": {
     "label": "Pages",
@@ -393,7 +395,9 @@
       "pricing_plan": "Pricing plan",
       "team_member": "Team member",
       "category": "Category",
-      "application": "Application"
+      "application": "Application",
+      "credit_pack": "Credit pack",
+      "promo_code": "Promo code"
     },
     "payload": {
       "flag": "{field} set to {value}",
@@ -672,5 +676,208 @@
     "moved": "Application moved",
     "noChange": "No change, it was already in that state.",
     "moveFailed": "That move could not be saved."
+  },
+  "percentOver100": "A percentage discount cannot go above 100%.",
+  "discountTypes": {
+    "percentage": "Percentage off",
+    "fixed": "Fixed amount off"
+  },
+  "planPicker": {
+    "selectAll": "Select all",
+    "clear": "Clear",
+    "none": "There are no pricing plans yet. Add one before pricing this.",
+    "spread": "Ticked plans run {low} to {high}.",
+    "spreadWarning": "Ticked plans run {low} to {high}. A credit covers whichever one it is spent on, so the cheaper plan is being sold at the dearer price."
+  },
+  "partnerPicker": {
+    "placeholder": "Search by email, name or phone",
+    "hint": "Type at least two characters to search accounts.",
+    "results": "Matching accounts",
+    "noMatches": "No account matches that.",
+    "notPartner": "Not a partner",
+    "clear": "Choose a different account"
+  },
+  "creditPacks": {
+    "title": "Credit packs",
+    "description": "The wholesale catalogue partners buy credits from.",
+    "eyebrow": "Credit pack",
+    "add": "Add pack",
+    "search": "Search by name, description or plan",
+    "emptyTitle": "No credit packs yet",
+    "emptyBody": "A pack sets what a partner pays for a batch of credits, and what those credits unlock.",
+    "createTitle": "Add a credit pack",
+    "editTitle": "Edit pack",
+    "scopeFilter": "Template scope",
+    "visibilityFilter": "Visibility",
+    "scopes": {
+      "any_filter": "Any scope",
+      "any": "Any template",
+      "own_partner": "The partner's own designs only"
+    },
+    "visibility": {
+      "all": "All packs",
+      "public": "On the public offer",
+      "bespoke": "Bespoke rates"
+    },
+    "featured": "Popular",
+    "bespoke": "Bespoke",
+    "ownDesigns": "Own designs",
+    "name": "Pack name",
+    "namePlaceholder": "e.g. 25 credits",
+    "descriptionLabel": "Description",
+    "price": "Price",
+    "currency": "Currency",
+    "creditCount": "Credits",
+    "creditCountRequired": "A pack has to carry at least one credit.",
+    "perCreditPreview": "That works out at {amount} per credit.",
+    "creditsAt": "{count} credits at {each} each",
+    "plans": "Plans these credits cover",
+    "plansHint": "Bundle plans of similar price. A credit covers whichever plan it is spent on, so a cheap plan beside a dear one hands away the difference.",
+    "plansRequired": "Choose at least one plan. With none, the issued credits are valid on every plan and would unlock the most expensive template on the platform.",
+    "planSummary": "{first} and {count} more",
+    "discountType": "Discount per credit",
+    "discountValue": "Discount value",
+    "maxDiscount": "Cap per redemption",
+    "maxDiscountHint": "The most one credit can take off. Leave empty for no cap.",
+    "noCap": "No cap",
+    "validityDays": "Credits expire after",
+    "validityHint": "Days from the day the code is issued. Leave empty and they never expire.",
+    "neverExpires": "Never expires",
+    "scope": "What these credits unlock",
+    "scopeOptions": {
+      "any": {
+        "label": "Any template on those plans",
+        "hint": "Includes GoEvent's own designs and other partners' work. This is the standard pack."
+      },
+      "own_partner": {
+        "label": "Only the partner's own approved designs",
+        "hint": "A narrower product, sold at a design-your-own rate. Their design still has to pass review before a credit will spend on it."
+      }
+    },
+    "flags": {
+      "is_active": {
+        "label": "On sale",
+        "hint": "Turning this off withdraws the pack from sale. Credits already bought are untouched."
+      },
+      "is_public": {
+        "label": "On the public offer",
+        "hint": "Off means a bespoke rate: partners and staff see it, the public page does not."
+      },
+      "is_featured": {
+        "label": "Mark as most popular",
+        "hint": "A highlight on the buy page. It changes no price and no position."
+      },
+      "requires_approval": {
+        "label": "Needs staff approval",
+        "hint": "The order waits for a human even when the price is zero."
+      },
+      "once_per_vendor": {
+        "label": "One per partner, ever",
+        "hint": "A second order from the same partner is refused. This is what makes a trial pack a trial."
+      }
+    },
+    "ordersCount": "{count} orders",
+    "repriceWarning": "{count} partners have bought this pack at the current terms. Their orders keep what they paid — an edit here only reaches future orders — but the number they were quoted is about to change.",
+    "orderingCheapest": "Cheapest first",
+    "orderingDearest": "Dearest first",
+    "orderingMostCredits": "Most credits",
+    "expiresInDays": "expires after {days} days",
+    "created": "Pack added",
+    "saved": "Pack saved",
+    "deleted": "Pack deleted",
+    "deleteTitle": "Delete this pack?",
+    "deleteWarning": "This cannot be undone. Withdrawing it from sale instead keeps it out of the catalogue without losing what it was.",
+    "deleteBlockedShort": "A pack that has been ordered cannot be deleted.",
+    "deleteBlocked": "{count} orders were placed against this pack, and they are the record of what each partner paid for. It cannot be deleted. Turn \"On sale\" off to withdraw it instead."
+  },
+  "promoCodes": {
+    "title": "Promo codes",
+    "description": "Every code on the platform — public discounts and partners’ prepaid credits.",
+    "eyebrow": "Promo code",
+    "add": "Add code",
+    "search": "Search by code, name or owner email",
+    "emptyTitle": "No promo codes yet",
+    "emptyBody": "A code takes an amount off a template activation or a ticket order.",
+    "createTitle": "Add a promo code",
+    "kindFilter": "Kind",
+    "kind": "What this code is",
+    "kinds": {
+      "all": "All kinds",
+      "marketing": "Marketing",
+      "partner_credit": "Partner credit"
+    },
+    "kindOptions": {
+      "marketing": {
+        "label": "Marketing discount",
+        "hint": "A public discount. Anyone holding the string can spend it, within its limits."
+      },
+      "partner_credit": {
+        "label": "One partner's prepaid credits",
+        "hint": "Locked to a single account. Normally minted by a credit pack order, not written by hand."
+      }
+    },
+    "code": "Code",
+    "codePlaceholder": "Leave empty to generate one",
+    "codeHint": "Uppercased when saved. Leave it empty on a new code and one is generated for you.",
+    "name": "Internal name",
+    "nameHint": "For staff. The code itself is what customers and support conversations use.",
+    "descriptionLabel": "Description shown to users",
+    "owner": "Belongs to",
+    "ownerHint": "Only this account can redeem the code. Without an owner, anyone holding it could spend the credits.",
+    "ownerRequired": "A credit code has to name the account it belongs to, otherwise anyone holding the string can spend it.",
+    "discountType": "Discount",
+    "discountValue": "Discount value",
+    "maxDiscount": "Cap per redemption",
+    "noCap": "No cap",
+    "minimumPurchase": "Minimum purchase",
+    "maxTotalUses": "Total redemptions",
+    "maxUsesCreditHint": "On a credit code this is the balance. Lowering it takes credits the partner paid for.",
+    "unlimited": "Unlimited",
+    "maxUsesPerUser": "Per account",
+    "validFrom": "Valid from",
+    "validUntil": "Valid until",
+    "validUntilHint": "Leave empty and it never expires.",
+    "validUntilTooEarly": "The end has to be after the start.",
+    "plans": "Plans this code covers",
+    "plansMarketingHint": "Leave every box unticked and the code works on all plans.",
+    "plansCreditHint": "Required on a credit code. With none ticked it would be valid on every plan.",
+    "plansRequiredForCredit": "Choose at least one plan. With none, these credits are valid on every plan and would unlock the most expensive template on the platform.",
+    "allPlans": "all plans",
+    "scope": "Templates it can be spent on",
+    "scopeOptions": {
+      "any": {
+        "label": "Any template on those plans",
+        "hint": "Includes GoEvent's own designs and other partners' work."
+      },
+      "own_partner": {
+        "label": "Only the owner's own approved designs",
+        "hint": "Refused on system templates and on other partners’ work. Meaningless without an owner."
+      }
+    },
+    "ownDesigns": "Own designs",
+    "activeHint": "Turning this off stops the code being redeemed and keeps everything it has already done.",
+    "firstPurchaseOnly": "First purchase only",
+    "firstPurchaseHint": "Only redeemable by an account that has never paid for anything before.",
+    "percentOff": "{value}% off",
+    "amountOff": "{value} off",
+    "usesOf": "{used} of {total} used",
+    "usesUnlimited": "{used} used",
+    "expired": "Expired",
+    "usedUp": "Used up",
+    "notYetValid": "Not started",
+    "issuedByOrder": "This code was minted by credit pack order {reference}. Its kind and its owner are fixed — the partner paid for these credits — and it cannot be deleted.",
+    "redemptions": "Redemptions",
+    "showRedemptions": "Show all {count}",
+    "redemptionsTruncated": "Showing {shown} of {total}.",
+    "orderingCode": "Code",
+    "orderingMostUsed": "Most redeemed",
+    "orderingExpiringSoon": "Expiring soonest",
+    "created": "Code added",
+    "saved": "Code saved",
+    "deleted": "Code deleted",
+    "deleteTitle": "Delete this code?",
+    "deleteWarning": "This cannot be undone. Turning the code off instead stops it being redeemed and keeps its history.",
+    "deleteBlockedIssued": "This code was issued by a credit pack order and cannot be deleted — the order cannot mint a replacement, so the credits would simply be gone. Turn it off instead.",
+    "deleteBlockedRedeemed": "This code has been redeemed {count} times and cannot be deleted — it would erase the history that per-account limits are counted from. Turn it off instead."
   }
 }

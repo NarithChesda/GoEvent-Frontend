@@ -38,6 +38,7 @@ import type {
   AdminDecision,
   AdminFlagsResult,
   AdminMetrics,
+  AdminPromoCodeUsageRow,
   AdminQueue,
   AdminSummary,
   AdminUserDetail,
@@ -170,16 +171,43 @@ export const adminService = {
   },
 
   /**
-   * Permanent, and quiet about it. Every catalogue reporting a usage count
-   * reports it because deleting does **not** fail when something is using the
-   * row — the FK is `SET_NULL`, so the content is simply left without its
-   * music, its category, its typeface. Deactivating is nearly always right.
+   * Permanent, and quiet about it — on six of the eight catalogues. Every
+   * catalogue reporting a usage count reports it because deleting does **not**
+   * fail when something is using the row: the FK is `SET_NULL`, so the content
+   * is simply left without its music, its category, its typeface. Deactivating
+   * is nearly always right.
+   *
+   * **The two commerce catalogues are the exception, and they refuse rather
+   * than warn.** A redeemed promo code, a code minted by a credit pack order,
+   * and a pack somebody has ordered are all a `400` here, because what a delete
+   * would destroy is a customer's record — a redemption history, or credits
+   * already paid for — and nothing in the system can put either back. The
+   * message says so; surface it and offer `is_active: false`, which is what
+   * staff wanted in every case a delete was reached for.
    */
   async deleteCatalogueItem(
     catalogue: AdminCatalogue,
     id: string | number,
   ): Promise<ApiResponse<null>> {
     return apiClient.delete<null>(`/api/admin/${catalogue}/${id}/`)
+  },
+
+  /**
+   * Who spent one promo code, on what, and for how much.
+   *
+   * The one place a catalogue has a nested read, so it is the one method here
+   * that is not generic. `current_total_uses` is a number; this answers the
+   * question that actually gets asked, which is whether a code leaked and where
+   * it went. Paginated like every other list.
+   */
+  async listPromoCodeUsages(
+    id: string,
+    params?: QueryParams,
+  ): Promise<ApiResponse<PaginatedResponse<AdminPromoCodeUsageRow>>> {
+    return apiClient.get<PaginatedResponse<AdminPromoCodeUsageRow>>(
+      `/api/admin/promo-codes/${id}/usages/`,
+      params,
+    )
   },
 
   // -------------------------------------------------------------------------

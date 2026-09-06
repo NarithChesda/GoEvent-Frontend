@@ -5,7 +5,7 @@
  * never appear in one and not the other — and adding one is an entry here plus
  * a route, which is what `events` cost when it arrived.
  *
- * **Grouped, since the catalogues landed.** Nine entries were a list; seventeen
+ * **Grouped, since the catalogues landed.** Nine entries were a list; nineteen
  * are a wall, and the split is not cosmetic — it is the difference the API
  * itself draws. A *queue* is contested work with a pending state, a decision
  * and an audit row; a *catalogue* is staff-authored content with full CRUD and
@@ -28,10 +28,12 @@ import {
   Shapes,
   Store,
   Tag,
+  TicketPercent,
   Type,
   UserRoundPlus,
   Users,
   UsersRound,
+  Wallet,
   type LucideIcon,
 } from 'lucide-vue-next'
 import type { AdminQueue } from '@/services/api'
@@ -102,7 +104,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { name: 'admin-music', icon: Music, labelKey: 'music' },
       { name: 'admin-fonts', icon: Type, labelKey: 'fonts' },
       { name: 'admin-icons', icon: Shapes, labelKey: 'icons' },
+      // The three money entries sit together, and after the asset ones: a pack
+      // is priced against a plan and mints a code, so someone opening any of
+      // the three usually has to read the other two.
       { name: 'admin-pricing-plans', icon: Tag, labelKey: 'pricingPlans' },
+      { name: 'admin-credit-packs', icon: Wallet, labelKey: 'creditPacks' },
+      { name: 'admin-promo-codes', icon: TicketPercent, labelKey: 'promoCodes' },
       { name: 'admin-categories', icon: Layers, labelKey: 'categories' },
       { name: 'admin-team', icon: UsersRound, labelKey: 'team' },
     ],
