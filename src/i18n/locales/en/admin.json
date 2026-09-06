@@ -11,6 +11,7 @@
   "nav": {
     "label": "Admin sections",
     "dashboard": "Overview",
+    "events": "Events",
     "templates": "Templates",
     "listings": "Listings",
     "partnerRequests": "Partner requests",
@@ -91,7 +92,40 @@
     "catalogueHint": "{templates} templates · {listings} listings live",
     "revenueChart": "Revenue per day",
     "eventsChart": "Events created per day",
-    "partnerTemplates": "{count} of the live templates were built by partners."
+    "partnerTemplates": "{count} of the live templates were built by partners.",
+    "eventsHint": "{window} in the window · {listed} listed publicly"
+  },
+  "events": {
+    "title": "Events",
+    "description": "Public events awaiting moderation. Approving lets the event appear in Explore.",
+    "search": "Search by title, organizer or location",
+    "emptyTitle": "No events to moderate",
+    "emptyBody": "New public events will appear here as organizers create them.",
+    "approve": "Approve for discovery",
+    "waitingOnOrganizer": "With organizer",
+    "lifecycleFilter": "Organizer's status",
+    "lifecycles": {
+      "any": "Any organizer status",
+      "draft": "Draft",
+      "published": "Published",
+      "cancelled": "Cancelled",
+      "completed": "Completed"
+    },
+    "orderingSoonest": "Starting soonest",
+    "bannerAlt": "Banner for {title}",
+    "gatesDiscovery": "This decision controls public discovery only. A rejected event keeps its own page, its share links, its registration and its invitations — it is removed from Explore, not taken down.",
+    "draftHint": "The organizer has not published this yet, so nothing is waiting on you. Reviewing a draft usually means deciding on a page that may still change.",
+    "openEvent": "Open the event page",
+    "moderationNote": "Note sent to the organizer",
+    "organizer": "Organizer",
+    "organizerEmail": "Organizer email",
+    "lifecycle": "Organizer's status",
+    "category": "Category",
+    "starts": "Starts",
+    "ends": "Ends",
+    "location": "Location",
+    "moderatedBy": "Moderated by",
+    "moderatedAt": "Moderated at"
   },
   "templates": {
     "title": "Templates",
@@ -325,22 +359,30 @@
       "confirm": "Confirmed",
       "claim": "Claimed",
       "cancel": "Cancelled",
-      "flag_change": "Flag changed"
+      "flag_change": "Flag changed",
+      "create": "Created",
+      "update": "Updated",
+      "delete": "Deleted"
     },
     "targets": {
       "all": "All targets",
+      "event": "Event",
       "template": "Template",
       "listing": "Listing",
       "partner_request": "Partner request",
       "payment": "Payment",
       "commission": "Commission",
       "credit_order": "Credit order",
-      "user": "User"
+      "user": "User",
+      "music": "Background music",
+      "font": "Font"
     },
     "payload": {
       "flag": "{field} set to {value}",
       "code": "Issued {code} for {credits} credits",
-      "reapply": "May reapply: {value}"
+      "reapply": "May reapply: {value}",
+      "event": "Moderated a {privacy} event, {status}",
+      "fields": "Changed {fields}"
     }
   }
 }

@@ -114,7 +114,18 @@
  */
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Ban, Check, ChevronDown, Coins, ScrollText, ToggleRight, X } from 'lucide-vue-next'
+import {
+  Ban,
+  Check,
+  ChevronDown,
+  Coins,
+  Pencil,
+  Plus,
+  ScrollText,
+  ToggleRight,
+  Trash2,
+  X,
+} from 'lucide-vue-next'
 import AdminToolbar from '@/components/admin/AdminToolbar.vue'
 import AdminListStates from '@/components/admin/AdminListStates.vue'
 import AdminPagination from '@/components/admin/AdminPagination.vue'
@@ -125,9 +136,26 @@ import type { AdminActionKind, AdminActionRow, AdminActionTarget, QueryParams } 
 
 const SEARCH_DEBOUNCE_MS = 300
 
-const ACTIONS: AdminActionKind[] = ['approve', 'reject', 'confirm', 'claim', 'cancel', 'flag_change']
+const ACTIONS: AdminActionKind[] = [
+  'approve',
+  'reject',
+  'confirm',
+  'claim',
+  'cancel',
+  'flag_change',
+  'create',
+  'update',
+  'delete',
+]
 
+/**
+ * Includes `music` and `font`, whose surfaces this frontend does not build yet.
+ * Staff still reach those catalogues through the API and Django admin, so their
+ * rows land in this log — and a filter that cannot name them would make those
+ * rows unfindable rather than absent.
+ */
 const TARGETS: AdminActionTarget[] = [
+  'event',
   'template',
   'listing',
   'partner_request',
@@ -135,6 +163,8 @@ const TARGETS: AdminActionTarget[] = [
   'commission',
   'credit_order',
   'user',
+  'music',
+  'font',
 ]
 
 const ACTION_ICON: Partial<Record<AdminActionKind, unknown>> = {
@@ -144,15 +174,26 @@ const ACTION_ICON: Partial<Record<AdminActionKind, unknown>> = {
   cancel: Ban,
   claim: Coins,
   flag_change: ToggleRight,
+  create: Plus,
+  update: Pencil,
+  delete: Trash2,
 }
 
+/**
+ * Three tones, not nine colours. Approving and rejecting are the decisions
+ * worth spotting in a scroll; the catalogue edits are bookkeeping and stay
+ * neutral, so a page of them does not read as a page of alarms.
+ */
 const ACTION_TONE: Partial<Record<AdminActionKind, string>> = {
   approve: 'bg-emerald-50 text-emerald-600',
   confirm: 'bg-emerald-50 text-emerald-600',
   reject: 'bg-red-50 text-red-600',
   cancel: 'bg-red-50 text-red-600',
+  delete: 'bg-red-50 text-red-600',
   claim: 'bg-sky-50 text-[#1e90ff]',
   flag_change: 'bg-slate-100 text-slate-600',
+  create: 'bg-slate-100 text-slate-600',
+  update: 'bg-slate-100 text-slate-600',
 }
 
 const { t } = useI18n()
@@ -180,11 +221,29 @@ const orderingOptions = computed(() => [
   { value: 'created_at', label: t('admin.ordering.oldest') },
 ])
 
-/** The three payload shapes the API documents, as one readable line each. */
+/**
+ * The payload shapes the API documents, as one readable line each.
+ *
+ * Order matters: `privacy`+`status` (an event moderation) is checked before
+ * `field`, because a catalogue edit also carries `field`/`value` and the two
+ * would otherwise collide on whichever key was tested first.
+ */
 const payloadLine = (row: AdminActionRow): string | null => {
   const payload = row.payload
   if (!payload || typeof payload !== 'object') return null
 
+  if ('privacy' in payload && 'status' in payload) {
+    return t('admin.actions.payload.event', {
+      privacy: String(payload.privacy),
+      status: String(payload.status),
+    })
+  }
+  if ('fields' in payload) {
+    const fields = payload.fields
+    return t('admin.actions.payload.fields', {
+      fields: Array.isArray(fields) ? fields.join(', ') : String(fields),
+    })
+  }
   if ('field' in payload) {
     return t('admin.actions.payload.flag', {
       field: String(payload.field),

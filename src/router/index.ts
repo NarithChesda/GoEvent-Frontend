@@ -260,6 +260,11 @@ const router = createRouter({
           component: () => import('../views/admin/AdminDashboardView.vue'),
         },
         {
+          path: 'events',
+          name: 'admin-events',
+          component: () => import('../views/admin/AdminEventQueueView.vue'),
+        },
+        {
           path: 'templates',
           name: 'admin-templates',
           component: () => import('../views/admin/AdminTemplateQueueView.vue'),

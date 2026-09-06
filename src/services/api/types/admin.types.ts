@@ -18,8 +18,9 @@
  * bare email string both render.
  */
 
-/** The six decision queues. Also the URL segment, so the strings are the API's. */
+/** The seven decision queues. Also the URL segment, so the strings are the API's. */
 export type AdminQueue =
+  | 'events'
   | 'templates'
   | 'listings'
   | 'partner-requests'
@@ -45,6 +46,7 @@ export type AdminActor = AdminUserRef | string | null
 /** `GET /api/admin/summary/` — the sidebar badges. Counts only. */
 export interface AdminSummary {
   queues: {
+    events: number
     templates: number
     listings: number
     partner_requests: number
@@ -76,6 +78,8 @@ export interface AdminMetrics {
   events: {
     total: number
     window: number
+    /** Public events that have cleared moderation — i.e. what Explore lists. */
+    public_approved?: number
     series: AdminMetricsDay[]
   }
   users: {
@@ -120,6 +124,57 @@ interface AdminReviewableRow {
   reviewed_at: string | null
   created_at: string
   updated_at: string
+}
+
+/** The organizer's own lifecycle for an event. Not a moderation state. */
+export type AdminEventLifecycle = 'draft' | 'published' | 'cancelled' | 'completed'
+
+/** What staff decided about listing the event. */
+export type AdminEventModeration = 'pending' | 'approved' | 'rejected'
+
+/**
+ * `events` — public events awaiting moderation.
+ *
+ * **Deliberately not an `AdminReviewableRow`.** Every other queue keeps one
+ * status and calls its decider `reviewed_by`; an event carries *two* statuses
+ * owned by two different people, and names its decider `moderated_by`. Bending
+ * it into the shared shape would have to pick one of the two to be `status`,
+ * which is exactly the conflation the backend split the field to avoid.
+ *
+ * - `status` is the **organizer's** lifecycle: draft → published → cancelled /
+ *   completed. Staff never set it.
+ * - `moderation_status` is **staff's**: pending → approved / rejected. This is
+ *   the one the queue decides, and the one `?status=` filters; the organizer's
+ *   is filtered with `?event_status=`.
+ *
+ * The queue is scoped to `privacy='public'` server-side — a private event is an
+ * invitation, not something GoEvent lists — so nothing here has to check it.
+ *
+ * There is no `admin_notes`: `moderation_note` is shown to the organizer, and
+ * is the only note this queue has.
+ */
+export interface AdminEventRow {
+  id: string
+  title: string
+  slug: string
+  short_description: string
+  organizer: AdminUserRef | null
+  category_name: string | null
+  start_date: string | null
+  end_date: string | null
+  location: string
+  banner_image: string | null
+  privacy: string
+  status: AdminEventLifecycle
+  status_display: string
+  moderation_status: AdminEventModeration
+  moderation_status_display: string
+  /** Shown to the organizer. Write rejections for them, not as internal notes. */
+  moderation_note: string
+  moderated_by: AdminActor
+  moderated_at: string | null
+  created_at: string
+  updated_at?: string
 }
 
 /**
@@ -246,8 +301,9 @@ export interface AdminCreditOrderRow extends AdminReviewableRow {
   issued_code?: string | null
 }
 
-/** Any of the six queue rows. */
+/** Any of the seven queue rows. */
 export type AdminQueueRow =
+  | AdminEventRow
   | AdminTemplateRow
   | AdminListingRow
   | AdminPartnerRequestRow
@@ -314,8 +370,13 @@ export type AdminActionKind =
   | 'claim'
   | 'cancel'
   | 'flag_change'
+  /** The managed catalogues (music, fonts) are writable, so they log CRUD too. */
+  | 'create'
+  | 'update'
+  | 'delete'
 
 export type AdminActionTarget =
+  | 'event'
   | 'template'
   | 'listing'
   | 'partner_request'
@@ -323,6 +384,14 @@ export type AdminActionTarget =
   | 'commission'
   | 'credit_order'
   | 'user'
+  /**
+   * Written by the managed-catalogue endpoints (`/api/admin/music/`,
+   * `/api/admin/fonts/`). Those surfaces are **not built in this frontend yet**,
+   * but staff can reach them through Django admin and the API, so their rows
+   * turn up in this log and the filter has to be able to name them.
+   */
+  | 'music'
+  | 'font'
 
 /**
  * One audit row. Read-only everywhere, Django admin included.

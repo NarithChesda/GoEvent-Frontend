@@ -2,11 +2,12 @@
  * The dashboard's destinations, declared once.
  *
  * The sidebar and the mobile strip render the same list, so a queue can never
- * appear in one and not the other — and adding the seventh queue the API will
- * eventually grow is one entry here plus a route.
+ * appear in one and not the other — and adding a queue is one entry here plus a
+ * route, which is exactly what `events` cost when it arrived.
  */
 
 import {
+  CalendarCheck,
   Coins,
   LayoutDashboard,
   LayoutTemplate,
@@ -35,6 +36,10 @@ export interface AdminNavItem {
 
 export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { name: 'admin-dashboard', icon: LayoutDashboard, labelKey: 'dashboard' },
+  // Events lead the queues because they are the highest-volume moderation
+  // surface and the only one where a delay is visible to the public — an
+  // unapproved event is missing from Explore while it waits.
+  { name: 'admin-events', icon: CalendarCheck, labelKey: 'events', queue: 'events' },
   { name: 'admin-templates', icon: LayoutTemplate, labelKey: 'templates', queue: 'templates' },
   { name: 'admin-listings', icon: Store, labelKey: 'listings', queue: 'listings' },
   {

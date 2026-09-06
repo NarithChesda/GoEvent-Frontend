@@ -116,10 +116,20 @@
               })
             "
           />
+          <!-- `public_approved` is what Explore actually lists, which is a
+               different number from the total and the one moderation moves. It
+               is optional in the type because it postdates the first build. -->
           <AdminStatTile
             :label="t('admin.dashboard.events')"
             :value="formatCount(metrics.events.total)"
-            :hint="t('admin.dashboard.inWindow', { count: formatCount(metrics.events.window) })"
+            :hint="
+              metrics.events.public_approved === undefined
+                ? t('admin.dashboard.inWindow', { count: formatCount(metrics.events.window) })
+                : t('admin.dashboard.eventsHint', {
+                    window: formatCount(metrics.events.window),
+                    listed: formatCount(metrics.events.public_approved),
+                  })
+            "
           />
           <AdminStatTile
             :label="t('admin.dashboard.users')"

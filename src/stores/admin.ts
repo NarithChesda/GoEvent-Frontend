@@ -21,6 +21,7 @@ import type { AdminQueue, AdminSummary } from '@/services/api'
 
 /** Queue → the key it has in the summary payload (which uses underscores). */
 const SUMMARY_KEY: Record<AdminQueue, keyof AdminSummary['queues']> = {
+  events: 'events',
   templates: 'templates',
   listings: 'listings',
   'partner-requests': 'partner_requests',
