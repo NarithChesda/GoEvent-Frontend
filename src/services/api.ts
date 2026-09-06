@@ -565,3 +565,34 @@ export type {
   PartnerRequestEnvelope,
   CreatePartnerRequestData,
 } from './api/types/partner.types'
+
+// Staff dashboard (`/api/admin/`). One generic service for six queues that share
+// one decision contract — see the module header for the 403/409 rules.
+export { adminService } from './api/modules/admin.service'
+export type { AdminRejectExtra } from './api/modules/admin.service'
+
+export type {
+  AdminQueue,
+  AdminUserRef,
+  AdminActor,
+  AdminSummary,
+  AdminMetricsDay,
+  AdminMetrics,
+  AdminDecision,
+  AdminTemplateRow,
+  AdminListingRow,
+  AdminPartnerRequestRow,
+  AdminPartnerRequestVolume,
+  AdminPaymentRow,
+  AdminCommissionRow,
+  AdminCreditOrderRow,
+  AdminTemplateScope,
+  AdminQueueRow,
+  AdminUserRow,
+  AdminUserDetail,
+  AdminUserFlagsPayload,
+  AdminFlagsResult,
+  AdminActionKind,
+  AdminActionTarget,
+  AdminActionRow,
+} from './api/types/admin.types'

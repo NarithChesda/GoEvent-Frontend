@@ -12,7 +12,8 @@
     "signIn": "Sign In",
     "signOut": "Sign Out",
     "createEvent": "Create Event",
-    "credits": "Partner Credits"
+    "credits": "Partner Credits",
+    "admin": "Admin"
   },
   "actions": {
     "save": "Save",

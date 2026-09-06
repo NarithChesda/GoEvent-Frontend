@@ -22,3 +22,5 @@ export * from './notification.types'
 export * from './ticket.types'
 export * from './credit.types'
 export * from './partner.types'
+
+export * from './admin.types'
