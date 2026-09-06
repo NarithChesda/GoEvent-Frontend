@@ -126,6 +126,17 @@ const props = withDefaults(
      * code that is not recoverable from anywhere else in this UI.
      */
     holdResult?: ((item: T) => boolean) | null
+    /**
+     * Which field carries the state **this queue decides**, when it is not
+     * `status`.
+     *
+     * Six queues have one status and it is the one being decided. `events` has
+     * two, owned by two different people: `status` is the organizer's
+     * draft/published lifecycle and `moderation_status` is staff's. Reading
+     * `status` there would call a published event "already decided" and hide
+     * both buttons on every row worth reviewing.
+     */
+    decisionStatus?: ((row: T) => string) | null
   }>(),
   {
     statusOptions: () => [],
@@ -137,6 +148,7 @@ const props = withDefaults(
     approveLabel: null,
     rejectExtra: () => ({}),
     holdResult: null,
+    decisionStatus: null,
   },
 )
 
@@ -173,9 +185,11 @@ const isFiltered = computed(() => Boolean(queue.search.value.trim() || queue.sta
  * their pending state four different ways (`pending`, `pending_review`,
  * `requested`) and a seventh would arrive without this file knowing.
  */
-const isDecidable = computed(
-  () => Boolean(selected.value) && statusTone(selected.value!.status) === 'pending',
-)
+const isDecidable = computed(() => {
+  const row = selected.value
+  if (!row) return false
+  return statusTone(props.decisionStatus ? props.decisionStatus(row) : row.status) === 'pending'
+})
 
 const openRow = (row: T): void => {
   selected.value = row

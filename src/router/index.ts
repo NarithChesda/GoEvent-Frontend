@@ -260,6 +260,11 @@ const router = createRouter({
           component: () => import('../views/admin/AdminDashboardView.vue'),
         },
         {
+          path: 'events',
+          name: 'admin-events',
+          component: () => import('../views/admin/AdminEventQueueView.vue'),
+        },
+        {
           path: 'templates',
           name: 'admin-templates',
           component: () => import('../views/admin/AdminTemplateQueueView.vue'),
@@ -288,6 +293,56 @@ const router = createRouter({
           path: 'credit-orders',
           name: 'admin-credit-orders',
           component: () => import('../views/admin/AdminCreditOrderQueueView.vue'),
+        },
+        {
+          path: 'applications',
+          name: 'admin-applications',
+          component: () => import('../views/admin/AdminApplicationsView.vue'),
+        },
+        // The managed catalogues: staff-authored content with full CRUD and no
+        // review workflow, as opposed to the queues above.
+        {
+          path: 'music',
+          name: 'admin-music',
+          component: () => import('../views/admin/AdminMusicView.vue'),
+        },
+        {
+          path: 'fonts',
+          name: 'admin-fonts',
+          component: () => import('../views/admin/AdminFontsView.vue'),
+        },
+        {
+          path: 'icons',
+          name: 'admin-icons',
+          component: () => import('../views/admin/AdminIconsView.vue'),
+        },
+        {
+          path: 'pricing-plans',
+          name: 'admin-pricing-plans',
+          component: () => import('../views/admin/AdminPricingPlansView.vue'),
+        },
+        // The commerce catalogues. Same CRUD shape as the ones above, except
+        // that both refuse their dangerous delete rather than orphaning quietly
+        // — what a delete would destroy here is a customer's record.
+        {
+          path: 'credit-packs',
+          name: 'admin-credit-packs',
+          component: () => import('../views/admin/AdminCreditPacksView.vue'),
+        },
+        {
+          path: 'promo-codes',
+          name: 'admin-promo-codes',
+          component: () => import('../views/admin/AdminPromoCodesView.vue'),
+        },
+        {
+          path: 'categories',
+          name: 'admin-categories',
+          component: () => import('../views/admin/AdminCategoriesView.vue'),
+        },
+        {
+          path: 'team',
+          name: 'admin-team',
+          component: () => import('../views/admin/AdminTeamView.vue'),
         },
         {
           path: 'users',
