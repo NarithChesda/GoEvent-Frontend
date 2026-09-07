@@ -12,6 +12,7 @@ import type {
   HostInfoDesignType,
   HostFrameStyle,
   CoupleOrnament,
+  HostBreaklineStyle,
 } from '../../services/api/types/template.types'
 
 // Import all layout variants
@@ -57,6 +58,19 @@ interface Props {
   frameStyle?: HostFrameStyle
   /** Motif between the two hosts. Forwarded to the layout variant. */
   coupleOrnament?: CoupleOrnament
+  /** The `crest` design's horizontal breakline. */
+  dividerStyle?: HostBreaklineStyle
+  /** Custom breakline artwork. Present wins over `dividerStyle`. */
+  dividerImage?: string | null
+  /** Breakline width, in percent of the block. */
+  dividerScale?: number
+  /** Logo size, in percent of the breakpoint's cap. Drawn by standard/portrait/crest. */
+  logoScale?: number
+  /** Where the host block starts, in rem. Read by every design. */
+  topOffset?: number
+  /** Event description title/body — the `crest` design's invitation sentence. */
+  descriptionTitle?: string
+  descriptionText?: string
 }
 
 const props = defineProps<Props>()

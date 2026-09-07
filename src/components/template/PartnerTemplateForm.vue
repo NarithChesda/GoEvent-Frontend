@@ -1578,13 +1578,9 @@
 
                 <!-- The frame is one choice drawn twice — around the title and
                      around the avatar — so the pair can never be mismatched. Only
-                     the grid designs draw it, so it collapses away on the two that
-                     don't: arch brings its own frames and simple has neither a
-                     title nor an avatar to frame. -->
-                <TemplateFormDisclosure
-                  :open="form.host_info_design_type === 'standard' || form.host_info_design_type === 'portrait'"
-                  content-class="space-y-3 pt-2"
-                >
+                     the grid designs draw it: arch brings its own frames, and
+                     simple and crest have no avatar to frame. -->
+                <TemplateFormDisclosure :open="hostDesignHasFrames" content-class="space-y-3 pt-2">
                   <TemplateFormChoice
                     v-model="hostFrameStyleModel"
                     :label="t('management.partnerTemplateForm.hostInfoDesign.frameLabel')"
@@ -1592,7 +1588,14 @@
                     :columns="1"
                   />
                   <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.frameHint') }}</p>
+                </TemplateFormDisclosure>
 
+                <!-- The motif is its own disclosure rather than a second row in
+                     the frame's, because the two open on different designs: the
+                     crest has no avatars to frame but it does have a gap between
+                     the two names, which is the same question in the one place
+                     that design has for it. -->
+                <TemplateFormDisclosure :open="hostDesignHasOrnament" content-class="space-y-3 pt-2">
                   <TemplateFormChoice
                     v-model="hostCoupleOrnamentModel"
                     :label="t('management.partnerTemplateForm.hostInfoDesign.ornamentLabel')"
@@ -1601,6 +1604,71 @@
                   />
                   <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.ornamentHint') }}</p>
                 </TemplateFormDisclosure>
+
+                <!-- The crest design's own controls: the breakline that closes
+                     the block, and the two sizes plus the offset that place it.
+                     None of them exist on any other design. -->
+                <TemplateFormDisclosure
+                  :open="form.host_info_design_type === 'crest'"
+                  content-class="space-y-3 pt-2"
+                >
+                  <TemplateFormChoice
+                    v-model="hostBreaklineStyleModel"
+                    :label="t('management.partnerTemplateForm.hostInfoDesign.breaklineLabel')"
+                    :options="hostBreaklineStyleOptions"
+                    :columns="1"
+                  />
+                  <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.breaklineHint') }}</p>
+
+                  <TemplateFormImageField
+                    :label="t('management.partnerTemplateForm.hostInfoDesign.breaklineImage')"
+                    :hint="t('management.partnerTemplateForm.hostInfoDesign.breaklineImageHint')"
+                    :upload-label="t('management.partnerTemplateForm.hostInfoDesign.breaklineImageUpload')"
+                    accept="image/png,image/svg+xml,image/*"
+                    :preview="hostDividerImageSrc"
+                    :file-name="form.host_divider_image?.name"
+                    @change="handleFileChange('host_divider_image', $event)"
+                    @clear="clearAssetField('host_divider_image')"
+                  />
+
+                  <TemplateFormNumber
+                    v-model="form.host_divider_scale"
+                    :label="t('management.partnerTemplateForm.hostInfoDesign.breaklineWidth')"
+                    :min="40"
+                    :max="200"
+                    :step="5"
+                    unit="%"
+                  />
+                  <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.breaklineWidthHint') }}</p>
+                </TemplateFormDisclosure>
+
+                <!-- Placement, and the one part of this panel that is not about
+                     which design: every design starts somewhere, and the ones
+                     that draw a logo can size it. So the offset is always on
+                     show and only the logo size collapses away — on `simple`
+                     and `arch`, which render no logo to size. -->
+                <div class="pt-1 space-y-3">
+                  <TemplateFormDisclosure :open="hostDesignHasLogo">
+                    <TemplateFormNumber
+                      v-model="form.host_logo_scale"
+                      :label="t('management.partnerTemplateForm.hostInfoDesign.logoScale')"
+                      :min="40"
+                      :max="250"
+                      :step="5"
+                      unit="%"
+                    />
+                  </TemplateFormDisclosure>
+
+                  <TemplateFormNumber
+                    v-model="form.host_top_offset"
+                    :label="t('management.partnerTemplateForm.hostInfoDesign.topOffset')"
+                    :min="-4"
+                    :max="16"
+                    :step="0.25"
+                    unit="rem"
+                  />
+                  <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.placementHint') }}</p>
+                </div>
               </div>
 
               <div class="p-4 space-y-2">
@@ -1789,6 +1857,8 @@ import {
   CircleDashed,
   Infinity as InfinityIcon,
   Flower2,
+  Diamond,
+  Spline,
   RectangleHorizontal,
   Frame,
   Clapperboard,
@@ -1836,6 +1906,7 @@ import type {
   SaveTheDateDesignType,
   HostFrameStyle,
   CoupleOrnament,
+  HostBreaklineStyle,
   SaveTheDateDesignConfig,
   AmbientCreaturesConfig,
   AmbientCreatureEntry,
@@ -2122,6 +2193,8 @@ interface FormState {
   sample_logo_1: File | null
   sample_logo_2: File | null
   header_text_image: File | null
+  /** Custom breakline art for the crest design. */
+  host_divider_image: File | null
   cover_stage_layout: CoverStageLayoutFormState
   falling_effect_enabled: boolean
   falling_effect: FallingEffectFormState
@@ -2147,6 +2220,18 @@ interface FormState {
   host_frame_style: HostFrameStyle
   /** Motif between the two hosts in the grid's centre column. */
   host_couple_ornament: CoupleOrnament
+  /**
+   * The crest design's horizontal breakline. `rule` is that design's own
+   * default rather than a legacy value — no published template carries `crest`
+   * yet, so there is nothing here to stay compatible with.
+   */
+  host_divider_style: HostBreaklineStyle
+  /** Width of that breakline, in percent of the block. */
+  host_divider_scale: number
+  /** Crest (logo) size, in percent of the design's base. */
+  host_logo_scale: number
+  /** Where the crest block starts, in rem. */
+  host_top_offset: number
   /** Info card (venue/map/countdown/RSVP) treatment in the showcase (glass | engraved). */
   info_card_design_type: InfoCardDesignType
   /**
@@ -2224,6 +2309,7 @@ const defaultForm = (): FormState => ({
   sample_logo_1: null,
   sample_logo_2: null,
   header_text_image: null,
+  host_divider_image: null,
   cover_stage_layout: defaultCoverStageLayout(),
   falling_effect_enabled: false,
   falling_effect: defaultFallingEffect(),
@@ -2243,6 +2329,10 @@ const defaultForm = (): FormState => ({
   dress_code_design_type: 'portrait',
   host_frame_style: 'none',
   host_couple_ornament: 'none',
+  host_divider_style: 'rule',
+  host_divider_scale: 100,
+  host_logo_scale: 100,
+  host_top_offset: 0,
   info_card_design_type: 'glass',
   save_the_date_design_type: 'auto',
   stage_mode_cover: 'animation',
@@ -2273,6 +2363,7 @@ const fallingTypeLabels = computed<Record<FallingEffectType, string>>(() => ({
 const form = reactive<FormState>(defaultForm())
 const previewImagePreview = ref<string | null>(null)
 const bgPhotoPreview = ref<string | null>(null)
+const hostDividerImagePreview = ref<string | null>(null)
 const fallingEffectCustomImagePreview = ref<string | null>(null)
 const sparkCustomImagePreview = ref<string | null>(null)
 const saving = ref(false)
@@ -2302,6 +2393,20 @@ const sparkCustomImageSrc = computed<string | null>(
     (form.clear_spark_custom_image
       ? null
       : (props.existingTemplate?.spark_custom_image ?? null)),
+)
+
+/**
+ * The crest's breakline art, on the same three states — except that this one is
+ * a normal template asset rather than a config-owned image, so its removal is
+ * staged through `clearedAssets` like every other decoration instead of through
+ * a `clear_*` flag of its own. `hasSavedAsset` is what accounts for that.
+ */
+const hostDividerImageSrc = computed<string | null>(
+  () =>
+    hostDividerImagePreview.value ??
+    (hasSavedAsset('host_divider_image')
+      ? (props.existingTemplate?.host_divider_image ?? null)
+      : null),
 )
 
 /**
@@ -2403,13 +2508,14 @@ const eventDetailsMarkerColorOptions = computed(() => [
   { value: 'custom', label: t('management.partnerTemplateForm.fallingEffect.sourceCustomShort') },
 ])
 
-// portrait and arch are wedding-only rearrangements of the host block; on any
-// other event type they fall through to the standard layout.
+// portrait, arch and crest are wedding-only rearrangements of the host block;
+// on any other event type they fall through to the standard layout.
 const hostInfoDesignOptions = computed(() => [
   { value: 'standard', label: t('management.partnerTemplateForm.hostInfoDesign.types.standard'), icon: Users },
   { value: 'simple', label: t('management.partnerTemplateForm.hostInfoDesign.types.simple'), icon: UserRound },
   { value: 'portrait', label: t('management.partnerTemplateForm.hostInfoDesign.types.portrait'), icon: IdCard },
   { value: 'arch', label: t('management.partnerTemplateForm.hostInfoDesign.types.arch'), icon: Church },
+  { value: 'crest', label: t('management.partnerTemplateForm.hostInfoDesign.types.crest'), icon: Crown },
 ])
 
 // One choice, two renderings — the title's frame and the avatar's ring are a
@@ -2423,7 +2529,8 @@ const hostFrameStyleOptions = computed(() => [
   { value: 'laurel', label: t('management.partnerTemplateForm.hostInfoDesign.frames.laurel'), icon: Award },
 ])
 
-// The motif in the centre column between the two hosts.
+// The motif in the centre column between the two hosts — beside their photos on
+// the grid designs, between their names on crest.
 const hostCoupleOrnamentOptions = computed(() => [
   { value: 'none', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.none'), icon: Ban },
   { value: 'heart', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.heart'), icon: Heart },
@@ -2431,6 +2538,24 @@ const hostCoupleOrnamentOptions = computed(() => [
   { value: 'knot', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.knot'), icon: InfinityIcon },
   { value: 'bloom', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.bloom'), icon: Flower2 },
 ])
+
+// The crest design's closing rule. A separate list from the centre motif above
+// because the two answer different questions in different places — that one is
+// the mark BETWEEN the hosts, this one is the rule UNDER them — and a template
+// may carry both without them competing.
+//
+// There is deliberately no `custom` entry: a partner picking it before
+// uploading anything would select a style that draws nothing. The upload is the
+// switch instead — a file, once attached, is drawn in place of whichever of
+// these is selected, and removing it reveals that choice again.
+const hostBreaklineStyleOptions = computed(() => [
+  { value: 'none', label: t('management.partnerTemplateForm.hostInfoDesign.breaklines.none'), icon: Ban },
+  { value: 'rule', label: t('management.partnerTemplateForm.hostInfoDesign.breaklines.rule'), icon: Minus },
+  { value: 'diamond', label: t('management.partnerTemplateForm.hostInfoDesign.breaklines.diamond'), icon: Diamond },
+  { value: 'lotus', label: t('management.partnerTemplateForm.hostInfoDesign.breaklines.lotus'), icon: Flower2 },
+  { value: 'flourish', label: t('management.partnerTemplateForm.hostInfoDesign.breaklines.flourish'), icon: Spline },
+])
+
 
 // Ordered by how much furniture each adds, which is also roughly how loud they
 // are: `rail` leads because it is what every existing template renders, so the
@@ -2934,6 +3059,42 @@ const hostCoupleOrnamentModel = computed<string>({
   set: (value) => { form.host_couple_ornament = value as CoupleOrnament },
 })
 
+const hostBreaklineStyleModel = computed<string>({
+  get: () => form.host_divider_style,
+  set: (value) => { form.host_divider_style = value as HostBreaklineStyle },
+})
+
+/**
+ * Which of the two shared host-chrome pickers this design actually draws.
+ *
+ * They are not the same set, which is why they are two disclosures rather than
+ * one: `arch` brings its own frames, `simple` has neither a title nor an
+ * avatar, and `crest` has no avatars to frame — but it does have a gap between
+ * its two names, which is the motif's slot on that design.
+ */
+const hostDesignHasFrames = computed(
+  () => form.host_info_design_type === 'standard' || form.host_info_design_type === 'portrait',
+)
+
+const hostDesignHasOrnament = computed(
+  () => hostDesignHasFrames.value || form.host_info_design_type === 'crest',
+)
+
+/**
+ * Which designs draw a logo, and can therefore be asked how big it should be.
+ * `simple` is a welcome header over two names and `arch` stages the couple's
+ * portraits instead — neither has one, so the control collapses away rather
+ * than offering a size for something that is not on screen.
+ *
+ * The same three designs as `hostDesignHasOrnament` today, and deliberately not
+ * the same constant: one asks whether there is a gap between the hosts to put a
+ * motif in, the other whether there is a logo on screen at all, and the next
+ * design added will almost certainly answer them differently.
+ */
+const hostDesignHasLogo = computed(
+  () => hostDesignHasFrames.value || form.host_info_design_type === 'crest',
+)
+
 /**
  * The three host-info choices travel as one config object, because they are one
  * on the wire: `frame_style` and `couple_ornament` are sibling keys on
@@ -2944,6 +3105,10 @@ const buildHostInfoDesignPayload = (): HostInfoDesignConfig => ({
   type: form.host_info_design_type,
   frame_style: form.host_frame_style,
   couple_ornament: form.host_couple_ornament,
+  divider_style: form.host_divider_style,
+  divider_scale: form.host_divider_scale,
+  logo_scale: form.host_logo_scale,
+  top_offset: form.host_top_offset,
 })
 
 const agendaDesignModel = computed<string>({
@@ -3869,6 +4034,7 @@ watch(
     Object.assign(form, defaultForm())
     previewImagePreview.value = null
     bgPhotoPreview.value = null
+    hostDividerImagePreview.value = null
     fallingEffectCustomImagePreview.value = null
     sparkCustomImagePreview.value = null
     // Staged removals belong to the template they were staged against.
@@ -3924,6 +4090,13 @@ watch(
       // frames, which is exactly 'none' - the look it already has.
       form.host_frame_style = template.host_info_design?.frame_style ?? 'none'
       form.host_couple_ornament = template.host_info_design?.couple_ornament ?? 'none'
+      // The crest design's own four. Their fallbacks are that design's defaults
+      // rather than a look to stay compatible with: `crest` is newer than any
+      // saved template, so an absent value has never rendered anything.
+      form.host_divider_style = template.host_info_design?.divider_style ?? 'rule'
+      form.host_divider_scale = template.host_info_design?.divider_scale ?? 100
+      form.host_logo_scale = template.host_info_design?.logo_scale ?? 100
+      form.host_top_offset = template.host_info_design?.top_offset ?? 0
       // Hydrate info card design (glass | engraved)
       form.info_card_design_type = template.info_card_design?.type ?? 'glass'
       // Hydrate the agenda design. Absent means the template predates the
@@ -4058,6 +4231,9 @@ function handleFileChange(field: keyof FormState, event: Event): void {
     sparkCustomImagePreview.value = URL.createObjectURL(file)
     form.clear_spark_custom_image = false
   }
+  if (field === 'host_divider_image') {
+    hostDividerImagePreview.value = URL.createObjectURL(file)
+  }
 }
 
 /**
@@ -4084,6 +4260,10 @@ function clearAssetField(field: ClearableAssetField): void {
     if (field === 'basic_background_photo') {
       if (bgPhotoPreview.value) URL.revokeObjectURL(bgPhotoPreview.value)
       bgPhotoPreview.value = null
+    }
+    if (field === 'host_divider_image') {
+      if (hostDividerImagePreview.value) URL.revokeObjectURL(hostDividerImagePreview.value)
+      hostDividerImagePreview.value = null
     }
     return
   }

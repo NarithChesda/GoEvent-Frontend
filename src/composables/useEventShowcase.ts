@@ -168,6 +168,14 @@ export interface TemplateAssets {
     sample_logo_1?: string | null
     sample_logo_2?: string | null
     header_text_image?: string | null
+    /**
+     * Custom breakline art for the `crest` host design. When present it is
+     * drawn in place of `host_info_design.divider_style`, not alongside it —
+     * the same precedence the falling effect's and the spark field's custom
+     * art already have over their built-in shapes. Backend field pending:
+     * docs/backend-api-requirements/host-info-design.md.
+     */
+    host_divider_image?: string | null
     // The guest-name title frame pieces live in here, NOT at the top level of
     // TemplateAssets (where they're also declared, below, but never read) — the
     // templateAssets computed spreads this sub-object and hands the result to

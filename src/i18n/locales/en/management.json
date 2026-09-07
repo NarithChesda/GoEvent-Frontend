@@ -3150,7 +3150,8 @@
         "standard": "Standard (parents, logo, titles, photos)",
         "simple": "Simple (welcome + large names)",
         "portrait": "Portrait (title, photo, then name)",
-        "arch": "Arch (couple story, arched photos)"
+        "arch": "Arch (couple story, arched photos)",
+        "crest": "Crest (crest, parents, invitation, couple)"
       },
       "frameLabel": "Title & Avatar Frame",
       "frameHint": "One choice, drawn twice - around the host title and around their avatar, so the pair always match. Standard and Portrait only; Arch brings its own frames and Simple has neither.",
@@ -3162,14 +3163,31 @@
         "laurel": "Laurel (sprigs and wreath)"
       },
       "ornamentLabel": "Centre Motif",
-      "ornamentHint": "Drawn in the column between the two hosts, beside their photos.",
+      "ornamentHint": "Drawn in the column between the two hosts - beside their photos on Standard and Portrait, between their names on Crest.",
       "ornaments": {
         "none": "None",
         "heart": "Heart",
         "rings": "Interlocked rings",
         "knot": "Knot",
         "bloom": "Bloom"
-      }
+      },
+      "breaklineLabel": "Breakline",
+      "breaklineHint": "The rule drawn under the couple to close the block. Separate from the centre motif above, which sits between the two hosts - a design can carry both.",
+      "breaklines": {
+        "none": "None (end on the names)",
+        "rule": "Hairline (fades at both ends)",
+        "diamond": "Diamond (lozenge at the centre)",
+        "lotus": "Lotus (bloom at the centre)",
+        "flourish": "Flourish (a drawn sweep)"
+      },
+      "breaklineImage": "Custom Breakline",
+      "breaklineImageHint": "Your own artwork, drawn in place of the style above as soon as it is attached - removing it brings that style back. Wide and short works best; a transparent PNG or SVG lets the card show through.",
+      "breaklineImageUpload": "Upload breakline",
+      "breaklineWidth": "Breakline width",
+      "breaklineWidthHint": "A share of the block - 100% is half of it. Sizes the drawn styles and your own artwork alike.",
+      "logoScale": "Logo size",
+      "topOffset": "Block starts at",
+      "placementHint": "Logo size is a percentage of the design's own base, so it holds at every screen size - Simple and Arch draw no logo, so it does not apply there. The offset moves the whole host block down from the top of the section on every design; a negative value pulls it up."
     },
     "footer": {
       "cancel": "Cancel",

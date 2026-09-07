@@ -584,14 +584,23 @@ export interface EventDetailsDesignConfig {
  *                portraits staged on a diagonal with a drawn hairline between
  *                them, each host's title, name and parents stacked under their
  *                own frame instead of split across shared rows.
+ * - `crest`    — the Khmer wedding-card order, read top to bottom: the crest
+ *                (logo), the two sets of parents who are inviting, the
+ *                invitation sentence itself, then the couple either side of a
+ *                vertical breakline. It renders **no avatars** — like `arch`
+ *                renders no logo, and `simple` renders neither title nor photo,
+ *                dropping a row is the composition, not an omission. The couple
+ *                is the last thing read rather than the first, which is what
+ *                makes the sentence above them an invitation rather than a
+ *                caption.
  *
- * `portrait` and `arch` are implemented by the **wedding** host layout only;
- * other event types ignore them and render `standard`.
+ * `portrait`, `arch` and `crest` are implemented by the **wedding** host layout
+ * only; other event types ignore them and render `standard`.
  *
  * Selected per template via `template_assets.host_info_design` and flows through
  * the showcase exactly like `event_details_design`.
  */
-export type HostInfoDesignType = 'standard' | 'simple' | 'portrait' | 'arch'
+export type HostInfoDesignType = 'standard' | 'simple' | 'portrait' | 'arch' | 'crest'
 
 /**
  * Configuration for the host information block on the showcase.
@@ -635,6 +644,28 @@ export type HostFrameStyle = 'none' | 'banner' | 'plaque' | 'ribbon' | 'laurel'
  */
 export type CoupleOrnament = 'none' | 'heart' | 'rings' | 'knot' | 'bloom'
 
+/**
+ * The horizontal breakline the `crest` design closes its host block with — the
+ * rule drawn under the couple.
+ *
+ * Distinct from `couple_ornament`, which is the mark *between* the two hosts.
+ * These two are never in competition, so a template may carry both.
+ *
+ * - `none`     — the block ends on the names, with no rule.
+ * - `rule`     — the default: one hairline that fades out at both ends, so it
+ *                reads as stationery rather than as a table border.
+ * - `diamond`  — that rule with a small lozenge at its centre.
+ * - `lotus`    — that rule with a lotus at its centre.
+ * - `flourish` — a drawn sweep across the whole width instead of a rule.
+ *
+ * A custom breakline image (`host_divider_image` on the template) **overrides**
+ * this the moment one is uploaded — the same precedence the falling effect and
+ * the spark field already give their custom art over the built-in shapes. That
+ * is also why there is no `custom` member here: it would be a choice a partner
+ * could make before they had a file, and get nothing from.
+ */
+export type HostBreaklineStyle = 'none' | 'rule' | 'diamond' | 'lotus' | 'flourish'
+
 export interface HostInfoDesignConfig {
   /** Which host info layout to render. Defaults to `standard`. */
   type: HostInfoDesignType
@@ -647,8 +678,47 @@ export interface HostInfoDesignConfig {
    * first one to take that path.
    */
   frame_style?: HostFrameStyle
-  /** Motif drawn between the two hosts. Defaults to `none`. */
+  /**
+   * Motif drawn between the two hosts. Defaults to `none`.
+   *
+   * Drawn beside the avatars by the grid designs and between the two names by
+   * `crest`, which has no avatars — one motif, one meaning, in whichever
+   * position the design has for it.
+   */
   couple_ornament?: CoupleOrnament
+  /**
+   * The horizontal breakline under the couple on the `crest` design. Defaults
+   * to `rule`. Ignored (but stored and returned unchanged) on every other type.
+   * Unlike `logo_scale` and `top_offset` below, this one really is crest-only —
+   * no other design has a block to close.
+   */
+  divider_style?: HostBreaklineStyle
+  /**
+   * Width of that breakline, as a **percentage** of the host block. Defaults to
+   * 100, which is half the block. Sizes the uploaded artwork and the drawn
+   * styles alike, so a partner sizes whichever they chose with one control.
+   */
+  divider_scale?: number
+  /**
+   * Size of the logo, as a **percentage** of the breakpoint's own cap rather
+   * than an absolute size — that cap is a responsive ladder, and one absolute
+   * value would be chosen on whichever screen the partner was previewing.
+   * Defaults to 100.
+   *
+   * Read by every design that draws a logo: `standard`, `portrait` and `crest`.
+   * `simple` and `arch` render none, so it is stored and returned unchanged and
+   * simply has nothing to size.
+   */
+  logo_scale?: number
+  /**
+   * Where the host block starts, in **rem**, measured from the top of the host
+   * section. Defaults to 0 — flush, exactly where every design began before
+   * this existed. Negative pulls it up under whatever sits above.
+   *
+   * Read by **every** wedding host design, not just `crest`: it positions the
+   * block, which all five have.
+   */
+  top_offset?: number
 }
 
 /**
@@ -1191,6 +1261,12 @@ export interface PartnerTemplate {
   sparks: SparkFieldConfig | null
   /** Custom spark image, when the field uses one instead of a built-in shape. */
   spark_custom_image: string | null
+  /**
+   * Custom artwork for the `crest` host design's horizontal breakline. Present
+   * means it is drawn in place of `host_info_design.divider_style`, not
+   * alongside it.
+   */
+  host_divider_image: string | null
   display_liquid_glass_background: boolean
   open_envelope_button: string | null
   basic_decoration_photo: string | null
@@ -1250,6 +1326,8 @@ export interface PartnerTemplateCreatePayload {
   sample_logo_1?: TemplateFileUpload
   sample_logo_2?: TemplateFileUpload
   header_text_image?: TemplateFileUpload
+  /** The `crest` host design's horizontal breakline artwork. */
+  host_divider_image?: TemplateFileUpload
   display_liquid_glass_background?: boolean
   open_envelope_button?: TemplateFileUpload
   cover_stage_layout?: CoverStageLayout

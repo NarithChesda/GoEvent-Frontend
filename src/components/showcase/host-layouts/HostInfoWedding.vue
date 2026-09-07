@@ -1,5 +1,9 @@
 <template>
-  <div class="host-info-wrapper" :class="{ 'khmer-text': currentLanguage === 'kh' }">
+  <div
+    class="host-info-wrapper"
+    :class="{ 'khmer-text': currentLanguage === 'kh' }"
+    :style="blockOffsetVars"
+  >
     <!-- Simple design: a minimal invitation — the welcome header above large
          script host names stacked and joined by an ampersand. Driven by
          template_assets.host_info_design.type === 'simple'. -->
@@ -68,6 +72,12 @@
          under their own frame. Its own component, because it shares no rows
          with the grid below. -->
     <HostInfoWeddingArch v-else-if="isArchDesign" v-bind="props" />
+
+    <!-- Crest design: the Khmer wedding-card order — crest, the two sets of
+         parents, the invitation sentence, then the couple either side of a
+         breakline. Its own component for the same reason arch is: it shares no
+         rows with the grid below, and the order is the whole design. -->
+    <HostInfoWeddingCrest v-else-if="isCrestDesign" v-bind="props" />
 
     <!-- Standard design (default): rich layout with parent names, logo, titles,
          host names and profile pictures arranged in a 7-row grid.
@@ -218,6 +228,7 @@
           :logo-url="logoUrl"
           :sample-logo-one="sampleLogoOne"
           :primary-color="primaryColor"
+          :scale="logoScale ?? 100"
           :animated="true"
           :animation-delay="animationDelays.logo"
         />
@@ -414,6 +425,7 @@ import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vu
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { PreviewFrameKey } from '@/components/showcase-preview/previewContext'
 import HostInfoWeddingArch from './wedding/HostInfoWeddingArch.vue'
+import HostInfoWeddingCrest from './wedding/HostInfoWeddingCrest.vue'
 import HostTitleFrame from './shared/frames/HostTitleFrame.vue'
 import HostAvatarFrame from './shared/frames/HostAvatarFrame.vue'
 import CoupleOrnamentMark from './shared/frames/CoupleOrnamentMark.vue'
@@ -498,12 +510,13 @@ const nameTextStyle = computed(() => ({
   fontFamily: props.primaryFont || props.secondaryFont || props.currentFont,
 }))
 
-// Active design. 'simple' renders the minimal welcome + script-names layout
-// and 'arch' hands off to its own component; 'portrait' is the standard grid
-// with the portrait row moved between the titles and the names, so it stays
-// here. Anything else falls back to the rich 'standard' grid below.
+// Active design. 'simple' renders the minimal welcome + script-names layout;
+// 'arch' and 'crest' each hand off to their own component; 'portrait' is the
+// standard grid with the portrait row moved between the titles and the names,
+// so it stays here. Anything else falls back to the rich 'standard' grid below.
 const isSimpleDesign = computed(() => props.designType === 'simple')
 const isArchDesign = computed(() => props.designType === 'arch')
+const isCrestDesign = computed(() => props.designType === 'crest')
 const isPortraitDesign = computed(() => props.designType === 'portrait')
 
 // Frame chrome and the centre motif, normalised once here so the template never
@@ -512,6 +525,30 @@ const isPortraitDesign = computed(() => props.designType === 'portrait')
 // exactly as they did before, and frames are opt-in rather than a new baseline.
 const frameStyle = computed<HostFrameStyle>(() => props.frameStyle ?? 'none')
 const coupleOrnament = computed<CoupleOrnament>(() => props.coupleOrnament ?? 'none')
+
+/**
+ * Where the host block starts, applied once here rather than inside each
+ * design.
+ *
+ * This wrapper is the only element every wedding design shares — `arch` and
+ * `crest` are components of their own, `simple` and the grid are branches of
+ * this template — so one rule here is the whole feature, and putting it in each
+ * design would be four copies that drift.
+ *
+ * Split across two properties because one cannot carry both directions:
+ * **padding cannot be negative** (the declaration is simply dropped, so a
+ * negative offset would silently do nothing), and a positive margin is
+ * collapsible in a way the partner would experience as the control sometimes
+ * working and sometimes not. So down is padding, up is margin, and exactly one
+ * of the two is ever non-zero.
+ */
+const blockOffsetVars = computed(() => {
+  const offset = props.topOffset ?? 0
+  return {
+    paddingTop: `${Math.max(offset, 0)}rem`,
+    marginTop: `${Math.min(offset, 0)}rem`,
+  }
+})
 
 // Script-name styling for the simple design — uses the primary (typically script)
 // font and the theme accent color, matching the standard layout's host names.

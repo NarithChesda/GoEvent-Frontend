@@ -103,7 +103,7 @@ const TEMPLATE_FILE_FIELDS: Array<keyof PartnerTemplateCreatePayload> = [
   'guest_title_frame_left', 'guest_title_frame_mid', 'guest_title_frame_right',
   'standard_cover_video', 'standard_transition_video', 'standard_background_video',
   'sample_logo_1', 'sample_logo_2', 'header_text_image',
-  'open_envelope_button',
+  'open_envelope_button', 'host_divider_image',
 ]
 
 /** How many pages `listEditableTemplates` will walk before giving up.
