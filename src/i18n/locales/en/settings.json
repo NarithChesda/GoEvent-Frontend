@@ -446,7 +446,6 @@
     "expiresOn": "Expires {date}",
     "creditCount": "{n} credit | {n} credits",
     "dayCount": "{n} day | {n} days",
-    "perCredit": "${amount} each",
     "forPlan": "For {plan}",
     "ownDesignsOnly": "Your own designs only",
     "alreadyClaimed": "Already claimed",
@@ -583,7 +582,11 @@
     "savePercent": "Save {n}%",
     "margin": {
       "label": "You keep",
-      "caption": "{each} an event, selling all {n} at {retail}"
-    }
+      "caption": "if you sell all {n} at {retail}",
+      "costLabel": "Cost",
+      "payEachLabel": "You pay each",
+      "keepEachLabel": "You keep each"
+    },
+    "mostPopular": "Most shops start here"
   }
 }

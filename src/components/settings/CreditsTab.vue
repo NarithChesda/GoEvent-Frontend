@@ -290,6 +290,20 @@
           {{ t('settings.credits.catalogue.subtitle') }}
         </p>
 
+        <!--
+          A pack card, in the composition the `/partners` wholesale rail used
+          before that section was taken down — because that rail had already
+          solved this card, and what replaced it here was a summary of it.
+
+          THE HEADLINE IS THE MARGIN, NOT THE PRICE. This card used to lead with
+          `$700.00` in its largest type and demote the return to a smaller block
+          underneath. That is the cost — the one number that argues *against*
+          buying — set as the thing you read first. A shop owner reading a
+          wholesale catalogue is deciding whether this is a business, and "$700"
+          does not answer that; "$800–1,425" does. The price is not hidden by the
+          swap: it is the first row of the ledger below, labelled, where a buyer
+          goes looking for it.
+        -->
         <div
           v-if="packs.length"
           class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3"
@@ -299,93 +313,192 @@
             :key="pack.id"
             type="button"
             :disabled="packDisabled(pack)"
-            class="group flex flex-col rounded-2xl border border-slate-200/60 bg-white p-4 text-left transition-all duration-300 hover:border-slate-300/80 hover:shadow-lg hover:shadow-slate-200/40 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-slate-200/60 disabled:hover:shadow-none focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 sm:p-5"
+            class="group flex flex-col rounded-2xl p-5 text-left transition-[border-color,box-shadow,transform] duration-200 ease-out active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 sm:p-6"
+            :class="
+              isFeaturedPack(pack)
+                ? 'bg-slate-900 shadow-xl shadow-slate-900/10 hover:shadow-2xl hover:shadow-slate-900/20 disabled:hover:shadow-xl'
+                : 'border border-slate-200/60 bg-white shadow-sm hover:border-slate-300/80 hover:shadow-lg hover:shadow-slate-200/40 disabled:hover:border-slate-200/60 disabled:hover:shadow-sm'
+            "
             @click="openBuyDrawer(pack)"
           >
-            <div class="flex items-start justify-between gap-2">
-              <p class="min-w-0 truncate text-sm font-semibold text-slate-900">{{ pack.name }}</p>
+            <!--
+              Why this card is worth a second look, said once per card in one
+              slot. The row renders whether or not there is anything to say and
+              holds its own height, so a pack with no claim — the middle of a
+              long ladder — leaves a gap rather than pulling its figure a line
+              above its neighbours'.
+
+              Only the recommendation and the saving are coloured. A green label
+              on every card reads as a row of success markers and spends the one
+              saturated colour this page has on a qualifier; slate everywhere
+              else is what makes the chosen card look chosen.
+            -->
+            <div class="mb-4 flex min-h-5 items-start justify-between gap-2">
+              <p
+                v-if="isFeaturedPack(pack)"
+                class="text-[0.6875rem] font-semibold uppercase tracking-wider text-emerald-300"
+              >
+                {{ t('settings.credits.mostPopular') }}
+              </p>
               <span
                 v-if="savingsPercent(pack)"
-                class="inline-flex flex-shrink-0 items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[0.6875rem] font-semibold text-emerald-700 ring-1 ring-emerald-200"
+                class="ml-auto inline-flex flex-shrink-0 items-center rounded-full px-2 py-0.5 text-[0.6875rem] font-semibold"
+                :class="
+                  isFeaturedPack(pack)
+                    ? 'bg-white/10 text-emerald-300'
+                    : 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
+                "
               >
                 {{ t('settings.credits.savePercent', { n: savingsPercent(pack) }) }}
               </span>
             </div>
 
-            <!--
-              What separates this pack from an otherwise identical one, so it
-              sits with the name rather than in the fine print at the foot of
-              the card: an own-designs pack is a different product at a
-              different rate, and finding that out at checkout is finding it out
-              after paying.
-            -->
-            <p
-              v-if="isOwnDesignsPack(pack)"
-              class="mt-2 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[0.6875rem] font-medium text-slate-600"
-            >
-              <PenTool class="h-3 w-3 flex-shrink-0 text-slate-400" aria-hidden="true" />
-              {{ t('settings.credits.ownDesignsOnly') }}
-            </p>
-
-            <p class="mt-3 text-2xl font-bold leading-none text-slate-900 tabular-nums">
-              {{ Number(pack.price) === 0 ? t('settings.credits.free') : `$${pack.price}` }}
-            </p>
-            <p class="mt-1.5 text-xs text-slate-600">
-              {{ t('settings.credits.creditCount', { n: pack.credit_count }, pack.credit_count) }}
-              <span v-if="Number(pack.price) !== 0" class="text-slate-400">
-                · {{ t('settings.credits.perCredit', { amount: pack.price_per_credit }) }}
-              </span>
-            </p>
-
-            <!--
-              What the pack is worth once it is sold through — the figure the
-              partner page used to lead its rail with, and the one a partner is
-              actually deciding on. The price above is what leaves their pocket
-              today; this is what comes back, and no card should make somebody
-              multiply two numbers to find it.
-
-              A hairline and a heading rather than a tinted inset: the card is
-              already an object inside a grid of objects, and a filled box inside
-              it would be a card within a card. It renders only when the plan
-              price is real — a serializer that omits it drops the block rather
-              than printing a margin computed from nothing.
-
-              IT REPLACED a struck-through "$85.00 retail per event" that used to
-              sit here. Retail is now on this card three times over — as the
-              savings badge, as the divisor behind the per-credit rate, and as
-              the band in the caption below — and the strike-through stated it in
-              a *different form* (the ceiling alone) one line above the band,
-              which reads as two figures disagreeing rather than as one fact. The
-              badge is the glanceable version and the caption is the one you can
-              do arithmetic with; the third was the one to lose.
-            -->
-            <div v-if="packMargin(pack)" class="mt-3 border-t border-slate-100 pt-3">
-              <p class="text-[0.6875rem] font-medium uppercase tracking-wider text-slate-500">
-                {{ t('settings.credits.margin.label') }}
-              </p>
-              <p
-                class="mt-1 whitespace-nowrap text-lg font-bold leading-none text-slate-900 tabular-nums"
+            <div class="min-w-0">
+              <h4
+                class="truncate text-sm font-semibold"
+                :class="isFeaturedPack(pack) ? 'text-white' : 'text-slate-900'"
               >
-                {{ packMargin(pack)!.total }}
+                {{ pack.name }}
+              </h4>
+              <p
+                class="mt-1 text-sm"
+                :class="isFeaturedPack(pack) ? 'text-slate-400' : 'text-slate-500'"
+              >
+                {{ t('settings.credits.creditCount', { n: pack.credit_count }, pack.credit_count) }}
               </p>
-              <p class="mt-1 text-[0.6875rem] leading-relaxed text-slate-500">
-                {{ packMargin(pack)!.caption }}
+              <!--
+                Which packages the credits unlock, a step under the count. Two
+                packs can be the same size at the same price and still be
+                different products — "25 Basic" and "25 Basic Plus" are — so
+                without this line those two cards differ by one word in the title
+                and read as a bug. Allowed to wrap: a pack spanning several plans
+                has a genuinely long label, and truncating it would hide the very
+                thing the line is here to show.
+              -->
+              <p
+                class="mt-1.5 text-xs leading-relaxed"
+                :class="isFeaturedPack(pack) ? 'text-slate-500' : 'text-slate-400'"
+              >
+                {{ t('settings.credits.forPlan', { plan: pack.pricing_plan_name }) }}
+              </p>
+
+              <!--
+                What separates this pack from an otherwise identical one, so it
+                sits with the name rather than in the fine print: an own-designs
+                pack is a different product at a different rate, and finding that
+                out at checkout is finding it out after paying.
+              -->
+              <p
+                v-if="isOwnDesignsPack(pack)"
+                class="mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.6875rem] font-medium"
+                :class="
+                  isFeaturedPack(pack)
+                    ? 'bg-white/10 text-slate-300'
+                    : 'bg-slate-100 text-slate-600'
+                "
+              >
+                <PenTool class="h-3 w-3 flex-shrink-0 opacity-70" aria-hidden="true" />
+                {{ t('settings.credits.ownDesignsOnly') }}
               </p>
             </div>
 
-            <div class="mt-auto pt-4">
-              <div class="flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
-                <p class="min-w-0 truncate text-xs text-slate-500">
-                  {{ t('settings.credits.forPlan', { plan: pack.pricing_plan_name }) }}
-                  ·
+            <!--
+              The figure the card exists to show. It is the margin wherever one
+              can be computed, and the pack's own price where it cannot — the
+              slot is never empty, because an empty slot drops one card's ledger
+              a hundred pixels below its neighbours' and puts a hole in the row.
+              That is exactly what "25 Basic" did: it carries no shared plan
+              price, so it rendered a card with nothing between its price and its
+              footer. `packHeadline` says which of the two figures it returned
+              and the label above it changes with it, so the number is never
+              mislabelled.
+
+              `whitespace-nowrap` because most of these are ranges, and a break
+              after the dash reads as two unrelated numbers.
+            -->
+            <div class="mt-6">
+              <p
+                class="text-[0.6875rem] font-semibold uppercase tracking-wider"
+                :class="isFeaturedPack(pack) ? 'text-emerald-300' : 'text-slate-500'"
+              >
+                {{ packHeadline(pack).label }}
+              </p>
+              <p
+                class="mt-1.5 whitespace-nowrap text-3xl font-bold leading-none tabular-nums"
+                :class="isFeaturedPack(pack) ? 'text-white' : 'text-slate-900'"
+              >
+                {{ packHeadline(pack).figure }}
+              </p>
+              <p
+                class="mt-2 min-h-8 text-xs leading-relaxed"
+                :class="isFeaturedPack(pack) ? 'text-slate-400' : 'text-slate-500'"
+              >
+                {{ packHeadline(pack).caption }}
+              </p>
+            </div>
+
+            <!--
+              The unit economics behind the figure, as rows. Rows rather than a
+              tinted inset: nothing here is separable from the pack it describes,
+              and a filled box inside a card is a card within a card.
+
+              "Cost" leads because it is what leaves the partner's pocket today
+              and the one number this card no longer shouts — it is not hidden,
+              it is filed. "You pay each" and "You keep each" were previously a
+              `text-slate-400` aside on the credit-count line and a clause inside
+              a caption sentence; they are the two numbers a partner quotes a job
+              with, so they get their own baselines.
+            -->
+            <dl
+              class="mt-5 divide-y border-t text-sm"
+              :class="
+                isFeaturedPack(pack)
+                  ? 'divide-white/10 border-white/10'
+                  : 'divide-slate-100 border-slate-100'
+              "
+            >
+              <div
+                v-for="row in packRows(pack)"
+                :key="row.label"
+                class="flex items-baseline justify-between gap-3 py-2.5"
+              >
+                <dt
+                  class="min-w-0 truncate"
+                  :class="isFeaturedPack(pack) ? 'text-slate-400' : 'text-slate-500'"
+                >
+                  {{ row.label }}
+                </dt>
+                <dd
+                  class="whitespace-nowrap font-medium tabular-nums"
+                  :class="isFeaturedPack(pack) ? 'text-slate-200' : 'text-slate-700'"
+                >
+                  {{ row.value }}
+                </dd>
+              </div>
+            </dl>
+
+            <!-- `mt-auto` on the wrapper, not on its contents, so the footer
+                 holds the card's bottom alignment whether or not there is a
+                 warning to print. -->
+            <div class="mt-auto pt-5">
+              <div class="flex items-center justify-between gap-2">
+                <p
+                  class="min-w-0 truncate text-xs"
+                  :class="isFeaturedPack(pack) ? 'text-slate-500' : 'text-slate-400'"
+                >
                   {{ validityLabel(pack) }}
                 </p>
                 <ChevronRight
-                  class="h-4 w-4 flex-shrink-0 text-slate-400 transition-transform duration-200 group-hover:translate-x-0.5"
+                  class="h-4 w-4 flex-shrink-0 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+                  :class="isFeaturedPack(pack) ? 'text-slate-500' : 'text-slate-400'"
                   aria-hidden="true"
                 />
               </div>
-              <p v-if="packNote(pack)" class="mt-2 text-xs font-medium text-amber-600">
+              <p
+                v-if="packNote(pack)"
+                class="mt-2 text-xs font-medium"
+                :class="isFeaturedPack(pack) ? 'text-amber-300' : 'text-amber-600'"
+              >
                 {{ packNote(pack) }}
               </p>
             </div>
@@ -715,9 +828,9 @@ const isOwnDesignsCode = (code: PartnerCreditCode): boolean => code.template_sco
  * that omits `pricing_plan_price` simply drops the badge.
  */
 const savingsPercent = (pack: CreditPack): number | null => {
-  const retail = Number(pack.pricing_plan_price)
+  const retail = planCeiling(pack)
   const each = Number(pack.price_per_credit)
-  if (!Number.isFinite(retail) || !Number.isFinite(each) || retail <= 0 || each < 0) return null
+  if (retail === null || !Number.isFinite(each) || each < 0) return null
   const percent = Math.round((1 - each / retail) * 100)
   return percent > 0 ? percent : null
 }
@@ -749,16 +862,53 @@ const validityLabel = (pack: CreditPack): string =>
  * knows: a partner who wants the work prices under the list. So an $85 plan is
  * quoted as "$60–85", and the margin is a range for the same reason.
  *
- * Anchored on the pack's own `pricing_plan_price` — the same field the savings
- * badge two lines above divides by — so a partner cannot read a percentage and a
- * margin on one card that were measured against different retails.
+ * Every retail figure on a card comes out of `planCeiling` — the savings badge,
+ * the headline and the ledger rows alike — so a partner can never read a
+ * percentage and a margin on one card that were measured against different
+ * retails.
  */
 const RETAIL_DISCOUNT_FLOOR = 25
 
-/** "675.00" → "$675", "27.50" → "$27.50", with thousands separators. */
+/**
+ * Retail price of one event on this pack's plans: the ceiling every figure on
+ * the card is measured from.
+ *
+ * `pricing_plan_price` first, because it is the server's own answer and, where
+ * a pack's plans disagree, deliberately the *lowest* of them — which understates
+ * the saving rather than overstating it, the safe direction on a page somebody
+ * spends money from.
+ *
+ * It is `null` on a pack whose plans have no single shared price, and that is
+ * not a rare edge: "25 Basic" spans Free Basic, Basic Plus and Basic Birthday
+ * and sends nothing here. Without a fallback its card had no saving, no margin
+ * and a hole where both should have been. `applicable_plan_details` carries the
+ * per-plan prices, so the highest of those is the ceiling — the most a partner
+ * can charge on the best plan the pack covers, which is the figure the rest of
+ * the card's arithmetic already assumes.
+ */
+function planCeiling(pack: CreditPack): number | null {
+  const shared = Number.parseFloat(pack.pricing_plan_price ?? '')
+  if (Number.isFinite(shared) && shared > 0) return shared
+
+  const perPlan = (pack.applicable_plan_details ?? [])
+    .map((plan) => Number.parseFloat(plan.price))
+    .filter((n) => Number.isFinite(n) && n > 0)
+  return perPlan.length ? Math.max(...perPlan) : null
+}
+
+/**
+ * `675` → "$675", `27.5` → "$27.50", with thousands separators.
+ *
+ * Cents are dropped on a whole number and kept in full on any other — a price is
+ * either round or it is written the way a price is written. It used to strip one
+ * trailing zero from the fixed form, which turned $27.50 into "$27.5"; that went
+ * unnoticed while this only formatted margins, which are computed and rarely
+ * land on a half. It now formats `price` and `price_per_credit` straight off the
+ * pack, where halves are ordinary.
+ */
 function money(value: number): string {
   if (!Number.isFinite(value)) return String(value)
-  const fixed = Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/0$/, '')
+  const fixed = Number.isInteger(value) ? String(value) : value.toFixed(2)
   const [whole, frac] = fixed.split('.')
   const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
   return `$${grouped}${frac ? '.' + frac : ''}`
@@ -774,29 +924,97 @@ function range(low: number, high: number): string {
 }
 
 /**
- * The pack's headline margin and what it assumes, or `null` when the plan price
- * is missing and there is nothing honest to say.
+ * What one event on this pack's plans is worth to the partner, as
+ * `[cost, keepLow, keepHigh]` — or `null` when there is no retail to measure
+ * against and therefore nothing honest to say.
  */
-const packMargin = (pack: CreditPack): { total: string; caption: string } | null => {
-  const ceiling = Number(pack.pricing_plan_price)
+const packUnit = (pack: CreditPack): { each: number; low: number; high: number } | null => {
+  const ceiling = planCeiling(pack)
   const each = Number(pack.price_per_credit)
-  const count = Number(pack.credit_count)
-  if (!Number.isFinite(ceiling) || ceiling <= 0) return null
-  if (!Number.isFinite(each) || each < 0 || !Number.isFinite(count) || count <= 0) return null
+  if (ceiling === null || !Number.isFinite(each) || each < 0) return null
 
   const floor = Math.max(0, ceiling - RETAIL_DISCOUNT_FLOOR)
-  const keepLow = Math.max(0, floor - each)
-  const keepHigh = Math.max(0, ceiling - each)
+  return { each, low: Math.max(0, floor - each), high: Math.max(0, ceiling - each) }
+}
 
+/**
+ * The card's one big figure, its label, and the assumption behind it.
+ *
+ * It is the pack's total margin wherever one can be computed, and the pack's own
+ * price where it cannot — never nothing. An empty slot is what put a hole in the
+ * middle of the "25 Basic" card and dropped its ledger a hundred pixels below
+ * its neighbours', and a row of cards that do not share a baseline reads as
+ * broken before it reads as a price list.
+ *
+ * The label moves with the figure, so the fallback is never a margin mislabelled
+ * as a price or the reverse.
+ */
+const packHeadline = (pack: CreditPack): { label: string; figure: string; caption: string } => {
+  const unit = packUnit(pack)
+  const count = Number(pack.credit_count)
+
+  if (!unit || !Number.isFinite(count) || count <= 0) {
+    return {
+      label: t('settings.credits.margin.costLabel'),
+      figure: Number(pack.price) === 0 ? t('settings.credits.free') : money(Number(pack.price)),
+      caption: t('settings.credits.creditCount', { n: pack.credit_count }, pack.credit_count),
+    }
+  }
+
+  const ceiling = planCeiling(pack)!
   return {
-    total: range(keepLow * count, keepHigh * count),
+    label: t('settings.credits.margin.label'),
+    figure: range(unit.low * count, unit.high * count),
     caption: t('settings.credits.margin.caption', {
-      each: range(keepLow, keepHigh),
       n: count,
-      retail: range(floor, ceiling),
+      retail: range(Math.max(0, ceiling - RETAIL_DISCOUNT_FLOOR), ceiling),
     }),
   }
 }
+
+/**
+ * The unit economics behind the headline, as label/value rows.
+ *
+ * What leaves the pocket today, what one invitation costs wholesale, and what
+ * one invitation leaves behind. The last row is dropped rather than blanked when
+ * there is no retail to subtract from: a row reading "—" is a promise that a
+ * number exists and we mislaid it.
+ */
+const packRows = (pack: CreditPack): { label: string; value: string }[] => {
+  const unit = packUnit(pack)
+  const rows = [
+    {
+      label: t('settings.credits.margin.costLabel'),
+      value: Number(pack.price) === 0 ? t('settings.credits.free') : money(Number(pack.price)),
+    },
+    {
+      label: t('settings.credits.margin.payEachLabel'),
+      value: money(Number(pack.price_per_credit)),
+    },
+  ]
+  if (unit) {
+    rows.push({
+      label: t('settings.credits.margin.keepEachLabel'),
+      value: range(unit.low, unit.high),
+    })
+  }
+  return rows
+}
+
+/**
+ * The one card that inverts to slate-900, and the only editorial claim on this
+ * grid.
+ *
+ * `is_featured` is presentation only and staff may flag several; a page built
+ * for one highlight honours the first in `display_order` (which is what `packs`
+ * is already sorted by) and treats the rest as ordinary. Four highlighted cards
+ * is the same as none.
+ */
+const featuredPackId = computed<string | null>(
+  () => packs.value.find((pack) => pack.is_featured)?.id ?? null,
+)
+
+const isFeaturedPack = (pack: CreditPack): boolean => pack.id === featuredPackId.value
 
 /** A claimed trial and an open order both make a second attempt a certain 400. */
 const packDisabled = (pack: CreditPack): boolean =>

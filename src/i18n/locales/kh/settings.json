@@ -446,7 +446,6 @@
     "expiresOn": "ផុតកំណត់ {date}",
     "creditCount": "{n} ឥណទាន",
     "dayCount": "{n} ថ្ងៃ",
-    "perCredit": "${amount} ក្នុងមួយ",
     "forPlan": "សម្រាប់ {plan}",
     "ownDesignsOnly": "តែការរចនាផ្ទាល់ខ្លួនរបស់អ្នក",
     "alreadyClaimed": "បានទទួលរួចហើយ",
@@ -582,8 +581,12 @@
     },
     "savePercent": "សន្សំ {n}%",
     "margin": {
-      "label": "អ្នកចំណេញ",
-      "caption": "{each} ក្នុងមួយកម្មវិធី បើលក់អស់ {n} ក្នុងតម្លៃ {retail}"
-    }
+      "label": "ចំណេញរបស់អ្នក",
+      "caption": "បើលក់អស់ {n} ក្នុងតម្លៃ {retail}",
+      "costLabel": "តម្លៃ",
+      "payEachLabel": "អ្នកបង់ក្នុងមួយធៀប",
+      "keepEachLabel": "ចំណេញក្នុងមួយធៀប"
+    },
+    "mostPopular": "ហាងភាគច្រើនចាប់ផ្តើមពីនេះ"
   }
 }
