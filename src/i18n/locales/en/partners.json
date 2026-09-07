@@ -185,6 +185,11 @@
       "body": "Your first two invitations are free. Buy a pack only once the work is steady."
     }
   },
+  "testimonials": {
+    "eyebrow": "What shops say",
+    "title": "The shops already selling it",
+    "subtitle": "In their own words — including what one of them would still like us to fix."
+  },
   "faq": {
     "eyebrow": "Before you ask",
     "title": "The questions shops actually ask",

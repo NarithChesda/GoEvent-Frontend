@@ -1365,8 +1365,53 @@
         </div>
       </section>
 
+
       <!--
-        7. FAQ — the last informative section and the only interactive one, so
+        7. WHAT SHOPS SAY — the proof for the claims directly above it, and it
+        sits between them and the questions because a reader who has just been
+        told what they get is exactly the reader asking who else already has it.
+
+        No cards, because §3 keeps them for the packs — the one genuinely
+        buyable object on this page — so each quote is separated the way the
+        benefits above it are: a hairline and a column. A wall of shadowed white
+        boxes here would quietly demote the pricing grid to one card set among
+        several.
+
+        And no aggregate strip, because a "180 shops on the programme" line
+        would be a second numbers section arguing with the pricing table two
+        screens up, and the numbers are this page's strongest asset. The quotes
+        carry their own — a sell price, a card count — inside the sentence that
+        earns them.
+
+        No star rows either. Stars are marketplace furniture: five amber glyphs
+        over every quote is the visual language of a listing with reviews
+        attached, and there were thirty of them on screen at once. What makes a
+        testimonial land is one shop's sentence read properly, which is why the
+        section leads with a single quote at pull-quote size and demotes the
+        rest — see PartnerTestimonials.vue for the rest of the reasoning.
+      -->
+      <section class="bg-slate-50 py-12 sm:py-20 lg:py-28">
+        <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
+          <header data-reveal class="mb-12 max-w-2xl lg:mb-16">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              {{ t('partners.testimonials.eyebrow') }}
+            </p>
+            <h2
+              class="type-display-sm mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
+            >
+              {{ t('partners.testimonials.title') }}
+            </h2>
+            <p class="mt-3 text-base leading-relaxed text-slate-600 sm:text-lg">
+              {{ t('partners.testimonials.subtitle') }}
+            </p>
+          </header>
+
+          <PartnerTestimonials :items="PARTNER_TESTIMONIALS" />
+        </div>
+      </section>
+
+      <!--
+        8. FAQ — the last informative section and the only interactive one, so
         it earns a shape of its own: a single panel lifted off the page's tinted
         ground, with full-bleed rows inside it.
 
@@ -1484,7 +1529,7 @@
       </section>
 
       <!--
-        8. CLOSING — the page's third and last gradient object, and now also its
+        9. CLOSING — the page's third and last gradient object, and now also its
         end. `AppFooter` is gone from here for the reason the top bar is: its
         nav, its social row and its "explore the app" link all belong to a
         product this reader has no account for, and on a page that is a pitch
@@ -1621,6 +1666,8 @@ import {
   Wrench,
 } from 'lucide-vue-next'
 import MainLayout from '@/components/MainLayout.vue'
+import PartnerTestimonials from '@/components/PartnerTestimonials.vue'
+import testimonialsData from '@/assets/testimonials.json'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import {
   usePartnerPricingTiers,
@@ -1885,6 +1932,13 @@ const PRODUCT_FEATURES = [
  * section repeats rather than as a gap. Adding one more item closes that row and
  * turns the orphan back into a hole; add them two at a time.
  */
+/*
+  Placeholder quotes for now — a generated set, in Khmer, which is the
+  language the shops this page is written for would actually review in.
+  Swap the JSON for real ones; nothing here reads anything but the array.
+*/
+const PARTNER_TESTIMONIALS = testimonialsData.partners.items
+
 const PARTNER_BENEFITS = [
   { key: 'branding', icon: BadgeCheck },
   { key: 'listing', icon: Store },
