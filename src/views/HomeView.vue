@@ -203,130 +203,7 @@
     </section>
 
     <!-- Testimonials Section -->
-    <section
-      v-if="showTestimonials"
-      id="testimonials"
-      ref="testimonialsSection"
-      class="py-12 sm:py-16 md:py-20 relative overflow-hidden scroll-animate"
-      :class="{ 'animate-fade-in-up': isVisible.testimonials }"
-    >
-      <!-- Background gradient -->
-      <div class="absolute inset-0 pointer-events-none testimonials-bg"></div>
-
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div class="text-center mb-12 sm:mb-16 md:mb-20">
-          <div
-            class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium bg-[#B0E0E6] text-[#1873cc] mb-4 sm:mb-6"
-          >
-            <MessageCircle class="h-3 w-3 sm:h-4 sm:w-4" />
-            Client Success Stories
-          </div>
-          <h2
-            class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 sm:mb-5 md:mb-6 leading-tight tracking-tight px-4"
-          >
-            Loved by
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
-              >10,000+</span
-            >
-            organizers
-          </h2>
-          <p class="text-base sm:text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed px-4">
-            From intimate gatherings to large-scale conferences, see how GoEvent transforms event
-            planning
-          </p>
-        </div>
-
-        <!-- Swipe Indicator (Mobile Only) -->
-        <div class="md:hidden text-center mb-4 px-4">
-          <div class="inline-flex items-center gap-2 text-slate-600 text-sm animate-pulse">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
-            </svg>
-            <span>Swipe to see reviews</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </div>
-        </div>
-
-        <!-- Testimonials Grid -->
-        <div class="md:grid md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mb-12 sm:mb-16 md:mb-20 overflow-x-auto md:overflow-visible snap-x snap-mandatory scrollbar-hide flex md:flex-none -mx-4 px-4 md:mx-0 md:px-0 py-2">
-          <div
-            v-for="(testimonial, index) in testimonials"
-            :key="testimonial.name"
-            class="group relative bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl sm:rounded-2xl p-6 sm:p-7 md:p-8 shadow-lg hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 w-[85vw] md:w-full flex-shrink-0 md:flex-shrink snap-center"
-            :class="index === 1 ? 'md:scale-105 md:z-10' : ''"
-          >
-            <!-- Quote icon -->
-            <div
-              class="absolute -top-2 -left-2 sm:-top-3 sm:-left-3 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-gradient-to-br from-[#2ecc71] to-[#1e90ff] rounded-full flex items-center justify-center text-white text-sm sm:text-base md:text-lg font-bold"
-            >
-              "
-            </div>
-
-            <!-- Rating stars -->
-            <div class="flex gap-0.5 sm:gap-1 text-yellow-400 mb-4 sm:mb-5 md:mb-6">
-              <Star v-for="i in 5" :key="i" class="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 fill-current" />
-            </div>
-
-            <!-- Testimonial content -->
-            <blockquote
-              class="text-slate-700 text-sm sm:text-base md:text-base leading-relaxed mb-5 sm:mb-6 md:mb-8 font-medium"
-            >
-              "{{ testimonial.content }}"
-            </blockquote>
-
-            <!-- Author info -->
-            <div class="flex items-center">
-              <div
-                class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gradient-to-br from-emerald-100 to-sky-100 rounded-full flex items-center justify-center mr-3 sm:mr-3.5 md:mr-4 group-hover:scale-110 transition-transform duration-300"
-              >
-                <span class="text-[#1e90ff] font-bold text-sm sm:text-base md:text-lg">{{
-                  testimonial.name.charAt(0)
-                }}</span>
-              </div>
-              <div>
-                <h4 class="font-bold text-slate-900 text-sm sm:text-base md:text-base">
-                  {{ testimonial.name }}
-                </h4>
-                <p class="text-[#1e90ff] font-medium text-xs sm:text-sm md:text-sm">
-                  {{ testimonial.role }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Hover effect background -->
-            <div
-              class="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-sky-50/50 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"
-            ></div>
-          </div>
-        </div>
-
-        <!-- Trust indicators -->
-        <div class="text-center">
-          <div
-            class="flex items-center justify-center gap-2 sm:gap-4 md:gap-6 lg:gap-8 bg-white/60 backdrop-blur-sm rounded-xl sm:rounded-2xl px-3 sm:px-6 md:px-8 py-3 sm:py-5 md:py-6 border border-white/20 flex-wrap sm:flex-nowrap"
-          >
-            <div class="flex items-center gap-1 sm:gap-2">
-              <div class="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
-              <span class="text-slate-700 font-medium text-xs sm:text-sm md:text-base whitespace-nowrap">99.9% Uptime</span>
-            </div>
-            <div class="hidden sm:block w-px h-4 sm:h-5 md:h-6 bg-slate-300 flex-shrink-0"></div>
-            <div class="flex items-center gap-1 sm:gap-2">
-              <Shield class="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 text-[#1e90ff] flex-shrink-0" />
-              <span class="text-slate-700 font-medium text-xs sm:text-sm md:text-base whitespace-nowrap"
-                >Enterprise Security</span
-              >
-            </div>
-            <div class="hidden sm:block w-px h-4 sm:h-5 md:h-6 bg-slate-300 flex-shrink-0"></div>
-            <div class="flex items-center gap-1 sm:gap-2">
-              <Award class="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 text-[#1e90ff] flex-shrink-0" />
-              <span class="text-slate-700 font-medium text-xs sm:text-sm md:text-base whitespace-nowrap">Award Winning</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    <TestimonialsSection />
 
     <!-- FAQ Section -->
     <section
@@ -446,6 +323,7 @@ import { useRouter } from 'vue-router'
 import MainLayout from '../components/MainLayout.vue'
 import Footer from '../components/Footer.vue'
 import PricingSection from '../components/PricingSection.vue'
+import TestimonialsSection from '../components/TestimonialsSection.vue'
 import { useScrollAnimations, useScrollToTop } from '../composables/useScrollAnimations'
 import LogoPng from '@/assets/logo.png'
 import HeroDevicesImg from '@/assets/hero-devices.webp'
@@ -461,9 +339,6 @@ import {
   Sparkles,
   ArrowRight,
   Play,
-  MessageCircle,
-  Shield,
-  Award,
   ArrowUp,
   HelpCircle,
   ChevronDown,
@@ -480,11 +355,8 @@ const authStore = useAuthStore()
 
 // Refs for sections
 const featuresSection = ref<HTMLElement>()
-const testimonialsSection = ref<HTMLElement>()
 const pricingSection = ref<HTMLElement>()
 const faqSection = ref<HTMLElement>()
-
-const showTestimonials = false
 
 // FAQ functionality
 const openFaq = ref<number | null>(null)
@@ -512,9 +384,6 @@ onMounted(() => {
   // Observe sections for scroll animations
   if (featuresSection.value) {
     observeElement(featuresSection.value, 'features')
-  }
-  if (testimonialsSection.value) {
-    observeElement(testimonialsSection.value, 'testimonials')
   }
   if (pricingSection.value) {
     observeElement(pricingSection.value, 'pricing')
@@ -576,27 +445,6 @@ const features = computed(() => [
   },
 ])
 
-const testimonials = computed(() => [
-  {
-    name: 'Sarah Johnson',
-    role: 'Corporate Event Manager',
-    content:
-      'GoEvent transformed how we manage our company conferences. The analytics feature helped us increase attendance by 40%.',
-  },
-  {
-    name: 'Michael Chen',
-    role: 'Wedding Planner',
-    content:
-      'The guest management system is incredible. My clients love how easy it is to track RSVPs and communicate with guests.',
-  },
-  {
-    name: 'Emily Rodriguez',
-    role: 'Non-profit Director',
-    content:
-      "We've organized 50+ charity events using GoEvent. The platform scales beautifully and saves us countless hours.",
-  },
-])
-
 const faqs = computed(() => [
   {
     question: 'How much does GoEvent cost?',
@@ -630,10 +478,6 @@ const faqs = computed(() => [
 /* Unified gradient system for positive, user-friendly feel */
 .features-bg {
   background: linear-gradient(to bottom, #ffffff, #f8fafc, #ffffff);
-}
-
-.testimonials-bg {
-  background: linear-gradient(to bottom right, #f8fafc, #ffffff, #faf5ff);
 }
 
 .faq-bg {
@@ -727,16 +571,6 @@ const faqs = computed(() => [
     opacity: 1;
     transform: translate3d(0, 0, 0);
   }
-}
-
-/* Hide scrollbar for horizontal scroll */
-.scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
 }
 
 /* Animation classes */
