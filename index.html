@@ -6,28 +6,56 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GoEvent</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Rajdhani:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-    <!-- Default meta tags -->
+    <!--
+      Everything between the two markers below is REPLACED at build time by
+      the prerender-meta plugin (build/prerenderMeta.ts). It rewrites this
+      block in place with the default card, and writes a copy of the file to
+      dist/<route>.html for each route that has a card of its own.
+
+      So the block below is what the plugin's DEFAULT_META already says, kept
+      in step by hand — it is what a raw, unbuilt index.html would serve, and
+      what the dev server shows.
+
+      It exists because link scrapers (Messenger, Telegram, WhatsApp, Slack,
+      Twitter) do not run JavaScript: `updateMetaTags` and the router's
+      `document.title` both run after mount and are invisible to them, so every
+      shared link showed this generic block. Routes not listed in that plugin's
+      table still fall through to it, which is what it is for.
+
+      Do not remove or rename the markers — the build fails loudly if they are
+      missing, rather than silently shipping the generic card again.
+    -->
+    <!-- meta:start -->
+    <title>GoEvent</title>
     <meta name="description" content="Create, manage, and showcase beautiful events with GoEvent. Perfect for weddings, conferences, parties, and more.">
     <meta name="author" content="GoEvent">
-    
+
     <!-- Open Graph tags -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="GoEvent - Create Amazing Events">
     <meta property="og:description" content="Create, manage, and showcase beautiful events with GoEvent. Perfect for weddings, conferences, parties, and more.">
     <meta property="og:site_name" content="GoEvent">
-    
+    <meta property="og:locale" content="en_US">
+    <meta property="og:image" content="https://goevent.online/og/default.png">
+    <meta property="og:image:alt" content="GoEvent guest management and expense tracking, on a laptop and a phone">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
     <!-- Twitter Card tags -->
-    <meta name="twitter:card" content="summary">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="GoEvent - Create Amazing Events">
     <meta name="twitter:description" content="Create, manage, and showcase beautiful events with GoEvent. Perfect for weddings, conferences, parties, and more.">
+    <meta name="twitter:image" content="https://goevent.online/og/default.png">
+    <meta name="twitter:image:alt" content="GoEvent guest management and expense tracking, on a laptop and a phone">
     <meta name="twitter:site" content="@GoEvent">
+    <!-- meta:end -->
   </head>
   <body>
     <div id="app"></div>

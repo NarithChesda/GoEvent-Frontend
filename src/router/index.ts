@@ -2,7 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import { resetMetaTags } from '../utils/metaUtils'
 import { useAuthStore } from '../stores/auth'
+import { useLanguageStore } from '../stores/language'
 import { authService } from '../services/auth'
+import type { AppLocale } from '../i18n'
 
 /**
  * Router Configuration
@@ -62,7 +64,7 @@ const router = createRouter({
       path: '/partners',
       name: 'partners',
       component: () => import('../views/PartnerProgramView.vue'),
-      meta: { title: 'Partner Programme - GoEvent' },
+      meta: { title: 'Partner Programme - GoEvent', preferredLocale: 'kh' },
     },
     {
       /**
@@ -74,7 +76,7 @@ const router = createRouter({
       path: '/partners/templates',
       name: 'partner-templates',
       component: () => import('../views/PartnerTemplateGalleryView.vue'),
-      meta: { title: 'Invitation Designs - GoEvent' },
+      meta: { title: 'Invitation Designs - GoEvent', preferredLocale: 'kh' },
     },
     {
       path: '/signin',
@@ -404,6 +406,19 @@ router.beforeEach(async (to, from, next) => {
     // Reset meta tags when leaving showcase pages
     if (from.name === 'event-showcase' && to.name !== 'event-showcase') {
       resetMetaTags()
+    }
+
+    /*
+     * A route may prefer a language of its own — the partner pages do, because
+     * they are links sent to Cambodian shop owners who have never opened the
+     * app. Awaited rather than fired off: the locale is a lazily loaded chunk,
+     * and navigating first would paint one frame of English before the swap.
+     * The store decides whether it applies at all (see applyPreferredLocale);
+     * a visitor who has chosen a language keeps it.
+     */
+    const preferredLocale = to.meta.preferredLocale as AppLocale | undefined
+    if (preferredLocale) {
+      await useLanguageStore().applyPreferredLocale(preferredLocale)
     }
 
     // Check if route requires authentication

@@ -4,6 +4,7 @@ import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
+import { prerenderMeta } from './build/prerenderMeta'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -17,6 +18,12 @@ export default defineConfig(({ mode }) => {
       vue(),
       vueJsx(),
       ...(mode === 'development' ? [vueDevTools()] : []),
+      /**
+       * Writes dist/<route>/index.html with a per-route <head> so link
+       * scrapers, which never run the app, get the right card. Build-only;
+       * the route table lives in build/prerenderMeta.ts.
+       */
+      prerenderMeta({ origin: env.VITE_PUBLIC_SITE_URL }),
     ],
     resolve: {
       alias: {
