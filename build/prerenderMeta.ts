@@ -96,7 +96,7 @@ export const PRERENDERED_ROUTES: PrerenderedRoute[] = [
     path: '/partners',
     title: 'កម្មវិធីដៃគូ GoEvent',
     description:
-      'អ្នករៀបចំធៀបជូនអតិថិជន ហើយកំណត់តម្លៃលក់ដោយខ្លួនឯង។ កម្មវិធីពីរដំបូងឥតគិតថ្លៃ។ គ្មានថ្លៃប្រចាំខែ ហើយយើងមិនយកចំណែកពីអ្វីដែលអ្នកលក់ទេ។',
+      'អ្នករៀបចំធៀបជូនអតិថិជន ២កម្មវិធីដំបូងឥតគិតថ្លៃ។',
     image: '/og/partners.png',
     imageAlt: 'ធៀបអញ្ជើញ GoEvent បី បើកជាទម្រង់ផ្លិត',
     locale: 'km_KH',
@@ -105,7 +105,7 @@ export const PRERENDERED_ROUTES: PrerenderedRoute[] = [
     path: '/partners/templates',
     title: 'ម៉ឺនុយម៉ូតធៀប GoEvent',
     description:
-      'ជ្រើសម៉ូតមួយ ហើយធៀបពិតបើកឡើងភ្លាម — ជាភាសាអង់គ្លេស និងខ្មែរ។ ស្លាកហាងរបស់អ្នកនៅបាតធៀបគ្រប់ម៉ូត។',
+      'ម៉ឺនុយម៉ូតធៀប — ជាភាសាអង់គ្លេស និងខ្មែរ។',
     image: '/og/partner-templates.png',
     imageAlt: 'ម៉ូតធៀបអញ្ជើញ GoEvent បួន',
     locale: 'km_KH',
