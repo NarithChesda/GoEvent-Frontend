@@ -48,10 +48,33 @@ Wholesale rates are therefore published. Anyone can read what partners pay,
 including customers comparing against retail, and competitors. That was the
 business call this document asked for, and it was answered yes.
 
-## What the frontend does with it
+## …and the frontend then stopped using it that way (Sept 2026)
 
-[usePartnerPricingTiers.ts](../../src/composables/usePartnerPricingTiers.ts)
-builds one rail:
+**The public rail is gone.** `/partners` no longer prints a price of any kind,
+and `usePartnerPricingTiers.ts` was deleted with it. Nothing about the endpoint
+changed and nothing here is retracted: the business call above stands, and the
+catalogue is still public for any caller that wants it. What changed is who we
+point at it. A wholesale rate on a page built to be *opened by a stranger* is a
+rate the partner's own customer can read before walking into the shop, and the
+margin we printed beside it — "$825–1,450 if you sell all 25 at $60–85" — is
+that partner's markup shown to the person paying it. Publishing our own
+wholesale is our call to make; publishing the partner's retail markup is not.
+
+So the ladder moved behind `is_partner`, to the credits page
+([CreditsTab.vue](../../src/components/settings/CreditsTab.vue)), which is now
+the only surface that prints partner pricing — and it inherited the margin maths
+the rail used to carry, per pack card: what the partner keeps per event and what
+the whole pack is worth sold through. §3 of `/partners` argues the offer with no
+figure at all (two free events, no monthly fee, your price) and links to
+`/credits`, where the router already handles the signed-out prospect.
+
+The rest of this section describes the rail as it was, and is kept because
+`is_public` / `is_featured` / `display_order` still work exactly as documented —
+the credits catalogue reads all three.
+
+## What the frontend used to do with it
+
+`usePartnerPricingTiers.ts` (deleted) built one rail:
 
 - **Two lead cards, always** — the free trial and pay-as-you-go, authored in
   `partners.pricing.tiers`. Pay-as-you-go is the `partner_rate` funding option

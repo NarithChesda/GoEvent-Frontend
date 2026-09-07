@@ -513,7 +513,7 @@
     },
     "catalogue": {
       "title": "Buy credits",
-      "subtitle": "A credit covers one event on one plan. Credits are not interchangeable between plans.",
+      "subtitle": "These are your partner prices. A credit covers one event on one plan, and credits are not interchangeable between plans.",
       "empty": "There are no credit packs on offer right now."
     },
     "orders": {
@@ -581,6 +581,9 @@
       "orderCancelled": "Order cancelled."
     },
     "savePercent": "Save {n}%",
-    "retailPerEvent": "retail per event"
+    "margin": {
+      "label": "You keep",
+      "caption": "{each} an event, selling all {n} at {retail}"
+    }
   }
 }

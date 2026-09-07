@@ -8,7 +8,7 @@
     "titleAccent": "Profit more in a pack.",
     "subtitle": "You build the invitation for your customer and set your own price. Your first two events are free. After that, pay for each event — or buy a pack and pay less.",
     "ctaPrimary": "Request partner access",
-    "ctaSecondary": "See the prices",
+    "ctaSecondary": "How it works",
     "proof": {
       "payg": "Your first two events are free — you buy nothing to try it",
       "fee": "No monthly fee, and we take no share of what you charge",
@@ -32,53 +32,6 @@
       "title": "Send it out",
       "body": "Pick a design and use one credit — the invitation is live the same minute. Send your customer the link for their guests list, and they can start inviting immediately."
     }
-  },
-  "pricing": {
-    "eyebrow": "Partner pricing — Basic package",
-    "title": "Buy more, keep more",
-    "subtitle": "Shops sell a Basic invitation for $60–85. Your first two events cost you nothing. After that, pay for each event with nothing up front, or buy a pack and pay less for every one.",
-    "profitLabel": "Your profit",
-    "payUpfront": "Cost",
-    "costEach": "You pay each",
-    "keepEach": "You keep each",
-    "forPlan": "For {plan}",
-    "ownDesignsOnly": "Your own designs only",
-    "invitationCount": "{n} invitation | {n} invitations",
-    "eventCount": "{n} event | {n} events",
-    "packProfitCaption": "if you sell all {n} at {retail}",
-    "cta": "Request partner access",
-    "scrollLabel": "Credit packs",
-    "tiers": {
-      "trial": {
-        "name": "Free trial",
-        "credits": "2 free events",
-        "badge": "Try it first",
-        "profit": "$120–170",
-        "profitCaption": "if you sell both at $60–85",
-        "upfront": "Nothing",
-        "costEach": "Free",
-        "keepEach": "$60–85",
-        "note": "Make two real invitations for two real customers before you pay us anything. Whatever you charge for them, you keep."
-      },
-      "payg": {
-        "name": "Pay as you go",
-        "credits": "Pay per event",
-        "badge": "Nothing up front",
-        "profit": "$30–42",
-        "profitCaption": "on every event you sell",
-        "upfront": "Nothing",
-        "costEach": "Half price",
-        "keepEach": "$30–42",
-        "note": "You pay half the package price, every time. A good way to start while you are still not sure how many events you will get."
-      },
-      "shop": {
-        "badge": "Most shops start here"
-      },
-      "volume": {
-        "badge": "Cheapest per event"
-      }
-    },
-    "footnote": "These are Basic package prices. The Standard package sells for $120–150 per event and has its own partner prices — ask us when we open your account. The profit shown assumes you sell every invitation in the pack. What you charge your own customer is up to you. Prices in US dollars."
   },
   "product": {
     "eyebrow": "What you are selling",
@@ -203,7 +156,7 @@
     },
     "price": {
       "q": "Can I set my own price?",
-      "a": "Yes. The prices on this page are what you pay us. What you charge your customer is completely up to you, and we take none of it."
+      "a": "Yes. What you charge your customer is completely up to you, and we take none of it."
     },
     "domain": {
       "q": "Is the invitation under my own brand?",
@@ -219,7 +172,7 @@
     },
     "plans": {
       "q": "Do credits work on any design?",
-      "a": "Credits only work on the package you bought them for. A Basic credit opens any Basic design, for any kind of event — but not a Standard one. This page shows Basic prices."
+      "a": "Credits only work on the package you bought them for. A Basic credit opens any Basic design, for any kind of event — but not a Standard one."
     },
     "payment": {
       "q": "How do I pay for a pack?",

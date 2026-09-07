@@ -269,14 +269,26 @@
         </p>
       </section>
 
-      <!-- The catalogue. Each pack is a separable, buyable object, so it earns a
-           card — and the card itself is the control, which keeps the page's one
-           gradient object in the drawer that opens. -->
+      <!--
+        The catalogue. Each pack is a separable, buyable object, so it earns a
+        card — and the card itself is the control, which keeps the page's one
+        gradient object in the drawer that opens.
+
+        THIS IS NOW THE ONLY PLACE PARTNER PRICING IS PUBLISHED. `/partners`
+        used to carry a wholesale rail off the public catalogue; it was taken
+        out because a wholesale rate at a public URL is a rate the partner's own
+        customer can read before they walk into the shop. Everything that rail
+        argued therefore has to be argued here instead — which is what the
+        margin block on each card is for. A price list a partner has to do
+        arithmetic on is not the same product as the page they were promised.
+      -->
       <section class="mb-8">
         <h3 class="text-base font-semibold text-slate-900">
           {{ t('settings.credits.catalogue.title') }}
         </h3>
-        <p class="mt-1 text-sm text-slate-500">{{ t('settings.credits.catalogue.subtitle') }}</p>
+        <p class="mt-1 max-w-2xl text-sm leading-relaxed text-slate-500">
+          {{ t('settings.credits.catalogue.subtitle') }}
+        </p>
 
         <div
           v-if="packs.length"
@@ -325,12 +337,41 @@
               </span>
             </p>
 
-            <!-- The comparison that makes wholesale worth buying, said once and
-                 in the retail terms the partner's own customer would pay. -->
-            <p v-if="retailPrice(pack)" class="mt-2.5 text-xs text-slate-500">
-              <span class="text-slate-400 line-through tabular-nums">${{ retailPrice(pack) }}</span>
-              {{ t('settings.credits.retailPerEvent') }}
-            </p>
+            <!--
+              What the pack is worth once it is sold through — the figure the
+              partner page used to lead its rail with, and the one a partner is
+              actually deciding on. The price above is what leaves their pocket
+              today; this is what comes back, and no card should make somebody
+              multiply two numbers to find it.
+
+              A hairline and a heading rather than a tinted inset: the card is
+              already an object inside a grid of objects, and a filled box inside
+              it would be a card within a card. It renders only when the plan
+              price is real — a serializer that omits it drops the block rather
+              than printing a margin computed from nothing.
+
+              IT REPLACED a struck-through "$85.00 retail per event" that used to
+              sit here. Retail is now on this card three times over — as the
+              savings badge, as the divisor behind the per-credit rate, and as
+              the band in the caption below — and the strike-through stated it in
+              a *different form* (the ceiling alone) one line above the band,
+              which reads as two figures disagreeing rather than as one fact. The
+              badge is the glanceable version and the caption is the one you can
+              do arithmetic with; the third was the one to lose.
+            -->
+            <div v-if="packMargin(pack)" class="mt-3 border-t border-slate-100 pt-3">
+              <p class="text-[0.6875rem] font-medium uppercase tracking-wider text-slate-500">
+                {{ t('settings.credits.margin.label') }}
+              </p>
+              <p
+                class="mt-1 whitespace-nowrap text-lg font-bold leading-none text-slate-900 tabular-nums"
+              >
+                {{ packMargin(pack)!.total }}
+              </p>
+              <p class="mt-1 text-[0.6875rem] leading-relaxed text-slate-500">
+                {{ packMargin(pack)!.caption }}
+              </p>
+            </div>
 
             <div class="mt-auto pt-4">
               <div class="flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
@@ -665,12 +706,6 @@ const isOwnDesignsPack = (pack: CreditPack): boolean => pack.template_scope === 
 
 const isOwnDesignsCode = (code: PartnerCreditCode): boolean => code.template_scope === 'own_partner'
 
-/** The retail price of the one event a credit covers — the thing being beaten. */
-const retailPrice = (pack: CreditPack): string | null => {
-  const retail = Number(pack.pricing_plan_price)
-  return Number.isFinite(retail) && retail > 0 ? pack.pricing_plan_price : null
-}
-
 /**
  * How far under retail this pack's per-credit rate lands.
  *
@@ -699,6 +734,69 @@ const validityLabel = (pack: CreditPack): string =>
   typeof pack.validity_days === 'number'
     ? t('settings.credits.dayCount', { n: pack.validity_days }, pack.validity_days)
     : t('settings.credits.noExpiry')
+
+/**
+ * ---------------------------------------------------------------------------
+ * What a pack is worth once it is sold through
+ * ---------------------------------------------------------------------------
+ * Ported here when `/partners` gave up its wholesale rail (and
+ * `usePartnerPricingTiers` with it). The reasoning is that composable's, and has
+ * not changed:
+ *
+ * The plan price is the *ceiling* — what a customer pays GoEvent directly, and
+ * therefore the most a partner can charge before that customer is better off
+ * coming to us. The floor is a business convention rather than anything the API
+ * knows: a partner who wants the work prices under the list. So an $85 plan is
+ * quoted as "$60–85", and the margin is a range for the same reason.
+ *
+ * Anchored on the pack's own `pricing_plan_price` — the same field the savings
+ * badge two lines above divides by — so a partner cannot read a percentage and a
+ * margin on one card that were measured against different retails.
+ */
+const RETAIL_DISCOUNT_FLOOR = 25
+
+/** "675.00" → "$675", "27.50" → "$27.50", with thousands separators. */
+function money(value: number): string {
+  if (!Number.isFinite(value)) return String(value)
+  const fixed = Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/0$/, '')
+  const [whole, frac] = fixed.split('.')
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return `$${grouped}${frac ? '.' + frac : ''}`
+}
+
+/**
+ * A span of money as one label. An en dash and no spaces around it: this lands
+ * in a bold figure inside a card that is one of three across, and "$825 – 1,450"
+ * is wide enough there to wrap after the dash into two unrelated numbers.
+ */
+function range(low: number, high: number): string {
+  return low === high ? money(low) : `${money(low)}–${money(high).replace('$', '')}`
+}
+
+/**
+ * The pack's headline margin and what it assumes, or `null` when the plan price
+ * is missing and there is nothing honest to say.
+ */
+const packMargin = (pack: CreditPack): { total: string; caption: string } | null => {
+  const ceiling = Number(pack.pricing_plan_price)
+  const each = Number(pack.price_per_credit)
+  const count = Number(pack.credit_count)
+  if (!Number.isFinite(ceiling) || ceiling <= 0) return null
+  if (!Number.isFinite(each) || each < 0 || !Number.isFinite(count) || count <= 0) return null
+
+  const floor = Math.max(0, ceiling - RETAIL_DISCOUNT_FLOOR)
+  const keepLow = Math.max(0, floor - each)
+  const keepHigh = Math.max(0, ceiling - each)
+
+  return {
+    total: range(keepLow * count, keepHigh * count),
+    caption: t('settings.credits.margin.caption', {
+      each: range(keepLow, keepHigh),
+      n: count,
+      retail: range(floor, ceiling),
+    }),
+  }
+}
 
 /** A claimed trial and an open order both make a second attempt a certain 400. */
 const packDisabled = (pack: CreditPack): boolean =>
