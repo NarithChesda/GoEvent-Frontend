@@ -95,3 +95,55 @@ export const LAUREL_LEAVES = [
   [31, 20, 3.1, 1.35, -60],
   [34, 22, 2.9, 1.3, -24],
 ] as const
+
+/**
+ * The `crest` design's horizontal breakline — the rule drawn under the couple
+ * to close the block.
+ *
+ * A wide, shallow box rather than the 100x100 the couple motifs share: this
+ * ornament runs across the block, and a square viewBox would either letterbox
+ * it or force the caller to do the maths.
+ */
+export const BREAKLINE_VIEWBOX = '0 0 100 20'
+
+/**
+ * One continuous sweep that crosses the centre — the classic stationery
+ * flourish, and the only breakline style that is a drawing rather than a rule
+ * with a mark on it.
+ *
+ * Authored **point-symmetric about (50, 10)**, not mirrored: reflecting a curve
+ * left-to-right meets its copy at the centre with a visible cusp, where
+ * rotating it through 180° meets tangentially and reads as one stroke. Every
+ * control point here has a partner at (100 - x, 20 - y), so the symmetry is
+ * checkable by eye in the numbers.
+ */
+export const BREAKLINE_FLOURISH_PATH =
+  'M2 10 C16 10 24 3 38 6 C44 7.2 47 9 50 10 ' +
+  'C53 11 56 12.8 62 14 C76 17 84 10 98 10'
+
+/** The stop at each end of the flourish, so the stroke ends rather than stops. */
+export const BREAKLINE_FLOURISH_DOTS = [
+  { cx: 2, cy: 10 },
+  { cx: 98, cy: 10 },
+] as const
+
+/**
+ * The lozenge at the centre of the `diamond` breakline. Wider than it is tall,
+ * because it interrupts a line that runs across the page — a square one reads
+ * as a bullet dropped onto the rule rather than as part of it.
+ */
+export const BREAKLINE_DIAMOND_PATH = 'M50 26 L78 50 L50 74 L22 50 Z'
+
+/** The inner echo, so the lozenge reads as drawn rather than as a solid mark. */
+export const BREAKLINE_DIAMOND_INNER_PATH = 'M50 40 L62 50 L50 60 L38 50 Z'
+
+/**
+ * `BLOOM_PATHS` cropped to its own ink, for use as a breakline's centre mark.
+ *
+ * The bloom fans upward from a single base point, so inside the shared 100x100
+ * box its drawing occupies roughly y 30-82 — fine between two avatars, where
+ * the box's centre is nowhere in particular, and wrong on a rule, where the
+ * mark hangs visibly low and renders small because most of its box is empty.
+ * Cropping rather than re-authoring keeps one lotus in the codebase.
+ */
+export const BLOOM_TIGHT_VIEWBOX = '10 28 80 56'

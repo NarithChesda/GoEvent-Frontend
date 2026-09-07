@@ -155,6 +155,13 @@
                     :design-type="hostInfoDesign?.type"
                     :frame-style="hostInfoDesign?.frame_style"
                     :couple-ornament="hostInfoDesign?.couple_ornament"
+                    :divider-style="hostInfoDesign?.divider_style"
+                    :divider-image="templateAssets?.host_divider_image"
+                    :divider-scale="hostInfoDesign?.divider_scale"
+                    :logo-scale="hostInfoDesign?.logo_scale"
+                    :top-offset="hostInfoDesign?.top_offset"
+                    :description-title="hostBlockOwnsDescription ? getDescriptionTitle() : undefined"
+                    :description-text="hostBlockOwnsDescription ? getDescriptionText() : undefined"
                   />
                 </div>
 
@@ -178,8 +185,8 @@
                   ]"
                 >
                   <EventInfo
-                    :description-title="getDescriptionTitle()"
-                    :description-text="getDescriptionText()"
+                    :description-title="hostBlockOwnsDescription ? undefined : getDescriptionTitle()"
+                    :description-text="hostBlockOwnsDescription ? undefined : getDescriptionText()"
                     :date-text="getDateText()"
                     :time-text="getTimeText()"
                     :location-text="getLocationText()"
@@ -882,6 +889,8 @@ interface TemplateAssets {
   sample_logo_1?: string | null
   /** Overlay sample logo — its opaque shape clips the first host image. */
   sample_logo_2?: string | null
+  /** Custom breakline art, forwarded to the `crest` host layout. */
+  host_divider_image?: string | null
 }
 
 interface VideoResourceManager {
@@ -1326,6 +1335,17 @@ const getTimeText = (): string | undefined => findEventText('time_text')?.conten
 const getLocationText = (): string | undefined => findEventText('location_text')?.content
 const getDescriptionText = (): string | undefined => findEventText('description')?.content
 const getDescriptionTitle = (): string | undefined => findEventText('description')?.title
+
+/**
+ * The `crest` host design puts the invitation sentence directly under the
+ * parents who are inviting, in the slot every other design gives a welcome
+ * header — so the description **moves** into the host block on that design and
+ * the info card below must not draw it a second time.
+ *
+ * Decided here rather than inside either component: they are siblings, and only
+ * their parent can see both.
+ */
+const hostBlockOwnsDescription = computed(() => props.hostInfoDesign?.type === 'crest')
 const getInstructionText = (): string | undefined => findEventText('instructions')?.content
 
 // Computed property to check if host message section should be displayed

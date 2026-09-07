@@ -10,6 +10,7 @@ import type {
   HostInfoDesignType,
   HostFrameStyle,
   CoupleOrnament,
+  HostBreaklineStyle,
   InfoCardDesignConfig,
   StageModesConfig,
 } from '@/services/api/types/template.types'
@@ -329,8 +330,40 @@ export interface HostInfoProps {
    * neither a title nor an avatar.
    */
   frameStyle?: HostFrameStyle
-  /** Motif between the two hosts, in the grid's centre column. Defaults to 'none'. */
+  /**
+   * Motif between the two hosts — beside the avatars in the grid layouts,
+   * between the two names on `crest`. Defaults to 'none'.
+   */
   coupleOrnament?: CoupleOrnament
+  /**
+   * The horizontal breakline closing the `crest` design's block. Defaults to
+   * 'rule'.
+   */
+  dividerStyle?: HostBreaklineStyle
+  /**
+   * Custom breakline art from `template_assets.assets.host_divider_image`.
+   * Present wins over `dividerStyle` outright, which is why it is a separate
+   * prop rather than a `custom` member of the enum: a style that needs a file
+   * to mean anything could otherwise be chosen without one.
+   */
+  dividerImage?: string | null
+  /** Breakline width, in percent of the block. Defaults to 100 (half the block). */
+  dividerScale?: number
+  /**
+   * Logo size, in percent of the breakpoint's own cap. Defaults to 100. Read by
+   * every design that draws a logo — `standard`, `portrait`, `crest`.
+   */
+  logoScale?: number
+  /** Where the host block starts, in rem. Defaults to 0. Read by every design. */
+  topOffset?: number
+  /**
+   * The event's `description` title and body. Rendered by `crest`, which puts
+   * the invitation sentence where the other designs put a welcome header — see
+   * MainContentStage, which withholds the same text from the info card below
+   * while that design is active so it is moved rather than duplicated.
+   */
+  descriptionTitle?: string
+  descriptionText?: string
 }
 
 // Error boundary types

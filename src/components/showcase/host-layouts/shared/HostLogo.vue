@@ -1,5 +1,5 @@
 <template>
-  <div class="logo-row" :class="logoRowClass">
+  <div class="logo-row" :class="logoRowClass" :style="scaleStyle">
     <div
       class="logo-content"
       :class="{ 'bounce-in-element': animated }"
@@ -41,12 +41,24 @@ interface Props {
   animated?: boolean
   animationDelay?: number
   logoRowClass?: string
+  /**
+   * Size of the logo, as a percent of the breakpoint's own cap. 100 is the
+   * size every layout rendered before this existed.
+   *
+   * Expressed as a multiplier on the existing caps rather than as a size of its
+   * own, because those caps are a responsive ladder (100px on a small phone up
+   * to 180px on a desktop) that a single number would have to replace whole —
+   * and a partner setting one absolute value would be choosing it on whichever
+   * screen they happened to be previewing on.
+   */
+  scale?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   animated: false,
   animationDelay: 0,
   logoRowClass: 'my-6',
+  scale: 100,
 })
 
 // Three-tier fallback chain matching CoverContentRows and HostInfoBirthday:
@@ -58,6 +70,13 @@ const resolvedLogoSrc = computed<string | null>(() => {
   if (props.sampleLogoOne) return getMediaUrl(props.sampleLogoOne) ?? null
   return null
 })
+
+// Percent on the wire, a multiplier in CSS. Left off entirely at 100 so the
+// caps resolve through their own `var(..., 1)` fallback — the declarations then
+// read exactly as they did before this prop existed.
+const scaleStyle = computed(() =>
+  props.scale === 100 ? undefined : { '--host-logo-scale': String(props.scale / 100) },
+)
 
 const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
   toRef(props, 'primaryColor')
@@ -86,9 +105,9 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
 
 .host-logo-showcase {
   height: auto;
-  max-height: 180px;
+  max-height: calc(180px * var(--host-logo-scale, 1));
   width: auto;
-  max-width: min(330px, 95%);
+  max-width: min(calc(330px * var(--host-logo-scale, 1)), 95%);
   object-fit: contain;
   transition: transform 0.3s ease;
 }
@@ -115,8 +134,8 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
   justify-content: center;
   width: auto;
   height: auto;
-  max-width: min(330px, 95%);
-  max-height: 180px;
+  max-width: min(calc(330px * var(--host-logo-scale, 1)), 95%);
+  max-height: calc(180px * var(--host-logo-scale, 1));
 }
 
 .fallback-logo:hover {
@@ -127,8 +146,8 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
   display: block;
   width: auto !important;
   height: auto !important;
-  max-width: min(330px, 95vw);
-  max-height: 180px;
+  max-width: min(calc(330px * var(--host-logo-scale, 1)), 95vw);
+  max-height: calc(180px * var(--host-logo-scale, 1));
   object-fit: contain;
   margin: 0 auto;
 }
@@ -162,35 +181,35 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
 /* Responsive breakpoints */
 @media (min-width: 640px) {
   .host-logo-showcase {
-    max-height: 140px;
-    max-width: min(350px, 95%);
+    max-height: calc(140px * var(--host-logo-scale, 1));
+    max-width: min(calc(350px * var(--host-logo-scale, 1)), 95%);
   }
 
   .fallback-logo {
-    max-width: min(350px, 95%);
-    max-height: 140px;
+    max-width: min(calc(350px * var(--host-logo-scale, 1)), 95%);
+    max-height: calc(140px * var(--host-logo-scale, 1));
   }
 
   .fallback-logo :deep(svg) {
-    max-width: min(350px, 95vw);
-    max-height: 140px;
+    max-width: min(calc(350px * var(--host-logo-scale, 1)), 95vw);
+    max-height: calc(140px * var(--host-logo-scale, 1));
   }
 }
 
 @media (min-width: 768px) {
   .host-logo-showcase {
-    max-height: 150px;
-    max-width: min(375px, 95%);
+    max-height: calc(150px * var(--host-logo-scale, 1));
+    max-width: min(calc(375px * var(--host-logo-scale, 1)), 95%);
   }
 
   .fallback-logo {
-    max-width: min(375px, 95%);
-    max-height: 150px;
+    max-width: min(calc(375px * var(--host-logo-scale, 1)), 95%);
+    max-height: calc(150px * var(--host-logo-scale, 1));
   }
 
   .fallback-logo :deep(svg) {
-    max-width: min(375px, 95vw);
-    max-height: 150px;
+    max-width: min(calc(375px * var(--host-logo-scale, 1)), 95vw);
+    max-height: calc(150px * var(--host-logo-scale, 1));
   }
 }
 
@@ -202,15 +221,15 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
   }
 
   .host-logo-showcase {
-    max-height: 180px;
-    max-width: min(330px, 95%);
+    max-height: calc(180px * var(--host-logo-scale, 1));
+    max-width: min(calc(330px * var(--host-logo-scale, 1)), 95%);
   }
 }
 
 @media (min-width: 1920px) {
   .host-logo-showcase {
-    max-height: 180px;
-    max-width: min(450px, 95%);
+    max-height: calc(180px * var(--host-logo-scale, 1));
+    max-width: min(calc(450px * var(--host-logo-scale, 1)), 95%);
   }
 
   .logo-row {
@@ -218,20 +237,20 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
   }
 
   .fallback-logo {
-    max-width: min(450px, 95%);
-    max-height: 180px;
+    max-width: min(calc(450px * var(--host-logo-scale, 1)), 95%);
+    max-height: calc(180px * var(--host-logo-scale, 1));
   }
 
   .fallback-logo :deep(svg) {
-    max-width: min(450px, 95vw);
-    max-height: 180px;
+    max-width: min(calc(450px * var(--host-logo-scale, 1)), 95vw);
+    max-height: calc(180px * var(--host-logo-scale, 1));
   }
 }
 
 @media (max-width: 374px) {
   .host-logo-showcase {
-    max-height: 100px;
-    max-width: min(240px, 90%);
+    max-height: calc(100px * var(--host-logo-scale, 1));
+    max-width: min(calc(240px * var(--host-logo-scale, 1)), 90%);
   }
 
   .logo-row {
@@ -239,8 +258,8 @@ const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
   }
 
   .fallback-logo {
-    max-height: 100px;
-    max-width: min(240px, 90%);
+    max-height: calc(100px * var(--host-logo-scale, 1));
+    max-width: min(calc(240px * var(--host-logo-scale, 1)), 90%);
   }
 }
 

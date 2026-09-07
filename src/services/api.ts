@@ -112,6 +112,7 @@ export type {
   HostInfoDesignConfig,
   HostFrameStyle,
   CoupleOrnament,
+  HostBreaklineStyle,
   InfoCardDesignType,
   InfoCardDesignConfig,
   AgendaDesignType,
