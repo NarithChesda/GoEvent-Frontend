@@ -20,6 +20,7 @@ import {
   DEFAULT_LOCALE,
   APP_LOCALE_STORAGE_KEY,
   ensureLocaleMessages,
+  hasStoredLocaleAtBoot,
   setI18nLocale,
   type AppLocale,
 } from '@/i18n'
@@ -27,6 +28,17 @@ import {
 export const useLanguageStore = defineStore('language', () => {
   // Initialize from localStorage (the same source i18n used on boot)
   const locale = ref<AppLocale>(readStoredLocale())
+
+  /**
+   * Whether the visitor's language is decided for this session — either they
+   * arrived with one stored, or something has set one since (their own
+   * toggle, or a route preference applying its one time).
+   *
+   * It exists so `applyPreferredLocale` fires at most once: without the latch,
+   * a shop owner who switched /partners to English would be flipped back to
+   * Khmer the moment they clicked through to /partners/templates.
+   */
+  const hasSettledLocale = ref(hasStoredLocaleAtBoot())
 
   function readStoredLocale(): AppLocale {
     try {
@@ -51,10 +63,30 @@ export const useLanguageStore = defineStore('language', () => {
    */
   async function setLocale(next: AppLocale) {
     if (!(SUPPORTED_LOCALES as readonly string[]).includes(next)) return
+    // Before the no-op return, not after: asking for the language you are
+    // already reading is still an answer, and it has to close the door on a
+    // route preference overriding it later.
+    hasSettledLocale.value = true
     if (next === locale.value) return
     await ensureLocaleMessages(next)
     locale.value = next
     setI18nLocale(next) // updates vue-i18n + localStorage + <html lang>
+  }
+
+  /**
+   * Apply a route's own preferred language — for pages whose audience is not
+   * the app's default one. `/partners` and `/partners/templates` are the
+   * cases: both are links a salesperson sends to a Cambodian shop owner who
+   * has never opened the app, so English is the wrong first impression.
+   *
+   * Only ever fires for a visitor who has not chosen a language, and only
+   * once. Anyone who has — a returning organizer, or someone who has just
+   * used the toggle on the page itself — keeps what they picked.
+   */
+  async function applyPreferredLocale(preferred: AppLocale) {
+    if (hasSettledLocale.value) return
+    await setLocale(preferred)
+    hasSettledLocale.value = true
   }
 
   /**
@@ -72,7 +104,9 @@ export const useLanguageStore = defineStore('language', () => {
 
   return {
     locale,
+    hasSettledLocale,
     setLocale,
+    applyPreferredLocale,
     init,
   }
 })

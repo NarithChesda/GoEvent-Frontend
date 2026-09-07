@@ -85,16 +85,33 @@ const messages = { en: enMessages } as Record<AppLocale, LocaleMessages>
  */
 const STORAGE_KEY = 'goevent_app_locale'
 
+/**
+ * Whether this visitor arrived with a language already chosen.
+ *
+ * Captured HERE, at module evaluation, because `setI18nLocale` persists on
+ * every call and `useLanguageStore().init()` calls it on every boot — so a
+ * moment after startup the key is always set and "is there a stored locale"
+ * can no longer tell a returning visitor's choice from the app writing down
+ * its own default. Routes that prefer a locale of their own (see
+ * `preferredLocale` in the router) read this to know whether they may.
+ */
+let storedLocaleAtBoot = false
+
 function getInitialLocale(): AppLocale {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored && (SUPPORTED_LOCALES as readonly string[]).includes(stored)) {
+      storedLocaleAtBoot = true
       return stored as AppLocale
     }
   } catch {
     // localStorage can throw in private mode / SSR — fall through
   }
   return DEFAULT_LOCALE
+}
+
+export function hasStoredLocaleAtBoot(): boolean {
+  return storedLocaleAtBoot
 }
 
 export const i18n = createI18n({
