@@ -92,13 +92,14 @@
         needed. Held out of the DOM entirely until first shown, so it costs a
         reader who never scrolls nothing at all.
 
-        The pricing section's CTA is deliberately NOT a third boundary, even
-        though it is the same button. Those two are the page's bookends — before
-        the first there is no argument yet, after the second there is nothing
-        left to say — whereas the pricing CTA is an inline control the reader
-        scrolls past in a second or two. A bar that withdrew and returned for it
-        would flicker in the corner of the eye every time somebody read the
-        packs, which costs more attention than the brief duplicate does.
+        TWO BOUNDARIES IS THE WHOLE RULE, and there is now nothing between them
+        to argue about: the page's only mid-page CTA lived in the old pricing
+        section and went with it, so the hero's row and the closing panel are the
+        page's only asks as well as its bookends. If one is ever added back
+        mid-page, it should NOT become a third boundary — an inline control the
+        reader scrolls past in a second or two would make the bar withdraw and
+        return, flickering in the corner of the eye, which costs more attention
+        than the brief duplicate does.
       -->
       <div
         v-if="actionBarMounted"
@@ -149,10 +150,15 @@
         The headline is a ladder rather than a price: free to start, better
         the more you commit. It opens on the free events because cost is the
         first objection a shop raises, and lands on the pack because that is
-        the upside — which is also the order the pricing rail is built in.
-        Everything else the old headline carried (your own price, your logo,
-        no account for the customer) is one step down, in the subtitle and in
-        "What you get".
+        the upside. Everything else the old headline carried (your own price,
+        your logo, no account for the customer) is one step down, in the
+        subtitle and in "What you get".
+
+        It names the pack without pricing it, and that is fine: the packs still
+        exist, they are just quoted on `/credits` now. The clause that used to
+        end the paragraph — "which is also the order the pricing rail is built
+        in" — is what the rail's removal invalidated, and it is the only thing
+        here that had to change.
 
         Each of the two spans has to fit on ONE line, or the hero reads as a
         paragraph in display type. The budget is ~18 characters, not ~22: the
@@ -307,7 +313,7 @@
                 <button
                   type="button"
                   class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-slate-100 px-6 py-3.5 text-sm font-medium text-slate-700 transition-[transform,background-color] duration-200 ease-out hover:bg-slate-200 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 sm:text-base"
-                  @click="scrollToPricing"
+                  @click="scrollToSteps"
                 >
                   {{ t('partners.hero.ctaSecondary') }}
                   <ArrowDown class="h-4 w-4" aria-hidden="true" />
@@ -340,7 +346,7 @@
         so a card would be chrome; the oversized slate-200 numerals and a single
         hairline carry the sequence instead.
       -->
-      <section id="how-it-works" class="scroll-mt-20 py-12 sm:py-20 lg:py-28">
+      <section id="how-it-works" ref="stepsRef" class="scroll-mt-20 py-12 sm:py-20 lg:py-28">
         <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
           <header data-reveal class="max-w-2xl">
             <h2
@@ -411,10 +417,10 @@
                    price of finding it.
 
                    Inverted to `bg-slate-900` rather than tinted: this section
-                   has no colour at all, and the pricing grid below already uses
-                   the dark fill to mean "look here" (see its comment). A pill
-                   is the loudest thing available here and it is spent once on
-                   the page's best fact about the work.
+                   has no colour at all, and a dark fill is the page's quietest
+                   way of saying "look here". A pill is the loudest thing
+                   available in this section and it is spent once, on the page's
+                   best fact about the work.
 
                    `flex-wrap` + `gap-y-2` because the row is two languages
                    wide: at `md` the column is ~260px and the Khmer heading and
@@ -445,301 +451,7 @@
       </section>
 
       <!--
-        3. PRICING — the centrepiece, and the only section built from cards,
-        because a pack genuinely is a separable, buyable object.
-
-        The featured tier inverts to `bg-slate-900` rather than taking the brand
-        gradient: the section's one gradient object is the CTA below the grid,
-        and a dark card is a stronger, quieter way to say "this one" than a
-        fourth gradient on the page.
-      -->
-      <section
-        id="pricing"
-        ref="pricingRef"
-        class="scroll-mt-20 border-y border-slate-200 bg-white/60 py-12 sm:py-20 lg:py-28"
-      >
-        <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-6xl lg:px-8 2xl:max-w-7xl">
-          <header data-reveal class="max-w-2xl">
-            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              {{ t('partners.pricing.eyebrow') }}
-            </p>
-            <h2
-              class="type-display-sm mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl"
-            >
-              {{ t('partners.pricing.title') }}
-            </h2>
-            <p class="mt-3 text-base leading-relaxed text-slate-600 sm:text-lg">
-              {{ t('partners.pricing.subtitle') }}
-            </p>
-          </header>
-
-          <!--
-            The rail. Always a horizontal scroller, never a grid: the catalogue
-            decides how many packs there are, and a grid that has to re-guess its
-            track count for every possible N ends up with an orphan on a second
-            row the moment the backend adds a pack. A rail has one behaviour for
-            two cards and for ten.
-
-            It bleeds to the viewport edge with a negative margin and pays the
-            padding back inside, so the first card lines up with the heading
-            while the last one can scroll past the container's right edge —
-            without that, cards stop short of the edge and the row reads as
-            clipped rather than continuing.
-
-            `scroll-pl-*` matches that padding so a snapped card lands on the
-            heading's left edge rather than under the fade.
-          -->
-          <div data-reveal class="relative mt-10 sm:mt-12">
-            <div
-              ref="railRef"
-              class="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-pl-4 px-4 pb-2 sm:-mx-6 sm:gap-5 sm:scroll-pl-6 sm:px-6 lg:-mx-8 lg:scroll-pl-8 lg:px-8"
-              :class="{ 'rail-fade-start': canScrollBack, 'rail-fade-end': canScrollOn }"
-              tabindex="0"
-              role="region"
-              :aria-label="t('partners.pricing.scrollLabel')"
-              @scroll.passive="updateRailEdges"
-            >
-              <article
-                v-for="(tier, i) in tiers"
-                :key="tier.key"
-                data-reveal
-                :style="{ '--reveal-delay': `calc(var(--stagger) * ${Math.min(i, 4)})` }"
-                class="flex w-[17.5rem] flex-none snap-start flex-col rounded-2xl p-6 sm:w-[19.5rem] sm:p-7"
-                :class="
-                  tier.featured
-                    ? 'bg-slate-900 shadow-xl shadow-slate-900/10'
-                    : 'border border-slate-200/60 bg-white shadow-sm'
-                "
-              >
-                <!--
-                  Why this card is worth a second look, said once per card in
-                  one slot. The wrapper is always rendered and holds the line's
-                  height, so a tier with nothing to claim — the middle of a long
-                  wholesale ladder — leaves a gap rather than pulling its figure
-                  a line above its neighbours'.
-
-                  Only the recommendation is emerald. A green label on every
-                  card would read as a row of "success" markers and spend the
-                  one saturated colour the system has on a qualifier; slate
-                  everywhere else is what makes the featured one look chosen.
-                -->
-                <div class="mb-4 min-h-4">
-                  <p
-                    v-if="tier.badge"
-                    class="text-xs font-semibold uppercase tracking-wider"
-                    :class="tier.featured ? 'text-emerald-300' : 'text-slate-500'"
-                  >
-                    {{ tier.badge }}
-                  </p>
-                </div>
-
-                <div class="min-w-0">
-                  <h3
-                    class="text-sm font-semibold"
-                    :class="tier.featured ? 'text-white' : 'text-slate-900'"
-                  >
-                    {{ tier.name }}
-                  </h3>
-                  <p
-                    class="mt-1 text-sm"
-                    :class="tier.featured ? 'text-slate-400' : 'text-slate-500'"
-                  >
-                    {{ tier.credits }}
-                  </p>
-                  <!--
-                    Which packages the credits unlock. Two packs can be the same
-                    size at the same price and still be different products — "25
-                    Basic" and "25 Basic Plus" are — so without this line those
-                    two cards differ by one word in the title and read as a bug.
-
-                    A step smaller than the count above it and allowed to wrap:
-                    a pack spanning several plans has a genuinely long label, and
-                    truncating it would hide the very thing the line is here to
-                    show.
-                  -->
-                  <p
-                    v-if="tier.plans"
-                    class="mt-1.5 text-xs leading-relaxed"
-                    :class="tier.featured ? 'text-slate-500' : 'text-slate-400'"
-                  >
-                    {{ t('partners.pricing.forPlan', { plan: tier.plans }) }}
-                  </p>
-                  <!--
-                    Whose designs the credits unlock, said next to which plans
-                    they cover — the two restrictions are independent and both
-                    apply. A pack sold at a bring-your-own-design rate is a
-                    different product, and the margins below it are only true
-                    for a shop that designs. Only the narrowed packs speak; the
-                    ordinary ones would otherwise all carry a line saying
-                    nothing.
-                  -->
-                  <p
-                    v-if="tier.ownDesignsOnly"
-                    class="mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.6875rem] font-medium"
-                    :class="
-                      tier.featured ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
-                    "
-                  >
-                    <PenTool class="h-3 w-3 flex-shrink-0 opacity-70" aria-hidden="true" />
-                    {{ t('partners.pricing.ownDesignsOnly') }}
-                  </p>
-                </div>
-
-                <!--
-                  The figure the page exists to show: what the whole pack is
-                  worth once it is sold through. It used to be the per-invitation
-                  cost, which is the honest unit but the wrong headline — "$27"
-                  is a price, and a shop owner is deciding whether this is a
-                  business. "$825–1,450" answers that. The unit economics keep
-                  their place in the rows below, one type step down.
-
-                  `whitespace-nowrap` because these are ranges, and a break after
-                  the dash reads as two unrelated numbers.
-                -->
-                <div class="mt-6">
-                  <p
-                    class="text-xs font-medium uppercase tracking-wider"
-                    :class="tier.featured ? 'text-emerald-300' : 'text-slate-500'"
-                  >
-                    {{ t('partners.pricing.profitLabel') }}
-                  </p>
-                  <p
-                    class="mt-1.5 whitespace-nowrap text-3xl font-bold leading-none tabular-nums sm:text-4xl"
-                    :class="tier.featured ? 'text-white' : 'text-slate-900'"
-                  >
-                    {{ tier.profit }}
-                  </p>
-                  <p
-                    class="mt-2 text-xs leading-relaxed"
-                    :class="tier.featured ? 'text-slate-400' : 'text-slate-500'"
-                  >
-                    {{ tier.profitCaption }}
-                  </p>
-                </div>
-
-                <!-- The unit economics behind the figure, as rows. Rows rather
-                     than a nested card: nothing here is separable from the pack
-                     it describes. "Pay up front" leads because it is the one
-                     axis on which the trial and pay-as-you-go beat every pack,
-                     and the reason they exist. -->
-                <dl
-                  class="mt-6 divide-y border-t text-sm"
-                  :class="
-                    tier.featured
-                      ? 'divide-white/10 border-white/10'
-                      : 'divide-slate-100 border-slate-100'
-                  "
-                >
-                  <div
-                    v-for="row in tierRows(tier)"
-                    :key="row.label"
-                    class="flex items-baseline justify-between gap-3 py-2.5"
-                  >
-                    <dt
-                      class="min-w-0 truncate"
-                      :class="tier.featured ? 'text-slate-400' : 'text-slate-500'"
-                    >
-                      {{ row.label }}
-                    </dt>
-                    <dd
-                      class="whitespace-nowrap font-medium tabular-nums"
-                      :class="tier.featured ? 'text-slate-200' : 'text-slate-700'"
-                    >
-                      {{ row.value }}
-                    </dd>
-                  </div>
-                </dl>
-
-                <!-- `mt-auto` on the wrapper, not on the note, so a live pack
-                     with an empty `description` still pushes nothing around: the
-                     spacer holds the card's bottom alignment whether or not
-                     there is a sentence to print. -->
-                <div class="mt-auto">
-                  <p
-                    v-if="tier.note"
-                    class="pt-5 text-xs leading-relaxed"
-                    :class="tier.featured ? 'text-slate-400' : 'text-slate-500'"
-                  >
-                    {{ tier.note }}
-                  </p>
-                </div>
-              </article>
-            </div>
-
-            <!--
-              Arrows are a pointer affordance only: a touch device already has
-              the gesture, and a control floating over a card the thumb is about
-              to swipe is in the way. They sit outside the scroller so they never
-              scroll away from the reader, and the whole layer is dropped when
-              everything already fits — an arrow that cannot move anything is
-              worse than no arrow.
-
-              `tabindex="-1"` and `aria-hidden` because the scroll container
-              itself is focusable and arrow-key scrollable: a keyboard user
-              already has a better path than tabbing through two buttons, and
-              announcing them would only add noise.
-
-              HOW FAR THEY HANG OUT MUST NEVER EXCEED THE GUTTER THEY HANG INTO,
-              and that gutter changes with the breakpoint while the offset used
-              not to. The rail's container is `px-4` below `sm`, so a flat
-              `-ml-5` put the left arrow's edge at 16 - 20 = -4px: four pixels
-              past the left edge of the screen, and the same on the right, so
-              the whole page scrolled sideways by four pixels at every width
-              under 640.
-
-              It went unnoticed for as long as it did because the arrows are
-              `display: none` under `(hover: hover) and (pointer: fine)` — a real
-              phone never draws them, so the bug is invisible on the device the
-              layout is for and appears the moment anyone checks the mobile view
-              by narrowing a desktop window. It is not only a testing artefact
-              though: a touch laptop, a Windows tablet or an Android with a mouse
-              all report a fine pointer at these widths and really do scroll.
-
-              12px against the 16px gutter, back to 20 from `sm` where the gutter
-              is 24. Keep the two in step if either ever changes.
-            -->
-            <div
-              v-if="railOverflows"
-              class="rail-arrows pointer-events-none absolute inset-y-0 left-0 right-0 items-center justify-between"
-              aria-hidden="true"
-            >
-              <button
-                v-for="dir in RAIL_DIRECTIONS"
-                :key="dir"
-                type="button"
-                tabindex="-1"
-                :disabled="dir < 0 ? !canScrollBack : !canScrollOn"
-                class="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white/90 text-slate-600 shadow-lg backdrop-blur-sm transition-[transform,opacity,background-color] duration-200 ease-out hover:bg-white hover:text-slate-900 active:scale-95 disabled:pointer-events-none disabled:opacity-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-                :class="dir < 0 ? '-ml-3 sm:-ml-5' : '-mr-3 sm:-mr-5'"
-                @click="scrollRail(dir)"
-              >
-                <ChevronLeft v-if="dir < 0" class="h-5 w-5" />
-                <ChevronRight v-else class="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-
-          <div data-reveal class="mt-10 flex flex-col items-start gap-6 sm:mt-12">
-            <RouterLink
-              to="/credits"
-              class="group inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-[transform,box-shadow,background-image] duration-200 ease-out hover:from-[#27ae60] hover:to-[#1873cc] hover:shadow-xl hover:shadow-emerald-600/30 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2 sm:text-base"
-            >
-              {{ t('partners.pricing.cta') }}
-              <ArrowRight
-                class="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
-                aria-hidden="true"
-              />
-            </RouterLink>
-
-            <p class="max-w-3xl text-xs leading-relaxed text-slate-500">
-              {{ t('partners.pricing.footnote') }}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!--
-        4. PRODUCT — what the partner is actually reselling, and therefore the
+        3. PRODUCT — what the partner is actually reselling, and therefore the
         justification for the retail column above.
 
         This section used to be eight icons in gradient discs with a paragraph
@@ -859,7 +571,8 @@
                 which is what it always was.
 
                 The rail bleeds to the viewport edge and pays the padding back
-                inside, the same way the pricing rail does, so a fourth screen
+                inside — a negative margin on the scroller, repaid as its own
+                horizontal padding — so a fourth screen
                 added later scrolls off the edge rather than wrapping into a
                 ragged second row. Three fit a 375px phone in English today and
                 scroll in Khmer, which is exactly the behaviour we want and not
@@ -1025,7 +738,7 @@
       </section>
 
       <!--
-        5. THE DAY ITSELF — the other half of what a credit buys, and the half
+        4. THE DAY ITSELF — the other half of what a credit buys, and the half
         no screenshot of an invitation can carry.
 
         Pictures, not sentences. A shop owner selling a wedding does not want to
@@ -1300,7 +1013,7 @@
         </div>
       </section>
       <!--
-        6. PARTNER BENEFITS — a spec sheet, not a feature grid: each item is
+        5. PARTNER BENEFITS — a spec sheet, not a feature grid: each item is
         ruled off at the top and carries no icon disc, so it reads as terms
         rather than as marketing, which is the register a business audience
         trusts at this point in the page.
@@ -1365,23 +1078,24 @@
         </div>
       </section>
 
-
       <!--
-        7. WHAT SHOPS SAY — the proof for the claims directly above it, and it
+        6. WHAT SHOPS SAY — the proof for the claims directly above it, and it
         sits between them and the questions because a reader who has just been
         told what they get is exactly the reader asking who else already has it.
 
-        No cards, because §3 keeps them for the packs — the one genuinely
-        buyable object on this page — so each quote is separated the way the
-        benefits above it are: a hairline and a column. A wall of shadowed white
-        boxes here would quietly demote the pricing grid to one card set among
-        several.
+        No cards, and now for a plainer reason than before. The pricing section
+        used to hold the page's only card set, and this one stayed cardless so a
+        wall of shadowed white boxes could not quietly demote it to one card set
+        among several. That section is gone, the FAQ panel below is the last card
+        on the page, and a quote was never a separable object anyway. Each is
+        separated the way the benefits above it are, with a hairline and a
+        column.
 
         And no aggregate strip, because a "180 shops on the programme" line
-        would be a second numbers section arguing with the pricing table two
-        screens up, and the numbers are this page's strongest asset. The quotes
-        carry their own — a sell price, a card count — inside the sentence that
-        earns them.
+        would be a second numbers section arguing with the quotes' own figures —
+        which, now that the wholesale rail is gone, are the only numbers this
+        page prints at all. The quotes carry them (a sell price, a card count)
+        inside the sentence that earns them.
 
         No star rows either. Stars are marketplace furniture: five amber glyphs
         over every quote is the visual language of a listing with reviews
@@ -1411,7 +1125,7 @@
       </section>
 
       <!--
-        8. FAQ — the last informative section and the only interactive one, so
+        7. FAQ — the last informative section and the only interactive one, so
         it earns a shape of its own: a single panel lifted off the page's tinted
         ground, with full-bleed rows inside it.
 
@@ -1529,7 +1243,7 @@
       </section>
 
       <!--
-        9. CLOSING — the page's third and last gradient object, and now also its
+        8. CLOSING — the page's third and last gradient object, and now also its
         end. `AppFooter` is gone from here for the reason the top bar is: its
         nav, its social row and its "explore the app" link all belong to a
         product this reader has no account for, and on a page that is a pitch
@@ -1620,12 +1334,22 @@
 /**
  * The partner offer, as a page a salesperson can send or present.
  *
- * Why this is authored content and not the live catalogue: every endpoint under
- * `/api/payment/` answers 403 without `is_partner`, deliberately — wholesale
- * pricing is confidential — so a page whose whole job is to be opened by
- * someone who is *not* a partner yet cannot fetch a single figure. The numbers
- * therefore live in `partners.json`, in one `pricing.tiers` block, so changing
- * the offer is an edit to two locale files and nothing else.
+ * WHY IT PRINTS NO PRICES. It used to. The credit-pack catalogue went public in
+ * August 2026 and this page rendered a wholesale rail off it — which was a
+ * mistake of audience rather than of plumbing: a wholesale rate at a public URL
+ * is a rate the partner's own customer can read before they walk into the shop,
+ * and the margin printed beside it is that partner's markup shown to the person
+ * paying it. The whole ladder therefore moved to `/credits`, behind
+ * `is_partner`, and this page argues the offer without quoting a figure. So it
+ * now fetches nothing at all: no catalogue call, no `usePartnerPricingTiers`
+ * (deleted with the rail), and every string it renders comes from
+ * `partners.json`.
+ *
+ * A "What it costs to start" section briefly stood where the rail had been —
+ * three facts (two free events, no monthly fee, your price) over a CTA. It was
+ * removed as redundant: the hero's proof list already makes all three points,
+ * and step 1 of "How it works" already says the first two events are free. What
+ * a prospect needs about money is said twice on this page, not four times.
  *
  * Every CTA points at `/credits`. The router already bounces an unauthenticated
  * visitor to `/signin?redirect=/credits`, and `CreditsTab` already renders the
@@ -1633,7 +1357,7 @@
  * signed-out prospect, the applicant and the approved partner without this page
  * knowing which it is talking to.
  */
-import { computed, ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { computed, ref, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
 import {
   ArrowDown,
@@ -1644,8 +1368,6 @@ import {
   CalendarDays,
   Check,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   ClipboardCheck,
   Clock,
   Eye,
@@ -1657,7 +1379,6 @@ import {
   Link2,
   MessageCircle,
   Palette,
-  PenTool,
   QrCode,
   Sparkles,
   Store,
@@ -1669,10 +1390,6 @@ import MainLayout from '@/components/MainLayout.vue'
 import PartnerTestimonials from '@/components/PartnerTestimonials.vue'
 import testimonialsData from '@/assets/testimonials.json'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import {
-  usePartnerPricingTiers,
-  type PartnerPricingTier,
-} from '@/composables/usePartnerPricingTiers'
 /**
  * Real screenshots of a real invitation and a real guest list, captured from
  * the app itself rather than drawn. They are checked in rather than fetched
@@ -1749,76 +1466,6 @@ const FAQ_KEYS = [
   'names',
   'apply',
 ] as const
-
-/**
- * The pricing row: the live credit-pack catalogue where it can be read, the
- * authored copy where it cannot. Pay-as-you-go always leads — it is the entry
- * with nothing to commit, and answers the objection the packs beside it would
- * otherwise raise. See the composable for why the live path is gated.
- */
-const { tiers } = usePartnerPricingTiers()
-
-/** The three unit-economics rows under each card's headline figure. */
-const tierRows = (tier: PartnerPricingTier) => [
-  { label: t('partners.pricing.payUpfront'), value: tier.upfront },
-  { label: t('partners.pricing.costEach'), value: tier.costEach },
-  { label: t('partners.pricing.keepEach'), value: tier.keepEach },
-]
-
-/**
- * The pricing rail's own state.
- *
- * `canScrollBack` / `canScrollOn` drive both the arrows' disabled state and the
- * edge fades, so a fade never sits over an edge there is nothing beyond — the
- * detail that separates a rail that looks scrollable from one that looks
- * clipped. `railOverflows` drops the arrow layer entirely when every card fits.
- *
- * The 1px tolerance is not superstition: a scroller at its end reports
- * `scrollLeft` as a fractional value on fractional device pixel ratios, so an
- * exact comparison leaves the "next" arrow enabled forever at the right edge.
- */
-const RAIL_DIRECTIONS = [-1, 1] as const
-const railRef = ref<HTMLElement | null>(null)
-const canScrollBack = ref(false)
-const canScrollOn = ref(false)
-const railOverflows = ref(false)
-
-function updateRailEdges() {
-  const el = railRef.value
-  if (!el) return
-  const max = el.scrollWidth - el.clientWidth
-  railOverflows.value = max > 1
-  canScrollBack.value = el.scrollLeft > 1
-  canScrollOn.value = el.scrollLeft < max - 1
-}
-
-/**
- * One card plus its gap per press, so a click always lands the next card on the
- * snap line rather than half of it. Measured from the DOM instead of the class,
- * because the card's width is in `rem` and the app rescales its root font on
- * laptop viewports — a hardcoded pixel step would be 25% out there.
- */
-function scrollRail(direction: -1 | 1) {
-  const el = railRef.value
-  const card = el?.querySelector('article')
-  if (!el || !card) return
-
-  const gap = Number.parseFloat(getComputedStyle(el).columnGap) || 0
-  el.scrollBy({
-    left: direction * (card.getBoundingClientRect().width + gap),
-    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-  })
-}
-
-// The rail's extent changes when the live catalogue swaps the cards in and when
-// the viewport resizes; neither fires a scroll event, so neither would update
-// the fades on its own.
-watch(tiers, () => nextTick(updateRailEdges))
-onMounted(() => {
-  updateRailEdges()
-  window.addEventListener('resize', updateRailEdges, { passive: true })
-})
-onBeforeUnmount(() => window.removeEventListener('resize', updateRailEdges))
 
 /**
  * The three screens the invitation is judged on, in the order a guest meets
@@ -1968,9 +1615,9 @@ const toggleFaq = (key: string) => {
   openFaqs.value = next
 }
 
-const pricingRef = ref<HTMLElement | null>(null)
-const scrollToPricing = () => {
-  pricingRef.value?.scrollIntoView({
+const stepsRef = ref<HTMLElement | null>(null)
+const scrollToSteps = () => {
+  stepsRef.value?.scrollIntoView({
     behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
     block: 'start',
   })
@@ -2064,10 +1711,12 @@ function scheduleActionBar() {
  * the page is read and the listeners detach when it empties, so the cost falls
  * to nothing by the time the reader reaches the bottom.
  *
- * `scanReveals()` is also re-runnable rather than a one-shot pass on mount,
- * because not every `[data-reveal]` exists at mount: the pricing cards are
- * replaced when the live catalogue arrives, and a mount-time snapshot missed
- * the replacements entirely — a partner saw one card and two holes.
+ * `scanReveals()` stays re-runnable rather than collapsing into a one-shot
+ * pass on mount. It was written that way for the live pricing cards, which
+ * arrived after mount and which a mount-time snapshot missed entirely — a
+ * partner saw one card and two holes. Those cards are gone with the wholesale
+ * rail, but `seen` makes a second call free, so the next section that renders
+ * asynchronously costs one line rather than this machinery rebuilt.
  */
 const pageRef = ref<HTMLElement | null>(null)
 const seen = new WeakSet<Element>()
@@ -2154,16 +1803,6 @@ onMounted(() => {
   scheduleActionBar()
 })
 
-// The live catalogue lands after mount and swaps the cards out, so the new ones
-// have to be picked up once Vue has patched the DOM. It also changes the page's
-// height, which moves both of the pill's boundaries.
-watch(tiers, () =>
-  nextTick(() => {
-    scanReveals()
-    scheduleActionBar()
-  }),
-)
-
 onBeforeUnmount(() => {
   stopSweeping()
   window.removeEventListener('scroll', scheduleActionBar)
@@ -2180,7 +1819,7 @@ onBeforeUnmount(() => {
   Declared once and read by everything below, because a landing page is one
   performance and eight sections each cascading at their own rate read as eight
   pages stapled together. That was literally true here: 80ms between two steps,
-  70ms between two pricing cards, 60ms between two feature tiles, 45ms between
+  70ms between two pack cards, 60ms between two feature tiles, 45ms between
   two questions, and no reader could have recovered a reason for any of it. One
   constant now, so the page keeps one pulse and changing that pulse is one edit.
 
@@ -2335,42 +1974,6 @@ onBeforeUnmount(() => {
 }
 
 /*
-  The rail's edge fades.
-
-  `mask-image`, not a gradient overlay: the section sits on a tinted ground
-  (`bg-white/60` over the page's own gradient), so an opaque white fade would be
-  a pale bar over a coloured background rather than a fade. A mask dissolves the
-  content itself and is correct on any ground.
-
-  Applied per edge and only when there is something beyond it — a fade over an
-  edge with nothing past it reads as clipping rather than as more to come. The
-  32px band is deliberately short: enough to say "continues", not enough to make
-  a card's price unreadable.
-
-  The fade appears and disappears without a transition, and should stay that
-  way: `mask-image` does not interpolate on the compositor, and the one frame
-  where a transition would show is the frame in which the reader has just
-  started dragging a rail of cards across — the edge is the least moving thing
-  on screen. An earlier version of this comment claimed a transition that was
-  never actually declared.
-*/
-/*
-  Pointer-only, written as a media query rather than a Tailwind arbitrary
-  variant: `[@media(hover:hover)and(pointer:fine)]:flex` compiles the condition
-  verbatim, without the space `and (pointer:fine)` requires, so the rule was
-  invalid CSS and the arrows never appeared at all.
-*/
-.rail-arrows {
-  display: none;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .rail-arrows {
-    display: flex;
-  }
-}
-
-/*
   The language FAB's transform states.
 
   In scoped CSS rather than Tailwind because the hover lift has to be gated on a
@@ -2473,33 +2076,6 @@ onBeforeUnmount(() => {
       opacity 180ms linear,
       visibility 0s;
   }
-}
-
-.rail-fade-start {
-  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 3rem);
-  mask-image: linear-gradient(to right, transparent 0, #000 3rem);
-}
-
-.rail-fade-end {
-  -webkit-mask-image: linear-gradient(to left, transparent 0, #000 3rem);
-  mask-image: linear-gradient(to left, transparent 0, #000 3rem);
-}
-
-.rail-fade-start.rail-fade-end {
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    #000 32px,
-    #000 calc(100% - 3rem),
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    #000 32px,
-    #000 calc(100% - 3rem),
-    transparent 100%
-  );
 }
 
 /*
@@ -3010,10 +2586,10 @@ onBeforeUnmount(() => {
   claim the heading is already making: this is *the whole* guest list, and it
   does not stop at eight.
 
-  A mask, not a white overlay, for the reason the rail's edge fades give: the
-  capture's own ground is near-white but not white, so an opaque wash would be a
-  pale bar sitting on top of it rather than a dissolve. A mask takes the pixels
-  out.
+  A mask, not a white overlay: the capture's own ground is near-white but not
+  white, so an opaque wash would be a pale bar sitting on top of it rather than
+  a dissolve. A mask takes the pixels out. (The pricing rail's edge fades were
+  the other user of this reasoning, and went with the rail.)
 
   The band is a percentage so it holds its proportion across both captures and
   every column width — the cut row is ~7% of the desktop capture's height, so

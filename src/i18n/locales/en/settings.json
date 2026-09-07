@@ -446,7 +446,6 @@
     "expiresOn": "Expires {date}",
     "creditCount": "{n} credit | {n} credits",
     "dayCount": "{n} day | {n} days",
-    "perCredit": "${amount} each",
     "forPlan": "For {plan}",
     "ownDesignsOnly": "Your own designs only",
     "alreadyClaimed": "Already claimed",
@@ -513,7 +512,7 @@
     },
     "catalogue": {
       "title": "Buy credits",
-      "subtitle": "A credit covers one event on one plan. Credits are not interchangeable between plans.",
+      "subtitle": "These are your partner prices. A credit covers one event on one plan, and credits are not interchangeable between plans.",
       "empty": "There are no credit packs on offer right now."
     },
     "orders": {
@@ -581,6 +580,13 @@
       "orderCancelled": "Order cancelled."
     },
     "savePercent": "Save {n}%",
-    "retailPerEvent": "retail per event"
+    "margin": {
+      "label": "You keep",
+      "caption": "if you sell all {n} at {retail}",
+      "costLabel": "Cost",
+      "payEachLabel": "You pay each",
+      "keepEachLabel": "You keep each"
+    },
+    "mostPopular": "Most shops start here"
   }
 }
