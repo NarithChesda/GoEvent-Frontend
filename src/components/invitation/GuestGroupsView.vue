@@ -34,7 +34,8 @@
          since the only thing it could open was the bulk importer. -->
     <div
       v-else-if="groups.length === 0 && !canEdit"
-      class="rounded-2xl border border-slate-200 bg-white px-6 py-14 text-center"
+      class="border-slate-200 bg-white px-6 py-14 text-center sm:rounded-2xl sm:border"
+      :class="bleed ? 'border-y' : 'rounded-2xl border'"
     >
       <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
         <Users class="h-6 w-6 text-slate-400" />
@@ -61,11 +62,24 @@
            empty — so they share one. They wrap onto two rows below `min-w` on
            the toolbar, where a field squeezed beside the ring would be
            narrower than its own placeholder. -->
+      <!-- `--guest-row-x` is the list's leading inset, published on the panel
+           and read by the band, the add row and every guest row
+           (`px-[var(--guest-row-x,0.75rem)]`). It is a variable because
+           bleeding changes what those 12px are measured *from*: inside a card
+           they sit on top of the page's own 16px gutter, but at full bleed they
+           are the whole distance between a guest's name and the edge of the
+           screen, which is too close. One inherited property rather than a
+           `bleed` prop threaded through three components — and the fallback is
+           the old value, so nothing that does not bleed moves. -->
       <div
         id="guests-panel"
         role="tabpanel"
         :aria-label="`${activeFilter === 'all' ? t('management.guestGroupsView.filterBar.allGroups') : groups.find(g => g.id.toString() === activeFilter)?.name || ''} ${t('management.guestGroupsView.filterBar.guestsPanelSuffix')}`"
-        class="rounded-2xl bg-white ring-1 ring-slate-900/5 sm:overflow-hidden"
+        class="bg-white sm:overflow-hidden sm:rounded-2xl sm:border-0 sm:ring-1 sm:ring-slate-900/5"
+        :class="bleed
+          ? 'border-y border-slate-200'
+          : 'rounded-2xl ring-1 ring-slate-900/5'"
+        :style="bleed ? { '--guest-row-x': '1rem' } : undefined"
       >
       <!-- On a phone this band is a floating layer, not a strip at the top of a
            card you scroll away from. A guest list is the one screen here that is
@@ -84,7 +98,8 @@
       <div ref="toolbarSlotRef" class="h-px" aria-hidden="true"></div>
       <div
         ref="toolbarRef"
-        class="sticky top-[var(--guest-toolbar-top,0px)] z-20 -mt-px flex flex-wrap items-center gap-x-0 gap-y-0 rounded-t-2xl border-b border-slate-100 bg-white/[0.92] px-3 py-2.5 backdrop-blur-xl backdrop-saturate-150 sm:static sm:gap-x-5 sm:gap-y-3 sm:rounded-none sm:bg-white sm:px-4 sm:backdrop-blur-none"
+        class="sticky top-[var(--guest-toolbar-top,0px)] z-20 -mt-px flex flex-wrap items-center gap-x-0 gap-y-0 border-b border-slate-100 bg-white/[0.92] px-[var(--guest-row-x,0.75rem)] py-2.5 backdrop-blur-xl backdrop-saturate-150 sm:static sm:gap-x-5 sm:gap-y-3 sm:rounded-none sm:bg-white sm:px-4 sm:backdrop-blur-none"
+        :class="bleed ? '' : 'rounded-t-2xl'"
       >
         <!-- The summary, and the one action that belongs beside it.
 
@@ -864,9 +879,24 @@ interface Props {
    * none of them writes and all of them are why the link was sent.
    */
   canEdit?: boolean
+  /**
+   * Let the panel run to the edges of its container below `sm`, as a band
+   * rather than a card: square corners, no ring, one hairline top and bottom.
+   *
+   * A guest list is a column of names, and a name is the one thing on this
+   * screen that has no shorter form — so on a phone the 32px a card's gutters
+   * cost is taken directly out of the content the page exists to show. That is
+   * a trade worth making only where the list *is* the page: the shared-link
+   * view, which has nothing else on it. Inside the manage screen the panel is
+   * one of several stacked surfaces and has to read as one of them, so the
+   * default is the card and this stays off.
+   *
+   * From `sm` up there is width to spare and both modes are the same card.
+   */
+  bleed?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), { canEdit: true })
+const props = withDefaults(defineProps<Props>(), { canEdit: true, bleed: false })
 
 const { t, te } = useI18n()
 

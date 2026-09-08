@@ -53,7 +53,7 @@
     </div>
 
     <div
-      class="group relative flex items-center gap-2.5 px-3 py-3 transition-colors duration-150 sm:px-4 sm:py-2.5"
+      class="group relative flex items-center gap-2.5 px-[var(--guest-row-x,0.75rem)] py-3 transition-colors duration-150 sm:px-4 sm:py-2.5"
       :class="[
         selected ? 'bg-sky-50' : mobile ? 'bg-white' : 'hover:bg-slate-50',
         canEdit || mobile ? 'cursor-pointer' : '',

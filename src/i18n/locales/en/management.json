@@ -3748,6 +3748,7 @@
   },
   "sharedGuestList": {
     "documentTitle": "{event} guest list - GoEvent",
+    "pageLabel": "Guest list",
     "badge": {
       "view": "View only",
       "edit": "Can edit"

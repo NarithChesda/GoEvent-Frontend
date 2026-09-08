@@ -36,61 +36,99 @@
     </div>
 
     <template v-else-if="context">
-      <!-- Header. The event it belongs to, who sent it, and what the holder may
-           do — in that order, because a link arriving in a chat thread has to
-           identify itself before it is trusted. -->
-      <header class="bg-white border-b border-slate-200">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
+      <!-- Header.
+
+           What the page is, which event it belongs to, and then who sent the
+           link and what it lets you do — in that order, because this arrives
+           in a chat thread with no chrome around it. An in-app browser hides
+           the tab title, so the document title cannot be the thing that says
+           "guest list"; without a word on the page a visitor is handed a
+           column of names and left to infer the rest.
+
+           Two groups, not one row of mixed facts. The thumbnail, the title and
+           the date are about the *event*; the badge, the sharer and the expiry
+           are about the *link*. They were interleaved — the access badge sat in
+           the title's row, where on a phone it took about 90px off a title that
+           then truncated mid-word. Split, the title gets the whole width and
+           the link's provenance reads as one sentence. -->
+      <header class="border-b border-slate-200 bg-white">
+        <div class="mx-auto max-w-5xl px-4 pb-3.5 pt-4 sm:px-6 sm:pb-4 sm:pt-5">
           <div class="flex items-start gap-3 sm:gap-4">
+            <!-- The thumbnail is drawn at every width. It used to be `hidden
+                 sm:block`, which removed the one non-textual signal that this
+                 is an event on the screen that needs it most — and it costs
+                 44px of a header that has width to spare, not of the list,
+                 which does not. -->
             <img
               v-if="context.event.banner_image"
               :src="context.event.banner_image"
               alt=""
-              class="hidden sm:block w-14 h-14 rounded-2xl object-cover flex-shrink-0 ring-1 ring-slate-900/5"
+              class="h-11 w-11 flex-shrink-0 rounded-xl object-cover ring-1 ring-slate-900/5 sm:h-14 sm:w-14 sm:rounded-2xl"
             />
             <div
               v-else
-              class="hidden sm:flex w-14 h-14 rounded-2xl bg-gradient-to-br from-[#2ecc71]/15 to-[#1e90ff]/15 items-center justify-center flex-shrink-0"
+              class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#2ecc71]/15 to-[#1e90ff]/15 sm:h-14 sm:w-14 sm:rounded-2xl"
             >
-              <CalendarDays class="w-6 h-6 text-[#2ecc71]" aria-hidden="true" />
+              <CalendarDays class="h-5 w-5 text-[#2ecc71] sm:h-6 sm:w-6" aria-hidden="true" />
             </div>
 
             <div class="min-w-0 flex-1">
-              <h1 class="text-lg sm:text-xl font-bold text-slate-900 leading-tight truncate">
+              <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 sm:text-xs">
+                {{ t('management.sharedGuestList.pageLabel') }}
+              </p>
+              <!-- Two lines, not one truncated one. The title is the page's
+                   identity and Khmer event names are routinely long enough to
+                   be cut inside a word by `truncate`. The leading is loose for
+                   the same reason `leading-tight` is wrong on any wrapping
+                   Khmer heading: coeng subscripts hang below the baseline and
+                   clip against the next line's box. -->
+              <h1 class="mt-0.5 line-clamp-2 text-[17px] font-bold leading-[1.4] tracking-tight text-slate-900 sm:text-xl sm:leading-snug">
                 {{ context.event.title }}
               </h1>
-              <p class="text-xs sm:text-sm text-slate-500 mt-0.5 truncate">
+              <p class="mt-1 truncate text-xs text-slate-500 sm:text-sm">
                 {{ eventSubtitle }}
               </p>
             </div>
+          </div>
 
-            <!-- Access, said plainly. The panel below already looks different
-                 in each mode, but only someone who has seen both would know
-                 that — this is the label that makes it legible on first sight. -->
+          <!-- Where the link came from and what it permits. Access is said
+               plainly: the panel below already looks different in each mode,
+               but only someone who has seen both would know that. -->
+          <div class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-slate-500">
             <span
-              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold flex-shrink-0"
+              class="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold"
               :class="canEdit ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-600'"
             >
-              <component :is="canEdit ? Pencil : Eye" class="w-3 h-3" aria-hidden="true" />
+              <component :is="canEdit ? Pencil : Eye" class="h-3 w-3" aria-hidden="true" />
               {{ canEdit
                 ? t('management.sharedGuestList.badge.edit')
                 : t('management.sharedGuestList.badge.view') }}
             </span>
+            <span class="min-w-0">
+              {{ t('management.sharedGuestList.sharedBy', { name: context.shared_by.name }) }}
+              <template v-if="context.expires_at">
+                <span aria-hidden="true"> · </span>
+                {{ t('management.sharedGuestList.expiresOn', { date: formatDate(context.expires_at) }) }}
+              </template>
+            </span>
           </div>
-
-          <p class="mt-3 text-xs text-slate-500">
-            {{ t('management.sharedGuestList.sharedBy', { name: context.shared_by.name }) }}
-            <template v-if="context.expires_at">
-              <span aria-hidden="true"> · </span>
-              {{ t('management.sharedGuestList.expiresOn', { date: formatDate(context.expires_at) }) }}
-            </template>
-          </p>
         </div>
       </header>
 
-      <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <!-- On a phone the list runs to the edges of the screen and the page has
+           no horizontal padding of its own: this page is the list, so the 32px
+           a gutter costs is taken straight out of the guest names, which are
+           the one thing here with no shorter form. `bleed` is what squares the
+           panel's corners and drops its ring to match. From `sm` up the gutter
+           and the card come back.
+
+           The top gap shrinks with it — the header states the page and the
+           list's own band restates the count directly under it, so 24px of
+           slate between them was holding two halves of one thought apart. -->
+      <main class="mx-auto max-w-5xl px-0 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-3 sm:px-6 sm:pb-12 sm:pt-8">
         <GuestGroupsView
           ref="guestGroupsViewRef"
+          bleed
           :groups="groups"
           :loading-groups="loadingGroups"
           :page-size="PAGE_SIZE"
@@ -127,7 +165,7 @@
         <!-- The one piece of GoEvent branding on the page, at the end where a
              signature goes rather than in a bar at the top competing with the
              event's own name. -->
-        <p class="mt-8 text-center text-xs text-slate-400">
+        <p class="mt-8 px-4 text-center text-xs text-slate-400 sm:px-0">
           {{ t('management.sharedGuestList.poweredBy') }}
         </p>
       </main>

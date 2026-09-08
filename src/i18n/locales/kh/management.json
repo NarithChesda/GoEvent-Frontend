@@ -3748,6 +3748,7 @@
   },
   "sharedGuestList": {
     "documentTitle": "បញ្ជីភ្ញៀវ {event} - GoEvent",
+    "pageLabel": "បញ្ជីភ្ញៀវ",
     "badge": {
       "view": "មើលបានតែប៉ុណ្ណោះ",
       "edit": "កែប្រែបាន"
