@@ -1,66 +1,45 @@
 <template>
   <div>
-    <!-- Embedded mode: EventTextTab-style section panel for the Showcase tab -->
-    <div
+    <!-- Embedded mode: one row of the Showcase tab's stacked section groups -->
+    <ShowcaseSectionRow
       v-if="embedded"
-      class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20"
+      :icon="CalendarClock"
+      :title="t('management.agenda.title')"
+      :summary="summary"
+      :filled="agendaItems.length > 0"
+      :expanded="isExpanded"
+      @toggle="toggleExpanded"
     >
-      <!-- Header (click to expand/collapse) -->
-      <div class="flex items-start justify-between gap-3">
+      <template #actions>
+        <!-- Action pills only exist while the section is open — a collapsed
+             row shows nothing but its chevron. -->
         <button
-          type="button"
-          class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
-          :aria-expanded="isExpanded"
-          :aria-label="t('management.media.sectionToggle')"
-          @click="toggleExpanded"
+          v-if="isExpanded && canEdit"
+          @click="openCreateDrawer"
+          class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
+          :title="t('management.agenda.addBtn')"
         >
-          <h5 class="font-semibold text-slate-900">{{ t('management.agenda.title') }}</h5>
-          <p class="text-sm text-slate-600">{{ t('management.agenda.subtitle') }}</p>
-          <!-- Drag and Drop Hint (Desktop Only) -->
-          <div
-            v-if="canEdit && agendaItems.length > 0"
-            class="hidden sm:flex items-center gap-1.5 mt-1.5 text-xs text-slate-400"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
-            </svg>
-            <span>{{ t('management.agenda.dragHint') }}</span>
-          </div>
+          <Plus class="w-3 h-3" aria-hidden="true" />
+          <span>{{ t('management.agenda.addBtn') }}</span>
         </button>
-        <div class="flex items-center gap-1 flex-shrink-0">
-          <!-- Action pills only exist while the section is open — a collapsed
-               card shows nothing but its chevron. -->
-          <button
-            v-if="isExpanded && canEdit"
-            @click="openCreateDrawer"
-            class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
-            :title="t('management.agenda.addBtn')"
-          >
-            <Plus class="w-3.5 h-3.5" aria-hidden="true" />
-            <span>{{ t('management.agenda.addBtn') }}</span>
-          </button>
-          <button
-            type="button"
-            class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-            :aria-expanded="isExpanded"
-            :aria-label="t('management.media.sectionToggle')"
-            :title="t('management.media.sectionToggle')"
-            @click="toggleExpanded"
-          >
-            <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isExpanded }" aria-hidden="true" />
-          </button>
-        </div>
-      </div>
+      </template>
 
-      <Transition name="collapse">
-      <div v-if="isExpanded" class="grid grid-rows-[1fr]">
-      <div class="min-h-0 overflow-hidden">
-      <div class="pt-6">
+      <div>
+        <!-- Reorder hint: advice about the list, so it sits with the list -->
+        <div
+          v-if="canEdit && agendaItems.length > 0"
+          class="hidden sm:flex items-center gap-1.5 mb-2 text-[11px] text-slate-400"
+        >
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+          </svg>
+          <span>{{ t('management.agenda.dragHint') }}</span>
+        </div>
       <!-- Loading State -->
       <div v-if="loading" class="space-y-5" aria-hidden="true">
         <div v-for="g in 2" :key="g" class="space-y-2">
           <div class="h-3 w-40 bg-slate-200 rounded animate-pulse"></div>
-          <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+          <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
             <div v-for="r in 2" :key="r" class="p-3 sm:p-4 flex items-center gap-3">
               <div class="w-16 flex-shrink-0 space-y-1.5">
                 <div class="h-3 w-12 bg-slate-200 rounded animate-pulse"></div>
@@ -79,19 +58,19 @@
       <div
         v-else-if="agendaItems.length === 0"
         @click="canEdit ? openCreateDrawer() : undefined"
-        class="border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-300"
+        class="border border-dashed rounded-xl p-5 text-center transition-all duration-300"
         :class="canEdit
           ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group'
           : 'border-slate-300 bg-slate-50'"
       >
         <Calendar
-          class="w-8 h-8 text-slate-400 mx-auto mb-3"
+          class="w-6 h-6 text-slate-400 mx-auto mb-2"
           :class="{ 'group-hover:text-emerald-600 transition-colors': canEdit }"
         />
-        <p class="font-semibold text-slate-600" :class="{ 'group-hover:text-slate-900 transition-colors': canEdit }">
+        <p class="text-[13px] font-semibold text-slate-600" :class="{ 'group-hover:text-slate-900 transition-colors': canEdit }">
           {{ t('management.agenda.empty.title') }}
         </p>
-        <p class="text-sm text-slate-500 mt-1">{{ t('management.agenda.empty.description') }}</p>
+        <p class="text-[11px] text-slate-500 mt-1">{{ t('management.agenda.empty.description') }}</p>
       </div>
 
       <!-- Day Groups -->
@@ -122,7 +101,7 @@
             </div>
           </div>
 
-          <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+          <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
             <button
               v-for="item in day.items"
               :key="item.id"
@@ -136,7 +115,7 @@
               @dragleave="onRowDragLeave($event, item)"
               @drop.prevent="onRowDrop(item)"
               @dragend="onRowDragEnd"
-              class="w-full flex items-center gap-3 p-3 sm:p-4 min-h-[56px] text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset"
+              class="w-full flex items-center gap-2.5 p-2.5 sm:p-3 min-h-[46px] text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset"
               :class="[
                 canEdit ? 'hover:bg-slate-50 active:bg-slate-100' : 'cursor-default',
                 draggedItem?.id === item.id ? 'opacity-50' : '',
@@ -196,7 +175,7 @@
                   </span>
                   <span
                     v-if="getItemPreview(item)"
-                    class="text-xs sm:text-sm text-slate-500 line-clamp-1"
+                    class="text-[11px] text-slate-500 line-clamp-1"
                   >
                     {{ getItemPreview(item) }}
                   </span>
@@ -213,10 +192,7 @@
         </div>
       </div>
       </div>
-      </div>
-      </div>
-      </Transition>
-    </div>
+    </ShowcaseSectionRow>
 
     <!-- Standalone tab mode -->
     <div v-else class="space-y-6">
@@ -485,7 +461,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, toRef } from 'vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { Calendar, Plus, ChevronDown, ChevronRight, Clock, Star, Info, Edit2, Trash2 } from 'lucide-vue-next'
+import { Calendar, CalendarClock, Plus, ChevronDown, ChevronRight, Clock, Star, Info, Edit2, Trash2 } from 'lucide-vue-next'
+import ShowcaseSectionRow from './ShowcaseSectionRow.vue'
 import { agendaService, type EventAgendaItem } from '../services/api'
 import AgendaItemCard from './AgendaItemCard.vue'
 import EditAgendaDrawer from './EditAgendaDrawer.vue'
@@ -511,6 +488,12 @@ const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection('agenda')
 
 // State
 const agendaItems = ref<EventAgendaItem[]>([])
+
+const summary = computed(() =>
+  agendaItems.value.length
+    ? t('management.media.sectionSummary.items', { count: agendaItems.value.length }, agendaItems.value.length)
+    : t('management.media.sectionSummary.notSet'),
+)
 const loading = ref(false)
 const showAgendaDrawer = ref(false)
 const showDeleteModal = ref(false)
@@ -1064,17 +1047,6 @@ defineExpose({
 
 <style scoped>
 /* Collapse/Expand transition for agenda groups */
-.collapse-enter-active,
-.collapse-leave-active {
-  transition: height 0.3s ease-out, opacity 0.25s ease-out;
-  overflow: hidden;
-}
-
-.collapse-enter-from,
-.collapse-leave-to {
-  height: 0;
-  opacity: 0;
-}
 
 .agenda-item {
   transition: transform 0.2s ease;

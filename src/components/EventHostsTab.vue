@@ -1,67 +1,44 @@
 <template>
   <div>
-    <!-- Embedded mode: EventTextTab-style section panel for the Showcase tab -->
-    <div
+    <!-- Embedded mode: one row of the Showcase tab's stacked section groups -->
+    <ShowcaseSectionRow
       v-if="embedded"
-      class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20"
+      :icon="Users"
+      :title="t('management.hosts.title')"
+      :summary="summary"
+      :filled="hosts.length > 0"
+      :expanded="isExpanded"
+      @toggle="toggleExpanded"
     >
-      <!-- Header (click to expand/collapse) -->
-      <div class="flex items-start justify-between gap-3">
+      <template #actions>
+        <!-- Action pills only exist while the section is open — a collapsed
+             row shows nothing but its chevron. -->
         <button
-          type="button"
-          class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
-          :aria-expanded="isExpanded"
-          :aria-label="t('management.media.sectionToggle')"
-          @click="toggleExpanded"
+          v-if="isExpanded && canEdit"
+          @click="showCreateModal = true"
+          class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
+          :title="t('management.hosts.addBtn')"
         >
-          <h5 class="font-semibold text-slate-900">{{ t('management.hosts.title') }}</h5>
-          <p class="text-sm text-slate-600">
-            {{ canEdit ? t('management.hosts.subtitleEdit') : t('management.hosts.subtitleView') }}
-          </p>
-          <!-- Drag and Drop Hint (Desktop Only) -->
-          <div
-            v-if="canEdit && hosts.length > 1"
-            class="hidden sm:flex items-center gap-1.5 mt-1.5 text-xs text-slate-400"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
-            </svg>
-            <span>{{ t('management.hosts.reorderHint') }}</span>
-          </div>
+          <UserPlus class="w-3 h-3" aria-hidden="true" />
+          <span>{{ t('management.hosts.addBtn') }}</span>
         </button>
-        <div class="flex items-center gap-1 flex-shrink-0">
-          <!-- Action pills only exist while the section is open — a collapsed
-               card shows nothing but its chevron. -->
-          <button
-            v-if="isExpanded && canEdit"
-            @click="showCreateModal = true"
-            class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
-            :title="t('management.hosts.addBtn')"
-          >
-            <UserPlus class="w-3.5 h-3.5" aria-hidden="true" />
-            <span>{{ t('management.hosts.addBtn') }}</span>
-          </button>
-          <button
-            type="button"
-            class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-            :aria-expanded="isExpanded"
-            :aria-label="t('management.media.sectionToggle')"
-            :title="t('management.media.sectionToggle')"
-            @click="toggleExpanded"
-          >
-            <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isExpanded }" aria-hidden="true" />
-          </button>
-        </div>
-      </div>
+      </template>
 
-      <Transition name="collapse">
-      <div v-if="isExpanded" class="grid grid-rows-[1fr]">
-      <div class="min-h-0 overflow-hidden">
-      <div class="pt-6">
+      <div>
+        <!-- Reorder hint: advice about the list, so it sits with the list -->
+        <div
+          v-if="canEdit && hosts.length > 1"
+          class="hidden sm:flex items-center gap-1.5 mb-2 text-[11px] text-slate-400"
+        >
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+          </svg>
+          <span>{{ t('management.hosts.reorderHint') }}</span>
+        </div>
       <!-- Loading State -->
       <div v-if="loading" class="space-y-2" aria-hidden="true">
         <div class="h-3 w-24 bg-slate-200 rounded animate-pulse"></div>
-        <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+        <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
           <div v-for="r in 3" :key="r" class="p-3 sm:p-4 flex items-center gap-3">
             <div class="w-10 h-10 bg-slate-200 rounded-full animate-pulse flex-shrink-0"></div>
             <div class="flex-1 space-y-2">
@@ -76,30 +53,30 @@
       <div
         v-else-if="hosts.length === 0"
         @click="canEdit ? (showCreateModal = true) : undefined"
-        class="border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-300"
+        class="border border-dashed rounded-xl p-5 text-center transition-all duration-300"
         :class="canEdit
           ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group'
           : 'border-slate-300 bg-slate-50'"
       >
         <Users
-          class="w-8 h-8 text-slate-400 mx-auto mb-3"
+          class="w-6 h-6 text-slate-400 mx-auto mb-2"
           :class="{ 'group-hover:text-emerald-600 transition-colors': canEdit }"
         />
-        <p class="font-semibold text-slate-600" :class="{ 'group-hover:text-slate-900 transition-colors': canEdit }">
+        <p class="text-[13px] font-semibold text-slate-600" :class="{ 'group-hover:text-slate-900 transition-colors': canEdit }">
           {{ canEdit ? t('management.hosts.empty.titleEdit') : t('management.hosts.empty.titleView') }}
         </p>
-        <p class="text-sm text-slate-500 mt-1">
+        <p class="text-[11px] text-slate-500 mt-1">
           {{ canEdit ? t('management.hosts.empty.descriptionEdit') : t('management.hosts.empty.descriptionView') }}
         </p>
       </div>
 
       <!-- Host Rows -->
       <div v-else class="space-y-2">
-        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+        <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
           {{ canEdit ? t('management.hosts.allHosts') : t('management.hosts.hostsLabel') }}
           <span class="text-slate-400">· {{ sortedHosts.length }}</span>
         </p>
-        <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+        <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
           <button
             v-for="host in sortedHosts"
             :key="host.id"
@@ -113,7 +90,7 @@
             @dragleave="onRowDragLeave($event, host)"
             @drop.prevent="onRowDrop(host)"
             @dragend="onRowDragEnd"
-            class="w-full flex items-center gap-3 p-3 sm:p-4 min-h-[56px] text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset"
+            class="w-full flex items-center gap-2.5 p-2.5 sm:p-3 min-h-[46px] text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset"
             :class="[
               canEdit ? 'hover:bg-slate-50 active:bg-slate-100' : 'cursor-default',
               draggedHost?.id === host.id ? 'opacity-50' : '',
@@ -168,10 +145,7 @@
         </div>
       </div>
       </div>
-      </div>
-      </div>
-      </Transition>
-    </div>
+    </ShowcaseSectionRow>
 
     <!-- Standalone tab mode -->
     <div v-else class="space-y-6">
@@ -376,7 +350,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { Users, UserPlus, Info, ChevronDown, ChevronRight } from 'lucide-vue-next'
+import { Users, UserPlus, Info, ChevronRight } from 'lucide-vue-next'
+import ShowcaseSectionRow from './ShowcaseSectionRow.vue'
 import { useToast } from '../composables/useToast'
 import { hostsService, type EventHost, apiService } from '../services/api'
 import HostCard from './HostCard.vue'
@@ -411,6 +386,12 @@ const props = defineProps<Props>()
 
 // State
 const hosts = ref<EventHost[]>([])
+
+const summary = computed(() =>
+  hosts.value.length
+    ? t('management.media.sectionSummary.hosts', { count: hosts.value.length }, hosts.value.length)
+    : t('management.media.sectionSummary.notSet'),
+)
 const loading = ref(false)
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
@@ -732,23 +713,4 @@ defineExpose({
 
 /* Collapse/expand via grid-template-rows 0fr↔1fr — tracks real content
    height so both directions ease evenly (no max-height dead time) */
-.collapse-enter-active,
-.collapse-leave-active {
-  transition:
-    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease;
-}
-
-.collapse-enter-from,
-.collapse-leave-to {
-  grid-template-rows: 0fr;
-  opacity: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .collapse-enter-active,
-  .collapse-leave-active {
-    transition: none !important;
-  }
-}
 </style>

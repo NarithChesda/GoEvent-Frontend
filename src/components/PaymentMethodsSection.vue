@@ -1,43 +1,25 @@
 <template>
-  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
-    <!-- Header (click to expand/collapse) -->
-    <div>
-      <div class="flex items-start justify-between gap-4">
-        <button
-          type="button"
-          class="flex-1 min-w-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
-          :aria-expanded="isExpanded"
-          :aria-label="t('management.media.sectionToggle')"
-          @click="toggleExpanded"
-        >
-          <div class="flex items-center gap-2">
-            <h5 class="font-semibold text-slate-900">{{ t('management.paymentMethods.header.title') }}</h5>
-            <span
-              v-if="isPaymentLocked"
-              class="inline-flex items-center px-2 py-1 bg-amber-100 text-amber-800 rounded-lg text-xs font-medium"
-            >
-              <Lock class="w-3 h-3 mr-1" />
-              {{ t('management.paymentMethods.header.lockedBadge') }}
-            </span>
-          </div>
-          <p class="text-sm text-slate-600">{{ t('management.paymentMethods.header.subtitle') }}</p>
-          <p v-if="isPaymentLocked" class="text-xs text-amber-700 mt-1">
-            {{ t('management.paymentMethods.header.lockedDescription') }}
-          </p>
-        </button>
-
-        <!-- Add, Lock, Info & Toggle Buttons. Everything but the chevron only
-             exists while the section is open — a collapsed card shows nothing
-             but its chevron. -->
-        <div class="flex items-center gap-2 flex-shrink-0">
+  <ShowcaseSectionRow
+    :icon="CreditCard"
+    :title="t('management.paymentMethods.header.title')"
+    :summary="summary"
+    :filled="paymentMethods.length > 0"
+    :expanded="isExpanded"
+    @toggle="toggleExpanded"
+  >
+        <!-- Add, Lock & Info. All only exist while the section is open — a
+             collapsed row shows nothing but its chevron. The locked badge and
+             its explanation moved into the body for the same reason: a row
+             says what is set, the body says the terms. -->
+    <template #actions>
           <!-- Add Pill -->
           <button
             v-if="isExpanded && canEditPayments && paymentMethods.length > 0"
             @click="showAddModal = true"
-            class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
+            class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
             :title="t('management.paymentMethods.header.add')"
           >
-            <Plus class="w-3.5 h-3.5" />
+            <Plus class="w-3 h-3" />
             <span>{{ t('management.paymentMethods.header.add') }}</span>
           </button>
 
@@ -45,10 +27,10 @@
           <button
             v-if="isExpanded && canEdit"
             @click="showLockHelpModal = true"
-            class="p-2 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+            class="p-1.5 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
             :title="t('management.paymentMethods.header.lockHelpTitle')"
           >
-            <Info class="w-4 h-4" />
+            <Info class="w-3.5 h-3.5" />
           </button>
 
           <!-- Lock/Unlock Button -->
@@ -57,9 +39,9 @@
             @click="showLockConfirmModal = true"
             :disabled="isToggling"
             :class="[
-              'flex items-center justify-center rounded-xl font-medium text-sm transition-all duration-200',
-              'border-2 focus:outline-none focus:ring-2 focus:ring-offset-2',
-              'p-2 sm:gap-2 sm:px-4 sm:py-2',
+              'flex items-center justify-center rounded-lg font-medium text-[11px] transition-all duration-200',
+              'border focus:outline-none focus:ring-2 focus:ring-offset-1',
+              'p-1.5 sm:gap-1.5 sm:px-2.5 sm:py-1',
               isPaymentLocked
                 ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 focus:ring-amber-500'
                 : 'border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 focus:ring-slate-500',
@@ -69,31 +51,26 @@
             <component
               :is="isToggling ? 'div' : (isPaymentLocked ? Lock : Unlock)"
               :class="[
-                'w-4 h-4',
+                'w-3 h-3',
                 isToggling ? 'animate-spin rounded-full border-2 border-current border-t-transparent' : ''
               ]"
             />
             <span class="hidden sm:inline">{{ isToggling ? t('management.paymentMethods.header.processing') : (isPaymentLocked ? t('management.paymentMethods.header.unlock') : t('management.paymentMethods.header.lock')) }}</span>
           </button>
+    </template>
 
-          <button
-            type="button"
-            class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-            :aria-expanded="isExpanded"
-            :aria-label="t('management.media.sectionToggle')"
-            :title="t('management.media.sectionToggle')"
-            @click="toggleExpanded"
-          >
-            <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isExpanded }" aria-hidden="true" />
-          </button>
-        </div>
-      </div>
+    <div>
+    <!-- Locked notice, in the body rather than on the row -->
+    <div
+      v-if="isPaymentLocked"
+      class="mb-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-2.5"
+    >
+      <Lock class="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-px" aria-hidden="true" />
+      <p class="text-[11px] text-amber-800 leading-snug">
+        <span class="font-semibold">{{ t('management.paymentMethods.header.lockedBadge') }}</span>
+        — {{ t('management.paymentMethods.header.lockedDescription') }}
+      </p>
     </div>
-
-    <Transition name="collapse">
-    <div v-if="isExpanded" class="grid grid-rows-[1fr]">
-    <div class="min-h-0 overflow-hidden">
-    <div class="pt-6">
     <!-- Lock Error Message (shown above content) -->
     <div v-if="lockError" class="mb-4">
       <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4">
@@ -119,9 +96,9 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden animate-pulse">
-      <div v-for="i in 3" :key="i" class="flex items-center gap-3 p-3 sm:p-4 min-h-[56px]">
-        <div class="w-9 h-9 rounded-lg bg-slate-200 flex-shrink-0"></div>
+    <div v-if="loading" class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden animate-pulse">
+      <div v-for="i in 3" :key="i" class="flex items-center gap-2.5 p-2.5 sm:p-3 min-h-[46px]">
+        <div class="w-8 h-8 rounded-lg bg-slate-200 flex-shrink-0"></div>
         <div class="flex-1 min-w-0 space-y-2">
           <div class="h-3.5 bg-slate-200 rounded w-1/3"></div>
           <div class="h-3 bg-slate-200 rounded w-1/2"></div>
@@ -151,7 +128,7 @@
         :disabled="!canEditPayments"
         @click="showAddModal = true"
         :class="[
-          'w-full border-2 border-dashed rounded-2xl p-8 transition-all duration-300 text-center',
+          'w-full border border-dashed rounded-xl p-5 transition-all duration-300 text-center',
           canEditPayments
             ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200'
             : 'border-slate-300 bg-slate-50 cursor-default'
@@ -166,10 +143,10 @@
             <CreditCard v-else class="w-8 h-8 text-slate-400" />
           </div>
           <p :class="[
-            'font-semibold transition-colors',
+            'text-[13px] font-semibold transition-colors',
             canEditPayments ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
           ]">{{ t('management.paymentMethods.empty.title') }}</p>
-          <p class="text-sm text-slate-500 mt-1">{{ t('management.paymentMethods.empty.description') }}</p>
+          <p class="text-[11px] text-slate-500 mt-1">{{ t('management.paymentMethods.empty.description') }}</p>
           <p v-if="canEditPayments" class="text-xs text-slate-400 mt-1">{{ t('management.paymentMethods.empty.clickToAdd') }}</p>
         </div>
       </button>
@@ -178,7 +155,7 @@
     <!-- Payment Methods Row List -->
     <div v-else>
       <div
-        class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden"
+        class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden"
         @dragover.prevent
         @drop="handleDrop"
       >
@@ -201,7 +178,7 @@
             :disabled="!canEditPayments"
             @click="editPaymentMethod(paymentMethod)"
             :class="[
-              'flex-1 min-w-0 flex items-center gap-3 p-3 sm:p-4 min-h-[56px] text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset',
+              'flex-1 min-w-0 flex items-center gap-2.5 p-2.5 sm:p-3 min-h-[46px] text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset',
               canEditPayments ? 'active:bg-slate-100 cursor-pointer' : 'cursor-default',
               !paymentMethod.is_active ? 'opacity-60' : '',
             ]"
@@ -272,9 +249,7 @@
       </div>
     </div>
     </div>
-    </div>
-    </div>
-    </Transition>
+  </ShowcaseSectionRow>
 
     <!-- Modals -->
     <PaymentMethodModal
@@ -520,7 +495,6 @@
         </div>
       </Transition>
     </Teleport>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -529,7 +503,6 @@ import {
   CreditCard,
   Plus,
   AlertCircle,
-  ChevronDown,
   ChevronRight,
   QrCode,
   Building2,
@@ -540,6 +513,7 @@ import {
   Unlock,
   Info,
 } from 'lucide-vue-next'
+import ShowcaseSectionRow from './ShowcaseSectionRow.vue'
 import { paymentMethodsService, eventsService, type EventPaymentMethod, type Event } from '../services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCollapsibleSection } from '@/composables/useCollapsibleSection'
@@ -565,6 +539,12 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const lockError = ref<string | null>(null)
 const paymentMethods = ref<EventPaymentMethod[]>([])
+
+const summary = computed(() =>
+  paymentMethods.value.length
+    ? t('management.media.sectionSummary.methods', { count: paymentMethods.value.length }, paymentMethods.value.length)
+    : t('management.media.sectionSummary.notSet'),
+)
 const isToggling = ref(false)
 const localEvent = ref<Event | undefined>(props.event)
 
@@ -970,23 +950,4 @@ defineExpose({
 
 /* Collapse/expand via grid-template-rows 0fr↔1fr — tracks real content
    height so both directions ease evenly (no max-height dead time) */
-.collapse-enter-active,
-.collapse-leave-active {
-  transition:
-    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease;
-}
-
-.collapse-enter-from,
-.collapse-leave-to {
-  grid-template-rows: 0fr;
-  opacity: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .collapse-enter-active,
-  .collapse-leave-active {
-    transition: none !important;
-  }
-}
 </style>

@@ -19,7 +19,7 @@
         <!-- No header/close button here — the edge chevron toggle (below)
              already opens and closes this panel; a second, redundant control
              just duplicated it and ate vertical space. -->
-        <div class="showcase-studio__panel-body">
+        <div ref="panelBodyEl" class="showcase-studio__panel-body" @scroll.passive="setPanelEdges">
           <!-- EventMediaTab reused wholesale — its own 10 section cards are
                coordinated into a single-open accordion (see
                useAccordionGroup.ts). Held back until the leading preview frame
@@ -784,6 +784,78 @@ const panelMode = ref<'content' | null>('content')
 // ARE the page, so there is nothing to yield to and it mounts immediately.
 // Same when this event's category has no live preview.
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Scroll edge fades on the content panel.
+//
+// The mask lengths live in CSS (--panel-fade-top / --panel-fade-bottom); this
+// only decides how much of each to show. Each is 0 at its own end of the
+// scroll, so the first row is never dimmed at rest and neither is the last —
+// a fade is only ever drawn over content that genuinely continues past it.
+// ---------------------------------------------------------------------------
+const panelBodyEl = ref<HTMLElement | null>(null)
+
+/** How tall a full fade is. Short enough to read as a soft edge, not a vignette. */
+const PANEL_FADE_PX = 20
+
+let panelEdgeFrame = 0
+
+const setPanelEdges = () => {
+  if (panelEdgeFrame) return
+  panelEdgeFrame = requestAnimationFrame(() => {
+    panelEdgeFrame = 0
+    const el = panelBodyEl.value
+    if (!el) return
+    const remaining = el.scrollHeight - el.clientHeight - el.scrollTop
+    // Ramp each fade in over its own first 20px of travel rather than switching
+    // it on, so beginning to scroll doesn't pop a band onto the content.
+    const top = Math.min(el.scrollTop, PANEL_FADE_PX)
+    const bottom = Math.min(Math.max(remaining, 0), PANEL_FADE_PX)
+    el.style.setProperty('--panel-fade-top', `${top}px`)
+    el.style.setProperty('--panel-fade-bottom', `${bottom}px`)
+  })
+}
+
+// The panel's content arrives asynchronously and the accordion changes its
+// height on every expand, so the bottom fade has to be re-derived from the box,
+// not only from scroll events — otherwise the panel opens with no fade at all
+// and only grows one once you have already scrolled.
+//
+// Two observers, because they answer different questions. The ResizeObserver is
+// pointed at the *content*, not the scroll port: the port's height barely
+// changes while the content's changes constantly, and observing the content is
+// also what makes the fade track an accordion's animated height frame by frame.
+// The MutationObserver exists only to re-point it — the content element is
+// replaced when the skeleton gives way to the real panel, and an observer left
+// on the detached skeleton never fires again.
+let panelResizeObserver: ResizeObserver | null = null
+let panelChildObserver: MutationObserver | null = null
+
+const observePanelContent = (el: HTMLElement) => {
+  if (!panelResizeObserver) return
+  panelResizeObserver.disconnect()
+  panelResizeObserver.observe(el)
+  if (el.firstElementChild) panelResizeObserver.observe(el.firstElementChild)
+  setPanelEdges()
+}
+
+const stopPanelObservers = () => {
+  panelResizeObserver?.disconnect()
+  panelChildObserver?.disconnect()
+  panelResizeObserver = null
+  panelChildObserver = null
+}
+
+watch(panelBodyEl, (el) => {
+  stopPanelObservers()
+  if (!el || typeof ResizeObserver === 'undefined') return
+  panelResizeObserver = new ResizeObserver(setPanelEdges)
+  observePanelContent(el)
+  if (typeof MutationObserver !== 'undefined') {
+    panelChildObserver = new MutationObserver(() => observePanelContent(el))
+    panelChildObserver.observe(el, { childList: true })
+  }
+})
+
 const panelContentReady = ref(false)
 
 /** Upper bound on the wait — a frame that never hands shakes must not keep the
@@ -816,6 +888,8 @@ watch(isMobileStudio, (mobile) => {
 })
 
 onBeforeUnmount(() => {
+  stopPanelObservers()
+  if (panelEdgeFrame) cancelAnimationFrame(panelEdgeFrame)
   if (panelContentTimer !== null) clearTimeout(panelContentTimer)
 })
 
@@ -1372,7 +1446,14 @@ defineExpose({
      the shell's own animating width, so the reveal clips a fixed-size
      surface rather than reflowing its contents as the box grows. */
   height: 100%;
-  border-right: 1px solid rgba(148, 163, 184, 0.3);
+  border-right: 1px solid rgba(148, 163, 184, 0.28);
+  /* The border alone reads as a cut through the wash. A hairline of light on
+     the inside and a short falloff on the outside make the same edge read as
+     one surface meeting another — which is what it is, since the frames beside
+     it sit on the same background. */
+  box-shadow:
+    inset -1px 0 0 rgba(255, 255, 255, 0.6),
+    2px 0 12px -6px rgba(15, 23, 42, 0.1);
   /* No fill of its own — same reasoning as EventNavigationTabs' rail, which
      this panel docks onto: the page's `premium-bg` runs through the header, the
      rail, this panel and the frames beside it as one background, instead of
@@ -1388,16 +1469,48 @@ defineExpose({
 .showcase-studio__panel-body {
   flex: 1;
   overflow-y: auto;
-  padding: 1.5rem;
-  /* Thin custom scrollbar (same recipe as the app's drawers, see §10 of the
-     design skill) — the OS-default scrollbar this panel used to render is
-     thick and flatly gray, clashing with the glass panel around it. */
+  /* Trailing room so the last group clears the panel's bottom edge instead of
+     ending flush against it. */
+  padding: 1.25rem 1.25rem 3rem;
+
+  /* Scroll edge fade. Content meets the panel's top and bottom edges with no
+     divider between them, so without this it is cut off mid-row — which reads
+     as a rendering fault rather than as "there is more". The two lengths are
+     set from JS (see setPanelEdges) and are 0 at the corresponding end of the
+     scroll, so nothing is dimmed when there is nothing past the edge. */
+  --panel-fade-top: 0px;
+  --panel-fade-bottom: 0px;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--panel-fade-top),
+    #000 calc(100% - var(--panel-fade-bottom)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--panel-fade-top),
+    #000 calc(100% - var(--panel-fade-bottom)),
+    transparent 100%
+  );
+
+  /* Overlay scrollbar: reserved gutter so appearing/disappearing never reflows
+     the column, a thumb inset from the edge by a transparent border, and a
+     resting state faint enough to read as part of the glass rather than as a
+     grey rail down the side of it. */
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+.showcase-studio__panel-body:hover,
+.showcase-studio__panel-body:focus-within {
+  scrollbar-color: rgba(100, 116, 139, 0.6) transparent;
 }
 
 .showcase-studio__panel-body::-webkit-scrollbar {
-  width: 6px;
+  width: 10px;
 }
 
 .showcase-studio__panel-body::-webkit-scrollbar-track {
@@ -1405,23 +1518,40 @@ defineExpose({
 }
 
 .showcase-studio__panel-body::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+  background-color: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+  /* A transparent border plus content-box clipping is what insets the thumb
+     from the panel edge — there is no padding property for a scrollbar. */
+  border: 3px solid transparent;
+  background-clip: content-box;
+  transition: background-color 200ms ease-out;
 }
 
-.showcase-studio__panel-body::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+.showcase-studio__panel-body:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.55);
+  background-clip: content-box;
 }
 
-/* EventMediaTab's ~10 section cards were designed for a full-width tab body,
-   where their subtitle/hint text has room to breathe. Reused here at a fixed
-   440px, that same text wraps across many lines and reads badly — so clamp
-   the subtitle to 2 lines with an ellipsis, and drop the secondary drag-hint
-   line entirely (it's a `hidden sm:flex` viewport breakpoint, not a container
+.showcase-studio__panel-body::-webkit-scrollbar-thumb:active {
+  background-color: rgba(71, 85, 105, 0.75);
+  background-clip: content-box;
+}
+
+/* Text in EventMediaTab was written for a full-width tab body; at this fixed
+   440px it wraps across many lines and reads badly. Two compensations remain:
+   clamp a title's subtitle to 2 lines, and drop the secondary drag-hint line
+   entirely (it's a `hidden sm:flex` viewport breakpoint, not a container
    query, so it stays visible at any desktop viewport width regardless of how
-   narrow this panel itself is). Scoped to this panel only via :deep() — the
-   same components read fine unclamped in their full-width tab context. */
-.showcase-studio__panel-body :deep(h5.font-semibold + p.text-sm) {
+   narrow this panel itself is).
+
+   The clamp's only subject now is the auto-fill card. The eleven section
+   cards it was written for became single-line rows in a stacked group and
+   carry no subtitle at all — a collapsed row states its title and a summary
+   ("16 texts" / "Not set"), which needs no clamping. This selector reaches
+   into another component's markup, so it breaks silently: there is no error
+   when it stops matching, only unclamped text. If you restyle that card's
+   header, check this. */
+.showcase-studio__panel-body :deep(h4.font-semibold + p) {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -1433,31 +1563,19 @@ defineExpose({
   display: none !important;
 }
 
-/* Section header action clusters (Add/Info/Lock pill(s) + the expand
-   chevron) are `flex-shrink-0` — sized to their own content, never
-   shrinking — which reads fine beside the title at the full-width tab's
-   width, but crowded and misaligned squeezed into this fixed 440px panel
-   (worst on Payment Methods, which stacks Add + Info + Lock + chevron
-   beside the title). Rather than force the row to wrap (tried first — it
-   just relocated the crowding to a second line and left a lone chevron
-   looking oddly stranded when a section had no other header button),
-   shrink the two space-hungry pieces in place:
-   - The expand chevron button is dropped entirely in this panel — the
-     title block underneath it is already the click target that toggles
-     the section (see useCollapsibleSection.ts), so the icon was a visual
-     affordance only, not the only way to trigger it. Full-width tab
-     context (not this panel) keeps it, via svg.lucide-chevron-down — a
-     class lucide-vue-next itself always adds to every ChevronDown icon
-     (see Icon.js), stable regardless of the Tailwind utility classes each
-     component happens to pass in.
-   - "Add X" pills (Plus icon + label, identified by their shared
-     border-dashed/rounded-full pill styling) collapse to icon-only; the
-     label moves to a native `title` tooltip on hover (added alongside the
-     visible label in each component, so it's inert everywhere else). */
-.showcase-studio__panel-body :deep(button:has(> svg.lucide-chevron-down)) {
-  display: none;
-}
+/* "Add X" pills (Plus icon + label, identified by their shared
+   border-dashed/rounded-full pill styling) collapse to icon-only in this
+   440px panel; the label moves to a native `title` tooltip on hover (added
+   alongside the visible label in each component, so it's inert everywhere
+   else).
 
+   This used to hide the expand chevron here too, because the old section
+   header stacked Add + Info + Lock + chevron beside a 16px title and ran out
+   of room (worst on Payment Methods). That crowding was a property of the
+   card header, not of this panel: the sections are now 53px rows with a 13px
+   title, and the chevron costs ~26px of a ~415px row. Hiding it left the rows
+   with no affordance saying they open, which is the one thing a stacked list
+   has to signal — so it is back. Don't re-add the rule without re-measuring. */
 .showcase-studio__panel-body :deep(.border-dashed.border-slate-300.rounded-full) {
   gap: 0;
   padding: 0.5rem;

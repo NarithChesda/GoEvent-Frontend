@@ -1,57 +1,39 @@
 <template>
-  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
-    <!-- Header (click to expand/collapse) -->
-    <div class="flex items-start justify-between gap-3">
+  <ShowcaseSectionRow
+    :icon="Shirt"
+    :title="t('management.dressCode.section.title')"
+    :summary="summary"
+    :filled="dressCodes.length > 0"
+    :expanded="isExpanded"
+    @toggle="toggleExpanded"
+  >
+    <template #actions>
+      <!-- Add pill — only while the section is open; a collapsed row shows
+           nothing but its chevron. -->
       <button
-        type="button"
-        class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
-        :aria-expanded="isExpanded"
-        :aria-label="t('management.media.sectionToggle')"
-        @click="toggleExpanded"
+        v-if="isExpanded && canEdit && dressCodes.length > 0"
+        @click="openAddDrawer"
+        class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
+        :title="t('management.dressCode.section.addCard.label')"
       >
-        <h5 class="font-semibold text-slate-900">{{ t('management.dressCode.section.title') }}</h5>
-        <p class="text-sm text-slate-600">{{ t('management.dressCode.section.subtitle') }}</p>
-        <p
-          v-if="canEdit && dressCodes.length > 1"
-          class="hidden sm:flex items-center gap-1 text-xs text-slate-400 mt-1"
-        >
-          <ArrowUpDown class="w-3 h-3" aria-hidden="true" />
-          {{ t('management.dressCode.section.dragHint') }}
-        </p>
+        <Plus class="w-3 h-3" aria-hidden="true" />
+        <span>{{ t('management.dressCode.section.addCard.label') }}</span>
       </button>
+    </template>
 
-      <div class="flex items-center gap-1 flex-shrink-0">
-        <!-- Add pill — only while the section is open; a collapsed card shows
-             nothing but its chevron. -->
-        <button
-          v-if="isExpanded && canEdit && dressCodes.length > 0"
-          @click="openAddDrawer"
-          class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
-          :title="t('management.dressCode.section.addCard.label')"
-        >
-          <Plus class="w-3.5 h-3.5" aria-hidden="true" />
-          <span>{{ t('management.dressCode.section.addCard.label') }}</span>
-        </button>
-        <button
-          type="button"
-          class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-          :aria-expanded="isExpanded"
-          :aria-label="t('management.media.sectionToggle')"
-          :title="t('management.media.sectionToggle')"
-          @click="toggleExpanded"
-        >
-          <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isExpanded }" aria-hidden="true" />
-        </button>
-      </div>
-    </div>
-
-    <Transition name="collapse">
-    <div v-if="isExpanded" class="grid grid-rows-[1fr]">
-    <div class="min-h-0 overflow-hidden">
-    <div class="pt-6">
+    <div>
+      <!-- The reorder hint moved off the collapsed row: it is advice about the
+           list below, so it belongs with the list. -->
+      <p
+        v-if="canEdit && dressCodes.length > 1"
+        class="hidden sm:flex items-center gap-1 text-[11px] text-slate-400 mb-2"
+      >
+        <ArrowUpDown class="w-3 h-3" aria-hidden="true" />
+        {{ t('management.dressCode.section.dragHint') }}
+      </p>
     <!-- Loading State -->
     <div v-if="loading" aria-hidden="true">
-      <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+      <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
         <div v-for="i in 3" :key="i" class="p-3 sm:p-4 flex items-center gap-3">
           <div class="w-10 h-10 bg-slate-200 rounded-lg animate-pulse flex-shrink-0"></div>
           <div class="flex-1 space-y-2">
@@ -85,7 +67,7 @@
       v-else-if="dressCodes.length === 0"
       @click="canEdit ? openAddDrawer() : null"
       :class="[
-        'border-2 border-dashed rounded-2xl p-8 transition-all duration-300 text-center',
+        'border border-dashed rounded-xl p-5 transition-all duration-300 text-center',
         canEdit
           ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group'
           : 'border-slate-300 bg-slate-50'
@@ -100,16 +82,16 @@
           aria-hidden="true"
         />
         <p :class="[
-          'font-semibold transition-colors',
+          'text-[13px] font-semibold transition-colors',
           canEdit ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
         ]">{{ t('management.dressCode.section.empty.title') }}</p>
-        <p class="text-sm text-slate-500 mt-1">{{ t('management.dressCode.section.empty.description') }}</p>
+        <p class="text-[11px] text-slate-500 mt-1">{{ t('management.dressCode.section.empty.description') }}</p>
         <p v-if="canEdit" class="text-xs text-slate-400 mt-1">{{ t('management.dressCode.section.empty.hint') }}</p>
       </div>
     </div>
 
     <!-- Dress Code Rows -->
-    <div v-else class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+    <div v-else class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
       <button
         v-for="dressCode in sortedDressCodes"
         :key="dressCode.id"
@@ -121,7 +103,7 @@
         @dragover.prevent="dragOverId = dressCode.id"
         @dragleave="dragOverId === dressCode.id && (dragOverId = null)"
         @drop.prevent="handleDrop(dressCode)"
-        class="w-full flex items-center gap-3 p-3 sm:p-4 min-h-[56px] text-left hover:bg-slate-50 active:bg-slate-100 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset"
+        class="w-full flex items-center gap-2.5 p-2.5 sm:p-3 min-h-[46px] text-left hover:bg-slate-50 active:bg-slate-100 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset"
         :class="{
           'opacity-50': draggedDressCode?.id === dressCode.id,
           'bg-sky-50': dragOverId === dressCode.id && draggedDressCode && draggedDressCode.id !== dressCode.id,
@@ -166,11 +148,9 @@
       </button>
     </div>
     </div>
-    </div>
-    </div>
-    </Transition>
+  </ShowcaseSectionRow>
 
-    <!-- Create/Edit Drawer -->
+  <!-- Create/Edit Drawer -->
     <EditDressCodeDrawer
       v-model="showDrawer"
       :event-id="eventId"
@@ -188,12 +168,12 @@
       @confirm="confirmDelete"
       @cancel="showDeleteModal = false"
     />
-  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { Shirt, AlertCircle, ArrowUpDown, ChevronDown, ChevronRight, Plus } from 'lucide-vue-next'
+import { Shirt, AlertCircle, ArrowUpDown, ChevronRight, Plus } from 'lucide-vue-next'
+import ShowcaseSectionRow from './ShowcaseSectionRow.vue'
 import { dressCodeService, type EventDressCode } from '../services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useNotifications } from '@/composables/useNotifications'
@@ -214,6 +194,12 @@ const { isExpanded, toggle: toggleExpanded } = useCollapsibleSection('dressCode'
 
 // State
 const dressCodes = ref<EventDressCode[]>([])
+
+const summary = computed(() =>
+  dressCodes.value.length
+    ? t('management.media.sectionSummary.codes', { count: dressCodes.value.length }, dressCodes.value.length)
+    : t('management.media.sectionSummary.notSet'),
+)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const showDrawer = ref(false)
@@ -413,23 +399,4 @@ defineExpose({
 <style scoped>
 /* Collapse/expand via grid-template-rows 0fr↔1fr — tracks real content
    height so both directions ease evenly (no max-height dead time) */
-.collapse-enter-active,
-.collapse-leave-active {
-  transition:
-    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease;
-}
-
-.collapse-enter-from,
-.collapse-leave-to {
-  grid-template-rows: 0fr;
-  opacity: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .collapse-enter-active,
-  .collapse-leave-active {
-    transition: none !important;
-  }
-}
 </style>

@@ -8,8 +8,36 @@
       </div>
     </div>
 
-    <!-- All Sections Stacked -->
-    <div class="space-y-6">
+    <!-- Twelve sections, as three stacked groups.
+
+         They used to be twelve separate `rounded-3xl shadow-xl` cards in one
+         flat run, each with its own 16px title over a 14px description. That
+         gave a reader nothing to aim at — every title weighed the same as
+         every other and nearly the same as its own description — and it cost
+         about four screens of scrolling to see a list of twelve things.
+
+         Now each is a 53px row (ShowcaseSectionRow), and a group is one card
+         holding its rows on hairlines. Three tiers carry the hierarchy:
+
+           group label   11px semibold uppercase slate-500, on the page ground
+           row title     13px semibold slate-900
+           row summary   11px slate-400, right-aligned
+
+         The description is gone from the collapsed state entirely. It restated
+         the title in more words; the summary in its place ("16 texts", "Not
+         set") says the one thing a collapsed row can usefully say — whether
+         there is anything inside. The icon tile says the same thing again
+         without words, brand blue when filled and slate when not, so the stack
+         can be scanned for gaps.
+
+         Content leads because it is what the auto-fill card above writes and
+         what an organizer returns to; settings trail because they are set
+         once. Within a group the order is the order they were already in.
+
+         The stack container clips the leading hairline (`overflow-hidden` plus
+         `-mt-px`) instead of using `divide-y`, because these sections are not
+         uniformly one element deep — see ShowcaseSectionRow's header. -->
+    <div class="space-y-8">
       <!-- Auto-fill from the category template — sits above the very sections
            it creates (Texts, Hosts, Agenda). Suppressed where a host renders the
            trigger itself (the Design Studio's mobile toolbar), which then calls
@@ -21,246 +49,229 @@
         @populated="handlePopulated"
       />
 
-      <!-- Brand Assets Section: Logo & Music (Category-specific: wedding, birthday, housewarming) -->
-      <div v-if="props.showCategorySpecificSections">
-        <div v-if="!localEventData && props.eventId" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-6 sm:p-8">
-          <div class="flex items-center justify-center">
-            <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#1e90ff]"></div>
-            <span class="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-600">{{ t('management.media.loading') }}</span>
-          </div>
+      <!-- What the invitation says. -->
+      <section v-if="localEventData?.id">
+      <h3 class="px-1 mb-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.media.groups.content') }}</h3>
+      <div class="stack-card bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden">
+        <div class="-mt-px">
+          <!-- Event Texts Section (Category-specific: wedding, birthday, housewarming) -->
+          <EventTextTab
+            v-if="props.showCategorySpecificSections"
+            ref="eventTextTabRef"
+            :key="`texts-${contentVersion}`"
+            :event-id="localEventData.id"
+          />
+
+          <!-- Hosts Section (merged from the standalone tab, all categories) -->
+          <EventHostsTab
+            :key="`hosts-${contentVersion}`"
+            :event-id="localEventData.id"
+            :can-edit="canEdit"
+            :event-category="localEventData.category_details?.name || localEventData.category_name || ''"
+            embedded
+          />
+
+          <!-- Agenda Section (merged from the standalone tab, all categories) -->
+          <EventAgendaTab
+            :key="`agenda-${contentVersion}`"
+            :event-id="localEventData.id"
+            :can-edit="canEdit"
+            embedded
+          />
+
+          <!-- Dress Code Section (all categories) -->
+          <DressCodeSection
+            ref="dressCodeSectionRef"
+            :event-id="localEventData.id"
+            :can-edit="canEdit"
+          />
         </div>
-        <MediaUploadsSection
-          v-else
-          :event-data="localEventData"
-          :can-edit="canEdit"
-          @updated="handleEventUpdated"
-        />
       </div>
+      </section>
 
-      <!-- Event Banner (all categories) — the sole editor for banner_image,
-           shown as the link-preview card guests actually receive. -->
-      <div v-if="localEventData?.id">
-        <EventBannerSection
-          :event="localEventData"
-          :can-edit="canEdit"
-          @updated="handleEventUpdated"
-        />
-      </div>
+      <!-- What it shows. Always rendered: the photo gallery has no gate. -->
+      <section>
+      <h3 class="px-1 mb-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.media.groups.media') }}</h3>
+      <div class="stack-card bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden">
+        <div class="-mt-px">
+          <!-- Brand Assets Section: Logo & Music (Category-specific: wedding, birthday, housewarming) -->
+          <template v-if="props.showCategorySpecificSections">
+            <div v-if="!localEventData && props.eventId" class="flex items-center justify-center py-5">
+              <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-[#1e90ff]"></div>
+              <span class="ml-2 text-[11px] text-slate-500">{{ t('management.media.loading') }}</span>
+            </div>
+            <MediaUploadsSection
+              v-else
+              :event-data="localEventData"
+              :can-edit="canEdit"
+              @updated="handleEventUpdated"
+            />
+          </template>
 
-      <!-- Event Texts Section (Category-specific: wedding, birthday, housewarming) -->
-      <div v-if="props.showCategorySpecificSections && localEventData?.id">
-        <EventTextTab
-          ref="eventTextTabRef"
-          :key="`texts-${contentVersion}`"
-          :event-id="localEventData.id"
-        />
-      </div>
+          <!-- Event Banner (all categories) — the sole editor for banner_image,
+               shown as the link-preview card guests actually receive. -->
+          <EventBannerSection
+            v-if="localEventData?.id"
+            :event="localEventData"
+            :can-edit="canEdit"
+            @updated="handleEventUpdated"
+          />
 
-      <!-- Hosts Section (merged from the standalone tab, all categories) -->
-      <div v-if="localEventData?.id">
-        <EventHostsTab
-          :key="`hosts-${contentVersion}`"
-          :event-id="localEventData.id"
-          :can-edit="canEdit"
-          :event-category="localEventData.category_details?.name || localEventData.category_name || ''"
-          embedded
-        />
-      </div>
-
-      <!-- Agenda Section (merged from the standalone tab, all categories) -->
-      <div v-if="localEventData?.id">
-        <EventAgendaTab
-          :key="`agenda-${contentVersion}`"
-          :event-id="localEventData.id"
-          :can-edit="canEdit"
-          embedded
-        />
-      </div>
-
-      <!-- Dress Code Section (all categories) -->
-      <div v-if="localEventData?.id">
-        <DressCodeSection
-          ref="dressCodeSectionRef"
-          :event-id="localEventData.id"
-          :can-edit="canEdit"
-        />
-      </div>
-
-      <!-- Photo Gallery Section -->
-      <div>
-        <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
-          <!-- Header (click to expand/collapse) -->
-          <div class="flex items-start justify-between gap-4">
-            <button
-              type="button"
-              class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
-              :aria-expanded="isPhotosExpanded"
-              :aria-label="t('management.media.sectionToggle')"
-              @click="togglePhotosExpanded"
-            >
-              <h5 class="font-semibold text-slate-900">{{ t('management.media.photos.title') }}</h5>
-              <p class="text-sm text-slate-600">{{ t('management.media.photos.description') }}</p>
-            </button>
-            <div class="flex items-center gap-1 flex-shrink-0">
+          <!-- Photo Gallery Section -->
+          <ShowcaseSectionRow
+            :icon="ImageIcon"
+            :title="t('management.media.photos.title')"
+            :summary="photosSummary"
+            :filled="media.length > 0"
+            :expanded="isPhotosExpanded"
+            @toggle="togglePhotosExpanded"
+          >
+            <template #actions>
               <!-- Action pills only exist while the section is open — a
-                   collapsed card shows nothing but its chevron. -->
+                   collapsed row shows nothing but its chevron. -->
               <button
                 v-if="isPhotosExpanded && canUpload"
                 type="button"
                 @click="openUploadModal"
-                class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
+                class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
                 :title="t('management.media.photos.addPhotos')"
               >
-                <Plus class="w-3.5 h-3.5" />
+                <Plus class="w-3 h-3" />
                 <span>{{ t('management.media.photos.addPhotos') }}</span>
               </button>
-              <button
-                type="button"
-                class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-                :aria-expanded="isPhotosExpanded"
-                :aria-label="t('management.media.sectionToggle')"
-                :title="t('management.media.sectionToggle')"
-                @click="togglePhotosExpanded"
+            </template>
+
+            <div>
+              <!-- Loading State -->
+              <div
+                v-if="loading"
+                class="grid grid-cols-2 gap-4 sm:gap-6"
               >
-                <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isPhotosExpanded }" aria-hidden="true" />
-              </button>
-            </div>
-          </div>
-
-          <Transition name="collapse">
-          <div v-if="isPhotosExpanded" class="grid grid-rows-[1fr]">
-          <div class="min-h-0 overflow-hidden">
-          <div class="pt-6">
-          <!-- Loading State -->
-          <div
-            v-if="loading"
-            class="grid grid-cols-2 gap-4 sm:gap-6"
-          >
-            <div v-for="i in 8" :key="i" class="animate-pulse">
-              <div class="bg-slate-200 aspect-square rounded-xl sm:rounded-2xl"></div>
-            </div>
-          </div>
-
-          <!-- Error State -->
-          <div v-else-if="error" class="text-center py-8 sm:py-12">
-            <div class="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-              <AlertCircle class="w-6 h-6 sm:w-8 sm:h-8 text-red-600" />
-            </div>
-            <p class="text-sm sm:text-base text-slate-600 max-w-md mx-auto">{{ error }}</p>
-            <button
-              @click="fetchMedia"
-              class="mt-4 px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors duration-200"
-            >
-              {{ t('management.media.photos.tryAgain') }}
-            </button>
-          </div>
-
-          <!-- Gallery Content -->
-          <div v-else>
-            <!-- Empty State -->
-            <div v-if="media.length === 0">
-              <button
-                type="button"
-                :disabled="!canUpload"
-                @click="openUploadModal"
-                :class="[
-                  'w-full border-2 border-dashed rounded-2xl p-8 transition-all duration-300 text-center',
-                  canUpload
-                    ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200'
-                    : 'border-slate-300 bg-slate-50 cursor-default'
-                ]"
-              >
-                <div class="flex flex-col items-center justify-center min-h-[7.5rem]">
-                  <div :class="[
-                    'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300',
-                    canUpload ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
-                  ]">
-                    <Upload v-if="canUpload" class="w-8 h-8 transition-colors text-slate-400 group-hover:text-emerald-600" />
-                    <ImageIcon v-else class="w-8 h-8 text-slate-400" />
-                  </div>
-                  <p :class="[
-                    'font-semibold transition-colors',
-                    canUpload ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
-                  ]">{{ t('management.media.photos.empty.title') }}</p>
-                  <p class="text-sm text-slate-500 mt-1">{{ t('management.media.photos.empty.description') }}</p>
-                  <p v-if="canUpload" class="text-xs text-slate-400 mt-1">{{ t('management.media.photos.empty.hint') }}</p>
+                <div v-for="i in 8" :key="i" class="animate-pulse">
+                  <div class="bg-slate-200 aspect-square rounded-xl sm:rounded-2xl"></div>
                 </div>
-              </button>
-            </div>
+              </div>
 
-            <!-- Media Grid with Upload Card -->
-            <div v-else class="grid grid-cols-2 gap-4 sm:gap-6">
-              <MediaCard
-                v-for="(mediaItem, index) in media"
-                :key="mediaItem.id"
-                :media="mediaItem"
-                :can-edit="canEdit"
-                :draggable="canEdit"
-                :is-first="index === 0"
-                :is-last="index === media.length - 1"
-                @delete="deleteMedia"
-                @set-featured="toggleFeatured"
-                @drag-start="handleDragStart"
-                @drag-end="handleDragEnd"
-                @move-up="handleMoveUp(mediaItem)"
-                @move-down="handleMoveDown(mediaItem)"
-                class="media-item"
-                :data-id="mediaItem.id"
-              />
-
-              <!-- Upload Card at the end -->
-              <button
-                v-if="canUpload"
-                type="button"
-                @click="openUploadModal"
-                class="border-2 border-dashed rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer group border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 aspect-square flex flex-col items-center justify-center p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-              >
-                <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
-                  <Upload class="w-6 h-6 sm:w-8 sm:h-8 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+              <!-- Error State -->
+              <div v-else-if="error" class="text-center py-8 sm:py-12">
+                <div class="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <AlertCircle class="w-6 h-6 sm:w-8 sm:h-8 text-red-600" />
                 </div>
-                <p class="font-semibold transition-colors text-slate-600 group-hover:text-slate-900 text-sm sm:text-base">{{ t('management.media.photos.addPhotos') }}</p>
-                <p class="text-xs text-slate-400 mt-1">{{ t('management.media.photos.count', { count: media.length }) }}</p>
-              </button>
-            </div>
-          </div>
-          </div>
-          </div>
-          </div>
-          </Transition>
+                <p class="text-sm sm:text-base text-slate-600 max-w-md mx-auto">{{ error }}</p>
+                <button
+                  @click="fetchMedia"
+                  class="mt-4 px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors duration-200"
+                >
+                  {{ t('management.media.photos.tryAgain') }}
+                </button>
+              </div>
+
+              <!-- Gallery Content -->
+              <div v-else>
+                <!-- Empty State -->
+                <div v-if="media.length === 0">
+                  <button
+                    type="button"
+                    :disabled="!canUpload"
+                    @click="openUploadModal"
+                    :class="[
+                      'w-full border border-dashed rounded-xl p-5 transition-all duration-300 text-center',
+                      canUpload
+                        ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200'
+                        : 'border-slate-300 bg-slate-50 cursor-default'
+                    ]"
+                  >
+                    <div class="flex flex-col items-center justify-center min-h-[7.5rem]">
+                      <div :class="[
+                        'w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300',
+                        canUpload ? 'bg-slate-200 group-hover:bg-emerald-100' : 'bg-slate-200'
+                      ]">
+                        <Upload v-if="canUpload" class="w-8 h-8 transition-colors text-slate-400 group-hover:text-emerald-600" />
+                        <ImageIcon v-else class="w-8 h-8 text-slate-400" />
+                      </div>
+                      <p :class="[
+                        'text-[13px] font-semibold transition-colors',
+                        canUpload ? 'text-slate-600 group-hover:text-slate-900' : 'text-slate-600'
+                      ]">{{ t('management.media.photos.empty.title') }}</p>
+                      <p class="text-[11px] text-slate-500 mt-1">{{ t('management.media.photos.empty.description') }}</p>
+                      <p v-if="canUpload" class="text-xs text-slate-400 mt-1">{{ t('management.media.photos.empty.hint') }}</p>
+                    </div>
+                  </button>
+                </div>
+
+                <!-- Media Grid with Upload Card -->
+                <div v-else class="grid grid-cols-2 gap-4 sm:gap-6">
+                  <MediaCard
+                    v-for="(mediaItem, index) in media"
+                    :key="mediaItem.id"
+                    :media="mediaItem"
+                    :can-edit="canEdit"
+                    :draggable="canEdit"
+                    :is-first="index === 0"
+                    :is-last="index === media.length - 1"
+                    @delete="deleteMedia"
+                    @set-featured="toggleFeatured"
+                    @drag-start="handleDragStart"
+                    @drag-end="handleDragEnd"
+                    @move-up="handleMoveUp(mediaItem)"
+                    @move-down="handleMoveDown(mediaItem)"
+                    class="media-item"
+                    :data-id="mediaItem.id"
+                  />
+
+                  <!-- Upload Card at the end -->
+                  <button
+                    v-if="canUpload"
+                    type="button"
+                    @click="openUploadModal"
+                    class="border border-dashed rounded-xl transition-all duration-300 cursor-pointer group border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 aspect-square flex flex-col items-center justify-center p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+                  >
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 transition-all duration-300 bg-slate-200 group-hover:bg-emerald-100">
+                      <Upload class="w-6 h-6 sm:w-8 sm:h-8 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+                    </div>
+                    <p class="font-semibold transition-colors text-slate-600 group-hover:text-slate-900 text-sm sm:text-base">{{ t('management.media.photos.addPhotos') }}</p>
+                    <p class="text-xs text-slate-400 mt-1">{{ t('management.media.photos.count', { count: media.length }) }}</p>
+                  </button>
+                </div>
+              </div>
+              </div>
+          </ShowcaseSectionRow>
+
+          <!-- Videos & Maps Section (YouTube) -->
+          <EmbedsSection
+            :event-data="localEventData"
+            :can-edit="canEdit"
+            @updated="handleEventUpdated"
+          />
         </div>
       </div>
+      </section>
 
-      <!-- Videos & Maps Section (YouTube) -->
-      <div>
-        <EmbedsSection
-          :event-data="localEventData"
-          :can-edit="canEdit"
-          @updated="handleEventUpdated"
-        />
+      <!-- Set once, then left alone. -->
+      <section v-if="localEventData?.id">
+      <h3 class="px-1 mb-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{{ t('management.media.groups.settings') }}</h3>
+      <div class="stack-card bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden">
+        <div class="-mt-px">
+          <!-- Event Payment Section -->
+          <PaymentMethodsSection
+            ref="paymentMethodsSectionRef"
+            :event-id="localEventData.id"
+            :event="localEventData"
+            :can-edit="canEdit"
+            @event-updated="handleEventUpdated"
+          />
+
+          <!-- Display Settings Section (all categories). Duplicates the live
+               preview's per-section on/off chips on purpose — see the component
+               header for why the preview alone isn't enough. -->
+          <DisplaySettingsSection
+            :event-data="localEventData"
+            :can-edit="canEdit"
+            @updated="handleEventUpdated"
+          />
+        </div>
       </div>
-
-      <!-- Event Payment Section -->
-      <div v-if="localEventData?.id">
-        <PaymentMethodsSection
-          ref="paymentMethodsSectionRef"
-          :event-id="localEventData.id"
-          :event="localEventData"
-          :can-edit="canEdit"
-          @event-updated="handleEventUpdated"
-        />
-      </div>
-
-      <!-- Display Settings Section (all categories). Duplicates the live
-           preview's per-section on/off chips on purpose — see the component
-           header for why the preview alone isn't enough. -->
-      <div v-if="localEventData?.id">
-        <DisplaySettingsSection
-          :event-data="localEventData"
-          :can-edit="canEdit"
-          @updated="handleEventUpdated"
-        />
-      </div>
-
+      </section>
     </div>
 
     <!-- Upload Drawer -->
@@ -290,7 +301,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { Upload, ImageIcon, AlertCircle, ChevronDown, Plus } from 'lucide-vue-next'
+import { Upload, ImageIcon, AlertCircle, Plus } from 'lucide-vue-next'
+import ShowcaseSectionRow from './ShowcaseSectionRow.vue'
 import { mediaService, type EventPhoto, type Event } from '../services/api'
 import { useToast } from '../composables/useToast'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -379,6 +391,12 @@ const deleting = ref(false)
 const localEventData = ref<Event | undefined>(props.eventData ? { ...props.eventData } : undefined)
 
 const canUpload = computed(() => props.canEdit && !!props.eventData && !!props.eventId)
+
+const photosSummary = computed(() =>
+  media.value.length
+    ? t('management.media.sectionSummary.photos', { count: media.value.length }, media.value.length)
+    : t('management.media.sectionSummary.notSet'),
+)
 
 // Bumped after a template auto-fill: the Texts/Hosts/Agenda sections each load
 // their own data on mount and have no idea rows appeared underneath them, so
@@ -751,23 +769,23 @@ defineExpose({
 
 /* Collapse/expand via grid-template-rows 0fr↔1fr — tracks real content
    height so both directions ease evenly (no max-height dead time) */
-.collapse-enter-active,
-.collapse-leave-active {
-  transition:
-    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease;
-}
 
-.collapse-enter-from,
-.collapse-leave-to {
-  grid-template-rows: 0fr;
-  opacity: 0;
-}
+/*
+  The group card.
 
-@media (prefers-reduced-motion: reduce) {
-  .collapse-enter-active,
-  .collapse-leave-active {
-    transition: none !important;
-  }
+  Tailwind's shadow-lg is 10% pure black; over this page's pale mint wash that
+  reads as a grey smudge under each card rather than as depth, and three of them
+  stacked in a 440px column made the whole panel look dusty. Same geometry, but
+  tinted to the slate the palette is built on and split in two — a tight contact
+  shadow that draws the card's edge, and a wider ambient one that lifts it.
+
+  The border stays DESIGN.md's white/20 (§4.3): on a glass surface that is a
+  highlight catching the light, not the line that defines the edge. The shadow
+  is what defines it.
+*/
+.stack-card {
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 8px 20px -8px rgba(15, 23, 42, 0.12);
 }
 </style>

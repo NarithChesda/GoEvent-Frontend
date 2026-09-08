@@ -34,7 +34,7 @@
     </Transition>
   </template>
 
-  <div v-else-if="visible" class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-3xl shadow-xl p-4 sm:p-6">
+  <div v-else-if="visible" class="bg-white/80 backdrop-blur-sm border border-white/40 rounded-2xl shadow-lg p-3.5">
     <div class="flex items-start gap-3">
       <span
         class="w-9 h-9 rounded-lg bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center flex-shrink-0"
@@ -43,8 +43,8 @@
         <Wand2 class="w-4 h-4 text-[#2ecc71]" />
       </span>
       <div class="min-w-0 flex-1">
-        <h5 class="font-semibold text-slate-900">{{ t('management.media.populate.label') }}</h5>
-        <p class="text-sm text-slate-600">{{ t('management.media.populate.description') }}</p>
+        <h4 class="text-base font-semibold text-slate-900 leading-snug">{{ t('management.media.populate.label') }}</h4>
+        <p class="mt-0.5 text-xs text-slate-500 leading-snug">{{ t('management.media.populate.description') }}</p>
       </div>
     </div>
 

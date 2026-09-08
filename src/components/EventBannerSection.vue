@@ -1,54 +1,31 @@
 <template>
-  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
-    <!-- Header (click to expand/collapse) -->
-    <div class="flex items-start justify-between gap-3">
+  <ShowcaseSectionRow
+    :icon="Share2"
+    :title="t('management.media.eventBanner.title')"
+    :summary="hasBanner ? t('management.media.sectionSummary.set') : t('management.media.sectionSummary.notSet')"
+    :filled="hasBanner"
+    :expanded="isExpanded"
+    @toggle="toggle"
+  >
+    <template #actions>
+      <!-- Action pills only exist while the section is open — a collapsed
+           row shows nothing but its chevron. -->
       <button
-        type="button"
-        class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
-        :aria-expanded="isExpanded"
-        :aria-label="t('management.media.sectionToggle')"
-        @click="toggle"
-      >
-        <h5 class="font-semibold text-slate-900">{{ t('management.media.eventBanner.title') }}</h5>
-        <p class="text-sm text-slate-600">{{ t('management.media.eventBanner.subtitle') }}</p>
-      </button>
-      <div class="flex items-center gap-1 flex-shrink-0">
-        <!-- Action pills only exist while the section is open — a collapsed
-             card shows nothing but its chevron. -->
-        <button
           v-if="isExpanded && canEdit"
           type="button"
           @click="pickFile"
           :disabled="isBusy"
           :title="changeLabel"
           :aria-label="changeLabel"
-          class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Loader v-if="isBusy" class="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
-          <ImagePlus v-else class="w-3.5 h-3.5" aria-hidden="true" />
-          <span>{{ changeLabel }}</span>
-        </button>
-        <button
-          type="button"
-          class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-          :aria-expanded="isExpanded"
-          :aria-label="t('management.media.sectionToggle')"
-          :title="t('management.media.sectionToggle')"
-          @click="toggle"
-        >
-          <ChevronDown
-            class="w-4 h-4 transition-transform duration-200"
-            :class="{ 'rotate-180': isExpanded }"
-            aria-hidden="true"
-          />
-        </button>
-      </div>
-    </div>
+        <Loader v-if="isBusy" class="w-3 h-3 animate-spin" aria-hidden="true" />
+        <ImagePlus v-else class="w-3 h-3" aria-hidden="true" />
+        <span>{{ changeLabel }}</span>
+      </button>
+    </template>
 
-    <Transition name="collapse">
-      <div v-if="isExpanded" class="grid grid-rows-[1fr]">
-        <div class="min-h-0 overflow-hidden">
-          <div class="pt-6 space-y-4">
+    <div class="space-y-3">
             <!-- Upload error -->
             <div
               v-if="mediaUpload.error.value"
@@ -66,7 +43,7 @@
               type="button"
               :disabled="!canEdit || isBusy"
               @click="pickFile"
-              class="w-full border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-300"
+              class="w-full border border-dashed rounded-xl p-5 text-center transition-all duration-300"
               :class="
                 canEdit
                   ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200'
@@ -74,7 +51,7 @@
               "
             >
               <ImagePlus
-                class="w-8 h-8 text-slate-400 mx-auto mb-3"
+                class="w-6 h-6 text-slate-400 mx-auto mb-2"
                 :class="{ 'group-hover:text-emerald-600 transition-colors': canEdit }"
                 aria-hidden="true"
               />
@@ -248,12 +225,10 @@
               class="hidden"
               @change="handleFileChange"
             />
-          </div>
-        </div>
-      </div>
-    </Transition>
+    </div>
+  </ShowcaseSectionRow>
 
-    <!-- Banner Image Cropper Modal -->
+  <!-- Banner Image Cropper Modal -->
     <ImageCropperModal
       v-if="showCropper"
       :show="showCropper"
@@ -278,7 +253,6 @@
       @confirm="handleRemove"
       @cancel="showDeleteModal = false"
     />
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -296,7 +270,8 @@
  * that shows it being bad — not a form field two tabs away.
  */
 import { computed, nextTick, ref, toRef } from 'vue'
-import { AlertCircle, ChevronDown, Crop, ImagePlus, Loader, Trash2 } from 'lucide-vue-next'
+import { AlertCircle, Crop, ImagePlus, Loader, Share2, Trash2 } from 'lucide-vue-next'
+import ShowcaseSectionRow from './ShowcaseSectionRow.vue'
 import { eventsService, type Event } from '@/services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useNotifications } from '@/composables/useNotifications'
@@ -477,18 +452,6 @@ const handleRemove = async () => {
 </script>
 
 <style scoped>
-.collapse-enter-active,
-.collapse-leave-active {
-  transition:
-    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease;
-}
-
-.collapse-enter-from,
-.collapse-leave-to {
-  grid-template-rows: 0fr;
-  opacity: 0;
-}
 
 @media (prefers-reduced-motion: reduce) {
   .collapse-enter-active,
