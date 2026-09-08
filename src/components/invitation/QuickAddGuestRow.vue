@@ -9,7 +9,7 @@
        value column, and Enter commits and keeps the caret so several guests go
        in back to back. -->
   <div
-    class="flex items-center gap-2.5 px-3 py-2.5 transition-colors duration-150 sm:px-4"
+    class="flex items-center gap-2.5 px-[var(--guest-row-x,0.75rem)] py-2.5 transition-colors duration-150 sm:px-4"
     :class="isFocused ? 'bg-sky-50/70' : ''"
   >
     <!-- The leading slot is the guest rows' checkbox slot, at the same width,
