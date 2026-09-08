@@ -505,6 +505,23 @@
     },
     "loading": "កំពុងផ្ទុកមេឌៀ...",
     "sectionToggle": "លាតត្រដាង ឬបង្រួមផ្នែក",
+    "sectionSummary": {
+      "notSet": "មិនទាន់កំណត់",
+      "set": "បានកំណត់",
+      "texts": "អត្ថបទ {count}",
+      "hosts": "ម្ចាស់កម្មវិធី {count}",
+      "items": "ធាតុ {count}",
+      "codes": "កូដសម្លៀកបំពាក់ {count}",
+      "photos": "រូបភាព {count}",
+      "methods": "វិធីបង់ប្រាក់ {count}",
+      "assets": "ឯកសារ {count}",
+      "shown": "បង្ហាញ {count}"
+    },
+    "groups": {
+      "content": "មាតិកាលិខិតអញ្ជើញ",
+      "media": "មេឌៀ និងម៉ាកសញ្ញា",
+      "settings": "ការបង់ប្រាក់ និងការបង្ហាញ"
+    },
     "populate": {
       "label": "បំពេញស្វ័យប្រវត្តិពីគំរូប្រភេទ",
       "description": "បំពេញអត្ថបទ ម្ចាស់ផ្ទះ និងកម្មវិធីខាងក្រោម ដោយប្រើខ្លឹមសារចាប់ផ្ដើមសម្រាប់ប្រភេទកម្មវិធីនេះ។",
@@ -1163,7 +1180,8 @@
     "languagesBar": {
       "label": "ភាសា",
       "add": "បន្ថែម",
-      "menuAriaLabel": "បន្ថែមភាសា",
+      "menuAriaLabel": "ជ្រើសរើសភាសា",
+      "lockedHint": "មានអត្ថបទរួចហើយ — សូមលុបមាតិកាជាមុនសិន",
       "removeAriaLabel": "លុប {language}"
     },
     "groups": {

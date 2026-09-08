@@ -1,35 +1,15 @@
 <template>
-  <div class="space-y-6">
+  <div>
     <!-- Google Maps Embed -->
-    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
-      <!-- Header (click to expand/collapse) -->
-      <div class="flex items-start justify-between gap-3">
-        <button
-          type="button"
-          class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
-          :aria-expanded="isMapExpanded"
-          :aria-label="t('management.media.sectionToggle')"
-          @click="toggleMap"
-        >
-          <h5 class="font-semibold text-slate-900">{{ t('management.embeds.map.title') }}</h5>
-          <p class="text-sm text-slate-600">{{ t('management.embeds.map.description') }}</p>
-        </button>
-        <button
-          type="button"
-          class="p-2 -mt-1 -mr-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-          :aria-expanded="isMapExpanded"
-          :aria-label="t('management.media.sectionToggle')"
-          :title="t('management.media.sectionToggle')"
-          @click="toggleMap"
-        >
-          <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isMapExpanded }" aria-hidden="true" />
-        </button>
-      </div>
-
-      <Transition name="collapse">
-      <div v-if="isMapExpanded" class="grid grid-rows-[1fr]">
-      <div class="min-h-0 overflow-hidden">
-      <div class="pt-6">
+    <ShowcaseSectionRow
+      :icon="MapPin"
+      :title="t('management.embeds.map.title')"
+      :summary="!!mapPreviewUrl ? t('management.media.sectionSummary.set') : t('management.media.sectionSummary.notSet')"
+      :filled="!!mapPreviewUrl"
+      :expanded="isMapExpanded"
+      @toggle="toggleMap"
+    >
+      <div>
         <!-- Set: the map itself, in the same 16:9 rounded frame the showcase
              gives it, with the actions that change it attached underneath.
              The embed URL never appears — it's plumbing, and the identity line
@@ -85,7 +65,7 @@
           :disabled="!canEdit"
           @click="gmapModalOpen = true"
           :class="[
-            'w-full aspect-video flex flex-col items-center justify-center gap-1.5 px-4 border-2 border-dashed rounded-2xl text-center transition-all duration-300',
+            'w-full aspect-video flex flex-col items-center justify-center gap-1 px-4 border border-dashed rounded-xl text-center transition-all duration-300',
             canEdit
               ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200'
               : 'border-slate-300 bg-slate-50 cursor-default'
@@ -99,64 +79,41 @@
           <span class="text-sm font-semibold text-slate-700">
             {{ canEdit ? t('management.showcasePreview.editors.addMap') : t('management.embeds.map.empty') }}
           </span>
-          <span v-if="canEdit" class="text-xs sm:text-sm text-slate-500">
+          <span v-if="canEdit" class="text-[11px] text-slate-500">
             {{ t('management.embeds.map.emptyHint') }}
           </span>
         </button>
       </div>
-      </div>
-      </div>
-      </Transition>
-    </div>
+    </ShowcaseSectionRow>
 
     <!-- YouTube Embed -->
-    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
-      <!-- Header (click to expand/collapse) -->
-      <div class="flex items-start justify-between gap-3">
+    <ShowcaseSectionRow
+      :icon="Youtube"
+      :title="t('management.embeds.youtube.title')"
+      :summary="!!formData.youtube_embed_link ? t('management.media.sectionSummary.set') : t('management.media.sectionSummary.notSet')"
+      :filled="!!formData.youtube_embed_link"
+      :expanded="isYoutubeExpanded"
+      @toggle="toggleYoutube"
+    >
+      <template #actions>
+        <!-- Help Button — only while the section is open; a collapsed row
+             shows nothing but its chevron. -->
         <button
-          type="button"
-          class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
-          :aria-expanded="isYoutubeExpanded"
-          :aria-label="t('management.media.sectionToggle')"
-          @click="toggleYoutube"
+          v-if="isYoutubeExpanded"
+          @click="showYouTubeHelpModal = true"
+          class="p-1.5 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+          :title="t('management.embeds.youtube.helpButtonTitle')"
         >
-          <h5 class="font-semibold text-slate-900">{{ t('management.embeds.youtube.title') }}</h5>
-          <p class="text-sm text-slate-600">{{ t('management.embeds.youtube.description') }}</p>
+          <Info class="w-3.5 h-3.5" />
         </button>
+      </template>
 
-        <div class="flex items-center gap-1 flex-shrink-0">
-          <!-- Help Button — only while the section is open; a collapsed card
-               shows nothing but its chevron. -->
-          <button
-            v-if="isYoutubeExpanded"
-            @click="showYouTubeHelpModal = true"
-            class="p-2 text-slate-400 hover:text-[#1e90ff] hover:bg-sky-50 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-            :title="t('management.embeds.youtube.helpButtonTitle')"
-          >
-            <Info class="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-            :aria-expanded="isYoutubeExpanded"
-            :aria-label="t('management.media.sectionToggle')"
-            :title="t('management.media.sectionToggle')"
-            @click="toggleYoutube"
-          >
-            <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isYoutubeExpanded }" aria-hidden="true" />
-          </button>
-        </div>
-      </div>
-
-      <Transition name="collapse">
-      <div v-if="isYoutubeExpanded" class="grid grid-rows-[1fr]">
-      <div class="min-h-0 overflow-hidden">
-      <div class="space-y-3 sm:space-y-4 pt-6">
+      <div class="space-y-3">
         <!-- YouTube Preview -->
         <div v-if="formData.youtube_embed_link" class="relative">
           <iframe
             :src="formData.youtube_embed_link"
-            class="w-full h-48 sm:h-56 md:h-64 rounded-xl sm:rounded-2xl"
+            class="w-full h-40 sm:h-48 rounded-xl"
             frameborder="0"
             allowfullscreen
           ></iframe>
@@ -176,14 +133,14 @@
           :disabled="!canEdit"
           @click="focusUrlInput"
           :class="[
-            'w-full border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center transition-all duration-300',
+            'w-full border border-dashed rounded-xl p-5 text-center transition-all duration-300',
             canEdit
               ? 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 hover:border-emerald-400 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200'
               : 'border-slate-300 bg-slate-50 cursor-default'
           ]"
         >
           <Youtube class="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 mx-auto mb-1.5 sm:mb-2 transition-colors group-hover:text-emerald-600" />
-          <p class="text-xs sm:text-sm text-slate-600">{{ t('management.embeds.youtube.empty') }}</p>
+          <p class="text-[11px] text-slate-600">{{ t('management.embeds.youtube.empty') }}</p>
         </button>
 
         <div>
@@ -220,10 +177,7 @@
           </button>
         </div>
       </div>
-      </div>
-      </div>
-      </Transition>
-    </div>
+    </ShowcaseSectionRow>
 
     <!-- The one map editor — the same component the showcase preview opens, so
          both entry points behave identically. It saves straight to the API. -->
@@ -365,7 +319,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { Youtube, Map, MapPin, Pencil, Trash2, X, Save, ChevronDown, Info } from 'lucide-vue-next'
+import { Youtube, Map, MapPin, Pencil, Trash2, X, Save, Info } from 'lucide-vue-next'
+import ShowcaseSectionRow from './ShowcaseSectionRow.vue'
 import { eventsService, type Event } from '../services/api'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import GmapEmbedModal from './showcase-preview/editors/GmapEmbedModal.vue'
@@ -596,23 +551,4 @@ const handleYouTubePaste = (event: ClipboardEvent) => {
 
 /* Collapse/expand via grid-template-rows 0fr↔1fr — tracks real content
    height so both directions ease evenly (no max-height dead time) */
-.collapse-enter-active,
-.collapse-leave-active {
-  transition:
-    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease;
-}
-
-.collapse-enter-from,
-.collapse-leave-to {
-  grid-template-rows: 0fr;
-  opacity: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .collapse-enter-active,
-  .collapse-leave-active {
-    transition: none !important;
-  }
-}
 </style>

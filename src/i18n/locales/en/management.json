@@ -505,6 +505,23 @@
     },
     "loading": "Loading media...",
     "sectionToggle": "Expand or collapse section",
+    "sectionSummary": {
+      "notSet": "Not set",
+      "set": "Set",
+      "texts": "{count} text | {count} texts",
+      "hosts": "{count} host | {count} hosts",
+      "items": "{count} item | {count} items",
+      "codes": "{count} code | {count} codes",
+      "photos": "{count} photo | {count} photos",
+      "methods": "{count} method | {count} methods",
+      "assets": "{count} asset | {count} assets",
+      "shown": "{count} shown"
+    },
+    "groups": {
+      "content": "Invitation content",
+      "media": "Media & branding",
+      "settings": "Payments & display"
+    },
     "populate": {
       "label": "Auto-fill from category template",
       "description": "Fill the texts, hosts and agenda below with a ready-made starting point for this event category.",
@@ -1163,7 +1180,8 @@
     "languagesBar": {
       "label": "Languages",
       "add": "Add",
-      "menuAriaLabel": "Add a language",
+      "menuAriaLabel": "Select languages",
+      "lockedHint": "Already has saved text — remove its content first",
       "removeAriaLabel": "Remove {language}"
     },
     "groups": {

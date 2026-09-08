@@ -1,40 +1,82 @@
 <template>
-  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
-    <!-- Header (click to expand/collapse) -->
-    <div class="flex items-start justify-between gap-3">
+  <ShowcaseSectionRow
+    :icon="Type"
+    :title="t('management.eventTextTab.header.title')"
+    :summary="summary"
+    :filled="allTexts.length > 0"
+    :expanded="isExpanded"
+    @toggle="toggleExpanded"
+  >
+    <!-- Which languages this event is written in is a property of the whole
+         section, so it belongs beside the section's name — not as a row of
+         chrome above the list it governs. One control, one question: it lists
+         every language and the checked ones are the active ones, so adding and
+         removing are the same gesture instead of a pill row plus a separate
+         "Add" menu. -->
+    <template v-if="isExpanded && !loading && !error" #actions>
       <button
+        ref="langTriggerEl"
         type="button"
-        class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
-        :aria-expanded="isExpanded"
-        :aria-label="t('management.media.sectionToggle')"
-        @click="toggleExpanded"
+        class="inline-flex items-center gap-1 pl-2 pr-1.5 py-1 rounded-full border border-slate-200 bg-white text-[11px] font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900 active:scale-[0.97] transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+        :aria-expanded="showLanguageMenu"
+        aria-haspopup="menu"
+        :title="t('management.eventTextTab.languagesBar.label')"
+        @click="showLanguageMenu = !showLanguageMenu"
       >
-        <h5 class="font-semibold text-slate-900">{{ t('management.eventTextTab.header.title') }}</h5>
-        <p class="text-sm text-slate-600">{{ t('management.eventTextTab.header.subtitle') }}</p>
+        <Languages class="w-3 h-3 text-slate-400" aria-hidden="true" />
+        <span class="uppercase tracking-wide">{{ languageTriggerLabel }}</span>
+        <ChevronDown
+          class="w-3 h-3 text-slate-400 transition-transform duration-200"
+          :class="{ 'rotate-180': showLanguageMenu }"
+          aria-hidden="true"
+        />
       </button>
-      <button
-        type="button"
-        class="p-2 -mt-1 -mr-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-        :aria-expanded="isExpanded"
-        :aria-label="t('management.media.sectionToggle')"
-        :title="t('management.media.sectionToggle')"
-        @click="toggleExpanded"
-      >
-        <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isExpanded }" aria-hidden="true" />
-      </button>
-    </div>
 
-    <Transition name="collapse">
-    <div v-if="isExpanded" class="grid grid-rows-[1fr]">
-    <div class="min-h-0 overflow-hidden">
-    <div class="pt-6">
+      <AnchoredMenu
+        :open="showLanguageMenu"
+        :anchor="langTriggerEl"
+        align="end"
+        :min-width="216"
+        :aria-label="t('management.eventTextTab.languagesBar.menuAriaLabel')"
+        @close="showLanguageMenu = false"
+      >
+        <p class="px-2.5 pt-1.5 pb-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+          {{ t('management.eventTextTab.languagesBar.label') }}
+        </p>
+        <button
+          v-for="lang in allLanguageOptions"
+          :key="lang.code"
+          type="button"
+          role="menuitemcheckbox"
+          :aria-checked="lang.active"
+          :disabled="lang.locked"
+          :title="lang.locked ? t('management.eventTextTab.languagesBar.lockedHint') : undefined"
+          class="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-[13px] font-medium transition-colors duration-150 disabled:cursor-default"
+          :class="lang.active ? 'text-slate-900 hover:bg-slate-50' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'"
+          @click="toggleLanguage(lang)"
+        >
+          <span
+            class="w-4 h-4 rounded-[4px] border flex items-center justify-center flex-shrink-0 transition-colors duration-150"
+            :class="lang.active
+              ? (lang.locked ? 'bg-slate-300 border-slate-300' : 'bg-[#1e90ff] border-[#1e90ff]')
+              : 'bg-white border-slate-300'"
+          >
+            <Check v-if="lang.active" class="w-3 h-3 text-white" aria-hidden="true" />
+          </span>
+          <span class="flex-1 truncate">{{ getLanguageName(lang.code) }}</span>
+          <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{{ lang.code }}</span>
+        </button>
+      </AnchoredMenu>
+    </template>
+
+    <div>
     <!-- Loading State -->
     <div v-if="loading" class="space-y-5" aria-hidden="true">
       <div v-for="g in 2" :key="g" class="space-y-2">
         <div class="h-3 w-24 bg-slate-200 rounded animate-pulse"></div>
-        <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+        <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
           <div v-for="r in 3" :key="r" class="p-3 sm:p-4 flex items-center gap-3">
-            <div class="w-9 h-9 bg-slate-200 rounded-lg animate-pulse flex-shrink-0"></div>
+            <div class="w-8 h-8 bg-slate-200 rounded-lg animate-pulse flex-shrink-0"></div>
             <div class="flex-1 space-y-2">
               <div class="h-3 w-32 bg-slate-200 rounded animate-pulse"></div>
               <div class="h-3 w-48 bg-slate-100 rounded animate-pulse"></div>
@@ -63,77 +105,23 @@
     </div>
 
     <!-- Content -->
-    <div v-else class="space-y-5">
-      <!-- Languages Bar -->
-      <div class="flex items-center flex-wrap gap-2">
-        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider mr-1">
-          {{ t('management.eventTextTab.languagesBar.label') }}
-        </span>
-        <span
-          v-for="lang in activeLanguages"
-          :key="lang"
-          class="inline-flex items-center gap-1 pl-3 pr-1.5 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-full"
-        >
-          {{ getLanguageName(lang) }}
-          <button
-            v-if="canRemoveLanguage(lang)"
-            @click="removeLanguage(lang)"
-            :aria-label="t('management.eventTextTab.languagesBar.removeAriaLabel', { language: getLanguageName(lang) })"
-            class="p-1 -my-1 text-slate-400 hover:text-red-600 active:text-red-600 rounded-full transition-colors"
-          >
-            <X class="w-3.5 h-3.5" aria-hidden="true" />
-          </button>
-          <span v-else class="w-1"></span>
-        </span>
-
-        <!-- Add Language Dropdown -->
-        <div v-if="languagesForAdd.length > 0" class="relative">
-          <button
-            @click="showLanguageMenu = !showLanguageMenu"
-            class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 border border-dashed border-slate-300 rounded-full hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
-          >
-            <Plus class="w-3.5 h-3.5" aria-hidden="true" />
-            {{ t('management.eventTextTab.languagesBar.add') }}
-          </button>
-
-          <div v-if="showLanguageMenu" class="fixed inset-0 z-[90]" @click="showLanguageMenu = false"></div>
-          <Transition name="dropdown">
-            <div
-              v-if="showLanguageMenu"
-              class="absolute top-full left-0 mt-2 min-w-[12.5rem] bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-[20rem] overflow-y-auto py-1"
-              role="menu"
-              :aria-label="t('management.eventTextTab.languagesBar.menuAriaLabel')"
-            >
-              <button
-                v-for="lang in languagesForAdd"
-                :key="lang"
-                role="menuitem"
-                @click="addLanguage(lang)"
-                class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200 text-left"
-              >
-                {{ getLanguageName(lang) }}
-              </button>
-            </div>
-          </Transition>
-        </div>
-      </div>
-
+    <div v-else class="space-y-4">
       <!-- Slot Groups -->
       <div v-for="group in slotGroups" :key="group.key" class="space-y-2">
-        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+        <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
           {{ t(`management.eventTextTab.groups.${group.key}`) }}
         </p>
-        <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+        <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
           <button
             v-for="slot in group.slots"
             :key="slot.value"
             @click="openSlotEditor(slot.value)"
             :aria-label="t('management.eventTextTab.slot.openEditorAriaLabel', { type: getTextTypeLabel(slot.value) })"
-            class="w-full flex items-center gap-3 p-3 sm:p-4 min-h-[56px] text-left hover:bg-slate-50 active:bg-slate-100 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset"
+            class="w-full flex items-center gap-2.5 p-2.5 sm:p-3 min-h-[46px] text-left hover:bg-slate-50 active:bg-slate-100 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-inset"
           >
             <!-- Icon -->
             <div
-              class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 border"
+              class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border"
               :class="slotHasAnyContent(slot.value)
                 ? 'bg-sky-50 border-sky-100'
                 : 'bg-slate-50 border-slate-100'"
@@ -186,11 +174,9 @@
       </div>
     </div>
     </div>
-    </div>
-    </div>
-    </Transition>
+  </ShowcaseSectionRow>
 
-    <!-- Per-slot Edit Drawer -->
+  <!-- Per-slot Edit Drawer -->
     <EditEventTextDrawer
       v-model="showTextDrawer"
       :event-id="eventId"
@@ -199,12 +185,13 @@
       :existing-texts="allTexts"
       @saved="fetchTexts"
     />
-  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { Plus, X, AlertCircle, ChevronDown, ChevronRight } from 'lucide-vue-next'
+import { AlertCircle, Check, ChevronDown, ChevronRight, Languages, Type } from 'lucide-vue-next'
+import ShowcaseSectionRow from './ShowcaseSectionRow.vue'
+import AnchoredMenu from './common/AnchoredMenu.vue'
 import { eventTextsService, type EventText } from '../services/api'
 import EditEventTextDrawer from './EditEventTextDrawer.vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -237,6 +224,7 @@ const error = ref<string | null>(null)
 const allTexts = ref<EventText[]>([])
 const showTextDrawer = ref(false)
 const showLanguageMenu = ref(false)
+const langTriggerEl = ref<HTMLElement | null>(null)
 const activeSlot = ref<string | null>(null)
 // Languages added by the user this session that have no saved texts yet
 const addedLanguages = ref<string[]>([])
@@ -250,8 +238,23 @@ const activeLanguages = computed(() => {
   return sortEventTextLanguages([...langs])
 })
 
-const languagesForAdd = computed(() =>
-  EVENT_TEXT_LANGUAGES.filter((code) => !activeLanguages.value.includes(code)),
+/**
+ * Every language, each carrying whether it is on and whether it may be turned
+ * off. English and any language that already has saved texts are locked on —
+ * unchecking those would mean deleting content, which is the drawer's job, not
+ * this menu's. They still render checked (and greyed) rather than being hidden,
+ * so the menu is a truthful picture of what the event is written in.
+ */
+const languageTriggerLabel = computed(() => {
+  const codes = activeLanguages.value
+  return codes.length <= 3 ? codes.join(' · ') : `${codes.slice(0, 2).join(' · ')} +${codes.length - 2}`
+})
+
+const allLanguageOptions = computed(() =>
+  EVENT_TEXT_LANGUAGES.map((code) => {
+    const active = activeLanguages.value.includes(code)
+    return { code, active, locked: active && !canRemoveLanguage(code) }
+  }),
 )
 
 // Slots organized by showcase location, keeping only non-empty groups
@@ -274,6 +277,14 @@ const findText = (textType: string, lang: string): EventText | undefined =>
 
 const slotHasAnyContent = (textType: string): boolean =>
   allTexts.value.some((text) => text.text_type === textType)
+
+// Counts rows, not slots: a slot written in three languages is three texts,
+// which is what the list below shows and what the work actually was.
+const summary = computed(() =>
+  allTexts.value.length
+    ? t('management.media.sectionSummary.texts', { count: allTexts.value.length }, allTexts.value.length)
+    : t('management.media.sectionSummary.notSet'),
+)
 
 // Preview in the app language when available, falling back to English, then anything
 const getSlotPreview = (textType: string): string => {
@@ -330,15 +341,16 @@ const fetchTexts = async () => {
   }
 }
 
-const addLanguage = (lang: string) => {
-  if (!addedLanguages.value.includes(lang)) {
-    addedLanguages.value.push(lang)
+// Adding and removing are one gesture now. The menu stays open: picking
+// languages is usually picking several, and closing after each would make the
+// second one cost a second trip.
+const toggleLanguage = (lang: { code: string; active: boolean; locked: boolean }) => {
+  if (lang.locked) return
+  if (lang.active) {
+    addedLanguages.value = addedLanguages.value.filter((code) => code !== lang.code)
+  } else if (!addedLanguages.value.includes(lang.code)) {
+    addedLanguages.value.push(lang.code)
   }
-  showLanguageMenu.value = false
-}
-
-const removeLanguage = (lang: string) => {
-  addedLanguages.value = addedLanguages.value.filter((code) => code !== lang)
 }
 
 const openSlotEditor = (textType: string) => {
@@ -382,23 +394,4 @@ defineExpose({
 
 /* Collapse/expand via grid-template-rows 0fr↔1fr — tracks real content
    height so both directions ease evenly (no max-height dead time) */
-.collapse-enter-active,
-.collapse-leave-active {
-  transition:
-    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease;
-}
-
-.collapse-enter-from,
-.collapse-leave-to {
-  grid-template-rows: 0fr;
-  opacity: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .collapse-enter-active,
-  .collapse-leave-active {
-    transition: none !important;
-  }
-}
 </style>

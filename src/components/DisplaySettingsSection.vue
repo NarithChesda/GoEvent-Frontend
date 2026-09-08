@@ -6,35 +6,15 @@
        disappears once the event has started. This card is the always-findable
        home for the same three fields, and the only one non-showcase categories
        (business, music, other) get, since they render no live preview. -->
-  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-4 sm:p-6 border border-white/20">
-    <!-- Header (click to expand/collapse) -->
-    <div class="flex items-start justify-between gap-3">
-      <button
-        type="button"
-        class="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded-lg"
-        :aria-expanded="isExpanded"
-        :aria-label="t('management.media.sectionToggle')"
-        @click="toggle"
-      >
-        <h5 class="font-semibold text-slate-900">{{ t('management.displaySettings.title') }}</h5>
-        <p class="text-sm text-slate-600">{{ t('management.displaySettings.description') }}</p>
-      </button>
-      <button
-        type="button"
-        class="p-2 -mt-1 -mr-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-        :aria-expanded="isExpanded"
-        :aria-label="t('management.media.sectionToggle')"
-        :title="t('management.media.sectionToggle')"
-        @click="toggle"
-      >
-        <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isExpanded }" aria-hidden="true" />
-      </button>
-    </div>
-
-    <Transition name="collapse">
-    <div v-if="isExpanded" class="grid grid-rows-[1fr]">
-    <div class="min-h-0 overflow-hidden">
-    <div class="space-y-3 pt-6">
+  <ShowcaseSectionRow
+    :icon="SlidersHorizontal"
+    :title="t('management.displaySettings.title')"
+    :summary="summary"
+    filled
+    :expanded="isExpanded"
+    @toggle="toggle"
+  >
+    <div class="space-y-2">
       <!-- Each row saves on click — same immediate-patch behavior as the
            preview chips, so the two surfaces can't disagree about what's on. -->
       <button
@@ -42,45 +22,41 @@
         :key="setting.field"
         type="button"
         :disabled="!canEdit || saving === setting.field"
-        class="w-full flex items-center justify-between gap-3 p-3 bg-slate-50 rounded-lg text-left transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+        class="w-full flex items-center justify-between gap-3 p-2.5 bg-white border border-slate-200 rounded-xl text-left transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
         role="switch"
         :aria-checked="isOn(setting.field)"
         @click="toggleField(setting.field)"
       >
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="p-2 bg-white rounded-lg shadow-sm flex-shrink-0">
-            <component :is="setting.icon" class="w-4 h-4 text-sky-500" />
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-7 h-7 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <component :is="setting.icon" class="w-3.5 h-3.5 text-sky-500" />
           </div>
           <div class="min-w-0">
-            <p class="text-sm font-medium text-slate-700">{{ t(setting.labelKey) }}</p>
-            <p class="text-xs text-slate-500">{{ t(setting.descKey) }}</p>
+            <p class="text-[13px] font-medium text-slate-700 leading-snug">{{ t(setting.labelKey) }}</p>
+            <p class="text-[11px] text-slate-500 leading-snug">{{ t(setting.descKey) }}</p>
           </div>
         </div>
         <div
           :class="[
-            'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
+            'relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
             isOn(setting.field) ? 'bg-sky-500' : 'bg-slate-200'
           ]"
           aria-hidden="true"
         >
           <span
-            class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
-            :style="{ transform: isOn(setting.field) ? 'translateX(20px)' : 'translateX(0)' }"
+            class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out"
+            :style="{ transform: isOn(setting.field) ? 'translateX(16px)' : 'translateX(0)' }"
           />
         </div>
       </button>
     </div>
-    </div>
-    </div>
-    </Transition>
-
-    <!-- Toast Feedback -->
-  </div>
+  </ShowcaseSectionRow>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { UserCheck, MessageSquare, Timer, ChevronDown } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
+import { UserCheck, MessageSquare, Timer, SlidersHorizontal } from 'lucide-vue-next'
+import ShowcaseSectionRow from './ShowcaseSectionRow.vue'
 import { eventsService, type Event } from '../services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useToast } from '../composables/useToast'
@@ -127,8 +103,18 @@ const SETTINGS: { field: DisplayField; icon: typeof UserCheck; labelKey: string;
 
 const saving = ref<DisplayField | null>(null)
 
+// "3 shown" reads the same way the showcase does — absent means on, so a fresh
+// event honestly reports all three rather than none.
 // Absent means on — matches how the showcase itself reads these (`!== false`).
 const isOn = (field: DisplayField) => props.eventData?.[field] !== false
+
+// "3 shown", so a fresh event reports what the showcase will actually render
+// rather than nothing.
+const summary = computed(() =>
+  t('management.media.sectionSummary.shown', {
+    count: SETTINGS.filter((entry) => isOn(entry.field)).length,
+  }),
+)
 
 const toggleField = async (field: DisplayField) => {
   if (!props.canEdit || !props.eventData || saving.value) return
@@ -151,26 +137,3 @@ const toggleField = async (field: DisplayField) => {
 }
 </script>
 
-<style scoped>
-/* Collapse/expand via grid-template-rows 0fr↔1fr — tracks real content
-   height so both directions ease evenly (no max-height dead time) */
-.collapse-enter-active,
-.collapse-leave-active {
-  transition:
-    grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease;
-}
-
-.collapse-enter-from,
-.collapse-leave-to {
-  grid-template-rows: 0fr;
-  opacity: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .collapse-enter-active,
-  .collapse-leave-active {
-    transition: none !important;
-  }
-}
-</style>
