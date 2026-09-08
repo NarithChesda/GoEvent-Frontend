@@ -22,7 +22,7 @@
           :style="{ fontFamily: displayFont }"
         >
           <span
-            v-if="item.icon?.svg_code"
+            v-if="hasIcon(item)"
             class="agd-icon ldg-glyph"
             aria-hidden="true"
             v-html="iconSvg(item)"
@@ -66,7 +66,7 @@ import type { AgendaDesignItem, AgendaDesignProps } from './types'
  */
 const props = defineProps<AgendaDesignProps>()
 
-const { displayFont, bodyFont, stagger, iconSvg, isKhmer } = useAgendaDesign(props)
+const { displayFont, bodyFont, stagger, hasIcon, iconSvg, isKhmer } = useAgendaDesign(props)
 const items = computed(() => props.items)
 
 /**

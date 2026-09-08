@@ -199,6 +199,7 @@ import { computed, inject, nextTick, onMounted, onUnmounted, ref, useId, watch }
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
+import { useIconLibraryStore } from '@/stores/iconLibrary'
 import {
   splitToWords,
   ANIMATION_CONSTANTS,
@@ -273,6 +274,13 @@ const props = defineProps<Props>()
 // public showcase, so the edit affordances can never leak into production.
 const editIntentCtx = inject(EditIntentKey, undefined)
 const { t: tApp } = useAppLanguage()
+
+// The section owns the fetch for the same reason it owns the header, the tabs
+// and the reveal clock: a design is handed one day's items and draws them. Kick
+// it off in setup rather than onMounted so the request is in flight before the
+// list paints — items carry only an icon id now, and the artwork comes from the
+// shared library. Deduplicated, so mounting a second agenda costs nothing.
+useIconLibraryStore().load()
 
 // ---------------------------------------------------------------------------
 // Design selection

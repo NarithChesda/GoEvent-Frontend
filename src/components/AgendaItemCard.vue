@@ -24,7 +24,7 @@
       <!-- Icon Section (Hidden on mobile) -->
       <div class="hidden sm:block flex-shrink-0">
         <div
-          v-if="item.icon"
+          v-if="hasIconArtwork"
           class="w-10 h-10 rounded-lg flex items-center justify-center"
           :style="{ backgroundColor: iconBackgroundColor }"
           v-html="sanitizedIconSvg"
@@ -152,6 +152,7 @@ import {
 import type { EventAgendaItem } from '../services/api'
 import { sanitizeSvg } from '@/utils/sanitize'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useIconLibraryStore } from '@/stores/iconLibrary'
 
 interface Props {
   item: EventAgendaItem
@@ -169,6 +170,11 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const { locale, t } = useAppLanguage()
+
+// An agenda item names its icon; the drawing comes from the shared library.
+// Every card asks for it, and they all share one request.
+const iconLibrary = useIconLibraryStore()
+iconLibrary.load()
 
 // Pick the translation for the active locale; fall back to root English fields
 const localizedItem = computed(() => {
@@ -245,11 +251,16 @@ const cardStyles = computed(() => ({
  * Prevents XSS attacks from malicious SVG content
  */
 const sanitizedIconSvg = computed(() => {
-  if (!props.item.icon || !props.item.icon.svg_code) {
-    return ''
-  }
-  return sanitizeSvg(props.item.icon.svg_code)
+  const svg = iconLibrary.svgFor(props.item.icon?.id)
+  return svg ? sanitizeSvg(svg) : ''
 })
+
+/**
+ * Whether to draw the icon tile rather than the clock fallback. Stays true
+ * while the library is still loading, so an item with an icon doesn't flash
+ * the fallback and then swap.
+ */
+const hasIconArtwork = computed(() => iconLibrary.hasArtwork(props.item.icon?.id))
 
 // Helper functions
 const KNOWN_AGENDA_TYPES = ['session', 'keynote', 'workshop', 'panel', 'break', 'networking', 'other']
@@ -295,7 +306,7 @@ const createDragPreview = (): HTMLElement => {
   `
 
   // Icon section
-  if (props.item.icon?.svg_code) {
+  if (sanitizedIconSvg.value) {
     const iconDiv = document.createElement('div')
     iconDiv.style.cssText = `
       width: 32px;

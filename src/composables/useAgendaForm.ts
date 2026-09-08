@@ -6,12 +6,11 @@
 import { ref, reactive, computed } from 'vue'
 import {
   agendaService,
-  coreDataService,
   type EventAgendaItem,
-  type AgendaIcon,
   type CreateAgendaRequest,
 } from '@/services/api'
 import { sanitizePlainText, validateUrl } from '@/utils/sanitize'
+import { useIconLibraryStore } from '@/stores/iconLibrary'
 
 // Type for agenda_type to ensure type safety
 type AgendaType = CreateAgendaRequest['agenda_type']
@@ -66,7 +65,11 @@ export function useAgendaForm(
 
   // State
   const loading = ref(false)
-  const availableIcons = ref<AgendaIcon[]>([])
+
+  // The picker draws from the same library the showcase resolves its artwork
+  // from — one fetch, shared, rather than the drawer pulling its own copy.
+  const iconLibrary = useIconLibraryStore()
+  const availableIcons = computed(() => iconLibrary.icons)
   const fieldErrors = ref<Record<string, string>>({})
   const generalError = ref<string>('')
   const urlValidationError = ref<string>('')
@@ -131,17 +134,8 @@ export function useAgendaForm(
   // Original form values for dirty tracking (only used in edit mode)
   const originalFormData = ref<AgendaFormData | null>(null)
 
-  // Fetch available icons
-  const fetchIcons = async () => {
-    try {
-      const response = await coreDataService.getIcons()
-      if (response.success && response.data) {
-        availableIcons.value = response.data
-      }
-    } catch (error) {
-      console.error('Error fetching icons:', error)
-    }
-  }
+  // Fetch available icons (no-op once the library is loaded)
+  const fetchIcons = () => iconLibrary.load()
 
   // Get selected icon
   const getSelectedIcon = () => {

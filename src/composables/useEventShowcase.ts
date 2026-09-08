@@ -48,10 +48,14 @@ export interface Host {
   parent_b_name?: string
 }
 
+/**
+ * A reference, not the artwork — the showcase payload stopped inlining
+ * `svg_code` on every agenda item (20-36KB each, repeated). The drawing is
+ * resolved by id from the shared library; see `useIconLibraryStore`.
+ */
 export interface AgendaItemIcon {
   id: number
   name: string
-  svg_code: string
 }
 
 export interface AgendaItem {

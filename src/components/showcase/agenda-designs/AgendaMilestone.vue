@@ -10,7 +10,7 @@
         <div class="mst-stop">
           <div class="mst-roundel">
             <div
-              v-if="item.icon?.svg_code"
+              v-if="hasIcon(item)"
               class="agd-icon mst-glyph"
               v-html="iconSvg(item)"
             />
@@ -68,7 +68,7 @@ import type { AgendaDesignProps } from './types'
  */
 const props = defineProps<AgendaDesignProps>()
 
-const { displayFont, bodyFont, stagger, iconSvg, timeText, isKhmer } = useAgendaDesign(props)
+const { displayFont, bodyFont, stagger, hasIcon, iconSvg, timeText, isKhmer } = useAgendaDesign(props)
 const items = computed(() => props.items)
 </script>
 

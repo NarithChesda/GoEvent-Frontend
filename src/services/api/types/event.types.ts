@@ -225,10 +225,10 @@ export interface BulkReorderHostsRequest {
 }
 
 // Import AgendaIcon from core-data.types.ts to avoid duplication
-import type { AgendaIcon } from './core-data.types'
+import type { AgendaIcon, AgendaIconRef } from './core-data.types'
 
 // Re-export for convenience
-export type { AgendaIcon }
+export type { AgendaIcon, AgendaIconRef }
 
 export interface EventAgendaItem {
   id: number
@@ -241,7 +241,7 @@ export interface EventAgendaItem {
   end_time_text: string
   speaker: string
   location: string
-  icon?: AgendaIcon | null
+  icon?: AgendaIconRef | null
   virtual_link: string
   order: number
   is_featured: boolean

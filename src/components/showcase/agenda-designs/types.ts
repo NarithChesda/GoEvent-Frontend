@@ -20,10 +20,14 @@ export interface AgendaDesignItem {
   start_time_text?: string
   end_time_text?: string
   order?: number
+  /**
+   * A reference. The artwork is resolved by id from the shared icon library
+   * (`useIconLibraryStore`), which the section loads — see `useAgendaDesign`'s
+   * `hasIcon`/`iconSvg`.
+   */
   icon?: {
     id: number
     name: string
-    svg_code: string
   }
 }
 

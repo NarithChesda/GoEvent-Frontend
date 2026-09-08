@@ -2,9 +2,24 @@
  * Core data type definitions (icons, team members, categories)
  */
 
-export interface AgendaIcon {
+/**
+ * An icon as it appears when it is *referenced* — on an agenda item, inside the
+ * showcase payload. The artwork is deliberately not here: `svg_code` runs
+ * 20-36KB per icon, and nesting it on every agenda item made a 13-item schedule
+ * a 262KB response, most of it the same nine drawings repeated. Resolve the
+ * artwork by id from the library instead — see `useIconLibraryStore`.
+ */
+export interface AgendaIconRef {
   id: number
   name: string
+}
+
+/**
+ * A library icon, as served by `/api/core-data/custom-icons/?include_svg=1`.
+ * The one representation that still carries the artwork, fetched once per app
+ * and shared by every event rather than inlined into each of them.
+ */
+export interface AgendaIcon extends AgendaIconRef {
   svg_code: string
 }
 
