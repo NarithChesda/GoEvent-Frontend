@@ -46,6 +46,7 @@ export type {
   CreateHostRequest,
   BulkReorderHostsRequest,
   AgendaIcon,
+  AgendaIconRef,
   EventAgendaItem,
   AgendaTranslation,
   CreateAgendaRequest,

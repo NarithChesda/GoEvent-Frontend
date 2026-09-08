@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { useIconLibraryStore } from '@/stores/iconLibrary'
 import type { AgendaDesignItem, AgendaDesignProps } from './types'
 
 /**
@@ -11,8 +12,7 @@ import type { AgendaDesignItem, AgendaDesignProps } from './types'
  * reach `v-html` content; in CSS, because an SVG can encode a fill in a form
  * this pass doesn't cover (a `<style>` block, a `class`, a gradient stop).
  */
-export function recolorAgendaIcon(item: AgendaDesignItem, color: string): string {
-  const svg = item.icon?.svg_code
+export function recolorAgendaIcon(svg: string, color: string): string {
   if (!svg || !color) return svg || ''
 
   let processed = svg
@@ -58,6 +58,12 @@ export function isKhmerTitle(item: AgendaDesignItem): boolean {
  * unrolling. Both are capped — see `stagger`.
  */
 export function useAgendaDesign(props: AgendaDesignProps) {
+  // An agenda item names its icon; the drawing itself lives in the shared
+  // library, loaded once by AgendaSection. Until it arrives `iconSvg` is empty
+  // and `hasIcon` still holds the slot open, so an icon fades in rather than
+  // the fallback glyph appearing and then being replaced.
+  const iconLibrary = useIconLibraryStore()
+
   const displayFont = computed(() => props.primaryFont || props.currentFont)
   const bodyFont = computed(() => props.secondaryFont || props.currentFont)
 
@@ -76,7 +82,9 @@ export function useAgendaDesign(props: AgendaDesignProps) {
     displayFont,
     bodyFont,
     stagger,
-    iconSvg: (item: AgendaDesignItem) => recolorAgendaIcon(item, props.primaryColor),
+    hasIcon: (item: AgendaDesignItem) => iconLibrary.hasArtwork(item.icon?.id),
+    iconSvg: (item: AgendaDesignItem) =>
+      recolorAgendaIcon(iconLibrary.svgFor(item.icon?.id), props.primaryColor),
     timeText: agendaTimeText,
     isKhmer: isKhmerTitle,
   }

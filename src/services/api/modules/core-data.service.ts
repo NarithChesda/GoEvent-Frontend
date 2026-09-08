@@ -17,9 +17,30 @@ import type {
 
 // Core Data Service
 export const coreDataService = {
-  // Get available icons
+  /**
+   * The whole icon library, artwork included.
+   *
+   * `include_svg=1` is not optional: without it the endpoint answers
+   * `{id, name, uploaded_at}` and every icon renders blank. It is the only way
+   * to get `svg_code` now that agenda items carry a reference rather than the
+   * drawing.
+   *
+   * Fetched with `getPublic` — no Authorization header — because the response
+   * is byte-identical for every caller and comes back
+   * `Cache-Control: public, max-age=300, s-maxage=3600`. That is the whole
+   * win: one edge-cached ~394KB request shared across every visitor and every
+   * event, instead of the same drawings re-sent inside each agenda payload.
+   * The reads are open to anyone, so a guest on a showcase resolves icons the
+   * same way an organizer does.
+   *
+   * Call this through `useIconLibraryStore` rather than directly — the store
+   * is what keeps it to one request per app.
+   */
   async getIcons(): Promise<ApiResponse<AgendaIcon[]>> {
-    const response = await apiClient.get<{ results: AgendaIcon[] }>('/api/core-data/custom-icons/')
+    const response = await apiClient.getPublic<{ results: AgendaIcon[] }>(
+      '/api/core-data/custom-icons/',
+      { include_svg: 1 },
+    )
     if (response.success && response.data) {
       return {
         success: true,
