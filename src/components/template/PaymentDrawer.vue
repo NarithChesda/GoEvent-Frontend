@@ -17,13 +17,18 @@
     >
       <!-- Why the figure is not the list price. A pay-as-you-go partner code
            discounts the normal path rather than zeroing it, so the rate is
-           named where the price is. An applied promo says so in its own row
-           below instead, and doesn't need a second chip here. -->
+           named where the price is — with the code, because that code is what
+           gets submitted to justify the figure beside it. An applied promo says
+           so in its own row below instead, and doesn't need a second chip. -->
       <template v-if="showPartnerRateBadge" #badges>
         <span
           class="inline-flex items-center rounded-full bg-sky-100 px-2 py-0.5 text-[0.6875rem] font-medium text-sky-700"
         >
-          {{ t('management.templatePaymentTab.paymentDrawer.funding.partnerRate') }}
+          {{
+            t('management.templatePaymentTab.paymentDrawer.funding.partnerRate', {
+              code: activeDiscount?.code ?? '',
+            })
+          }}
         </span>
       </template>
 
@@ -297,18 +302,19 @@
     </p>
 
     <!--
-      Paying with a credit skips everything below: the partner prepaid when
-      they bought the pack, so there is no amount to transfer, no receipt to
-      attach and no code to type. One field, one call — which leaves nothing
-      between the choice and the button, so the drawer spends that space
-      saying what the button is about to do.
+      Two ways of owing nothing, and neither has anything below it to fill in.
+      A credit was prepaid when the pack was bought; a code that covers the plan
+      in full leaves no balance to move. Either way there is no amount to
+      transfer, no receipt to attach and no method to attach it to — which
+      leaves nothing between the choice and the button, so the drawer spends
+      that space saying what the button is about to do.
     -->
     <p
-      v-if="payingWithCredit"
+      v-if="instantActivation"
       class="flex items-start gap-2.5 rounded-2xl bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-600"
     >
       <Zap class="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-slate-400" aria-hidden="true" />
-      <span>{{ creditOutcomeLabel }}</span>
+      <span>{{ payingWithCredit ? creditOutcomeLabel : coveredOutcomeLabel }}</span>
     </p>
 
     <!--
@@ -513,7 +519,25 @@ const fundingChoice = ref<'standard' | 'credit'>('standard')
 const withheldOwnDesignsCredits = ref(0)
 
 const creditOption = computed(() => activationOptions.value?.credit ?? null)
-const partnerRate = computed(() => activationOptions.value?.partner_rate ?? null)
+
+/**
+ * The standing rate this partner holds — and the code that authorises it.
+ *
+ * `partner_rate` is a display hint about a promo code the partner already has.
+ * It is not a second checkout path and not a price to submit: there is one
+ * payment path, and a code is the only thing that can reduce its total. So a
+ * rate is honoured by sending its `code`; posting its `amount_due` as `amount`
+ * with nothing authorising the discount is checked against the undiscounted
+ * plan price and rejected — which is exactly what used to happen here.
+ *
+ * A rate carrying no code is therefore not a rate we can offer at all. Showing
+ * its price would be that same discount with nothing behind it.
+ */
+const partnerRate = computed(() => {
+  const rate = activationOptions.value?.partner_rate
+  return rate?.code ? rate : null
+})
+
 const payingWithCredit = computed(() => fundingChoice.value === 'credit' && !!creditOption.value)
 
 const planName = computed(
@@ -521,15 +545,55 @@ const planName = computed(
 )
 
 /**
- * What the transfer path costs, in order of authority: a validated promo code,
- * then the partner's own pay-as-you-go rate, then whatever the server quoted,
- * and only as a last resort the plan's list price (when `/activation-options/`
- * is unavailable — an older backend, or an offline moment).
+ * The discount in force, and the code that authorises it.
+ *
+ * Only one code can be sent, so only one can apply: a code the organizer typed
+ * outranks the partner's standing rate, and removing it falls back to the rate
+ * rather than to the list price — a partner cannot lose their own rate by
+ * trying another code.
+ *
+ * The figure on screen and the code in the payload both read from here, and
+ * that is the whole point of it. They used to be resolved separately, so the
+ * drawer could show a partner rate and then post its total with nothing
+ * authorising the discount.
+ */
+const activeDiscount = computed<{
+  code: string
+  source: 'promo' | 'partnerRate'
+  amountDue: string | null
+  listPrice: string | null
+} | null>(() => {
+  const typed = appliedPromoCode.value
+  if (typed?.code) {
+    return {
+      code: typed.code,
+      source: 'promo',
+      amountDue: promoDiscount.value?.final ?? null,
+      listPrice: promoDiscount.value?.original ?? null,
+    }
+  }
+  const rate = partnerRate.value
+  if (rate?.code) {
+    return {
+      code: rate.code,
+      source: 'partnerRate',
+      amountDue: rate.amount_due,
+      listPrice:
+        activationOptions.value?.pricing_plan.price ?? props.templatePackage?.price ?? null,
+    }
+  }
+  return null
+})
+
+/**
+ * What the transfer path costs, in order of authority: the discount in force,
+ * then whatever the server quoted, and only as a last resort the plan's list
+ * price (when `/activation-options/` is unavailable — an older backend, or an
+ * offline moment).
  */
 const standardAmount = computed(
   () =>
-    promoDiscount.value?.final ??
-    partnerRate.value?.amount_due ??
+    activeDiscount.value?.amountDue ??
     activationOptions.value?.standard.amount_due ??
     props.templatePackage?.price ??
     '0.00',
@@ -537,12 +601,9 @@ const standardAmount = computed(
 
 /** The list price, shown struck through only when something actually reduced it. */
 const strikethroughPrice = computed(() => {
-  if (promoDiscount.value) return promoDiscount.value.original
-  const listPrice = activationOptions.value?.pricing_plan.price ?? props.templatePackage?.price
-  if (partnerRate.value && listPrice && listPrice !== partnerRate.value.amount_due) {
-    return listPrice
-  }
-  return null
+  const listPrice = activeDiscount.value?.listPrice
+  if (!listPrice || listPrice === standardAmount.value) return null
+  return listPrice
 })
 
 /**
@@ -568,7 +629,7 @@ const headlineAmount = computed(() =>
 )
 
 const showPartnerRateBadge = computed(
-  () => !payingWithCredit.value && !!partnerRate.value && !promoDiscount.value,
+  () => !payingWithCredit.value && activeDiscount.value?.source === 'partnerRate',
 )
 
 const showSummaryDetails = computed(() => !payingWithCredit.value || !!props.currentPayment)
@@ -597,6 +658,39 @@ const creditOutcomeLabel = computed(() => {
   return t('management.templatePaymentTab.paymentDrawer.funding.credit.outcome', { n: left })
 })
 
+/**
+ * The transfer path with nothing left to transfer — a code that covers the plan
+ * in full.
+ *
+ * No money moves, so there is no method to attach it to and no receipt to show
+ * for it: the server confirms the payment on the spot, exactly as a credit
+ * does. A rate is usually a fixed discount and leaves a real balance owing, so
+ * this is the exception rather than the shape of the path.
+ *
+ * Gated on there being a code, so the only thing it can ever turn off is a
+ * transfer a discount just made pointless — a plan quoted at zero for any other
+ * reason goes on asking for a method exactly as it did before.
+ */
+const coveredInFull = computed(() => {
+  if (payingWithCredit.value || !activeDiscount.value) return false
+  return Number.parseFloat(standardAmount.value) === 0
+})
+
+/** The two paths that activate on the spot: nothing to send, nothing to verify. */
+const instantActivation = computed(() => payingWithCredit.value || coveredInFull.value)
+
+/**
+ * What pressing the button does when a code covers everything — the same gap
+ * the credit note fills. The drawer has just taken away the method, the receipt
+ * and the reference, so without this it asks for nothing and says nothing about
+ * what it is about to do.
+ */
+const coveredOutcomeLabel = computed(() =>
+  t('management.templatePaymentTab.paymentDrawer.funding.covered.outcome', {
+    code: activeDiscount.value?.code ?? '',
+  }),
+)
+
 /** Whether the credit on offer is one of the narrow, own-designs kind. */
 const isOwnDesignsCredit = computed(() => creditOption.value?.template_scope === 'own_partner')
 
@@ -620,7 +714,7 @@ const creditExpiryLabel = computed(() => {
 
 const isFormValid = computed(() => {
   if (!props.templatePackage) return false
-  return payingWithCredit.value || Boolean(selectedMethod.value)
+  return instantActivation.value || Boolean(selectedMethod.value)
 })
 
 /**
@@ -642,11 +736,11 @@ const submitLabel = computed(() => {
       : t('management.templatePaymentTab.paymentDrawer.submitSuccessTitle')
   }
   if (submittingPayment.value) {
-    return payingWithCredit.value
+    return instantActivation.value
       ? t('management.templatePaymentTab.paymentDrawer.activating')
       : t('management.templatePaymentTab.paymentDrawer.submitting')
   }
-  return payingWithCredit.value
+  return instantActivation.value
     ? t('management.templatePaymentTab.paymentDrawer.activateBtn')
     : t('management.templatePaymentTab.paymentDrawer.submitBtn')
 })
@@ -903,25 +997,29 @@ const submitByTransfer = async (): Promise<void> => {
 
   formData.append('event', sanitizeInput(props.eventId))
   formData.append('pricing_plan', templatePackage.id.toString())
-  formData.append('payment_method', selectedMethod.value!.id.toString())
 
-  // `amount` is optional and re-validated server-side, so it has to be the same
-  // figure the drawer just showed — sending the list price while displaying a
-  // partner rate would be rejected rather than honoured.
-  formData.append('amount', standardAmount.value)
+  // Nothing moves when a code covers the plan in full, so there is no method to
+  // attach it to — and nothing above this asked the partner for one.
+  if (!coveredInFull.value) {
+    formData.append('payment_method', selectedMethod.value!.id.toString())
+  }
+
+  // No `amount`, and no `promo_discount`. Both are optional and both are the
+  // server's to compute: it derives the total from the plan price minus the
+  // discount the code carries, then checks any figure we send against it rather
+  // than honouring it. So there is no total here for the drawer to get wrong.
   formData.append(
     'original_price',
-    promoDiscount.value?.original ??
+    activeDiscount.value?.listPrice ??
       activationOptions.value?.pricing_plan.price ??
       templatePackage.price,
   )
-  if (promoDiscount.value) {
-    formData.append('promo_discount', promoDiscount.value.discount)
-  }
 
-  // Backend expects the code itself, not the promo code's UUID
-  if (appliedPromoCode.value?.code) {
-    formData.append('promo_code_string', appliedPromoCode.value.code)
+  // The code itself, not its UUID — and the only thing that can reduce the
+  // total. A partner's standing rate is authorised exactly as a typed code is;
+  // sending the price it produces without it is what the server rejects.
+  if (activeDiscount.value) {
+    formData.append('promo_code_string', activeDiscount.value.code)
   }
 
   if (paymentForm.value.transaction_reference.trim()) {
@@ -974,7 +1072,7 @@ const submitPayment = async (): Promise<void> => {
     return
   }
 
-  if (!payingWithCredit.value) {
+  if (!instantActivation.value) {
     if (paymentForm.value.transaction_reference.trim()) {
       const transactionRefError = validateTransactionReference(
         paymentForm.value.transaction_reference,
@@ -1023,9 +1121,10 @@ const submitPayment = async (): Promise<void> => {
     console.error('Error submitting payment:', err)
     error.value = errorMessage
     showError(t('management.templatePaymentTab.paymentDrawer.submitFailedTitle'), errorMessage)
-    // The credit may have been spent elsewhere since the drawer opened; refetch
-    // so the options on screen match what the server will accept next time.
-    if (payingWithCredit.value) await loadActivationOptions()
+    // The credit may have been spent, or the rate expired, since the drawer
+    // opened; refetch so the options on screen match what the server will
+    // accept next time.
+    if (instantActivation.value) await loadActivationOptions()
   } finally {
     submittingPayment.value = false
   }

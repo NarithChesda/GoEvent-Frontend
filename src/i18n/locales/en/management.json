@@ -1654,7 +1654,7 @@
       "activating": "Activating…",
       "funding": {
         "heading": "How to pay for this",
-        "partnerRate": "Partner rate",
+        "partnerRate": "Partner rate · {code}",
         "credit": {
           "title": "Use a partner credit",
           "remaining": "{n} credit left | {n} credits left",
@@ -1666,6 +1666,9 @@
           "costPlus": "1 credit + ${amount}",
           "outcome": "Activating spends 1 credit. You'll have {n} left, with nothing to transfer and no receipt to upload.",
           "outcomeSimple": "Activating now spends 1 credit. Nothing to transfer, no receipt to upload."
+        },
+        "covered": {
+          "outcome": "{code} covers this plan in full. Nothing to transfer, no receipt to upload."
         },
         "standard": {
           "title": "Pay by transfer",
