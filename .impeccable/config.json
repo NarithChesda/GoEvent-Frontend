@@ -26,6 +26,15 @@
         ],
         "createdAt": "2026-09-06T07:04:25.461Z",
         "reason": "False positive: the img is guarded by v-if=\"resolved && !failed\" so it never renders without a resolved URL, and handling the broken case is this component's entire purpose (it falls back to the queue's own missing-asset block on @error)."
+      },
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "src/components/PricingSection.vue"
+        ],
+        "createdAt": "2026-09-12T07:29:48.449Z",
+        "reason": "Claude: L49 is the loading spinner (rounded-full + border-b-2 + animate-spin), the canonical CSS spinner arc, not a card accent. Pre-existing, untouched by this change. The only genuine rounded+border element here is the best-seller card's emerald-300 ring, which the detector does not flag."
       }
     ]
   }

@@ -68,7 +68,7 @@
                 class="flex items-center text-sm text-slate-700"
               >
                 <CheckCircle class="w-4 h-4 mr-2 text-green-600 flex-shrink-0" />
-                {{ feature }}
+                {{ planFeatureTitle(feature) }}
               </div>
             </div>
           </div>
@@ -240,6 +240,7 @@ import {
   Type,
 } from 'lucide-vue-next'
 import type { Event } from '@/services/api'
+import { planFeatureTitle } from '@/utils/planFeatures'
 
 interface Props {
   event: Event

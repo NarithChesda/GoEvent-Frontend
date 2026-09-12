@@ -159,7 +159,7 @@
             class="flex items-start gap-1.5 text-xs text-slate-700 leading-snug lg:inline-flex lg:items-center lg:px-2.5 lg:py-1 lg:rounded-full lg:bg-slate-50 lg:ring-1 lg:ring-slate-200/70 lg:text-[0.8125rem] lg:font-medium"
           >
             <Check class="w-3 h-3 text-emerald-600 flex-shrink-0" />
-            <span>{{ feature }}</span>
+            <span>{{ planFeatureTitle(feature) }}</span>
           </li>
         </ul>
       </div>
@@ -230,6 +230,7 @@ import { formatCurrency } from '../../utils/currency'
 import ActivationStepper from './ActivationStepper.vue'
 import type { EventTemplate } from '../../services/api'
 import type { ActivationState } from '../../composables/useTemplateActivation'
+import { planFeatureTitle } from '@/utils/planFeatures'
 
 interface Props {
   state: ActivationState
