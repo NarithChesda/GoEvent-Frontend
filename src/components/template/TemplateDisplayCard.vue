@@ -95,7 +95,7 @@
               class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 ring-1 ring-slate-200/70 text-xs sm:text-[0.8125rem] font-medium text-slate-700"
             >
               <Check class="w-3 h-3 text-emerald-600 flex-shrink-0" />
-              <span>{{ feature }}</span>
+              <span>{{ planFeatureTitle(feature) }}</span>
             </li>
           </ul>
         </div>
@@ -146,6 +146,7 @@ import { Eye, Palette, Check, PlayCircle, CreditCard, Crown, Sparkles } from 'lu
 import { useI18n } from 'vue-i18n'
 import { formatCurrency } from '../../utils/currency'
 import type { EventTemplate } from '../../services/api'
+import { planFeatureTitle } from '@/utils/planFeatures'
 
 const { t } = useI18n()
 

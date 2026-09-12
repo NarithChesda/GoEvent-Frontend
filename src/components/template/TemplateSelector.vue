@@ -243,7 +243,7 @@
                       class="flex items-center text-xs text-slate-600"
                     >
                       <CheckCircle class="w-3 h-3 mr-1.5 text-green-600 flex-shrink-0" />
-                      <span class="truncate">{{ feature }}</span>
+                      <span class="truncate">{{ planFeatureTitle(feature) }}</span>
                     </div>
                     <p
                       v-if="(template.package_plan?.features || []).length > 2"
@@ -331,6 +331,7 @@
 import { ref, computed, watch } from 'vue'
 import { X, Eye, CheckCircle, Image, Palette } from 'lucide-vue-next'
 import type { Event, EventTemplate } from '@/services/api'
+import { planFeatureTitle } from '@/utils/planFeatures'
 
 interface Category {
   id: number

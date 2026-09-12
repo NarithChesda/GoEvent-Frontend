@@ -66,7 +66,7 @@
       <div v-else class="max-w-7xl mx-auto">
         <div
           ref="plansContainer"
-          class="flex md:grid overflow-x-auto md:overflow-x-visible md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 lg:gap-6 2xl:gap-8 max-w-7xl mx-auto md:justify-items-center pb-4 md:pb-0 pt-4 snap-x snap-mandatory md:snap-none scrollbar-hide"
+          class="flex md:grid overflow-x-auto md:overflow-x-visible md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 lg:gap-6 2xl:gap-8 max-w-7xl mx-auto md:justify-items-center items-start pb-4 md:pb-0 pt-4 snap-x snap-mandatory md:snap-none scrollbar-hide"
         >
           <div
             v-for="plan in Object.keys(categorizedPlans).length === 1
@@ -92,7 +92,7 @@
 
             <!-- Card -->
             <div
-              class="relative backdrop-blur-sm rounded-2xl md:rounded-3xl lg:rounded-2xl 2xl:rounded-3xl h-full flex flex-col transition-all duration-300 p-6 md:p-8 lg:p-6 2xl:p-8"
+              class="plan-card relative backdrop-blur-sm rounded-2xl md:rounded-3xl lg:rounded-2xl 2xl:rounded-3xl h-full flex flex-col p-6 md:p-8 lg:p-6 2xl:p-8"
               :class="
                 plan.is_best_seller
                   ? 'bg-white/95 border-2 lg:border-[1.5px] 2xl:border-2 border-emerald-300 group-hover:bg-white'
@@ -127,7 +127,7 @@
                   href="https://t.me/goeventkh"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="w-full py-3 px-6 lg:py-2.5 lg:px-4.5 2xl:py-3 2xl:px-6 rounded-full font-semibold text-base lg:text-sm 2xl:text-base transition-all duration-300 flex items-center justify-center gap-2 lg:gap-1.5 2xl:gap-2"
+                  class="plan-cta w-full py-3 px-6 lg:py-2.5 lg:px-4.5 2xl:py-3 2xl:px-6 rounded-full font-semibold text-base lg:text-sm 2xl:text-base flex items-center justify-center gap-2 lg:gap-1.5 2xl:gap-2"
                   :class="
                     plan.is_best_seller
                       ? 'bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:opacity-90 text-white'
@@ -149,24 +149,69 @@
                 </a>
               </div>
 
-              <!-- Features section -->
-              <div class="flex-1 flex flex-col min-h-0">
-                <div class="flex-1 overflow-y-auto pr-2 lg:pr-1.5 2xl:pr-2 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
-                  <ul class="space-y-4 lg:space-y-2 2xl:space-y-4">
-                    <li
-                      v-for="feature in plan.features"
-                      :key="feature"
-                      class="flex items-start text-slate-700"
+              <!-- Features section.
+
+                   The card draws feature **titles** only and keeps the
+                   explaining half one tap away. The two halves come from one
+                   backend string (`title — description`, see planFeatures.ts);
+                   drawing both inline ran a ten-feature plan past three
+                   screens and left the short plans beside it as a column of
+                   white. The title is written to stand alone — it is the only
+                   half every compact in-app surface draws — and the sentence
+                   is what a buyer reads *after* a title has caught them, not
+                   while scanning three plans against each other.
+
+                   Tap, not hover: most of this page's traffic is the phone
+                   carousel above, which has no hover, and a row that opens
+                   under a moving cursor reflows the list the reader is
+                   scanning. One row open per card, so the card can never grow
+                   back into the wall this replaced.
+
+                   Hierarchy is weight + slate value, never a second colour —
+                   the card already spends the page's gradient on its price and
+                   its CTA. -->
+              <div class="flex-1 min-h-0">
+                <ul class="feat-list">
+                  <li v-for="(feature, index) in featuresByPlan[plan.id] || []" :key="index">
+                    <component
+                      :is="feature.description ? 'button' : 'div'"
+                      :type="feature.description ? 'button' : undefined"
+                      :aria-expanded="feature.description ? isFeatureOpen(plan.id, index) : undefined"
+                      :aria-controls="feature.description ? `plan-${plan.id}-feat-${index}` : undefined"
+                      class="feat-row"
+                      :class="{ 'feat-row--pressable': feature.description }"
+                      @click="feature.description && toggleFeature(plan.id, index)"
                     >
-                      <div class="flex-shrink-0 mr-3 lg:mr-2 2xl:mr-3 mt-0.5 lg:mt-0 2xl:mt-0.5">
-                        <svg class="w-5 h-5 lg:w-4 lg:h-4 2xl:w-5 2xl:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
+                      <Check class="feat-row__check" aria-hidden="true" />
+                      <span class="feat-row__title">{{ feature.title }}</span>
+                      <ChevronDown
+                        v-if="feature.description"
+                        class="feat-row__caret"
+                        :data-open="isFeatureOpen(plan.id, index)"
+                        aria-hidden="true"
+                      />
+                    </component>
+
+                    <!-- Always mounted, clipped to a 0fr track when closed:
+                         the sentence stays in the document for crawlers, and
+                         the open/close eases evenly in both directions the way
+                         a max-height never does. -->
+                    <div
+                      v-if="feature.description"
+                      :id="`plan-${plan.id}-feat-${index}`"
+                      class="feat-detail"
+                      :data-open="isFeatureOpen(plan.id, index)"
+                      :aria-hidden="!isFeatureOpen(plan.id, index)"
+                    >
+                      <div class="feat-detail__inner">
+                        <!-- leading-relaxed, not the scale's default: Khmer
+                             stacks diacritics above and coeng subscripts below,
+                             and clips at a tighter leading. -->
+                        <p class="feat-detail__text">{{ feature.description }}</p>
                       </div>
-                      <span class="text-sm leading-relaxed lg:leading-tight 2xl:leading-relaxed">{{ feature }}</span>
-                    </li>
-                  </ul>
-                </div>
+                    </div>
+                  </li>
+                </ul>
               </div>
 
               <!-- Footer notes for all plans -->
@@ -183,7 +228,7 @@
 
               <!-- Enhanced hover effect overlay -->
               <div
-                class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-sky-500/5 rounded-2xl md:rounded-3xl lg:rounded-2xl 2xl:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                class="plan-card__sheen absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-sky-500/5 rounded-2xl md:rounded-3xl lg:rounded-2xl 2xl:rounded-3xl pointer-events-none"
               ></div>
             </div>
           </div>
@@ -195,38 +240,51 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
-
-interface Category {
-  id: number
-  name: string
-  description: string
-  color: string
-  icon: string
-  is_active: boolean
-  created_by: number
-  created_by_name: string
-  created_at: string
-}
-
-interface PricingPlan {
-  id: number
-  name: string
-  description: string
-  price: string
-  commission: string
-  features: string[]
-  is_active: boolean
-  is_best_seller: boolean
-  category: Category | number
-  created_at: string
-  updated_at: string
-}
+import { Check, ChevronDown } from 'lucide-vue-next'
+import { FALLBACK_PRICING_PLANS, type PricingPlan } from '@/constants/pricingFallback'
+import { parsePlanFeature, type PlanFeature } from '@/utils/planFeatures'
 
 const loading = ref(false)
 const error = ref<string | null>(null)
 const pricingPlans = ref<PricingPlan[]>([])
 const activeCategory = ref<string>('Wedding')
 const plansContainer = ref<HTMLElement | null>(null)
+
+/**
+ * Each plan's feature lines, split into their two halves once — not per
+ * render, since expanding a row re-renders the whole grid.
+ *
+ * Blank lines are dropped here rather than in the template: the backend field
+ * is a newline-separated textarea, so a trailing newline arrives as an empty
+ * feature and used to draw a tick with nothing beside it.
+ */
+const featuresByPlan = computed(() => {
+  const byPlan: Record<number, PlanFeature[]> = {}
+
+  pricingPlans.value.forEach((plan) => {
+    byPlan[plan.id] = (plan.features ?? [])
+      .map(parsePlanFeature)
+      .filter((feature) => feature.title.length > 0)
+  })
+
+  return byPlan
+})
+
+/**
+ * The one open feature row per card, by plan id. Per card rather than per
+ * section so two plans can be read side by side, and one at a time so the
+ * card's height stays bounded — the whole point of collapsing them.
+ */
+const openFeature = ref<Record<number, number | null>>({})
+
+const isFeatureOpen = (planId: number, index: number) => openFeature.value[planId] === index
+
+const toggleFeature = (planId: number, index: number) => {
+  openFeature.value = {
+    ...openFeature.value,
+    [planId]: openFeature.value[planId] === index ? null : index,
+  }
+}
 
 const categorizedPlans = computed(() => {
   const categories: Record<string, PricingPlan[]> = {}
@@ -287,6 +345,12 @@ watch(
   { immediate: true },
 )
 
+// A card left with a row open in a category the reader has switched away from
+// would silently change height on the way back.
+watch(activeCategory, () => {
+  openFeature.value = {}
+})
+
 const fetchPricingPlans = async () => {
   loading.value = true
   error.value = null
@@ -315,132 +379,10 @@ const fetchPricingPlans = async () => {
     console.error('Error fetching pricing plans:', err)
     error.value = null
 
-    // Fallback to static data matching the screenshot
-    pricingPlans.value = [
-      {
-        id: 1,
-        name: 'Free',
-        description: 'https://api.goevent.online/api/events/ff726c4d-9356-4350-bc48-930b93a2a812/meta/?guest_name=%E1%9E%97%E1%9F%92%E1%9E%89%E1%9F%80%E1%9E%9C%E1%9E%80%E1%9E%B7%E1%9E%8F%E1%9F%92%E1%9E%8F%E1%9E%B7%E1%9E%99%E1%9E%9F&lang=kh',
-        price: '0.00',
-        commission: '0.00',
-        features: [
-          'Get simple explanations',
-          'Have short chats for common questions',
-          'Try out image generation',
-          'Save limited memory and context',
-        ],
-        category: {
-          id: 1,
-          name: 'Personal',
-          description: 'Personal plans',
-          color: '#6366f1',
-          icon: 'user',
-          is_active: true,
-          created_by: 1,
-          created_by_name: 'admin',
-          created_at: new Date().toISOString(),
-        },
-        is_best_seller: false,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: 2,
-        name: 'Go',
-        description: 'https://api.goevent.online/api/events/ff726c4d-9356-4350-bc48-930b93a2a812/meta/?guest_name=%E1%9E%97%E1%9F%92%E1%9E%89%E1%9F%80%E1%9E%9C%E1%9E%80%E1%9E%B7%E1%9E%8F%E1%9F%92%E1%9E%8F%E1%9E%B7%E1%9E%99%E1%9E%9F&lang=kh',
-        price: '5.00',
-        commission: '0.00',
-        features: [
-          'Go deep on harder questions',
-          'Chat longer and upload more content',
-          'Make realistic images for your projects',
-          'Store more context for smarter replies',
-          'Get help with planning and tasks',
-          'Explore projects, tasks, and custom GPTs',
-        ],
-        category: {
-          id: 1,
-          name: 'Personal',
-          description: 'Personal plans',
-          color: '#6366f1',
-          icon: 'user',
-          is_active: true,
-          created_by: 1,
-          created_by_name: 'admin',
-          created_at: new Date().toISOString(),
-        },
-        is_best_seller: true,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: 3,
-        name: 'Plus',
-        description: 'https://api.goevent.online/api/events/ff726c4d-9356-4350-bc48-930b93a2a812/meta/?guest_name=%E1%9E%97%E1%9F%92%E1%9E%89%E1%9F%80%E1%9E%9C%E1%9E%80%E1%9E%B7%E1%9E%8F%E1%9F%92%E1%9E%8F%E1%9E%B7%E1%9E%99%E1%9E%9F&lang=kh',
-        price: '20.00',
-        commission: '0.00',
-        features: [
-          'Solve complex problems',
-          'Have long chats over multiple sessions',
-          'Create more images, faster',
-          'Remember goals and past conversations',
-          'Plan travel and tasks with agent mode',
-          'Organize projects and customize GPTs',
-          'Produce and share videos on Sora',
-          'Write code and build apps with Codex',
-        ],
-        category: {
-          id: 1,
-          name: 'Personal',
-          description: 'Personal plans',
-          color: '#6366f1',
-          icon: 'user',
-          is_active: true,
-          created_by: 1,
-          created_by_name: 'admin',
-          created_at: new Date().toISOString(),
-        },
-        is_best_seller: false,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: 4,
-        name: 'Pro',
-        description: 'https://api.goevent.online/api/events/ff726c4d-9356-4350-bc48-930b93a2a812/meta/?guest_name=%E1%9E%97%E1%9F%92%E1%9E%89%E1%9F%80%E1%9E%9C%E1%9E%80%E1%9E%B7%E1%9E%8F%E1%9F%92%E1%9E%8F%E1%9E%B7%E1%9E%99%E1%9E%9F&lang=kh',
-        price: '200.00',
-        commission: '0.00',
-        features: [
-          'Master advanced tasks and topics',
-          'Tackle big projects with unlimited messages',
-          'Create high-quality images at any scale',
-          'Keep full context with maximum memory',
-          'Run research and plan tasks with agents',
-          'Scale your projects and automate workflows',
-          'Expand your limits with Sora video creation',
-          'Deploy code faster with Codex',
-          'Get early access to experimental features',
-        ],
-        category: {
-          id: 1,
-          name: 'Personal',
-          description: 'Personal plans',
-          color: '#6366f1',
-          icon: 'user',
-          is_active: true,
-          created_by: 1,
-          created_by_name: 'admin',
-          created_at: new Date().toISOString(),
-        },
-        is_best_seller: false,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    ]
+    // Last-known-good copy of the live plans, so a failed fetch still shows
+    // the real offer. Kept in src/constants/pricingFallback.ts next to the
+    // note about keeping it in step with Admin → Pricing Plans.
+    pricingPlans.value = FALLBACK_PRICING_PLANS
   } finally {
     loading.value = false
   }
@@ -468,5 +410,231 @@ onMounted(async () => {
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Card and CTA
+ * -------------------------------------------------------------------------*/
+
+.plan-card {
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease;
+}
+
+.plan-card__sheen {
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+/* Gated on a real pointer for the same reason the feature rows are: a tap on
+ * the phone carousel would otherwise leave one card lit. */
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .plan-card__sheen {
+    opacity: 1;
+  }
+}
+
+.plan-cta {
+  transition:
+    opacity 200ms ease,
+    background-color 200ms ease,
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* The card is the only thing on this page a visitor is asked to press; it has
+ * to answer. */
+.plan-cta:active {
+  transform: scale(0.97);
+}
+
+/* ---------------------------------------------------------------------------
+ * Feature rows
+ *
+ * The `<ul>` pulls its own row padding back out so the tick still sits on the
+ * card's content edge; the padding exists to give the tap target height a row
+ * of 13px text does not have on its own.
+ * -------------------------------------------------------------------------*/
+
+.feat-list {
+  margin-inline: -0.5rem;
+}
+
+.feat-row {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.4375rem 0.5rem;
+  border: 0;
+  border-radius: 0.625rem;
+  background: transparent;
+  text-align: start;
+  color: inherit;
+  font: inherit;
+  transition: background-color 150ms ease;
+}
+
+.feat-row--pressable {
+  cursor: pointer;
+}
+
+.feat-row:focus-visible {
+  outline: 2px solid #1e90ff;
+  outline-offset: 1px;
+}
+
+/* The open row stays marked on every device. Hover is gated on a real pointer
+ * on top of it: on the phone carousel a `:hover` rule would latch on after a
+ * tap and leave a *closed* row looking picked. */
+.feat-row[aria-expanded='true'] {
+  background-color: rgb(248 250 252); /* slate-50 */
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .feat-row--pressable:hover {
+    background-color: rgb(248 250 252); /* slate-50 */
+  }
+  .feat-row--pressable:hover .feat-row__caret {
+    color: rgb(100 116 139); /* slate-500 */
+  }
+}
+
+.feat-row__check {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+  color: rgb(5 150 105); /* emerald-600 */
+}
+
+.feat-row__title {
+  min-width: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.375;
+  color: rgb(15 23 42); /* slate-900 */
+}
+
+/* Quiet on purpose: ten of these run down the longest card, and a caret that
+ * competes with the tick turns the list into two columns of chrome. */
+.feat-row__caret {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+  margin-top: 0.1875rem;
+  margin-inline-start: auto;
+  color: rgb(203 213 225); /* slate-300 */
+  transition:
+    transform 200ms cubic-bezier(0.23, 1, 0.32, 1),
+    color 150ms ease;
+}
+
+.feat-row__caret[data-open='true'] {
+  transform: rotate(180deg);
+  color: rgb(100 116 139); /* slate-500 */
+}
+
+/* ---------------------------------------------------------------------------
+ * The description, as a grid-row collapse — same mechanism as SignInCard's,
+ * which eases evenly in both directions where a max-height cannot. The inner
+ * wrapper carries the fade so the sentence arrives with the box instead of
+ * being squeezed out of a shrinking one. Closing is faster than opening: the
+ * reader has already decided.
+ * -------------------------------------------------------------------------*/
+
+.feat-detail {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.feat-detail[data-open='true'] {
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 280ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.feat-detail__inner {
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity 140ms ease,
+    transform 200ms cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.feat-detail[data-open='true'] .feat-detail__inner {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 220ms ease 60ms,
+    transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.feat-detail__text {
+  /* line-height 1.7, not the scale's default: Khmer stacks diacritics above
+     and coeng subscripts below, and clips at a tighter leading. */
+  /* Right stop is the caret column's leading edge (caret + row padding), so a
+     long sentence keeps the margin the titles above it keep. */
+  padding: 0.125rem 1.375rem 0.5rem calc(1rem + 0.625rem);
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: rgb(71 85 105); /* slate-600 */
+}
+
+@media (min-width: 1024px) {
+  .feat-row {
+    gap: 0.5rem;
+    padding-block: 0.375rem;
+  }
+  .feat-row__check {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+  .feat-row__title {
+    font-size: 0.8125rem;
+  }
+  .feat-detail__text {
+    padding-left: calc(0.875rem + 0.5rem);
+    font-size: 0.6875rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .feat-row {
+    gap: 0.625rem;
+    padding-block: 0.4375rem;
+  }
+  .feat-row__check {
+    width: 1rem;
+    height: 1rem;
+  }
+  .feat-row__title {
+    font-size: 0.875rem;
+  }
+  .feat-detail__text {
+    padding-left: calc(1rem + 0.625rem);
+    font-size: 0.75rem;
+  }
+}
+
+/* Reduced motion keeps the disclosure — it carries meaning — and drops the
+ * travel. */
+@media (prefers-reduced-motion: reduce) {
+  .feat-detail,
+  .feat-detail[data-open='true'],
+  .feat-detail__inner,
+  .feat-detail[data-open='true'] .feat-detail__inner {
+    transition-duration: 1ms;
+  }
+  .feat-detail__inner {
+    transform: none;
+  }
+  .feat-row__caret {
+    transition-property: color;
+  }
+  .plan-cta:active {
+    transform: none;
+  }
 }
 </style>

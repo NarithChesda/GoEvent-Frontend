@@ -16,6 +16,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import { planFeatureTitle } from '@/utils/planFeatures'
+
 interface Props {
   features: string[]
   maxVisible?: number
@@ -25,7 +27,10 @@ const props = withDefaults(defineProps<Props>(), {
   maxVisible: 3,
 })
 
-const visibleFeatures = computed(() => props.features.slice(0, props.maxVisible))
+// Pills, so the title half only — see planFeatures.ts for the convention.
+const visibleFeatures = computed(() =>
+  props.features.slice(0, props.maxVisible).map(planFeatureTitle),
+)
 
 const remainingCount = computed(() => Math.max(0, props.features.length - props.maxVisible))
 </script>
