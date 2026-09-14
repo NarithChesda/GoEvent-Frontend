@@ -468,8 +468,12 @@ router.beforeEach(async (to, from, next) => {
       try {
         const isTokenValid = await authService.ensureValidToken()
 
-        if (!isTokenValid) {
-          console.warn('[Router] Token validation failed for staff route, logging out')
+        // false covers a rejected session *and* a request that never landed.
+        // Only the first should sign anyone out, and the session itself is the
+        // verdict — tokenManager clears it on a rejection and keeps it on a
+        // timeout. See tokenManager.hasSession().
+        if (!isTokenValid && !authService.hasSession()) {
+          console.warn('[Router] Session rejected on staff route, logging out')
           await authStore.logout()
           next(`/signin?redirect=${encodeURIComponent(to.fullPath)}`)
           return
@@ -496,8 +500,10 @@ router.beforeEach(async (to, from, next) => {
       try {
         const isTokenValid = await authService.ensureValidToken()
 
-        if (!isTokenValid) {
-          console.warn('[Router] Token validation failed, logging out')
+        // Same reasoning as the staff branch above: a validation that merely
+        // failed to complete must not cost the user their session.
+        if (!isTokenValid && !authService.hasSession()) {
+          console.warn('[Router] Session rejected, logging out')
           await authStore.logout()
           next(`/signin?redirect=${encodeURIComponent(to.fullPath)}`)
           return

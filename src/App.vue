@@ -2,11 +2,13 @@
 import { onMounted, onUnmounted, watch } from 'vue'
 import { RouterView, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
+import { authService } from './services/auth'
 import { useNotificationsStore } from './stores/notifications'
 import { resetVendorProfileCache } from './composables/settings'
 import { resetEventListCache } from './composables/useEventsData'
 import { resetServicesCache } from './composables/useServices'
 import { secureStorage } from './utils/secureStorage'
+import { SESSION_EXPIRED_EVENT } from './services/tokenManager'
 import { isPreviewFrameDocument } from './utils/previewFrameContext'
 import ToastHost from './components/ToastHost.vue'
 
@@ -71,8 +73,62 @@ if (!isPreviewFrame) {
   )
 }
 
+/**
+ * The session ended server-side, somewhere inside an API call.
+ *
+ * Storage has already been emptied by tokenManager; without this the Pinia
+ * store went on rendering a signed-in shell — avatar, event list, tab bar —
+ * over a session every request would now refuse, until the next full reload.
+ * Clearing the user here flips `isAuthenticated`, which tears the shell down
+ * through the watcher above, and the redirect carries the current page so the
+ * user comes back to where they were instead of a generic landing.
+ */
+const handleSessionExpired = () => {
+  authStore.handleSessionExpired()
+
+  const current = router.currentRoute.value
+  if (!current.meta.requiresAuth || current.name === 'signin') return
+
+  router.replace(`/signin?redirect=${encodeURIComponent(current.fullPath)}`)
+}
+
+/**
+ * Another tab signed in or out. localStorage is shared across them and the
+ * Telegram sign-in opens its deep link with `window.open(_, '_blank')`, so a
+ * phone routinely has two tabs of this app alive at once — without this, the
+ * one left behind keeps showing the previous account (or a signed-out shell)
+ * until it is reloaded by hand.
+ *
+ * `key === null` is a `localStorage.clear()` from a sibling tab and has to be
+ * treated as a change to everything.
+ */
+const handleStorageChange = (event: StorageEvent) => {
+  if (event.key !== null && !event.key.includes('user') && !event.key.includes('token')) return
+
+  const storedUser = authService.getUser()
+
+  if (!storedUser || !authService.hasSession()) {
+    // A sign-out in the other tab. Same treatment as an expired session: drop
+    // the shell here too, and leave a protected page rather than sit on one
+    // whose next request will 401.
+    handleSessionExpired()
+    return
+  }
+
+  if (storedUser.id !== authStore.user?.id) {
+    authStore.setUser(storedUser)
+  }
+}
+
+if (!isPreviewFrame) {
+  window.addEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired)
+  window.addEventListener('storage', handleStorageChange)
+}
+
 onUnmounted(() => {
   notificationsStore.stopPolling()
+  window.removeEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired)
+  window.removeEventListener('storage', handleStorageChange)
 })
 
 /**

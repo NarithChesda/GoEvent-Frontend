@@ -1,6 +1,6 @@
 import { apiService, type ApiResponse } from './api'
 import { secureStorage } from '../utils/secureStorage'
-import { tokenManager } from './tokenManager'
+import { tokenManager, TokenRejectedError } from './tokenManager'
 
 // Import API base URL for direct fetch in logout
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
@@ -338,6 +338,15 @@ class AuthService {
   }
 
   /**
+   * Is there a session at all — a live access token, or a refresh token that
+   * can still buy one? This, not isAuthenticated(), is what a UI gate wants:
+   * the access token expires hourly and the session lasts a day.
+   */
+  hasSession(): boolean {
+    return tokenManager.hasSession()
+  }
+
+  /**
    * Ensure token is valid - delegates to tokenManager for single source of truth
    *
    * IMPROVEMENTS:
@@ -365,6 +374,18 @@ class AuthService {
               access: response.data.access,
               refresh: response.data.refresh,
             }
+          }
+
+          /*
+           * Same rule as ApiClient's own refresh callback, and it has to be
+           * stated in both places because they use different transports: only a
+           * 400/401 is the server rejecting this refresh token. Without the
+           * distinction a blacklisted-but-unexpired token — what a sibling tab's
+           * rotation leaves behind — would look transient forever, and every
+           * request would 401 against a session the client kept believing in.
+           */
+          if (response.status === 400 || response.status === 401) {
+            throw new TokenRejectedError(`Token refresh rejected: ${response.status}`)
           }
 
           throw new Error('Token refresh failed')
