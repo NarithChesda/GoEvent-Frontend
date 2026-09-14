@@ -1,9 +1,22 @@
 # Backend API Requirements: Partner Access Requests
 
-> **Status: PENDING** — the frontend is built and shipped against this contract.
-> It degrades safely without it (see [What the frontend does meanwhile](#what-the-frontend-does-meanwhile)),
-> so this can land whenever the backend team is ready; nothing needs to be
-> un-picked on the frontend afterwards.
+> **Status: DEPLOYED** (routes verified in production 2026-09-14) — this said
+> PENDING for longer than it was true, which cost a round of wrong advice about
+> whether the form could actually file anything.
+>
+> What was checked, unauthenticated, against `api.goevent.online`:
+> `GET /api/payment/partner-requests/me/` → `401` (not `404`, so the route is
+> registered), and `OPTIONS /api/payment/partner-requests/` → `401` with
+> `allow: GET, POST, HEAD, OPTIONS`, so the collection accepts a create.
+>
+> **What that does NOT establish**: the response *shapes* below, and in
+> particular whether `can_reapply` and `review_note` are present — those need a
+> token to see. The frontend treats a missing `can_reapply` as "may not reapply"
+> and a missing `review_note` as "no reason given", so both degrade quietly
+> rather than breaking; confirm them the first time a real application is
+> reviewed. [What the frontend does meanwhile](#what-the-frontend-does-meanwhile)
+> is kept below because it is still what happens on any deployment where these
+> are absent.
 
 ## The ask, in one line
 
@@ -81,7 +94,7 @@ Request body — only the first two are required:
 | `contact_phone` | string | **yes** | ≤ 32 chars. Free text — Cambodian numbers are written many ways and rejecting a format costs a lead |
 | `contact_telegram` | string | no | ≤ 120 chars. `@handle` **or** a `t.me/…` link — accept both, normalise if you like |
 | `expected_monthly_events` | string | no | One of `1_5`, `6_20`, `21_50`, `50_plus`. Buckets, not a number |
-| `message` | string | no | ≤ 1000 chars |
+| `message` | string | no | ≤ 1000 chars. **Arrives pre-structured — see below** |
 
 `201` with the same envelope shape the credit-pack order endpoints use:
 
@@ -102,6 +115,38 @@ Errors:
   that state, so this only fires on a double submit or a stale tab.
 - **`400`** when the account is **already a partner**. Nothing in the UI can
   reach this, but it is worth refusing.
+
+### `message` is five answers, not one
+
+The form asks the shop five short questions — what kind of business, where they
+are based, how their customers get invitations today, who referred them, and a
+free note — and folds them into this one field before sending. Nothing else
+changed on the wire; there are no new request fields to add.
+
+It arrives as one `Label: answer` per line, unanswered questions omitted:
+
+```
+Business: Printing shop
+Based in: Siem Reap
+Invitations today: Prints cards
+Referred by: Sophea
+Notes: We also do decoration.
+```
+
+Two things follow for whoever builds the admin:
+
+- **Render it with newlines preserved** (`white-space: pre-line`, or a
+  `<textarea>`). Collapsed onto one line it is a run-on sentence and the
+  structure is wasted.
+- **The labels are always English, and so are the chosen options**, whichever
+  language the applicant filled the form in — only their own typing is in their
+  own words. That is deliberate, so a reviewer working a queue reads one format.
+
+The frontend budgets the free note against the 1000-character limit so the
+composed string can never exceed it (`noteBudget` in
+`src/composables/settings/usePartnerRequestForm.ts`). If this column is ever
+widened, widen `MESSAGE_MAX_LENGTH` there to match — it is the only place the
+number lives on the frontend.
 
 ### The two fields that are not obvious
 

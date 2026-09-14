@@ -84,7 +84,7 @@ export const DEFAULT_META: CardMeta = {
  * The routes that get their own head.
  *
  * In Khmer, and that is not a translation choice made here — it is the
- * language these two pages open in (`preferredLocale` on their routes in
+ * language these pages open in (`preferredLocale` on their routes in
  * src/router/index.ts). A card that reads in English and then hands over to a
  * Khmer page is worse than either one alone. Copy is kept in step with the
  * pages' own strings (src/i18n/locales/kh/partners.json) by hand rather than
@@ -95,8 +95,23 @@ export const PRERENDERED_ROUTES: PrerenderedRoute[] = [
   {
     path: '/partners',
     title: 'កម្មវិធីដៃគូ GoEvent',
-    description:
-      'អ្នករៀបចំធៀបជូនអតិថិជន ២កម្មវិធីដំបូងឥតគិតថ្លៃ។',
+    description: 'អ្នករៀបចំធៀបជូនអតិថិជន ២កម្មវិធីដំបូងឥតគិតថ្លៃ។',
+    image: '/og/partners.png',
+    imageAlt: 'ធៀបអញ្ជើញ GoEvent បី បើកជាទម្រង់ផ្លិត',
+    locale: 'km_KH',
+  },
+  {
+    /*
+     * The one of these three that gets sent to a named person rather than
+     * posted — it is the reply to "how do I become a partner?", so its card is
+     * read in a chat thread, under the sender's own sentence. It reuses
+     * `/og/partners.png` deliberately: the link goes to the same offer, and a
+     * second artwork for the form would make it look like a different product
+     * from the page the recipient may already have been shown.
+     */
+    path: '/partners/apply',
+    title: 'ស្នើសុំធ្វើជាដៃគូ GoEvent',
+    description: 'បំពេញព័ត៌មានហាងរបស់អ្នក — មិនទាន់ត្រូវការគណនីទេ។',
     image: '/og/partners.png',
     imageAlt: 'ធៀបអញ្ជើញ GoEvent បី បើកជាទម្រង់ផ្លិត',
     locale: 'km_KH',
@@ -104,8 +119,7 @@ export const PRERENDERED_ROUTES: PrerenderedRoute[] = [
   {
     path: '/partners/templates',
     title: 'ម៉ឺនុយម៉ូតធៀប GoEvent',
-    description:
-      'ម៉ឺនុយម៉ូតធៀប — ជាភាសាអង់គ្លេស និងខ្មែរ។',
+    description: 'ម៉ឺនុយម៉ូតធៀប — ជាភាសាអង់គ្លេស និងខ្មែរ។',
     image: '/og/partner-templates.png',
     imageAlt: 'ម៉ូតធៀបអញ្ជើញ GoEvent បួន',
     locale: 'km_KH',

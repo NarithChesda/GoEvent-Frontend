@@ -225,5 +225,28 @@
       "rsvp": "The replies card: 61% of 186 guests have replied, 96 coming, 148 expected once extra guests are counted, and the guests still to ask",
       "gifts": "The cash gift card: 84 of 186 guests gave, 3,860 USD in total, split by guest group"
     }
+  },
+  "apply": {
+    "back": "Partner programme",
+    "eyebrow": "Partner application",
+    "title": "Tell us about your shop",
+    "intro": "A partner buys credits at wholesale and spends one to activate each event they set up for a customer. Fill this in and we will be in touch — you can do it now and sign in at the end.",
+    "submit": "Send request",
+    "submitting": "Sending…",
+    "signInNote": "You will be asked to sign in or create an account when you send this. Nothing you have typed is lost.",
+    "resumed": "We kept what you had already typed.",
+    "signingIn": "Taking you to sign in…",
+    "checking": "Checking your account…",
+    "sent": {
+      "title": "Request sent",
+      "subtitle": "We look at every request by hand. Someone will contact you on the number you gave us, usually within two working days.",
+      "cta": "See partner credits"
+    },
+    "partner": {
+      "title": "You are already a partner",
+      "subtitle": "Your wholesale credits and packs are on the credits page.",
+      "cta": "Go to credits"
+    },
+    "contact": "Would rather talk to someone first?"
   }
 }
