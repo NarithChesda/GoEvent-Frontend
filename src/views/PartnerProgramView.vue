@@ -122,7 +122,7 @@
             </button>
 
             <RouterLink
-              to="/credits"
+              to="/partners/apply"
               class="group flex h-10 min-w-0 flex-shrink items-center gap-1.5 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-4 text-sm font-semibold text-white transition-[transform,background-image] duration-200 ease-out hover:from-[#27ae60] hover:to-[#1873cc] active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
             >
               <span class="truncate">{{ t('partners.hero.ctaPrimary') }}</span>
@@ -171,35 +171,70 @@
           <div class="grid items-center gap-7 sm:gap-9 lg:grid-cols-12 lg:gap-x-12 lg:gap-y-0">
             <div class="lg:col-span-6 lg:col-start-1 lg:row-start-1 xl:col-span-7">
               <!--
-                The way off the page and the badge that names it share one row.
-                The link takes the corner the app's logo held before the bar came
-                off, and the eyebrow — already the hero's first line — keeps its
-                place beside it, so losing the bar costs the hero no height.
+                The way off the page, the badge that names it, and — on phones —
+                the language share one row. The link takes the corner the app's
+                logo held before the bar came off, and the eyebrow — already the
+                hero's first line — keeps its place beside it, so losing the bar
+                costs the hero no height.
 
                 The link alone has no `data-reveal`: everything else here is
                 content and may arrive, but the one way out is chrome and is
                 never worth waiting for. It wraps only below ~320px, where a
-                second line beats a row that overflows.
-              -->
-              <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-                <RouterLink
-                  to="/events"
-                  class="group inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-slate-200 bg-white/70 px-3.5 py-2 text-[0.8125rem] font-medium text-slate-700 backdrop-blur transition-[color,border-color,background-color,transform] duration-200 ease-out hover:border-slate-300 hover:bg-white hover:text-slate-900 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 sm:text-sm"
-                >
-                  <ArrowLeft
-                    class="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-x-0.5"
-                    aria-hidden="true"
-                  />
-                  {{ t('partners.backToEvents') }}
-                </RouterLink>
+                second line beats a row that overflows — which is why the back
+                link and the badge are an inner wrapping group and the language
+                chip sits outside it, held to the trailing edge whether that
+                group is one line or two.
 
-                <p
-                  data-reveal
-                  class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600 ring-1 ring-slate-900/5 sm:text-[0.8125rem]"
+                WHY THE LANGUAGE IS HERE AND NOT ONLY IN THE ACTION PILL. The
+                pill is the page's phone chrome, but it is deliberately not on
+                screen until the hero's own CTA has scrolled away — so the first
+                screen, the one screen a sales page is guaranteed, had no
+                language control on a phone at all. A Khmer-reading shop owner
+                had to scroll past the entire argument in English before being
+                offered the language to read it in, which is the wrong way round.
+
+                Still not a third floating circle: the objection in the desktop
+                FAB's note stands, and this is a chip in a row that already
+                exists, costing the hero no height. The three copies are never
+                two-on-screen either — this one scrolls away above the hero CTA,
+                which is the very boundary the pill waits for.
+              -->
+              <div class="flex items-center gap-2 sm:gap-3">
+                <div class="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
+                  <RouterLink
+                    to="/events"
+                    class="group inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-slate-200 bg-white/70 px-3.5 py-2 text-[0.8125rem] font-medium text-slate-700 backdrop-blur transition-[color,border-color,background-color,transform] duration-200 ease-out hover:border-slate-300 hover:bg-white hover:text-slate-900 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 sm:text-sm"
+                  >
+                    <ArrowLeft
+                      class="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-x-0.5"
+                      aria-hidden="true"
+                    />
+                    {{ t('partners.backToEvents') }}
+                  </RouterLink>
+
+                  <p
+                    data-reveal
+                    class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#2ecc71]/10 to-[#1e90ff]/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600 ring-1 ring-slate-900/5 sm:text-[0.8125rem]"
+                  >
+                    <Store class="h-3.5 w-3.5" aria-hidden="true" />
+                    {{ t('partners.hero.eyebrow') }}
+                  </p>
+                </div>
+
+                <!--
+                  Desktop keeps the FAB and hides this, so there is exactly one
+                  language control per breakpoint. The face is the code you are
+                  reading now and the label names the one you would switch to —
+                  same contract as the other two copies.
+                -->
+                <button
+                  type="button"
+                  class="ml-auto inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white/70 text-xs font-semibold tracking-wide text-slate-700 backdrop-blur transition-[color,border-color,background-color,transform] duration-200 ease-out hover:border-slate-300 hover:bg-white hover:text-slate-900 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 lg:hidden"
+                  :aria-label="switchLanguageLabel"
+                  @click="toggleLanguage"
                 >
-                  <Store class="h-3.5 w-3.5" aria-hidden="true" />
-                  {{ t('partners.hero.eyebrow') }}
-                </p>
+                  {{ locale.toUpperCase() }}
+                </button>
               </div>
 
               <!-- Two blocks, not two inline spans: an inline space between
@@ -300,7 +335,7 @@
                 class="hero-cta-slot__row flex flex-col gap-3 sm:flex-row sm:items-center"
               >
                 <RouterLink
-                  to="/credits"
+                  to="/partners/apply"
                   class="group inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-[transform,box-shadow,background-image] duration-200 ease-out hover:from-[#27ae60] hover:to-[#1873cc] hover:shadow-xl hover:shadow-emerald-600/30 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 focus-visible:ring-offset-2 sm:text-base"
                 >
                   {{ t('partners.hero.ctaPrimary') }}
@@ -1274,7 +1309,7 @@
 
               <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <RouterLink
-                  to="/credits"
+                  to="/partners/apply"
                   class="group inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-slate-900 shadow-lg shadow-slate-900/10 transition-[transform,background-color] duration-200 ease-out hover:bg-slate-50 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent sm:w-auto sm:text-base"
                 >
                   {{ t('partners.closing.cta') }}
@@ -1351,11 +1386,19 @@
  * and step 1 of "How it works" already says the first two events are free. What
  * a prospect needs about money is said twice on this page, not four times.
  *
- * Every CTA points at `/credits`. The router already bounces an unauthenticated
- * visitor to `/signin?redirect=/credits`, and `CreditsTab` already renders the
- * partner application for a signed-in non-partner — so one link serves the
- * signed-out prospect, the applicant and the approved partner without this page
- * knowing which it is talking to.
+ * Every CTA points at `/partners/apply`, and used to point at `/credits`. That
+ * was one link serving the signed-out prospect, the applicant and the approved
+ * partner without this page knowing which it is talking to — which is still the
+ * property worth having, and `/partners/apply` has it too (it resolves to the
+ * form, "under review", or "you are already a partner", and sends the last of
+ * those on to `/credits`).
+ *
+ * What `/credits` did NOT have is a way in for the audience this page is
+ * written for. It is `requiresAuth`, so a shop owner who had just been argued
+ * into applying met a sign-in wall — register, verify, land on a credits page
+ * that refuses them, then find the application inside it. The application is a
+ * public page now and the account is asked for at its submit, so the ask on this
+ * page leads to the thing it names.
  */
 import { computed, ref, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'

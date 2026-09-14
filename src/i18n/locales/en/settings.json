@@ -496,8 +496,30 @@
           "21_50": "21–50 events",
           "50_plus": "More than 50 events"
         },
-        "message": "Anything else we should know",
-        "messagePlaceholder": "Where you are based, the kind of events you do, anyone at GoEvent you have spoken to"
+        "message": "In your own words",
+        "messagePlaceholder": "Anything the questions above did not cover",
+        "businessType": "What kind of business is it?",
+        "businessTypeOptions": {
+          "unspecified": "Choose one",
+          "wedding_shop": "Wedding shop",
+          "print_shop": "Printing shop",
+          "photo_video": "Photo or video studio",
+          "event_planner": "Event planner",
+          "decoration": "Decoration or venue",
+          "other": "Something else"
+        },
+        "basedIn": "Where are you based?",
+        "basedInPlaceholder": "Province or city",
+        "invitationsToday": "How do your customers get invitations now?",
+        "invitationsTodayOptions": {
+          "unspecified": "Choose one",
+          "printed": "We print cards",
+          "digital": "We make digital ones",
+          "outsourced": "We order them from someone else",
+          "none": "We do not do invitations yet"
+        },
+        "heardFrom": "Have you spoken to anyone at GoEvent?",
+        "heardFromPlaceholder": "Their name, or where you heard about us"
       },
       "validation": {
         "businessNameRequired": "Tell us what your shop is called.",
@@ -508,6 +530,11 @@
         "sent": "Request sent — we will be in touch shortly.",
         "failed": "Could not send your request. Please try again.",
         "unavailable": "Partner requests are not open yet. Contact the GoEvent team and we will set you up."
+      },
+      "sections": {
+        "shop": "Your shop",
+        "contact": "How we reach you",
+        "extra": "Anything else"
       }
     },
     "catalogue": {

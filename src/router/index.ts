@@ -58,8 +58,7 @@ const router = createRouter({
       /**
        * The partner offer, as a link a salesperson can send. Deliberately
        * public: its whole audience is people who are not partners yet, and
-       * every CTA on it points at `/credits`, which is where the auth guard
-       * and the application form already live.
+       * every CTA on it points at `/partners/apply`, which is public too.
        */
       path: '/partners',
       name: 'partners',
@@ -77,6 +76,20 @@ const router = createRouter({
       name: 'partner-templates',
       component: () => import('../views/PartnerTemplateGalleryView.vue'),
       meta: { title: 'Invitation Designs - GoEvent', preferredLocale: 'kh' },
+    },
+    {
+      /**
+       * The partner application, as a link that can be sent to someone with no
+       * account. Public on purpose, and the one route here whose publicness is
+       * load-bearing rather than incidental: the form it renders used to exist
+       * only behind `requiresAuth` on /credits, so the only thing a prospect
+       * could be sent was a sign-in wall. This page takes the answers first and
+       * asks for the account at submit — see PartnerApplyView.
+       */
+      path: '/partners/apply',
+      name: 'partner-apply',
+      component: () => import('../views/PartnerApplyView.vue'),
+      meta: { title: 'Become a Partner - GoEvent', preferredLocale: 'kh' },
     },
     {
       path: '/signin',

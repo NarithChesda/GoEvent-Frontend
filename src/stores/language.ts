@@ -94,12 +94,19 @@ export const useLanguageStore = defineStore('language', () => {
    * read the stored locale, but we call setI18nLocale once so the DOM
    * attribute is set even on a fresh load.
    *
+   * NOT persisted — this is the app stating its own default, not the visitor
+   * choosing one, and the two are indistinguishable once written to the same
+   * key. Persisting here is what used to make `preferredLocale` a one-load
+   * wonder: a visitor who had ever opened the app anywhere arrived at
+   * /partners with the key already reading `en`, so `hasStoredLocaleAtBoot`
+   * reported a choice they had never made and the Khmer preference stood down.
+   *
    * The stored locale's messages are loaded by main.ts BEFORE mount rather
    * than here — this runs during plugin setup, and an unawaited load would
    * race the first render.
    */
   function init() {
-    setI18nLocale(locale.value)
+    setI18nLocale(locale.value, { persist: false })
   }
 
   return {
