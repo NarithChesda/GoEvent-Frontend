@@ -3,9 +3,12 @@
  * Handles authentication, error handling, retries, and request deduplication
  */
 
-import { secureStorage } from '@/utils/secureStorage'
 import { isResolvedMediaUrl } from '@/utils/mediaUrl'
-import { tokenManager, type TokenRefreshResponse } from '@/services/tokenManager'
+import {
+  tokenManager,
+  TokenRejectedError,
+  type TokenRefreshResponse,
+} from '@/services/tokenManager'
 import { networkManager } from './NetworkManager'
 import { SecureLogger } from './SecureLogger'
 import type { ApiResponse, QueryParams, RequestOptions } from '../types/api.types'
@@ -19,6 +22,29 @@ const DEFAULT_REQUEST_TIMEOUT = 30000
 
 // Development mode flag
 const IS_DEV_MODE = import.meta.env.DEV
+
+/**
+ * Endpoints whose own 401 must never start a token refresh.
+ *
+ * `/token/refresh/` is the load-bearing one. Refreshing in response to *its*
+ * 401 re-enters `tokenManager.attemptTokenRefresh` while a refresh is already
+ * in flight, so the call is queued behind a refresh that is itself blocked
+ * waiting for this very response — a deadlock, and one with no escape, because
+ * `handleNetworkRequest` clears the request timer before handing the response
+ * here. It hung whenever the refresh token was genuinely dead, which is the one
+ * moment the app most needs to fail cleanly.
+ *
+ * The rest simply cannot be repaired by a fresher access token: a 401 from a
+ * login endpoint is bad credentials, not a stale session.
+ */
+const NO_REFRESH_ON_401 = [
+  '/api/auth/token/refresh/',
+  '/api/auth/token/verify/',
+  '/api/auth/login/',
+  '/api/auth/register/',
+  '/api/auth/google/login/',
+  '/api/auth/telegram/login/',
+]
 
 export class ApiClient {
   private baseURL: string
@@ -110,6 +136,13 @@ export class ApiClient {
         if (!response.ok) {
           const errorText = await response.text()
           console.error('[ApiClient] Token refresh failed:', response.status, errorText)
+
+          // 400/401 is the server rejecting the refresh token itself — the only
+          // answer that ends a session. A 5xx or a gateway error is the server
+          // having a bad moment and must leave the session intact.
+          if (response.status === 400 || response.status === 401) {
+            throw new TokenRejectedError(`Token refresh rejected: ${response.status}`)
+          }
           throw new Error(`Token refresh failed: ${response.status}`)
         }
 
@@ -411,38 +444,50 @@ export class ApiClient {
         }
 
         // Handle 401 specifically for auth token issues
-        if (response.status === 401 && !isRetry && requestFn) {
-          console.debug('[ApiClient] Received 401, attempting token refresh')
+        const skipRefresh = NO_REFRESH_ON_401.some((path) => response.url.includes(path))
 
-          // Attempt to refresh the token (tokenManager handles queuing automatically)
-          const refreshSuccess = await this.attemptTokenRefresh()
+        if (response.status === 401 && !skipRefresh) {
+          if (!isRetry && requestFn) {
+            console.debug('[ApiClient] Received 401, attempting token refresh')
 
-          if (refreshSuccess) {
-            console.info('[ApiClient] Token refresh successful, retrying original request')
-            // Retry the original request with new token
-            try {
-              // Create new AbortController for retry
-              const retryController = new AbortController()
-              const retryResponse = await requestFn(retryController.signal)
-              return this.handleResponse<T>(retryResponse, undefined, true)
-            } catch (retryError) {
-              console.error('[ApiClient] Retry after token refresh failed:', retryError)
-              return {
-                success: false,
-                message: 'Request failed after token refresh',
+            // Attempt to refresh the token (tokenManager handles queuing automatically)
+            const refreshSuccess = await this.attemptTokenRefresh()
+
+            if (refreshSuccess) {
+              console.info('[ApiClient] Token refresh successful, retrying original request')
+              // Retry the original request with new token
+              try {
+                // Create new AbortController for retry
+                const retryController = new AbortController()
+                const retryResponse = await requestFn(retryController.signal)
+                return this.handleResponse<T>(retryResponse, undefined, true)
+              } catch (retryError) {
+                console.error('[ApiClient] Retry after token refresh failed:', retryError)
+                return {
+                  success: false,
+                  message: 'Request failed after token refresh',
+                }
               }
             }
-          } else {
-            console.warn('[ApiClient] Token refresh failed, clearing auth data')
-            // Refresh failed, clear all auth data
-            tokenManager.clearTokens()
-            secureStorage.removeItem('user')
           }
-        } else if (response.status === 401 && isRetry) {
-          // If we already retried and still got 401, clear everything
-          console.warn('[ApiClient] Retry also failed with 401, clearing auth data')
-          tokenManager.clearTokens()
-          secureStorage.removeItem('user')
+
+          /*
+           * Reached only when the refresh did not produce a usable token, or
+           * when a retry carrying a fresh one still came back 401.
+           *
+           * Whether that ends the session is tokenManager's call, not ours: it
+           * drops the tokens on a definitive rejection and keeps them on a
+           * transient failure. Clearing unconditionally here — as this used to —
+           * signed the user out over a 502 or a moment without signal, which on
+           * a phone is the difference between an app that holds a session for a
+           * day and one that drops it whenever the lift doors close.
+           */
+          if (!tokenManager.hasSession()) {
+            console.warn('[ApiClient] Session rejected, clearing auth data')
+            tokenManager.endSession()
+          } else {
+            console.info('[ApiClient] 401 not resolved, but the session still stands')
+          }
         }
 
         const message = this.getUserFriendlyErrorMessage(response.status, data)

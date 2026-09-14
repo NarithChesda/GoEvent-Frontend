@@ -4,13 +4,32 @@ import { authService, type User, type LoginRequest, type RegisterRequest } from 
 import type { TelegramBotLoginUser } from '../composables/useTelegramBotLogin'
 
 export const useAuthStore = defineStore('auth', () => {
-  // State
-  const user = ref<User | null>(null)
+  /*
+   * State — hydrated from storage **synchronously**, at store creation.
+   *
+   * It used to start null and be filled in by `initializeAuth()` from App.vue's
+   * `onMounted`, which is too late: the router's first `beforeEach` runs while
+   * main.ts is still awaiting its locale chunk, so the guard asked "is this user
+   * signed in?" before anyone had looked in storage, got `null`, and redirected
+   * to /signin. SignInView has no bounce-back for an already-signed-in visitor,
+   * so whether the user landed back on their page depended entirely on
+   * initializeAuth finishing and the redirect being re-driven. Reading storage
+   * here costs one synchronous localStorage hit and removes the race outright.
+   */
+  const user = ref<User | null>(authService.getUser())
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  // Getters
-  const isAuthenticated = computed(() => !!user.value && authService.isAuthenticated())
+  /*
+   * Getters — gated on the *session*, not on the access token.
+   *
+   * `authService.isAuthenticated()` is false for the 23 hours of every 24 in
+   * which the 60-minute access token has expired but the refresh token has not.
+   * Gating on it signed people out mid-session; an expired access token is a
+   * recoverable state that ApiClient repairs on the first 401. See
+   * tokenManager.hasSession().
+   */
+  const isAuthenticated = computed(() => !!user.value && authService.hasSession())
   const userInitials = computed(() => {
     if (!user.value) return ''
 
@@ -172,64 +191,70 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  /**
+   * Confirm the hydrated session with the server, and repair a stale access
+   * token — **without ever ending a session over a bad network**.
+   *
+   * The store is already populated from storage by the time this runs, so this
+   * is no longer what makes the user appear signed in; it is only the
+   * reconciliation pass. The order matters: a missing refresh token is the one
+   * state that justifies clearing, and `ensureValidToken()` returning false is
+   * not that state — it is also what a timeout looks like — so the verdict is
+   * read back off the session itself.
+   */
   const initializeAuth = async () => {
-    const isDevelopment =
-      import.meta.env.DEV ||
-      window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1'
-
     try {
-      // Check if user is stored in storage
-      let storedUser: User | null = null
-      let hasValidAuth = false
-
-      try {
-        storedUser = authService.getUser()
-        hasValidAuth = authService.isAuthenticated()
-      } catch {
-        // In development, we can continue without stored auth
-        if (isDevelopment) {
-          return
-        }
-        // In production, clear potentially corrupted storage and continue
-        try {
-          authService.clearTokens()
-          authService.clearUser()
-        } catch {
-          // Silent error handling
+      if (!authService.hasSession()) {
+        // Nothing left to refresh with. Anything still in storage is dead
+        // weight that would otherwise render a signed-in shell over a session
+        // the server will refuse.
+        if (user.value || authService.getUser() || authService.getAccessToken()) {
+          await logout()
         }
         return
       }
 
-      if (storedUser && hasValidAuth) {
-        setUser(storedUser)
+      if (!user.value) {
+        // A live session whose cached user is missing or unreadable: fetch the
+        // profile rather than treat it as signed out. fetchProfile's own 401
+        // path goes through ApiClient, which refreshes and retries first.
+        await fetchProfile()
+        return
+      }
 
-        // Verify token validity - ensureValidToken now uses caching internally
-        // so this won't make excessive server calls
-        try {
-          const isValid = await authService.ensureValidToken()
+      const isValid = await authService.ensureValidToken()
 
-          if (isValid) {
-            // Optionally try to fetch fresh profile data in the background
-            // Don't await this to speed up app initialization
-            fetchProfile().catch((_profileError) => {
-              // Silently continue with cached user data
-            })
-          } else {
-            // Token is definitively invalid (not just a network error)
-            await logout()
-          }
-        } catch {
-          // Network error during validation - don't logout
-          // The user can continue with cached data
-          // In production, we're more lenient with network errors
-          // Users can still use the app with cached data if they just lost connection temporarily
-        }
+      if (isValid) {
+        // Refresh the cached profile in the background — never awaited, so a
+        // slow network cannot hold up the first paint.
+        fetchProfile().catch(() => {
+          // Cached user data stands.
+        })
+        return
+      }
+
+      /*
+       * ensureValidToken() answers false for a rejected refresh token *and* for
+       * a request that never made it out. tokenManager clears the tokens only in
+       * the first case, so the session itself is the verdict: still holding one
+       * means "try again on the next request", not "sign out".
+       */
+      if (!authService.hasSession()) {
+        await logout()
       }
     } catch {
-      // Don't logout on unexpected errors - this could be a transient issue
-      // Let the user continue with cached data if available
+      // Never sign out on an unexpected error — the cached session stands.
     }
+  }
+
+  /**
+   * The session ended server-side (tokenManager.endSession). Storage is already
+   * empty; this drops the in-memory user so the app stops rendering a signed-in
+   * shell. Routing is App.vue's job — the store must not know about the router.
+   */
+  const handleSessionExpired = () => {
+    user.value = null
+    isLoading.value = false
   }
 
   const googleLogin = async (accessToken: string) => {
@@ -368,6 +393,7 @@ export const useAuthStore = defineStore('auth', () => {
     fetchProfile,
     updateProfile,
     initializeAuth,
+    handleSessionExpired,
     googleLogin,
     telegramLogin,
     telegramBotLogin,

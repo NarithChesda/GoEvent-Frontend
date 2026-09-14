@@ -45,6 +45,32 @@ export interface TokenRefreshResponse {
   refresh: string
 }
 
+/**
+ * Thrown by a refresh callback when the server has *definitively* rejected the
+ * refresh token — a 400/401 from `/api/auth/token/refresh/`.
+ *
+ * Everything else a refresh can fail with (a 5xx, a timeout, a dropped
+ * connection, a backgrounded tab losing its request) is **transient**, and that
+ * distinction is the whole point of this class: the session used to be thrown
+ * away on any thrown error at all, so a phone that lost signal for a second
+ * mid-refresh came back signed out. Only a rejection ends a session; anything
+ * else leaves the tokens in place for the next request to retry.
+ */
+export class TokenRejectedError extends Error {
+  constructor(message = 'Refresh token rejected by server') {
+    super(message)
+    this.name = 'TokenRejectedError'
+  }
+}
+
+/**
+ * Broadcast once when a session is definitively over, so the app can drop its
+ * signed-in shell and send the user to sign-in with a redirect back. Without it
+ * storage was emptied underneath a Pinia store that went on rendering a
+ * signed-in user until the next full reload.
+ */
+export const SESSION_EXPIRED_EVENT = 'goevent:session-expired'
+
 class TokenManager {
   /**
    * Get access token from secure storage
@@ -118,6 +144,27 @@ class TokenManager {
   }
 
   /**
+   * End the session for good: drop the tokens and the cached user, then say so
+   * once, so the app can clear its signed-in shell and route to sign-in with a
+   * redirect back instead of leaving a Pinia store rendering a user whose
+   * storage has already been emptied.
+   *
+   * Called only where the server has definitively rejected the session — never
+   * on a transient failure. Deliberately idempotent: the refresh queue can hit
+   * this from several callers at once.
+   */
+  endSession(): void {
+    const hadSomething = !!(secureStorage.getItem('access_token') || secureStorage.getItem('user'))
+
+    this.clearTokens()
+    secureStorage.removeItem('user')
+
+    if (hadSomething && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT))
+    }
+  }
+
+  /**
    * Check if user is authenticated (has valid access token)
    */
   isAuthenticated(): boolean {
@@ -127,6 +174,36 @@ class TokenManager {
     // Quick client-side expiration check
     const isExpired = jwtUtils.isTokenExpired(token)
     return isExpired !== true // null or false means potentially valid
+  }
+
+  /**
+   * Is the refresh token still usable? Present, well formed, and not past its
+   * own `exp`. A token with no `exp` claim cannot be judged here, so it counts
+   * as usable and the server decides.
+   */
+  private isRefreshTokenUsable(): boolean {
+    const refreshToken = this.getRefreshToken()
+    if (!refreshToken) return false
+    return jwtUtils.isTokenExpired(refreshToken) !== true
+  }
+
+  /**
+   * **Is there a session at all?** — which is a different question from
+   * `isAuthenticated()`, and the one every gate in the app actually wants.
+   *
+   * The access token lives 60 minutes and the refresh token 24 hours, so for
+   * 23 of every 24 hours a perfectly good session has a dead access token in
+   * storage. Asking `isAuthenticated()` there answers "no" and the caller signs
+   * the user out — which is exactly how someone who spent an hour setting up an
+   * event, paid, and then reloaded the page to see the confirmation got thrown
+   * back to the sign-in screen with 23 hours of session left.
+   *
+   * An expired access token is a **recoverable** state: ApiClient refreshes and
+   * retries on a 401 by itself. So a session stands while *either* token can
+   * still get a request through.
+   */
+  hasSession(): boolean {
+    return this.isAuthenticated() || this.isRefreshTokenUsable()
   }
 
   /**
@@ -177,12 +254,34 @@ class TokenManager {
       try {
         const refreshToken = this.getRefreshToken()
         if (!refreshToken) {
-          this.clearTokens()
+          this.endSession()
           this.rejectPendingRequests(new Error('No refresh token available'))
           return false
         }
 
-        const response = await refreshCallback(refreshToken)
+        let response: TokenRefreshResponse
+        try {
+          response = await refreshCallback(refreshToken)
+        } catch (error) {
+          /*
+           * The backend runs ROTATE_REFRESH_TOKENS with BLACKLIST_AFTER_ROTATION,
+           * so the instant any other tab refreshes, the token this call is
+           * holding is blacklisted — and a rejection here proves nothing about
+           * the session. Two tabs is not an edge case in this app: signing in
+           * with Telegram opens the deep link with `window.open(_, '_blank')`,
+           * so a phone routinely ends up with the original tab and a second one
+           * both polling notifications and both refreshing on the same hour.
+           *
+           * Re-read storage: if a sibling tab has since written a different
+           * pair, use it rather than declaring the session over.
+           */
+          const rotated = this.getRefreshToken()
+          if (error instanceof TokenRejectedError && rotated && rotated !== refreshToken) {
+            response = await refreshCallback(rotated)
+          } else {
+            throw error
+          }
+        }
 
         if (response && response.access && response.refresh) {
           this.setTokens(response.access, response.refresh)
@@ -192,11 +291,17 @@ class TokenManager {
           return true
         }
 
-        this.clearTokens()
+        // A 200 carrying junk is a server contract violation, not a verdict on
+        // this session — leave the tokens alone and let the next call retry.
         this.rejectPendingRequests(new Error('Invalid refresh response'))
         return false
       } catch (error) {
-        this.clearTokens()
+        // Only a definitive rejection ends the session. A 5xx, a timeout, a
+        // dropped mobile connection: the tokens stay put and the next request
+        // tries again.
+        if (error instanceof TokenRejectedError) {
+          this.endSession()
+        }
         this.rejectPendingRequests(error as Error)
         return false
       } finally {
@@ -249,6 +354,12 @@ class TokenManager {
       const accessToken = this.getAccessToken()
 
       if (!accessToken) {
+        // No access token but a live refresh token is a recoverable state, not
+        // a signed-out one — storage holds the pair independently, and every
+        // rotation rewrites both.
+        if (this.isRefreshTokenUsable()) {
+          return await this.attemptTokenRefresh(refreshCallback)
+        }
         return false
       }
 
