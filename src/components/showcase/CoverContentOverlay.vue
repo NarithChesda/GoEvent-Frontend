@@ -82,6 +82,8 @@
         :first-host-id="firstHostId"
         :host-clip-style="hostClipStyle"
         :show-cover-header-text="showCoverHeaderText"
+        :show-cover-logo="showCoverLogo"
+        :show-cover-invite-text="showCoverInviteText"
         :guest-name="guestName"
         :primary-color="primaryColor"
         :secondary-color="secondaryColor"
@@ -126,6 +128,8 @@
         :first-host-id="firstHostId"
         :host-clip-style="hostClipStyle"
         :show-cover-header-text="showCoverHeaderText"
+        :show-cover-logo="showCoverLogo"
+        :show-cover-invite-text="showCoverInviteText"
         :guest-name="guestName"
         :primary-color="primaryColor"
         :secondary-color="secondaryColor"
@@ -186,6 +190,8 @@
         :first-host-id="firstHostId"
         :host-clip-style="hostClipStyle"
         :show-cover-header-text="showCoverHeaderText"
+        :show-cover-logo="showCoverLogo"
+        :show-cover-invite-text="showCoverInviteText"
         :guest-name="guestName"
         :primary-color="primaryColor"
         :secondary-color="secondaryColor"
@@ -413,6 +419,11 @@ const guestNameMaxWidthPercent = computed(() => layout.value.guestNameMaxWidthPe
 
 // Whether to render the cover text header row (template-controlled)
 const showCoverHeaderText = computed(() => layout.value.showCoverHeaderText)
+
+// Whether the logo and the invite text draw. Unlike the header, a hidden one
+// hands its space to nothing: the row stays, empty (see CoverContentRows).
+const showCoverLogo = computed(() => layout.value.showCoverLogo)
+const showCoverInviteText = computed(() => layout.value.showCoverInviteText)
 
 // Sample logos from template_assets — used in place of the event logo when
 // the cover header row is hidden (sample_logo_1 as base, sample_logo_2 overlaid).

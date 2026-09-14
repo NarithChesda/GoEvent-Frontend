@@ -128,6 +128,8 @@ export const COVER_STAGE_LAYOUT_DEFAULTS: Required<CoverStageLayout> = {
   guestNameMaxWidthPercent: 60,
   showWelcomeHeaderText: true,
   showCoverHeaderText: true,
+  showCoverLogo: true,
+  showCoverInviteText: true,
   showHostNameUnderLogo: true,
   hostClipScale: 60,
   hostClipOffsetX: 50,
@@ -440,6 +442,9 @@ export function useCoverStageLayout(
         config.showWelcomeHeaderText ?? COVER_STAGE_LAYOUT_DEFAULTS.showWelcomeHeaderText,
       showCoverHeaderText:
         config.showCoverHeaderText ?? COVER_STAGE_LAYOUT_DEFAULTS.showCoverHeaderText,
+      showCoverLogo: config.showCoverLogo ?? COVER_STAGE_LAYOUT_DEFAULTS.showCoverLogo,
+      showCoverInviteText:
+        config.showCoverInviteText ?? COVER_STAGE_LAYOUT_DEFAULTS.showCoverInviteText,
       showHostNameUnderLogo:
         config.showHostNameUnderLogo ?? COVER_STAGE_LAYOUT_DEFAULTS.showHostNameUnderLogo,
       hostClipScale:
@@ -504,6 +509,10 @@ export function useCoverStageLayout(
    * When showCoverHeaderText is false, the event title row collapses and its
    * height is absorbed by the logo row so sample_logo_1 / sample_logo_2
    * occupy the combined space.
+   *
+   * showCoverLogo and showCoverInviteText deliberately change nothing here, nor
+   * in rowsToCoverElements: those rows keep their height and render empty, so a
+   * block switched off never moves the blocks around it.
    */
   const rowStyles = computed(() => {
     const headerVisible = layout.value.showCoverHeaderText

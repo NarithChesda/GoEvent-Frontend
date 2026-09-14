@@ -989,30 +989,35 @@
               </div>
             </section>
 
-            <!-- What the cover shows. Three switches in one group rather than
-                 three loose rows under an eyebrow reading "Visibility": each row
-                 already begins with the word Show, so the eyebrow was naming the
-                 group after the thing every one of its members says about
-                 itself.
+            <!-- What the cover shows: one switch per block, in the order the
+                 cover stacks them. One group rather than loose rows under an
+                 eyebrow reading "Visibility": each row already begins with the
+                 word Show, so the eyebrow was naming the group after the thing
+                 every one of its members says about itself.
+
+                 The welcome header and the host name under the logo used to be
+                 here as well. They are stored in cover_stage_layout, but the
+                 invitation's host block is what draws them, so they are switched
+                 in Main Content beside it.
 
                  `divide-y` rather than `.list-group`, because the panel already
                  draws the border and the radius that class would bring — nesting
                  the two means immediately turning one of them back off. -->
             <section :class="[PANEL, 'overflow-hidden divide-y divide-slate-100']">
               <TemplateFormSwitch
-                v-model="form.cover_stage_layout.showWelcomeHeaderText"
-                :label="t('management.partnerTemplateForm.coverLayout.showWelcomeHeaderText')"
-                :description="t('management.partnerTemplateForm.coverLayout.showWelcomeHeaderTextHint')"
-              />
-              <TemplateFormSwitch
                 v-model="form.cover_stage_layout.showCoverHeaderText"
                 :label="t('management.partnerTemplateForm.coverLayout.showCoverHeaderText')"
                 :description="t('management.partnerTemplateForm.coverLayout.showCoverHeaderTextHint')"
               />
               <TemplateFormSwitch
-                v-model="form.cover_stage_layout.showHostNameUnderLogo"
-                :label="t('management.partnerTemplateForm.coverLayout.showHostNameUnderLogo')"
-                :description="t('management.partnerTemplateForm.coverLayout.showHostNameUnderLogoHint')"
+                v-model="form.cover_stage_layout.showCoverLogo"
+                :label="t('management.partnerTemplateForm.coverLayout.showCoverLogo')"
+                :description="t('management.partnerTemplateForm.coverLayout.showCoverLogoHint')"
+              />
+              <TemplateFormSwitch
+                v-model="form.cover_stage_layout.showCoverInviteText"
+                :label="t('management.partnerTemplateForm.coverLayout.showCoverInviteText')"
+                :description="t('management.partnerTemplateForm.coverLayout.showCoverInviteTextHint')"
               />
             </section>
 
@@ -1576,6 +1581,27 @@
                 />
                 <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.hostInfoDesign.designHint') }}</p>
 
+                <!-- What the block shows. Both switches are stored in
+                     cover_stage_layout, which is how they came to sit under
+                     Cover — a stage that draws neither. The welcome header
+                     collapses away on `crest`, whose invitation sentence holds
+                     that slot. The host name belongs to the birthday layout,
+                     which reads none of these designs, so it never collapses. -->
+                <div class="list-group">
+                  <TemplateFormDisclosure :open="hostDesignHasWelcomeHeader" content-class="">
+                    <TemplateFormSwitch
+                      v-model="form.cover_stage_layout.showWelcomeHeaderText"
+                      :label="t('management.partnerTemplateForm.coverLayout.showWelcomeHeaderText')"
+                      :description="t('management.partnerTemplateForm.coverLayout.showWelcomeHeaderTextHint')"
+                    />
+                  </TemplateFormDisclosure>
+                  <TemplateFormSwitch
+                    v-model="form.cover_stage_layout.showHostNameUnderLogo"
+                    :label="t('management.partnerTemplateForm.coverLayout.showHostNameUnderLogo')"
+                    :description="t('management.partnerTemplateForm.coverLayout.showHostNameUnderLogoHint')"
+                  />
+                </div>
+
                 <!-- The frame is one choice drawn twice — around the title and
                      around the avatar — so the pair can never be mismatched. Only
                      the grid designs draw it: arch brings its own frames, and
@@ -2124,6 +2150,8 @@ const defaultCoverStageLayout = (): CoverStageLayoutFormState => ({
   swipeArrowBottom: 5,
   showWelcomeHeaderText: true,
   showCoverHeaderText: true,
+  showCoverLogo: true,
+  showCoverInviteText: true,
   showHostNameUnderLogo: true,
   hostClipScale: 60,
   hostClipOffsetX: 50,
@@ -2877,18 +2905,41 @@ const layoutModeModel = computed<string>({
   },
 })
 
+/**
+ * Which blocks are on the cover at all — the preview frame's
+ * `coverElementVisibility`, minus its guest-name gate, which no template setting
+ * controls. A block that is switched off has nothing to place.
+ */
+const coverBlockShown = computed<Record<CoverElementId, boolean>>(() => ({
+  header: form.cover_stage_layout.showCoverHeaderText,
+  logo: form.cover_stage_layout.showCoverLogo,
+  invite: form.cover_stage_layout.showCoverInviteText,
+  guest: true,
+}))
+
 const coverBlockChips = computed(() =>
   COVER_ELEMENT_IDS.map((id) => ({
     id,
     label: t(`management.coverLayoutEditor.blocks.${id}`),
-    // A hidden header row isn't on the cover, so there's nothing to place.
-    available: id !== 'header' || form.cover_stage_layout.showCoverHeaderText,
+    available: coverBlockShown.value[id],
   })),
 )
 
 function selectCoverElement(id: CoverElementId): void {
   selectedCoverElement.value = selectedCoverElement.value === id ? null : id
 }
+
+// Switching off the selected block would leave its fields on screen, editing a
+// box nothing draws — the preview has already dropped its handles.
+watch(
+  () => {
+    const id = selectedCoverElement.value
+    return id !== null && !coverBlockShown.value[id]
+  },
+  (hidden) => {
+    if (hidden) selectedCoverElement.value = null
+  },
+)
 
 /**
  * Writes one block and persists all four.
@@ -3094,6 +3145,13 @@ const hostDesignHasOrnament = computed(
 const hostDesignHasLogo = computed(
   () => hostDesignHasFrames.value || form.host_info_design_type === 'crest',
 )
+
+/**
+ * Every design opens on the welcome header except `crest`, where the invitation
+ * sentence holds that slot and a greeting above it would be a second headline —
+ * so the switch collapses away there rather than toggling nothing.
+ */
+const hostDesignHasWelcomeHeader = computed(() => form.host_info_design_type !== 'crest')
 
 /**
  * The three host-info choices travel as one config object, because they are one

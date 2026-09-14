@@ -333,11 +333,12 @@ const coverTextPalette = computed<CoverTextPalette>(() => ({
 /** Which blocks the cover is actually rendering, and so which are draggable. */
 const coverElementVisibility = computed<Record<CoverElementId, boolean>>(() => ({
   header: resolvedCoverLayout.value.showCoverHeaderText,
-  logo: true,
-  // Both are gated on a guest name in CoverContentRows. Preview frames always
-  // have one (useDefaultGuestName), but a frame opened without it shouldn't
-  // offer handles for blocks that aren't on screen.
-  invite: !!guestName.value,
+  logo: resolvedCoverLayout.value.showCoverLogo,
+  // Both are gated on a guest name in CoverContentRows, and the invite text on
+  // its own switch as well. Preview frames always have a guest name
+  // (useDefaultGuestName), but a frame opened without one shouldn't offer
+  // handles for blocks that aren't on screen.
+  invite: resolvedCoverLayout.value.showCoverInviteText && !!guestName.value,
   guest: !!guestName.value,
 }))
 

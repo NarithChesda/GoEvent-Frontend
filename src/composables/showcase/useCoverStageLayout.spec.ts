@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest'
+import { computed } from 'vue'
 import {
   COVER_STAGE_LAYOUT_DEFAULTS,
   coverElementStyle,
   resolveCoverElements,
+  useCoverStageLayout,
 } from './useCoverStageLayout'
 import type { CoverStageLayout } from '@/services/api/types/template.types'
 
@@ -60,5 +62,35 @@ describe('cover element type slots', () => {
       fontType: 'decorative',
     })
     expect(sent.coverElements.guest?.colorSource).toBe('custom')
+  })
+})
+
+/**
+ * The logo and invite-text switches take a block off the cover without handing
+ * its space to anything. Cover artwork is drawn with a place for each line, so
+ * the invariant worth pinning is that switching one off moves no other block —
+ * in either placement model.
+ */
+describe('cover block switches', () => {
+  const resolve = (config: CoverStageLayout) =>
+    useCoverStageLayout(computed<CoverStageLayout | undefined>(() => config))
+
+  it('draws the logo and the invite text unless the template says otherwise', () => {
+    const { layout } = resolve({})
+    expect(layout.value.showCoverLogo).toBe(true)
+    expect(layout.value.showCoverInviteText).toBe(true)
+  })
+
+  it('carries an explicit false through', () => {
+    const { layout } = resolve({ showCoverLogo: false, showCoverInviteText: false })
+    expect(layout.value.showCoverLogo).toBe(false)
+    expect(layout.value.showCoverInviteText).toBe(false)
+  })
+
+  it('moves no other block when one is switched off', () => {
+    const shown = resolve({})
+    const hidden = resolve({ showCoverLogo: false, showCoverInviteText: false })
+    expect(hidden.rowStyles.value).toEqual(shown.rowStyles.value)
+    expect(hidden.elements.value).toEqual(shown.elements.value)
   })
 })

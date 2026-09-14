@@ -468,6 +468,17 @@ export interface CoverStageLayout {
   // sample_logo_1 / sample_logo_2 render in the merged space.
   showCoverHeaderText?: boolean     // default: true
 
+  // Render the logo on the cover stage. When false the logo row keeps its height
+  // and draws nothing, so the header, invite text and guest name stay where the
+  // template put them — cover artwork is often drawn with a place for each line,
+  // and closing the gap would pull them off it. In the row layout, a partner who
+  // wants the space back sets the logo row's height to 0.
+  showCoverLogo?: boolean           // default: true
+
+  // Render the invite text above the guest name on the cover stage. Same rule as
+  // showCoverLogo: the row's space is kept rather than collapsed.
+  showCoverInviteText?: boolean     // default: true
+
   // Host image clipped into sample_logo_2's shape (merged logo row).
   // hostClipScale sets image size as % of the clip square (0–100).
   // hostClipOffsetX/Y pan the host photo within the clip square via CSS
