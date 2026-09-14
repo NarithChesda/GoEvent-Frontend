@@ -175,13 +175,21 @@ export async function ensureLocaleMessages(locale: AppLocale): Promise<void> {
  * non-component code (e.g. router guards, API error handlers).
  *
  * Assumes `locale`'s messages are already loaded — see ensureLocaleMessages.
+ *
+ * `persist: false` applies the locale WITHOUT writing it down, and exists for
+ * exactly one caller: the store's boot-time sync. Persisting there records the
+ * app's own default as though the visitor had chosen it, and from the next load
+ * on `hasStoredLocaleAtBoot` can no longer tell the two apart — which silently
+ * kills every route `preferredLocale` for anyone who has opened the app once.
  */
-export function setI18nLocale(locale: AppLocale): void {
+export function setI18nLocale(locale: AppLocale, options?: { persist?: boolean }): void {
   i18n.global.locale.value = locale
-  try {
-    localStorage.setItem(STORAGE_KEY, locale)
-  } catch {
-    // ignore persistence failures
+  if (options?.persist !== false) {
+    try {
+      localStorage.setItem(STORAGE_KEY, locale)
+    } catch {
+      // ignore persistence failures
+    }
   }
   // Reflect on <html lang="..."> for accessibility and SEO
   if (typeof document !== 'undefined') {
