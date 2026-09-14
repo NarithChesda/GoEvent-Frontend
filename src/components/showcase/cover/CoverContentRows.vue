@@ -35,13 +35,16 @@
       </div>
     </div>
 
-    <!-- Event Logo Row (absorbs the event title row's height when the header is hidden) -->
+    <!-- Event Logo Row (absorbs the event title row's height when the header is hidden).
+         Switched off (showCoverLogo), the row stays and only its contents go:
+         rows are placed by stacking, so dropping the row itself would lift the
+         invite text and guest name off the spots the cover artwork drew for them. -->
     <div
       class="content-row-logo flex items-center justify-center"
       :class="[{ 'animate-fadeIn animation-delay-200': showAnimations }, blockClass]"
       :style="blockStyle('logo')"
     >
-      <div class="flex items-center justify-center h-full w-full px-4 cover-logo-wrapper">
+      <div v-if="showCoverLogo" class="flex items-center justify-center h-full w-full px-4 cover-logo-wrapper">
         <!-- Merged logo row: stack with a three-tier base (event logo → sample_logo_1 →
              recoloured temp SVG). sample_logo_2's opaque shape either overlays directly
              or clips the first host's profile image into the shape. -->
@@ -118,7 +121,8 @@
       </div>
     </div>
 
-    <!-- Invite Text Row -->
+    <!-- Invite Text Row. Kept when showCoverInviteText is off, for the logo row's
+         reason: removing it would lift the guest name into its place. -->
     <div
       v-if="guestName"
       class="content-row-invite flex items-center justify-center"
@@ -126,6 +130,7 @@
       :style="{ ...blockStyle('invite'), overflow: 'visible' }"
     >
       <div
+        v-if="showCoverInviteText"
         class="invite-content-container flex items-center justify-center px-4 w-full"
         style="height: 60%"
       >
@@ -216,6 +221,10 @@ interface Props {
   hostClipStyle?: Record<string, string>
   /** Render the cover text header row. When false, the event title row collapses and sample logos fill the merged logo row. */
   showCoverHeaderText?: boolean
+  /** Draw the logo. When false the row keeps its space and renders empty, so no other block moves. */
+  showCoverLogo?: boolean
+  /** Draw the invite text above the guest name. When false its row keeps its space, like the logo's. */
+  showCoverInviteText?: boolean
   guestName?: string | null
   primaryColor: string
   secondaryColor?: string | null
@@ -249,6 +258,9 @@ const props = withDefaults(defineProps<Props>(), {
   displayLiquidGlass: true,
   guestNameMaxWidthPercent: 60,
   showCoverHeaderText: true,
+  // Explicit, because an absent optional boolean prop casts to false.
+  showCoverLogo: true,
+  showCoverInviteText: true,
   layoutMode: 'rows',
 })
 
@@ -303,7 +315,9 @@ const resolvedBaseLogoSrc = computed(() => {
 // 1 (square), which matches temp-showcase-logo.svg's viewBox.
 const baseLogoAspect = ref<number | null>(null)
 watch(
-  resolvedBaseLogoSrc,
+  // A hidden logo is never laid out, so there is nothing to measure — and
+  // measuring it means downloading it.
+  () => (props.showCoverLogo ? resolvedBaseLogoSrc.value : null),
   (url, _prev, onCleanup) => {
     baseLogoAspect.value = null
     if (!url || typeof window === 'undefined') return
@@ -334,8 +348,10 @@ const { protectionAttrs } = useAssetProtection()
 // Auto-detect the opaque bounding box of sample_logo_2 so the host photo can
 // be scaled/positioned to fill exactly the shape silhouette (not the full
 // image footprint). Falls back to null on CORS/tainted-canvas errors.
+// Null while the logo is switched off, for the aspect watcher's reason: the
+// analysis downloads the image, and nothing would draw it.
 const sampleLogoTwoUrl = computed(() =>
-  props.sampleLogoTwo ? props.getMediaUrl(props.sampleLogoTwo) : null,
+  props.showCoverLogo && props.sampleLogoTwo ? props.getMediaUrl(props.sampleLogoTwo) : null,
 )
 const { bounds: shapeBounds } = useShapeMaskBounds(sampleLogoTwoUrl)
 

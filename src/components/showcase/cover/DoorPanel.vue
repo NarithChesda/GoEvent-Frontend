@@ -80,6 +80,8 @@
           :first-host-id="firstHostId"
           :host-clip-style="hostClipStyle"
           :show-cover-header-text="showCoverHeaderText"
+          :show-cover-logo="showCoverLogo"
+          :show-cover-invite-text="showCoverInviteText"
           :guest-name="guestName"
           :primary-color="primaryColor"
           :secondary-color="secondaryColor"
@@ -175,6 +177,10 @@ interface Props {
   hostClipStyle?: Record<string, string>
   /** Render the cover text header row; when false, the row collapses and its space is merged into the logo row. */
   showCoverHeaderText?: boolean
+  /** Draw the logo. When false its row keeps its space, so no other block moves. */
+  showCoverLogo?: boolean
+  /** Draw the invite text. When false its row keeps its space, like the logo's. */
+  showCoverInviteText?: boolean
   guestName?: string | null
   primaryColor: string
   secondaryColor?: string | null
@@ -213,6 +219,10 @@ const props = withDefaults(defineProps<Props>(), {
   displayLiquidGlass: true,
   backgroundColor: '#000000',
   showCoverHeaderText: true,
+  // Explicit, because an absent optional boolean prop casts to false — which
+  // would hide both blocks for any caller that doesn't pass them.
+  showCoverLogo: true,
+  showCoverInviteText: true,
 })
 
 const { protectionAttrs } = useAssetProtection()
