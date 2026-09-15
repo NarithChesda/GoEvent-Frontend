@@ -35,6 +35,15 @@
         ],
         "createdAt": "2026-09-12T07:29:48.449Z",
         "reason": "Claude: L49 is the loading spinner (rounded-full + border-b-2 + animate-spin), the canonical CSS spinner arc, not a card accent. Pre-existing, untouched by this change. The only genuine rounded+border element here is the best-seller card's emerald-300 ring, which the detector does not flag."
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/components/events/EventCard.vue"
+        ],
+        "createdAt": "2026-09-15T09:57:57.799Z",
+        "reason": "intentional design: the category accent rail predates this session (HEAD had inset 3px accent shadow) and the owner's in-progress diff deliberately reworked it into a fading gradient with a documented rationale in the .event-card::before comment"
       }
     ]
   }

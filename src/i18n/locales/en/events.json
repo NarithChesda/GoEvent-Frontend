@@ -10,6 +10,7 @@
     "going": "{count} going | {count} going",
     "interested": "{count} interested | {count} interested",
     "virtual": "Virtual",
+    "manage": "Manage",
     "when": {
       "live": "Happening now",
       "soon": "Starting soon",

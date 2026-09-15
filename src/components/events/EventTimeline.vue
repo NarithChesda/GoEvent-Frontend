@@ -9,7 +9,7 @@
       <div class="sm:hidden relative">
         <!-- Timeline line (always visible) -->
         <div
-          class="timeline-spine absolute left-[3px] w-0.5 bg-gradient-to-b from-[#2ecc71]/55 to-[#1e90ff]/40"
+          class="timeline-spine absolute left-[3px] w-0.5 bg-gradient-to-b from-[#2ecc71]/30 to-[#1e90ff]/14"
         ></div>
 
         <!-- Date Header with Dot (becomes pill when sticky). Rests 8px below
@@ -18,7 +18,14 @@
         <div
           class="sticky top-[calc(env(safe-area-inset-top,0px)+64px)] z-10 mb-3 date-header-sticky inline-flex items-center gap-2"
         >
-          <div class="w-2 h-2 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] flex-shrink-0 ring-2 ring-white"></div>
+          <!-- A ringed bead, the same node desktop draws, not a filled dot. At
+               8px the brand gradient has no room to be a gradient — it resolved
+               to one muddy teal blob, and it put the loudest colour on the page
+               on the one element that is pure structure. A ring reads as a
+               node, and hands the colour back to the cards. -->
+          <div
+            class="w-2 h-2 rounded-full bg-white flex-shrink-0 ring-2 ring-[#2ecc71] shadow-sm shadow-[#2ecc71]/25"
+          ></div>
           <div class="inline-flex items-baseline gap-2">
             <span class="text-slate-800 font-semibold text-lg">{{
               dateGroup.monthDay
@@ -58,7 +65,11 @@
         </div>
 
         <!-- Middle: Timeline. The spine used to be a 1px hairline at 30% alpha
-             with a flat dot, which read as an accident rather than structure. -->
+             with a flat dot, which read as an accident rather than structure.
+             It then overcorrected to 55% brand green, which on a page whose own
+             wash is mint made the one element carrying no information the most
+             saturated thing on screen. It is structure: it should be legible
+             and then get out of the way, which is what the alphas here are. -->
         <div class="flex flex-col items-center flex-shrink-0 relative">
           <!-- Timeline bead (Sticky) -->
           <div class="sticky top-20 lg:top-24 z-10">
@@ -68,7 +79,7 @@
           </div>
           <!-- Timeline line: always show for all date groups -->
           <div
-            class="timeline-spine absolute w-0.5 bg-gradient-to-b from-[#2ecc71]/55 to-[#1e90ff]/40"
+            class="timeline-spine absolute w-0.5 bg-gradient-to-b from-[#2ecc71]/30 to-[#1e90ff]/14"
           ></div>
         </div>
 
@@ -208,6 +219,15 @@ const canManageEvent = (event: Event): boolean => {
     -webkit-backface-visibility: hidden;
     /* Contain layout to prevent repaints */
     contain: layout style;
+    /* The pill is toggled by an IntersectionObserver, which fires on a
+       threshold rather than continuously — so without this the whole material
+       lands in one frame and the header visibly snaps as you scroll past it.
+       Paint only: `backdrop-filter` is deliberately left out, for the reason
+       MobileTopBar's `.glass-header` gives. */
+    transition:
+      background-color 180ms cubic-bezier(0.23, 1, 0.32, 1),
+      box-shadow 180ms cubic-bezier(0.23, 1, 0.32, 1),
+      border-color 180ms cubic-bezier(0.23, 1, 0.32, 1);
   }
 
   .date-header-sticky.is-stuck {
