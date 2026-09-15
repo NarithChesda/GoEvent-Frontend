@@ -128,9 +128,32 @@ html.showcase-viewport-locked #app {
     0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
+/*
+  The bar surface, and it *materialises with the bar* rather than sitting on it.
+
+  A fixed opaque white was right for the desktop nav — the list runs underneath
+  it, so a translucent control takes its contrast from whatever banner happens
+  to be passing — but the mobile top bar is transparent while the page is at the
+  top, and that is where this control spends most of its life. A 94% white pill
+  there was the only hard-edged, uncoloured object on a screen of soft mint
+  wash: a sticker on the bar, not part of it. Worse, the bloom in `premium-bg`
+  peaks on exactly this strip, so the chip read as a hole punched in the light.
+
+  Both the fill and the hairline now ride `--nav-edge`, the same 0→1 scroll
+  progress the bar's own material rides. It inherits: `useScrollEdge` writes it
+  onto the header element and this control is teleported inside it. So at rest
+  the chip is frost over the bloom and belongs to the page; by the time anything
+  is actually scrolling underneath it has reached the opacity the label needs
+  over a dark banner. Nothing transitions, for the reason `.glass-header` gives:
+  a tween here could not be reversed mid-scroll.
+
+  The `1` fallback is what the desktop nav gets on the frame it absorbs the
+  controls — by then the page is well past 56px, so that branch resolves to the
+  old opaque value either way.
+*/
 .lfc-surface--nav {
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+  background: rgba(255, 255, 255, calc(0.4 + 0.54 * var(--nav-edge, 1)));
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, calc(0.025 + 0.035 * var(--nav-edge, 1)));
 }
 
 /*

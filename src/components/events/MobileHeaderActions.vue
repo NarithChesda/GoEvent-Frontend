@@ -5,16 +5,19 @@
     below the nav breakpoint means inside the mobile top bar — desktop keeps
     both in TopNavBar instead, so this is never rendered there.
 
-    Geometry matches the filter chips (`w-10 h-10 rounded-full border`) and must
-    stay matching: the four controls read as one group, and one odd size out
-    makes the cluster look assembled by accident.
+    Geometry matches the filter chips (`w-10 h-10 rounded-full`) and so does
+    their surface (`.lfc-surface--*`, main.css) and their press (`.lfc-press`).
+    All three must stay matching: the four controls read as one group, and one
+    odd size or fill out makes the cluster look assembled by accident. The
+    hairline comes from the surface's inset shadow rather than a `border`, so
+    the circle cannot change size when the fill does.
   -->
   <div ref="root" class="relative flex items-center gap-1.5">
     <button
       type="button"
       @click="openSearch"
       :aria-label="t('common.actions.search')"
-      class="flex items-center justify-center w-10 h-10 rounded-full border transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
+      class="lfc-press flex items-center justify-center w-10 h-10 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2ecc71]/40"
       :class="chipClass"
     >
       <Search class="w-5 h-5" />
@@ -29,7 +32,7 @@
       aria-haspopup="menu"
       :aria-expanded="showLanguageMenu"
       :aria-label="t('common.language.label')"
-      class="flex items-center justify-center w-10 h-10 rounded-full border transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#2ecc71]/30"
+      class="lfc-press flex items-center justify-center w-10 h-10 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2ecc71]/40"
       :class="chipClass"
     >
       <Globe class="w-5 h-5" />
@@ -89,10 +92,16 @@ const { open: openSearch } = useGlobalSearch()
 const root = ref<HTMLElement | null>(null)
 const showLanguageMenu = ref(false)
 
+// Same two surfaces the filter controls are built from, so the cluster really
+// is one material rather than a chip beside two ghost buttons. It used to be
+// the latter: on the mobile bar the filter pill carried an opaque fill and
+// these carried none, which read as one control and two icons rather than as a
+// row. Palette only, never geometry — the width, height and radius above are
+// what keep the four the same object.
 const chipClass = computed(() =>
   resolvedTone.value === 'nav'
-    ? 'border-transparent text-slate-600 hover:bg-slate-100'
-    : 'glass-button border-white/50 text-slate-600'
+    ? 'lfc-surface--nav text-slate-600 hover:text-slate-900'
+    : 'lfc-surface--page text-slate-600 hover:text-slate-900'
 )
 
 const selectLanguage = (code: string) => {
@@ -122,17 +131,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Same glass as the filter chips, so the group reads as one material. */
-.glass-button {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.glass-button:hover {
-  background: rgba(255, 255, 255, 0.75);
-}
-
 .glass-dropdown {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(20px);
@@ -143,14 +141,35 @@ onUnmounted(() => {
     0 4px 12px rgba(30, 144, 255, 0.08);
 }
 
-.dropdown-enter-active,
+/* Scales out of the button it belongs to rather than out of its own centre,
+   and never from nothing — a menu that grows from zero reads as conjured, not
+   as opened. Exits faster than it enters: the user has already decided. */
+.glass-dropdown {
+  transform-origin: top right;
+}
+
+.dropdown-enter-active {
+  transition:
+    opacity 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
 .dropdown-leave-active {
-  transition: all 0.2s ease;
+  transition:
+    opacity 120ms ease-out,
+    transform 120ms ease-out;
 }
 
 .dropdown-enter-from,
 .dropdown-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-6px) scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-enter-from,
+  .dropdown-leave-to {
+    transform: none;
+  }
 }
 </style>

@@ -277,6 +277,47 @@ export function categoryAccent(categoryName: string | null | undefined): string 
   return resolveCoverTheme(categoryName).accent
 }
 
+/** slate-900, the ink every muted accent is pulled toward. */
+const MUTE_TOWARD = [15, 23, 42] as const
+
+/**
+ * The accent again, quietened enough to be set as small type.
+ *
+ * The accents are chosen to carry a category's identity at poster scale, where
+ * a saturated hue is exactly right. Set as an 10.5px semibold label they are
+ * too loud for the job: on the event card the category chip was rendering in
+ * full `#be123c` above a `slate-900` title less than half a step darker, so the
+ * smallest text in the card had the most optical weight in it and the headline
+ * read as the caption. The fix is not a different hue — identity is the point —
+ * but less chroma and a lower value, which is what pulling the accent toward
+ * slate-900 does while leaving it recognisably the category's colour.
+ *
+ * Small marks that are *only* colour keep the pure accent: a 4px dot has no
+ * legibility to lose and is where the hue should land hardest.
+ *
+ * @param hex - Six-digit hex accent, e.g. `#be123c`
+ * @param weight - How much accent survives the mix. 1 returns it untouched.
+ * @returns A six-digit hex dark enough for small text on white or a light tint
+ */
+export function mutedAccent(hex: string, weight = 0.62): string {
+  const parsed = /^#?([0-9a-f]{6})$/i.exec(hex.trim())
+  if (!parsed) return hex
+
+  const int = Number.parseInt(parsed[1], 16)
+  const channels = [(int >> 16) & 255, (int >> 8) & 255, int & 255]
+
+  return (
+    '#' +
+    channels
+      .map((channel, index) =>
+        Math.round(channel * weight + MUTE_TOWARD[index] * (1 - weight))
+          .toString(16)
+          .padStart(2, '0'),
+      )
+      .join('')
+  )
+}
+
 /**
  * The category's full theme record, for surfaces that want more than the accent.
  *
