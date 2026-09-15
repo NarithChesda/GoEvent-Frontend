@@ -664,6 +664,15 @@ watch(
     // Only proceed if category actually changed
     if (newCategory === oldCategory) return
 
+    /**
+     * Auto-populate fills the event from the chosen category's template, so it
+     * is an answer to the category question rather than a separate one — the
+     * row only exists once a category is picked, and arriving already off made
+     * the reveal look like an offer the organizer had to accept twice. Clearing
+     * the category turns it back off so a hidden `true` is never submitted.
+     */
+    form.auto_populate = hasCategory.value
+
     // Clear description when switching categories
     if (oldCategory !== undefined && oldCategory !== '') {
       form.description = ''
