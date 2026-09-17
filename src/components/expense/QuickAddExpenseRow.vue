@@ -1,16 +1,45 @@
 <template>
   <div>
     <!-- Collapsed dashed pill -->
+    <!-- As a row of a grouped sheet: no dashed pill, because a pill inside a
+         list of rows is a second surface where the sheet already is one. -->
     <button
-      v-if="!isExpanded"
+      v-if="!isExpanded && appearance === 'row'"
       type="button"
       @click="handlePillClick"
-      :class="[
-        'w-full flex items-center justify-center gap-2 font-medium text-slate-600 border-2 border-dashed border-slate-300 hover:border-emerald-400 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all',
-        compact ? 'px-3 py-2 text-xs rounded-xl bg-white/60' : 'h-12 px-4 text-sm rounded-2xl',
-      ]"
+      class="qa-row flex w-full items-center gap-3 px-4 py-3.5 text-left sm:px-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-200"
     >
-      <Plus :class="compact ? 'w-3.5 h-3.5' : 'w-4 h-4'" class="flex-shrink-0" />
+      <span
+        class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border-2 border-dashed border-slate-300 text-slate-400"
+        aria-hidden="true"
+      >
+        <Plus class="h-4 w-4" />
+      </span>
+      <span class="text-sm font-medium text-slate-600">
+        {{ t('management.expenseBudgets.inlineAdd.addExpense') }}
+      </span>
+    </button>
+
+    <!-- Nested under a category: an action of that sub-list, not a dashed box.
+         A bordered pill inside an expanded row is a second surface where the
+         sheet is already one. -->
+    <button
+      v-else-if="!isExpanded && compact"
+      type="button"
+      @click="handlePillClick"
+      class="flex w-full items-center gap-2 py-1 text-xs font-medium text-[#1e90ff] transition-colors duration-200 hover:text-sky-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 rounded"
+    >
+      <Plus class="h-3.5 w-3.5 flex-shrink-0" />
+      <span class="truncate whitespace-nowrap">{{ t('management.expenseBudgets.inlineAdd.addExpense') }}</span>
+    </button>
+
+    <button
+      v-else-if="!isExpanded"
+      type="button"
+      @click="handlePillClick"
+      class="h-12 w-full flex items-center justify-center gap-2 px-4 text-sm font-medium text-slate-600 border-2 border-dashed border-slate-300 rounded-2xl hover:border-emerald-400 hover:text-emerald-700 hover:bg-emerald-50 active:bg-emerald-50 transition-all"
+    >
+      <Plus class="w-4 h-4 flex-shrink-0" />
       <span class="truncate whitespace-nowrap">{{ t('management.expenseBudgets.inlineAdd.addExpense') }}</span>
     </button>
 
@@ -18,8 +47,12 @@
     <div
       v-else
       :class="[
-        'bg-white ring-1 ring-sky-200 flex flex-wrap items-center gap-2',
-        compact ? 'rounded-xl p-2' : 'rounded-2xl p-2.5',
+        'flex flex-wrap items-center gap-2',
+        appearance === 'row'
+          ? 'bg-sky-50/40 px-4 py-3 sm:px-5'
+          : compact
+            ? 'bg-white ring-1 ring-sky-200 rounded-xl p-2'
+            : 'bg-white ring-1 ring-sky-200 rounded-2xl p-2.5',
       ]"
     >
       <!-- Description -->
@@ -205,9 +238,27 @@ const props = withDefaults(
     defaultCategoryId?: number | null
     /** Tighter styling for use inside an expanded budget card. */
     compact?: boolean
+    /**
+     * `row` renders it as a cell of a grouped sheet rather than a standalone
+     * dashed pill — used where it is the last row of the budget list.
+     */
+    appearance?: 'pill' | 'row'
+    /**
+     * The currency the plan is currently being read in. A new expense starts
+     * there, so an amount typed while looking at the riel plan is not filed
+     * against the dollar one; picking a category that already has a budget
+     * still wins over it (see `syncCurrencyToCategory`).
+     */
+    defaultCurrency?: CurrencyCode
     submitting?: boolean
   }>(),
-  { defaultCategoryId: null, compact: false, submitting: false },
+  {
+    defaultCategoryId: null,
+    compact: false,
+    appearance: 'pill',
+    defaultCurrency: 'USD',
+    submitting: false,
+  },
 )
 
 const emit = defineEmits<{
@@ -223,7 +274,7 @@ const emit = defineEmits<{
 const isExpanded = ref(false)
 const description = ref('')
 const amount = ref<number | null>(null)
-const currency = ref<CurrencyCode>('USD')
+const currency = ref<CurrencyCode>(props.defaultCurrency)
 const selectedCategoryId = ref<number | null>(props.fixedCategoryId ?? props.defaultCategoryId)
 const showCategoryDropdown = ref(false)
 const descriptionInputRef = ref<HTMLInputElement | null>(null)
@@ -250,6 +301,15 @@ watch(
   () => props.defaultCategoryId,
   (id) => {
     if (!isExpanded.value && props.fixedCategoryId === undefined) selectedCategoryId.value = id
+  },
+)
+
+// Follow the plan's currency, but only while collapsed — switching it under
+// someone mid-compose would refile the amount they are typing.
+watch(
+  () => props.defaultCurrency,
+  (next) => {
+    if (!isExpanded.value) currency.value = next
   },
 )
 
@@ -375,6 +435,27 @@ onBeforeUnmount(() => {
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* Press feedback lands on pointer-down and eases back out, matching the budget
+   rows this sits at the end of. */
+.qa-row {
+  transition: background-color 0.22s ease-out;
+}
+
+.qa-row:hover {
+  background-color: rgb(248 250 252);
+}
+
+.qa-row:active {
+  background-color: rgb(241 245 249);
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qa-row {
+    transition: none;
+  }
 }
 
 /* Hide number-input spinners so the amount field stays compact */

@@ -2035,8 +2035,34 @@
     }
   },
   "expenseTab": {
-    "title": "Expense Tracking",
-    "subtitle": "Manage budgets and track spending"
+    "title": "Budget & expenses",
+    "subtitle": "Plan what each part of your event will cost, then track what you actually spend."
+  },
+  "budgetPlan": {
+    "title": "Budget plan",
+    "currencyGroup": "Currency",
+    "leftToSpend": "left to spend",
+    "overBudget": "over budget",
+    "unplannedSpend": "{amount} spent in categories with no budget",
+    "spent": "Spent",
+    "categories": "Categories",
+    "expenses": "Expenses",
+    "allocationSummary": "{spent} spent of {planned} planned",
+    "planCategory": "Plan a category",
+    "categoryLabel": "Category",
+    "amountLabel": "Budget amount",
+    "currencyLabel": "Currency",
+    "pickCategory": "Choose a category",
+    "setBudget": "Set budget",
+    "allCategoriesPlanned": "Every category already has a budget.",
+    "notPlanned": "No budget set",
+    "planFailed": "Couldn't set that budget",
+    "empty": {
+      "title": "Plan your event budget",
+      "description": "Give each part of your event an amount, then record what you spend against it.",
+      "action": "Plan your first category"
+    },
+    "spentOfPlanned": "{spent} spent of {planned} planned"
   },
   "expenseSummary": {
     "error": {
