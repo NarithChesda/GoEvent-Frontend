@@ -222,6 +222,9 @@ export const partnerTemplateService = {
     if (payload.save_the_date_design !== undefined) {
       formData.append('save_the_date_design', JSON.stringify(payload.save_the_date_design))
     }
+    if (payload.text_effects !== undefined) {
+      formData.append('text_effects', JSON.stringify(payload.text_effects))
+    }
     if (payload.stage_modes !== undefined) {
       formData.append('stage_modes', JSON.stringify(payload.stage_modes))
     }
@@ -297,6 +300,9 @@ export const partnerTemplateService = {
     }
     if (payload.save_the_date_design !== undefined) {
       formData.append('save_the_date_design', JSON.stringify(payload.save_the_date_design))
+    }
+    if (payload.text_effects !== undefined) {
+      formData.append('text_effects', JSON.stringify(payload.text_effects))
     }
     if (payload.stage_modes !== undefined) {
       formData.append('stage_modes', JSON.stringify(payload.stage_modes))

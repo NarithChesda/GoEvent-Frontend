@@ -14,20 +14,25 @@
          gradient for all of them at once, which kills the bloom. Overlaying it
          keeps the two independent — the base copy is untouched, and the gleam
          is purely additive. -->
-    <div class="script-stack">
-      <p class="script-label std-solid">
+    <!-- A metallic finish goes on the stack, not the label: the gleam reads the
+         metal's own lit/hot tones from it, so the pass of light is gold over
+         gold rather than the stage's ink colour laid across the foil. -->
+    <div class="script-stack" :class="finish">
+      <p class="script-label" :class="{ 'std-solid': !finish.length }">
         <span
           v-for="(char, i) in chars"
           :key="i"
           class="script-char"
           :style="{ '--std-char-delay': `${400 + i * 65}ms` }"
-          >{{ char === ' ' ? " " : char }}</span
+          ><span class="tfx-ink">{{ char === ' ' ? " " : char }}</span></span
         >
       </p>
       <p class="script-label script-gleam" aria-hidden="true">{{ label }}</p>
     </div>
 
-    <p v-if="longDate" class="std-longdate script-date std-solid">{{ longDate }}</p>
+    <p v-if="longDate" class="std-longdate script-date" :class="dateInkClass">
+      <span class="tfx-ink">{{ longDate }}</span>
+    </p>
 
     <!-- Draws last, once the date has settled, so the frame closes around
          finished copy rather than around copy still arriving. -->
@@ -38,6 +43,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { SaveTheDateDesignProps } from '../types'
+import { stdInkClass } from '../ink'
 
 /**
  * `script` — the decoration transition's original composition, unchanged.
@@ -57,6 +63,9 @@ import type { SaveTheDateDesignProps } from '../types'
  */
 const props = defineProps<SaveTheDateDesignProps>()
 const chars = computed(() => props.label.split(''))
+
+// Always solid, as above — unless a metallic finish replaces the ink outright.
+const dateInkClass = computed(() => stdInkClass('solid', props.finish))
 </script>
 
 <style scoped>
@@ -130,9 +139,9 @@ const chars = computed(() => props.label.split(''))
   background-image: linear-gradient(
     100deg,
     transparent 38%,
-    var(--std-ink-lit) 47%,
-    var(--std-hot) 50%,
-    var(--std-ink-lit) 53%,
+    var(--tfx-face, var(--std-ink-lit)) 47%,
+    var(--tfx-rim, var(--std-hot)) 50%,
+    var(--tfx-face, var(--std-ink-lit)) 53%,
     transparent 62%
   );
   background-size: 260% 100%;

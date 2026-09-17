@@ -9,9 +9,9 @@
       <h2
         :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }"
         class="leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular mb-3 sm:mb-4 md:mb-6 laptop-sm:mb-2 laptop-md:mb-2 desktop:mb-2 capitalize dress-code-header"
-        :class="[currentLanguage === 'kh' && 'khmer-text-fix']"
+        :class="[currentLanguage === 'kh' && 'khmer-text-fix', fx('primary')]"
       >
-        {{ sectionTitle }}
+        <span class="tfx-ink">{{ sectionTitle }}</span>
       </h2>
       <p
         v-if="sectionDescription"
@@ -77,6 +77,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import { computed, inject, reactive } from 'vue'
 import type { DressCode } from '../../types/showcase'
 import { translateRSVP, type SupportedLanguage } from '../../utils/translations'
@@ -155,6 +156,10 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Metallic lettering for the section heading, if the template struck its
+// primary slot in one (see useTextEffects.ts).
+const fx = useTextEffect()
 
 // Only provided by the editable manage-page preview frame — undefined on the
 // public showcase, so the add-dress-code affordance can never leak there.

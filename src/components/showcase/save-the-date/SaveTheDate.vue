@@ -9,6 +9,7 @@ import type {
   SaveTheDateDesignType,
 } from '@/services/api/types/template.types'
 import type { SaveTheDateParts } from './types'
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 
 import StdScript from './designs/StdScript.vue'
 import StdEngraved from './designs/StdEngraved.vue'
@@ -172,6 +173,11 @@ const contractStyle = computed<Record<string, string>>(() => {
   return style
 })
 
+// The primary slot's metallic finish, if the template struck one. The design
+// is still never told which template it is drawing — it receives classes, the
+// same way it receives the stage's ink. See ink.ts for why primary.
+const fx = useTextEffect()
+
 const designProps = computed(() => ({
   revealed: props.revealed,
   label: props.label,
@@ -179,6 +185,7 @@ const designProps = computed(() => ({
   numericDate: numericDate.value,
   parts: parts.value,
   ink: props.ink,
+  finish: fx('primary'),
   inkColor: props.inkColor,
   hotColor: props.hotColor,
 }))

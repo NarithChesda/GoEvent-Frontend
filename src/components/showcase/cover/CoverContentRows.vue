@@ -27,9 +27,10 @@
         >
           <h1
             class="scaled-header font-regular capitalize khmer-text-fix text-center"
+            :class="fx(fontSlot('header'))"
             :style="headerTextStyle"
           >
-            {{ displayTitle }}
+            <span class="tfx-ink">{{ displayTitle }}</span>
           </h1>
         </InlineEditableText>
       </div>
@@ -139,8 +140,12 @@
           :target="{ kind: 'eventText', textType: 'invite_text', field: 'content' }"
           :input-style="{ fontFamily: inviteTextStyle.fontFamily, color: inviteTextStyle.color }"
         >
-          <p class="scaled-invite-text khmer-text-fix text-center" :style="inviteTextStyle">
-            {{ displayInviteText }}
+          <p
+            class="scaled-invite-text khmer-text-fix text-center"
+            :class="fx(fontSlot('invite'))"
+            :style="inviteTextStyle"
+          >
+            <span class="tfx-ink">{{ displayInviteText }}</span>
           </p>
         </InlineEditableText>
       </div>
@@ -169,6 +174,7 @@
           :guest-title-frame-right="guestTitleFrameRight"
           :guest-frame="guestFrame"
           :max-width-px="guestNameMaxWidthPx"
+          :font-slot="fontSlot('guest')"
         />
       </div>
     </div>
@@ -186,9 +192,12 @@ import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vu
 import type { EditIntent } from '@/components/showcase-preview/edit/editContext'
 import type {
   CoverElementId,
+  CoverFontSlot,
   CoverLayoutMode,
   GuestFrameConfig,
 } from '@/services/api/types/template.types'
+import { COVER_ELEMENT_DEFAULT_FONT_SLOTS } from '@/composables/showcase/useCoverStageLayout'
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import fallbackLogoSvg from '@/assets/temp-showcase-logo.svg?raw'
 
 interface RowStyles {
@@ -240,6 +249,11 @@ interface Props {
   layoutMode?: CoverLayoutMode
   /** Centre-anchored box per block, resolved by useCoverStageLayout. */
   elementStyles?: Record<CoverElementId, Record<string, string>>
+  /**
+   * The font slot each block renders in (useCoverStageLayout's
+   * `elementFontSlots`), for its metallic finish. Absent = every block's default.
+   */
+  elementFontSlots?: Record<CoverElementId, CoverFontSlot>
   getMediaUrl: (url: string) => string
   displayLiquidGlass?: boolean
   guestTitleFrameLeft?: string | null
@@ -265,6 +279,12 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const isFree = computed(() => props.layoutMode === 'free' && !!props.elementStyles)
+
+// Metallic lettering follows the block's font slot, so a free block pointed at
+// a different slot takes that slot's finish along with its typeface.
+const fx = useTextEffect()
+const fontSlot = (id: CoverElementId): CoverFontSlot =>
+  props.elementFontSlots?.[id] ?? COVER_ELEMENT_DEFAULT_FONT_SLOTS[id]
 
 // One extra class, applied to all four blocks, carrying the absolute
 // centre-anchored positioning that free mode needs. Empty in rows mode so the

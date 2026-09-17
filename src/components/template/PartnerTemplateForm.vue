@@ -656,6 +656,52 @@
                 </div>
               </div>
             </section>
+
+            <!-- Text finish: metallic lettering, per font SLOT rather than per
+                 font row. Rows are per language, and a design that gilds its
+                 English headings but prints the same headings flat in Khmer is
+                 not a choice anyone makes — so one control per slot, and it
+                 follows that slot onto every stage (see useTextEffects.ts). -->
+            <section :class="[PANEL, 'p-4 space-y-3']">
+              <h5 :class="SECTION_HEADING">
+                {{ t('management.partnerTemplateForm.textEffects.sectionTitle') }}
+              </h5>
+              <p :class="FIELD_HINT">
+                {{ t('management.partnerTemplateForm.textEffects.hint') }}
+              </p>
+
+              <div
+                v-for="slot in textEffectSlots"
+                :key="slot"
+                class="pt-3 border-t border-slate-100 space-y-2"
+              >
+                <TemplateFormChoice
+                  :model-value="form.text_effects[slot].finish"
+                  :label="t(`management.templateSlots.fonts.${slot}.label`)"
+                  :options="textEffectFinishOptions"
+                  variant="segmented"
+                  @update:model-value="setTextEffectFinish(slot, $event)"
+                />
+                <!-- Kept in state while the finish is off, so switching a slot
+                     back on returns the metal the partner last chose. -->
+                <template v-if="form.text_effects[slot].finish !== 'none'">
+                  <TemplateFormChoice
+                    :model-value="form.text_effects[slot].metal"
+                    :label="t('management.partnerTemplateForm.textEffects.metalLabel')"
+                    :options="textEffectMetalOptions"
+                    variant="segmented"
+                    @update:model-value="setTextEffectMetal(slot, $event)"
+                  />
+                  <TemplateFormChoice
+                    :model-value="form.text_effects[slot].animation"
+                    :label="t('management.partnerTemplateForm.textEffects.animationLabel')"
+                    :options="textEffectAnimationOptions"
+                    variant="segmented"
+                    @update:model-value="setTextEffectAnimation(slot, $event)"
+                  />
+                </template>
+              </div>
+            </section>
           </template>
 
           <!-- ==================== COVER STAGE & LAYOUT ===================== -->
@@ -1943,8 +1989,22 @@ import type {
   StageMode,
   StageModesConfig,
   TransitionStageMode,
+  TextEffectAnimation,
+  TextEffectFinish,
+  TextEffectMetal,
+  TextEffectSlot,
+  TextEffectsConfig,
 } from '../../services/api'
 import { resolveStageModes } from '@/composables/showcase/useStageModes'
+import {
+  DEFAULT_TEXT_EFFECT_ANIMATION,
+  DEFAULT_TEXT_EFFECT_METAL,
+  TEXT_EFFECT_ANIMATIONS,
+  TEXT_EFFECT_FINISHES,
+  TEXT_EFFECT_METALS,
+  TEXT_EFFECT_SLOTS,
+  resolveTextEffect,
+} from '@/composables/showcase/useTextEffects'
 import PartnerTemplateFileField from './PartnerTemplateFileField.vue'
 import PartnerTemplatePreview from './PartnerTemplatePreview.vue'
 import TemplateSlotField from './TemplateSlotField.vue'
@@ -2194,6 +2254,15 @@ interface SparkFieldFormState {
   intensity: 'subtle' | 'normal' | 'bright'
 }
 
+/** A slot's finish as the form holds it: `none` is a slot with no finish. */
+type TextEffectFinishChoice = TextEffectFinish | 'none'
+
+interface TextEffectFormState {
+  finish: TextEffectFinishChoice
+  metal: TextEffectMetal
+  animation: TextEffectAnimation
+}
+
 interface FormState {
   name: string
   /** Menu position, lower first. See TEMPLATE_MENU_ORDER_DEFAULT. */
@@ -2282,7 +2351,17 @@ interface FormState {
   stage_mode_cover: StageMode
   stage_mode_transition: TransitionStageMode
   stage_mode_background: StageMode
+  /** Metallic lettering per V1 font slot. Every slot is always present here. */
+  text_effects: Record<TextEffectSlot, TextEffectFormState>
 }
+
+const defaultTextEffects = (): Record<TextEffectSlot, TextEffectFormState> =>
+  Object.fromEntries(
+    TEXT_EFFECT_SLOTS.map((slot) => [
+      slot,
+      { finish: 'none', metal: DEFAULT_TEXT_EFFECT_METAL, animation: DEFAULT_TEXT_EFFECT_ANIMATION },
+    ]),
+  ) as Record<TextEffectSlot, TextEffectFormState>
 
 const defaultFallingEffect = (): FallingEffectFormState => ({
   type: 'petals',
@@ -2366,6 +2445,7 @@ const defaultForm = (): FormState => ({
   stage_mode_cover: 'animation',
   stage_mode_transition: 'animation',
   stage_mode_background: 'animation',
+  text_effects: defaultTextEffects(),
 })
 
 const CREATURE_TYPES: AmbientCreatureEffectType[] = ['butterfly', 'dove', 'firefly', 'dragonfly', 'balloon', 'hummingbird']
@@ -3197,6 +3277,20 @@ const saveTheDateDesignModel = computed<string>({
  * at all. Shared by the save payload and the live preview draft so the two can't
  * drift.
  */
+/**
+ * Only the slots that carry a finish, or `null` when none does — the same value
+ * a template saved before this field existed has, so turning every finish off
+ * returns the template to exactly that state rather than to a map of nulls.
+ */
+const buildTextEffectsPayload = (): TextEffectsConfig | null => {
+  const config: TextEffectsConfig = {}
+  for (const slot of TEXT_EFFECT_SLOTS) {
+    const { finish, metal, animation } = form.text_effects[slot]
+    if (finish !== 'none') config[slot] = { finish, metal, animation }
+  }
+  return Object.keys(config).length ? config : null
+}
+
 const buildSaveTheDateDesignPayload = (): SaveTheDateDesignConfig | null =>
   form.save_the_date_design_type === 'auto'
     ? null
@@ -3213,6 +3307,71 @@ const buildSaveTheDateDesignPayload = (): SaveTheDateDesignConfig | null =>
 // and the animated middle beat was additionally a wedding-only accident of
 // having uploaded no cover film.
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Text finish
+
+const textEffectFinishOptions = computed(() => [
+  { value: 'none', label: t('management.partnerTemplateForm.textEffects.finishes.none') },
+  { value: 'foil', label: t('management.partnerTemplateForm.textEffects.finishes.foil') },
+  { value: 'relief', label: t('management.partnerTemplateForm.textEffects.finishes.relief') },
+])
+
+const textEffectMetalOptions = computed(() =>
+  TEXT_EFFECT_METALS.map((metal) => ({
+    value: metal,
+    label: t(`management.partnerTemplateForm.textEffects.metals.${metal}`),
+  })),
+)
+
+// The choice controls emit a plain string; only a value this form offered is
+// written back, so the state can never hold something the payload can't send.
+const setTextEffectFinish = (slot: TextEffectSlot, value: string) => {
+  if (value === 'none' || (TEXT_EFFECT_FINISHES as readonly string[]).includes(value)) {
+    form.text_effects[slot].finish = value as TextEffectFinishChoice
+  }
+}
+
+const setTextEffectMetal = (slot: TextEffectSlot, value: string) => {
+  if ((TEXT_EFFECT_METALS as readonly string[]).includes(value)) {
+    form.text_effects[slot].metal = value as TextEffectMetal
+  }
+}
+
+const textEffectAnimationOptions = computed(() =>
+  TEXT_EFFECT_ANIMATIONS.map((animation) => ({
+    value: animation,
+    label: t(`management.partnerTemplateForm.textEffects.animations.${animation}`),
+  })),
+)
+
+const setTextEffectAnimation = (slot: TextEffectSlot, value: string) => {
+  if ((TEXT_EFFECT_ANIMATIONS as readonly string[]).includes(value)) {
+    form.text_effects[slot].animation = value as TextEffectAnimation
+  }
+}
+
+/**
+ * Which slots get a control. Primary and secondary draw type on every
+ * template; accent and decorative draw only where a free-placed cover block
+ * was pointed at them, so they are offered exactly then — plus whenever one
+ * already carries a finish, so it can still be taken off.
+ */
+const textEffectSlots = computed<TextEffectSlot[]>(() => {
+  const layout = form.cover_stage_layout
+  const pickedByCover = new Set(
+    layout.layoutMode === 'free'
+      ? Object.values(layout.coverElements ?? {}).map((box) => box?.fontType)
+      : [],
+  )
+  return TEXT_EFFECT_SLOTS.filter(
+    (slot) =>
+      slot === 'primary' ||
+      slot === 'secondary' ||
+      pickedByCover.has(slot) ||
+      form.text_effects[slot].finish !== 'none',
+  )
+})
 
 const stageModeOptions = computed(() => [
   { value: 'animation', label: t('management.partnerTemplateForm.stageModes.animation'), icon: Sparkles },
@@ -4177,6 +4336,13 @@ watch(
       form.stage_mode_cover = template.stage_modes?.cover ?? inferredModes.cover
       form.stage_mode_transition = template.stage_modes?.transition ?? inferredModes.transition
       form.stage_mode_background = template.stage_modes?.background ?? inferredModes.background
+      // Hydrate the text finishes through the showcase's own resolver, so an
+      // unknown value opens as exactly what guests see: no finish, or gold.
+      form.text_effects = defaultTextEffects()
+      for (const slot of TEXT_EFFECT_SLOTS) {
+        const effect = resolveTextEffect(template.text_effects?.[slot])
+        if (effect) form.text_effects[slot] = { ...effect }
+      }
       // Hydrate ambient creatures
       if (template.ambient_creatures) {
         form.ambient_creatures_enabled = true
@@ -4456,6 +4622,7 @@ async function handleSave(): Promise<void> {
       dress_code_design: { type: form.dress_code_design_type },
       save_the_date_design: buildSaveTheDateDesignPayload(),
       stage_modes: buildStageModesPayload(),
+      text_effects: buildTextEffectsPayload(),
     }
 
     // Add file fields that have been set. The asset list is shared with the
@@ -4769,6 +4936,7 @@ const previewDraft = computed<PartnerTemplateDraft>(() => {
     dress_code_design: { type: form.dress_code_design_type },
     save_the_date_design: buildSaveTheDateDesignPayload(),
     stage_modes: buildStageModesPayload(),
+    text_effects: buildTextEffectsPayload(),
     colors: previewColors.value,
     fonts: previewFonts.value,
     files,

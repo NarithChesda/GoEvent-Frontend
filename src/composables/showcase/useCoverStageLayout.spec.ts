@@ -63,6 +63,26 @@ describe('cover element type slots', () => {
     })
     expect(sent.coverElements.guest?.colorSource).toBe('custom')
   })
+
+  // The metallic finish is a class, so it can't follow the font through the
+  // `--cover-block-font` variable reference; it reads the resolved slot instead,
+  // and has to agree with the variable about which slot that is.
+  it('resolves each block\'s slot for its metallic finish', () => {
+    const { elementFontSlots } = useCoverStageLayout(computed(() => layout))
+    expect(elementFontSlots.value).toEqual({
+      header: 'decorative',
+      logo: 'primary',
+      invite: 'secondary',
+      guest: 'primary',
+    })
+  })
+
+  it('ignores picked slots in rows mode, as the styles do', () => {
+    const { elementFontSlots } = useCoverStageLayout(
+      computed(() => ({ ...layout, layoutMode: 'rows' as const })),
+    )
+    expect(elementFontSlots.value.header).toBe('primary')
+  })
 })
 
 /**

@@ -194,6 +194,18 @@ export const COVER_FONT_SLOT_VARS: Record<CoverFontSlot, string> = {
   decorative: '--tpl-font-decorative',
 }
 
+/**
+ * The slot each block renders in when it hasn't picked one — the fallback
+ * expression of its own `--cover-block-font`. `logo` draws no text; it is here
+ * only so the record is total.
+ */
+export const COVER_ELEMENT_DEFAULT_FONT_SLOTS: Record<CoverElementId, CoverFontSlot> = {
+  header: 'primary',
+  logo: 'primary',
+  invite: 'secondary',
+  guest: 'primary',
+}
+
 export const COVER_COLOR_SLOT_VARS: Record<
   Exclude<CoverElementColorSource, 'custom'>,
   string
@@ -497,6 +509,25 @@ export function useCoverStageLayout(
   })
 
   /**
+   * The font slot each block renders in: the one it picked in free placement,
+   * else its default. The font itself never needs this — it reaches the block
+   * by CSS variable reference (see coverElementStyle) — but a slot's metallic
+   * finish is a class, and a class cannot be resolved through a variable.
+   *
+   * Rows mode ignores `fontType` exactly as the styles do: those blocks never
+   * set `--cover-block-font`, so they render in their default slot.
+   */
+  const elementFontSlots = computed<Record<CoverElementId, CoverFontSlot>>(() => {
+    const slots = { ...COVER_ELEMENT_DEFAULT_FONT_SLOTS }
+    if (!isFreeLayout.value) return slots
+    for (const id of COVER_ELEMENT_IDS) {
+      const picked = elements.value[id].fontType
+      if (picked) slots[id] = picked
+    }
+    return slots
+  })
+
+  /**
    * Pre-computed style for inner container positioning
    */
   const containerStyle = computed(() => ({
@@ -552,6 +583,7 @@ export function useCoverStageLayout(
     isFreeLayout,
     elements,
     elementStyles,
+    elementFontSlots,
     guestFrame,
     coverGilding,
     containerStyle,

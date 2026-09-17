@@ -19,6 +19,7 @@
             :class="[
               'text-base sm:text-lg md:text-xl lg:text-2xl font-regular leading-tight capitalize',
               currentLanguage === 'kh' && 'khmer-text-fix',
+              fx('primary'),
             ]"
             :style="{
               fontFamily: primaryFont || currentFont,
@@ -30,8 +31,8 @@
               :key="`thank-title-${currentLanguage}-${index}`"
               class="bounce-word"
               :style="{ animationDelay: `${animationDelays.thankYouTitle + wordCascadeDelay(index)}s` }"
-              >{{ word
-              }}{{ index < splitToWords(thankYouMessage.title).length - 1 ? '\u00A0' : '' }}</span
+              ><span class="tfx-ink">{{ word
+              }}{{ index < splitToWords(thankYouMessage.title).length - 1 ? '\u00A0' : '' }}</span></span
             >
           </h2>
         </InlineEditableText>
@@ -90,6 +91,7 @@
             :class="[
               'text-base sm:text-lg md:text-xl lg:text-2xl font-regular leading-tight capitalize',
               currentLanguage === 'kh' && 'khmer-text-fix',
+              fx('primary'),
             ]"
             :style="{
               fontFamily: primaryFont || currentFont,
@@ -101,8 +103,8 @@
               :key="`sorry-title-${currentLanguage}-${index}`"
               class="bounce-word"
               :style="{ animationDelay: `${animationDelays.sorryTitle + wordCascadeDelay(index)}s` }"
-              >{{ word
-              }}{{ index < splitToWords(sorryMessage.title).length - 1 ? '\u00A0' : '' }}</span
+              ><span class="tfx-ink">{{ word
+              }}{{ index < splitToWords(sorryMessage.title).length - 1 ? '\u00A0' : '' }}</span></span
             >
           </h2>
         </InlineEditableText>
@@ -151,6 +153,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
@@ -177,6 +180,10 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Metallic lettering for the section heading, if the template struck its
+// primary slot in one (see useTextEffects.ts).
+const fx = useTextEffect()
 
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 

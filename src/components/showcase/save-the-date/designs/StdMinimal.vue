@@ -1,13 +1,14 @@
 <template>
   <div class="std std-minimal" :class="{ 'is-revealed': revealed }">
-    <p class="std-eyebrow min-label std-rise" :class="inkClass">{{ label }}</p>
-    <p v-if="longDate" class="min-date std-rise" :class="inkClass">{{ longDate }}</p>
+    <p class="std-eyebrow min-label std-rise" :class="inkClass"><span class="tfx-ink">{{ label }}</span></p>
+    <p v-if="longDate" class="min-date std-rise" :class="inkClass"><span class="tfx-ink">{{ longDate }}</span></p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { SaveTheDateDesignProps } from '../types'
+import { stdInkClass } from '../ink'
 
 /**
  * `minimal` — no rules, no ornament, no numeral. A small tracked label over the
@@ -25,7 +26,7 @@ import type { SaveTheDateDesignProps } from '../types'
  */
 const props = defineProps<SaveTheDateDesignProps>()
 
-const inkClass = computed(() => (props.ink === 'metal' ? 'std-metal' : 'std-solid'))
+const inkClass = computed(() => stdInkClass(props.ink, props.finish))
 </script>
 
 <style scoped>

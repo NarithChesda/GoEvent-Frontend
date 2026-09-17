@@ -44,6 +44,12 @@ export interface SaveTheDateDesignProps {
   parts: SaveTheDateParts | null
   /** Which fill the host stage's ground calls for. See save-the-date-base.css. */
   ink: 'solid' | 'metal'
+  /**
+   * The template's metallic finish for its primary slot, as classes (empty when
+   * it has none). Replaces `ink` wherever it is set — see ink.ts — and needs
+   * every run of copy wrapped in `<span class="tfx-ink">`.
+   */
+  finish: string[]
   /** The ink colour as a plain string, for SVG strokes. */
   inkColor: string
   /** The specular hotspot as a plain string, for SVG fills. */

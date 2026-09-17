@@ -30,7 +30,7 @@
       <div v-if="hosts.length > 0" class="title-row">
         <div class="host-title-left">
           <p
-            :class="['parent-name-text leading-normal text-center opacity-90', getKhmerClass(currentLanguage)]"
+            :class="['parent-name-text leading-normal text-center opacity-90', getKhmerClass(currentLanguage), fx('secondary')]"
             :style="titleTextStyle"
           >
             <span
@@ -38,14 +38,14 @@
               :key="`title-left-${currentLanguage}-${index}`"
               class="bounce-word"
               :style="{ animationDelay: `${animationDelays.titleLeft + wordCascadeDelay(index)}s` }"
-            >{{ word }}{{ index < splitToWords(leftHostTitle).length - 1 ? '\u00A0' : '' }}</span>
+            ><span class="tfx-ink">{{ word }}{{ index < splitToWords(leftHostTitle).length - 1 ? '\u00A0' : '' }}</span></span>
           </p>
         </div>
         <div class="center-spacer"></div>
         <div class="host-title-right">
           <p
             v-if="hosts.length > 1"
-            :class="['parent-name-text leading-normal text-center opacity-90', getKhmerClass(currentLanguage)]"
+            :class="['parent-name-text leading-normal text-center opacity-90', getKhmerClass(currentLanguage), fx('secondary')]"
             :style="titleTextStyle"
           >
             <span
@@ -53,7 +53,7 @@
               :key="`title-right-${currentLanguage}-${index}`"
               class="bounce-word"
               :style="{ animationDelay: `${animationDelays.titleRight + wordCascadeDelay(index)}s` }"
-            >{{ word }}{{ index < splitToWords(rightHostTitle).length - 1 ? '\u00A0' : '' }}</span>
+            ><span class="tfx-ink">{{ word }}{{ index < splitToWords(rightHostTitle).length - 1 ? '\u00A0' : '' }}</span></span>
           </p>
         </div>
       </div>
@@ -62,7 +62,7 @@
       <div v-if="hosts.length > 0" class="name-row">
         <div class="host-name-left">
           <h3
-            :class="['host-name-text font-regular leading-tight capitalize', getKhmerClass(currentLanguage)]"
+            :class="['host-name-text font-regular leading-tight capitalize', getKhmerClass(currentLanguage), fx('primary')]"
             :style="nameTextStyle"
           >
             <span
@@ -70,14 +70,14 @@
               :key="`name-left-${currentLanguage}-${index}`"
               class="bounce-word"
               :style="{ animationDelay: `${animationDelays.nameLeft + wordCascadeDelay(index)}s` }"
-            >{{ word }}{{ index < splitToWords(hosts[0].name).length - 1 ? '\u00A0' : '' }}</span>
+            ><span class="tfx-ink">{{ word }}{{ index < splitToWords(hosts[0].name).length - 1 ? '\u00A0' : '' }}</span></span>
           </h3>
         </div>
         <div class="center-spacer"></div>
         <div class="host-name-right">
           <h3
             v-if="hosts.length > 1"
-            :class="['host-name-text font-regular leading-tight capitalize', getKhmerClass(currentLanguage)]"
+            :class="['host-name-text font-regular leading-tight capitalize', getKhmerClass(currentLanguage), fx('primary')]"
             :style="nameTextStyle"
           >
             <span
@@ -85,7 +85,7 @@
               :key="`name-right-${currentLanguage}-${index}`"
               class="bounce-word"
               :style="{ animationDelay: `${animationDelays.nameRight + wordCascadeDelay(index)}s` }"
-            >{{ word }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? '\u00A0' : '' }}</span>
+            ><span class="tfx-ink">{{ word }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? '\u00A0' : '' }}</span></span>
           </h3>
         </div>
       </div>
@@ -122,6 +122,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { HostInfoProps } from '@/types/showcase'
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import {
   WelcomeHeader,
@@ -135,6 +136,9 @@ import {
 } from './shared'
 
 const props = defineProps<HostInfoProps>()
+
+// Metallic lettering per font slot (see useTextEffects.ts).
+const fx = useTextEffect()
 
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 

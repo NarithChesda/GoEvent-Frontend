@@ -28,6 +28,7 @@
           <h2
             v-if="hosts.length > 0"
             class="simple-name-text leading-tight"
+            :class="fx('primary')"
             :style="simpleNameStyle"
           >
             <span
@@ -35,14 +36,14 @@
               :key="`simple-name-left-${currentLanguage}-${index}`"
               class="bounce-word"
               :style="{ animationDelay: `${simpleAnimationDelays.nameLeft + wordCascadeDelay(index)}s` }"
-              >{{ word }}{{ index < splitToWords(hosts[0].name).length - 1 ? ' ' : '' }}</span
+              ><span class="tfx-ink">{{ word }}{{ index < splitToWords(hosts[0].name).length - 1 ? ' ' : '' }}</span></span
             >
           </h2>
         </InlineEditableText>
 
-        <div v-if="hosts.length > 1" class="simple-amp" :style="simpleNameStyle">
+        <div v-if="hosts.length > 1" class="simple-amp" :class="fx('primary')" :style="simpleNameStyle">
           <span class="bounce-word" :style="{ animationDelay: `${simpleAnimationDelays.amp}s` }"
-            >&amp;</span
+            ><span class="tfx-ink">&amp;</span></span
           >
         </div>
 
@@ -52,7 +53,7 @@
           :target="{ kind: 'host', hostId: hosts[1]?.id ?? 0, field: 'name' }"
           :input-style="{ fontFamily: simpleNameStyle.fontFamily, color: simpleNameStyle.color }"
         >
-          <h2 class="simple-name-text leading-tight" :style="simpleNameStyle">
+          <h2 class="simple-name-text leading-tight" :class="fx('primary')" :style="simpleNameStyle">
             <span
               v-for="(word, index) in splitToWords(hosts[1]?.name)"
               :key="`simple-name-right-${currentLanguage}-${index}`"
@@ -60,7 +61,7 @@
               :style="{
                 animationDelay: `${simpleAnimationDelays.nameRight + wordCascadeDelay(index)}s`,
               }"
-              >{{ word }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? ' ' : '' }}</span
+              ><span class="tfx-ink">{{ word }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? ' ' : '' }}</span></span
             >
           </h2>
         </InlineEditableText>
@@ -130,6 +131,7 @@
                 :text="hosts[0].parent_a_name || hosts[0].parent_b_name || ''"
                 :color="primaryColor"
                 :font-family="primaryFont || currentFont"
+                font-slot="primary"
                 :base-delay="animationDelays.parentALeft"
                 :word-delay="WORD_DELAY"
                 :key-prefix="`parent-a-left-${currentLanguage}`"
@@ -159,6 +161,7 @@
                 :text="hosts[1]?.parent_a_name || hosts[1]?.parent_b_name || ''"
                 :color="primaryColor"
                 :font-family="primaryFont || currentFont"
+                font-slot="primary"
                 :base-delay="animationDelays.parentARight"
                 :word-delay="WORD_DELAY"
                 :key-prefix="`parent-a-right-${currentLanguage}`"
@@ -187,6 +190,7 @@
                 :text="hosts[0].parent_b_name || ''"
                 :color="primaryColor"
                 :font-family="primaryFont || currentFont"
+                font-slot="primary"
                 :base-delay="animationDelays.parentBLeft"
                 :word-delay="WORD_DELAY"
                 :key-prefix="`parent-b-left-${currentLanguage}`"
@@ -212,6 +216,7 @@
                 :text="hosts[1]?.parent_b_name || ''"
                 :color="primaryColor"
                 :font-family="primaryFont || currentFont"
+                font-slot="primary"
                 :base-delay="animationDelays.parentBRight"
                 :word-delay="WORD_DELAY"
                 :key-prefix="`parent-b-right-${currentLanguage}`"
@@ -251,6 +256,7 @@
                 :class="[
                   'parent-name-text leading-normal text-center opacity-90',
                   getKhmerClass(currentLanguage),
+                  fx('secondary'),
                 ]"
                 :style="titleTextStyle"
               >
@@ -259,8 +265,8 @@
                   :key="`title-left-${currentLanguage}-${index}`"
                   class="bounce-word"
                   :style="{ animationDelay: `${animationDelays.titleLeft + wordCascadeDelay(index)}s` }"
-                  >{{ word
-                  }}{{ index < splitToWords(leftHostTitle).length - 1 ? '\u00A0' : '' }}</span
+                  ><span class="tfx-ink">{{ word
+                  }}{{ index < splitToWords(leftHostTitle).length - 1 ? '\u00A0' : '' }}</span></span
                 >
               </p>
             </HostTitleFrame>
@@ -283,6 +289,7 @@
                 :class="[
                   'parent-name-text leading-normal text-center opacity-90',
                   getKhmerClass(currentLanguage),
+                  fx('secondary'),
                 ]"
                 :style="titleTextStyle"
               >
@@ -291,8 +298,8 @@
                   :key="`title-right-${currentLanguage}-${index}`"
                   class="bounce-word"
                   :style="{ animationDelay: `${animationDelays.titleRight + wordCascadeDelay(index)}s` }"
-                  >{{ word
-                  }}{{ index < splitToWords(rightHostTitle).length - 1 ? '\u00A0' : '' }}</span
+                  ><span class="tfx-ink">{{ word
+                  }}{{ index < splitToWords(rightHostTitle).length - 1 ? '\u00A0' : '' }}</span></span
                 >
               </p>
             </HostTitleFrame>
@@ -309,7 +316,7 @@
             :input-style="{ fontFamily: nameTextStyle.fontFamily, color: nameTextStyle.color }"
           >
             <h3
-              :class="['host-name-text font-regular leading-tight', getKhmerClass(currentLanguage)]"
+              :class="['host-name-text font-regular leading-tight', getKhmerClass(currentLanguage), fx('primary')]"
               :style="nameTextStyle"
             >
               <span
@@ -317,8 +324,8 @@
                 :key="`name-left-${currentLanguage}-${index}`"
                 class="bounce-word"
                 :style="{ animationDelay: `${animationDelays.nameLeft + wordCascadeDelay(index)}s` }"
-                >{{ word
-                }}{{ index < splitToWords(hosts[0].name).length - 1 ? '\u00A0' : '' }}</span
+                ><span class="tfx-ink">{{ word
+                }}{{ index < splitToWords(hosts[0].name).length - 1 ? '\u00A0' : '' }}</span></span
               >
             </h3>
           </InlineEditableText>
@@ -332,7 +339,7 @@
             :input-style="{ fontFamily: nameTextStyle.fontFamily, color: nameTextStyle.color }"
           >
             <h3
-              :class="['host-name-text font-regular leading-tight', getKhmerClass(currentLanguage)]"
+              :class="['host-name-text font-regular leading-tight', getKhmerClass(currentLanguage), fx('primary')]"
               :style="nameTextStyle"
             >
               <span
@@ -340,8 +347,8 @@
                 :key="`name-right-${currentLanguage}-${index}`"
                 class="bounce-word"
                 :style="{ animationDelay: `${animationDelays.nameRight + wordCascadeDelay(index)}s` }"
-                >{{ word
-                }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? '\u00A0' : '' }}</span
+                ><span class="tfx-ink">{{ word
+                }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? '\u00A0' : '' }}</span></span
               >
             </h3>
           </InlineEditableText>
@@ -420,6 +427,7 @@ import { computed, inject } from 'vue'
 import type { HostInfoProps } from '@/types/showcase'
 import type { HostFrameStyle, CoupleOrnament } from '@/services/api/types/template.types'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
@@ -449,6 +457,8 @@ const editIntentCtx = inject(EditIntentKey, undefined)
 // Present in every preview frame, editable or not. See previewContext.ts.
 const previewCtx = inject(PreviewFrameKey, undefined)
 const { t: tApp } = useAppLanguage()
+// Metallic lettering per font slot. Names are primary, titles secondary.
+const fx = useTextEffect()
 
 const addPhotoLabel = computed(() => tApp('management.showcasePreview.editors.addHostPhoto'))
 

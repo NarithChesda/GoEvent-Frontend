@@ -49,6 +49,7 @@
               :text="hosts[0].parent_a_name || hosts[0].parent_b_name || ''"
               :color="primaryColor"
               :font-family="primaryFont || currentFont"
+              font-slot="primary"
               :base-delay="delays.parentALeft"
               :word-delay="WORD_DELAY"
               :key-prefix="`crest-parent-a-left-${currentLanguage}`"
@@ -78,6 +79,7 @@
               :text="hosts[1]?.parent_a_name || hosts[1]?.parent_b_name || ''"
               :color="primaryColor"
               :font-family="primaryFont || currentFont"
+              font-slot="primary"
               :base-delay="delays.parentARight"
               :word-delay="WORD_DELAY"
               :key-prefix="`crest-parent-a-right-${currentLanguage}`"
@@ -105,6 +107,7 @@
               :text="hosts[0].parent_b_name || ''"
               :color="primaryColor"
               :font-family="primaryFont || currentFont"
+              font-slot="primary"
               :base-delay="delays.parentBLeft"
               :word-delay="WORD_DELAY"
               :key-prefix="`crest-parent-b-left-${currentLanguage}`"
@@ -130,6 +133,7 @@
               :text="hosts[1]?.parent_b_name || ''"
               :color="primaryColor"
               :font-family="primaryFont || currentFont"
+              font-slot="primary"
               :base-delay="delays.parentBRight"
               :word-delay="WORD_DELAY"
               :key-prefix="`crest-parent-b-right-${currentLanguage}`"
@@ -153,7 +157,7 @@
         :input-style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
       >
         <h2
-          :class="['crest-invite-title text-center', getKhmerClass(currentLanguage)]"
+          :class="['crest-invite-title text-center', getKhmerClass(currentLanguage), fx('primary')]"
           :style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
         >
           <span
@@ -161,8 +165,8 @@
             :key="`crest-invite-title-${currentLanguage}-${index}`"
             class="bounce-word"
             :style="{ animationDelay: `${delays.inviteTitle + wordCascadeDelay(index)}s` }"
-            >{{ word
-            }}{{ index < splitToWords(descriptionTitle).length - 1 ? '\u00A0' : '' }}</span
+            ><span class="tfx-ink">{{ word
+            }}{{ index < splitToWords(descriptionTitle).length - 1 ? '\u00A0' : '' }}</span></span
           >
         </h2>
       </InlineEditableText>
@@ -227,6 +231,7 @@
             :class="[
               'parent-name-text leading-normal text-center opacity-90',
               getKhmerClass(currentLanguage),
+              fx('secondary'),
             ]"
             :style="titleStyle"
           >
@@ -235,8 +240,8 @@
               :key="`crest-title-left-${currentLanguage}-${index}`"
               class="bounce-word"
               :style="{ animationDelay: `${delays.titleLeft + wordCascadeDelay(index)}s` }"
-              >{{ word
-              }}{{ index < splitToWords(leftHostTitle).length - 1 ? '\u00A0' : '' }}</span
+              ><span class="tfx-ink">{{ word
+              }}{{ index < splitToWords(leftHostTitle).length - 1 ? '\u00A0' : '' }}</span></span
             >
           </p>
         </InlineEditableText>
@@ -247,7 +252,7 @@
           :input-style="{ fontFamily: nameStyle.fontFamily, color: nameStyle.color }"
         >
           <h3
-            :class="['host-name-text font-regular leading-tight', getKhmerClass(currentLanguage)]"
+            :class="['host-name-text font-regular leading-tight', getKhmerClass(currentLanguage), fx('primary')]"
             :style="nameStyle"
           >
             <span
@@ -255,8 +260,8 @@
               :key="`crest-name-left-${currentLanguage}-${index}`"
               class="bounce-word"
               :style="{ animationDelay: `${delays.nameLeft + wordCascadeDelay(index)}s` }"
-              >{{ word
-              }}{{ index < splitToWords(hosts[0].name).length - 1 ? '\u00A0' : '' }}</span
+              ><span class="tfx-ink">{{ word
+              }}{{ index < splitToWords(hosts[0].name).length - 1 ? '\u00A0' : '' }}</span></span
             >
           </h3>
         </InlineEditableText>
@@ -282,6 +287,7 @@
             :class="[
               'parent-name-text leading-normal text-center opacity-90',
               getKhmerClass(currentLanguage),
+              fx('secondary'),
             ]"
             :style="titleStyle"
           >
@@ -290,8 +296,8 @@
               :key="`crest-title-right-${currentLanguage}-${index}`"
               class="bounce-word"
               :style="{ animationDelay: `${delays.titleRight + wordCascadeDelay(index)}s` }"
-              >{{ word
-              }}{{ index < splitToWords(rightHostTitle).length - 1 ? '\u00A0' : '' }}</span
+              ><span class="tfx-ink">{{ word
+              }}{{ index < splitToWords(rightHostTitle).length - 1 ? '\u00A0' : '' }}</span></span
             >
           </p>
         </InlineEditableText>
@@ -302,7 +308,7 @@
           :input-style="{ fontFamily: nameStyle.fontFamily, color: nameStyle.color }"
         >
           <h3
-            :class="['host-name-text font-regular leading-tight', getKhmerClass(currentLanguage)]"
+            :class="['host-name-text font-regular leading-tight', getKhmerClass(currentLanguage), fx('primary')]"
             :style="nameStyle"
           >
             <span
@@ -310,8 +316,8 @@
               :key="`crest-name-right-${currentLanguage}-${index}`"
               class="bounce-word"
               :style="{ animationDelay: `${delays.nameRight + wordCascadeDelay(index)}s` }"
-              >{{ word
-              }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? '\u00A0' : '' }}</span
+              ><span class="tfx-ink">{{ word
+              }}{{ index < splitToWords(hosts[1]?.name).length - 1 ? '\u00A0' : '' }}</span></span
             >
           </h3>
         </InlineEditableText>
@@ -341,6 +347,7 @@ import type { CoupleOrnament } from '@/services/api/types/template.types'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import CoupleOrnamentMark from '../shared/frames/CoupleOrnamentMark.vue'
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import HostBreaklineMark from '../shared/frames/HostBreaklineMark.vue'
 import {
   HostLogo,
@@ -372,6 +379,10 @@ import {
  * responsive ladder and cannot drift apart on a breakpoint.
  */
 const props = defineProps<HostInfoProps>()
+
+// Metallic lettering per font slot: the invitation heading and the names are
+// primary, the titles secondary. The invitation sentence is prose and takes none.
+const fx = useTextEffect()
 
 const WORD_DELAY = ANIMATION_CONSTANTS.WORD_DELAY
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP

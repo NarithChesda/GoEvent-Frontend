@@ -97,6 +97,7 @@
         :row-styles="rowStyles"
         :layout-mode="layoutMode"
         :element-styles="elementStyles"
+        :element-font-slots="elementFontSlots"
         :get-media-url="getMediaUrl"
         :display-liquid-glass="displayLiquidGlass"
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
@@ -143,6 +144,7 @@
         :row-styles="rowStyles"
         :layout-mode="layoutMode"
         :element-styles="elementStyles"
+        :element-font-slots="elementFontSlots"
         :get-media-url="getMediaUrl"
         :display-liquid-glass="displayLiquidGlass"
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
@@ -205,6 +207,7 @@
         :row-styles="rowStyles"
         :layout-mode="layoutMode"
         :element-styles="elementStyles"
+        :element-font-slots="elementFontSlots"
         :get-media-url="getMediaUrl"
         :display-liquid-glass="displayLiquidGlass"
         :guest-title-frame-left="templateAssets?.guest_title_frame_left"
@@ -350,6 +353,7 @@ const {
   rowStyles,
   layoutMode,
   elementStyles,
+  elementFontSlots,
   guestFrame,
   coverGilding,
   decorationZIndexes,

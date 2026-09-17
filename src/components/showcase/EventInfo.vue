@@ -24,6 +24,7 @@
             :class="[
               'text-base sm:text-lg md:text-xl lg:text-2xl font-regular leading-tight capitalize',
               currentLanguage === 'kh' && 'khmer-text-fix',
+              fx('primary'),
             ]"
             :style="{
               fontFamily: primaryFont || currentFont,
@@ -35,7 +36,7 @@
               :key="`title-${currentLanguage}-${index}`"
               class="bounce-word"
               :style="{ animationDelay: `${animationDelays.title + wordCascadeDelay(index)}s` }"
-            >{{ word }}{{ index < splitToWords(descriptionTitle).length - 1 ? '\u00A0' : '' }}</span>
+            ><span class="tfx-ink">{{ word }}{{ index < splitToWords(descriptionTitle).length - 1 ? '\u00A0' : '' }}</span></span>
           </h2>
         </InlineEditableText>
       </div>
@@ -107,8 +108,9 @@
           <div
             v-if="dateParts.day"
             class="date-day"
+            :class="fx('primary')"
             :style="{ fontFamily: primaryFont || currentFont }"
-          >{{ dateParts.day }}</div>
+          ><span class="tfx-ink">{{ dateParts.day }}</span></div>
           <div
             v-if="dateParts.month"
             class="date-month"
@@ -170,8 +172,9 @@
           ></span>
           <div
             class="flanked-day details-line"
+            :class="fx('primary')"
             :style="{ fontFamily: primaryFont || currentFont, animationDelay: detailsTextDelay(1) }"
-          >{{ dateParts.day }}</div>
+          ><span class="tfx-ink">{{ dateParts.day }}</span></div>
           <span
             class="flanked-rule"
             aria-hidden="true"
@@ -266,8 +269,9 @@
           >{{ dateParts.weekday }}</div>
           <div
             class="arch-day details-line"
+            :class="fx('primary')"
             :style="{ fontFamily: primaryFont || currentFont, animationDelay: detailsTextDelay(1) }"
-          >{{ dateParts.day }}</div>
+          ><span class="tfx-ink">{{ dateParts.day }}</span></div>
           <div
             :class="['arch-month details-line', currentLanguage === 'kh' && 'khmer-text-fix']"
             :style="{ fontFamily: secondaryFont || currentFont, animationDelay: detailsTextDelay(2) }"
@@ -318,8 +322,9 @@
           >{{ monthShort }}</div>
           <div
             class="ticket-day details-line"
+            :class="fx('primary')"
             :style="{ fontFamily: primaryFont || currentFont, animationDelay: detailsTextDelay(1) }"
-          >{{ dateParts.day }}</div>
+          ><span class="tfx-ink">{{ dateParts.day }}</span></div>
           <div
             v-if="dateYear"
             class="ticket-year details-line"
@@ -636,6 +641,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import { computed, ref, onMounted, onUnmounted, watch, nextTick, inject } from 'vue'
 import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
@@ -702,6 +708,10 @@ interface Props {
   /** Hex colour, read only when detailsMarkerColorSource is 'custom'. */
   detailsMarkerCustomColor?: string | null
 }
+
+// Metallic lettering for the display type drawn in a finished slot: the
+// description title and the day numeral (see useTextEffects.ts).
+const fx = useTextEffect()
 
 const props = withDefaults(defineProps<Props>(), {
   showRsvp: false,

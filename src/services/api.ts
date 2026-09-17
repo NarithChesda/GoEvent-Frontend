@@ -131,6 +131,12 @@ export type {
   StageMode,
   StageModesConfig,
   TransitionStageMode,
+  TextEffectFinish,
+  TextEffectMetal,
+  TextEffectAnimation,
+  TextEffectConfig,
+  TextEffectSlot,
+  TextEffectsConfig,
 } from './api/types/template.types'
 
 export {

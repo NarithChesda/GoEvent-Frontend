@@ -16,6 +16,7 @@ import type {
   SaveTheDateDesignConfig,
   SparkFieldConfig,
   StageModesConfig,
+  TextEffectsConfig,
 } from '../services/api/types/template.types'
 import type { StoredMusicStartStage } from '../services/api/types/event.types'
 
@@ -241,6 +242,12 @@ export interface TemplateAssets {
    * uploaded videos — see resolveStageModes.
    */
   stage_modes?: StageModesConfig | null
+  /**
+   * Metallic lettering per font slot (foil | relief, in gold | rose gold |
+   * silver). Absent means no finish on any slot — every template saved before
+   * this field existed. See useTextEffects.ts.
+   */
+  text_effects?: TextEffectsConfig | null
   display_liquid_glass_background?: boolean
   guest_title_frame_left?: string | null
   guest_title_frame_mid?: string | null

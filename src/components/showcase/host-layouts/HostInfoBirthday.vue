@@ -72,14 +72,14 @@
     <p
       v-if="showHostNameUnderLogo && displayHostName"
       class="host-name-under-logo bounce-in-element"
-      :class="{ 'khmer-text-fix': currentLanguage === 'kh' }"
+      :class="[{ 'khmer-text-fix': currentLanguage === 'kh' }, fx('primary')]"
       :style="{
         color: primaryColor,
         fontFamily: primaryFont || currentFont,
         animationDelay: `${animationDelays.hostName}s`,
       }"
     >
-      {{ displayHostName }}
+      <span class="tfx-ink">{{ displayHostName }}</span>
     </p>
   </div>
 </template>
@@ -87,6 +87,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import type { HostInfoProps } from '@/types/showcase'
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import { useShapeMaskBounds } from '@/composables/showcase/useShapeMaskBounds'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import type { EditIntent } from '@/components/showcase-preview/edit/editContext'
@@ -99,6 +100,9 @@ import {
 import fallbackLogoSvg from '@/assets/temp-showcase-logo.svg?raw'
 
 const props = defineProps<HostInfoProps>()
+
+// Metallic lettering per font slot (see useTextEffects.ts).
+const fx = useTextEffect()
 
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 
