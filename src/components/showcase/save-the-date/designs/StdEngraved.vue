@@ -4,11 +4,11 @@
       <OrnamentRule :gold="inkColor" :gold-light="hotColor" />
     </div>
 
-    <p class="std-eyebrow eng-label std-wipe" :class="inkClass">{{ label }}</p>
+    <p class="std-eyebrow eng-label std-wipe" :class="inkClass"><span class="tfx-ink">{{ label }}</span></p>
 
-    <p v-if="numericDate" class="eng-numeric std-wipe" :class="inkClass">{{ numericDate }}</p>
+    <p v-if="numericDate" class="eng-numeric std-wipe" :class="inkClass"><span class="tfx-ink">{{ numericDate }}</span></p>
 
-    <p v-if="longDate" class="std-longdate eng-long std-wipe" :class="inkClass">{{ longDate }}</p>
+    <p v-if="longDate" class="std-longdate eng-long std-wipe" :class="inkClass"><span class="tfx-ink">{{ longDate }}</span></p>
 
     <div class="eng-ornament eng-ornament-bottom">
       <OrnamentRule :gold="inkColor" :gold-light="hotColor" />
@@ -20,6 +20,7 @@
 import { computed } from 'vue'
 import OrnamentRule from '../../transition/OrnamentRule.vue'
 import type { SaveTheDateDesignProps } from '../types'
+import { stdInkClass } from '../ink'
 
 /**
  * `engraved` — the door transition's original composition, unchanged.
@@ -32,7 +33,7 @@ import type { SaveTheDateDesignProps } from '../types'
  */
 const props = defineProps<SaveTheDateDesignProps>()
 
-const inkClass = computed(() => (props.ink === 'metal' ? 'std-metal' : 'std-solid'))
+const inkClass = computed(() => stdInkClass(props.ink, props.finish))
 </script>
 
 <style scoped>

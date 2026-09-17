@@ -25,10 +25,10 @@
     <header v-if="paymentSectionTitle" class="pay-head">
       <h2
         class="pay-title"
-        :class="{ 'khmer-text-fix': currentLanguage === 'kh' }"
+        :class="[{ 'khmer-text-fix': currentLanguage === 'kh' }, fx('primary')]"
         :style="{ fontFamily: primaryFont || currentFont }"
       >
-        {{ paymentSectionTitle }}
+        <span class="tfx-ink">{{ paymentSectionTitle }}</span>
       </h2>
       <span class="pay-orn" aria-hidden="true">
         <span class="pay-orn__rule"></span>
@@ -205,6 +205,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import { computed, ref, watch, inject, onUnmounted } from 'vue'
 import { Landmark, ChevronDown, QrCode, Copy, Check } from 'lucide-vue-next'
 import type { EventPaymentMethod } from '../../services/api'
@@ -250,6 +251,10 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Metallic lettering for the section heading, if the template struck its
+// primary slot in one (see useTextEffects.ts).
+const fx = useTextEffect()
 
 // Only provided by the editable manage-page preview frame — undefined on the
 // public showcase, so these edit affordances can never leak there.

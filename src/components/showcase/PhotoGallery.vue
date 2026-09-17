@@ -12,13 +12,14 @@
         :class="[
           'leading-tight text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular sm:mb-4 md:mb-6 capitalize gallery-header',
           currentLanguage === 'kh' && 'khmer-text-fix',
+          fx('primary'),
         ]"
         :style="{
           fontFamily: primaryFont || currentFont,
           color: primaryColor,
         }"
       >
-        {{ galleryHeaderText }}
+        <span class="tfx-ink">{{ galleryHeaderText }}</span>
       </h2>
     </div>
 
@@ -121,6 +122,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import { computed, onMounted, onUnmounted, ref, reactive, watch, nextTick } from 'vue'
 import type { EventPhoto } from '../../composables/useEventShowcase'
 import {
@@ -154,6 +156,10 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Metallic lettering for the section heading, if the template struck its
+// primary slot in one (see useTextEffects.ts).
+const fx = useTextEffect()
 
 const emit = defineEmits<{
   openPhoto: [EventPhoto]

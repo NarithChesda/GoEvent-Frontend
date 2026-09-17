@@ -14,7 +14,7 @@
       <h2
         ref="guestNameElementRef"
         class="scaled-guest-name font-regular khmer-text-fix text-center guest-name-single-line"
-        :class="{ 'is-marquee': isOverflowing }"
+        :class="[{ 'is-marquee': isOverflowing }, fx(fontSlot)]"
         :style="[textStyle, scaleStyle, widthCapStyle]"
       >
         <!-- Hidden probe used for accurate DOM-based width measurement.
@@ -28,7 +28,7 @@
               :key="index"
               class="bounce-char"
               :style="{ animationDelay: `${1 + index * 0.05}s` }"
-            >{{ char === ' ' ? '\u00A0' : char }}</span>
+            ><span class="tfx-ink">{{ char === ' ' ? '\u00A0' : char }}</span></span>
           </template>
           <template v-else>
             <span
@@ -36,12 +36,12 @@
               :key="index"
               class="bounce-word"
               :style="{ animationDelay: `${1 + index * 0.15}s` }"
-            >{{ word }}{{ index < guestNameWords.length - 1 ? '\u00A0' : '' }}</span>
+            ><span class="tfx-ink">{{ word }}{{ index < guestNameWords.length - 1 ? '\u00A0' : '' }}</span></span>
           </template>
         </template>
         <span v-else class="marquee-track">
-          <span class="marquee-item">{{ formattedGuestName }}</span>
-          <span class="marquee-item" aria-hidden="true">{{ formattedGuestName }}</span>
+          <span class="marquee-item"><span class="tfx-ink">{{ formattedGuestName }}</span></span>
+          <span class="marquee-item" aria-hidden="true"><span class="tfx-ink">{{ formattedGuestName }}</span></span>
         </span>
       </h2>
     </div>
@@ -55,7 +55,12 @@ import {
   GUEST_FRAME_DEFAULTS,
   type ResolvedGuestFrame,
 } from '@/composables/showcase/useCoverStageLayout'
-import type { CoverStageLayout, GuestFrameConfig } from '@/services/api/types/template.types'
+import type {
+  CoverStageLayout,
+  GuestFrameConfig,
+  TextEffectSlot,
+} from '@/services/api/types/template.types'
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import { GUEST_FRAME_COMPONENTS } from './guest-frames'
 
 // Default liquid glass frames
@@ -88,6 +93,14 @@ interface Props {
   scale?: number
   /** Pixel cap on the guest name width (derived from template percentage) */
   maxWidthPx?: number | null
+  /**
+   * The font slot whose metallic finish the name is struck in: the guest
+   * block's own slot in free placement, else `primary`, the name's role on the
+   * cover. That holds for a Latin name too, even though it renders in Great
+   * Vibes rather than the slot's typeface — the finish follows the role, so a
+   * gilded cover never leaves the guest's own name printed flat.
+   */
+  fontSlot?: TextEffectSlot
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -95,7 +108,10 @@ const props = withDefaults(defineProps<Props>(), {
   scale: 1,
   maxWidthPx: null,
   guestFrame: null,
+  fontSlot: 'primary',
 })
+
+const fx = useTextEffect()
 
 // resolveGuestFrame takes the whole layout, but only ever reads `guestFrame` —
 // passing a one-key object keeps the fill-in rules in one place instead of

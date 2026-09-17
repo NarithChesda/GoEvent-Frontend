@@ -11,6 +11,7 @@
     <span
       ref="textRef"
       class="auto-fit-text"
+      :class="fx(fontSlot)"
       :style="textStyle"
     >
       <span
@@ -18,7 +19,7 @@
         :key="`${keyPrefix}-${index}`"
         class="bounce-word"
         :style="{ animationDelay: `${baseDelay + cappedDelay(index)}s` }"
-      >{{ word }}{{ index < words.length - 1 ? '\u00A0' : '' }}</span>
+      ><span class="tfx-ink">{{ word }}{{ index < words.length - 1 ? '\u00A0' : '' }}</span></span>
     </span>
   </div>
 </template>
@@ -26,6 +27,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { splitToWords, ANIMATION_CONSTANTS } from '@/composables/showcase/useHostInfoUtils'
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
+import type { TextEffectSlot } from '@/services/api/types/template.types'
 
 interface Props {
   text: string
@@ -36,6 +39,11 @@ interface Props {
   keyPrefix?: string
   minScale?: number
   baseFontSize?: number
+  /**
+   * The font slot `fontFamily` came from, for its metallic finish. Unset draws
+   * no finish, so a caller that isn't drawing slot text gets none.
+   */
+  fontSlot?: TextEffectSlot
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -47,6 +55,8 @@ const props = withDefaults(defineProps<Props>(), {
   minScale: 0.5,
   baseFontSize: 0, // 0 means inherit from parent
 })
+
+const fx = useTextEffect()
 
 const containerRef = ref<HTMLElement | null>(null)
 const measureRef = ref<HTMLElement | null>(null)

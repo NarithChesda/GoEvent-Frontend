@@ -24,10 +24,10 @@
     <header class="wb-head">
       <h2
         class="wb-title"
-        :class="{ 'khmer-text-fix': currentLanguage === 'kh' }"
+        :class="[{ 'khmer-text-fix': currentLanguage === 'kh' }, fx('primary')]"
         :style="{ fontFamily: primaryFont || currentFont }"
       >
-        {{ commentHeaderText }}
+        <span class="tfx-ink">{{ commentHeaderText }}</span>
       </h2>
       <span class="wb-orn" aria-hidden="true">
         <span class="wb-orn__rule"></span>
@@ -303,6 +303,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import { ref, computed, onMounted, nextTick, onUnmounted, watch, type ComponentPublicInstance } from 'vue'
 import { Check, Edit, Trash2, MoreVertical, PenLine } from 'lucide-vue-next'
 import { useAuthStore } from '../../stores/auth'
@@ -351,6 +352,10 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Metallic lettering for the section heading, if the template struck its
+// primary slot in one (see useTextEffects.ts).
+const fx = useTextEffect()
 
 const emit = defineEmits<{
   commentSubmitted: [EventComment]

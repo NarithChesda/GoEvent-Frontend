@@ -95,12 +95,12 @@
           :input-style="{ fontFamily: secondaryFont || currentFont, color: accentInk }"
         >
           <span
-            :class="['arch-role arch-in-line', getKhmerClass(currentLanguage)]"
+            :class="['arch-role arch-in-line', getKhmerClass(currentLanguage), fx('secondary')]"
             :style="{
               fontFamily: secondaryFont || currentFont,
               animationDelay: cardDelay(i, 'role'),
             }"
-            >{{ person.role }}</span
+            ><span class="tfx-ink">{{ person.role }}</span></span
           >
         </InlineEditableText>
 
@@ -110,13 +110,13 @@
           :input-style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
         >
           <h3
-            :class="['arch-name arch-in-name', getKhmerClass(currentLanguage)]"
+            :class="['arch-name arch-in-name', getKhmerClass(currentLanguage), fx('primary')]"
             :style="{
               fontFamily: primaryFont || secondaryFont || currentFont,
               animationDelay: cardDelay(i, 'name'),
             }"
           >
-            {{ person.name }}
+            <span class="tfx-ink">{{ person.name }}</span>
           </h3>
         </InlineEditableText>
 
@@ -134,9 +134,12 @@
             :target="{ kind: 'host', hostId: person.key, field: parent.field }"
             :input-style="{ fontFamily: secondaryFont || currentFont, color: primaryColor }"
           >
-            <span class="arch-parent" :style="{ fontFamily: secondaryFont || currentFont }">{{
-              parent.value
-            }}</span>
+            <span
+              class="arch-parent"
+              :class="fx('secondary')"
+              :style="{ fontFamily: secondaryFont || currentFont }"
+              ><span class="tfx-ink">{{ parent.value }}</span></span
+            >
           </InlineEditableText>
         </p>
       </article>
@@ -167,15 +170,15 @@
         </EditableRegion>
         <span
           v-if="person.role"
-          :class="['arch-role arch-in-line', getKhmerClass(currentLanguage)]"
+          :class="['arch-role arch-in-line', getKhmerClass(currentLanguage), fx('secondary')]"
           :style="{ fontFamily: secondaryFont || currentFont }"
-          >{{ person.role }}</span
+          ><span class="tfx-ink">{{ person.role }}</span></span
         >
         <h3
-          :class="['arch-name arch-in-name', getKhmerClass(currentLanguage)]"
+          :class="['arch-name arch-in-name', getKhmerClass(currentLanguage), fx('primary')]"
           :style="{ fontFamily: primaryFont || secondaryFont || currentFont }"
         >
-          {{ person.name }}
+          <span class="tfx-ink">{{ person.name }}</span>
         </h3>
         <p
           v-if="person.parents.length"
@@ -185,8 +188,9 @@
             v-for="parent in person.parents"
             :key="parent.field"
             class="arch-parent"
+            :class="fx('secondary')"
             :style="{ fontFamily: secondaryFont || currentFont }"
-            >{{ parent.value }}</span
+            ><span class="tfx-ink">{{ parent.value }}</span></span
           >
         </p>
       </article>
@@ -198,6 +202,7 @@
 import { computed, inject } from 'vue'
 import type { HostInfoProps } from '@/types/showcase'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
@@ -215,6 +220,8 @@ const props = defineProps<HostInfoProps>()
 // public showcase, so the "add photo" affordance can never reach guests.
 const editIntentCtx = inject(EditIntentKey, undefined)
 const { t: tApp } = useAppLanguage()
+// Metallic lettering per font slot: names primary, roles and parents secondary.
+const fx = useTextEffect()
 
 const addPhotoLabel = computed(() =>
   editIntentCtx ? tApp('management.showcasePreview.editors.addHostPhoto') : undefined,

@@ -1,6 +1,6 @@
 <template>
   <div class="std std-medallion" :class="{ 'is-revealed': revealed }">
-    <p class="std-eyebrow med-label std-rise" :class="inkClass">{{ label }}</p>
+    <p class="std-eyebrow med-label std-rise" :class="inkClass"><span class="tfx-ink">{{ label }}</span></p>
 
     <div v-if="parts" class="med-seal">
       <!-- The ring is drawn, not faded: one stroke travelling all the way round
@@ -27,14 +27,14 @@
           stroke-width="0.5"
         />
       </svg>
-      <span class="med-day" :class="inkClass">{{ parts.day }}</span>
+      <span class="med-day" :class="inkClass"><span class="tfx-ink">{{ parts.day }}</span></span>
     </div>
 
     <p v-if="parts" class="med-monthyear std-rise" :class="inkClass">
-      {{ parts.monthLong }} {{ parts.year }}
+      <span class="tfx-ink">{{ parts.monthLong }} {{ parts.year }}</span>
     </p>
     <p v-if="parts" class="std-longdate med-weekday std-rise" :class="inkClass">
-      {{ parts.weekday }}
+      <span class="tfx-ink">{{ parts.weekday }}</span>
     </p>
   </div>
 </template>
@@ -42,6 +42,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { SaveTheDateDesignProps } from '../types'
+import { stdInkClass } from '../ink'
 
 /**
  * `medallion` — a drawn hairline ring with the day numeral inside it, the month
@@ -60,7 +61,7 @@ import type { SaveTheDateDesignProps } from '../types'
  */
 const props = defineProps<SaveTheDateDesignProps>()
 
-const inkClass = computed(() => (props.ink === 'metal' ? 'std-metal' : 'std-solid'))
+const inkClass = computed(() => stdInkClass(props.ink, props.finish))
 </script>
 
 <style scoped>

@@ -95,6 +95,7 @@
           :row-styles="rowStyles"
           :layout-mode="layoutMode"
           :element-styles="elementStyles"
+          :element-font-slots="elementFontSlots"
           :get-media-url="getMediaUrl"
           :display-liquid-glass="displayLiquidGlass"
           :guest-title-frame-left="guestTitleFrameLeft"
@@ -125,6 +126,7 @@ import { useAssetProtection } from '@/composables/showcase/useAssetProtection'
 import type { ResolvedCoverGilding } from '@/composables/showcase/useCoverStageLayout'
 import type {
   CoverElementId,
+  CoverFontSlot,
   CoverLayoutMode,
   GuestFrameConfig,
 } from '@/services/api/types/template.types'
@@ -197,6 +199,8 @@ interface Props {
   /** Forwarded straight through: the doors render the same cover blocks. */
   layoutMode?: CoverLayoutMode
   elementStyles?: Record<CoverElementId, Record<string, string>>
+  /** The font slot each block renders in, for its metallic finish. */
+  elementFontSlots?: Record<CoverElementId, CoverFontSlot>
   getMediaUrl: (url: string) => string
   displayLiquidGlass?: boolean
   guestTitleFrameLeft?: string | null

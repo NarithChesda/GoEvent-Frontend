@@ -2878,6 +2878,27 @@
         "errorGeneric": "Upload failed. Please try again."
       }
     },
+    "textEffects": {
+      "sectionTitle": "Text finish",
+      "hint": "Strikes the showcase's display text in metal, per font: the cover header and guest name, the Save the Date (it follows Primary), host names and section headings. Body text, forms and buttons stay in plain ink. Foil lies flat like a stamped card; Relief raises the letters with an edge and a shadow. Shine is the light that crosses the letters: once as they appear, or again every few seconds.",
+      "metalLabel": "Metal",
+      "animationLabel": "Shine",
+      "finishes": {
+        "none": "None",
+        "foil": "Foil",
+        "relief": "Relief"
+      },
+      "metals": {
+        "gold": "Gold",
+        "rose_gold": "Rose gold",
+        "silver": "Silver"
+      },
+      "animations": {
+        "none": "None",
+        "sheen": "Once",
+        "shimmer": "Repeat"
+      }
+    },
     "backgroundStage": {
       "sectionTitle": "Background",
       "backgroundPhoto": "Background Photo",

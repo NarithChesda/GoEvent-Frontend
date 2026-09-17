@@ -175,6 +175,7 @@
 import { computed, inject, ref, watch } from 'vue'
 import type { useEventShowcase } from '@/composables/useEventShowcase'
 import { resolveStageModesForEvent } from '@/composables/showcase/useStageModes'
+import { provideTextEffects } from '@/composables/showcase/useTextEffects'
 import {
   useCoverStageLayout,
   type CoverTextPalette,
@@ -255,6 +256,11 @@ const {
   changeLanguage,
   toggleMusic,
 } = props.showcase
+
+// Same provider as the live showcase, so a frame draws exactly what a guest
+// sees — including a partner's unsaved finish, which arrives in the staged
+// template_assets like every other config.
+provideTextEffects(computed(() => event.value?.template_assets?.text_effects))
 
 // Latches on the first photo-modal open and never resets — that's what keeps
 // the modal's chunk (and the modal itself) out of the frame's initial load

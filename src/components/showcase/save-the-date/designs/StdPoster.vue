@@ -8,19 +8,20 @@
         :class="[inkClass, `poster-line-${i + 1}`]"
         :style="{ '--std-line-delay': `${i * 140}ms` }"
       >
-        {{ line }}
+        <span class="tfx-ink">{{ line }}</span>
       </p>
     </div>
 
     <div class="std-rule poster-rule" />
 
-    <p v-if="numericDate" class="poster-date std-rise" :class="inkClass">{{ numericDate }}</p>
+    <p v-if="numericDate" class="poster-date std-rise" :class="inkClass"><span class="tfx-ink">{{ numericDate }}</span></p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { SaveTheDateDesignProps } from '../types'
+import { stdInkClass } from '../ink'
 
 /**
  * `poster` — the label itself set large and stacked at tight leading, with the
@@ -40,7 +41,7 @@ import type { SaveTheDateDesignProps } from '../types'
  */
 const props = defineProps<SaveTheDateDesignProps>()
 
-const inkClass = computed(() => (props.ink === 'metal' ? 'std-metal' : 'std-solid'))
+const inkClass = computed(() => stdInkClass(props.ink, props.finish))
 
 /**
  * Break the label into stacked lines. `Save the Date` becomes `SAVE` / `THE

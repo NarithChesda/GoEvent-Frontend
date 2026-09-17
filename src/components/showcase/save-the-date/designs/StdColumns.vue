@@ -1,20 +1,20 @@
 <template>
   <div class="std std-columns" :class="{ 'is-revealed': revealed }">
-    <p class="std-eyebrow col-label std-rise" :class="inkClass">{{ label }}</p>
+    <p class="std-eyebrow col-label std-rise" :class="inkClass"><span class="tfx-ink">{{ label }}</span></p>
 
     <!-- Month, day, year — so the day sits in the middle track and the whole row
          is centred on it, the way the info card's `flanked` date is centred on
          its own day numeral. -->
     <div v-if="parts" class="col-row">
-      <span class="col-cell col-cell-1" :class="inkClass">{{ parts.monthShort }}</span>
+      <span class="col-cell col-cell-1" :class="inkClass"><span class="tfx-ink">{{ parts.monthShort }}</span></span>
       <span class="col-divider" aria-hidden="true" />
-      <span class="col-cell col-cell-2" :class="inkClass">{{ parts.day }}</span>
+      <span class="col-cell col-cell-2" :class="inkClass"><span class="tfx-ink">{{ parts.day }}</span></span>
       <span class="col-divider" aria-hidden="true" />
-      <span class="col-cell col-cell-3" :class="inkClass">{{ parts.year }}</span>
+      <span class="col-cell col-cell-3" :class="inkClass"><span class="tfx-ink">{{ parts.year }}</span></span>
     </div>
 
     <p v-if="parts" class="std-longdate col-weekday std-rise" :class="inkClass">
-      {{ parts.weekday }}
+      <span class="tfx-ink">{{ parts.weekday }}</span>
     </p>
   </div>
 </template>
@@ -22,6 +22,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { SaveTheDateDesignProps } from '../types'
+import { stdInkClass } from '../ink'
 
 /**
  * `columns` — the date broken into `month | day | year`, three cells of equal
@@ -57,7 +58,7 @@ import type { SaveTheDateDesignProps } from '../types'
  */
 const props = defineProps<SaveTheDateDesignProps>()
 
-const inkClass = computed(() => (props.ink === 'metal' ? 'std-metal' : 'std-solid'))
+const inkClass = computed(() => stdInkClass(props.ink, props.finish))
 </script>
 
 <style scoped>

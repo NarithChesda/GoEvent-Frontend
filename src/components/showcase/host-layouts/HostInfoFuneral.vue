@@ -62,7 +62,7 @@
     <!-- Event Hosts Header -->
     <div v-if="hosts.length > 0" class="hosts-section px-4 mt-4">
       <h3
-        :class="['hosts-header text-center', getKhmerClass(currentLanguage)]"
+        :class="['hosts-header text-center', getKhmerClass(currentLanguage), fx('primary')]"
         :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }"
       >
         <span
@@ -70,7 +70,7 @@
           :key="`header-${currentLanguage}-${index}`"
           class="bounce-word"
           :style="{ animationDelay: `${animationDelays.header + wordCascadeDelay(index)}s` }"
-        >{{ word }}{{ index < splitToWords(hostsHeaderText).length - 1 ? '\u00A0' : '' }}</span>
+        ><span class="tfx-ink">{{ word }}{{ index < splitToWords(hostsHeaderText).length - 1 ? '\u00A0' : '' }}</span></span>
       </h3>
 
       <!-- Host List -->
@@ -83,13 +83,13 @@
         >
           <p
             v-if="host.title"
-            :class="['host-title', getKhmerClass(currentLanguage)]"
+            :class="['host-title', getKhmerClass(currentLanguage), fx('secondary')]"
             :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
-          >{{ host.title }}</p>
+          ><span class="tfx-ink">{{ host.title }}</span></p>
           <p
-            :class="['host-name', getKhmerClass(currentLanguage)]"
+            :class="['host-name', getKhmerClass(currentLanguage), fx('primary')]"
             :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }"
-          >{{ host.name }}</p>
+          ><span class="tfx-ink">{{ host.name }}</span></p>
         </li>
       </ul>
     </div>
@@ -99,6 +99,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { HostInfoProps } from '@/types/showcase'
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import {
   WelcomeHeader,
   getKhmerClass,
@@ -113,6 +114,9 @@ import { useFallbackLogo } from '@/composables/showcase/useHostInfoUtils'
 import { translateRSVP, type SupportedLanguage } from '@/utils/translations'
 
 const props = defineProps<HostInfoProps>()
+
+// Metallic lettering per font slot (see useTextEffects.ts).
+const fx = useTextEffect()
 
 const { fallbackLogoSvgContent, fallbackLogoStyle } = useFallbackLogo(
   computed(() => props.primaryColor)

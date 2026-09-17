@@ -248,6 +248,7 @@ import { useAuthStore } from '../stores/auth'
 import { useAssetProtection } from '../composables/showcase/useAssetProtection'
 import { DOOR_CLEARED_MS } from '../composables/showcase/useDoorAnimation'
 import { resolveStageModesForEvent } from '../composables/showcase/useStageModes'
+import { provideTextEffects } from '../composables/showcase/useTextEffects'
 import { getPendingLogin } from '../composables/useTelegramBotLogin'
 
 // Meta tags utility
@@ -356,6 +357,10 @@ const {
 
 // Provide video resource manager to child components using Vue's provide/inject
 provide('videoResourceManager', videoResourceManager)
+
+// Metallic lettering per font slot, for every stage below. Injected rather than
+// passed because the headings that read it sit up to five components deep.
+provideTextEffects(computed(() => event.value?.template_assets?.text_effects))
 
 // CoverStage component ref
 const coverStageRef = ref<InstanceType<typeof CoverStage> | null>(null)

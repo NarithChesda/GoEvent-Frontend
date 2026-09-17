@@ -969,6 +969,58 @@ export interface SaveTheDateDesignConfig {
 }
 
 /**
+ * How metallic lettering is struck.
+ *
+ * - `foil`   — flat hot-foil stamping: a metal gradient clipped to the glyphs,
+ *              lying on the page (a foil-printed card).
+ * - `relief` — the same metal raised off the page: a short extruded edge and a
+ *              soft cast shadow under it (3D gilded lettering).
+ */
+export type TextEffectFinish = 'foil' | 'relief'
+
+/** Which metal the lettering is struck in. Absent means `gold`. */
+export type TextEffectMetal = 'gold' | 'rose_gold' | 'silver'
+
+/**
+ * How light moves across the metal. Absent means `sheen`, which is what every
+ * finish did before this option existed.
+ *
+ * - `none`    — no light; the metal holds still.
+ * - `sheen`   — one pass of light as the lettering arrives.
+ * - `shimmer` — that pass, then again every few seconds, on one beat shared by
+ *               every shimmering element on the page.
+ */
+export type TextEffectAnimation = 'none' | 'sheen' | 'shimmer'
+
+/** One font slot's finish. */
+export interface TextEffectConfig {
+  finish: TextEffectFinish
+  metal?: TextEffectMetal
+  animation?: TextEffectAnimation
+}
+
+/**
+ * The font slots a finish can be attached to: V1's four, the same slots the
+ * cover publishes. The scroll-story slots are not here because V2 renders none
+ * of the V1 stages this effect is drawn on.
+ */
+export type TextEffectSlot = CoverFontSlot
+
+/**
+ * Metallic lettering, per font slot (`template_assets.text_effects`).
+ *
+ * A finish belongs to the slot, not to a typeface or a language: `primary: foil`
+ * gilds every piece of *display* text the showcase draws in the primary slot —
+ * cover header and guest name, the host block, section headings — whichever
+ * typeface that slot resolves to in the guest's language. Body copy, forms and
+ * buttons in the same slot never take it (see useTextEffects.ts).
+ *
+ * Absent keys, `null`, and the whole field being absent all mean "no finish",
+ * which is what every template saved before this existed renders.
+ */
+export type TextEffectsConfig = Partial<Record<TextEffectSlot, TextEffectConfig | null>>
+
+/**
  * How one showcase stage presents itself: built from artwork and animated, or
  * a film.
  *
@@ -1268,6 +1320,8 @@ export interface PartnerTemplate {
   save_the_date_design: SaveTheDateDesignConfig | null
   /** Per-stage animation/video modes. Null = infer from assets + category. */
   stage_modes: StageModesConfig | null
+  /** Metallic lettering per font slot. Null / absent = no finish anywhere. */
+  text_effects?: TextEffectsConfig | null
   ambient_creatures: AmbientCreaturesConfig | null
   sparks: SparkFieldConfig | null
   /** Custom spark image, when the field uses one instead of a built-in shape. */
@@ -1360,6 +1414,8 @@ export interface PartnerTemplateCreatePayload {
   save_the_date_design?: SaveTheDateDesignConfig | null
   /** Per-stage animation/video modes. Pass `null` to fall back to the legacy inference. */
   stage_modes?: StageModesConfig | null
+  /** Metallic lettering per font slot. Pass `null` to remove every finish. */
+  text_effects?: TextEffectsConfig | null
   /** Ambient creature effect config. Pass `null` to disable the effect. */
   ambient_creatures?: AmbientCreaturesConfig | null
   /** Drifting spark field config. Pass `null` to disable the effect. */

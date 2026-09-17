@@ -15,6 +15,7 @@
           // tiers then had to override.
           'font-regular mb-3 sm:mb-4 md:mb-6 laptop-sm:mb-2 laptop-md:mb-2 desktop:mb-2 capitalize agenda-header',
           currentLanguage === 'kh' && 'khmer-text-fix',
+          fx('primary'),
         ]"
         :style="{ fontFamily: primaryFont || currentFont, color: primaryColor }"
       >
@@ -23,7 +24,7 @@
           :key="`header-${currentLanguage}-${index}`"
           class="bounce-word"
           :style="{ animationDelay: `${animationDelays.header + wordCascadeDelay(index)}s` }"
-          >{{ word }}{{ index < headerWords.length - 1 ? ' ' : '' }}</span
+          ><span class="tfx-ink">{{ word }}{{ index < headerWords.length - 1 ? ' ' : '' }}</span></span
         >
       </h2>
 
@@ -195,6 +196,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import { computed, inject, nextTick, onMounted, onUnmounted, ref, useId, watch } from 'vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -269,6 +271,10 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Metallic lettering for the section heading, if the template struck its
+// primary slot in one (see useTextEffects.ts).
+const fx = useTextEffect()
 
 // Only provided by the editable manage-page preview frame — undefined on the
 // public showcase, so the edit affordances can never leak into production.

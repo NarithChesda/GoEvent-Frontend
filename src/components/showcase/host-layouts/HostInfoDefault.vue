@@ -62,7 +62,7 @@
         <!-- Host Title -->
         <p
           v-if="host.title"
-          :class="['text-xs sm:text-sm opacity-75 mb-1', getKhmerClass(currentLanguage)]"
+          :class="['text-xs sm:text-sm opacity-75 mb-1', getKhmerClass(currentLanguage), fx('secondary')]"
           :style="{ color: primaryColor, fontFamily: secondaryFont || currentFont }"
         >
           <span
@@ -70,12 +70,12 @@
             :key="`title-${hostIndex}-${currentLanguage}-${index}`"
             class="bounce-word"
             :style="{ animationDelay: `${getHostAnimationDelay(hostIndex, 'title') + wordCascadeDelay(index)}s` }"
-          >{{ word }}{{ index < splitToWords(host.title).length - 1 ? '\u00A0' : '' }}</span>
+          ><span class="tfx-ink">{{ word }}{{ index < splitToWords(host.title).length - 1 ? '\u00A0' : '' }}</span></span>
         </p>
 
         <!-- Host Name -->
         <h4
-          :class="['text-lg sm:text-xl md:text-2xl font-semibold leading-tight', getKhmerClass(currentLanguage)]"
+          :class="['text-lg sm:text-xl md:text-2xl font-semibold leading-tight', getKhmerClass(currentLanguage), fx('primary')]"
           :style="{ color: primaryColor, fontFamily: primaryFont || currentFont }"
         >
           <span
@@ -83,7 +83,7 @@
             :key="`name-${hostIndex}-${currentLanguage}-${index}`"
             class="bounce-word"
             :style="{ animationDelay: `${getHostAnimationDelay(hostIndex, 'name') + wordCascadeDelay(index)}s` }"
-          >{{ word }}{{ index < splitToWords(host.name).length - 1 ? '\u00A0' : '' }}</span>
+          ><span class="tfx-ink">{{ word }}{{ index < splitToWords(host.name).length - 1 ? '\u00A0' : '' }}</span></span>
         </h4>
 
         <!-- Host Bio -->
@@ -107,6 +107,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { HostInfoProps } from '@/types/showcase'
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import {
   WelcomeHeader,
   getKhmerClass,
@@ -118,6 +119,9 @@ import {
 } from './shared'
 
 const props = defineProps<HostInfoProps>()
+
+// Metallic lettering per font slot (see useTextEffects.ts).
+const fx = useTextEffect()
 
 const ELEMENT_GAP = ANIMATION_CONSTANTS.ELEMENT_GAP
 

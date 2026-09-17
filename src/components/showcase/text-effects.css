@@ -1,0 +1,403 @@
+/**
+ * Metallic lettering — `template_assets.text_effects`.
+ *
+ * Loaded unscoped, once, by useTextEffects.ts: the classes are applied from ~20
+ * components, and a scoped copy in each would be twenty copies of one rule.
+ * Every selector is under `.tfx`, so nothing here reaches an element that did
+ * not opt in. The markup contract and the reasons for it are documented in
+ * useTextEffects.ts; in short:
+ *
+ *   <h2 :class="fx('primary')" :style="{ fontFamily: primaryFont }">
+ *     <span class="bounce-word"><span class="tfx-ink">Sofia</span></span>
+ *   </h2>
+ *
+ * `.tfx` (the element that sets the slot's font) carries the metal's palette and
+ * the finish's depth; `.tfx-ink` (every run of text inside it) carries the fill
+ * and the rim.
+ *
+ * What makes lettering read as gold rather than as yellow paint, in the order
+ * this file builds it:
+ *
+ *   1. a palette that shifts hue with light — pale yellow highlights, red-brown
+ *      shadows — rather than one yellow at different brightnesses;
+ *   2. a fill with a horizon: a hard line where the bright upper half of every
+ *      glyph meets a dark reflection. A soft fade reads as a printed gradient;
+ *      a hard one reads as a polished surface;
+ *   3. a drawn rim — a hairline of dark metal around every glyph, which is what
+ *      separates pale gold from a pale card;
+ *   4. a shadow that sits UNDER the letters rather than hugging them — a halo
+ *      reads as a smudge on a cream card, not as lift;
+ *   5. light moving across it. Paint doesn't catch light and metal does, and on
+ *      a screen that movement is most of what says "metal".
+ *
+ * Tune at the showcase's real sizes — 11–25px — on a cream card as well as a
+ * dark cover, and at a phone's device pixel ratio. Every earlier version that
+ * looked right on a large dark swatch came out wrong on a real invitation, and
+ * the one that looked right on 40px script clogged 13px Khmer.
+ */
+
+/* ---------------------------------------------------------------------------
+   Metals
+   ---------------------------------------------------------------------------
+   Named tones rather than gradients, so each fill below is written once and a
+   metal is only ever a palette.
+
+   The hue moves with the light, the way it does on real metal: highlights
+   drift toward pale yellow, shadows toward red-brown. The previous gold kept
+   one hue from top to bottom and its deepest tone was olive (#87600f), which
+   is exactly what made the invitation read as mustard. The brightest tones
+   stay a step below the cream card — a near-white face vanished into the paper
+   and left the top of every small Khmer glyph missing.
+
+   Not darker than this. A palette with a mid-gold body and only thin lines of
+   pale measured ~1.6× the contrast against cream, and was rejected on sight as
+   too dark: on an invitation the bright gold is the point, and the rim below is
+   what keeps it legible.
+
+   `--tfx-spec` is the specular line just above the horizon; `--tfx-line` is the
+   rim drawn around each glyph and the contact edge under it. */
+
+.tfx--gold {
+  --tfx-spec: #fff3c8;
+  --tfx-rim: #fbe29a;
+  --tfx-face: #efc762;
+  --tfx-mid: #e2ad45;
+  --tfx-low: #c1812a;
+  --tfx-deep: #7a4812;
+  --tfx-reflect: #eabd5c;
+  --tfx-line: rgba(150, 96, 26, 0.8);
+  --tfx-side: #8a5a1a;
+  --tfx-side-dark: #563308;
+  --tfx-glint: rgba(255, 250, 225, 0.95);
+  --tfx-shadow: rgba(92, 52, 8, 0.3);
+}
+
+.tfx--rose_gold {
+  --tfx-spec: #fff1ea;
+  --tfx-rim: #f9dccd;
+  --tfx-face: #eebca6;
+  --tfx-mid: #dc9d86;
+  --tfx-low: #bd7563;
+  --tfx-deep: #7a3f31;
+  --tfx-reflect: #e3ad97;
+  --tfx-line: rgba(140, 78, 60, 0.8);
+  --tfx-side: #87503f;
+  --tfx-side-dark: #56301f;
+  --tfx-glint: rgba(255, 243, 236, 0.95);
+  --tfx-shadow: rgba(90, 45, 30, 0.28);
+}
+
+.tfx--silver {
+  --tfx-spec: #ffffff;
+  --tfx-rim: #f1f3f6;
+  --tfx-face: #d9dde3;
+  --tfx-mid: #b9bfc8;
+  --tfx-low: #939aa5;
+  --tfx-deep: #4f5661;
+  --tfx-reflect: #c9ced6;
+  --tfx-line: rgba(88, 95, 106, 0.75);
+  --tfx-side: #5d646d;
+  --tfx-side-dark: #353940;
+  --tfx-glint: rgba(255, 255, 255, 0.95);
+  --tfx-shadow: rgba(30, 35, 45, 0.26);
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  /* -------------------------------------------------------------------------
+     Fills
+     -------------------------------------------------------------------------
+     Both are lit from above and vertical, because vertical is the one direction
+     that survives being repeated per word and per line.
+
+     The stops are placed on a MEASURED band. The ink box includes 0.35em of
+     padding above and below, and across every face the showcase ships — Moul,
+     Kantumruy Pro, Lobster, Libre Baskerville — the glyph body (top of the
+     consonant or cap down to the baseline) lands at 31–68% of that box, so a
+     stop at 50% is the middle of the letter whatever the face.
+
+     Stops are plain percentages on purpose. This value is substituted into
+     `background-image` through a custom property, so anything in it an engine
+     can't parse drops the whole image at computed-value time — and with the
+     text fill already transparent, the names would render as nothing. */
+
+  /* Foil: a flat mirror. The glyph's upper half brightens toward a specular line
+     at 47%, meets the darkest tone at 51% — the horizon — and the reflected
+     light comes straight back up below it. Brightest directly against darkest
+     is what reads as polish; the earlier version put 8% of fade between them
+     and the lettering read as a gradient print. The dark band is kept thin so
+     that at 13px it tints the stroke rather than striping it. */
+  .tfx--foil {
+    --tfx-fill: linear-gradient(
+      180deg,
+      var(--tfx-low) 0%,
+      var(--tfx-mid) 20%,
+      var(--tfx-face) 32%,
+      var(--tfx-rim) 42%,
+      var(--tfx-spec) 47%,
+      var(--tfx-deep) 51%,
+      var(--tfx-mid) 55%,
+      var(--tfx-reflect) 61%,
+      var(--tfx-face) 66%,
+      var(--tfx-low) 78%,
+      var(--tfx-deep) 100%
+    );
+  }
+
+  /* Relief: a rounded, raised stroke. A bright rim high on every stroke, falling
+     smoothly — no hard horizon, a curved surface doesn't have one — through mid
+     gold to deep amber at the baseline, with a reflected rise at ~80% so Khmer
+     subscripts and descenders stay legible instead of sinking into the side. */
+  .tfx--relief {
+    --tfx-fill: linear-gradient(
+      180deg,
+      var(--tfx-mid) 0%,
+      var(--tfx-face) 22%,
+      var(--tfx-rim) 33%,
+      var(--tfx-spec) 38%,
+      var(--tfx-face) 45%,
+      var(--tfx-mid) 53%,
+      var(--tfx-low) 61%,
+      var(--tfx-deep) 69%,
+      var(--tfx-reflect) 80%,
+      var(--tfx-deep) 100%
+    );
+  }
+
+  .tfx .tfx-ink {
+    background-image:
+      /* The pass of light. Parked just off the leading edge until the element is
+         lit (see "Light" below). Narrow — under a third of a word — because a
+         wide band bleaches the letters to cream for the length of the pass and
+         reads as a glitch rather than as light catching metal. Sized at 240% so
+         the band starts and ends only just past the edges: at 350% two-thirds of
+         the animation happened off the letters and the visible crossing was a
+         0.4s flicker rather than an unhurried glint. */
+      linear-gradient(105deg, transparent 44%, var(--tfx-glint) 50%, transparent 56%),
+      /* Crinkle: soft light and dark patches a few pixels across, so neighbouring
+         strokes catch the light slightly differently and the face reads as foil
+         rather than as a plastic gradient. Two noise fields, one mapped to a pale
+         cream and one to a dark umber, each only where its noise peaks. The first
+         version was single-pixel grey noise, which desaturated the metal and read
+         as dirt on large script; larger or stronger patches than these lay a
+         visible pale wash across the first letters of a word.
+
+         Drawn normally, NOT through a blend mode — whether a background blend
+         mode survives `background-clip: text` differs between engines, and where
+         it doesn't, a texture tuned for one renders as mottling. */
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><filter id='l' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='0.13' numOctaves='2' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 0.97  0 0 0 0 0.86  1.3 0 0 0 -0.76'/></filter><filter id='d' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='0.13' numOctaves='2' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.3  0 0 0 0 0.2  0 0 0 0 0.1  -1.2 0 0 0 0.5'/></filter><rect width='96' height='96' filter='url(%23l)'/><rect width='96' height='96' filter='url(%23d)'/></svg>"),
+      var(--tfx-fill);
+    background-size: 240% 100%, 96px 96px, 100% 100%;
+    background-position: 100% 0, 0 0, 0 0;
+    background-repeat: no-repeat, repeat, no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    /* A text-shadow paints over a clipped background, not under it, so any halo
+       the heading inherits would lay a flat colour across the metal. Depth comes
+       from the finish's filter on `.tfx` instead, which works on the rendered
+       glyphs. */
+    text-shadow: none;
+
+    /* The rim. A stroke rather than a ring of offset drop-shadows, because its
+       width can shrink with the type and a filter's effect cannot: every
+       drop-shadow copy re-composites the glyph's anti-aliased edge, even at a
+       zero offset, so a four-way outline that gave 40px script a crisp edge
+       filled in the counters of 13px Battambang. The stroke is a hairline on
+       small text — not none, because without any edge the pale top of a small
+       glyph disappears into the card — and grows with the lettering.
+
+       It is centred on the outline, so half of it lies inside the glyph. That is
+       what caps it: at 26px Cormorant's hairlines are about a pixel wide, and a
+       thicker stroke hollowed them into outlined letters.
+
+       Painted over the fill and the pass of light alike, so the light travels
+       inside the rim. An engine that can't resolve the width drops the
+       declaration and the lettering is simply unrimmed. */
+    -webkit-text-stroke: clamp(0.2px, 0.03em - 0.35px, 0.7px) var(--tfx-line);
+
+    /* The overhang budget. `background-clip: text` never paints outside the
+       element's own box, so ink that overhangs it — a script capital's swash, a
+       descender below a tight line-height, a Khmer subscript — is simply not
+       drawn. Padding widens the box over that ink; the equal negative inline
+       margin gives the width straight back, so no glyph moves. Vertical padding
+       on an inline box never affects layout in the first place.
+
+       `clone` repeats both on every line fragment, so a heading that wraps
+       keeps the padding and the payback on each line, and each line gets the
+       whole gradient rather than one gradient stretched across all of them. */
+    padding: 0.35em 0.25em;
+    margin-inline: -0.25em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  /* -------------------------------------------------------------------------
+     Light
+     -------------------------------------------------------------------------
+     How light crosses the metal is the slot's `animation`:
+
+       none     the metal holds still;
+       sheen    one pass as the lettering arrives (the default);
+       shimmer  that pass, then again on a shared beat while the card is open.
+
+     useTextEffects' observer lights an element once it is on screen and its own
+     words have arrived, and writes WHICH light into `data-tfx-lit` — so the
+     attribute is the whole state, and a partner switching the option in the
+     studio relights the element rather than leaving it playing the old one.
+     Each ink span carries its own delays, so the light follows a heading's
+     words in reading order rather than crossing every word at once.
+
+     Linear, because a pass of light travels at a constant speed — an eased sweep
+     hesitates in the middle, which is the part being watched. The band starts
+     and ends off the box, so it needs no opacity envelope. Same gesture as the
+     Save the Date's own gleam, so the showcase has one vocabulary for light. */
+  .tfx[data-tfx-lit='sheen'] .tfx-ink {
+    animation: tfxSheen 1.2s linear var(--tfx-sheen-delay, 0ms) 1 both;
+  }
+
+  /* The arrival pass plus a repeat, as two animations on one property. The later
+     one wins while it runs and has no fill, so until its first beat the arrival
+     pass — filled both ways — governs; the repeat rests exactly where that pass
+     ends, so the handover can't be seen.
+
+     Every shimmering element repeats on ONE beat (its delay is aligned to the
+     document clock in useTextEffects), so light crosses the headings on screen
+     together, the way it would if the card were tilted in the hand — not each
+     heading on its own schedule from whenever it scrolled into view. Slow on
+     purpose: at two or three seconds a looping glint stops reading as light
+     catching metal and starts reading as a slot machine. */
+  .tfx[data-tfx-lit='shimmer'] .tfx-ink {
+    animation:
+      tfxSheen 1.2s linear var(--tfx-sheen-delay, 0ms) 1 both,
+      tfxShimmer 6s linear var(--tfx-shimmer-delay, 0ms) infinite;
+  }
+
+  /* -------------------------------------------------------------------------
+     Finishes — fixed-pixel fallback
+     -------------------------------------------------------------------------
+     Both finishes are `drop-shadow` filters on the heading rather than
+     text-shadows on the ink, for the reason above; a filter also sees the
+     finished glyph, so every edge follows the letterform exactly.
+
+     These plain-pixel versions are for an engine that can't resolve math inside
+     `drop-shadow()`. The block below replaces them wherever it can — and it has
+     to be gated rather than simply declared after: a `var()` that resolves to
+     an invalid filter at computed-value time drops the property to `none`, it
+     does not fall back to the earlier declaration. They are sized for small
+     text, since that is where a fixed depth goes wrong: too deep a side on a
+     13px name is a smear, too shallow a one on a 40px title is merely subtle. */
+
+  .tfx--foil {
+    filter:
+      drop-shadow(0 0.5px 0 var(--tfx-line))
+      drop-shadow(0 0.75px 1px var(--tfx-shadow));
+  }
+
+  .tfx--relief {
+    filter:
+      drop-shadow(0 -0.3px 0 var(--tfx-glint))
+      drop-shadow(0.1px 0.35px 0 var(--tfx-side))
+      drop-shadow(0.1px 0.35px 0 var(--tfx-side-dark))
+      drop-shadow(0 0.5px 1px var(--tfx-shadow));
+  }
+}
+
+@keyframes tfxSheen {
+  from {
+    background-position: 100% 0, 0 0, 0 0;
+  }
+  to {
+    background-position: 0% 0, 0 0, 0 0;
+  }
+}
+
+/* 20% of 6s is the arrival pass's own 1.2s, so a repeat crosses at the same
+   speed as the first pass. The period is SHIMMER_PERIOD_MS in useTextEffects.ts,
+   which aligns the beat — change the two together. */
+@keyframes tfxShimmer {
+  0% {
+    background-position: 100% 0, 0 0, 0 0;
+  }
+  20%,
+  100% {
+    background-position: 0% 0, 0 0, 0 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Finishes — scaled with the lettering
+   ---------------------------------------------------------------------------
+   The depths here grow with the type from a SUBTRACTION (`0.02em - 0.2px`)
+   rather than as a plain `em`, so they shrink faster than the lettering does
+   and all but disappear on small text. Each drop-shadow is a whole copy of the
+   glyphs laid under them, and under a 13px parent's name even a fraction of a
+   pixel of copy reads as bold rather than as depth. Pure `em` got this
+   backwards — a third of a pixel at real sizes, so the relief did not exist —
+   and the floored version that replaced it gave the smallest text the same
+   absolute depth as a heading, which on an 11px title was a smear.
+
+   Capped, too: each layer is an offset copy of the glyphs, and on a thin
+   script stroke at display size copies further apart than ~2px separate into
+   stacked outlines instead of one solid side.
+
+   Shadows are offset further than they are blurred, so they read as the
+   letters standing off the card rather than as a dark halo around them. */
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) and
+  (filter: drop-shadow(calc(clamp(1px, 0.02em, 2px) * 0.5) max(1px, 0.06em) 0 red)) {
+  /* Stamped into the page: a contact edge in the rim's tone, and a tight shadow
+     directly under it. Foil lies ON the card, so nothing here lifts it off. */
+  .tfx--foil {
+    filter:
+      drop-shadow(0 clamp(0.25px, 0.02em, 1px) 0 var(--tfx-line))
+      drop-shadow(0 clamp(0px, 0.05em - 0.4px, 2px) clamp(0.3px, 0.06em - 0.3px, 2.5px) var(--tfx-shadow));
+  }
+
+  /* Raised off the page, lit from above:
+       1. a bright rim just above every top edge — the bevel catching the light.
+          Invisible against cream (light on light), and exactly the edge that
+          makes relief read as metal on a dark cover;
+       2. two steps of side, bronze then dark bronze, turned down and a little
+          right, away from the light. Each stacked drop-shadow offsets
+          everything drawn so far, which is what builds one solid side rather
+          than a blurred outline. Two steps of 1.5 rather than three of 1: the
+          same depth on a title, one fewer copy thickening a small name;
+       3. the lettering's shadow on the card, which reaches no offset at all
+          until the type is past ~11px. On small text it was most of what read
+          as thick — a blurred copy wider than the strokes it sat under. */
+  .tfx--relief {
+    --tfx-step: clamp(0.1px, 0.02em - 0.2px, 1.5px);
+    filter:
+      drop-shadow(0 calc(var(--tfx-step) * -0.7) 0 var(--tfx-glint))
+      drop-shadow(calc(var(--tfx-step) * 0.45) calc(var(--tfx-step) * 1.5) 0 var(--tfx-side))
+      drop-shadow(calc(var(--tfx-step) * 0.45) calc(var(--tfx-step) * 1.5) 0 var(--tfx-side-dark))
+      drop-shadow(0 clamp(0px, 0.06em - 0.65px, 2.5px) clamp(0.3px, 0.07em - 0.55px, 3px) var(--tfx-shadow));
+  }
+}
+
+/* Fewer and gentler, not none: the metal stays exactly as it is, and only the
+   travelling light — pure decoration, pure movement — goes. Whichever light the
+   template chose; a repeating one most of all. */
+@media (prefers-reduced-motion: reduce) {
+  .tfx[data-tfx-lit] .tfx-ink {
+    animation: none;
+  }
+}
+
+/* Forced colours replace text colour but not `-webkit-text-fill-color`, which
+   would leave the lettering transparent over a background the mode has removed.
+   Hand the text back to the system colour, and drop the rim with it — a stroke
+   in the metal's tone around system-coloured text is just a blur. */
+@media (forced-colors: active) {
+  .tfx .tfx-ink {
+    -webkit-text-fill-color: currentColor;
+    -webkit-text-stroke: 0;
+    background-image: none;
+    animation: none;
+  }
+
+  .tfx {
+    filter: none;
+  }
+}

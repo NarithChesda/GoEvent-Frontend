@@ -12,6 +12,7 @@
           'text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-regular leading-tight',
           textClass,
           currentLanguage === 'kh' && 'khmer-text-fix',
+          fx(fontSlot),
         ]"
         :style="{
           fontFamily: fontFamily,
@@ -28,12 +29,12 @@
               :key="`welcome-${currentLanguage}-${line.startIndex + wordIndex}`"
               class="bounce-word"
               :style="{ animationDelay: `${baseDelay + wordCascadeDelay(line.startIndex + wordIndex)}s` }"
-            >{{ word }}{{ wordIndex < line.words.length - 1 ? '\u00A0' : '' }}</span>
+            ><span class="tfx-ink">{{ word }}{{ wordIndex < line.words.length - 1 ? '\u00A0' : '' }}</span></span>
           </template>
         </template>
         <!-- Static text mode -->
         <template v-else>
-          {{ displayMessage }}
+          <span class="tfx-ink">{{ displayMessage }}</span>
         </template>
       </h2>
       </InlineEditableText>
@@ -45,6 +46,8 @@
 import { computed } from 'vue'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import { wordCascadeDelay } from '@/composables/showcase/useHostInfoUtils'
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
+import type { TextEffectSlot } from '@/services/api/types/template.types'
 
 interface Props {
   message?: string
@@ -55,6 +58,8 @@ interface Props {
   animated?: boolean
   baseDelay?: number
   textClass?: string
+  /** The font slot `fontFamily` came from, for its metallic finish. */
+  fontSlot?: TextEffectSlot
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -62,7 +67,10 @@ const props = withDefaults(defineProps<Props>(), {
   animated: false,
   baseDelay: 0.1,
   textClass: '',
+  fontSlot: 'primary',
 })
+
+const fx = useTextEffect()
 
 const displayMessage = computed(() => props.message || props.defaultMessage)
 

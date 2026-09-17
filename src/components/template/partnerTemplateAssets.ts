@@ -14,6 +14,7 @@ import type {
   SaveTheDateDesignConfig,
   SparkFieldConfig,
   StageModesConfig,
+  TextEffectsConfig,
 } from '@/services/api'
 
 /**
@@ -69,6 +70,8 @@ export interface PartnerTemplateDraft {
   save_the_date_design: SaveTheDateDesignConfig | null
   /** Per-stage animation/video modes. Null = the legacy asset/category inference. */
   stage_modes: StageModesConfig | null
+  /** Metallic lettering per font slot. Null = no finish on any slot. */
+  text_effects: TextEffectsConfig | null
   /** Saved colors (edit mode) or pending ones (create mode) — same shape either way. */
   colors: Array<Pick<EventTemplateColor, 'hex_color_code' | 'name'> & { id?: number }>
   /** Saved language fonts. Pending (create-mode) fonts carry no font file yet, so they can't preview. */
@@ -269,6 +272,7 @@ export function partnerTemplateToAssets(template: PartnerTemplate): TemplateAsse
     dress_code_design: template.dress_code_design,
     save_the_date_design: template.save_the_date_design,
     stage_modes: template.stage_modes,
+    text_effects: template.text_effects ?? null,
     display_liquid_glass_background: template.display_liquid_glass_background,
   }
 }
@@ -308,6 +312,7 @@ export function partnerTemplateDraftToAssets(
     dress_code_design: draft.dress_code_design,
     save_the_date_design: draft.save_the_date_design,
     stage_modes: draft.stage_modes,
+    text_effects: draft.text_effects,
     display_liquid_glass_background: draft.display_liquid_glass_background,
   }
 }
