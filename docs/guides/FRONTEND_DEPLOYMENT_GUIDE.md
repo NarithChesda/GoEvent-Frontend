@@ -235,6 +235,14 @@ Node.js version: 20
 | `VITE_TELEGRAM_BOT_TOKEN` | *(secret)* | **nothing — see warning below** |
 | `VITE_TELEGRAM_ADMIN_CHAT_ID` | `6934534080` | **nothing — see warning below** |
 
+**To add** for the partner Facebook campaign (not yet set as of 2026-09-18):
+
+- `VITE_META_PIXEL_ID` — the Meta dataset (pixel) id from Events Manager; the
+  project owner supplies it. Read by [`src/utils/metaPixel.ts`](../../src/utils/metaPixel.ts).
+  Absent ⇒ the pixel never loads and no browser `Lead` fires, while campaign
+  attribution still reaches the backend. Not a secret: a pixel id is public in
+  every page that loads it. Update the table above once it is set.
+
 **Deliberately absent**, so they fall back to their safe defaults — do not add
 them to production:
 

@@ -9,16 +9,31 @@ import router from './router'
 import { ensureLocaleMessages, i18n } from './i18n'
 import { useLanguageStore } from './stores/language'
 import { isPreviewFrameDocument } from './utils/previewFrameContext'
+import { captureAttribution } from './utils/attribution'
+import { trackPageView } from './utils/metaPixel'
 
 // The Design Studio's preview iframes each boot this file in full (see
 // previewFrameContext.ts). Startup work that only serves app chrome they never
 // render is skipped there, so the studio pays for it once instead of 3-4 times.
 const isPreviewFrame = isPreviewFrameDocument()
 
+// Before the router is installed: it starts the initial navigation on install,
+// and the campaign parameters must be read from the address bar as it landed.
+if (!isPreviewFrame) captureAttribution()
+
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(i18n)
+
+// Registered before install, so the landing navigation itself is reported — and
+// that first PageView is when the pixel sets `_fbc` from the URL's `fbclid`. A
+// failed navigation (a duplicate click, an aborted guard) changed no page.
+if (!isPreviewFrame) {
+  router.afterEach((to, _from, failure) => {
+    if (!failure) trackPageView(to)
+  })
+}
 app.use(router)
 
 // Google Sign-In. `install()` injects https://accounts.google.com/gsi/client

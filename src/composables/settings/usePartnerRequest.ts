@@ -15,11 +15,17 @@
  * conflated is the submit: a `404`/`405` on the POST means the feature is not
  * deployed, and telling someone their request failed when there was nowhere to
  * send it would have them retrying forever.
+ *
+ * `submit` is also where lead tracking happens, because every surface that files
+ * an application goes through it — the form on `/partners/apply`, that page's
+ * automatic submit after the sign-in round trip, and the drawer on `/credits`.
  */
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { partnerRequestsService } from '@/services/api'
 import type { CreatePartnerRequestData, PartnerRequest } from '@/services/api'
+import { getAttribution } from '@/utils/attribution'
+import { getMetaBrowserIds, trackServerEvent } from '@/utils/metaPixel'
 
 export function usePartnerRequest() {
   const { t } = useI18n()
@@ -62,10 +68,19 @@ export function usePartnerRequest() {
     fieldErrors.value = null
 
     try {
-      const response = await partnerRequestsService.createRequest(data)
+      const response = await partnerRequestsService.createRequest({
+        ...data,
+        // Which ad brought this browser, and the pixel's cookies for the server's
+        // own `Lead`. Neither can fail the request; see CreatePartnerRequestData.
+        attribution: getAttribution(),
+        meta: { ...getMetaBrowserIds(), event_source_url: window.location.href },
+      })
 
       if (response.success && response.data?.request) {
         request.value = response.data.request
+        // Only now: the row exists. Never on click — the form sends people to
+        // sign in, and a Lead on click would count everyone who gave up there.
+        trackServerEvent(response.data.meta_event)
         return { success: true }
       }
 

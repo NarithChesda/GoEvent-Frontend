@@ -212,6 +212,11 @@
     "phone": "Phone",
     "telegram": "Telegram",
     "volume": "Expected volume",
+    "businessType": "Business type",
+    "source": "Source",
+    "landingPage": "Landing page",
+    "referrer": "Came from",
+    "firstSeen": "First visit",
     "canReapply": "May reapply"
   },
   "payments": {

@@ -18,6 +18,8 @@
  * bare email string both render.
  */
 
+import type { PartnerBusinessType } from './partner.types'
+
 /** The seven decision queues. Also the URL segment, so the strings are the API's. */
 export type AdminQueue =
   | 'events'
@@ -236,6 +238,33 @@ export interface AdminPartnerRequestRow extends AdminReviewableRow {
   review_note: string
   reapply_allowed: string | null
   can_reapply: boolean
+
+  /*
+   * Lead tracking (backend 2026-09-18). Optional because a backend older than
+   * that sends none of it; once deployed every key is present, `null` when the
+   * applicant didn't state it or arrived organic.
+   */
+  business_type?: PartnerBusinessType | null
+  business_type_display?: string | null
+  /**
+   * The attribution in one line — `facebook / paid · b2b_partner_v1 · ad 1202…`,
+   * or `facebook (link click)` for a bare `fbclid` — and `""` when organic.
+   */
+  source_display?: string
+  utm_source?: string | null
+  utm_medium?: string | null
+  utm_campaign?: string | null
+  utm_content?: string | null
+  utm_term?: string | null
+  fb_campaign_id?: string | null
+  fb_adset_id?: string | null
+  fb_ad_id?: string | null
+  fb_placement?: string | null
+  /** Path only — the page the campaign landed this browser on. */
+  landing_page?: string | null
+  referrer?: string | null
+  /** When the browser first arrived from the campaign, not when it applied. */
+  first_seen_at?: string | null
 }
 
 /** `payments` — template activation payments awaiting confirmation. */

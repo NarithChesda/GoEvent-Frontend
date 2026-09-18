@@ -15,23 +15,29 @@
  * a prospect who has just met the page freezes at it — and the three facts a
  * reviewer needs to judge a shop went unanswered. So the box is now those
  * questions, most of them one tap, and `composeMessage` folds the answers back
- * into the single string the API takes. **Nothing new is sent**; the extra
- * questions never reach the wire as fields of their own.
+ * into the single string the API takes.
+ *
+ * The one exception is `business_type`, which became a real column for lead
+ * tracking (Meta's `content_category`, the reports, the admin filter can't parse
+ * prose). It is sent as its own field **and** still folded in as a `Business:`
+ * line, until the backend that knows the field is deployed: the deployed one
+ * drops it, and the folded line is what reviewers read meanwhile. Once the `201`
+ * carries `meta_event`, stop folding it — see FRONTEND_PARTNER_LEAD_TRACKING_GUIDE.md
+ * step 6b (backend repo).
  */
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { CreatePartnerRequestData, PartnerRequestVolume } from '@/services/api'
+import type {
+  CreatePartnerRequestData,
+  PartnerBusinessType,
+  PartnerRequestVolume,
+} from '@/services/api'
 
-/** What kind of shop this is. Frontend-only — folded into `message`. */
-export type PartnerBusinessType =
-  | 'wedding_shop'
-  | 'print_shop'
-  | 'photo_video'
-  | 'event_planner'
-  | 'decoration'
-  | 'other'
+// Lives with the API types now that the API has the field; re-exported so the
+// form's own imports keep working.
+export type { PartnerBusinessType }
 
-/** How their customers get invitations today. Frontend-only, as above. */
+/** How their customers get invitations today. Frontend-only — folded into `message`. */
 export type PartnerInvitationsToday = 'printed' | 'digital' | 'outsourced' | 'none'
 
 export const BUSINESS_TYPES: PartnerBusinessType[] = [
@@ -224,13 +230,15 @@ export function usePartnerRequestForm() {
 
   /**
    * The draft as the API wants it: trimmed, unanswered keys dropped, and the
-   * five "about your business" questions folded down into `message`.
+   * five "about your business" questions folded down into `message` —
+   * `business_type` sent as its own field as well (see the header).
    */
   const payload = (): CreatePartnerRequestData => ({
     business_name: draft.value.business_name.trim(),
     contact_phone: draft.value.contact_phone.trim(),
     contact_telegram: draft.value.contact_telegram?.trim() || undefined,
     expected_monthly_events: draft.value.expected_monthly_events || undefined,
+    business_type: draft.value.business_type || undefined,
     message: composeMessage(draft.value),
   })
 
