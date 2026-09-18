@@ -124,6 +124,22 @@ export const PRERENDERED_ROUTES: PrerenderedRoute[] = [
     imageAlt: 'ម៉ូតធៀបអញ្ជើញ GoEvent បួន',
     locale: 'km_KH',
   },
+  {
+    /*
+     * English, unlike the three above: the policy text is English only (see
+     * src/components/legal/privacyPolicyContent.ts) and the route has no
+     * preferredLocale. It is here less for chat previews than for the review
+     * bots — Google's OAuth consent screen and Meta's ad account both check this
+     * URL, and a real <title> and canonical in the static HTML costs nothing.
+     */
+    path: '/privacy',
+    title: 'GoEvent Privacy Policy',
+    description: 'What GoEvent collects, why, who it is shared with, and the choices you have.',
+    documentTitle: 'Privacy Policy - GoEvent',
+    image: DEFAULT_META.image,
+    imageAlt: DEFAULT_META.imageAlt,
+    locale: 'en_US',
+  },
 ]
 
 const escapeAttr = (value: string) =>

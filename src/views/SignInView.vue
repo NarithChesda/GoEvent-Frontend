@@ -15,12 +15,12 @@
       <div class="w-full max-w-[26rem]">
         <SignInCard @authenticated="handleRedirectAfterLogin" />
 
+        <!-- Privacy only until a Terms of Service page exists: `/terms` has no
+             route, and with no not-found page it rendered blank. When it does,
+             restore `auth.signIn.termsOfService` + `auth.signIn.and` before this
+             link — both keys are still in the locale files. -->
         <p class="mt-5 text-center text-xs text-slate-400">
           {{ t('auth.signIn.termsPrefix') }}
-          <a href="/terms" class="font-medium text-slate-500 hover:text-slate-700">
-            {{ t('auth.signIn.termsOfService') }}
-          </a>
-          {{ t('auth.signIn.and') }}
           <a href="/privacy" class="font-medium text-slate-500 hover:text-slate-700">
             {{ t('auth.signIn.privacyPolicy') }}
           </a>

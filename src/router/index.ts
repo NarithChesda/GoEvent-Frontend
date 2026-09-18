@@ -92,6 +92,17 @@ const router = createRouter({
       meta: { title: 'Become a Partner - GoEvent', preferredLocale: 'kh' },
     },
     {
+      /**
+       * Public and permanent: the sign-up form, the footers, Google's OAuth
+       * consent screen and Meta's ad account all point at this exact URL.
+       * Its sections are linkable (`/privacy#cookies`) — never rename an id.
+       */
+      path: '/privacy',
+      name: 'privacy',
+      component: () => import('../views/PrivacyPolicyView.vue'),
+      meta: { title: 'Privacy Policy - GoEvent' },
+    },
+    {
       path: '/signin',
       name: 'signin',
       component: () => import('../views/SignInView.vue'),

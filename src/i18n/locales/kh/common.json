@@ -118,7 +118,8 @@
     "aboutUs": "អំពីយើង",
     "pricing": "តម្លៃ",
     "discover": "ស្វែងរក",
-    "hostCta": "រៀបចំកម្មវិធីរបស់អ្នកជាមួយ GoEvent"
+    "hostCta": "រៀបចំកម្មវិធីរបស់អ្នកជាមួយ GoEvent",
+    "privacy": "ឯកជនភាព"
   },
   "dateTimePicker": {
     "placeholder": "ជ្រើសរើសកាលបរិច្ឆេទ និងម៉ោង",
@@ -167,5 +168,15 @@
     "days": "{n} ថ្ងៃ",
     "hours": "{n} ម៉ោង",
     "minutes": "{n} នាទី"
+  },
+  "legal": {
+    "lastUpdated": "ធ្វើបច្ចុប្បន្នភាពចុងក្រោយ {date}",
+    "contents": "មាតិកា",
+    "summary": "សេចក្ដីសង្ខេប",
+    "englishOnly": "គោលការណ៍នេះមានតែជាភាសាអង់គ្លេសនៅឡើយ។",
+    "privacy": {
+      "title": "គោលការណ៍ឯកជនភាព",
+      "contactCta": "ផ្ញើសារមកយើងតាម Telegram"
+    }
   }
 }

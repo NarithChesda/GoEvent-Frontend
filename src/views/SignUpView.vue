@@ -175,7 +175,14 @@
               I agree to the
               <a href="#" class="text-[#1e90ff] hover:text-[#1e90ff]">Terms of Service</a>
               and
-              <a href="#" class="text-[#1e90ff] hover:text-[#1e90ff]">Privacy Policy</a>
+              <!-- A new tab: the policy is a long read, and following it in
+                   place would throw away the form being filled in. -->
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noopener"
+                class="text-[#1e90ff] hover:text-[#1e90ff]"
+              >Privacy Policy</a>
             </label>
           </div>
 
