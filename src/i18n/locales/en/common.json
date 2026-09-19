@@ -121,6 +121,11 @@
     "hostCta": "Host your event with GoEvent",
     "privacy": "Privacy"
   },
+  "notFoundPage": {
+    "title": "Page not found",
+    "description": "The link may be broken, or the page may have moved.",
+    "action": "Go to the homepage"
+  },
   "dateTimePicker": {
     "placeholder": "Select date & time",
     "time": "Time",
