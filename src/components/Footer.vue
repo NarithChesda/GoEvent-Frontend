@@ -87,8 +87,8 @@
               <a href="#" class="text-xs sm:text-sm md:text-base text-slate-600 hover:text-[#2ecc71] transition-colors duration-200 inline-block py-1">Contact</a>
             </li>
             <li>
-              <a href="#" class="text-xs sm:text-sm md:text-base text-slate-600 hover:text-[#2ecc71] transition-colors duration-200 inline-block py-1"
-                >Privacy Policy</a
+              <RouterLink to="/privacy" class="text-xs sm:text-sm md:text-base text-slate-600 hover:text-[#2ecc71] transition-colors duration-200 inline-block py-1"
+                >Privacy Policy</RouterLink
               >
             </li>
           </ul>
@@ -102,11 +102,12 @@
             <a href="#" class="text-xs sm:text-sm text-slate-500 hover:text-[#1e90ff] transition-colors duration-200 whitespace-nowrap"
               >Terms of Service</a
             >
-            <a href="#" class="text-xs sm:text-sm text-slate-500 hover:text-[#1e90ff] transition-colors duration-200 whitespace-nowrap"
-              >Privacy Policy</a
+            <RouterLink to="/privacy" class="text-xs sm:text-sm text-slate-500 hover:text-[#1e90ff] transition-colors duration-200 whitespace-nowrap"
+              >Privacy Policy</RouterLink
             >
-            <a href="#" class="text-xs sm:text-sm text-slate-500 hover:text-[#1e90ff] transition-colors duration-200 whitespace-nowrap"
-              >Cookie Policy</a
+            <!-- No separate cookie policy: cookies are a section of the privacy one. -->
+            <RouterLink to="/privacy#cookies" class="text-xs sm:text-sm text-slate-500 hover:text-[#1e90ff] transition-colors duration-200 whitespace-nowrap"
+              >Cookie Policy</RouterLink
             >
           </div>
         </div>

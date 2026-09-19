@@ -517,7 +517,6 @@ const showEditDrawer = ref(false)
 
 // Interval IDs for polling
 const guestManagementPollInterval = ref<number | null>(null)
-const expenseTrackingPollInterval = ref<number | null>(null)
 
 // Template refs for tab components
 const agendaTabRef = ref<InstanceType<typeof EventAgendaTab> | null>(null)
@@ -945,17 +944,6 @@ watch(
         }
       })
     }
-    // Update expense tracking subtab when switching to expenses tab
-    if (activeTab.value === 'expenses') {
-      // Use nextTick to ensure component is mounted
-      nextTick(() => {
-        // Note: getActiveSubTab was removed in expense tab refactor
-        // const currentSubTab = expenseTabRef.value?.getActiveSubTab()
-        // if (currentSubTab) {
-        //   expenseTrackingSubTab.value = currentSubTab
-        // }
-      })
-    }
   }
 )
 
@@ -989,36 +977,6 @@ watch(
   { immediate: true }
 )
 
-// Watch for updates to expense tracking subtab
-watch(
-  () => expenseTabRef.value,
-  () => {
-    // Clear existing interval if any
-    if (expenseTrackingPollInterval.value !== null) {
-      clearInterval(expenseTrackingPollInterval.value)
-      expenseTrackingPollInterval.value = null
-    }
-
-    if (activeTab.value === 'expenses' && expenseTabRef.value) {
-      // Poll for subtab changes at a reasonable interval (1 second instead of 100ms)
-      expenseTrackingPollInterval.value = setInterval(() => {
-        if (!expenseTabRef.value || activeTab.value !== 'expenses') {
-          if (expenseTrackingPollInterval.value !== null) {
-            clearInterval(expenseTrackingPollInterval.value)
-            expenseTrackingPollInterval.value = null
-          }
-          return
-        }
-        // Note: getActiveSubTab was removed in expense tab refactor
-        // const currentSubTab = expenseTabRef.value.getActiveSubTab()
-        // if (currentSubTab && currentSubTab !== expenseTrackingSubTab.value) {
-        //   expenseTrackingSubTab.value = currentSubTab
-        // }
-      }, 1000) as unknown as number
-    }
-  },
-  { immediate: true }
-)
 
 // Watch activeTab and update URL query parameter for tab persistence.
 //
@@ -1064,9 +1022,6 @@ onMounted(() => {
 onUnmounted(() => {
   if (guestManagementPollInterval.value !== null) {
     clearInterval(guestManagementPollInterval.value)
-  }
-  if (expenseTrackingPollInterval.value !== null) {
-    clearInterval(expenseTrackingPollInterval.value)
   }
 })
 </script>

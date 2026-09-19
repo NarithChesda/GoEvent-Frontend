@@ -569,6 +569,7 @@ export { partnerRequestsService } from './api/modules/partner-requests.service'
 export type {
   PartnerRequestStatus,
   PartnerRequestVolume,
+  PartnerBusinessType,
   PartnerRequest,
   PartnerRequestEnvelope,
   CreatePartnerRequestData,

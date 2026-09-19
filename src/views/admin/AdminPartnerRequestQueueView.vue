@@ -50,6 +50,7 @@
         </span>
         <span class="mt-0.5 block truncate text-xs text-slate-500">
           {{ row.user?.email }}
+          <template v-if="businessTypeLabel(row)"> · {{ businessTypeLabel(row) }} </template>
           <template v-if="row.expected_monthly_events_display">
             · {{ row.expected_monthly_events_display }}
           </template>
@@ -136,7 +137,18 @@ import type { AdminPartnerRequestRow, AdminPartnerRequestVolume } from '@/servic
 
 const VOLUMES: AdminPartnerRequestVolume[] = ['1_5', '6_20', '21_50', '50_plus']
 
-const { t } = useI18n()
+const { t, te } = useI18n()
+
+/**
+ * The applicant's own form's wording, so a Khmer-reading reviewer sees the
+ * option the applicant picked. The server's English label covers an option the
+ * backend has and this build does not yet.
+ */
+const businessTypeLabel = (row: AdminPartnerRequestRow): string | null => {
+  if (!row.business_type) return null
+  const key = `settings.credits.request.fields.businessTypeOptions.${row.business_type}`
+  return te(key) ? t(key) : row.business_type_display || row.business_type
+}
 
 const volume = ref('')
 const extraParams = computed(() => ({ expected_monthly_events: volume.value || undefined }))
@@ -175,11 +187,20 @@ const orderingOptions = computed(() => [
 
 const factsFor = (row: AdminPartnerRequestRow): AdminFact[] => [
   { label: t('admin.partnerRequests.business'), value: row.business_name, strong: true },
+  { label: t('admin.partnerRequests.businessType'), value: businessTypeLabel(row) },
   { label: t('admin.partnerRequests.applicant'), value: describeActor(row.user) },
   { label: t('admin.partnerRequests.email'), value: row.user?.email },
   { label: t('admin.partnerRequests.phone'), value: row.contact_phone },
   { label: t('admin.partnerRequests.telegram'), value: row.contact_telegram },
   { label: t('admin.partnerRequests.volume'), value: row.expected_monthly_events_display },
+  // Attribution: all empty, and so all dropped, for an organic applicant.
+  { label: t('admin.partnerRequests.source'), value: row.source_display },
+  { label: t('admin.partnerRequests.landingPage'), value: row.landing_page },
+  { label: t('admin.partnerRequests.referrer'), value: row.referrer },
+  {
+    label: t('admin.partnerRequests.firstSeen'),
+    value: row.first_seen_at ? formatDateTime(row.first_seen_at) : null,
+  },
   { label: t('admin.submitted'), value: formatDateTime(row.created_at) },
   { label: t('admin.reviewedBy'), value: describeActor(row.reviewed_by) },
   { label: t('admin.reviewedAt'), value: row.reviewed_at ? formatDateTime(row.reviewed_at) : null },

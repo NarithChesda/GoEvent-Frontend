@@ -1,0 +1,26 @@
+# goevent.online
+#
+# Everything public is crawlable. The paths below are signed-in tools, which
+# only ever show a crawler the sign-in page, and the Design Studio's preview
+# frames, which render one showcase stage inside another page and are not a
+# page of their own.
+#
+# The invitation showcase (/events/*/showcase) is deliberately NOT disallowed:
+# link-preview bots that honour robots.txt would stop drawing a card for every
+# invitation a couple sends.
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /settings
+Disallow: /security
+Disallow: /credits
+Disallow: /my-tickets
+Disallow: /events/*/manage
+Disallow: /events/*/edit
+Disallow: /events/*/checkout
+Disallow: /events/*/showcase-preview-frame
+Disallow: /template-showcase-preview-frame
+
+# Proxied from api.goevent.online/sitemap.xml by functions/sitemap.xml.ts.
+Sitemap: https://goevent.online/sitemap.xml

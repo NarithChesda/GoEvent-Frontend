@@ -9,21 +9,23 @@
  *
  * These pages are static marketing copy — one title, one description, one
  * image, the same for every visitor — so they need a second static HTML file,
- * not a render server. This plugin does two things to the built output:
+ * not a render server. This plugin does three things to the built output:
  *
  *   1. rewrites the marker block in `dist/index.html` with DEFAULT_META, the
- *      card every route without one of its own is shared with; and
+ *      card every route without one of its own is shared with;
  *   2. writes `dist/<route>.html` — a copy of that same file carrying the
- *      route's own head — for each entry in PRERENDERED_ROUTES.
+ *      route's own head — for each entry in PRERENDERED_ROUTES; and
+ *   3. writes `dist/404.html`, the same shell again plus `noindex`, which
+ *      Pages serves with a 404 status for any path that is neither a file nor
+ *      one of the app's routes in _redirects.
  *
- * Cloudflare Pages serves a matching static asset in preference to the
- * `/* /index.html 200` SPA fallback in _redirects, so the crawler gets the
- * route's card and the browser boots exactly the same app underneath.
+ * Cloudflare Pages serves a matching static asset in preference to the SPA
+ * rewrites in _redirects, so the crawler gets the route's card and the browser
+ * boots exactly the same app underneath.
  *
- * What this is NOT for: anything whose preview depends on a record — an event
- * showcase, a vendor storefront, a service listing. Those already have (or
- * need) the backend's bot-detecting meta endpoint, the pattern `/g/:code`
- * follows in _redirects.
+ * What this is NOT for: anything whose preview depends on a record. The event
+ * page is rendered at the edge (functions/events/[id].ts); a vendor storefront
+ * or a service listing still needs a backend endpoint to do the same.
  */
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import path from 'node:path'
@@ -124,12 +126,42 @@ export const PRERENDERED_ROUTES: PrerenderedRoute[] = [
     imageAlt: 'ម៉ូតធៀបអញ្ជើញ GoEvent បួន',
     locale: 'km_KH',
   },
+  {
+    /*
+     * English, unlike the three above: the policy text is English only (see
+     * src/components/legal/privacyPolicyContent.ts) and the route has no
+     * preferredLocale. It is here less for chat previews than for the review
+     * bots — Google's OAuth consent screen and Meta's ad account both check this
+     * URL, and a real <title> and canonical in the static HTML costs nothing.
+     */
+    path: '/privacy',
+    title: 'GoEvent Privacy Policy',
+    description: 'What GoEvent collects, why, who it is shared with, and the choices you have.',
+    documentTitle: 'Privacy Policy - GoEvent',
+    image: DEFAULT_META.image,
+    imageAlt: DEFAULT_META.imageAlt,
+    locale: 'en_US',
+  },
 ]
 
 const escapeAttr = (value: string) =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
-function renderHead(meta: CardMeta, origin: string, canonicalPath?: string): string {
+/**
+ * The head of dist/404.html. The default card, because a link scraper still
+ * draws one for a dead link, and a tab title that says what happened: the
+ * router overwrites it anyway once the app boots, but a scraper never runs it.
+ */
+const NOT_FOUND_META: CardMeta = {
+  ...DEFAULT_META,
+  documentTitle: 'Page Not Found - GoEvent',
+}
+
+function renderHead(
+  meta: CardMeta,
+  origin: string,
+  { canonicalPath, noindex = false }: { canonicalPath?: string; noindex?: boolean } = {},
+): string {
   const url = canonicalPath ? `${origin}${canonicalPath}` : null
   const image = `${origin}${meta.image}`
   const title = escapeAttr(meta.title)
@@ -140,6 +172,7 @@ function renderHead(meta: CardMeta, origin: string, canonicalPath?: string): str
     `<title>${escapeAttr(meta.documentTitle ?? meta.title)}</title>`,
     `<meta name="description" content="${description}">`,
     `<meta name="author" content="GoEvent">`,
+    ...(noindex ? [`<meta name="robots" content="noindex">`] : []),
     ...(url ? [`<link rel="canonical" href="${url}">`] : []),
     ``,
     `<!-- Open Graph tags (prerendered — see build/prerenderMeta.ts) -->`,
@@ -225,9 +258,31 @@ export function prerenderMeta(options: { origin?: string } = {}): Plugin {
          */
         const target = path.join(outDir, `${route.path.replace(/^\//, '')}.html`)
         await mkdir(path.dirname(target), { recursive: true })
-        await writeFile(target, withHead(renderHead(route, origin, route.path)), 'utf8')
+        await writeFile(
+          target,
+          withHead(renderHead(route, origin, { canonicalPath: route.path })),
+          'utf8',
+        )
         this.info?.(`prerendered head for ${route.path}`)
       }
+
+      /*
+       * Its presence is what turns Pages' SPA fallback off: with no top-level
+       * 404.html, Pages answers every unknown path with index.html and a 200,
+       * so every mistyped URL was a duplicate of the homepage to Google. With
+       * it, only the routes listed in _redirects get the shell with a 200.
+       *
+       * It is the whole app shell, not an error page, so a route that was
+       * forgotten in _redirects still renders for a person — the router draws
+       * it — and only crawlers see the 404. The router's own catch-all draws
+       * the not-found page for everything else.
+       */
+      await writeFile(
+        path.join(outDir, '404.html'),
+        withHead(renderHead(NOT_FOUND_META, origin, { noindex: true })),
+        'utf8',
+      )
+      this.info?.('prerendered 404.html')
     },
   }
 }

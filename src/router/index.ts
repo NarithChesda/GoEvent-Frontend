@@ -1,6 +1,6 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, START_LOCATION } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import { resetMetaTags } from '../utils/metaUtils'
+import { clearEdgeMeta, hasEdgeTitle, resetMetaTags } from '../utils/metaUtils'
 import { useAuthStore } from '../stores/auth'
 import { useLanguageStore } from '../stores/language'
 import { authService } from '../services/auth'
@@ -39,8 +39,25 @@ const router = createRouter({
   },
   routes: [
     {
+      /**
+       * The front door, served at the root URL itself. It used to be a
+       * client-side `redirect: '/events'`, which left the domain's homepage
+       * with no page of its own — Google followed the redirect and indexed
+       * "My Events". Signed out (and every crawler is), it renders the same
+       * landing /events shows a signed-out visitor; signed in, there is no
+       * landing to show, so the account goes straight to its events.
+       *
+       * Its own name rather than an alias of `events`: the pixel's route
+       * allowlist (metaPixel.ts) and the nav's active state key off names.
+       */
       path: '/',
-      redirect: '/events',
+      name: 'landing',
+      component: () => import('../views/EventsView.vue'),
+      beforeEnter: (to) =>
+        useAuthStore().isAuthenticated
+          ? { path: '/events', query: to.query, hash: to.hash, replace: true }
+          : true,
+      meta: { title: 'GoEvent - Create Amazing Events' },
     },
     {
       path: '/home',
@@ -90,6 +107,17 @@ const router = createRouter({
       name: 'partner-apply',
       component: () => import('../views/PartnerApplyView.vue'),
       meta: { title: 'Become a Partner - GoEvent', preferredLocale: 'kh' },
+    },
+    {
+      /**
+       * Public and permanent: the sign-up form, the footers, Google's OAuth
+       * consent screen and Meta's ad account all point at this exact URL.
+       * Its sections are linkable (`/privacy#cookies`) — never rename an id.
+       */
+      path: '/privacy',
+      name: 'privacy',
+      component: () => import('../views/PrivacyPolicyView.vue'),
+      meta: { title: 'Privacy Policy - GoEvent' },
     },
     {
       path: '/signin',
@@ -371,6 +399,19 @@ const router = createRouter({
         },
       ],
     },
+    {
+      /**
+       * Everything else. Without it an unknown URL rendered an empty page.
+       * Keep it last. A path the server doesn't know arrives here from
+       * dist/404.html with a real 404 status; one it does know but the router
+       * doesn't (`/events/x/y/z`, under a `_redirects` splat) arrives with a
+       * 200, which is why the view also marks itself noindex.
+       */
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('../views/NotFoundView.vue'),
+      meta: { title: 'Page Not Found - GoEvent' },
+    },
   ],
 })
 
@@ -411,8 +452,18 @@ const applyRootScaleClasses = (routeName: unknown) => {
  */
 router.beforeEach(async (to, from, next) => {
   try {
+    /*
+     * The first render of a page the edge already titled with its own record
+     * (an event — functions/events/[id].ts) keeps that title: the route's
+     * generic one would replace it before the page could, and Google reads
+     * the rendered title. After that, whatever the edge wrote describes the
+     * URL it served, not the one being navigated to.
+     */
+    const isFirstNavigation = from === START_LOCATION
+    if (!isFirstNavigation && from.path !== to.path) clearEdgeMeta()
+
     // Update document title based on route meta
-    if (to.meta.title) {
+    if (to.meta.title && !(isFirstNavigation && hasEdgeTitle())) {
       document.title = to.meta.title as string
     }
 

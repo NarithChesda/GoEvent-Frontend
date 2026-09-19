@@ -118,7 +118,13 @@
     "aboutUs": "About Us",
     "pricing": "Pricing",
     "discover": "Discover",
-    "hostCta": "Host your event with GoEvent"
+    "hostCta": "Host your event with GoEvent",
+    "privacy": "Privacy"
+  },
+  "notFoundPage": {
+    "title": "Page not found",
+    "description": "The link may be broken, or the page may have moved.",
+    "action": "Go to the homepage"
   },
   "dateTimePicker": {
     "placeholder": "Select date & time",
@@ -167,5 +173,15 @@
     "days": "{n} day | {n} days",
     "hours": "{n} hour | {n} hours",
     "minutes": "{n} minute | {n} minutes"
+  },
+  "legal": {
+    "lastUpdated": "Last updated {date}",
+    "contents": "Contents",
+    "summary": "The short version",
+    "englishOnly": "This policy is currently available in English only.",
+    "privacy": {
+      "title": "Privacy Policy",
+      "contactCta": "Message us on Telegram"
+    }
   }
 }

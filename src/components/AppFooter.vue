@@ -51,6 +51,12 @@
           >
             {{ t('common.footer.discover') }}
           </RouterLink>
+          <RouterLink
+            to="/privacy"
+            class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
+          >
+            {{ t('common.footer.privacy') }}
+          </RouterLink>
         </nav>
 
         <!-- Right: Social Icons -->

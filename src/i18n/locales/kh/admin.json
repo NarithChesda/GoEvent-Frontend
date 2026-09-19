@@ -212,6 +212,11 @@
     "phone": "ទូរស័ព្ទ",
     "telegram": "តេឡេក្រាម",
     "volume": "ចំនួនប៉ាន់ស្មាន",
+    "businessType": "ប្រភេទអាជីវកម្ម",
+    "source": "ប្រភព",
+    "landingPage": "ទំព័រចូលដំបូង",
+    "referrer": "មកពី",
+    "firstSeen": "ចូលមើលលើកដំបូង",
     "canReapply": "អាចដាក់ស្នើម្ដងទៀត"
   },
   "payments": {

@@ -1,3 +1,5 @@
+import { EDGE_META_ATTR } from './eventSeo'
+
 interface EventMeta {
   title: string
   description: string
@@ -79,41 +81,35 @@ export const updateMetaTags = (meta: EventMeta) => {
     updateMetaTag('meta[name="twitter:image:alt"]', `${meta.title} - Event Image`)
   }
 
-  // Additional event-specific structured data
-  const eventStructuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'Event',
-    name: meta.title,
-    description: meta.description,
-    url: meta.url,
-    image: meta.image,
-    location: meta.location
-      ? {
-          '@type': 'Place',
-          name: meta.location,
-        }
-      : undefined,
-    organizer: {
-      '@type': 'Organization',
-      name: meta.author || 'GoEvent',
-    },
-    startDate: meta.publishedTime,
-    offers: {
-      '@type': 'Offer',
-      availability: 'https://schema.org/InStock',
-      price: '0',
-      priceCurrency: 'USD',
-    },
-  }
+  /*
+   * No JSON-LD here. This used to write a schema.org Event for every caller —
+   * service listings and vendor storefronts included — each with a hard-coded
+   * free, in-stock offer. Google renders this app, so it read them: a price of
+   * 0 on ticketed events, and a dateless Event on every service page. An
+   * event's real structured data is written at the edge from the backend's
+   * record (functions/events/[id].ts, src/utils/eventSeo.ts).
+   */
+}
 
-  // Update structured data
-  let structuredDataElement = head.querySelector('script[type="application/ld+json"]')
-  if (!structuredDataElement) {
-    structuredDataElement = document.createElement('script')
-    structuredDataElement.setAttribute('type', 'application/ld+json')
-    head.appendChild(structuredDataElement)
-  }
-  structuredDataElement.textContent = JSON.stringify(eventStructuredData, null, 2)
+/**
+ * Whether the edge titled this document for the URL it was served at
+ * (functions/events/[id].ts). The router leaves that title alone on the first
+ * render instead of replacing it with the route's generic one.
+ */
+export const hasEdgeTitle = (): boolean =>
+  document.head.querySelector(`title[${EDGE_META_ATTR}]`) !== null
+
+/**
+ * Takes down what the edge wrote into <head> — canonical, JSON-LD, robots and
+ * the event's card. Once the visitor navigates away from the page they were
+ * served, all of it describes a URL they are no longer on. The <title> element
+ * stays (the router retitles it) and only loses its mark.
+ */
+export const clearEdgeMeta = (): void => {
+  document.head.querySelectorAll(`[${EDGE_META_ATTR}]`).forEach((element) => {
+    if (element.tagName === 'TITLE') element.removeAttribute(EDGE_META_ATTR)
+    else element.remove()
+  })
 }
 
 export const resetMetaTags = () => {
@@ -130,12 +126,6 @@ export const resetMetaTags = () => {
   }
 
   updateMetaTags(defaultMeta)
-
-  // Remove event-specific structured data
-  const structuredDataElement = document.head.querySelector('script[type="application/ld+json"]')
-  if (structuredDataElement) {
-    structuredDataElement.remove()
-  }
 }
 
 // Helper function to extract the best image from event data

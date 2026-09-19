@@ -13,7 +13,26 @@
  * Backend spec: docs/backend-api-requirements/partner-access-request.md
  */
 
+import type { Attribution } from '@/utils/attribution'
+import type { MetaBrowserEvent } from '@/utils/metaPixel'
+
 export type PartnerRequestStatus = 'pending' | 'approved' | 'rejected'
+
+/**
+ * What kind of shop this is.
+ *
+ * Mirrors the backend's `PartnerAccessRequest.BUSINESS_TYPE_CHOICES` one for
+ * one. **Add a new option on the backend first**: it does not refuse an unknown
+ * value, it files the application with no business type — which quietly drops
+ * that applicant from the qualified-lead reporting until someone reads the log.
+ */
+export type PartnerBusinessType =
+  | 'wedding_shop'
+  | 'print_shop'
+  | 'photo_video'
+  | 'event_planner'
+  | 'decoration'
+  | 'other'
 
 /**
  * Roughly how much wholesale the applicant expects to need.
@@ -37,6 +56,8 @@ export interface PartnerRequest {
   contact_phone: string
   contact_telegram?: string
   expected_monthly_events?: PartnerRequestVolume | null
+  /** `null` when not stated; absent from a backend older than lead tracking. */
+  business_type?: PartnerBusinessType | null
   message?: string
   /**
    * What the reviewer told the applicant. Only meaningful on a rejection, and
@@ -59,13 +80,29 @@ export interface PartnerRequestEnvelope {
   success: boolean
   message: string
   request: PartnerRequest
+  /**
+   * The browser twin of the server's `Lead`, to fire exactly as given. Absent
+   * from a backend older than lead tracking — and then no browser event fires.
+   */
+  meta_event?: MetaBrowserEvent
 }
 
-/** Only `business_name` and `contact_phone` are required. */
+/**
+ * Only `business_name` and `contact_phone` are required.
+ *
+ * `attribution` and `meta` are lead tracking, write-only, and can never fail a
+ * submission: the server drops or truncates anything malformed rather than
+ * answering `400`, so they are sent as they are, unvalidated.
+ */
 export interface CreatePartnerRequestData {
   business_name: string
   contact_phone: string
   contact_telegram?: string
   expected_monthly_events?: PartnerRequestVolume
+  business_type?: PartnerBusinessType
   message?: string
+  /** Where this browser came from — `getAttribution()`. `null` when organic. */
+  attribution?: Attribution | null
+  /** The pixel's cookies and the page URL, for the Conversions API. */
+  meta?: { fbp?: string; fbc?: string; event_source_url?: string }
 }

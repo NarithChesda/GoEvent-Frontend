@@ -19,9 +19,10 @@ export default defineConfig(({ mode }) => {
       vueJsx(),
       ...(mode === 'development' ? [vueDevTools()] : []),
       /**
-       * Writes dist/<route>/index.html with a per-route <head> so link
-       * scrapers, which never run the app, get the right card. Build-only;
-       * the route table lives in build/prerenderMeta.ts.
+       * Writes dist/<route>.html with a per-route <head> so link scrapers,
+       * which never run the app, get the right card — and dist/404.html, the
+       * noindexed shell Pages serves for unknown paths. Build-only; the route
+       * table lives in build/prerenderMeta.ts.
        */
       prerenderMeta({ origin: env.VITE_PUBLIC_SITE_URL }),
     ],

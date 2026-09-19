@@ -17,21 +17,29 @@
   # Cache control for HTML (no cache)
   Cache-Control: no-cache, no-store, must-revalidate
 
+# Long-lived caching for fingerprinted and static files.
+#
+# Pages MERGES every rule that matches a path, joining repeated headers with a
+# comma, so without the `! Cache-Control` detach each of these inherited
+# `no-cache, no-store` from /* above and went out as
+# `no-cache, no-store, must-revalidate, public, max-age=31536000, immutable`
+# — no-store wins, and browsers re-downloaded the whole bundle on every visit
+# (seen on production, 2026-09-19). The detach drops the inherited value first.
+
 # Cache static assets for 1 year
 /assets/*
+  ! Cache-Control
   Cache-Control: public, max-age=31536000, immutable
 
 # Cache images
 /images/*
+  ! Cache-Control
   Cache-Control: public, max-age=31536000, immutable
 
-# Cache fonts
-*.woff2
-  Cache-Control: public, max-age=31536000, immutable
-*.woff
-  Cache-Control: public, max-age=31536000, immutable
-*.ttf
-  Cache-Control: public, max-age=31536000, immutable
+# Fonts need no rule of their own: Vite fingerprints them into /assets/fonts/,
+# which /assets/* covers. (There were `*.woff2`-style rules here; a rule must
+# start with `/`, so Pages read each as a malformed header line of the rule
+# above it and they never applied.)
 
 # Don't cache service worker
 /sw.js

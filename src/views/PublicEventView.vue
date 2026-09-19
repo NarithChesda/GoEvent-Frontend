@@ -574,6 +574,7 @@ import { useAuthStore } from '../stores/auth'
 import { useToast } from '../composables/useToast'
 import { apiClient } from '../services/api'
 import { extractGoogleMapsEmbedUrl } from '../utils/embedExtractor'
+import { eventDocumentTitle } from '../utils/eventSeo'
 import { BANNER_WIDTHS, getBannerUrl as resolveBannerUrl } from '@/utils/mediaUrl'
 import type { EventAgendaItem } from '../services/api/types/event.types'
 
@@ -795,6 +796,10 @@ const loadEvent = async () => {
         router.replace(`/events/${eventId}/manage`)
         return
       }
+
+      // The edge serves this page already titled (functions/events/[id].ts);
+      // this covers arriving in-app, and a render where the edge lookup failed.
+      document.title = eventDocumentTitle(event.value.title)
 
       // Mark that we've checked registration status
       if (authStore.isAuthenticated) {

@@ -1,0 +1,22 @@
+{
+  // Type-checks the Cloudflare Pages Functions (and the one app module they
+  // import) against the Workers runtime rather than the DOM. Cloudflare's own
+  // build only strips the types, so this — via `npm run type-check` — is the
+  // only place they are checked. Runtime-only globals the Functions use are
+  // declared in the files themselves (see _lib/edge.ts).
+  "include": ["./**/*.ts", "../src/utils/eventSeo.ts"],
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+    "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.functions.tsbuildinfo",
+
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "WebWorker"],
+    "types": [],
+    "strict": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "include": ["/events/*", "/sitemap.xml"],
+  "exclude": [
+    "/events/*/showcase",
+    "/events/*/showcase-preview-frame",
+    "/events/*/manage",
+    "/events/*/edit",
+    "/events/*/checkout"
+  ]
+}
