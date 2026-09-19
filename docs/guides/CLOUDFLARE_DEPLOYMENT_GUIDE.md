@@ -120,78 +120,28 @@ VITE_GENERATE_SOURCEMAP=true
 
 ### Configuration Files (Committed)
 
-#### `wrangler.toml` - Cloudflare Pages Configuration
-```toml
-name = "goevent-frontend"
-compatibility_date = "2024-09-14"
+> **Updated 2026-09-19.** The snippets that used to be here had drifted from the
+> real files, and two of them were wrong in ways that mattered: `/* /index.html
+> 200` is rejected by Pages as an infinite loop (it never applied), and rules
+> like `*.js` are invalid because a `_headers` rule must start with `/`. Read the
+> files themselves, and [CLOUDFLARE_SEO_SETUP.md](CLOUDFLARE_SEO_SETUP.md) for
+> how they work together.
 
-[build]
-command = "npm run build-cloudflare"
-cwd = "."
-watch_dir = ["src", "public", "index.html", "vite.config.ts", "tailwind.config.js"]
+What Pages deploys from this repo:
 
-[build.upload]
-format = "directory"
-dir = "dist"
+| File | Role |
+|---|---|
+| `public/_redirects` | Every client route as a rewrite to `/` (the app shell). Unlisted paths get `404.html`. |
+| `public/_headers` | Security headers, `no-store` HTML, one-year caching for `/assets/*`. |
+| `public/_routes.json` | Which paths invoke Pages Functions: `/events/*` (minus event sub-pages) and `/sitemap.xml`. |
+| `public/robots.txt` | Crawl rules and the sitemap URL. |
+| `functions/` | Pages Functions: edge-rendered event pages and the sitemap proxy. Compiled by Pages automatically. |
+| `dist/404.html`, `dist/<route>.html` | Written at build time by `build/prerenderMeta.ts`. |
 
-[build.environment_variables]
-NODE_VERSION = "20"
-NPM_FLAGS = "--frozen-lockfile"
-```
-
-#### `_headers` - Security and Performance Headers
-```
-/*
-  X-Frame-Options: DENY
-  X-Content-Type-Options: nosniff
-  X-XSS-Protection: 1; mode=block
-  Referrer-Policy: strict-origin-when-cross-origin
-  Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; media-src 'self' https: blob:; connect-src 'self' https://api.goevent.online wss://api.goevent.online https://accounts.google.com; frame-src 'self' https://accounts.google.com;
-
-/assets/*
-  Cache-Control: public, max-age=31536000, immutable
-
-*.js
-  Cache-Control: public, max-age=31536000, immutable
-
-*.css
-  Cache-Control: public, max-age=31536000, immutable
-
-*.png
-  Cache-Control: public, max-age=31536000, immutable
-
-*.jpg
-  Cache-Control: public, max-age=31536000, immutable
-
-*.jpeg
-  Cache-Control: public, max-age=31536000, immutable
-
-*.webp
-  Cache-Control: public, max-age=31536000, immutable
-
-*.svg
-  Cache-Control: public, max-age=31536000, immutable
-
-*.woff2
-  Cache-Control: public, max-age=31536000, immutable
-
-*.ico
-  Cache-Control: public, max-age=86400
-
-/
-  Cache-Control: public, max-age=0, must-revalidate
-
-/index.html
-  Cache-Control: public, max-age=0, must-revalidate
-```
-
-#### `_redirects` - SPA Routing Support
-```
-# Single Page Application routing
-# All routes should be handled by Vue Router client-side
-/* /index.html 200
-```
+The repo-root `_redirects`, `_headers` and `wrangler.toml` are **not** used.
+Pages reads `_redirects`/`_headers` from the build output (`dist/`, copied from
+`public/`), and it skips a `wrangler.toml` that has no `pages_build_output_dir`.
+Build settings live in the dashboard.
 
 ---
 
