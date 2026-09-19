@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   EDGE_META_ATTR,
+  FREE_OFFER_CURRENCY,
   buildEventJsonLd,
   renderEventHead,
   renderNoIndexHead,
@@ -22,6 +23,7 @@ const ticketed = (): EventSeo => ({
   image: 'https://ik.imagekit.io/goevent/tr:w-1200,h-630,f-jpg/media/event_banners/cover.webp',
   start_date: '2026-10-10T19:00:00+07:00',
   end_date: '2026-10-10T23:00:00+07:00',
+  status: 'scheduled',
   is_online: false,
   location: 'Factory Phnom Penh, 1159 National Road 2, Phnom Penh',
   organizer_name: 'Phnom Penh Jazz Club',
@@ -51,6 +53,7 @@ describe('buildEventJsonLd', () => {
       startDate: '2026-10-10T19:00:00+07:00',
       endDate: '2026-10-10T23:00:00+07:00',
       eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      eventStatus: 'https://schema.org/EventScheduled',
       location: {
         '@type': 'Place',
         name: 'Factory Phnom Penh, 1159 National Road 2, Phnom Penh',
@@ -75,11 +78,26 @@ describe('buildEventJsonLd', () => {
     })
   })
 
-  it('claims free only for a free event, and never offers without tickets', () => {
+  it('offers a free event at price 0 on its own page', () => {
     const free = { ...ticketed(), event_type: 'free' as const, ticket: null }
     const ld = buildEventJsonLd(free)
     expect(ld.isAccessibleForFree).toBe(true)
-    expect(ld).not.toHaveProperty('offers')
+    expect(ld.offers).toEqual({
+      '@type': 'Offer',
+      price: 0,
+      priceCurrency: FREE_OFFER_CURRENCY,
+      availability: 'https://schema.org/InStock',
+      url: URL_,
+    })
+  })
+
+  it('maps the status, and reads an absent or unknown one as scheduled', () => {
+    const statusOf = (status: EventSeo['status']) =>
+      buildEventJsonLd({ ...ticketed(), status }).eventStatus
+    expect(statusOf('cancelled')).toBe('https://schema.org/EventCancelled')
+    expect(statusOf('postponed')).toBe('https://schema.org/EventPostponed')
+    expect(statusOf(undefined)).toBe('https://schema.org/EventScheduled')
+    expect(statusOf('rescheduled-someday')).toBe('https://schema.org/EventScheduled')
   })
 
   it('claims nothing about the price of a curated event', () => {

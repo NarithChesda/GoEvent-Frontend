@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory, START_LOCATION } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 import { clearEdgeMeta, hasEdgeTitle, resetMetaTags } from '../utils/metaUtils'
 import { useAuthStore } from '../stores/auth'
 import { useLanguageStore } from '../stores/language'
@@ -43,27 +42,30 @@ const router = createRouter({
        * The front door, served at the root URL itself. It used to be a
        * client-side `redirect: '/events'`, which left the domain's homepage
        * with no page of its own — Google followed the redirect and indexed
-       * "My Events". Signed out (and every crawler is), it renders the same
-       * landing /events shows a signed-out visitor; signed in, there is no
-       * landing to show, so the account goes straight to its events.
+       * "My Events". Signed out (and every crawler is), it renders the landing
+       * and its sections; signed in, the account goes straight to its events —
+       * unless it asked for a section of the page by name. `/#pricing` is the
+       * footer's Pricing link on every page, and an account should be able to
+       * read the prices too.
        *
        * Its own name rather than an alias of `events`: the pixel's route
        * allowlist (metaPixel.ts) and the nav's active state key off names.
+       *
+       * The title matches the one build/prerenderMeta.ts writes into the
+       * homepage's static HTML (staticRoutes.spec.ts holds them together).
+       *
+       * There is no `/home` any more: it was an older English landing that
+       * competed with this one for "homepage", and public/_redirects sends it
+       * here with a 301.
        */
       path: '/',
       name: 'landing',
-      component: () => import('../views/EventsView.vue'),
+      component: () => import('../views/LandingView.vue'),
       beforeEnter: (to) =>
-        useAuthStore().isAuthenticated
-          ? { path: '/events', query: to.query, hash: to.hash, replace: true }
+        useAuthStore().isAuthenticated && !to.hash
+          ? { path: '/events', query: to.query, replace: true }
           : true,
-      meta: { title: 'GoEvent - Create Amazing Events' },
-    },
-    {
-      path: '/home',
-      name: 'home',
-      component: HomeView,
-      meta: { title: 'Home - GoEvent' },
+      meta: { title: 'GoEvent — Digital Wedding Invitations & RSVP | ធៀបការឌីជីថល' },
     },
     {
       path: '/about',

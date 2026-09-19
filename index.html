@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="">
+<html lang="en">
   <head>
     <meta charset="UTF-8">
     <link rel="icon" href="/icon.png" type="image/png">
@@ -14,9 +14,11 @@
 
     <!--
       Everything between the two markers below is REPLACED at build time by
-      the prerender-meta plugin (build/prerenderMeta.ts). It rewrites this
-      block in place with the default card, and writes a copy of the file to
-      dist/<route>.html for each route that has a card of its own.
+      the prerender-meta plugin (build/prerenderMeta.ts), which writes this
+      file out several times: dist/app-shell.html with the default card (the
+      page every client route is rewritten to), dist/index.html with the
+      homepage's own head and text, and dist/<route>.html for each other route
+      that has a card of its own. It also sets <html lang> per file.
 
       So the block below is what the plugin's DEFAULT_META already says, kept
       in step by hand — it is what a raw, unbuilt index.html would serve, and

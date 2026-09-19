@@ -68,6 +68,7 @@ Living documentation for large multi-phase features:
 Deployment, workflow, and subsystem how-tos:
 
 - [CLOUDFLARE_DEPLOYMENT_GUIDE.md](guides/CLOUDFLARE_DEPLOYMENT_GUIDE.md) / [FRONTEND_DEPLOYMENT_GUIDE.md](guides/FRONTEND_DEPLOYMENT_GUIDE.md) / [LOCAL_WORKFLOW_GUIDE.md](guides/LOCAL_WORKFLOW_GUIDE.md) — deployment & dev workflow
+- [CLOUDFLARE_SEO_SETUP.md](guides/CLOUDFLARE_SEO_SETUP.md) — Cloudflare dashboard setup for SEO: Search Console, the `pages.dev` redirect, settings not to touch, post-deploy checks (for whoever manages Cloudflare)
 - [PLAYWRIGHT.md](guides/PLAYWRIGHT.md) — E2E testing setup, fixtures, and why `npx playwright install` must never be run
 - [PARTNER_PAGE_SCREENSHOTS.md](guides/PARTNER_PAGE_SCREENSHOTS.md) — recapturing the `/partners` invitation and guest-list screenshots
 - [PARTNER_OUTREACH_VIDEO.md](guides/PARTNER_OUTREACH_VIDEO.md) — cold-outreach video brief for recruiting print shops as partners

@@ -45,7 +45,93 @@
     "headlineAccent": "start here",
     "subtitle": "From weddings and birthdays to conferences and concerts, GoEvent makes every invitation feel effortless.",
     "primaryCta": "Create Your First Event",
-    "secondaryCta": "Discover Events"
+    "secondaryCta": "Discover Events",
+    "features": {
+      "title": "Everything your invitation needs",
+      "subtitle": "One link carries the whole event: the design, the details and the replies.",
+      "personal": {
+        "title": "Their own link, with their name on it",
+        "body": "Every guest gets an invitation addressed to them, sent in the chat app they already use."
+      },
+      "bilingual": {
+        "title": "Khmer and English",
+        "body": "Write your invitation in both languages. Guests switch between them with one tap."
+      },
+      "media": {
+        "title": "Your photos, music and map",
+        "body": "Photos, a song, the schedule and the way to the venue, all on the same invitation."
+      },
+      "rsvp": {
+        "title": "One-tap replies, under the right name",
+        "body": "Guests reply from the invitation itself, with nothing to install and no account to make."
+      },
+      "guests": {
+        "title": "Guest list and seating",
+        "body": "See who is coming, sort guests into groups and seat them at tables."
+      },
+      "tickets": {
+        "title": "Tickets and fundraising",
+        "body": "Sell tickets or collect donations for a public event, right from its page."
+      }
+    },
+    "steps": {
+      "title": "How it works",
+      "create": {
+        "title": "Create your event",
+        "body": "Add the date, the place, the hosts and the schedule."
+      },
+      "design": {
+        "title": "Choose a design",
+        "body": "Pick an invitation design and make it yours with photos and music."
+      },
+      "share": {
+        "title": "Send it to your guests",
+        "body": "Share each guest's link and watch the replies come in."
+      }
+    },
+    "designs": {
+      "title": "Invitation designs",
+      "body": "Weddings, birthdays and more. Open any design and read the whole invitation it makes, in English and Khmer.",
+      "cta": "Browse the designs",
+      "partner": "Make invitations for your customers?",
+      "partnerCta": "See the partner programme"
+    },
+    "pricing": {
+      "title": "Pricing",
+      "subtitle": "Setting up your event is free. You pay once, when you activate its design.",
+      "loading": "Loading pricing plans…",
+      "bestSeller": "Best Seller",
+      "ctaFree": "Get Started Free",
+      "ctaStart": "Get Started",
+      "ctaContact": "Contact Us",
+      "noteFree": "Perfect to get started.",
+      "noteFreeLink": "See what's possible",
+      "notePaid": "Want to see it in action?",
+      "notePaidLink": "Try our demo"
+    },
+    "faq": {
+      "title": "Questions",
+      "guests": {
+        "q": "Do my guests need an account or an app?",
+        "a": "No. They open their link in the browser they already have, and reply from there."
+      },
+      "languages": {
+        "q": "Can the invitation be in Khmer and English?",
+        "a": "Yes. You write both, and each guest can switch language on the invitation."
+      },
+      "cost": {
+        "q": "How much does it cost?",
+        "a": "Setting up your event is free. You pay once, when you activate your invitation's design, and the price depends on that design's plan. The plans are listed above."
+      },
+      "edit": {
+        "q": "Can I change the invitation after I send it?",
+        "a": "Yes. Your changes show on every guest's link straight away, so there is nothing to send again."
+      },
+      "help": {
+        "q": "How do I get help?",
+        "a": "Message us on Telegram at t.me/goeventkh."
+      }
+    }
   },
   "messages": {
     "createSuccess": "Event created successfully!",

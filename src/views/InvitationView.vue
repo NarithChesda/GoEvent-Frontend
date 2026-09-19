@@ -233,7 +233,7 @@ import {
   UserPlus,
   LogOut,
 } from 'lucide-vue-next'
-import LogoSvg from '@/assets/logo.png'
+import LogoSvg from '@/assets/logo.webp'
 import { useAuthStore } from '@/stores/auth'
 import { invitationsService, type CollaboratorInvitationData } from '@/services/api'
 import { googleTokenLogin } from 'vue3-google-login'

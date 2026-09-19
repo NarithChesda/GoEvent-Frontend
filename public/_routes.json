@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "include": ["/events/*", "/sitemap.xml"],
+  "include": ["/events/*", "/services/vendors/*", "/sitemap.xml"],
   "exclude": [
     "/events/*/showcase",
     "/events/*/showcase-preview-frame",

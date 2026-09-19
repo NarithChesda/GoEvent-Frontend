@@ -1,72 +1,96 @@
 /**
- * Per-route <head> prerendering for link previews.
+ * Per-route <head> (and text) prerendering, for everything that reads a page
+ * without running it.
  *
  * Link scrapers — Messenger, Telegram, WhatsApp, Slack, Twitter, Discord — do
- * not execute JavaScript. Everything this app does about meta tags happens
- * after mount (`updateMetaTags` in src/utils/metaUtils.ts, the router's
- * `document.title`), so a scraper only ever saw the generic block in
- * index.html and every shared link rendered the same GoEvent card.
+ * not execute JavaScript, and neither do Bing's first pass or most AI
+ * crawlers. Everything this app does about meta tags happens after mount
+ * (`updateMetaTags` in src/utils/metaUtils.ts, the router's `document.title`),
+ * so they only ever saw one generic head over an empty `<div id="app">`.
  *
- * These pages are static marketing copy — one title, one description, one
- * image, the same for every visitor — so they need a second static HTML file,
- * not a render server. This plugin does three things to the built output:
+ * The public marketing pages are static copy — the same for every visitor —
+ * so they need a second static HTML file, not a render server. This plugin
+ * rewrites the built output:
  *
- *   1. rewrites the marker block in `dist/index.html` with DEFAULT_META, the
- *      card every route without one of its own is shared with;
- *   2. writes `dist/<route>.html` — a copy of that same file carrying the
- *      route's own head — for each entry in PRERENDERED_ROUTES; and
- *   3. writes `dist/404.html`, the same shell again plus `noindex`, which
- *      Pages serves with a 404 status for any path that is neither a file nor
- *      one of the app's routes in _redirects.
+ *   1. `dist/app-shell.html` — the app with the generic DEFAULT_META head, the
+ *      page every client route without a file of its own is rewritten to
+ *      (public/_redirects) and the edge Functions build on (functions/_lib);
+ *   2. `dist/index.html` — the homepage, with its own head, JSON-LD and text;
+ *   3. `dist/<route>.html` for every other entry in PRERENDERED_ROUTES; and
+ *   4. `dist/404.html`, the shell again plus `noindex`, which Pages serves
+ *      with a 404 status for any path that is neither a file nor one of the
+ *      app's routes in _redirects.
+ *
+ * The shell and the homepage used to be one file. That was fine while the
+ * homepage said nothing about itself, and it is why they are two now: a
+ * canonical in index.html would have been served to /signin, every showcase
+ * and every other rewritten route, telling Google each one *is* the homepage.
  *
  * Cloudflare Pages serves a matching static asset in preference to the SPA
- * rewrites in _redirects, so the crawler gets the route's card and the browser
+ * rewrites in _redirects, so the crawler gets the route's page and the browser
  * boots exactly the same app underneath.
  *
- * What this is NOT for: anything whose preview depends on a record. The event
- * page is rendered at the edge (functions/events/[id].ts); a vendor storefront
- * or a service listing still needs a backend endpoint to do the same.
+ * What this is NOT for: anything whose preview depends on a record. Event
+ * pages and vendor storefronts are rendered at the edge (functions/); a
+ * service listing still needs a backend endpoint to do the same.
  */
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import type { Plugin } from 'vite'
+import { STATIC_BODY_STYLE, createBodyRenderer } from './prerenderBodies'
 
 const META_START = '<!-- meta:start -->'
 const META_END = '<!-- meta:end -->'
+const APP_ROOT = '<div id="app"></div>'
 
 /** Where the built site is served from. Only used to absolutise `og:url` and
  *  `og:image`, both of which every scraper requires to be absolute. */
 export const DEFAULT_SITE_ORIGIN = 'https://goevent.online'
 
+/**
+ * The app shell's file, and the path it is served at — the target of every
+ * rewrite in public/_redirects, and SHELL_PATH in functions/_lib/edge.ts.
+ * staticRoutes.spec.ts holds all three together.
+ */
+export const SHELL_FILE = 'app-shell.html'
+export const SHELL_PATH = '/app-shell'
+
 export interface CardMeta {
   title: string
   /**
    * The <title> tag, when it should differ from the card's title. The card's
-   * is written for a chat bubble and the tag for a browser tab, and on the
-   * fallback those are not the same sentence — the router overwrites the tag
-   * per route a moment after boot, so a marketing line there only flashes.
+   * is written for a chat bubble and the tag for a browser tab. For a route
+   * the router also titles, it must be that route's `meta.title`, or the tab
+   * changes as the app boots (staticRoutes.spec.ts checks it).
    */
   documentTitle?: string
   description: string
   /** Site-root-relative path to a 1200x630 card image in public/. */
   image: string
   imageAlt: string
-  /** OpenGraph locale of the copy above, e.g. `km_KH`. */
+  /** OpenGraph locale of the copy above, e.g. `km_KH`. Also sets `<html lang>`. */
   locale: string
 }
 
 export interface PrerenderedRoute extends CardMeta {
-  /** Route path, leading slash, no trailing slash. */
+  /** Route path, leading slash, no trailing slash (`/` for the homepage). */
   path: string
+  /**
+   * The canonical URL's path when it is another page's — this route serves a
+   * duplicate of it. Defaults to `path`.
+   */
+  canonicalPath?: string
+  /** schema.org objects for the head, given the site's origin. */
+  jsonLd?: (origin: string) => object[]
 }
 
 /**
- * The card every other route gets, written into `dist/index.html` itself —
- * the file the SPA rewrite in _redirects serves for `/events`, `/explore`,
- * `/signin` and everything else without a card of its own.
+ * The card for every route without one of its own, written into the app
+ * shell — the file the SPA rewrite in _redirects serves for `/events`,
+ * `/signin`, every showcase and everything else not listed below.
  *
  * English, because that is the app's DEFAULT_LOCALE and so what those routes
- * boot in; the two Khmer cards below front the two pages that do not.
+ * boot in; the Khmer cards below front the pages that do not.
  *
  * It carries NO `og:url` and no canonical, deliberately. One file answers
  * many URLs, so naming one of them would tell a scraper that every share of
@@ -82,18 +106,114 @@ export const DEFAULT_META: CardMeta = {
   locale: 'en_US',
 }
 
+/** The same channels as the footer's social links (AppFooter.vue). */
+const SOCIAL_PROFILES = [
+  'https://t.me/goeventkh',
+  'https://www.facebook.com/profile.php?id=61581851850221',
+  'https://www.instagram.com/goevent.online/',
+  'https://www.tiktok.com/@goevent.online',
+]
+
 /**
- * The routes that get their own head.
+ * Who publishes the site, for Google's knowledge panel and the site name it
+ * shows over results. The logo is the app mark rendered at 512px
+ * (public/brand/): Google wants at least 112px, and the favicon is 107.
+ */
+const siteJsonLd = (origin: string): object[] => [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    '@id': `${origin}/#organization`,
+    name: 'GoEvent',
+    url: `${origin}/`,
+    logo: `${origin}/brand/goevent-icon-512.png`,
+    sameAs: SOCIAL_PROFILES,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${origin}/#website`,
+    name: 'GoEvent',
+    url: `${origin}/`,
+    inLanguage: ['en', 'km'],
+    publisher: { '@id': `${origin}/#organization` },
+  },
+]
+
+/** The About page's card; `/contact` renders the same page (see below). */
+const ABOUT_CARD: CardMeta = {
+  title: 'About GoEvent',
+  description:
+    'The team behind GoEvent, and what we are building: digital invitations, guest lists and tickets for events of every size.',
+  documentTitle: 'About - GoEvent',
+  image: DEFAULT_META.image,
+  imageAlt: DEFAULT_META.imageAlt,
+  locale: 'en_US',
+}
+
+/**
+ * The routes that get their own file.
  *
- * In Khmer, and that is not a translation choice made here — it is the
- * language these pages open in (`preferredLocale` on their routes in
- * src/router/index.ts). A card that reads in English and then hands over to a
- * Khmer page is worse than either one alone. Copy is kept in step with the
- * pages' own strings (src/i18n/locales/kh/partners.json) by hand rather than
- * imported: a scraper gets one language whatever the visitor's is, and a card
- * is not the place for a page's full subtitle.
+ * Each card is written in the language its page opens in: the partner pages
+ * prefer Khmer (`preferredLocale` in src/router/index.ts), everything else
+ * boots in English. A card that reads in one language and hands over to a
+ * page in the other is worse than either alone. Copy is kept in step with the
+ * pages' own strings by hand rather than imported: a scraper gets one
+ * language whatever the visitor's is, and a card is not the place for a
+ * page's full subtitle. The page *text* below the head is imported
+ * (build/prerenderBodies.ts).
  */
 export const PRERENDERED_ROUTES: PrerenderedRoute[] = [
+  {
+    /*
+     * The homepage, and the one page whose words are chosen for search: what
+     * people type is "wedding invitation" and ធៀបការ (a wedding card), not
+     * "event management". It opens in English (the app's default locale), so
+     * the card and `<html lang>` are English; the Khmer term rides along in
+     * the title because that is what most of the market searches in.
+     */
+    path: '/',
+    title: 'GoEvent — digital invitations in Khmer and English',
+    documentTitle: 'GoEvent — Digital Wedding Invitations & RSVP | ធៀបការឌីជីថល',
+    description:
+      'Make a digital wedding invitation (ធៀបការ) in Khmer and English, send every guest their own link with their name on it, and collect RSVPs in one place.',
+    image: DEFAULT_META.image,
+    imageAlt: DEFAULT_META.imageAlt,
+    locale: 'en_US',
+    jsonLd: siteJsonLd,
+  },
+  {
+    path: '/explore',
+    title: 'Discover events on GoEvent',
+    documentTitle: 'Discover Events - GoEvent',
+    description:
+      'Concerts, meetups, workshops and celebrations open to the public. See what is on, and open any event for where and when.',
+    image: DEFAULT_META.image,
+    imageAlt: DEFAULT_META.imageAlt,
+    locale: 'en_US',
+  },
+  {
+    path: '/services',
+    title: 'Event services on GoEvent',
+    documentTitle: 'Event Services - GoEvent',
+    description:
+      'Photographers, caterers, venues, decorators, makeup artists and other wedding and event services, with their work and how to reach them.',
+    image: DEFAULT_META.image,
+    imageAlt: DEFAULT_META.imageAlt,
+    locale: 'en_US',
+  },
+  { path: '/about', ...ABOUT_CARD },
+  {
+    /*
+     * The router renders the About page here too (there is no contact page
+     * yet), so this URL is a duplicate and its canonical says so. It keeps a
+     * tab title of its own because the router gives it one.
+     */
+    path: '/contact',
+    ...ABOUT_CARD,
+    documentTitle: 'Contact - GoEvent',
+    canonicalPath: '/about',
+  },
   {
     path: '/partners',
     title: 'កម្មវិធីដៃគូ GoEvent',
@@ -104,9 +224,9 @@ export const PRERENDERED_ROUTES: PrerenderedRoute[] = [
   },
   {
     /*
-     * The one of these three that gets sent to a named person rather than
-     * posted — it is the reply to "how do I become a partner?", so its card is
-     * read in a chat thread, under the sender's own sentence. It reuses
+     * The one of these that gets sent to a named person rather than posted —
+     * it is the reply to "how do I become a partner?", so its card is read in
+     * a chat thread, under the sender's own sentence. It reuses
      * `/og/partners.png` deliberately: the link goes to the same offer, and a
      * second artwork for the form would make it look like a different product
      * from the page the recipient may already have been shown.
@@ -128,7 +248,7 @@ export const PRERENDERED_ROUTES: PrerenderedRoute[] = [
   },
   {
     /*
-     * English, unlike the three above: the policy text is English only (see
+     * English: the policy text is English only (see
      * src/components/legal/privacyPolicyContent.ts) and the route has no
      * preferredLocale. It is here less for chat previews than for the review
      * bots — Google's OAuth consent screen and Meta's ad account both check this
@@ -147,6 +267,12 @@ export const PRERENDERED_ROUTES: PrerenderedRoute[] = [
 const escapeAttr = (value: string) =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
+/** JSON for an inline <script>: `<` escaped so no string in it can close the element. */
+const inlineJson = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c')
+
+/** `km_KH` → `km`: an HTML lang is a language tag, not an OpenGraph locale. */
+export const htmlLang = (locale: string) => locale.split('_')[0]!.toLowerCase()
+
 /**
  * The head of dist/404.html. The default card, because a link scraper still
  * draws one for a dead link, and a tab title that says what happened: the
@@ -157,10 +283,17 @@ const NOT_FOUND_META: CardMeta = {
   documentTitle: 'Page Not Found - GoEvent',
 }
 
+interface HeadOptions {
+  canonicalPath?: string
+  noindex?: boolean
+  jsonLd?: object[]
+  hasStaticBody?: boolean
+}
+
 function renderHead(
   meta: CardMeta,
   origin: string,
-  { canonicalPath, noindex = false }: { canonicalPath?: string; noindex?: boolean } = {},
+  { canonicalPath, noindex = false, jsonLd, hasStaticBody = false }: HeadOptions = {},
 ): string {
   const url = canonicalPath ? `${origin}${canonicalPath}` : null
   const image = `${origin}${meta.image}`
@@ -195,11 +328,16 @@ function renderHead(
     `<meta name="twitter:image" content="${image}">`,
     `<meta name="twitter:image:alt" content="${imageAlt}">`,
     `<meta name="twitter:site" content="@GoEvent">`,
+    ...(jsonLd?.length
+      ? [``, `<script type="application/ld+json">${inlineJson(jsonLd)}</script>`]
+      : []),
+    ...(hasStaticBody ? [``, STATIC_BODY_STYLE] : []),
   ].join('\n    ')
 }
 
 export function prerenderMeta(options: { origin?: string } = {}): Plugin {
   const origin = (options.origin || DEFAULT_SITE_ORIGIN).replace(/\/+$/, '')
+  let root = ''
   let outDir = ''
   let isSsr = false
 
@@ -208,6 +346,7 @@ export function prerenderMeta(options: { origin?: string } = {}): Plugin {
     apply: 'build',
 
     configResolved(config) {
+      root = config.root
       outDir = path.resolve(config.root, config.build.outDir)
       isSsr = Boolean(config.build.ssr)
     },
@@ -234,19 +373,34 @@ export function prerenderMeta(options: { origin?: string } = {}): Plugin {
             'Restore the markers in index.html — see the comment above them.',
         )
       }
+      if (!html.includes(APP_ROOT)) {
+        throw new Error(`[prerender-meta] ${APP_ROOT} not found in ${indexPath}.`)
+      }
 
       const before = html.slice(0, start + META_START.length)
       const after = html.slice(end)
-      const withHead = (head: string) => `${before}\n    ${head}\n    ${after}`
+      const page = (head: string, locale: string, body: string | null = null) => {
+        const withHead = `${before}\n    ${head}\n    ${after}`.replace(
+          /<html lang="[^"]*">/,
+          `<html lang="${htmlLang(locale)}">`,
+        )
+        return body ? withHead.replace(APP_ROOT, `<div id="app">${body}</div>`) : withHead
+      }
 
-      // The fallback first, in place — every route without a card of its own
-      // is served this file by the SPA rewrite.
-      await writeFile(indexPath, withHead(renderHead(DEFAULT_META, origin)), 'utf8')
-      this.info?.('prerendered the default head')
+      // The shell first. Every route without a file of its own is served it.
+      await writeFile(
+        path.join(outDir, SHELL_FILE),
+        page(renderHead(DEFAULT_META, origin), DEFAULT_META.locale),
+        'utf8',
+      )
+      this.info?.(`prerendered the app shell (${SHELL_FILE})`)
+
+      const bodyFor = createBodyRenderer(root)
 
       for (const route of PRERENDERED_ROUTES) {
         /*
-         * `<route>.html`, not `<route>/index.html`.
+         * `<route>.html`, not `<route>/index.html` (the homepage aside, which
+         * is index.html by definition).
          *
          * Both are resolved by Cloudflare Pages, but only this one is resolved
          * for the URL people actually share. A static server asked for
@@ -256,14 +410,24 @@ export function prerenderMeta(options: { origin?: string } = {}): Plugin {
          * behaves exactly that way and is how this can be checked locally at
          * all.
          */
-        const target = path.join(outDir, `${route.path.replace(/^\//, '')}.html`)
+        const file = route.path === '/' ? 'index.html' : `${route.path.replace(/^\//, '')}.html`
+        const target = path.join(outDir, file)
+        const body = bodyFor(route.path)
         await mkdir(path.dirname(target), { recursive: true })
         await writeFile(
           target,
-          withHead(renderHead(route, origin, { canonicalPath: route.path })),
+          page(
+            renderHead(route, origin, {
+              canonicalPath: route.canonicalPath ?? route.path,
+              jsonLd: route.jsonLd?.(origin),
+              hasStaticBody: Boolean(body),
+            }),
+            route.locale,
+            body,
+          ),
           'utf8',
         )
-        this.info?.(`prerendered head for ${route.path}`)
+        this.info?.(`prerendered ${route.path} (${file})`)
       }
 
       /*
@@ -279,7 +443,7 @@ export function prerenderMeta(options: { origin?: string } = {}): Plugin {
        */
       await writeFile(
         path.join(outDir, '404.html'),
-        withHead(renderHead(NOT_FOUND_META, origin, { noindex: true })),
+        page(renderHead(NOT_FOUND_META, origin, { noindex: true }), NOT_FOUND_META.locale),
         'utf8',
       )
       this.info?.('prerendered 404.html')

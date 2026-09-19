@@ -49,8 +49,12 @@ const PIXEL_ID = (import.meta.env.VITE_META_PIXEL_ID as string | undefined)?.tri
  * The routes the pixel may report. Everything else, above all the invitation
  * showcase, it never hears about. A route belongs here only if its URL cannot
  * carry anyone's data: the pixel sends the whole address, query string included.
+ *
+ * `landing` is the homepage at `/`, which took over from the retired `/home`
+ * (route `home`). The Privacy Policy lists "our home" page among these, so the
+ * two must name the same page.
  */
-const TRACKED_ROUTES = new Set(['home', 'about', 'partners', 'partner-templates', 'partner-apply'])
+const TRACKED_ROUTES = new Set(['landing', 'about', 'partners', 'partner-templates', 'partner-apply'])
 
 /**
  * Sign-in and sign-up are part of the funnel (the apply form sends anyone

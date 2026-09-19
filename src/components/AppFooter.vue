@@ -22,7 +22,7 @@
         <!-- Navigation (inline with logo) -->
         <nav class="flex items-center space-x-4 flex-1 ml-6">
           <RouterLink
-            to="/home"
+            to="/"
             class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
           >
             {{ t('common.footer.home') }}
@@ -40,7 +40,7 @@
             {{ t('partners.nav') }}
           </RouterLink>
           <RouterLink
-            to="/home#pricing"
+            to="/#pricing"
             class="text-sm text-slate-500 hover:text-slate-700 transition-colors"
           >
             {{ t('common.footer.pricing') }}

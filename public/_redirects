@@ -3,44 +3,57 @@
 # Static rules come first, then the ones with a placeholder or a splat: Pages
 # resolves exact paths faster when nothing dynamic is above them.
 
+# ── Moved pages ─────────────────────────────────────────────────────────────
+#
+# /home was an older English landing page that competed with `/` as the site's
+# homepage (two 200s, no canonical, both linked from the footer). Its pricing
+# section now lives on `/`; a /home#pricing link keeps its fragment across the
+# redirect, so it still lands there.
+/home                              /  301
+
+# Browsers and crawlers ask for /favicon.ico whatever <head> says. The icon is
+# a PNG (index.html links it), so the old path points at that instead of 404ing.
+/favicon.ico                       /icon.png  301
+
 # ── The app's routes ────────────────────────────────────────────────────────
 #
-# Each client route is rewritten to the app shell with a 200. Anything NOT
-# listed falls through to dist/404.html — the same shell, served with a 404
-# status and `noindex` (build/prerenderMeta.ts), where the router draws its
-# not-found page. So a mistyped URL is a real 404 instead of a copy of the
-# homepage, and a missing JS chunk after a deploy is a 404 instead of HTML.
+# Each client route is rewritten to the app shell, /app-shell (dist/app-shell.html,
+# written by build/prerenderMeta.ts), with a 200. Anything NOT listed falls
+# through to dist/404.html — the same shell, served with a 404 status and
+# `noindex`, where the router draws its not-found page. So a mistyped URL is a
+# real 404 instead of a copy of the homepage, and a missing JS chunk after a
+# deploy is a 404 instead of HTML.
+#
+# The shell is not `/`. That is the homepage, whose HTML carries the homepage's
+# canonical, structured data and text — a rewrite to it would tell Google that
+# /signin, every showcase and every other route below is the homepage.
 #
 # ADD EVERY NEW ROUTE HERE. One forgotten still renders — 404.html boots the
 # app — but crawlers and link scrapers get a 404 for it.
 # src/router/staticRoutes.spec.ts fails when a router path isn't covered.
 #
-# The target is `/`, never `/index.html`. Pages strips `/index.html` to `/`
-# with a 308, so a rewrite to it redirects the visitor to the homepage — or,
-# for a splat, is rejected at deploy as an infinite loop and ignored. The old
+# Never target `/index.html` or `/app-shell.html`. Pages strips `.html` with a
+# 308, so a rewrite to either redirects the visitor instead — or, for a splat,
+# is rejected at deploy as an infinite loop and ignored. The old
 # `/* /index.html 200` catch-all was ignored that way: deep links only worked
 # because Pages serves index.html for unknown paths when there is no 404.html.
 #
-# Not listed, because a file answers them first: `/` (index.html) and the
-# prerendered cards /partners, /partners/apply, /partners/templates and
-# /privacy (build/prerenderMeta.ts). /events/<id> itself goes to the Function
-# in functions/events/[id].ts before this file is read.
+# Not listed, because a file answers them first: `/` (index.html) and every
+# page in build/prerenderMeta.ts's PRERENDERED_ROUTES — /about, /contact,
+# /explore, /services, /privacy and the /partners pages. /events/<id> and
+# /services/vendors/<id> go to the Functions in functions/ before this file is
+# read.
 
-/home                              /  200
-/about                             /  200
-/contact                           /  200
-/signin                            /  200
-/signup                            /  200
-/events                            /  200
-/explore                           /  200
-/services                          /  200
-/calendars                         /  200
-/settings                          /  200
-/security                          /  200
-/credits                           /  200
-/my-tickets                        /  200
-/admin                             /  200
-/template-showcase-preview-frame   /  200
+/signin                            /app-shell  200
+/signup                            /app-shell  200
+/events                            /app-shell  200
+/calendars                         /app-shell  200
+/settings                          /app-shell  200
+/security                          /app-shell  200
+/credits                           /app-shell  200
+/my-tickets                        /app-shell  200
+/admin                             /app-shell  200
+/template-showcase-preview-frame   /app-shell  200
 
 # Shortlink routing: Frontend /g/{code} → Backend /api/events/g/{code}/
 # Backend handles bot detection (SSR meta tags) and user redirection
@@ -53,9 +66,9 @@
 #   - Cloudflare Workers/Functions for dynamic routing
 /g/:code  https://api.goevent.online/api/events/g/:code/  302
 
-/events/*                          /  200
-/services/*                        /  200
-/guest-list/*                      /  200
-/invitation/*                      /  200
-/my-tickets/*                      /  200
-/admin/*                           /  200
+/events/*                          /app-shell  200
+/services/*                        /app-shell  200
+/guest-list/*                      /app-shell  200
+/invitation/*                      /app-shell  200
+/my-tickets/*                      /app-shell  200
+/admin/*                           /app-shell  200

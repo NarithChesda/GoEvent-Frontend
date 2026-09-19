@@ -26,7 +26,32 @@ export interface PagesContext {
   params: Record<string, string | string[] | undefined>
   /** The static site's answer for this request — `_redirects` included. */
   next(): Promise<Response>
+  /** Keeps the invocation alive for work finished after the response is sent. */
+  waitUntil(promise: Promise<unknown>): void
 }
+
+declare global {
+  /** Workers extension: the zone's own edge cache, the one `fetch` reads through. */
+  interface CacheStorage {
+    readonly default: Cache
+  }
+}
+
+/**
+ * The app shell: the generic page every client route without a file of its own
+ * is rewritten to (public/_redirects), written by build/prerenderMeta.ts as
+ * `dist/app-shell.html`. Not `/`, which is the homepage and carries the
+ * homepage's canonical — a Function that rewrote *that* would tell Google each
+ * event page is really the homepage.
+ */
+export const SHELL_PATH = '/app-shell'
+
+/**
+ * Sent on every API call. Cloudflare in front of the API answers 403 to library
+ * default user agents (SEO_API_DOCS.md), and a named one is what the backend's
+ * logs can tell apart from a visitor.
+ */
+export const EDGE_USER_AGENT = 'GoEvent-Edge/1.0'
 
 const DEFAULT_API_ORIGIN = 'https://api.goevent.online'
 
