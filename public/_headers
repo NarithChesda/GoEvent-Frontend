@@ -17,6 +17,17 @@
   # Cache control for HTML (no cache)
   Cache-Control: no-cache, no-store, must-revalidate
 
+# Pages with nothing to find. Signed out, /events is the landing's hero again
+# under "My Events" — the title Google once gave the homepage — and every page
+# links to it; /signin is a form. Header rather than robots.txt: a disallowed
+# URL can't be fetched, so Google never reads its noindex, and a `Disallow:
+# /events` would take every /events/<id> page with it. Each rule matches its
+# own path only, never the pages beneath it.
+/events
+  X-Robots-Tag: noindex
+/signin
+  X-Robots-Tag: noindex
+
 # Long-lived caching for fingerprinted and static files.
 #
 # Pages MERGES every rule that matches a path, joining repeated headers with a

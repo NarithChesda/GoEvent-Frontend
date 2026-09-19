@@ -49,9 +49,13 @@
       class="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-6 py-[clamp(1.5rem,5vh,3.5rem)] pb-[clamp(4rem,16vh,8rem)] lg:pb-[clamp(1.5rem,5vh,3.5rem)] pointer-events-none lg:pointer-events-auto"
     >
       <!-- 40px tall: the mark carries a wordmark inside it, which turns to mush
-           below that on a phone screen. -->
+           below that on a phone screen. A 120px-tall WebP (3x that) rather
+           than the 3782px master PNG, which at 205 KB was the homepage's
+           largest download. -->
       <img
-        :src="LogoPng"
+        :src="LogoImg"
+        width="351"
+        height="120"
         alt="GoEvent"
         class="hero-item h-10 w-auto mb-[clamp(0.875rem,3vh,1.75rem)]"
         style="animation-delay: 0ms"
@@ -152,7 +156,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { ArrowRight } from 'lucide-vue-next'
-import LogoPng from '@/assets/logo.png'
+import LogoImg from '@/assets/logo-hero.webp'
 import { eventsService } from '@/services/api'
 import { getEventImage } from '@/composables/useEventFormatters'
 import { buildEventCoverDataUri } from '@/utils/eventCoverPlaceholder'

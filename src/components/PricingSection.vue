@@ -1,5 +1,13 @@
 <template>
-  <section id="pricing" class="py-24 lg:py-18 2xl:py-24 relative overflow-hidden scroll-animate">
+  <!-- The homepage's pricing band (LandingSections.vue), `#pricing` being the
+       anchor the footer's Pricing link lands on. Its heading matches the
+       sections around it rather than being a headline of its own: the page's
+       one gradient headline is the hero's. -->
+  <section
+    id="pricing"
+    aria-labelledby="pricing-title"
+    class="py-[clamp(3.5rem,9vh,6rem)] relative overflow-hidden scroll-animate"
+  >
     <!-- Background elements -->
     <div class="absolute inset-0">
       <div
@@ -8,18 +16,21 @@
       <div class="absolute bottom-0 right-0 w-72 h-72 lg:w-54 lg:h-54 2xl:w-72 2xl:h-72 bg-sky-100/20 rounded-full blur-3xl"></div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-      <div class="text-center mb-12 sm:mb-16 lg:mb-9 2xl:mb-16">
-        <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-4xl 2xl:text-5xl font-bold text-slate-900 mb-8 sm:mb-10 lg:mb-6 2xl:mb-10 leading-tight px-4">
-          Choose Your
-          <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]">
-            Perfect Plan
-          </span>
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div class="mb-10 sm:mb-12">
+        <h2
+          id="pricing-title"
+          class="text-2xl sm:text-3xl font-bold text-slate-900 leading-snug tracking-tight"
+        >
+          {{ t('events.landing.pricing.title') }}
         </h2>
+        <p class="mt-3 max-w-xl text-base text-slate-600 leading-relaxed">
+          {{ t('events.landing.pricing.subtitle') }}
+        </p>
 
         <!-- Category Toggle (Personal/Business) -->
-        <div class="mb-12 lg:mb-9 2xl:mb-12" v-if="Object.keys(categorizedPlans).length > 1">
-          <div class="flex justify-center">
+        <div class="mt-8" v-if="Object.keys(categorizedPlans).length > 1">
+          <div class="flex">
             <div class="inline-flex bg-white rounded-full p-1 lg:p-0.5 2xl:p-1 border-2 lg:border 2xl:border-2 border-slate-200">
               <button
                 v-for="categoryName in Object.keys(categorizedPlans)"
@@ -48,7 +59,7 @@
         <div
           class="inline-block animate-spin rounded-full h-8 w-8 lg:h-6 lg:w-6 2xl:h-8 2xl:w-8 border-b-2 border-[#1e90ff]"
         ></div>
-        <p class="text-slate-700 mt-4 lg:mt-3 lg:text-sm 2xl:mt-4 2xl:text-base">Loading pricing plans...</p>
+        <p class="text-slate-700 mt-4 lg:mt-3 lg:text-sm 2xl:mt-4 2xl:text-base">{{ t('events.landing.pricing.loading') }}</p>
       </div>
 
       <!-- Error State -->
@@ -58,7 +69,7 @@
           @click="fetchPricingPlans"
           class="bg-[#1e90ff] hover:bg-[#1873cc] text-white px-6 py-2 lg:px-4.5 lg:py-1.5 lg:text-sm 2xl:px-6 2xl:py-2 2xl:text-base rounded-lg"
         >
-          Retry
+          {{ t('common.actions.retry') }}
         </button>
       </div>
 
@@ -86,7 +97,7 @@
                 <svg class="w-4 h-4 lg:w-3 lg:h-3 2xl:w-4 2xl:h-4 fill-current" viewBox="0 0 24 24">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                 </svg>
-                <span class="text-sm lg:text-xs 2xl:text-sm font-bold uppercase tracking-wide">Best Seller</span>
+                <span class="text-sm lg:text-xs 2xl:text-sm font-bold uppercase tracking-wide">{{ t('events.landing.pricing.bestSeller') }}</span>
               </div>
             </div>
 
@@ -138,10 +149,10 @@
                 >
                   {{
                     plan.price === '0.00'
-                      ? 'Get Started Free'
+                      ? t('events.landing.pricing.ctaFree')
                       : plan.is_best_seller
-                      ? 'Get Started'
-                      : 'Contact Us'
+                      ? t('events.landing.pricing.ctaStart')
+                      : t('events.landing.pricing.ctaContact')
                   }}
                   <svg class="w-5 h-5 lg:w-4 lg:h-4 2xl:w-5 2xl:h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.008-1.252-.241-1.865-.44-.752-.244-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635.099-.002.321.023.465.141.122.098.155.231.171.325.016.094.036.308.02.475z"/>
@@ -218,10 +229,10 @@
               <div class="mt-6 pt-6 lg:mt-4 lg:pt-4 2xl:mt-6 2xl:pt-6 border-t lg:border-t-[0.5px] 2xl:border-t border-slate-200 flex-shrink-0">
                 <p class="text-xs lg:text-[10px] 2xl:text-xs text-slate-500 text-center lg:leading-tight 2xl:leading-normal">
                   <template v-if="plan.price === '0.00'">
-                    Perfect to get started. <a :href="plan.description || 'https://api.goevent.online/api/events/ff726c4d-9356-4350-bc48-930b93a2a812/meta/?guest_name=%E1%9E%97%E1%9F%92%E1%9E%89%E1%9F%80%E1%9E%9C%E1%9E%80%E1%9E%B7%E1%9E%8F%E1%9F%92%E1%9E%8F%E1%9E%B7%E1%9E%99%E1%9E%9F&lang=kh'" class="underline hover:text-slate-700 font-medium">See what's possible</a>
+                    {{ t('events.landing.pricing.noteFree') }} <a :href="plan.description || 'https://api.goevent.online/api/events/ff726c4d-9356-4350-bc48-930b93a2a812/meta/?guest_name=%E1%9E%97%E1%9F%92%E1%9E%89%E1%9F%80%E1%9E%9C%E1%9E%80%E1%9E%B7%E1%9E%8F%E1%9F%92%E1%9E%8F%E1%9E%B7%E1%9E%99%E1%9E%9F&lang=kh'" class="underline hover:text-slate-700 font-medium">{{ t('events.landing.pricing.noteFreeLink') }}</a>
                   </template>
                   <template v-else>
-                    Want to see it in action? <a :href="plan.description || 'https://api.goevent.online/api/events/ff726c4d-9356-4350-bc48-930b93a2a812/meta/?guest_name=%E1%9E%97%E1%9F%92%E1%9E%89%E1%9F%80%E1%9E%9C%E1%9E%80%E1%9E%B7%E1%9E%8F%E1%9F%92%E1%9E%8F%E1%9E%B7%E1%9E%99%E1%9E%9F&lang=kh'" class="underline hover:text-slate-700 font-medium">Try our demo</a>
+                    {{ t('events.landing.pricing.notePaid') }} <a :href="plan.description || 'https://api.goevent.online/api/events/ff726c4d-9356-4350-bc48-930b93a2a812/meta/?guest_name=%E1%9E%97%E1%9F%92%E1%9E%89%E1%9F%80%E1%9E%9C%E1%9E%80%E1%9E%B7%E1%9E%8F%E1%9F%92%E1%9E%8F%E1%9E%B7%E1%9E%99%E1%9E%9F&lang=kh'" class="underline hover:text-slate-700 font-medium">{{ t('events.landing.pricing.notePaidLink') }}</a>
                   </template>
                 </p>
               </div>
@@ -243,6 +254,9 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { Check, ChevronDown } from 'lucide-vue-next'
 import { FALLBACK_PRICING_PLANS, type PricingPlan } from '@/constants/pricingFallback'
 import { parsePlanFeature, type PlanFeature } from '@/utils/planFeatures'
+import { useAppLanguage } from '@/composables/useAppLanguage'
+
+const { t } = useAppLanguage()
 
 const loading = ref(false)
 const error = ref<string | null>(null)

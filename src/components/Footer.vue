@@ -120,7 +120,7 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Facebook, Instagram } from 'lucide-vue-next'
-import LogoPng from '@/assets/logo.png'
+import LogoPng from '@/assets/logo.webp'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 
 // Only the Partners link is translated so far — the rest of this footer is

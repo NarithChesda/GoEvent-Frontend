@@ -51,7 +51,7 @@ Priority when they compete — the gradient goes to whichever is highest on this
 3. A drawer or panel header that establishes context
 4. Everything else → `bg-slate-900` (dark solid), `bg-slate-100` (secondary), or `text-slate-600` (ghost)
 
-**Gradient text** (`bg-clip-text`, 16 uses) is the weakest use — it spends the brand's loudest asset to decorate a word. It is earned on a marketing headline where the brand *is* the subject ([HomeView.vue](src/views/HomeView.vue), [AboutView.vue](src/views/AboutView.vue)). It is not earned on a metric, a count, a section heading, or anything inside the app shell.
+**Gradient text** (`bg-clip-text`, 16 uses) is the weakest use — it spends the brand's loudest asset to decorate a word. It is earned on a marketing headline where the brand *is* the subject ([EventsLandingHero.vue](src/components/events/EventsLandingHero.vue), [AboutView.vue](src/views/AboutView.vue)). It is not earned on a metric, a count, a section heading, or anything inside the app shell.
 
 Tinted brand surfaces (`/10`, `/20`) don't count against the budget — they read as texture, not as an object.
 

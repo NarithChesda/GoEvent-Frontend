@@ -36,14 +36,16 @@ Pushing `clean-production` builds with the existing settings:
 
 From that build, Pages uses:
 
-- **`functions/`** — two Pages Functions:
+- **`functions/`** — three Pages Functions:
   - `/events/<uuid>`: fetches the event's SEO data from the API and writes the event's own title, description, preview image and Google Event data into the page.
+  - `/services/vendors/<uuid>`: the same for a vendor storefront, with Google LocalBusiness data, from `GET /api/public/vendors/<uuid>/seo/`.
   - `/sitemap.xml`: serves the backend's sitemap from goevent.online.
 
-  The build log shows `Found Functions directory at /functions`, and the deployment's **Functions** tab lists both routes.
-- **`_routes.json`** — limits the Functions to those two paths. Showcase, manage, checkout and every other page are plain static files and never run a Function.
-- **`_redirects`** — the app's routes. Any other path returns **404** (it used to return the homepage with a 200).
-- **`_headers`** — security headers, and one-year browser caching for `/assets/*`.
+  The build log shows `Found Functions directory at /functions`, and the deployment's **Functions** tab lists all three routes.
+- **`_routes.json`** — limits the Functions to those paths. Showcase, manage, checkout and every other page are plain static files and never run a Function.
+- **`_redirects`** — the app's routes, each rewritten to the app shell (`/app-shell`). Any other path returns **404**. `/home` answers **301 → `/`** (it was a second homepage), and `/favicon.ico` **301 → `/icon.png`**.
+- **Prerendered pages** — `/`, `/explore`, `/services`, `/about`, `/contact`, `/privacy` and the `/partners` pages are static files with their own title, description, canonical and text. `/` also carries Organization and WebSite data.
+- **`_headers`** — security headers, one-year browser caching for `/assets/*`, and `X-Robots-Tag: noindex` on `/events` (a signed-in list; signed out it repeats the homepage) and `/signin`.
 - **`robots.txt`** — now a real text file.
 
 ### Environment variables
@@ -58,7 +60,7 @@ Do not add a `/api` suffix to it. The Function tolerates one, but the app does n
 
 ### Usage
 
-Each view of `/events/<uuid>` and each sitemap fetch counts as one Functions request. On the Workers Free plan the limit is **100,000 requests a day** across the account. Guest invitation traffic (`/events/<id>/showcase`) is excluded and costs nothing. Watch **Workers & Pages → goevent-frontend → Metrics**.
+Each view of `/events/<uuid>` or `/services/vendors/<uuid>`, and each sitemap fetch, counts as one Functions request. On the Workers Free plan the limit is **100,000 requests a day** across the account. Guest invitation traffic (`/events/<id>/showcase`) is excluded and costs nothing. Watch **Workers & Pages → goevent-frontend → Metrics**.
 
 ---
 
@@ -113,7 +115,7 @@ The feature is under **Security → Bots** (in newer dashboards, **AI Crawl Cont
 
 ## 5. Settings that would break this (don't change without care)
 
-- **No "Cache Everything" cache rule for HTML on goevent.online.** HTML is deliberately `no-store`: it names the current build's fingerprinted JS files, and a cached copy from a previous deploy loads chunks that no longer exist. The event-page Function also caches its own API lookups (5 minutes), so an HTML cache rule adds nothing.
+- **No "Cache Everything" cache rule for HTML on goevent.online.** HTML is deliberately `no-store`: it names the current build's fingerprinted JS files, and a cached copy from a previous deploy loads chunks that no longer exist. The event and vendor Functions cache their own API answers in the zone's edge cache (fresh for 5 minutes, then served stale for up to a day while they refresh in the background, under `/__edge-seo/…`), so an HTML cache rule adds nothing. Purging the zone's cache simply makes the next view of each page ask the API again.
 - **Don't block or challenge verified bots.** Googlebot, `facebookexternalhit`, `TelegramBot`, `Twitterbot` and `WhatsApp` must reach event pages and `/events/*/showcase` without a challenge, or search results and invitation previews break. The default Bot Fight Mode allows verified bots. If previews stop appearing, check **Security → Events** for challenges against those user agents.
 - **Leave the existing `/e/*` and `/g/*` rules alone.** Zone rules already send both to the backend before Pages sees the request: `/g/<code>` answers `302 → https://api.goevent.online/g/<code>`. The `/g/:code` line in `_redirects` is only the fallback for hosts outside the zone, such as `pages.dev`. Neither path is affected by this release.
 - **Don't move the Pages root directory** off the repo root (§1).
@@ -131,7 +133,22 @@ curl -sI https://goevent.online/this-does-not-exist     # 404, and the body cont
 curl -s  https://goevent.online/robots.txt              # plain text, with the Sitemap: line
 curl -sI https://goevent.online/sitemap.xml             # 200, content-type application/xml, x-robots-tag: noindex
 curl -sI https://goevent.online/assets/js/<any>.js      # cache-control: public, max-age=31536000, immutable (and nothing else)
+curl -sI https://goevent.online/events                  # 200, x-robots-tag: noindex
+curl -sI https://goevent.online/signin                  # 200, x-robots-tag: noindex
+curl -sI https://goevent.online/home                    # 301, location: /
+curl -sI https://goevent.online/favicon.ico             # 301, location: /icon.png
 ```
+
+Each public page has its own head and text in the HTML itself (view-source, not Inspect):
+
+```sh
+for p in / /explore /services /about /privacy; do
+  curl -s https://goevent.online$p | grep -iE '<title|canonical|name="description"'
+done
+curl -s https://goevent.online/calendars | grep -c canonical   # 0: routes without a page of their own get the generic shell
+```
+
+Google's Rich Results Test on `https://goevent.online/` should detect an **Organization**.
 
 For an event, pick any `/events/<uuid>` from the sitemap:
 
@@ -147,7 +164,9 @@ Google's [Rich Results Test](https://search.google.com/test/rich-results) on an 
 
 | Symptom | Likely cause |
 |---|---|
-| Event pages show the generic "GoEvent" title | The Function can't reach the API. Check `VITE_API_BASE_URL`, then that `https://api.goevent.online/api/public/events/<uuid>/seo/` answers. The page is left untouched on any API failure. |
+| Event pages show the generic "GoEvent" title | The Function can't reach the API. Check `VITE_API_BASE_URL`, then that `https://api.goevent.online/api/public/events/<uuid>/seo/` answers. The page is left untouched on any API failure, unless the edge still holds that event's last good answer from the past day. |
+| Vendor pages show the generic "GoEvent" title | The same checks as for events, against `https://api.goevent.online/api/public/vendors/<uuid>/seo/`. An HTML (not JSON) 404 there means the deployed backend lacks the endpoint. |
+| `/signin`, a showcase or another app route carries the homepage's canonical | Its `_redirects` line targets `/` instead of `/app-shell`. `src/router/staticRoutes.spec.ts` should have caught it. |
 | Every event page carries `noindex` | The API answers the SEO endpoint with a JSON 404 for events that should be public. Check the event's privacy, publish and moderation status in the backend. |
 | A real page returns 404 | Its route is missing from `public/_redirects`. The page still renders for people, but crawlers see a 404. `src/router/staticRoutes.spec.ts` should have caught it. |
 | `/sitemap.xml` returns 503 | The backend's sitemap is down. The 503 tells Google to retry later. |

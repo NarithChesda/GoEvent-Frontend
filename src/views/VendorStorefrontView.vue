@@ -207,6 +207,7 @@ import { useServices } from '@/composables/useServices'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useToast } from '@/composables/useToast'
 import { updateMetaTags, resetMetaTags } from '@/utils/metaUtils'
+import { vendorDocumentTitle } from '@/utils/vendorSeo'
 
 const { t } = useAppLanguage()
 const route = useRoute()
@@ -376,7 +377,7 @@ const load = async (id: string) => {
   isLoading.value = false
 
   updateMetaTags({
-    title: `${selectedVendor.value.name} - GoEvent Services`,
+    title: vendorDocumentTitle(selectedVendor.value.name),
     description: selectedVendor.value.tagline || selectedVendor.value.description.slice(0, 157),
     // The hero is built to be seen wide; a round logo crops badly in a share card
     image: selectedVendor.value.coverImage || selectedVendor.value.logo,

@@ -43,9 +43,11 @@
           </span>
         </p>
 
-        <!-- Title -->
+        <!-- Title. A real link, so crawlers can follow it (see eventHref). -->
         <h3 class="text-base font-semibold text-slate-900 leading-snug tracking-tight line-clamp-2">
-          {{ event.title }}
+          <a :href="eventHref" class="event-card__link" tabindex="-1" @click="handleTitleLinkClick">{{
+            event.title
+          }}</a>
         </h3>
 
         <!-- Location. `leading-relaxed` because `truncate` clips to the line
@@ -190,9 +192,11 @@
           </span>
         </div>
 
-        <!-- Title -->
+        <!-- Title. A real link, so crawlers can follow it (see eventHref). -->
         <h3 class="text-[18.5px] font-semibold text-slate-900 leading-snug tracking-tight line-clamp-2">
-          {{ event.title }}
+          <a :href="eventHref" class="event-card__link" tabindex="-1" @click="handleTitleLinkClick">{{
+            event.title
+          }}</a>
         </h3>
 
         <!-- Location -->
@@ -371,6 +375,30 @@ watch(
     updateState(isLiked ?? false, likesCount ?? 0)
   }
 )
+
+/**
+ * The event's own page. Search engines follow links, not click handlers, so a
+ * list of cards that only opened a drawer gave Google no way from /explore to
+ * any event, and the events none of the site's link weight.
+ *
+ * Only the title is the link: the card holds buttons (like, manage), and an
+ * <a> may not contain interactive content. It stays out of the tab order —
+ * the card is already the keyboard stop — but screen readers still list it.
+ */
+const eventHref = computed(() => `/events/${props.event.id}`)
+
+/**
+ * A plain click is the card's click: prevented here, it bubbles on and opens
+ * the drawer exactly as before. A click that asks for somewhere else — a new
+ * tab or window — is left to the browser and kept from the card.
+ */
+const handleTitleLinkClick = (e: MouseEvent) => {
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
+    e.stopPropagation()
+    return
+  }
+  e.preventDefault()
+}
 
 const handleLikeClick = async (e: MouseEvent) => {
   e.stopPropagation()
@@ -630,6 +658,15 @@ const timeRangeSuffix = computed(() => {
 .cover-frame img {
   -webkit-touch-callout: none;
   user-select: none;
+}
+
+/* The title's link reads as the title it always was: a tap on it is still a
+   tap on the card, so it draws nothing a card title didn't, and a long press
+   shouldn't raise iOS's link-preview sheet any more than the cover's. */
+.event-card__link {
+  color: inherit;
+  text-decoration: none;
+  -webkit-touch-callout: none;
 }
 
 .live-pulse {
