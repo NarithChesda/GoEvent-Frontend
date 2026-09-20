@@ -72,6 +72,7 @@ Deployment, workflow, and subsystem how-tos:
 - [PLAYWRIGHT.md](guides/PLAYWRIGHT.md) — E2E testing setup, fixtures, and why `npx playwright install` must never be run
 - [PARTNER_PAGE_SCREENSHOTS.md](guides/PARTNER_PAGE_SCREENSHOTS.md) — recapturing the `/partners` invitation and guest-list screenshots
 - [PARTNER_OUTREACH_VIDEO.md](guides/PARTNER_OUTREACH_VIDEO.md) — cold-outreach video brief for recruiting print shops as partners
+- [META_PIXEL_CAMPAIGN_SETUP.md](guides/META_PIXEL_CAMPAIGN_SETUP.md) — Meta pixel + Conversions API setup for the partner Facebook campaign: events sent, ad URL parameters, launch tests, who does what (for marketing)
 - [API_SERVICE_TECHNICAL_REFERENCE.md](guides/API_SERVICE_TECHNICAL_REFERENCE.md) — API core internals (SecureLogger, type guards)
 - [VIDEO_MEMORY_MANAGEMENT.md](guides/VIDEO_MEMORY_MANAGEMENT.md) — showcase video memory system
 - [REDIRECT_SYSTEM_IMPLEMENTATION.md](guides/REDIRECT_SYSTEM_IMPLEMENTATION.md) — showcase redirect state
