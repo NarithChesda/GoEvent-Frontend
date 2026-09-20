@@ -18,7 +18,7 @@
 
         <h3
           class="agd-title ldg-title capitalize"
-          :class="{ 'is-khmer': isKhmer(item) }"
+          :class="[{ 'is-khmer': isKhmer(item) }, fx('primary')]"
           :style="{ fontFamily: displayFont }"
         >
           <span
@@ -33,7 +33,10 @@
             :stroke-width="1.5"
             aria-hidden="true"
           />
-          {{ item.title || 'Event Activity' }}
+          <!-- Only the text run is inked: the glyph shares this element, and
+               `background-clip: text` would have nothing to clip through it. It
+               takes the metal as a flat fill instead, via --agd-icon-color. -->
+          <span class="tfx-ink">{{ item.title || 'Event Activity' }}</span>
         </h3>
       </div>
     </AgendaItemFrame>
@@ -66,7 +69,7 @@ import type { AgendaDesignItem, AgendaDesignProps } from './types'
  */
 const props = defineProps<AgendaDesignProps>()
 
-const { displayFont, bodyFont, stagger, hasIcon, iconSvg, isKhmer } = useAgendaDesign(props)
+const { displayFont, bodyFont, stagger, fx, hasIcon, iconSvg, isKhmer } = useAgendaDesign(props)
 const items = computed(() => props.items)
 
 /**

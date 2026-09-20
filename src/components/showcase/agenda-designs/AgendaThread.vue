@@ -25,10 +25,10 @@
             </p>
             <h3
               class="agd-title thread-title capitalize"
-              :class="{ 'is-khmer': isKhmer(item) }"
+              :class="[{ 'is-khmer': isKhmer(item) }, fx('primary')]"
               :style="{ fontFamily: displayFont }"
             >
-              {{ item.title || 'Event Activity' }}
+              <span class="tfx-ink">{{ item.title || 'Event Activity' }}</span>
             </h3>
           </div>
         </div>
@@ -84,7 +84,8 @@ import type { AgendaDesignProps } from './types'
  */
 const props = defineProps<AgendaDesignProps>()
 
-const { displayFont, bodyFont, stagger, hasIcon, iconSvg, timeText, isKhmer } = useAgendaDesign(props)
+const { displayFont, bodyFont, stagger, fx, hasIcon, iconSvg, timeText, isKhmer } =
+  useAgendaDesign(props)
 const items = computed(() => props.items)
 
 /**
