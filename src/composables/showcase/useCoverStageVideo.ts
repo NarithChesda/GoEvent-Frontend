@@ -1,6 +1,7 @@
 import { ref, computed, onUnmounted, nextTick, watch, readonly } from 'vue'
 import { useVideoResourceManager, type RegisterVideoOptions } from './useVideoResourceManager'
 import { isInMemoryMediaUrl, resolveMediaUrl } from '@/utils/mediaUrl'
+import type { StageMode } from './useStageModes'
 
 export type VideoPhase = 'none' | 'event' | 'background'
 export type ShowcaseStage = 'cover' | 'transition' | 'event_video' | 'main_content'
@@ -31,6 +32,18 @@ interface VideoProps extends VideoUrls {
   currentShowcaseStage?: ShowcaseStage
   shouldSkipToMainContent?: boolean
   videoStatePreserved?: boolean
+  /**
+   * What sits behind the invitation, already resolved by resolveStageModes.
+   *
+   * Read for exactly one decision: whether the middle beat's last frame has
+   * something to hand over to when no background film follows it. `animation`
+   * means VideoContainer has an artwork backdrop mounted underneath (background
+   * photo → template colour → decoration photo → white), so the frozen frame is
+   * retired and that backdrop is revealed. `video` with no file deliberately
+   * draws none of that ladder, so the frame is held rather than dissolved into
+   * the wrapper's flat colour.
+   */
+  backgroundMode?: StageMode
 }
 
 export function useCoverStageVideo(
@@ -775,9 +788,51 @@ export function useCoverStageVideo(
     typeof createBackgroundVideoPlaybackManager
   > | null = null
 
+  /**
+   * How long the middle beat's last frame takes to dissolve into the artwork
+   * backdrop. Long enough to read as a hand-off rather than a cut, short enough
+   * that the invitation is not waiting on it.
+   */
+  const EVENT_VIDEO_RETIRE_MS = 600
+
+  /**
+   * Retire the middle beat's frozen last frame when no background film is
+   * coming to replace it.
+   *
+   * The frame is held on purpose while a background video loads — it is what
+   * bridges the gap on Telegram/Messenger browsers, and `hideEventVideos` cuts
+   * it the instant the film paints, because the two are authored to connect.
+   * With no film there is nothing to connect to and nothing ever hid it: the
+   * element sits at z-index 10 with opacity 1, while the invitation's own
+   * backdrop — background photo, template colour, decoration photo, white — is
+   * mounted at z-index -1 underneath and can never be seen. The main content
+   * renders above at z-20, so the symptom is precisely an invitation over a
+   * still of the video that just finished.
+   *
+   * Only on an artwork background: `background: 'video'` with no file draws none
+   * of that ladder (see resolveStageModes), so dissolving here would reveal the
+   * wrapper's flat colour instead of a backdrop — strictly worse than the frame
+   * already on screen.
+   *
+   * Faded rather than cut, since unlike the film hand-off these two images were
+   * never made to line up. The transition is set in the same tick as the opacity
+   * so the change itself is what animates.
+   */
+  const retireEventVideos = () => {
+    if ((props.backgroundMode ?? 'animation') !== 'animation') return
+
+    for (const video of [videoRefs.eventVideoPreloader(), videoRefs.sequentialVideoContainer()]) {
+      if (!video) continue
+      video.style.transition = `opacity ${EVENT_VIDEO_RETIRE_MS}ms ease-out`
+      videoManager.setVisibility(video, false)
+    }
+  }
+
   const playBackgroundVideo = () => {
     if (!props.backgroundVideoUrl) {
-      // No background video, just keep the event video frozen
+      // Nothing is coming to replace the middle beat's last frame, so let the
+      // invitation's own backdrop through instead of leaving it frozen there.
+      retireEventVideos()
       return
     }
 
@@ -972,6 +1027,7 @@ export function useCoverStageVideo(
         if (props.backgroundVideoUrl) {
           playBackgroundVideo()
         } else {
+          retireEventVideos()
           emit('sequentialVideoEnded')
         }
       }

@@ -167,3 +167,88 @@ describe('background video slow-network behaviour', () => {
     wrapper.unmount()
   })
 })
+
+/**
+ * What happens to the middle beat's last frame when no background film follows.
+ *
+ * The frame is held on purpose while a background video loads — it bridges the
+ * gap on Telegram/Messenger browsers. With no film to replace it nothing ever
+ * hid it: the element stayed at z-index 10 / opacity 1 while the invitation's
+ * own backdrop sat at z-index -1 underneath, so the main content (z-20)
+ * rendered over a still of the video that had just finished, and the background
+ * photo never appeared.
+ */
+describe('retiring the event video when no background video follows', () => {
+  beforeEach(() => {
+    window.matchMedia = vi
+      .fn()
+      .mockReturnValue({ matches: false }) as unknown as typeof window.matchMedia
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.clearAllTimers()
+    vi.useRealTimers()
+    document.body.innerHTML = ''
+  })
+
+  const mountPlayingEventVideo = (backgroundMode: 'animation' | 'video') => {
+    const eventVideo = document.createElement('video')
+    eventVideo.load = vi.fn()
+    eventVideo.play = vi.fn().mockResolvedValue(undefined)
+    document.body.appendChild(eventVideo)
+
+    let state!: ReturnType<typeof useCoverStageVideo>
+
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          state = useCoverStageVideo(
+            {
+              eventVideoPreloader: () => eventVideo,
+              sequentialVideoContainer: () => null,
+              coverVideoElement: () => null,
+              backgroundVideoElement: () => null,
+            },
+            {
+              eventVideoUrl: '/media/events/transition.mp4',
+              backgroundVideoUrl: null,
+              currentShowcaseStage: 'event_video',
+              backgroundMode,
+            },
+            vi.fn(),
+          )
+          return () => null
+        },
+      }),
+    )
+
+    return { eventVideo, state, wrapper }
+  }
+
+  it('fades the last frame out so the artwork backdrop can be seen', () => {
+    const { eventVideo, state, wrapper } = mountPlayingEventVideo('animation')
+
+    // The stage watcher's immediate pass rolls the film and raises it over the
+    // backdrop layers.
+    expect(eventVideo.style.opacity).toBe('1')
+
+    state.handleSequentialVideoEnded()
+
+    expect(eventVideo.style.opacity).toBe('0')
+    expect(eventVideo.style.transition).toContain('opacity')
+    wrapper.unmount()
+  })
+
+  it('holds the last frame on a video background, which draws no artwork', () => {
+    // `background: 'video'` with no file deliberately draws none of the artwork
+    // ladder, so dissolving here would reveal the wrapper's flat colour —
+    // strictly worse than the frame already on screen.
+    const { eventVideo, state, wrapper } = mountPlayingEventVideo('video')
+
+    state.handleSequentialVideoEnded()
+
+    expect(eventVideo.style.opacity).toBe('1')
+    wrapper.unmount()
+  })
+})
