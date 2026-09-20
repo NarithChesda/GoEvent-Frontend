@@ -112,8 +112,15 @@
       <div
         :class="[
           'mx-auto py-6 md:py-8',
+          // The studio is three phone frames beside a fixed panel, and a frame
+          // is fitted to the height it has — so the cap is what decides
+          // whether they fill that height or stop short of it with a band of
+          // empty page under them. At 100rem a 1080p window left ~140px unused
+          // below every phone. Still capped rather than full-bleed: past this
+          // the row stops growing anyway (PREVIEW_FRAME_MAX_WIDTH), so an
+          // ultrawide would only be buying itself wider margins.
           activeTab === 'design-studio' && canViewShowcasePreview
-            ? 'max-w-[100rem]'
+            ? 'max-w-[120rem]'
             : 'px-4 sm:px-6 lg:px-8 max-w-3xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl',
         ]"
       >

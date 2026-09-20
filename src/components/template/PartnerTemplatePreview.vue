@@ -158,6 +158,7 @@ import { Maximize2, Minimize2 } from 'lucide-vue-next'
 import type { Event, PartnerTemplate } from '@/services/api'
 import type { CoverElementBoxes, CoverElementId } from '@/services/api/types/template.types'
 import PreviewFrame from '../showcase-preview/PreviewFrame.vue'
+import { PREVIEW_FRAME_MAX_WIDTH } from '../showcase-preview/previewFrameSize'
 import InertIframe from '../showcase-preview/InertIframe.vue'
 import TemplateSegmented, { type TemplateSegmentedOption } from './TemplateSegmented.vue'
 import {
@@ -549,23 +550,26 @@ let bodyResizeObserver: ResizeObserver | null = null
 // ---------------------------------------------------------------------------
 // Full screen.
 //
-// The preview column is ~340px wide and the modal caps at 90vh, which on a
-// laptop leaves the phone rendering at about two thirds of its real size —
-// legible enough to judge a colour, not enough to place a block on the cover by
-// hand. Full screen hands the same frame the whole viewport, so it renders at
-// or above 1:1 and every drag target grows with it.
+// The preview column is a few hundred px wide (it grows with the window, but
+// the editor beside it has to keep most of the room) and the modal caps at
+// 90vh, which on a laptop leaves the phone rendering well under its real size
+// — legible enough to judge a colour, not enough to place a block on the cover
+// by hand. Full screen hands the same frame the whole viewport, so it renders
+// at or above 1:1 and every drag target grows with it.
 // ---------------------------------------------------------------------------
 const fullscreen = ref(false)
 
 /**
- * Native phone width (PreviewFrame's own default) times the most the mockup is
- * allowed to be blown up past life size. Without a cap a tall display would
- * scale it to something that is no longer recognisably a phone; with it, height
- * governs on ordinary screens and this only ever bites on very tall ones.
+ * The most the mockup may be blown up past life size, in either mode. Without
+ * a cap a tall display would scale it to something that is no longer
+ * recognisably a phone; with it, height governs on ordinary screens and this
+ * only ever bites on very tall ones.
+ *
+ * One number for both modes now: the docked pane's own width is what limits it
+ * there anyway, and holding that pane to life size was exactly what left a band
+ * of empty column under the phone.
  */
-const FULLSCREEN_MAX_WIDTH = 390 * 1.5
-
-const frameMaxWidth = computed(() => (fullscreen.value ? FULLSCREEN_MAX_WIDTH : 390))
+const frameMaxWidth = PREVIEW_FRAME_MAX_WIDTH
 
 const fullscreenLabel = computed(() =>
   t(

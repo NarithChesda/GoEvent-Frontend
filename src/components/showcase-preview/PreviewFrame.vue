@@ -26,11 +26,21 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import {
+  PREVIEW_FRAME_MAX_WIDTH,
+  PREVIEW_FRAME_WIDTH,
+  usePreviewFrameHeight,
+} from './previewFrameSize'
 
 interface Props {
   label: string
   width?: number
+  /** Overrides the viewport-derived native height (see previewFrameSize). */
   height?: number
+  /** How wide the phone may be *drawn* — not the viewport it renders at.
+   *  Defaults to PREVIEW_FRAME_MAX_WIDTH, i.e. the frame is allowed to scale
+   *  up past its native width to use vertical space it would otherwise leave
+   *  empty. Pass a smaller number to hold it to a particular column. */
   maxWidth?: number
   /** Extra space to always leave below the frame (bottom page padding, a
    *  fixed mobile tab bar) when fitting the frame to the viewport height. */
@@ -52,18 +62,21 @@ interface Props {
   widthOverride?: number
 }
 
-// Native size matches a real mobile viewport (iPhone 12/13/14 CSS px) rather
-// than an arbitrary design-canvas resolution — the showcase components rely
-// on real vh/vw units, so rendering at an actual phone width/height is what
-// makes the preview match what a guest sees on their phone, not just the
-// same aspect ratio scaled down from a much larger canvas.
+// Native size matches a real mobile viewport rather than an arbitrary
+// design-canvas resolution — the showcase components rely on real vh/vw units,
+// so rendering at an actual phone width/height is what makes the preview match
+// what a guest sees on their phone, not just the same aspect ratio scaled down
+// from a much larger canvas. The height of that viewport is 9:16 on a PC and a
+// modern phone's full 19.5:9 below it — see previewFrameSize.
 const props = withDefaults(defineProps<Props>(), {
-  width: 390,
-  height: 844,
-  maxWidth: 390,
+  width: PREVIEW_FRAME_WIDTH,
+  maxWidth: PREVIEW_FRAME_MAX_WIDTH,
   bottomReserve: 40,
   fitHeight: true,
 })
+
+const viewportFrameHeight = usePreviewFrameHeight()
+const frameHeight = computed(() => props.height ?? viewportFrameHeight.value)
 
 const frameWrapRef = ref<HTMLElement | null>(null)
 const scalerRef = ref<HTMLElement | null>(null)
@@ -88,18 +101,18 @@ const scale = computed(() => {
     viewportHeight.value - topOffset.value - props.bottomReserve,
     200,
   )
-  const heightScale = availableHeight / props.height
+  const heightScale = availableHeight / frameHeight.value
   return Math.min(widthScale, heightScale)
 })
 
 const scalerStyle = computed(() => ({
   width: `${props.width * scale.value}px`,
-  height: `${props.height * scale.value}px`,
+  height: `${frameHeight.value * scale.value}px`,
 }))
 
 const nativeStyle = computed(() => ({
   width: `${props.width}px`,
-  height: `${props.height}px`,
+  height: `${frameHeight.value}px`,
   transform: `scale(${scale.value})`,
 }))
 
