@@ -308,6 +308,10 @@ const videoState = useCoverStageVideo(
     currentShowcaseStage: props.currentShowcaseStage,
     shouldSkipToMainContent: props.shouldSkipToMainContent,
     videoStatePreserved: props.videoStatePreserved,
+    // Only so the pipeline knows whether the middle beat's last frame has an
+    // artwork backdrop to hand over to when no background film follows it.
+    // Read once, like every prop here — a template swap remounts this component.
+    backgroundMode: stageModes.value.background,
   },
   (event, ...args) => {
     (emit as any)(event, ...args)
