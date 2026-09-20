@@ -61,10 +61,17 @@
          the same element stacks into header / rail / pane / footer rows, which
          is why it is a grid rather than nested flex columns: one of the two
          panes is `hidden` there and the rows still line up without a second
-         wrapper element. -->
+         wrapper element.
+
+         The preview column widens with the window because the phone in it is
+         fitted to the height it has: a 9:16 frame needs ~0.56px of width per
+         px of column height, so a fixed 24rem pane on a tall display drew the
+         phone small and left the rest of the column empty. The editor column
+         is what gives up the room, and only on screens that have it to give —
+         at `lg` the two are unchanged. -->
     <div
       v-if="isOpen"
-      class="absolute inset-0 z-10 grid bg-slate-50 overflow-hidden grid-cols-1 grid-rows-[auto_auto_minmax(0,1fr)_auto] lg:grid-cols-[13rem_minmax(0,1fr)_minmax(20rem,24rem)] lg:grid-rows-[minmax(0,1fr)]"
+      class="absolute inset-0 z-10 grid bg-slate-50 overflow-hidden grid-cols-1 grid-rows-[auto_auto_minmax(0,1fr)_auto] lg:grid-cols-[13rem_minmax(0,1fr)_minmax(20rem,24rem)] xl:grid-cols-[13rem_minmax(0,1fr)_minmax(24rem,28rem)] 2xl:grid-cols-[13rem_minmax(0,1fr)_minmax(26rem,31rem)] lg:grid-rows-[minmax(0,1fr)]"
     >
       <!-- Below `lg` the modal is a full-screen sheet with no room for a phone
            frame beside the form, so the two swap places instead of sitting side

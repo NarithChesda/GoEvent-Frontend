@@ -613,6 +613,11 @@ import {
   X,
 } from 'lucide-vue-next'
 import PreviewFrame from '@/components/showcase-preview/PreviewFrame.vue'
+import {
+  PREVIEW_FRAME_MAX_WIDTH,
+  PREVIEW_FRAME_WIDTH,
+  usePreviewFrameAspect,
+} from '@/components/showcase-preview/previewFrameSize'
 import InertIframe from '@/components/showcase-preview/InertIframe.vue'
 import {
   resolvePreviewRenderer,
@@ -1144,8 +1149,23 @@ const hasViewControls = computed(
  * here: the frames box is then already the right size to measure.
  */
 const FRAME_BOTTOM_RESERVE = 72
-const FRAME_ASPECT = 390 / 844
-const NATIVE_FRAME_WIDTH = 390
+/**
+ * The frame's own shape, which this page has to agree with because it fits the
+ * phones itself (in document coordinates) instead of letting PreviewFrame do
+ * it. Reactive, because the shape is 9:16 on a desktop and the full 19.5:9
+ * phone below it — a fixed number here would fit every frame to the wrong
+ * height on one side of that boundary.
+ */
+const frameAspect = usePreviewFrameAspect()
+const NATIVE_FRAME_WIDTH = PREVIEW_FRAME_WIDTH
+/**
+ * The desktop ceiling is the *drawn* one, not the native width: this page
+ * hands PreviewFrame a width computed from the height it has, so capping at
+ * the native 390 was what left a band of empty stage under every phone on a
+ * tall window. The phone layout keeps the native cap — there the frame is
+ * already the whole screen and has no spare height to spend.
+ */
+const MAX_FRAME_WIDTH = PREVIEW_FRAME_MAX_WIDTH
 /** Never so small that the invitation stops being readable; the page scrolls. */
 const MIN_FRAME_WIDTH = 240
 /**
@@ -1196,14 +1216,14 @@ const frameMaxWidth = computed(() => {
   if (isNarrow.value) {
     return Math.max(
       MIN_NARROW_FRAME_WIDTH,
-      Math.min(NATIVE_FRAME_WIDTH, Math.floor(framesHeight.value * FRAME_ASPECT)),
+      Math.min(NATIVE_FRAME_WIDTH, Math.floor(framesHeight.value * frameAspect.value)),
     )
   }
   return Math.max(
     MIN_FRAME_WIDTH,
     Math.min(
-      NATIVE_FRAME_WIDTH,
-      Math.round((viewportHeight.value - framesTop.value - FRAME_BOTTOM_RESERVE) * FRAME_ASPECT),
+      MAX_FRAME_WIDTH,
+      Math.round((viewportHeight.value - framesTop.value - FRAME_BOTTOM_RESERVE) * frameAspect.value),
     ),
   )
 })
@@ -3346,10 +3366,11 @@ onUnmounted(() => {
 
 /* --- Loading + empty ------------------------------------------------------ */
 
-/* 390x844, the phone the frame actually is — not the 2:3 box this used to be.
-   A skeleton in the wrong proportion means the page settles into a different
+/* The phone the frame actually is — not the 2:3 box this used to be. A
+   skeleton in the wrong proportion means the page settles into a different
    shape the moment it loads, which is the one thing a skeleton exists to
-   prevent. */
+   prevent. Which is why it follows the frame across the same 1024px boundary
+   the frame's own shape does (previewFrameSize). */
 .tpl-skeleton-frame {
   width: 100%;
   max-width: 300px;
@@ -3357,6 +3378,12 @@ onUnmounted(() => {
   border-radius: 1.5rem;
   background: rgba(226, 232, 240, 0.7);
   animation: tpl-pulse 1.6s ease-in-out infinite;
+}
+
+@media (min-width: 1024px) {
+  .tpl-skeleton-frame {
+    aspect-ratio: 9 / 16;
+  }
 }
 
 .tpl-skeleton-card {
