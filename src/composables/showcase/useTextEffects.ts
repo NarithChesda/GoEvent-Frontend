@@ -73,6 +73,32 @@ export const TEXT_EFFECT_SLOTS: readonly TextEffectSlot[] = [
 export const DEFAULT_TEXT_EFFECT_METAL: TextEffectMetal = 'gold'
 export const DEFAULT_TEXT_EFFECT_ANIMATION: TextEffectAnimation = 'sheen'
 
+/**
+ * One solid tone per metal, for marks drawn *beside* gilded text that cannot
+ * carry the fill themselves — an activity icon, a drawn rule.
+ *
+ * The lettering's metal is a gradient clipped to the glyphs, which needs a text
+ * box to paint into: an inline SVG has none, and `background-clip` cannot reach
+ * it. So a mark takes one tone of the same palette instead, and the question is
+ * only which.
+ *
+ * It is `--tfx-low`, the shadow-side tone, for all three — **not** the bright
+ * body tone the letters read as. The lettering is legible on a cream card
+ * because of its rim (`-webkit-text-stroke` in text-effects.css); a mark has no
+ * rim, and an icon filled in `--tfx-face` on a pale invitation is the washed-out
+ * shape that finish exists to avoid. `--tfx-low` is the darkest tone still
+ * unmistakably the metal, and it is a tone of the palette rather than a colour
+ * invented here — a retune of the palette moves it too.
+ *
+ * Kept in step with the `.tfx--<metal>` blocks in text-effects.css by hand,
+ * which is why each value names the token it copies.
+ */
+export const TEXT_EFFECT_MARK_INK: Record<TextEffectMetal, string> = {
+  gold: '#c1812a', // --tfx-low
+  rose_gold: '#bd7563', // --tfx-low
+  silver: '#939aa5', // --tfx-low
+}
+
 /** A slot's finish with every default applied. */
 export interface ResolvedTextEffect {
   finish: TextEffectFinish
@@ -391,4 +417,25 @@ function useSheenLighting(active: Ref<boolean>): void {
 export function useTextEffect(): (slot: TextEffectSlot | null | undefined) => string[] {
   const effects = inject(TextEffectsKey, null)
   return (slot) => (effects && slot ? textEffectClasses(effects.value[slot]) : [])
+}
+
+/**
+ * `markInk(slot)` → the solid metal tone for marks drawn beside that slot's
+ * gilded text, or `null` when the slot has no finish.
+ *
+ * Separate from `fx` because these two answer different questions. `fx` gilds
+ * *text*, by handing an element classes that paint a gradient through it; this
+ * hands back a colour, for the things next to that text which can only be one
+ * — an inline SVG, a rule, anything whose paint is a single value. A slot with
+ * no finish returns `null`, which every caller reads as "use the ink you
+ * already used", so nothing needs a second branch for the ungilded case.
+ *
+ * See TEXT_EFFECT_MARK_INK for why it is not the tone the letters read as.
+ */
+export function useTextEffectMarkInk(): (slot: TextEffectSlot | null | undefined) => string | null {
+  const effects = inject(TextEffectsKey, null)
+  return (slot) => {
+    const effect = effects && slot ? effects.value[slot] : null
+    return effect ? TEXT_EFFECT_MARK_INK[effect.metal] : null
+  }
 }

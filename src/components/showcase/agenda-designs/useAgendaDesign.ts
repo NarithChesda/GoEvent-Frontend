@@ -1,5 +1,6 @@
 import { computed } from 'vue'
 import { useIconLibraryStore } from '@/stores/iconLibrary'
+import { useTextEffect } from '@/composables/showcase/useTextEffects'
 import type { AgendaDesignItem, AgendaDesignProps } from './types'
 
 /**
@@ -46,9 +47,10 @@ export function isKhmerTitle(item: AgendaDesignItem): boolean {
 }
 
 /**
- * The four derivations every agenda design repeats, resolved once so five
- * designs can't drift into five answers: which face the title sets in, which
- * the time does, how far apart the items enter, and the per-item helpers above.
+ * The derivations every agenda design repeats, resolved once so five designs
+ * can't drift into five answers: which face the title sets in, which the time
+ * does, how far apart the items enter, whether the title is gilded, and the
+ * per-item helpers above.
  *
  * The stagger is the only judgement call here. 70ms between items on a tab
  * switch is enough to read as a cascade without making the last item of a
@@ -68,6 +70,22 @@ export function useAgendaDesign(props: AgendaDesignProps) {
   const bodyFont = computed(() => props.secondaryFont || props.currentFont)
 
   /**
+   * The primary slot's metallic finish, for the item title.
+   *
+   * Resolved here rather than in each design for the same reason the faces are:
+   * the title is the one piece of display text in an agenda item, every design
+   * draws it in `displayFont` — the primary slot — and a finish that reached
+   * four designs out of five would be a bug nobody noticed until a partner
+   * switched design. Returns `[]` with no finish, so an ungilded template
+   * renders byte-identically.
+   *
+   * It goes on the title element, never on the row: the time beside it sets in
+   * the secondary slot, and `.tfx` on a container holding both would gild it
+   * from the wrong slot (see the markup contract in useTextEffects.ts).
+   */
+  const fx = useTextEffect()
+
+  /**
    * Seconds between consecutive items. Capped so a long schedule doesn't turn
    * its tail into a wait: past ~9 items the cascade is already legible and the
    * only thing more delay buys is a guest watching an empty column.
@@ -82,9 +100,10 @@ export function useAgendaDesign(props: AgendaDesignProps) {
     displayFont,
     bodyFont,
     stagger,
+    fx,
     hasIcon: (item: AgendaDesignItem) => iconLibrary.hasArtwork(item.icon?.id),
     iconSvg: (item: AgendaDesignItem) =>
-      recolorAgendaIcon(iconLibrary.svgFor(item.icon?.id), props.primaryColor),
+      recolorAgendaIcon(iconLibrary.svgFor(item.icon?.id), props.iconColor || props.primaryColor),
     timeText: agendaTimeText,
     isKhmer: isKhmerTitle,
   }

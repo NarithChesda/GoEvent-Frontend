@@ -170,6 +170,7 @@
             :items="activeItems"
             :primary-color="primaryColor"
             :accent-color="accentColor"
+            :icon-color="agendaIconColor"
             :current-font="currentFont"
             :primary-font="primaryFont"
             :secondary-font="secondaryFont"
@@ -196,7 +197,7 @@
 </template>
 
 <script setup lang="ts">
-import { useTextEffect } from '@/composables/showcase/useTextEffects'
+import { useTextEffect, useTextEffectMarkInk } from '@/composables/showcase/useTextEffects'
 import { computed, inject, nextTick, onMounted, onUnmounted, ref, useId, watch } from 'vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -313,10 +314,30 @@ const designType = computed<AgendaDesignType>(() => {
 
 const designComponent = computed(() => DESIGNS[designType.value])
 
+/**
+ * What an activity icon is drawn in.
+ *
+ * The item title takes the primary slot's finish (see `useAgendaDesign`'s
+ * `fx`), and a gold title beside a primary-coloured glyph reads as two
+ * unrelated marks rather than one gilded card — so the icon takes the same
+ * metal, as a flat tone. It cannot take the fill itself: that is a gradient
+ * clipped to glyphs, and an inline SVG has no text box to clip through.
+ *
+ * `null` whenever the primary slot has no finish, which every consumer reads as
+ * "the ink you already used" — so an ungilded template is untouched.
+ */
+const iconInk = useTextEffectMarkInk()
+const agendaIconColor = computed(() => iconInk('primary') ?? props.primaryColor)
+
 /** The CSS contract documented at the top of agenda-base.css. */
 const contractStyle = computed(() => ({
   '--agd-ink': props.primaryColor,
   '--agd-accent': props.accentColor,
+  // Both halves of the icon recolour, for the reason agenda-base.css gives: the
+  // CSS rule is what reaches `v-html` content, and the inline rewrite in
+  // `recolorAgendaIcon` is what reaches fills the rule can't express. They have
+  // to agree, so they read the same value.
+  '--agd-icon-color': agendaIconColor.value,
 }))
 
 // ---------------------------------------------------------------------------

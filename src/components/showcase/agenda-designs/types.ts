@@ -36,6 +36,17 @@ export interface AgendaDesignProps {
   items: AgendaDesignItem[]
   primaryColor: string
   accentColor: string
+  /**
+   * What an activity icon is drawn in. Absent falls back to `primaryColor`,
+   * which is what every icon was before a template could gild its text.
+   *
+   * It exists because the item title takes the primary slot's metallic finish
+   * (see `useAgendaDesign`'s `fx`) and a gold title beside a primary-coloured
+   * glyph reads as two unrelated marks. The section resolves it — a design
+   * never asks what finish is in play, the same way it never asks what category
+   * the event is.
+   */
+  iconColor?: string
   currentFont: string
   primaryFont?: string
   secondaryFont?: string

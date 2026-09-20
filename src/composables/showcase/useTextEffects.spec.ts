@@ -4,6 +4,8 @@ import { defineComponent, h, nextTick, ref } from 'vue'
 import { mount } from '@vue/test-utils'
 import type { TextEffectsConfig } from '@/services/api/types/template.types'
 import {
+  TEXT_EFFECT_MARK_INK,
+  TEXT_EFFECT_METALS,
   SHEEN_AFTER_REVEAL_MS,
   SHEEN_PASS_MS,
   SHEEN_STAGGER_MS,
@@ -18,6 +20,7 @@ import {
   textEffectAnimationOf,
   textEffectClasses,
   useTextEffect,
+  useTextEffectMarkInk,
 } from './useTextEffects'
 
 /**
@@ -158,6 +161,59 @@ describe('useTextEffect', () => {
     config.value = null
     await nextTick()
     expect(primary.classes()).toEqual([])
+  })
+})
+
+/**
+ * The tone marks beside gilded text take when they cannot carry the fill —
+ * an agenda item's activity icon is the first of them.
+ *
+ * `null` for an unfinished slot is the contract, not an oversight: every caller
+ * reads it as "keep the ink you already used", which is what lets an ungilded
+ * template render byte-identically with no branch of its own.
+ */
+describe('useTextEffectMarkInk', () => {
+  const Mark = defineComponent({
+    props: { slot: { type: String, default: 'primary' } },
+    setup(props) {
+      const markInk = useTextEffectMarkInk()
+      return () => h('i', { 'data-ink': markInk(props.slot as 'primary') ?? '' })
+    },
+  })
+
+  const inkOf = (wrapper: ReturnType<typeof mount>) =>
+    wrapper.find('i').attributes('data-ink')
+
+  it('has no tone when nothing provides a finish', () => {
+    expect(inkOf(mount(Mark))).toBe('')
+  })
+
+  it('answers with that slot’s own metal, and only that slot', async () => {
+    const config = ref<TextEffectsConfig | null>(null)
+    const Host = defineComponent({
+      setup() {
+        provideTextEffects(config)
+        return () => [h(Mark, { slot: 'primary' }), h(Mark, { slot: 'secondary' })]
+      },
+    })
+    const wrapper = mount(Host)
+
+    config.value = { primary: { finish: 'foil', metal: 'silver' } }
+    await nextTick()
+    const [primary, secondary] = wrapper.findAll('i')
+    expect(primary.attributes('data-ink')).toBe(TEXT_EFFECT_MARK_INK.silver)
+    // A mark beside ungilded text keeps the ink its design already chose.
+    expect(secondary.attributes('data-ink')).toBe('')
+
+    config.value = { primary: { finish: 'foil' } }
+    await nextTick()
+    expect(wrapper.findAll('i')[0].attributes('data-ink')).toBe(TEXT_EFFECT_MARK_INK.gold)
+  })
+
+  it('offers a tone for every metal a finish can name', () => {
+    for (const metal of TEXT_EFFECT_METALS) {
+      expect(TEXT_EFFECT_MARK_INK[metal]).toMatch(/^#[0-9a-f]{6}$/)
+    }
   })
 })
 
