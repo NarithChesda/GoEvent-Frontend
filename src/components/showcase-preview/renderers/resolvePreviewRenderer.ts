@@ -146,7 +146,10 @@ const V1_RENDERER: PreviewRendererDescriptor = {
       // values — so the two never both show, and neither shows a hidden-note
       // for the other's templates.
       id: 'event_video',
-      labelKey: 'management.showcasePreview.eventVideoLabel',
+      // Same label as the animated frame: the two are one stage in the
+      // guest's experience, and they are mutually exclusive, so naming the
+      // filmed one after its source described the asset rather than the beat.
+      labelKey: 'management.showcasePreview.transitionLabel',
       // Nothing on this stage is inline-editable (it's one full-bleed video),
       // and staying non-editable keeps InertIframe's click shield, which is
       // what turns a click into the `replay` command below.
