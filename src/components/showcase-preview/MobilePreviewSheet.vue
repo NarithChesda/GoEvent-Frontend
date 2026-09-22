@@ -168,10 +168,11 @@
  * guest actually sees. Now the iframe fills the sheet at 1:1 and the controls
  * are one icon-only pill that dims itself when idle.
  */
-import { computed, onUnmounted, ref, watch, type Component } from 'vue'
-import { BookOpen, Clapperboard, DoorOpen, Layers, Pencil, ScrollText, Sparkles, TriangleAlert, X } from 'lucide-vue-next'
+import { computed, onUnmounted, ref, watch } from 'vue'
+import { Pencil, Sparkles, TriangleAlert, X } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import InertIframe from './InertIframe.vue'
+import { previewStageIcon as stageIcon } from './previewStageIcons'
 import type { PreviewFrameDescriptor } from './renderers/resolvePreviewRenderer'
 import type { TemplateAssets } from '@/composables/useEventShowcase'
 import type { ActivationState } from '@/composables/useTemplateActivation'
@@ -238,19 +239,6 @@ watch(
 )
 
 watch(activeId, (id) => emit('active-frame-changed', id), { immediate: true })
-
-// Frame ids are renderer-defined vocabulary (V1's cover/transition/main today,
-// a V2 renderer will declare its own pages), so an unknown id has to degrade to
-// a generic icon rather than render nothing — the labels still come from the
-// descriptor's own labelKey, and press-and-hold reveals them.
-const STAGE_ICONS: Record<string, Component> = {
-  cover: BookOpen,
-  transition: DoorOpen,
-  event_video: Clapperboard,
-  main: ScrollText,
-}
-
-const stageIcon = (id: string): Component => STAGE_ICONS[id] ?? Layers
 
 // --- Edit hints ------------------------------------------------------------
 // On by default: this sheet is reached from the editing studio, and outlines

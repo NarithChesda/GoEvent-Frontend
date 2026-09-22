@@ -471,25 +471,18 @@ import {
   OPTION_BASE,
   OPTION_IDLE,
   OPTION_SELECTED,
+  SEARCH_FIELD,
   SECTION_HEADING,
+  filterIconClass,
   optionIconClass,
 } from './template/templateUi'
+import { getCategoryIcon } from './template/categoryIcons'
 import {
   X,
   Check,
   Search,
   Loader2,
   Sparkles,
-  Heart,
-  Briefcase,
-  GraduationCap,
-  Music,
-  Utensils,
-  Users,
-  Calendar,
-  PartyPopper,
-  Building2,
-  Cake,
   Layers,
   Crown,
   LayoutTemplate,
@@ -697,40 +690,6 @@ const handlePartnerTemplateSelected = (template: PartnerTemplate): void => {
   emit('preview-stage', partnerTemplateToAssets(template))
 }
 
-// Category icon mapping with cache for performance
-const categoryIcons: Record<string, LucideIcon> = {
-  Wedding: Heart,
-  Corporate: Briefcase,
-  Education: GraduationCap,
-  Concert: Music,
-  Food: Utensils,
-  Social: Users,
-  Conference: Calendar,
-  Party: PartyPopper,
-  Business: Building2,
-  Birthday: Cake,
-}
-
-const categoryIconCache = new Map<string, LucideIcon>()
-
-const getCategoryIcon = (categoryName: string): LucideIcon => {
-  const cacheKey = categoryName.toLowerCase()
-
-  if (categoryIconCache.has(cacheKey)) {
-    return categoryIconCache.get(cacheKey)!
-  }
-
-  for (const [key, icon] of Object.entries(categoryIcons)) {
-    if (cacheKey.includes(key.toLowerCase())) {
-      categoryIconCache.set(cacheKey, icon)
-      return icon
-    }
-  }
-
-  categoryIconCache.set(cacheKey, Calendar)
-  return Calendar
-}
-
 // Category selection
 const selectCategory = (categoryId: number | null): void => {
   setCategoryFilter(categoryId)
@@ -801,22 +760,6 @@ const navItemClass = (active: boolean): string =>
 
 const navIconClass = (active: boolean): string =>
   `w-4 h-4 flex-shrink-0 transition-colors duration-200 ${optionIconClass(active)}`
-
-/**
- * Search sits in chrome beside pill controls, so it is a pill — one shape, both
- * breakpoints. It was `rounded-full` on the phone and `rounded-xl` on the
- * desktop, which is the same field changing shape for no reason.
- */
-const SEARCH_FIELD =
-  'w-full bg-slate-100 border border-transparent rounded-full transition-[background-color,border-color,box-shadow] duration-200 ease-out placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100'
-
-/** Icon-only filter trigger. Active = a chosen option, per the vocabulary. */
-const filterIconClass = (active: boolean): string =>
-  `${OPTION_BASE} flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full active:scale-[0.94] ${
-    active
-      ? 'bg-gradient-to-br from-[#2ecc71]/15 to-[#1e90ff]/15 ring-sky-300 text-[#1e90ff]'
-      : 'bg-slate-100 ring-transparent text-slate-600 hover:bg-slate-200 hover:text-slate-700'
-  }`
 
 // Focus trap implementation
 const handleKeyDown = (event: KeyboardEvent): void => {

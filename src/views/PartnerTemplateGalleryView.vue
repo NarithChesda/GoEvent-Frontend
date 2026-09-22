@@ -6,8 +6,13 @@
     height is exactly what a phone-shaped frame wants. The back link is the only
     navigation the page needs.
   -->
-  <div class="tpl-page">
-    <header class="tpl-page__head">
+  <div class="tpl-page" :class="{ 'is-viewer': isViewer }">
+    <!-- On a phone the page is the studio's mobile preview: the invitation is the
+         whole screen and every control lives in the bar at its foot, so the
+         header is not drawn at all. The page still needs its name. -->
+    <h1 v-if="isViewer" class="sr-only">{{ t('partners.templates.title') }}</h1>
+
+    <header v-else class="tpl-page__head">
       <!--
         The catalogue's column, and everything that steers it. The header bar is
         divided by the same two columns as the body below, so each side's chrome
@@ -27,7 +32,7 @@
           to="/partners"
           class="tpl-back"
           :class="{ 'is-icon': !backLabel }"
-          :aria-label="backLabel || t('common.actions.back')"
+          :aria-label="backName"
         >
           <ArrowLeft class="h-4 w-4 flex-none" aria-hidden="true" />
           <!-- In a span so a phone can drop it: up there the title names the
@@ -118,37 +123,6 @@
       </div>
 
       <!--
-        The caveat about whose invitation this is — the one thing up here that
-        is about the sample rather than about the preview's own controls, which
-        live together over the frame instead.
-
-        A button because on a phone it was three lines of prose under the frame,
-        costing more height than a sentence read once is worth. Held behind a
-        mark it costs a disc, and stays one tap away for as long as it is wanted.
-      -->
-      <div v-if="isNarrow" class="tpl-topbar">
-        <div class="tpl-info">
-          <button
-            type="button"
-            class="tpl-icon-btn"
-            :class="{ 'is-open': noteOpen }"
-            :aria-expanded="noteOpen"
-            :aria-label="t('partners.templates.noteLabel')"
-            @click="toggleNote"
-          >
-            <Info class="h-4 w-4" aria-hidden="true" />
-          </button>
-
-          <div v-if="noteOpen" class="tpl-filter__scrim" @click="noteOpen = false" />
-          <Transition name="tpl-dropdown">
-            <p v-if="noteOpen" class="tpl-info__panel" role="status">
-              {{ t('partners.templates.note') }}
-            </p>
-          </Transition>
-        </div>
-      </div>
-
-      <!--
         How you are looking at it: how many screens, and in which language. Page
         chrome, not stage furniture — it changes the whole view rather than
         anything about the design on screen — so it sits in the header's trailing
@@ -199,10 +173,18 @@
       </div>
     </header>
 
-    <!-- Loading: the two halves, in outline. On a phone only the stage — the
-         catalogue is behind a button down there, so a shelf of grey cards would
-         be a placeholder for something that is not on screen. -->
-    <div v-if="loading" class="tpl-studio">
+    <!-- Loading, on a phone: the viewer's own black screen with the frame's
+         spinner in it. The invitation arrives into exactly this box, so there
+         is no outline for the page to resettle from — and the bar is already
+         up, so the way back is there from the first frame. -->
+    <div v-if="loading && isViewer" class="tpl-viewer">
+      <div class="tpl-frame-pending">
+        <div class="tpl-spinner" />
+      </div>
+    </div>
+
+    <!-- Loading: the two halves, in outline. -->
+    <div v-else-if="loading" class="tpl-studio">
       <div class="tpl-studio__stage">
         <div class="tpl-stage">
           <div class="tpl-frames tpl-frames--single">
@@ -210,7 +192,7 @@
           </div>
         </div>
       </div>
-      <div v-if="!isNarrow" class="tpl-studio__menu">
+      <div class="tpl-studio__menu">
         <div class="tpl-menu__scroll">
           <div class="tpl-card-grid">
             <div v-for="n in 6" :key="n" class="tpl-skeleton-card" />
@@ -239,11 +221,48 @@
 
     <div v-else ref="studioRef" class="tpl-studio" :style="studioStyle">
       <!--
-        The invitation, first in the DOM and on the left: it is the payload, and
-        on a phone that means you land on it rather than scrolling a catalogue to
-        reach it.
+        The phone: the Design Studio's mobile preview, the same screen seen from
+        the other side of the counter (MobilePreviewSheet).
+
+        The frame IS the page — edge to edge, at the device's own viewport size,
+        with nothing taking layout height from it. So the invitation renders at
+        exactly the size a guest's phone gives it: no bezel, no letterbox, no
+        scaling, and the showcase's vh/vw units resolve to what a guest gets.
+        The last version drew a phone inside the phone, fitted between a top bar
+        and a dock, and a 393px screen previewed a 332px invitation.
+
+        One frame on screen at a time, the others held by `v-show` so a stage
+        switch is instant once the queue has warmed them. Swipeable, because the
+        frame is the whole screen and the stages are a sequence.
       -->
-      <div class="tpl-studio__stage">
+      <div v-if="isViewer" class="tpl-viewer">
+        <div
+          v-for="frame in visibleFrames"
+          v-show="activeFrameId === frame.id"
+          :key="frame.id"
+          class="tpl-viewer__frame"
+        >
+          <InertIframe
+            v-if="mountedFrameIds.has(frame.id)"
+            :ref="(el) => setFrameRef(frame.id, el)"
+            :src="frameUrl(frame)"
+            :click-message="frame.clickMessage"
+            :swipeable="visibleFrames.length > 1"
+            @ready="onFrameReady(frame.id)"
+            @loaded="onFrameLoaded"
+            @languages="onFrameLanguages"
+            @swipe="onFrameSwipe"
+          />
+          <div v-else class="tpl-frame-pending">
+            <div class="tpl-spinner" />
+          </div>
+        </div>
+      </div>
+
+      <!--
+        The invitation, first in the DOM and on the left: it is the payload.
+      -->
+      <div v-else class="tpl-studio__stage">
         <!--
           Stage picker ABOVE the frame, centred on it: three moments of one
           flow, and the phone they belong to directly under them. One row,
@@ -253,11 +272,6 @@
           It costs nothing net, because the frame's own caption comes off when
           the picker is up (see :label below): the picker already names the
           stage, and two labels for one screen is one too many.
-
-          Desktop only. On a phone the same three stages are the dock's tabs,
-          where they cost the invitation nothing at all — over the frame they
-          were a band of chrome that, once the page scrolled, sat on top of the
-          screen it was labelling.
         -->
         <div class="tpl-stage">
           <div v-if="showStagePicker" class="tpl-stagebar">
@@ -287,21 +301,14 @@
               :max-width="frameMaxWidth"
               :width-override="sharedColumnWidth"
             >
-              <!-- Swipeable on a phone only, where the frame is most of the
-                   screen and the three stages are the page's main navigation:
-                   the biggest thing on screen becomes the way through them,
-                   and the pill above turns into the map rather than the only
-                   road. Nothing to swipe to in the three-up row. -->
               <InertIframe
                 v-if="mountedFrameIds.has(frame.id)"
                 :ref="(el) => setFrameRef(frame.id, el)"
                 :src="frameUrl(frame)"
                 :click-message="frame.clickMessage"
-                :swipeable="isNarrow && visibleFrames.length > 1"
                 @ready="onFrameReady(frame.id)"
                 @loaded="onFrameLoaded"
                 @languages="onFrameLanguages"
-                @swipe="onFrameSwipe"
               />
               <div v-else class="tpl-frame-pending">
                 <div class="tpl-spinner" />
@@ -318,11 +325,6 @@
         <p class="tpl-note">{{ t('partners.templates.note') }}</p>
       </div>
 
-      <!-- Anywhere else on the screen closes it. The sheet stands over the
-           invitation, and reaching past it for the design you can already see
-           is the most natural way to put it away. -->
-      <div v-if="isNarrow && browseOpen" class="tpl-sheet__scrim" @click="browseOpen = false" />
-
       <!--
         The catalogue, on the right and made of artwork. A column of names told a
         visitor nothing they could judge — a design is chosen by looking at it,
@@ -333,75 +335,21 @@
         can be eight, and one matches the customer in front of you), the plan is
         the grouping (there are two or three, and a partner wants the cheap shelf
         and the expensive shelf visible at once).
+
+        Desktop only. A phone gets the studio's own menu, below.
       -->
       <!-- Named by the heading that used to sit inside it: the landmark keeps
            its name in the accessibility tree now that the visible row has moved
            into the header. -->
-      <aside
-        class="tpl-studio__menu"
-        :class="{ 'is-open': browseOpen }"
-        :aria-label="t('partners.templates.menuLabel')"
-      >
-        <!--
-          The sheet's own header, phone only: what this card is, and the way out
-          of it. The dock's browse button toggles it too, but a sheet that can
-          only be dismissed by the control that opened it asks the visitor to
-          remember where that control was.
-        -->
-        <div v-if="isNarrow" class="tpl-sheet__head">
-          <p class="tpl-sheet__title">
-            {{ t('partners.templates.menuLabel') }}
-            <span class="tpl-sheet__count">{{ filteredTemplates.length }}</span>
-          </p>
-          <button
-            type="button"
-            class="tpl-sheet__close"
-            :aria-label="t('common.actions.close')"
-            @click="browseOpen = false"
-          >
-            <X class="h-4 w-4" aria-hidden="true" />
-          </button>
-        </div>
-
-        <!--
-          On a phone the shelves are tabs and only one is open. The sheet is a
-          temporary overlay rather than a permanent band, so it can afford the
-          full grid of artwork underneath them — three rows of designs seen at
-          once, where the dock this replaces could only ever show one.
-
-          Not rendered above `lg`, where the column is tall and narrow and the
-          shelves read better all at once, under their own headings.
-        -->
-        <div
-          v-if="isNarrow && groupedTemplates.length > 1"
-          class="tpl-plans"
-          role="tablist"
-          :aria-label="t('partners.templates.planLabel')"
-        >
-          <button
-            v-for="group in groupedTemplates"
-            :key="group.key"
-            type="button"
-            role="tab"
-            class="tpl-plan"
-            :class="{ 'is-active': group.key === visibleGroupKey }"
-            :aria-selected="group.key === visibleGroupKey"
-            @click="selectGroup(group.key, $event)"
-          >
-            <span class="tpl-plan__name">{{ group.label }}</span>
-            <span class="tpl-plan__count">{{ group.templates.length }}</span>
-          </button>
-        </div>
-
+      <aside v-if="!isViewer" class="tpl-studio__menu" :aria-label="t('partners.templates.menuLabel')">
         <div class="tpl-menu__scroll">
           <section
             v-for="group in groupedTemplates"
-            v-show="!isNarrow || group.key === visibleGroupKey"
             :key="group.key"
             class="tpl-menu-group"
             :aria-label="group.label"
           >
-            <h2 v-if="!isNarrow" class="tpl-menu-group__head">
+            <h2 class="tpl-menu-group__head">
               {{ group.label }}
               <span class="text-slate-400">· {{ group.templates.length }}</span>
             </h2>
@@ -459,98 +407,331 @@
           </section>
         </div>
       </aside>
+
+      <!--
+        The phone's catalogue: the Design Studio's own template menu
+        (BrowseTemplateModal's phone layout), so a partner meets one menu whether
+        they are choosing a design for a customer's event or browsing them here.
+        Same search pill, same package and category buttons opening the same
+        bottom sheets, same cards — its classes come from the modal's shared
+        vocabulary (templateUi.ts) and its cards are the modal's TemplateCard.
+
+        It takes the whole screen, and the bar stays over its foot: the Templates
+        button that opened it is also the way back, beside the stages it will
+        return you to. Picking a design puts it away, because the design is what
+        you came to see.
+
+        Kept mounted and hidden rather than `v-if`, so a toggle in the middle of
+        its entrance retargets instead of restarting — and so a visitor's search
+        and scroll position are still there the next time they open it.
+      -->
+      <div
+        v-else
+        class="tpl-menu-sheet"
+        :class="{ 'is-open': browseOpen }"
+        role="dialog"
+        :aria-label="t('management.browseTemplateModal.title')"
+      >
+        <!-- The modal's mobile search row: search, package, category, close. -->
+        <div class="tpl-menu-sheet__head">
+          <div class="relative flex-1">
+            <Search
+              class="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+              aria-hidden="true"
+            />
+            <!-- `text-base`: at 16px iOS does not zoom the page on focus. -->
+            <input
+              v-model="menuQuery"
+              type="text"
+              enterkeyhint="search"
+              :placeholder="t('management.browseTemplateModal.search.placeholder')"
+              :aria-label="t('management.browseTemplateModal.search.ariaLabel')"
+              :class="[SEARCH_FIELD, 'h-10 pl-11 pr-4 text-base']"
+            />
+          </div>
+
+          <!-- Only when there is a choice: a filter over one option can only
+               ever be "All", and an icon that does nothing is noise. -->
+          <button
+            v-if="groupedTemplates.length > 1"
+            type="button"
+            aria-haspopup="dialog"
+            :aria-expanded="planSheetOpen"
+            :aria-label="planChipLabel"
+            :class="filterIconClass(menuPlan !== '')"
+            @click="planSheetOpen = true"
+          >
+            <component :is="planIcon(menuPlan)" class="h-[1.125rem] w-[1.125rem]" />
+          </button>
+
+          <button
+            v-if="categories.length > 1"
+            type="button"
+            aria-haspopup="dialog"
+            :aria-expanded="categorySheetOpen"
+            :aria-label="categoryChipLabel"
+            :class="filterIconClass(activeCategory !== '')"
+            @click="categorySheetOpen = true"
+          >
+            <component
+              :is="activeCategory ? getCategoryIcon(activeCategory) : Sparkles"
+              class="h-[1.125rem] w-[1.125rem]"
+            />
+          </button>
+
+          <button
+            type="button"
+            :class="[BTN_ICON, 'h-10 w-10']"
+            :aria-label="t('management.browseTemplateModal.closeModal')"
+            @click="browseOpen = false"
+          >
+            <X class="h-5 w-5" />
+          </button>
+        </div>
+
+        <div class="tpl-menu-sheet__body">
+          <!--
+            Whose invitation this is — desktop says it under the frames. On a
+            phone there is no "under": the invitation is the whole screen, and a
+            sentence floated over it would sit on the artwork being judged. Here
+            it is read at the moment it matters, while choosing a design, and
+            scrolls away with the first row.
+          -->
+          <p class="tpl-menu-sheet__note">{{ t('partners.templates.note') }}</p>
+
+          <TemplateGrid
+            v-if="menuCards.length"
+            :templates="menuCards"
+            :selected-template-id="activeTemplateId"
+            hide-price
+            @select-template="(template) => selectTemplate(template.id)"
+          />
+
+          <TemplateEmptyState v-else :has-filters="menuHasFilters" @clear-filters="clearMenuFilters" />
+        </div>
+      </div>
+
+      <!-- Package sheet — the modal's, row for row. The one difference is what
+           it lists: this catalogue groups by each plan's own name, never by a
+           folded basic/standard tier, because credits are plan-scoped. -->
+      <Transition name="tpl-fade">
+        <div
+          v-if="isViewer && planSheetOpen"
+          class="tpl-filter-sheet__scrim"
+          @click="planSheetOpen = false"
+        />
+      </Transition>
+      <Transition name="tpl-bottom-sheet">
+        <div
+          v-if="isViewer && planSheetOpen"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="t('management.browseTemplateModal.sidebar.packageLabel')"
+          class="tpl-filter-sheet"
+        >
+          <div class="mx-auto mt-3 h-1 w-10 rounded-full bg-slate-300" aria-hidden="true" />
+          <h3 :class="[SECTION_HEADING, 'px-5 pb-1 pt-4']">
+            {{ t('management.browseTemplateModal.sidebar.packageLabel') }}
+          </h3>
+          <div class="max-h-[60vh] overflow-y-auto overscroll-contain py-1">
+            <button
+              v-for="option in planOptions"
+              :key="option.value || 'all'"
+              type="button"
+              :aria-pressed="menuPlan === option.value"
+              class="flex w-full items-center gap-3 px-5 py-2.5 transition-colors active:bg-slate-50"
+              @click="selectMenuPlan(option.value)"
+            >
+              <span
+                :class="[
+                  'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full transition-colors',
+                  menuPlan === option.value
+                    ? 'bg-gradient-to-br from-[#2ecc71]/15 to-[#1e90ff]/15 ring-1 ring-sky-300'
+                    : 'bg-slate-100',
+                ]"
+              >
+                <component
+                  :is="planIcon(option.value)"
+                  :class="['h-[1.125rem] w-[1.125rem]', optionIconClass(menuPlan === option.value)]"
+                />
+              </span>
+              <span
+                :class="[
+                  'flex-1 truncate text-left text-sm',
+                  menuPlan === option.value ? 'font-semibold text-slate-900' : 'font-medium text-slate-700',
+                ]"
+                >{{ option.label }}</span
+              >
+              <Check v-if="menuPlan === option.value" class="h-5 w-5 flex-shrink-0 text-[#1e90ff]" />
+            </button>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Category sheet — the modal's, row for row. -->
+      <Transition name="tpl-fade">
+        <div
+          v-if="isViewer && categorySheetOpen"
+          class="tpl-filter-sheet__scrim"
+          @click="categorySheetOpen = false"
+        />
+      </Transition>
+      <Transition name="tpl-bottom-sheet">
+        <div
+          v-if="isViewer && categorySheetOpen"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="t('management.browseTemplateModal.sidebar.categoryLabel')"
+          class="tpl-filter-sheet"
+        >
+          <div class="mx-auto mt-3 h-1 w-10 rounded-full bg-slate-300" aria-hidden="true" />
+          <h3 :class="[SECTION_HEADING, 'px-5 pb-1 pt-4']">
+            {{ t('management.browseTemplateModal.sidebar.categoryLabel') }}
+          </h3>
+          <div class="max-h-[60vh] overflow-y-auto overscroll-contain py-1">
+            <button
+              type="button"
+              :aria-pressed="activeCategory === ''"
+              class="flex w-full items-center gap-3 px-5 py-3 transition-colors active:bg-slate-50"
+              @click="selectMenuCategory('')"
+            >
+              <span
+                class="h-3 w-3 flex-shrink-0 rounded-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff]"
+                aria-hidden="true"
+              />
+              <span
+                :class="[
+                  'flex-1 text-left text-sm',
+                  activeCategory === '' ? 'font-semibold text-slate-900' : 'font-medium text-slate-700',
+                ]"
+                >{{ t('management.browseTemplateModal.filters.all') }}</span
+              >
+              <Check v-if="activeCategory === ''" class="h-5 w-5 flex-shrink-0 text-[#1e90ff]" />
+            </button>
+            <button
+              v-for="category in categories"
+              :key="category.value"
+              type="button"
+              :aria-pressed="activeCategory === category.value"
+              class="flex w-full items-center gap-3 px-5 py-3 transition-colors active:bg-slate-50"
+              @click="selectMenuCategory(category.value)"
+            >
+              <span
+                class="h-3 w-3 flex-shrink-0 rounded-full"
+                :style="{ backgroundColor: category.color }"
+                aria-hidden="true"
+              />
+              <span
+                :class="[
+                  'flex-1 truncate text-left text-sm',
+                  activeCategory === category.value
+                    ? 'font-semibold text-slate-900'
+                    : 'font-medium text-slate-700',
+                ]"
+                >{{ category.label }}</span
+              >
+              <Check
+                v-if="activeCategory === category.value"
+                class="h-5 w-5 flex-shrink-0 text-[#1e90ff]"
+              />
+            </button>
+          </div>
+        </div>
+      </Transition>
     </div>
 
     <!--
-      The phone's tab bar: every control that changes what is on the screen
-      above it, in one floating pill at the bottom of the window.
+      The phone's controls: the studio's mobile-preview bar (MobilePreviewSheet),
+      so a partner sees one preview whether they are browsing designs here or
+      editing their own in the studio.
 
-      It is the app's own MobileTabBar, borrowed — the same glass pill, the same
-      travelling gradient, the same rule that only the tab you are on carries a
-      label. That is not decoration: it is the shape a thumb already knows on
-      this product, and this page's controls do exactly what that bar's do.
+      One icon-only pill floating over the foot of the invitation, so the whole
+      control surface costs the invitation no layout height at all. Labels are
+      one press-and-hold away, never permanent. The way out leads; the stages sit
+      in an inset track so they read as one control rather than three loose
+      icons among the others; the two ways of changing how you are looking —
+      language and design — close it.
 
-      What it replaces is a stage picker and a language pill stuck over the
-      invitation, and a catalogue welded across the bottom third of the window —
-      two bands of chrome that between them left the phone taller than the space
-      that was left for it, so the page scrolled and both bands rode over the
-      thing they were controlling. Down here they cost one row, once, and the
-      catalogue is behind the last button rather than permanently on screen.
+      It dims and sinks when left alone, because it sits on the artwork it exists
+      to show — all of it but Templates, which stays lit, and none of it while
+      the menu is open. Dimmed is not disabled: the press that wakes it also does
+      what it was pressed for.
     -->
-    <div v-if="showDock" ref="dockRef" class="tpl-dock">
-      <div class="tpl-dock__pill glass-pill">
-        <!-- No padding on the row itself, so a tab's offset within it is also
-             the indicator's offset — no constant to keep the two in step. -->
+    <div v-if="isViewer" ref="dockRef" class="tpl-bar-dock">
+      <nav
+        class="tpl-bar"
+        :class="{ 'is-idle': barIdle }"
+        :aria-label="t('partners.templates.viewControlsLabel')"
+        @pointerdown="wakeChrome"
+        @focusin="wakeChrome"
+      >
+        <!-- An arrow, not the studio's X: that one closes a sheet, this one
+             leaves the page. -->
+        <RouterLink to="/partners" class="tpl-bar__btn" :aria-label="backName">
+          <ArrowLeft class="h-5 w-5" aria-hidden="true" />
+          <span class="tpl-bar__tooltip" aria-hidden="true">{{ backName }}</span>
+        </RouterLink>
+
         <div
-          ref="dockRowRef"
-          class="tpl-dock__row"
+          v-if="!loading && visibleFrames.length > 1"
+          class="tpl-bar__seg"
           role="group"
           :aria-label="t('partners.templates.stageLabel')"
         >
-          <!--
-            One gradient pill that travels, rather than each tab painting and
-            un-painting its own: a background-image cannot be interpolated, so
-            the per-tab version could only pop the fill on and then slide the
-            width out from under it. Its geometry is measured, never declared —
-            the width is the active label's, which changes with the locale and
-            with the webfont's arrival.
-          -->
-          <span
-            v-show="indicator.visible"
-            class="tpl-dock__indicator"
-            :style="{ width: `${indicator.w}px`, transform: `translateX(${indicator.x}px)` }"
-            aria-hidden="true"
-          />
-
           <button
             v-for="frame in visibleFrames"
             :key="frame.id"
             type="button"
-            class="tpl-dock__tab"
+            class="tpl-bar__btn tpl-bar__btn--seg"
             :class="{ 'is-active': activeFrameId === frame.id }"
-            :data-active="activeFrameId === frame.id ? 'true' : undefined"
             :aria-pressed="activeFrameId === frame.id"
             :aria-label="t(frame.labelKey)"
-            @click="activeFrameId = frame.id"
+            @click="selectStage(frame.id)"
           >
-            <component :is="stageIcon(frame.id)" class="h-5 w-5 flex-none" aria-hidden="true" />
-            <!-- Width opens through a grid column rather than a max-width, so
-                 the open and the close ease identically. Clipped, not
-                 ellipsised: the column opens from zero, and an ellipsis would
-                 show through most of the reveal. -->
-            <span class="tpl-dock__label">
-              <span class="tpl-dock__label-text">{{ t(frame.labelKey) }}</span>
-            </span>
-          </button>
-
-          <span class="tpl-dock__divider" aria-hidden="true" />
-
-          <button
-            v-if="frameLanguages.length > 1"
-            type="button"
-            class="tpl-dock__btn tpl-dock__btn--lang"
-            :aria-label="t('partners.templates.switchLanguage')"
-            @click="cycleLanguage"
-          >
-            <Languages class="h-4 w-4 flex-none" aria-hidden="true" />
-            <span>{{ previewLanguage.toUpperCase() }}</span>
-          </button>
-
-          <!-- The catalogue, on a switch. Held lit for as long as the sheet it
-               opened is up, so the sheet is never a card with nothing pointing
-               at it. -->
-          <button
-            type="button"
-            class="tpl-dock__btn"
-            :class="{ 'is-open': browseOpen }"
-            :aria-expanded="browseOpen"
-            :aria-label="t('partners.templates.browseLabel')"
-            @click="toggleBrowse"
-          >
-            <LayoutGrid class="h-5 w-5 flex-none" aria-hidden="true" />
+            <component :is="stageIcon(frame.id)" class="h-[1.125rem] w-[1.125rem]" aria-hidden="true" />
+            <span class="tpl-bar__tooltip" aria-hidden="true">{{ t(frame.labelKey) }}</span>
           </button>
         </div>
-      </div>
+
+        <button
+          v-if="frameLanguages.length > 1"
+          type="button"
+          class="tpl-bar__btn tpl-bar__btn--lang"
+          :aria-label="t('partners.templates.switchLanguage')"
+          @click="cycleLanguage"
+        >
+          {{ previewLanguage.toUpperCase() }}
+          <span class="tpl-bar__tooltip" aria-hidden="true">
+            {{ t('partners.templates.switchLanguage') }}
+          </span>
+        </button>
+
+        <!--
+          Templates: the studio's primary button, carried over — the brand
+          gradient, the palette, and the studio's own word for it. Choosing a
+          design is what this page is for, so it is the one control on the bar
+          that carries a label, and it sits last, under the thumb.
+
+          The label is also what keeps it from reading as a fourth stage: the
+          gradient means "you are here" in the track and "this is the action"
+          here (templateUi's two sanctioned uses), and a word is the difference
+          between the two. On the narrowest phones the word goes and the gradient
+          stays, exactly as the studio's own button does when its row runs short.
+        -->
+        <button
+          v-if="!loading"
+          type="button"
+          class="tpl-bar__btn tpl-bar__btn--menu"
+          :aria-expanded="browseOpen"
+          :aria-label="t('management.templatePaymentTab.browseBtn.templates')"
+          @click="toggleBrowse"
+        >
+          <Palette class="h-[1.125rem] w-[1.125rem] flex-none" aria-hidden="true" />
+          <span class="tpl-bar__menu-label" aria-hidden="true">
+            {{ t('management.templatePaymentTab.browseBtn.templates') }}
+          </span>
+        </button>
+      </nav>
     </div>
   </div>
 </template>
@@ -592,30 +773,40 @@
  * templates modal uses. Changing an <iframe>'s `src` would re-navigate it, and
  * with three frames that is three full app boots per click.
  */
-import { computed, nextTick, onMounted, onUnmounted, ref, watch, type Component } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import {
   ArrowLeft,
   ArrowRight,
   Check,
   ChevronDown,
+  Crown,
   Filter,
   ImageOff,
-  Info,
+  Layers,
   LayoutGrid,
   Languages,
-  Mail,
   Palette,
-  Play,
-  ScrollText,
+  Search,
   Smartphone,
   Sparkles,
   X,
+  type LucideIcon,
 } from 'lucide-vue-next'
 import PreviewFrame from '@/components/showcase-preview/PreviewFrame.vue'
+import TemplateGrid from '@/components/template/TemplateGrid.vue'
+import TemplateEmptyState from '@/components/template/TemplateEmptyState.vue'
+import { getCategoryIcon } from '@/components/template/categoryIcons'
+import {
+  BTN_ICON,
+  SEARCH_FIELD,
+  SECTION_HEADING,
+  filterIconClass,
+  optionIconClass,
+} from '@/components/template/templateUi'
+import { previewStageIcon as stageIcon } from '@/components/showcase-preview/previewStageIcons'
 import {
   PREVIEW_FRAME_MAX_WIDTH,
-  PREVIEW_FRAME_WIDTH,
   usePreviewFrameAspect,
 } from '@/components/showcase-preview/previewFrameSize'
 import InertIframe from '@/components/showcase-preview/InertIframe.vue'
@@ -625,7 +816,7 @@ import {
 } from '@/components/showcase-preview/renderers/resolvePreviewRenderer'
 import { eventTemplateService, packagePlanService } from '@/services/api'
 import { useTemplatePreviewEvents } from '@/composables/showcase-preview/useTemplatePreviewEvents'
-import type { PackagePlan, PublicEventTemplate } from '@/services/api'
+import type { EventTemplate, PackagePlan, PublicEventTemplate } from '@/services/api'
 // The showcase's own TemplateAssets, not the API types' flat one: this is the
 // shape the preview bridge and the renderer registry both speak.
 import type { TemplateAssets } from '@/composables/useEventShowcase'
@@ -642,6 +833,10 @@ const TELEGRAM_URL = 'https://t.me/goeventkh'
  * and what shape it is.
  */
 const backLabel = computed(() => t('partners.templates.back'))
+
+/** What the back link is called when its label is empty, and on the phone's
+ *  bar, where it is an icon and nothing else. */
+const backName = computed(() => backLabel.value || t('common.actions.back'))
 
 // ---------------------------------------------------------------------------
 // The catalogue
@@ -774,9 +969,6 @@ const filteredTemplates = computed(() =>
 const selectCategory = (value: string) => {
   activeCategory.value = value
   categoryMenuOpen.value = false
-  // The shelves are rebuilt from the survivors, so an earlier tap is a claim
-  // about a list that no longer exists. Fall back to following the selection.
-  activeGroupKey.value = ''
 }
 
 // ---------------------------------------------------------------------------
@@ -828,41 +1020,115 @@ const groupedTemplates = computed<TemplateGroup[]>(() => {
  */
 const orderedTemplates = computed(() => groupedTemplates.value.flatMap((group) => group.templates))
 
-/**
- * Which shelf is open, on the phone layout where only one is.
- *
- * Derived from the selected design rather than stored outright, so the tab and
- * the tick can never disagree: whatever the catalogue lands on — first load, a
- * filter change, a template retired by one — the shelf holding it is the shelf
- * that opens. An explicit tap wins while it still names a shelf that exists.
- */
-const activeGroupKey = ref('')
+// ---------------------------------------------------------------------------
+// The phone's menu — the studio's template menu, on this catalogue's two axes
+// ---------------------------------------------------------------------------
+
+/** Free text, matched against a design's name and its event type. */
+const menuQuery = ref('')
 
 /**
- * Opening a shelf also brings its tab fully into the strip.
- *
- * The strip scrolls sideways, so the tab you just chose is often the one half
- * off the edge — tapping it and watching it stay clipped reads as the tap not
- * having landed, even though the rail below it changed.
+ * The plan the phone's menu is narrowed to, by the plan's own name — the
+ * shelves' key, for the reason planRank gives. '' is every plan. The studio's
+ * package filter folds plans into Basic / Standard; this one cannot.
  */
-const selectGroup = (key: string, event: MouseEvent) => {
-  activeGroupKey.value = key
-  ;(event.currentTarget as HTMLElement | null)?.scrollIntoView({
-    inline: 'center',
-    block: 'nearest',
-    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-  })
+const menuPlan = ref('')
+
+const planSheetOpen = ref(false)
+const categorySheetOpen = ref(false)
+
+/** "All", then each plan the current event type offers, cheapest first. */
+const planOptions = computed(() => [
+  { value: '', label: t('management.browseTemplateModal.filters.all') },
+  ...groupedTemplates.value.map((group) => ({ value: group.key, label: group.label })),
+])
+
+// A plan chosen under one event type may not be offered under the next, and a
+// filter nobody can see or change must not keep emptying the grid.
+watch(groupedTemplates, (groups) => {
+  if (menuPlan.value && !groups.some((group) => group.key === menuPlan.value)) menuPlan.value = ''
+})
+
+/** The studio package filter's glyphs, and the card's: a crown for a standard
+ *  tier, sparkles for the rest, layers for all of them. */
+const planIcon = (plan: string): LucideIcon => {
+  if (!plan) return Layers
+  return plan.toLowerCase().includes('standard') ? Crown : Sparkles
 }
 
-const visibleGroupKey = computed(() => {
-  const groups = groupedTemplates.value
-  if (!groups.length) return ''
-  if (groups.some((group) => group.key === activeGroupKey.value)) return activeGroupKey.value
-  const holding = groups.find((group) =>
-    group.templates.some((template) => template.id === activeTemplateId.value),
-  )
-  return (holding ?? groups[0]).key
+// Each button is named for what it filters until something is chosen, then for
+// the choice — the studio's rule, so neither ever reads a bare "All".
+const planChipLabel = computed(
+  () => menuPlan.value || t('management.browseTemplateModal.sidebar.packageLabel'),
+)
+const categoryChipLabel = computed(
+  () => activeCategory.value || t('management.browseTemplateModal.sidebar.categoryLabel'),
+)
+
+const selectMenuPlan = (plan: string) => {
+  menuPlan.value = plan
+  planSheetOpen.value = false
+}
+
+const selectMenuCategory = (category: string) => {
+  selectCategory(category)
+  categorySheetOpen.value = false
+}
+
+/** The shelves in their own order, narrowed by the plan and the search. */
+const menuTemplates = computed(() => {
+  const query = menuQuery.value.trim().toLowerCase()
+  return groupedTemplates.value
+    .filter((group) => !menuPlan.value || group.key === menuPlan.value)
+    .flatMap((group) => group.templates)
+    .filter(
+      (template) =>
+        !query ||
+        template.name.toLowerCase().includes(query) ||
+        categoryNameFor(template).toLowerCase().includes(query),
+    )
 })
+
+/**
+ * Each design in the shape the studio's TemplateCard reads.
+ *
+ * The public list carries a plan id where the card wants the plan itself, so it
+ * is joined here. Only what a card draws is filled in — colours, fonts and
+ * assets are the frames' business and reach them over the bridge.
+ * `youtube_preview_url` is left off on purpose: on the chosen card it turns
+ * into a "Preview" button out to a recorded video, and on this page the live
+ * invitation behind the menu IS the preview.
+ */
+const toCard = (template: PublicEventTemplate): EventTemplate => {
+  const plan = planFor(template)
+  return {
+    id: template.id,
+    name: template.name,
+    preview_image: template.preview_image ?? '',
+    template_colors: [],
+    template_fonts: [],
+    package_plan: {
+      id: plan?.id ?? 0,
+      name: plan?.name || t('partners.templates.otherPlan'),
+      price: plan?.price ?? '0',
+      commission: plan?.commission ?? '0',
+      features: plan?.features ?? [],
+      category: plan?.category,
+    },
+  }
+}
+
+const menuCards = computed(() => menuTemplates.value.map(toCard))
+
+const menuHasFilters = computed(() =>
+  Boolean(menuQuery.value.trim() || menuPlan.value || activeCategory.value),
+)
+
+const clearMenuFilters = () => {
+  menuQuery.value = ''
+  menuPlan.value = ''
+  selectCategory('')
+}
 
 // Filtering can retire the design on screen; land on the first one that survived
 // rather than previewing something no longer in the list.
@@ -1015,11 +1281,24 @@ const viewMode = ref<'single' | 'multiple'>('multiple')
 // Below `lg` there is only ever one frame: three phones side by side on a phone
 // would each be ~100px wide, which previews nothing. Tracked as media state
 // rather than a CSS-only hide, so the frames that aren't shown are never mounted.
-const isNarrow = ref(false)
+//
+// Read at setup, not first in onMounted: the phone and desktop layouts are
+// different trees now, and starting from `false` painted the desktop header and
+// skeleton for a frame before swapping them out.
+const NARROW_QUERY = '(max-width: 1023px)'
+const isNarrow = ref(typeof window !== 'undefined' && window.matchMedia(NARROW_QUERY).matches)
 let narrowQuery: MediaQueryList | null = null
 const onNarrowChange = (event: MediaQueryListEvent | MediaQueryList) => {
   isNarrow.value = event.matches
 }
+
+/**
+ * The phone layout proper: the studio's full-screen preview. While loading too,
+ * so the page opens on the black screen the invitation will arrive into — but
+ * not for an empty catalogue, where there is no invitation to be full-screen
+ * and the page falls back to its header and an explanation.
+ */
+const isViewer = computed(() => isNarrow.value && (loading.value || templates.value.length > 0))
 
 const isSingleView = computed(() => isNarrow.value || viewMode.value === 'single')
 
@@ -1042,63 +1321,73 @@ const showLayoutSegments = computed(() => !isNarrow.value && visibleFrames.value
  * Only one frame on screen, somewhere else to go from it, and room above it to
  * say so.
  *
- * Desktop only now. A phone's stages are the dock's tabs — the same three
- * choices, in the one band of chrome the layout already pays for, instead of a
- * second one directly over the invitation.
+ * Desktop only. A phone's stages are the bar's inset track — the same three
+ * choices, floating over the invitation instead of taking height above it.
  */
 const showStagePicker = computed(
   () => !isNarrow.value && isSingleView.value && visibleFrames.value.length > 1,
 )
 
 /**
- * The dock: the phone's whole control surface, and the only chrome below the
- * frame. It waits for the catalogue, because until then there is neither a
- * stage worth switching nor a design worth browsing.
- */
-const showDock = computed(() => isNarrow.value && !loading.value && templates.value.length > 0)
-
-/** Which stage each tab draws. Ordered by the flow, not by the vocabulary. */
-const STAGE_ICONS: Record<string, Component> = {
-  cover: Mail,
-  transition: Sparkles,
-  event_video: Play,
-  main: ScrollText,
-}
-
-const stageIcon = (id: string): Component => STAGE_ICONS[id] ?? Smartphone
-
-/**
- * The catalogue, on a phone: a sheet over the invitation rather than a band
- * permanently across the bottom of it.
- *
- * Which is the whole reason the phone fits its window again. The dock it
- * replaced was ~200px of fixed chrome — the height of every card in it, plus a
- * row of plan tabs — and the frame was fitted to what was left, which on a
- * short screen was not enough to draw an invitation in.
+ * The catalogue, on a phone: the studio's template menu, over the invitation
+ * rather than a band permanently across the bottom of it — the invitation is
+ * the whole screen, and a design is chosen in bursts.
  */
 const browseOpen = ref(false)
 
 const toggleBrowse = () => {
   browseOpen.value = !browseOpen.value
-  // Two overlays over one invitation is one too many.
-  if (browseOpen.value) noteOpen.value = false
 }
 
 /**
- * The sample-invitation caveat, held behind a mark on a phone.
- *
- * It reads once and matters once, and in the flow under the frame it was three
- * lines of prose permanently occupying a band the preview wanted. Desktop keeps
- * it in place, where the room exists and there is nothing to trade it against.
+ * A stage tapped while the menu is up is a request to see that stage, so the
+ * menu gets out of the way — otherwise the tap changes a screen nobody can see.
  */
-const noteOpen = ref(false)
-
-const toggleNote = () => {
-  noteOpen.value = !noteOpen.value
-  // The other half of toggleBrowse's rule: two overlays over one invitation is
-  // one too many, and this one opens from the bar the sheet does not cover.
-  if (noteOpen.value) browseOpen.value = false
+const selectStage = (id: string) => {
+  activeFrameId.value = id
+  browseOpen.value = false
 }
+
+// ---------------------------------------------------------------------------
+// The phone's bar: dims when left alone
+//
+// The same rule as the studio's mobile preview (MobilePreviewSheet), with the
+// same numbers. The bar is the only way out, so it can never disappear — but it
+// also sits on the invitation it is there to show, so after a few seconds
+// untouched it dims and sinks. Any press on it (or hover / focus, via CSS)
+// brings it straight back, and it stays interactive while dimmed.
+// ---------------------------------------------------------------------------
+
+const IDLE_DELAY = 3200
+
+const chromeIdle = ref(false)
+let idleTimer: ReturnType<typeof setTimeout> | null = null
+
+const clearIdleTimer = () => {
+  if (idleTimer) clearTimeout(idleTimer)
+  idleTimer = null
+}
+
+const wakeChrome = () => {
+  chromeIdle.value = false
+  clearIdleTimer()
+  idleTimer = setTimeout(() => (chromeIdle.value = true), IDLE_DELAY)
+}
+
+/** Never dimmed under the open catalogue: the sheet stands on the bar, and its
+ *  lit button is what says what the sheet is. */
+const barIdle = computed(() => chromeIdle.value && !browseOpen.value)
+
+// Put away by the scrim, the close button or a picked design, the sheet never
+// touched the bar — so without this the bar would drop straight to dim the
+// moment the sheet left it, with the new design only just arriving above it.
+watch(browseOpen, (open) => {
+  if (!open && isViewer.value) wakeChrome()
+})
+
+// Starts the clock the moment the bar exists, so it recedes on its own even if
+// the visitor never touches it.
+watch(isViewer, (viewer) => (viewer ? wakeChrome() : clearIdleTimer()), { immediate: true })
 
 /**
  * A swipe across the phone moves one stage, in the direction the finger went —
@@ -1106,13 +1395,18 @@ const toggleNote = () => {
  * pager has always read. It stops at the ends rather than wrapping: three
  * stages are a sequence with a beginning and an end, not a carousel, and
  * looping from Main Content back to Cover would undo the picker's own story.
+ *
+ * It wakes the bar, too: the stage track is what confirms where the swipe
+ * landed, and a dimmed one says it less clearly.
  */
 const onFrameSwipe = (direction: 'left' | 'right') => {
   const frames = visibleFrames.value
   const index = frames.findIndex((frame) => frame.id === activeFrameId.value)
   if (index === -1) return
   const next = frames[index + (direction === 'left' ? 1 : -1)]
-  if (next) activeFrameId.value = next.id
+  if (!next) return
+  activeFrameId.value = next.id
+  wakeChrome()
 }
 
 /**
@@ -1122,13 +1416,13 @@ const onFrameSwipe = (direction: 'left' | 'right') => {
  * roughly what the picker costs, so the phone renders the same size either way.
  */
 const frameLabel = (frame: PreviewFrameDescriptor): string =>
-  showStagePicker.value || isNarrow.value ? '' : t(frame.labelKey)
+  showStagePicker.value ? '' : t(frame.labelKey)
 
 /**
  * The pill is a container: with nothing to put in it, it is a stray blob. On a
  * phone it is always empty — the layout segments never show there and the
- * language toggle has moved down to the frame — so the header keeps only the
- * back link and the title.
+ * language toggle lives on the bar — so the header, where there is one at all
+ * (an empty catalogue), keeps only the back link and the title.
  */
 const hasViewControls = computed(
   () =>
@@ -1143,10 +1437,8 @@ const hasViewControls = computed(
 // ---------------------------------------------------------------------------
 
 /**
- * Room kept below the phones for the sample-content note — desktop's reserve,
- * and the only one there is now. A phone's is the dock's measured height, and
- * it is spent in CSS as the stage's own bottom padding rather than subtracted
- * here: the frames box is then already the right size to measure.
+ * Room kept below the phones for the sample-content note. Desktop only: on a
+ * phone the frame is the whole screen and nothing is fitted at all.
  */
 const FRAME_BOTTOM_RESERVE = 72
 /**
@@ -1157,28 +1449,15 @@ const FRAME_BOTTOM_RESERVE = 72
  * height on one side of that boundary.
  */
 const frameAspect = usePreviewFrameAspect()
-const NATIVE_FRAME_WIDTH = PREVIEW_FRAME_WIDTH
 /**
- * The desktop ceiling is the *drawn* one, not the native width: this page
- * hands PreviewFrame a width computed from the height it has, so capping at
- * the native 390 was what left a band of empty stage under every phone on a
- * tall window. The phone layout keeps the native cap — there the frame is
- * already the whole screen and has no spare height to spend.
+ * The ceiling is the *drawn* one, not the native width: this page hands
+ * PreviewFrame a width computed from the height it has, so capping at the
+ * native 390 was what left a band of empty stage under every phone on a tall
+ * window.
  */
 const MAX_FRAME_WIDTH = PREVIEW_FRAME_MAX_WIDTH
 /** Never so small that the invitation stops being readable; the page scrolls. */
 const MIN_FRAME_WIDTH = 240
-/**
- * The floor on a phone, where the page CANNOT scroll: the frame is fitted to
- * the space between the top bar and the dock, and whatever that space is, the
- * whole invitation has to be inside it. So this is a guard against a degenerate
- * zero, not a minimum readable size — a floor the available height cannot
- * honour draws the invitation past the edges of a window with no way to reach
- * the rest of it. Set below what even a landscape phone asks for (a 393px-tall
- * window leaves ~253px of stage, which wants 116px of frame), so in practice it
- * never binds and the fit is always exact.
- */
-const MIN_NARROW_FRAME_WIDTH = 96
 
 const viewportHeight = ref(typeof window !== 'undefined' ? window.innerHeight : 900)
 /** Where the phones start, in DOCUMENT coordinates — see frameMaxWidth. */
@@ -1194,46 +1473,23 @@ const framesTop = ref(320)
  * tab panel but not on a page. Measuring in document coordinates instead gives
  * the same answer at any scroll position, and this page opens at the top, which
  * is where the fit has to be right.
+ *
+ * Desktop only. A phone draws no PreviewFrame: its invitation is the screen.
  */
-/**
- * How large a frame may render.
- *
- * Two different questions, because the two layouts answer to different things.
- *
- * On a phone the page is exactly one window tall and does not scroll, so the
- * frames box is a flex child with a real, settled height — and the honest
- * answer is simply "as tall as that box". Measuring the box rather than
- * predicting it is what makes the fit correct at every size: the top bar wraps
- * in Khmer, the dock grows by a safe-area inset, and neither has to be known
- * here. There is no feedback loop — the box's height is the space left over
- * after the header and the dock's reserve, which nothing about the frame's own
- * size can move.
- *
- * On desktop the page may scroll, so the frame is fitted to the window from the
- * frames box's position in DOCUMENT coordinates instead — see framesTop.
- */
-const frameMaxWidth = computed(() => {
-  if (isNarrow.value) {
-    return Math.max(
-      MIN_NARROW_FRAME_WIDTH,
-      Math.min(NATIVE_FRAME_WIDTH, Math.floor(framesHeight.value * frameAspect.value)),
-    )
-  }
-  return Math.max(
+const frameMaxWidth = computed(() =>
+  Math.max(
     MIN_FRAME_WIDTH,
     Math.min(
       MAX_FRAME_WIDTH,
       Math.round((viewportHeight.value - framesTop.value - FRAME_BOTTOM_RESERVE) * frameAspect.value),
     ),
-  )
-})
+  ),
+)
 
 const FRAMES_GAP_PX = 24
 
 const framesRef = ref<HTMLElement | null>(null)
 const framesWidth = ref(0)
-/** The frames box's own height — the phone layout's whole sizing input. */
-const framesHeight = ref(0)
 let framesObserver: ResizeObserver | null = null
 
 /**
@@ -1250,15 +1506,14 @@ const studioRef = ref<HTMLElement | null>(null)
 const studioTop = ref(96)
 
 /**
- * How tall the dock is, published to CSS so the stage reserves exactly it and
- * the sheet can sit directly on top of it.
+ * How far the phone's bar stands off the bottom of the window, published to CSS
+ * so the catalogue sheet can stand directly on it.
  *
  * Measured rather than assumed because it is not a constant: it carries a
- * safe-area inset on the phones that have one, and its row is a line of text
- * whose height follows the locale's own font. The seed is a fair guess at the
- * pill, used only for the first frame before the observer reports.
+ * safe-area inset on the phones that have one. The seed is the bar's own
+ * geometry (a 54px pill, 12px up), used only until the observer reports.
  */
-const dockHeight = ref(76)
+const dockHeight = ref(66)
 
 const studioStyle = computed(() => ({
   '--tpl-studio-top': `${studioTop.value}px`,
@@ -1268,7 +1523,6 @@ const studioStyle = computed(() => ({
 /** Every measurement the frames need, taken from the container that holds them. */
 const measureFrameBox = (element: HTMLElement) => {
   framesWidth.value = element.clientWidth
-  framesHeight.value = element.clientHeight
   framesTop.value = element.getBoundingClientRect().top + window.scrollY
   if (studioRef.value) {
     studioTop.value = studioRef.value.getBoundingClientRect().top + window.scrollY
@@ -1284,38 +1538,22 @@ watch(framesRef, (element) => {
   framesObserver.observe(element)
 })
 
-/**
- * The dock's height, watched rather than read once.
- *
- * It changes under the page's feet — a safe-area inset arriving, a locale
- * relabelling the active tab — and it is the floor the phone is fitted to, so
- * `refit` has to run when it moves.
- */
+/** The bar's height, watched rather than read once — a safe-area inset can
+ *  arrive under the page's feet. */
 const dockRef = ref<HTMLElement | null>(null)
 let dockObserver: ResizeObserver | null = null
 
-/** Watch the element, publish its height, re-fit. */
-const observeHeight = (
-  element: HTMLElement,
-  target: typeof dockHeight,
-  onChange?: () => void,
-): ResizeObserver => {
-  const measure = () => {
-    const next = Math.round(element.getBoundingClientRect().height)
-    if (next && next !== target.value) {
-      target.value = next
-      onChange?.()
-    }
-  }
-  measure()
-  const observer = new ResizeObserver(measure)
-  observer.observe(element)
-  return observer
-}
-
 watch(dockRef, (element) => {
   dockObserver?.disconnect()
-  dockObserver = element ? observeHeight(element, dockHeight, refit) : null
+  dockObserver = null
+  if (!element) return
+  const measure = () => {
+    const next = Math.round(element.getBoundingClientRect().height)
+    if (next) dockHeight.value = next
+  }
+  measure()
+  dockObserver = new ResizeObserver(measure)
+  dockObserver.observe(element)
 })
 
 /**
@@ -1374,107 +1612,7 @@ const refit = () => {
 }
 
 watch([isSingleView, activeFrameId, frameMaxWidth], remeasure)
-watch([loading, isNarrow, showStagePicker, groupedTemplates, visibleGroupKey], refit)
-
-// ---------------------------------------------------------------------------
-// The dock's travelling indicator
-//
-// Lifted from MobileTabBar, for the same reason it exists there: the pill's
-// geometry cannot be declared, because its width is the active tab's width and
-// that depends on the label, the locale and whether the webfont has arrived.
-// So it is measured off the tab the template has already marked active.
-// ---------------------------------------------------------------------------
-
-const dockRowRef = ref<HTMLElement | null>(null)
-const indicator = ref({ x: 0, w: 0, visible: false })
-
-/** Matches the tabs' own transition: the glide lands on the layout they settle
- *  into, and one ending first would stop short of the final width. */
-const GLIDE_MS = 380
-
-let glideFrame = 0
-
-const measureIndicator = () => {
-  const row = dockRowRef.value
-  const tab = row?.querySelector<HTMLElement>('[data-active="true"]')
-  if (!row || !tab) return null
-  const rowBox = row.getBoundingClientRect()
-  const tabBox = tab.getBoundingClientRect()
-  return { x: tabBox.left - rowBox.left, w: tabBox.width }
-}
-
-const cancelGlide = () => {
-  if (glideFrame) cancelAnimationFrame(glideFrame)
-  glideFrame = 0
-}
-
-/** Jump straight to the current geometry — mount, resize, locale change. */
-const settleIndicator = () => {
-  cancelGlide()
-  const target = measureIndicator()
-  indicator.value = target ? { ...target, visible: true } : { ...indicator.value, visible: false }
-}
-
-/**
- * Travel to the newly active tab.
- *
- * The destination is still moving while we go: the old tab is giving up its
- * label and the new one taking one, so everything to the right of the change is
- * sliding too. Measuring once at the start would aim at the old layout and land
- * short, so the target is re-read every frame and the eased fraction applied to
- * wherever it has got to.
- */
-const glideIndicator = () => {
-  const from = indicator.value.visible ? { x: indicator.value.x, w: indicator.value.w } : null
-  if (!from || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    settleIndicator()
-    return
-  }
-  if (!measureIndicator()) {
-    cancelGlide()
-    indicator.value = { ...indicator.value, visible: false }
-    return
-  }
-
-  cancelGlide()
-  const start = performance.now()
-  const step = (now: number) => {
-    const progress = Math.min(1, (now - start) / GLIDE_MS)
-    const eased = 1 - Math.pow(1 - progress, 3)
-    const target = measureIndicator()
-    if (!target) {
-      settleIndicator()
-      return
-    }
-    indicator.value = {
-      x: from.x + (target.x - from.x) * eased,
-      w: from.w + (target.w - from.w) * eased,
-      visible: true,
-    }
-    if (progress < 1) glideFrame = requestAnimationFrame(step)
-    else settleIndicator() // land on the measured value, not the interpolated one
-  }
-  glideFrame = requestAnimationFrame(step)
-}
-
-// Switching stage is the only thing that should animate — by tab or by swipe,
-// both of which land here. Everything else that moves the tabs (a locale
-// relabelling them, the dock appearing, the row resizing) jumps.
-watch(activeFrameId, () => void nextTick(glideIndicator))
-watch([locale, visibleFrames, showDock], () => void nextTick(settleIndicator))
-
-let dockRowObserver: ResizeObserver | null = null
-watch(dockRowRef, (element) => {
-  dockRowObserver?.disconnect()
-  dockRowObserver = null
-  if (!element) {
-    indicator.value = { ...indicator.value, visible: false }
-    return
-  }
-  void nextTick(settleIndicator)
-  dockRowObserver = new ResizeObserver(settleIndicator)
-  dockRowObserver.observe(element)
-})
+watch([loading, isNarrow, showStagePicker, groupedTemplates], refit)
 
 const onWindowResize = () => {
   viewportHeight.value = window.innerHeight
@@ -1560,6 +1698,13 @@ const mountNextFrame = () => {
 // where an animated one was), and on a phone a dot tap asks for a frame that was
 // never booted. Either way the queue has something new to do.
 watch(mountQueue, () => mountNextFrame())
+
+// Crossing the `lg` line swaps the phone's full-screen viewer for the desktop's
+// PreviewFrames, which are different parents — so every frame unmounts and has
+// to boot again in the other tree. The unmount is what forgets them (see
+// setFrameRef), and it lands in the render AFTER a pre-flush watcher has run,
+// so the queue is restarted post-flush, once there is something to restart.
+watch(isViewer, () => mountNextFrame(), { flush: 'post' })
 
 const frameRefs = new Map<string, InstanceType<typeof InertIframe>>()
 
@@ -1695,13 +1840,19 @@ const cycleLanguage = () => {
 
 const onKeydown = (event: KeyboardEvent) => {
   if (event.key !== 'Escape') return
+  // Innermost first, as the studio's modal does: a filter sheet closes before
+  // the menu it belongs to.
+  if (planSheetOpen.value || categorySheetOpen.value) {
+    planSheetOpen.value = false
+    categorySheetOpen.value = false
+    return
+  }
   categoryMenuOpen.value = false
-  noteOpen.value = false
   browseOpen.value = false
 }
 
 onMounted(() => {
-  narrowQuery = window.matchMedia('(max-width: 1023px)')
+  narrowQuery = window.matchMedia(NARROW_QUERY)
   onNarrowChange(narrowQuery)
   narrowQuery.addEventListener('change', onNarrowChange)
   window.addEventListener('resize', onWindowResize)
@@ -1722,10 +1873,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (frameMountTimer) clearTimeout(frameMountTimer)
-  cancelGlide()
+  clearIdleTimer()
   framesObserver?.disconnect()
   dockObserver?.disconnect()
-  dockRowObserver?.disconnect()
   narrowQuery?.removeEventListener('change', onNarrowChange)
   window.removeEventListener('resize', onWindowResize)
   document.removeEventListener('keydown', onKeydown)
@@ -1792,10 +1942,8 @@ onUnmounted(() => {
     #fff 45%,
     rgba(30, 144, 255, 0.03)
   );
-  /* No bottom runway on a phone: the dock is fixed over the last 200px of the
-     window, so anything the page reserved down there was scroll the visitor
-     could take and see nothing for. The stage reserves what the dock needs
-     itself, in its own padding. */
+  /* No bottom runway: a phone is the full-screen viewer (.is-viewer), and a
+     page that fits its window has no scroll to pad. */
   padding: 0.75rem var(--tpl-pad) 0;
 }
 
@@ -1979,7 +2127,7 @@ onUnmounted(() => {
   box-shadow: var(--tpl-focus);
 }
 
-/* Between the back link and the controls, on the one row a phone's top bar
+/* Between the back link and the controls, on the one row a narrow header
    gets. It shrinks before either of them does — they are fixed-size targets and
    this is text, which can take a second line when a locale needs one (Khmer's
    title is twice English's). Wrapping costs the bar 20px; giving the title a
@@ -2102,19 +2250,8 @@ onUnmounted(() => {
   }
 }
 
-/*
-  The phone, and nothing else on the screen with it.
-
-  It used to sit under a catalogue in the flow above, and then under a catalogue
-  welded across the bottom third of the window — ~200px of fixed chrome, plus a
-  control bar over the frame, with the invitation fitted into what was left.
-  Both are gone: the controls are one dock at the foot of the window and the
-  catalogue is behind a button on it, so the stage owns the entire band between
-  the top bar and that dock.
-
-  The padding is the dock's measured height handed back to the document, which
-  is what keeps the phone clear of it rather than tucked underneath.
-*/
+/* The frames and the caption under them. Desktop's; a phone draws the
+   full-screen viewer instead (.tpl-viewer). */
 .tpl-studio__stage {
   display: flex;
   min-width: 0;
@@ -2122,271 +2259,157 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.875rem;
   order: 1;
-  padding-bottom: var(--tpl-dock-h, 76px);
 }
 
 /*
-  The catalogue as a sheet — a card that stands on the dock while you are
-  choosing, and is not there when you are not.
-
-  It used to be the dock itself: a permanent band across the bottom of the
-  window, as tall as the cards in it plus a row of plan tabs, with the
-  invitation fitted into whatever remained. That is an expensive way to hold
-  something a visitor uses in bursts — and what it cost came out of the one
-  thing the page exists to show.
-
-  Held in the DOM and hidden rather than mounted on demand, so a transition can
-  be interrupted and retargeted: a sheet is toggled in bursts too, and keyframes
-  restart from zero. `visibility` is what takes it out of the tab order and the
-  accessibility tree while it is closed, and it flips at the end of the way out
-  so the card can be seen leaving.
+  The catalogue column — desktop only, and simply always there. A phone gets the
+  studio's template menu instead (.tpl-menu-sheet).
 */
 .tpl-studio__menu {
-  position: fixed;
-  inset-inline: 0.75rem;
-  bottom: calc(var(--tpl-dock-h, 76px) + 0.25rem);
-  z-index: 60;
+  order: 1;
+  position: sticky;
+  top: 1rem;
   display: flex;
-  flex-direction: column;
   min-width: 0;
-  order: 2;
-  max-height: min(60dvh, 30rem);
-  border-radius: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(20px) saturate(180%);
-  box-shadow:
-    0 18px 40px -12px rgba(15, 23, 42, 0.3),
-    0 4px 12px rgba(30, 144, 255, 0.08);
-  padding: 0.75rem 0.5rem 0.5rem;
-  opacity: 0;
-  visibility: hidden;
-  /* Never from nothing: it is a card that comes up off the dock, not one that
-     materialises out of the middle of the screen. */
-  transform: translateY(10px) scale(0.98);
-  transform-origin: bottom center;
-  /* Out faster than in — the way out is the system responding, and the visitor
-     has already decided. */
-  transition:
-    opacity 160ms var(--tpl-ease-out),
-    transform 160ms var(--tpl-ease-out),
-    visibility 0s linear 160ms;
-}
-
-.tpl-studio__menu.is-open {
-  opacity: 1;
-  visibility: visible;
-  transform: none;
-  transition:
-    opacity 220ms var(--tpl-ease-out),
-    transform 220ms var(--tpl-ease-out),
-    visibility 0s;
-}
-
-/*
-  Anywhere else on the screen puts it away.
-
-  Barely tinted, deliberately: the sheet carries its own shadow and its own
-  material, and a dark wash over an invitation being judged is a lie about that
-  invitation's colours.
-*/
-.tpl-sheet__scrim {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  background: rgba(15, 23, 42, 0.12);
-  animation: tpl-fade-in 200ms var(--tpl-ease-out);
-}
-
-@keyframes tpl-fade-in {
-  from {
-    opacity: 0;
-  }
-}
-
-/* What the card is, and the way out of it. */
-.tpl-sheet__head {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  /* Lands the title on the same line as the cards below it: the scroller under
-     this pays its own 0.5rem on top of the sheet's. */
-  padding: 0 0.5rem 0.5rem;
-}
-
-.tpl-sheet__title {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.375rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: rgb(15 23 42);
-}
-
-.tpl-sheet__count {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: rgb(148 163 184);
-  font-variant-numeric: tabular-nums;
-}
-
-.tpl-sheet__close {
-  display: inline-flex;
-  flex: none;
-  height: 2rem;
-  width: 2rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
-  color: rgb(100 116 139);
-  transition:
-    background-color var(--tpl-dur) var(--tpl-ease-out),
-    color var(--tpl-dur) var(--tpl-ease-out),
-    transform var(--tpl-press) var(--tpl-ease-out);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .tpl-sheet__close:hover {
-    background: rgb(241 245 249);
-    color: rgb(15 23 42);
-  }
-}
-
-.tpl-sheet__close:active {
-  transform: scale(0.94);
-}
-
-.tpl-sheet__close:focus-visible {
-  outline: none;
-  box-shadow: var(--tpl-focus);
+  flex-direction: column;
+  /* Its own top, measured — see studioTop. Falls back to a guess for the
+     frame before the measurement lands. */
+  max-height: calc(100vh - var(--tpl-studio-top, 6rem) - 1rem);
 }
 
 @media (min-width: 1024px) {
   /* Side by side, and the reading direction flips back: choose on the left,
-     look on the right. A column, not a dock — there is height here to spend. */
+     look on the right. */
   .tpl-studio__stage {
     order: 2;
-    padding-bottom: 0;
-  }
-
-  /* Not a sheet up here: a column that is simply always there, so every one of
-     the sheet's own properties has to be handed back. */
-  .tpl-studio__menu {
-    order: 1;
-    position: sticky;
-    inset-inline: auto;
-    bottom: auto;
-    z-index: auto;
-    padding: 0;
-    background: none;
-    backdrop-filter: none;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    opacity: 1;
-    visibility: visible;
-    transform: none;
-    transition: none;
-    top: 1rem;
-    /* Its own top, measured — see studioTop. Falls back to a guess for the
-       frame before the measurement lands. */
-    max-height: calc(100vh - var(--tpl-studio-top, 6rem) - 1rem);
-    display: flex;
-    flex-direction: column;
   }
 }
 
-/* --- The phone's top-bar controls ---------------------------------------- */
+/* --- The phone's menu: the studio's template menu ------------------------- */
 
-/* Pinned to the trailing edge the way the view pill is on a desktop, so the
-   bar reads the same either way: navigation left, name centred, controls right. */
-.tpl-topbar {
-  display: inline-flex;
-  flex: none;
-  margin-left: auto;
-  align-items: center;
-  gap: 0.375rem;
-}
+/*
+  BrowseTemplateModal's phone layout — a white search row over a slate-50 grid
+  of its own cards — over the whole screen, with the bar floating over its foot.
+  Every control in it takes its classes from templateUi in the markup; this only
+  places it and moves it.
 
-/* The same glass, the same round, one control height narrower than a labelled
-   pill because it holds a single glyph. */
-.tpl-icon-btn {
-  position: relative;
-  display: inline-flex;
-  flex: none;
-  height: var(--tpl-control-h);
-  width: var(--tpl-control-h);
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
-  border: 1px solid var(--tpl-glass-edge);
-  background: var(--tpl-glass);
-  box-shadow: var(--tpl-glass-lift);
-  backdrop-filter: blur(12px);
-  color: rgb(71 85 105);
+  Held in the DOM and hidden rather than mounted on demand, so a toggle in the
+  middle of the way in retargets instead of restarting. `visibility` takes it
+  out of the tab order and the accessibility tree while it is closed, and flips
+  at the end of the way out so it can be seen leaving.
+
+  It rises off the bar rather than scaling from the centre like the modal: what
+  opened it is at the foot of the screen. Out faster than in — the way out is
+  the system answering a decision the visitor has already made.
+*/
+.tpl-menu-sheet {
+  position: fixed;
+  inset: 0;
+  height: 100dvh;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px) scale(0.985);
+  transform-origin: bottom center;
   transition:
-    color var(--tpl-dur) var(--tpl-ease-out),
-    background-color var(--tpl-dur) var(--tpl-ease-out),
-    transform var(--tpl-press) var(--tpl-ease-out);
+    opacity 180ms var(--tpl-ease-out),
+    transform 180ms var(--tpl-ease-out),
+    visibility 0s linear 180ms;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .tpl-icon-btn:hover {
-    color: rgb(15 23 42);
-    background: var(--tpl-glass-hover);
-  }
+.tpl-menu-sheet.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity 260ms var(--tpl-ease-out),
+    transform 260ms var(--tpl-ease-out),
+    visibility 0s;
 }
 
-.tpl-icon-btn:active {
-  transform: scale(0.94);
+/* The modal's search row (`flex items-center gap-2 px-4 pt-4 pb-3`), plus the
+   notch, which this — unlike the modal, laid out inside the app — sits under. */
+.tpl-menu-sheet__head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.5rem;
+  padding: max(1rem, env(safe-area-inset-top)) 1rem 0.75rem;
+  background: #fff;
 }
 
-.tpl-icon-btn:focus-visible {
-  outline: none;
-  box-shadow: var(--tpl-focus);
+/* The modal's grid pane: slate-50, 1rem in. Its foot is the bar's measured
+   height plus a gap, so the last row of cards clears the bar floating over it
+   rather than scrolling to a stop underneath it. */
+.tpl-menu-sheet__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: rgb(248 250 252);
+  padding: 1rem 1rem calc(var(--tpl-dock-h, 66px) + 1rem);
+  scrollbar-width: thin;
+  scrollbar-color: rgb(203 213 225) transparent;
 }
 
-/* Held open: the mark stays lit for as long as the panel it opened is up, so
-   there is never a floating paragraph with nothing pointing at it. */
-.tpl-icon-btn.is-open {
-  border-color: transparent;
-  background: linear-gradient(to right, #2ecc71, #1e90ff);
-  color: #fff;
-}
-
-.tpl-info {
-  position: relative;
+.tpl-menu-sheet__note {
+  margin-bottom: 0.875rem;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: rgb(100 116 139);
+  text-wrap: pretty;
 }
 
 /*
-  The caveat, on demand.
-
-  Anchored under the mark and to the screen's trailing edge rather than the
-  button's, because at 40px wide the button has no width to hang a paragraph
-  from — a popover narrower than its own first word is not a popover. It scales
-  out of the corner it belongs to all the same.
+  The modal's filter sheets — `fixed inset-x-0 bottom-0 bg-white rounded-t-3xl
+  shadow-2xl` over a black/40 blurred scrim, with the modal's own timings. Above
+  the bar, which they cover while they are up: a sheet that ends at the bar
+  would be a second, shorter menu.
 */
-.tpl-info__panel {
-  position: absolute;
-  top: calc(100% + 0.5rem);
-  right: 0;
-  z-index: 100;
-  width: max-content;
-  max-width: min(20rem, calc(100vw - 2 * var(--tpl-pad)));
-  border-radius: 0.75rem;
-  border: 1px solid rgb(226 232 240);
+.tpl-filter-sheet__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.tpl-filter-sheet {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 90;
+  border-radius: 1.5rem 1.5rem 0 0;
   background: #fff;
-  box-shadow:
-    0 20px 25px -5px rgba(15, 23, 42, 0.12),
-    0 8px 10px -6px rgba(15, 23, 42, 0.08);
-  padding: 0.75rem 0.875rem;
-  font-size: 0.75rem;
-  line-height: 1.6;
-  color: rgb(71 85 105);
-  text-align: left;
-  transform-origin: top right;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
+}
+
+.tpl-fade-enter-active,
+.tpl-fade-leave-active {
+  transition: opacity 250ms ease;
+}
+
+.tpl-fade-enter-from,
+.tpl-fade-leave-to {
+  opacity: 0;
+}
+
+.tpl-bottom-sheet-enter-active {
+  transition: transform 350ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.tpl-bottom-sheet-leave-active {
+  transition: transform 250ms cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.tpl-bottom-sheet-enter-from,
+.tpl-bottom-sheet-leave-to {
+  transform: translateY(100%);
 }
 
 /* Only the single-event-type fallback still renders this — see the header. */
@@ -2618,102 +2641,10 @@ onUnmounted(() => {
   background: rgb(148 163 184);
 }
 
-/* --- The shelves, as tabs (phone only) ------------------------------------ */
-
-/* Runs to the sheet's own edges, so a tab leaves the row the way a card
-   leaves the grid below it — and starts on the same line the cards do, which
-   is the sheet's inset plus the scroller's own. Escaping the sheet's padding
-   and paying it back as padding is what buys both at once. */
-.tpl-plans {
-  display: flex;
-  flex: none;
-  gap: 0.375rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  margin-inline: -0.5rem;
-  padding-inline: 1rem;
-  scroll-padding-inline: 1rem;
-  padding-bottom: 0.125rem;
-  margin-bottom: 0.5rem;
-}
-
-.tpl-plans::-webkit-scrollbar {
-  display: none;
-}
-
-/* Not uppercased. These are product names — "Free Basic", "Standard" — and
-   credits are plan-scoped, so the name is the thing a partner has to read
-   exactly; setting it in caps restyles a name into a label. It also buys the
-   legibility back that lets the row sit at a thumb-sized 36px instead of the
-   23px it was, which on the one layout where these ARE the navigation was the
-   smallest tap target on the page. */
-.tpl-plan {
-  display: inline-flex;
-  flex: none;
-  min-height: 2rem;
-  align-items: center;
-  gap: 0.375rem;
-  border-radius: 9999px;
-  border: 1px solid rgb(226 232 240);
-  background: #fff;
-  padding: 0 0.875rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
-  color: rgb(71 85 105);
-  transition:
-    background-color var(--tpl-dur) var(--tpl-ease-out),
-    border-color var(--tpl-dur) var(--tpl-ease-out),
-    color var(--tpl-dur) var(--tpl-ease-out),
-    box-shadow var(--tpl-dur) var(--tpl-ease-out),
-    transform var(--tpl-press) var(--tpl-ease-out);
-}
-
-/* Pointer only: on touch, :hover latches on tap and the unchosen shelf is left
-   looking half-chosen next to the one that actually is. */
-@media (hover: hover) and (pointer: fine) {
-  .tpl-plan:hover:not(.is-active) {
-    border-color: rgb(203 213 225);
-    background: rgb(248 250 252);
-    color: rgb(15 23 42);
-  }
-}
-
-.tpl-plan:active {
-  transform: scale(0.97);
-}
-
-.tpl-plan:focus-visible {
-  outline: none;
-  box-shadow: var(--tpl-focus);
-}
-
-.tpl-plan.is-active {
-  border-color: transparent;
-  background: linear-gradient(to right, #2ecc71, #1e90ff);
-  color: #fff;
-  box-shadow: 0 4px 6px -1px rgba(46, 204, 113, 0.2);
-}
-
-.tpl-plan__count {
-  font-size: 0.6875rem;
-  font-variant-numeric: tabular-nums;
-  opacity: 0.7;
-}
-
-/*
-  Air between two shelves — which only the desktop column has.
-
-  Scoped to it, because the sibling combinator reads the DOM and not `display`:
-  on a phone the shelves are tabs and exactly one is ever on screen, but the
-  hidden sections before it still qualify it as an adjacent sibling. So every
-  shelf but the FIRST would open 20px down from the sheet's own tabs, for no
-  reason a visitor could see.
-*/
-@media (min-width: 1024px) {
-  .tpl-menu-group + .tpl-menu-group {
-    margin-top: 1.25rem;
-  }
+/* Air between two shelves. The column is desktop-only now, so no longer scoped
+   to it: the phone's menu is the studio's flat grid, with no shelves at all. */
+.tpl-menu-group + .tpl-menu-group {
+  margin-top: 1.25rem;
 }
 
 /*
@@ -3009,11 +2940,8 @@ onUnmounted(() => {
 /*
   Which screen — asked in one row directly over the phone it is about.
 
-  Desktop only, and so is everything it holds. It used to be sticky under the
-  top bar, with the language toggle beside it, because on a phone the page
-  scrolled and the row would otherwise scroll away from the stage it steered.
-  A phone has neither now: the page is exactly one window tall, and these two
-  controls are tabs on the dock at the foot of it.
+  Desktop only, and so is everything it holds. On a phone the same stages are
+  the inset track on the bar floating over the invitation.
 */
 .tpl-stagebar {
   display: flex;
@@ -3094,207 +3022,267 @@ onUnmounted(() => {
   box-shadow: 0 4px 6px -1px rgba(46, 204, 113, 0.2);
 }
 
-/* --- The dock: the phone's own tab bar ------------------------------------ */
+/* --- The phone's bar ----------------------------------------------------- */
 
 /*
-  The app's MobileTabBar, on a page that ships without the app shell.
+  The studio's mobile-preview bar (MobilePreviewSheet's .preview-sheet__bar),
+  on a page that is that preview seen from the other side of the counter. Same
+  material, same geometry, same numbers — keep the two in step.
 
-  Same pill, same material (`.glass-pill`, shared from main.css so the two
-  cannot drift), same rule that only the tab you are on carries a label — which
-  is what lets five controls hug their content and leave real air at both edges
-  instead of spanning the screen as a bar.
-
-  The wrapper is click-through: it spans the window so the pill can be centred
-  in it, but the strip either side of the pill belongs to the invitation behind.
+  The wrapper spans the window so the pill can be centred in it, and is
+  click-through, so the strip either side of the pill belongs to the invitation
+  behind it. It is also what is measured (--tpl-dock-h) for the sheet to stand
+  on, which is why it carries the bottom offset as padding rather than the pill
+  carrying it as a position.
 */
-.tpl-dock {
+.tpl-bar-dock {
   position: fixed;
   inset-inline: 0;
   bottom: 0;
   z-index: 70;
   display: flex;
   justify-content: center;
-  padding: 0 0.75rem max(0.75rem, env(safe-area-inset-bottom));
+  /* 12px up, plus the home indicator on the phones that have one — the
+     studio's own offset. */
+  padding: 0 0.75rem calc(0.75rem + env(safe-area-inset-bottom));
   pointer-events: none;
-}
-
-.tpl-dock__pill {
-  pointer-events: auto;
-  max-width: 100%;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  padding: 0.375rem;
-}
-
-/* No padding of its own, so a tab's offset within the row is also the
-   indicator's offset. It scrolls rather than wraps: a second row of chrome
-   comes straight off the height of the phone above it, and Khmer's labels are
-   within ~30px of fitting a 360px screen as they are. */
-.tpl-dock__row {
-  position: relative;
-  display: flex;
-  max-width: 100%;
-  align-items: center;
-  gap: 0.125rem;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-}
-
-.tpl-dock__row::-webkit-scrollbar {
-  display: none;
-}
-
-/* Moved, never repainted: one gradient that travels between the tabs. Its
-   geometry is set from JS every frame of the move — see the indicator. */
-.tpl-dock__indicator {
-  position: absolute;
-  inset-block: 0;
-  left: 0;
-  z-index: 0;
-  border-radius: 9999px;
-  background: linear-gradient(to right, #2ecc71, #1e90ff);
-  box-shadow: 0 4px 6px -1px rgba(46, 204, 113, 0.25);
-  pointer-events: none;
-  will-change: transform;
-}
-
-.tpl-dock__tab {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-  flex: none;
-  /* The page's own control height, which is also a target that survives a
-     thumb. */
-  height: var(--tpl-control-h);
-  align-items: center;
-  border-radius: 9999px;
-  padding: 0 0.5rem;
-  color: rgb(100 116 139);
-  transition:
-    color 200ms var(--tpl-ease-out),
-    padding 380ms cubic-bezier(0.32, 0.72, 0, 1),
-    transform var(--tpl-press) var(--tpl-ease-out);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .tpl-dock__tab:hover {
-    color: rgb(51 65 85);
-  }
-}
-
-.tpl-dock__tab:active {
-  transform: scale(0.95);
-}
-
-/* Inset: the row clips to the pill's 6px pad, so an outset ring would be drawn
-   half underneath its own container. */
-.tpl-dock__tab:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 2px rgb(56 189 248);
-}
-
-.tpl-dock__tab.is-active {
-  color: #fff;
-  padding: 0 0.75rem;
-}
-
-/* Width opens through a grid column rather than a max-width, so the open and
-   the close ease identically. */
-.tpl-dock__label {
-  display: grid;
-  grid-template-columns: 0fr;
-  margin-left: 0;
-  transition:
-    grid-template-columns 380ms cubic-bezier(0.32, 0.72, 0, 1),
-    margin 380ms cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.tpl-dock__tab.is-active .tpl-dock__label {
-  grid-template-columns: 1fr;
-  margin-left: 0.375rem;
 }
 
 /*
-  Held back until the travelling pill is most of the way here: it can only lag
-  the layout it is chasing, so a label that appeared with the layout would spend
-  the first half of the move sitting outside it. Leaving is quicker and
-  undelayed for the same reason from the other side — the outgoing text has to
-  be gone before the pill arrives over it.
-
-  Clipped rather than ellipsised, because the column opens from zero and an
-  ellipsis would show through most of the reveal; the cap is what keeps Khmer's
-  longer labels from pushing the row into a scroll.
+  Deliberately NOT a scroll container: `overflow-x: auto` makes overflow-y
+  compute to `auto` as well, which would clip every tooltip (they sit above
+  the bar, outside its box). Back, three stages, language and browse measure
+  ~264px, so it fits a 320px screen without scrolling.
 */
-.tpl-dock__label-text {
-  overflow: hidden;
-  white-space: nowrap;
-  max-width: 5rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  opacity: 0;
-  transition: opacity 100ms var(--tpl-ease-out);
+.tpl-bar {
+  /* How lit the bar is: 1 awake, 0.4 idle. Every alpha below is multiplied by
+     it, so idle is the studio's own 40% — just not applied to Templates. */
+  --tpl-bar-lit: 1;
+  pointer-events: auto;
+  display: flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: 9999px;
+  background: rgb(15 23 42 / calc(0.82 * var(--tpl-bar-lit)));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgb(148 163 184 / calc(0.22 * var(--tpl-bar-lit)));
+  box-shadow: 0 12px 30px -8px rgb(0 0 0 / calc(0.55 * var(--tpl-bar-lit)));
+  transition:
+    background-color 300ms ease,
+    border-color 300ms ease,
+    box-shadow 300ms ease,
+    transform 300ms ease;
 }
 
-.tpl-dock__tab.is-active .tpl-dock__label-text {
-  opacity: 1;
-  transition-duration: 200ms;
-  transition-delay: 200ms;
+/*
+  Dimmed, not hidden: still the way out, still tappable, just out of the way.
+
+  The studio fades its whole bar with one `opacity`. This one fades the pill's
+  material and every control on it EXCEPT Templates, because an opacity on the
+  pill is inherited by everything inside it, and the page's primary action
+  receding into a 40% ghost after three seconds is exactly the opposite of
+  highlighting it. So while the rest of the bar gets out of the invitation's
+  way, the one thing a visitor came here to do stays lit.
+
+  A mouse or a keyboard brings it back without a press; `wakeChrome` covers a
+  finger. Keyboard focus only (`:focus-visible`), because a tapped button keeps
+  plain focus on Android and would hold the bar lit until the next tap
+  elsewhere.
+*/
+.tpl-bar > :not(.tpl-bar__btn--menu) {
+  opacity: var(--tpl-bar-lit);
 }
 
-/* Between what is on the screen and how it is being shown. */
-.tpl-dock__divider {
-  flex: none;
-  width: 1px;
-  height: 1.25rem;
-  margin-inline: 0.25rem;
-  background: rgba(148, 163, 184, 0.45);
+.tpl-bar.is-idle {
+  --tpl-bar-lit: 0.4;
+  transform: translateY(0.25rem) scale(0.97);
 }
 
-.tpl-dock__btn {
+.tpl-bar.is-idle:has(:focus-visible) {
+  --tpl-bar-lit: 1;
+  transform: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tpl-bar.is-idle:hover {
+    --tpl-bar-lit: 1;
+    transform: none;
+  }
+}
+
+.tpl-bar__btn {
   position: relative;
-  z-index: 1;
-  display: inline-flex;
   flex: none;
-  height: var(--tpl-control-h);
-  min-width: var(--tpl-control-h);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3125rem;
+  /* 40px, the §17 touch-target floor. */
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 9999px;
-  padding: 0 0.4375rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  color: rgb(71 85 105);
+  color: rgb(226 232 240);
+  background: transparent;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition:
-    background-color 200ms var(--tpl-ease-out),
-    color 200ms var(--tpl-ease-out),
+    opacity 300ms ease,
+    background-color 200ms ease,
+    color 200ms ease,
     transform var(--tpl-press) var(--tpl-ease-out);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .tpl-dock__btn:hover {
-    color: rgb(15 23 42);
-    background: rgba(15, 23, 42, 0.04);
+  .tpl-bar__btn:hover {
+    background: rgba(255, 255, 255, 0.12);
   }
 }
 
-.tpl-dock__btn:active {
-  transform: scale(0.95);
-}
-
-.tpl-dock__btn:focus-visible {
+/* Inset: the pill clips nothing, but an outset ring would run into the
+   neighbouring button at a 4px gap. */
+.tpl-bar__btn:focus-visible {
   outline: none;
+  background: rgba(255, 255, 255, 0.12);
   box-shadow: inset 0 0 0 2px rgb(56 189 248);
 }
 
-/* Held lit while the sheet it opened is up — the same slate tint the app's own
-   tab bar uses for its open profile menu, rather than the brand gradient, which
-   belongs to the tab you are on and would read as a fourth stage. */
-.tpl-dock__btn.is-open {
-  background: rgba(15, 23, 42, 0.07);
-  color: rgb(15 23 42);
+.tpl-bar__btn:active {
+  background: rgba(255, 255, 255, 0.18);
+  transform: scale(0.95);
+}
+
+.tpl-bar__btn--lang {
+  width: auto;
+  min-width: 2.5rem;
+  padding: 0 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/*
+  Templates — the studio's primary button (.showcase-preview-tab__templates-btn)
+  at the bar's height: the brand gradient, white type, the soft green lift, and
+  the same deeper gradient under a mouse. Written against both classes so it
+  outranks the plain button's hover, press and focus fills declared above.
+*/
+.tpl-bar__btn.tpl-bar__btn--menu {
+  width: auto;
+  gap: 0.375rem;
+  padding: 0 0.875rem 0 0.75rem;
+  color: #fff;
+  background: linear-gradient(to right, #2ecc71, #1e90ff);
+  box-shadow: 0 4px 10px -2px rgba(46, 204, 113, 0.35);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tpl-bar__btn.tpl-bar__btn--menu:hover {
+    background: linear-gradient(to right, #27ae60, #1873cc);
+  }
+}
+
+.tpl-bar__btn.tpl-bar__btn--menu:active {
+  background: linear-gradient(to right, #27ae60, #1873cc);
+}
+
+.tpl-bar__btn.tpl-bar__btn--menu:focus-visible {
+  box-shadow:
+    inset 0 0 0 2px rgb(56 189 248),
+    0 4px 10px -2px rgba(46, 204, 113, 0.35);
+}
+
+/* Short of room, the word goes and the gradient stays — the studio's own rule
+   for this button. Measured in Chromium: the labelled bar is 327px in English
+   (280px in Khmer), so with the dock's 12px gutters it needs a 351px window —
+   a 360px Android keeps the word, a 320px iPhone SE does not. */
+@media (max-width: 350px) {
+  .tpl-bar__btn.tpl-bar__btn--menu {
+    width: 2.5rem;
+    padding: 0;
+  }
+
+  .tpl-bar__menu-label {
+    display: none;
+  }
+}
+
+/* The stages: an inset track so the three read as one segmented control
+   rather than three loose icons among the page's other actions. */
+.tpl-bar__seg {
+  flex: none;
+  display: flex;
+  transition: opacity 300ms ease;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.1875rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.tpl-bar__btn--seg {
+  width: 2.375rem;
+  height: 2.375rem;
+}
+
+/* After :active, so a press on the stage already on screen keeps its fill. */
+.tpl-bar__btn--seg.is-active {
+  color: #fff;
+  background: linear-gradient(to right, #2ecc71, #1e90ff);
+  box-shadow: 0 2px 6px -1px rgba(46, 204, 113, 0.45);
+}
+
+/*
+  Hold-to-see-text. Hidden until hover (a mouse), keyboard focus, or a held
+  press — the delayed :active rule below — and never pointer-events, so it
+  cannot take the tap meant for the button under it. The studio's bar and the
+  showcase's own V2FloatingActionBar work the same way.
+*/
+.tpl-bar__tooltip {
+  position: absolute;
+  bottom: calc(100% + 0.625rem);
+  left: 50%;
+  transform: translateX(-50%) translateY(0.25rem);
+  padding: 0.375rem 0.625rem;
+  border-radius: 0.5rem;
+  background: rgb(15 23 42);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: rgb(226 232 240);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tpl-bar__btn:hover .tpl-bar__tooltip {
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+}
+
+.tpl-bar__btn:focus-visible .tpl-bar__tooltip {
+  opacity: 1;
+  transform: translateX(-50%);
+}
+
+/* Touch long-press: the reveal only starts after ~450ms of :active. A quick tap
+   releases :active well before that, so the pending transition never runs and
+   no label flashes on an ordinary tap. The press scale is undone on the label
+   itself, so a held button's name is not drawn shrunken. */
+.tpl-bar__btn:active .tpl-bar__tooltip {
+  opacity: 1;
+  transform: translateX(-50%) scale(1.0526);
+  transition-delay: 0.45s;
 }
 
 .tpl-frames {
@@ -3347,7 +3335,7 @@ onUnmounted(() => {
   takes vertically comes straight off the height of the phones above it — which
   on a phone is the whole argument for not showing it here at all: three lines
   of prose that reads once, standing permanently in the band the invitation
-  wants. Up there it is behind the mark in the top bar instead.
+  wants. There it heads the catalogue sheet instead.
 */
 .tpl-note {
   display: none;
@@ -3447,88 +3435,47 @@ onUnmounted(() => {
 }
 
 /* --------------------------------------------------------------------------
-   Phone: exactly the window, and nothing spills out of it
+   Phone: the studio's full-screen preview
 
-   Last in the file on purpose. Every rule here overrides a base declared above
-   it at the same specificity, so it has to come after them — the first draft of
-   this block sat next to `.tpl-page` at the top and `.tpl-studio { display:
-   grid }` two hundred lines below quietly won.
+   Scoped to `.is-viewer` rather than to a width: an empty catalogue on a phone
+   has no invitation to be full-screen, and keeps the ordinary page with its
+   header and the explanation.
    -------------------------------------------------------------------------- */
 
-/*
-  The page is three things — a top bar, one phone, one dock — and all three have
-  to be visible at once, which is only true when the middle one is fitted to
-  what the other two leave. Letting the page scroll instead is precisely how the
-  invitation ended up underneath its own controls: the frame was sized from a
-  guess, came out taller than the space it had, and the two bands of chrome
-  fixed over it then rode across the thing they were labelling.
+/* A media viewer, so black rather than the page's ground — on a stage that does
+   not paint its own full-bleed background there should be an edge, not a seam.
+   Exactly the window, and nothing scrolls: the only scroll surface left is the
+   invitation inside the frame. */
+.tpl-page.is-viewer {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #000;
+}
 
-  So the column is locked to the window and the frame is measured off the box it
-  actually gets (see frameMaxWidth). Nothing here can scroll, and nothing needs
-  to.
-*/
-@media (max-width: 1023px) {
-  .tpl-page {
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+/* The frame is the page: the iframe's own viewport is the device's, so the
+   showcase's vh/vw units resolve to exactly what a guest gets. `dvh`, not
+   `vh` — a vh-tall frame runs under the URL bar and takes the bar with it. */
+.tpl-viewer {
+  position: fixed;
+  inset: 0;
+  height: 100dvh;
+  overflow: hidden;
+  background: #000;
+}
 
-  /*
-    A fixed band at the top, and not a sticky one: nothing scrolls under it any
-    more, and sticky was actively wrong here. A sticky box may not leave its
-    containing block's padding box, so the negative top margin that pulls this
-    band to the top of the page moved it in layout and not on screen — it was
-    painted 12px lower than the 60px slot it occupied, and the stage's first
-    6px were drawn underneath it. Static, the two agree.
-  */
-  .tpl-page__head {
-    position: static;
-    flex: none;
-  }
+.tpl-viewer__frame {
+  position: absolute;
+  inset: 0;
+}
 
-  .tpl-studio {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    /* The catalogue is an overlay down here, so there is no second band to
-       separate the stage from. */
-    gap: 0;
-  }
-
-  .tpl-studio__stage,
-  .tpl-stage,
-  .tpl-frames {
-    flex: 1;
-    min-height: 0;
-  }
-
-  .tpl-frames {
-    /* The phone sits in the middle of whatever height is left, and the frame is
-       fitted to that height — so this clips nothing in practice. It is the
-       guard for the one case that can exceed it: a window short enough to hit
-       the frame's floor, where clipping beats handing the page a scrollbar it
-       has no room to use. */
-    align-items: center;
-    overflow: hidden;
-  }
-
-  /* The one block on the page that can be taller than the window it is in. */
-  .tpl-empty {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-  }
-
-  /* Fitted to the box like the frame it stands in for, or the page visibly
-     resettles the moment it loads. */
-  .tpl-skeleton-frame {
-    height: 100%;
-    width: auto;
-    max-width: 100%;
-  }
+/* The page's black, not the frame placeholder's slate: nothing here is a
+   phone-shaped box waiting to be filled. */
+.tpl-viewer .tpl-frame-pending {
+  background: transparent;
 }
 
 /* Reduced motion keeps the opacity changes that aid comprehension and drops the
@@ -3568,36 +3515,41 @@ onUnmounted(() => {
   .tpl-filter__trigger:active,
   .tpl-seg__btn:active,
   .tpl-step:active,
-  .tpl-icon-btn:active,
-  .tpl-plan:active,
-  .tpl-dock__tab:active,
-  .tpl-dock__btn:active,
-  .tpl-sheet__close:active,
+  .tpl-bar__btn:active,
   .tpl-empty__cta:active {
     transform: none;
   }
 
-  /* The dock keeps its colour changes and drops the movement: the label stops
-     sliding open and the indicator stops travelling (the glide checks the same
-     preference and jumps instead), but which tab is lit still reads. */
-  .tpl-dock__tab,
-  .tpl-dock__label {
-    transition-property: color;
+  /* The bar still dims when idle — a pure fade now, no sink. */
+  .tpl-bar {
+    transition-property: background-color, border-color, box-shadow;
   }
 
-  .tpl-dock__label-text {
-    transition: none;
+  .tpl-bar.is-idle {
+    transform: none;
   }
 
-  /* The sheet still fades — that is what says it arrived — but it no longer
+  .tpl-bar__tooltip,
+  .tpl-bar__btn:active .tpl-bar__tooltip {
+    transform: translateX(-50%);
+  }
+
+  /* The menu still fades — that is what says it arrived — but it no longer
      rises into place. */
-  .tpl-studio__menu,
-  .tpl-studio__menu.is-open {
+  .tpl-menu-sheet,
+  .tpl-menu-sheet.is-open {
     transition-property: opacity, visibility;
   }
 
-  .tpl-sheet__scrim {
-    animation: none;
+  .tpl-menu-sheet {
+    transform: none;
+  }
+
+  .tpl-fade-enter-active,
+  .tpl-fade-leave-active,
+  .tpl-bottom-sheet-enter-active,
+  .tpl-bottom-sheet-leave-active {
+    transition: none;
   }
 }
 </style>
