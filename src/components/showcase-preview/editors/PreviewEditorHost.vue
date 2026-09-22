@@ -36,7 +36,9 @@
   <EditHostDrawer
     v-model="hostDrawerOpen"
     :event-id="eventId"
+    :event-category="eventCategory"
     :host="activeHost"
+    :existing-hosts="hostList"
     @updated="onHostUpdated"
   />
 
@@ -123,7 +125,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, toRef } from 'vue'
+import { computed, onMounted, onUnmounted, ref, toRef } from 'vue'
 import { useMediaUpload } from '@/composables/useMediaUpload'
 import { useNotifications } from '@/composables/useNotifications'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -217,14 +219,28 @@ const toggleDisplayField = async (
 // --- Host image ------------------------------------------------------------
 const hostDrawerOpen = ref(false)
 const activeHost = ref<EventHost | undefined>(undefined)
+const hostList = ref<EventHost[]>([])
+
+// The drawer shows the parent-name rows only for categories that have them
+// (wedding, birthday). Same expression the Hosts section is given in
+// EventManageView — without it this drawer silently dropped them.
+const eventCategory = computed(
+  () => props.eventData?.category_details?.name || props.eventData?.category_name || '',
+)
 
 const openHostEditor = async (hostId: number) => {
-  const response = await hostsService.getHost(props.eventId, hostId)
+  // The list is the drawer's position control (phone widths), the same list
+  // the Hosts section hands it. Failing to get it only hides that control.
+  const [response, list] = await Promise.all([
+    hostsService.getHost(props.eventId, hostId),
+    hostsService.getHosts(props.eventId),
+  ])
   if (!response.success || !response.data) {
     notifyError(t('management.showcasePreview.editors.hostLoadFailed'))
     return
   }
   activeHost.value = response.data
+  hostList.value = (list.success && list.data?.results) || []
   hostDrawerOpen.value = true
 }
 
