@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import { hostsService, dressCodeService } from '@/services/api'
+import { hostsService, dressCodeService, type HostTranslation } from '@/services/api'
 import { saveEventTextField } from '@/utils/eventTextUpsert'
 import type { InlineEditTarget } from '@/components/showcase-preview/edit/editContext'
 import type { ShowcaseData, EventData } from '@/composables/useEventShowcase'
@@ -9,6 +9,16 @@ interface UseShowcaseEditSavesOptions {
   showcaseData: Ref<ShowcaseData | null>
   currentLanguage: Ref<string>
 }
+
+type HostTextField = Extract<InlineEditTarget, { kind: 'host' }>['field']
+type WritableHostTranslation = Omit<HostTranslation, 'id' | 'host' | 'created_at' | 'updated_at'>
+
+/**
+ * The language a host's own fields are written in. Every other language is a
+ * row in its `translations[]` — EditHostDrawer's split exactly: an English card
+ * over the base fields, one card per translation, and no way to add an `en` row.
+ */
+const HOST_BASE_LANGUAGE = 'en'
 
 /**
  * The inline-edit save switchboard for the showcase preview frames. Renderer
@@ -29,6 +39,73 @@ interface UseShowcaseEditSavesOptions {
 export function useShowcaseEditSaves(options: UseShowcaseEditSavesOptions) {
   const { event, showcaseData, currentLanguage } = options
 
+  // One write chain per host. A translated edit rewrites the host's whole
+  // translations array (the API replaces it wholesale), so two edits in flight
+  // on one host — the name, then the title before the name has landed — would
+  // both read the same array, and the second PATCH would undo the first.
+  const hostWrites = new Map<number, Promise<unknown>>()
+
+  /**
+   * Writes one host field in the language the preview is showing.
+   *
+   * The showcase hands this frame hosts already flattened to that language — a
+   * translation row, when one exists, replaces the base fields wholesale — so a
+   * PATCH of the bare field always wrote the English base, whatever was on
+   * screen. Every other language goes through `translations[]`, read from the
+   * host itself because the showcase copy doesn't carry it.
+   */
+  const writeHostField = (
+    eventId: string,
+    hostId: number,
+    field: HostTextField,
+    value: string,
+    language: string,
+  ) => {
+    const write = async () => {
+      if (language === HOST_BASE_LANGUAGE) {
+        return hostsService.patchHost(eventId, hostId, { [field]: value })
+      }
+
+      const current = await hostsService.getHost(eventId, hostId)
+      if (!current.success || !current.data) return current
+      const host = current.data
+
+      const translations: WritableHostTranslation[] = (host.translations ?? []).map((t) => ({
+        language: t.language,
+        name: t.name ?? '',
+        parent_a_name: t.parent_a_name ?? '',
+        parent_b_name: t.parent_b_name ?? '',
+        title: t.title ?? '',
+        bio: t.bio ?? '',
+      }))
+
+      const existing = translations.find((t) => t.language === language)
+      if (existing) {
+        existing[field] = value
+      } else {
+        // Seeded from the base fields, because that is what this language was
+        // showing: with no row of its own it falls back to the base host. A row
+        // holding only this edit would blank every other field the moment it
+        // exists, since a translation replaces them all.
+        translations.push({
+          language,
+          name: host.name ?? '',
+          parent_a_name: host.parent_a_name ?? '',
+          parent_b_name: host.parent_b_name ?? '',
+          title: host.title ?? '',
+          bio: host.bio ?? '',
+          [field]: value,
+        })
+      }
+
+      return hostsService.patchHost(eventId, hostId, { translations })
+    }
+
+    const queued = (hostWrites.get(hostId) ?? Promise.resolve()).then(write)
+    hostWrites.set(hostId, queued.catch(() => undefined))
+    return queued
+  }
+
   const save = async (target: InlineEditTarget, value: string) => {
     const eventId = event.value.id
     if (!eventId) return { success: false, message: 'Event not loaded' }
@@ -48,9 +125,15 @@ export function useShowcaseEditSaves(options: UseShowcaseEditSavesOptions) {
           const host = showcaseData.value?.event.hosts?.find((h) => h.id === target.hostId)
           const previous = host?.[target.field] ?? ''
           if (host) host[target.field] = value
-          const res = await hostsService.patchHost(eventId, target.hostId, {
-            [target.field]: value,
-          })
+          // Read now, not after the queue: a language switch while this write
+          // waits its turn must not move it onto the new language.
+          const res = await writeHostField(
+            eventId,
+            target.hostId,
+            target.field,
+            value,
+            currentLanguage.value,
+          )
           if (!res.success && host) host[target.field] = previous
           return res
         }

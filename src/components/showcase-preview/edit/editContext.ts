@@ -3,7 +3,8 @@ import type { InjectionKey } from 'vue'
 /**
  * Identifies which record + field an inline edit on the showcase preview
  * writes to. Mirrors the save targets the management forms already use:
- * EventText upsert-by-(text_type, language), Host PATCH, DressCode PATCH.
+ * EventText upsert-by-(text_type, language), Host PATCH (the base fields in
+ * English, that language's `translations[]` row otherwise), DressCode PATCH.
  * (Agenda titles are no longer inline-edited — the whole agenda card is an
  * EditableRegion opening EditAgendaDrawer, which handles translations.)
  */
