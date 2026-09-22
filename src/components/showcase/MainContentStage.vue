@@ -1,5 +1,6 @@
 <template>
-  <div class="absolute inset-0 z-10">
+  <!-- A tap anywhere on this stage plays the invitation: see useCinematicScroll. -->
+  <div ref="stageRootRef" class="absolute inset-0 z-10">
     <!-- Background handled by CoverStage - transparent div maintains z-index stacking -->
     <div class="absolute inset-0 w-full h-full object-cover bg-transparent"></div>
 
@@ -125,7 +126,9 @@
                  the outer container and the whole glass card slides — a visible
                  break in the middle of the primary gesture. -->
             <div
+              ref="stageScrollRef"
               class="stage-scroll relative z-10 h-full overflow-y-auto overscroll-contain custom-scrollbar"
+              :class="{ 'stage-scroll--playing': isAutoScrolling }"
             >
               <div :class="contentPaddingClasses">
                 <!-- Host Information (now includes welcome header) -->
@@ -523,6 +526,7 @@
                      what turns the block from space you wade through into a page you
                      land on. -->
                 <div
+                  ref="footerPageRef"
                   class="footer-page min-h-[calc(85dvh-2rem)] flex flex-col items-center justify-center"
                   :class="footerMarginClasses"
                 >
@@ -846,6 +850,7 @@ import type { EventComment, DressCode } from '../../types/showcase'
 import type { EventPaymentMethod } from '../../services/api'
 import type {} from '../../utils/translations'
 import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProgress'
+import { useCinematicScroll } from '@/composables/showcase/useCinematicScroll'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
 import { useCoverStageLayout } from '../../composables/showcase/useCoverStageLayout'
@@ -1225,6 +1230,26 @@ const {
   commentSection: commentSectionRef,
   footerLockup: footerLockupRef,
 } = sectionRefs
+
+// Tap-to-play. It comes to rest where the footer page's `scroll-snap-align:
+// center` puts it — the place a guest's own scroll settles at the end — so the
+// snap it had to suspend while moving has nothing to correct when it returns.
+// Off in the editable preview, where a tap on the invitation is an edit.
+const stageRootRef = ref<HTMLElement>()
+const stageScrollRef = ref<HTMLElement>()
+const footerPageRef = ref<HTMLElement>()
+const { isPlaying: isAutoScrolling } = useCinematicScroll({
+  root: stageRootRef,
+  scroller: stageScrollRef,
+  restOffset: (scroller) => {
+    const footer = footerPageRef.value
+    if (!footer) return scroller.scrollHeight - scroller.clientHeight
+    // offsetTop is against `.stage-scroll`, the footer's nearest positioned
+    // ancestor, so it is already in the scroller's content coordinates.
+    return footer.offsetTop + footer.offsetHeight / 2 - scroller.clientHeight / 2
+  },
+  enabled: () => !editIntentCtx,
+})
 
 /**
  * Reveal one section, optionally offset within a staggered batch.
@@ -1859,6 +1884,14 @@ onUnmounted(() => {
    sticky. One target, so nothing else on the page changes behaviour. */
 .stage-scroll {
   scroll-snap-type: y proximity;
+}
+
+/* Suspended while tap-to-play rolls the card. Every `scrollTop` write is a
+   programmatic scroll the browser snaps after, so once playback came within
+   proximity range of the footer it would be yanked there in a single frame
+   instead of gliding in. Playback lands on that same snap point itself. */
+.stage-scroll--playing {
+  scroll-snap-type: none;
 }
 
 .footer-page {
