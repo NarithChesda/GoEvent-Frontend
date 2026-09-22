@@ -44,7 +44,7 @@
       <!-- Price pill (top-right) — only when there is a price to state. A free
            template used to carry a "Free" pill up here AND a "Free Basic" chip
            in the footer, which is the same fact twice on a 180px-wide card. -->
-      <div v-if="!isFree" class="absolute top-2 right-2 z-10">
+      <div v-if="!isFree && !hidePrice" class="absolute top-2 right-2 z-10">
         <span
           class="inline-flex items-center px-2.5 py-1 rounded-full text-[0.6875rem] font-semibold backdrop-blur-md bg-black/55 text-white ring-1 ring-white/20"
         >
@@ -131,10 +131,18 @@ interface Props {
   template: EventTemplate
   isSelected: boolean
   isOwned?: boolean
+  /**
+   * Leave the price pill off. The public design catalogue is shown by partners
+   * to their own customers, and a partner sets their own price — so a GoEvent
+   * price on every card would quote the customer a number over the partner's
+   * head (see "No price is published outside is_partner" in CLAUDE.md).
+   */
+  hidePrice?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isOwned: false,
+  hidePrice: false,
 })
 
 const emit = defineEmits<{

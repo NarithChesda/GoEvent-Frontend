@@ -147,6 +147,19 @@ export const optionClass = (selected: boolean): string =>
 export const optionIconClass = (selected: boolean): string =>
   selected ? OPTION_ICON_SELECTED : OPTION_ICON_IDLE
 
+/**
+ * Icon-only filter trigger in a template menu's search row (package, category).
+ * Active = a chosen option, per the vocabulary above. Shared by the studio's
+ * browse modal and the public design catalogue, so the two menus' toolbars are
+ * one toolbar.
+ */
+export const filterIconClass = (active: boolean): string =>
+  `${OPTION_BASE} flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full active:scale-[0.94] ${
+    active
+      ? 'bg-gradient-to-br from-[#2ecc71]/15 to-[#1e90ff]/15 ring-sky-300 text-[#1e90ff]'
+      : 'bg-slate-100 ring-transparent text-slate-600 hover:bg-slate-200 hover:text-slate-700'
+  }`
+
 // ---------------------------------------------------------------------------
 // Fields
 // ---------------------------------------------------------------------------
@@ -167,6 +180,15 @@ export const FIELD_SM =
  */
 export const FIELD_NUM =
   'w-16 px-2 py-1 text-right text-xs font-semibold text-slate-700 tabular-nums bg-slate-100 border border-transparent rounded-lg transition-[background-color,border-color,box-shadow] duration-200 ease-out focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100'
+
+/**
+ * A template menu's search field. It sits in chrome beside pill controls, so it
+ * is a pill — one shape, both breakpoints. It was `rounded-full` on the phone
+ * and `rounded-xl` on the desktop, which is the same field changing shape for
+ * no reason. Height, padding and type size come from the caller.
+ */
+export const SEARCH_FIELD =
+  'w-full bg-slate-100 border border-transparent rounded-full transition-[background-color,border-color,box-shadow] duration-200 ease-out placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-sky-300 focus:ring-4 focus:ring-sky-100'
 
 /** Field label. Denser than §8's page-form label — this is an editor, not a page. */
 export const FIELD_LABEL = 'block text-xs font-medium text-slate-600'
