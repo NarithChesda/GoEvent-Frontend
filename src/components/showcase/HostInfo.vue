@@ -14,6 +14,7 @@ import type {
   CoupleOrnament,
   HostBreaklineStyle,
 } from '../../services/api/types/template.types'
+import type { CoverHostNamesBinding } from './cover/coverDetails'
 
 // Import all layout variants
 import HostInfoWedding from './host-layouts/HostInfoWedding.vue'
@@ -68,6 +69,8 @@ interface Props {
   logoScale?: number
   /** Where the host block starts, in rem. Read by every design. */
   topOffset?: number
+  /** The cover's host names, for `simple` to draw instead of its own. Null = its own. */
+  coverHostNames?: CoverHostNamesBinding | null
   /** Event description title/body — the `crest` design's invitation sentence. */
   descriptionTitle?: string
   descriptionText?: string

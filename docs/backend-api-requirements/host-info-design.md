@@ -9,6 +9,11 @@
 > plus **one genuinely new model field**, the image `host_divider_image`. The
 > keys need no migration (see §2); the image does (see §6). Everything already
 > shipped is unchanged.
+>
+> **PENDING (added with cover-matched names):** one more optional key,
+> the boolean `sync_cover_names`. It reads settings that already travel in
+> `cover_stage_layout`, so there is no new field and nothing to migrate —
+> store and return it like the others.
 
 ## Overview
 
@@ -63,6 +68,7 @@ is fully backward compatible — existing templates need no migration.
 | `divider_scale` | number | no | 40–200 | **Percent** of the block's width for that breakline; 100 is half the block. Defaults to 100. |
 | `logo_scale` | number | no | 40–250 | **Percent** of the breakpoint's own logo cap. Defaults to 100. Read by `standard`, `portrait` and `crest`. |
 | `top_offset` | number | no | −4 to 16 | Where the host block starts, in **rem**. Defaults to 0. Read by **every** design. |
+| `sync_cover_names` | boolean | no | `true`, `false` | `simple` only: draw the host names the way the cover's host-names block draws them. Defaults to `false`. |
 
 The whole `host_info_design` field may also be `null` (meaning "use the default
 `standard`"). It is **not** a file and carries no images.
@@ -126,6 +132,21 @@ default changes impossible.
 Ranges above are what the editor's sliders offer, not a validation contract —
 clamp rather than reject if you validate them at all, since a stored value
 outside the range still renders.
+
+### `sync_cover_names` — one flag, no data of its own
+
+The `simple` design is the cover's host-names block laid out a second time: two
+names with a mark between them. With this flag on it borrows that block's
+settings instead of keeping its own — which hosts (`hostCount`), the
+arrangement, the line under each name, the mark (including the uploaded
+`cover_host_separator_image`), spaced capitals, and the names' and small line's
+fonts, sizes and colour. **All of that already lives in `cover_stage_layout`**,
+which the showcase payload already carries, so this adds one boolean and nothing
+else: no new field, no new image, nothing to migrate.
+
+It is read by `simple` alone; store and return it unchanged on every other
+`type`, exactly like `divider_style`. Defaults to `false`, which is the look
+every `simple` template has today, so it **must not be backfilled**.
 
 ---
 
@@ -321,6 +342,8 @@ config objects:
       showcase payload.
 - [ ] Uploading or clearing `host_divider_image` leaves a stored
       `divider_style` / `divider_scale` untouched.
+- [ ] `sync_cover_names` round-trips as a boolean on every `type`, and a config
+      that omits it is returned without it (not backfilled to `false`).
 
 ---
 

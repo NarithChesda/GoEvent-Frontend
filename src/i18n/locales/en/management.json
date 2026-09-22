@@ -3330,7 +3330,11 @@
       "breaklineWidthHint": "A share of the block - 100% is half of it. Sizes the drawn styles and your own artwork alike.",
       "logoScale": "Logo size",
       "topOffset": "Block starts at",
-      "placementHint": "Logo size is a percentage of the design's own base, so it holds at every screen size - Simple and Arch draw no logo, so it does not apply there. The offset moves the whole host block down from the top of the section on every design; a negative value pulls it up."
+      "placementHint": "Logo size is a percentage of the design's own base, so it holds at every screen size - Simple and Arch draw no logo, so it does not apply there. The offset moves the whole host block down from the top of the section on every design; a negative value pulls it up.",
+      "syncCoverNames": "Match the cover's host names",
+      "syncCoverNamesHint": "Which hosts, the line under each name, the mark between them, capitals, fonts, size and colour all follow Show host names on the Cover Stage.",
+      "syncCoverNamesOff": "The cover isn't showing its host names, but these still follow its settings. Switch Show host names on in Cover Stage to change them.",
+      "openCover": "Open Cover Stage"
     },
     "footer": {
       "cancel": "Cancel",

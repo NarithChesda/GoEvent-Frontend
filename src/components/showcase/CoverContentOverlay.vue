@@ -240,10 +240,9 @@
 import { computed } from 'vue'
 import { useOptimizedDecorations, useOptimizedBackgrounds } from '@/composables/showcase/useOptimizedDecorations'
 import {
-  COVER_COLOR_SLOT_VARS,
   COVER_DECORATION_RELIEF_FILTERS,
   COVER_DECORATION_RELIEF_VAR,
-  COVER_FONT_SLOT_VARS,
+  coverSlotVars,
   useCoverStageLayout,
 } from '@/composables/showcase/useCoverStageLayout'
 import { useShowcaseAnimation, type ShowcaseAnimationType } from '@/composables/showcase/useShowcaseAnimation'
@@ -403,33 +402,17 @@ const decorationReliefFilter = computed(() =>
 
 /**
  * The template's font and colour slots, published as CSS variables for
- * free-placed blocks to reference by name.
- *
- * Every entry falls back the way the showcase itself already falls back
- * (accent → primary, decorative → accent, and so on), so a block pointed at a
- * slot this template doesn't fill renders in something sensible rather than in
- * the browser default.
+ * free-placed blocks to reference by name (see coverSlotVars).
  */
-const slotVarStyle = computed<Record<string, string>>(() => {
-  const body = props.primaryFont || props.currentFont
-  const accentFont = props.accentFont || body
-  return {
-    // Published here rather than passed as a prop because it lands on images in
-    // two components — CoverDecorations and DoorPanel — and this root is the
-    // nearest ancestor of both. Same trick, and the same reason, as the font and
-    // colour slots below. Inert at `none`, which is every template that hasn't
-    // switched the gilding on.
-    [COVER_DECORATION_RELIEF_VAR]: decorationReliefFilter.value,
-    [COVER_FONT_SLOT_VARS.primary]: body,
-    [COVER_FONT_SLOT_VARS.secondary]: props.secondaryFont || body,
-    [COVER_FONT_SLOT_VARS.accent]: accentFont,
-    [COVER_FONT_SLOT_VARS.decorative]: props.decorativeFont || accentFont,
-    [COVER_COLOR_SLOT_VARS.primary]: props.primaryColor,
-    [COVER_COLOR_SLOT_VARS.secondary]: props.secondaryColor || props.primaryColor,
-    [COVER_COLOR_SLOT_VARS.accent]: props.accentColor || props.primaryColor,
-    [COVER_COLOR_SLOT_VARS.guestname]: props.guestnameColor || props.primaryColor,
-  }
-})
+const slotVarStyle = computed<Record<string, string>>(() => ({
+  // Published here rather than passed as a prop because it lands on images in
+  // two components — CoverDecorations and DoorPanel — and this root is the
+  // nearest ancestor of both. Same trick, and the same reason, as the font and
+  // colour slots below. Inert at `none`, which is every template that hasn't
+  // switched the gilding on.
+  [COVER_DECORATION_RELIEF_VAR]: decorationReliefFilter.value,
+  ...coverSlotVars(props),
+}))
 
 // Swipe arrow bottom position
 const swipeArrowBottom = computed(() => layout.value.swipeArrowBottom)

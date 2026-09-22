@@ -1809,7 +1809,36 @@
                     :label="t('management.partnerTemplateForm.coverLayout.showHostNameUnderLogo')"
                     :description="t('management.partnerTemplateForm.coverLayout.showHostNameUnderLogoHint')"
                   />
+                  <!-- `simple` is the one design whose names are the cover's
+                       names block laid out again, so it is the one that can
+                       borrow that block's settings rather than keep its own.
+                       Off keeps its own look; nothing is backfilled. -->
+                  <TemplateFormDisclosure :open="form.host_info_design_type === 'simple'" content-class="">
+                    <TemplateFormSwitch
+                      v-model="form.host_sync_cover_names"
+                      :label="t('management.partnerTemplateForm.hostInfoDesign.syncCoverNames')"
+                      :description="t('management.partnerTemplateForm.hostInfoDesign.syncCoverNamesHint')"
+                    />
+                  </TemplateFormDisclosure>
                 </div>
+
+                <!-- The settings it borrows live under the cover's "Show host
+                     names" switch, and that switch hides them while it is off —
+                     so say where they are, with the way there, rather than let
+                     the names follow settings the partner cannot find. -->
+                <TemplateFormDisclosure
+                  :open="form.host_info_design_type === 'simple' && form.host_sync_cover_names && !form.cover_stage_layout.showCoverHosts"
+                  content-class="pt-1"
+                >
+                  <div class="flex items-center gap-3 rounded-xl bg-slate-50 ring-1 ring-slate-200/70 p-2.5">
+                    <p class="flex-1 min-w-0 text-[0.6875rem] leading-snug text-slate-600">
+                      {{ t('management.partnerTemplateForm.hostInfoDesign.syncCoverNamesOff') }}
+                    </p>
+                    <button type="button" :class="BTN_SECONDARY_SM" @click="selectSection('cover')">
+                      {{ t('management.partnerTemplateForm.hostInfoDesign.openCover') }}
+                    </button>
+                  </div>
+                </TemplateFormDisclosure>
 
                 <!-- The frame is one choice drawn twice — around the title and
                      around the avatar — so the pair can never be mismatched. Only
@@ -2523,6 +2552,8 @@ interface FormState {
   host_logo_scale: number
   /** Where the crest block starts, in rem. */
   host_top_offset: number
+  /** `simple` only: draw the names the way the cover's host names are set up. */
+  host_sync_cover_names: boolean
   /** Info card (venue/map/countdown/RSVP) treatment in the showcase (glass | engraved). */
   info_card_design_type: InfoCardDesignType
   /**
@@ -2635,6 +2666,7 @@ const defaultForm = (): FormState => ({
   host_divider_scale: 100,
   host_logo_scale: 100,
   host_top_offset: 0,
+  host_sync_cover_names: false,
   info_card_design_type: 'glass',
   save_the_date_design_type: 'auto',
   stage_mode_cover: 'animation',
@@ -3769,6 +3801,7 @@ const buildHostInfoDesignPayload = (): HostInfoDesignConfig => ({
   divider_scale: form.host_divider_scale,
   logo_scale: form.host_logo_scale,
   top_offset: form.host_top_offset,
+  sync_cover_names: form.host_sync_cover_names,
 })
 
 const agendaDesignModel = computed<string>({
@@ -4841,6 +4874,9 @@ watch(
       form.host_divider_scale = template.host_info_design?.divider_scale ?? 100
       form.host_logo_scale = template.host_info_design?.logo_scale ?? 100
       form.host_top_offset = template.host_info_design?.top_offset ?? 0
+      // Absent is `false`: the simple design's own two names, as every template
+      // saved before the option existed renders them.
+      form.host_sync_cover_names = template.host_info_design?.sync_cover_names ?? false
       // Hydrate info card design (glass | engraved)
       form.info_card_design_type = template.info_card_design?.type ?? 'glass'
       // Hydrate the agenda design. Absent means the template predates the

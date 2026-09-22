@@ -32,6 +32,7 @@ const template = {
   name: 'Sage',
   status: 'draft',
   package_plan: { id: 3, name: 'Basic' },
+  display_liquid_glass_background: false,
   cover_stage_layout: coverLayout,
   template_colors: [],
   template_fonts: [
@@ -262,5 +263,63 @@ describe('PartnerTemplateForm — cover blocks', () => {
     expect(boxes.date?.x).not.toBe(20)
     // A block that carried no colour has no box left at all.
     expect(boxes.hosts).toBeUndefined()
+  })
+})
+
+describe('PartnerTemplateForm — simple host design matching the cover', () => {
+  async function openContent(overrides: Record<string, unknown>) {
+    const wrapper = mount(PartnerTemplateForm, {
+      props: { isOpen: true, existingTemplate: { ...template, ...overrides }, eventId: 'evt' },
+      global: { stubs: { PartnerTemplatePreview: true, Teleport: true } },
+    })
+    await flushPromises()
+    const content = wrapper.findAll('nav button').find((b) => b.text().includes('sections.content'))
+    await content!.trigger('click')
+    await flushPromises()
+    return wrapper
+  }
+
+  const syncSwitch = (wrapper: Awaited<ReturnType<typeof openContent>>) =>
+    wrapper
+      .findAll('button[role="switch"]')
+      .find((b) => b.text().includes('hostInfoDesign.syncCoverNames'))
+
+  const draftHostDesign = (wrapper: Awaited<ReturnType<typeof openContent>>) =>
+    wrapper.findComponent(PartnerTemplatePreview).props('draft').host_info_design
+
+  it('offers the switch on the simple design only', async () => {
+    const standard = await openContent({ host_info_design: { type: 'standard' } })
+    expect(syncSwitch(standard)).toBeUndefined()
+
+    const simple = await openContent({ host_info_design: { type: 'simple' } })
+    expect(syncSwitch(simple)).toBeTruthy()
+    // Absent opens as off: the design's own names, as it always rendered.
+    expect(syncSwitch(simple)!.attributes('aria-checked')).toBe('false')
+  })
+
+  it('writes the choice onto host_info_design', async () => {
+    const wrapper = await openContent({ host_info_design: { type: 'simple' } })
+    await syncSwitch(wrapper)!.trigger('click')
+    await flushPromises()
+
+    expect(draftHostDesign(wrapper)).toMatchObject({ type: 'simple', sync_cover_names: true })
+  })
+
+  it('points at the Cover Stage while the cover hides the names it follows', async () => {
+    const hidden = await openContent({
+      host_info_design: { type: 'simple', sync_cover_names: true },
+      cover_stage_layout: { ...coverLayout, showCoverHosts: false },
+    })
+    const open = hidden.findAll('button').find((b) => b.text() === 'management.partnerTemplateForm.hostInfoDesign.openCover')
+    expect(open).toBeTruthy()
+    await open!.trigger('click')
+    await flushPromises()
+    // The cover section is open: its block switches are on screen.
+    expect(hidden.find('[data-cover-block="hosts"]').exists()).toBe(true)
+
+    const shown = await openContent({ host_info_design: { type: 'simple', sync_cover_names: true } })
+    expect(
+      shown.findAll('button').some((b) => b.text() === 'management.partnerTemplateForm.hostInfoDesign.openCover'),
+    ).toBe(false)
   })
 })

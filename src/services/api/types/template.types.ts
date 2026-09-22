@@ -897,6 +897,16 @@ export interface HostInfoDesignConfig {
    * block, which all five have.
    */
   top_offset?: number
+  /**
+   * `simple` only: draw the host names the way the cover's host-names block
+   * draws them — its hosts, arrangement, line under each name, the mark between
+   * them (the uploaded one included), spaced capitals, and the names' and small
+   * line's fonts, sizes and colour, all read from `cover_stage_layout`. Absent
+   * or `false` keeps `simple`'s own look: two names stacked around an ampersand.
+   *
+   * Stored and returned unchanged on every other design, which ignore it.
+   */
+  sync_cover_names?: boolean
 }
 
 /**

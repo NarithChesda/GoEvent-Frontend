@@ -14,6 +14,7 @@ import type {
   InfoCardDesignConfig,
   StageModesConfig,
 } from '@/services/api/types/template.types'
+import type { CoverHostNamesBinding } from '@/components/showcase/cover/coverDetails'
 
 // Core showcase data types
 export interface Host {
@@ -360,6 +361,12 @@ export interface HostInfoProps {
   logoScale?: number
   /** Where the host block starts, in rem. Defaults to 0. Read by every design. */
   topOffset?: number
+  /**
+   * The cover's host names, for `simple` to draw in place of its own two stacked
+   * names. Present only when the template sets `sync_cover_names`; null or
+   * absent keeps `simple` exactly as it was. Every other design ignores it.
+   */
+  coverHostNames?: CoverHostNamesBinding | null
   /**
    * The event's `description` title and body. Rendered by `crest`, which puts
    * the invitation sentence where the other designs put a welcome header — see

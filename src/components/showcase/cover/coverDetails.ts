@@ -99,6 +99,27 @@ export interface CoverDetailBlocksBinding {
   sublineStyle?: ResolvedCoverTextStyle
 }
 
+/**
+ * The cover's host-names block, for the `simple` host design to draw when the
+ * template sets it to match (`host_info_design.sync_cover_names`).
+ *
+ * `vars` carries the look the same way the cover does: the template's slot
+ * variables (coverSlotVars) plus the names' own `--cover-block-font` /
+ * `--cover-block-color` (coverBlockTypeVars). With those published on the
+ * invitation's names, the font and colour expressions CoverDetailBlocks writes
+ * for the names resolve there exactly as they do on the cover.
+ */
+export interface CoverHostNamesBinding {
+  details: ResolvedCoverDetails
+  /** The names' font slot, for their metallic finish. */
+  namesSlot: CoverFontSlot
+  /** The small line under each name, styled on its own. */
+  sublineStyle: ResolvedCoverTextStyle
+  vars: Record<string, string>
+  /** The template's own mark, already a full URL. Replaces `details.separator`. */
+  separatorImageUrl: string | null
+}
+
 // Khmer and Khmer Symbols. Enough to tell a Khmer name from a romanised one,
 // which is the only question asked of it.
 const KHMER_SCRIPT = /[\u1780-\u17FF\u19E0-\u19FF]/

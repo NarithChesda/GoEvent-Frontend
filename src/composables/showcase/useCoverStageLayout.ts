@@ -696,29 +696,81 @@ export function coverElementStyle(
   box: ResolvedCoverElementBox,
   text?: ResolvedCoverTextStyle,
 ): Record<string, string> {
-  const style: Record<string, string> = {
+  return {
     left: `${round(box.x - box.width / 2)}%`,
     top: `${round(box.y - box.height / 2)}%`,
     width: `${box.width}%`,
     height: `${box.height}%`,
+    ...coverBlockTypeVars(box, text),
   }
+}
 
-  // The block's type: its main text's resolved style when there is one (see
-  // resolveCoverTextStyles), else what the box itself carries. Read by the
-  // text-scaling clamps in cover-stage-styles.css / GuestNameFrame.
-  //
-  // The font is only set when something opted in. Leaving the variable
-  // undefined is what makes "unset" mean "render exactly as before": the
-  // consumers spell their old value as the var()'s fallback, so an absent
-  // variable is not a missing style but the original one.
-  Object.assign(style, coverTextVars(text ?? { fontType: box.fontType, fontScale: box.fontScale }))
+/**
+ * A block's type and colour, as the variables its rules read — everything
+ * `coverElementStyle` sets except where the block sits. Split out for the one
+ * reader that draws a cover block's look somewhere else: the `simple` host
+ * design, when it is set to match the cover's host names.
+ *
+ * The type is the block's main text's resolved style when there is one (see
+ * resolveCoverTextStyles), else what the box itself carries. Read by the
+ * text-scaling clamps in cover-stage-styles.css / GuestNameFrame.
+ *
+ * The font is only set when something opted in. Leaving the variable undefined
+ * is what makes "unset" mean "render exactly as before": the consumers spell
+ * their old value as the var()'s fallback, so an absent variable is not a
+ * missing style but the original one. Same for the colour.
+ */
+export function coverBlockTypeVars(
+  box: ResolvedCoverElementBox,
+  text?: ResolvedCoverTextStyle,
+): Record<string, string> {
+  const vars = coverTextVars(text ?? { fontType: box.fontType, fontScale: box.fontScale })
   if (box.colorSource === 'custom') {
-    if (box.customColor) style['--cover-block-color'] = box.customColor
+    if (box.customColor) vars['--cover-block-color'] = box.customColor
   } else if (box.colorSource) {
-    style['--cover-block-color'] = `var(${COVER_COLOR_SLOT_VARS[box.colorSource]})`
+    vars['--cover-block-color'] = `var(${COVER_COLOR_SLOT_VARS[box.colorSource]})`
   }
+  return vars
+}
 
-  return style
+/** The template's fonts and colours, as `coverSlotVars` needs them. */
+export interface CoverSlotSources {
+  currentFont: string
+  primaryFont?: string
+  secondaryFont?: string
+  accentFont?: string
+  decorativeFont?: string
+  primaryColor: string
+  secondaryColor?: string | null
+  accentColor?: string
+  guestnameColor?: string | null
+}
+
+/**
+ * The template's font and colour slots, published as CSS variables for a
+ * block's rules to reference by name (`COVER_FONT_SLOT_VARS`,
+ * `COVER_COLOR_SLOT_VARS`).
+ *
+ * Every entry falls back the way the showcase itself already falls back
+ * (accent → primary, decorative → accent, and so on), so a text pointed at a
+ * slot this template doesn't fill renders in something sensible rather than in
+ * the browser default. One table for both places that publish them — the cover
+ * overlay, and the `simple` host design when it matches the cover's names — so
+ * the same slot can never resolve to two different faces.
+ */
+export function coverSlotVars(sources: CoverSlotSources): Record<string, string> {
+  const body = sources.primaryFont || sources.currentFont
+  const accentFont = sources.accentFont || body
+  return {
+    [COVER_FONT_SLOT_VARS.primary]: body,
+    [COVER_FONT_SLOT_VARS.secondary]: sources.secondaryFont || body,
+    [COVER_FONT_SLOT_VARS.accent]: accentFont,
+    [COVER_FONT_SLOT_VARS.decorative]: sources.decorativeFont || accentFont,
+    [COVER_COLOR_SLOT_VARS.primary]: sources.primaryColor,
+    [COVER_COLOR_SLOT_VARS.secondary]: sources.secondaryColor || sources.primaryColor,
+    [COVER_COLOR_SLOT_VARS.accent]: sources.accentColor || sources.primaryColor,
+    [COVER_COLOR_SLOT_VARS.guestname]: sources.guestnameColor || sources.primaryColor,
+  }
 }
 
 /**
