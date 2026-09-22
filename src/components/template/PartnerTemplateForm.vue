@@ -712,356 +712,421 @@
           </template>
 
           <!-- ==================== COVER STAGE & LAYOUT ===================== -->
-          <!-- Artwork first — what the cover is made of — then the geometry that
-               arranges it. They were two rail entries pointing at the same stage
-               and the same preview, so placing a block meant bouncing between
-               tabs to see which artwork it was moving. -->
+          <!-- Three questions, in the order a cover is designed: what it is made
+               of (the artwork, and the light on it), what it says (every block,
+               each carrying everything about how it looks), and where each block
+               sits. The rare geometry is one tap deeper, last.
+
+               It used to be sorted by where things are stored rather than by
+               what they draw. The guest name alone was set up in four panels —
+               its frame at the top, its font in a Text styles table, its colour
+               inside Block placement, its switch at the very bottom — and the
+               list of what the cover shows was cut in two, the names, date and
+               venue above that table and the header, logo, invite line and guest
+               name below the placement panel. -->
           <template v-else-if="activeSection === 'cover'">
             <PlanRequiredNotice v-if="!form.package_plan_id" @pick="selectSection('basics')" />
-            <template v-else>
-              <section :class="[PANEL, 'divide-y divide-slate-200/70']">
-                <div class="p-4 space-y-3">
-                  <h5 :class="SECTION_HEADING">
-                    {{ t('management.partnerTemplateForm.coverDecorations.backdropGroup') }}
-                  </h5>
-                  <!-- What the cover is: artwork that animates away, or a film.
-                       It picks the backdrop slot below, because the stage draws
-                       one or the other and never both. -->
-                  <TemplateFormChoice v-model="coverModeModel" :options="stageModeOptions" />
-                  <p :class="FIELD_HINT">
-                    {{ t(`management.partnerTemplateForm.stageModes.coverHint.${form.stage_mode_cover}`) }}
-                  </p>
-                  <FileUploadField
-                    v-if="form.stage_mode_cover === 'animation'"
-                    :label="t('management.partnerTemplateForm.coverDecorations.coverBackground')"
-                    accept="image/*"
-                    :file-name="form.basic_decoration_photo?.name"
-                    :has-existing-file="hasSavedAsset('basic_decoration_photo')"
-                    @change="handleFileChange('basic_decoration_photo', $event)"
-                    @clear="clearAssetField('basic_decoration_photo')"
-                  />
-                  <FileUploadField
-                    v-else
-                    :label="t('management.partnerTemplateForm.coverDecorations.coverBackground')"
-                    accept="video/*"
-                    :file-name="form.standard_cover_video?.name"
-                    :has-existing-file="hasSavedAsset('standard_cover_video')"
-                    @change="handleFileChange('standard_cover_video', $event)"
-                    @clear="clearAssetField('standard_cover_video')"
-                  />
-                  <!-- Cover artwork, so it follows the cover's mode rather
-                       than the plan: a filmed cover has nothing to frame. -->
-                  <div v-if="form.stage_mode_cover === 'animation'" class="grid grid-cols-2 gap-2.5">
-                    <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverTop')" accept="image/*" :file-name="form.cover_top_decoration?.name" :has-existing-file="hasSavedAsset('cover_top_decoration')" @change="handleFileChange('cover_top_decoration', $event)" @clear="clearAssetField('cover_top_decoration')" />
-                    <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverBottom')" accept="image/*" :file-name="form.cover_bottom_decoration?.name" :has-existing-file="hasSavedAsset('cover_bottom_decoration')" @change="handleFileChange('cover_bottom_decoration', $event)" @clear="clearAssetField('cover_bottom_decoration')" />
-                    <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverLeft')" accept="image/*" :file-name="form.cover_left_decoration?.name" :has-existing-file="hasSavedAsset('cover_left_decoration')" @change="handleFileChange('cover_left_decoration', $event)" @clear="clearAssetField('cover_left_decoration')" />
-                    <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverRight')" accept="image/*" :file-name="form.cover_right_decoration?.name" :has-existing-file="hasSavedAsset('cover_right_decoration')" @change="handleFileChange('cover_right_decoration', $event)" @clear="clearAssetField('cover_right_decoration')" />
-                  </div>
+            <!-- The artwork, and the light on it. The gilding lights this
+                 artwork's own border, so it closes the panel that uploads the
+                 artwork rather than sitting in a panel of its own between the
+                 artwork and the text. -->
+            <section v-else :class="[PANEL, 'overflow-hidden divide-y divide-slate-200/70']">
+              <div class="p-4 space-y-3">
+                <h5 :class="SECTION_HEADING">
+                  {{ t('management.partnerTemplateForm.coverDecorations.backdropGroup') }}
+                </h5>
+                <!-- What the cover is: artwork that animates away, or a film.
+                     It picks the backdrop slot below, because the stage draws
+                     one or the other and never both. -->
+                <TemplateFormChoice v-model="coverModeModel" :options="stageModeOptions" />
+                <p :class="FIELD_HINT">
+                  {{ t(`management.partnerTemplateForm.stageModes.coverHint.${form.stage_mode_cover}`) }}
+                </p>
+                <FileUploadField
+                  v-if="form.stage_mode_cover === 'animation'"
+                  :label="t('management.partnerTemplateForm.coverDecorations.coverBackground')"
+                  accept="image/*"
+                  :file-name="form.basic_decoration_photo?.name"
+                  :has-existing-file="hasSavedAsset('basic_decoration_photo')"
+                  @change="handleFileChange('basic_decoration_photo', $event)"
+                  @clear="clearAssetField('basic_decoration_photo')"
+                />
+                <FileUploadField
+                  v-else
+                  :label="t('management.partnerTemplateForm.coverDecorations.coverBackground')"
+                  accept="video/*"
+                  :file-name="form.standard_cover_video?.name"
+                  :has-existing-file="hasSavedAsset('standard_cover_video')"
+                  @change="handleFileChange('standard_cover_video', $event)"
+                  @clear="clearAssetField('standard_cover_video')"
+                />
+                <!-- Cover artwork, so it follows the cover's mode rather
+                     than the plan: a filmed cover has nothing to frame. -->
+                <div v-if="form.stage_mode_cover === 'animation'" class="grid grid-cols-2 gap-2.5">
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverTop')" accept="image/*" :file-name="form.cover_top_decoration?.name" :has-existing-file="hasSavedAsset('cover_top_decoration')" @change="handleFileChange('cover_top_decoration', $event)" @clear="clearAssetField('cover_top_decoration')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverBottom')" accept="image/*" :file-name="form.cover_bottom_decoration?.name" :has-existing-file="hasSavedAsset('cover_bottom_decoration')" @change="handleFileChange('cover_bottom_decoration', $event)" @clear="clearAssetField('cover_bottom_decoration')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverLeft')" accept="image/*" :file-name="form.cover_left_decoration?.name" :has-existing-file="hasSavedAsset('cover_left_decoration')" @change="handleFileChange('cover_left_decoration', $event)" @clear="clearAssetField('cover_left_decoration')" />
+                  <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.coverRight')" accept="image/*" :file-name="form.cover_right_decoration?.name" :has-existing-file="hasSavedAsset('cover_right_decoration')" @change="handleFileChange('cover_right_decoration', $event)" @clear="clearAssetField('cover_right_decoration')" />
                 </div>
+              </div>
 
-                <div class="p-4 space-y-3">
-                  <h5 :class="SECTION_HEADING">
-                    {{ t('management.partnerTemplateForm.coverDecorations.guestFrameGroup') }}
-                  </h5>
+              <!-- Lighting for the artwork's border: still stored in
+                   cover_stage_layout, but about this stage only. The cover's
+                   exit animation used to head this group; it chooses the
+                   transition as much as the exit, so it lives in the
+                   Transition tab beside the film it plays into.
 
+                   No eyebrow: one once read "Cover gilding" directly above a
+                   switch reading *Enable gilding*. The switch names the
+                   feature. -->
+              <div>
+                <TemplateFormSwitch
+                  v-model="form.cover_stage_layout.coverGilding.enabled"
+                  :label="t('management.partnerTemplateForm.coverGilding.enableLabel')"
+                  :description="t('management.partnerTemplateForm.coverGilding.enableHint')"
+                />
+
+                <TemplateFormDisclosure
+                  :open="form.cover_stage_layout.coverGilding.enabled"
+                  content-class="px-3 pb-3 pt-3 space-y-4 border-t border-slate-100"
+                >
                   <TemplateFormChoice
-                    v-model="guestFrameStyleModel"
-                    :options="guestFrameStyleOptions"
-                    :columns="3"
-                  />
-                  <p :class="FIELD_HINT">
-                    {{ t(`management.partnerTemplateForm.guestFrame.hint.${form.cover_stage_layout.guestFrame.style}`) }}
-                  </p>
-
-                  <!-- The same three upload slots serve every style, relabelled to
-                       what the chosen style actually draws with them. Binding the
-                       fields to fixed asset fields (rather than swapping fields per
-                       style) is what lets a partner switch styles without losing
-                       artwork they already uploaded. -->
-                  <div v-if="form.cover_stage_layout.guestFrame.style === 'split'" class="grid grid-cols-3 gap-2.5">
-                    <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameLeft')" accept="image/*" :file-name="form.guest_title_frame_left?.name" :has-existing-file="hasSavedAsset('guest_title_frame_left')" @change="handleFileChange('guest_title_frame_left', $event)" @clear="clearAssetField('guest_title_frame_left')" />
-                    <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameMid')" accept="image/*" :file-name="form.guest_title_frame_mid?.name" :has-existing-file="hasSavedAsset('guest_title_frame_mid')" @change="handleFileChange('guest_title_frame_mid', $event)" @clear="clearAssetField('guest_title_frame_mid')" />
-                    <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameRight')" accept="image/*" :file-name="form.guest_title_frame_right?.name" :has-existing-file="hasSavedAsset('guest_title_frame_right')" @change="handleFileChange('guest_title_frame_right', $event)" @clear="clearAssetField('guest_title_frame_right')" />
-                  </div>
-
-                  <FileUploadField
-                    v-else-if="form.cover_stage_layout.guestFrame.style === 'single'"
-                    :label="t('management.partnerTemplateForm.guestFrame.singleImage')"
-                    accept="image/*"
-                    :file-name="form.guest_title_frame_mid?.name"
-                    :has-existing-file="hasSavedAsset('guest_title_frame_mid')"
-                    @change="handleFileChange('guest_title_frame_mid', $event)"
-                    @clear="clearAssetField('guest_title_frame_mid')"
-                  />
-
-                  <template v-else>
-                    <div class="grid grid-cols-2 gap-2.5">
-                      <FileUploadField :label="t('management.partnerTemplateForm.guestFrame.cornerAImage')" accept="image/*" :file-name="form.guest_title_frame_left?.name" :has-existing-file="hasSavedAsset('guest_title_frame_left')" @change="handleFileChange('guest_title_frame_left', $event)" @clear="clearAssetField('guest_title_frame_left')" />
-                      <FileUploadField :label="t('management.partnerTemplateForm.guestFrame.cornerBImage')" accept="image/*" :file-name="form.guest_title_frame_right?.name" :has-existing-file="hasSavedAsset('guest_title_frame_right')" @change="handleFileChange('guest_title_frame_right', $event)" @clear="clearAssetField('guest_title_frame_right')" />
-                    </div>
-
-                    <GuestFrameCornerGrid
-                      v-model="guestFrameCornersModel"
-                      :has-left="hasGuestFrameSlot('guest_title_frame_left')"
-                      :has-right="hasGuestFrameSlot('guest_title_frame_right')"
-                    />
-
-                    <div class="grid grid-cols-2 gap-2.5">
-                      <TemplateFormNumber v-model="form.cover_stage_layout.guestFrame.cornerSize" :label="t('management.partnerTemplateForm.guestFrame.cornerSize')" :min="5" :max="60" :step="1" unit="%" />
-                      <TemplateFormNumber v-model="form.cover_stage_layout.guestFrame.cornerInset" :label="t('management.partnerTemplateForm.guestFrame.cornerInset')" :min="-20" :max="30" :step="1" unit="%" />
-                    </div>
-                  </template>
-
-                  <TemplateFormNumber
-                    v-model="form.cover_stage_layout.guestFrame.scale"
-                    :label="t('management.partnerTemplateForm.guestFrame.scale')"
-                    :min="0.3"
-                    :max="2.5"
-                    :step="0.05"
-                    unit="x"
-                  />
-                </div>
-
-                <div class="p-4 space-y-3">
-                  <h5 :class="SECTION_HEADING">
-                    {{ t('management.partnerTemplateForm.coverDecorations.brandingGroup') }}
-                  </h5>
-                  <div class="grid grid-cols-3 gap-2.5">
-                    <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo1')" accept="image/png,image/svg+xml,image/*" :file-name="form.sample_logo_1?.name" :has-existing-file="hasSavedAsset('sample_logo_1')" @change="handleFileChange('sample_logo_1', $event)" @clear="clearAssetField('sample_logo_1')" />
-                    <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo2')" accept="image/png,image/svg+xml,image/*" :file-name="form.sample_logo_2?.name" :has-existing-file="hasSavedAsset('sample_logo_2')" @change="handleFileChange('sample_logo_2', $event)" @clear="clearAssetField('sample_logo_2')" />
-                    <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.headerTextImage')" accept="image/png,image/svg+xml,image/*" :file-name="form.header_text_image?.name" :has-existing-file="hasSavedAsset('header_text_image')" @change="handleFileChange('header_text_image', $event)" @clear="clearAssetField('header_text_image')" />
-                  </div>
-                </div>
-              </section>
-            </template>
-
-            <!-- ----------------------- Cover lighting ----------------------- -->
-            <!-- The cover's exit animation used to head this group. It chooses
-                 the transition stage as much as it chooses the cover's exit, so
-                 it now sits in the Transition tab beside the film it plays into.
-                 What is left is lighting for the cover artwork's border: still
-                 stored in cover_stage_layout, but about this stage only. -->
-            <!-- The eyebrow this panel carried said "Cover gilding" directly
-                 above a switch reading *Enable gilding* — the same words twice,
-                 which is the pattern removed nine times over from the event
-                 drawers. The switch names the feature; the panel is the
-                 feature. -->
-            <section :class="[PANEL, 'overflow-hidden']">
-              <TemplateFormSwitch
-                v-model="form.cover_stage_layout.coverGilding.enabled"
-                :label="t('management.partnerTemplateForm.coverGilding.enableLabel')"
-                :description="t('management.partnerTemplateForm.coverGilding.enableHint')"
-              />
-
-              <TemplateFormDisclosure
-                :open="form.cover_stage_layout.coverGilding.enabled"
-                content-class="px-3 pb-3 pt-3 space-y-4 border-t border-slate-100"
-              >
-                      <TemplateFormChoice
-                        v-model="gildingIntensityModel"
-                        :label="t('management.partnerTemplateForm.coverGilding.intensity')"
-                        :options="gildingIntensityOptions"
-                        variant="segmented"
-                      />
-
-                      <!-- Acts on the four decoration PNGs rather than on the
-                           band, so it is the one control here that does
-                           something for a cover made of edge pieces. -->
-                      <TemplateFormChoice
-                        v-model="gildingReliefModel"
-                        :label="t('management.partnerTemplateForm.coverGilding.relief')"
-                        :options="gildingReliefOptions"
-                        variant="segmented"
-                      />
-                      <p class="text-[0.6875rem] leading-snug text-slate-500">
-                        {{ t('management.partnerTemplateForm.coverGilding.reliefHint') }}
-                      </p>
-
-                      <!-- Band edges, both as % of the stage width so the border
-                           keeps a uniform thickness all the way round. -->
-                      <div class="grid grid-cols-2 gap-2.5">
-                        <TemplateFormNumber
-                          v-model="form.cover_stage_layout.coverGilding.bandOuter"
-                          :label="t('management.partnerTemplateForm.coverGilding.bandOuter')"
-                          :min="0"
-                          :max="20"
-                          :step="0.1"
-                          unit="%"
-                        />
-                        <TemplateFormNumber
-                          v-model="form.cover_stage_layout.coverGilding.bandInner"
-                          :label="t('management.partnerTemplateForm.coverGilding.bandInner')"
-                          :min="0.5"
-                          :max="30"
-                          :step="0.1"
-                          unit="%"
-                        />
-                      </div>
-                      <p
-                        v-if="form.cover_stage_layout.coverGilding.bandInner <= form.cover_stage_layout.coverGilding.bandOuter"
-                        class="text-[0.6875rem] leading-snug text-amber-700 bg-amber-50 ring-1 ring-amber-100 rounded-xl p-2.5"
-                      >
-                        {{ t('management.partnerTemplateForm.coverGilding.bandWarning') }}
-                      </p>
-
-                      <div class="list-group">
-                        <TemplateFormSwitch
-                          v-model="form.cover_stage_layout.coverGilding.cornerFlares"
-                          :label="t('management.partnerTemplateForm.coverGilding.cornerFlares')"
-                          :description="t('management.partnerTemplateForm.coverGilding.cornerFlaresHint')"
-                        />
-                      </div>
-                      <!-- The drifting motes used to be configured here. They
-                           span every stage rather than sitting on the band, so
-                           they now have their own section below. -->
-                      <p class="text-[0.6875rem] leading-snug text-slate-500">
-                        {{ t('management.partnerTemplateForm.coverGilding.sparkMovedHint') }}
-                      </p>
-
-                      <TemplateFormChoice
-                        v-model="gildingColorSourceModel"
-                        :label="t('management.partnerTemplateForm.coverGilding.colorSource')"
-                        :options="gildingColorSourceOptions"
-                        variant="segmented"
-                      />
-
-                      <TemplateFormColor
-                        v-if="form.cover_stage_layout.coverGilding.colorSource === 'custom'"
-                        v-model="form.cover_stage_layout.coverGilding.customColor"
-                        :name="t('management.partnerTemplateForm.colorField.names.gilding')"
-                        placeholder="#E0B269"
-                      />
-              </TemplateFormDisclosure>
-            </section>
-
-            <!-- The names-and-details composition: the hosts' names with a mark
-                 between them, the date, and the venue — a printed card's layout,
-                 where the couple is the headline rather than the guest. Three
-                 switches, each opening only its own settings, because a template
-                 routinely wants the names without the venue and the other way
-                 round. No eyebrow over them: each row already says what it
-                 shows, the same reason the visibility group below has none. -->
-            <section :class="[PANEL, 'overflow-hidden divide-y divide-slate-100']">
-              <TemplateFormSwitch
-                v-model="form.cover_stage_layout.showCoverHosts"
-                :label="t('management.partnerTemplateForm.coverDetails.showHosts')"
-                :description="t('management.partnerTemplateForm.coverDetails.showHostsHint')"
-              />
-              <TemplateFormDisclosure
-                :open="form.cover_stage_layout.showCoverHosts"
-                content-class="px-4 pb-4 pt-3 space-y-4"
-              >
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
-                  <TemplateFormSelect
-                    v-model="coverHostCountModel"
-                    :label="t('management.partnerTemplateForm.coverDetails.hostCount')"
-                    :options="coverHostCountOptions"
-                  />
-                  <TemplateFormChoice
-                    v-model="coverHostArrangementModel"
-                    :label="t('management.partnerTemplateForm.coverDetails.arrangement')"
-                    :options="coverHostArrangementOptions"
+                    v-model="gildingIntensityModel"
+                    :label="t('management.partnerTemplateForm.coverGilding.intensity')"
+                    :options="gildingIntensityOptions"
                     variant="segmented"
                   />
-                </div>
 
-                <div class="space-y-1.5">
+                  <!-- Acts on the four decoration PNGs rather than on the
+                       band, so it is the one control here that does
+                       something for a cover made of edge pieces. -->
                   <TemplateFormChoice
-                    v-model="coverHostSublineModel"
-                    :label="t('management.partnerTemplateForm.coverDetails.subline')"
-                    :options="coverHostSublineOptions"
-                    :columns="3"
+                    v-model="gildingReliefModel"
+                    :label="t('management.partnerTemplateForm.coverGilding.relief')"
+                    :options="gildingReliefOptions"
+                    variant="segmented"
                   />
-                  <p :class="FIELD_HINT">
-                    {{ t(`management.partnerTemplateForm.coverDetails.sublineHint.${form.cover_stage_layout.coverDetails.hostSubline}`) }}
+                  <p class="text-[0.6875rem] leading-snug text-slate-500">
+                    {{ t('management.partnerTemplateForm.coverGilding.reliefHint') }}
                   </p>
-                </div>
 
-                <!-- The mark. An upload replaces the choice rather than being one
-                     of its options — the precedence the crest's breakline art
-                     has over its style — so there is no option that draws nothing
-                     until a file exists, and removing the file brings the chosen
-                     mark back. -->
-                <TemplateFormChoice
-                  v-model="coverSeparatorModel"
-                  :label="t('management.partnerTemplateForm.coverDetails.separator')"
-                  :options="coverSeparatorOptions"
-                />
-                <TemplateFormImageField
-                  :label="t('management.partnerTemplateForm.coverDetails.separatorImage')"
-                  :hint="t('management.partnerTemplateForm.coverDetails.separatorImageHint')"
-                  :upload-label="t('management.partnerTemplateForm.coverDetails.separatorImageUpload')"
-                  accept="image/png,image/svg+xml,image/*"
-                  :preview="coverHostSeparatorImageSrc"
-                  :file-name="form.cover_host_separator_image?.name"
-                  @change="handleFileChange('cover_host_separator_image', $event)"
-                  @clear="clearAssetField('cover_host_separator_image')"
-                />
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
-                  <TemplateFormSelect
-                    v-model="coverSeparatorColorModel"
-                    :label="t('management.partnerTemplateForm.coverDetails.separatorColor')"
-                    :options="coverSeparatorColorOptions"
+                  <!-- Band edges, both as % of the stage width so the border
+                       keeps a uniform thickness all the way round. -->
+                  <div class="grid grid-cols-2 gap-2.5">
+                    <TemplateFormNumber
+                      v-model="form.cover_stage_layout.coverGilding.bandOuter"
+                      :label="t('management.partnerTemplateForm.coverGilding.bandOuter')"
+                      :min="0"
+                      :max="20"
+                      :step="0.1"
+                      unit="%"
+                    />
+                    <TemplateFormNumber
+                      v-model="form.cover_stage_layout.coverGilding.bandInner"
+                      :label="t('management.partnerTemplateForm.coverGilding.bandInner')"
+                      :min="0.5"
+                      :max="30"
+                      :step="0.1"
+                      unit="%"
+                    />
+                  </div>
+                  <p
+                    v-if="form.cover_stage_layout.coverGilding.bandInner <= form.cover_stage_layout.coverGilding.bandOuter"
+                    class="text-[0.6875rem] leading-snug text-amber-700 bg-amber-50 ring-1 ring-amber-100 rounded-xl p-2.5"
+                  >
+                    {{ t('management.partnerTemplateForm.coverGilding.bandWarning') }}
+                  </p>
+
+                  <div class="list-group">
+                    <TemplateFormSwitch
+                      v-model="form.cover_stage_layout.coverGilding.cornerFlares"
+                      :label="t('management.partnerTemplateForm.coverGilding.cornerFlares')"
+                      :description="t('management.partnerTemplateForm.coverGilding.cornerFlaresHint')"
+                    />
+                  </div>
+                  <!-- The drifting motes used to be configured here. They
+                       span every stage rather than sitting on the band, so
+                       they now have their own section in Effects. -->
+                  <p class="text-[0.6875rem] leading-snug text-slate-500">
+                    {{ t('management.partnerTemplateForm.coverGilding.sparkMovedHint') }}
+                  </p>
+
+                  <TemplateFormChoice
+                    v-model="gildingColorSourceModel"
+                    :label="t('management.partnerTemplateForm.coverGilding.colorSource')"
+                    :options="gildingColorSourceOptions"
+                    variant="segmented"
                   />
-                  <TemplateFormNumber
-                    v-model="coverSeparatorScaleModel"
-                    :label="t('management.partnerTemplateForm.coverDetails.separatorScale')"
-                    :min="COVER_SEPARATOR_SCALE_RANGE.min * 100"
-                    :max="COVER_SEPARATOR_SCALE_RANGE.max * 100"
-                    :step="5"
-                    unit="%"
+
+                  <TemplateFormColor
+                    v-if="form.cover_stage_layout.coverGilding.colorSource === 'custom'"
+                    v-model="form.cover_stage_layout.coverGilding.customColor"
+                    :name="t('management.partnerTemplateForm.colorField.names.gilding')"
+                    placeholder="#E0B269"
                   />
-                </div>
-                <TemplateFormColor
-                  v-if="form.cover_stage_layout.coverDetails.separatorColorSource === 'custom'"
-                  v-model="form.cover_stage_layout.coverDetails.separatorCustomColor"
-                  :name="t('management.partnerTemplateForm.colorField.names.hostSeparator')"
-                  placeholder="#C9A45C"
-                />
-              </TemplateFormDisclosure>
+                </TemplateFormDisclosure>
+              </div>
+            </section>
 
-              <TemplateFormSwitch
-                v-model="form.cover_stage_layout.showCoverDate"
-                :label="t('management.partnerTemplateForm.coverDetails.showDate')"
-                :description="t('management.partnerTemplateForm.coverDetails.showDateHint')"
-              />
-              <TemplateFormDisclosure
-                :open="form.cover_stage_layout.showCoverDate"
-                content-class="px-4 pb-4 pt-3 space-y-1.5"
-              >
-                <TemplateFormChoice
-                  v-model="coverDateFormatModel"
-                  :label="t('management.partnerTemplateForm.coverDetails.dateFormat')"
-                  :options="coverDateFormatOptions"
-                  :columns="3"
-                />
-                <p :class="FIELD_HINT">
-                  {{ t(`management.partnerTemplateForm.coverDetails.dateFormatHint.${form.cover_stage_layout.coverDetails.dateFormat}`) }}
-                </p>
-              </TemplateFormDisclosure>
+            <!-- What the cover says: one switch per block, in the order the
+                 cover draws them (`coverBlocks`), and each switch opens
+                 everything about its block — the block's own settings first,
+                 then its type (font, size, colour) last, the same place in
+                 every block. Type comes last because the host names' second
+                 line only exists once "Under each name" above it says so.
 
-              <TemplateFormSwitch
-                v-model="form.cover_stage_layout.showCoverLocation"
-                :label="t('management.partnerTemplateForm.coverDetails.showLocation')"
-                :description="t('management.partnerTemplateForm.coverDetails.showLocationHint')"
-              />
-              <TemplateFormDisclosure
-                :open="form.cover_stage_layout.showCoverLocation"
-                content-class="px-4 pb-4 pt-3"
-              >
-                <div class="list-group">
-                  <TemplateFormSwitch
-                    v-model="form.cover_stage_layout.coverDetails.showTime"
-                    :label="t('management.partnerTemplateForm.coverDetails.showTime')"
-                    :description="t('management.partnerTemplateForm.coverDetails.showTimeHint')"
+                 A block switched off takes its settings with it, so a
+                 template that draws three blocks shows three blocks' settings
+                 rather than seven.
+
+                 No eyebrow: every row begins with "Show", and a heading over
+                 them would name the group after what each member already says
+                 about itself. `divide-y` rather than `.list-group`, because the
+                 panel already draws the border and the radius. -->
+            <section :class="[PANEL, 'overflow-hidden divide-y divide-slate-100']">
+              <template v-for="block in coverBlocks" :key="block.id">
+                <TemplateFormSwitch
+                  :model-value="block.shown"
+                  :label="block.label"
+                  :description="block.hint"
+                  :data-cover-block="block.id"
+                  @update:model-value="setCoverBlockShown(block.id, $event)"
+                />
+                <TemplateFormDisclosure :open="block.shown" content-class="px-3 pb-4 pt-3 space-y-4">
+                  <FileUploadField
+                    v-if="block.id === 'header'"
+                    :label="t('management.partnerTemplateForm.coverDecorations.headerTextImage')"
+                    accept="image/png,image/svg+xml,image/*"
+                    :file-name="form.header_text_image?.name"
+                    :has-existing-file="hasSavedAsset('header_text_image')"
+                    @change="handleFileChange('header_text_image', $event)"
+                    @clear="clearAssetField('header_text_image')"
                   />
-                </div>
-              </TemplateFormDisclosure>
 
-              <!-- What the three share. Capitals is one decision for the whole
-                   composition — spaced names over a lowercase venue read as two
-                   designs — so it is asked once, after the three it governs. -->
-              <TemplateFormDisclosure :open="coverDetailsShown" content-class="p-4 space-y-3">
+                  <!-- The logo row's stack: sample logo 1 is the base when the
+                       event has no logo of its own, sample logo 2 the shape
+                       laid over it (and the clip for the first host's photo). -->
+                  <div v-else-if="block.id === 'logo'" class="grid grid-cols-2 gap-2.5">
+                    <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo1')" accept="image/png,image/svg+xml,image/*" :file-name="form.sample_logo_1?.name" :has-existing-file="hasSavedAsset('sample_logo_1')" @change="handleFileChange('sample_logo_1', $event)" @clear="clearAssetField('sample_logo_1')" />
+                    <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo2')" accept="image/png,image/svg+xml,image/*" :file-name="form.sample_logo_2?.name" :has-existing-file="hasSavedAsset('sample_logo_2')" @change="handleFileChange('sample_logo_2', $event)" @clear="clearAssetField('sample_logo_2')" />
+                  </div>
+
+                  <div v-else-if="block.id === 'guest'" class="space-y-3">
+                    <TemplateFormChoice
+                      v-model="guestFrameStyleModel"
+                      :label="t('management.partnerTemplateForm.coverDecorations.guestFrameGroup')"
+                      :options="guestFrameStyleOptions"
+                      :columns="3"
+                    />
+                    <p :class="FIELD_HINT">
+                      {{ t(`management.partnerTemplateForm.guestFrame.hint.${form.cover_stage_layout.guestFrame.style}`) }}
+                    </p>
+
+                    <!-- The same three upload slots serve every style, relabelled
+                         to what the chosen style actually draws with them.
+                         Binding the fields to fixed asset fields (rather than
+                         swapping fields per style) is what lets a partner switch
+                         styles without losing artwork they already uploaded. -->
+                    <div v-if="form.cover_stage_layout.guestFrame.style === 'split'" class="grid grid-cols-3 gap-2.5">
+                      <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameLeft')" accept="image/*" :file-name="form.guest_title_frame_left?.name" :has-existing-file="hasSavedAsset('guest_title_frame_left')" @change="handleFileChange('guest_title_frame_left', $event)" @clear="clearAssetField('guest_title_frame_left')" />
+                      <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameMid')" accept="image/*" :file-name="form.guest_title_frame_mid?.name" :has-existing-file="hasSavedAsset('guest_title_frame_mid')" @change="handleFileChange('guest_title_frame_mid', $event)" @clear="clearAssetField('guest_title_frame_mid')" />
+                      <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.frameRight')" accept="image/*" :file-name="form.guest_title_frame_right?.name" :has-existing-file="hasSavedAsset('guest_title_frame_right')" @change="handleFileChange('guest_title_frame_right', $event)" @clear="clearAssetField('guest_title_frame_right')" />
+                    </div>
+
+                    <FileUploadField
+                      v-else-if="form.cover_stage_layout.guestFrame.style === 'single'"
+                      :label="t('management.partnerTemplateForm.guestFrame.singleImage')"
+                      accept="image/*"
+                      :file-name="form.guest_title_frame_mid?.name"
+                      :has-existing-file="hasSavedAsset('guest_title_frame_mid')"
+                      @change="handleFileChange('guest_title_frame_mid', $event)"
+                      @clear="clearAssetField('guest_title_frame_mid')"
+                    />
+
+                    <template v-else>
+                      <div class="grid grid-cols-2 gap-2.5">
+                        <FileUploadField :label="t('management.partnerTemplateForm.guestFrame.cornerAImage')" accept="image/*" :file-name="form.guest_title_frame_left?.name" :has-existing-file="hasSavedAsset('guest_title_frame_left')" @change="handleFileChange('guest_title_frame_left', $event)" @clear="clearAssetField('guest_title_frame_left')" />
+                        <FileUploadField :label="t('management.partnerTemplateForm.guestFrame.cornerBImage')" accept="image/*" :file-name="form.guest_title_frame_right?.name" :has-existing-file="hasSavedAsset('guest_title_frame_right')" @change="handleFileChange('guest_title_frame_right', $event)" @clear="clearAssetField('guest_title_frame_right')" />
+                      </div>
+
+                      <GuestFrameCornerGrid
+                        v-model="guestFrameCornersModel"
+                        :has-left="hasGuestFrameSlot('guest_title_frame_left')"
+                        :has-right="hasGuestFrameSlot('guest_title_frame_right')"
+                      />
+
+                      <div class="grid grid-cols-2 gap-2.5">
+                        <TemplateFormNumber v-model="form.cover_stage_layout.guestFrame.cornerSize" :label="t('management.partnerTemplateForm.guestFrame.cornerSize')" :min="5" :max="60" :step="1" unit="%" />
+                        <TemplateFormNumber v-model="form.cover_stage_layout.guestFrame.cornerInset" :label="t('management.partnerTemplateForm.guestFrame.cornerInset')" :min="-20" :max="30" :step="1" unit="%" />
+                      </div>
+                    </template>
+
+                    <TemplateFormNumber
+                      v-model="form.cover_stage_layout.guestFrame.scale"
+                      :label="t('management.partnerTemplateForm.guestFrame.scale')"
+                      :min="0.3"
+                      :max="2.5"
+                      :step="0.05"
+                      unit="x"
+                    />
+                  </div>
+
+                  <div v-else-if="block.id === 'hosts'" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                      <TemplateFormSelect
+                        v-model="coverHostCountModel"
+                        :label="t('management.partnerTemplateForm.coverDetails.hostCount')"
+                        :options="coverHostCountOptions"
+                      />
+                      <TemplateFormChoice
+                        v-model="coverHostArrangementModel"
+                        :label="t('management.partnerTemplateForm.coverDetails.arrangement')"
+                        :options="coverHostArrangementOptions"
+                        variant="segmented"
+                      />
+                    </div>
+
+                    <div class="space-y-1.5">
+                      <TemplateFormChoice
+                        v-model="coverHostSublineModel"
+                        :label="t('management.partnerTemplateForm.coverDetails.subline')"
+                        :options="coverHostSublineOptions"
+                        :columns="3"
+                      />
+                      <p :class="FIELD_HINT">
+                        {{ t(`management.partnerTemplateForm.coverDetails.sublineHint.${form.cover_stage_layout.coverDetails.hostSubline}`) }}
+                      </p>
+                    </div>
+
+                    <!-- The mark. An upload replaces the choice rather than
+                         being one of its options — the precedence the crest's
+                         breakline art has over its style — so there is no
+                         option that draws nothing until a file exists, and
+                         removing the file brings the chosen mark back. -->
+                    <TemplateFormChoice
+                      v-model="coverSeparatorModel"
+                      :label="t('management.partnerTemplateForm.coverDetails.separator')"
+                      :options="coverSeparatorOptions"
+                    />
+                    <TemplateFormImageField
+                      :label="t('management.partnerTemplateForm.coverDetails.separatorImage')"
+                      :hint="t('management.partnerTemplateForm.coverDetails.separatorImageHint')"
+                      :upload-label="t('management.partnerTemplateForm.coverDetails.separatorImageUpload')"
+                      accept="image/png,image/svg+xml,image/*"
+                      :preview="coverHostSeparatorImageSrc"
+                      :file-name="form.cover_host_separator_image?.name"
+                      @change="handleFileChange('cover_host_separator_image', $event)"
+                      @clear="clearAssetField('cover_host_separator_image')"
+                    />
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                      <TemplateFormSelect
+                        v-model="coverSeparatorColorModel"
+                        :label="t('management.partnerTemplateForm.coverDetails.separatorColor')"
+                        :options="coverSeparatorColorOptions"
+                      />
+                      <TemplateFormNumber
+                        v-model="coverSeparatorScaleModel"
+                        :label="t('management.partnerTemplateForm.coverDetails.separatorScale')"
+                        :min="COVER_SEPARATOR_SCALE_RANGE.min * 100"
+                        :max="COVER_SEPARATOR_SCALE_RANGE.max * 100"
+                        :step="5"
+                        unit="%"
+                      />
+                    </div>
+                    <TemplateFormColor
+                      v-if="form.cover_stage_layout.coverDetails.separatorColorSource === 'custom'"
+                      v-model="form.cover_stage_layout.coverDetails.separatorCustomColor"
+                      :name="t('management.partnerTemplateForm.colorField.names.hostSeparator')"
+                      placeholder="#C9A45C"
+                    />
+                  </div>
+
+                  <div v-else-if="block.id === 'date'" class="space-y-1.5">
+                    <TemplateFormChoice
+                      v-model="coverDateFormatModel"
+                      :label="t('management.partnerTemplateForm.coverDetails.dateFormat')"
+                      :options="coverDateFormatOptions"
+                      :columns="3"
+                    />
+                    <p :class="FIELD_HINT">
+                      {{ t(`management.partnerTemplateForm.coverDetails.dateFormatHint.${form.cover_stage_layout.coverDetails.dateFormat}`) }}
+                    </p>
+                  </div>
+
+                  <div v-else-if="block.id === 'location'" class="list-group">
+                    <TemplateFormSwitch
+                      v-model="form.cover_stage_layout.coverDetails.showTime"
+                      :label="t('management.partnerTemplateForm.coverDetails.showTime')"
+                      :description="t('management.partnerTemplateForm.coverDetails.showTimeHint')"
+                    />
+                  </div>
+
+                  <!-- The block's type. Font and size are per TEXT (in
+                       `coverText`, both layout modes), which is why the names
+                       block lists two rows; colour is per BLOCK and lives on
+                       its box, so it is offered only where the block is placed
+                       by box — every block in free mode, only the names, date
+                       and venue in rows. The preview's A−/A+ and its colour bar
+                       write the same values, so the two can never disagree. -->
+                  <div
+                    v-if="block.texts.length"
+                    class="space-y-3"
+                    :class="{ 'pt-4 border-t border-slate-100': block.id !== 'invite' }"
+                  >
+                    <div
+                      v-for="text in block.texts"
+                      :key="text.id"
+                      class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3"
+                      :data-cover-text="text.id"
+                    >
+                      <TemplateFormSelect
+                        :model-value="coverTextFont(text.id)"
+                        :label="text.label"
+                        :options="coverTextFontOptions"
+                        @update:model-value="setCoverTextFont(text.id, $event)"
+                      />
+                      <TemplateFormNumber
+                        :model-value="coverTextSize(text.id)"
+                        :label="t('management.partnerTemplateForm.coverText.size')"
+                        :min="COVER_TEXT_SCALE_RANGE.min * 100"
+                        :max="COVER_TEXT_SCALE_RANGE.max * 100"
+                        :step="5"
+                        unit="%"
+                        @update:model-value="setCoverTextSize(text.id, $event)"
+                      />
+                    </div>
+                    <div
+                      v-if="block.colorEditable"
+                      class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3"
+                      :data-cover-color="block.id"
+                    >
+                      <TemplateFormSelect
+                        :model-value="coverBlockColorSource(block.id)"
+                        :label="t('management.coverLayoutEditor.fields.colorSource')"
+                        :options="coverColorSourceOptions"
+                        @update:model-value="setCoverBlockColorSource(block.id, $event)"
+                      />
+                      <!-- Colour names a palette slot rather than a hex, so a
+                           recoloured template still reaches the block; only
+                           Custom takes a hex. -->
+                      <TemplateFormColor
+                        v-if="coverBlockColorSource(block.id) === 'custom'"
+                        :model-value="coverBlockCustomColor(block.id)"
+                        :label="t('management.coverLayoutEditor.colorSources.custom')"
+                        :name="t('management.partnerTemplateForm.colorField.names.coverText')"
+                        placeholder="#FFFFFF"
+                        @update:model-value="setCoverBlockCustomColor(block.id, $event)"
+                      />
+                    </div>
+                  </div>
+                </TemplateFormDisclosure>
+              </template>
+
+              <!-- What the names, date and venue share. Capitals is one
+                   decision for the whole composition — spaced names over a
+                   lowercase venue read as two designs — so it is asked once,
+                   after the blocks it governs. -->
+              <TemplateFormDisclosure :open="coverDetailsShown" content-class="p-3 space-y-3">
                 <div class="list-group">
                   <TemplateFormSwitch
                     v-model="form.cover_stage_layout.coverDetails.capitals"
@@ -1069,11 +1134,11 @@
                     :description="t('management.partnerTemplateForm.coverDetails.capitalsHint')"
                   />
                 </div>
-                <!-- The composition lands where the logo, the invite line and the
-                     guest name sit, because it is meant to replace them. Said,
-                     with the one-tap way out, rather than done: switching a
-                     partner's other blocks off behind their back is not a
-                     default, it is a surprise. -->
+                <!-- The composition lands where the logo, the invite line and
+                     the guest name sit, because it is meant to replace them.
+                     Said, with the one-tap way out, rather than done:
+                     switching a partner's other blocks off behind their back
+                     is not a default, it is a surprise. -->
                 <div
                   v-if="coverRowsCompeting"
                   class="flex items-center gap-3 rounded-xl bg-amber-50 ring-1 ring-amber-100 p-2.5"
@@ -1088,49 +1153,13 @@
               </TemplateFormDisclosure>
             </section>
 
-            <!-- Text styles: the font and size of every text on the cover, one
-                 row per text that is switched on. Keyed by text, not by block,
-                 because the names block holds two texts set in different faces
-                 at different sizes. They hold in both layout modes, unlike the
-                 boxes below, so a stacked-rows template can style its guest name
-                 as freely as a free one. The preview's A−/A+ writes the same
-                 numbers, so the two can never disagree. -->
-            <section v-if="coverTextRows.length" :class="[PANEL, 'divide-y divide-slate-200/70']">
-              <div class="p-4 space-y-1">
-                <h5 :class="SECTION_HEADING">
-                  {{ t('management.partnerTemplateForm.coverText.heading') }}
-                </h5>
-                <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.coverText.hint') }}</p>
-              </div>
-              <div
-                v-for="row in coverTextRows"
-                :key="row.id"
-                class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3"
-              >
-                <TemplateFormSelect
-                  :model-value="coverTextFont(row.id)"
-                  :label="row.label"
-                  :options="coverTextFontOptions"
-                  @update:model-value="setCoverTextFont(row.id, $event)"
-                />
-                <TemplateFormNumber
-                  :model-value="coverTextSize(row.id)"
-                  :label="t('management.partnerTemplateForm.coverText.size')"
-                  :min="COVER_TEXT_SCALE_RANGE.min * 100"
-                  :max="COVER_TEXT_SCALE_RANGE.max * 100"
-                  :step="5"
-                  unit="%"
-                  @update:model-value="setCoverTextSize(row.id, $event)"
-                />
-              </div>
-            </section>
-
-            <!-- Placement model. Rows is the original stacked layout; free hands
-                 each block its own rectangle, which is what the preview's drag
-                 handles write to. Switching to free seeds every block from the
-                 row geometry, so nothing on the cover moves until something is
-                 actually dragged. -->
-            <section :class="[PANEL, 'divide-y divide-slate-200/70']">
+            <!-- Where each block sits, and nothing else: how a block looks is
+                 set beside its switch above. Rows is the original stacked
+                 layout; free hands each block its own rectangle, which is what
+                 the preview's drag handles write to. Switching to free seeds
+                 every block from the row geometry, so nothing on the cover
+                 moves until something is actually dragged. -->
+            <section :class="PANEL">
               <div class="p-4 space-y-4">
                 <h5 :class="SECTION_HEADING">
                   {{ t('management.coverLayoutEditor.sectionTitle') }}
@@ -1177,24 +1206,6 @@
                       <TemplateFormNumber v-model="coverBoxHeight" :label="t('management.coverLayoutEditor.fields.height')" :min="2" :max="100" :step="0.5" unit="%" />
                     </div>
 
-                    <!-- Colour names a palette slot rather than a hex, so a
-                         recoloured template still reaches the block. Font and
-                         size are not here: they belong to the TEXT, not the box,
-                         and live in Text styles above, where they hold in both
-                         layout modes. -->
-                    <TemplateFormSelect
-                      v-if="selectedCoverBlockHasText"
-                      v-model="coverBoxColorSource"
-                      :label="t('management.coverLayoutEditor.fields.colorSource')"
-                      :options="coverColorSourceOptions"
-                    />
-
-                    <TemplateFormColor
-                      v-if="selectedCoverBlockHasText && selectedCoverBox.colorSource === 'custom'"
-                      v-model="coverBoxCustomColor"
-                      :name="t('management.partnerTemplateForm.colorField.names.coverText')"
-                      placeholder="#FFFFFF"
-                    />
                     <div class="flex flex-wrap items-center gap-2">
                       <button
                         type="button"
@@ -1217,43 +1228,6 @@
                   </p>
                 </template>
               </div>
-            </section>
-
-            <!-- What the cover shows: one switch per block, in the order the
-                 cover stacks them. One group rather than loose rows under an
-                 eyebrow reading "Visibility": each row already begins with the
-                 word Show, so the eyebrow was naming the group after the thing
-                 every one of its members says about itself.
-
-                 The welcome header and the host name under the logo used to be
-                 here as well. They are stored in cover_stage_layout, but the
-                 invitation's host block is what draws them, so they are switched
-                 in Main Content beside it.
-
-                 `divide-y` rather than `.list-group`, because the panel already
-                 draws the border and the radius that class would bring — nesting
-                 the two means immediately turning one of them back off. -->
-            <section :class="[PANEL, 'overflow-hidden divide-y divide-slate-100']">
-              <TemplateFormSwitch
-                v-model="form.cover_stage_layout.showCoverHeaderText"
-                :label="t('management.partnerTemplateForm.coverLayout.showCoverHeaderText')"
-                :description="t('management.partnerTemplateForm.coverLayout.showCoverHeaderTextHint')"
-              />
-              <TemplateFormSwitch
-                v-model="form.cover_stage_layout.showCoverLogo"
-                :label="t('management.partnerTemplateForm.coverLayout.showCoverLogo')"
-                :description="t('management.partnerTemplateForm.coverLayout.showCoverLogoHint')"
-              />
-              <TemplateFormSwitch
-                v-model="form.cover_stage_layout.showCoverInviteText"
-                :label="t('management.partnerTemplateForm.coverLayout.showCoverInviteText')"
-                :description="t('management.partnerTemplateForm.coverLayout.showCoverInviteTextHint')"
-              />
-              <TemplateFormSwitch
-                v-model="form.cover_stage_layout.showCoverGuestName"
-                :label="t('management.partnerTemplateForm.coverLayout.showCoverGuestName')"
-                :description="t('management.partnerTemplateForm.coverLayout.showCoverGuestNameHint')"
-              />
             </section>
 
             <!-- Advanced layout.
@@ -3231,20 +3205,32 @@ const layoutModeModel = computed<string>({
   },
 })
 
+/** The switch that puts each block on the cover. */
+const COVER_BLOCK_SWITCH = {
+  header: 'showCoverHeaderText',
+  logo: 'showCoverLogo',
+  invite: 'showCoverInviteText',
+  guest: 'showCoverGuestName',
+  hosts: 'showCoverHosts',
+  date: 'showCoverDate',
+  location: 'showCoverLocation',
+} as const satisfies Record<CoverElementId, keyof CoverStageLayout>
+
 /**
  * Which blocks are on the cover at all — the preview frame's
  * `coverElementVisibility`, minus its guest-name gate, which no template setting
  * controls. A block that is switched off has nothing to place.
  */
-const coverBlockShown = computed<Record<CoverElementId, boolean>>(() => ({
-  header: form.cover_stage_layout.showCoverHeaderText,
-  logo: form.cover_stage_layout.showCoverLogo,
-  invite: form.cover_stage_layout.showCoverInviteText,
-  guest: form.cover_stage_layout.showCoverGuestName,
-  hosts: form.cover_stage_layout.showCoverHosts,
-  date: form.cover_stage_layout.showCoverDate,
-  location: form.cover_stage_layout.showCoverLocation,
-}))
+const coverBlockShown = computed(
+  () =>
+    Object.fromEntries(
+      COVER_ELEMENT_IDS.map((id) => [id, form.cover_stage_layout[COVER_BLOCK_SWITCH[id]]]),
+    ) as Record<CoverElementId, boolean>,
+)
+
+function setCoverBlockShown(id: CoverElementId, shown: boolean): void {
+  form.cover_stage_layout[COVER_BLOCK_SWITCH[id]] = shown
+}
 
 /**
  * Free mode lists every block, greying the ones switched off, as it always has.
@@ -3291,9 +3277,7 @@ watch(
  * stored: the row blocks' resolved boxes there are their ROW geometry, and
  * writing it would freeze them against the next row-height edit.
  */
-function updateSelectedCoverBox(patch: Partial<CoverElementBox>): void {
-  const id = selectedCoverElement.value
-  if (!id) return
+function updateCoverBox(id: CoverElementId, patch: Partial<CoverElementBox>): void {
   const next: CoverElementBoxes = { ...(form.cover_stage_layout.coverElements ?? {}) }
   for (const key of placeableCoverElementIds(form.cover_stage_layout.layoutMode)) {
     next[key] =
@@ -3307,7 +3291,10 @@ function updateSelectedCoverBox(patch: Partial<CoverElementBox>): void {
 function coverBoxModel(field: 'x' | 'y' | 'width' | 'height') {
   return computed<number>({
     get: () => selectedCoverBox.value?.[field] ?? 0,
-    set: (value) => updateSelectedCoverBox({ [field]: value }),
+    set: (value) => {
+      const id = selectedCoverElement.value
+      if (id) updateCoverBox(id, { [field]: value })
+    },
   })
 }
 
@@ -3315,11 +3302,6 @@ const coverBoxX = coverBoxModel('x')
 const coverBoxY = coverBoxModel('y')
 const coverBoxWidth = coverBoxModel('width')
 const coverBoxHeight = coverBoxModel('height')
-
-/** The logo block has no text, so none of the type controls apply to it. */
-const selectedCoverBlockHasText = computed(
-  () => !!selectedCoverBox.value && selectedCoverElement.value !== 'logo',
-)
 
 /**
  * `auto` is the unset state, and it is not the same as picking the slot the
@@ -3374,61 +3356,77 @@ const coverColorSourceOptions = computed<TemplateFormSelectOption[]>(() => [
   ),
 ])
 
-const coverBoxColorSource = computed<string>({
-  get: () => selectedCoverBox.value?.colorSource ?? COVER_SLOT_AUTO,
-  set: (value) => {
-    const source = value === COVER_SLOT_AUTO ? undefined : (value as CoverElementColorSource)
-    updateSelectedCoverBox({
-      colorSource: source,
-      // Seed the picker with something visible rather than an empty swatch the
-      // partner has to notice is empty before the colour can change at all.
-      ...(source === 'custom' && !selectedCoverBox.value?.customColor
-        ? { customColor: '#FFFFFF' }
-        : {}),
-    })
-  },
-})
+/**
+ * Whether a block's colour can be set: it has text, and it is placed by box in
+ * this mode. The colour lives on the box, and in rows mode the header, invite
+ * line and guest name have none — they are laid out by the row numbers, and
+ * writing them a box would freeze that geometry against the next row edit.
+ */
+const coverBlockColorEditable = (id: CoverElementId): boolean =>
+  COVER_BLOCK_TEXT[id] !== null &&
+  placeableCoverElementIds(form.cover_stage_layout.layoutMode).includes(id)
 
-const coverBoxCustomColor = computed<string>({
-  get: () => selectedCoverBox.value?.customColor ?? '#FFFFFF',
-  set: (value) => updateSelectedCoverBox({ customColor: value }),
-})
+const coverBlockColorSource = (id: CoverElementId): string =>
+  resolvedCoverElements.value[id].colorSource ?? COVER_SLOT_AUTO
+
+function setCoverBlockColorSource(id: CoverElementId, value: string | number): void {
+  const source = value === COVER_SLOT_AUTO ? undefined : (value as CoverElementColorSource)
+  updateCoverBox(id, {
+    colorSource: source,
+    // Seed the picker with something visible rather than an empty swatch the
+    // partner has to notice is empty before the colour can change at all.
+    ...(source === 'custom' && !resolvedCoverElements.value[id].customColor
+      ? { customColor: '#FFFFFF' }
+      : {}),
+  })
+}
+
+const coverBlockCustomColor = (id: CoverElementId): string =>
+  resolvedCoverElements.value[id].customColor ?? '#FFFFFF'
+
+function setCoverBlockCustomColor(id: CoverElementId, value: string): void {
+  updateCoverBox(id, { customColor: value })
+}
 
 /**
  * Puts one block back where the row model would have put it.
  *
- * `updateSelectedCoverBox` merges the patch onto the block's *current* resolved
- * values, so the type slots need to be named with an explicit `undefined`
- * here — omitting the keys entirely (which is what the row model's own boxes
- * do, since they never had a type slot to begin with) would leave the block's
- * existing fontType/colorSource/customColor untouched instead of clearing them.
+ * Geometry only. The colour is set beside the block's switch, not in the
+ * placement panel this button sits in, so a reset here must not undo it — the
+ * patch merges onto the block's current resolved values, which carries the
+ * colour through. `fontType` is named with an explicit `undefined` because the
+ * row model's own boxes never had one, and omitting the key would leave a
+ * legacy slot on the box untouched.
  */
 function resetSelectedCoverBlock(): void {
   const id = selectedCoverElement.value
   if (!id) return
-  updateSelectedCoverBox({
+  updateCoverBox(id, {
     ...rowsToCoverElements(form.cover_stage_layout)[id],
     fontType: undefined,
-    colorSource: undefined,
-    customColor: undefined,
   })
 }
 
 /**
- * Drops every hand-placed box. The template then carries no `coverElements` at
- * all, which is also what makes "reset" a real reset: the blocks go back to
- * tracking the row numbers rather than to a frozen copy of them.
+ * Drops every hand-placed box this mode lists, which is also what makes "reset"
+ * a real reset: the blocks go back to tracking the row numbers rather than to a
+ * frozen copy of them.
+ *
+ * A block with a colour keeps a box at its seeded geometry, carrying only that
+ * colour — for the reason `resetSelectedCoverBlock` gives. Rows mode resets
+ * what it lists, the detail blocks, and leaves the row blocks' remembered free
+ * positions for the next switch back to free.
  */
 function resetAllCoverBlocks(): void {
-  if (isFreeCoverLayout.value) {
-    form.cover_stage_layout.coverElements = {}
-  } else {
-    // Rows mode resets what it lists — the detail blocks — and leaves the row
-    // blocks' remembered free positions for the next switch back to free.
-    const next: CoverElementBoxes = { ...(form.cover_stage_layout.coverElements ?? {}) }
-    for (const id of COVER_DETAIL_ELEMENT_IDS) delete next[id]
-    form.cover_stage_layout.coverElements = next
+  const stored = form.cover_stage_layout.coverElements ?? {}
+  const seeds = rowsToCoverElements(form.cover_stage_layout)
+  const next: CoverElementBoxes = { ...stored }
+  for (const id of placeableCoverElementIds(form.cover_stage_layout.layoutMode)) {
+    const { colorSource, customColor } = stored[id] ?? {}
+    if (colorSource) next[id] = { ...seeds[id], colorSource, ...(customColor ? { customColor } : {}) }
+    else delete next[id]
   }
+  form.cover_stage_layout.coverElements = next
   selectedCoverElement.value = null
 }
 
@@ -3450,30 +3448,56 @@ function onCoverLayoutChange(elements: CoverElementBoxes): void {
 /** Every text's style as it renders now, box fallbacks included. */
 const resolvedCoverText = computed(() => resolveCoverTextStyles(form.cover_stage_layout))
 
-/** Whether the switch that owns each text has it on the cover. */
-const coverTextShown = computed<Record<CoverTextId, boolean>>(() => {
-  const layout = form.cover_stage_layout
-  return {
-    header: layout.showCoverHeaderText,
-    invite: layout.showCoverInviteText,
-    guest: layout.showCoverGuestName,
-    hostNames: layout.showCoverHosts,
-    hostSubline: layout.showCoverHosts && layout.coverDetails.hostSubline !== 'none',
-    date: layout.showCoverDate,
-    location: layout.showCoverLocation,
-  }
-})
+/**
+ * The copy for each block's switch, under `management.partnerTemplateForm`.
+ * The hint is the same key with `Hint` appended. The row blocks' switches were
+ * written under `coverLayout`, the names-and-details ones under `coverDetails`.
+ */
+const COVER_BLOCK_SWITCH_COPY: Record<CoverElementId, string> = {
+  header: 'coverLayout.showCoverHeaderText',
+  logo: 'coverLayout.showCoverLogo',
+  invite: 'coverLayout.showCoverInviteText',
+  guest: 'coverLayout.showCoverGuestName',
+  hosts: 'coverDetails.showHosts',
+  date: 'coverDetails.showDate',
+  location: 'coverDetails.showLocation',
+}
 
 /**
- * One row per text that is on the cover. A text switched off has nothing to
- * style, and listing it would put seven rows in front of a template that
- * draws three.
+ * Everything on the cover, in the order the cover draws it — one switch each,
+ * opening that block's own settings and then its type.
+ *
+ * `texts` is the block's texts (two for the names while "Under each name" draws
+ * something, one for every other text block, none for the logo). It does NOT
+ * follow the block's own switch, even though a text switched off has nothing to
+ * style: the disclosure already hides it, and emptying the list at the same
+ * moment would drop the type rows out from under the collapse while it plays.
+ * A lone text's font field is labelled "Font"; the names' two are labelled by
+ * text, since "Font" twice would not say which is which.
  */
-const coverTextRows = computed(() =>
-  COVER_TEXT_IDS.filter((id) => coverTextShown.value[id]).map((id) => ({
-    id,
-    label: t(`management.partnerTemplateForm.coverText.texts.${id}`),
-  })),
+const coverBlocks = computed(() =>
+  COVER_ELEMENT_IDS.map((id) => {
+    const texts = COVER_TEXT_IDS.filter(
+      (text) =>
+        COVER_TEXT_BLOCK[text] === id &&
+        (text !== 'hostSubline' || form.cover_stage_layout.coverDetails.hostSubline !== 'none'),
+    )
+    const copy = COVER_BLOCK_SWITCH_COPY[id]
+    return {
+      id,
+      shown: coverBlockShown.value[id],
+      label: t(`management.partnerTemplateForm.${copy}`),
+      hint: t(`management.partnerTemplateForm.${copy}Hint`),
+      texts: texts.map((text) => ({
+        id: text,
+        label:
+          texts.length > 1
+            ? t(`management.partnerTemplateForm.coverText.texts.${text}`)
+            : t('management.coverLayoutEditor.fields.fontType'),
+      })),
+      colorEditable: coverBlockColorEditable(id),
+    }
+  }),
 )
 
 const coverTextFont = (id: CoverTextId): string =>

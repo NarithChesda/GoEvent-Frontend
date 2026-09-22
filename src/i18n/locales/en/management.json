@@ -2950,8 +2950,7 @@
       "sampleLogo2": "Sample Logo 2",
       "headerTextImage": "Header Text Image",
       "backdropGroup": "Backdrop & decorations",
-      "guestFrameGroup": "Guest name frame",
-      "brandingGroup": "Logos & header art"
+      "guestFrameGroup": "Guest name frame"
     },
     "transitionStage": {
       "animationGroup": "Opening Animation",
@@ -3032,13 +3031,13 @@
       "visibilityToggles": "Visibility Toggles",
       "showWelcomeHeaderText": "Show Welcome Header Text",
       "showWelcomeHeaderTextHint": "The greeting line above the hosts.",
-      "showCoverHeaderText": "Show Cover Header Text",
+      "showCoverHeaderText": "Show header text",
       "showCoverHeaderTextHint": "Render the cover header text row. When off, the logo row absorbs that height.",
-      "showCoverLogo": "Show Logo",
+      "showCoverLogo": "Show logo",
       "showCoverLogoHint": "When off, its row is left empty rather than closed, so nothing else on the cover moves.",
-      "showCoverInviteText": "Show Invite Text",
+      "showCoverInviteText": "Show invite text",
       "showCoverInviteTextHint": "The line above the guest name. When off, its space is kept, so the guest name stays put.",
-      "showCoverGuestName": "Show Guest Name",
+      "showCoverGuestName": "Show guest name",
       "showCoverGuestNameHint": "The guest's own name. When off, its space is kept, like the logo's.",
       "showHostNameUnderLogo": "Show Host Name Under Logo",
       "showHostNameUnderLogoHint": "The host name beneath the logo. Birthday invitations only.",
@@ -3108,8 +3107,6 @@
       "hideCompeting": "Hide them"
     },
     "coverText": {
-      "heading": "Text styles",
-      "hint": "The font and size of each text on the cover, in either layout. Fonts are this template's own, chosen per language under Fonts.",
       "size": "Size",
       "slotEmpty": "{slot} · not set yet",
       "texts": {
