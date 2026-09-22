@@ -934,6 +934,197 @@
               </TemplateFormDisclosure>
             </section>
 
+            <!-- The names-and-details composition: the hosts' names with a mark
+                 between them, the date, and the venue — a printed card's layout,
+                 where the couple is the headline rather than the guest. Three
+                 switches, each opening only its own settings, because a template
+                 routinely wants the names without the venue and the other way
+                 round. No eyebrow over them: each row already says what it
+                 shows, the same reason the visibility group below has none. -->
+            <section :class="[PANEL, 'overflow-hidden divide-y divide-slate-100']">
+              <TemplateFormSwitch
+                v-model="form.cover_stage_layout.showCoverHosts"
+                :label="t('management.partnerTemplateForm.coverDetails.showHosts')"
+                :description="t('management.partnerTemplateForm.coverDetails.showHostsHint')"
+              />
+              <TemplateFormDisclosure
+                :open="form.cover_stage_layout.showCoverHosts"
+                content-class="px-4 pb-4 pt-3 space-y-4"
+              >
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                  <TemplateFormSelect
+                    v-model="coverHostCountModel"
+                    :label="t('management.partnerTemplateForm.coverDetails.hostCount')"
+                    :options="coverHostCountOptions"
+                  />
+                  <TemplateFormChoice
+                    v-model="coverHostArrangementModel"
+                    :label="t('management.partnerTemplateForm.coverDetails.arrangement')"
+                    :options="coverHostArrangementOptions"
+                    variant="segmented"
+                  />
+                </div>
+
+                <div class="space-y-1.5">
+                  <TemplateFormChoice
+                    v-model="coverHostSublineModel"
+                    :label="t('management.partnerTemplateForm.coverDetails.subline')"
+                    :options="coverHostSublineOptions"
+                    :columns="3"
+                  />
+                  <p :class="FIELD_HINT">
+                    {{ t(`management.partnerTemplateForm.coverDetails.sublineHint.${form.cover_stage_layout.coverDetails.hostSubline}`) }}
+                  </p>
+                </div>
+
+                <!-- The mark. An upload replaces the choice rather than being one
+                     of its options — the precedence the crest's breakline art
+                     has over its style — so there is no option that draws nothing
+                     until a file exists, and removing the file brings the chosen
+                     mark back. -->
+                <TemplateFormChoice
+                  v-model="coverSeparatorModel"
+                  :label="t('management.partnerTemplateForm.coverDetails.separator')"
+                  :options="coverSeparatorOptions"
+                />
+                <TemplateFormImageField
+                  :label="t('management.partnerTemplateForm.coverDetails.separatorImage')"
+                  :hint="t('management.partnerTemplateForm.coverDetails.separatorImageHint')"
+                  :upload-label="t('management.partnerTemplateForm.coverDetails.separatorImageUpload')"
+                  accept="image/png,image/svg+xml,image/*"
+                  :preview="coverHostSeparatorImageSrc"
+                  :file-name="form.cover_host_separator_image?.name"
+                  @change="handleFileChange('cover_host_separator_image', $event)"
+                  @clear="clearAssetField('cover_host_separator_image')"
+                />
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                  <TemplateFormSelect
+                    v-model="coverSeparatorColorModel"
+                    :label="t('management.partnerTemplateForm.coverDetails.separatorColor')"
+                    :options="coverSeparatorColorOptions"
+                  />
+                  <TemplateFormNumber
+                    v-model="coverSeparatorScaleModel"
+                    :label="t('management.partnerTemplateForm.coverDetails.separatorScale')"
+                    :min="COVER_SEPARATOR_SCALE_RANGE.min * 100"
+                    :max="COVER_SEPARATOR_SCALE_RANGE.max * 100"
+                    :step="5"
+                    unit="%"
+                  />
+                </div>
+                <TemplateFormColor
+                  v-if="form.cover_stage_layout.coverDetails.separatorColorSource === 'custom'"
+                  v-model="form.cover_stage_layout.coverDetails.separatorCustomColor"
+                  :name="t('management.partnerTemplateForm.colorField.names.hostSeparator')"
+                  placeholder="#C9A45C"
+                />
+              </TemplateFormDisclosure>
+
+              <TemplateFormSwitch
+                v-model="form.cover_stage_layout.showCoverDate"
+                :label="t('management.partnerTemplateForm.coverDetails.showDate')"
+                :description="t('management.partnerTemplateForm.coverDetails.showDateHint')"
+              />
+              <TemplateFormDisclosure
+                :open="form.cover_stage_layout.showCoverDate"
+                content-class="px-4 pb-4 pt-3 space-y-1.5"
+              >
+                <TemplateFormChoice
+                  v-model="coverDateFormatModel"
+                  :label="t('management.partnerTemplateForm.coverDetails.dateFormat')"
+                  :options="coverDateFormatOptions"
+                  :columns="3"
+                />
+                <p :class="FIELD_HINT">
+                  {{ t(`management.partnerTemplateForm.coverDetails.dateFormatHint.${form.cover_stage_layout.coverDetails.dateFormat}`) }}
+                </p>
+              </TemplateFormDisclosure>
+
+              <TemplateFormSwitch
+                v-model="form.cover_stage_layout.showCoverLocation"
+                :label="t('management.partnerTemplateForm.coverDetails.showLocation')"
+                :description="t('management.partnerTemplateForm.coverDetails.showLocationHint')"
+              />
+              <TemplateFormDisclosure
+                :open="form.cover_stage_layout.showCoverLocation"
+                content-class="px-4 pb-4 pt-3"
+              >
+                <div class="list-group">
+                  <TemplateFormSwitch
+                    v-model="form.cover_stage_layout.coverDetails.showTime"
+                    :label="t('management.partnerTemplateForm.coverDetails.showTime')"
+                    :description="t('management.partnerTemplateForm.coverDetails.showTimeHint')"
+                  />
+                </div>
+              </TemplateFormDisclosure>
+
+              <!-- What the three share. Capitals is one decision for the whole
+                   composition — spaced names over a lowercase venue read as two
+                   designs — so it is asked once, after the three it governs. -->
+              <TemplateFormDisclosure :open="coverDetailsShown" content-class="p-4 space-y-3">
+                <div class="list-group">
+                  <TemplateFormSwitch
+                    v-model="form.cover_stage_layout.coverDetails.capitals"
+                    :label="t('management.partnerTemplateForm.coverDetails.capitals')"
+                    :description="t('management.partnerTemplateForm.coverDetails.capitalsHint')"
+                  />
+                </div>
+                <!-- The composition lands where the logo, the invite line and the
+                     guest name sit, because it is meant to replace them. Said,
+                     with the one-tap way out, rather than done: switching a
+                     partner's other blocks off behind their back is not a
+                     default, it is a surprise. -->
+                <div
+                  v-if="coverRowsCompeting"
+                  class="flex items-center gap-3 rounded-xl bg-amber-50 ring-1 ring-amber-100 p-2.5"
+                >
+                  <p class="flex-1 min-w-0 text-[0.6875rem] leading-snug text-amber-800">
+                    {{ t('management.partnerTemplateForm.coverDetails.competingHint') }}
+                  </p>
+                  <button type="button" :class="BTN_SECONDARY_SM" @click="hideCompetingCoverBlocks">
+                    {{ t('management.partnerTemplateForm.coverDetails.hideCompeting') }}
+                  </button>
+                </div>
+              </TemplateFormDisclosure>
+            </section>
+
+            <!-- Text styles: the font and size of every text on the cover, one
+                 row per text that is switched on. Keyed by text, not by block,
+                 because the names block holds two texts set in different faces
+                 at different sizes. They hold in both layout modes, unlike the
+                 boxes below, so a stacked-rows template can style its guest name
+                 as freely as a free one. The preview's A−/A+ writes the same
+                 numbers, so the two can never disagree. -->
+            <section v-if="coverTextRows.length" :class="[PANEL, 'divide-y divide-slate-200/70']">
+              <div class="p-4 space-y-1">
+                <h5 :class="SECTION_HEADING">
+                  {{ t('management.partnerTemplateForm.coverText.heading') }}
+                </h5>
+                <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.coverText.hint') }}</p>
+              </div>
+              <div
+                v-for="row in coverTextRows"
+                :key="row.id"
+                class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3"
+              >
+                <TemplateFormSelect
+                  :model-value="coverTextFont(row.id)"
+                  :label="row.label"
+                  :options="coverTextFontOptions"
+                  @update:model-value="setCoverTextFont(row.id, $event)"
+                />
+                <TemplateFormNumber
+                  :model-value="coverTextSize(row.id)"
+                  :label="t('management.partnerTemplateForm.coverText.size')"
+                  :min="COVER_TEXT_SCALE_RANGE.min * 100"
+                  :max="COVER_TEXT_SCALE_RANGE.max * 100"
+                  :step="5"
+                  unit="%"
+                  @update:model-value="setCoverTextSize(row.id, $event)"
+                />
+              </div>
+            </section>
+
             <!-- Placement model. Rows is the original stacked layout; free hands
                  each block its own rectangle, which is what the preview's drag
                  handles write to. Switching to free seeds every block from the
@@ -946,10 +1137,16 @@
                 </h5>
                 <TemplateFormChoice v-model="layoutModeModel" :options="layoutModeOptions" />
 
-                <template v-if="isFreeCoverLayout">
+                <p v-if="!isFreeCoverLayout" :class="FIELD_HINT">
+                  {{ t('management.coverLayoutEditor.rowsHint') }}
+                </p>
+
+                <!-- In free mode every block; in rows mode only the names, date
+                     and venue, which are placed by box in both. -->
+                <template v-if="coverBlockChips.length">
                   <p class="flex items-start gap-1.5 text-[0.6875rem] leading-snug text-sky-700 bg-sky-50 ring-1 ring-sky-100 rounded-xl p-2.5">
                     <Move class="w-3.5 h-3.5 flex-shrink-0 mt-px" />
-                    {{ t('management.coverLayoutEditor.dragHint') }}
+                    {{ t(isFreeCoverLayout ? 'management.coverLayoutEditor.dragHint' : 'management.coverLayoutEditor.detailsDragHint') }}
                   </p>
 
                   <!-- Same selection the overlay uses: clicking a chip highlights
@@ -978,36 +1175,19 @@
                       <TemplateFormNumber v-model="coverBoxY" :label="t('management.coverLayoutEditor.fields.y')" :min="0" :max="100" :step="0.5" unit="%" />
                       <TemplateFormNumber v-model="coverBoxWidth" :label="t('management.coverLayoutEditor.fields.width')" :min="3" :max="100" :step="0.5" unit="%" />
                       <TemplateFormNumber v-model="coverBoxHeight" :label="t('management.coverLayoutEditor.fields.height')" :min="2" :max="100" :step="0.5" unit="%" />
-                      <!-- The logo scales with its box; only the text blocks have
-                           a size that the box alone can't express. -->
-                      <TemplateFormNumber
-                        v-if="selectedCoverBlockHasText"
-                        v-model="coverBoxFontScale"
-                        :label="t('management.coverLayoutEditor.fields.fontScale')"
-                        :min="40"
-                        :max="250"
-                        :step="5"
-                        unit="%"
-                      />
                     </div>
 
-                    <!-- Type slots. Both name a slot from this template's own
-                         palette/fonts rather than a literal value: fonts are
-                         declared per language, so a baked-in family would freeze
-                         the cover to one script, and a baked-in hex would stop
-                         following the template's colours. -->
-                    <div v-if="selectedCoverBlockHasText" class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
-                      <TemplateFormSelect
-                        v-model="coverBoxFontType"
-                        :label="t('management.coverLayoutEditor.fields.fontType')"
-                        :options="coverFontTypeOptions"
-                      />
-                      <TemplateFormSelect
-                        v-model="coverBoxColorSource"
-                        :label="t('management.coverLayoutEditor.fields.colorSource')"
-                        :options="coverColorSourceOptions"
-                      />
-                    </div>
+                    <!-- Colour names a palette slot rather than a hex, so a
+                         recoloured template still reaches the block. Font and
+                         size are not here: they belong to the TEXT, not the box,
+                         and live in Text styles above, where they hold in both
+                         layout modes. -->
+                    <TemplateFormSelect
+                      v-if="selectedCoverBlockHasText"
+                      v-model="coverBoxColorSource"
+                      :label="t('management.coverLayoutEditor.fields.colorSource')"
+                      :options="coverColorSourceOptions"
+                    />
 
                     <TemplateFormColor
                       v-if="selectedCoverBlockHasText && selectedCoverBox.colorSource === 'custom'"
@@ -1036,9 +1216,6 @@
                     {{ t('management.coverLayoutEditor.pickBlock') }}
                   </p>
                 </template>
-                <p v-else :class="FIELD_HINT">
-                  {{ t('management.coverLayoutEditor.rowsHint') }}
-                </p>
               </div>
             </section>
 
@@ -1071,6 +1248,11 @@
                 v-model="form.cover_stage_layout.showCoverInviteText"
                 :label="t('management.partnerTemplateForm.coverLayout.showCoverInviteText')"
                 :description="t('management.partnerTemplateForm.coverLayout.showCoverInviteTextHint')"
+              />
+              <TemplateFormSwitch
+                v-model="form.cover_stage_layout.showCoverGuestName"
+                :label="t('management.partnerTemplateForm.coverLayout.showCoverGuestName')"
+                :description="t('management.partnerTemplateForm.coverLayout.showCoverGuestNameHint')"
               />
             </section>
 
@@ -1857,6 +2039,7 @@
           :saved-template="existingTemplate"
           :layout-editing="coverLayoutEditing"
           @layout-change="onCoverLayoutChange"
+          @text-change="onCoverTextChange"
         />
       </aside>
 
@@ -1947,6 +2130,9 @@ import {
   Waypoints,
   Milestone,
   LayoutList,
+  Ampersand,
+  CaseLower,
+  Hash,
   type LucideIcon,
 } from 'lucide-vue-next'
 import { partnerTemplateService, packagePlanService, customFontsService, FONT_TYPE_LABELS, LANGUAGE_CODE_LABELS, TEMPLATE_MENU_ORDER_DEFAULT } from '../../services/api'
@@ -1964,6 +2150,12 @@ import type {
   CoverElementColorSource,
   CoverElementId,
   CoverLayoutMode,
+  CoverHostSeparator,
+  CoverHostArrangement,
+  CoverHostSubline,
+  CoverDateFormat,
+  CoverTextId,
+  CoverTextStyle,
   GuestFrameCorners,
   GuestFrameStyle,
   EventTemplateColor,
@@ -2056,12 +2248,25 @@ import { TEMPLATES_HEADER_SLOT } from './templatesHeaderSlot'
 import { useMediaQuery } from '../../composables/useMediaQuery'
 import GuestFrameCornerGrid from './GuestFrameCornerGrid.vue'
 import {
+  COVER_DETAIL_ELEMENT_IDS,
   COVER_ELEMENT_IDS,
   COVER_FONT_SLOT_VARS,
+  COVER_HOST_COUNT_MAX,
+  COVER_ROW_ELEMENT_IDS,
+  COVER_SEPARATOR_SCALE_RANGE,
+  COVER_BLOCK_TEXT,
+  COVER_TEXT_BLOCK,
+  COVER_TEXT_IDS,
+  COVER_TEXT_SCALE_RANGE,
+  isCoverDetailElement,
+  placeableCoverElementIds,
+  resolveCoverDetails,
   resolveCoverElements,
   resolveCoverGilding,
+  resolveCoverTextStyles,
   resolveGuestFrame,
   rowsToCoverElements,
+  type ResolvedCoverDetails,
   type ResolvedCoverElementBox,
   type ResolvedCoverGilding,
   type ResolvedGuestFrame,
@@ -2200,6 +2405,7 @@ async function fetchPlans(): Promise<void> {
 type CoverStageLayoutFormState = Required<CoverStageLayout> & {
   guestFrame: ResolvedGuestFrame
   coverGilding: ResolvedCoverGilding
+  coverDetails: ResolvedCoverDetails
 }
 
 const defaultCoverStageLayout = (): CoverStageLayoutFormState => ({
@@ -2207,6 +2413,8 @@ const defaultCoverStageLayout = (): CoverStageLayoutFormState => ({
   coverElements: {},
   guestFrame: resolveGuestFrame({} as Required<CoverStageLayout>),
   coverGilding: resolveCoverGilding({} as Required<CoverStageLayout>),
+  coverDetails: resolveCoverDetails({} as Required<CoverStageLayout>),
+  coverText: {},
   contentTopPosition: 23.5,
   innerContainerHeight: 53,
   eventTitleHeight: 18.75,
@@ -2219,6 +2427,10 @@ const defaultCoverStageLayout = (): CoverStageLayoutFormState => ({
   showCoverHeaderText: true,
   showCoverLogo: true,
   showCoverInviteText: true,
+  showCoverGuestName: true,
+  showCoverHosts: false,
+  showCoverDate: false,
+  showCoverLocation: false,
   showHostNameUnderLogo: true,
   hostClipScale: 60,
   hostClipOffsetX: 50,
@@ -2299,6 +2511,7 @@ interface FormState {
   header_text_image: File | null
   /** Custom breakline art for the crest design. */
   host_divider_image: File | null
+  cover_host_separator_image: File | null
   cover_stage_layout: CoverStageLayoutFormState
   falling_effect_enabled: boolean
   falling_effect: FallingEffectFormState
@@ -2424,6 +2637,7 @@ const defaultForm = (): FormState => ({
   sample_logo_2: null,
   header_text_image: null,
   host_divider_image: null,
+  cover_host_separator_image: null,
   cover_stage_layout: defaultCoverStageLayout(),
   falling_effect_enabled: false,
   falling_effect: defaultFallingEffect(),
@@ -2479,6 +2693,7 @@ const form = reactive<FormState>(defaultForm())
 const previewImagePreview = ref<string | null>(null)
 const bgPhotoPreview = ref<string | null>(null)
 const hostDividerImagePreview = ref<string | null>(null)
+const coverHostSeparatorImagePreview = ref<string | null>(null)
 const fallingEffectCustomImagePreview = ref<string | null>(null)
 const sparkCustomImagePreview = ref<string | null>(null)
 const saving = ref(false)
@@ -2521,6 +2736,15 @@ const hostDividerImageSrc = computed<string | null>(
     hostDividerImagePreview.value ??
     (hasSavedAsset('host_divider_image')
       ? (props.existingTemplate?.host_divider_image ?? null)
+      : null),
+)
+
+/** The cover's own mark between the host names — the same three states. */
+const coverHostSeparatorImageSrc = computed<string | null>(
+  () =>
+    coverHostSeparatorImagePreview.value ??
+    (hasSavedAsset('cover_host_separator_image')
+      ? (props.existingTemplate?.cover_host_separator_image ?? null)
       : null),
 )
 
@@ -2958,8 +3182,14 @@ const isFreeCoverLayout = computed(() => form.cover_stage_layout.layoutMode === 
  * Handles only appear while the section that owns them is open. Leaving the
  * overlay armed after navigating to, say, Main Content would mean an invisible
  * sheet sitting over a preview nobody is trying to drag.
+ *
+ * Armed in rows mode too once a names-and-details block is on: those are placed
+ * by box in both modes, and the preview is the only place a partner can see
+ * where they are putting one.
  */
-const coverLayoutEditing = computed(() => activeSection.value === 'cover' && isFreeCoverLayout.value)
+const coverLayoutEditing = computed(
+  () => activeSection.value === 'cover' && (isFreeCoverLayout.value || coverDetailsShown.value),
+)
 
 /**
  * The boxes as they'd render right now: whatever the template specifies, over
@@ -2983,12 +3213,21 @@ const layoutModeModel = computed<string>({
     const mode = value as CoverLayoutMode
     // Seeding on the way in is what makes the switch non-destructive: free mode
     // starts as a pixel-identical copy of the rows the partner already tuned,
-    // rather than a blank canvas they have to rebuild.
-    if (mode === 'free' && Object.keys(form.cover_stage_layout.coverElements ?? {}).length === 0) {
-      form.cover_stage_layout.coverElements = rowsToCoverElements(form.cover_stage_layout)
+    // rather than a blank canvas they have to rebuild. Per block rather than
+    // "if the map is empty": the names, date and venue are placed in rows mode
+    // too, so the map can already hold them — and a row block that an earlier
+    // free session left a box for keeps that box, as it always has.
+    if (mode === 'free') {
+      const current = form.cover_stage_layout.coverElements ?? {}
+      const rows = rowsToCoverElements(form.cover_stage_layout)
+      const next: CoverElementBoxes = { ...current }
+      for (const id of COVER_ROW_ELEMENT_IDS) next[id] = current[id] ?? rows[id]
+      form.cover_stage_layout.coverElements = next
     }
     form.cover_stage_layout.layoutMode = mode
-    if (mode !== 'free') selectedCoverElement.value = null
+    // A detail block stays selectable in rows mode; a row block does not.
+    const selected = selectedCoverElement.value
+    if (mode !== 'free' && selected && !isCoverDetailElement(selected)) selectedCoverElement.value = null
   },
 })
 
@@ -3001,16 +3240,28 @@ const coverBlockShown = computed<Record<CoverElementId, boolean>>(() => ({
   header: form.cover_stage_layout.showCoverHeaderText,
   logo: form.cover_stage_layout.showCoverLogo,
   invite: form.cover_stage_layout.showCoverInviteText,
-  guest: true,
+  guest: form.cover_stage_layout.showCoverGuestName,
+  hosts: form.cover_stage_layout.showCoverHosts,
+  date: form.cover_stage_layout.showCoverDate,
+  location: form.cover_stage_layout.showCoverLocation,
 }))
 
-const coverBlockChips = computed(() =>
-  COVER_ELEMENT_IDS.map((id) => ({
+/**
+ * Free mode lists every block, greying the ones switched off, as it always has.
+ * Rows mode lists only the detail blocks that are on — the row blocks are
+ * placed by the row numbers there, and a greyed chip for a detail block the
+ * partner never asked for would only be noise.
+ */
+const coverBlockChips = computed(() => {
+  const ids = isFreeCoverLayout.value
+    ? COVER_ELEMENT_IDS
+    : COVER_DETAIL_ELEMENT_IDS.filter((id) => coverBlockShown.value[id])
+  return ids.map((id) => ({
     id,
     label: t(`management.coverLayoutEditor.blocks.${id}`),
     available: coverBlockShown.value[id],
-  })),
-)
+  }))
+})
 
 function selectCoverElement(id: CoverElementId): void {
   selectedCoverElement.value = selectedCoverElement.value === id ? null : id
@@ -3029,18 +3280,22 @@ watch(
 )
 
 /**
- * Writes one block and persists all four.
+ * Writes one block and persists every block this mode places.
  *
  * Storing the complete map rather than just the edited block matters for what
  * the template does later: a half-specified `coverElements` leaves the other
  * blocks implicitly tied to the row numbers, so editing an unrelated row height
  * months later would silently move them.
+ *
+ * In rows mode that map is only the detail blocks, merged over whatever else is
+ * stored: the row blocks' resolved boxes there are their ROW geometry, and
+ * writing it would freeze them against the next row-height edit.
  */
 function updateSelectedCoverBox(patch: Partial<CoverElementBox>): void {
   const id = selectedCoverElement.value
   if (!id) return
-  const next: CoverElementBoxes = {}
-  for (const key of COVER_ELEMENT_IDS) {
+  const next: CoverElementBoxes = { ...(form.cover_stage_layout.coverElements ?? {}) }
+  for (const key of placeableCoverElementIds(form.cover_stage_layout.layoutMode)) {
     next[key] =
       key === id
         ? { ...resolvedCoverElements.value[key], ...patch }
@@ -3061,13 +3316,6 @@ const coverBoxY = coverBoxModel('y')
 const coverBoxWidth = coverBoxModel('width')
 const coverBoxHeight = coverBoxModel('height')
 
-// Stored as a multiplier, edited as a percentage — "120%" reads as a size, "1.2"
-// reads as an implementation detail.
-const coverBoxFontScale = computed<number>({
-  get: () => Math.round((selectedCoverBox.value?.fontScale ?? 1) * 100),
-  set: (value) => updateSelectedCoverBox({ fontScale: Math.max(0.1, value / 100) }),
-})
-
 /** The logo block has no text, so none of the type controls apply to it. */
 const selectedCoverBlockHasText = computed(
   () => !!selectedCoverBox.value && selectedCoverElement.value !== 'logo',
@@ -3083,20 +3331,37 @@ const selectedCoverBlockHasText = computed(
 const COVER_SLOT_AUTO = 'auto'
 
 /**
- * Driven by `COVER_FONT_SLOT_VARS`, not by `FONT_TYPE_LABELS`.
+ * The fonts a cover text can be set in: the template's own slots, each labelled
+ * with what it holds ("Primary · Cormorant Garamond / Kantumruy Pro"), since a
+ * slot name alone says nothing about how the text will look. One name per
+ * language the slot is filled in — the text follows the showcase's language,
+ * so a partner is choosing all of them at once.
  *
- * The two lists used to be the same four values, but `font_type` gained the
- * scroll-story slots (`v2-body`, `v2-display`) and the cover stage publishes no
- * CSS variable for those — a block pointed at one would inherit nothing and
- * render in no font at all. Reading the slot-variable map means the picker can
- * only ever offer slots that actually resolve.
+ * Driven by `COVER_FONT_SLOT_VARS`, not by `FONT_TYPE_LABELS`. The two lists
+ * used to be the same four values, but `font_type` gained the scroll-story
+ * slots (`v2-body`, `v2-display`) and the cover stage publishes no CSS variable
+ * for those — a text pointed at one would inherit nothing and render in no font
+ * at all. Reading the slot-variable map means the picker can only ever offer
+ * slots that actually resolve.
  */
-const coverFontTypeOptions = computed<TemplateFormSelectOption[]>(() => [
+const coverTextFontOptions = computed<TemplateFormSelectOption[]>(() => [
   { value: COVER_SLOT_AUTO, label: t('management.coverLayoutEditor.fontTypes.auto') },
-  ...(Object.keys(COVER_FONT_SLOT_VARS) as CoverFontSlot[]).map((slot) => ({
-    value: slot,
-    label: t(`management.coverLayoutEditor.fontTypes.${slot}`),
-  })),
+  ...(Object.keys(COVER_FONT_SLOT_VARS) as CoverFontSlot[]).map((slot) => {
+    const names = [
+      ...new Set(
+        previewFonts.value
+          .filter((row) => row.font_type === slot && row.font?.name)
+          .map((row) => row.font!.name),
+      ),
+    ]
+    const slotLabel = t(`management.coverLayoutEditor.fontTypes.${slot}`)
+    return {
+      value: slot,
+      label: names.length
+        ? `${slotLabel} · ${names.join(' / ')}`
+        : t('management.partnerTemplateForm.coverText.slotEmpty', { slot: slotLabel }),
+    }
+  }),
 ])
 
 const coverColorSourceOptions = computed<TemplateFormSelectOption[]>(() => [
@@ -3108,14 +3373,6 @@ const coverColorSourceOptions = computed<TemplateFormSelectOption[]>(() => [
     }),
   ),
 ])
-
-const coverBoxFontType = computed<string>({
-  get: () => selectedCoverBox.value?.fontType ?? COVER_SLOT_AUTO,
-  set: (value) =>
-    updateSelectedCoverBox({
-      fontType: value === COVER_SLOT_AUTO ? undefined : (value as CoverFontSlot),
-    }),
-})
 
 const coverBoxColorSource = computed<string>({
   get: () => selectedCoverBox.value?.colorSource ?? COVER_SLOT_AUTO,
@@ -3163,14 +3420,248 @@ function resetSelectedCoverBlock(): void {
  * tracking the row numbers rather than to a frozen copy of them.
  */
 function resetAllCoverBlocks(): void {
-  form.cover_stage_layout.coverElements = {}
+  if (isFreeCoverLayout.value) {
+    form.cover_stage_layout.coverElements = {}
+  } else {
+    // Rows mode resets what it lists — the detail blocks — and leaves the row
+    // blocks' remembered free positions for the next switch back to free.
+    const next: CoverElementBoxes = { ...(form.cover_stage_layout.coverElements ?? {}) }
+    for (const id of COVER_DETAIL_ELEMENT_IDS) delete next[id]
+    form.cover_stage_layout.coverElements = next
+  }
   selectedCoverElement.value = null
 }
 
-/** A block was dragged or resized in the preview frame. */
+/**
+ * A block was dragged or resized in the preview frame. Merged, not assigned:
+ * in rows mode the frame reports only the detail blocks.
+ */
 function onCoverLayoutChange(elements: CoverElementBoxes): void {
-  form.cover_stage_layout.coverElements = elements
+  form.cover_stage_layout.coverElements = {
+    ...(form.cover_stage_layout.coverElements ?? {}),
+    ...elements,
+  }
 }
+
+// ---------------------------------------------------------------------------
+// Text styles — font slot and size per text, in `coverText`.
+// ---------------------------------------------------------------------------
+
+/** Every text's style as it renders now, box fallbacks included. */
+const resolvedCoverText = computed(() => resolveCoverTextStyles(form.cover_stage_layout))
+
+/** Whether the switch that owns each text has it on the cover. */
+const coverTextShown = computed<Record<CoverTextId, boolean>>(() => {
+  const layout = form.cover_stage_layout
+  return {
+    header: layout.showCoverHeaderText,
+    invite: layout.showCoverInviteText,
+    guest: layout.showCoverGuestName,
+    hostNames: layout.showCoverHosts,
+    hostSubline: layout.showCoverHosts && layout.coverDetails.hostSubline !== 'none',
+    date: layout.showCoverDate,
+    location: layout.showCoverLocation,
+  }
+})
+
+/**
+ * One row per text that is on the cover. A text switched off has nothing to
+ * style, and listing it would put seven rows in front of a template that
+ * draws three.
+ */
+const coverTextRows = computed(() =>
+  COVER_TEXT_IDS.filter((id) => coverTextShown.value[id]).map((id) => ({
+    id,
+    label: t(`management.partnerTemplateForm.coverText.texts.${id}`),
+  })),
+)
+
+const coverTextFont = (id: CoverTextId): string =>
+  resolvedCoverText.value[id].fontType ?? COVER_SLOT_AUTO
+
+// Stored as a multiplier, edited as a percentage — "120%" reads as a size, "1.2"
+// reads as an implementation detail.
+const coverTextSize = (id: CoverTextId): number =>
+  Math.round(resolvedCoverText.value[id].fontScale * 100)
+
+/**
+ * Writes one text's whole style, and takes the type off its block's box.
+ *
+ * The whole style, because the entry replaces what the text resolved to —
+ * including a slot it was only inheriting from its box, which must survive a
+ * resize. And off the box, because the box is only the FALLBACK
+ * (resolveCoverTextStyles): left there, picking "Default" would fall straight
+ * back to the box's old slot and appear to do nothing. The box is only touched
+ * if it is already stored, so this never creates one — which would pin a row
+ * block's geometry.
+ */
+function writeCoverText(id: CoverTextId, style: CoverTextStyle): void {
+  const layout = form.cover_stage_layout
+  layout.coverText = { ...(layout.coverText ?? {}), [id]: style }
+
+  const block = COVER_TEXT_BLOCK[id]
+  const box = layout.coverElements?.[block]
+  if (COVER_BLOCK_TEXT[block] === id && box && (box.fontType || box.fontScale !== undefined)) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { fontType, fontScale, ...rest } = box
+    layout.coverElements = { ...layout.coverElements, [block]: rest }
+  }
+}
+
+function setCoverTextFont(id: CoverTextId, value: string | number): void {
+  const current = resolvedCoverText.value[id]
+  const slot = value === COVER_SLOT_AUTO ? undefined : (value as CoverFontSlot)
+  writeCoverText(id, { ...(slot ? { fontType: slot } : {}), fontScale: current.fontScale })
+}
+
+function setCoverTextSize(id: CoverTextId, percent: number): void {
+  const current = resolvedCoverText.value[id]
+  const fontScale = Math.min(
+    COVER_TEXT_SCALE_RANGE.max,
+    Math.max(COVER_TEXT_SCALE_RANGE.min, percent / 100),
+  )
+  writeCoverText(id, { ...(current.fontType ? { fontType: current.fontType } : {}), fontScale })
+}
+
+/** The preview's A−/A+ resized a text; the frame sends its whole style. */
+function onCoverTextChange(id: CoverTextId, style: CoverTextStyle): void {
+  writeCoverText(id, style)
+}
+
+// ---------------------------------------------------------------------------
+// The names-and-details composition's own settings. Placement is above, with
+// every other block's; everything here is how the three draw.
+// ---------------------------------------------------------------------------
+const coverDetailsShown = computed(
+  () =>
+    form.cover_stage_layout.showCoverHosts ||
+    form.cover_stage_layout.showCoverDate ||
+    form.cover_stage_layout.showCoverLocation,
+)
+
+/** The row blocks this composition lands on top of, still switched on. */
+const coverRowsCompeting = computed(
+  () =>
+    coverDetailsShown.value &&
+    (form.cover_stage_layout.showCoverLogo ||
+      form.cover_stage_layout.showCoverInviteText ||
+      form.cover_stage_layout.showCoverGuestName),
+)
+
+/**
+ * The header is deliberately left alone: on the reference card it is the line
+ * that opens the invitation above the names ("You are invited to the wedding
+ * of"), and the default placement leaves its row clear for exactly that.
+ */
+function hideCompetingCoverBlocks(): void {
+  form.cover_stage_layout.showCoverLogo = false
+  form.cover_stage_layout.showCoverInviteText = false
+  form.cover_stage_layout.showCoverGuestName = false
+}
+
+const COVER_HOST_COUNT_ALL = 'all'
+
+const coverHostCountOptions = computed<TemplateFormSelectOption[]>(() => [
+  { value: COVER_HOST_COUNT_ALL, label: t('management.partnerTemplateForm.coverDetails.hostCountAll') },
+  ...Array.from({ length: COVER_HOST_COUNT_MAX }, (_, i) => ({
+    value: String(i + 1),
+    label: t('management.partnerTemplateForm.coverDetails.hostCountN', { n: i + 1 }),
+  })),
+])
+
+const coverHostCountModel = computed<string>({
+  get: () => {
+    const count = form.cover_stage_layout.coverDetails.hostCount
+    return count ? String(count) : COVER_HOST_COUNT_ALL
+  },
+  set: (value) => {
+    form.cover_stage_layout.coverDetails.hostCount =
+      value === COVER_HOST_COUNT_ALL ? null : Number(value)
+  },
+})
+
+const coverHostArrangementOptions = computed(() =>
+  (['stacked', 'inline'] as CoverHostArrangement[]).map((value) => ({
+    value,
+    label: t(`management.partnerTemplateForm.coverDetails.arrangements.${value}`),
+  })),
+)
+
+const coverHostArrangementModel = computed<string>({
+  get: () => form.cover_stage_layout.coverDetails.hostArrangement,
+  set: (value) => { form.cover_stage_layout.coverDetails.hostArrangement = value as CoverHostArrangement },
+})
+
+const coverHostSublineOptions = computed(() => [
+  { value: 'none', label: t('management.partnerTemplateForm.coverDetails.sublines.none'), icon: Ban },
+  { value: 'surname', label: t('management.partnerTemplateForm.coverDetails.sublines.surname'), icon: Type },
+  { value: 'title', label: t('management.partnerTemplateForm.coverDetails.sublines.title'), icon: IdCard },
+])
+
+const coverHostSublineModel = computed<string>({
+  get: () => form.cover_stage_layout.coverDetails.hostSubline,
+  set: (value) => { form.cover_stage_layout.coverDetails.hostSubline = value as CoverHostSubline },
+})
+
+// The four drawn motifs keep the names the host block's centre ornament gives
+// them, so a partner who picked "Knot" there finds the same word here.
+const coverSeparatorOptions = computed(() => [
+  { value: 'ampersand', label: t('management.partnerTemplateForm.coverDetails.separators.ampersand'), icon: Ampersand },
+  { value: 'word', label: t('management.partnerTemplateForm.coverDetails.separators.word'), icon: CaseLower },
+  { value: 'heart', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.heart'), icon: Heart },
+  { value: 'rings', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.rings'), icon: CircleDashed },
+  { value: 'knot', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.knot'), icon: InfinityIcon },
+  { value: 'bloom', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.bloom'), icon: Flower2 },
+  { value: 'none', label: t('management.partnerTemplateForm.hostInfoDesign.ornaments.none'), icon: Ban },
+])
+
+const coverSeparatorModel = computed<string>({
+  get: () => form.cover_stage_layout.coverDetails.separator,
+  set: (value) => { form.cover_stage_layout.coverDetails.separator = value as CoverHostSeparator },
+})
+
+// No "default" entry, unlike the blocks' own colour picker: the mark has no
+// older rule to fall back to, so its default is simply the accent it starts on.
+const coverSeparatorColorOptions = computed<TemplateFormSelectOption[]>(() =>
+  (['primary', 'secondary', 'accent', 'guestname', 'custom'] as CoverElementColorSource[]).map(
+    (source) => ({
+      value: source,
+      label: t(`management.coverLayoutEditor.colorSources.${source}`),
+    }),
+  ),
+)
+
+const coverSeparatorColorModel = computed<string>({
+  get: () => form.cover_stage_layout.coverDetails.separatorColorSource,
+  set: (value) => {
+    const details = form.cover_stage_layout.coverDetails
+    details.separatorColorSource = value as CoverElementColorSource
+    // Seed the picker with something visible, as the blocks' own custom colour does.
+    if (value === 'custom' && !details.separatorCustomColor) details.separatorCustomColor = '#C9A45C'
+  },
+})
+
+// Stored as a multiplier, edited as a percentage, like the blocks' text size.
+const coverSeparatorScaleModel = computed<number>({
+  get: () => Math.round(form.cover_stage_layout.coverDetails.separatorScale * 100),
+  set: (value) => {
+    form.cover_stage_layout.coverDetails.separatorScale = Math.min(
+      COVER_SEPARATOR_SCALE_RANGE.max,
+      Math.max(COVER_SEPARATOR_SCALE_RANGE.min, value / 100),
+    )
+  },
+})
+
+const coverDateFormatOptions = computed(() => [
+  { value: 'numeric', label: t('management.partnerTemplateForm.coverDetails.dateFormats.numeric'), icon: Hash },
+  { value: 'long', label: t('management.partnerTemplateForm.coverDetails.dateFormats.long'), icon: CalendarDays },
+  { value: 'text', label: t('management.partnerTemplateForm.coverDetails.dateFormats.text'), icon: PenLine },
+])
+
+const coverDateFormatModel = computed<string>({
+  get: () => form.cover_stage_layout.coverDetails.dateFormat,
+  set: (value) => { form.cover_stage_layout.coverDetails.dateFormat = value as CoverDateFormat },
+})
 
 const eventDetailsDesignModel = computed<string>({
   get: () => form.event_details_design_type,
@@ -3365,11 +3856,10 @@ const setTextEffectAnimation = (slot: TextEffectSlot, value: string) => {
  * already carries a finish, so it can still be taken off.
  */
 const textEffectSlots = computed<TextEffectSlot[]>(() => {
-  const layout = form.cover_stage_layout
+  // Every slot a cover text renders in — its own pick, or its box's where that
+  // still applies (resolveCoverTextStyles).
   const pickedByCover = new Set(
-    layout.layoutMode === 'free'
-      ? Object.values(layout.coverElements ?? {}).map((box) => box?.fontType)
-      : [],
+    Object.values(resolvedCoverText.value).map((style) => style.fontType),
   )
   return TEXT_EFFECT_SLOTS.filter(
     (slot) =>
@@ -3672,6 +4162,7 @@ const COVER_ASSET_FIELDS: PartnerTemplateAssetField[] = [
   'sample_logo_1',
   'sample_logo_2',
   'header_text_image',
+  'cover_host_separator_image',
 ]
 
 const TRANSITION_ASSET_FIELDS: PartnerTemplateAssetField[] = ['standard_transition_video']
@@ -4259,6 +4750,7 @@ watch(
     previewImagePreview.value = null
     bgPhotoPreview.value = null
     hostDividerImagePreview.value = null
+    coverHostSeparatorImagePreview.value = null
     fallingEffectCustomImagePreview.value = null
     sparkCustomImagePreview.value = null
     // Staged removals belong to the template they were staged against.
@@ -4285,6 +4777,10 @@ watch(
         // Same reason as guestFrame above: a stored `coverGilding` may name only
         // `enabled`, and every control below binds straight to a resolved field.
         form.cover_stage_layout.coverGilding = resolveCoverGilding(
+          template.cover_stage_layout as Required<CoverStageLayout>,
+        )
+        // And again for the names-and-details config, for the same reason.
+        form.cover_stage_layout.coverDetails = resolveCoverDetails(
           template.cover_stage_layout as Required<CoverStageLayout>,
         )
       }
@@ -4465,6 +4961,9 @@ function handleFileChange(field: keyof FormState, event: Event): void {
   if (field === 'host_divider_image') {
     hostDividerImagePreview.value = URL.createObjectURL(file)
   }
+  if (field === 'cover_host_separator_image') {
+    coverHostSeparatorImagePreview.value = URL.createObjectURL(file)
+  }
 }
 
 /**
@@ -4495,6 +4994,10 @@ function clearAssetField(field: ClearableAssetField): void {
     if (field === 'host_divider_image') {
       if (hostDividerImagePreview.value) URL.revokeObjectURL(hostDividerImagePreview.value)
       hostDividerImagePreview.value = null
+    }
+    if (field === 'cover_host_separator_image') {
+      if (coverHostSeparatorImagePreview.value) URL.revokeObjectURL(coverHostSeparatorImagePreview.value)
+      coverHostSeparatorImagePreview.value = null
     }
     return
   }

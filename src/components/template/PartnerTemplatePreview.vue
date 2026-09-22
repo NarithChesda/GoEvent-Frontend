@@ -112,6 +112,7 @@
           @languages="onFrameLanguages"
           @cover-layout-change="(elements, commit) => emit('layout-change', elements, commit)"
           @cover-layout-select="(id) => emit('update:selectedElement', id)"
+          @cover-text-change="(textId, style) => emit('text-change', textId, style)"
         />
       </PreviewFrame>
 
@@ -156,7 +157,12 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Maximize2, Minimize2 } from 'lucide-vue-next'
 import type { Event, PartnerTemplate } from '@/services/api'
-import type { CoverElementBoxes, CoverElementId } from '@/services/api/types/template.types'
+import type {
+  CoverElementBoxes,
+  CoverElementId,
+  CoverTextId,
+  CoverTextStyle,
+} from '@/services/api/types/template.types'
 import PreviewFrame from '../showcase-preview/PreviewFrame.vue'
 import { PREVIEW_FRAME_MAX_WIDTH } from '../showcase-preview/previewFrameSize'
 import InertIframe from '../showcase-preview/InertIframe.vue'
@@ -222,6 +228,7 @@ const emit = defineEmits<{
   'update:stage': [string]
   'update:selectedElement': [CoverElementId | null]
   'layout-change': [elements: CoverElementBoxes, commit: boolean]
+  'text-change': [textId: CoverTextId, style: CoverTextStyle]
 }>()
 
 const { t } = useI18n()

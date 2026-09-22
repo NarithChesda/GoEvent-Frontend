@@ -46,7 +46,12 @@ import {
   type ParentToFrameType,
 } from './bridge/previewBridge'
 import type { TemplateAssets } from '@/composables/useEventShowcase'
-import type { CoverElementBoxes, CoverElementId } from '@/services/api/types/template.types'
+import type {
+  CoverElementBoxes,
+  CoverElementId,
+  CoverTextId,
+  CoverTextStyle,
+} from '@/services/api/types/template.types'
 
 interface Props {
   src: string
@@ -87,6 +92,8 @@ const emit = defineEmits<{
   coverLayoutChange: [elements: CoverElementBoxes, commit: boolean]
   /** A cover block was selected (or deselected) inside the frame. */
   coverLayoutSelect: [elementId: CoverElementId | null]
+  /** A cover text was resized from the preview's toolbar. */
+  coverTextChange: [textId: CoverTextId, style: CoverTextStyle]
   /** A horizontal drag cleared the distance or velocity threshold. `swipeable`
    *  only. The direction is the finger's, so 'left' means "next". */
   swipe: [direction: 'left' | 'right']
@@ -109,6 +116,7 @@ const onWindowMessage = (event: MessageEvent) => {
   if (parsed.type === 'showcase-languages') emit('languages', parsed.languages, parsed.currentLanguage)
   if (parsed.type === 'cover-layout-change') emit('coverLayoutChange', parsed.elements, parsed.commit)
   if (parsed.type === 'cover-layout-select') emit('coverLayoutSelect', parsed.elementId)
+  if (parsed.type === 'cover-text-change') emit('coverTextChange', parsed.textId, parsed.style)
 }
 
 onMounted(() => window.addEventListener('message', onWindowMessage))

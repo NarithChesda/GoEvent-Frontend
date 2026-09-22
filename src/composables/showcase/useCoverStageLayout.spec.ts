@@ -1,8 +1,15 @@
 import { describe, it, expect } from 'vitest'
 import { computed } from 'vue'
 import {
+  COVER_DETAIL_ELEMENT_DEFAULTS,
+  COVER_DETAILS_DEFAULTS,
+  COVER_ELEMENT_IDS,
+  COVER_SEPARATOR_SCALE_RANGE,
   COVER_STAGE_LAYOUT_DEFAULTS,
+  COVER_TEXT_IDS,
+  COVER_TEXT_SCALE_RANGE,
   coverElementStyle,
+  placeableCoverElementIds,
   resolveCoverElements,
   useCoverStageLayout,
 } from './useCoverStageLayout'
@@ -74,6 +81,9 @@ describe('cover element type slots', () => {
       logo: 'primary',
       invite: 'secondary',
       guest: 'primary',
+      hosts: 'primary',
+      date: 'primary',
+      location: 'secondary',
     })
   })
 
@@ -109,8 +119,157 @@ describe('cover block switches', () => {
 
   it('moves no other block when one is switched off', () => {
     const shown = resolve({})
-    const hidden = resolve({ showCoverLogo: false, showCoverInviteText: false })
+    const hidden = resolve({
+      showCoverLogo: false,
+      showCoverInviteText: false,
+      showCoverGuestName: false,
+    })
     expect(hidden.rowStyles.value).toEqual(shown.rowStyles.value)
     expect(hidden.elements.value).toEqual(shown.elements.value)
+  })
+
+  it('draws the guest name unless the template says otherwise', () => {
+    expect(resolve({}).layout.value.showCoverGuestName).toBe(true)
+    expect(resolve({ showCoverGuestName: false }).layout.value.showCoverGuestName).toBe(false)
+  })
+})
+
+/**
+ * Text styles live per text in `coverText` and hold in both layout modes. The
+ * invariant that matters most is the one nobody would see break: a template
+ * that never set one must render exactly as it did — including a row block in
+ * rows mode that still carries a style from an old free session, which never
+ * rendered and must not start to.
+ */
+describe('cover text styles', () => {
+  const resolve = (config: CoverStageLayout) =>
+    useCoverStageLayout(computed<CoverStageLayout | undefined>(() => config))
+
+  it('changes nothing for a template that set none', () => {
+    const { textStyles, rowStyles } = resolve({})
+    for (const id of COVER_TEXT_IDS) {
+      expect(textStyles.value[id]).toEqual({ fontType: undefined, fontScale: 1 })
+    }
+    expect(rowStyles.value.eventTitle).toEqual({ height: '18.75%', '--cover-font-scale': '1' })
+  })
+
+  it('styles a row block in rows mode, where its box never could', () => {
+    const { rowStyles, elementFontSlots } = resolve({
+      layoutMode: 'rows',
+      coverText: { guest: { fontType: 'decorative', fontScale: 1.3 } },
+    })
+    expect(rowStyles.value.guestName).toMatchObject({
+      '--cover-font-scale': '1.3',
+      '--cover-block-font': 'var(--tpl-font-decorative)',
+    })
+    expect(elementFontSlots.value.guest).toBe('decorative')
+  })
+
+  it('falls back to the box only where the box has always applied', () => {
+    const stale = { header: { x: 50, y: 30, width: 100, height: 10, fontScale: 1.6, fontType: 'accent' as const } }
+    // Free mode: the box's type has always rendered, and still does.
+    expect(resolve({ layoutMode: 'free', coverElements: stale }).textStyles.value.header).toEqual({
+      fontType: 'accent',
+      fontScale: 1.6,
+    })
+    // Rows mode: it never rendered, so it still doesn't.
+    const rows = resolve({ layoutMode: 'rows', coverElements: stale })
+    expect(rows.textStyles.value.header).toEqual({ fontType: undefined, fontScale: 1 })
+    expect(rows.rowStyles.value.eventTitle['--cover-block-font']).toBeUndefined()
+  })
+
+  it('lets the text style win over its box, field by field', () => {
+    const { textStyles, elementStyles } = resolve({
+      layoutMode: 'free',
+      coverElements: { invite: { x: 50, y: 60, width: 100, height: 5, fontScale: 1.4, fontType: 'accent' } },
+      coverText: { invite: { fontScale: 0.8 } },
+    })
+    expect(textStyles.value.invite).toEqual({ fontType: 'accent', fontScale: 0.8 })
+    expect(elementStyles.value.invite['--cover-font-scale']).toBe('0.8')
+    expect(elementStyles.value.invite['--cover-block-font']).toBe('var(--tpl-font-accent)')
+  })
+
+  it('styles the line under the names apart from the names', () => {
+    const { textStyles, elementStyles } = resolve({
+      coverText: { hostNames: { fontScale: 1.2 }, hostSubline: { fontType: 'accent', fontScale: 0.7 } },
+    })
+    expect(elementStyles.value.hosts['--cover-font-scale']).toBe('1.2')
+    expect(textStyles.value.hostSubline).toEqual({ fontType: 'accent', fontScale: 0.7 })
+  })
+
+  it('drops a slot this build publishes no variable for, and clamps the size', () => {
+    const { textStyles } = resolve({
+      coverText: { date: { fontType: 'v2-display' as never, fontScale: 9 } },
+    })
+    expect(textStyles.value.date).toEqual({ fontType: undefined, fontScale: COVER_TEXT_SCALE_RANGE.max })
+  })
+})
+
+/**
+ * The names, date and venue. Off until switched on — so no existing template
+ * changes — and placed by box in both layout modes, because they never stacked.
+ */
+describe('cover detail blocks', () => {
+  const resolve = (config: CoverStageLayout) =>
+    useCoverStageLayout(computed<CoverStageLayout | undefined>(() => config))
+
+  it('is off on every template that has not asked for it', () => {
+    const { layout, coverDetails } = resolve({})
+    expect(layout.value.showCoverHosts).toBe(false)
+    expect(layout.value.showCoverDate).toBe(false)
+    expect(layout.value.showCoverLocation).toBe(false)
+    expect(coverDetails.value).toEqual(COVER_DETAILS_DEFAULTS)
+  })
+
+  it('starts each block on the reference card placement', () => {
+    const { elements } = resolve({})
+    expect(elements.value.hosts).toEqual(COVER_DETAIL_ELEMENT_DEFAULTS.hosts)
+    expect(elements.value.date).toEqual(COVER_DETAIL_ELEMENT_DEFAULTS.date)
+    expect(elements.value.location).toEqual(COVER_DETAIL_ELEMENT_DEFAULTS.location)
+    // Stacked top to bottom as the card reads.
+    expect(elements.value.hosts.y).toBeLessThan(elements.value.date.y)
+    expect(elements.value.date.y).toBeLessThan(elements.value.location.y)
+  })
+
+  it('places a detail block by its own box even in rows mode', () => {
+    const moved = { x: 40, y: 30, width: 60, height: 10, fontScale: 1.2, fontType: 'decorative' as const }
+    const { elements, elementStyles, elementFontSlots } = resolve({
+      layoutMode: 'rows',
+      coverElements: { hosts: moved },
+    })
+    expect(elements.value.hosts).toMatchObject({ x: 40, y: 30, width: 60, height: 10 })
+    expect(elementStyles.value.hosts.left).toBe('10%')
+    // The detail block's font pick holds in rows mode; a row block's doesn't.
+    expect(elementFontSlots.value.hosts).toBe('decorative')
+  })
+
+  it('lets a partner move the details in rows mode and every block in free mode', () => {
+    expect(placeableCoverElementIds('rows')).toEqual(['hosts', 'date', 'location'])
+    expect(placeableCoverElementIds('free')).toEqual(COVER_ELEMENT_IDS)
+  })
+
+  it('falls back to the reference card for values this build does not know', () => {
+    const { coverDetails } = resolve({
+      coverDetails: {
+        separator: 'sparkle' as never,
+        hostArrangement: 'diagonal' as never,
+        dateFormat: 'lunar' as never,
+        hostCount: 0,
+        separatorScale: 9,
+      },
+    })
+    expect(coverDetails.value.separator).toBe('ampersand')
+    expect(coverDetails.value.hostArrangement).toBe('stacked')
+    expect(coverDetails.value.dateFormat).toBe('numeric')
+    // 0 is not "show none" — that is the switch's job — so it means every host.
+    expect(coverDetails.value.hostCount).toBeNull()
+    expect(coverDetails.value.separatorScale).toBe(COVER_SEPARATOR_SCALE_RANGE.max)
+  })
+
+  it('carries a partial config through, filling only what it leaves out', () => {
+    const { coverDetails } = resolve({ coverDetails: { separator: 'rings', hostCount: 3.4 } })
+    expect(coverDetails.value.separator).toBe('rings')
+    expect(coverDetails.value.hostCount).toBe(3)
+    expect(coverDetails.value.hostSubline).toBe(COVER_DETAILS_DEFAULTS.hostSubline)
   })
 })

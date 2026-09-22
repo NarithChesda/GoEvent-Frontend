@@ -31,7 +31,11 @@ import { useShowcaseEditSaves } from '@/composables/showcase-preview/useShowcase
 import { InlineEditKey, EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import { PreviewFrameKey } from '@/components/showcase-preview/previewContext'
 import { CoverLayoutEditKey } from '@/components/showcase-preview/edit/coverLayoutEditContext'
-import type { CoverElementBoxes, CoverElementId } from '@/services/api/types/template.types'
+import type {
+  CoverElementBoxes,
+  CoverElementId,
+  CoverTextStyles,
+} from '@/services/api/types/template.types'
 import {
   parsePreviewBridgeMessage,
   postEditIntentToParent,
@@ -150,12 +154,14 @@ const editHintsOn = ref(route.query.hints === '1')
 // ---------------------------------------------------------------------------
 const coverLayoutEditing = ref(route.query.layoutEdit === '1')
 const coverLayoutOverride = ref<CoverElementBoxes | null>(null)
+const coverTextOverride = ref<CoverTextStyles | null>(null)
 const coverLayoutSelected = ref<CoverElementId | null>(null)
 const coverLayoutDragging = ref(false)
 
 provide(CoverLayoutEditKey, {
   active: coverLayoutEditing,
   override: coverLayoutOverride,
+  textOverride: coverTextOverride,
   selected: coverLayoutSelected,
   dragging: coverLayoutDragging,
 })
@@ -197,6 +203,8 @@ const onFrameMessage = (msg: MessageEvent) => {
     // which case this is a stale echo of a position two frames old and
     // adopting it would visibly snap the block backwards.
     if (!coverLayoutDragging.value) coverLayoutOverride.value = null
+    // A text edit is a click, never a drag, so the push always supersedes it.
+    coverTextOverride.value = null
   }
   if (parsed.type === 'preview-template-clear') clearStagedTemplatePreview()
   if (parsed.type === 'preview-template-commit') commitStagedTemplatePreview()
@@ -206,6 +214,7 @@ const onFrameMessage = (msg: MessageEvent) => {
   if (parsed.type === 'cover-layout-edit-off') {
     coverLayoutEditing.value = false
     coverLayoutOverride.value = null
+    coverTextOverride.value = null
     coverLayoutSelected.value = null
   }
   if (parsed.type === 'cover-layout-select') coverLayoutSelected.value = parsed.elementId

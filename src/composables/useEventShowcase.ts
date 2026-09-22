@@ -181,6 +181,13 @@ export interface TemplateAssets {
      * docs/backend-api-requirements/host-info-design.md.
      */
     host_divider_image?: string | null
+    /**
+     * The mark between the host names on the cover, drawn in place of
+     * `cover_stage_layout.coverDetails.separator` — the precedence
+     * host_divider_image has above. Backend field pending:
+     * docs/backend-api-requirements/cover-details.md.
+     */
+    cover_host_separator_image?: string | null
     // The guest-name title frame pieces live in here, NOT at the top level of
     // TemplateAssets (where they're also declared, below, but never read) — the
     // templateAssets computed spreads this sub-object and hands the result to
@@ -320,6 +327,8 @@ export interface EventData {
   short_description?: string
   start_date: string
   end_date: string
+  /** IANA zone the event is held in — what the cover sets its date and time in. */
+  timezone?: string
   location?: string
   virtual_link?: string
   is_virtual?: boolean

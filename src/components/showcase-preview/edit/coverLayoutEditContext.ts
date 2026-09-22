@@ -1,5 +1,9 @@
 import type { InjectionKey, Ref } from 'vue'
-import type { CoverElementBoxes, CoverElementId } from '@/services/api/types/template.types'
+import type {
+  CoverElementBoxes,
+  CoverElementId,
+  CoverTextStyles,
+} from '@/services/api/types/template.types'
 
 /**
  * Frame-side state for the direct-manipulation cover layout editor.
@@ -23,6 +27,12 @@ export interface CoverLayoutEditContext {
   active: Ref<boolean>
   /** Boxes being dragged right now; null means the pushed template rules. */
   override: Ref<CoverElementBoxes | null>
+  /**
+   * Text styles changed on the preview and not yet echoed back by a push — the
+   * same job `override` does for boxes. Without it a run of A+ clicks would each
+   * read the size from before the last one, and land one step up in total.
+   */
+  textOverride: Ref<CoverTextStyles | null>
   /** The block the editor pane and the overlay agree is selected. */
   selected: Ref<CoverElementId | null>
   /** A pointer drag is in flight, so incoming pushes are stale echoes. */

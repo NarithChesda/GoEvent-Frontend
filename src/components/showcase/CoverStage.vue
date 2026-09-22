@@ -67,6 +67,7 @@
       :cover-right-decoration="coverRightDecoration"
       :animation-type="animationType"
       :ambient-creatures="props.ambientCreatures"
+      :event-details="eventDetails"
       @open-envelope="handleOpenEnvelope"
     />
 
@@ -147,6 +148,7 @@ import { sparkFieldKeyOf } from '@/composables/showcase/useSparkField'
 import type { ShowcaseAnimationType } from '@/composables/showcase/useShowcaseAnimation'
 import { resolveStageModes, type ResolvedStageModes } from '@/composables/showcase/useStageModes'
 import { useCoverStageLayout } from '@/composables/showcase/useCoverStageLayout'
+import type { CoverEventDetails } from './cover/coverDetails'
 import VideoContainer from './VideoContainer.vue'
 import CoverContentOverlay from './CoverContentOverlay.vue'
 import FallingEffect from './FallingEffect.vue'
@@ -185,6 +187,8 @@ interface Props {
   firstHostName?: string
   /** First host id — routes the preview editor to the host drawer when the logo row frames that host's photo. */
   firstHostId?: number | null
+  /** The hosts, date and venue — for the cover's names-and-details blocks. */
+  eventDetails?: CoverEventDetails | null
   eventVideoUrl?: string | null
   backgroundVideoUrl?: string | null
   primaryColor: string

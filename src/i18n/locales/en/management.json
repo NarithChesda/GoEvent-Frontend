@@ -2774,6 +2774,7 @@
     },
     "rowsHint": "Blocks stack in a fixed order inside one container. Switch to free placement to move and resize each one on its own.",
     "dragHint": "Drag a block on the preview to move it, or its handles to resize. Select one to set its text size and colour from the bar beneath it. Arrow keys nudge, Ctrl + up/down scales the text, Shift for bigger steps, Alt to ignore the guides.",
+    "detailsDragHint": "Host names, date and venue sit wherever you put them, in either mode. Drag one on the preview, or pick it here for exact values.",
     "previewHint": "Drag the blocks to place them. Nothing is saved until you save the template.",
     "blockPicker": "Cover block",
     "pickBlock": "Pick a block above, or click one straight on the preview.",
@@ -2781,7 +2782,10 @@
       "header": "Header text",
       "logo": "Logo",
       "invite": "Invite text",
-      "guest": "Guest name"
+      "guest": "Guest name",
+      "hosts": "Host names",
+      "date": "Date",
+      "location": "Venue"
     },
     "fields": {
       "x": "Centre X",
@@ -3034,6 +3038,8 @@
       "showCoverLogoHint": "When off, its row is left empty rather than closed, so nothing else on the cover moves.",
       "showCoverInviteText": "Show Invite Text",
       "showCoverInviteTextHint": "The line above the guest name. When off, its space is kept, so the guest name stays put.",
+      "showCoverGuestName": "Show Guest Name",
+      "showCoverGuestNameHint": "The guest's own name. When off, its space is kept, like the logo's.",
       "showHostNameUnderLogo": "Show Host Name Under Logo",
       "showHostNameUnderLogoHint": "The host name beneath the logo. Birthday invitations only.",
       "hostClip": "Host Image Clip",
@@ -3046,6 +3052,75 @@
       "right": "Right",
       "top": "Top",
       "bottom": "Bottom"
+    },
+    "coverDetails": {
+      "showHosts": "Show host names",
+      "showHostsHint": "Every host the event has, one or several, with a mark between the names.",
+      "showDate": "Show the date",
+      "showDateHint": "The event date, in the accent colour.",
+      "showLocation": "Show the venue",
+      "showLocationHint": "The time and the venue, from the event's own details.",
+      "hostCount": "Names shown",
+      "hostCountAll": "Every host",
+      "hostCountN": "Up to {n}",
+      "arrangement": "Arrangement",
+      "arrangements": {
+        "stacked": "Stacked",
+        "inline": "On one line"
+      },
+      "subline": "Under each name",
+      "sublines": {
+        "none": "Nothing",
+        "surname": "Family name",
+        "title": "Title"
+      },
+      "sublineHint": {
+        "none": "Each name on its own, in full.",
+        "surname": "The first name large, the family name small beneath it. Names written in Khmer stay whole.",
+        "title": "The host's title, such as Bride or Groom, beneath their full name."
+      },
+      "separator": "Between the names",
+      "separators": {
+        "ampersand": "Ampersand (&)",
+        "word": "The word “and”"
+      },
+      "separatorImage": "Your own mark",
+      "separatorImageHint": "Drawn instead of the choice above while it is attached. A transparent PNG or SVG works best.",
+      "separatorImageUpload": "Upload a mark",
+      "separatorColor": "Mark colour",
+      "separatorScale": "Mark size",
+      "dateFormat": "Date style",
+      "dateFormats": {
+        "numeric": "20.10.2025",
+        "long": "Spelled out",
+        "text": "As written"
+      },
+      "dateFormatHint": {
+        "numeric": "Day, month and year in figures, in the event's own time zone.",
+        "long": "The weekday, day, month and year in words, in the invitation's language.",
+        "text": "The event's own date line, word for word. Uses figures when it has none."
+      },
+      "showTime": "Show the time",
+      "showTimeHint": "The event's time line, or its start time when it has none.",
+      "capitals": "Spaced capitals",
+      "capitalsHint": "Names and venue in wide capitals, as printed cards set them. Khmer text is never changed.",
+      "competingHint": "The logo, invite text and guest name are still on, in the same space.",
+      "hideCompeting": "Hide them"
+    },
+    "coverText": {
+      "heading": "Text styles",
+      "hint": "The font and size of each text on the cover, in either layout. Fonts are this template's own, chosen per language under Fonts.",
+      "size": "Size",
+      "slotEmpty": "{slot} · not set yet",
+      "texts": {
+        "header": "Header text",
+        "invite": "Invite text",
+        "guest": "Guest name",
+        "hostNames": "Host names",
+        "hostSubline": "Under each name",
+        "date": "Date",
+        "location": "Time and venue"
+      }
     },
     "fallingEffect": {
       "enableLabel": "Enable Falling Particles",
@@ -3327,7 +3402,8 @@
         "calendarMarker": "Circled day",
         "sparks": "Drifting sparks",
         "templateColor": "Template color",
-        "fallingEffect": "Falling particles"
+        "fallingEffect": "Falling particles",
+        "hostSeparator": "Mark between the names"
       }
     }
   },

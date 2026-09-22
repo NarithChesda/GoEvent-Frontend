@@ -46,6 +46,7 @@ export const PARTNER_TEMPLATE_ASSET_FIELDS = [
   'sample_logo_2',
   'header_text_image',
   'host_divider_image',
+  'cover_host_separator_image',
 ] as const
 
 export type PartnerTemplateAssetField = (typeof PARTNER_TEMPLATE_ASSET_FIELDS)[number]

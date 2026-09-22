@@ -151,7 +151,8 @@
       </div>
     </div>
 
-    <!-- Guest Name Row -->
+    <!-- Guest Name Row. Switched off (showCoverGuestName), the row stays and
+         only the name goes, for the logo row's reason. -->
     <div
       v-if="guestName"
       ref="guestContainerRef"
@@ -159,7 +160,7 @@
       :class="blockClass"
       :style="{ ...blockStyle('guest'), overflow: 'visible', zIndex: 100 }"
     >
-      <div class="guest-content-container flex items-center justify-center px-4 w-full">
+      <div v-if="showCoverGuestName" class="guest-content-container flex items-center justify-center px-4 w-full">
         <GuestNameFrame
           ref="guestNameFrameRef"
           :guest-name="guestName || ''"
@@ -194,6 +195,7 @@ import type {
   CoverElementId,
   CoverFontSlot,
   CoverLayoutMode,
+  CoverRowElementId,
   GuestFrameConfig,
 } from '@/services/api/types/template.types'
 import { COVER_ELEMENT_DEFAULT_FONT_SLOTS } from '@/composables/showcase/useCoverStageLayout'
@@ -234,6 +236,8 @@ interface Props {
   showCoverLogo?: boolean
   /** Draw the invite text above the guest name. When false its row keeps its space, like the logo's. */
   showCoverInviteText?: boolean
+  /** Draw the guest's name. When false its row keeps its space, like the logo's. */
+  showCoverGuestName?: boolean
   guestName?: string | null
   primaryColor: string
   secondaryColor?: string | null
@@ -275,6 +279,7 @@ const props = withDefaults(defineProps<Props>(), {
   // Explicit, because an absent optional boolean prop casts to false.
   showCoverLogo: true,
   showCoverInviteText: true,
+  showCoverGuestName: true,
   layoutMode: 'rows',
 })
 
@@ -291,7 +296,7 @@ const fontSlot = (id: CoverElementId): CoverFontSlot =>
 // flex-column stacking is untouched.
 const blockClass = computed(() => (isFree.value ? 'cover-free-block' : ''))
 
-const ROW_STYLE_KEYS: Record<CoverElementId, keyof RowStyles> = {
+const ROW_STYLE_KEYS: Record<CoverRowElementId, keyof RowStyles> = {
   header: 'eventTitle',
   logo: 'logo',
   invite: 'inviteText',
@@ -299,7 +304,7 @@ const ROW_STYLE_KEYS: Record<CoverElementId, keyof RowStyles> = {
 }
 
 /** Wrapper geometry for one block, in whichever model is active. */
-const blockStyle = (id: CoverElementId): Record<string, string> =>
+const blockStyle = (id: CoverRowElementId): Record<string, string> =>
   isFree.value ? props.elementStyles![id] : props.rowStyles[ROW_STYLE_KEYS[id]]
 
 // Render the merged logo row as a stack whenever it can carry the

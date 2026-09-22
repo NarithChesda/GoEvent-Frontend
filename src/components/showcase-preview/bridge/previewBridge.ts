@@ -1,6 +1,11 @@
 import type { EditIntent } from '../edit/editContext'
 import type { TemplateAssets } from '@/composables/useEventShowcase'
-import type { CoverElementBoxes, CoverElementId } from '@/services/api/types/template.types'
+import type {
+  CoverElementBoxes,
+  CoverElementId,
+  CoverTextId,
+  CoverTextStyle,
+} from '@/services/api/types/template.types'
 
 /**
  * Typed same-origin postMessage protocol between the manage-page preview tab
@@ -35,6 +40,10 @@ import type { CoverElementBoxes, CoverElementId } from '@/services/api/types/tem
  *                      never fire),
  *                    cover-layout-edit-on/off (turn the direct-manipulation
  *                      cover layout overlay on — see CoverLayoutEditor.vue)
+ *
+ * `cover-text-change` goes frame → parent only: the overlay's A−/A+ resized a
+ * block's text. The parent owns `coverText` and pushes it back down inside the
+ * next template push, like every other edit.
  *
  * `cover-layout-change` and `cover-layout-select` travel in BOTH directions:
  * dragging a block in the frame reports up, and the editor pane's numeric
@@ -89,6 +98,13 @@ export type PreviewBridgeMessage =
       source: typeof PREVIEW_BRIDGE_SOURCE
       type: 'cover-layout-select'
       elementId: CoverElementId | null
+    }
+  | {
+      source: typeof PREVIEW_BRIDGE_SOURCE
+      type: 'cover-text-change'
+      textId: CoverTextId
+      /** The text's whole style after the edit, not a delta. */
+      style: CoverTextStyle
     }
 
 /**
@@ -241,6 +257,21 @@ export function postCoverLayoutChangeToParent(
       // on a Vue reactive proxy, and these boxes come straight off a ref.
       elements: JSON.parse(JSON.stringify(elements)) as CoverElementBoxes,
       commit,
+    } satisfies PreviewBridgeMessage,
+    window.location.origin,
+  )
+}
+
+/** Frame side: one cover text was restyled on the preview. */
+export function postCoverTextChangeToParent(textId: CoverTextId, style: CoverTextStyle): void {
+  if (window.parent === window) return
+  window.parent.postMessage(
+    {
+      source: PREVIEW_BRIDGE_SOURCE,
+      type: 'cover-text-change',
+      textId,
+      // Unwrapped for structured clone, as postCoverLayoutChangeToParent does.
+      style: JSON.parse(JSON.stringify(style)) as CoverTextStyle,
     } satisfies PreviewBridgeMessage,
     window.location.origin,
   )
