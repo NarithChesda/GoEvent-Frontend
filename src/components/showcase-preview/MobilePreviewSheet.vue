@@ -53,18 +53,25 @@
         </div>
 
         <!-- Overlaid just above the bar it talks about, and self-dismissing, so
-             it costs no frame height. -->
+             it costs no frame height. Also where auto-fill reports how it went:
+             the rail it is pressed on has no width to say it in. -->
         <Transition name="preview-sheet-tip">
-          <p v-if="tipKey" class="preview-sheet__tip">
-            {{ t(`management.showcasePreview.mobilePreview.${tipKey}`) }}
+          <p
+            v-if="tip"
+            class="preview-sheet__tip"
+            :class="{ 'is-error': tip.tone === 'error' }"
+            role="status"
+          >
+            {{ tip.text }}
           </p>
         </Transition>
 
         <!-- The tool rail: how the preview is looked at (language, edit
-             highlights) and the event-wide settings no tap on the invitation can
-             reach (music, the link preview) — neither has a place on the
-             invitation to be tapped. A column at the right edge, so the bar
-             below keeps its width for the one flow it carries.
+             highlights) and what no tap on the invitation can reach — filling
+             it from the category's template, and the event-wide settings (music,
+             the link preview) that have no place on the invitation to be tapped.
+             A column at the right edge, so the bar below keeps its width for the
+             one flow it carries.
 
              Centred on the height rather than stacked on the bar: it stays clear
              of the preview-only notice above and the tip over the bar below at
@@ -109,11 +116,42 @@
             </span>
           </button>
 
-          <!-- Looking | changing: the two above alter only this screen, the two
+          <!-- Looking | changing: the two above alter only this screen, the ones
                below write to the event. Both halves exist exactly when the
                viewer can edit (the highlights toggle above, the link preview
                below). -->
           <span v-if="canEdit" class="preview-sheet__rail-divider" aria-hidden="true" />
+
+          <!-- Auto-fill leads the writing half: it fills the invitation itself,
+               where the two after it set what travels with it. The component
+               keeps its confirm dialog, which opens over this sheet, so a stray
+               tap on a 40px disc still writes nothing. -->
+          <PopulateFromTemplateCard
+            v-if="canEdit"
+            :event="eventData"
+            :can-edit="canEdit"
+            variant="slot"
+            @populated="emit('populated')"
+            @status="onPopulateStatus"
+          >
+            <template #trigger="{ start, loading }">
+              <button
+                type="button"
+                class="preview-sheet__btn"
+                :disabled="loading"
+                :aria-busy="loading"
+                aria-haspopup="dialog"
+                :aria-label="t('management.media.populate.label')"
+                @click="start"
+              >
+                <Loader2 v-if="loading" class="w-[1.125rem] h-[1.125rem] animate-spin" aria-hidden="true" />
+                <Wand2 v-else class="w-[1.125rem] h-[1.125rem]" aria-hidden="true" />
+                <span class="preview-sheet__tooltip preview-sheet__tooltip--side" aria-hidden="true">
+                  {{ t('management.media.populate.label') }}
+                </span>
+              </button>
+            </template>
+          </PopulateFromTemplateCard>
 
           <button
             v-if="canEdit && showMusic"
@@ -317,14 +355,15 @@
  * guest actually sees. Now the iframe fills the sheet at 1:1 and the controls
  * float over it, dimming themselves when idle: a bar at the foot for leaving,
  * the stages and the choose-then-pay flow, and a rail at the right edge for the
- * tools — how the preview is looked at, and the event-wide settings (music, the
- * link preview) that have no place on the invitation to be tapped.
+ * tools — how the preview is looked at, auto-fill, and the event-wide settings
+ * (music, the link preview) that have no place on the invitation to be tapped.
  */
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
-import { Music, Palette, Pencil, Share2, Sparkles, TriangleAlert, X } from 'lucide-vue-next'
+import { Loader2, Music, Palette, Pencil, Share2, Sparkles, TriangleAlert, Wand2, X } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { defineResilientAsyncComponent } from '@/utils/asyncComponent'
 import MobileBottomSheet from '@/components/common/MobileBottomSheet.vue'
+import PopulateFromTemplateCard from '@/components/PopulateFromTemplateCard.vue'
 import InertIframe from './InertIframe.vue'
 import { previewStageIcon as stageIcon } from './previewStageIcons'
 import type { PreviewFrameDescriptor } from './renderers/resolvePreviewRenderer'
@@ -386,6 +425,9 @@ const emit = defineEmits<{
   /** The music or link-preview sheet saved the event — the same contract as
    *  EventMediaTab's own `event-updated`. */
   'event-updated': [event: Event]
+  /** Auto-fill wrote texts, hosts and agenda. Nothing comes back but the
+   *  counts, so the frames need a full refresh. */
+  populated: []
   /** Which stage is on screen right now — the sheet shows exactly one frame
    *  at a time (unlike the desktop studio's "multiple" default), so the host
    *  tab needs this to know which frame(s) a post-save refresh can skip. */
@@ -587,7 +629,9 @@ watch(
 // An icon-only toggle can't say what it does, and a permanent caption would
 // cost frame height forever to say something you need twice. So the tip
 // narrates the hints state: once on open, and again whenever it's toggled.
-const tipKey = ref<'editHintsTip' | 'editHintsOff' | null>(null)
+// Auto-fill reports through it too — a result, so it stays up longer (the
+// forms' card clears its own after the same 5s).
+const tip = ref<{ text: string; tone: 'info' | 'error' } | null>(null)
 let tipTimer: ReturnType<typeof setTimeout> | null = null
 
 const clearTipTimer = () => {
@@ -595,10 +639,18 @@ const clearTipTimer = () => {
   tipTimer = null
 }
 
-const showTipFor = (key: 'editHintsTip' | 'editHintsOff') => {
+const showTip = (text: string, tone: 'info' | 'error' = 'info', duration = 3500) => {
   clearTipTimer()
-  tipKey.value = key
-  tipTimer = setTimeout(() => (tipKey.value = null), 3500)
+  tip.value = { text, tone }
+  tipTimer = setTimeout(() => (tip.value = null), duration)
+}
+
+const showTipFor = (key: 'editHintsTip' | 'editHintsOff') => {
+  showTip(t(`management.showcasePreview.mobilePreview.${key}`))
+}
+
+const onPopulateStatus = (status: { type: 'success' | 'error'; text: string }) => {
+  showTip(status.text, status.type === 'error' ? 'error' : 'info', 5000)
 }
 
 // --- Open/close side effects ----------------------------------------------
@@ -614,11 +666,18 @@ const onKeydown = (event: KeyboardEvent) => {
   else if (!props.templatesOpen) emit('close')
 }
 
+// Immediate, because the sheet can be mounted already open: where it is the
+// Studio tab itself (the host's `previewFirst`), landing on that tab — a reload,
+// or a new event arriving from the create wizard — renders it open from the
+// first frame, and a plain watcher would never hear it open at all (no scroll
+// lock, no Escape, no tip). Mounting closed has nothing to undo, so that first
+// call is skipped rather than clearing a body style someone else set.
 watch(
   () => props.open,
-  (open) => {
+  (open, wasOpen) => {
+    if (!open && wasOpen === undefined) return
     clearTipTimer()
-    tipKey.value = null
+    tip.value = null
     if (open) {
       // The sheet is the only scroll surface that should exist while it's up —
       // otherwise a drag that starts outside the frame scrolls the manage page
@@ -636,6 +695,7 @@ watch(
       frameInstances.clear()
     }
   },
+  { immediate: true },
 )
 
 onUnmounted(() => {
@@ -1116,18 +1176,33 @@ onUnmounted(() => {
   bottom: calc(4.5rem + env(safe-area-inset-bottom));
   transform: translateX(-50%);
   z-index: 2;
+  /* `max-content` because an absolutely positioned box at `left: 50%` would
+     otherwise shrink-to-fit into the half of the sheet right of its left edge,
+     and wrap there — auto-fill's result line is a full sentence, and Khmer runs
+     longer still. The cap is what wraps it now. */
+  width: max-content;
   max-width: calc(100vw - 2rem);
   padding: 0.4375rem 0.875rem;
-  border-radius: 9999px;
+  /* A pill on one line, and still a clean shape on two. */
+  border-radius: 1rem;
   font-size: 0.75rem;
   font-weight: 600;
+  line-height: 1.4;
   text-align: center;
+  text-wrap: balance;
   color: rgb(226 232 240);
   background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(148, 163, 184, 0.25);
   pointer-events: none;
+}
+
+/* Auto-fill failing is the one thing it says that needs acting on. Tinted, not
+   a red slab: it sits over the invitation. */
+.preview-sheet__tip.is-error {
+  color: rgb(254 202 202);
+  border-color: rgba(248, 113, 113, 0.45);
 }
 
 /* Sheet motion follows §10's bottom-sheet curve — this rises from the bottom

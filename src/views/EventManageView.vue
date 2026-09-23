@@ -218,10 +218,13 @@
                 :event-data="event"
                 :can-view-live-preview="!!canViewShowcasePreview"
                 :show-category-specific-sections="showCategorySpecificSections"
+                :preview-first="studioHasDesigns"
+                :active="activeTab === 'design-studio'"
                 @event-updated="handleEventUpdated"
                 @media-updated="handleMediaUpdated"
                 @template-applied="handleTemplateUpdated"
                 @open-activation="activeTab = 'template-payment'"
+                @leave="leaveStudio"
               />
               <EventMediaTab
                 v-else-if="event?.id"
@@ -427,6 +430,7 @@ import EventManageMobileTabBar from '../components/EventManageMobileTabBar.vue'
 import { useAuthStore } from '../stores/auth'
 import { eventsService, apiClient, type Event, type EventPhoto } from '../services/api'
 import { isShowcaseCategory } from '../utils/showcaseCategories'
+import { useDesignCategories } from '../composables/event/useDesignCategories'
 import EventEditDrawer from '../components/EventEditDrawer.vue'
 import type { TabConfig } from '../components/EventNavigationTabs.vue'
 
@@ -582,6 +586,39 @@ const canViewShowcasePreview = computed(() => {
     canViewRestrictedTabs.value &&
     isShowcaseCategory(event.value?.category_details?.name || event.value?.category_name)
   )
+})
+
+/**
+ * Whether this event's category has invitation designs — which on a phone makes
+ * the Design Studio tab open straight into the live preview (ShowcasePreviewTab's
+ * `previewFirst`). A studio is not enough: a category can have one and no
+ * approved template (Housewarming, as of September 2026), and there the forms
+ * page is still the better screen. An event that already wears a template has
+ * something to show whatever the catalogue says.
+ *
+ * Asked only where it changes anything — a phone, a studio category — and until
+ * the catalogue answers, `hasDesigns` stands in with "has a studio".
+ */
+const designCategories = useDesignCategories()
+
+watch(
+  [isDesktop, canViewShowcasePreview],
+  ([desktop, studio]) => {
+    if (!desktop && studio) void designCategories.load(0)
+  },
+  { immediate: true },
+)
+
+const studioHasDesigns = computed(() => {
+  const current = event.value
+  if (!current) return false
+  if (current.event_template) return true
+  const category =
+    current.category_details ??
+    (current.category != null
+      ? { id: current.category, name: current.category_name ?? undefined }
+      : null)
+  return designCategories.hasDesigns(category)
 })
 
 // Check if event category supports category-specific showcase features
@@ -942,12 +979,27 @@ const showMessage = (type: 'success' | 'error', text: string) => {
 
 
 
+/**
+ * Where closing the studio's preview goes, when the preview is the whole tab
+ * (see `studioHasDesigns`). Recorded on the way in; a visit that started on the
+ * studio has nowhere it came from, so it closes onto the overview.
+ */
+let studioReturnTab = 'overview'
+
+const leaveStudio = () => {
+  activeTab.value = studioReturnTab
+}
+
 // Watch for tab changes and reset sub-tab
 watch(
   () => activeTab.value,
-  (tab) => {
+  (tab, previous) => {
     // Reset sub-tab when main tab changes
     activeSubTab.value = ''
+
+    if (tab === 'design-studio' && previous && previous !== 'design-studio') {
+      studioReturnTab = previous
+    }
 
     if (tab === 'design-studio') {
       if (!studioEverOpened.value) {
