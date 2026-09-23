@@ -1,14 +1,14 @@
 import type { Page } from '@playwright/test'
-import { test, expect } from './fixtures'
+import { test, expect, APP_LOCALE_KEY } from './fixtures'
 
 /**
  * /partners and /partners/templates open in Khmer, and stay reachable in both
  * languages on a phone.
  *
  * Both are links a salesperson sends to a Cambodian shop owner who has never
- * opened the app, so the route declares `preferredLocale: 'kh'` (router meta)
- * and the language store applies it to anyone who has not chosen for
- * themselves.
+ * opened the app. Khmer is now the whole app's default (DEFAULT_LOCALE), and
+ * the routes still declare `preferredLocale: 'kh'` (router meta) so they stay
+ * Khmer-first should that default ever change back.
  *
  * The regression this file exists for is silent and was live: the store's boot
  * sync persisted the app's own default locale, so from a visitor's SECOND load
@@ -17,12 +17,12 @@ import { test, expect } from './fixtures'
  * simply renders in English — which is why it is asserted rather than eyeballed.
  */
 
+// About first visits, so no language is seeded (see fixtures.ts).
+test.use({ appLocale: null })
+
 const LANG_SWITCH = /ប្តូរទៅ|Switch to/
 
-/** The store's persistence key (APP_LOCALE_STORAGE_KEY). */
-const LOCALE_KEY = 'goevent_app_locale'
-
-const storedLocale = (page: Page) => page.evaluate((key) => localStorage.getItem(key), LOCALE_KEY)
+const storedLocale = (page: Page) => page.evaluate((key) => localStorage.getItem(key), APP_LOCALE_KEY)
 
 test.describe('partner pages open in Khmer', () => {
   test.beforeEach(async ({ page, stubApi }) => {
@@ -35,10 +35,11 @@ test.describe('partner pages open in Khmer', () => {
   })
 
   test('having opened the app elsewhere first does not cost them Khmer', async ({ page }) => {
-    // The regression: /events boots the app, which used to write 'en' down as
-    // though the visitor had picked it. A reload is what made that stick.
+    // The regression: /events boots the app, which used to write its default
+    // down as though the visitor had picked it. A reload is what made that
+    // stick. Nothing may be stored by a boot on its own.
     await page.goto('/events')
-    await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+    await expect(page.locator('html')).toHaveAttribute('lang', 'km')
     expect(await storedLocale(page)).toBeNull()
 
     await page.goto('/partners')

@@ -94,11 +94,14 @@
         </div>
       </button>
 
-      <!-- Event Create Drawer -->
+      <!-- The create wizard. Signed in or out alike: it owns the request, the
+           sign-in detour and the hand-off to the new event, so this page only
+           decides when it is open. -->
       <EventCreateDrawer
         :is-visible="showCreateModal"
-        @close="showCreateModal = false"
-        @submit="handleEventCreate"
+        :resume="resumeCreate"
+        @close="closeCreateModal"
+        @created="loadEvents('my', {}, false, true)"
       />
 
       <!-- Delete Confirm Modal -->
@@ -177,6 +180,8 @@ const timeFilterOptions = computed(() => [
 
 // UI state
 const showCreateModal = ref(false)
+/** Opened by sign-in's return trip — see EventCreateDrawer's `resume`. */
+const resumeCreate = ref(false)
 const showDeleteModal = ref(false)
 const isDeleting = ref(false)
 const eventToDelete = ref<Event | null>(null)
@@ -374,15 +379,18 @@ const handleLoginRequired = () => {
   showEventDrawer.value = false
 }
 
+/**
+ * No sign-in first, even signed out: the wizard asks who they are only when
+ * they press Create, by which point they have something worth signing in for.
+ */
 const handleCreateEventClick = () => {
-  if (authStore.isAuthenticated) {
-    showCreateModal.value = true
-  } else {
-    router.push({
-      path: '/signin',
-      query: { redirect: '/events?createEvent=true' },
-    })
-  }
+  resumeCreate.value = false
+  showCreateModal.value = true
+}
+
+const closeCreateModal = () => {
+  showCreateModal.value = false
+  resumeCreate.value = false
 }
 
 const handleDeleteConfirm = async () => {
@@ -418,20 +426,21 @@ const showMessage = (type: 'success' | 'error', text: string) => {
   showToast(type, text)
 }
 
-const shouldOpenCreateModalFromQuery = () => {
+/**
+ * `?createEvent=true` opens the wizard (the nav's and the footer's links);
+ * `?createEvent=resume` is sign-in handing a visitor back after they pressed
+ * Create while signed out (CREATE_EVENT_RESUME_PATH). Neither is gated on being
+ * signed in any more — the wizard itself decides when that is needed.
+ */
+const createEventIntentFromQuery = (): 'open' | 'resume' | null => {
   const param = route.query.createEvent
-  const values = Array.isArray(param) ? param : [param]
+  const values = (Array.isArray(param) ? param : [param])
+    .filter((value): value is string => value != null)
+    .map((value) => value.toLowerCase())
 
-  return values.some((value) => {
-    if (value == null) return false
-    const normalized = value.toLowerCase()
-    return (
-      normalized === '' ||
-      normalized === '1' ||
-      normalized === 'true' ||
-      normalized === 'yes'
-    )
-  })
+  if (values.includes('resume')) return 'resume'
+  if (values.some((value) => ['', '1', 'true', 'yes'].includes(value))) return 'open'
+  return null
 }
 
 const clearCreateEventQuery = () => {
@@ -441,100 +450,12 @@ const clearCreateEventQuery = () => {
 }
 
 const maybeOpenCreateModalFromRoute = () => {
-  if (!authStore.isAuthenticated) return
-  if (!shouldOpenCreateModalFromQuery()) return
+  const intent = createEventIntentFromQuery()
+  if (!intent) return
 
+  resumeCreate.value = intent === 'resume'
   showCreateModal.value = true
   clearCreateEventQuery()
-}
-
-interface EventFormData {
-  title: string
-  description: string
-  start_date: string
-  end_date: string
-  location: string
-  privacy: 'public' | 'private'
-  short_description?: string
-  is_virtual?: boolean
-  virtual_link?: string
-  max_attendees?: number | null
-  registration_fee?: number
-  registration_required?: boolean
-  registration_deadline?: string | null
-  category?: number | string | null
-  banner_image?: string | null
-  is_free?: boolean
-  timezone?: string
-  status?: string
-  auto_populate?: boolean
-}
-
-const handleEventCreate = async (formData: EventFormData, done: (ok: boolean) => void) => {
-  try {
-    const eventData = {
-      title: formData.title,
-      description: formData.description,
-      short_description: formData.short_description || '',
-      start_date: formData.start_date,
-      end_date: formData.end_date,
-      location: formData.location || '',
-      is_virtual: formData.is_virtual || false,
-      virtual_link: formData.virtual_link || '',
-      privacy: formData.privacy,
-      ...(formData.status && {
-        status: formData.status as 'draft' | 'published' | 'cancelled' | 'completed',
-      }),
-      category: formData.category
-        ? typeof formData.category === 'string'
-          ? parseInt(formData.category)
-          : formData.category
-        : null,
-      max_attendees: formData.max_attendees || null,
-      registration_required: formData.registration_required || false,
-      registration_deadline: formData.registration_deadline || null,
-      timezone: formData.timezone || 'UTC',
-      ...(formData.auto_populate && { auto_populate: true }),
-    }
-
-    const response = await eventsService.createEvent(eventData)
-
-    if (response.success && response.data) {
-      timeFilter.value = 'recent'
-      // Refresh silently and BEFORE handing back: the drawer then plays its
-      // confirmation over a list that is already correct, so when it slides
-      // away the new event is simply there — no skeleton flash in between.
-      await loadEvents('my', {}, false, true)
-      // No success toast. The drawer holds its own "Created" tick before it
-      // slides away, and it slides away onto a list that already has the event
-      // in it — a bar arriving on top of both is the third telling.
-      done(true)
-      return
-    } else {
-      let errorMessage = response.message || t('events.messages.createError')
-
-      if (response.errors) {
-        const errorDetails = Object.entries(response.errors)
-          .map(
-            ([field, messages]) =>
-              `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`
-          )
-          .join('; ')
-        errorMessage = `${t('events.messages.validationErrors')}: ${errorDetails}`
-      }
-
-      showMessage('error', errorMessage)
-    }
-  } catch (error) {
-    if (import.meta.env.DEV) {
-      console.error('Error creating event:', error)
-    }
-    showMessage('error', t('events.messages.networkError'))
-  }
-
-  // Every failing path lands here: the drawer stays open with the user's input
-  // intact, so the error toast is something they can act on.
-  done(false)
 }
 
 // Watchers
@@ -560,7 +481,6 @@ watch(
   () => authStore.isAuthenticated,
   (isAuthenticated) => {
     if (isAuthenticated) {
-      maybeOpenCreateModalFromRoute()
       loadEvents('my', {})
     } else {
       events.value = []

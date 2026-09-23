@@ -38,6 +38,14 @@ export const STATIC_BODY_STYLE = [
   `<noscript><style>.${STATIC_BODY_CLASS}{display:block;max-width:42rem;margin:0 auto;padding:2rem 1rem;font:16px/1.6 system-ui,sans-serif;color:#0f172a}</style></noscript>`,
 ].join('')
 
+/**
+ * What /services is, for its card and its text alike. Typed here because the
+ * page has no subtitle string of its own to import; shared so the two can't
+ * drift.
+ */
+export const SERVICES_DESCRIPTION_KH =
+  'អ្នកថតរូប អ្នកថតវីដេអូ អ្នកធ្វើម្ហូប ទីកន្លែងរៀបចំកម្មវិធី អ្នកតុបតែង អ្នកផាត់មុខ និងសេវាកម្មពិធីមង្គលការ និងកម្មវិធីផ្សេងទៀត ព្រមទាំងស្នាដៃ និងរបៀបទាក់ទងពួកគេ។'
+
 const esc = (value: string) =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
@@ -95,9 +103,11 @@ export function createBodyRenderer(root: string) {
       .map(([href, label]) => `<li>${link(href!, label!)}</li>`)
       .join('')}</ul></nav>`
 
+  // The pages the app opens in Khmer (its default locale) are written in Khmer
+  // here too; /about and /privacy, whose content is English-only, stay English.
   const home = () => {
-    const en: Lang = 'en'
-    const k = (key: string) => t(en, `events.landing.${key}`)
+    const kh: Lang = 'kh'
+    const k = (key: string) => t(kh, `events.landing.${key}`)
     const plans = FALLBACK_PRICING_PLANS.filter((plan) => plan.is_active)
     return [
       `<h1>${esc(k('headline'))} ${esc(k('headlineAccent'))}</h1>`,
@@ -106,12 +116,12 @@ export function createBodyRenderer(root: string) {
 
       tag('h2', k('features.title')),
       tag('p', k('features.subtitle')),
-      `<ul>${entries(en, 'events.landing.features', 'title', 'body')
+      `<ul>${entries(kh, 'events.landing.features', 'title', 'body')
         .map((item) => `<li>${tag('h3', item.title!)}${tag('p', item.body!)}</li>`)
         .join('')}</ul>`,
 
       tag('h2', k('steps.title')),
-      `<ol>${entries(en, 'events.landing.steps', 'title', 'body')
+      `<ol>${entries(kh, 'events.landing.steps', 'title', 'body')
         .map((item) => `<li>${tag('h3', item.title!)}${tag('p', item.body!)}</li>`)
         .join('')}</ol>`,
 
@@ -133,7 +143,7 @@ export function createBodyRenderer(root: string) {
         .join('')}</ul>`,
 
       tag('h2', k('faq.title')),
-      entries(en, 'events.landing.faq', 'q', 'a')
+      entries(kh, 'events.landing.faq', 'q', 'a')
         .map((item) => `${tag('h3', item.q!)}${tag('p', item.a!)}`)
         .join(''),
     ].join('')
@@ -141,18 +151,12 @@ export function createBodyRenderer(root: string) {
 
   const explore = () =>
     [
-      tag('h1', t('en', 'events.landing.secondaryCta')),
-      tag('p', t('en', 'discover.subtitle')),
+      tag('h1', t('kh', 'events.landing.secondaryCta')),
+      tag('p', t('kh', 'discover.subtitle')),
     ].join('')
 
   const services = () =>
-    [
-      tag('h1', t('en', 'services.title')),
-      tag(
-        'p',
-        'Photographers, videographers, caterers, venues, decorators, makeup artists and other wedding and event services, with their work and how to reach them.',
-      ),
-    ].join('')
+    [tag('h1', t('kh', 'services.title')), tag('p', SERVICES_DESCRIPTION_KH)].join('')
 
   // Mirrors AboutView.vue by hand (see the header comment).
   const about = () =>
@@ -241,9 +245,9 @@ export function createBodyRenderer(root: string) {
     ].join('')
 
   const BODIES: Record<string, { lang: Lang; render: () => string }> = {
-    '/': { lang: 'en', render: home },
-    '/explore': { lang: 'en', render: explore },
-    '/services': { lang: 'en', render: services },
+    '/': { lang: 'kh', render: home },
+    '/explore': { lang: 'kh', render: explore },
+    '/services': { lang: 'kh', render: services },
     '/about': { lang: 'en', render: about },
     '/contact': { lang: 'en', render: about },
     '/privacy': { lang: 'en', render: privacy },

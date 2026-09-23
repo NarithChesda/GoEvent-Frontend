@@ -426,6 +426,7 @@ import EventNavigationTabs from '../components/EventNavigationTabs.vue'
 import EventManageMobileTabBar from '../components/EventManageMobileTabBar.vue'
 import { useAuthStore } from '../stores/auth'
 import { eventsService, apiClient, type Event, type EventPhoto } from '../services/api'
+import { isShowcaseCategory } from '../utils/showcaseCategories'
 import EventEditDrawer from '../components/EventEditDrawer.vue'
 import type { TabConfig } from '../components/EventNavigationTabs.vue'
 
@@ -568,19 +569,6 @@ const canViewRestrictedTabs = computed(() => {
   // Only organizer or collaborators can view restricted tabs
   return event.value.can_edit
 })
-
-// Categories that support showcase/template features. Backend category names
-// may include a suffix (e.g. "Housewarming Party", "Birthday Party",
-// "Funeral Service"), so we match by prefix rather than exact equality.
-const SHOWCASE_CATEGORIES = ['wedding', 'birthday', 'housewarming', 'funeral', 'ceremony']
-
-const isShowcaseCategory = (
-  category: string | null | undefined,
-): boolean => {
-  if (!category) return false
-  const normalized = category.toLowerCase()
-  return SHOWCASE_CATEGORIES.some((c) => normalized.startsWith(c))
-}
 
 const canViewMedia = computed(() => {
   // Show showcase/media tab for all events that the user can edit
@@ -902,6 +890,38 @@ const goToStudioTemplates = async () => {
   await nextTick()
   showcasePreviewTabRef.value?.openTemplates?.()
 }
+
+/**
+ * `?open=templates` — the create wizard's hand-off (see newEventLocation). A
+ * new event in a category with invitation designs arrives with the template
+ * browser already up, since choosing how it looks is the first thing to do with
+ * it. The studio is lazy and waits on the event, so this waits for its ref
+ * rather than for the route.
+ *
+ * One-shot: stripped from the URL as it is consumed, so a reload or a Back into
+ * this page does not reopen the browser over whatever the organizer was doing.
+ * An event whose category has no studio never mounts one; the param is simply
+ * dropped once that is known.
+ */
+const pendingOpenTemplates = ref(route.query.open === 'templates')
+
+const dropOpenParam = () => {
+  pendingOpenTemplates.value = false
+  if (route.query.open === undefined) return
+  const query = { ...route.query }
+  delete query.open
+  router.replace({ query })
+}
+
+watch(showcasePreviewTabRef, (studio) => {
+  if (!pendingOpenTemplates.value || !studio) return
+  studio.openTemplates?.()
+  dropOpenParam()
+})
+
+watch(event, (loaded) => {
+  if (pendingOpenTemplates.value && loaded && !canViewShowcasePreview.value) dropOpenParam()
+})
 
 const handleGuestTabChange = async (tab: string, action?: string) => {
   activeTab.value = tab

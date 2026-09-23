@@ -13,7 +13,15 @@
     -->
     <main class="flex min-h-screen justify-center px-4 pb-16 pt-[18vh] sm:px-6 sm:pt-[20vh]">
       <div class="w-full max-w-[26rem]">
-        <SignInCard @authenticated="handleRedirectAfterLogin" />
+        <SignInCard
+          :title="pendingEvent ? t('auth.signIn.createEventTitle') : undefined"
+          :subtitle="
+            pendingEvent
+              ? t('auth.signIn.createEventSubtitle', { title: pendingEvent.title })
+              : undefined
+          "
+          @authenticated="handleRedirectAfterLogin"
+        />
 
         <!-- Privacy only until a Terms of Service page exists: `/terms` has no
              route, and with no not-found page it rendered blank. When it does,
@@ -31,14 +39,27 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import TopNavBar from '@/components/TopNavBar.vue'
 import SignInCard from '@/components/auth/SignInCard.vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
+import { CREATE_EVENT_RESUME_PATH, readCreateEventDraft } from '@/utils/createEventForm'
 
 const router = useRouter()
 const route = useRoute()
 const { t } = useAppLanguage()
+
+/**
+ * The create wizard's detour: someone pressed Create while signed out, and
+ * their answers are waiting in a draft. Said here, in the card's own heading,
+ * because the worry a sign-in wall raises at that moment is "did I just lose
+ * what I typed?" — and the answer is no. A generic "Welcome back" would also
+ * be wrong for someone who has never been here.
+ */
+const pendingEvent = computed(() =>
+  route.query.redirect === CREATE_EVENT_RESUME_PATH ? readCreateEventDraft() : null,
+)
 
 const handleRedirectAfterLogin = () => {
   const redirectPath = route.query.redirect as string

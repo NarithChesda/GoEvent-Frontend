@@ -44,7 +44,17 @@ import enMessages from './messages/en'
 export const SUPPORTED_LOCALES = ['en', 'kh'] as const
 export type AppLocale = (typeof SUPPORTED_LOCALES)[number]
 
-export const DEFAULT_LOCALE: AppLocale = 'en'
+/**
+ * Khmer: what a visitor who has not chosen a language sees — on every page of
+ * the app, not only the ones that used to prefer it (`preferredLocale`). The
+ * market is Cambodian, and English is a tap away on the language switch.
+ *
+ * Deliberately not the same as FALLBACK_LOCALE. English stays the fallback —
+ * and so the one bundled locale — because it is the complete source every
+ * translation is made from; a key missing from Khmer should read as English,
+ * never as a raw key path.
+ */
+export const DEFAULT_LOCALE: AppLocale = 'kh'
 export const FALLBACK_LOCALE: AppLocale = 'en'
 
 type LocaleMessages = typeof enMessages
@@ -82,8 +92,19 @@ const messages = { en: enMessages } as Record<AppLocale, LocaleMessages>
  * Read persisted locale from localStorage (if any). We read here rather
  * than from the Pinia store because i18n is created before Pinia mounts.
  * The store keeps itself in sync on init and on every setLocale call.
+ *
+ * `_v2`, because the value under the old key cannot be trusted as a choice.
+ * Until 2026-09-14 the app wrote its own default ('en') there on every boot,
+ * so nearly every returning visitor carried an English "preference" they had
+ * never expressed — and when the default became Khmer, honouring it would have
+ * left most of the audience in English. The new key only ever holds a language
+ * someone picked; everyone starts from the default once, and anyone who
+ * switches back to English keeps it from then on.
  */
-const STORAGE_KEY = 'goevent_app_locale'
+const STORAGE_KEY = 'goevent_app_locale_v2'
+
+/** Keys no longer read, removed at boot so they don't linger in storage. */
+const LEGACY_STORAGE_KEYS = ['goevent_app_locale']
 
 /**
  * Whether this visitor arrived with a language already chosen.
@@ -99,6 +120,7 @@ let storedLocaleAtBoot = false
 
 function getInitialLocale(): AppLocale {
   try {
+    for (const key of LEGACY_STORAGE_KEYS) localStorage.removeItem(key)
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored && (SUPPORTED_LOCALES as readonly string[]).includes(stored)) {
       storedLocaleAtBoot = true

@@ -30,7 +30,20 @@ type GoEventFixtures = {
    * registered before this catch-all never gets a chance to answer.
    */
   stubApi: (page: Page) => Promise<void>
+  /**
+   * The app language each test starts in, written to storage as though the
+   * visitor had chosen it. `'en'` by default: the app opens in Khmer for anyone
+   * who has not chosen (DEFAULT_LOCALE), and the suite's assertions are written
+   * against the English strings. A test about first-visit language behaviour
+   * opts out with `test.use({ appLocale: null })` and gets clean storage.
+   */
+  appLocale: 'en' | 'kh' | null
+  /** Applies `appLocale`. Automatic — nothing asks for it by name. */
+  seedAppLocale: void
 }
+
+/** The language store's persistence key (APP_LOCALE_STORAGE_KEY). */
+export const APP_LOCALE_KEY = 'goevent_app_locale_v2'
 
 /**
  * Origin of the Django backend, matching VITE_API_BASE_URL.
@@ -43,6 +56,25 @@ type GoEventFixtures = {
 const API_ORIGIN = process.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000'
 
 export const test = base.extend<GoEventFixtures>({
+  appLocale: ['en', { option: true }],
+
+  seedAppLocale: [
+    async ({ page, appLocale }, use) => {
+      if (appLocale) {
+        // Only when nothing is stored yet, so a test that switches language
+        // and reloads keeps what it switched to.
+        await page.addInitScript(
+          ({ key, value }) => {
+            if (!localStorage.getItem(key)) localStorage.setItem(key, value)
+          },
+          { key: APP_LOCALE_KEY, value: appLocale },
+        )
+      }
+      await use()
+    },
+    { auto: true },
+  ],
+
   consoleErrors: async ({ page }, use) => {
     const errors: string[] = []
 

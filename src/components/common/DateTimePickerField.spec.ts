@@ -2,8 +2,16 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { createPinia } from 'pinia'
-import { i18n } from '@/i18n'
+import { APP_LOCALE_STORAGE_KEY, i18n } from '@/i18n'
 import DateTimePickerField from './DateTimePickerField.vue'
+
+// The app opens in Khmer by default, and these assertions read English month
+// names — so English is chosen, the way a visitor would choose it. The language
+// store reads this when each mount's fresh Pinia creates it.
+const chooseEnglish = () => {
+  localStorage.setItem(APP_LOCALE_STORAGE_KEY, 'en')
+  i18n.global.locale.value = 'en'
+}
 
 // jsdom has no matchMedia; default to desktop (not mobile)
 vi.stubGlobal(
@@ -31,6 +39,7 @@ describe('DateTimePickerField', () => {
   beforeEach(() => {
     wrapper?.unmount()
     document.body.innerHTML = ''
+    chooseEnglish()
   })
 
   it('shows the placeholder when empty and a localized value when set', async () => {

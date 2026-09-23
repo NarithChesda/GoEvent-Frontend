@@ -1,5 +1,5 @@
 import type { BrowserContext, Page } from '@playwright/test'
-import { test, expect } from './fixtures'
+import { test, expect, APP_LOCALE_KEY } from './fixtures'
 
 /**
  * `/partners/apply` — the public partner application.
@@ -45,7 +45,7 @@ const user = (isPartner = false) => ({
 
 /** Pin the UI language — see note 2 in the file header. */
 async function useEnglish(page: Page): Promise<void> {
-  await page.addInitScript(() => localStorage.setItem('goevent_app_locale', 'en'))
+  await page.addInitScript((key) => localStorage.setItem(key, 'en'), APP_LOCALE_KEY)
 }
 
 /**

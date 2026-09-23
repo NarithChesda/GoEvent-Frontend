@@ -57,7 +57,7 @@ async function seedSession(
       localStorage.setItem('goevent_v3_access_token', wrap(jwt(accessOffset as number)))
       localStorage.setItem('goevent_v3_refresh_token', wrap(jwt(refreshOffset as number)))
       localStorage.setItem('goevent_v3_user', wrap(JSON.stringify(user)))
-      localStorage.setItem('goevent_app_locale', 'en')
+      localStorage.setItem('goevent_app_locale_v2', 'en')
     },
     [accessAgeSeconds, refreshAgeSeconds, USER] as const,
   )
