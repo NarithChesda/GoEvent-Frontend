@@ -413,6 +413,7 @@
       :event-id="eventId"
       :event-data="eventData"
       @saved="onEditorSaved"
+      @media-updated="onMediaUpdated"
     />
 
     <!-- Checkout, opened straight from the activation pill — the same drawer the

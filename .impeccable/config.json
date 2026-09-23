@@ -44,6 +44,15 @@
         ],
         "createdAt": "2026-09-15T09:57:57.799Z",
         "reason": "intentional design: the category accent rail predates this session (HEAD had inset 3px accent shadow) and the owner's in-progress diff deliberately reworked it into a fading gradient with a documented rationale in the .event-card::before comment"
+      },
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "src/components/EventMediaTab.vue"
+        ],
+        "createdAt": "2026-09-23T22:38:56.182Z",
+        "reason": "Claude triage: L100 is the standard Tailwind loading spinner (rounded-full + border-b-2 + animate-spin), not an accent border on a card; pre-existing code, not part of this change"
       }
     ]
   }
