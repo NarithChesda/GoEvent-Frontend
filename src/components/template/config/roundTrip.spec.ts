@@ -250,4 +250,30 @@ describe('partner template form config round trip', () => {
     expect(hydrated.sparks.count).toBe(17)
     expect(hydrated.sparks.intensity).toBe('bright')
   })
+
+  /**
+   * The photo stack's layout rides in the cover layout blob beside the
+   * animation type. A chosen layout has to survive a reload; a stored null or
+   * an option this build doesn't know opens (and re-saves) as the pile, which is
+   * what the showcase renders for it — never as an unselected picker.
+   */
+  it('round-trips the photo stack layout, reading null and unknown as the pile', () => {
+    const chosen = blankTemplate({
+      cover_stage_layout: {
+        showcaseAnimationType: 'stack',
+        stackLayout: 'mosaic',
+      } as PartnerTemplate['cover_stage_layout'],
+    })
+    const saved = buildConfigPayload(hydrateForm(chosen))
+    expect(saved.cover_stage_layout?.stackLayout).toBe('mosaic')
+    const reloaded = hydrateForm(blankTemplate({ cover_stage_layout: saved.cover_stage_layout }))
+    expect(reloaded.cover_stage_layout.stackLayout).toBe('mosaic')
+
+    for (const stored of [null, 'carousel']) {
+      const template = blankTemplate({
+        cover_stage_layout: { stackLayout: stored } as unknown as PartnerTemplate['cover_stage_layout'],
+      })
+      expect(hydrateForm(template).cover_stage_layout.stackLayout).toBe('pile')
+    }
+  })
 })

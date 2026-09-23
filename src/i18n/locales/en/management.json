@@ -2956,7 +2956,23 @@
       "animationGroup": "Opening Animation",
       "animationDecoration": "Decoration (slide out)",
       "animationDoor": "Door (split open)",
-      "animationHint": "Picks how the cover gives way and which transition follows it: decorations slide off and the invitation is unveiled, or the cover splits into two doors that swing open.",
+      "animationStack": "Photo stack (memories)",
+      "stackLayoutGroup": "Photo Layout",
+      "stackLayouts": {
+        "pile": "Pile of prints",
+        "split": "Split",
+        "booth": "Photo booth",
+        "mosaic": "Mosaic",
+        "film": "Film strip"
+      },
+      "stackLayoutHint": {
+        "pile": "Up to five instant-film prints, laid down one at a time on a pile that then spreads out above the Save the Date.",
+        "split": "Up to four photos cut on a slanted seam, each wiping open in turn, with the Save the Date in the band between them.",
+        "booth": "Up to three photos on a photo-booth strip, each appearing with a flash, with the Save the Date at the foot of the card.",
+        "mosaic": "Up to six photos surfacing one by one in two staggered columns on dark, then pulled back into a card above the Save the Date.",
+        "film": "Up to four photos developing one by one on a strip of film, pinned with tape in the accent colour, above the Save the Date."
+      },
+      "animationHint": "Picks how the cover gives way and which transition follows it: decorations slide off and the invitation is unveiled, the cover splits into two doors that swing open, or the event's photos are laid down one at a time as a stack of prints.",
       "sectionTitle": "Transition video",
       "video": "Video",
       "videoHint": "Plays after the cover, before the invitation appears. Used only when the event has no video of its own."
@@ -2972,6 +2988,7 @@
       "transitionGroup": "Middle Stage",
       "transitionHint": {
         "animation": "The Save the Date card over the event's featured photograph. Events with no featured photo go straight from the cover to the invitation.",
+        "animationStack": "The event's photos, revealed one at a time in the layout below: the featured photos first, then the gallery in order. Then the Save the Date. Events with no featured photo go straight from the cover to the invitation.",
         "video": "A film playing full screen between the cover and the invitation — the event's own video, or the one uploaded below.",
         "none": "There is no middle stage. The cover hands straight over to the invitation, whatever photograph or video the event has."
       },

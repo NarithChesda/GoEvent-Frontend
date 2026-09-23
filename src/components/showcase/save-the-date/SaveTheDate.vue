@@ -21,7 +21,7 @@ import StdPoster from './designs/StdPoster.vue'
 /**
  * The transition stage's Save the Date title card.
  *
- * Both transition stages mount this and get the same six compositions; which one
+ * Every transition stage mounts this and gets the same six compositions; which one
  * renders is the template's call (`template_assets.save_the_date_design`),
  * exactly as `host_info_design` picks a host layout. What stays the *stage's*
  * call is everything around the composition — the ground it sits on, the ink it
@@ -31,9 +31,9 @@ import StdPoster from './designs/StdPoster.vue'
  *
  * The one place this differs from `host_info_design`: the fallback is
  * **per-stage**, not global. A template that has never set the field has to keep
- * the look its stage shipped with — `script` on the decoration transition,
- * `engraved` on the door — so `fallback` is a required prop rather than a
- * default baked in here.
+ * the look its stage shipped with — `script` on the decoration transition (and
+ * on the photo stack, which chose it), `engraved` on the door — so `fallback`
+ * is a required prop rather than a default baked in here.
  */
 interface Props {
   /** The template's choice. Absent / null / unknown falls back to `fallback`. */

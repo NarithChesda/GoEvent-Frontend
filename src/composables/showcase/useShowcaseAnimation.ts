@@ -1,9 +1,22 @@
 import { computed, type Ref, type ComputedRef } from 'vue'
 
 /**
- * Available animation types for showcase cover-to-main-content transition
+ * Available animation types for showcase cover-to-main-content transition.
+ * Each one names a cover exit *and* the transition stage paired with it:
+ * `decoration` → TransitionStage, `door` → TransitionStageDoor, `stack` →
+ * TransitionStageStack.
  */
-export type ShowcaseAnimationType = 'decoration' | 'door'
+export type ShowcaseAnimationType = 'decoration' | 'door' | 'stack'
+
+/**
+ * How the cover itself leaves. Three animation types, two exits: `stack` deals
+ * its prints into the space the cover's ornaments vacate, so it leaves exactly
+ * the way `decoration` does and differs only in the stage that follows.
+ */
+export type CoverExit = 'decoration' | 'door'
+
+export const coverExitOf = (type: ShowcaseAnimationType): CoverExit =>
+  type === 'door' ? 'door' : 'decoration'
 
 /**
  * Animation configuration from environment
@@ -14,7 +27,7 @@ const ENV_ANIMATION_TYPE = (import.meta.env.VITE_SHOWCASE_ANIMATION_TYPE || 'dec
  * Validate animation type
  */
 function isValidAnimationType(type: string): type is ShowcaseAnimationType {
-  return type === 'decoration' || type === 'door'
+  return type === 'decoration' || type === 'door' || type === 'stack'
 }
 
 /**
@@ -81,9 +94,9 @@ export function useShowcaseAnimation(config: ShowcaseAnimationConfig): ShowcaseA
     return getAnimationType(animationType?.value)
   })
 
-  // Animation type checks
-  const isDecorationAnimation = computed(() => currentAnimationType.value === 'decoration')
-  const isDoorAnimation = computed(() => currentAnimationType.value === 'door')
+  // Which way the cover leaves — `stack` exits as `decoration` does.
+  const isDecorationAnimation = computed(() => coverExitOf(currentAnimationType.value) === 'decoration')
+  const isDoorAnimation = computed(() => coverExitOf(currentAnimationType.value) === 'door')
 
   // Cover container classes
   const coverContainerClasses = computed(() => ({

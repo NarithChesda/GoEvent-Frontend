@@ -587,6 +587,12 @@ export interface CoverDetailsConfig {
 }
 
 /**
+ * How the photo-stack transition (`showcaseAnimationType: 'stack'`) composes
+ * the event's photographs — see photoStack.ts for what each one draws.
+ */
+export type StackLayoutType = 'pile' | 'split' | 'booth' | 'mosaic' | 'film'
+
+/**
  * Cover stage layout configuration
  * All values are optional with sensible defaults applied in components
  */
@@ -665,7 +671,13 @@ export interface CoverStageLayout {
   bottomDecorationZIndex?: number   // default: 25
 
   // Animation settings
-  showcaseAnimationType?: 'decoration' | 'door'  // default: 'decoration'
+  // 'stack' exits the cover as 'decoration' does, then reveals the event's
+  // photographs one at a time before the Save the Date (TransitionStageStack).
+  showcaseAnimationType?: 'decoration' | 'door' | 'stack'  // default: 'decoration'
+
+  // How the 'stack' transition composes its photographs. Read only when
+  // showcaseAnimationType is 'stack'; absent or unknown means 'pile'.
+  stackLayout?: StackLayoutType  // default: 'pile'
 
   // Printed-gold lighting over the cover artwork. Omitted = off, so every
   // existing template's cover renders exactly as before.
@@ -1088,7 +1100,7 @@ export interface DressCodeDesignConfig {
  * stage — the block that carries the label and the event date over the
  * featured photograph, between the cover and the invitation.
  *
- * Both transition stages render the same six designs. Each one owns a distinct
+ * Every transition stage renders the same six designs. Each one owns a distinct
  * *composition* and a distinct reveal *gesture*, not just a restyle:
  *
  * - `script`    — the decoration stage's original: an italic script label
@@ -1116,8 +1128,9 @@ export interface DressCodeDesignConfig {
  *                 a hairline. The one design that isn't wedding-coded.
  *
  * Absent / `null` falls back to **whichever design that stage shipped with** —
- * `script` for the decoration transition, `engraved` for the door transition —
- * so every already-published template renders exactly as it does today. That
+ * `script` for the decoration and photo-stack transitions, `engraved` for the
+ * door transition — so every already-published template renders exactly as it
+ * does today. That
  * per-stage fallback is the one way this config differs from
  * `host_info_design`, which has a single global default.
  *
@@ -1136,9 +1149,9 @@ export type SaveTheDateDesignType =
  * Configuration for the Save the Date title card on the transition stage.
  *
  * Mirrors the `HostInfoDesignConfig` pattern: a small JSON object sent inside
- * the template package and forwarded down to both TransitionStage.vue and
- * TransitionStageDoor.vue. When omitted each stage keeps its own original
- * design (see `SaveTheDateDesignType`).
+ * the template package and forwarded down to TransitionStage.vue,
+ * TransitionStageDoor.vue and TransitionStageStack.vue. When omitted each stage
+ * keeps its own original design (see `SaveTheDateDesignType`).
  */
 export interface SaveTheDateDesignConfig {
   /** Which Save the Date composition to render. Defaults per stage. */

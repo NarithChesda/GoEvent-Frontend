@@ -11,7 +11,8 @@
         <section :class="[PANEL, 'divide-y divide-slate-200/70']">
           <!-- One control, two stages: it chooses the cover's exit animation
                *and* the transition that plays under it — decorations sliding
-               off into a veil reveal, or the cover splitting into two doors.
+               off into a veil reveal, the cover splitting into two doors, or
+               decorations sliding off under a pile of the event's prints.
                It used to sit in Cover, which showed half of what it does. -->
           <div class="p-4 space-y-2">
             <TemplateFormChoice
@@ -33,8 +34,21 @@
               :label="t('management.partnerTemplateForm.stageModes.transitionGroup')"
               :options="transitionModeOptions"
             />
+            <p :class="FIELD_HINT">{{ t(transitionHintKey) }}</p>
+          </div>
+
+          <!-- How the photo stack composes its photographs. Only where it can
+               render: the stack animation, with an artwork middle beat — a film
+               or no beat never draws a single photograph. -->
+          <div v-if="showsStackLayout" class="p-4 space-y-2">
+            <TemplateFormChoice
+              v-model="stackLayoutModel"
+              :label="t('management.partnerTemplateForm.transitionStage.stackLayoutGroup')"
+              :options="stackLayoutOptions"
+              :columns="3"
+            />
             <p :class="FIELD_HINT">
-              {{ t(`management.partnerTemplateForm.stageModes.transitionHint.${form.stage_mode_transition}`) }}
+              {{ t(`management.partnerTemplateForm.transitionStage.stackLayoutHint.${resolveStackLayout(form.cover_stage_layout.stackLayout)}`) }}
             </p>
           </div>
 
@@ -80,8 +94,27 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Ban, Clapperboard, Columns3, DoorOpen, Frame, Minus, Signature, Sparkles, Stamp, Type, Wand2 } from 'lucide-vue-next'
+import {
+  Ban,
+  Clapperboard,
+  Columns3,
+  DoorOpen,
+  Film,
+  Frame,
+  Images,
+  Layers,
+  LayoutDashboard,
+  LayoutGrid,
+  Minus,
+  Rows3,
+  Signature,
+  Sparkles,
+  Stamp,
+  Type,
+  Wand2,
+} from 'lucide-vue-next'
 
+import { resolveStackLayout } from '@/components/showcase/photo-stack/photoStack'
 import TemplateFormChoice from '../TemplateFormChoice.vue'
 import FileUploadField from '../PartnerTemplateFileField.vue'
 import PlanRequiredNotice from '../TemplateFormPlanNotice.vue'
@@ -104,7 +137,19 @@ const { t } = useI18n()
 const animationOptions = computed(() => [
   { value: 'decoration', label: t('management.partnerTemplateForm.transitionStage.animationDecoration'), icon: Sparkles },
   { value: 'door', label: t('management.partnerTemplateForm.transitionStage.animationDoor'), icon: DoorOpen },
+  { value: 'stack', label: t('management.partnerTemplateForm.transitionStage.animationStack'), icon: Images },
 ])
+
+/**
+ * The artwork beat is a different thing on the stack: prints dealt from the
+ * gallery rather than one card over one photograph, so it says so — including
+ * that the gallery is where most of the prints come from.
+ */
+const transitionHintKey = computed(() => {
+  const mode = form.stage_mode_transition
+  const stacked = mode === 'animation' && form.cover_stage_layout.showcaseAnimationType === 'stack'
+  return `management.partnerTemplateForm.stageModes.transitionHint.${stacked ? 'animationStack' : mode}`
+})
 
 const stageModeOptions = computed(() => [
   { value: 'animation', label: t('management.partnerTemplateForm.stageModes.animation'), icon: Sparkles },
@@ -136,7 +181,22 @@ const saveTheDateDesignOptions = computed(() => [
   { value: 'poster', label: t('management.partnerTemplateForm.saveTheDateDesign.types.poster'), icon: Type },
 ])
 
+const stackLayoutOptions = computed(() => [
+  { value: 'pile', label: t('management.partnerTemplateForm.transitionStage.stackLayouts.pile'), icon: Layers },
+  { value: 'split', label: t('management.partnerTemplateForm.transitionStage.stackLayouts.split'), icon: LayoutGrid },
+  { value: 'booth', label: t('management.partnerTemplateForm.transitionStage.stackLayouts.booth'), icon: Rows3 },
+  { value: 'mosaic', label: t('management.partnerTemplateForm.transitionStage.stackLayouts.mosaic'), icon: LayoutDashboard },
+  { value: 'film', label: t('management.partnerTemplateForm.transitionStage.stackLayouts.film'), icon: Film },
+])
+
+const showsStackLayout = computed(
+  () =>
+    form.cover_stage_layout.showcaseAnimationType === 'stack' &&
+    form.stage_mode_transition === 'animation',
+)
+
 const animationTypeModel = enumModel(() => form.cover_stage_layout, 'showcaseAnimationType')
+const stackLayoutModel = enumModel(() => form.cover_stage_layout, 'stackLayout')
 const transitionModeModel = enumModel(() => form, 'stage_mode_transition')
 const saveTheDateDesignModel = enumModel(() => form, 'save_the_date_design_type')
 </script>

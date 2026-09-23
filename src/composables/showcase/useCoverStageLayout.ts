@@ -198,6 +198,7 @@ export const COVER_STAGE_LAYOUT_DEFAULTS: Required<CoverStageLayout> = {
   topDecorationZIndex: 25,
   bottomDecorationZIndex: 25,
   showcaseAnimationType: 'decoration',
+  stackLayout: 'pile',
   coverGilding: COVER_GILDING_DEFAULTS,
   contentWidth: 'standard',
   layoutMode: 'rows',
@@ -839,6 +840,7 @@ export function useCoverStageLayout(
         config.bottomDecorationZIndex ?? COVER_STAGE_LAYOUT_DEFAULTS.bottomDecorationZIndex,
       showcaseAnimationType:
         config.showcaseAnimationType ?? COVER_STAGE_LAYOUT_DEFAULTS.showcaseAnimationType,
+      stackLayout: config.stackLayout ?? COVER_STAGE_LAYOUT_DEFAULTS.stackLayout,
       coverGilding: config.coverGilding ?? COVER_STAGE_LAYOUT_DEFAULTS.coverGilding,
       contentWidth: config.contentWidth ?? COVER_STAGE_LAYOUT_DEFAULTS.contentWidth,
       layoutMode: config.layoutMode ?? COVER_STAGE_LAYOUT_DEFAULTS.layoutMode,

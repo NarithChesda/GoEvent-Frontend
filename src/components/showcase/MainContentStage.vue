@@ -952,8 +952,9 @@ interface Props {
   bottomDecoration?: string | null
   leftDecoration?: string | null
   rightDecoration?: string | null
-  /** Showcase animation type from template_assets.showcase_animation_type */
-  animationType?: 'decoration' | 'door'
+  /** Showcase animation type from template_assets.showcase_animation_type.
+   *  `stack` enters as `decoration` does — its stage hands off the same way. */
+  animationType?: 'decoration' | 'door' | 'stack'
   /** Main stage layout configuration for decoration z-indexes */
   mainStageLayout?: CoverStageLayout
   /** Date + location block design from template (panel | calendar) */

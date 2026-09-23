@@ -6,6 +6,7 @@ import {
   type ResolvedCoverGilding,
   type ResolvedGuestFrame,
 } from '@/composables/showcase/useCoverStageLayout'
+import { resolveStackLayout } from '@/components/showcase/photo-stack/photoStack'
 import type { CoverStageLayout, PartnerTemplate } from '@/services/api'
 
 /**
@@ -59,6 +60,7 @@ export const defaultCoverStageLayout = (): CoverStageLayoutFormState => ({
   topDecorationZIndex: 25,
   bottomDecorationZIndex: 25,
   showcaseAnimationType: 'decoration',
+  stackLayout: 'pile',
   contentWidth: 'standard',
 })
 
@@ -80,6 +82,9 @@ export function hydrateCoverLayout(template: PartnerTemplate | null): CoverLayou
   layout.guestFrame = resolveGuestFrame(required)
   layout.coverGilding = resolveCoverGilding(required)
   layout.coverDetails = resolveCoverDetails(required)
+  // A stored null or an option this build doesn't know renders as the pile, so
+  // the picker opens on the pile rather than on nothing.
+  layout.stackLayout = resolveStackLayout(layout.stackLayout)
   return { cover_stage_layout: layout }
 }
 

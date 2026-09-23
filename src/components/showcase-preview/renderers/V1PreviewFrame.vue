@@ -126,6 +126,27 @@
     :get-media-url="getMediaUrl"
   />
 
+  <!-- `standalone`: there is no CoverStage around it here, so it draws its own
+       falling field rather than relying on the shared one. -->
+  <TransitionStageStack
+    v-else-if="stage === 'transition' && isStackTransition"
+    :key="replayKey"
+    :freeze-at-peak="true"
+    :standalone="true"
+    :event-title="event.title"
+    :event-photos="eventPhotos"
+    :event-start-date="event.start_date"
+    :primary-color="primaryColor"
+    :accent-color="accentColor"
+    :blur-effect-color="blurEffectColor"
+    :backdrop-photo="stageModes.cover === 'animation' ? templateAssets?.basic_decoration_photo : null"
+    :backdrop-color="templateColor"
+    :layout="event.template_assets?.cover_stage_layout?.stackLayout"
+    :falling-effect="event.template_assets?.falling_effect"
+    :save-the-date-design="event.template_assets?.save_the_date_design"
+    :get-media-url="getMediaUrl"
+  />
+
   <TransitionStage
     v-else-if="stage === 'transition'"
     :key="replayKey"
@@ -214,6 +235,7 @@ import {
   V1EventVideoStage,
   TransitionStage,
   TransitionStageDoor,
+  TransitionStageStack,
   MainContentStage,
   PhotoModal,
 } from './v1StageComponents'
@@ -452,6 +474,9 @@ const onCoverLayoutDragging = (value: boolean): void => {
 // resolved exactly as the live showcase resolves it.
 const isDoorTransition = computed(
   () => event.value?.template_assets?.cover_stage_layout?.showcaseAnimationType === 'door',
+)
+const isStackTransition = computed(
+  () => event.value?.template_assets?.cover_stage_layout?.showcaseAnimationType === 'stack',
 )
 
 // Resolved by the same function the live showcase uses, so the frame draws
