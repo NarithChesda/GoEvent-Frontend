@@ -68,6 +68,7 @@ Living documentation for large multi-phase features:
 
 Deployment, workflow, and subsystem how-tos:
 
+- [TEMPLATE_EDITOR_ARCHITECTURE.md](guides/TEMPLATE_EDITOR_ARCHITECTURE.md) — **the standard for the partner template editor**: where a new design or display option goes, the four layers (`config/`, `sections/`, composables, shell), the invariants that must not be broken, and three traps that neither `type-check` nor ESLint catches. Read before adding any template option
 - [CLOUDFLARE_DEPLOYMENT_GUIDE.md](guides/CLOUDFLARE_DEPLOYMENT_GUIDE.md) / [FRONTEND_DEPLOYMENT_GUIDE.md](guides/FRONTEND_DEPLOYMENT_GUIDE.md) / [LOCAL_WORKFLOW_GUIDE.md](guides/LOCAL_WORKFLOW_GUIDE.md) — deployment & dev workflow
 - [CLOUDFLARE_SEO_SETUP.md](guides/CLOUDFLARE_SEO_SETUP.md) — Cloudflare dashboard setup for SEO: Search Console, the `pages.dev` redirect, settings not to touch, post-deploy checks (for whoever manages Cloudflare)
 - [PLAYWRIGHT.md](guides/PLAYWRIGHT.md) — E2E testing setup, fixtures, and why `npx playwright install` must never be run
