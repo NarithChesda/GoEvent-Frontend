@@ -6,14 +6,14 @@
     <!-- No sign-in header.
          This landing used to float a Sign in pill over the top-right corner,
          because the page's own chrome is hidden in this state (see EventsView).
-         But the hero's primary button is `Create Your First Event`, and for a
-         signed-out visitor `handleCreateEventClick` pushes
-         `/signin?redirect=/events?createEvent=true` — the same sign-in page,
-         and one that carries them on into the thing they came to do. So the
-         pill was the same door, named worse, competing with the one CTA this
-         screen exists to press (goevent-taste: one screen, one primary action).
-         `Discover Events` still reaches the rest of the app, and /explore
-         carries the real nav bar with its own Sign in. -->
+         But the hero's primary button is `Create Your First Event`, which opens
+         the create wizard right here and asks the visitor to sign in when they
+         press Create at its end — the same sign-in, reached with an event
+         already worth signing in for. So the pill was the same door, named
+         worse, competing with the one CTA this screen exists to press
+         (goevent-taste: one screen, one primary action). `Discover Events`
+         still reaches the rest of the app, and /explore carries the real nav
+         bar with its own Sign in. -->
     <!-- Desktop tile field: absolute, behind the copy, cropped by the section. -->
     <div
       v-if="artReady"

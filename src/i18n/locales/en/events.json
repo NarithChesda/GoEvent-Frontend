@@ -152,9 +152,7 @@
     "title": "Create New Event",
     "fields": {
       "eventTitle": "Event Title",
-      "titlePlaceholder": "Enter event title",
       "category": "Category",
-      "categoryPlaceholder": "Select a category",
       "aboutEvent": "About this event",
       "descriptionPlaceholder": "Detailed event description",
       "registrationDeadline": "Deadline",
@@ -181,12 +179,48 @@
       "creating": "Creating...",
       "created": "Event created",
       "create": "Create Event",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "continue": "Continue",
+      "back": "Back"
     },
     "privacyOptions": {
       "private": "Private",
       "public": "Public"
-    }
+    },
+    "progress": "Step {current} of {total}",
+    "steps": {
+      "type": {
+        "title": "What are you planning?",
+        "hint": "We'll set up your event to match.",
+        "designs": "Invitation designs available",
+        "other": "Other events",
+        "loadError": "We couldn't load the event types. Try again, or continue without one.",
+        "retry": "Try again",
+        "buttonLabels": {
+          "funeral": "Funeral"
+        }
+      },
+      "name": {
+        "title": "What's it called?",
+        "hint": "Guests will see this name. You can change it any time.",
+        "placeholders": {
+          "wedding": "e.g. Dara & Sophea's Wedding",
+          "birthday": "e.g. Lina's 30th Birthday",
+          "funeral": "e.g. Funeral of Mr. Sok Chan",
+          "housewarming": "e.g. Our New Home",
+          "default": "e.g. Summer Music Night"
+        }
+      },
+      "when": {
+        "title": "When is it?"
+      },
+      "details": {
+        "title": "Final details",
+        "hint": "Everything here can be changed later.",
+        "noCategory": "None"
+      }
+    },
+    "signInNote": "Next, you'll sign in or create an account. Everything you've entered is kept."
   },
   "tickets": {
     "public": {
