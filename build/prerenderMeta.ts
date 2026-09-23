@@ -37,7 +37,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import type { Plugin } from 'vite'
-import { STATIC_BODY_STYLE, createBodyRenderer } from './prerenderBodies'
+import { SERVICES_DESCRIPTION_KH, STATIC_BODY_STYLE, createBodyRenderer } from './prerenderBodies'
 
 const META_START = '<!-- meta:start -->'
 const META_END = '<!-- meta:end -->'
@@ -89,21 +89,21 @@ export interface PrerenderedRoute extends CardMeta {
  * shell — the file the SPA rewrite in _redirects serves for `/events`,
  * `/signin`, every showcase and everything else not listed below.
  *
- * English, because that is the app's DEFAULT_LOCALE and so what those routes
- * boot in; the Khmer cards below front the pages that do not.
+ * Khmer, because that is the app's DEFAULT_LOCALE (src/i18n/index.ts) and so
+ * what those routes boot in for anyone who has not chosen English.
  *
  * It carries NO `og:url` and no canonical, deliberately. One file answers
  * many URLs, so naming one of them would tell a scraper that every share of
  * every route is really a share of that page.
  */
 export const DEFAULT_META: CardMeta = {
-  title: 'GoEvent - Create Amazing Events',
+  title: 'GoEvent — បង្កើតកម្មវិធី និងធៀបអញ្ជើញឌីជីថល',
   description:
-    'Create, manage, and showcase beautiful events with GoEvent. Perfect for weddings, conferences, parties, and more.',
+    'បង្កើត គ្រប់គ្រង និងចែករំលែកកម្មវិធីរបស់អ្នកជាមួយ GoEvent — ធៀបអញ្ជើញឌីជីថល បញ្ជីភ្ញៀវ និងការឆ្លើយតប សម្រាប់ពិធីមង្គលការ ខួបកំណើត និងកម្មវិធីគ្រប់ប្រភេទ។',
   documentTitle: 'GoEvent',
   image: '/og/default.png',
-  imageAlt: 'GoEvent guest management and expense tracking, on a laptop and a phone',
-  locale: 'en_US',
+  imageAlt: 'ការគ្រប់គ្រងភ្ញៀវ និងការតាមដានចំណាយរបស់ GoEvent នៅលើកុំព្យូទ័រ និងទូរស័ព្ទ',
+  locale: 'km_KH',
 }
 
 /** The same channels as the footer's social links (AppFooter.vue). */
@@ -140,67 +140,83 @@ const siteJsonLd = (origin: string): object[] => [
   },
 ]
 
-/** The About page's card; `/contact` renders the same page (see below). */
+/**
+ * English, so the image's alt text is too: the cards below that stay in
+ * English front pages whose content is English whatever the app language is.
+ */
+const ENGLISH_IMAGE_ALT = 'GoEvent guest management and expense tracking, on a laptop and a phone'
+
+/**
+ * The About page's card; `/contact` renders the same page (see below).
+ *
+ * English although the app opens in Khmer: AboutView.vue writes its text in
+ * the template rather than through i18n, so the page itself reads in English
+ * in either language, and the card follows the page.
+ */
 const ABOUT_CARD: CardMeta = {
   title: 'About GoEvent',
   description:
     'The team behind GoEvent, and what we are building: digital invitations, guest lists and tickets for events of every size.',
   documentTitle: 'About - GoEvent',
   image: DEFAULT_META.image,
-  imageAlt: DEFAULT_META.imageAlt,
+  imageAlt: ENGLISH_IMAGE_ALT,
   locale: 'en_US',
 }
 
 /**
  * The routes that get their own file.
  *
- * Each card is written in the language its page opens in: the partner pages
- * prefer Khmer (`preferredLocale` in src/router/index.ts), everything else
- * boots in English. A card that reads in one language and hands over to a
+ * Each card is written in the language its page opens in — Khmer, the app's
+ * default locale, for every page whose words come from i18n; English only for
+ * the two whose content is English-only (/about and /privacy, each explained
+ * where it is declared). A card that reads in one language and hands over to a
  * page in the other is worse than either alone. Copy is kept in step with the
  * pages' own strings by hand rather than imported: a scraper gets one
  * language whatever the visitor's is, and a card is not the place for a
  * page's full subtitle. The page *text* below the head is imported
  * (build/prerenderBodies.ts).
+ *
+ * `documentTitle` is left as it was on the Khmer cards: it must equal the
+ * route's `meta.title` (staticRoutes.spec.ts), and the router's tab titles are
+ * not translated.
  */
 export const PRERENDERED_ROUTES: PrerenderedRoute[] = [
   {
     /*
      * The homepage, and the one page whose words are chosen for search: what
-     * people type is "wedding invitation" and ធៀបការ (a wedding card), not
-     * "event management". It opens in English (the app's default locale), so
-     * the card and `<html lang>` are English; the Khmer term rides along in
-     * the title because that is what most of the market searches in.
+     * people type is ធៀបការ (a wedding card) and "wedding invitation", not
+     * "event management". It opens in Khmer (the app's default locale), so the
+     * card, the page text and `<html lang>` are Khmer; the tab title stays
+     * bilingual because a good part of the market still searches in English.
      */
     path: '/',
-    title: 'GoEvent — digital invitations in Khmer and English',
+    title: 'GoEvent — ធៀបអញ្ជើញឌីជីថល ជាភាសាខ្មែរ និងអង់គ្លេស',
     documentTitle: 'GoEvent — Digital Wedding Invitations & RSVP | ធៀបការឌីជីថល',
     description:
-      'Make a digital wedding invitation (ធៀបការ) in Khmer and English, send every guest their own link with their name on it, and collect RSVPs in one place.',
+      'បង្កើតធៀបការឌីជីថលជាភាសាខ្មែរ និងអង់គ្លេស ផ្ញើ Link ដែលមានឈ្មោះភ្ញៀវម្នាក់ៗ ហើយទទួលការឆ្លើយតប (RSVP) នៅកន្លែងតែមួយ។',
     image: DEFAULT_META.image,
     imageAlt: DEFAULT_META.imageAlt,
-    locale: 'en_US',
+    locale: 'km_KH',
     jsonLd: siteJsonLd,
   },
   {
     path: '/explore',
-    title: 'Discover events on GoEvent',
+    title: 'ស្វែងរកកម្មវិធីនៅលើ GoEvent',
     documentTitle: 'Discover Events - GoEvent',
     description:
-      'Concerts, meetups, workshops and celebrations open to the public. See what is on, and open any event for where and when.',
+      'កម្មវិធីតន្ត្រី ជំនួប សិក្ខាសាលា និងពិធីផ្សេងៗដែលបើកជាសាធារណៈ។ មើលថាមានអ្វីកំពុងកើតឡើង ហើយបើកកម្មវិធីណាមួយដើម្បីដឹងទីកន្លែង និងពេលវេលា។',
     image: DEFAULT_META.image,
     imageAlt: DEFAULT_META.imageAlt,
-    locale: 'en_US',
+    locale: 'km_KH',
   },
   {
     path: '/services',
-    title: 'Event services on GoEvent',
+    title: 'សេវាកម្មសម្រាប់កម្មវិធី នៅលើ GoEvent',
     documentTitle: 'Event Services - GoEvent',
-    description:
-      'Photographers, caterers, venues, decorators, makeup artists and other wedding and event services, with their work and how to reach them.',
+    description: SERVICES_DESCRIPTION_KH,
     image: DEFAULT_META.image,
     imageAlt: DEFAULT_META.imageAlt,
-    locale: 'en_US',
+    locale: 'km_KH',
   },
   { path: '/about', ...ABOUT_CARD },
   {
@@ -259,7 +275,7 @@ export const PRERENDERED_ROUTES: PrerenderedRoute[] = [
     description: 'What GoEvent collects, why, who it is shared with, and the choices you have.',
     documentTitle: 'Privacy Policy - GoEvent',
     image: DEFAULT_META.image,
-    imageAlt: DEFAULT_META.imageAlt,
+    imageAlt: ENGLISH_IMAGE_ALT,
     locale: 'en_US',
   },
 ]

@@ -372,6 +372,16 @@ Backend contract: `SEO_API_DOCS.md` in the backend repo (`seo` app). Everything 
 - Service listing pages (`/services/<uuid>`) are in the sitemap but still get only client-side meta. Edge injection needs a backend SEO endpoint like the event and vendor ones (the anonymous API throttle rules out calling the normal public endpoints from the edge).
 - **Event cards link to their page.** [EventCard.vue](src/components/events/EventCard.vue)'s title is an `<a href="/events/<id>">` (out of the tab order; the card stays the keyboard stop) so crawlers can follow /explore to every event. A plain click is prevented and bubbles to the card, which still opens the drawer; a modified or middle click opens the page.
 
+### App language: Khmer by default
+
+`DEFAULT_LOCALE` is `'kh'` ([src/i18n/index.ts](src/i18n/index.ts)): anyone who has not chosen a language sees the app in Khmer. English is still `FALLBACK_LOCALE` and still the one bundled locale — it is the complete source every translation is made from, so a key missing from Khmer reads as English, never as a key path.
+
+- **The choice is stored under `goevent_app_locale_v2`, and only a real choice ever is.** Until 2026-09-14 every boot wrote the app's own default (`en`) into the old `goevent_app_locale`, so that key says nothing about what anyone chose. It is ignored and removed at boot, so everyone starts in Khmer once, and a visitor who switches to English keeps it. The store's boot sync must stay `persist: false` for the same reason.
+- **Khmer is a lazy chunk awaited before first paint** (main.ts), so no page flashes English. [build/preloadDefaultLocale.ts](build/preloadDefaultLocale.ts) adds a `modulepreload` for it to every HTML file so it downloads alongside the entry instead of after it. The build fails if it can't find the chunk.
+- **Except the guest showcase** (`isGuestShowcaseDocument` in [previewFrameContext.ts](src/utils/previewFrameContext.ts)): the invitation speaks the event's language, not the app's, and the app strings it holds are studio affordances a guest never sees, so it loads the chunk in the background rather than holding the cover back for it.
+- **Prerendered pages follow the page's language**: the shell, `/`, `/explore`, `/services` and the partner pages are Khmer (card, text, `<html lang>`); `/about`, `/contact` and `/privacy` stay English because their content is English-only. `documentTitle`s are unchanged — they must equal the router's untranslated `meta.title`.
+- **Tests that assert English must choose it.** The E2E fixture seeds `en` for every test (`appLocale` option in [e2e/fixtures.ts](e2e/fixtures.ts)); a test about first-visit language uses `test.use({ appLocale: null })`. Unit tests that mount with the real i18n store the choice first (see DateTimePickerField.spec.ts).
+
 ### Environment Variables
 Required env vars (see [.env.example](.env.example)):
 - `VITE_API_BASE_URL`: Backend API URL (default: http://127.0.0.1:8000)

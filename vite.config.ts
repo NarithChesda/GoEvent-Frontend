@@ -5,6 +5,7 @@ import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import { prerenderMeta } from './build/prerenderMeta'
+import { preloadDefaultLocale } from './build/preloadDefaultLocale'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -18,6 +19,11 @@ export default defineConfig(({ mode }) => {
       vue(),
       vueJsx(),
       ...(mode === 'development' ? [vueDevTools()] : []),
+      /**
+       * Starts the Khmer messages chunk — the default locale, awaited before
+       * the first render — alongside the entry rather than after it. Build-only.
+       */
+      preloadDefaultLocale(),
       /**
        * Writes dist/<route>.html with a per-route <head> so link scrapers,
        * which never run the app, get the right card — and dist/404.html, the

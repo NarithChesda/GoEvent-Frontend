@@ -8,7 +8,7 @@ import App from './App.vue'
 import router from './router'
 import { ensureLocaleMessages, i18n } from './i18n'
 import { useLanguageStore } from './stores/language'
-import { isPreviewFrameDocument } from './utils/previewFrameContext'
+import { isGuestShowcaseDocument, isPreviewFrameDocument } from './utils/previewFrameContext'
 import { captureAttribution } from './utils/attribution'
 import { trackPageView } from './utils/metaPixel'
 
@@ -55,6 +55,13 @@ languageStore.init()
 // messages are awaited before the first render — otherwise a Khmer session
 // would paint one frame of English and then swap. No-op (already resolved) for
 // English, which is bundled.
-await ensureLocaleMessages(languageStore.locale)
+//
+// Except for a guest opening their invitation. The showcase speaks the
+// event's own language (src/utils/translations.ts), not the app's — the app
+// strings it holds are the studio's edit affordances, which a guest never sees
+// — so making every guest wait on the app's Khmer chunk before the cover could
+// paint would be pure delay. It still loads, in the background.
+const startupMessages = ensureLocaleMessages(languageStore.locale)
+if (!isGuestShowcaseDocument()) await startupMessages
 
 app.mount('#app')

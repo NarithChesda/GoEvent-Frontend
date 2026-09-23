@@ -31,3 +31,14 @@ export function isPreviewFrameDocument(): boolean {
   if (typeof window === 'undefined') return false
   return window.location.pathname.includes(PREVIEW_FRAME_PATH_SEGMENT)
 }
+
+/**
+ * Whether THIS document is a guest's invitation — `/events/:id/showcase`, the
+ * live page, not the studio's frames of it. Same reasoning as above: main.ts
+ * has to know before the router exists, and what it needs to know is that this
+ * boot is for someone who will only ever see the showcase.
+ */
+export function isGuestShowcaseDocument(): boolean {
+  if (typeof window === 'undefined') return false
+  return /^\/events\/[^/]+\/showcase\/?$/.test(window.location.pathname)
+}
