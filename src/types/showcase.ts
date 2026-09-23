@@ -137,9 +137,10 @@ export interface EventPhoto {
   is_featured: boolean
   created_at: string
   /**
-   * Organizer-chosen crop rectangle, in percentages of the source image, used
-   * when the photo is displayed full-screen (the transition stage's featured
-   * photo). All four absent = the whole image = a plain centre crop.
+   * The organizer's framed region, in percentages of the source image: the
+   * part of the photo every frame it is drawn in must show (the transition
+   * stage's full screen, a photo-stack print or tile). Any shape. All four
+   * absent = the whole image = a plain centre crop.
    * See src/utils/photoCrop.ts.
    */
   crop_x?: number | null

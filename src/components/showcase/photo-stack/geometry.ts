@@ -1,3 +1,5 @@
+import type { StackLayoutType } from '@/services/api/types/template.types'
+
 /**
  * Where each photograph sits in each photo-stack layout, as data — so the
  * shapes can be tested, and the layout components only have to draw them.
@@ -271,4 +273,61 @@ export const BOOTH_CAPACITY = 3
 export const filmStripHeight = (count: number): number => {
   const n = clampCount(count, FILM_CAPACITY)
   return 0.09 + n * 0.255 + (n - 1) * 0.03
+}
+
+// --- Frame shapes ------------------------------------------------------------
+
+/**
+ * The phone every frame is measured on — the same 390×844 the framing editor
+ * and the preview frame use. On it `--sk-w` is the full 390 (56.25vh would be
+ * 475), so a stage width is a stage width.
+ */
+const STAGE_W = 390
+const STAGE_H = 844
+
+/** The print's window, the booth's frames and the film's frames — fixed. */
+const FIXED_FRAME_ASPECT = { pile: 4 / 5, booth: 3 / 2, film: 4 / 3 } as const
+
+/** The mosaic's gutter: `--mo-gap`, 0.022 of the stage width. */
+const MOSAIC_GAP = 0.022 * STAGE_W
+
+/**
+ * A mosaic tile's inside, where its photograph is. The card fills the stage;
+ * the grid is inset half a gutter, and every tile gives up half a gutter on
+ * each side (see StackMosaic.vue).
+ */
+const mosaicTileAspect = (tile: MosaicTile): number => {
+  const gridW = STAGE_W - MOSAIC_GAP
+  const gridH = STAGE_H - MOSAIC_GAP
+  const width = gridW * (tile.column === 'full' ? 1 : 0.5) - MOSAIC_GAP
+  const height = gridH * (tile.height / 100) - MOSAIC_GAP
+  return width / height
+}
+
+/**
+ * The shape (width ÷ height) of the frame the `index`th of `count` photographs
+ * lands in, in a layout. The framing editor frames each photograph in exactly
+ * this, so what the organizer sees is what the stack draws.
+ *
+ * A split panel is measured as its box: the slant takes a sliver off one
+ * corner, which is not a shape anyone can frame for. Two layouts change a
+ * photograph's frame with the count (a sixth photograph re-cuts every mosaic
+ * column), which is fine — a region shows in full in any frame, so the next
+ * photograph only changes how much is shown around it.
+ */
+export function stackFrameAspect(
+  layout: StackLayoutType,
+  count: number,
+  index: number,
+): number {
+  if (layout === 'split') {
+    const panels = splitLayout(count).panels
+    const panel = panels[Math.min(Math.max(0, index), panels.length - 1)]
+    return (panel.width * STAGE_W) / (panel.height * STAGE_H)
+  }
+  if (layout === 'mosaic') {
+    const tiles = mosaicTiles(count)
+    return mosaicTileAspect(tiles[Math.min(Math.max(0, index), tiles.length - 1)])
+  }
+  return FIXED_FRAME_ASPECT[layout]
 }

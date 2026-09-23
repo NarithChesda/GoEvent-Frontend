@@ -1,4 +1,5 @@
 import type { InjectionKey } from 'vue'
+import type { StackLayoutType } from '@/services/api/types/template.types'
 
 /**
  * Identifies which record + field an inline edit on the showcase preview
@@ -49,8 +50,15 @@ export type EditIntent =
   | { kind: 'paymentAdd' }
   /** `focus: 'crop'` opens the picker straight on its crop tab — the transition
    *  stage offers both (tap the photo to swap it, the crop button to re-frame
-   *  the one already chosen). */
-  | { kind: 'featuredPhoto'; focus?: 'choose' | 'crop' }
+   *  the one already chosen). The photo stack also says which layout it is
+   *  drawing, so the editor frames each photograph in its own frame's shape,
+   *  and which photograph was tapped, so it opens on that one. */
+  | {
+      kind: 'featuredPhoto'
+      focus?: 'choose' | 'crop'
+      stackLayout?: StackLayoutType
+      photoId?: number
+    }
   | { kind: 'displayToggle'; field: 'rsvp_enabled' | 'comments_enabled' | 'countdown_enabled' }
 
 export interface EditIntentContext {

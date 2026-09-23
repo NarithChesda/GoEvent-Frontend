@@ -8,6 +8,7 @@ import {
   mosaicTiles,
   pileLayout,
   splitLayout,
+  stackFrameAspect,
 } from './geometry'
 
 const range = (n: number) => Array.from({ length: n }, (_, i) => i + 1)
@@ -116,5 +117,48 @@ describe('filmStripHeight', () => {
     }
     // Strip + 0.1w of air + a ~0.3w Save the Date, inside a 16/9 = 1.78w stage.
     expect(filmStripHeight(FILM_CAPACITY) + 0.1 + 0.3).toBeLessThan(16 / 9)
+  })
+})
+
+describe('stackFrameAspect', () => {
+  it('gives the fixed layouts their frame', () => {
+    expect(stackFrameAspect('pile', 5, 0)).toBeCloseTo(4 / 5, 6)
+    expect(stackFrameAspect('booth', 3, 2)).toBeCloseTo(3 / 2, 6)
+    expect(stackFrameAspect('film', 4, 1)).toBeCloseTo(4 / 3, 6)
+  })
+
+  it('measures a split panel on the 390×844 phone', () => {
+    // The lone panel: the full width, 62% of the height.
+    expect(stackFrameAspect('split', 1, 0)).toBeCloseTo(390 / (0.62 * 844), 6)
+    // Four panels are each taller than wide.
+    for (let k = 0; k < SPLIT_CAPACITY; k++) {
+      expect(stackFrameAspect('split', SPLIT_CAPACITY, k)).toBeLessThan(1)
+    }
+  })
+
+  it('re-cuts the mosaic with the count', () => {
+    // Two full-height columns are very tall frames…
+    expect(stackFrameAspect('mosaic', 2, 0)).toBeLessThan(0.3)
+    // …and six photographs cut them into far squarer tiles.
+    expect(stackFrameAspect('mosaic', MOSAIC_CAPACITY, 0)).toBeGreaterThan(0.6)
+    // One photograph is the whole card.
+    expect(stackFrameAspect('mosaic', 1, 0)).toBeGreaterThan(stackFrameAspect('mosaic', 2, 0))
+  })
+
+  it.each([
+    ['pile', PILE_CAPACITY],
+    ['split', SPLIT_CAPACITY],
+    ['booth', 3],
+    ['mosaic', MOSAIC_CAPACITY],
+    ['film', FILM_CAPACITY],
+  ] as const)('gives every photograph in a full %s a usable frame', (layout, capacity) => {
+    for (let n = 1; n <= capacity; n++) {
+      for (let k = 0; k < n; k++) {
+        const aspect = stackFrameAspect(layout, n, k)
+        expect(Number.isFinite(aspect)).toBe(true)
+        expect(aspect).toBeGreaterThan(0.2)
+        expect(aspect).toBeLessThan(2)
+      }
+    }
   })
 })

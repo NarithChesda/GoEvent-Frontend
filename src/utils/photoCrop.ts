@@ -1,12 +1,17 @@
 /**
- * Featured-photo crop rectangle.
+ * A photo's framed region: the part of it the organizer has said must show.
  *
- * The transition stage shows the featured photo full-screen, so something has
- * to decide which part of it survives. Rather than an anchor point (which can
- * only slide the photo along whichever axis happens to overflow — on a phone
- * that's left/right only, with no way to look further up or down), the
- * organizer draws a phone-shaped rectangle over the photo and the stage renders
- * what's inside it.
+ * It began as a phone-shaped crop for the one full-screen featured photo. The
+ * photo stack then put the same photographs into frames of every shape — a 4:5
+ * print, a 3:2 booth frame, a mosaic column taller than 1:3 — and a rectangle
+ * of one shape is only ever right for frames of that shape. So the rectangle
+ * now means **"everything in here stays visible"**, in any shape, and every
+ * frame shows all of it and fills the rest of its own shape with the photo
+ * around it (`cropToCoverGeometry`). In the frame it was framed in, that is
+ * exactly what the organizer saw; in any other it is that plus more.
+ *
+ * A stored phone-shaped crop is simply a region that happens to be phone-shaped,
+ * so every crop saved before this renders as it always did.
  *
  * Stored as four percentages of the source image, so the values stay correct
  * however the backend re-processes the file (uploads are resized to max
@@ -16,8 +21,7 @@
  * the plain `object-fit: cover; object-position: center` this replaces, so
  * photos with no stored crop look exactly as they always have.
  *
- * Backend contract (fields still pending server-side):
- * docs/backend-api-requirements/featured-photo-crop.md
+ * Backend contract: docs/backend-api-requirements/featured-photo-crop.md
  */
 
 /** A rectangle in percentages of the source image. */
@@ -46,14 +50,23 @@ export interface Point {
 export const FULL_CROP: Readonly<PhotoCrop> = Object.freeze({ x: 0, y: 0, width: 100, height: 100 })
 
 /**
- * The phone the crop is authored against: PreviewFrame's native 390x844
- * (iPhone 12/13/14 CSS px). The showcase is overwhelmingly viewed on phones,
- * so the crop box is locked to this one shape rather than offering a choice.
+ * The phone every frame is measured on: PreviewFrame's native 390x844 (iPhone
+ * 12/13/14 CSS px). A full-screen stage is exactly this shape; the photo
+ * stack's frames are fractions of it (see stackFrameAspect).
  */
 export const SHOWCASE_FRAME_SIZE: Readonly<Size> = Object.freeze({ width: 390, height: 844 })
 export const SHOWCASE_FRAME_ASPECT = SHOWCASE_FRAME_SIZE.width / SHOWCASE_FRAME_SIZE.height
 
-/** How far in the organizer may crop, relative to the largest box that fits. */
+/**
+ * How far a photo is ever magnified past a plain `cover` of its frame — the
+ * editor's zoom ceiling, and the renderer's.
+ *
+ * One number serves both because a region never needs more zoom in any frame
+ * than it was framed at: framed at zoom z, one of its axes spans exactly 1/z of
+ * the photo, so containing it anywhere takes at most z × that frame's cover.
+ * The renderer's cap therefore only ever binds on a rectangle that did not come
+ * from the editor — and binding zooms OUT, so all of the region still shows.
+ */
 export const MAX_CROP_ZOOM = 3
 
 /** Below this the rectangle stops being meaningful (and risks dividing by zero). */
@@ -130,94 +143,6 @@ export const cropCentre = (crop: PhotoCrop): Point => ({
   y: crop.y + crop.height / 2,
 })
 
-// --- Aspect-locked sizing ----------------------------------------------------
-
-/**
- * The largest rectangle of `aspect` (width/height, in *rendered pixels*) that
- * fits inside the image. One of the two dimensions always comes out at 100%:
- * a phone-shaped box over a landscape photo spans its full height, and over a
- * very tall photo its full width.
- *
- * This is why resizing matters rather than being a nicety — at maximum size the
- * box is pinned on one axis and can only slide along the other. Shrinking it is
- * what creates room to move the other way.
- */
-export const maxCropSizeForAspect = (natural: Size, aspect: number): Size => {
-  if (!natural.width || !natural.height) return { width: 100, height: 100 }
-  const widthAtFullHeight = ((natural.height * aspect) / natural.width) * 100
-  if (widthAtFullHeight <= 100) return { width: widthAtFullHeight, height: 100 }
-  return { width: 100, height: (natural.width / aspect / natural.height) * 100 }
-}
-
-/** Zoom 1 = the largest box that fits; 2 = half that size, and so on. */
-export const cropZoom = (crop: PhotoCrop, natural: Size, aspect: number): number => {
-  const max = maxCropSizeForAspect(natural, aspect)
-  if (crop.height <= 0) return 1
-  return clamp(max.height / crop.height, 1, MAX_CROP_ZOOM)
-}
-
-/** Build an aspect-locked crop at `zoom`, centred on `centre`. */
-export const cropFromZoom = (
-  natural: Size,
-  aspect: number,
-  zoom: number,
-  centre: Point = { x: 50, y: 50 },
-): PhotoCrop => {
-  const max = maxCropSizeForAspect(natural, aspect)
-  const safeZoom = clamp(zoom, 1, MAX_CROP_ZOOM)
-  const width = max.width / safeZoom
-  const height = max.height / safeZoom
-  return sanitizeCrop({ x: centre.x - width / 2, y: centre.y - height / 2, width, height })
-}
-
-/** Slide the crop without resizing it, stopping at the image's edges. */
-export const moveCrop = (crop: PhotoCrop, deltaX: number, deltaY: number): PhotoCrop =>
-  sanitizeCrop({ ...crop, x: crop.x + deltaX, y: crop.y + deltaY })
-
-export type CropCorner = 'nw' | 'ne' | 'sw' | 'se'
-
-/**
- * Resize by dragging one corner, with the opposite corner pinned and the aspect
- * locked. `pointer` is in image percentage coordinates.
- *
- * Aspect-locked means one size degree of freedom, so the two axes of the drag
- * have to be reconciled: whichever asks for the bigger box wins, which is what
- * makes a diagonal drag feel like it follows the cursor.
- */
-export const resizeCropFromCorner = (
-  crop: PhotoCrop,
-  natural: Size,
-  aspect: number,
-  corner: CropCorner,
-  pointer: Point,
-): PhotoCrop => {
-  const max = maxCropSizeForAspect(natural, aspect)
-  const growsLeft = corner === 'nw' || corner === 'sw'
-  const growsUp = corner === 'nw' || corner === 'ne'
-  const anchorX = growsLeft ? crop.x + crop.width : crop.x
-  const anchorY = growsUp ? crop.y + crop.height : crop.y
-
-  /** Convert a wanted height into the width that the aspect lock implies. */
-  const widthForHeight = (height: number) => (height / max.height) * max.width
-
-  let width = Math.max(Math.abs(pointer.x - anchorX), widthForHeight(Math.abs(pointer.y - anchorY)))
-
-  // Can't grow past the image edges, past the largest fitting box, or below the
-  // zoom ceiling.
-  const roomX = growsLeft ? anchorX : 100 - anchorX
-  const roomY = growsUp ? anchorY : 100 - anchorY
-  width = Math.min(width, roomX, widthForHeight(roomY), max.width)
-  width = Math.max(width, max.width / MAX_CROP_ZOOM)
-
-  const height = (width / max.width) * max.height
-  return sanitizeCrop({
-    x: growsLeft ? anchorX - width : anchorX,
-    y: growsUp ? anchorY - height : anchorY,
-    width,
-    height,
-  })
-}
-
 // --- Rendering ---------------------------------------------------------------
 
 /** Absolute geometry for an <img> so that `crop` fills `viewport`. */
@@ -229,25 +154,33 @@ export interface CropGeometry {
 }
 
 /**
- * Lay the image out so the cropped region fills the viewport.
+ * Lay the image out in a frame so that all of the region shows.
  *
- * The crop is authored on a phone, but guests turn up on other shapes, so a
- * rule is needed for what gives. This one matches the crop's **height** to the
- * viewport's and centres on the crop, then pulls the image back if that would
- * expose an edge.
+ * The rule is "contain the region, but never less than cover the frame":
  *
- * Height-priority rather than "cover the viewport with the crop": the crop is
- * always phone-portrait-shaped, so its height is where the subject lives.
- * Covering would make the crop's *width* bind on a wide screen and slice the
- * top and bottom off the chosen region — a portrait of a person loses their
- * head and feet on a desktop browser. Matching height instead keeps everything
- * the organizer framed and reveals more of the photo sideways, which is the
- * benign direction to be wrong in.
+ * 1. Scale so the region fits the frame exactly on its binding axis — the
+ *    region's height on a frame wider than it, its width on one narrower. All
+ *    of it shows; the frame's spare room on the other axis is filled with the
+ *    photo around it, centred on the region.
+ * 2. Never below `cover`, so there is no empty edge. Where the photo simply
+ *    isn't that shape (a portrait photo in a 3:2 frame), the frame shows as
+ *    much of the region as the photo allows.
+ * 3. Never past MAX_CROP_ZOOM × cover (see there for why that never cuts a
+ *    region the editor produced).
  *
- * The second term keeps the image covering the viewport horizontally, so there
- * is never an empty edge. For the whole-image default both terms reduce to the
- * plain `cover` scale, which is why an uncropped photo renders exactly as it
- * did before this feature existed.
+ * Then the image is pulled back if centring on the region would expose an edge.
+ *
+ * In the frame a region was framed in, (1) is an exact fit — the frame shows
+ * what the organizer saw. Everywhere else it errs by showing more, never less,
+ * which is the benign direction: a portrait framed on a phone keeps the heads
+ * and feet on a desktop, and a close crop framed for a 4:5 print keeps both
+ * faces in a 3:2 one.
+ *
+ * For the whole-image default every term reduces to the plain `cover` scale,
+ * which is why an uncropped photo renders exactly as it did before this
+ * feature existed. For a phone-shaped crop (every crop saved before the photo
+ * stack) on any screen at least as wide as a phone, (1) is the crop's height
+ * matched to the screen's — the rule this stage has always used.
  *
  * Returns null until both sizes are known — callers fall back to plain
  * `object-fit: cover` for that first frame.
@@ -264,13 +197,15 @@ export const cropToCoverGeometry = (
   const cropPixelHeight = (safe.height / 100) * natural.height
   if (cropPixelWidth <= 0 || cropPixelHeight <= 0) return null
 
-  const scale = Math.max(viewport.height / cropPixelHeight, viewport.width / natural.width)
+  const cover = Math.max(viewport.width / natural.width, viewport.height / natural.height)
+  const contain = Math.min(viewport.width / cropPixelWidth, viewport.height / cropPixelHeight)
+  const scale = clamp(contain, cover, cover * MAX_CROP_ZOOM)
   const width = natural.width * scale
   const height = natural.height * scale
 
   const centre = cropCentre(safe)
-  // The image is always at least viewport-sized here (it contains the crop,
-  // which covers the viewport), so these clamp ranges are never inverted.
+  // At or above `cover` the image is at least viewport-sized on both axes, so
+  // these clamp ranges are never inverted.
   return {
     left: clamp(viewport.width / 2 - (centre.x / 100) * width, viewport.width - width, 0),
     top: clamp(viewport.height / 2 - (centre.y / 100) * height, viewport.height - height, 0),

@@ -13,15 +13,22 @@
         <RotateCcw class="preview-control-icon" aria-hidden="true" />
       </button>
 
-      <!-- The crop is authored for a full-screen stage, so here it only moves
-           the lead photograph's focal point — still the right control for "the
-           subject is off-centre in the first frame". -->
+      <!-- Opens the framing editor on the lead photograph, with every other
+           photograph in the stack a tap away, each in its own frame's shape.
+           Tapping a photograph opens it on that one instead. -->
       <button
         v-if="leadPhoto"
         type="button"
         class="preview-control-btn edit-region-control"
         :title="tApp('management.showcasePreview.editors.adjustCrop')"
-        @click.stop.prevent="editIntentCtx.requestEdit({ kind: 'featuredPhoto', focus: 'crop' })"
+        @click.stop.prevent="
+          editIntentCtx.requestEdit({
+            kind: 'featuredPhoto',
+            focus: 'crop',
+            stackLayout: layoutType,
+            photoId: leadPhoto.id,
+          })
+        "
       >
         <Crop class="preview-control-icon" aria-hidden="true" />
       </button>
@@ -116,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, inject, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import { RotateCcw, Crop } from 'lucide-vue-next'
 import type { EventPhoto } from '@/types/showcase'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
@@ -126,6 +133,7 @@ import { useAppLanguage } from '@/composables/useAppLanguage'
 import FallingEffect from './FallingEffect.vue'
 import SaveTheDate from './save-the-date/SaveTheDate.vue'
 import {
+  StackLayoutKey,
   resolveStackLayout,
   stackCopyGround,
   stackPhotosFor,
@@ -205,6 +213,7 @@ const LAYOUTS = {
 
 const layoutType = computed(() => resolveStackLayout(props.layout))
 const layoutComponent = computed(() => LAYOUTS[layoutType.value])
+provide(StackLayoutKey, layoutType)
 
 const photos = computed(() => stackPhotosFor(props.eventPhotos, layoutType.value))
 const leadPhoto = computed(() => photos.value[0] ?? null)

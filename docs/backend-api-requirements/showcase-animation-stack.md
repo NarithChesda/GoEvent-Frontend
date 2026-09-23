@@ -47,7 +47,9 @@ the same way it already sends `showcaseAnimationType`.
 ## Which photographs it uses (no change needed)
 
 Only what the showcase payload already carries: the event's `photos`, with
-`is_featured`, `order` and the optional `crop_*` fields. The stack takes as many
+`is_featured`, `order` and the optional `crop_*` fields (each photo's framed
+region — every frame shows all of it; see [featured-photo-crop.md](featured-photo-crop.md)).
+The stack takes as many
 as its layout holds: the featured photos first, in `order`, then the rest of the
 gallery in `order`. As on the other two transitions, an event with **no** featured
 photo skips the middle stage entirely.

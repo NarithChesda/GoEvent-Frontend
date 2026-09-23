@@ -1,3 +1,4 @@
+import type { ComputedRef, InjectionKey } from 'vue'
 import type { EventPhoto } from '@/types/showcase'
 import type { StackLayoutType } from '@/services/api/types/template.types'
 import { cropCentre, resolvePhotoCrop, type PhotoCropFields } from '@/utils/photoCrop'
@@ -155,18 +156,22 @@ export const stackPhotosFor = (
 ): EventPhoto[] => selectStackPhotos(photos, stackCapacity(layout))
 
 /**
- * Where inside its frame a photograph is anchored: the centre of the
- * organizer's stored crop, as an `object-position`.
- *
- * The crop is authored as a phone-shaped rectangle for a full-screen stage, and
- * these frames are every other shape, so the rectangle itself can't be applied —
- * but its centre is exactly "where the subject is", which is the one thing a
- * smaller window needs to know. No stored crop resolves to 50% 50%.
+ * Where a photograph is anchored in its frame before its geometry is known —
+ * the centre of the organizer's framed region, as an `object-position`. For
+ * the first paint only: once StackPhoto has measured its frame and the image,
+ * it lays the photograph out so the whole region shows (cropToCoverGeometry).
+ * No stored region resolves to 50% 50%.
  */
 export const printFocus = (photo: PhotoCropFields | null | undefined): string => {
   const centre = cropCentre(resolvePhotoCrop(photo))
   return `${centre.x}% ${centre.y}%`
 }
+
+/**
+ * The template's layout, provided by the stage so each photograph can open the
+ * framing editor on its own frame without every layout passing it down.
+ */
+export const StackLayoutKey: InjectionKey<ComputedRef<StackLayoutType>> = Symbol('stack-layout')
 
 // --- Clock -------------------------------------------------------------------
 
