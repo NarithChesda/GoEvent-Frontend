@@ -399,6 +399,13 @@
                   ref="gallerySectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
                 >
+                  <!-- In the editable preview a tap on the gallery means "manage
+                       photos", and nothing else. The region hears the tap only
+                       as it bubbles, after the tile has already handled it, so
+                       the tile's own viewer used to open too — hidden behind
+                       the upload drawer, then waiting there when it closed.
+                       The viewer is a guest's view, not an editing one, so it
+                       is not forwarded at all while editing. -->
                   <EditableRegion :intent="{ kind: 'photos' }">
                     <PhotoGallery
                       :photos="eventPhotos"
@@ -411,7 +418,7 @@
                       :secondary-font="secondaryFont"
                       :event-texts="eventTexts"
                       :current-language="currentLanguage"
-                      @open-photo="$emit('openPhoto', $event)"
+                      @open-photo="!editIntentCtx && $emit('openPhoto', $event)"
                     />
                   </EditableRegion>
 
