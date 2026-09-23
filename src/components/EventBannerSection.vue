@@ -5,6 +5,7 @@
     :summary="hasBanner ? t('management.media.sectionSummary.set') : t('management.media.sectionSummary.notSet')"
     :filled="hasBanner"
     :expanded="isExpanded"
+    :standalone="standalone"
     @toggle="toggle"
   >
     <template #actions>
@@ -287,6 +288,9 @@ import DeleteConfirmModal from './DeleteConfirmModal.vue'
 interface Props {
   event?: Event
   canEdit: boolean
+  /** The whole of a sheet rather than a row in the section stack (the studio's
+   *  mobile preview) — see ShowcaseSectionRow's `standalone`. */
+  standalone?: boolean
 }
 
 interface Emits {
@@ -299,7 +303,10 @@ const emit = defineEmits<Emits>()
 const { t } = useAppLanguage()
 const { error: notifyError } = useNotifications()
 
-const { isExpanded, toggle } = useCollapsibleSection('eventBanner')
+const { isExpanded: rowExpanded, toggle } = useCollapsibleSection('eventBanner')
+// Standalone there is nothing to collapse into, so it is always open — which is
+// also what puts the header's Add/Change pill on screen.
+const isExpanded = computed(() => props.standalone || rowExpanded.value)
 
 const eventRef = toRef(props, 'event')
 const mediaUpload = useMediaUpload(eventRef, (updated) => emit('updated', updated))

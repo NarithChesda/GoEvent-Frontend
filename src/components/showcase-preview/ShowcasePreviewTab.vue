@@ -393,11 +393,16 @@
       :activation-state="activationResolved ? activationState : undefined"
       :staged-template="stagedTemplateData"
       :register-frame="setFrameRef"
+      :templates-open="showTemplatesModal"
+      :event-data="eventData"
+      :show-music="showCategorySpecificSections"
       @close="closeMobilePreview"
       @cycle-language="cycleLanguage"
       @languages="onFrameLanguages"
       @activate="showPaymentDrawer = true"
       @active-frame-changed="onMobileActiveFrameChanged"
+      @open-templates="showTemplatesModal = true"
+      @event-updated="onEditorSaved"
     />
 
     <!-- Parent-side editors for edit intents posted by the frames (logo

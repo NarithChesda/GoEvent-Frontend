@@ -415,7 +415,8 @@
       "previewOnly": "Guests can't see this yet",
       "readOnly": "You have view-only access — tap Preview to see the showcase.",
       "editHintsOff": "Highlights off — this is how guests see it",
-      "controls": "Preview controls"
+      "controls": "Preview controls",
+      "tools": "Preview tools"
     },
     "editors": {
       "partnerLogoSlot": "Your Logo",
