@@ -8,14 +8,14 @@
             <div class="flex items-start justify-between gap-3 mb-4">
               <div>
                 <h3 class="text-base font-semibold text-slate-900">
-                  {{ t('management.showcasePreview.editors.featuredPhotoTitle') }}
+                  {{
+                    stackLayout
+                      ? t('management.showcasePreview.editors.stackPhotosTitle')
+                      : t('management.showcasePreview.editors.featuredPhotoTitle')
+                  }}
                 </h3>
                 <p class="text-xs sm:text-sm text-slate-500 mt-1">
-                  {{
-                    tab === 'crop'
-                      ? t('management.showcasePreview.editors.cropDescription')
-                      : t('management.showcasePreview.editors.featuredPhotoDescription')
-                  }}
+                  {{ description }}
                 </p>
               </div>
               <button
@@ -63,8 +63,8 @@
             </div>
 
             <template v-else>
-              <!-- Which photo vs. how it's cropped are separate decisions; the
-                   crop tab is only reachable once there's a photo to crop. -->
+              <!-- Which photo vs. how it's framed are separate decisions; the
+                   crop tab is only reachable once there's a photo to frame. -->
               <div class="flex items-center gap-1 p-1 mb-4 bg-slate-100 rounded-xl">
                 <button
                   type="button"
@@ -123,12 +123,54 @@
                 </button>
               </div>
 
-              <!-- Crop -->
-              <div v-else-if="featuredPhoto">
-                <PhotoCropEditor
-                  :model-value="draftCrop"
-                  :image-url="featuredPhoto.image"
-                  @update:model-value="onDraftCropUpdate"
+              <!-- Frame -->
+              <div v-else-if="activeFrame">
+                <!-- The photos the stack reveals, in order, each drawn in the
+                     shape of the frame it lands in and framed live — so the
+                     row is both the picker and the preview. Only for the
+                     stack: a full-screen stage draws one photo. -->
+                <div
+                  v-if="frames.length > 1"
+                  class="flex items-center gap-2.5 overflow-x-auto px-1 pt-1 pb-2 mb-2 -mx-1"
+                >
+                  <button
+                    v-for="(frame, k) in frames"
+                    :key="frame.photo.id"
+                    type="button"
+                    class="relative shrink-0 rounded-[3px] transition-[opacity,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1e90ff] focus-visible:ring-offset-2"
+                    :class="
+                      frame.photo.id === activeFrame.photo.id
+                        ? 'ring-2 ring-[#1e90ff] ring-offset-2'
+                        : 'opacity-60 hover:opacity-100'
+                    "
+                    :aria-label="
+                      t('management.showcasePreview.editors.cropPhotoPosition', {
+                        n: k + 1,
+                        total: frames.length,
+                      })
+                    "
+                    :aria-pressed="frame.photo.id === activeFrame.photo.id"
+                    @click="activeId = frame.photo.id"
+                  >
+                    <FramedPhotoThumb
+                      :image-url="frame.photo.image"
+                      :region="regionOf(frame.photo)"
+                      :aspect="frame.aspect"
+                    />
+                    <span
+                      v-if="isDirty(frame.photo)"
+                      class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#1e90ff] ring-2 ring-white"
+                      :title="t('management.showcasePreview.editors.cropUnsaved')"
+                    />
+                  </button>
+                </div>
+
+                <PhotoFramingEditor
+                  :key="activeFrame.photo.id"
+                  :model-value="regionOf(activeFrame.photo)"
+                  :image-url="activeFrame.photo.image"
+                  :frame-aspect="activeFrame.aspect"
+                  @update:model-value="setDraft(activeFrame.photo, $event)"
                 />
 
                 <!-- The PATCH succeeds against a server that doesn't know these
@@ -159,7 +201,7 @@
                   <button
                     type="button"
                     class="px-5 py-2 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] text-white text-sm font-semibold rounded-lg hover:opacity-90 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                    :disabled="savingCrop || !cropDirty"
+                    :disabled="savingCrop || dirtyPhotos.length === 0"
                     @click="saveCrop"
                   >
                     {{
@@ -179,20 +221,23 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { X, Star, ImagePlus, Loader } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { mediaService, type EventPhoto } from '@/services/api'
+import type { StackLayoutType } from '@/services/api/types/template.types'
 import {
-  FULL_CROP,
+  SHOWCASE_FRAME_ASPECT,
   cropsEqual,
-  isFullCrop,
   resolvePhotoCrop,
   responseSupportsPhotoCrop,
   toPhotoCropPayload,
   type PhotoCrop,
 } from '@/utils/photoCrop'
-import PhotoCropEditor from './PhotoCropEditor.vue'
+import { stackPhotosFor } from '@/components/showcase/photo-stack/photoStack'
+import { stackFrameAspect } from '@/components/showcase/photo-stack/geometry'
+import PhotoFramingEditor from './PhotoFramingEditor.vue'
+import FramedPhotoThumb from './FramedPhotoThumb.vue'
 
 interface Props {
   modelValue: boolean
@@ -200,6 +245,12 @@ interface Props {
   /** Which tab to open on. The transition stage's crop button asks for
    *  'crop' directly; tapping the photo itself asks for 'choose'. */
   initialFocus?: 'choose' | 'crop'
+  /** Set when the preview is showing the photo stack: every photograph it
+   *  reveals is framed here, each in its own frame's shape. Absent means a
+   *  full-screen stage, which draws the featured photo alone. */
+  stackLayout?: StackLayoutType | null
+  /** Which photograph to open on — the one that was tapped in the stack. */
+  initialPhotoId?: number | null
 }
 
 const props = defineProps<Props>()
@@ -221,57 +272,93 @@ const tab = ref<'choose' | 'crop'>('choose')
 
 const featuredPhoto = computed(() => photos.value.find((p) => p.is_featured) ?? null)
 
-// --- Crop draft --------------------------------------------------------------
-
-const draftCrop = ref<PhotoCrop>({ ...FULL_CROP })
-const savingCrop = ref(false)
-const cropError = ref<string | null>(null)
-/** Set when a save round-trips without the crop fields coming back. */
-const cropUnsupported = ref(false)
-
-const savedCrop = computed(() => resolvePhotoCrop(featuredPhoto.value))
-
-/**
- * The editor snaps a stored whole-image crop to the largest phone-shaped box
- * as soon as it knows the photo's dimensions. That's visually identical to what
- * was stored (a phone already sees exactly that region), so it must not count
- * as an edit — comparing against the box the editor settled on, rather than
- * against the raw stored value, keeps Save disabled until something is actually
- * moved.
- */
-const editorBaseline = ref<PhotoCrop>({ ...FULL_CROP })
-const cropDirty = computed(() => !cropsEqual(draftCrop.value, editorBaseline.value))
-
-const onDraftCropUpdate = (next: PhotoCrop) => {
-  // The first update while the draft is still the untouched whole-image default
-  // is that snap, not a user gesture.
-  if (isFullCrop(draftCrop.value) && isFullCrop(savedCrop.value)) {
-    editorBaseline.value = next
+const description = computed(() => {
+  if (tab.value === 'crop') {
+    return props.stackLayout
+      ? t('management.showcasePreview.editors.cropStackDescription')
+      : t('management.showcasePreview.editors.cropDescription')
   }
-  draftCrop.value = next
+  return props.stackLayout
+    ? t('management.showcasePreview.editors.featuredPhotoStackDescription')
+    : t('management.showcasePreview.editors.featuredPhotoDescription')
+})
+
+// --- Frames ------------------------------------------------------------------
+
+interface Frame {
+  photo: EventPhoto
+  /** Width ÷ height of the frame this photo lands in. */
+  aspect: number
 }
 
-const resetDraft = () => {
-  draftCrop.value = { ...savedCrop.value }
-  editorBaseline.value = { ...savedCrop.value }
+/**
+ * Every photograph the stage will draw, in the order it draws them, with the
+ * shape it draws each one in. Derived here rather than handed over by the
+ * preview, so choosing a different featured photo on the other tab re-deals
+ * the stack exactly as the stage will.
+ */
+const frames = computed<Frame[]>(() => {
+  const layout = props.stackLayout
+  if (layout) {
+    const chosen = stackPhotosFor(photos.value, layout)
+    return chosen.map((photo, k) => ({
+      photo,
+      aspect: stackFrameAspect(layout, chosen.length, k),
+    }))
+  }
+  return featuredPhoto.value ? [{ photo: featuredPhoto.value, aspect: SHOWCASE_FRAME_ASPECT }] : []
+})
+
+const activeId = ref<number | null>(null)
+
+const activeFrame = computed(
+  () => frames.value.find((f) => f.photo.id === activeId.value) ?? frames.value[0] ?? null,
+)
+
+// --- Drafts --------------------------------------------------------------------
+// One per photograph, kept across switching between them, so a whole stack can
+// be framed and saved in one go.
+
+const drafts = reactive<Record<number, PhotoCrop>>({})
+
+const regionOf = (photo: EventPhoto): PhotoCrop => drafts[photo.id] ?? resolvePhotoCrop(photo)
+
+/** The editor never emits for merely opening a photo, so any draft that
+ *  differs from what is stored is a real edit. */
+const isDirty = (photo: EventPhoto): boolean =>
+  photo.id in drafts && !cropsEqual(drafts[photo.id], resolvePhotoCrop(photo))
+
+const dirtyPhotos = computed(() => frames.value.map((f) => f.photo).filter(isDirty))
+
+const setDraft = (photo: EventPhoto, region: PhotoCrop) => {
+  drafts[photo.id] = region
   cropError.value = null
   cropUnsupported.value = false
 }
 
-// A different photo being featured means a different stored crop.
-watch(() => featuredPhoto.value?.id, resetDraft)
+const clearDrafts = () => {
+  for (const id of Object.keys(drafts)) delete drafts[Number(id)]
+}
+
+const savingCrop = ref(false)
+const cropError = ref<string | null>(null)
+/** Set when a save round-trips without the crop fields coming back. */
+const cropUnsupported = ref(false)
 
 // --- Load --------------------------------------------------------------------
 
 const loadPhotos = async () => {
   loading.value = true
   error.value = null
+  clearDrafts()
+  cropError.value = null
+  cropUnsupported.value = false
   try {
     const response = await mediaService.getEventMedia(props.eventId)
     if (response.success && response.data) {
       photos.value = response.data.results
-      resetDraft()
-      // Honour the requested tab only once we know there's something to crop.
+      activeId.value = props.initialPhotoId ?? null
+      // Honour the requested tab only once we know there's something to frame.
       tab.value = props.initialFocus === 'crop' && featuredPhoto.value ? 'crop' : 'choose'
     } else {
       error.value = t('management.showcasePreview.editors.featuredPhotoLoadFailed')
@@ -324,8 +411,11 @@ const toggleFeatured = async (photo: EventPhoto) => {
       })
       emit('saved')
       // Choosing a photo and framing it are one continuous decision — hand the
-      // organizer straight to the crop rather than making them find the tab.
-      if (makeFeatured) tab.value = 'crop'
+      // organizer straight to the frame, on the photo they just chose.
+      if (makeFeatured) {
+        activeId.value = photo.id
+        tab.value = 'crop'
+      }
     } else {
       error.value = t('management.showcasePreview.editors.featuredPhotoUpdateFailed')
     }
@@ -336,39 +426,44 @@ const toggleFeatured = async (photo: EventPhoto) => {
   }
 }
 
-// --- Save the crop -----------------------------------------------------------
+// --- Save --------------------------------------------------------------------
 
 const saveCrop = async () => {
-  const target = featuredPhoto.value
-  if (!target || savingCrop.value) return
+  const targets = dirtyPhotos.value
+  if (!targets.length || savingCrop.value) return
 
   savingCrop.value = true
   cropError.value = null
   cropUnsupported.value = false
   try {
-    const response = await mediaService.updateEventMedia(
-      props.eventId,
-      target.id,
-      toPhotoCropPayload(draftCrop.value),
+    const results = await Promise.all(
+      targets.map((photo) =>
+        mediaService
+          .updateEventMedia(props.eventId, photo.id, toPhotoCropPayload(drafts[photo.id]))
+          .catch(() => null),
+      ),
     )
-    if (!response.success || !response.data) {
-      cropError.value = response.message || t('management.showcasePreview.editors.cropSaveFailed')
-      return
-    }
-    if (!responseSupportsPhotoCrop(response.data)) {
-      // Keep the draft on screen — it isn't stored, and saying otherwise would
-      // send the organizer off to look for a change that never happened.
-      cropUnsupported.value = true
-      return
-    }
-    const saved = response.data
-    photos.value = photos.value.map((p) => (p.id === target.id ? saved : p))
-    draftCrop.value = { ...resolvePhotoCrop(saved) }
-    editorBaseline.value = { ...draftCrop.value }
-    // Refreshes the preview frames so the new crop is visible immediately.
-    emit('saved')
-  } catch {
-    cropError.value = t('management.showcasePreview.editors.cropSaveFailed')
+    let savedAny = false
+    results.forEach((response, k) => {
+      const photo = targets[k]
+      if (!response?.success || !response.data) {
+        cropError.value =
+          response?.message || t('management.showcasePreview.editors.cropSaveFailed')
+        return
+      }
+      if (!responseSupportsPhotoCrop(response.data)) {
+        // Keep the draft on screen — it isn't stored, and saying otherwise would
+        // send the organizer off to look for a change that never happened.
+        cropUnsupported.value = true
+        return
+      }
+      const saved = response.data
+      photos.value = photos.value.map((p) => (p.id === photo.id ? saved : p))
+      delete drafts[photo.id]
+      savedAny = true
+    })
+    // Refreshes the preview frames so the new framing is visible immediately.
+    if (savedAny) emit('saved')
   } finally {
     savingCrop.value = false
   }

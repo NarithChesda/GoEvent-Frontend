@@ -387,7 +387,8 @@ const revealPhoto = () => {
 }
 
 // Animation timeline (this stage backs the `decoration` animation type; door
-// templates get TransitionStageDoor.vue instead):
+// templates get TransitionStageDoor.vue instead, stack templates
+// TransitionStageStack.vue):
 //   0ms    - Envelope tapped. This stage mounts; the cover's copy leaves (0.7s),
 //            its gilding and creatures fade (0.7s), its ornaments slide out
 //            (staggered, last one clears at 1200ms)

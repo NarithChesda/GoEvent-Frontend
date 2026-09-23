@@ -17,6 +17,7 @@
     :first-host-image="hosts[0]?.profile_image || null"
     :first-host-name="hosts[0]?.name || ''"
     :first-host-id="hosts[0]?.id ?? null"
+    :event-details="coverEventDetails"
     :event-video-url="eventVideoUrl"
     :background-video-url="backgroundVideoUrl"
     :primary-color="primaryColor"
@@ -68,6 +69,9 @@
         :current-font="currentFont"
         :primary-font="primaryFont"
         :secondary-font="secondaryFont"
+        :accent-font="accentFont"
+        :decorative-font="decorativeFont"
+        :guestname-color="guestnameColor"
         :is-event-past="isEventPast"
         :get-media-url="getMediaUrl"
         :available-languages="availableLanguages"
@@ -122,6 +126,27 @@
     :get-media-url="getMediaUrl"
   />
 
+  <!-- `standalone`: there is no CoverStage around it here, so it draws its own
+       falling field rather than relying on the shared one. -->
+  <TransitionStageStack
+    v-else-if="stage === 'transition' && isStackTransition"
+    :key="replayKey"
+    :freeze-at-peak="true"
+    :standalone="true"
+    :event-title="event.title"
+    :event-photos="eventPhotos"
+    :event-start-date="event.start_date"
+    :primary-color="primaryColor"
+    :accent-color="accentColor"
+    :blur-effect-color="blurEffectColor"
+    :backdrop-photo="stageModes.cover === 'animation' ? templateAssets?.basic_decoration_photo : null"
+    :backdrop-color="templateColor"
+    :layout="event.template_assets?.cover_stage_layout?.stackLayout"
+    :falling-effect="event.template_assets?.falling_effect"
+    :save-the-date-design="event.template_assets?.save_the_date_design"
+    :get-media-url="getMediaUrl"
+  />
+
   <TransitionStage
     v-else-if="stage === 'transition'"
     :key="replayKey"
@@ -146,13 +171,16 @@
        coordinates are the same numbers with no conversion anywhere. -->
   <CoverLayoutEditor
     v-if="coverLayoutEdit?.active.value && stage === 'cover'"
-    :elements="coverElements"
+    :elements="coverEditorElements"
     :visible="coverElementVisibility"
+    :placeable="coverPlaceable"
+    :text-scales="coverTextScales"
     :palette="coverTextPalette"
     :selected="coverLayoutEdit.selected.value"
     @select="onCoverLayoutSelect"
     @change="onCoverLayoutChange"
     @dragging="onCoverLayoutDragging"
+    @text-scale="onCoverTextScale"
   />
 
   <!-- Only rendered once a photo has actually been opened, so its chunk is not
@@ -177,13 +205,22 @@ import type { useEventShowcase } from '@/composables/useEventShowcase'
 import { resolveStageModesForEvent } from '@/composables/showcase/useStageModes'
 import { provideTextEffects } from '@/composables/showcase/useTextEffects'
 import {
+  COVER_BLOCK_TEXT,
+  COVER_DETAIL_ELEMENT_IDS,
+  COVER_ELEMENT_IDS,
+  COVER_ROW_ELEMENT_IDS,
+  placeableCoverElementIds,
+  rowsToCoverElements,
   useCoverStageLayout,
   type CoverTextPalette,
+  type ResolvedCoverElements,
 } from '@/composables/showcase/useCoverStageLayout'
+import { coverEventDetailsOf } from '@/components/showcase/cover/coverDetails'
 import { CoverLayoutEditKey } from '@/components/showcase-preview/edit/coverLayoutEditContext'
 import {
   postCoverLayoutChangeToParent,
   postCoverLayoutSelection,
+  postCoverTextChangeToParent,
 } from '@/components/showcase-preview/bridge/previewBridge'
 import type {
   CoverElementBoxes,
@@ -198,6 +235,7 @@ import {
   V1EventVideoStage,
   TransitionStage,
   TransitionStageDoor,
+  TransitionStageStack,
   MainContentStage,
   PhotoModal,
 } from './v1StageComponents'
@@ -305,21 +343,38 @@ const coverLayoutEdit = inject(CoverLayoutEditKey, undefined)
  * push. Forcing `layoutMode: 'free'` alongside it means a partner can drag a
  * block while the template is still nominally on rows and see the result — the
  * editor pane flips the real mode when they commit.
+ *
+ * Only when the drag moved one of the four row blocks, though. The names, date
+ * and venue are placed by box in rows mode too, and dragging one of them there
+ * must not flip the header, logo, invite and guest name into free placement —
+ * where a map kept from an earlier free session would move them mid-drag.
  */
 const coverStageLayout = computed<CoverStageLayout | undefined>(() => {
   const base = event.value?.template_assets?.cover_stage_layout ?? undefined
   const override = coverLayoutEdit?.override.value
-  if (!override) return base
+  const textOverride = coverLayoutEdit?.textOverride.value
+  if (!override && !textOverride) return base
+  const movesRowBlock = !!override && COVER_ROW_ELEMENT_IDS.some((id) => id in override)
   return {
     ...(base ?? {}),
-    layoutMode: 'free',
-    coverElements: { ...(base?.coverElements ?? {}), ...override },
+    ...(movesRowBlock ? { layoutMode: 'free' as const } : {}),
+    ...(override ? { coverElements: { ...(base?.coverElements ?? {}), ...override } } : {}),
+    // Per text, whole entries: an override entry is the text's full style
+    // after the edit (see onCoverTextScale), so it replaces rather than merges.
+    ...(textOverride ? { coverText: { ...(base?.coverText ?? {}), ...textOverride } } : {}),
   }
 })
 
+/** The hosts, date and venue the cover's names-and-details blocks draw. */
+const coverEventDetails = computed(() => coverEventDetailsOf(event.value, hosts.value))
+
 // The same resolution the cover itself runs, so the overlay's handles are drawn
 // from exactly the boxes the blocks rendered at — never a parallel calculation.
-const { layout: resolvedCoverLayout, elements: coverElements } = useCoverStageLayout(
+const {
+  layout: resolvedCoverLayout,
+  elements: coverElements,
+  textStyles: coverTextStyles,
+} = useCoverStageLayout(
   coverStageLayout,
   computed(() => event.value?.template_assets?.cover_content_top_position),
 )
@@ -345,8 +400,29 @@ const coverElementVisibility = computed<Record<CoverElementId, boolean>>(() => (
   // (useDefaultGuestName), but a frame opened without one shouldn't offer
   // handles for blocks that aren't on screen.
   invite: resolvedCoverLayout.value.showCoverInviteText && !!guestName.value,
-  guest: !!guestName.value,
+  guest: resolvedCoverLayout.value.showCoverGuestName && !!guestName.value,
+  // The names block draws nothing for an event with no named host.
+  hosts: resolvedCoverLayout.value.showCoverHosts && hosts.value.some((host) => !!host.name?.trim()),
+  date: resolvedCoverLayout.value.showCoverDate,
+  location: resolvedCoverLayout.value.showCoverLocation,
 }))
+
+/** The blocks the overlay may move: every one in free mode, the details in rows. */
+const coverPlaceable = computed(() => placeableCoverElementIds(resolvedCoverLayout.value.layoutMode))
+
+/**
+ * The boxes the overlay draws its outlines and snap guides from — which must be
+ * where each block actually IS. In free mode that is the resolved map. In rows
+ * mode the four row blocks sit on their rows whatever `coverElements` still
+ * remembers from an earlier free session, so their guides come from the row
+ * geometry; only the detail blocks read the map.
+ */
+const coverEditorElements = computed<ResolvedCoverElements>(() => {
+  if (resolvedCoverLayout.value.layoutMode === 'free') return coverElements.value
+  const rows = rowsToCoverElements(resolvedCoverLayout.value)
+  for (const id of COVER_DETAIL_ELEMENT_IDS) rows[id] = coverElements.value[id]
+  return rows
+})
 
 const onCoverLayoutChange = (elements: CoverElementBoxes, commit: boolean): void => {
   if (coverLayoutEdit) coverLayoutEdit.override.value = elements
@@ -360,6 +436,36 @@ const onCoverLayoutSelect = (id: CoverElementId | null): void => {
   if (window.parent !== window) postCoverLayoutSelection(window.parent, id)
 }
 
+/** Each block's main-text size, for the overlay toolbar's readout and steps. */
+const coverTextScales = computed<Partial<Record<CoverElementId, number>>>(() => {
+  const scales: Partial<Record<CoverElementId, number>> = {}
+  for (const id of COVER_ELEMENT_IDS) {
+    const text = COVER_BLOCK_TEXT[id]
+    if (text) scales[id] = coverTextStyles.value[text].fontScale
+  }
+  return scales
+})
+
+/**
+ * The toolbar resized a block's text. Kept in the text's own entry — never the
+ * box, which the row model ignores for the four row blocks in rows mode — and
+ * written as the text's whole style, so a font slot it already had (or was
+ * inheriting from its box) survives the resize.
+ */
+const onCoverTextScale = (id: CoverElementId, fontScale: number): void => {
+  const textId = COVER_BLOCK_TEXT[id]
+  if (!textId) return
+  const current = coverTextStyles.value[textId]
+  const style = {
+    ...(current.fontType ? { fontType: current.fontType } : {}),
+    fontScale,
+  }
+  if (coverLayoutEdit) {
+    coverLayoutEdit.textOverride.value = { ...(coverLayoutEdit.textOverride.value ?? {}), [textId]: style }
+  }
+  postCoverTextChangeToParent(textId, style)
+}
+
 const onCoverLayoutDragging = (value: boolean): void => {
   if (coverLayoutEdit) coverLayoutEdit.dragging.value = value
 }
@@ -368,6 +474,9 @@ const onCoverLayoutDragging = (value: boolean): void => {
 // resolved exactly as the live showcase resolves it.
 const isDoorTransition = computed(
   () => event.value?.template_assets?.cover_stage_layout?.showcaseAnimationType === 'door',
+)
+const isStackTransition = computed(
+  () => event.value?.template_assets?.cover_stage_layout?.showcaseAnimationType === 'stack',
 )
 
 // Resolved by the same function the live showcase uses, so the frame draws

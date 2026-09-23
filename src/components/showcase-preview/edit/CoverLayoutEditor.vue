@@ -124,23 +124,41 @@ interface Props {
   elements: ResolvedCoverElements
   /** Blocks the cover is actually rendering; the rest get no handles. */
   visible: Record<CoverElementId, boolean>
+  /**
+   * Blocks this layout mode lets a partner move (placeableCoverElementIds).
+   * In rows mode that is only the names-and-details blocks: the four row
+   * blocks still show as snap guides, since a detail block is aligned against
+   * them, but they get no outline or handle because the row model places them.
+   * Absent = every block.
+   */
+  placeable?: readonly CoverElementId[]
   selected: CoverElementId | null
   /**
    * The template's palette, resolved to hex. Drives the selected block's colour
    * swatches; omit it and the toolbar shows text size only.
    */
   palette?: CoverTextPalette
+  /**
+   * The size of each block's main text, resolved (resolveCoverTextStyles). The
+   * toolbar reads and writes THIS rather than the box's own `fontScale`: a
+   * text's size lives in `coverText` now, where it holds in both layout modes.
+   * Absent = the box's value, for a caller that hasn't resolved them.
+   */
+  textScales?: Partial<Record<CoverElementId, number>>
 }
 
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
   select: [CoverElementId | null]
-  /** Full map, not a single block: the first drag should persist a complete
-   *  free layout rather than one explicit block plus three that would still
-   *  shift if someone later nudged a row-model number. */
+  /** Every movable block, not a single one: the first drag should persist a
+   *  complete free layout rather than one explicit block plus three that would
+   *  still shift if someone later nudged a row-model number. The receiver
+   *  MERGES it — in rows mode it carries only the detail blocks. */
   change: [elements: CoverElementBoxes, commit: boolean]
   dragging: [boolean]
+  /** The selected block's main text was resized from the toolbar or keyboard. */
+  textScale: [id: CoverElementId, fontScale: number]
 }>()
 
 const { t } = useAppLanguage()
@@ -150,9 +168,18 @@ const labels = computed<Record<CoverElementId, string>>(() => ({
   logo: t('management.coverLayoutEditor.blocks.logo'),
   invite: t('management.coverLayoutEditor.blocks.invite'),
   guest: t('management.coverLayoutEditor.blocks.guest'),
+  hosts: t('management.coverLayoutEditor.blocks.hosts'),
+  date: t('management.coverLayoutEditor.blocks.date'),
+  location: t('management.coverLayoutEditor.blocks.location'),
 }))
 
-const renderedIds = computed(() => COVER_ELEMENT_IDS.filter((id) => props.visible[id]))
+const placeableIds = computed(() => props.placeable ?? COVER_ELEMENT_IDS)
+
+/** On screen — every one of these is something another block can align to. */
+const visibleIds = computed(() => COVER_ELEMENT_IDS.filter((id) => props.visible[id]))
+
+/** On screen AND movable — these get an outline and handles. */
+const renderedIds = computed(() => visibleIds.value.filter((id) => placeableIds.value.includes(id)))
 
 const boxStyle = (id: CoverElementId) => {
   const box = props.elements[id]
@@ -235,7 +262,7 @@ const readout = computed(() => {
 // ---------------------------------------------------------------------------
 function guideValues(axis: 'x' | 'y', exclude: CoverElementId): number[] {
   const values = [0, 50, 100]
-  for (const id of renderedIds.value) {
+  for (const id of visibleIds.value) {
     if (id === exclude) continue
     const box = props.elements[id]
     const centre = axis === 'x' ? box.x : box.y
@@ -384,8 +411,13 @@ function commitBox(id: CoverElementId, box: ResolvedCoverElementBox, commit: boo
     fontScale: round(clamp(box.fontScale, FONT_SCALE_MIN, FONT_SCALE_MAX) * 100) / 100,
   }
 
+  // Only the movable blocks go out. In rows mode the four row blocks' boxes
+  // here are their ROW geometry, and writing that into `coverElements` would
+  // freeze them there — the next row-height edit would then no longer move
+  // them, and neither would switching to free mode, which seeds from the rows
+  // only when the map is empty.
   const elements: CoverElementBoxes = {}
-  for (const key of COVER_ELEMENT_IDS) {
+  for (const key of placeableIds.value) {
     elements[key] = key === id ? normalized : { ...props.elements[key] }
   }
   emit('change', elements, commit)
@@ -456,7 +488,7 @@ const hasText = (id: CoverElementId): boolean => id !== 'logo'
 /** The block whose toolbar is showing: the selection, unless it's mid-drag. */
 const toolbarId = computed<CoverElementId | null>(() => {
   const id = props.selected
-  if (!id || drag.value || !props.visible[id] || !hasText(id)) return null
+  if (!id || drag.value || !renderedIds.value.includes(id) || !hasText(id)) return null
   return id
 })
 
@@ -472,16 +504,21 @@ const toolbarAbove = computed(() => {
   return !!box && box.y + box.height / 2 > 84
 })
 
-const fontScalePercent = computed(() => Math.round((toolbarBox.value?.fontScale ?? 1) * 100))
+const textScaleOf = (id: CoverElementId): number =>
+  props.textScales?.[id] ?? props.elements[id].fontScale ?? 1
+
+const fontScalePercent = computed(() =>
+  Math.round((toolbarId.value ? textScaleOf(toolbarId.value) : 1) * 100),
+)
 
 function setFontScale(id: CoverElementId, value: number): void {
-  commitBox(id, { ...props.elements[id], fontScale: value }, true)
+  emit('textScale', id, round(clamp(value, FONT_SCALE_MIN, FONT_SCALE_MAX) * 100) / 100)
 }
 
 function bumpFontScale(delta: number): void {
   const id = toolbarId.value
   if (!id) return
-  setFontScale(id, (props.elements[id].fontScale ?? 1) + delta)
+  setFontScale(id, textScaleOf(id) + delta)
 }
 
 /**
@@ -537,7 +574,7 @@ function onKeydown(event: KeyboardEvent): void {
     return
   }
   const id = props.selected
-  if (!id || !props.visible[id]) return
+  if (!id || !renderedIds.value.includes(id)) return
 
   // Ctrl/Cmd + up/down scales the text instead of moving the block — the
   // precision counterpart to the toolbar's A−/A+, and the pairing people
@@ -546,7 +583,7 @@ function onKeydown(event: KeyboardEvent): void {
     if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return
     event.preventDefault()
     const direction = event.key === 'ArrowUp' ? 1 : -1
-    setFontScale(id, (props.elements[id].fontScale ?? 1) + direction * FONT_SCALE_STEP)
+    setFontScale(id, textScaleOf(id) + direction * FONT_SCALE_STEP)
     return
   }
 

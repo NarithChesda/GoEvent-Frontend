@@ -4,23 +4,38 @@ import {
   MAX_CROP_ZOOM,
   SHOWCASE_FRAME_ASPECT,
   cropCentre,
-  cropFromZoom,
   cropToCoverGeometry,
-  cropZoom,
   cropsEqual,
   isFullCrop,
-  maxCropSizeForAspect,
-  moveCrop,
-  resizeCropFromCorner,
   resolvePhotoCrop,
   responseSupportsPhotoCrop,
   sanitizeCrop,
   toPhotoCropPayload,
+  type CropGeometry,
   type PhotoCrop,
+  type Point,
+  type Size,
 } from './photoCrop'
+import { regionFromView } from './photoFraming'
 
 const LANDSCAPE = { width: 3000, height: 2000 }
 const PORTRAIT = { width: 1200, height: 1600 }
+
+/** A region framed in a frame of `aspect` at `zoom` — what the editor stores. */
+const framedIn = (natural: Size, aspect: number, zoom: number, centre: Point = { x: 50, y: 50 }) =>
+  regionFromView({ zoom, centre }, natural, aspect)
+
+/** The shape every crop saved before the photo stack has. */
+const phoneCrop = (natural: Size, zoom: number, centre?: Point) =>
+  framedIn(natural, SHOWCASE_FRAME_ASPECT, zoom, centre)
+
+/** Where the region lands inside the viewport, in viewport pixels. */
+const regionOnScreen = (crop: PhotoCrop, g: CropGeometry) => ({
+  left: g.left + (crop.x / 100) * g.width,
+  top: g.top + (crop.y / 100) * g.height,
+  right: g.left + ((crop.x + crop.width) / 100) * g.width,
+  bottom: g.top + ((crop.y + crop.height) / 100) * g.height,
+})
 
 describe('resolvePhotoCrop', () => {
   it('falls back to the whole image when nothing is stored', () => {
@@ -111,123 +126,6 @@ describe('sanitizeCrop / payload / comparisons', () => {
   })
 })
 
-describe('maxCropSizeForAspect', () => {
-  it('spans the full height of a landscape photo', () => {
-    const max = maxCropSizeForAspect(LANDSCAPE, SHOWCASE_FRAME_ASPECT)
-    expect(max.height).toBe(100)
-    // 2000px tall * (390/844) = 924px wide, out of 3000 = 30.8%
-    expect(max.width).toBeCloseTo(30.8, 1)
-  })
-
-  it('spans the full width of a photo taller than the phone frame', () => {
-    // 9:32 is narrower than 390:844, so height is the spare dimension.
-    const max = maxCropSizeForAspect({ width: 900, height: 3200 }, SHOWCASE_FRAME_ASPECT)
-    expect(max.width).toBe(100)
-    expect(max.height).toBeLessThan(100)
-  })
-
-  it('produces a box whose rendered pixels really are the frame aspect', () => {
-    for (const natural of [LANDSCAPE, PORTRAIT, { width: 900, height: 3200 }]) {
-      const max = maxCropSizeForAspect(natural, SHOWCASE_FRAME_ASPECT)
-      const pixelAspect =
-        ((max.width / 100) * natural.width) / ((max.height / 100) * natural.height)
-      expect(pixelAspect).toBeCloseTo(SHOWCASE_FRAME_ASPECT, 4)
-      expect(max.width).toBeLessThanOrEqual(100)
-      expect(max.height).toBeLessThanOrEqual(100)
-    }
-  })
-})
-
-describe('cropFromZoom / cropZoom', () => {
-  it('round-trips zoom', () => {
-    for (const zoom of [1, 1.5, 2, 3]) {
-      const crop = cropFromZoom(LANDSCAPE, SHOWCASE_FRAME_ASPECT, zoom)
-      expect(cropZoom(crop, LANDSCAPE, SHOWCASE_FRAME_ASPECT)).toBeCloseTo(zoom, 1)
-    }
-  })
-
-  it('centres on the requested point and clamps to the image', () => {
-    const centred = cropFromZoom(LANDSCAPE, SHOWCASE_FRAME_ASPECT, 2, { x: 40, y: 60 })
-    expect(cropCentre(centred).x).toBeCloseTo(40, 1)
-    expect(cropCentre(centred).y).toBeCloseTo(60, 1)
-
-    // A centre near the edge can't be honoured without leaving the image.
-    const clamped = cropFromZoom(LANDSCAPE, SHOWCASE_FRAME_ASPECT, 2, { x: 0, y: 0 })
-    expect(clamped.x).toBe(0)
-    expect(clamped.y).toBe(0)
-  })
-
-  it('refuses to zoom past the ceiling or below the largest fitting box', () => {
-    const tooFar = cropFromZoom(LANDSCAPE, SHOWCASE_FRAME_ASPECT, 99)
-    expect(cropZoom(tooFar, LANDSCAPE, SHOWCASE_FRAME_ASPECT)).toBeCloseTo(MAX_CROP_ZOOM, 1)
-
-    const tooWide = cropFromZoom(LANDSCAPE, SHOWCASE_FRAME_ASPECT, 0.2)
-    expect(tooWide).toEqual(cropFromZoom(LANDSCAPE, SHOWCASE_FRAME_ASPECT, 1))
-  })
-
-  it('gives vertical room only once the box has been shrunk', () => {
-    // This is the whole reason resizing exists: at full size a phone-shaped box
-    // over a landscape photo spans its entire height and cannot move up/down.
-    const full = cropFromZoom(LANDSCAPE, SHOWCASE_FRAME_ASPECT, 1)
-    expect(full.height).toBe(100)
-    expect(moveCrop(full, 0, 20).y).toBe(0)
-
-    const smaller = cropFromZoom(LANDSCAPE, SHOWCASE_FRAME_ASPECT, 2)
-    expect(moveCrop(smaller, 0, 20).y).toBeGreaterThan(smaller.y)
-  })
-})
-
-describe('moveCrop', () => {
-  it('slides the box and stops at the edges', () => {
-    const crop: PhotoCrop = { x: 10, y: 10, width: 20, height: 40 }
-    expect(moveCrop(crop, 5, -5)).toEqual({ x: 15, y: 5, width: 20, height: 40 })
-    expect(moveCrop(crop, 999, 999)).toEqual({ x: 80, y: 60, width: 20, height: 40 })
-    expect(moveCrop(crop, -999, -999)).toEqual({ x: 0, y: 0, width: 20, height: 40 })
-  })
-})
-
-describe('resizeCropFromCorner', () => {
-  const start = cropFromZoom(LANDSCAPE, SHOWCASE_FRAME_ASPECT, 2, { x: 50, y: 50 })
-
-  it('pins the opposite corner', () => {
-    const resized = resizeCropFromCorner(start, LANDSCAPE, SHOWCASE_FRAME_ASPECT, 'nw', {
-      x: start.x + 5,
-      y: start.y + 5,
-    })
-    // Dragging the top-left inward must leave the bottom-right where it was.
-    expect(resized.x + resized.width).toBeCloseTo(start.x + start.width, 1)
-    expect(resized.y + resized.height).toBeCloseTo(start.y + start.height, 1)
-    expect(resized.width).toBeLessThan(start.width)
-  })
-
-  it('holds the frame aspect through a resize', () => {
-    const resized = resizeCropFromCorner(start, LANDSCAPE, SHOWCASE_FRAME_ASPECT, 'se', {
-      x: 95,
-      y: 60,
-    })
-    const pixelAspect =
-      ((resized.width / 100) * LANDSCAPE.width) / ((resized.height / 100) * LANDSCAPE.height)
-    expect(pixelAspect).toBeCloseTo(SHOWCASE_FRAME_ASPECT, 3)
-  })
-
-  it('never grows outside the image or past the zoom limits', () => {
-    const grown = resizeCropFromCorner(start, LANDSCAPE, SHOWCASE_FRAME_ASPECT, 'se', {
-      x: 500,
-      y: 500,
-    })
-    expect(grown.x).toBeGreaterThanOrEqual(0)
-    expect(grown.y).toBeGreaterThanOrEqual(0)
-    expect(grown.x + grown.width).toBeLessThanOrEqual(100.01)
-    expect(grown.y + grown.height).toBeLessThanOrEqual(100.01)
-
-    const shrunk = resizeCropFromCorner(start, LANDSCAPE, SHOWCASE_FRAME_ASPECT, 'se', {
-      x: start.x,
-      y: start.y,
-    })
-    expect(cropZoom(shrunk, LANDSCAPE, SHOWCASE_FRAME_ASPECT)).toBeLessThanOrEqual(MAX_CROP_ZOOM)
-  })
-})
-
 describe('cropToCoverGeometry', () => {
   const PHONE = { width: 390, height: 844 }
 
@@ -249,7 +147,7 @@ describe('cropToCoverGeometry', () => {
   })
 
   it('puts the chosen region on screen, exactly, at the authored aspect', () => {
-    const crop = cropFromZoom(LANDSCAPE, SHOWCASE_FRAME_ASPECT, 2, { x: 25, y: 40 })
+    const crop = phoneCrop(LANDSCAPE, 2, { x: 25, y: 40 })
     const geometry = cropToCoverGeometry(crop, LANDSCAPE, PHONE)!
 
     // The crop's centre should land in the middle of the phone viewport...
@@ -273,9 +171,9 @@ describe('cropToCoverGeometry', () => {
     ]
     const crops = [
       { ...FULL_CROP },
-      cropFromZoom(LANDSCAPE, SHOWCASE_FRAME_ASPECT, 1),
-      cropFromZoom(LANDSCAPE, SHOWCASE_FRAME_ASPECT, 3, { x: 5, y: 95 }), // hard against a corner
-      cropFromZoom(PORTRAIT, SHOWCASE_FRAME_ASPECT, 2, { x: 100, y: 0 }),
+      phoneCrop(LANDSCAPE, 1),
+      phoneCrop(LANDSCAPE, 3, { x: 5, y: 95 }), // hard against a corner
+      phoneCrop(PORTRAIT, 2, { x: 100, y: 0 }),
     ]
 
     for (const natural of [LANDSCAPE, PORTRAIT]) {
@@ -296,7 +194,7 @@ describe('cropToCoverGeometry', () => {
   })
 
   it('shows a slice of the chosen region on a wider screen, not something else', () => {
-    const crop = cropFromZoom(LANDSCAPE, SHOWCASE_FRAME_ASPECT, 2, { x: 30, y: 50 })
+    const crop = phoneCrop(LANDSCAPE, 2, { x: 30, y: 50 })
     const desktop = { width: 1600, height: 900 }
     const g = cropToCoverGeometry(crop, LANDSCAPE, desktop)!
 
@@ -306,5 +204,93 @@ describe('cropToCoverGeometry', () => {
     expect((crop.height / 100) * g.height).toBeCloseTo(desktop.height, 0)
     // ...and horizontally we see more than the crop, never less.
     expect((crop.width / 100) * g.width).toBeLessThanOrEqual(desktop.width + 0.01)
+  })
+
+  // --- Any shape ------------------------------------------------------------
+  // The photo stack draws one region in a 4:5 print, a 3:2 booth frame, a
+  // mosaic column under 1:3 and everything between.
+
+  const SHAPES = [0.28, 0.6, SHOWCASE_FRAME_ASPECT, 4 / 5, 1.15, 4 / 3, 3 / 2, 16 / 9]
+  const PHOTOS = [LANDSCAPE, PORTRAIT, { width: 1000, height: 1000 }, { width: 900, height: 1600 }]
+
+  it('is exactly what was framed, in the frame it was framed in', () => {
+    for (const natural of PHOTOS) {
+      for (const aspect of SHAPES) {
+        const region = framedIn(natural, aspect, 1.7, { x: 38, y: 33 })
+        const viewport = { width: 500 * aspect, height: 500 }
+        const box = regionOnScreen(region, cropToCoverGeometry(region, natural, viewport)!)
+        // Within a pixel of a 500px frame: the stored rectangle is rounded to
+        // one decimal of a percent.
+        expect(Math.abs(box.left)).toBeLessThan(1)
+        expect(Math.abs(box.top)).toBeLessThan(1)
+        expect(Math.abs(box.right - viewport.width)).toBeLessThan(1)
+        expect(Math.abs(box.bottom - viewport.height)).toBeLessThan(1)
+      }
+    }
+  })
+
+  it('shows all of a region in every other shape, or as much as the photo allows', () => {
+    const eps = 0.5
+    for (const natural of PHOTOS) {
+      for (const framedAspect of SHAPES) {
+        for (const zoom of [1, 2, MAX_CROP_ZOOM]) {
+          const region = framedIn(natural, framedAspect, zoom, { x: 30, y: 25 })
+          for (const aspect of SHAPES) {
+            const viewport = { width: 400 * aspect, height: 400 }
+            const g = cropToCoverGeometry(region, natural, viewport)!
+            const box = regionOnScreen(region, g)
+            // Per axis: the region fits inside the frame, or — where the photo
+            // is simply the wrong shape for it — spans the whole frame, so
+            // nothing outside the region is shown in its place.
+            const fitsX = box.left >= -eps && box.right <= viewport.width + eps
+            const spansX = box.left <= eps && box.right >= viewport.width - eps
+            const fitsY = box.top >= -eps && box.bottom <= viewport.height + eps
+            const spansY = box.top <= eps && box.bottom >= viewport.height - eps
+            expect(fitsX || spansX).toBe(true)
+            expect(fitsY || spansY).toBe(true)
+          }
+        }
+      }
+    }
+  })
+
+  it('never needs more zoom than a region was framed at', () => {
+    // Which is why the renderer's cap is the editor's cap.
+    for (const natural of PHOTOS) {
+      for (const framedAspect of SHAPES) {
+        const zoom = MAX_CROP_ZOOM
+        const region = framedIn(natural, framedAspect, zoom, { x: 60, y: 45 })
+        for (const aspect of SHAPES) {
+          const viewport = { width: 400 * aspect, height: 400 }
+          const g = cropToCoverGeometry(region, natural, viewport)!
+          const cover = Math.max(viewport.width / natural.width, viewport.height / natural.height)
+          expect(g.width / natural.width / cover).toBeLessThanOrEqual(zoom + 0.01)
+        }
+      }
+    }
+  })
+
+  it('keeps all of a phone crop on a phone narrower than the one it was framed on', () => {
+    // The one change for crops saved before the photo stack: matching height
+    // would slice their sides here; containing them shows a sliver more above
+    // and below instead.
+    const crop = phoneCrop(LANDSCAPE, 2, { x: 40, y: 50 })
+    const narrow = { width: 360, height: 800 }
+    const box = regionOnScreen(crop, cropToCoverGeometry(crop, LANDSCAPE, narrow)!)
+    expect(box.left).toBeCloseTo(0, 0)
+    expect(box.right).toBeCloseTo(narrow.width, 0)
+    expect(box.top).toBeGreaterThanOrEqual(-0.01)
+    expect(box.bottom).toBeLessThanOrEqual(narrow.height + 0.01)
+  })
+
+  it('stops magnifying at the cap for a rectangle the editor could not have made', () => {
+    const tiny = { x: 49.5, y: 49.5, width: 1, height: 1 }
+    const viewport = { width: 390, height: 844 }
+    const g = cropToCoverGeometry(tiny, LANDSCAPE, viewport)!
+    const cover = Math.max(viewport.width / LANDSCAPE.width, viewport.height / LANDSCAPE.height)
+    expect(g.width / LANDSCAPE.width / cover).toBeCloseTo(MAX_CROP_ZOOM, 6)
+    // Centred on it all the same.
+    const centre = cropCentre(tiny)
+    expect(g.left + (centre.x / 100) * g.width).toBeCloseTo(viewport.width / 2, 1)
   })
 })

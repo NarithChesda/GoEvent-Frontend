@@ -151,7 +151,7 @@
 import { ref, computed } from 'vue'
 import { useOptimizedBackgrounds } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
-import { getAnimationType, type ShowcaseAnimationType } from '../../composables/showcase/useShowcaseAnimation'
+import { coverExitOf, getAnimationType, type ShowcaseAnimationType } from '../../composables/showcase/useShowcaseAnimation'
 import type { StageMode } from '../../composables/showcase/useStageModes'
 
 // Asset protection (production-only)
@@ -206,8 +206,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Animation type detection - only apply swipe-up for decoration animation
-const isDecorationAnimation = computed(() => getAnimationType(props.animationType) === 'decoration')
+// Animation type detection - only apply swipe-up for the decoration exit
+// (which `stack` shares)
+const isDecorationAnimation = computed(() => coverExitOf(getAnimationType(props.animationType)) === 'decoration')
 
 /**
  * Which backdrop each stage gets.

@@ -14,6 +14,7 @@ import type {
   InfoCardDesignConfig,
   StageModesConfig,
 } from '@/services/api/types/template.types'
+import type { CoverHostNamesBinding } from '@/components/showcase/cover/coverDetails'
 
 // Core showcase data types
 export interface Host {
@@ -136,9 +137,10 @@ export interface EventPhoto {
   is_featured: boolean
   created_at: string
   /**
-   * Organizer-chosen crop rectangle, in percentages of the source image, used
-   * when the photo is displayed full-screen (the transition stage's featured
-   * photo). All four absent = the whole image = a plain centre crop.
+   * The organizer's framed region, in percentages of the source image: the
+   * part of the photo every frame it is drawn in must show (the transition
+   * stage's full screen, a photo-stack print or tile). Any shape. All four
+   * absent = the whole image = a plain centre crop.
    * See src/utils/photoCrop.ts.
    */
   crop_x?: number | null
@@ -360,6 +362,12 @@ export interface HostInfoProps {
   logoScale?: number
   /** Where the host block starts, in rem. Defaults to 0. Read by every design. */
   topOffset?: number
+  /**
+   * The cover's host names, for `simple` to draw in place of its own two stacked
+   * names. Present only when the template sets `sync_cover_names`; null or
+   * absent keeps `simple` exactly as it was. Every other design ignores it.
+   */
+  coverHostNames?: CoverHostNamesBinding | null
   /**
    * The event's `description` title and body. Rendered by `crest`, which puts
    * the invitation sentence where the other designs put a welcome header — see

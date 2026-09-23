@@ -84,6 +84,7 @@
         :show-cover-header-text="showCoverHeaderText"
         :show-cover-logo="showCoverLogo"
         :show-cover-invite-text="showCoverInviteText"
+        :show-cover-guest-name="showCoverGuestName"
         :guest-name="guestName"
         :primary-color="primaryColor"
         :secondary-color="secondaryColor"
@@ -109,6 +110,7 @@
         :background-image-url="doorBackgroundImageUrl"
         :cover-gilding="coverGilding"
         :accent-color="accentColor"
+        :detail-blocks="detailBlocks"
       />
 
       <!-- Right Door Panel -->
@@ -131,6 +133,7 @@
         :show-cover-header-text="showCoverHeaderText"
         :show-cover-logo="showCoverLogo"
         :show-cover-invite-text="showCoverInviteText"
+        :show-cover-guest-name="showCoverGuestName"
         :guest-name="guestName"
         :primary-color="primaryColor"
         :secondary-color="secondaryColor"
@@ -156,6 +159,7 @@
         :background-image-url="doorBackgroundImageUrl"
         :cover-gilding="coverGilding"
         :accent-color="accentColor"
+        :detail-blocks="detailBlocks"
       />
     </div>
 
@@ -194,6 +198,7 @@
         :show-cover-header-text="showCoverHeaderText"
         :show-cover-logo="showCoverLogo"
         :show-cover-invite-text="showCoverInviteText"
+        :show-cover-guest-name="showCoverGuestName"
         :guest-name="guestName"
         :primary-color="primaryColor"
         :secondary-color="secondaryColor"
@@ -218,6 +223,11 @@
         :show-animations="true"
       />
 
+      <!-- The hosts' names, the date and the venue, when the template draws
+           them. Inside this layer rather than beside it, so they leave with the
+           rest of the cover copy on the tap. -->
+      <CoverDetailBlocks v-if="detailBlocks" v-bind="detailBlocks" :show-animations="true" />
+
       <!-- Swipe Up Arrow Indicator. Hidden by default when the envelope can't
            actually be opened, but `showSwipeArrow` overrides that so a preview
            can still show where `swipeArrowBottom` puts it. -->
@@ -230,16 +240,23 @@
 import { computed } from 'vue'
 import { useOptimizedDecorations, useOptimizedBackgrounds } from '@/composables/showcase/useOptimizedDecorations'
 import {
-  COVER_COLOR_SLOT_VARS,
   COVER_DECORATION_RELIEF_FILTERS,
   COVER_DECORATION_RELIEF_VAR,
-  COVER_FONT_SLOT_VARS,
+  coverSlotVars,
   useCoverStageLayout,
 } from '@/composables/showcase/useCoverStageLayout'
 import { useShowcaseAnimation, type ShowcaseAnimationType } from '@/composables/showcase/useShowcaseAnimation'
 import { useTouchGesture } from '@/composables/showcase/useTouchGesture'
 import type { CoverStageLayout, AmbientCreaturesConfig } from '@/services/api/types/template.types'
-import { CoverDecorations, CoverContentRows, CoverGilding, DoorPanel, SwipeUpArrow } from './cover'
+import {
+  CoverDecorations,
+  CoverContentRows,
+  CoverDetailBlocks,
+  CoverGilding,
+  DoorPanel,
+  SwipeUpArrow,
+} from './cover'
+import type { CoverDetailBlocksBinding, CoverEventDetails } from './cover/coverDetails'
 import AmbientEffect from './AmbientEffect.vue'
 
 // Local interface for template assets (component-specific subset)
@@ -253,6 +270,7 @@ interface CoverTemplateAssets {
   sample_logo_1?: string | null
   sample_logo_2?: string | null
   header_text_image?: string | null
+  cover_host_separator_image?: string | null
 }
 
 interface EventText {
@@ -303,6 +321,8 @@ interface Props {
   animationType?: ShowcaseAnimationType
   /** Ambient creature effect config from template. Only renders when provided. */
   ambientCreatures?: AmbientCreaturesConfig | null
+  /** The hosts, date and venue the names-and-details blocks draw. */
+  eventDetails?: CoverEventDetails | null
 }
 
 const props = defineProps<Props>()
@@ -356,6 +376,8 @@ const {
   elementFontSlots,
   guestFrame,
   coverGilding,
+  coverDetails,
+  textStyles,
   decorationZIndexes,
   layout,
 } = useCoverStageLayout(
@@ -380,33 +402,17 @@ const decorationReliefFilter = computed(() =>
 
 /**
  * The template's font and colour slots, published as CSS variables for
- * free-placed blocks to reference by name.
- *
- * Every entry falls back the way the showcase itself already falls back
- * (accent → primary, decorative → accent, and so on), so a block pointed at a
- * slot this template doesn't fill renders in something sensible rather than in
- * the browser default.
+ * free-placed blocks to reference by name (see coverSlotVars).
  */
-const slotVarStyle = computed<Record<string, string>>(() => {
-  const body = props.primaryFont || props.currentFont
-  const accentFont = props.accentFont || body
-  return {
-    // Published here rather than passed as a prop because it lands on images in
-    // two components — CoverDecorations and DoorPanel — and this root is the
-    // nearest ancestor of both. Same trick, and the same reason, as the font and
-    // colour slots below. Inert at `none`, which is every template that hasn't
-    // switched the gilding on.
-    [COVER_DECORATION_RELIEF_VAR]: decorationReliefFilter.value,
-    [COVER_FONT_SLOT_VARS.primary]: body,
-    [COVER_FONT_SLOT_VARS.secondary]: props.secondaryFont || body,
-    [COVER_FONT_SLOT_VARS.accent]: accentFont,
-    [COVER_FONT_SLOT_VARS.decorative]: props.decorativeFont || accentFont,
-    [COVER_COLOR_SLOT_VARS.primary]: props.primaryColor,
-    [COVER_COLOR_SLOT_VARS.secondary]: props.secondaryColor || props.primaryColor,
-    [COVER_COLOR_SLOT_VARS.accent]: props.accentColor || props.primaryColor,
-    [COVER_COLOR_SLOT_VARS.guestname]: props.guestnameColor || props.primaryColor,
-  }
-})
+const slotVarStyle = computed<Record<string, string>>(() => ({
+  // Published here rather than passed as a prop because it lands on images in
+  // two components — CoverDecorations and DoorPanel — and this root is the
+  // nearest ancestor of both. Same trick, and the same reason, as the font and
+  // colour slots below. Inert at `none`, which is every template that hasn't
+  // switched the gilding on.
+  [COVER_DECORATION_RELIEF_VAR]: decorationReliefFilter.value,
+  ...coverSlotVars(props),
+}))
 
 // Swipe arrow bottom position
 const swipeArrowBottom = computed(() => layout.value.swipeArrowBottom)
@@ -428,6 +434,39 @@ const showCoverHeaderText = computed(() => layout.value.showCoverHeaderText)
 // hands its space to nothing: the row stays, empty (see CoverContentRows).
 const showCoverLogo = computed(() => layout.value.showCoverLogo)
 const showCoverInviteText = computed(() => layout.value.showCoverInviteText)
+const showCoverGuestName = computed(() => layout.value.showCoverGuestName)
+
+/**
+ * Everything the names-and-details blocks draw from, built once and bound to
+ * three places — this layer's copy and each door leaf's. Null when the template
+ * switched none of the three on, which is what keeps the component (and its
+ * date and text lookups) off every cover that doesn't use it.
+ */
+const detailBlocks = computed<CoverDetailBlocksBinding | null>(() => {
+  const visible = {
+    hosts: layout.value.showCoverHosts,
+    date: layout.value.showCoverDate,
+    location: layout.value.showCoverLocation,
+  }
+  if (!visible.hosts && !visible.date && !visible.location) return null
+  const separatorImage = props.templateAssets?.cover_host_separator_image
+  return {
+    eventDetails: props.eventDetails ?? null,
+    eventTexts: props.eventTexts,
+    currentLanguage: props.currentLanguage,
+    visible,
+    details: coverDetails.value,
+    elementStyles: elementStyles.value,
+    elementFontSlots: elementFontSlots.value,
+    primaryColor: props.primaryColor,
+    accentColor: props.accentColor,
+    currentFont: props.currentFont,
+    primaryFont: props.primaryFont,
+    secondaryFont: props.secondaryFont,
+    separatorImageUrl: separatorImage ? props.getMediaUrl(separatorImage) : null,
+    sublineStyle: textStyles.value.hostSubline,
+  }
+})
 
 // Sample logos from template_assets — used in place of the event logo when
 // the cover header row is hidden (sample_logo_1 as base, sample_logo_2 overlaid).

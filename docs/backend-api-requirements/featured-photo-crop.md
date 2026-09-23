@@ -21,6 +21,24 @@ tool and re-uploading.
 The ask: let the organizer **draw a phone-shaped rectangle** over their photo
 and have the stage render what's inside it. That's **four numbers per photo**.
 
+### Update (Sept 2026): any shape, for the photo stack — no backend change
+
+The photo-stack transition ([showcase-animation-stack.md](showcase-animation-stack.md))
+shows up to six photos at once, in frames of many shapes: a 4:5 print, a 3:2
+booth frame, a mosaic column narrower than 1:3. A phone-shaped rectangle is only
+right for phone-shaped frames. So the same four fields now mean **"the region of
+the photo that must show"**, in any shape. Every frame shows all of it and fills
+the rest of its own shape with the photo around it. The organizer frames each
+photo in the shape of the frame it actually lands in.
+
+**Nothing changes on the backend.** The fields, ranges, defaults, endpoints and
+echo requirement are exactly as below. The one thing to confirm is that
+**nothing validates the rectangle's aspect ratio**. The frontend now sends
+rectangles of every shape (`{ "crop_x": 0, "crop_y": 0, "crop_width": 100, "crop_height": 50 }`
+is a normal value), and the model below only range-checks each field, which is
+correct. Rectangles saved before this are simply regions that happen to be
+phone-shaped, and they render as they always did.
+
 ## Data Contract
 
 ### Fields
@@ -263,11 +281,13 @@ fix.
   need to worry about half-populated rows.
 - Frontend consumption is already complete and forward-compatible:
   - [src/utils/photoCrop.ts](../../src/utils/photoCrop.ts) — the contract:
-    parsing, clamping, aspect-locked sizing, and the render geometry.
+    parsing, clamping, and the one render geometry every frame uses.
   - [TransitionStage.vue](../../src/components/showcase/TransitionStage.vue) —
     lays the photo out so the chosen rectangle fills the screen.
-  - [PhotoCropEditor.vue](../../src/components/showcase-preview/editors/PhotoCropEditor.vue)
-    — the phone-shaped crop box: drag to move, corner handles or a zoom slider
-    to resize.
+  - [StackPhoto.vue](../../src/components/showcase/photo-stack/StackPhoto.vue)
+    — the same, in every frame of the photo stack.
+  - [PhotoFramingEditor.vue](../../src/components/showcase-preview/editors/PhotoFramingEditor.vue)
+    — the photo moved and zoomed under a fixed frame of the real shape.
   - [FeaturedPhotoModal.vue](../../src/components/showcase-preview/editors/FeaturedPhotoModal.vue)
-    — "Choose photo" / "Crop" tabs; saves via the § 2 PATCH.
+    — "Choose photo" / "Crop" tabs; saves via the § 2 PATCH, one per changed
+    photo.

@@ -82,6 +82,7 @@
           :show-cover-header-text="showCoverHeaderText"
           :show-cover-logo="showCoverLogo"
           :show-cover-invite-text="showCoverInviteText"
+          :show-cover-guest-name="showCoverGuestName"
           :guest-name="guestName"
           :primary-color="primaryColor"
           :secondary-color="secondaryColor"
@@ -105,6 +106,9 @@
           :guest-name-max-width-percent="guestNameMaxWidthPercent"
           :show-animations="false"
         />
+        <!-- The names-and-details blocks, drawn still: the leaf is a
+             photograph of the cover being moved, like the rows above. -->
+        <CoverDetailBlocks v-if="detailBlocks" v-bind="detailBlocks" :show-animations="false" />
       </div>
     </div>
 
@@ -131,6 +135,8 @@ import type {
   GuestFrameConfig,
 } from '@/services/api/types/template.types'
 import CoverContentRows from './CoverContentRows.vue'
+import CoverDetailBlocks from './CoverDetailBlocks.vue'
+import type { CoverDetailBlocksBinding } from './coverDetails'
 import CoverGilding from './CoverGilding.vue'
 
 interface RowStyles {
@@ -183,6 +189,13 @@ interface Props {
   showCoverLogo?: boolean
   /** Draw the invite text. When false its row keeps its space, like the logo's. */
   showCoverInviteText?: boolean
+  /** Draw the guest's name. When false its row keeps its space, like the logo's. */
+  showCoverGuestName?: boolean
+  /**
+   * Everything the names-and-details blocks draw from, bound as one — each leaf
+   * only hands it on. Null when the template switched none of them on.
+   */
+  detailBlocks?: CoverDetailBlocksBinding | null
   guestName?: string | null
   primaryColor: string
   secondaryColor?: string | null
@@ -227,6 +240,8 @@ const props = withDefaults(defineProps<Props>(), {
   // would hide both blocks for any caller that doesn't pass them.
   showCoverLogo: true,
   showCoverInviteText: true,
+  showCoverGuestName: true,
+  detailBlocks: null,
 })
 
 const { protectionAttrs } = useAssetProtection()

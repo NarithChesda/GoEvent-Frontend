@@ -179,13 +179,31 @@ export interface TemplateAssets {
 }
 
 /**
- * The four cover-stage blocks a template can place freely.
+ * The four blocks of the original cover stack — header text, logo, invite text,
+ * guest name. Stacked as rows in `rows` mode, placed by box in `free` mode.
+ */
+export type CoverRowElementId = 'header' | 'logo' | 'invite' | 'guest'
+
+/**
+ * The names-and-details composition: the hosts' names with the mark between
+ * them, the date, and the venue — the layout of a printed card, where the
+ * couple is the headline rather than the guest.
+ *
+ * These never stacked, so they have no row geometry to fall back to: they are
+ * placed by their own box in BOTH layout modes (`COVER_DETAIL_ELEMENT_DEFAULTS`
+ * is where they sit until a partner moves them). Each one is off until its
+ * `showCover*` switch turns it on.
+ */
+export type CoverDetailElementId = 'hosts' | 'date' | 'location'
+
+/**
+ * Every cover-stage block a template can place.
  *
  * Deliberately NOT the swipe arrow: that one is navigation chrome with a fixed
  * pixel size and its own responsive rules, and `swipeArrowBottom` already
  * positions it in both layout modes.
  */
-export type CoverElementId = 'header' | 'logo' | 'invite' | 'guest'
+export type CoverElementId = CoverRowElementId | CoverDetailElementId
 
 /**
  * Where one cover block's text takes its colour from.
@@ -258,6 +276,46 @@ export interface CoverElementBox {
 
 /** Placement per block. Partial: any missing block falls back to the row model. */
 export type CoverElementBoxes = Partial<Record<CoverElementId, CoverElementBox>>
+
+/**
+ * Every run of text on the cover a partner can set the font and size of on its
+ * own. Keyed by TEXT, not by block: the names block holds two runs that are set
+ * in different faces at different sizes (the names, and the small line under
+ * each), and a partner styling them needs to reach each one.
+ *
+ * The logo draws no text, so it has no entry. The time line and the venue share
+ * `location`: they are one block of reading text, and the reference card sets
+ * them alike.
+ */
+export type CoverTextId =
+  | 'header'
+  | 'invite'
+  | 'guest'
+  | 'hostNames'
+  | 'hostSubline'
+  | 'date'
+  | 'location'
+
+/**
+ * One text's type, applied in BOTH layout modes — unlike a block's box, whose
+ * geometry the row model overrides in `rows` mode.
+ *
+ * Both fields optional, and unset is not the same as naming today's value:
+ * unset keeps the block's own rule (the guest name's script face for Latin
+ * names, say), where a slot overrides it.
+ */
+export interface CoverTextStyle {
+  /**
+   * Which of the template's font slots this text is set in. A slot, never a
+   * family, for the reason `CoverElementBox.fontType` gives: fonts are declared
+   * per language, and a baked-in family would freeze the cover to one script.
+   */
+  fontType?: CoverFontSlot
+  /** Multiplier on the text's own responsive size. Default 1. */
+  fontScale?: number
+}
+
+export type CoverTextStyles = Partial<Record<CoverTextId, CoverTextStyle>>
 
 /**
  * How the guest name's frame artwork is constructed.
@@ -439,6 +497,102 @@ export interface CoverGildingConfig {
 }
 
 /**
+ * What stands between two host names on the cover.
+ *
+ * - `ampersand` — "&", set in the names' own face, so a script template gets
+ *                 its script ampersand. The default, and the reference card's.
+ * - `word`      — the language's own "and" (and / និង / 和), set small between
+ *                 the names. Follows the showcase's language switch.
+ * - `heart` | `rings` | `knot` | `bloom` — the drawn motifs the host block's
+ *                 `couple_ornament` offers, so one motif can run through both
+ *                 stages of an invitation.
+ * - `none`      — the names stand alone, spaced.
+ *
+ * An uploaded mark (`cover_host_separator_image` on the template) **overrides**
+ * this outright — the precedence `host_divider_image` has over `divider_style`.
+ * That is also why there is no `custom` member: it would be a choice that draws
+ * nothing until a file exists, and removing the file reveals this choice again.
+ */
+export type CoverHostSeparator = 'ampersand' | 'word' | Exclude<CoupleOrnament, 'none'> | 'none'
+
+/**
+ * How several host names share the block.
+ *
+ * - `stacked` — one name per line, the mark on its own line between them.
+ * - `inline`  — the names on one line with the mark between them, wrapping only
+ *               when the line runs out. Suits a script face, which reads as one
+ *               phrase rather than as a list.
+ */
+export type CoverHostArrangement = 'stacked' | 'inline'
+
+/**
+ * The smaller line under each host's name.
+ *
+ * - `none`    — the name alone.
+ * - `surname` — the name split at its last space: the given name large, the
+ *               family name small under it (RICHARD / JONES). Never applied to a
+ *               name in Khmer script, which puts the family name first — the
+ *               split would set the given name in the small line.
+ * - `title`   — the host's own title (Bride, Groom, …) under the full name.
+ */
+export type CoverHostSubline = 'none' | 'surname' | 'title'
+
+/**
+ * How the cover sets the date.
+ *
+ * - `numeric` — 20.10.2025, from the event's start date in the event's own time
+ *               zone (Khmer numerals on a Khmer showcase).
+ * - `long`    — the weekday, day, month and year spelled out in the language.
+ * - `text`    — the organizer's own `date_text`, exactly as written — for a
+ *               lunar date, or wording the other two can't produce. Falls back
+ *               to `numeric` when the event has none.
+ */
+export type CoverDateFormat = 'numeric' | 'long' | 'text'
+
+/**
+ * How the names-and-details blocks draw. Placement is not in here — like every
+ * other cover block, each one's box lives in `coverElements`.
+ *
+ * Every field is optional; `COVER_DETAILS_DEFAULTS` is the reference card.
+ */
+export interface CoverDetailsConfig {
+  /**
+   * Show at most this many hosts, in the event's own host order. `null` (the
+   * default) shows every host the event has — one, two or six — which is what
+   * makes one template serve a wedding, a birthday and a joint celebration.
+   */
+  hostCount?: number | null
+  /** Default `stacked`. */
+  hostArrangement?: CoverHostArrangement
+  /** Default `surname`. */
+  hostSubline?: CoverHostSubline
+  /**
+   * Set Latin text in spaced capitals — the names, the small lines and the
+   * venue. Never applied to Khmer, which has no case and whose stacked
+   * subscripts come apart under letter-spacing. Default true.
+   */
+  capitals?: boolean
+  /** Default `ampersand`. */
+  separator?: CoverHostSeparator
+  /** Size of the mark relative to the names it sits between. Default 1. */
+  separatorScale?: number
+  /** Palette slot the mark is drawn in. Default `accent`. */
+  separatorColorSource?: CoverElementColorSource
+  /** Hex colour, read only when `separatorColorSource` is `custom`. */
+  separatorCustomColor?: string | null
+  /** Default `numeric`. */
+  dateFormat?: CoverDateFormat
+  /** Draw the time line above the venue. Default true. */
+  showTime?: boolean
+}
+
+/**
+ * How the photo-stack transition (`showcaseAnimationType: 'stack'`) composes
+ * the event's photographs — see photoStack.ts for what each one draws.
+ */
+export type StackLayoutType = 'pile' | 'split' | 'booth' | 'mosaic' | 'film'
+
+/**
  * Cover stage layout configuration
  * All values are optional with sensible defaults applied in components
  */
@@ -479,6 +633,25 @@ export interface CoverStageLayout {
   // showCoverLogo: the row's space is kept rather than collapsed.
   showCoverInviteText?: boolean     // default: true
 
+  // Render the guest's name on the cover stage. Same rule again: the row keeps
+  // its space. Off is for a card whose headline is the hosts, not the guest.
+  showCoverGuestName?: boolean      // default: true
+
+  // The names-and-details composition (see CoverDetailElementId). Each block
+  // is off until switched on, so no existing template changes.
+  showCoverHosts?: boolean          // default: false
+  showCoverDate?: boolean           // default: false
+  showCoverLocation?: boolean       // default: false
+
+  // How those three blocks draw. Omitted = the reference card.
+  coverDetails?: CoverDetailsConfig
+
+  // Font slot and size per text, in both layout modes. Omitted per text = the
+  // block's own rule — or, for a block placed freely, the `fontType` /
+  // `fontScale` its box carried before this map existed (see
+  // resolveCoverTextStyles), so no published template changes.
+  coverText?: CoverTextStyles
+
   // Host image clipped into sample_logo_2's shape (merged logo row).
   // hostClipScale sets image size as % of the clip square (0–100).
   // hostClipOffsetX/Y pan the host photo within the clip square via CSS
@@ -498,7 +671,13 @@ export interface CoverStageLayout {
   bottomDecorationZIndex?: number   // default: 25
 
   // Animation settings
-  showcaseAnimationType?: 'decoration' | 'door'  // default: 'decoration'
+  // 'stack' exits the cover as 'decoration' does, then reveals the event's
+  // photographs one at a time before the Save the Date (TransitionStageStack).
+  showcaseAnimationType?: 'decoration' | 'door' | 'stack'  // default: 'decoration'
+
+  // How the 'stack' transition composes its photographs. Read only when
+  // showcaseAnimationType is 'stack'; absent or unknown means 'pile'.
+  stackLayout?: StackLayoutType  // default: 'pile'
 
   // Printed-gold lighting over the cover artwork. Omitted = off, so every
   // existing template's cover renders exactly as before.
@@ -730,6 +909,16 @@ export interface HostInfoDesignConfig {
    * block, which all five have.
    */
   top_offset?: number
+  /**
+   * `simple` only: draw the host names the way the cover's host-names block
+   * draws them — its hosts, arrangement, line under each name, the mark between
+   * them (the uploaded one included), spaced capitals, and the names' and small
+   * line's fonts, sizes and colour, all read from `cover_stage_layout`. Absent
+   * or `false` keeps `simple`'s own look: two names stacked around an ampersand.
+   *
+   * Stored and returned unchanged on every other design, which ignore it.
+   */
+  sync_cover_names?: boolean
 }
 
 /**
@@ -911,7 +1100,7 @@ export interface DressCodeDesignConfig {
  * stage — the block that carries the label and the event date over the
  * featured photograph, between the cover and the invitation.
  *
- * Both transition stages render the same six designs. Each one owns a distinct
+ * Every transition stage renders the same six designs. Each one owns a distinct
  * *composition* and a distinct reveal *gesture*, not just a restyle:
  *
  * - `script`    — the decoration stage's original: an italic script label
@@ -939,8 +1128,9 @@ export interface DressCodeDesignConfig {
  *                 a hairline. The one design that isn't wedding-coded.
  *
  * Absent / `null` falls back to **whichever design that stage shipped with** —
- * `script` for the decoration transition, `engraved` for the door transition —
- * so every already-published template renders exactly as it does today. That
+ * `script` for the decoration and photo-stack transitions, `engraved` for the
+ * door transition — so every already-published template renders exactly as it
+ * does today. That
  * per-stage fallback is the one way this config differs from
  * `host_info_design`, which has a single global default.
  *
@@ -959,9 +1149,9 @@ export type SaveTheDateDesignType =
  * Configuration for the Save the Date title card on the transition stage.
  *
  * Mirrors the `HostInfoDesignConfig` pattern: a small JSON object sent inside
- * the template package and forwarded down to both TransitionStage.vue and
- * TransitionStageDoor.vue. When omitted each stage keeps its own original
- * design (see `SaveTheDateDesignType`).
+ * the template package and forwarded down to TransitionStage.vue,
+ * TransitionStageDoor.vue and TransitionStageStack.vue. When omitted each stage
+ * keeps its own original design (see `SaveTheDateDesignType`).
  */
 export interface SaveTheDateDesignConfig {
   /** Which Save the Date composition to render. Defaults per stage. */
@@ -1332,6 +1522,13 @@ export interface PartnerTemplate {
    * alongside it.
    */
   host_divider_image: string | null
+  /**
+   * The mark drawn between the host names on the cover, in place of
+   * `cover_stage_layout.coverDetails.separator`. Optional because the backend
+   * field is pending (docs/backend-api-requirements/cover-details.md) — until it
+   * ships, the record simply doesn't carry the key.
+   */
+  cover_host_separator_image?: string | null
   display_liquid_glass_background: boolean
   open_envelope_button: string | null
   basic_decoration_photo: string | null
@@ -1393,6 +1590,8 @@ export interface PartnerTemplateCreatePayload {
   header_text_image?: TemplateFileUpload
   /** The `crest` host design's horizontal breakline artwork. */
   host_divider_image?: TemplateFileUpload
+  /** The mark between the host names on the cover. */
+  cover_host_separator_image?: TemplateFileUpload
   display_liquid_glass_background?: boolean
   open_envelope_button?: TemplateFileUpload
   cover_stage_layout?: CoverStageLayout

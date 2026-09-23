@@ -53,6 +53,8 @@
     v-model="featuredPhotoOpen"
     :event-id="eventId"
     :initial-focus="featuredPhotoFocus"
+    :stack-layout="featuredPhotoStackLayout"
+    :initial-photo-id="featuredPhotoId"
     @saved="onFeaturedPhotoSaved"
     @upload-requested="onFeaturedPhotoUploadRequested"
   />
@@ -131,6 +133,7 @@ import { useNotifications } from '@/composables/useNotifications'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { parsePreviewBridgeMessage } from '../bridge/previewBridge'
 import type { EditIntent } from '../edit/editContext'
+import type { StackLayoutType } from '@/services/api/types/template.types'
 import {
   agendaService,
   hostsService,
@@ -270,6 +273,10 @@ const featuredPhotoOpen = ref(false)
 /** Which tab the picker opens on — the stage has one affordance for swapping
  *  the photo and another for re-framing its crop. */
 const featuredPhotoFocus = ref<'choose' | 'crop'>('choose')
+/** Set by the photo stack: frame every photograph it reveals, each in its own
+ *  frame's shape, opening on the one that was tapped. */
+const featuredPhotoStackLayout = ref<StackLayoutType | null>(null)
+const featuredPhotoId = ref<number | null>(null)
 
 const onFeaturedPhotoSaved = () => emit('saved')
 
@@ -557,6 +564,8 @@ const handleIntent = (intent: EditIntent) => {
       break
     case 'featuredPhoto':
       featuredPhotoFocus.value = intent.focus ?? 'choose'
+      featuredPhotoStackLayout.value = intent.stackLayout ?? null
+      featuredPhotoId.value = intent.photoId ?? null
       featuredPhotoOpen.value = true
       break
     case 'agendaItem':

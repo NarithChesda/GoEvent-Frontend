@@ -163,6 +163,7 @@
                     :divider-scale="hostInfoDesign?.divider_scale"
                     :logo-scale="hostInfoDesign?.logo_scale"
                     :top-offset="hostInfoDesign?.top_offset"
+                    :cover-host-names="coverHostNames"
                     :description-title="hostBlockOwnsDescription ? getDescriptionTitle() : undefined"
                     :description-text="hostBlockOwnsDescription ? getDescriptionText() : undefined"
                   />
@@ -853,7 +854,12 @@ import { showcaseRevealObserverInit } from '@/composables/showcase/useScrollProg
 import { useCinematicScroll } from '@/composables/showcase/useCinematicScroll'
 import { useOptimizedDecorations } from '../../composables/showcase/useOptimizedDecorations'
 import { useAssetProtection } from '../../composables/showcase/useAssetProtection'
-import { useCoverStageLayout } from '../../composables/showcase/useCoverStageLayout'
+import {
+  coverBlockTypeVars,
+  coverSlotVars,
+  useCoverStageLayout,
+} from '../../composables/showcase/useCoverStageLayout'
+import type { CoverHostNamesBinding } from './cover/coverDetails'
 import type {
   AgendaDesignConfig,
   DressCodeDesignConfig,
@@ -896,6 +902,8 @@ interface TemplateAssets {
   sample_logo_2?: string | null
   /** Custom breakline art, forwarded to the `crest` host layout. */
   host_divider_image?: string | null
+  /** The cover's own mark between host names, for `simple` when it matches the cover. */
+  cover_host_separator_image?: string | null
 }
 
 interface VideoResourceManager {
@@ -922,6 +930,15 @@ interface Props {
   currentFont: string
   primaryFont?: string
   secondaryFont?: string
+  /**
+   * The template's other two font slots and its guest-name colour. Nothing on
+   * this stage is set in them by default; they are here because the `simple`
+   * host design can match the cover's host names, and the cover lets those
+   * names (and the line under them) be set in any slot.
+   */
+  accentFont?: string
+  decorativeFont?: string
+  guestnameColor?: string | null
   isEventPast: boolean
   getMediaUrl: (url: string) => string
   availableLanguages?: Array<{ id: number; language: string; language_display: string }>
@@ -935,8 +952,9 @@ interface Props {
   bottomDecoration?: string | null
   leftDecoration?: string | null
   rightDecoration?: string | null
-  /** Showcase animation type from template_assets.showcase_animation_type */
-  animationType?: 'decoration' | 'door'
+  /** Showcase animation type from template_assets.showcase_animation_type.
+   *  `stack` enters as `decoration` does — its stage hands off the same way. */
+  animationType?: 'decoration' | 'door' | 'stack'
   /** Main stage layout configuration for decoration z-indexes */
   mainStageLayout?: CoverStageLayout
   /** Date + location block design from template (panel | calendar) */
@@ -963,10 +981,65 @@ const previewFrameCtx = inject(PreviewFrameKey, undefined)
 const { t: tApp, locale: appLocale } = useAppLanguage()
 
 // Main stage layout configuration (decoration z-indexes + welcome header visibility)
-const { decorationZIndexes, layout: mainStageLayoutResolved } = useCoverStageLayout(
+const {
+  decorationZIndexes,
+  layout: mainStageLayoutResolved,
+  coverDetails,
+  textStyles: coverTextStyles,
+  elements: coverElements,
+  elementFontSlots: coverElementFontSlots,
+} = useCoverStageLayout(
   computed(() => props.mainStageLayout),
   computed(() => undefined),
 )
+
+/**
+ * The cover's host-names block, for the `simple` host design to draw instead of
+ * its own two stacked names — only when the template asks it to
+ * (`host_info_design.sync_cover_names`). Null otherwise, which is what keeps
+ * `simple` rendering exactly as it always has.
+ *
+ * Built from the same resolved config the cover renders from, so the two can't
+ * disagree about which hosts, how each name splits, or which mark sits between
+ * them. Not gated on the cover SHOWING its names: the setting is "look like the
+ * cover's names", and switching the cover's block off shouldn't silently change
+ * the invitation.
+ */
+const matchesCoverNames = computed(
+  () => props.hostInfoDesign?.type === 'simple' && !!props.hostInfoDesign.sync_cover_names,
+)
+
+/**
+ * The stage's width in px, published so the matched names can be sized by the
+ * cover's own formula — which is a share of the STAGE, not of the card the
+ * invitation is drawn on.
+ *
+ * Measured rather than expressed in CSS, because neither unit reaches it: `vw`
+ * is the window, and on a desktop the stage is a 9:16 frame centred in it
+ * (`.showcase-container`), while a container query would mean making this root
+ * a container, which also makes it the containing block for every
+ * `position: fixed` layer inside the invitation. This root is `inset-0` of the
+ * stage, so its own width is the number.
+ */
+const stageWidth = ref(0)
+
+const coverHostNames = computed<CoverHostNamesBinding | null>(() => {
+  if (!matchesCoverNames.value) return null
+  const separatorImage = props.templateAssets?.cover_host_separator_image
+  return {
+    details: coverDetails.value,
+    namesSlot: coverElementFontSlots.value.hosts,
+    sublineStyle: coverTextStyles.value.hostSubline,
+    vars: {
+      ...coverSlotVars(props),
+      ...coverBlockTypeVars(coverElements.value.hosts, coverTextStyles.value.hostNames),
+      // Only once measured: until then the names fall back to the viewport,
+      // which is the stage on a phone, rather than to 0 and vanishing.
+      ...(stageWidth.value ? { '--cover-stage-w': `${stageWidth.value}px` } : {}),
+    },
+    separatorImageUrl: separatorImage ? props.getMediaUrl(separatorImage) : null,
+  }
+})
 
 // Template-controlled: whether HostInfo renders the welcome header row
 const showWelcomeHeaderText = computed(() => mainStageLayoutResolved.value.showWelcomeHeaderText)
@@ -1236,6 +1309,32 @@ const {
 // snap it had to suspend while moving has nothing to correct when it returns.
 // Off in the editable preview, where a tap on the invitation is an edit.
 const stageRootRef = ref<HTMLElement>()
+
+// Watches the stage's width for `stageWidth` above — declared here because
+// `stageRootRef` is, and only while a template actually matches the cover's
+// names, so every other showcase pays nothing for it.
+let stageObserver: ResizeObserver | null = null
+
+watch(
+  [matchesCoverNames, stageRootRef],
+  ([matches, root]) => {
+    stageObserver?.disconnect()
+    stageObserver = null
+    if (!matches || !root || typeof ResizeObserver === 'undefined') return
+    stageWidth.value = root.clientWidth
+    stageObserver = new ResizeObserver(() => {
+      stageWidth.value = root.clientWidth
+    })
+    stageObserver.observe(root)
+  },
+  { immediate: true },
+)
+
+onUnmounted(() => {
+  stageObserver?.disconnect()
+  stageObserver = null
+})
+
 const stageScrollRef = ref<HTMLElement>()
 const footerPageRef = ref<HTMLElement>()
 const { isPlaying: isAutoScrolling } = useCinematicScroll({

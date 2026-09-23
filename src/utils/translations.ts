@@ -13,6 +13,9 @@ export const rsvpTranslations: Record<
     /** Placeholder guest name used where no real guest link/name is available
      *  (e.g. the manage-page live preview). */
     default_guest_name: string
+    /** The word set between two host names on the cover, when a template
+     *  joins them with a word rather than a mark. */
+    host_joiner: string
 
     // Buttons
     rsvp_yes_button: string
@@ -229,6 +232,7 @@ export const rsvpTranslations: Record<
     rsvp_header_default: 'Will you attend our event?',
     invite_text: "You're Invited",
     default_guest_name: 'Honored Guest',
+    host_joiner: 'and',
 
     // Buttons
     rsvp_yes_button: "Yes, I'll attend",
@@ -445,6 +449,7 @@ export const rsvpTranslations: Record<
     rsvp_header_default: 'តើលោកអ្នកនឹងចូលរួមកម្មវិធីរបស់យើងខ្ញុំទេ?',
     invite_text: 'សូមគោរពអញ្ជើញ',
     default_guest_name: 'ភ្ញៀវកិត្តិយស',
+    host_joiner: 'និង',
 
     // Buttons
     rsvp_yes_button: 'ចូលរួម',
@@ -661,6 +666,7 @@ export const rsvpTranslations: Record<
     rsvp_header_default: '您会参加我们的活动吗？',
     invite_text: '诚邀您',
     default_guest_name: '尊敬的来宾',
+    host_joiner: '和',
 
     // Buttons
     rsvp_yes_button: '是的，我会参加',

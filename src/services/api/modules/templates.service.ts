@@ -103,8 +103,80 @@ const TEMPLATE_FILE_FIELDS: Array<keyof PartnerTemplateCreatePayload> = [
   'guest_title_frame_left', 'guest_title_frame_mid', 'guest_title_frame_right',
   'standard_cover_video', 'standard_transition_video', 'standard_background_video',
   'sample_logo_1', 'sample_logo_2', 'header_text_image',
-  'open_envelope_button', 'host_divider_image',
+  'open_envelope_button', 'host_divider_image', 'cover_host_separator_image',
 ]
+
+/**
+ * Every JSON config block a partner template carries, for exactly the reason
+ * TEMPLATE_FILE_FIELDS exists: create and update must agree on it, and when the
+ * list was written out by hand in both methods there was nothing making them.
+ * A config added to one and forgotten in the other saves on a new template and
+ * silently does nothing on every edit of an existing one — the same failure the
+ * three dropped logo uploads above were.
+ *
+ * `undefined` means the caller isn't touching this config, so it is left alone.
+ * Every other value — including `null`, which is how a config is switched off —
+ * is serialized and sent.
+ */
+const TEMPLATE_JSON_CONFIG_FIELDS = [
+  'cover_stage_layout',
+  'falling_effect',
+  'ambient_creatures',
+  'sparks',
+  'event_details_design',
+  'host_info_design',
+  'info_card_design',
+  'agenda_design',
+  'dress_code_design',
+  'save_the_date_design',
+  'text_effects',
+  'stage_modes',
+] as const satisfies ReadonlyArray<keyof PartnerTemplateCreatePayload>
+
+/**
+ * The config-owned images, which are neither normal file fields nor JSON: they
+ * live inside a config block on the server but travel as their own multipart
+ * part. Same three states as TEMPLATE_FILE_FIELDS.
+ */
+const TEMPLATE_CONFIG_IMAGE_FIELDS = [
+  'falling_effect_custom_image',
+  'spark_custom_image',
+] as const satisfies ReadonlyArray<keyof PartnerTemplateCreatePayload>
+
+/**
+ * Everything create and update append identically: the files, the JSON configs
+ * and the config-owned images. Only the four scalar fields above differ between
+ * them (create requires a name, update patches whatever it was given), so those
+ * stay with their own method.
+ */
+function appendTemplateAssetsAndConfigs(
+  formData: FormData,
+  payload: Partial<PartnerTemplateCreatePayload>,
+): void {
+  for (const field of TEMPLATE_FILE_FIELDS) {
+    const file = payload[field]
+    if (file instanceof File) {
+      formData.append(field, file)
+    } else if (file === '') {
+      // Explicit removal — see TEMPLATE_FILE_FIELDS.
+      formData.append(field, '')
+    }
+  }
+  for (const field of TEMPLATE_JSON_CONFIG_FIELDS) {
+    const config = payload[field]
+    if (config !== undefined) {
+      formData.append(field, JSON.stringify(config))
+    }
+  }
+  for (const field of TEMPLATE_CONFIG_IMAGE_FIELDS) {
+    const image = payload[field]
+    if (image instanceof File) {
+      formData.append(field, image)
+    } else if (image === '') {
+      formData.append(field, '')
+    }
+  }
+}
 
 /** How many pages `listEditableTemplates` will walk before giving up.
  *  A guard against a server that keeps answering with a `next`, not a real
@@ -183,61 +255,7 @@ export const partnerTemplateService = {
     if (payload.youtube_preview_url) {
       formData.append('youtube_preview_url', payload.youtube_preview_url)
     }
-    for (const field of TEMPLATE_FILE_FIELDS) {
-      const file = payload[field]
-      if (file instanceof File) {
-        formData.append(field, file)
-      } else if (file === '') {
-        // Explicit removal — see TEMPLATE_FILE_FIELDS.
-        formData.append(field, '')
-      }
-    }
-    if (payload.cover_stage_layout) {
-      formData.append('cover_stage_layout', JSON.stringify(payload.cover_stage_layout))
-    }
-    if (payload.falling_effect !== undefined) {
-      formData.append('falling_effect', JSON.stringify(payload.falling_effect))
-    }
-    if (payload.ambient_creatures !== undefined) {
-      formData.append('ambient_creatures', JSON.stringify(payload.ambient_creatures))
-    }
-    if (payload.sparks !== undefined) {
-      formData.append('sparks', JSON.stringify(payload.sparks))
-    }
-    if (payload.event_details_design !== undefined) {
-      formData.append('event_details_design', JSON.stringify(payload.event_details_design))
-    }
-    if (payload.host_info_design !== undefined) {
-      formData.append('host_info_design', JSON.stringify(payload.host_info_design))
-    }
-    if (payload.info_card_design !== undefined) {
-      formData.append('info_card_design', JSON.stringify(payload.info_card_design))
-    }
-    if (payload.agenda_design !== undefined) {
-      formData.append('agenda_design', JSON.stringify(payload.agenda_design))
-    }
-    if (payload.dress_code_design !== undefined) {
-      formData.append('dress_code_design', JSON.stringify(payload.dress_code_design))
-    }
-    if (payload.save_the_date_design !== undefined) {
-      formData.append('save_the_date_design', JSON.stringify(payload.save_the_date_design))
-    }
-    if (payload.text_effects !== undefined) {
-      formData.append('text_effects', JSON.stringify(payload.text_effects))
-    }
-    if (payload.stage_modes !== undefined) {
-      formData.append('stage_modes', JSON.stringify(payload.stage_modes))
-    }
-    if (payload.falling_effect_custom_image instanceof File) {
-      formData.append('falling_effect_custom_image', payload.falling_effect_custom_image)
-    } else if (payload.falling_effect_custom_image === '') {
-      formData.append('falling_effect_custom_image', '')
-    }
-    if (payload.spark_custom_image instanceof File) {
-      formData.append('spark_custom_image', payload.spark_custom_image)
-    } else if (payload.spark_custom_image === '') {
-      formData.append('spark_custom_image', '')
-    }
+    appendTemplateAssetsAndConfigs(formData, payload)
     return apiClient.postFormData<PartnerTemplate>('/api/core-data/partner-templates/', formData)
   },
 
@@ -262,61 +280,7 @@ export const partnerTemplateService = {
     if (payload.youtube_preview_url !== undefined) {
       formData.append('youtube_preview_url', payload.youtube_preview_url)
     }
-    for (const field of TEMPLATE_FILE_FIELDS) {
-      const file = payload[field]
-      if (file instanceof File) {
-        formData.append(field, file)
-      } else if (file === '') {
-        // Explicit removal — see TEMPLATE_FILE_FIELDS.
-        formData.append(field, '')
-      }
-    }
-    if (payload.cover_stage_layout) {
-      formData.append('cover_stage_layout', JSON.stringify(payload.cover_stage_layout))
-    }
-    if (payload.falling_effect !== undefined) {
-      formData.append('falling_effect', JSON.stringify(payload.falling_effect))
-    }
-    if (payload.ambient_creatures !== undefined) {
-      formData.append('ambient_creatures', JSON.stringify(payload.ambient_creatures))
-    }
-    if (payload.sparks !== undefined) {
-      formData.append('sparks', JSON.stringify(payload.sparks))
-    }
-    if (payload.event_details_design !== undefined) {
-      formData.append('event_details_design', JSON.stringify(payload.event_details_design))
-    }
-    if (payload.host_info_design !== undefined) {
-      formData.append('host_info_design', JSON.stringify(payload.host_info_design))
-    }
-    if (payload.info_card_design !== undefined) {
-      formData.append('info_card_design', JSON.stringify(payload.info_card_design))
-    }
-    if (payload.agenda_design !== undefined) {
-      formData.append('agenda_design', JSON.stringify(payload.agenda_design))
-    }
-    if (payload.dress_code_design !== undefined) {
-      formData.append('dress_code_design', JSON.stringify(payload.dress_code_design))
-    }
-    if (payload.save_the_date_design !== undefined) {
-      formData.append('save_the_date_design', JSON.stringify(payload.save_the_date_design))
-    }
-    if (payload.text_effects !== undefined) {
-      formData.append('text_effects', JSON.stringify(payload.text_effects))
-    }
-    if (payload.stage_modes !== undefined) {
-      formData.append('stage_modes', JSON.stringify(payload.stage_modes))
-    }
-    if (payload.falling_effect_custom_image instanceof File) {
-      formData.append('falling_effect_custom_image', payload.falling_effect_custom_image)
-    } else if (payload.falling_effect_custom_image === '') {
-      formData.append('falling_effect_custom_image', '')
-    }
-    if (payload.spark_custom_image instanceof File) {
-      formData.append('spark_custom_image', payload.spark_custom_image)
-    } else if (payload.spark_custom_image === '') {
-      formData.append('spark_custom_image', '')
-    }
+    appendTemplateAssetsAndConfigs(formData, payload)
     return apiClient.patchFormData<PartnerTemplate>(
       `/api/core-data/partner-templates/${templateId}/`,
       formData,

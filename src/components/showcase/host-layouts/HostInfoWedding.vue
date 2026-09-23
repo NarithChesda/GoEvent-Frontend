@@ -19,7 +19,99 @@
         :base-delay="0.1"
       />
 
-      <div :class="['simple-names', getKhmerClass(currentLanguage)]">
+      <!-- Matched to the cover's host names (host_info_design.sync_cover_names):
+           the same hosts, split and joined the way the cover's names block does
+           it — its arrangement, its line under each name, its mark (the
+           uploaded one included), its capitals, and the names' fonts and colour.
+           The rules are the cover's own functions (coverDetails.ts) and the look
+           arrives as the cover's own variables (`coverHostNames.vars`), so the
+           expressions below are CoverDetailBlocks' expressions, not a copy of
+           its decisions. Only the size and the entrance are this design's: the
+           names run on its type ladder and bounce in word by word like the
+           rest of the invitation. -->
+      <!-- A wrapper, so the block's own spacing is not measured into anything
+           the names are sized against: their size is a share of the STAGE
+           (`--cover-stage-w`), which is what the cover sizes its names by. -->
+      <div v-if="coverHostNames" class="synced-names-frame">
+      <div
+        class="synced-names"
+        :class="`synced-names--${coverHostNames.details.hostArrangement}`"
+        :style="syncedNamesStyle"
+      >
+        <template v-for="(host, index) in syncedHostLines" :key="host.id">
+          <span
+            v-if="index > 0"
+            class="bounce-word synced-sep"
+            :style="{ animationDelay: `${host.separatorDelay}s` }"
+          >
+            <HostSeparatorMark
+              :kind="coverHostNames.details.separator"
+              :image-url="coverHostNames.separatorImageUrl"
+              :word="syncedJoinerWord"
+              :color="syncedSeparatorColor"
+              :icon-color="syncedSeparatorIconColor"
+              :font-family="syncedNamesFont"
+              :finish-class="fx(coverHostNames.namesSlot)"
+              :capitals="takesCapitals(coverHostNames.details.capitals, syncedJoinerWord)"
+              :scale="coverHostNames.details.separatorScale"
+            />
+          </span>
+          <div class="synced-host">
+            <!-- The whole name is the edit target even when it is drawn split
+                 over two lines: the split is presentation, the record is one
+                 field. -->
+            <InlineEditableText
+              :value="host.fullName"
+              :target="{ kind: 'host', hostId: host.id, field: 'name' }"
+              :input-style="{ fontFamily: syncedNamesFont }"
+            >
+              <h2
+                class="synced-name"
+                :class="[fx(coverHostNames.namesSlot), syncedRunClass(host.name)]"
+                :style="{ fontFamily: syncedNamesFont }"
+              >
+                <span
+                  v-for="(word, wordIndex) in host.words"
+                  :key="`synced-name-${currentLanguage}-${host.id}-${wordIndex}`"
+                  class="bounce-word"
+                  :style="{ animationDelay: `${host.nameDelay + wordCascadeDelay(wordIndex)}s` }"
+                  ><span class="tfx-ink">{{ word
+                  }}{{ wordIndex < host.words.length - 1 ? ' ' : '' }}</span></span
+                >
+              </h2>
+              <p
+                v-if="host.subline && coverHostNames.details.hostSubline === 'surname'"
+                class="synced-sub"
+                :class="syncedRunClass(host.subline)"
+                :style="{ fontFamily: syncedSublineFont }"
+              >
+                <span class="bounce-word" :style="{ animationDelay: `${host.sublineDelay}s` }">{{
+                  host.subline
+                }}</span>
+              </p>
+            </InlineEditableText>
+            <InlineEditableText
+              v-if="host.subline && coverHostNames.details.hostSubline === 'title'"
+              :value="host.subline"
+              :target="{ kind: 'host', hostId: host.id, field: 'title' }"
+              :input-style="{ fontFamily: syncedSublineFont }"
+            >
+              <p
+                class="synced-sub"
+                :class="syncedRunClass(host.subline)"
+                :style="{ fontFamily: syncedSublineFont }"
+              >
+                <span class="bounce-word" :style="{ animationDelay: `${host.sublineDelay}s` }">{{
+                  host.subline
+                }}</span>
+              </p>
+            </InlineEditableText>
+          </div>
+        </template>
+      </div>
+      </div>
+
+      <div v-else :class="['simple-names', getKhmerClass(currentLanguage)]">
         <InlineEditableText
           :value="hosts[0].name"
           :target="{ kind: 'host', hostId: hosts[0].id, field: 'name' }"
@@ -427,7 +519,20 @@ import { computed, inject } from 'vue'
 import type { HostInfoProps } from '@/types/showcase'
 import type { HostFrameStyle, CoupleOrnament } from '@/services/api/types/template.types'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { useTextEffect } from '@/composables/showcase/useTextEffects'
+import { useTextEffect, useTextEffectMarkInk } from '@/composables/showcase/useTextEffects'
+import {
+  COVER_FONT_SLOT_VARS,
+  coverColorSourceValue,
+} from '@/composables/showcase/useCoverStageLayout'
+import HostSeparatorMark from '../cover/HostSeparatorMark.vue'
+import {
+  coverHostLines,
+  hasKhmerScript,
+  hostCountScale,
+  hostJoinerWord,
+  selectCoverHosts,
+  takesCapitals,
+} from '../cover/coverDetails'
 import InlineEditableText from '@/components/showcase-preview/edit/InlineEditableText.vue'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
@@ -459,6 +564,7 @@ const previewCtx = inject(PreviewFrameKey, undefined)
 const { t: tApp } = useAppLanguage()
 // Metallic lettering per font slot. Names are primary, titles secondary.
 const fx = useTextEffect()
+const markInk = useTextEffectMarkInk()
 
 const addPhotoLabel = computed(() => tApp('management.showcasePreview.editors.addHostPhoto'))
 
@@ -567,16 +673,21 @@ const simpleNameStyle = computed(() => ({
   fontFamily: props.primaryFont || props.secondaryFont || props.currentFont,
 }))
 
-// Animation delays for the simple design: welcome → first name → ampersand →
-// second name. Mirrors the standard layout's sequential cascade so the two
-// designs feel consistent when switching templates.
-const simpleAnimationDelays = computed(() => {
-  let cursor = 0.1
+// When the simple design's names begin: after the welcome header, when there is
+// one. Shared by its own names and by the cover-matched ones below.
+const simpleNamesStart = computed(() => {
   const welcomeText =
     props.showWelcomeHeaderText === false
       ? ''
       : props.welcomeMessage || 'You Are Invited to Our Wedding'
-  if (welcomeText) cursor += getTextAnimationDuration(welcomeText) + ELEMENT_GAP
+  return welcomeText ? 0.1 + getTextAnimationDuration(welcomeText) + ELEMENT_GAP : 0.1
+})
+
+// Animation delays for the simple design: welcome → first name → ampersand →
+// second name. Mirrors the standard layout's sequential cascade so the two
+// designs feel consistent when switching templates.
+const simpleAnimationDelays = computed(() => {
+  let cursor = simpleNamesStart.value
 
   const nameLeft = cursor
   cursor += getTextAnimationDuration(props.hosts[0]?.name) + ELEMENT_GAP
@@ -585,6 +696,91 @@ const simpleAnimationDelays = computed(() => {
   const nameRight = cursor
 
   return { nameLeft, amp, nameRight }
+})
+
+// ---------------------------------------------------------------------------
+// The simple design matched to the cover's host names. Every value below is the
+// one CoverDetailBlocks computes for the same names, from the same binding —
+// the `var()`s resolve because `coverHostNames.vars` publishes the cover's slot
+// and block variables on this block's root.
+// ---------------------------------------------------------------------------
+const syncedNamesFont = computed(
+  () => `var(--cover-block-font, ${props.primaryFont || props.currentFont})`,
+)
+
+// Its own slot, else the reading face whatever the names are set in — a script
+// caption under a script name is illegible. The cover's rule, verbatim.
+const syncedSublineFont = computed(() => {
+  const reading = props.secondaryFont || props.currentFont
+  const slot = props.coverHostNames?.sublineStyle.fontType
+  return slot ? `var(${COVER_FONT_SLOT_VARS[slot]}, ${reading})` : reading
+})
+
+const syncedSeparatorColor = computed(() => {
+  const details = props.coverHostNames?.details
+  const accent = props.accentColor || props.primaryColor
+  return details
+    ? coverColorSourceValue(details.separatorColorSource, details.separatorCustomColor, accent)
+    : accent
+})
+
+const syncedSeparatorIconColor = computed(
+  () => markInk(props.coverHostNames?.namesSlot) ?? syncedSeparatorColor.value,
+)
+
+const syncedJoinerWord = computed(() => hostJoinerWord(props.currentLanguage))
+
+/**
+ * Each host the cover would name, split the way it splits them, with this
+ * design's cascade: a name's words bounce in, its small line follows it, and a
+ * mark precedes every name after the first — the order the default names use
+ * (name, ampersand, name), carried to any number of hosts.
+ */
+const syncedHostLines = computed(() => {
+  const binding = props.coverHostNames
+  if (!binding) return []
+  let cursor = simpleNamesStart.value
+  return selectCoverHosts(props.hosts, binding.details.hostCount).map((host, index) => {
+    const lines = coverHostLines(host, binding.details.hostSubline)
+    const separatorDelay = cursor
+    if (index > 0) cursor += 0.2
+    const nameDelay = cursor
+    const nameDuration = getTextAnimationDuration(lines.name)
+    const sublineDelay = nameDelay + nameDuration
+    cursor += nameDuration + (lines.subline ? 0.15 : 0) + ELEMENT_GAP
+    return {
+      id: host.id,
+      fullName: host.name,
+      ...lines,
+      words: splitToWords(lines.name),
+      separatorDelay,
+      nameDelay,
+      sublineDelay,
+    }
+  })
+})
+
+const syncedNamesStyle = computed(() => ({
+  ...props.coverHostNames?.vars,
+  color: `var(--cover-block-color, ${props.primaryColor})`,
+  '--synced-count-scale': `${hostCountScale(
+    syncedHostLines.value.length,
+    props.coverHostNames?.details.hostArrangement ?? 'stacked',
+  )}`,
+  // The names' own Size % rides in on `vars` as `--cover-font-scale`; the small
+  // line's is separate, because it is a text of its own on the cover too.
+  '--synced-sub-scale': `${props.coverHostNames?.sublineStyle.fontScale ?? 1}`,
+}))
+
+/**
+ * Per run of text, as on the cover: spaced capitals when the template asks for
+ * them and the run is not Khmer, and the taller leading Khmer needs when it is.
+ * Per run rather than per block, because a Khmer showcase can still carry a
+ * host whose name was typed in Latin letters.
+ */
+const syncedRunClass = (text: string | null): Record<string, boolean> => ({
+  'synced-caps': !!text && takesCapitals(props.coverHostNames?.details.capitals ?? false, text),
+  'synced-khmer': !!text && hasKhmerScript(text),
 })
 
 // Animation delays calculation
@@ -891,4 +1087,111 @@ const animationDelays = computed(() => {
     font-size: 1.25rem;
   }
 }
+
+/* ============================================================
+   Simple design, matched to the cover's host names. The
+   composition is the cover's (.cdb-hosts in CoverDetailBlocks);
+   the size is this design's — the simple names' own ladder,
+   stepping down as more names share the block, exactly as the
+   cover's names do. Everything else is sized in em of the names,
+   so the mark and the small line follow that one number.
+   ============================================================ */
+.synced-names-frame {
+  width: 100%;
+  margin-top: 0.75rem;
+}
+
+.synced-names {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  /* The cover's own expression for these names, against the same reference: the
+     cover measures 6.4% of the STAGE's width (`6.4cqw` of `.cdb`), and
+     `--cover-stage-w` is that stage, measured by MainContentStage. Sizing off
+     this block instead drew them a card's-width smaller — the card is inset
+     within the stage — which is what "the size is not synced" looked like.
+     `100vw` only as the fallback: it is the stage on a phone, and is only
+     reached before the first measurement. */
+  font-size: calc(
+    clamp(1rem, var(--cover-stage-w, 100vw) * 0.064, 3.2rem) * var(--cover-font-scale, 1) *
+      var(--synced-count-scale, 1)
+  );
+}
+
+.synced-names--stacked {
+  flex-direction: column;
+  row-gap: 0.18em;
+}
+
+/* Baseline, so the mark sits on the names' line rather than centred between a
+   name and its small line underneath. */
+.synced-names--inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.4em;
+  row-gap: 0.2em;
+}
+
+/* A drawn motif's baseline is its bottom edge, which would stand it a full
+   motif-height above the names' letters. */
+.synced-names--inline :deep(.hsm-icon),
+.synced-names--inline :deep(.hsm-image) {
+  margin-bottom: -0.2em;
+}
+
+.synced-host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.synced-name {
+  margin: 0;
+  font-size: 1em;
+  font-weight: 400;
+  line-height: 1.05;
+  text-align: center;
+  word-break: break-word;
+}
+
+/* Sized off the block, not in em of the name above it — the cover's rule, for
+   the cover's reason: the two are set on their own, and an em-sized caption
+   would grow every time the names did. It still steps down with the host count,
+   alongside the names it captions, and carries the small line's own Size %. */
+.synced-sub {
+  margin: 0.3em 0 0;
+  font-size: calc(
+    clamp(0.6rem, var(--cover-stage-w, 100vw) * 0.023, 1.15rem) * var(--synced-sub-scale, 1) *
+      var(--synced-count-scale, 1)
+  );
+  line-height: 1.35;
+  text-align: center;
+  opacity: 0.82;
+}
+
+/* Spaced capitals. Tracking also lands after the last letter, which pulls
+   centred text off-centre by half of it; the start padding pays it back. */
+.synced-caps {
+  text-transform: uppercase;
+  letter-spacing: var(--synced-track, 0.12em);
+  padding-inline-start: var(--synced-track, 0.12em);
+}
+
+.synced-sub.synced-caps {
+  --synced-track: 0.26em;
+}
+
+/* Coeng subscripts and stacked vowels need room a Latin line doesn't. */
+.synced-name.synced-khmer {
+  line-height: 1.35;
+}
+
+.synced-sub.synced-khmer {
+  line-height: 1.7;
+}
+
 </style>

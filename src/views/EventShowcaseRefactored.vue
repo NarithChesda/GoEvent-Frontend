@@ -85,6 +85,7 @@
         :first-host-image="hosts[0]?.profile_image || null"
         :first-host-name="hosts[0]?.name || ''"
         :first-host-id="hosts[0]?.id ?? null"
+        :event-details="coverEventDetails"
         :event-video-url="eventVideoUrl"
         :background-video-url="backgroundVideoUrl"
         :primary-color="primaryColor"
@@ -141,6 +142,9 @@
             :current-font="currentFont"
             :primary-font="primaryFont"
             :secondary-font="secondaryFont"
+            :accent-font="accentFont"
+            :decorative-font="decorativeFont"
+            :guestname-color="guestnameColor"
             :is-event-past="isEventPast"
             :get-media-url="getMediaUrl"
             :available-languages="availableLanguages"
@@ -194,13 +198,38 @@
               @transition-complete="handleTransitionComplete"
             />
           </Transition>
+
+          <!-- Stack templates' transition stage. In the same slot, for the
+               opposite reason: nothing here parts to reveal it, but at z-25 it
+               sits under CoverStage's falling field and sparks (31), so they
+               keep drifting over the prints unbroken instead of this stage
+               spawning a second field. It fades itself out, over the
+               invitation mounted behind it on `dissolveStart`, exactly as the
+               decoration stage does. -->
+          <TransitionStageStack
+            v-if="showTransitionStage && isStackTransition"
+            :event-title="event.title"
+            :event-photos="eventPhotos"
+            :event-start-date="event.start_date"
+            :primary-color="primaryColor"
+            :accent-color="accentColor"
+            :blur-effect-color="blurEffectColor"
+            :backdrop-photo="stageModes.cover === 'animation' ? templateAssets?.basic_decoration_photo : null"
+            :backdrop-color="templateColor"
+            :layout="event.template_assets?.cover_stage_layout?.stackLayout"
+            :falling-effect="event.template_assets?.falling_effect"
+            :save-the-date-design="event.template_assets?.save_the_date_design"
+            :get-media-url="getMediaUrl"
+            @dissolve-start="handleTransitionDissolveStart"
+            @transition-complete="handleTransitionComplete"
+          />
         </template>
       </CoverStage>
 
       <!-- Decoration templates' transition stage (basic wedding events only,
            requires a featured photo) -->
       <TransitionStage
-        v-if="showTransitionStage && !isDoorTransition"
+        v-if="showTransitionStage && !isDoorTransition && !isStackTransition"
         :event-title="event.title"
         :event-logo="event.logo_one"
         :event-photos="eventPhotos"
@@ -261,11 +290,14 @@ import {
 
 // Components
 import CoverStage from '../components/showcase/CoverStage.vue'
+import { coverEventDetailsOf } from '../components/showcase/cover/coverDetails'
 import ErrorDisplay from '../components/showcase/ErrorDisplay.vue'
 import LoadingSpinner from '../components/showcase/LoadingSpinner.vue'
 import MainContentStage from '../components/showcase/MainContentStage.vue'
 import TransitionStage from '../components/showcase/TransitionStage.vue'
 import TransitionStageDoor from '../components/showcase/TransitionStageDoor.vue'
+import TransitionStageStack from '../components/showcase/TransitionStageStack.vue'
+import { resolveStackLayout, stackPhotosFor } from '../components/showcase/photo-stack/photoStack'
 import PhotoModal from '../components/showcase/PhotoModal.vue'
 import AuthModal from '../components/AuthModal.vue'
 import { useAuthModal } from '../composables/useAuthModal'
@@ -402,6 +434,9 @@ const handleCommentSubmitted = () => {
  */
 const stageModes = computed(() => resolveStageModesForEvent(event.value))
 
+/** The hosts, date and venue the cover's names-and-details blocks draw. */
+const coverEventDetails = computed(() => coverEventDetailsOf(event.value, hosts.value))
+
 /** The middle beat is the Save the Date card over the featured photo. */
 const usesTransitionStage = computed(() => stageModes.value.transition === 'animation')
 
@@ -430,37 +465,58 @@ const showTransitionStage = computed(
   () => isTransitionStage.value && usesTransitionStage.value && hasFeaturedPhoto.value,
 )
 
-// Which of the two transition stages this template gets. Mirrors how CoverStage
-// resolves the animation type (template field only, defaulting to decoration) —
-// the door cover animation is paired with the curtain-and-cartouche transition,
-// everything else with the veil reveal.
+// Which of the three transition stages this template gets. Mirrors how
+// CoverStage resolves the animation type (template field only, defaulting to
+// decoration) — the door cover animation is paired with the
+// curtain-and-cartouche transition, the stack with the photo montage, everything
+// else with the veil reveal.
 const isDoorTransition = computed(
   () => event.value.template_assets?.cover_stage_layout?.showcaseAnimationType === 'door',
 )
+const isStackTransition = computed(
+  () => event.value.template_assets?.cover_stage_layout?.showcaseAnimationType === 'stack',
+)
 
 /**
- * Fetch and decode the transition stage's featured photo while the guest is
- * still looking at the cover.
+ * The photographs the transition stage will draw: as many as the stack's
+ * layout holds, or the other two stages' single featured photo.
+ */
+const transitionPhotoImages = computed<string[]>(() => {
+  if (!usesTransitionStage.value) return []
+  if (isStackTransition.value) {
+    const layout = resolveStackLayout(event.value.template_assets?.cover_stage_layout?.stackLayout)
+    return stackPhotosFor(eventPhotos.value, layout).map((p) => p.image)
+  }
+  const featured = eventPhotos.value?.find((p) => p.is_featured)?.image
+  return featured ? [featured] : []
+})
+
+/**
+ * Fetch and decode the transition stage's photographs while the guest is still
+ * looking at the cover.
  *
  * That stage mounts on the tap, in the very frame the cover starts animating
- * away, and its full-bleed photo has never been requested before that moment.
+ * away, and its photographs have never been requested before that moment.
  * Doing the fetch, the decode and the resulting geometry measurement there
  * competes with the frame the cover's exit has to land on — on a desktop that
  * is absorbed invisibly, on a phone it is the difference between the doors
  * gliding and the opening of the swing stuttering. Warmed here, the tap gets a
- * cache hit on an already-decoded bitmap.
+ * cache hit on an already-decoded bitmap. The stack needs this most: it waits
+ * for its lead print, but deals the later ones on the beat whether or not they
+ * have arrived.
  *
  * Fire-and-forget by design: if it fails, the stage simply loads the photo the
  * way it always did.
  */
 watch(
-  () => (usesTransitionStage.value ? (eventPhotos.value?.find((p) => p.is_featured)?.image ?? null) : null),
-  (image) => {
-    if (!image) return
-    const warm = new Image()
-    warm.decoding = 'async'
-    warm.src = getMediaUrl(image)
-    void warm.decode?.().catch(() => {})
+  () => transitionPhotoImages.value.join('|'),
+  () => {
+    for (const image of transitionPhotoImages.value) {
+      const warm = new Image()
+      warm.decoding = 'async'
+      warm.src = getMediaUrl(image)
+      void warm.decode?.().catch(() => {})
+    }
   },
   { immediate: true },
 )

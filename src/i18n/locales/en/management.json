@@ -464,7 +464,9 @@
       "editFeaturedPhoto": "Change featured photo",
       "addFeaturedPhoto": "Set featured photo",
       "featuredPhotoTitle": "Featured Photo",
+      "stackPhotosTitle": "Transition photos",
       "featuredPhotoDescription": "Shown full-screen on the transition stage between the cover and the main invitation.",
+      "featuredPhotoStackDescription": "Opens the photo stack on the transition stage. The rest of the stack follows your gallery order.",
       "featuredPhotoEmpty": "No photos yet",
       "featuredPhotoUploadPrompt": "Upload photos first, then come back here to choose one as featured.",
       "featuredPhotoUploadButton": "Upload photos",
@@ -473,16 +475,15 @@
       "adjustCrop": "Crop photo",
       "cropTabChoose": "Choose photo",
       "cropTabAdjust": "Crop",
-      "cropDescription": "Guests see the part of your photo inside the phone frame. Move it, or resize it to show more or less.",
+      "cropDescription": "Guests see what's inside the frame. Drag the photo to move it; pinch or scroll to zoom.",
+      "cropStackDescription": "Each photo lands in its own frame in this design — frame each one. Other designs always show at least what you framed.",
       "cropNeedsPhoto": "Choose a featured photo first",
-      "cropHint": "Drag the frame to move it. Drag a corner — or use Zoom — to resize it; a smaller frame can also move up and down.",
-      "cropBoxLabel": "Crop frame — drag to move, arrow keys to nudge",
-      "cropCornerTopLeft": "Resize from the top left",
-      "cropCornerTopRight": "Resize from the top right",
-      "cropCornerBottomLeft": "Resize from the bottom left",
-      "cropCornerBottomRight": "Resize from the bottom right",
+      "cropHint": "Drag to move. Pinch, or hold Ctrl and scroll, to zoom.",
+      "cropBoxLabel": "Photo in its frame — drag to move, arrow keys to nudge, plus and minus to zoom",
       "cropZoom": "Zoom",
-      "cropReset": "Reset to full photo",
+      "cropReset": "Reset",
+      "cropPhotoPosition": "Photo {n} of {total}",
+      "cropUnsaved": "Unsaved changes",
       "cropSaveFailed": "Couldn't save the crop",
       "cropUnsupported": "This server doesn't store photo cropping yet, so your crop wasn't saved. Everything else about the photo is unaffected.",
       "replayTransition": "Replay",
@@ -2774,6 +2775,7 @@
     },
     "rowsHint": "Blocks stack in a fixed order inside one container. Switch to free placement to move and resize each one on its own.",
     "dragHint": "Drag a block on the preview to move it, or its handles to resize. Select one to set its text size and colour from the bar beneath it. Arrow keys nudge, Ctrl + up/down scales the text, Shift for bigger steps, Alt to ignore the guides.",
+    "detailsDragHint": "Host names, date and venue sit wherever you put them, in either mode. Drag one on the preview, or pick it here for exact values.",
     "previewHint": "Drag the blocks to place them. Nothing is saved until you save the template.",
     "blockPicker": "Cover block",
     "pickBlock": "Pick a block above, or click one straight on the preview.",
@@ -2781,7 +2783,10 @@
       "header": "Header text",
       "logo": "Logo",
       "invite": "Invite text",
-      "guest": "Guest name"
+      "guest": "Guest name",
+      "hosts": "Host names",
+      "date": "Date",
+      "location": "Venue"
     },
     "fields": {
       "x": "Centre X",
@@ -2946,14 +2951,29 @@
       "sampleLogo2": "Sample Logo 2",
       "headerTextImage": "Header Text Image",
       "backdropGroup": "Backdrop & decorations",
-      "guestFrameGroup": "Guest name frame",
-      "brandingGroup": "Logos & header art"
+      "guestFrameGroup": "Guest name frame"
     },
     "transitionStage": {
       "animationGroup": "Opening Animation",
       "animationDecoration": "Decoration (slide out)",
       "animationDoor": "Door (split open)",
-      "animationHint": "Picks how the cover gives way and which transition follows it: decorations slide off and the invitation is unveiled, or the cover splits into two doors that swing open.",
+      "animationStack": "Photo stack (memories)",
+      "stackLayoutGroup": "Photo Layout",
+      "stackLayouts": {
+        "pile": "Pile of prints",
+        "split": "Split",
+        "booth": "Photo booth",
+        "mosaic": "Mosaic",
+        "film": "Film strip"
+      },
+      "stackLayoutHint": {
+        "pile": "Up to five instant-film prints, laid down one at a time on a pile that then spreads out above the Save the Date.",
+        "split": "Up to four photos cut on a slanted seam, each wiping open in turn, with the Save the Date in the band between them.",
+        "booth": "Up to three photos on a photo-booth strip, each appearing with a flash, with the Save the Date at the foot of the card.",
+        "mosaic": "Up to six photos surfacing one by one in two staggered columns on dark, then pulled back into a card above the Save the Date.",
+        "film": "Up to four photos developing one by one on a strip of film, pinned with tape in the accent colour, above the Save the Date."
+      },
+      "animationHint": "Picks how the cover gives way and which transition follows it: decorations slide off and the invitation is unveiled, the cover splits into two doors that swing open, or the event's photos are laid down one at a time as a stack of prints.",
       "sectionTitle": "Transition video",
       "video": "Video",
       "videoHint": "Plays after the cover, before the invitation appears. Used only when the event has no video of its own."
@@ -2969,6 +2989,7 @@
       "transitionGroup": "Middle Stage",
       "transitionHint": {
         "animation": "The Save the Date card over the event's featured photograph. Events with no featured photo go straight from the cover to the invitation.",
+        "animationStack": "The event's photos, revealed one at a time in the layout below: the featured photos first, then the gallery in order. Then the Save the Date. Events with no featured photo go straight from the cover to the invitation.",
         "video": "A film playing full screen between the cover and the invitation — the event's own video, or the one uploaded below.",
         "none": "There is no middle stage. The cover hands straight over to the invitation, whatever photograph or video the event has."
       },
@@ -3028,12 +3049,14 @@
       "visibilityToggles": "Visibility Toggles",
       "showWelcomeHeaderText": "Show Welcome Header Text",
       "showWelcomeHeaderTextHint": "The greeting line above the hosts.",
-      "showCoverHeaderText": "Show Cover Header Text",
+      "showCoverHeaderText": "Show header text",
       "showCoverHeaderTextHint": "Render the cover header text row. When off, the logo row absorbs that height.",
-      "showCoverLogo": "Show Logo",
+      "showCoverLogo": "Show logo",
       "showCoverLogoHint": "When off, its row is left empty rather than closed, so nothing else on the cover moves.",
-      "showCoverInviteText": "Show Invite Text",
+      "showCoverInviteText": "Show invite text",
       "showCoverInviteTextHint": "The line above the guest name. When off, its space is kept, so the guest name stays put.",
+      "showCoverGuestName": "Show guest name",
+      "showCoverGuestNameHint": "The guest's own name. When off, its space is kept, like the logo's.",
       "showHostNameUnderLogo": "Show Host Name Under Logo",
       "showHostNameUnderLogoHint": "The host name beneath the logo. Birthday invitations only.",
       "hostClip": "Host Image Clip",
@@ -3046,6 +3069,73 @@
       "right": "Right",
       "top": "Top",
       "bottom": "Bottom"
+    },
+    "coverDetails": {
+      "showHosts": "Show host names",
+      "showHostsHint": "Every host the event has, one or several, with a mark between the names.",
+      "showDate": "Show the date",
+      "showDateHint": "The event date, in the accent colour.",
+      "showLocation": "Show the venue",
+      "showLocationHint": "The time and the venue, from the event's own details.",
+      "hostCount": "Names shown",
+      "hostCountAll": "Every host",
+      "hostCountN": "Up to {n}",
+      "arrangement": "Arrangement",
+      "arrangements": {
+        "stacked": "Stacked",
+        "inline": "On one line"
+      },
+      "subline": "Under each name",
+      "sublines": {
+        "none": "Nothing",
+        "surname": "Family name",
+        "title": "Title"
+      },
+      "sublineHint": {
+        "none": "Each name on its own, in full.",
+        "surname": "The first name large, the family name small beneath it. Names written in Khmer stay whole.",
+        "title": "The host's title, such as Bride or Groom, beneath their full name."
+      },
+      "separator": "Between the names",
+      "separators": {
+        "ampersand": "Ampersand (&)",
+        "word": "The word “and”"
+      },
+      "separatorImage": "Your own mark",
+      "separatorImageHint": "Drawn instead of the choice above while it is attached. A transparent PNG or SVG works best.",
+      "separatorImageUpload": "Upload a mark",
+      "separatorColor": "Mark colour",
+      "separatorScale": "Mark size",
+      "dateFormat": "Date style",
+      "dateFormats": {
+        "numeric": "20.10.2025",
+        "long": "Spelled out",
+        "text": "As written"
+      },
+      "dateFormatHint": {
+        "numeric": "Day, month and year in figures, in the event's own time zone.",
+        "long": "The weekday, day, month and year in words, in the invitation's language.",
+        "text": "The event's own date line, word for word. Uses figures when it has none."
+      },
+      "showTime": "Show the time",
+      "showTimeHint": "The event's time line, or its start time when it has none.",
+      "capitals": "Spaced capitals",
+      "capitalsHint": "Names and venue in wide capitals, as printed cards set them. Khmer text is never changed.",
+      "competingHint": "The logo, invite text and guest name are still on, in the same space.",
+      "hideCompeting": "Hide them"
+    },
+    "coverText": {
+      "size": "Size",
+      "slotEmpty": "{slot} · not set yet",
+      "texts": {
+        "header": "Header text",
+        "invite": "Invite text",
+        "guest": "Guest name",
+        "hostNames": "Host names",
+        "hostSubline": "Under each name",
+        "date": "Date",
+        "location": "Time and venue"
+      }
     },
     "fallingEffect": {
       "enableLabel": "Enable Falling Particles",
@@ -3258,7 +3348,11 @@
       "breaklineWidthHint": "A share of the block - 100% is half of it. Sizes the drawn styles and your own artwork alike.",
       "logoScale": "Logo size",
       "topOffset": "Block starts at",
-      "placementHint": "Logo size is a percentage of the design's own base, so it holds at every screen size - Simple and Arch draw no logo, so it does not apply there. The offset moves the whole host block down from the top of the section on every design; a negative value pulls it up."
+      "placementHint": "Logo size is a percentage of the design's own base, so it holds at every screen size - Simple and Arch draw no logo, so it does not apply there. The offset moves the whole host block down from the top of the section on every design; a negative value pulls it up.",
+      "syncCoverNames": "Match the cover's host names",
+      "syncCoverNamesHint": "Which hosts, the line under each name, the mark between them, capitals, fonts, size and colour all follow Show host names on the Cover Stage.",
+      "syncCoverNamesOff": "The cover isn't showing its host names, but these still follow its settings. Switch Show host names on in Cover Stage to change them.",
+      "openCover": "Open Cover Stage"
     },
     "footer": {
       "cancel": "Cancel",
@@ -3327,7 +3421,8 @@
         "calendarMarker": "Circled day",
         "sparks": "Drifting sparks",
         "templateColor": "Template color",
-        "fallingEffect": "Falling particles"
+        "fallingEffect": "Falling particles",
+        "hostSeparator": "Mark between the names"
       }
     }
   },

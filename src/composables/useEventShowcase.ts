@@ -181,6 +181,13 @@ export interface TemplateAssets {
      * docs/backend-api-requirements/host-info-design.md.
      */
     host_divider_image?: string | null
+    /**
+     * The mark between the host names on the cover, drawn in place of
+     * `cover_stage_layout.coverDetails.separator` — the precedence
+     * host_divider_image has above. Backend field pending:
+     * docs/backend-api-requirements/cover-details.md.
+     */
+    cover_host_separator_image?: string | null
     // The guest-name title frame pieces live in here, NOT at the top level of
     // TemplateAssets (where they're also declared, below, but never read) — the
     // templateAssets computed spreads this sub-object and hands the result to
@@ -263,9 +270,10 @@ export interface EventPhoto {
   is_featured: boolean
   created_at: string
   /**
-   * Organizer-chosen crop rectangle, in percentages of the source image, used
-   * when the photo is displayed full-screen (the transition stage's featured
-   * photo). All four absent = the whole image = a plain centre crop.
+   * The organizer's framed region, in percentages of the source image: the
+   * part of the photo every frame it is drawn in must show (the transition
+   * stage's full screen, a photo-stack print or tile). Any shape. All four
+   * absent = the whole image = a plain centre crop.
    * See src/utils/photoCrop.ts.
    */
   crop_x?: number | null
@@ -320,6 +328,8 @@ export interface EventData {
   short_description?: string
   start_date: string
   end_date: string
+  /** IANA zone the event is held in — what the cover sets its date and time in. */
+  timezone?: string
   location?: string
   virtual_link?: string
   is_virtual?: boolean
