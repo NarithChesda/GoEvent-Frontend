@@ -66,6 +66,12 @@ describe('galleryPhotosOf', () => {
     expect(galleryPhotosOf(photos).map((p) => p.id)).toEqual([1, 3])
     expect(galleryPhotosOf(undefined)).toEqual([])
   })
+
+  it('leaves out the photo in the cover’s frame too, when there is one', () => {
+    const photos = [{ id: 1 }, { id: 2 }, { id: 3, band_placement: 'top' as const }]
+    expect(galleryPhotosOf(photos, 2).map((p) => p.id)).toEqual([1])
+    expect(galleryPhotosOf(photos, null).map((p) => p.id)).toEqual([1, 2])
+  })
 })
 
 describe('resolvePhotoBands', () => {

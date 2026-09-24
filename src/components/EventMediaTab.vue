@@ -211,6 +211,7 @@
                     :is-last="index === media.length - 1"
                     @delete="deleteMedia"
                     @set-featured="toggleFeatured"
+                    @set-cover="toggleCoverPhoto"
                     @drag-start="handleDragStart"
                     @drag-end="handleDragEnd"
                     @move-up="handleMoveUp(mediaItem)"
@@ -312,6 +313,7 @@ import { useCollapsibleSection } from '@/composables/useCollapsibleSection'
 import { provideAccordionGroup } from '@/composables/useAccordionGroup'
 import { defineResilientAsyncComponent } from '@/utils/asyncComponent'
 import MediaCard from './MediaCard.vue'
+import { coverPhotoPayload, responseSupportsCoverPhoto } from '@/components/showcase/cover/coverPhoto'
 
 // ---------------------------------------------------------------------------
 // Section cards and overlays, code-split.
@@ -521,6 +523,49 @@ const toggleFeatured = async (mediaItem: EventPhoto) => {
   } catch (err) {
     console.error('Failed to update featured status:', err)
     showError(t('management.media.toast.featuredNetworkError'))
+  }
+}
+
+/**
+ * One cover photo per event, as in the photos drawer: putting a photo on the
+ * cover takes the one that was off it, and tapping the cover photo clears it.
+ * The chosen photo is sent first, because a server that doesn't store the
+ * field answers 200 without it — nothing else is touched until that is known.
+ */
+const toggleCoverPhoto = async (mediaItem: EventPhoto) => {
+  if (!props.eventId) return
+  const eventId = props.eventId
+  const makeCover = mediaItem.is_cover_photo !== true
+
+  try {
+    const response = await mediaService.updateEventMedia(eventId, mediaItem.id, coverPhotoPayload(makeCover))
+    if (!response.success || !response.data) {
+      showError(response.message || t('management.media.uploadModal.gallery.coverFailed'))
+      return
+    }
+    if (!responseSupportsCoverPhoto(response.data)) {
+      showError(t('management.media.uploadModal.gallery.coverUnsupported'))
+      return
+    }
+    const saved = response.data
+    const previous = makeCover
+      ? media.value.filter((item) => item.is_cover_photo === true && item.id !== mediaItem.id)
+      : []
+    await Promise.all(
+      previous.map((item) => mediaService.updateEventMedia(eventId, item.id, coverPhotoPayload(false))),
+    )
+    media.value = media.value.map((item) =>
+      item.id === mediaItem.id
+        ? saved
+        : previous.some((other) => other.id === item.id)
+          ? { ...item, is_cover_photo: false }
+          : item,
+    )
+    emit('media-updated', media.value)
+    showSuccess(t(makeCover ? 'management.media.toast.coverSet' : 'management.media.toast.coverCleared'))
+  } catch (err) {
+    console.error('Failed to update the cover photo:', err)
+    showError(t('management.media.uploadModal.gallery.coverFailed'))
   }
 }
 

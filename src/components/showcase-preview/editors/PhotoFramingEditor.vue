@@ -32,6 +32,10 @@
       <!-- One spread shadow dims everything outside the frame, so there is no
            second set of overlay elements to keep in register. -->
       <div class="framing-frame" :style="frameStyle" aria-hidden="true">
+        <!-- A frame cut to a shape (the cover's photo frame) dims what the
+             shape throws away, the same as outside the frame: only what is
+             lit will show. -->
+        <span v-if="shapeStyle" class="framing-shape" :style="shapeStyle" />
         <span class="framing-thirds" />
       </div>
 
@@ -84,6 +88,7 @@ import { computed, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 import { Loader, RotateCcw } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { MAX_CROP_ZOOM, cropsEqual, type PhotoCrop, type Point, type Size } from '@/utils/photoCrop'
+import type { CoverPhotoShapeMask } from '../edit/editContext'
 import {
   CENTRED_VIEW,
   clampCentre,
@@ -104,9 +109,14 @@ interface Props {
   frameAspect: number
   /** The framed region, in % of the photo — see photoCrop.ts. */
   modelValue: PhotoCrop
+  /**
+   * The shape the frame is cut to, when it is not a rectangle: a shape image
+   * whose opaque bounding box is exactly this frame. Absent = a plain frame.
+   */
+  shapeMask?: CoverPhotoShapeMask | null
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { shapeMask: null })
 const emit = defineEmits<{ 'update:modelValue': [value: PhotoCrop] }>()
 
 const { t } = useAppLanguage()
@@ -198,6 +208,33 @@ const frameStyle = computed((): Record<string, string> => {
     top: `${frame.top}px`,
     width: `${frame.width}px`,
     height: `${frame.height}px`,
+  }
+})
+
+/**
+ * The shape image laid over the frame so that its opaque bounding box is the
+ * frame, and punched out of a full-frame dim: two mask layers, the second
+ * excluded from the first. The position is the sprite formula — a percentage
+ * in `mask-position` aligns that fraction of the image with the same fraction
+ * of the box, so the bounding box's left edge lands on the frame's left edge
+ * at x / (1 − width).
+ */
+const shapeStyle = computed((): Record<string, string> | null => {
+  const shape = props.shapeMask
+  if (!shape) return null
+  const { x, y, width, height } = shape.bounds
+  if (!(width > 0) || !(height > 0)) return null
+  const at = (offset: number, span: number) => (span >= 1 ? 0 : (offset / (1 - span)) * 100)
+  const image = `linear-gradient(#000, #000), url("${shape.url}")`
+  const size = `100% 100%, ${100 / width}% ${100 / height}%`
+  const position = `0 0, ${at(x, width)}% ${at(y, height)}%`
+  return {
+    maskImage: image,
+    WebkitMaskImage: image,
+    maskSize: size,
+    WebkitMaskSize: size,
+    maskPosition: position,
+    WebkitMaskPosition: position,
   }
 })
 
@@ -768,6 +805,23 @@ const reset = () => {
   transition-duration: 0.15s;
 }
 
+/* The dim the shape cuts away, in step with the dim outside the frame. */
+.framing-shape {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.62);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  transition: background-color 0.3s ease-out;
+}
+
+.is-interacting .framing-shape {
+  background: rgba(15, 23, 42, 0.4);
+  transition-duration: 0.15s;
+}
+
 /* Rule-of-thirds guides — only while moving, as in Photos. Gradients, so there
    are no child elements to position. */
 .framing-thirds {
@@ -871,6 +925,7 @@ const reset = () => {
 
 @media (prefers-reduced-motion: reduce) {
   .framing-frame,
+  .framing-shape,
   .framing-thirds {
     transition: none;
   }

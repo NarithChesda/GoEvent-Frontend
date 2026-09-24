@@ -177,12 +177,87 @@
                 @clear="clearAssetField('header_text_image')"
               />
 
-              <!-- The logo row's stack: sample logo 1 is the base when the
-                   event has no logo of its own, sample logo 2 the shape
-                   laid over it (and the clip for the first host's photo). -->
-              <div v-else-if="block.id === 'logo'" class="grid grid-cols-2 gap-2.5">
-                <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo1')" accept="image/png,image/svg+xml,image/*" :file-name="form.sample_logo_1?.name" :has-existing-file="hasSavedAsset('sample_logo_1')" @change="handleFileChange('sample_logo_1', $event)" @clear="clearAssetField('sample_logo_1')" />
-                <FileUploadField :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo2')" accept="image/png,image/svg+xml,image/*" :file-name="form.sample_logo_2?.name" :has-existing-file="hasSavedAsset('sample_logo_2')" @change="handleFileChange('sample_logo_2', $event)" @clear="clearAssetField('sample_logo_2')" />
+              <!-- The logo's placeholder, drawn while the event has no logo
+                   of its own. Sample logo 2 is not offered here: it only ever
+                   shaped a photo, which is the photo frame's job now. -->
+              <FileUploadField
+                v-else-if="block.id === 'logo'"
+                :label="t('management.partnerTemplateForm.coverDecorations.sampleLogo1')"
+                accept="image/png,image/svg+xml,image/*"
+                :file-name="form.sample_logo_1?.name"
+                :has-existing-file="hasSavedAsset('sample_logo_1')"
+                @change="handleFileChange('sample_logo_1', $event)"
+                @clear="clearAssetField('sample_logo_1')"
+              />
+
+              <!-- The frame is two images and one decision: the artwork, the
+                   shape the photograph is cut to, and which of the two is on
+                   top. The photograph itself is the organizer's — they pick
+                   and frame it in their own studio, so there is nothing here
+                   to choose it with. -->
+              <div v-else-if="block.id === 'photo'" class="space-y-4">
+                <div class="space-y-3">
+                  <TemplateFormImageField
+                    :label="t('management.partnerTemplateForm.coverPhoto.frameImage')"
+                    :hint="t('management.partnerTemplateForm.coverPhoto.frameImageHint')"
+                    :upload-label="t('management.partnerTemplateForm.coverPhoto.frameImageUpload')"
+                    accept="image/png,image/svg+xml,image/webp,image/*"
+                    :preview="coverPhotoFrameImageSrc"
+                    :file-name="form.cover_photo_frame_image?.name"
+                    @change="handleFileChange('cover_photo_frame_image', $event)"
+                    @clear="clearAssetField('cover_photo_frame_image')"
+                  />
+                  <TemplateFormImageField
+                    :label="t('management.partnerTemplateForm.coverPhoto.shapeImage')"
+                    :hint="t('management.partnerTemplateForm.coverPhoto.shapeImageHint')"
+                    :upload-label="t('management.partnerTemplateForm.coverPhoto.shapeImageUpload')"
+                    accept="image/png,image/svg+xml,image/webp,image/*"
+                    :preview="coverPhotoShapeImageSrc"
+                    :file-name="form.cover_photo_shape_image?.name"
+                    @change="handleFileChange('cover_photo_shape_image', $event)"
+                    @clear="clearAssetField('cover_photo_shape_image')"
+                  />
+                  <p v-if="coverPhotoUsesSampleLogos" :class="FIELD_HINT">
+                    {{ t('management.partnerTemplateForm.coverPhoto.sampleLogosHint') }}
+                  </p>
+                </div>
+
+                <div class="space-y-1.5">
+                  <TemplateFormChoice
+                    v-model="coverPhotoFrameLayerModel"
+                    :label="t('management.partnerTemplateForm.coverPhoto.layer')"
+                    :options="coverPhotoFrameLayerOptions"
+                    variant="segmented"
+                  />
+                  <p :class="FIELD_HINT">
+                    {{ t(`management.partnerTemplateForm.coverPhoto.layerHint.${form.cover_stage_layout.coverPhoto.frameLayer}`) }}
+                  </p>
+                </div>
+
+                <!-- Only the fallback's position: a chosen photo is framed by
+                     the organizer, photo by photo. -->
+                <div class="space-y-3 pt-4 border-t border-slate-100">
+                  <div>
+                    <span :class="FIELD_LABEL">{{ t('management.partnerTemplateForm.coverLayout.hostClip') }}</span>
+                    <p :class="[FIELD_HINT, 'mt-1']">{{ t('management.partnerTemplateForm.coverLayout.hostClipHint') }}</p>
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+                    <TemplateFormNumber v-model="form.cover_stage_layout.hostClipOffsetX" :label="t('management.partnerTemplateForm.coverLayout.hostClipOffsetX')" :min="0" :max="100" :step="1" unit="%" />
+                    <TemplateFormNumber v-model="form.cover_stage_layout.hostClipOffsetY" :label="t('management.partnerTemplateForm.coverLayout.hostClipOffsetY')" :min="0" :max="100" :step="1" unit="%" />
+                  </div>
+                </div>
+
+                <div
+                  v-if="coverPhotoOverLogo"
+                  class="flex items-center gap-3 rounded-xl bg-amber-50 ring-1 ring-amber-100 p-2.5"
+                >
+                  <p class="flex-1 min-w-0 text-[0.6875rem] leading-snug text-amber-800">
+                    {{ t('management.partnerTemplateForm.coverPhoto.overLogoHint') }}
+                  </p>
+                  <button type="button" :class="BTN_SECONDARY_SM" @click="hideLogoForPhoto">
+                    {{ t('management.partnerTemplateForm.coverPhoto.hideLogo') }}
+                  </button>
+                </div>
               </div>
 
               <div v-else-if="block.id === 'guest'" class="space-y-3">
@@ -505,8 +580,8 @@
         </section>
 
         <!-- Advanced layout.
-             Fifteen sliders — the container box, the five row heights, the
-             host clip and the four decoration z-indexes — that were laid out
+             The sliders — the container box, the five row heights and the
+             four decoration z-indexes — that were laid out
              flat, at the same weight as the artwork slots and the mode
              pickers above them. They are the rarest controls in the editor
              and the hardest to recover from: a template is designed once,
@@ -571,20 +646,6 @@
             </div>
 
             <div class="space-y-3">
-              <div>
-                <h5 :class="SECTION_HEADING">
-                  {{ t('management.partnerTemplateForm.coverLayout.hostClip') }}
-                </h5>
-                <p class="text-[0.6875rem] text-slate-400 leading-snug mt-1">{{ t('management.partnerTemplateForm.coverLayout.hostClipHint') }}</p>
-              </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
-                <TemplateFormNumber v-model="form.cover_stage_layout.hostClipScale" :label="t('management.partnerTemplateForm.coverLayout.hostClipScale')" :min="0" :max="100" :step="1" unit="%" />
-                <TemplateFormNumber v-model="form.cover_stage_layout.hostClipOffsetX" :label="t('management.partnerTemplateForm.coverLayout.hostClipOffsetX')" :min="0" :max="100" :step="1" unit="%" />
-                <TemplateFormNumber v-model="form.cover_stage_layout.hostClipOffsetY" :label="t('management.partnerTemplateForm.coverLayout.hostClipOffsetY')" :min="0" :max="100" :step="1" unit="%" />
-              </div>
-            </div>
-
-            <div class="space-y-3">
               <h5 :class="SECTION_HEADING">
                 {{ t('management.partnerTemplateForm.coverLayout.zIndexes') }}
               </h5>
@@ -619,6 +680,7 @@ import {
   BTN_SECONDARY_SM,
   CHIP_BASE,
   FIELD_HINT,
+  FIELD_LABEL,
   OPTION_IDLE,
   OPTION_SELECTED,
   PANEL,
@@ -698,6 +760,11 @@ const {
   coverSeparatorScaleModel,
   coverDateFormatOptions,
   coverDateFormatModel,
+  coverPhotoFrameLayerOptions,
+  coverPhotoFrameLayerModel,
+  coverPhotoUsesSampleLogos,
+  coverPhotoOverLogo,
+  hideLogoForPhoto,
 } = props.cover
 
 const { form, assets, selectSection } = useTemplateEditor()
@@ -707,6 +774,10 @@ const { t } = useI18n()
 
 /** The cover's own mark between the host names, on the usual three states. */
 const coverHostSeparatorImageSrc = stagedImageSrc('cover_host_separator_image')
+
+/** The photo frame's two images, on the same three states. */
+const coverPhotoFrameImageSrc = stagedImageSrc('cover_photo_frame_image')
+const coverPhotoShapeImageSrc = stagedImageSrc('cover_photo_shape_image')
 
 const stageModeOptions = computed(() => [
   { value: 'animation', label: t('management.partnerTemplateForm.stageModes.animation'), icon: Sparkles },

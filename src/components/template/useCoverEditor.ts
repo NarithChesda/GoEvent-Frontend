@@ -17,6 +17,8 @@ import {
   PenLine,
   RectangleHorizontal,
   Rows3,
+  BringToFront,
+  SendToBack,
   Type,
 } from 'lucide-vue-next'
 
@@ -36,7 +38,7 @@ import type {
 } from '@/services/api'
 import {
   COVER_BLOCK_TEXT,
-  COVER_DETAIL_ELEMENT_IDS,
+  COVER_BOX_ELEMENT_IDS,
   COVER_ELEMENT_IDS,
   COVER_FONT_SLOT_VARS,
   COVER_HOST_COUNT_MAX,
@@ -45,7 +47,7 @@ import {
   COVER_TEXT_BLOCK,
   COVER_TEXT_IDS,
   COVER_TEXT_SCALE_RANGE,
-  isCoverDetailElement,
+  isCoverBoxElement,
   placeableCoverElementIds,
   resolveCoverElements,
   resolveCoverTextStyles,
@@ -175,7 +177,9 @@ export function useCoverEditor(
    * where they are putting one.
    */
   const coverLayoutEditing = computed(
-    () => activeSection.value === 'cover' && (isFreeCoverLayout.value || coverDetailsShown.value),
+    () =>
+      activeSection.value === 'cover' &&
+      (isFreeCoverLayout.value || coverDetailsShown.value || form.cover_stage_layout.showCoverPhoto),
   )
 
   /**
@@ -212,9 +216,9 @@ export function useCoverEditor(
         form.cover_stage_layout.coverElements = next
       }
       form.cover_stage_layout.layoutMode = mode
-      // A detail block stays selectable in rows mode; a row block does not.
+      // A box block stays selectable in rows mode; a row block does not.
       const selected = selectedCoverElement.value
-      if (mode !== 'free' && selected && !isCoverDetailElement(selected)) selectedCoverElement.value = null
+      if (mode !== 'free' && selected && !isCoverBoxElement(selected)) selectedCoverElement.value = null
     },
   })
 
@@ -222,6 +226,7 @@ export function useCoverEditor(
   const COVER_BLOCK_SWITCH = {
     header: 'showCoverHeaderText',
     logo: 'showCoverLogo',
+    photo: 'showCoverPhoto',
     invite: 'showCoverInviteText',
     guest: 'showCoverGuestName',
     hosts: 'showCoverHosts',
@@ -247,14 +252,14 @@ export function useCoverEditor(
 
   /**
    * Free mode lists every block, greying the ones switched off, as it always has.
-   * Rows mode lists only the detail blocks that are on — the row blocks are
-   * placed by the row numbers there, and a greyed chip for a detail block the
-   * partner never asked for would only be noise.
+   * Rows mode lists only the box blocks that are on (the photo frame and the
+   * details) — the row blocks are placed by the row numbers there, and a greyed
+   * chip for a block the partner never asked for would only be noise.
    */
   const coverBlockChips = computed(() => {
     const ids = isFreeCoverLayout.value
       ? COVER_ELEMENT_IDS
-      : COVER_DETAIL_ELEMENT_IDS.filter((id) => coverBlockShown.value[id])
+      : COVER_BOX_ELEMENT_IDS.filter((id) => coverBlockShown.value[id])
     return ids.map((id) => ({
       id,
       label: t(`management.coverLayoutEditor.blocks.${id}`),
@@ -469,6 +474,7 @@ export function useCoverEditor(
   const COVER_BLOCK_SWITCH_COPY: Record<CoverElementId, string> = {
     header: 'coverLayout.showCoverHeaderText',
     logo: 'coverLayout.showCoverLogo',
+    photo: 'coverPhoto.show',
     invite: 'coverLayout.showCoverInviteText',
     guest: 'coverLayout.showCoverGuestName',
     hosts: 'coverDetails.showHosts',
@@ -688,6 +694,53 @@ export function useCoverEditor(
 
   const coverDateFormatModel = enumModel(() => form.cover_stage_layout.coverDetails, 'dateFormat')
 
+  // ---------------------------------------------------------------------------
+  // The photo frame's own settings. Placement is above, with every other
+  // block's; which photograph fills it, and how it is framed, is the organizer's
+  // choice in their own studio, not the template's.
+  // ---------------------------------------------------------------------------
+  const coverPhotoFrameLayerOptions = computed(() => [
+    { value: 'under', label: t('management.partnerTemplateForm.coverPhoto.layers.under'), icon: SendToBack },
+    { value: 'over', label: t('management.partnerTemplateForm.coverPhoto.layers.over'), icon: BringToFront },
+  ])
+
+  const coverPhotoFrameLayerModel = enumModel(() => form.cover_stage_layout.coverPhoto, 'frameLayer')
+
+  /** Whether an image will be there at render time: picked now, or saved and not staged for removal. */
+  const hasCoverArt = (
+    field: 'cover_photo_frame_image' | 'cover_photo_shape_image' | 'sample_logo_2',
+  ): boolean => !!form[field] || hasSavedAsset(field)
+
+  /**
+   * The frame is still drawn from the sample-logo pair — the same rule the cover
+   * applies (coverPhotoArt): neither image of its own, and a sample logo 2.
+   * Said in the panel, because otherwise two empty upload slots sit above a
+   * frame that is plainly drawing something.
+   */
+  const coverPhotoUsesSampleLogos = computed(
+    () =>
+      !hasCoverArt('cover_photo_frame_image') &&
+      !hasCoverArt('cover_photo_shape_image') &&
+      hasCoverArt('sample_logo_2'),
+  )
+
+  /**
+   * The frame is on, still where it starts — on the logo row, because that is
+   * where a card's centrepiece goes — and the logo is on too, so the two draw
+   * over each other. Said, with the one-tap way out, rather than done: the same
+   * courtesy the names-and-details composition extends.
+   */
+  const coverPhotoOverLogo = computed(
+    () =>
+      form.cover_stage_layout.showCoverPhoto &&
+      form.cover_stage_layout.showCoverLogo &&
+      !form.cover_stage_layout.coverElements?.photo,
+  )
+
+  function hideLogoForPhoto(): void {
+    form.cover_stage_layout.showCoverLogo = false
+  }
+
   return {
     coverAdvancedOpen,
     // Whether the preview frame should arm its drag handles.
@@ -752,6 +805,12 @@ export function useCoverEditor(
     coverSeparatorScaleModel,
     coverDateFormatOptions,
     coverDateFormatModel,
+    // The photo frame
+    coverPhotoFrameLayerOptions,
+    coverPhotoFrameLayerModel,
+    coverPhotoUsesSampleLogos,
+    coverPhotoOverLogo,
+    hideLogoForPhoto,
   }
 }
 

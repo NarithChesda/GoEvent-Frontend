@@ -31,6 +31,17 @@
         </span>
       </div>
 
+      <!-- The cover's photo frame shows this one. -->
+      <div v-if="media.is_cover_photo === true" class="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2">
+        <span
+          class="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-emerald-500 text-white shadow-lg"
+          :title="t('management.media.uploadModal.gallery.coverPhoto')"
+        >
+          <Frame class="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-1" />
+          <span class="hidden sm:inline">{{ t('management.media.uploadModal.gallery.cover') }}</span>
+        </span>
+      </div>
+
       <!-- Drag Handle (only visible if can edit and draggable) -->
       <div
         v-if="canEdit && draggable"
@@ -92,6 +103,25 @@
             <Star class="w-3.5 h-3.5 sm:w-4 sm:h-4" :class="media.is_featured ? 'fill-current' : ''" />
           </button>
 
+          <!-- Cover photo toggle: one per event, like the featured photo -->
+          <button
+            @click="$emit('set-cover', media)"
+            class="p-1.5 sm:p-2 bg-white/90 hover:bg-white rounded-lg transition-colors duration-200 shadow-lg"
+            :class="
+              media.is_cover_photo === true
+                ? 'text-emerald-600 hover:text-emerald-700'
+                : 'text-slate-400 hover:text-emerald-600'
+            "
+            :title="
+              media.is_cover_photo === true
+                ? t('management.media.card.clearCover')
+                : t('management.media.card.setCover')
+            "
+            :aria-pressed="media.is_cover_photo === true"
+          >
+            <Frame class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </button>
+
           <!-- Delete Button -->
           <button
             @click="$emit('delete', media)"
@@ -137,8 +167,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Trash2, Star, Calendar, ImageIcon, GripVertical, ChevronUp, ChevronDown } from 'lucide-vue-next'
+import { Trash2, Star, Calendar, ImageIcon, GripVertical, ChevronUp, ChevronDown, Frame } from 'lucide-vue-next'
 import type { EventPhoto } from '../services/api'
+import { useAppLanguage } from '@/composables/useAppLanguage'
 
 interface Props {
   media: EventPhoto
@@ -151,6 +182,7 @@ interface Props {
 interface Emits {
   delete: [media: EventPhoto]
   'set-featured': [media: EventPhoto]
+  'set-cover': [media: EventPhoto]
   'drag-start': [media: EventPhoto]
   'drag-end': [media: EventPhoto]
   'move-up': []
@@ -159,6 +191,8 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+const { t } = useAppLanguage()
 
 // State
 const imageError = ref(false)

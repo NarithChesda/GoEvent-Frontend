@@ -93,9 +93,18 @@ export const photoBandPlacement = (photo: PhotoBandFields | null | undefined): P
 export const isPhotoBand = (photo: PhotoBandFields | null | undefined): boolean =>
   photoBandPlacement(photo) !== null
 
-/** The gallery's photos: every photo that isn't a band, in the order given. */
-export const galleryPhotosOf = <P extends PhotoBandFields>(photos: readonly P[] | null | undefined): P[] =>
-  (photos ?? []).filter((photo) => !isPhotoBand(photo))
+/**
+ * The gallery's photos: every photo that isn't a band, in the order given —
+ * nor the one the cover's photo frame is drawing, when there is one
+ * (`coverFramePhotoId`), for the same reason.
+ */
+export const galleryPhotosOf = <P extends PhotoBandFields & { id?: number }>(
+  photos: readonly P[] | null | undefined,
+  coverPhotoId: number | null = null,
+): P[] =>
+  (photos ?? []).filter(
+    (photo) => !isPhotoBand(photo) && (coverPhotoId === null || photo.id !== coverPhotoId),
+  )
 
 export interface ResolvedPhotoBand<P> {
   /** The photo's id — one photo is at most one band. */

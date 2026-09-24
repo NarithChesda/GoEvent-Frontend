@@ -74,6 +74,18 @@
     @upload-requested="photosOpen = true"
   />
 
+  <!-- The cover's photo frame: which photo, and how it sits in the frame's
+       shape. Stored on the photo, so a save is a gallery change too. -->
+  <CoverPhotoEditor
+    v-model="coverPhotoOpen"
+    :event-id="eventId"
+    :frame-aspect="coverPhotoFrameAspect"
+    :shape="coverPhotoShape"
+    @preview="(photos) => emit('preview', photos)"
+    @saved="(photos) => emit('media-updated', photos)"
+    @upload-requested="photosOpen = true"
+  />
+
   <EditAgendaDrawer
     v-model="agendaDrawerOpen"
     :event-id="eventId"
@@ -147,7 +159,7 @@ import { useMediaUpload } from '@/composables/useMediaUpload'
 import { useNotifications } from '@/composables/useNotifications'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { parsePreviewBridgeMessage, type PhotoFieldPatch } from '../bridge/previewBridge'
-import type { EditIntent } from '../edit/editContext'
+import type { CoverPhotoShapeMask, EditIntent } from '../edit/editContext'
 import type { StackLayoutType } from '@/services/api/types/template.types'
 import {
   agendaService,
@@ -168,6 +180,7 @@ import GmapEmbedModal from './GmapEmbedModal.vue'
 import YoutubeEmbedModal from './YoutubeEmbedModal.vue'
 import FeaturedPhotoModal from './FeaturedPhotoModal.vue'
 import PhotoBandEditor from './PhotoBandEditor.vue'
+import CoverPhotoEditor from './CoverPhotoEditor.vue'
 import type { BlendSwatch } from '@/components/showcase/photo-band/photoBand'
 import EditEventDateModal from './EditEventDateModal.vue'
 import EditHostDrawer from '@/components/EditHostDrawer.vue'
@@ -310,6 +323,14 @@ const onFeaturedPhotoUploadRequested = () => {
 const photoBandOpen = ref(false)
 /** The band that was tapped (its photo); null when the add row asked for a new one. */
 const photoBandId = ref<number | null>(null)
+
+// --- Cover photo frame ----------------------------------------------------------
+// Also a panel without a scrim, and closed by any other intent for the same
+// reason as the band's. The frame reports the shape it cuts the photo to, since
+// only it has measured the template's artwork.
+const coverPhotoOpen = ref(false)
+const coverPhotoFrameAspect = ref(1)
+const coverPhotoShape = ref<CoverPhotoShapeMask | null>(null)
 
 // --- Agenda (item drawer + delete confirm + day-group date modal) ----------
 const agendaDrawerOpen = ref(false)
@@ -568,9 +589,10 @@ const confirmPaymentDelete = async () => {
 
 // --- Intent routing --------------------------------------------------------
 const handleIntent = (intent: EditIntent) => {
-  // Closing reverts the frames to the stored band, so two editors never draw
-  // over each other's work.
+  // Closing reverts the frames to the stored band (or cover photo), so two
+  // editors never draw over each other's work.
   if (intent.kind !== 'photoBand') photoBandOpen.value = false
+  if (intent.kind !== 'coverPhoto') coverPhotoOpen.value = false
 
   switch (intent.kind) {
     case 'eventLogo':
@@ -637,6 +659,11 @@ const handleIntent = (intent: EditIntent) => {
       }
       photoBandId.value = intent.photoId ?? null
       photoBandOpen.value = true
+      break
+    case 'coverPhoto':
+      coverPhotoFrameAspect.value = intent.frameAspect > 0 ? intent.frameAspect : 1
+      coverPhotoShape.value = intent.shape ?? null
+      coverPhotoOpen.value = true
       break
   }
 }

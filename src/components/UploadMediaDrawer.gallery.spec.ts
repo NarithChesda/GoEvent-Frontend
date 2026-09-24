@@ -241,6 +241,69 @@ describe('UploadMediaDrawer gallery', () => {
       expect(api.updateEventMedia).toHaveBeenCalledWith('e1', 1, { is_featured: false })
     })
 
+    describe('the cover photo', () => {
+      /** The server echoing each PATCH back onto the photo. */
+      const echo = () =>
+        api.updateEventMedia.mockImplementation(
+          async (_event: string, id: number, fields: object) =>
+            ({ success: true, data: { ...photo(id, 0), ...fields } }) as never,
+        )
+
+      beforeEach(() => {
+        api.getEventMedia.mockResolvedValue({
+          success: true,
+          data: [photo(1, 0), { ...photo(2, 1), is_cover_photo: true }, photo(3, 2)],
+        } as never)
+      })
+
+      it('puts the selected photo on the cover, and takes the one that was off it', async () => {
+        echo()
+        const w = await mountDrawer()
+
+        await select(w, 3)
+        buttonByText(gallery('cover'))!.click()
+        await flushPromises()
+
+        // The chosen photo first: its echo says whether the server stores this at all.
+        expect(api.updateEventMedia).toHaveBeenNthCalledWith(1, 'e1', 3, { is_cover_photo: true })
+        expect(api.updateEventMedia).toHaveBeenNthCalledWith(2, 'e1', 2, { is_cover_photo: false })
+        const [reported] = w.emitted('photos-changed')!.at(-1) as [EventPhoto[]]
+        expect(reported.filter((p) => p.is_cover_photo).map((p) => p.id)).toEqual([3])
+        expect(buttonByText(gallery('coverOn'))).toBeDefined()
+        expect(document.body.querySelectorAll('.pag-cover')).toHaveLength(1)
+      })
+
+      it('clears the cover photo when it is tapped again', async () => {
+        echo()
+        await mountDrawer()
+
+        await select(wrapper!, 2)
+        buttonByText(gallery('coverOn'))!.click()
+        await flushPromises()
+
+        expect(api.updateEventMedia).toHaveBeenCalledTimes(1)
+        expect(api.updateEventMedia).toHaveBeenCalledWith('e1', 2, { is_cover_photo: false })
+        expect(document.body.querySelectorAll('.pag-cover')).toHaveLength(0)
+      })
+
+      it('changes nothing, and says why, on a server that does not store it yet', async () => {
+        // 200, with the unknown field dropped from the echo.
+        api.updateEventMedia.mockResolvedValue({ success: true, data: photo(3, 2) } as never)
+        const w = await mountDrawer()
+
+        await select(w, 3)
+        buttonByText(gallery('cover'))!.click()
+        await flushPromises()
+
+        expect(api.updateEventMedia).toHaveBeenCalledTimes(1)
+        expect(w.emitted('photos-changed')).toBeUndefined()
+        expect(document.body.textContent).toContain(gallery('coverUnsupported'))
+        // Photo 2 is still the cover photo.
+        expect(buttonByText(gallery('cover'))).toBeDefined()
+        expect(document.body.querySelectorAll('.pag-cover')).toHaveLength(1)
+      })
+    })
+
     it('moves the selected photo with Earlier and Later', async () => {
       const w = await mountDrawer()
 

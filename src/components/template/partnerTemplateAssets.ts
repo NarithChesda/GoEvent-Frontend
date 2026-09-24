@@ -44,6 +44,8 @@ export const PARTNER_TEMPLATE_ASSET_FIELDS = [
   'guest_title_frame_right',
   'sample_logo_1',
   'sample_logo_2',
+  'cover_photo_frame_image',
+  'cover_photo_shape_image',
   'header_text_image',
   'host_divider_image',
   'cover_host_separator_image',

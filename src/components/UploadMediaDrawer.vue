@@ -506,6 +506,28 @@
                   }}
                 </span>
               </button>
+              <!-- The photo in the cover's photo frame — one per event, like the
+                   featured photo. Its crop is set on the cover itself, in the
+                   studio preview, where the frame's shape can be seen. -->
+              <button
+                type="button"
+                class="sel-action"
+                :class="{ 'is-on is-on--cover': selectedPhoto.is_cover_photo === true }"
+                :aria-pressed="selectedPhoto.is_cover_photo === true"
+                :title="t('management.media.uploadModal.gallery.coverTitle')"
+                :disabled="coveringId !== null"
+                @click="toggleCoverPhoto(selectedPhoto)"
+              >
+                <Loader2 v-if="coveringId === selectedPhoto.id" class="w-[1.125rem] h-[1.125rem] animate-spin" aria-hidden="true" />
+                <Frame v-else class="w-[1.125rem] h-[1.125rem]" aria-hidden="true" />
+                <span>
+                  {{
+                    selectedPhoto.is_cover_photo === true
+                      ? t('management.media.uploadModal.gallery.coverOn')
+                      : t('management.media.uploadModal.gallery.cover')
+                  }}
+                </span>
+              </button>
               <!-- Where in the invitation this photo appears as a band — or
                    in the gallery, like any other photo. -->
               <button
@@ -621,6 +643,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Frame,
   GalleryHorizontal,
   Upload,
   X,
@@ -644,6 +667,7 @@ import {
   photoBandPlacement,
   responseSupportsPhotoBand,
 } from '@/components/showcase/photo-band/photoBand'
+import { coverPhotoPayload, responseSupportsCoverPhoto } from '@/components/showcase/cover/coverPhoto'
 import { compressImage } from '@/utils/imageCompression'
 import { FILE_SIZE_LIMITS } from '@/constants/media'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -964,6 +988,62 @@ const toggleFeatured = async (photo: EventPhoto) => {
   }
 }
 
+// --- Cover photo ------------------------------------------------------------
+
+const coveringId = ref<number | null>(null)
+
+/**
+ * One cover photo, as there is one featured photo: putting a photo on the cover
+ * takes the one that was off it; tapping the cover photo clears it (the frame
+ * then shows the first host's photo). Shown at once and saved at once.
+ *
+ * The chosen photo is sent first, because a server that doesn't store the field
+ * answers 200 without it — checked before anything else is touched, so nothing
+ * is changed that can't be. A later failure re-reads the gallery rather than
+ * guessing which of the requests went through.
+ */
+const toggleCoverPhoto = async (photo: EventPhoto) => {
+  if (coveringId.value !== null) return
+  const makeCover = photo.is_cover_photo !== true
+  const previous = makeCover
+    ? photos.value.filter((item) => item.is_cover_photo === true && item.id !== photo.id)
+    : []
+  const before = new Map(photos.value.map((item) => [item.id, item.is_cover_photo === true]))
+  const setCover = (decide: (item: EventPhoto) => boolean) => {
+    photos.value = photos.value.map((item) => ({ ...item, is_cover_photo: decide(item) }))
+  }
+  const revert = () => setCover((item) => before.get(item.id) ?? item.is_cover_photo === true)
+
+  setCover((item) =>
+    item.id === photo.id
+      ? makeCover
+      : previous.some((other) => other.id === item.id)
+        ? false
+        : item.is_cover_photo === true,
+  )
+  coveringId.value = photo.id
+  try {
+    const response = await mediaService.updateEventMedia(props.eventId, photo.id, coverPhotoPayload(makeCover))
+    if (!response.success || !response.data) throw new Error(response.message || 'cover failed')
+    if (!responseSupportsCoverPhoto(response.data)) {
+      revert()
+      flashGalleryError(t('management.media.uploadModal.gallery.coverUnsupported'))
+      return
+    }
+    for (const other of previous) {
+      const cleared = await mediaService.updateEventMedia(props.eventId, other.id, coverPhotoPayload(false))
+      if (!cleared.success) throw new Error(cleared.message || 'cover failed')
+    }
+    emit('photos-changed', committedPhotos())
+  } catch {
+    revert()
+    flashGalleryError(t('management.media.uploadModal.gallery.coverFailed'))
+    void loadPhotos()
+  } finally {
+    coveringId.value = null
+  }
+}
+
 // --- Photo band -------------------------------------------------------------
 
 const bandMenuOpen = ref(false)
@@ -1278,7 +1358,7 @@ onUnmounted(() => {
 }
 
 /* The selection bar's actions: an icon over a short name, the way a toolbar
-   names its tools. Five share a phone's width at a 44px target; a name too long
+   names its tools. Seven share a 390px phone's width at a 44px target; a name too long
    for its column is cut rather than wrapped, so every button keeps one height. */
 .sel-action {
   flex: 1 1 0;
@@ -1342,6 +1422,11 @@ onUnmounted(() => {
 /* A band: the sky of the band badge on its thumbnail, not the star's amber. */
 .sel-action.is-on--band {
   color: rgb(125 211 252);
+}
+
+/* The cover photo: the emerald of its badge on the thumbnail. */
+.sel-action.is-on--cover {
+  color: rgb(110 231 183);
 }
 
 /* The band menu's rows: the bar's own material, one section per row. */

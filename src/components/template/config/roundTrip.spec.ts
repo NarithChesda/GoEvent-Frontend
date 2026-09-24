@@ -276,4 +276,50 @@ describe('partner template form config round trip', () => {
       expect(hydrateForm(template).cover_stage_layout.stackLayout).toBe('pile')
     }
   })
+  /**
+   * The photo frame's switch is inferred when absent, from the sample-logo pair
+   * the birthday cover drew its photo with. The form opens on what the cover
+   * renders and a save pins it, so an unrelated edit to such a template never
+   * moves or drops its photo — and a template without the pair never gains one.
+   */
+  describe('cover photo frame', () => {
+    it('opens a sample-logo template on the photo frame, logo off, and saves it that way', () => {
+      for (const layout of [null, { logoHeight: 40 }]) {
+        const legacy = blankTemplate({
+          sample_logo_1: 'frame.png',
+          sample_logo_2: 'shape.png',
+          cover_stage_layout: layout as PartnerTemplate['cover_stage_layout'],
+        })
+        const hydrated = hydrateForm(legacy)
+        expect(hydrated.cover_stage_layout.showCoverPhoto).toBe(true)
+        expect(hydrated.cover_stage_layout.showCoverLogo).toBe(false)
+
+        const saved = buildConfigPayload(hydrated)
+        expect(saved.cover_stage_layout).toMatchObject({ showCoverPhoto: true, showCoverLogo: false })
+      }
+    })
+
+    it('never gives a frame to a template without the pair', () => {
+      const plain = hydrateForm(blankTemplate({ sample_logo_1: 'mark.png' }))
+      expect(plain.cover_stage_layout.showCoverPhoto).toBe(false)
+      expect(plain.cover_stage_layout.showCoverLogo).toBe(true)
+    })
+
+    it('keeps an explicit switch and the frame layer through save and reload', () => {
+      const template = blankTemplate({
+        sample_logo_2: 'shape.png',
+        cover_stage_layout: {
+          showCoverPhoto: false,
+          coverPhoto: { frameLayer: 'over' },
+        } as PartnerTemplate['cover_stage_layout'],
+      })
+      const hydrated = hydrateForm(template)
+      expect(hydrated.cover_stage_layout.showCoverPhoto).toBe(false)
+      expect(hydrated.cover_stage_layout.showCoverLogo).toBe(true)
+
+      const reloaded = hydrateForm(savedAs(hydrated, { sample_logo_2: 'shape.png' }))
+      expect(reloaded.cover_stage_layout.showCoverPhoto).toBe(false)
+      expect(reloaded.cover_stage_layout.coverPhoto).toEqual({ frameLayer: 'over' })
+    })
+  })
 })

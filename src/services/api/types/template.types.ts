@@ -148,10 +148,21 @@ export interface EventTemplate {
   /** Standard mode's middle stage, used when the event has no `event_video` of its own. */
   standard_transition_video?: string
   standard_background_video?: string
-  /** Primary sample logo (transparency). Rendered in the merged logo row when showCoverHeaderText is false. */
+  /**
+   * Primary sample logo (transparency): the logo drawn while the event has none
+   * of its own. With sample_logo_2 it is also the photo frame's legacy artwork.
+   */
   sample_logo_1?: string | null
-  /** Secondary sample logo (transparency). Overlaid on top of sample_logo_1 at the same position. */
+  /**
+   * Secondary sample logo (transparency). Never drawn on its own: with
+   * sample_logo_1 it is the photo frame's legacy shape, used only until the
+   * template uploads a frame or shape of its own (see coverPhotoArt).
+   */
   sample_logo_2?: string | null
+  /** The cover photo frame's artwork (transparency). */
+  cover_photo_frame_image?: string | null
+  /** The cover photo frame's shape: its opaque pixels are where the photograph shows. */
+  cover_photo_shape_image?: string | null
   /** Header text rendered as an image (transparency). */
   header_text_image?: string | null
   created_at?: string
@@ -166,10 +177,21 @@ export interface TemplateAssets {
   /** Standard mode's middle stage, used when the event has no `event_video` of its own. */
   standard_transition_video?: string
   standard_background_video?: string
-  /** Primary sample logo (transparency). Rendered in the merged logo row when showCoverHeaderText is false. */
+  /**
+   * Primary sample logo (transparency): the logo drawn while the event has none
+   * of its own. With sample_logo_2 it is also the photo frame's legacy artwork.
+   */
   sample_logo_1?: string | null
-  /** Secondary sample logo (transparency). Overlaid on top of sample_logo_1 at the same position. */
+  /**
+   * Secondary sample logo (transparency). Never drawn on its own: with
+   * sample_logo_1 it is the photo frame's legacy shape, used only until the
+   * template uploads a frame or shape of its own (see coverPhotoArt).
+   */
   sample_logo_2?: string | null
+  /** The cover photo frame's artwork (transparency). */
+  cover_photo_frame_image?: string | null
+  /** The cover photo frame's shape: its opaque pixels are where the photograph shows. */
+  cover_photo_shape_image?: string | null
   /** Header text rendered as an image (transparency). */
   header_text_image?: string | null
   ambient_creatures?: AmbientCreaturesConfig | null
@@ -197,13 +219,45 @@ export type CoverRowElementId = 'header' | 'logo' | 'invite' | 'guest'
 export type CoverDetailElementId = 'hosts' | 'date' | 'location'
 
 /**
+ * The photo frame: one of the event's photographs, cut to the template's shape
+ * and set in its frame artwork (see CoverPhotoConfig). Placed by its own box in
+ * BOTH layout modes, like the detail blocks, because its size is the thing a
+ * partner adjusts — a row's height is not a size, it is a share of a stack.
+ */
+export type CoverPhotoElementId = 'photo'
+
+/**
  * Every cover-stage block a template can place.
  *
  * Deliberately NOT the swipe arrow: that one is navigation chrome with a fixed
  * pixel size and its own responsive rules, and `swipeArrowBottom` already
  * positions it in both layout modes.
  */
-export type CoverElementId = CoverRowElementId | CoverDetailElementId
+export type CoverElementId = CoverRowElementId | CoverPhotoElementId | CoverDetailElementId
+
+/**
+ * Whether the frame artwork is drawn behind the photograph or in front of it.
+ *
+ * - `under` — the photograph lies on the artwork, cut to the shape. What the
+ *   sample-logo pair always drew, so it is what an absent value means.
+ * - `over`  — the artwork is drawn on top: a frame with a transparent window,
+ *   whose rim hides the photograph's cut edge. The forgiving choice, because
+ *   the shape only has to be a little larger than the window rather than match
+ *   it exactly.
+ */
+export type CoverPhotoFrameLayer = 'under' | 'over'
+
+/**
+ * How the cover's photo frame draws. The artwork and the shape are template
+ * assets (`cover_photo_frame_image`, `cover_photo_shape_image`); where it sits
+ * and how big it is are its box (`coverElements.photo`); which photograph fills
+ * it, and how that photograph is framed, belong to the event (the photo marked
+ * `is_cover_photo`, and that photo's own `crop_*`).
+ */
+export interface CoverPhotoConfig {
+  /** Default `under`. */
+  frameLayer?: CoverPhotoFrameLayer
+}
 
 /**
  * Where one cover block's text takes its colour from.
@@ -618,8 +672,8 @@ export interface CoverStageLayout {
   showHostNameUnderLogo?: boolean   // default: false
 
   // Render the cover header text row on the cover stage. When false, the event
-  // title row is hidden and its height is absorbed by the logo row so
-  // sample_logo_1 / sample_logo_2 render in the merged space.
+  // title row is hidden and its height is absorbed by the logo row, whose logo
+  // then grows to fill the merged space.
   showCoverHeaderText?: boolean     // default: true
 
   // Render the logo on the cover stage. When false the logo row keeps its height
@@ -652,11 +706,21 @@ export interface CoverStageLayout {
   // resolveCoverTextStyles), so no published template changes.
   coverText?: CoverTextStyles
 
-  // Host image clipped into sample_logo_2's shape (merged logo row).
-  // hostClipScale sets image size as % of the clip square (0–100).
-  // hostClipOffsetX/Y pan the host photo within the clip square via CSS
-  // object-position — use this to keep the face inside a head-region shape.
-  // 0 = left/top edge, 50 = center, 100 = right/bottom edge.
+  // The photo frame (see CoverPhotoElementId). Absent means infer: on for a
+  // template carrying the sample-logo pair (sample_logo_2), which drew the host's
+  // photo in the logo row before this block existed — and then the logo is off,
+  // because that pair WAS the logo row. Never backfilled; the partner form seeds
+  // it from the same inference and saves it explicitly.
+  showCoverPhoto?: boolean          // default: inferred, see above
+
+  // How the photo frame draws. Omitted = the artwork under the photograph.
+  coverPhoto?: CoverPhotoConfig
+
+  // Where the first host's photo sits in the photo frame's shape, used only
+  // while the event has no photo marked as its cover photo (a chosen photo is
+  // framed by its own crop_* instead). CSS object-position: 0 = left/top edge,
+  // 50 = center, 100 = right/bottom edge. hostClipScale is read by nothing and
+  // is kept only so a stored value survives a save.
   hostClipScale?: number            // default: 60
   hostClipOffsetX?: number          // default: 50
   hostClipOffsetY?: number          // default: 50
@@ -1549,6 +1613,10 @@ export interface PartnerTemplate {
   standard_background_video: string | null
   sample_logo_1: string | null
   sample_logo_2: string | null
+  /** The cover photo frame's artwork. Backend field pending: cover-photo-frame.md. */
+  cover_photo_frame_image?: string | null
+  /** The cover photo frame's shape. Backend field pending: cover-photo-frame.md. */
+  cover_photo_shape_image?: string | null
   header_text_image: string | null
   created_at: string
   updated_at: string
@@ -1587,6 +1655,10 @@ export interface PartnerTemplateCreatePayload {
   standard_background_video?: TemplateFileUpload
   sample_logo_1?: TemplateFileUpload
   sample_logo_2?: TemplateFileUpload
+  /** The cover photo frame's artwork. */
+  cover_photo_frame_image?: TemplateFileUpload
+  /** The cover photo frame's shape. */
+  cover_photo_shape_image?: TemplateFileUpload
   header_text_image?: TemplateFileUpload
   /** The `crest` host design's horizontal breakline artwork. */
   host_divider_image?: TemplateFileUpload

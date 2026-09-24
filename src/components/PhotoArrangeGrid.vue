@@ -56,6 +56,16 @@
           <GalleryHorizontal class="w-3 h-3" aria-hidden="true" />
         </span>
 
+        <!-- The cover's photo frame shows this one. Information only, like the
+             star; the selection bar's Cover action is where it is set. -->
+        <span
+          v-if="photo.is_cover_photo === true"
+          class="pag-cover"
+          :title="t('management.media.uploadModal.gallery.coverPhoto')"
+        >
+          <Frame class="w-3 h-3" aria-hidden="true" />
+        </span>
+
         <!-- Selected: a check where the remove button sits, which the bar
              below takes over while this photo is selected. -->
         <span v-if="selectedId === photo.id" class="pag-check" aria-hidden="true">
@@ -110,7 +120,7 @@
  * `update:selectedId` — saving, undo and failure are the parent's.
  */
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { Check, GalleryHorizontal, Star, X } from 'lucide-vue-next'
+import { Check, Frame, GalleryHorizontal, Star, X } from 'lucide-vue-next'
 import type { EventPhoto } from '@/services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { imagekitUrl, resolveMediaUrl } from '@/utils/mediaUrl'
@@ -167,6 +177,7 @@ const photoLabel = (photo: EventPhoto, index: number) => {
     position,
     photo.is_featured ? t('management.media.uploadModal.gallery.featured') : null,
     isPhotoBand(photo) ? t('management.media.uploadModal.gallery.band') : null,
+    photo.is_cover_photo === true ? t('management.media.uploadModal.gallery.coverPhoto') : null,
   ]
     .filter(Boolean)
     .join(', ')
@@ -734,6 +745,23 @@ const onKeydown = (event: KeyboardEvent, photo: EventPhoto) => {
   border-radius: 9999px;
   color: #fff;
   background: #1e90ff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+  pointer-events: none;
+}
+
+/* Bottom-right: the one corner the star, the band and the remove button leave. */
+.pag-cover {
+  position: absolute;
+  bottom: 0.375rem;
+  right: 0.375rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  color: #fff;
+  background: rgb(16 185 129);
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
   pointer-events: none;
 }

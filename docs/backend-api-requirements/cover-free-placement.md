@@ -63,7 +63,7 @@ renders byte-for-byte as it does today.
 
 ### `coverElements` keys
 
-Four, all optional: `header`, `logo`, `invite`, `guest`. (Three more, `hosts`, `date` and `location`, arrived with the cover's names-and-details blocks; see [cover-details.md](cover-details.md). Unlike these four, they are read in both layout modes.) A block omitted
+Four, all optional: `header`, `logo`, `invite`, `guest`. (Three more, `hosts`, `date` and `location`, arrived with the cover's names-and-details blocks; see [cover-details.md](cover-details.md). A fourth, `photo`, arrived with the photo frame; see [cover-photo-frame.md](cover-photo-frame.md). Unlike these four, they are read in both layout modes.) A block omitted
 from the map falls back to the rectangle the row model would have given it, so a
 partially-authored map is still a complete layout. (In practice the editor always
 writes all four — see [Why the frontend always writes all four](#why-the-frontend-always-writes-all-four).)

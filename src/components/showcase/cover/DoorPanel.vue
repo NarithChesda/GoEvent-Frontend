@@ -70,15 +70,13 @@
 
       <!-- Content layer -->
       <div class="door-content-layer">
+        <!-- The photo frame, beneath the copy as on the decoration cover, and
+             drawn still: the leaf is a photograph of the cover being moved. -->
+        <CoverPhotoFrame v-if="photoFrame" v-bind="photoFrame" :show-animations="false" />
         <CoverContentRows
           :event-title="eventTitle"
           :event-logo="eventLogo"
           :sample-logo-one="sampleLogoOne"
-          :sample-logo-two="sampleLogoTwo"
-          :first-host-image="firstHostImage"
-          :first-host-name="firstHostName"
-          :first-host-id="firstHostId"
-          :host-clip-style="hostClipStyle"
           :show-cover-header-text="showCoverHeaderText"
           :show-cover-logo="showCoverLogo"
           :show-cover-invite-text="showCoverInviteText"
@@ -136,7 +134,9 @@ import type {
 } from '@/services/api/types/template.types'
 import CoverContentRows from './CoverContentRows.vue'
 import CoverDetailBlocks from './CoverDetailBlocks.vue'
+import CoverPhotoFrame from './CoverPhotoFrame.vue'
 import type { CoverDetailBlocksBinding } from './coverDetails'
+import type { CoverPhotoFrameBinding } from './coverPhoto'
 import CoverGilding from './CoverGilding.vue'
 
 interface RowStyles {
@@ -171,18 +171,13 @@ interface Props {
   // Content props
   eventTitle: string
   eventLogo?: string | null
-  /** Template-provided base logo (transparency). Shown in the merged logo row when showCoverHeaderText is false. */
+  /** The template's sample logo, drawn while the event has no logo of its own. */
   sampleLogoOne?: string | null
-  /** Template-provided overlay logo (transparency). Its opaque shape is used as a clip mask for the first host image. */
-  sampleLogoTwo?: string | null
-  /** First host profile image — clipped by sample_logo_2 in the merged logo row. */
-  firstHostImage?: string | null
-  /** First host display name — alt text for the clipped host image. */
-  firstHostName?: string
-  /** First host id — routes the preview editor to the host drawer when the logo row frames that host's photo. */
-  firstHostId?: number | null
-  /** CSS variables driving host-clip size/offset (from cover_stage_layout). */
-  hostClipStyle?: Record<string, string>
+  /**
+   * Everything the photo frame draws from, bound as one — each leaf only hands
+   * it on, as it does the detail blocks. Null when the frame is off.
+   */
+  photoFrame?: CoverPhotoFrameBinding | null
   /** Render the cover text header row; when false, the row collapses and its space is merged into the logo row. */
   showCoverHeaderText?: boolean
   /** Draw the logo. When false its row keeps its space, so no other block moves. */
@@ -242,6 +237,7 @@ const props = withDefaults(defineProps<Props>(), {
   showCoverInviteText: true,
   showCoverGuestName: true,
   detailBlocks: null,
+  photoFrame: null,
 })
 
 const { protectionAttrs } = useAssetProtection()

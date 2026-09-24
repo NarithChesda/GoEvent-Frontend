@@ -986,6 +986,7 @@ import {
   resolvePhotoBands,
   type ResolvedPhotoBand,
 } from './photo-band/photoBand'
+import { coverFramePhotoId } from './cover/coverPhoto'
 import type { PhotoBandPlacement } from '../../services/api/types/event.types'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import SectionDisplayToggle from '@/components/showcase-preview/edit/SectionDisplayToggle.vue'
@@ -1191,9 +1192,15 @@ const eventType = computed(() => {
   return props.event.category_details?.name || props.event.category_name || 'default'
 })
 
-// A photo set to appear as a band leaves the gallery: the invitation never
-// shows the same photograph twice.
-const galleryPhotos = computed(() => galleryPhotosOf(props.eventPhotos))
+// A photo set to appear as a band leaves the gallery, and so does the one in the
+// cover's photo frame while the design draws it: the invitation never shows the
+// same photograph twice.
+const galleryPhotos = computed(() =>
+  galleryPhotosOf(
+    props.eventPhotos,
+    coverFramePhotoId(props.eventPhotos, props.mainStageLayout, props.templateAssets),
+  ),
+)
 
 // Which photo is a band where. Moving a band between sections changes no count
 // the reveal watcher below could see, and each move mounts a new slot element.

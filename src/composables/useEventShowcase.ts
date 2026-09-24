@@ -18,7 +18,7 @@ import type {
   StageModesConfig,
   TextEffectsConfig,
 } from '../services/api/types/template.types'
-import type { PhotoBandFields, StoredMusicStartStage } from '../services/api/types/event.types'
+import type { CoverPhotoFields, PhotoBandFields, StoredMusicStartStage } from '../services/api/types/event.types'
 
 // Imports - Composables
 import { usePerformance, ResourceManager } from '../utils/performance'
@@ -31,6 +31,7 @@ import { useTemplateProcessor } from './showcase/useTemplateProcessor'
 
 // Imports - Utilities
 import { galleryPhotosOf } from '../components/showcase/photo-band/photoBand'
+import { coverFramePhotoId } from '../components/showcase/cover/coverPhoto'
 import { updateMetaTags, getBestEventImage, createEventDescription } from '../utils/metaUtils'
 import { translateRSVP, type SupportedLanguage } from '../utils/translations'
 
@@ -173,6 +174,14 @@ export interface TemplateAssets {
     cover_right_decoration?: string
     sample_logo_1?: string | null
     sample_logo_2?: string | null
+    /**
+     * The cover photo frame's artwork and shape. Together they replace the
+     * sample-logo pair, which served as both until they existed (see
+     * coverPhotoArt). Backend fields pending:
+     * docs/backend-api-requirements/cover-photo-frame.md.
+     */
+    cover_photo_frame_image?: string | null
+    cover_photo_shape_image?: string | null
     header_text_image?: string | null
     /**
      * Custom breakline art for the `crest` host design. When present it is
@@ -262,7 +271,7 @@ export interface TemplateAssets {
   guest_title_frame_right?: string | null
 }
 
-export interface EventPhoto extends PhotoBandFields {
+export interface EventPhoto extends PhotoBandFields, CoverPhotoFields {
   id: number
   event: string
   image: string
@@ -687,10 +696,20 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
 
   /**
    * The photos the gallery shows, and so the ones its lightbox pages through:
-   * every photo not set to appear as a band. A band is that photograph's place
-   * on the invitation, so it isn't repeated here.
+   * every photo not set to appear as a band, nor the one the cover's photo
+   * frame is drawing. Each is that photograph's place on the invitation, so it
+   * isn't repeated here.
    */
-  const galleryPhotos = computed(() => galleryPhotosOf(eventPhotos.value))
+  const galleryPhotos = computed(() =>
+    galleryPhotosOf(
+      eventPhotos.value,
+      coverFramePhotoId(
+        eventPhotos.value,
+        event.value?.template_assets?.cover_stage_layout,
+        event.value?.template_assets?.assets,
+      ),
+    ),
+  )
 
   const paymentMethods = computed(() => {
     const methods = event.value?.payment_methods || []

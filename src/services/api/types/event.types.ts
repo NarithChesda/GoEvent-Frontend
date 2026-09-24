@@ -90,6 +90,17 @@ export type PhotoBandPlacement =
  *
  * Pending backend fields — see docs/backend-api-requirements/photo-band.md
  */
+/**
+ * The photograph the cover's photo frame shows: a setting on the photo, beside
+ * `is_featured`, and framed by the same `crop_*` region. At most one photo per
+ * event carries it; absent/false on every photo falls back to the first host's
+ * profile photo. Backend field pending:
+ * docs/backend-api-requirements/cover-photo-frame.md
+ */
+export interface CoverPhotoFields {
+  is_cover_photo?: boolean | null
+}
+
 export interface PhotoBandFields {
   /** Which section it follows. `null`/absent/empty = an ordinary gallery photo. */
   band_placement?: PhotoBandPlacement | null
@@ -324,7 +335,7 @@ export interface BulkReorderRequest {
   updates: { id: number; order: number; date?: string | null }[]
 }
 
-export interface EventPhoto extends PhotoBandFields {
+export interface EventPhoto extends PhotoBandFields, CoverPhotoFields {
   id: number
   event: string
   image: string

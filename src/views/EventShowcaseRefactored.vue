@@ -82,9 +82,7 @@
         :guest-name="guestName"
         :event-title="event.title"
         :event-logo="event.logo_one"
-        :first-host-image="hosts[0]?.profile_image || null"
-        :first-host-name="hosts[0]?.name || ''"
-        :first-host-id="hosts[0]?.id ?? null"
+        :cover-photo="coverPhoto"
         :event-details="coverEventDetails"
         :event-video-url="eventVideoUrl"
         :background-video-url="backgroundVideoUrl"
@@ -291,6 +289,7 @@ import {
 // Components
 import CoverStage from '../components/showcase/CoverStage.vue'
 import { coverEventDetailsOf } from '../components/showcase/cover/coverDetails'
+import { resolveCoverPhotoSource } from '../components/showcase/cover/coverPhoto'
 import ErrorDisplay from '../components/showcase/ErrorDisplay.vue'
 import LoadingSpinner from '../components/showcase/LoadingSpinner.vue'
 import MainContentStage from '../components/showcase/MainContentStage.vue'
@@ -437,6 +436,9 @@ const stageModes = computed(() => resolveStageModesForEvent(event.value))
 
 /** The hosts, date and venue the cover's names-and-details blocks draw. */
 const coverEventDetails = computed(() => coverEventDetailsOf(event.value, hosts.value))
+
+/** The cover's photo frame: the photo marked as the cover photo, else the first host's. */
+const coverPhoto = computed(() => resolveCoverPhotoSource(eventPhotos.value, hosts.value))
 
 /** The middle beat is the Save the Date card over the featured photo. */
 const usesTransitionStage = computed(() => stageModes.value.transition === 'animation')

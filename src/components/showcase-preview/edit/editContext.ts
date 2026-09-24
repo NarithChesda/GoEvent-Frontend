@@ -62,6 +62,24 @@ export type EditIntent =
   | { kind: 'displayToggle'; field: 'rsvp_enabled' | 'comments_enabled' | 'countdown_enabled' }
   /** Edit the photo band that was tapped — or, without a `photoId`, add one. */
   | { kind: 'photoBand'; photoId?: number }
+  /**
+   * Choose and frame the cover's photo-frame photograph. The frame says what
+   * shape it cuts the photo to — only it has measured the template's shape —
+   * so the editor frames the photo in exactly the window the cover draws.
+   */
+  | {
+      kind: 'coverPhoto'
+      /** Width ÷ height of the photograph's box on the cover. */
+      frameAspect: number
+      /** The shape the window is cut to, for the editor to trace; null draws a plain rectangle. */
+      shape?: CoverPhotoShapeMask | null
+    }
+
+/** A shape image and its opaque bounding box (ratios of the image, 0–1). */
+export interface CoverPhotoShapeMask {
+  url: string
+  bounds: { x: number; y: number; width: number; height: number }
+}
 
 export interface EditIntentContext {
   requestEdit: (intent: EditIntent) => void

@@ -519,6 +519,15 @@
       "photoBandUploadPrompt": "Upload photos first, then come back here to choose one for the band.",
       "photoBandSaveFailed": "Couldn't save the photo band",
       "photoBandUnsupported": "This server doesn't store photo bands yet, so nothing was saved. The preview goes back to how it was when you close this panel.",
+      "editCoverPhoto": "Change cover photo",
+      "coverPhotoTitle": "Cover photo",
+      "coverPhotoDescription": "The photo in the frame on your cover. Pick one, then move and zoom it until the frame shows what you want.",
+      "coverPhotoUploadPrompt": "Upload photos first, then come back here to choose one for the cover.",
+      "coverPhotoFallbackHint": "Until you pick one, the cover shows the first host's photo.",
+      "coverPhotoCropHint": "Only the lit part shows on the cover. This is the photo's own crop, so it also applies wherever else the photo appears.",
+      "coverPhotoUnsupported": "This server doesn't store a cover photo yet, so nothing was saved. The preview goes back to how it was when you close this panel.",
+      "coverPhotoRemove": "Remove cover photo",
+      "coverPhotoSaveFailed": "Couldn't save the cover photo.",
       "replayTransition": "Replay",
       "countdownLabel": "Countdown",
       "rsvpLabel": "RSVP",
@@ -769,7 +778,7 @@
       "removeFile": "Remove photo",
       "gallery": {
         "title": "Already uploaded",
-        "hint": "Tap a photo to feature it, make it a band, move it or remove it — or press and hold to drag it into place.",
+        "hint": "Tap a photo to feature it, put it on the cover, make it a band, move it or remove it — or press and hold to drag it into place.",
         "photoLabel": "Photo {n} of {total}",
         "featured": "Featured photo",
         "remove": "Remove from the gallery",
@@ -785,6 +794,12 @@
         "removeFailed": "Couldn't remove that photo, so it's been put back.",
         "reorderFailed": "Couldn't save the new order, so it's been put back.",
         "featureFailed": "Couldn't change the featured photo.",
+        "cover": "Cover",
+        "coverOn": "On cover",
+        "coverPhoto": "Cover photo",
+        "coverTitle": "Show this photo in the frame on your cover. While your design has a photo frame, the photo moves there from the gallery. Crop it by tapping the frame in the Design Studio preview.",
+        "coverFailed": "Couldn't change the cover photo.",
+        "coverUnsupported": "This server doesn't store a cover photo yet, so nothing was changed.",
         "band": "Band",
         "bandNone": "In the gallery",
         "bandHint": "A band photo leaves the gallery. Set its blend color and crop by tapping it in the Design Studio preview.",
@@ -840,10 +855,16 @@
       "featuredUpdated": "Featured status updated",
       "featuredError": "Failed to update featured status",
       "featuredNetworkError": "Network error while updating featured status",
+      "coverSet": "Cover photo set",
+      "coverCleared": "Cover photo removed",
       "uploadSuccessOne": "1 photo uploaded successfully",
       "uploadSuccessMany": "{count} photos uploaded successfully",
       "reorderError": "Failed to reorder media",
       "reorderNetworkError": "Network error while reordering media"
+    },
+    "card": {
+      "setCover": "Use as cover photo",
+      "clearCover": "Remove from cover"
     }
   },
   "messages": {
@@ -2842,6 +2863,7 @@
     "blocks": {
       "header": "Header text",
       "logo": "Logo",
+      "photo": "Photo frame",
       "invite": "Invite text",
       "guest": "Guest name",
       "hosts": "Host names",
@@ -3119,8 +3141,8 @@
       "showCoverGuestNameHint": "The guest's own name. When off, its space is kept, like the logo's.",
       "showHostNameUnderLogo": "Show Host Name Under Logo",
       "showHostNameUnderLogoHint": "The host name beneath the logo. Birthday invitations only.",
-      "hostClip": "Host Image Clip",
-      "hostClipHint": "Position of the host image clipped into sample_logo_2's shape (% of clip square).",
+      "hostClip": "Host photo position",
+      "hostClipHint": "Until the organizer picks a cover photo, the first host's photo fills the frame. This is where it sits in the shape.",
       "hostClipScale": "Scale (%)",
       "hostClipOffsetX": "Offset X (%)",
       "hostClipOffsetY": "Offset Y (%)",
@@ -3183,6 +3205,28 @@
       "capitalsHint": "Names and venue in wide capitals, as printed cards set them. Khmer text is never changed.",
       "competingHint": "The logo, invite text and guest name are still on, in the same space.",
       "hideCompeting": "Hide them"
+    },
+    "coverPhoto": {
+      "show": "Show photo frame",
+      "showHint": "One of the event's photos, cut to your shape and set in your frame. The organizer picks the photo and positions it.",
+      "frameImage": "Frame",
+      "frameImageHint": "The artwork around the photo. A transparent PNG works best.",
+      "frameImageUpload": "Upload frame artwork",
+      "shapeImage": "Shape",
+      "shapeImageHint": "The photo shows through this image's solid pixels. Draw it on the same canvas as the frame so the two line up.",
+      "shapeImageUpload": "Upload a shape",
+      "sampleLogosHint": "Sample Logo 1 is drawn as the frame and Sample Logo 2 as the shape. Upload a frame or a shape here to replace both.",
+      "layer": "Frame artwork",
+      "layers": {
+        "under": "Behind the photo",
+        "over": "In front of the photo"
+      },
+      "layerHint": {
+        "under": "The photo lies on the artwork, cut exactly to the shape.",
+        "over": "The artwork covers the photo's edge, so the shape only needs to be a little larger than the frame's window."
+      },
+      "overLogoHint": "The photo frame sits where the logo is. Hide the logo, or move the frame under Block Placement.",
+      "hideLogo": "Hide logo"
     },
     "coverText": {
       "size": "Size",
