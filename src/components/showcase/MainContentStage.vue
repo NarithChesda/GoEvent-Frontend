@@ -195,6 +195,39 @@
                   :class="['mt-6 sm:mt-8', BAND_SLOT_CLASS]"
                 />
 
+                <!-- Guest dedication: the invite text and the name of the
+                     guest this link was sent to. Here, between who is
+                     inviting and what they are inviting to, because that is
+                     where a Khmer wedding card writes the guest — the block
+                     reads as the middle of one sentence, not as a second
+                     greeting under the welcome header. After the hosts' band
+                     slot, so a band placed "after the hosts" stays directly
+                     under them.
+
+                     Only when the template chose a design (absent = none, the
+                     cover already greets the guest) and there is someone to
+                     address: a public link carries no guest, and previews
+                     fill in "Honored Guest". No divider after it — it is the
+                     hinge between two sections, and a bow-tie would cut the
+                     sentence in half. -->
+                <div
+                  v-if="guestInviteDesign && guestName"
+                  ref="guestInviteRef"
+                  class="mt-6 sm:mt-8 laptop-sm:mt-8 laptop-md:mt-10 laptop-lg:mt-12 desktop:mt-10 animate-reveal"
+                >
+                  <GuestInviteSection
+                    :guest-name="guestName"
+                    :event-texts="eventTexts"
+                    :current-language="currentLanguage"
+                    :primary-color="primaryColor"
+                    :accent-color="accentColor"
+                    :current-font="currentFont"
+                    :primary-font="primaryFont"
+                    :secondary-font="secondaryFont"
+                    :guest-invite-design="guestInviteDesign"
+                  />
+                </div>
+
                 <!-- Event Information with Integrated RSVP -->
                 <div
                   ref="eventInfoRef"
@@ -962,6 +995,7 @@ import type {
   DressCodeDesignConfig,
   CoverStageLayout,
   EventDetailsDesignConfig,
+  GuestInviteDesignConfig,
   HostInfoDesignConfig,
   InfoCardDesignConfig,
 } from '../../services/api/types/template.types'
@@ -971,6 +1005,7 @@ const { protectionAttrs } = useAssetProtection()
 
 // Component imports
 import HostInfo from './HostInfo.vue'
+import GuestInviteSection from './GuestInviteSection.vue'
 import EventInfo from './EventInfo.vue'
 import RSVPSection from './RSVPSection.vue'
 import GuestRSVPSection from './GuestRSVPSection.vue'
@@ -1072,6 +1107,8 @@ interface Props {
   /** Agenda list design from template (rail | thread | milestone | ledger | stack) */
   agendaDesign?: AgendaDesignConfig | null
   dressCodeDesign?: DressCodeDesignConfig | null
+  /** Guest dedication design from template. Absent / null = no block. */
+  guestInviteDesign?: GuestInviteDesignConfig | null
 }
 
 const props = defineProps<Props>()
@@ -1418,6 +1455,7 @@ const REVEAL_STAGGER_MS = 60
 const sectionRefs = {
   welcomeHeader: ref<HTMLElement>(),
   hostInfo: ref<HTMLElement>(),
+  guestInvite: ref<HTMLElement>(),
   eventInfo: ref<HTMLElement>(),
   rsvpSection: ref<HTMLElement>(),
   dressCodeSection: ref<HTMLElement>(),
@@ -1435,6 +1473,7 @@ const sectionRefs = {
 const {
   welcomeHeader: welcomeHeaderRef,
   hostInfo: hostInfoRef,
+  guestInvite: guestInviteRef,
   eventInfo: eventInfoRef,
   rsvpSection: rsvpSectionRef,
   dressCodeSection: dressCodeSectionRef,
@@ -1531,6 +1570,7 @@ const initializeRevealAnimations = () => {
   const animationConfig: Array<[SectionRef, string]> = [
     [welcomeHeaderRef, 'welcome-header'],
     [hostInfoRef, 'host-info'],
+    [guestInviteRef, 'guest-invite'],
     [eventInfoRef, 'event-info'],
     [rsvpSectionRef, 'rsvp-section'],
     [dressCodeSectionRef, 'dress-code-section'],
@@ -1577,6 +1617,11 @@ watch(
     props.paymentMethods?.length,
     props.eventTexts?.length,
     props.currentLanguage,
+    // The guest dedication mounts on a template design and a guest name, and
+    // either can arrive after the stage does (a studio design change, a
+    // template's assets landing late).
+    props.guestInviteDesign?.type,
+    !!props.guestName,
   ],
   async () => {
     await nextTick()

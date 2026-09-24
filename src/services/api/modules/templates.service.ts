@@ -129,6 +129,7 @@ const TEMPLATE_JSON_CONFIG_FIELDS = [
   'info_card_design',
   'agenda_design',
   'dress_code_design',
+  'guest_invite_design',
   'save_the_date_design',
   'text_effects',
   'stage_modes',

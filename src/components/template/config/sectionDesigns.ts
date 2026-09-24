@@ -3,6 +3,8 @@ import type {
   AgendaDesignType,
   DressCodeDesignConfig,
   DressCodeDesignType,
+  GuestInviteDesignConfig,
+  GuestInviteDesignType,
   InfoCardDesignConfig,
   InfoCardDesignType,
   PartnerTemplate,
@@ -11,9 +13,9 @@ import type {
 } from '@/services/api'
 
 /**
- * The four section designs that are a bare choice of composition: the info
- * card, the agenda, the dress code and the Save the Date. Each is one `{ type }`
- * config on the wire, with no sibling settings — so far.
+ * The section designs that are a bare choice of composition: the info card, the
+ * agenda, the dress code, the Save the Date and the guest dedication. Each is
+ * one `{ type }` config on the wire, with no sibling settings — so far.
  *
  * Grouped rather than given a module each because they are the same shape and
  * the same decision asked four times, and because the builders below are the
@@ -37,6 +39,14 @@ export interface SectionDesignsFormState {
    * can't silently pin it to a design its partner never chose.
    */
   save_the_date_design_type: SaveTheDateDesignType | 'auto'
+  /**
+   * The guest dedication on the invitation. `none` is not a design — it stores
+   * `null`, which draws no block, and it is what every template saved before
+   * the field existed loads as. Unlike the three designs above, off is the
+   * default: this block is additive, and a template whose cover already greets
+   * the guest by name does not want a second greeting under the hosts.
+   */
+  guest_invite_design_type: GuestInviteDesignType | 'none'
 }
 
 export const defaultSectionDesigns = (): SectionDesignsFormState => ({
@@ -44,6 +54,7 @@ export const defaultSectionDesigns = (): SectionDesignsFormState => ({
   agenda_design_type: 'rail',
   dress_code_design_type: 'portrait',
   save_the_date_design_type: 'auto',
+  guest_invite_design_type: 'none',
 })
 
 export function hydrateSectionDesigns(template: PartnerTemplate | null): SectionDesignsFormState {
@@ -59,6 +70,7 @@ export function hydrateSectionDesigns(template: PartnerTemplate | null): Section
     // No stored value means 'auto' — each transition stage keeps its own
     // default — which is what every template saved before this field existed has.
     save_the_date_design_type: template?.save_the_date_design?.type ?? 'auto',
+    guest_invite_design_type: hydrateGuestInviteDesign(template?.guest_invite_design?.type),
   }
 }
 
@@ -85,3 +97,33 @@ export const buildSaveTheDateDesignPayload = (
   state.save_the_date_design_type === 'auto'
     ? null
     : { type: state.save_the_date_design_type }
+
+/**
+ * The designs this build ships, so a stored value it has never heard of opens
+ * on the one the showcase actually draws for it (`inscribed`) rather than on a
+ * picker with nothing selected — which a save would then write back unchanged.
+ */
+const GUEST_INVITE_DESIGN_TYPES: readonly GuestInviteDesignType[] = [
+  'inscribed',
+  'formal',
+  'place_card',
+  'tag',
+]
+
+function hydrateGuestInviteDesign(
+  type: string | null | undefined,
+): SectionDesignsFormState['guest_invite_design_type'] {
+  if (!type) return 'none'
+  return (GUEST_INVITE_DESIGN_TYPES as readonly string[]).includes(type)
+    ? (type as GuestInviteDesignType)
+    : 'inscribed'
+}
+
+/**
+ * `none` persists as `null`, never as an absent key: absent on the wire means
+ * "leave this alone", so switching the block off has to be said out loud.
+ */
+export const buildGuestInviteDesignPayload = (
+  state: SectionDesignsFormState,
+): GuestInviteDesignConfig | null =>
+  state.guest_invite_design_type === 'none' ? null : { type: state.guest_invite_design_type }

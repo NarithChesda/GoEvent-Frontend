@@ -7,6 +7,7 @@ import { eventsService, type EventPaymentMethod } from '../services/api'
 import type {
   AgendaDesignConfig,
   DressCodeDesignConfig,
+  GuestInviteDesignConfig,
   AmbientCreaturesConfig,
   CoverStageLayout,
   FallingEffectConfig,
@@ -247,6 +248,11 @@ export interface TemplateAssets {
    * section rendered before this field existed.
    */
   dress_code_design?: DressCodeDesignConfig | null
+  /**
+   * Guest dedication on the invitation (inscribed | formal | place_card | tag).
+   * Absent means no block at all — it is additive, so nothing is backfilled.
+   */
+  guest_invite_design?: GuestInviteDesignConfig | null
   /**
    * Transition-stage Save the Date composition. Absent falls back per stage —
    * `script` on the decoration transition, `engraved` on the door — so every

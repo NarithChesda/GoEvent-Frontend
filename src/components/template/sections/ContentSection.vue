@@ -70,13 +70,13 @@
              card it draws on, then hosts, then the date, then the card
              under the date, then the schedule. A partner scrolling this
              panel is walking down the invitation. -->
-        <!-- The five design pickers, in one panel.
+        <!-- The design pickers, in one panel.
              Each was its own card carrying an uppercase eyebrow, a stack of
              full-width radio cards and a hint — three levels of chrome over
              one question, five times down the page, so scrolling this
              section read as five unrelated screens rather than as one walk
              down the invitation. They ask the same kind of question about
-             five consecutive blocks of one stage, so they are one panel
+             consecutive blocks of one stage, so they are one panel
              whose hairlines keep that order legible. The eyebrow becomes
              the picker's own label, the same way every other field in this
              editor is named. -->
@@ -235,6 +235,39 @@
             </div>
           </div>
 
+          <!-- Who the invitation is for: the invite text and the guest's
+               name, between the hosts above and the date below — which is
+               why it sits between their two pickers here. Off by default,
+               because it is additive: a cover that already greets the guest
+               by name does not want a second greeting under the hosts. -->
+          <div class="p-4 space-y-2">
+            <TemplateFormChoice
+              v-model="guestInviteDesignModel"
+              :label="t('management.partnerTemplateForm.guestInviteDesign.sectionTitle')"
+              :options="guestInviteDesignOptions"
+              :columns="1"
+            />
+            <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.guestInviteDesign.designHint') }}</p>
+
+            <!-- Suggested, never done for the partner: when the cover no
+                 longer names the guest and this is off, nothing on the
+                 template says who it was sent to. One tap turns it on. -->
+            <TemplateFormDisclosure :open="guestUnaddressed" content-class="pt-1">
+              <div class="flex items-center gap-3 rounded-xl bg-slate-50 ring-1 ring-slate-200/70 p-2.5">
+                <p class="flex-1 min-w-0 text-[0.6875rem] leading-snug text-slate-600">
+                  {{ t('management.partnerTemplateForm.guestInviteDesign.coverHidesGuest') }}
+                </p>
+                <button
+                  type="button"
+                  :class="BTN_SECONDARY_SM"
+                  @click="form.guest_invite_design_type = 'inscribed'"
+                >
+                  {{ t('management.partnerTemplateForm.guestInviteDesign.addHere') }}
+                </button>
+              </div>
+            </TemplateFormDisclosure>
+          </div>
+
           <div class="p-4 space-y-2">
             <TemplateFormChoice
               v-model="eventDetailsDesignModel"
@@ -337,6 +370,7 @@ import {
   Crown,
   Diamond,
   Droplets,
+  Feather,
   Flower2,
   Frame,
   GitCommitVertical,
@@ -358,6 +392,8 @@ import {
   Sparkles,
   Spline,
   Square,
+  Tag,
+  Tent,
   Ticket,
   UserRound,
   Users,
@@ -487,6 +523,30 @@ const dressCodeDesignOptions = computed(() => [
   { value: 'ledger', label: t('management.partnerTemplateForm.dressCodeDesign.types.ledger'), icon: Rows3 },
 ])
 
+// Off leads, because it is the default and what every existing template is.
+// The four then run from the most traditional to the most playful — the dotted
+// line of a printed Khmer card, the tracked formal line, the reception's place
+// card, the party's gift tag — which is also the order a partner would reach
+// for them going from a wedding to a birthday.
+const guestInviteDesignOptions = computed(() => [
+  { value: 'none', label: t('management.partnerTemplateForm.guestInviteDesign.types.none'), icon: Ban },
+  { value: 'inscribed', label: t('management.partnerTemplateForm.guestInviteDesign.types.inscribed'), icon: PenLine },
+  { value: 'formal', label: t('management.partnerTemplateForm.guestInviteDesign.types.formal'), icon: Feather },
+  { value: 'place_card', label: t('management.partnerTemplateForm.guestInviteDesign.types.place_card'), icon: Tent },
+  { value: 'tag', label: t('management.partnerTemplateForm.guestInviteDesign.types.tag'), icon: Tag },
+])
+
+/**
+ * The cover names nobody and neither does the invitation. Both of the cover's
+ * rows count: its invite text is only drawn beside a name, so with the name
+ * off the cover addresses no one even if that switch is on.
+ */
+const guestUnaddressed = computed(
+  () =>
+    form.guest_invite_design_type === 'none' &&
+    form.cover_stage_layout.showCoverGuestName === false,
+)
+
 // The engraved option is built to sit under the calendar / flanked / arch date
 // designs, which are drawn in the same hairline language. Under the panel or
 // ticket designs it still renders, it just has nothing above it to rhyme with.
@@ -547,5 +607,6 @@ const hostCoupleOrnamentModel = enumModel(() => form, 'host_couple_ornament')
 const hostBreaklineStyleModel = enumModel(() => form, 'host_divider_style')
 const agendaDesignModel = enumModel(() => form, 'agenda_design_type')
 const dressCodeDesignModel = enumModel(() => form, 'dress_code_design_type')
+const guestInviteDesignModel = enumModel(() => form, 'guest_invite_design_type')
 const infoCardDesignModel = enumModel(() => form, 'info_card_design_type')
 </script>

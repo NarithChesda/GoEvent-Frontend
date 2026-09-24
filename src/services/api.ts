@@ -130,6 +130,8 @@ export type {
   AgendaDesignConfig,
   DressCodeDesignType,
   DressCodeDesignConfig,
+  GuestInviteDesignType,
+  GuestInviteDesignConfig,
   SaveTheDateDesignType,
   SaveTheDateDesignConfig,
   AmbientCreatureEffectType,

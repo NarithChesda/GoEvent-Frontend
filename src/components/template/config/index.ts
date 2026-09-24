@@ -5,6 +5,7 @@ import type {
   DressCodeDesignConfig,
   EventDetailsDesignConfig,
   FallingEffectConfig,
+  GuestInviteDesignConfig,
   HostInfoDesignConfig,
   InfoCardDesignConfig,
   PartnerTemplate,
@@ -49,6 +50,7 @@ import {
 import {
   buildAgendaDesignPayload,
   buildDressCodeDesignPayload,
+  buildGuestInviteDesignPayload,
   buildInfoCardDesignPayload,
   buildSaveTheDateDesignPayload,
   defaultSectionDesigns,
@@ -151,7 +153,7 @@ export function hydrateForm(template: PartnerTemplate | null): FormState {
  * Written out rather than `Pick`ed from the payload type, because the two say
  * different things. On the wire every config is optional and most accept `null`
  * — absent means "do not touch this", null means "switch this off". This form
- * always has an answer for all twelve, and for the eight that cannot be switched
+ * always has an answer for all thirteen, and for the eight that cannot be switched
  * off it is never null; the live preview renders this value, so it needs the
  * narrower truth.
  *
@@ -171,6 +173,7 @@ export interface TemplateConfigPayload {
   info_card_design: InfoCardDesignConfig
   agenda_design: AgendaDesignConfig
   dress_code_design: DressCodeDesignConfig
+  guest_invite_design: GuestInviteDesignConfig | null
   save_the_date_design: SaveTheDateDesignConfig | null
   stage_modes: StageModesConfig
   text_effects: TextEffectsConfig | null
@@ -196,6 +199,7 @@ export function buildConfigPayload(form: FormState): TemplateConfigPayload {
     info_card_design: buildInfoCardDesignPayload(form),
     agenda_design: buildAgendaDesignPayload(form),
     dress_code_design: buildDressCodeDesignPayload(form),
+    guest_invite_design: buildGuestInviteDesignPayload(form),
     save_the_date_design: buildSaveTheDateDesignPayload(form),
     stage_modes: buildStageModesPayload(form),
     text_effects: buildTextEffectsPayload(form),

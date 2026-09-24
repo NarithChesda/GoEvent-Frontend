@@ -3408,6 +3408,19 @@
         "ledger": "Ledger (one line per code, nothing hidden)"
       }
     },
+    "guestInviteDesign": {
+      "sectionTitle": "Guest Dedication",
+      "designHint": "The invite text and the name of the guest the link was sent to, drawn between the hosts and the date. Shown only on a link sent to a named guest, since a public link has no one to address.",
+      "coverHidesGuest": "The cover doesn't show the guest's name, so nothing on this design says who the invitation is for.",
+      "addHere": "Add it here",
+      "types": {
+        "none": "Off (the cover greets the guest)",
+        "inscribed": "Inscribed (the name on a dotted line) — the Khmer card",
+        "formal": "Formal (tracked line, large name) — ceremonies",
+        "place_card": "Place card (a folded card at their seat) — receptions",
+        "tag": "Gift tag (hung on a string) — birthdays, parties"
+      }
+    },
     "hostInfoDesign": {
       "sectionTitle": "Host Info Design",
       "designHint": "Controls how the host information is displayed in the showcase.",

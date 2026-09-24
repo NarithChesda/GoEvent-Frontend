@@ -1160,6 +1160,55 @@ export interface DressCodeDesignConfig {
 }
 
 /**
+ * Composition used for the **guest dedication** on the main content stage —
+ * the event's invite text and the name of the guest the link was sent to,
+ * drawn between the host block and the date & venue.
+ *
+ * The cover has always carried these two, as rows of its own. A template whose
+ * cover doesn't (a printed-card cover led by the couple, a filmed cover with no
+ * text over it) had nowhere left that said who the invitation was for. This is
+ * that place on the invitation itself, with compositions of its own rather than
+ * the cover's guest-name frame moved down a stage.
+ *
+ * It sits where a Khmer wedding card writes the guest: after the parents who
+ * are inviting and before what they are inviting to, so the block reads as the
+ * middle of one sentence rather than as a second greeting.
+ *
+ * - `inscribed`  — the printed card's own convention: the invite text, then the
+ *                  name written onto a dotted line the way a card leaves one
+ *                  blank to be filled in by hand. The rule draws out from the
+ *                  centre and the name settles onto it.
+ * - `formal`     — the invite text tracked small between two hairlines, the
+ *                  name large under it word by word. The quiet one: weddings,
+ *                  ceremonies, funerals.
+ * - `place_card` — the name on a folded place card, as it would be at the
+ *                  guest's seat, standing up off the table as it arrives. The
+ *                  one with a material of its own: receptions and dinners.
+ * - `tag`        — the name on a gift tag hung from a string, swinging in and
+ *                  coming to rest slightly askew. The playful one: birthdays,
+ *                  housewarmings, parties.
+ *
+ * **Absent / `null` means no block at all**, unlike every other section design
+ * here — this one is additive, so switching it off is the default and every
+ * template saved before it existed renders unchanged. Never backfill it. An
+ * unrecognised `type` (written by a newer frontend) renders `inscribed`: the
+ * partner switched the block on, so it degrades to a design, not to nothing.
+ *
+ * Only drawn when the showcase was opened for a named guest. A public link has
+ * nobody to address, and the invite text alone would be a greeting to no one.
+ */
+export type GuestInviteDesignType = 'inscribed' | 'formal' | 'place_card' | 'tag'
+
+/**
+ * Configuration for the guest dedication block. An object for the same reason
+ * `agenda_design` is one — a per-design option can be added as a sibling key.
+ */
+export interface GuestInviteDesignConfig {
+  /** Which composition to render. An unknown value renders `inscribed`. */
+  type: GuestInviteDesignType
+}
+
+/**
  * Composition used for the **Save the Date** title card on the transition
  * stage — the block that carries the label and the event date over the
  * featured photograph, between the cover and the invitation.
@@ -1571,6 +1620,12 @@ export interface PartnerTemplate {
   agenda_design: AgendaDesignConfig | null
   /** Dress code block design. Null = the `portrait` design every event renders today. */
   dress_code_design: DressCodeDesignConfig | null
+  /**
+   * Guest dedication on the invitation. Null / absent = no block. Optional
+   * because the backend field is pending
+   * (docs/backend-api-requirements/guest-invite-design.md).
+   */
+  guest_invite_design?: GuestInviteDesignConfig | null
   save_the_date_design: SaveTheDateDesignConfig | null
   /** Per-stage animation/video modes. Null = infer from assets + category. */
   stage_modes: StageModesConfig | null
@@ -1681,6 +1736,8 @@ export interface PartnerTemplateCreatePayload {
   agenda_design?: AgendaDesignConfig | null
   /** Dress code block design. Pass `null` to fall back to the `portrait` design. */
   dress_code_design?: DressCodeDesignConfig | null
+  /** Guest dedication on the invitation. Pass `null` to remove the block. */
+  guest_invite_design?: GuestInviteDesignConfig | null
   /** Transition-stage Save the Date design. Pass `null` to keep each stage's own default. */
   save_the_date_design?: SaveTheDateDesignConfig | null
   /** Per-stage animation/video modes. Pass `null` to fall back to the legacy inference. */

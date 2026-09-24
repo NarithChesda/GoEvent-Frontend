@@ -99,6 +99,7 @@ describe('partner template form config round trip', () => {
     expect(hydrated.dress_code_design_type).toBe(fresh.dress_code_design_type)
     expect(hydrated.info_card_design_type).toBe(fresh.info_card_design_type)
     expect(hydrated.save_the_date_design_type).toBe('auto')
+    expect(hydrated.guest_invite_design_type).toBe('none')
     expect(hydrated.text_effects).toEqual(fresh.text_effects)
     expect(hydrated.falling_effect_enabled).toBe(false)
     expect(hydrated.ambient_creatures_enabled).toBe(false)
@@ -124,6 +125,7 @@ describe('partner template form config round trip', () => {
       dress_code_design_type: 'atelier',
       info_card_design_type: 'engraved',
       save_the_date_design_type: 'engraved',
+      guest_invite_design_type: 'place_card',
       event_details_design_type: 'calendar',
       event_details_marker_color_source: 'custom',
       event_details_marker_custom_color: '#123456',
@@ -163,6 +165,26 @@ describe('partner template form config round trip', () => {
       const form = { ...defaultForm(), save_the_date_design_type: 'auto' as const }
       expect(buildConfigPayload(form).save_the_date_design).toBeNull()
       expect(hydrateForm(savedAs(form)).save_the_date_design_type).toBe('auto')
+    })
+
+    /**
+     * The guest dedication is additive: off draws no block, so it has to reach
+     * the server as an explicit null (absent would mean "leave it alone") and
+     * come back as off — never as a design nobody chose.
+     */
+    it('persists the guest dedication "none" as null, and reads it back as none', () => {
+      const form = { ...defaultForm(), guest_invite_design_type: 'none' as const }
+      expect(buildConfigPayload(form).guest_invite_design).toBeNull()
+      expect(hydrateForm(savedAs(form)).guest_invite_design_type).toBe('none')
+    })
+
+    it('reads a guest dedication design this build does not know as inscribed', () => {
+      const template = blankTemplate({
+        guest_invite_design: { type: 'envelope' } as unknown as PartnerTemplate['guest_invite_design'],
+      })
+      // Switched on by the partner, so it opens on the design the showcase
+      // draws for it rather than as "off", which a save would then persist.
+      expect(hydrateForm(template).guest_invite_design_type).toBe('inscribed')
     })
 
     it('sends sparks off as an explicit enabled:false, never as null', () => {
@@ -223,6 +245,7 @@ describe('partner template form config round trip', () => {
         'dress_code_design',
         'event_details_design',
         'falling_effect',
+        'guest_invite_design',
         'host_info_design',
         'info_card_design',
         'save_the_date_design',
