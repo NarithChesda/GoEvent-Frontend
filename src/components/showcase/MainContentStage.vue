@@ -270,6 +270,9 @@
                     :details-design="eventDetailsDesign?.type"
                     :details-marker-color-source="eventDetailsDesign?.marker_color_source"
                     :details-marker-custom-color="eventDetailsDesign?.marker_custom_color"
+                    :details-calendar-style="eventDetailsDesign?.calendar_style"
+                    :details-calendar-card-radius="eventDetailsDesign?.calendar_card_radius"
+                    :details-calendar-card-color="eventDetailsDesign?.calendar_card_color"
                     @open-map="$emit('openMap')"
                   >
                     <template #rsvp>

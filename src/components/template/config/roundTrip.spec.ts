@@ -129,6 +129,7 @@ describe('partner template form config round trip', () => {
       event_details_design_type: 'calendar',
       event_details_marker_color_source: 'custom',
       event_details_marker_custom_color: '#123456',
+      event_details_calendar_style: 'week',
       stage_mode_cover: 'video',
       stage_mode_transition: 'none',
       stage_mode_background: 'video',
@@ -197,6 +198,59 @@ describe('partner template form config round trip', () => {
 
     it('sends no text_effects at all when no slot carries a finish', () => {
       expect(buildConfigPayload(defaultForm()).text_effects).toBeNull()
+    })
+
+    /**
+     * `calendar_style` is sent only when it says something: absent already
+     * means `classic`, so a classic calendar template's payload is byte for byte
+     * what it was before the key existed — which matters to a backend that
+     * refuses keys it doesn't know.
+     */
+    it('sends a calendar style only on the calendar design, and never for classic', () => {
+      const calendar = { ...defaultForm(), event_details_design_type: 'calendar' as const }
+      expect(buildConfigPayload(calendar).event_details_design).not.toHaveProperty('calendar_style')
+
+      const dial = { ...calendar, event_details_calendar_style: 'dial' as const }
+      expect(buildConfigPayload(dial).event_details_design).toHaveProperty('calendar_style', 'dial')
+      expect(hydrateForm(savedAs(dial)).event_details_calendar_style).toBe('dial')
+
+      const flanked = { ...dial, event_details_design_type: 'flanked' as const }
+      expect(buildConfigPayload(flanked).event_details_design).not.toHaveProperty('calendar_style')
+    })
+
+    it("sends the card's corner radius only with the card, clamped to the editor's range", () => {
+      const card = {
+        ...defaultForm(),
+        event_details_design_type: 'calendar' as const,
+        event_details_calendar_style: 'card' as const,
+        event_details_calendar_card_radius: 18,
+      }
+      expect(buildConfigPayload(card).event_details_design).toMatchObject({
+        calendar_style: 'card',
+        calendar_card_radius: 18,
+        calendar_card_color: '#FFFFFF',
+      })
+      expect(hydrateForm(savedAs(card)).event_details_calendar_card_radius).toBe(18)
+
+      const blush = { ...card, event_details_calendar_card_color: '#FDF2F4' }
+      expect(hydrateForm(savedAs(blush)).event_details_calendar_card_color).toBe('#FDF2F4')
+
+      const week = { ...card, event_details_calendar_style: 'week' as const }
+      expect(buildConfigPayload(week).event_details_design).not.toHaveProperty('calendar_card_radius')
+      expect(buildConfigPayload(week).event_details_design).not.toHaveProperty('calendar_card_color')
+
+      const tooRound = { ...card, event_details_calendar_card_radius: 400 }
+      expect(buildConfigPayload(tooRound).event_details_design).toHaveProperty('calendar_card_radius', 40)
+    })
+
+    it('reads a calendar style this build does not draw as classic', () => {
+      const template = blankTemplate({
+        event_details_design: {
+          type: 'calendar',
+          calendar_style: 'lunar',
+        } as unknown as PartnerTemplate['event_details_design'],
+      })
+      expect(hydrateForm(template).event_details_calendar_style).toBe('classic')
     })
 
     it('drops the calendar marker colour when the design is a panel', () => {

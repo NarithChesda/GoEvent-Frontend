@@ -3358,6 +3358,20 @@
         "arch": "Arch (date inside a drawn arch)",
         "ticket": "Ticket (stub + venue)"
       },
+      "calendarStyleLabel": "Calendar style",
+      "calendarStyleHint": "Which calendar is drawn. Every style marks the event day in the accent mark colour below and moves the venue into the map card.",
+      "calendarStyles": {
+        "classic": "Classic (month grid, heart drawn round the day)",
+        "wall": "Wall planner (ruled boxes, the day stamped)",
+        "week": "Week (just that week, the day in a capsule)",
+        "desk": "Desk calendar (flips to the day)",
+        "dial": "Dial (the month round a ring)",
+        "card": "Floating card (paper calendar, clipped on)"
+      },
+      "cardRadius": "Card corner radius",
+      "cardRadiusHint": "0 is square paper. Round the corners to match a softer template.",
+      "cardColor": "Card colour",
+      "cardColorHint": "The paper the calendar is printed on. White by default. If your text colour would be hard to read on it, the card prints in near-black or white instead.",
       "markerColorSource": "Accent mark colour",
       "markerColorHint": "Colour of the design's one accent mark — the calendar's circled day, the flanked rules, the arch outline, the ticket perforation. Pick a template colour that stands out against the background.",
       "sourceAccent": "Accent",
@@ -3536,6 +3550,7 @@
         "gilding": "Gilded cover border",
         "coverText": "Cover text block",
         "calendarMarker": "Circled day",
+        "calendarCard": "Calendar card",
         "sparks": "Drifting sparks",
         "templateColor": "Template color",
         "fallingEffect": "Falling particles",

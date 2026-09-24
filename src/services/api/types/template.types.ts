@@ -806,6 +806,36 @@ export type EventDetailsDesignType = 'panel' | 'calendar' | 'flanked' | 'arch' |
 export type EventDetailsMarkerColorSource = 'accent' | 'primary' | 'secondary' | 'custom'
 
 /**
+ * Which calendar the `calendar` date design draws. Read only on that design,
+ * and a sibling key of `event_details_design` rather than a new `type`: every
+ * one of these is still "the date shown as a calendar", which hands the venue
+ * to the map card and spends the marker colour on the event day — they differ
+ * only in which calendar is drawn.
+ *
+ * - `classic` — the month grid with a hand-drawn heart circling the day. What
+ *               every calendar template rendered before this key existed.
+ * - `wall`    — a ruled wall-planner page: every day in its own box, number in
+ *               the corner, the event day pressed with a solid stamp.
+ * - `week`    — only the event's week, one row of seven, the day standing in a
+ *               tall filled capsule. The compact, modern one.
+ * - `desk`    — a desk flip calendar on binder rings: month on a coloured band,
+ *               the day set huge. The page before it flips over the rings as
+ *               it arrives.
+ * - `dial`    — the month's days set round a ring like a clock face, with a
+ *               hand that sweeps round to the day; the date sits in the centre.
+ * - `card`    — a paper calendar card floating on the page, clipped at the top
+ *               with a paperclip: the year circled by hand, the month set huge,
+ *               a plain grid of numbers with the day circled in the same hand.
+ *               The only style with a corner radius of its own
+ *               (`calendar_card_radius`).
+ *
+ * Absent means `classic`, and the editor only ever sends a value other than
+ * `classic`, so no existing template's payload changes. An unrecognised value
+ * renders `classic`.
+ */
+export type EventDetailsCalendarStyle = 'classic' | 'wall' | 'week' | 'desk' | 'dial' | 'card'
+
+/**
  * Configuration for the event date + location block on the showcase.
  *
  * Mirrors the `FallingEffectConfig` pattern: a small JSON object sent inside
@@ -822,6 +852,19 @@ export interface EventDetailsDesignConfig {
   marker_color_source?: EventDetailsMarkerColorSource
   /** Hex colour, read only when `marker_color_source` is `custom`. */
   marker_custom_color?: string | null
+  /** Which calendar the `calendar` design draws. Absent = `classic`. */
+  calendar_style?: EventDetailsCalendarStyle
+  /**
+   * Corner radius of the `card` calendar, in px (0–40). Read only by that
+   * style; absent = 0, the square-cornered paper card.
+   */
+  calendar_card_radius?: number
+  /**
+   * Paper colour of the `card` calendar, as a hex. Read only by that style;
+   * absent = white. The card prints in the template's ink unless that would
+   * be unreadable on this paper, when it switches to near-black or white.
+   */
+  calendar_card_color?: string | null
 }
 
 /**

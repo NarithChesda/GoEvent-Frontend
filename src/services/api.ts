@@ -119,6 +119,7 @@ export type {
   EventDetailsDesignType,
   EventDetailsDesignConfig,
   EventDetailsMarkerColorSource,
+  EventDetailsCalendarStyle,
   HostInfoDesignType,
   HostInfoDesignConfig,
   HostFrameStyle,

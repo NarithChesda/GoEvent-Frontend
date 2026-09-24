@@ -277,6 +277,48 @@
             />
             <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.eventDetailsDesign.designHint') }}</p>
 
+            <!-- Which calendar the calendar design draws. A sibling setting
+                 rather than more designs above: every one of these is still
+                 "the date as a calendar" — venue in the map card, the marker
+                 colour spent on the day — and only the calendar changes. -->
+            <TemplateFormDisclosure
+              :open="form.event_details_design_type === 'calendar'"
+              content-class="space-y-3 pt-2"
+            >
+              <TemplateFormChoice
+                v-model="calendarStyleModel"
+                :label="t('management.partnerTemplateForm.eventDetailsDesign.calendarStyleLabel')"
+                :options="calendarStyleOptions"
+                :columns="1"
+              />
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.eventDetailsDesign.calendarStyleHint') }}</p>
+
+              <!-- The card is the one calendar with corners of its own, so it
+                   is the one that asks how round they are: square paper for an
+                   editorial template, a soft rounded card for a modern one. -->
+              <TemplateFormDisclosure
+                :open="form.event_details_calendar_style === 'card'"
+                content-class="space-y-2 pt-1"
+              >
+                <TemplateFormNumber
+                  v-model="form.event_details_calendar_card_radius"
+                  :label="t('management.partnerTemplateForm.eventDetailsDesign.cardRadius')"
+                  :min="0"
+                  :max="CALENDAR_CARD_RADIUS_MAX"
+                  :step="2"
+                  unit="px"
+                />
+                <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.eventDetailsDesign.cardRadiusHint') }}</p>
+                <TemplateFormColor
+                  v-model="form.event_details_calendar_card_color"
+                  :label="t('management.partnerTemplateForm.eventDetailsDesign.cardColor')"
+                  :name="t('management.partnerTemplateForm.colorField.names.calendarCard')"
+                  placeholder="#FFFFFF"
+                />
+                <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.eventDetailsDesign.cardColorHint') }}</p>
+              </TemplateFormDisclosure>
+            </TemplateFormDisclosure>
+
             <!-- Every design but panel spends this on exactly one accent mark:
                  the calendar's circled day, the flanked rules, the arch
                  outline, the ticket perforation + stub numeral. -->
@@ -363,8 +405,10 @@ import {
   Ban,
   Bookmark,
   CalendarDays,
+  CalendarRange,
   Church,
   CircleDashed,
+  CircleDot,
   Clapperboard,
   Columns2,
   Crown,
@@ -374,6 +418,7 @@ import {
   Flower2,
   Frame,
   GitCommitVertical,
+  Grid3x3,
   Heart,
   IdCard,
   Infinity as InfinityIcon,
@@ -385,6 +430,7 @@ import {
   Minus,
   PanelLeft,
   Palette,
+  Paperclip,
   PenLine,
   RectangleHorizontal,
   Rows3,
@@ -410,6 +456,7 @@ import FileUploadField from '../PartnerTemplateFileField.vue'
 import PlanRequiredNotice from '../TemplateFormPlanNotice.vue'
 import { BTN_SECONDARY_SM, FIELD_HINT, PANEL, SECTION_HEADING } from '../templateUi'
 import { enumModel } from '../formModels'
+import { CALENDAR_CARD_RADIUS_MAX } from '@/components/showcase/calendar-designs/calendarModel'
 import { useTemplateEditor } from '../templateEditorContext'
 
 /**
@@ -445,6 +492,21 @@ const eventDetailsDesignOptions = computed(() => [
   { value: 'flanked', label: t('management.partnerTemplateForm.eventDetailsDesign.types.flanked'), icon: AlignVerticalJustifyCenter },
   { value: 'arch', label: t('management.partnerTemplateForm.eventDetailsDesign.types.arch'), icon: Church },
   { value: 'ticket', label: t('management.partnerTemplateForm.eventDetailsDesign.types.ticket'), icon: Ticket },
+])
+
+// `classic` leads: it is what every calendar template already draws, so the
+// picker opens on no change. Then from the most to the least of the month
+// shown — the full ruled page, the one week, the single day, the month as a
+// dial — which is also roughly from the most formal to the most playful. The
+// card closes the list: the one that is an object laid on the page rather than
+// drawn onto it.
+const calendarStyleOptions = computed(() => [
+  { value: 'classic', label: t('management.partnerTemplateForm.eventDetailsDesign.calendarStyles.classic'), icon: Heart },
+  { value: 'wall', label: t('management.partnerTemplateForm.eventDetailsDesign.calendarStyles.wall'), icon: Grid3x3 },
+  { value: 'week', label: t('management.partnerTemplateForm.eventDetailsDesign.calendarStyles.week'), icon: CalendarRange },
+  { value: 'desk', label: t('management.partnerTemplateForm.eventDetailsDesign.calendarStyles.desk'), icon: CalendarDays },
+  { value: 'dial', label: t('management.partnerTemplateForm.eventDetailsDesign.calendarStyles.dial'), icon: CircleDot },
+  { value: 'card', label: t('management.partnerTemplateForm.eventDetailsDesign.calendarStyles.card'), icon: Paperclip },
 ])
 
 const eventDetailsMarkerColorOptions = computed(() => [
@@ -597,6 +659,7 @@ const hostDesignHasWelcomeHeader = computed(() => form.host_info_design_type !==
 const contentWidthModel = enumModel(() => form.cover_stage_layout, 'contentWidth')
 const backgroundModeModel = enumModel(() => form, 'stage_mode_background')
 const eventDetailsDesignModel = enumModel(() => form, 'event_details_design_type')
+const calendarStyleModel = enumModel(() => form, 'event_details_calendar_style')
 const eventDetailsMarkerColorSourceModel = enumModel(
   () => form,
   'event_details_marker_color_source',

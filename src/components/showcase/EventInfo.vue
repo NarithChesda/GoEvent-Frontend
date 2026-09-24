@@ -367,9 +367,10 @@
     <!-- Calendar design: a full month grid with the event day circled. Driven
          by template_assets.event_details_design.type === 'calendar' (see
          activeDesign, which handles the no-start-date fallback to panel).
-         Location renders inside the map card header below. -->
+         Location renders inside the map card header below. This is the
+         `classic` calendar; the other styles are the block after it. -->
     <div
-      v-if="isCalendarDesign"
+      v-if="isCalendarDesign && calendarStyle === 'classic'"
       class="calendar-card bounce-in-element"
       :style="{
         color: primaryColor,
@@ -424,6 +425,41 @@
           </svg>
         </div>
       </div>
+      </EditableRegion>
+    </div>
+
+    <!-- The other calendars (event_details_design.calendar_style): a ruled wall
+         planner, the event's week, a desk flip calendar, a dial. Each is its own
+         component in calendar-designs/ and owns its composition and arrival;
+         this card is what every date design shares — the bounce-in, the `em`
+         ladder of .details-design, the marker colour, the edit region. The
+         venue still goes to the map card header, as it does for the classic. -->
+    <div
+      v-else-if="isCalendarDesign && calendarDesignModel && calendarStyleComponent"
+      class="details-design calendar-style-card bounce-in-element"
+      :class="{ 'details-kh': currentLanguage === 'kh' }"
+      :style="{
+        color: primaryColor,
+        animationDelay: `${animationDelays.date}s`,
+        '--details-marker-color': detailsMarkerColor,
+      }"
+    >
+      <EditableRegion :intent="{ kind: 'eventDate' }" class="calendar-region">
+        <component
+          :is="calendarStyleComponent"
+          :model="calendarDesignModel"
+          :active="isVisible"
+          :t0="detailsTiming.draw"
+          :display-font="primaryFont || currentFont"
+          :text-font="secondaryFont || currentFont"
+          :marker-ink="calendarMarkerInk"
+          :finish-class="fx('primary')"
+          :khmer="currentLanguage === 'kh'"
+          :card-radius="resolveCalendarCardRadius(detailsCalendarCardRadius)"
+          :card-color="calendarCardColor"
+          :card-ink="cardInkFor(primaryColor, calendarCardColor)"
+          :paper-tone="paperToneOf(calendarCardColor)"
+        />
       </EditableRegion>
     </div>
 
@@ -648,7 +684,24 @@ import InlineEditableText from '@/components/showcase-preview/edit/InlineEditabl
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import SectionDisplayToggle from '@/components/showcase-preview/edit/SectionDisplayToggle.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
-import type { EventDetailsMarkerColorSource } from '@/services/api/types/template.types'
+import type {
+  EventDetailsCalendarStyle,
+  EventDetailsMarkerColorSource,
+} from '@/services/api/types/template.types'
+import {
+  buildCalendarDesignModel,
+  inkOn,
+  cardInkFor,
+  paperToneOf,
+  resolveCalendarCardColor,
+  resolveCalendarCardRadius,
+  resolveCalendarStyle,
+} from './calendar-designs/calendarModel'
+import CalendarWall from './calendar-designs/CalendarWall.vue'
+import CalendarWeek from './calendar-designs/CalendarWeek.vue'
+import CalendarDesk from './calendar-designs/CalendarDesk.vue'
+import CalendarDial from './calendar-designs/CalendarDial.vue'
+import CalendarCard from './calendar-designs/CalendarCard.vue'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { useCountdown } from '../../composables/useCountdown'
 import {
@@ -707,6 +760,12 @@ interface Props {
   detailsMarkerColorSource?: EventDetailsMarkerColorSource
   /** Hex colour, read only when detailsMarkerColorSource is 'custom'. */
   detailsMarkerCustomColor?: string | null
+  /** Which calendar the `calendar` design draws. Absent / unknown = `classic`. */
+  detailsCalendarStyle?: EventDetailsCalendarStyle | null
+  /** The `card` calendar's corner radius, in px. Absent = square. */
+  detailsCalendarCardRadius?: number | null
+  /** The `card` calendar's paper colour, hex. Absent = white. */
+  detailsCalendarCardColor?: string | null
 }
 
 // Metallic lettering for the display type drawn in a finished slot: the
@@ -819,6 +878,44 @@ const activeDesign = computed(() =>
 
 const isCalendarDesign = computed(() => activeDesign.value === 'calendar')
 
+// Which calendar the calendar design draws. `classic` is the month grid below in
+// this file; the rest are compositions of their own in calendar-designs/.
+const calendarStyle = computed(() => resolveCalendarStyle(props.detailsCalendarStyle))
+
+const CALENDAR_STYLE_COMPONENTS = {
+  wall: CalendarWall,
+  week: CalendarWeek,
+  desk: CalendarDesk,
+  dial: CalendarDial,
+  card: CalendarCard,
+} as const satisfies Record<Exclude<EventDetailsCalendarStyle, 'classic'>, unknown>
+
+const calendarStyleComponent = computed(() =>
+  calendarStyle.value === 'classic' ? null : CALENDAR_STYLE_COMPONENTS[calendarStyle.value],
+)
+
+/**
+ * The facts every non-classic calendar draws from. Null for the classic grid
+ * (which builds its own `calendarModel` below) and whenever the date doesn't
+ * parse — `activeDesign` has already fallen back to panel in that case.
+ */
+const calendarDesignModel = computed(() => {
+  if (!isCalendarDesign.value || calendarStyle.value === 'classic' || !props.eventStartDate) {
+    return null
+  }
+  const date = new Date(props.eventStartDate)
+  if (Number.isNaN(date.getTime())) return null
+  return buildCalendarDesignModel({
+    date,
+    language: props.currentLanguage ?? 'en',
+    heading: calendarModel.value.heading,
+    weekdayLabels: calendarWeekdayLabels.value,
+    weekday: dateParts.value.weekday,
+    month: dateParts.value.month,
+    year: dateYear.value,
+  })
+})
+
 // The info card's own treatment, independent of which date design sits above
 // it. 'engraved' drops the glass panel and re-inks the whole block in
 // primaryColor, which is what lets it read as the same sheet as the calendar /
@@ -842,7 +939,12 @@ const isGlassCard = computed(() => !isEngraved.value && !isFrosted.value)
 // the single boundary between them. Only the designs that already draw
 // top/bottom rules have one to give up.
 const engravedJoinsDateMark = computed(
-  () => isEngraved.value && (isCalendarDesign.value || activeDesign.value === 'panel'),
+  () =>
+    isEngraved.value &&
+    // Only the classic calendar closes on a rule; the other calendar styles
+    // have no bottom rule to give up, so they keep their gap to the sheet.
+    ((isCalendarDesign.value && calendarStyle.value === 'classic') ||
+      activeDesign.value === 'panel'),
 )
 
 // Designs that hand the venue off to the map card's own header instead of
@@ -916,6 +1018,14 @@ const detailsMarkerColor = computed(() => {
       return props.accentColor || props.primaryColor || MARKER_FALLBACK
   }
 })
+
+// Ink for type drawn ON the marker colour — the wall stamp's number, the week
+// capsule's day, the desk calendar's month band. The marker is a template
+// colour, pale gold as often as deep red, so it is chosen, not assumed white.
+const calendarMarkerInk = computed(() => inkOn(detailsMarkerColor.value))
+
+// The `card` calendar's paper — the template's pick, white when it made none.
+const calendarCardColor = computed(() => resolveCalendarCardColor(props.detailsCalendarCardColor))
 
 // Localized SUN–SAT weekday header labels for the calendar grid. Uses the
 // explicit Khmer short names for 'kh' and Intl 'short' weekday names otherwise,
