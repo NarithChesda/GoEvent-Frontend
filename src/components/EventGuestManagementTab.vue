@@ -62,13 +62,11 @@
 
     <!-- Content Area.
          `--guest-toolbar-top` is where the guest list's own toolbar pins itself
-         on a phone: below the app bar and the manage tab strip, both of which
-         are `fixed`. The tab strip publishes its measured height, so this is
-         derived from the same number the page's own spacer uses rather than
-         from a second guess at it. The guest list defaults the variable to 0,
-         which is right wherever it is mounted without fixed chrome above it —
-         the shared-link page, for one. -->
-    <div v-else class="min-h-[25rem]" style="--guest-toolbar-top: calc(4rem + var(--manage-tabbar-h, 52px))">
+         on a phone: below the manage header, the only chrome fixed to the top
+         of the screen there (the section tabs float at the bottom). The guest
+         list defaults the variable to 0, which is right wherever it is mounted
+         without fixed chrome above it — the shared-link page, for one. -->
+    <div v-else class="min-h-[25rem]" style="--guest-toolbar-top: 4rem">
       <!-- One header row for the whole tab: the title, the view choice, and
            sharing.
 

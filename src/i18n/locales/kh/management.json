@@ -371,6 +371,9 @@
     "tickets": "សំបុត្រ",
     "ticketsMobile": "សំបុត្រ"
   },
+  "mobileNav": {
+    "label": "ផ្នែកនៃកម្មវិធី"
+  },
   "actions": {
     "publish": "ផ្សព្វផ្សាយ",
     "unpublish": "ដកចេញ",

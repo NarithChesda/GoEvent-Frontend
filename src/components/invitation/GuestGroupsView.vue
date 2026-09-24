@@ -1119,10 +1119,11 @@ const { menuStyle: filterMenuStyle } = useAnchoredMenu(isDropdownOpen, tabsConta
 
 /**
  * Read off the band's own geometry rather than off a scroll offset: the pin
- * line is `--guest-toolbar-top`, which is a `calc()` over a variable another
- * component measures and publishes, and re-deriving that number here would be a
- * second source of truth for it that goes stale the moment the tab strip's
- * height changes. A sticky element that has left its slot is simply an element
+ * line is `--guest-toolbar-top`, which the page mounting this list sets from its
+ * own fixed chrome, and re-deriving that number here would be a second source
+ * of truth for it that goes stale the moment that chrome changes (it has: the
+ * manage page's tab strip used to sit under its header). A sticky element that
+ * has left its slot is simply an element
  * sitting lower than the slot it came out of — which needs no numbers at all.
  */
 const toolbarRef = ref<HTMLElement | null>(null)

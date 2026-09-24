@@ -371,6 +371,9 @@
     "tickets": "Tickets",
     "ticketsMobile": "Tickets"
   },
+  "mobileNav": {
+    "label": "Event sections"
+  },
   "actions": {
     "publish": "Publish",
     "unpublish": "Unpublish",

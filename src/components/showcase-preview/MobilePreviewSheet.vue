@@ -287,7 +287,7 @@
               :aria-label="t('management.activation.pill.activateCta')"
               @click="emit('activate')"
             >
-              <Sparkles class="w-[1.125rem] h-[1.125rem] flex-none" aria-hidden="true" />
+              <ShoppingCart class="w-[1.125rem] h-[1.125rem] flex-none" aria-hidden="true" />
               <span class="preview-sheet__btn-label" aria-hidden="true">
                 {{ t('management.activation.pill.activateCta') }}
               </span>
@@ -359,7 +359,7 @@
  * (music, the link preview) that have no place on the invitation to be tapped.
  */
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
-import { Loader2, Music, Palette, Pencil, Share2, Sparkles, TriangleAlert, Wand2, X } from 'lucide-vue-next'
+import { Loader2, Music, Palette, Pencil, Share2, ShoppingCart, TriangleAlert, Wand2, X } from 'lucide-vue-next'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { defineResilientAsyncComponent } from '@/utils/asyncComponent'
 import MobileBottomSheet from '@/components/common/MobileBottomSheet.vue'
