@@ -100,6 +100,8 @@ describe('partner template form config round trip', () => {
     expect(hydrated.info_card_design_type).toBe(fresh.info_card_design_type)
     expect(hydrated.save_the_date_design_type).toBe('auto')
     expect(hydrated.guest_invite_design_type).toBe('none')
+    expect(hydrated.countdown_rsvp_placement).toBe('card')
+    expect(hydrated.info_card_map_style).toBe('window')
     expect(hydrated.text_effects).toEqual(fresh.text_effects)
     expect(hydrated.falling_effect_enabled).toBe(false)
     expect(hydrated.ambient_creatures_enabled).toBe(false)
@@ -126,6 +128,10 @@ describe('partner template form config round trip', () => {
       info_card_design_type: 'engraved',
       save_the_date_design_type: 'engraved',
       guest_invite_design_type: 'place_card',
+      info_card_map_style: 'atlas',
+      countdown_rsvp_placement: 'section',
+      countdown_design_type: 'orbit',
+      rsvp_design_type: 'envelope',
       event_details_design_type: 'calendar',
       event_details_marker_color_source: 'custom',
       event_details_marker_custom_color: '#123456',
@@ -186,6 +192,67 @@ describe('partner template form config round trip', () => {
       // Switched on by the partner, so it opens on the design the showcase
       // draws for it rather than as "off", which a save would then persist.
       expect(hydrateForm(template).guest_invite_design_type).toBe('inscribed')
+    })
+
+    /**
+     * Left in the card, the pair is no config at all — but it must reach the
+     * server as an explicit null, because absent means "leave it alone" and a
+     * partner moving it back into the card has to be heard.
+     */
+    it('persists the countdown + RSVP left in the card as null, and reads it back as the card', () => {
+      const form = {
+        ...defaultForm(),
+        countdown_rsvp_placement: 'card' as const,
+        countdown_design_type: 'flip' as const,
+      }
+      expect(buildConfigPayload(form).countdown_rsvp_design).toBeNull()
+      expect(hydrateForm(savedAs(form)).countdown_rsvp_placement).toBe('card')
+    })
+
+    it('saves both designs together once the pair has a section of its own', () => {
+      const form = {
+        ...defaultForm(),
+        countdown_rsvp_placement: 'section' as const,
+        countdown_design_type: 'typeset' as const,
+        rsvp_design_type: 'inline' as const,
+      }
+      expect(buildConfigPayload(form).countdown_rsvp_design).toEqual({
+        countdown: 'typeset',
+        rsvp: 'inline',
+      })
+    })
+
+    it('reads a countdown or RSVP design this build does not know as the first of its kind', () => {
+      const template = blankTemplate({
+        countdown_rsvp_design: {
+          countdown: 'hourglass',
+          rsvp: 'scroll',
+        } as unknown as PartnerTemplate['countdown_rsvp_design'],
+      })
+      const hydrated = hydrateForm(template)
+      // The partner chose the section, so it stays on — on designs that exist.
+      expect(hydrated.countdown_rsvp_placement).toBe('section')
+      expect(hydrated.countdown_design_type).toBe('strips')
+      expect(hydrated.rsvp_design_type).toBe('card')
+    })
+
+    /**
+     * The window is what every card drew, so a template that keeps it must send
+     * the same info_card_design it always did — the backend may refuse keys it
+     * does not know.
+     */
+    it('sends map_style only when the map is not the window', () => {
+      expect(buildConfigPayload(defaultForm()).info_card_design).toEqual({ type: 'glass' })
+      const arch = { ...defaultForm(), info_card_map_style: 'arch' as const }
+      expect(buildConfigPayload(arch).info_card_design).toEqual({ type: 'glass', map_style: 'arch' })
+      expect(hydrateForm(savedAs(arch)).info_card_map_style).toBe('arch')
+    })
+
+    it('reads a map style this build does not draw as the window', () => {
+      const template = blankTemplate({
+        info_card_design: { type: 'frosted', map_style: 'globe' } as unknown as PartnerTemplate['info_card_design'],
+      })
+      expect(hydrateForm(template).info_card_map_style).toBe('window')
     })
 
     it('sends sparks off as an explicit enabled:false, never as null', () => {
@@ -295,6 +362,7 @@ describe('partner template form config round trip', () => {
       [
         'agenda_design',
         'ambient_creatures',
+        'countdown_rsvp_design',
         'cover_stage_layout',
         'dress_code_design',
         'event_details_design',

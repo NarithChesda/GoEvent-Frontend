@@ -42,6 +42,19 @@
         </span>
       </div>
 
+      <!-- The countdown's strips are cut from this one. A badge, not a
+           toggle: the card's action row is already full on a phone, and the
+           photo is chosen and framed on the strips in the Design Studio. -->
+      <div v-if="media.is_countdown_photo === true" class="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2">
+        <span
+          class="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-indigo-500 text-white shadow-lg"
+          :title="t('management.media.uploadModal.gallery.countdownPhoto')"
+        >
+          <Timer class="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-1" />
+          <span class="hidden sm:inline">{{ t('management.media.uploadModal.gallery.countdown') }}</span>
+        </span>
+      </div>
+
       <!-- Drag Handle (only visible if can edit and draggable) -->
       <div
         v-if="canEdit && draggable"
@@ -167,7 +180,17 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Trash2, Star, Calendar, ImageIcon, GripVertical, ChevronUp, ChevronDown, Frame } from 'lucide-vue-next'
+import {
+  Trash2,
+  Star,
+  Calendar,
+  ImageIcon,
+  GripVertical,
+  ChevronUp,
+  ChevronDown,
+  Frame,
+  Timer,
+} from 'lucide-vue-next'
 import type { EventPhoto } from '../services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 

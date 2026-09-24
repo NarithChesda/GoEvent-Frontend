@@ -95,16 +95,20 @@ export const isPhotoBand = (photo: PhotoBandFields | null | undefined): boolean 
 
 /**
  * The gallery's photos: every photo that isn't a band, in the order given —
- * nor the one the cover's photo frame is drawing, when there is one
- * (`coverFramePhotoId`), for the same reason.
+ * nor any photo another block is drawing, for the same reason: the cover's
+ * photo frame (`coverFramePhotoId`), the countdown's strips
+ * (`countdownStripsPhotoId`). Each is passed as an id, or null when that block
+ * isn't drawing a photo of its own.
  */
 export const galleryPhotosOf = <P extends PhotoBandFields & { id?: number }>(
   photos: readonly P[] | null | undefined,
-  coverPhotoId: number | null = null,
-): P[] =>
-  (photos ?? []).filter(
-    (photo) => !isPhotoBand(photo) && (coverPhotoId === null || photo.id !== coverPhotoId),
+  ...drawnElsewhere: (number | null)[]
+): P[] => {
+  const taken = new Set(drawnElsewhere.filter((id): id is number => id !== null))
+  return (photos ?? []).filter(
+    (photo) => !isPhotoBand(photo) && (photo.id === undefined || !taken.has(photo.id)),
   )
+}
 
 export interface ResolvedPhotoBand<P> {
   /** The photo's id — one photo is at most one band. */

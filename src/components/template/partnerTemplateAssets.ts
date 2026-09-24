@@ -3,6 +3,7 @@ import type {
   AgendaDesignConfig,
   DressCodeDesignConfig,
   GuestInviteDesignConfig,
+  CountdownRsvpDesignConfig,
   AmbientCreaturesConfig,
   CoverStageLayout,
   EventDetailsDesignConfig,
@@ -73,6 +74,8 @@ export interface PartnerTemplateDraft {
   dress_code_design: DressCodeDesignConfig
   /** Guest dedication on the invitation. Null = no block. */
   guest_invite_design: GuestInviteDesignConfig | null
+  /** Countdown + RSVP section. Null = both stay in the info card. */
+  countdown_rsvp_design: CountdownRsvpDesignConfig | null
   save_the_date_design: SaveTheDateDesignConfig | null
   /** Per-stage animation/video modes. Null = the legacy asset/category inference. */
   stage_modes: StageModesConfig | null
@@ -277,6 +280,7 @@ export function partnerTemplateToAssets(template: PartnerTemplate): TemplateAsse
     agenda_design: template.agenda_design,
     dress_code_design: template.dress_code_design,
     guest_invite_design: template.guest_invite_design ?? null,
+    countdown_rsvp_design: template.countdown_rsvp_design ?? null,
     save_the_date_design: template.save_the_date_design,
     stage_modes: template.stage_modes,
     text_effects: template.text_effects ?? null,
@@ -318,6 +322,7 @@ export function partnerTemplateDraftToAssets(
     agenda_design: draft.agenda_design,
     dress_code_design: draft.dress_code_design,
     guest_invite_design: draft.guest_invite_design,
+    countdown_rsvp_design: draft.countdown_rsvp_design,
     save_the_date_design: draft.save_the_date_design,
     stage_modes: draft.stage_modes,
     text_effects: draft.text_effects,

@@ -1065,6 +1065,81 @@ export type InfoCardDesignType = 'glass' | 'engraved' | 'frosted'
 export interface InfoCardDesignConfig {
   /** Which info card treatment to render. Defaults to `glass`. */
   type: InfoCardDesignType
+  /**
+   * How the Google Map inside the card is framed. Absent / unknown = `window`,
+   * the rounded rectangle every card drew before this existed, and the editor
+   * never sends `window` — so a template that keeps it saves the same payload
+   * it always did.
+   */
+  map_style?: InfoCardMapStyle | null
+}
+
+/**
+ * The frame the venue map is set in, inside the info card. A sibling key of the
+ * card's treatment rather than more treatments, because every one of these
+ * still sits in whichever card material (glass / engraved / frosted) the
+ * template chose; only the map's own shape changes.
+ *
+ * - `window`   — the default: the map as a 16:9 window, as it always was.
+ * - `arch`     — the map in an arched window, a hairline arch drawn around it.
+ *                The ceremonial one, rhyming with the `arch` date design.
+ * - `atlas`    — the map in an old map's checkered border (the neatline),
+ *                a compass rose settling onto its corner.
+ * - `polaroid` — the map as an instant print laid on the card, taped at the
+ *                top, the venue written in the wide bottom margin.
+ *
+ * Every frame keeps the embed's bottom edge square and uncovered: Google's
+ * logo and terms sit in its bottom corners, and the Maps embed terms do not
+ * allow them to be hidden. That is why there is no circular frame.
+ */
+export type InfoCardMapStyle = 'window' | 'arch' | 'atlas' | 'polaroid'
+
+/**
+ * The countdown's composition when it has a section of its own.
+ *
+ * - `strips`  — one of the event's photographs cut into three tall strips, with
+ *               the days, hours and minutes set at the foot of each.
+ * - `flip`    — a split-flap board: each digit on its own flap, which turns
+ *               over when the minute does.
+ * - `orbit`   — a dial: the days in the centre, the hours and minutes left as
+ *               two arcs round it, inside a watch-bezel of ticks.
+ * - `typeset` — the count as a line of print between two hairlines, the
+ *               figures in the display face and the units small beside them.
+ */
+export type CountdownDesignType = 'strips' | 'flip' | 'orbit' | 'typeset'
+
+/**
+ * The surface the RSVP form is set on when it has a section of its own.
+ *
+ * - `card`     — a printed reply card: paper, a double hairline border and an
+ *                R.S.V.P. mark, the form inked onto it.
+ * - `envelope` — that reply card rising out of an opened envelope.
+ * - `glass`    — the liquid-glass panel the info card has always drawn, white
+ *                type, now a card of its own.
+ * - `inline`   — no surface: the form inked straight onto the page under a
+ *                short hairline, like the engraved card.
+ */
+export type RsvpDesignType = 'card' | 'envelope' | 'glass' | 'inline'
+
+/**
+ * The countdown and the RSVP taken out of the info card into a section of
+ * their own, placed straight after it.
+ *
+ * One config for the pair, not one each, because they move together: a
+ * countdown out here with the RSVP left in the card (or the other way round)
+ * would split what the guest reads as one question — how long until, and will
+ * you come.
+ *
+ * **Absent / `null` keeps both inside the info card**, exactly as every
+ * template rendered before this existed. Never backfill it. An unknown value
+ * in either key (written by a newer frontend) renders that key's first design,
+ * because the partner did choose the section.
+ *
+ * Backend: docs/backend-api-requirements/countdown-rsvp-design.md
+ */
+export interface CountdownRsvpDesignConfig {
+  countdown: CountdownDesignType
+  rsvp: RsvpDesignType
 }
 
 /**
@@ -1669,6 +1744,12 @@ export interface PartnerTemplate {
    * (docs/backend-api-requirements/guest-invite-design.md).
    */
   guest_invite_design?: GuestInviteDesignConfig | null
+  /**
+   * The countdown and the RSVP in a section of their own. Null / absent =
+   * both stay inside the info card. Optional because the backend field is
+   * pending (docs/backend-api-requirements/countdown-rsvp-design.md).
+   */
+  countdown_rsvp_design?: CountdownRsvpDesignConfig | null
   save_the_date_design: SaveTheDateDesignConfig | null
   /** Per-stage animation/video modes. Null = infer from assets + category. */
   stage_modes: StageModesConfig | null
@@ -1781,6 +1862,8 @@ export interface PartnerTemplateCreatePayload {
   dress_code_design?: DressCodeDesignConfig | null
   /** Guest dedication on the invitation. Pass `null` to remove the block. */
   guest_invite_design?: GuestInviteDesignConfig | null
+  /** Countdown + RSVP section. Pass `null` to keep both inside the info card. */
+  countdown_rsvp_design?: CountdownRsvpDesignConfig | null
   /** Transition-stage Save the Date design. Pass `null` to keep each stage's own default. */
   save_the_date_design?: SaveTheDateDesignConfig | null
   /** Per-stage animation/video modes. Pass `null` to fall back to the legacy inference. */

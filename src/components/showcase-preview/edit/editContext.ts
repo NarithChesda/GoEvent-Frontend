@@ -74,6 +74,19 @@ export type EditIntent =
       /** The shape the window is cut to, for the editor to trace; null draws a plain rectangle. */
       shape?: CoverPhotoShapeMask | null
     }
+  /**
+   * Choose and frame the photograph the countdown's strips are cut from. Like
+   * the cover's frame, the strips report their own shape — the whole band's
+   * aspect, and the three columns with the gaps between them — because only
+   * they have measured how wide the card is.
+   */
+  | {
+      kind: 'countdownPhoto'
+      /** Width ÷ height of the whole strips band. */
+      frameAspect: number
+      /** The three columns, so the editor dims what the gaps throw away. */
+      shape?: CoverPhotoShapeMask | null
+    }
 
 /** A shape image and its opaque bounding box (ratios of the image, 0–1). */
 export interface CoverPhotoShapeMask {

@@ -273,48 +273,17 @@
                     :details-calendar-style="eventDetailsDesign?.calendar_style"
                     :details-calendar-card-radius="eventDetailsDesign?.calendar_card_radius"
                     :details-calendar-card-color="eventDetailsDesign?.calendar_card_color"
+                    :countdown-rsvp-in-section="!!countdownRsvp"
+                    :map-style="infoCardDesign?.map_style"
                     @open-map="$emit('openMap')"
                   >
-                    <template #rsvp>
+                    <!-- The form, in the card, while the card still holds it. Once the
+                         template gives the countdown and the reply a section of
+                         their own it is drawn there instead (below), and the
+                         card becomes the venue card. -->
+                    <template v-if="!countdownRsvp" #rsvp>
                       <div id="rsvp-section" ref="rsvpSectionRef">
-                        <!-- Private events: guest-shortcode based questionnaire -->
-                        <GuestRSVPSection
-                          v-if="event.privacy === 'private'"
-                          :event-id="event.id"
-                          :guest-shortcode="guestShortcode"
-                          :guest-name="guestName"
-                          :event-start-date="event.start_date"
-                          :event-end-date="event.end_date"
-                          :primary-color="primaryColor"
-                          :secondary-color="secondaryColor"
-                          :accent-color="accentColor"
-                          :background-color="backgroundColor"
-                          :event-texts="eventTexts"
-                          :current-language="currentLanguage"
-                          :event-type="eventType"
-                          :current-font="currentFont"
-                          :primary-font="primaryFont"
-                          :secondary-font="secondaryFont"
-                        />
-                        <!-- Public events: JWT / account-based RSVP -->
-                        <RSVPSection
-                          v-else
-                          :event-id="event.id"
-                          :event-start-date="event.start_date"
-                          :event-end-date="event.end_date"
-                          :primary-color="primaryColor"
-                          :secondary-color="secondaryColor"
-                          @show-auth-modal="$emit('showAuthModal')"
-                          :accent-color="accentColor"
-                          :background-color="backgroundColor"
-                          :is-event-past="isEventPast"
-                          :event-texts="eventTexts"
-                          :current-language="currentLanguage"
-                          :event-type="eventType"
-                          :current-font="currentFont"
-                          :primary-font="primaryFont"
-                          :secondary-font="secondaryFont"
-                        />
+                        <component :is="rsvpForm.component" v-bind="rsvpForm.props" v-on="rsvpForm.listeners" />
                       </div>
                     </template>
                   </EventInfo>
@@ -327,6 +296,44 @@
                     v-if="infoCardDesign?.type !== 'engraved'"
                     :primary-color="primaryColor"
                   />
+                </div>
+
+                <!-- The countdown and the reply in a section of their own, when
+                     the template chose one (countdown_rsvp_design; absent keeps
+                     both in the info card above, as every template drew them).
+                     Straight after the card and before its band slot, so a band
+                     placed "after the date & venue" still lands after the
+                     RSVP, which is where it was placed. Not drawn at all when
+                     there is nothing to count and nothing to answer. -->
+                <div
+                  v-if="countdownRsvp && countdownRsvpShown"
+                  ref="countdownRsvpRef"
+                  class="mb-6 sm:mb-8 laptop-sm:mb-8 laptop-md:mb-10 laptop-lg:mb-12 desktop:mb-10 animate-reveal"
+                >
+                  <CountdownRsvpSection
+                    :design="countdownRsvp"
+                    :event-start-date="event.start_date"
+                    :show-countdown="event.countdown_enabled !== false"
+                    :show-rsvp="event.rsvp_enabled !== false"
+                    :is-event-past="isEventPast"
+                    :photos="eventPhotos"
+                    :bleed-class="bleedMarginClasses"
+                    :primary-color="primaryColor"
+                    :accent-color="accentColor"
+                    :background-color="backgroundColor"
+                    :current-font="currentFont"
+                    :primary-font="primaryFont"
+                    :secondary-font="secondaryFont"
+                    :current-language="currentLanguage"
+                  >
+                    <template #rsvp>
+                      <div id="rsvp-section" ref="rsvpSectionRef">
+                        <component :is="rsvpForm.component" v-bind="rsvpForm.props" v-on="rsvpForm.listeners" />
+                      </div>
+                    </template>
+                  </CountdownRsvpSection>
+
+                  <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
                 <PhotoBandSlot
@@ -995,6 +1002,7 @@ import type { CoverHostNamesBinding } from './cover/coverDetails'
 import { resolveGlassTone } from './glassTone'
 import type {
   AgendaDesignConfig,
+  CountdownRsvpDesignConfig,
   DressCodeDesignConfig,
   CoverStageLayout,
   EventDetailsDesignConfig,
@@ -1010,6 +1018,8 @@ const { protectionAttrs } = useAssetProtection()
 import HostInfo from './HostInfo.vue'
 import GuestInviteSection from './GuestInviteSection.vue'
 import EventInfo from './EventInfo.vue'
+import CountdownRsvpSection from './countdown-rsvp/CountdownRsvpSection.vue'
+import { countdownStripsPhotoId, resolveCountdownRsvpDesign } from './countdown-rsvp/countdownRsvp'
 import RSVPSection from './RSVPSection.vue'
 import GuestRSVPSection from './GuestRSVPSection.vue'
 import AgendaSection from './AgendaSection.vue'
@@ -1112,6 +1122,8 @@ interface Props {
   dressCodeDesign?: DressCodeDesignConfig | null
   /** Guest dedication design from template. Absent / null = no block. */
   guestInviteDesign?: GuestInviteDesignConfig | null
+  /** Countdown + RSVP in a section of their own. Absent / null = both stay in the info card. */
+  countdownRsvpDesign?: CountdownRsvpDesignConfig | null
 }
 
 const props = defineProps<Props>()
@@ -1232,13 +1244,18 @@ const eventType = computed(() => {
   return props.event.category_details?.name || props.event.category_name || 'default'
 })
 
-// A photo set to appear as a band leaves the gallery, and so does the one in the
-// cover's photo frame while the design draws it: the invitation never shows the
-// same photograph twice.
+// A photo set to appear as a band leaves the gallery, and so do the one in the
+// cover's photo frame and the one the countdown's strips are cut from, while the
+// design draws them: the invitation never shows the same photograph twice.
 const galleryPhotos = computed(() =>
   galleryPhotosOf(
     props.eventPhotos,
     coverFramePhotoId(props.eventPhotos, props.mainStageLayout, props.templateAssets),
+    countdownStripsPhotoId(
+      props.eventPhotos,
+      props.countdownRsvpDesign,
+      props.event.countdown_enabled !== false,
+    ),
   ),
 )
 
@@ -1460,6 +1477,7 @@ const sectionRefs = {
   hostInfo: ref<HTMLElement>(),
   guestInvite: ref<HTMLElement>(),
   eventInfo: ref<HTMLElement>(),
+  countdownRsvp: ref<HTMLElement>(),
   rsvpSection: ref<HTMLElement>(),
   dressCodeSection: ref<HTMLElement>(),
   agendaSection: ref<HTMLElement>(),
@@ -1478,6 +1496,7 @@ const {
   hostInfo: hostInfoRef,
   guestInvite: guestInviteRef,
   eventInfo: eventInfoRef,
+  countdownRsvp: countdownRsvpRef,
   rsvpSection: rsvpSectionRef,
   dressCodeSection: dressCodeSectionRef,
   agendaSection: agendaSectionRef,
@@ -1575,6 +1594,7 @@ const initializeRevealAnimations = () => {
     [hostInfoRef, 'host-info'],
     [guestInviteRef, 'guest-invite'],
     [eventInfoRef, 'event-info'],
+    [countdownRsvpRef, 'countdown-rsvp'],
     [rsvpSectionRef, 'rsvp-section'],
     [dressCodeSectionRef, 'dress-code-section'],
     [agendaSectionRef, 'agenda-section'],
@@ -1624,6 +1644,9 @@ watch(
     // either can arrive after the stage does (a studio design change, a
     // template's assets landing late).
     props.guestInviteDesign?.type,
+    // The countdown + RSVP section mounts on a template design, which can
+    // arrive after the stage does (a studio design change).
+    !!props.countdownRsvpDesign,
     !!props.guestName,
   ],
   async () => {
@@ -1670,6 +1693,69 @@ const getDescriptionTitle = (): string | undefined => findEventText('description
  * their parent can see both.
  */
 const hostBlockOwnsDescription = computed(() => props.hostInfoDesign?.type === 'crest')
+
+/**
+ * The countdown + RSVP section's two designs, or null to leave both in the info
+ * card — which is what every template saved before the section existed has.
+ */
+const countdownRsvp = computed(() => resolveCountdownRsvpDesign(props.countdownRsvpDesign))
+
+/**
+ * Whether the section has anything to draw: a count still running, or a reply
+ * that can still be given. Both forms hide themselves once the event has ended,
+ * and the count once it has started, so with neither left the section (and its
+ * divider) is not drawn rather than leaving an empty gap. The studio keeps both
+ * on screen when switched off, for their on/off chips.
+ *
+ * Read against the clock once per render, not ticking: a page left open across
+ * the start keeps its section until the next render, where the count inside it
+ * has already hidden itself.
+ */
+const countdownRsvpShown = computed(() => {
+  const editing = !!editIntentCtx
+  const rsvp = (props.event.rsvp_enabled !== false || editing) && !props.isEventPast
+  const start = Date.parse(props.event.start_date ?? '')
+  const counting =
+    (props.event.countdown_enabled !== false || editing) &&
+    Number.isFinite(start) &&
+    start > Date.now()
+  return rsvp || counting
+})
+
+/**
+ * The RSVP form, declared once for both places it can be drawn — in the info
+ * card, or in the countdown + RSVP section. Private events answer a guest's own
+ * questionnaire by shortcode; public ones RSVP through an account.
+ */
+const rsvpForm = computed(() => {
+  const shared = {
+    eventId: props.event.id,
+    eventStartDate: props.event.start_date,
+    eventEndDate: props.event.end_date,
+    primaryColor: props.primaryColor,
+    secondaryColor: props.secondaryColor,
+    accentColor: props.accentColor,
+    backgroundColor: props.backgroundColor,
+    eventTexts: props.eventTexts,
+    currentLanguage: props.currentLanguage,
+    eventType: eventType.value,
+    currentFont: props.currentFont,
+    primaryFont: props.primaryFont,
+    secondaryFont: props.secondaryFont,
+  }
+  if (props.event.privacy === 'private') {
+    return {
+      component: GuestRSVPSection,
+      props: { ...shared, guestShortcode: props.guestShortcode, guestName: props.guestName },
+      listeners: {},
+    }
+  }
+  return {
+    component: RSVPSection,
+    props: { ...shared, isEventPast: props.isEventPast },
+    listeners: { showAuthModal: () => emit('showAuthModal') },
+  }
+})
 const getInstructionText = (): string | undefined => findEventText('instructions')?.content
 
 // Computed property to check if host message section should be displayed

@@ -39,7 +39,7 @@ export type GlassTone = 'frost' | 'clear'
 export const FROST_INK_CEILING = 0.3
 
 /** `#rgb` / `#rrggbb` → [r, g, b] in 0–255, or null for anything else. */
-const parseHex = (color: string | null | undefined): [number, number, number] | null => {
+export const parseHex = (color: string | null | undefined): [number, number, number] | null => {
   const value = (color ?? '').trim()
   const long = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(value)
   if (long) return [parseInt(long[1], 16), parseInt(long[2], 16), parseInt(long[3], 16)]

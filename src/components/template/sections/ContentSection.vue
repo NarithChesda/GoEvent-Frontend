@@ -358,6 +358,56 @@
               :columns="1"
             />
             <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.infoCardDesign.designHint') }}</p>
+
+            <!-- The map's frame, inside whichever card material is chosen
+                 above. A sibling setting rather than more card designs: the
+                 card stays glass, frosted or engraved, only the map changes. -->
+            <div class="pt-2 space-y-2">
+              <TemplateFormChoice
+                v-model="mapStyleModel"
+                :label="t('management.partnerTemplateForm.infoCardDesign.mapStyleLabel')"
+                :options="mapStyleOptions"
+                :columns="1"
+              />
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.infoCardDesign.mapStyleHint') }}</p>
+            </div>
+          </div>
+
+          <!-- The countdown and the reply. In the card (the default, and what
+               every existing template draws) they sit at its foot under the
+               map; in a section of their own they follow the card, each in a
+               design of its own. They move as a pair: a count out here with
+               the reply left in the card would split one question in two. -->
+          <div class="p-4 space-y-2">
+            <TemplateFormChoice
+              v-model="countdownRsvpPlacementModel"
+              :label="t('management.partnerTemplateForm.countdownRsvpDesign.sectionTitle')"
+              :options="countdownRsvpPlacementOptions"
+              variant="segmented"
+            />
+            <p :class="FIELD_HINT">
+              {{ t(`management.partnerTemplateForm.countdownRsvpDesign.placementHint.${form.countdown_rsvp_placement}`) }}
+            </p>
+
+            <TemplateFormDisclosure
+              :open="form.countdown_rsvp_placement === 'section'"
+              content-class="space-y-3 pt-2"
+            >
+              <TemplateFormChoice
+                v-model="countdownDesignModel"
+                :label="t('management.partnerTemplateForm.countdownRsvpDesign.countdownLabel')"
+                :options="countdownDesignOptions"
+                :columns="1"
+              />
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.countdownRsvpDesign.countdownHint') }}</p>
+              <TemplateFormChoice
+                v-model="rsvpDesignModel"
+                :label="t('management.partnerTemplateForm.countdownRsvpDesign.rsvpLabel')"
+                :options="rsvpDesignOptions"
+                :columns="1"
+              />
+              <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.countdownRsvpDesign.rsvpHint') }}</p>
+            </TemplateFormDisclosure>
           </div>
 
           <!-- The schedule under the invitation. Until this existed the
@@ -409,14 +459,18 @@ import {
   Church,
   CircleDashed,
   CircleDot,
+  Camera,
   Clapperboard,
   Columns2,
+  Columns3,
+  Compass,
   Crown,
   Diamond,
   Droplets,
   Feather,
   Flower2,
   Frame,
+  Gauge,
   GitCommitVertical,
   Grid3x3,
   Heart,
@@ -424,6 +478,8 @@ import {
   Infinity as InfinityIcon,
   LayoutList,
   LayoutPanelTop,
+  MailOpen,
+  Map as MapIcon,
   Maximize2,
   Milestone,
   Minimize2,
@@ -431,6 +487,7 @@ import {
   PanelLeft,
   Palette,
   Paperclip,
+  RectangleVertical,
   PenLine,
   RectangleHorizontal,
   Rows3,
@@ -441,6 +498,8 @@ import {
   Tag,
   Tent,
   Ticket,
+  Timer,
+  Type,
   UserRound,
   Users,
   Waypoints,
@@ -618,6 +677,40 @@ const infoCardDesignOptions = computed(() => [
   { value: 'engraved', label: t('management.partnerTemplateForm.infoCardDesign.types.engraved'), icon: PenLine },
 ])
 
+// `window` leads: it is the frame every card has always drawn, so the picker
+// opens on no change. Every frame leaves the embed's bottom edge uncovered —
+// Google's logo and terms live there — which is why none of them is round.
+const mapStyleOptions = computed(() => [
+  { value: 'window', label: t('management.partnerTemplateForm.infoCardDesign.mapStyles.window'), icon: MapIcon },
+  { value: 'arch', label: t('management.partnerTemplateForm.infoCardDesign.mapStyles.arch'), icon: Church },
+  { value: 'atlas', label: t('management.partnerTemplateForm.infoCardDesign.mapStyles.atlas'), icon: Compass },
+  { value: 'polaroid', label: t('management.partnerTemplateForm.infoCardDesign.mapStyles.polaroid'), icon: Camera },
+])
+
+const countdownRsvpPlacementOptions = computed(() => [
+  { value: 'card', label: t('management.partnerTemplateForm.countdownRsvpDesign.placements.card') },
+  { value: 'section', label: t('management.partnerTemplateForm.countdownRsvpDesign.placements.section') },
+])
+
+// From the one that is a picture to the one that is only type: the event's own
+// photograph cut into strips, the split-flap board, the dial, the printed line.
+const countdownDesignOptions = computed(() => [
+  { value: 'strips', label: t('management.partnerTemplateForm.countdownRsvpDesign.countdowns.strips'), icon: Columns3 },
+  { value: 'flip', label: t('management.partnerTemplateForm.countdownRsvpDesign.countdowns.flip'), icon: Timer },
+  { value: 'orbit', label: t('management.partnerTemplateForm.countdownRsvpDesign.countdowns.orbit'), icon: Gauge },
+  { value: 'typeset', label: t('management.partnerTemplateForm.countdownRsvpDesign.countdowns.typeset'), icon: Type },
+])
+
+// The printed reply card leads — the one a wedding invitation has always come
+// with — then that card in its envelope, the glass panel the card used to draw
+// it on, and the form set straight onto the page.
+const rsvpDesignOptions = computed(() => [
+  { value: 'card', label: t('management.partnerTemplateForm.countdownRsvpDesign.rsvps.card'), icon: RectangleVertical },
+  { value: 'envelope', label: t('management.partnerTemplateForm.countdownRsvpDesign.rsvps.envelope'), icon: MailOpen },
+  { value: 'glass', label: t('management.partnerTemplateForm.countdownRsvpDesign.rsvps.glass'), icon: Droplets },
+  { value: 'inline', label: t('management.partnerTemplateForm.countdownRsvpDesign.rsvps.inline'), icon: PenLine },
+])
+
 /**
  * Which of the two shared host-chrome pickers this design actually draws.
  *
@@ -672,4 +765,8 @@ const agendaDesignModel = enumModel(() => form, 'agenda_design_type')
 const dressCodeDesignModel = enumModel(() => form, 'dress_code_design_type')
 const guestInviteDesignModel = enumModel(() => form, 'guest_invite_design_type')
 const infoCardDesignModel = enumModel(() => form, 'info_card_design_type')
+const mapStyleModel = enumModel(() => form, 'info_card_map_style')
+const countdownRsvpPlacementModel = enumModel(() => form, 'countdown_rsvp_placement')
+const countdownDesignModel = enumModel(() => form, 'countdown_design_type')
+const rsvpDesignModel = enumModel(() => form, 'rsvp_design_type')
 </script>

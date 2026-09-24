@@ -3,8 +3,13 @@
        judged against the frame artwork around it, which only the preview can
        show. No scrim, and every choice is pushed into the frames live
        (`preview`) until it is saved or abandoned. Both choices are stored on
-       the photo itself: `is_cover_photo` beside its featured flag, and its own
-       framing, which it keeps wherever else it appears. -->
+       the photo itself: a flag beside its featured one, and its own framing,
+       which it keeps wherever else it appears.
+
+       One editor for every block drawn from a photo the organizer marks for
+       it (`role`): the cover's photo frame (`is_cover_photo`) and the
+       countdown's strips (`is_countdown_photo`). They differ only in the flag,
+       the words, and what shows until a photo is marked. -->
   <Teleport to="body">
     <Transition name="cpe">
       <div
@@ -24,10 +29,10 @@
         <div class="flex items-start justify-between gap-3 px-4 sm:px-5 pt-3 md:pt-5">
           <div class="min-w-0">
             <h3 :id="titleId" class="text-base font-semibold text-slate-900">
-              {{ t('management.showcasePreview.editors.coverPhotoTitle') }}
+              {{ t(copy.title) }}
             </h3>
             <p class="text-xs sm:text-sm text-slate-500 mt-1">
-              {{ t('management.showcasePreview.editors.coverPhotoDescription') }}
+              {{ t(copy.description) }}
             </p>
           </div>
           <button
@@ -61,7 +66,7 @@
               {{ t('management.showcasePreview.editors.featuredPhotoEmpty') }}
             </p>
             <p class="text-xs text-slate-500 mt-1">
-              {{ t('management.showcasePreview.editors.coverPhotoUploadPrompt') }}
+              {{ t(copy.uploadPrompt) }}
             </p>
             <button
               type="button"
@@ -104,7 +109,7 @@
               <div
                 class="grid grid-cols-3 gap-2.5"
                 role="radiogroup"
-                :aria-label="t('management.showcasePreview.editors.coverPhotoTitle')"
+                :aria-label="t(copy.title)"
               >
                 <button
                   v-for="(photo, k) in photos"
@@ -143,14 +148,14 @@
                 </button>
               </div>
 
-              <p v-if="storedCoverId === null" class="mt-3 text-xs text-slate-500">
-                {{ t('management.showcasePreview.editors.coverPhotoFallbackHint') }}
+              <p v-if="storedMarkedId === null" class="mt-3 text-xs text-slate-500">
+                {{ t(copy.fallbackHint) }}
               </p>
             </section>
 
             <section v-else-if="selectedPhoto">
               <p class="text-xs sm:text-sm text-slate-500 mb-3">
-                {{ t('management.showcasePreview.editors.coverPhotoCropHint') }}
+                {{ t(copy.cropHint) }}
               </p>
               <PhotoFramingEditor
                 :key="selectedPhoto.id"
@@ -168,7 +173,7 @@
               v-if="unsupported"
               class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800"
             >
-              {{ t('management.showcasePreview.editors.coverPhotoUnsupported') }}
+              {{ t(copy.unsupported) }}
             </div>
             <div
               v-else-if="cropUnsupported"
@@ -190,13 +195,13 @@
           class="flex-shrink-0 flex items-center gap-2 border-t border-slate-100 px-4 sm:px-5 py-3"
         >
           <button
-            v-if="storedCoverId !== null"
+            v-if="storedMarkedId !== null"
             type="button"
             class="px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="saving"
             @click="remove"
           >
-            {{ t('management.showcasePreview.editors.coverPhotoRemove') }}
+            {{ t(copy.remove) }}
           </button>
           <div class="flex-1" />
           <button
@@ -237,21 +242,29 @@ import {
   type PhotoCrop,
 } from '@/utils/photoCrop'
 import { coverPhotoPayload, responseSupportsCoverPhoto } from '@/components/showcase/cover/coverPhoto'
+import {
+  countdownPhotoPayload,
+  responseSupportsCountdownPhoto,
+} from '@/components/showcase/countdown-rsvp/countdownRsvp'
 import type { PhotoFieldPatch } from '../bridge/previewBridge'
 import type { CoverPhotoShapeMask } from '../edit/editContext'
 import PhotoFramingEditor from './PhotoFramingEditor.vue'
 import FramedPhotoThumb from './FramedPhotoThumb.vue'
 
+type PhotoRole = 'cover' | 'countdown'
+
 interface Props {
   modelValue: boolean
   eventId: string
-  /** Width ÷ height of the photograph's box on the cover — the frame's own report. */
+  /** Which block's photo this is. Absent = the cover's, what this editor began as. */
+  role?: PhotoRole
+  /** Width ÷ height of the photograph's box — the block's own report. */
   frameAspect?: number
-  /** The shape the cover cuts the photograph to; null frames a plain rectangle. */
+  /** The shape the block cuts the photograph to; null frames a plain rectangle. */
   shape?: CoverPhotoShapeMask | null
 }
 
-const props = withDefaults(defineProps<Props>(), { frameAspect: 1, shape: null })
+const props = withDefaults(defineProps<Props>(), { role: 'cover', frameAspect: 1, shape: null })
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   /** Draw these photos this way in the preview frames now; nothing is saved. */
@@ -265,6 +278,56 @@ const emit = defineEmits<{
 const { t } = useAppLanguage()
 const titleId = useId()
 
+type RoleFlag = 'is_cover_photo' | 'is_countdown_photo'
+
+/**
+ * Everything that differs between the blocks: which flag marks the photo, the
+ * PATCH that sets it, how to tell a server that stores it from one that drops
+ * it, and the words. The rest — one photo per event, chosen then framed, live
+ * drafts reverted on any close without a save — is the same errand.
+ */
+const ROLES: Record<
+  PhotoRole,
+  {
+    flag: RoleFlag
+    payload: (on: boolean) => Partial<Record<RoleFlag, boolean | null>>
+    supports: (photo?: EventPhoto | null) => boolean
+    prefix: string
+  }
+> = {
+  cover: {
+    flag: 'is_cover_photo',
+    payload: coverPhotoPayload,
+    supports: responseSupportsCoverPhoto,
+    prefix: 'coverPhoto',
+  },
+  countdown: {
+    flag: 'is_countdown_photo',
+    payload: countdownPhotoPayload,
+    supports: responseSupportsCountdownPhoto,
+    prefix: 'countdownPhoto',
+  },
+}
+
+const role = computed(() => ROLES[props.role])
+
+const copy = computed(() => {
+  const key = (name: string) => `management.showcasePreview.editors.${role.value.prefix}${name}`
+  return {
+    title: key('Title'),
+    description: key('Description'),
+    uploadPrompt: key('UploadPrompt'),
+    fallbackHint: key('FallbackHint'),
+    cropHint: key('CropHint'),
+    unsupported: key('Unsupported'),
+    remove: key('Remove'),
+    saveFailed: key('SaveFailed'),
+  }
+})
+
+const isMarked = (photo: EventPhoto | null | undefined): boolean =>
+  photo?.[role.value.flag] === true
+
 const TABS = ['choose', 'crop'] as const
 const tab = ref<(typeof TABS)[number]>('choose')
 
@@ -276,8 +339,8 @@ const photos = ref<EventPhoto[]>([])
 
 const storedPhoto = (id: number | null) => photos.value.find((p) => p.id === id) ?? null
 
-/** The photo that was the cover photo when the panel opened. */
-const storedCoverId = ref<number | null>(null)
+/** The photo that was marked for this block when the panel opened. */
+const storedMarkedId = ref<number | null>(null)
 const draftPhotoId = ref<number | null>(null)
 /** A new framing for the chosen photo; null leaves its stored framing alone. */
 const draftCrop = ref<PhotoCrop | null>(null)
@@ -330,7 +393,7 @@ const shapeThumbStyle = computed<Record<string, string> | null>(() => {
 const isDirty = computed(() => {
   const target = selectedPhoto.value
   if (!target) return false
-  if (target.id !== storedCoverId.value) return true
+  if (target.id !== storedMarkedId.value) return true
   return draftCrop.value !== null && !cropsEqual(draftCrop.value, resolvePhotoCrop(target))
 })
 
@@ -348,12 +411,12 @@ const cropUnsupported = ref(false)
 
 // --- What the frames are shown ----------------------------------------------------
 
-/** A photo as stored: its cover flag and its framing. */
+/** A photo as stored: its flag and its framing. */
 const restorePatch = (id: number): PhotoFieldPatch => {
   const photo = storedPhoto(id)
   return {
     id,
-    is_cover_photo: photo?.is_cover_photo === true,
+    [role.value.flag]: isMarked(photo),
     crop_x: photo?.crop_x ?? null,
     crop_y: photo?.crop_y ?? null,
     crop_width: photo?.crop_width ?? null,
@@ -361,18 +424,18 @@ const restorePatch = (id: number): PhotoFieldPatch => {
   }
 }
 
-/** The draft, as changes to photos: the chosen one becomes the cover photo, and
- *  the one that was stops being it. */
+/** The draft, as changes to photos: the chosen one becomes this block's photo,
+ *  and the one that was stops being it. */
 const draftPatches = computed<PhotoFieldPatch[]>(() => {
   const target = draftPhotoId.value
   if (target === null) return []
   const patches: PhotoFieldPatch[] = []
-  if (storedCoverId.value !== null && storedCoverId.value !== target) {
-    patches.push({ id: storedCoverId.value, ...coverPhotoPayload(false) })
+  if (storedMarkedId.value !== null && storedMarkedId.value !== target) {
+    patches.push({ id: storedMarkedId.value, ...role.value.payload(false) })
   }
   patches.push({
     id: target,
-    ...coverPhotoPayload(true),
+    ...role.value.payload(true),
     ...(draftCrop.value ? toPhotoCropPayload(draftCrop.value) : {}),
   })
   return patches
@@ -442,14 +505,15 @@ const loadPhotos = async () => {
 }
 
 /**
- * Open on the cover photo as stored, straight on its framing — the likelier
+ * Open on the marked photo as stored, straight on its framing — the likelier
  * errand once one is chosen. With none chosen, nothing is selected and nothing
- * is previewed: the cover keeps showing the host's photo until a photo is
- * actually picked, rather than swapping it for one the organizer didn't choose.
+ * is previewed: the block keeps showing its fallback (the cover the host's
+ * photo, the strips the featured one) until a photo is actually picked, rather
+ * than swapping it for one the organizer didn't choose.
  */
 const seedDraft = () => {
-  const stored = photos.value.find((p) => p.is_cover_photo === true) ?? null
-  storedCoverId.value = stored?.id ?? null
+  const stored = photos.value.find((p) => isMarked(p)) ?? null
+  storedMarkedId.value = stored?.id ?? null
   draftPhotoId.value = stored?.id ?? null
   draftCrop.value = null
   tab.value = stored ? 'crop' : 'choose'
@@ -502,7 +566,7 @@ const requestUpload = () => {
 
 /**
  * PATCH each photo the draft touches. Resolves to the saved photos, or null
- * after saying why — a server that doesn't know `is_cover_photo` answers 200
+ * after saying why — a server that doesn't know the flag answers 200
  * without it.
  */
 const patchPhotos = async (patches: PhotoFieldPatch[]): Promise<EventPhoto[] | null> => {
@@ -516,10 +580,10 @@ const patchPhotos = async (patches: PhotoFieldPatch[]): Promise<EventPhoto[] | n
   const saved: EventPhoto[] = []
   for (const response of responses) {
     if (!response?.success || !response.data) {
-      saveError.value = response?.message || t('management.showcasePreview.editors.coverPhotoSaveFailed')
+      saveError.value = response?.message || t(copy.value.saveFailed)
       return null
     }
-    if (!responseSupportsCoverPhoto(response.data)) {
+    if (!role.value.supports(response.data)) {
       unsupported.value = true
       return null
     }
@@ -547,7 +611,7 @@ const commit = async (patches: PhotoFieldPatch[], sentCrop: boolean) => {
       // The choice is stored; the framing isn't. Say so and stay, rather than
       // closing on a framing that will be gone on the next load.
       cropUnsupported.value = true
-      storedCoverId.value = draftPhotoId.value
+      storedMarkedId.value = draftPhotoId.value
       draftCrop.value = null
       return
     }
@@ -559,10 +623,10 @@ const commit = async (patches: PhotoFieldPatch[], sentCrop: boolean) => {
 
 const save = () => commit(draftPatches.value, draftCrop.value !== null)
 
-/** Back to the host's photo: the stored cover photo stops being one. */
+/** Back to the block's fallback: the stored photo stops being marked for it. */
 const remove = () => {
-  if (storedCoverId.value === null) return
-  commit([{ id: storedCoverId.value, ...coverPhotoPayload(false) }], false)
+  if (storedMarkedId.value === null) return
+  commit([{ id: storedMarkedId.value, ...role.value.payload(false) }], false)
 }
 </script>
 

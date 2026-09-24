@@ -86,6 +86,20 @@
     @upload-requested="photosOpen = true"
   />
 
+  <!-- The countdown's strips: the same editor for the photo they are cut
+       from, told the band's shape — its three columns and the gaps between
+       them — the way the cover's frame reports its own. -->
+  <CoverPhotoEditor
+    v-model="countdownPhotoOpen"
+    role="countdown"
+    :event-id="eventId"
+    :frame-aspect="countdownPhotoFrameAspect"
+    :shape="countdownPhotoShape"
+    @preview="(photos) => emit('preview', photos)"
+    @saved="(photos) => emit('media-updated', photos)"
+    @upload-requested="photosOpen = true"
+  />
+
   <EditAgendaDrawer
     v-model="agendaDrawerOpen"
     :event-id="eventId"
@@ -331,6 +345,13 @@ const photoBandId = ref<number | null>(null)
 const coverPhotoOpen = ref(false)
 const coverPhotoFrameAspect = ref(1)
 const coverPhotoShape = ref<CoverPhotoShapeMask | null>(null)
+
+// --- Countdown photo ------------------------------------------------------------
+// The same panel for the photo the countdown's strips are cut from, closed by
+// any other intent for the same reason.
+const countdownPhotoOpen = ref(false)
+const countdownPhotoFrameAspect = ref(4 / 5)
+const countdownPhotoShape = ref<CoverPhotoShapeMask | null>(null)
 
 // --- Agenda (item drawer + delete confirm + day-group date modal) ----------
 const agendaDrawerOpen = ref(false)
@@ -593,6 +614,7 @@ const handleIntent = (intent: EditIntent) => {
   // editors never draw over each other's work.
   if (intent.kind !== 'photoBand') photoBandOpen.value = false
   if (intent.kind !== 'coverPhoto') coverPhotoOpen.value = false
+  if (intent.kind !== 'countdownPhoto') countdownPhotoOpen.value = false
 
   switch (intent.kind) {
     case 'eventLogo':
@@ -664,6 +686,11 @@ const handleIntent = (intent: EditIntent) => {
       coverPhotoFrameAspect.value = intent.frameAspect > 0 ? intent.frameAspect : 1
       coverPhotoShape.value = intent.shape ?? null
       coverPhotoOpen.value = true
+      break
+    case 'countdownPhoto':
+      countdownPhotoFrameAspect.value = intent.frameAspect > 0 ? intent.frameAspect : 4 / 5
+      countdownPhotoShape.value = intent.shape ?? null
+      countdownPhotoOpen.value = true
       break
   }
 }

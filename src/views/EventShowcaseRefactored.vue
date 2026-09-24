@@ -163,6 +163,7 @@
             :agenda-design="event.template_assets?.agenda_design"
             :dress-code-design="event.template_assets?.dress_code_design"
             :guest-invite-design="event.template_assets?.guest_invite_design"
+            :countdown-rsvp-design="event.template_assets?.countdown_rsvp_design"
             @open-map="openGoogleMap"
             @open-photo="openPhotoModal"
             @register="registerForEvent"

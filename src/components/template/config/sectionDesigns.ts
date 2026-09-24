@@ -7,10 +7,12 @@ import type {
   GuestInviteDesignType,
   InfoCardDesignConfig,
   InfoCardDesignType,
+  InfoCardMapStyle,
   PartnerTemplate,
   SaveTheDateDesignConfig,
   SaveTheDateDesignType,
 } from '@/services/api'
+import { resolveMapStyle } from '@/components/showcase/countdown-rsvp/countdownRsvp'
 
 /**
  * The section designs that are a bare choice of composition: the info card, the
@@ -29,6 +31,12 @@ import type {
 export interface SectionDesignsFormState {
   /** Info card (venue/map/countdown/RSVP) treatment in the showcase (glass | engraved). */
   info_card_design_type: InfoCardDesignType
+  /**
+   * How the map inside the info card is framed. A sibling key of the card's
+   * treatment, the way `calendar_style` is of the date design's: the card's
+   * material stays whatever it is and only the map's own shape changes.
+   */
+  info_card_map_style: InfoCardMapStyle
   agenda_design_type: AgendaDesignType
   dress_code_design_type: DressCodeDesignType
   /**
@@ -51,6 +59,7 @@ export interface SectionDesignsFormState {
 
 export const defaultSectionDesigns = (): SectionDesignsFormState => ({
   info_card_design_type: 'glass',
+  info_card_map_style: 'window',
   agenda_design_type: 'rail',
   dress_code_design_type: 'portrait',
   save_the_date_design_type: 'auto',
@@ -60,6 +69,8 @@ export const defaultSectionDesigns = (): SectionDesignsFormState => ({
 export function hydrateSectionDesigns(template: PartnerTemplate | null): SectionDesignsFormState {
   return {
     info_card_design_type: template?.info_card_design?.type ?? 'glass',
+    // Absent and unknown both mean the window every map was drawn in.
+    info_card_map_style: resolveMapStyle(template?.info_card_design?.map_style),
     // Absent means the template predates the field, which is exactly 'rail' —
     // the one composition every agenda rendered back when the look came from
     // the event category.
@@ -74,9 +85,17 @@ export function hydrateSectionDesigns(template: PartnerTemplate | null): Section
   }
 }
 
+/**
+ * `map_style` is sent only when it isn't the window, so a template that keeps the
+ * window saves exactly the payload it always did — which matters because the
+ * backend may validate this blob's keys (see info-card-design.md).
+ */
 export const buildInfoCardDesignPayload = (
   state: SectionDesignsFormState,
-): InfoCardDesignConfig => ({ type: state.info_card_design_type })
+): InfoCardDesignConfig =>
+  state.info_card_map_style === 'window'
+    ? { type: state.info_card_design_type }
+    : { type: state.info_card_design_type, map_style: state.info_card_map_style }
 
 export const buildAgendaDesignPayload = (state: SectionDesignsFormState): AgendaDesignConfig => ({
   type: state.agenda_design_type,

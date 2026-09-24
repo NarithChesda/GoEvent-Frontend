@@ -54,10 +54,10 @@ const SHAPE = { url: 'https://cdn.test/shape.png', bounds: { x: 0.25, y: 0.25, w
 const mounted: { unmount: () => void }[] = []
 
 /** Mounted closed and then opened, the way the host opens it. */
-const open = async (photos: ReturnType<typeof photo>[]) => {
+const open = async (photos: ReturnType<typeof photo>[], extra: Record<string, unknown> = {}) => {
   getEventMedia.mockResolvedValue({ success: true, data: { results: photos } })
   const wrapper = mount(CoverPhotoEditor, {
-    props: { modelValue: false, eventId: 'evt-1', frameAspect: 0.8, shape: SHAPE },
+    props: { modelValue: false, eventId: 'evt-1', frameAspect: 0.8, shape: SHAPE, ...extra },
     global: { stubs: { teleport: true, PhotoFramingEditor: FramingStub } },
   })
   mounted.push(wrapper)
@@ -192,5 +192,67 @@ describe('CoverPhotoEditor', () => {
 
     expect(updateEventMedia).toHaveBeenCalledTimes(1)
     expect(updateEventMedia).toHaveBeenCalledWith('evt-1', 1, { is_cover_photo: false })
+  })
+})
+
+/**
+ * The same editor for the photo the countdown's strips are cut from: only the
+ * flag it writes and its words change, so these check exactly that — and that
+ * the cover's flag is never touched from here.
+ */
+describe('CoverPhotoEditor as the countdown photo editor', () => {
+  beforeEach(() => {
+    getEventMedia.mockReset()
+    updateEventMedia.mockReset()
+  })
+
+  afterEach(() => {
+    while (mounted.length) mounted.pop()!.unmount()
+  })
+
+  const countdown = { role: 'countdown' }
+
+  it('opens on the photo marked for the countdown, not the cover', async () => {
+    const wrapper = await open(
+      [photo(1, { is_cover_photo: true }), photo(2, { is_countdown_photo: true })],
+      countdown,
+    )
+    await button(wrapper, 'management.showcasePreview.editors.cropTabChoose')!.trigger('click')
+    expect(choices(wrapper).map((c) => c.attributes('aria-checked'))).toEqual(['false', 'true'])
+    expect(wrapper.text()).toContain('management.showcasePreview.editors.countdownPhotoTitle')
+  })
+
+  it('moves the countdown flag, and only that flag', async () => {
+    updateEventMedia.mockImplementation(async (_event: string, id: number, fields: object) => ({
+      success: true,
+      data: { ...photo(id), is_countdown_photo: false, ...fields },
+    }))
+    const wrapper = await open([photo(1), photo(2, { is_countdown_photo: true })], countdown)
+
+    await button(wrapper, 'management.showcasePreview.editors.cropTabChoose')!.trigger('click')
+    await choices(wrapper)[0].trigger('click')
+    await settle()
+    expect(patchFor(lastPreview(wrapper), 1)).toMatchObject({ is_countdown_photo: true })
+    expect(patchFor(lastPreview(wrapper), 1)).not.toHaveProperty('is_cover_photo')
+
+    await button(wrapper, 'management.showcasePreview.editors.save')!.trigger('click')
+    await flushPromises()
+    expect(updateEventMedia).toHaveBeenCalledWith('evt-1', 2, { is_countdown_photo: false })
+    expect(updateEventMedia).toHaveBeenCalledWith('evt-1', 1, { is_countdown_photo: true })
+  })
+
+  it('says so when the server does not store a countdown photo yet', async () => {
+    updateEventMedia.mockImplementation(async (_event: string, id: number) => ({
+      success: true,
+      data: photo(id), // no is_countdown_photo: the field was dropped
+    }))
+    const wrapper = await open([photo(1)], countdown)
+
+    await choices(wrapper)[0].trigger('click')
+    await button(wrapper, 'management.showcasePreview.editors.save')!.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('management.showcasePreview.editors.countdownPhotoUnsupported')
+    expect(wrapper.emitted('saved')).toBeUndefined()
   })
 })

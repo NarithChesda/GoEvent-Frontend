@@ -8,6 +8,7 @@ import type {
   AgendaDesignConfig,
   DressCodeDesignConfig,
   GuestInviteDesignConfig,
+  CountdownRsvpDesignConfig,
   AmbientCreaturesConfig,
   CoverStageLayout,
   FallingEffectConfig,
@@ -19,7 +20,12 @@ import type {
   StageModesConfig,
   TextEffectsConfig,
 } from '../services/api/types/template.types'
-import type { CoverPhotoFields, PhotoBandFields, StoredMusicStartStage } from '../services/api/types/event.types'
+import type {
+  CountdownPhotoFields,
+  CoverPhotoFields,
+  PhotoBandFields,
+  StoredMusicStartStage,
+} from '../services/api/types/event.types'
 
 // Imports - Composables
 import { usePerformance, ResourceManager } from '../utils/performance'
@@ -33,6 +39,7 @@ import { useTemplateProcessor } from './showcase/useTemplateProcessor'
 // Imports - Utilities
 import { galleryPhotosOf } from '../components/showcase/photo-band/photoBand'
 import { coverFramePhotoId } from '../components/showcase/cover/coverPhoto'
+import { countdownStripsPhotoId } from '../components/showcase/countdown-rsvp/countdownRsvp'
 import { updateMetaTags, getBestEventImage, createEventDescription } from '../utils/metaUtils'
 import { translateRSVP, type SupportedLanguage } from '../utils/translations'
 
@@ -254,6 +261,12 @@ export interface TemplateAssets {
    */
   guest_invite_design?: GuestInviteDesignConfig | null
   /**
+   * The countdown and the RSVP in a section of their own after the info card.
+   * Absent keeps both inside the card, as every template drew them — never
+   * backfilled.
+   */
+  countdown_rsvp_design?: CountdownRsvpDesignConfig | null
+  /**
    * Transition-stage Save the Date composition. Absent falls back per stage —
    * `script` on the decoration transition, `engraved` on the door — so every
    * already-published template renders unchanged.
@@ -277,7 +290,7 @@ export interface TemplateAssets {
   guest_title_frame_right?: string | null
 }
 
-export interface EventPhoto extends PhotoBandFields, CoverPhotoFields {
+export interface EventPhoto extends PhotoBandFields, CoverPhotoFields, CountdownPhotoFields {
   id: number
   event: string
   image: string
@@ -703,8 +716,8 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
   /**
    * The photos the gallery shows, and so the ones its lightbox pages through:
    * every photo not set to appear as a band, nor the one the cover's photo
-   * frame is drawing. Each is that photograph's place on the invitation, so it
-   * isn't repeated here.
+   * frame is drawing, nor the one the countdown's strips are cut from. Each is
+   * that photograph's place on the invitation, so it isn't repeated here.
    */
   const galleryPhotos = computed(() =>
     galleryPhotosOf(
@@ -713,6 +726,11 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
         eventPhotos.value,
         event.value?.template_assets?.cover_stage_layout,
         event.value?.template_assets?.assets,
+      ),
+      countdownStripsPhotoId(
+        eventPhotos.value,
+        event.value?.template_assets?.countdown_rsvp_design,
+        event.value?.countdown_enabled !== false,
       ),
     ),
   )

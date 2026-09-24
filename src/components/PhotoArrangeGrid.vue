@@ -66,6 +66,19 @@
           <Frame class="w-3 h-3" aria-hidden="true" />
         </span>
 
+        <!-- The countdown's strips are cut from this one. Information only:
+             it is chosen and framed on the strips themselves, in the Design
+             Studio preview, where the cuts can be seen. Beside the cover's
+             badge when a photo is both, since every corner is taken. -->
+        <span
+          v-if="photo.is_countdown_photo === true"
+          class="pag-countdown"
+          :class="{ 'is-beside-cover': photo.is_cover_photo === true }"
+          :title="t('management.media.uploadModal.gallery.countdownPhoto')"
+        >
+          <Timer class="w-3 h-3" aria-hidden="true" />
+        </span>
+
         <!-- Selected: a check where the remove button sits, which the bar
              below takes over while this photo is selected. -->
         <span v-if="selectedId === photo.id" class="pag-check" aria-hidden="true">
@@ -120,7 +133,7 @@
  * `update:selectedId` — saving, undo and failure are the parent's.
  */
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { Check, Frame, GalleryHorizontal, Star, X } from 'lucide-vue-next'
+import { Check, Frame, GalleryHorizontal, Star, Timer, X } from 'lucide-vue-next'
 import type { EventPhoto } from '@/services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { imagekitUrl, resolveMediaUrl } from '@/utils/mediaUrl'
@@ -178,6 +191,9 @@ const photoLabel = (photo: EventPhoto, index: number) => {
     photo.is_featured ? t('management.media.uploadModal.gallery.featured') : null,
     isPhotoBand(photo) ? t('management.media.uploadModal.gallery.band') : null,
     photo.is_cover_photo === true ? t('management.media.uploadModal.gallery.coverPhoto') : null,
+    photo.is_countdown_photo === true
+      ? t('management.media.uploadModal.gallery.countdownPhoto')
+      : null,
   ]
     .filter(Boolean)
     .join(', ')
@@ -764,6 +780,28 @@ const onKeydown = (event: KeyboardEvent, photo: EventPhoto) => {
   background: rgb(16 185 129);
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
   pointer-events: none;
+}
+
+/* The countdown's photo: the same chip in indigo, stepping left of the cover's
+   when one photo is both. */
+.pag-countdown {
+  position: absolute;
+  bottom: 0.375rem;
+  right: 0.375rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  color: #fff;
+  background: rgb(99 102 241);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+  pointer-events: none;
+}
+
+.pag-countdown.is-beside-cover {
+  right: 1.875rem;
 }
 
 .pag-check {

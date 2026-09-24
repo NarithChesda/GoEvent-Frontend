@@ -528,6 +528,15 @@
       "coverPhotoUnsupported": "This server doesn't store a cover photo yet, so nothing was saved. The preview goes back to how it was when you close this panel.",
       "coverPhotoRemove": "Remove cover photo",
       "coverPhotoSaveFailed": "Couldn't save the cover photo.",
+      "editCountdownPhoto": "Change countdown photo",
+      "countdownPhotoTitle": "Countdown photo",
+      "countdownPhotoDescription": "The photo the countdown's three stripes are cut from. Pick one, then move and zoom it until the stripes show what you want.",
+      "countdownPhotoUploadPrompt": "Upload photos first, then come back here to choose one for the countdown.",
+      "countdownPhotoFallbackHint": "Until you pick one, the countdown uses your featured photo.",
+      "countdownPhotoCropHint": "Only the lit stripes show; the gaps between them are cut away. This is the photo's own crop, so it also applies wherever else the photo appears.",
+      "countdownPhotoUnsupported": "This server doesn't store a countdown photo yet, so nothing was saved. The preview goes back to how it was when you close this panel.",
+      "countdownPhotoRemove": "Remove countdown photo",
+      "countdownPhotoSaveFailed": "Couldn't save the countdown photo.",
       "replayTransition": "Replay",
       "countdownLabel": "Countdown",
       "rsvpLabel": "RSVP",
@@ -800,6 +809,8 @@
         "coverTitle": "Show this photo in the frame on your cover. While your design has a photo frame, the photo moves there from the gallery. Crop it by tapping the frame in the Design Studio preview.",
         "coverFailed": "Couldn't change the cover photo.",
         "coverUnsupported": "This server doesn't store a cover photo yet, so nothing was changed.",
+        "countdown": "Countdown",
+        "countdownPhoto": "Countdown photo",
         "band": "Band",
         "bandNone": "In the gallery",
         "bandHint": "A band photo leaves the gallery. Set its blend color and crop by tapping it in the Design Studio preview.",
@@ -3385,6 +3396,41 @@
         "glass": "Glass (rounded panel, white text)",
         "frosted": "Frosted (blurred sheet, coloured text)",
         "engraved": "Engraved (hairline rules, inked type)"
+      },
+      "mapStyleLabel": "Map frame",
+      "mapStyleHint": "How the venue map is framed inside the card. The card's own material above stays as it is.",
+      "mapStyles": {
+        "window": "Window (rounded rectangle)",
+        "arch": "Arch (arched window, drawn outline)",
+        "atlas": "Atlas (old-map border, compass rose)",
+        "polaroid": "Polaroid (taped print, venue in the margin)"
+      }
+    },
+    "countdownRsvpDesign": {
+      "sectionTitle": "Countdown & RSVP",
+      "placements": {
+        "card": "In the info card",
+        "section": "Own section"
+      },
+      "placementHint": {
+        "card": "The countdown and the RSVP sit at the foot of the info card, under the map, in the card's own material.",
+        "section": "The countdown and the RSVP get a section of their own after the info card, each in the design picked below."
+      },
+      "countdownLabel": "Countdown design",
+      "countdownHint": "Days, hours and minutes until the start. Photo strips are cut from the event's featured photo, or its first photo when none is featured.",
+      "rsvpLabel": "RSVP design",
+      "rsvpHint": "The surface the reply form is set on. The reply card and the envelope print the form in the template's colour, or in near-black when that colour is too pale to read on paper.",
+      "countdowns": {
+        "strips": "Photo strips (the event photo cut in three)",
+        "flip": "Flip board (split-flap digits)",
+        "orbit": "Dial (days in the centre, hours and minutes as rings)",
+        "typeset": "Typeset (a printed line between hairlines)"
+      },
+      "rsvps": {
+        "card": "Reply card (printed card with an R.S.V.P. mark)",
+        "envelope": "Envelope (the reply card rising out of it)",
+        "glass": "Glass (the liquid-glass panel)",
+        "inline": "Inline (set straight on the page)"
       }
     },
     "saveTheDateDesign": {

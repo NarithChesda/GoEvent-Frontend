@@ -101,6 +101,17 @@ export interface CoverPhotoFields {
   is_cover_photo?: boolean | null
 }
 
+/**
+ * The photograph the countdown's `strips` design is cut from: a setting on the
+ * photo, beside `is_cover_photo`, framed by the same `crop_*` region. At most
+ * one photo per event carries it; with none, the strips fall back to the
+ * featured photo, then the first. Backend field pending:
+ * docs/backend-api-requirements/countdown-rsvp-design.md
+ */
+export interface CountdownPhotoFields {
+  is_countdown_photo?: boolean | null
+}
+
 export interface PhotoBandFields {
   /** Which section it follows. `null`/absent/empty = an ordinary gallery photo. */
   band_placement?: PhotoBandPlacement | null
@@ -335,7 +346,7 @@ export interface BulkReorderRequest {
   updates: { id: number; order: number; date?: string | null }[]
 }
 
-export interface EventPhoto extends PhotoBandFields, CoverPhotoFields {
+export interface EventPhoto extends PhotoBandFields, CoverPhotoFields, CountdownPhotoFields {
   id: number
   event: string
   image: string

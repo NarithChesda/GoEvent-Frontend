@@ -1,0 +1,268 @@
+/* ============================================================================
+   The RSVP form, inked.
+
+   Both RSVP forms (GuestRSVPSection for private events, RSVPSection for public
+   ones) are drawn white-on-glass: white type, white-ringed pills, a white
+   submit. That is right on the `glass` shell and on nothing else, so the three
+   shells that set the form on paper or on the page (`card`, `envelope`,
+   `inline`) re-ink it from here — the same arrangement, and the same recipe,
+   as the frosted info card's RSVP block in EventInfo.vue, rather than a fork
+   of two components that together run to 3,000 lines.
+
+   Three colours come in on the form wrapper and everything below is a mix of
+   them:
+
+     --crs-form-ink    every piece of copy, and the fill of the one solid
+                       control (the chosen answer, the submit)
+     --crs-form-tone   every surface and hairline
+     --crs-form-paper  the label on that solid control — measured against the
+                       ink, never assumed white
+
+   Loaded unscoped, once, from CountdownRsvpSection.vue. Every selector starts
+   `.crs .crs-rsvp .crs-form--ink` (three classes), which outranks each rule it
+   overrides in the forms' own scoped styles — those top out at three classes
+   plus the scope attribute on a *state* (`:hover:not(.active)`), and every
+   state they style is restated here with its own state, so nothing is left to
+   stylesheet order across chunks. `!important` appears only where a form sets
+   the value as an inline style.
+   ========================================================================== */
+
+.crs .crs-rsvp .crs-form--ink {
+  --crs-form-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --crs-form-hair: color-mix(in srgb, var(--crs-form-tone) 26%, transparent);
+  --crs-form-fill: color-mix(in srgb, var(--crs-form-tone) 7%, transparent);
+  --crs-form-fill-hover: color-mix(in srgb, var(--crs-form-tone) 14%, transparent);
+  color: var(--crs-form-ink);
+}
+
+/* --- Copy ------------------------------------------------------------------ */
+
+.crs .crs-rsvp .crs-form--ink .rsvp-title,
+.crs .crs-rsvp .crs-form--ink .step-prompt,
+.crs .crs-rsvp .crs-form--ink .stepper-value,
+.crs .crs-rsvp .crs-form--ink .stepper-label,
+.crs .crs-rsvp .crs-form--ink .toggle-label,
+.crs .crs-rsvp .crs-form--ink .confirmation-text,
+.crs .crs-rsvp .crs-form--ink .confirmation-code-text,
+.crs .crs-rsvp .crs-form--ink .seat-stat-value,
+.crs .crs-rsvp .crs-form--ink .link-btn,
+.crs .crs-rsvp .crs-form--ink .message-text,
+.crs .crs-rsvp .crs-form--ink .label-error,
+.crs .crs-rsvp .crs-form--ink .required-star,
+.crs .crs-rsvp .crs-form--ink .text-white {
+  color: inherit;
+}
+
+/* Secondary copy is set back in the ink, never in a grey. */
+.crs .crs-rsvp .crs-form--ink .step-hint,
+.crs .crs-rsvp .crs-form--ink .rsvp-placeholder,
+.crs .crs-rsvp .crs-form--ink .responded-at,
+.crs .crs-rsvp .crs-form--ink .message-text.success,
+.crs .crs-rsvp .crs-form--ink .seat-stat-label {
+  color: color-mix(in srgb, currentColor 64%, transparent);
+}
+
+.crs .crs-rsvp .crs-form--ink .message-text.error,
+.crs .crs-rsvp .crs-form--ink .label-error {
+  font-weight: 600;
+}
+
+/* The inactive half of the attend/decline pair is dimmed by an inline
+   opacity tuned for white on a saturated panel; on ink over paper that is a
+   whisper, so the dimming moves into the colour. */
+.crs .crs-rsvp .crs-form--ink .toggle-label {
+  opacity: 1 !important;
+  color: color-mix(in srgb, currentColor 58%, transparent);
+}
+
+.crs .crs-rsvp .crs-form--ink .toggle-container:has(.toggle-switch:not(.active)) .toggle-label:first-child,
+.crs .crs-rsvp .crs-form--ink .toggle-container:has(.toggle-switch.active) .toggle-label:last-child {
+  color: inherit;
+  font-weight: 600;
+}
+
+/* --- Choices --------------------------------------------------------------- */
+
+/* Unselected answers: a hairline ring over a faint tint of the surface.
+   `:not(.active)` is load-bearing, not tidiness: the forms' own hover rule is
+   `:hover:not(.active)` with an `!important` white tint, and a touch device
+   leaves :hover stuck on after a tap — this has to outrank it without one. */
+.crs .crs-rsvp .crs-form--ink .chip:not(.active),
+.crs .crs-rsvp .crs-form--ink .status-option:not(.active),
+.crs .crs-rsvp .crs-form--ink .edit-btn {
+  border: 1px solid var(--crs-form-hair);
+  background: var(--crs-form-fill) !important;
+  color: inherit !important;
+  box-shadow: none;
+  transition:
+    background 180ms var(--crs-form-ease),
+    border-color 180ms var(--crs-form-ease),
+    color 180ms var(--crs-form-ease),
+    transform 120ms var(--crs-form-ease);
+}
+
+/* The whole question rides on the status options: a thumb-sized target. */
+.crs .crs-rsvp .crs-form--ink .status-option {
+  min-height: 2.75rem;
+}
+
+/* The guest's own answer: solid ink, the label in the measured paper. */
+.crs .crs-rsvp .crs-form--ink .chip.active,
+.crs .crs-rsvp .crs-form--ink .status-option.active {
+  border: 1px solid var(--crs-form-ink);
+  background: var(--crs-form-ink) !important;
+  color: var(--crs-form-paper) !important;
+}
+
+.crs .crs-rsvp .crs-form--ink .chip:active,
+.crs .crs-rsvp .crs-form--ink .status-option:active {
+  transform: scale(0.97);
+}
+
+/* --- Actions --------------------------------------------------------------- */
+
+/* The one primary action, whichever form drew it. */
+.crs .crs-rsvp .crs-form--ink .nav-btn.next,
+.crs .crs-rsvp .crs-form--ink .nav-btn.submit,
+.crs .crs-rsvp .crs-form--ink .rsvp-btn-signin {
+  min-height: 2.75rem;
+  padding: 0.5rem 1.35rem;
+  border: none;
+  background: var(--crs-form-ink) !important;
+  color: var(--crs-form-paper) !important;
+  font-weight: 600;
+  box-shadow: 0 6px 18px -12px color-mix(in srgb, var(--crs-form-ink) 90%, transparent);
+  transition:
+    box-shadow 200ms var(--crs-form-ease),
+    background 200ms var(--crs-form-ease),
+    transform 120ms var(--crs-form-ease);
+}
+
+/* Disabled is a lighter impression, not a faded one. */
+.crs .crs-rsvp .crs-form--ink .nav-btn.next:disabled,
+.crs .crs-rsvp .crs-form--ink .nav-btn.submit:disabled {
+  opacity: 1;
+  background: color-mix(in srgb, var(--crs-form-ink) 30%, transparent) !important;
+  box-shadow: none;
+}
+
+/* The retreat is not a second primary action. */
+.crs .crs-rsvp .crs-form--ink .nav-btn.back {
+  min-height: 2.75rem;
+  border: 1px solid var(--crs-form-hair);
+  background: transparent !important;
+  color: color-mix(in srgb, currentColor 70%, transparent) !important;
+  box-shadow: none;
+}
+
+.crs .crs-rsvp .crs-form--ink .nav-btn:active:not(:disabled),
+.crs .crs-rsvp .crs-form--ink .rsvp-btn-signin:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .crs .crs-rsvp .crs-form--ink .chip:hover:not(.active),
+  .crs .crs-rsvp .crs-form--ink .status-option:hover:not(.active),
+  .crs .crs-rsvp .crs-form--ink .edit-btn:hover,
+  .crs .crs-rsvp .crs-form--ink .nav-btn.back:hover {
+    background: var(--crs-form-fill-hover) !important;
+    border-color: color-mix(in srgb, var(--crs-form-tone) 44%, transparent);
+    color: inherit !important;
+  }
+
+  .crs .crs-rsvp .crs-form--ink .nav-btn.next:hover:not(:disabled):not(:active),
+  .crs .crs-rsvp .crs-form--ink .nav-btn.submit:hover:not(:disabled):not(:active),
+  .crs .crs-rsvp .crs-form--ink .rsvp-btn-signin:hover:not(:active) {
+    transform: none;
+    box-shadow: 0 10px 24px -12px color-mix(in srgb, var(--crs-form-ink) 90%, transparent);
+  }
+
+  /* The public form's counter turns its ring white on hover, which on paper
+     deletes the button at the moment the pointer is on it. */
+  .crs .crs-rsvp .crs-form--ink .stepper-btn:hover:not(:disabled) {
+    border-color: var(--crs-form-ink);
+    background: var(--crs-form-fill-hover);
+    transform: none;
+  }
+}
+
+.crs .crs-rsvp .crs-form--ink .status-option:focus-visible,
+.crs .crs-rsvp .crs-form--ink .chip:focus-visible,
+.crs .crs-rsvp .crs-form--ink .stepper-btn:focus-visible,
+.crs .crs-rsvp .crs-form--ink .nav-btn:focus-visible,
+.crs .crs-rsvp .crs-form--ink .edit-btn:focus-visible,
+.crs .crs-rsvp .crs-form--ink .link-btn:focus-visible,
+.crs .crs-rsvp .crs-form--ink .rsvp-btn-signin:focus-visible {
+  outline: 2px solid var(--crs-form-ink);
+  outline-offset: 2px;
+}
+
+/* --- Counters, fields, progress -------------------------------------------- */
+
+/* The counter's buttons are ~1.6rem; an invisible expander takes the target to
+   a thumb without moving the drawn circle. */
+.crs .crs-rsvp .crs-form--ink .stepper-btn {
+  position: relative;
+  border: 1px solid var(--crs-form-hair);
+  background: var(--crs-form-fill);
+  color: inherit;
+}
+
+.crs .crs-rsvp .crs-form--ink .stepper-btn::after {
+  content: '';
+  position: absolute;
+  inset: -0.6rem;
+}
+
+.crs .crs-rsvp .crs-form--ink .line-input,
+.crs .crs-rsvp .crs-form--ink .line-textarea {
+  color: inherit;
+  border-bottom-color: color-mix(in srgb, var(--crs-form-tone) 32%, transparent);
+}
+
+.crs .crs-rsvp .crs-form--ink .line-input::placeholder,
+.crs .crs-rsvp .crs-form--ink .line-textarea::placeholder {
+  color: color-mix(in srgb, currentColor 45%, transparent);
+}
+
+.crs .crs-rsvp .crs-form--ink .line-input:focus,
+.crs .crs-rsvp .crs-form--ink .line-textarea:focus {
+  border-bottom-color: var(--crs-form-ink);
+}
+
+/* A glow needs a dark ground to bloom against; paper has none. */
+.crs .crs-rsvp .crs-form--ink .wizard-progress {
+  background: color-mix(in srgb, var(--crs-form-tone) 14%, transparent);
+}
+
+.crs .crs-rsvp .crs-form--ink .wizard-progress-fill {
+  background: var(--crs-form-ink);
+  box-shadow: none;
+}
+
+.crs .crs-rsvp .crs-form--ink .rsvp-title-check,
+.crs .crs-rsvp .crs-form--ink .confirmation-chip,
+.crs .crs-rsvp .crs-form--ink .seat-ticket {
+  border-color: var(--crs-form-hair);
+  background: var(--crs-form-fill);
+  color: inherit;
+}
+
+.crs .crs-rsvp .crs-form--ink .toggle-switch {
+  border: 1px solid color-mix(in srgb, var(--crs-form-tone) 30%, transparent);
+  background: color-mix(in srgb, var(--crs-form-tone) 10%, transparent) !important;
+}
+
+.crs .crs-rsvp .crs-form--ink .toggle-thumb {
+  background: var(--crs-form-ink) !important;
+}
+
+.crs .crs-rsvp .crs-form--ink .spinner-white,
+.crs .crs-rsvp .crs-form--ink .spinner-inline {
+  border-color: color-mix(in srgb, currentColor 25%, transparent);
+  border-top-color: currentColor;
+}
+
+.crs .crs-rsvp .crs-form--ink .seat-ticket-divider {
+  background: var(--crs-form-hair);
+}

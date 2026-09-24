@@ -72,6 +72,12 @@ describe('galleryPhotosOf', () => {
     expect(galleryPhotosOf(photos, 2).map((p) => p.id)).toEqual([1])
     expect(galleryPhotosOf(photos, null).map((p) => p.id)).toEqual([1, 2])
   })
+
+  it('leaves out every photo another block is drawing — the cover and the countdown both', () => {
+    const photos = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }]
+    expect(galleryPhotosOf(photos, 2, 4).map((p) => p.id)).toEqual([1, 3])
+    expect(galleryPhotosOf(photos, null, 3).map((p) => p.id)).toEqual([1, 2, 4])
+  })
 })
 
 describe('resolvePhotoBands', () => {

@@ -463,8 +463,11 @@
       </EditableRegion>
     </div>
 
-    <!-- Event Details Block -->
-    <div class="space-y-3">
+    <!-- Event Details Block. Always drawn while the countdown and the RSVP
+         live in it, exactly as it was; once they have a section of their own
+         (countdownRsvpInSection) it is only a venue card, and an empty one is
+         not drawn at all. -->
+    <div v-if="!countdownRsvpInSection || venueCardHasContent" class="space-y-3">
       <!-- Three treatments of the same content. `glass` is the original: a
            2px-white-bordered, tinted, blurred panel with white type throughout.
            `engraved` throws the panel away and sets the block as ink on the
@@ -489,7 +492,7 @@
                (calendar, flanked, arch — see locationInMapCard): centered above
                the map frame, replacing the panel design's location card. -->
           <InlineEditableText
-            v-if="locationInMapCard && locationText"
+            v-if="locationInMapCard && locationText && !venueOnPrint"
             :value="locationText"
             :target="{ kind: 'eventText', textType: 'location_text', field: 'content' }"
             :multiline="true"
@@ -512,7 +515,43 @@
             :class="{ 'engraved-map': isEngraved, 'frosted-map': isFrosted }"
             :style="{ animationDelay: `${animationDelays.map}s` }"
           >
-            <EditableRegion :intent="{ kind: 'gmapEmbed' }">
+            <!-- Every map style but the window is a frame of its own
+                 (map-designs/MapFrame.vue). The edit region wraps only the
+                 embed, so the polaroid's caption below it stays its own
+                 inline edit rather than opening the map editor. -->
+            <MapFrame
+              v-if="resolvedMapStyle !== 'window'"
+              :variant="resolvedMapStyle"
+              :light="isGlassCard"
+              :revealed="isVisible"
+              :delay="animationDelays.map"
+              :caption-font="primaryFont || currentFont"
+              :khmer="currentLanguage === 'kh'"
+              :style="{ '--mf-tape': detailsMarkerColor }"
+            >
+              <EditableRegion :intent="{ kind: 'gmapEmbed' }">
+                <iframe
+                  :src="googleMapEmbedLink"
+                  width="100%"
+                  height="100%"
+                  style="border: 0"
+                  :allowfullscreen="false"
+                  loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade"
+                />
+              </EditableRegion>
+              <template v-if="venueOnPrint" #caption>
+                <InlineEditableText
+                  :value="locationText!"
+                  :target="{ kind: 'eventText', textType: 'location_text', field: 'content' }"
+                  :multiline="true"
+                  :input-style="{ fontFamily: primaryFont || currentFont, color: '#2a2118' }"
+                >
+                  <span :class="[currentLanguage === 'kh' && 'khmer-text-fix']">{{ locationText }}</span>
+                </InlineEditableText>
+              </template>
+            </MapFrame>
+            <EditableRegion v-else :intent="{ kind: 'gmapEmbed' }">
               <!-- Engraved mounts the map as a plate: a hairline frame with a
                    thin margin inside it and a second, fainter hairline against
                    the image, which is how a photograph is set on printed
@@ -557,7 +596,7 @@
                content — editIntentCtx is never provided on the public
                showcase) -->
           <div
-            v-if="countdown && isCountdownActive && (showCountdown || editIntentCtx)"
+            v-if="!countdownRsvpInSection && countdown && isCountdownActive && (showCountdown || editIntentCtx)"
             class="countdown-container px-4 pt-2 pb-2 bounce-in-element"
             :class="{ 'has-display-toggle': editIntentCtx, 'engraved-band': isEngraved }"
             :style="{ animationDelay: `${animationDelays.countdown}s` }"
@@ -645,7 +684,7 @@
                the RSVP band itself (one rule for every boundary in the sheet,
                rather than a drawn line here and a hairline everywhere else). -->
           <div
-            v-if="isGlassCard && countdown && isCountdownActive && (showCountdown || editIntentCtx) && (showRsvp || editIntentCtx)"
+            v-if="!countdownRsvpInSection && isGlassCard && countdown && isCountdownActive && (showCountdown || editIntentCtx) && (showRsvp || editIntentCtx)"
             class="countdown-divider bounce-in-element"
             :style="{ animationDelay: `${animationDelays.divider}s` }"
           >
@@ -658,7 +697,7 @@
                content — editIntentCtx is never provided on the public
                showcase) -->
           <div
-            v-if="showRsvp || editIntentCtx"
+            v-if="!countdownRsvpInSection && (showRsvp || editIntentCtx)"
             class="bounce-in-element rsvp-toggle-container"
             :class="{ 'has-display-toggle': editIntentCtx, 'engraved-band': isEngraved }"
             :style="{ animationDelay: `${animationDelays.rsvp}s` }"
@@ -687,7 +726,10 @@ import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
 import type {
   EventDetailsCalendarStyle,
   EventDetailsMarkerColorSource,
+  InfoCardMapStyle,
 } from '@/services/api/types/template.types'
+import MapFrame from './map-designs/MapFrame.vue'
+import { paperOnInk as paperOnInkFor, resolveMapStyle } from './countdown-rsvp/countdownRsvp'
 import {
   buildCalendarDesignModel,
   inkOn,
@@ -766,6 +808,14 @@ interface Props {
   detailsCalendarCardRadius?: number | null
   /** The `card` calendar's paper colour, hex. Absent = white. */
   detailsCalendarCardColor?: string | null
+  /**
+   * The countdown and the RSVP have a section of their own after this card
+   * (`countdown_rsvp_design`), so the card draws neither — it is the venue
+   * card. False keeps both here, as every template drew them before.
+   */
+  countdownRsvpInSection?: boolean
+  /** How the map is framed (`info_card_design.map_style`). Absent = `window`. */
+  mapStyle?: InfoCardMapStyle | null
 }
 
 // Metallic lettering for the display type drawn in a finished slot: the
@@ -958,6 +1008,33 @@ const locationInMapCard = computed(
     activeDesign.value === 'calendar' ||
     activeDesign.value === 'flanked' ||
     activeDesign.value === 'arch',
+)
+
+// The map's frame. Only an embed that is actually drawn has one.
+const resolvedMapStyle = computed(() => resolveMapStyle(props.mapStyle))
+
+const hasMapEmbed = computed(() => !!(props.hasGoogleMap && props.googleMapEmbedLink))
+
+// The polaroid writes the venue in its own bottom margin, so for the designs
+// that hand the venue to this card, the print's caption replaces the header
+// above the map rather than repeating it under it.
+const venueOnPrint = computed(
+  () =>
+    resolvedMapStyle.value === 'polaroid' &&
+    hasMapEmbed.value &&
+    locationInMapCard.value &&
+    !!props.locationText,
+)
+
+// With the countdown and the RSVP in a section of their own, this is only the
+// venue card: the venue line (for the designs that put it here) and the map.
+// Nothing of either — and not the studio, which offers "add a map" in it — is
+// no card at all, rather than an empty panel between two sections.
+const venueCardHasContent = computed(
+  () =>
+    hasMapEmbed.value ||
+    !!editIntentCtx ||
+    (locationInMapCard.value && !!props.locationText),
 )
 
 // Localized 4-digit year (Khmer numerals for 'kh'), used by the designs that
@@ -1267,70 +1344,18 @@ const countdownNumberFont = computed(() => {
     : `'Rajdhani', sans-serif`
 })
 
-/* Off-white and near-black rather than pure — pure white on a saturated fill
-   vibrates, and pure black reads as a hole punched in it. Same pair, and the
-   same reasoning, as the host frames' label ink (frames/frameInk.ts). */
-const PAPER_LIGHT = '#fdfaf4'
-const PAPER_DARK = '#2a2118'
-/* The label on the filled control is 0.72rem/600 — small text, so AA is 4.5:1. */
-const PAPER_MIN_CONTRAST = 4.5
-
-/** Force a template colour to `#rrggbb`, or null when it isn't a hex at all. */
-const toHex6 = (color: string | null | undefined): string | null => {
-  const value = (color ?? '').trim()
-  if (/^#[0-9a-f]{6}$/i.test(value)) return value.toLowerCase()
-  const short = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(value)
-  if (short) return `#${short[1]}${short[1]}${short[2]}${short[2]}${short[3]}${short[3]}`.toLowerCase()
-  return null
-}
-
-const relativeLuminance = (hex6: string): number => {
-  const channel = (at: number) => {
-    const s = parseInt(hex6.slice(at, at + 2), 16) / 255
-    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
-  }
-  return 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5)
-}
-
-const contrastRatio = (a: string, b: string): number => {
-  const [hi, lo] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x)
-  return (hi + 0.05) / (lo + 0.05)
-}
-
 /**
  * A colour that is readable *against* the template's ink — used for the text of
  * the one filled control each inked design allows (the RSVP submit / selected
  * option), which inverts to ink-on-paper. Engraved reads it as the paper its
  * type is printed on; frosted as the label on its one solid capsule.
  *
- * It cannot simply *be* the template's background. `useTemplateProcessor`
- * already substitutes the primary colour for any template that declares no
- * colour named `background`, so `backgroundColor` arrives here as the ink
- * itself far more often than not — and the submit button then paints primary
- * type on a primary fill and disappears. Keep the declared background only
- * while it stays readable against the ink; otherwise pick whichever of the two
- * papers contrasts better, the way InlineEditableText picks its backing plate.
+ * Shared with the countdown + RSVP section (countdownRsvp.ts → paperOnInk),
+ * which inks the same forms, so the two can never pick different papers for
+ * one template. Why it cannot simply be the template's background is
+ * documented there.
  */
-const paperOnInk = computed(() => {
-  const ink = toHex6(props.primaryColor)
-  if (!ink) {
-    /* Unmeasurable ink (a named colour, an rgb()/hsl() string, an 8-digit
-       hex). The declared background is only safe here if it is demonstrably
-       a *different* colour from the ink — which is exactly what the
-       substitution described above makes it not, most of the time. */
-    const bg = (props.backgroundColor ?? '').trim()
-    return bg && bg.toLowerCase() !== (props.primaryColor ?? '').trim().toLowerCase()
-      ? bg
-      : PAPER_LIGHT
-  }
-
-  const declared = toHex6(props.backgroundColor)
-  if (declared && contrastRatio(declared, ink) >= PAPER_MIN_CONTRAST) return declared
-
-  return contrastRatio(PAPER_LIGHT, ink) >= contrastRatio(PAPER_DARK, ink)
-    ? PAPER_LIGHT
-    : PAPER_DARK
-})
+const paperOnInk = computed(() => paperOnInkFor(props.primaryColor, props.backgroundColor))
 
 /* ---------------------------------------------------------------------------
  * The info card's two layers, resolved once per design.

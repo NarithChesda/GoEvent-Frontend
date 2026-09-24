@@ -1,6 +1,7 @@
 import type {
   AgendaDesignConfig,
   AmbientCreaturesConfig,
+  CountdownRsvpDesignConfig,
   CoverStageLayout,
   DressCodeDesignConfig,
   EventDetailsDesignConfig,
@@ -23,6 +24,12 @@ import {
   hydrateCoverLayout,
   type CoverLayoutFormState,
 } from './coverLayout'
+import {
+  buildCountdownRsvpDesignPayload,
+  defaultCountdownRsvpDesign,
+  hydrateCountdownRsvpDesign,
+  type CountdownRsvpFormState,
+} from './countdownRsvpDesign'
 import {
   buildEventDetailsDesignPayload,
   defaultEventDetailsDesign,
@@ -102,6 +109,7 @@ export type FormState = BasicsFormState &
   EventDetailsDesignFormState &
   HostInfoDesignFormState &
   SectionDesignsFormState &
+  CountdownRsvpFormState &
   StageModesFormState &
   TextEffectsFormState
 
@@ -115,6 +123,7 @@ export const defaultForm = (): FormState => ({
   ...defaultEventDetailsDesign(),
   ...defaultHostInfoDesign(),
   ...defaultSectionDesigns(),
+  ...defaultCountdownRsvpDesign(),
   ...defaultStageModes(),
   ...defaultTextEffects(),
 })
@@ -139,6 +148,7 @@ export function hydrateForm(template: PartnerTemplate | null): FormState {
     ...hydrateEventDetailsDesign(template),
     ...hydrateHostInfoDesign(template),
     ...hydrateSectionDesigns(template),
+    ...hydrateCountdownRsvpDesign(template),
     ...hydrateStageModes(template),
     ...hydrateTextEffects(template),
   }
@@ -153,7 +163,7 @@ export function hydrateForm(template: PartnerTemplate | null): FormState {
  * Written out rather than `Pick`ed from the payload type, because the two say
  * different things. On the wire every config is optional and most accept `null`
  * — absent means "do not touch this", null means "switch this off". This form
- * always has an answer for all thirteen, and for the eight that cannot be switched
+ * always has an answer for all fourteen, and for the eight that cannot be switched
  * off it is never null; the live preview renders this value, so it needs the
  * narrower truth.
  *
@@ -174,6 +184,7 @@ export interface TemplateConfigPayload {
   agenda_design: AgendaDesignConfig
   dress_code_design: DressCodeDesignConfig
   guest_invite_design: GuestInviteDesignConfig | null
+  countdown_rsvp_design: CountdownRsvpDesignConfig | null
   save_the_date_design: SaveTheDateDesignConfig | null
   stage_modes: StageModesConfig
   text_effects: TextEffectsConfig | null
@@ -200,6 +211,7 @@ export function buildConfigPayload(form: FormState): TemplateConfigPayload {
     agenda_design: buildAgendaDesignPayload(form),
     dress_code_design: buildDressCodeDesignPayload(form),
     guest_invite_design: buildGuestInviteDesignPayload(form),
+    countdown_rsvp_design: buildCountdownRsvpDesignPayload(form),
     save_the_date_design: buildSaveTheDateDesignPayload(form),
     stage_modes: buildStageModesPayload(form),
     text_effects: buildTextEffectsPayload(form),
