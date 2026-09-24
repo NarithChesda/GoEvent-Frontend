@@ -116,7 +116,11 @@
           <!-- Liquid Glass Card -->
           <div class="liquid-glass-card" :class="[cardAnimationClass, cardWidthClass]">
             <!-- Glass Background Effects -->
-            <div v-if="showLiquidGlass" class="glass-background"></div>
+            <div
+              v-if="showLiquidGlass"
+              class="glass-background"
+              :class="{ 'glass-background--clear': glassTone === 'clear' }"
+            ></div>
 
             <!-- Content Container with Scroll.
                  `overscroll-contain` matters here: this scroller is nested
@@ -128,7 +132,10 @@
             <div
               ref="stageScrollRef"
               class="stage-scroll relative z-10 h-full overflow-y-auto overscroll-contain custom-scrollbar"
-              :class="{ 'stage-scroll--playing': isAutoScrolling }"
+              :class="{
+                'stage-scroll--playing': isAutoScrolling,
+                'stage-scroll--ink-edge': showLiquidGlass && glassTone === 'clear',
+              }"
             >
               <div :class="contentPaddingClasses">
                 <!-- Host Information (now includes welcome header) -->
@@ -867,6 +874,7 @@ import {
   useCoverStageLayout,
 } from '../../composables/showcase/useCoverStageLayout'
 import type { CoverHostNamesBinding } from './cover/coverDetails'
+import { resolveGlassTone } from './glassTone'
 import type {
   AgendaDesignConfig,
   DressCodeDesignConfig,
@@ -1099,6 +1107,11 @@ const showLiquidGlass = computed(() => {
   // Show liquid glass by default (true or undefined), hide only when explicitly false
   return value !== false
 })
+
+// Which way the glass moves the ground — chosen against the ink, because a white
+// film can't make gold legible. `clear` also turns on the text edge below. See
+// glassTone.ts for the measurements behind it.
+const glassTone = computed(() => resolveGlassTone(props.primaryColor))
 
 // "Wide content" mode: backed by template_assets.cover_stage_layout.contentWidth.
 // Falls back to the VITE_SHOWCASE_CONTENT_WIDTH env var for local visual testing
@@ -1908,6 +1921,17 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
+/* Clear glass — for an ink white can't make legible (glassTone.ts). The blur
+   stays, because it is what calms petals and filigree behind the glyphs; the
+   white film goes, because against gold it only washed the artwork out, and
+   over a dark backdrop it closed the gap to pale ink. The edge on `::after`
+   still draws the pane. Legibility comes from `.stage-scroll--ink-edge`. */
+.glass-background--clear::before {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px) saturate(0.85);
+  -webkit-backdrop-filter: blur(10px) saturate(0.85);
+}
+
 /* Fallback for browsers without backdrop-filter support */
 @supports not (backdrop-filter: blur(20px)) {
   .glass-background::before {
@@ -1917,6 +1941,62 @@ onUnmounted(() => {
       rgba(255, 255, 255, 0.8) 50%,
       rgba(255, 255, 255, 0.85) 100%
     );
+  }
+
+  /* An opaque white sheet is the frost at its worst for a light ink. */
+  .glass-background--clear::before {
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+/* The text edge that clear glass relies on: a hairline in a deep shade of each
+   run's own colour, which is what separates pale gold from a pale ground
+   without covering the ground — the metallic finishes keep gold legible on a
+   cream card the same way. Nearly every run on this stage is the primary ink,
+   often at reduced alpha, so it is set once here and inherited rather than
+   opted into by twenty section components.
+
+   - Per element, not inherited from the root: `em` in the width resolves at
+     the declaring element, so a root-level width would give 12px names the
+     stroke of the root's size.
+   - Capped at 0.5px, lower than the finishes' rim. Legibility is a small-text
+     problem: display type is already large enough to read, and at 0.75px a
+     40px numeral read as outlined sticker lettering.
+   - The shade keeps the run's alpha, or a 58% note would carry a darker rim
+     than its own fill and read as outlined. Relative colour does that;
+     `color-mix` is the fallback for engines without it, and there a faded run's
+     rim is somewhat stronger than its fill.
+   - `paint-order: stroke fill` lays it under the glyph, so only the outer half
+     shows and small Khmer keeps its full weight and open counters.
+   - `.tfx-ink` is skipped: a metallic finish draws its own rim, and matching
+     it here would tie the two at equal specificity with bundle order choosing.
+     An inert ink span (no `.tfx` above it) inherits this one instead. */
+.stage-scroll--ink-edge,
+.stage-scroll--ink-edge :deep(:not(.tfx-ink)) {
+  -webkit-text-stroke-width: clamp(0.3px, 0.035em - 0.25px, 0.5px);
+  -webkit-text-stroke-color: color-mix(in srgb, currentColor 45%, #000);
+  -webkit-text-stroke-color: rgb(
+    from currentColor calc(r * 0.45) calc(g * 0.45) calc(b * 0.45) / alpha
+  );
+  paint-order: stroke fill;
+}
+
+/* Controls sit on fills of their own and keep the type they were designed
+   with; so does the footer bar, which carries white on its own tint. Each
+   selector outranks or follows the rule above, and none reaches `.tfx-ink`. */
+.stage-scroll--ink-edge
+  :deep(:is(button, a, input, textarea, select, [role='button'], [role='tab'])),
+.stage-scroll--ink-edge
+  :deep(:is(button, a, input, textarea, select, [role='button'], [role='tab']) :not(.tfx-ink)),
+.stage-scroll--ink-edge .footer-card-container,
+.stage-scroll--ink-edge .footer-card-container :deep(:not(.tfx-ink)) {
+  -webkit-text-stroke-width: 0;
+}
+
+@media (forced-colors: active) {
+  .stage-scroll--ink-edge,
+  .stage-scroll--ink-edge :deep(:not(.tfx-ink)) {
+    -webkit-text-stroke-width: 0;
   }
 }
 
