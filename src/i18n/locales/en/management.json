@@ -787,7 +787,7 @@
       "removeFile": "Remove photo",
       "gallery": {
         "title": "Already uploaded",
-        "hint": "Tap a photo to feature it, put it on the cover, make it a band, move it or remove it — or press and hold to drag it into place.",
+        "hint": "Tap a photo to feature it, use it for the cover or the countdown, make it a band, move it or remove it — or press and hold to drag it into place.",
         "photoLabel": "Photo {n} of {total}",
         "featured": "Featured photo",
         "remove": "Remove from the gallery",
@@ -804,13 +804,18 @@
         "reorderFailed": "Couldn't save the new order, so it's been put back.",
         "featureFailed": "Couldn't change the featured photo.",
         "cover": "Cover",
-        "coverOn": "On cover",
         "coverPhoto": "Cover photo",
-        "coverTitle": "Show this photo in the frame on your cover. While your design has a photo frame, the photo moves there from the gallery. Crop it by tapping the frame in the Design Studio preview.",
         "coverFailed": "Couldn't change the cover photo.",
         "coverUnsupported": "This server doesn't store a cover photo yet, so nothing was changed.",
         "countdown": "Countdown",
         "countdownPhoto": "Countdown photo",
+        "useFor": "Use for",
+        "useForTitle": "Use this photo for your cover's photo frame or the countdown's strips.",
+        "useForHint": "One photo each. While your design draws it, the photo moves there from the gallery. Frame it by tapping it in the Design Studio preview.",
+        "coverPhotoFrame": "Cover photo frame",
+        "countdownStrips": "Countdown strips",
+        "countdownFailed": "Couldn't change the countdown photo.",
+        "countdownUnsupported": "This server doesn't store a countdown photo yet, so nothing was changed.",
         "band": "Band",
         "bandNone": "In the gallery",
         "bandHint": "A band photo leaves the gallery. Set its blend color and crop by tapping it in the Design Studio preview.",
@@ -868,6 +873,8 @@
       "featuredNetworkError": "Network error while updating featured status",
       "coverSet": "Cover photo set",
       "coverCleared": "Cover photo removed",
+      "countdownSet": "Countdown photo set",
+      "countdownCleared": "Countdown photo removed",
       "uploadSuccessOne": "1 photo uploaded successfully",
       "uploadSuccessMany": "{count} photos uploaded successfully",
       "reorderError": "Failed to reorder media",
@@ -875,7 +882,9 @@
     },
     "card": {
       "setCover": "Use as cover photo",
-      "clearCover": "Remove from cover"
+      "clearCover": "Remove from cover",
+      "setCountdown": "Use as countdown photo",
+      "clearCountdown": "Remove from countdown"
     }
   },
   "messages": {

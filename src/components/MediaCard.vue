@@ -42,9 +42,7 @@
         </span>
       </div>
 
-      <!-- The countdown's strips are cut from this one. A badge, not a
-           toggle: the card's action row is already full on a phone, and the
-           photo is chosen and framed on the strips in the Design Studio. -->
+      <!-- The countdown's strips are cut from this one. -->
       <div v-if="media.is_countdown_photo === true" class="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2">
         <span
           class="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-indigo-500 text-white shadow-lg"
@@ -77,7 +75,7 @@
         class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none"
         :class="imageError ? 'bg-black/30' : 'bg-black/40'"
       >
-        <div class="flex items-center space-x-1.5 sm:space-x-2 pointer-events-auto">
+        <div class="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-2 pointer-events-auto">
           <!-- Move Up Button (mobile only) -->
           <button
             v-if="draggable"
@@ -133,6 +131,27 @@
             :aria-pressed="media.is_cover_photo === true"
           >
             <Frame class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </button>
+
+          <!-- Countdown photo toggle: the photo the countdown's strips are cut
+               from, one per event like the cover photo. Framed on the strips
+               themselves, in the Design Studio preview. -->
+          <button
+            @click="$emit('set-countdown', media)"
+            class="p-1.5 sm:p-2 bg-white/90 hover:bg-white rounded-lg transition-colors duration-200 shadow-lg"
+            :class="
+              media.is_countdown_photo === true
+                ? 'text-indigo-600 hover:text-indigo-700'
+                : 'text-slate-400 hover:text-indigo-600'
+            "
+            :title="
+              media.is_countdown_photo === true
+                ? t('management.media.card.clearCountdown')
+                : t('management.media.card.setCountdown')
+            "
+            :aria-pressed="media.is_countdown_photo === true"
+          >
+            <Timer class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
 
           <!-- Delete Button -->
@@ -206,6 +225,7 @@ interface Emits {
   delete: [media: EventPhoto]
   'set-featured': [media: EventPhoto]
   'set-cover': [media: EventPhoto]
+  'set-countdown': [media: EventPhoto]
   'drag-start': [media: EventPhoto]
   'drag-end': [media: EventPhoto]
   'move-up': []

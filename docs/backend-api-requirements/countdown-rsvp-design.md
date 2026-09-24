@@ -149,8 +149,9 @@ This applies to every endpoint that already carries `guest_invite_design`:
 ## The countdown photo
 
 The `strips` design is cut from one of the event's photographs, and the
-organizer chooses which, in the Design Studio (tapping the strips opens a
-picker, then a framing editor showing the three stripes). The choice is a
+organizer chooses which: in the photos drawer (**Use for → Countdown strips**),
+on the Photos tab's photo card, or in the Design Studio (tapping the strips
+opens a picker, then a framing editor showing the three stripes). The choice is a
 setting on the photo, exactly like `is_cover_photo`:
 
 ```json
