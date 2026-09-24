@@ -45,6 +45,17 @@
           <Star class="w-3 h-3 fill-current" aria-hidden="true" />
         </span>
 
+        <!-- A band: this photo appears in its own section of the invitation
+             instead of the gallery. Information only, like the star; the
+             selection bar's Band action is where it is set. -->
+        <span
+          v-if="isPhotoBand(photo)"
+          class="pag-band"
+          :title="t('management.media.uploadModal.gallery.band')"
+        >
+          <GalleryHorizontal class="w-3 h-3" aria-hidden="true" />
+        </span>
+
         <!-- Selected: a check where the remove button sits, which the bar
              below takes over while this photo is selected. -->
         <span v-if="selectedId === photo.id" class="pag-check" aria-hidden="true">
@@ -99,10 +110,11 @@
  * `update:selectedId` — saving, undo and failure are the parent's.
  */
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { Check, Star, X } from 'lucide-vue-next'
+import { Check, GalleryHorizontal, Star, X } from 'lucide-vue-next'
 import type { EventPhoto } from '@/services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
 import { imagekitUrl, resolveMediaUrl } from '@/utils/mediaUrl'
+import { isPhotoBand } from '@/components/showcase/photo-band/photoBand'
 
 interface Props {
   photos: EventPhoto[]
@@ -151,9 +163,13 @@ const photoLabel = (photo: EventPhoto, index: number) => {
     n: index + 1,
     total: items.value.length,
   })
-  return photo.is_featured
-    ? `${position}, ${t('management.media.uploadModal.gallery.featured')}`
-    : position
+  return [
+    position,
+    photo.is_featured ? t('management.media.uploadModal.gallery.featured') : null,
+    isPhotoBand(photo) ? t('management.media.uploadModal.gallery.band') : null,
+  ]
+    .filter(Boolean)
+    .join(', ')
 }
 
 // ---------------------------------------------------------------------------
@@ -701,6 +717,23 @@ const onKeydown = (event: KeyboardEvent, photo: EventPhoto) => {
   border-radius: 9999px;
   color: #fff;
   background: linear-gradient(to bottom right, #facc15, #f97316);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+  pointer-events: none;
+}
+
+/* Bottom-left, clear of the star above it and the remove button on the right. */
+.pag-band {
+  position: absolute;
+  bottom: 0.375rem;
+  left: 0.375rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  color: #fff;
+  background: #1e90ff;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
   pointer-events: none;
 }

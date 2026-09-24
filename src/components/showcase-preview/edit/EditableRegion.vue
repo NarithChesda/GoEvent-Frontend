@@ -65,6 +65,7 @@ const DEFAULT_LABEL_KEYS: Record<EditIntent['kind'], string> = {
   paymentItem: 'management.showcasePreview.editors.editPaymentMethod',
   paymentAdd: 'management.showcasePreview.editors.addPaymentMethod',
   featuredPhoto: 'management.showcasePreview.editors.editFeaturedPhoto',
+  photoBand: 'management.showcasePreview.editors.editPhotoBand',
   // Not actually rendered through EditableRegion (see the display-toggle
   // chips in MainContentStage.vue) — listed only to keep this map exhaustive
   // over EditIntent['kind'].

@@ -38,11 +38,13 @@ import {
   parsePreviewBridgeMessage,
   postToFrame,
   postEventPatchToFrame,
+  postPhotoPatchToFrame,
   postTemplatePreviewToFrame,
   postSetLanguageToFrame,
   postPreviewEventToFrame,
   postCoverLayoutSelection,
   type EventFieldPatch,
+  type PhotoFieldPatch,
   type ParentToFrameType,
 } from './bridge/previewBridge'
 import type { TemplateAssets } from '@/composables/useEventShowcase'
@@ -141,6 +143,8 @@ defineExpose({
   post: (type: ParentToFrameType) => postToFrame(iframeRef.value?.contentWindow, type),
   postEventPatch: (fields: EventFieldPatch) =>
     postEventPatchToFrame(iframeRef.value?.contentWindow, fields),
+  postPhotoPatch: (photos: PhotoFieldPatch[]) =>
+    postPhotoPatchToFrame(iframeRef.value?.contentWindow, photos),
   postTemplatePreview: (templateData: TemplateAssets) =>
     postTemplatePreviewToFrame(iframeRef.value?.contentWindow, templateData),
   postSetLanguage: (language: string) =>

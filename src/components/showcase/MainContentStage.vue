@@ -92,7 +92,7 @@
       :is-music-playing="isMusicPlaying"
       :has-location="!!event.google_map_embed_link"
       :has-video="!!event.youtube_embed_link"
-      :has-gallery="eventPhotos.length > 0"
+      :has-gallery="galleryPhotos.length > 0"
       :has-payment="paymentMethods.length > 0"
       :has-rsvp="event.rsvp_enabled !== false"
       :has-comments="event.comments_enabled !== false"
@@ -138,6 +138,19 @@
               }"
             >
               <div :class="contentPaddingClasses">
+                <!-- Photo bands sit in a PhotoBandSlot after every section, in
+                     the invitation's own order, rendered whether or not the
+                     section before it is — so a band placed after a section
+                     this event doesn't have still draws, between its
+                     neighbours. None has a divider after it: the fade already
+                     is that boundary, and a bow-tie under it would draw it
+                     twice. -->
+                <PhotoBandSlot
+                  :bands="bandsAt.top"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
+
                 <!-- Host Information (now includes welcome header) -->
                 <div ref="hostInfoRef" class="animate-reveal">
                   <HostInfo
@@ -175,6 +188,12 @@
                     :description-text="hostBlockOwnsDescription ? getDescriptionText() : undefined"
                   />
                 </div>
+
+                <PhotoBandSlot
+                  :bands="bandsAt.after_hosts"
+                  :bleed-class="bleedMarginClasses"
+                  :class="['mt-6 sm:mt-8', BAND_SLOT_CLASS]"
+                />
 
                 <!-- Event Information with Integrated RSVP -->
                 <div
@@ -274,6 +293,27 @@
                   />
                 </div>
 
+                <PhotoBandSlot
+                  :bands="bandsAt.after_event_info"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
+
+                <!-- The one place the studio offers a new band. Each band's
+                     editor then moves it to whichever section it belongs
+                     after, so an add row at every slot would only be ten
+                     dashed buttons down the invitation. Never on the public
+                     showcase: editIntentCtx is only provided in the studio. -->
+                <div v-if="editIntentCtx" class="add-video-row">
+                  <button
+                    type="button"
+                    class="edit-region-control add-video-btn"
+                    @click.stop.prevent="editIntentCtx.requestEdit({ kind: 'photoBand' })"
+                  >
+                    ＋ {{ tApp('management.showcasePreview.editors.addPhotoBand') }}
+                  </button>
+                </div>
+
                 <!-- Dress Code Section. Also rendered when empty inside any
                      preview frame: in the editable manage-page one so the first
                      dress code can be added from there, and in the partner
@@ -305,6 +345,12 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
+                <PhotoBandSlot
+                  :bands="bandsAt.after_dress_code"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
+
                 <!-- Agenda Section (also rendered when empty inside the
                      editable manage-page preview, so the first agenda item
                      can be added from there — editIntentCtx is never provided
@@ -334,6 +380,12 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
+                <PhotoBandSlot
+                  :bands="bandsAt.after_agenda"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
+
                 <!-- Host Message Section (Thank You / Sorry Message) -->
                 <div
                   v-if="showHostMessage"
@@ -356,6 +408,12 @@
                   <!-- Host Message Section Divider -->
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
+
+                <PhotoBandSlot
+                  :bands="bandsAt.after_host_message"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
 
                 <!-- YouTube Video Section (also rendered when empty inside
                      the editable manage-page preview, so a video link can be
@@ -399,9 +457,15 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
+                <PhotoBandSlot
+                  :bands="bandsAt.after_video"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
+
                 <!-- Photo Gallery Section -->
                 <div
-                  v-if="eventPhotos.length > 0"
+                  v-if="galleryPhotos.length > 0"
                   id="gallery-section"
                   ref="gallerySectionRef"
                   class="mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal"
@@ -415,7 +479,7 @@
                        is not forwarded at all while editing. -->
                   <EditableRegion :intent="{ kind: 'photos' }">
                     <PhotoGallery
-                      :photos="eventPhotos"
+                      :photos="galleryPhotos"
                       :primary-color="primaryColor"
                       :secondary-color="secondaryColor"
                       :accent-color="accentColor"
@@ -432,6 +496,12 @@
                   <!-- Gallery Section Divider -->
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
+
+                <PhotoBandSlot
+                  :bands="bandsAt.after_gallery"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
 
                 <!-- Payment Section. Empty-but-rendered in a preview frame for
                      the same two reasons as the dress code above: somewhere to
@@ -465,6 +535,12 @@
                   <!-- Payment Section Divider -->
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
+
+                <PhotoBandSlot
+                  :bands="bandsAt.after_payment"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
 
                 <!-- Comment Section (also rendered when disabled inside the
                      editable manage-page preview, so the toggle stays
@@ -508,6 +584,12 @@
                   <WeddingSectionDivider :primary-color="primaryColor" />
                 </div>
 
+                <PhotoBandSlot
+                  :bands="bandsAt.after_comments"
+                  :bleed-class="bleedMarginClasses"
+                  :class="BAND_SLOT_CLASS"
+                />
+
                 <!-- Registration Button -->
                 <div v-if="event.registration_required && !isEventPast" class="mb-6">
                   <button
@@ -543,7 +625,7 @@
                 <div
                   ref="footerPageRef"
                   class="footer-page min-h-[calc(85dvh-2rem)] flex flex-col items-center justify-center"
-                  :class="footerMarginClasses"
+                  :class="bleedMarginClasses"
                 >
                   <!-- Footer Card with Conditional Styling -->
                   <div
@@ -897,6 +979,14 @@ import HostMessageSection from './HostMessageSection.vue'
 import DressCodeSection from './DressCodeSection.vue'
 import YouTubeVideoSection from './YouTubeVideoSection.vue'
 import PhotoGallery from './PhotoGallery.vue'
+import PhotoBandSlot from './photo-band/PhotoBandSlot.vue'
+import {
+  PHOTO_BAND_PLACEMENTS,
+  galleryPhotosOf,
+  resolvePhotoBands,
+  type ResolvedPhotoBand,
+} from './photo-band/photoBand'
+import type { PhotoBandPlacement } from '../../services/api/types/event.types'
 import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vue'
 import SectionDisplayToggle from '@/components/showcase-preview/edit/SectionDisplayToggle.vue'
 import { EditIntentKey } from '@/components/showcase-preview/edit/editContext'
@@ -1101,6 +1191,32 @@ const eventType = computed(() => {
   return props.event.category_details?.name || props.event.category_name || 'default'
 })
 
+// A photo set to appear as a band leaves the gallery: the invitation never
+// shows the same photograph twice.
+const galleryPhotos = computed(() => galleryPhotosOf(props.eventPhotos))
+
+// Which photo is a band where. Moving a band between sections changes no count
+// the reveal watcher below could see, and each move mounts a new slot element.
+const bandSignature = computed(() =>
+  (props.eventPhotos ?? []).map((p) => `${p.id}:${p.band_placement ?? ''}`).join(','),
+)
+
+// The photo bands, grouped by the section each follows, in gallery order.
+const bandsAt = computed(() => {
+  const groups = Object.fromEntries(PHOTO_BAND_PLACEMENTS.map((p) => [p, []])) as unknown as Record<
+    PhotoBandPlacement,
+    ResolvedPhotoBand<EventPhoto>[]
+  >
+  for (const band of resolvePhotoBands(props.eventPhotos)) {
+    groups[band.placement].push(band)
+  }
+  return groups
+})
+
+// Every slot's spacing and reveal — the same bottom rhythm as the sections.
+const BAND_SLOT_CLASS =
+  'mb-8 sm:mb-10 laptop-sm:mb-10 laptop-md:mb-12 laptop-lg:mb-14 desktop:mb-12 animate-reveal'
+
 // Computed property to control liquid glass background visibility
 const showLiquidGlass = computed(() => {
   const value = props.templateAssets?.display_liquid_glass_background
@@ -1128,13 +1244,14 @@ const isWideContent = computed(() => {
 const cardWidthClass = computed(() => (isWideContent.value ? 'liquid-glass-card--wide' : ''))
 
 // Horizontal padding shrinks in wide mode to hand more of the card's width to the content;
-// vertical rhythm is unchanged. Footer uses the negative-margin counterpart to stay flush.
+// vertical rhythm is unchanged. Whatever runs edge to edge — the footer, the photo
+// band — takes the negative-margin counterpart, so the two must move together.
 const contentPaddingClasses = computed(() =>
   isWideContent.value
     ? 'py-6 sm:py-6 md:py-4 laptop-sm:py-5 laptop-md:py-5 laptop-lg:py-6 desktop:py-5 px-3 sm:px-3 md:px-2 laptop-sm:px-3 laptop-md:px-3 laptop-lg:px-4 desktop:px-3'
     : 'p-6 sm:p-6 md:p-4 laptop-sm:p-5 laptop-md:p-5 laptop-lg:p-6 desktop:p-5',
 )
-const footerMarginClasses = computed(() =>
+const bleedMarginClasses = computed(() =>
   isWideContent.value
     ? '-mx-3 sm:-mx-3 md:-mx-2 laptop-sm:-mx-3 laptop-md:-mx-3 laptop-lg:-mx-4 desktop:-mx-3'
     : '-mx-6 sm:-mx-6 md:-mx-4 laptop-sm:-mx-5 laptop-md:-mx-5 laptop-lg:-mx-6 desktop:-mx-5',
@@ -1419,7 +1536,14 @@ const initializeRevealAnimations = () => {
     [footerLockupRef, 'footer-lockup'],
   ]
 
-  animationConfig.forEach(([elementRef, elementId]) => {
+  // Photo band slots are as many as the organizer placed, each mounting and
+  // unmounting as bands move between sections, so they are found rather than
+  // held by ref. A slot that reappears is a new element, and is observed anew.
+  const bandSlots = Array.from(
+    stageScrollRef.value?.querySelectorAll<HTMLElement>('.photo-band-slot') ?? [],
+  ).map((el): [SectionRef, string] => [{ value: el }, 'photo-band'])
+
+  ;[...animationConfig, ...bandSlots].forEach(([elementRef, elementId]) => {
     const el = elementRef.value
     if (!el || !revealObserver.value) return
     if (observedElements.value.has(el) || el.classList.contains('is-visible')) return
@@ -1442,6 +1566,7 @@ watch(
     props.dressCodes?.length,
     props.agendaItems?.length,
     props.eventPhotos?.length,
+    bandSignature.value,
     props.paymentMethods?.length,
     props.eventTexts?.length,
     props.currentLanguage,

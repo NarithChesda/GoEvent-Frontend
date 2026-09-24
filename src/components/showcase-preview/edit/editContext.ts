@@ -60,6 +60,8 @@ export type EditIntent =
       photoId?: number
     }
   | { kind: 'displayToggle'; field: 'rsvp_enabled' | 'comments_enabled' | 'countdown_enabled' }
+  /** Edit the photo band that was tapped — or, without a `photoId`, add one. */
+  | { kind: 'photoBand'; photoId?: number }
 
 export interface EditIntentContext {
   requestEdit: (intent: EditIntent) => void

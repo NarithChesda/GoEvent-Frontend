@@ -431,6 +431,41 @@
             </div>
           </Transition>
 
+          <!-- The band's sections, opened from the bar below and in its
+               material. Choosing one saves at once, like featuring does. -->
+          <Transition name="undo-bar">
+            <div
+              v-if="selectedPhoto && bandMenuOpen"
+              class="pointer-events-auto rounded-2xl bg-slate-900/95 p-1 text-white shadow-lg"
+            >
+              <div
+                class="max-h-[min(22rem,45dvh)] overflow-y-auto overscroll-contain"
+                role="radiogroup"
+                :aria-label="t('management.showcasePreview.editors.photoBandPlacement')"
+              >
+                <button
+                  v-for="option in bandOptions"
+                  :key="option.value ?? 'gallery'"
+                  type="button"
+                  role="radio"
+                  class="band-option"
+                  :aria-checked="photoBandPlacement(selectedPhoto) === option.value"
+                  @click="setBandPlacement(selectedPhoto, option.value)"
+                >
+                  <span class="flex-1 min-w-0 truncate text-left">{{ option.label }}</span>
+                  <Check
+                    v-if="photoBandPlacement(selectedPhoto) === option.value"
+                    class="w-4 h-4 flex-shrink-0 text-sky-300"
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
+              <p class="px-3 pt-1.5 pb-2 text-[11px] leading-snug text-slate-400 border-t border-white/10 mt-1">
+                {{ t('management.media.uploadModal.gallery.bandHint') }}
+              </p>
+            </div>
+          </Transition>
+
           <!-- What can be done to the selected photo, in words — the same bar
                the Photos app raises for a selection. Feature and the two moves
                are what the gallery had no visible way to do; the press-and-hold
@@ -470,6 +505,22 @@
                       : t('management.media.uploadModal.gallery.feature')
                   }}
                 </span>
+              </button>
+              <!-- Where in the invitation this photo appears as a band — or
+                   in the gallery, like any other photo. -->
+              <button
+                type="button"
+                class="sel-action"
+                :class="{ 'is-on is-on--band': isPhotoBand(selectedPhoto) }"
+                :aria-expanded="bandMenuOpen"
+                :aria-pressed="isPhotoBand(selectedPhoto)"
+                :title="t('management.showcasePreview.editors.photoBandDescription')"
+                :disabled="placingId !== null"
+                @click="bandMenuOpen = !bandMenuOpen"
+              >
+                <Loader2 v-if="placingId === selectedPhoto.id" class="w-[1.125rem] h-[1.125rem] animate-spin" aria-hidden="true" />
+                <GalleryHorizontal v-else class="w-[1.125rem] h-[1.125rem]" aria-hidden="true" />
+                <span>{{ t('management.media.uploadModal.gallery.band') }}</span>
               </button>
               <button
                 type="button"
@@ -570,6 +621,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  GalleryHorizontal,
   Upload,
   X,
   ImageIcon,
@@ -584,6 +636,14 @@ import {
   TriangleAlert,
 } from 'lucide-vue-next'
 import { mediaService, type EventPhoto } from '../services/api'
+import type { PhotoBandPlacement } from '@/services/api/types/event.types'
+import {
+  PHOTO_BAND_PLACEMENTS,
+  isPhotoBand,
+  photoBandPayload,
+  photoBandPlacement,
+  responseSupportsPhotoBand,
+} from '@/components/showcase/photo-band/photoBand'
 import { compressImage } from '@/utils/imageCompression'
 import { FILE_SIZE_LIMITS } from '@/constants/media'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -901,6 +961,60 @@ const toggleFeatured = async (photo: EventPhoto) => {
     void loadPhotos()
   } finally {
     featuringId.value = null
+  }
+}
+
+// --- Photo band -------------------------------------------------------------
+
+const bandMenuOpen = ref(false)
+const placingId = ref<number | null>(null)
+
+// The menu belongs to the photo it was opened on.
+watch(selectedId, () => {
+  bandMenuOpen.value = false
+})
+
+/** "In the gallery" first — the photo as it is by default — then the sections in invitation order. */
+const bandOptions = computed(() => [
+  { value: null, label: t('management.media.uploadModal.gallery.bandNone') },
+  ...PHOTO_BAND_PLACEMENTS.map((placement) => ({
+    value: placement,
+    label: t(`management.showcasePreview.editors.photoBandPlacements.${placement}`),
+  })),
+])
+
+/**
+ * Makes the photo a band after `placement`, or — with null — a gallery photo
+ * again. Shown at once and saved at once, as featuring is. The blend colour is
+ * kept across a move: it matches the template behind the card, not the
+ * section. A server that doesn't store the fields answers 200 without them, so
+ * the echo is checked before this counts as saved.
+ */
+const setBandPlacement = async (photo: EventPhoto, placement: PhotoBandPlacement | null) => {
+  bandMenuOpen.value = false
+  if (placingId.value !== null || photoBandPlacement(photo) === placement) return
+  const before = { band_placement: photo.band_placement ?? null, band_blend_color: photo.band_blend_color ?? null }
+  const payload = photoBandPayload(placement, photo.band_blend_color ?? null)
+  const apply = (fields: typeof before) => {
+    photos.value = photos.value.map((item) => (item.id === photo.id ? { ...item, ...fields } : item))
+  }
+
+  apply(payload)
+  placingId.value = photo.id
+  try {
+    const response = await mediaService.updateEventMedia(props.eventId, photo.id, payload)
+    if (!response.success || !response.data) throw new Error(response.message || 'band failed')
+    if (!responseSupportsPhotoBand(response.data)) {
+      apply(before)
+      flashGalleryError(t('management.showcasePreview.editors.photoBandUnsupported'))
+      return
+    }
+    emit('photos-changed', committedPhotos())
+  } catch {
+    apply(before)
+    flashGalleryError(t('management.showcasePreview.editors.photoBandSaveFailed'))
+  } finally {
+    placingId.value = null
   }
 }
 
@@ -1223,6 +1337,49 @@ onUnmounted(() => {
 /* Featured: the star's own amber, as on the photo's badge. */
 .sel-action.is-on {
   color: rgb(251 191 36);
+}
+
+/* A band: the sky of the band badge on its thumbnail, not the star's amber. */
+.sel-action.is-on--band {
+  color: rgb(125 211 252);
+}
+
+/* The band menu's rows: the bar's own material, one section per row. */
+.band-option {
+  width: 100%;
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  color: rgb(226 232 240);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 150ms ease;
+}
+
+.band-option[aria-checked='true'] {
+  color: #fff;
+  font-weight: 600;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .band-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.band-option:active {
+  background: rgba(255, 255, 255, 0.16);
+  transition: none;
+}
+
+.band-option:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgb(56 189 248);
 }
 
 .sel-action--danger {

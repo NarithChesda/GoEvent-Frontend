@@ -153,6 +153,21 @@ export interface CropGeometry {
   height: number
 }
 
+export interface CropGeometryOptions {
+  /**
+   * Share of the frame's height, at its top and again at its bottom, that the
+   * region is kept clear of — for a frame whose top and bottom edges fade out
+   * (the photo band). The photo still covers the whole frame; only the "all of
+   * the region shows" fit moves inward, so a face framed near the top of a
+   * photo lands where the photo is still sharp rather than inside the fade.
+   * 0, the default, is every other frame and changes nothing.
+   */
+  insetY?: number
+}
+
+/** Past this a frame would have no clear middle left to fit a region into. */
+const MAX_INSET_Y = 0.4
+
 /**
  * Lay the image out in a frame so that all of the region shows.
  *
@@ -182,6 +197,10 @@ export interface CropGeometry {
  * stack) on any screen at least as wide as a phone, (1) is the crop's height
  * matched to the screen's — the rule this stage has always used.
  *
+ * With `insetY` the region is contained in the frame's clear middle instead of
+ * the whole frame (see CropGeometryOptions). The inset is symmetric, so that
+ * middle shares the frame's centre and the centring below is unchanged.
+ *
  * Returns null until both sizes are known — callers fall back to plain
  * `object-fit: cover` for that first frame.
  */
@@ -189,6 +208,7 @@ export const cropToCoverGeometry = (
   crop: PhotoCrop,
   natural: Size | null,
   viewport: Size | null,
+  options: CropGeometryOptions = {},
 ): CropGeometry | null => {
   if (!natural?.width || !natural.height || !viewport?.width || !viewport.height) return null
 
@@ -197,8 +217,9 @@ export const cropToCoverGeometry = (
   const cropPixelHeight = (safe.height / 100) * natural.height
   if (cropPixelWidth <= 0 || cropPixelHeight <= 0) return null
 
+  const clearHeight = viewport.height * (1 - 2 * clamp(options.insetY ?? 0, 0, MAX_INSET_Y))
   const cover = Math.max(viewport.width / natural.width, viewport.height / natural.height)
-  const contain = Math.min(viewport.width / cropPixelWidth, viewport.height / cropPixelHeight)
+  const contain = Math.min(viewport.width / cropPixelWidth, clearHeight / cropPixelHeight)
   const scale = clamp(contain, cover, cover * MAX_CROP_ZOOM)
   const width = natural.width * scale
   const height = natural.height * scale

@@ -62,6 +62,18 @@
     @upload-requested="onFeaturedPhotoUploadRequested"
   />
 
+  <!-- A band is stored on its photo, so a save is a gallery change: reported
+       the way the photos drawer reports one. -->
+  <PhotoBandEditor
+    v-model="photoBandOpen"
+    :event-id="eventId"
+    :photo-id="photoBandId"
+    :swatches="blendSwatches"
+    @preview="(photos) => emit('preview', photos)"
+    @saved="(photos) => emit('media-updated', photos)"
+    @upload-requested="photosOpen = true"
+  />
+
   <EditAgendaDrawer
     v-model="agendaDrawerOpen"
     :event-id="eventId"
@@ -130,11 +142,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, toRef } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, toRef } from 'vue'
 import { useMediaUpload } from '@/composables/useMediaUpload'
 import { useNotifications } from '@/composables/useNotifications'
 import { useAppLanguage } from '@/composables/useAppLanguage'
-import { parsePreviewBridgeMessage } from '../bridge/previewBridge'
+import { parsePreviewBridgeMessage, type PhotoFieldPatch } from '../bridge/previewBridge'
 import type { EditIntent } from '../edit/editContext'
 import type { StackLayoutType } from '@/services/api/types/template.types'
 import {
@@ -155,6 +167,8 @@ import { fromApiDate, isUnscheduled } from '@/constants/agenda'
 import GmapEmbedModal from './GmapEmbedModal.vue'
 import YoutubeEmbedModal from './YoutubeEmbedModal.vue'
 import FeaturedPhotoModal from './FeaturedPhotoModal.vue'
+import PhotoBandEditor from './PhotoBandEditor.vue'
+import type { BlendSwatch } from '@/components/showcase/photo-band/photoBand'
 import EditEventDateModal from './EditEventDateModal.vue'
 import EditHostDrawer from '@/components/EditHostDrawer.vue'
 import UploadMediaDrawer from '@/components/UploadMediaDrawer.vue'
@@ -169,10 +183,15 @@ interface Props {
   /** The manage page's event record — needed by the logo uploader and the
    *  gmap modal for current values. */
   eventData?: Event
+  /** The applied template's colours, offered as photo-band blend colours. */
+  blendSwatches?: BlendSwatch[]
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { eventData: undefined, blendSwatches: () => [] })
 const emit = defineEmits<{
+  /** Draw these photos this way in the frames now — an editor's unsaved draft,
+   *  or the stored values it is being put back to. Never saved by this. */
+  preview: [photos: PhotoFieldPatch[]]
   /** A parent-side editor saved something. Carries the updated event when the
    *  save returns one (event-level fields); the tab refreshes the frames
    *  either way. */
@@ -283,6 +302,14 @@ const onFeaturedPhotoSaved = () => emit('saved')
 const onFeaturedPhotoUploadRequested = () => {
   photosOpen.value = true
 }
+
+// --- Photo band ----------------------------------------------------------------
+// A panel without a scrim, so the frames stay on screen while it is open — the
+// one editor that can be left open while another region is tapped, which is
+// why routing any other intent closes it (see handleIntent).
+const photoBandOpen = ref(false)
+/** The band that was tapped (its photo); null when the add row asked for a new one. */
+const photoBandId = ref<number | null>(null)
 
 // --- Agenda (item drawer + delete confirm + day-group date modal) ----------
 const agendaDrawerOpen = ref(false)
@@ -541,6 +568,10 @@ const confirmPaymentDelete = async () => {
 
 // --- Intent routing --------------------------------------------------------
 const handleIntent = (intent: EditIntent) => {
+  // Closing reverts the frames to the stored band, so two editors never draw
+  // over each other's work.
+  if (intent.kind !== 'photoBand') photoBandOpen.value = false
+
   switch (intent.kind) {
     case 'eventLogo':
       logoInputRef.value?.click()
@@ -592,6 +623,20 @@ const handleIntent = (intent: EditIntent) => {
       break
     case 'displayToggle':
       toggleDisplayField(intent.field)
+      break
+    case 'photoBand':
+      // Tapping another band while one is open switches to it: close first,
+      // so the panel reverts the old draft and reopens on the tapped band.
+      if (photoBandOpen.value && photoBandId.value !== (intent.photoId ?? null)) {
+        photoBandOpen.value = false
+        void nextTick(() => {
+          photoBandId.value = intent.photoId ?? null
+          photoBandOpen.value = true
+        })
+        break
+      }
+      photoBandId.value = intent.photoId ?? null
+      photoBandOpen.value = true
       break
   }
 }

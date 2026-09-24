@@ -293,4 +293,44 @@ describe('cropToCoverGeometry', () => {
     const centre = cropCentre(tiny)
     expect(g.left + (centre.x / 100) * g.width).toBeCloseTo(viewport.width / 2, 1)
   })
+
+  describe('with insetY (a frame whose top and bottom fade out)', () => {
+    const BAND = { width: 400, height: 500 }
+    const INSET = 0.12
+
+    it('is exactly the plain renderer at 0', () => {
+      const crop = phoneCrop(PORTRAIT, 1.6, { x: 45, y: 30 })
+      expect(cropToCoverGeometry(crop, PORTRAIT, BAND, { insetY: 0 })).toEqual(
+        cropToCoverGeometry(crop, PORTRAIT, BAND),
+      )
+    })
+
+    it('fits a tall region between the fades instead of edge to edge', () => {
+      // A standing couple framed tighter than the band: without the inset their
+      // heads and feet would sit in the fades.
+      const couple = { x: 40, y: 20, width: 20, height: 40 }
+      const box = regionOnScreen(couple, cropToCoverGeometry(couple, PORTRAIT, BAND, { insetY: INSET })!)
+      expect(box.top).toBeCloseTo(BAND.height * INSET, 1)
+      expect(box.bottom).toBeCloseTo(BAND.height * (1 - INSET), 1)
+
+      const plain = regionOnScreen(couple, cropToCoverGeometry(couple, PORTRAIT, BAND)!)
+      expect(plain.top).toBeCloseTo(0, 1)
+    })
+
+    it('still covers the whole frame — the fades are drawn over photo, not over nothing', () => {
+      for (const natural of PHOTOS) {
+        const g = cropToCoverGeometry(FULL_CROP, natural, BAND, { insetY: INSET })!
+        expect(g.left).toBeLessThanOrEqual(0.01)
+        expect(g.top).toBeLessThanOrEqual(0.01)
+        expect(g.left + g.width).toBeGreaterThanOrEqual(BAND.width - 0.01)
+        expect(g.top + g.height).toBeGreaterThanOrEqual(BAND.height - 0.01)
+      }
+    })
+
+    it('leaves some clear middle whatever inset it is handed', () => {
+      const couple = { x: 40, y: 20, width: 20, height: 40 }
+      const g = cropToCoverGeometry(couple, PORTRAIT, BAND, { insetY: 5 })!
+      expect(Number.isFinite(g.width) && g.width > 0).toBe(true)
+    })
+  })
 })

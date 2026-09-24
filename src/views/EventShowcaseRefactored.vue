@@ -256,7 +256,7 @@
       <!-- Photo Modal -->
       <PhotoModal
         :is-open="isPhotoModalOpen"
-        :photos="eventPhotos"
+        :photos="galleryPhotos"
         :current-photo="currentModalPhoto"
         :get-media-url="getMediaUrl"
         @close="closePhotoModal"
@@ -338,6 +338,7 @@ const {
   hosts,
   agendaItems,
   eventPhotos,
+  galleryPhotos,
   paymentMethods,
   dressCodes,
   primaryColor,

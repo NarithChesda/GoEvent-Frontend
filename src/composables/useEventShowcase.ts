@@ -18,7 +18,7 @@ import type {
   StageModesConfig,
   TextEffectsConfig,
 } from '../services/api/types/template.types'
-import type { StoredMusicStartStage } from '../services/api/types/event.types'
+import type { PhotoBandFields, StoredMusicStartStage } from '../services/api/types/event.types'
 
 // Imports - Composables
 import { usePerformance, ResourceManager } from '../utils/performance'
@@ -30,6 +30,7 @@ import { resolveStageModesForEvent } from './showcase/useStageModes'
 import { useTemplateProcessor } from './showcase/useTemplateProcessor'
 
 // Imports - Utilities
+import { galleryPhotosOf } from '../components/showcase/photo-band/photoBand'
 import { updateMetaTags, getBestEventImage, createEventDescription } from '../utils/metaUtils'
 import { translateRSVP, type SupportedLanguage } from '../utils/translations'
 
@@ -261,7 +262,7 @@ export interface TemplateAssets {
   guest_title_frame_right?: string | null
 }
 
-export interface EventPhoto {
+export interface EventPhoto extends PhotoBandFields {
   id: number
   event: string
   image: string
@@ -684,6 +685,13 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     return [...photos].sort((a, b) => (a.order || 0) - (b.order || 0))
   })
 
+  /**
+   * The photos the gallery shows, and so the ones its lightbox pages through:
+   * every photo not set to appear as a band. A band is that photograph's place
+   * on the invitation, so it isn't repeated here.
+   */
+  const galleryPhotos = computed(() => galleryPhotosOf(eventPhotos.value))
+
   const paymentMethods = computed(() => {
     const methods = event.value?.payment_methods || []
     if (methods.length === 0) return []
@@ -1035,6 +1043,30 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     showcaseData.value = {
       ...showcaseData.value,
       event: { ...showcaseData.value.event, ...fields },
+    }
+  }
+
+  /**
+   * Merges fields into individual photos, matched by id — the same idea as
+   * `applyEventFieldPatch`, one level down. Preview-only (the bridge's
+   * `patch-photos`): it is how the studio draws a photo band's unsaved section,
+   * colour and framing, and how it puts the stored ones back on cancel. The
+   * showcase payload carries the list as `photos` or `event_photos`, so both
+   * are patched. A photo the frame doesn't have is ignored.
+   */
+  const applyPhotoFieldPatch = (patches: Array<{ id: number } & Record<string, unknown>>) => {
+    if (!showcaseData.value || patches.length === 0) return
+    const byId = new Map(patches.map((patch) => [patch.id, patch]))
+    const patchList = (list?: EventPhoto[]) =>
+      list?.map((photo) => (byId.has(photo.id) ? { ...photo, ...byId.get(photo.id) } : photo))
+    const current = showcaseData.value.event
+    showcaseData.value = {
+      ...showcaseData.value,
+      event: {
+        ...current,
+        ...(current.photos ? { photos: patchList(current.photos) } : {}),
+        ...(current.event_photos ? { event_photos: patchList(current.event_photos) } : {}),
+      },
     }
   }
 
@@ -1596,6 +1628,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     hosts,
     agendaItems,
     eventPhotos,
+    galleryPhotos,
     paymentMethods,
     dressCodes,
     primaryColor,
@@ -1624,6 +1657,7 @@ export function useEventShowcase(options?: UseEventShowcaseOptions) {
     loadShowcase,
     refreshShowcaseData,
     applyEventFieldPatch,
+    applyPhotoFieldPatch,
     applyPreviewTemplateFallback,
     setStagedTemplatePreview,
     clearStagedTemplatePreview,
