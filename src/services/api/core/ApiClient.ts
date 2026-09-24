@@ -682,18 +682,15 @@ export class ApiClient {
         const isFormData = data instanceof FormData
         const body = data ? (isFormData ? data : JSON.stringify(data)) : undefined
 
-        // Debug logging for PATCH requests
+        // Through SecureLogger like every other request log here, so the one
+        // switch that silences them silences this too. It was a bare
+        // console.log, printing the whole body of every PATCH — a photo reorder,
+        // a featured toggle — into the dev console.
         if (IS_DEV_MODE) {
-          const headers = {
-            ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-            ...this.getAuthHeaders(),
-          }
-          console.log('[ApiClient] PATCH request:', {
+          SecureLogger.debug('PATCH request', {
             url: `${this.baseURL}${endpoint}`,
             isFormData,
             body: isFormData ? '[FormData]' : body,
-            headers: Object.keys(headers),
-            contentType: headers['Content-Type'],
           })
         }
 

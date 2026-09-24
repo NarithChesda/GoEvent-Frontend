@@ -1,5 +1,33 @@
 <template>
-  <div class="border-t border-slate-100">
+  <!-- Standalone: the section on its own, as the whole of a sheet (the studio's
+       mobile preview opens music and the link preview this way). Nothing to
+       collapse into and nothing stacked around it, so no toggle, no chevron,
+       no hairline and no tint — the header is the sheet's title bar, and the
+       section's own actions stay beside its title where they always are. -->
+  <div v-if="standalone">
+    <div class="flex items-center gap-2.5 px-5 pt-3 pb-3">
+      <span
+        class="w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0"
+        :class="filled ? 'bg-sky-50 border-sky-100' : 'bg-slate-50 border-slate-100'"
+      >
+        <component
+          :is="icon"
+          class="w-4 h-4"
+          :class="filled ? 'text-[#1e90ff]' : 'text-slate-400'"
+          aria-hidden="true"
+        />
+      </span>
+      <h2 class="min-w-0 flex-1 truncate text-base font-semibold text-slate-900 leading-snug">{{ title }}</h2>
+      <div class="flex items-center gap-0.5 flex-shrink-0">
+        <slot name="actions" />
+      </div>
+    </div>
+    <div class="px-5 pb-4">
+      <slot />
+    </div>
+  </div>
+
+  <div v-else class="border-t border-slate-100">
     <!-- Header. Two buttons, not one: the action slot holds real buttons and
          they cannot nest inside the toggle. The title area is the large target;
          the chevron is the small conventional one. -->
@@ -98,6 +126,10 @@ defineProps<{
   /** Whether the section holds any content — tints the icon tile. */
   filled?: boolean
   expanded: boolean
+  /** Render as a whole sheet rather than a row in a stack: always open, no
+   *  toggle. The section should also treat itself as expanded, so anything it
+   *  gates on its open state (the header actions) is there. */
+  standalone?: boolean
 }>()
 
 defineEmits<{ (e: 'toggle'): void }>()

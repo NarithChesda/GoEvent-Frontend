@@ -1,7 +1,10 @@
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="isOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-0 lg:p-12">
+      <!-- The modal rung of the §14 ladder. It sat at z-[100] — the in-page
+           dropdown rung — which was only ever right by accident, and wrong once
+           the studio's mobile preview (z-900) started opening it from inside. -->
+      <div v-if="isOpen" class="fixed inset-0 z-[1000] flex items-center justify-center p-0 lg:p-12">
         <!-- Backdrop (hidden on mobile since modal is fullscreen) -->
         <div class="hidden lg:block absolute inset-0 bg-slate-950/60 backdrop-blur-sm" @click="handleModalClose" />
 

@@ -115,15 +115,20 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* Above the modal rung (§14: drawers 998/999, modals 1000), below toasts
+   (1100). A menu belongs to the layer its trigger is on, and a teleported one
+   has no way to know which that is — so it sits over all of them. At 120/121 it
+   opened underneath any trigger that lives in a drawer, or in the studio's
+   mobile preview (900). */
 .anchored-menu__scrim {
   position: fixed;
   inset: 0;
-  z-index: 120;
+  z-index: 1050;
 }
 
 .anchored-menu {
   position: fixed;
-  z-index: 121;
+  z-index: 1051;
   overflow-y: auto;
   padding: 0.25rem;
   border-radius: 0.75rem;

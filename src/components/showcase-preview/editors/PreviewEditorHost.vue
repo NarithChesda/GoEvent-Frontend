@@ -42,11 +42,14 @@
     @updated="onHostUpdated"
   />
 
+  <!-- The gallery's own manager: what is already there (to arrange, to prune,
+       to not upload twice) above the way to add more. -->
   <UploadMediaDrawer
     v-if="photosOpen"
     :event-id="eventId"
-    @close="closePhotos"
-    @uploaded="onPhotoUploaded"
+    :initial-photos="eventData?.photos"
+    @close="photosOpen = false"
+    @photos-changed="(photos) => emit('media-updated', photos)"
   />
 
   <FeaturedPhotoModal
@@ -141,6 +144,7 @@ import {
   paymentMethodsService,
   eventsService,
   type Event,
+  type EventPhoto,
   type EventAgendaItem,
   type EventHost,
   type EventDressCode,
@@ -173,6 +177,10 @@ const emit = defineEmits<{
    *  save returns one (event-level fields); the tab refreshes the frames
    *  either way. */
   saved: [event?: Event]
+  /** The photos drawer saved a change to the gallery — the whole list in its
+   *  new order, so the manage page's copy (and the forms' grid) follow it, and
+   *  the frames refresh while the drawer is still open over them. */
+  'media-updated': [photos: EventPhoto[]]
 }>()
 
 const { t } = useAppLanguage()
@@ -253,20 +261,10 @@ const onHostUpdated = () => {
 }
 
 // --- Event photos ----------------------------------------------------------
+// Every change is reported as it is saved (see the drawer's `photos-changed`),
+// so there is nothing left to flush on close — the frames have already caught
+// up by the time it goes.
 const photosOpen = ref(false)
-const photosDirty = ref(false)
-
-const onPhotoUploaded = () => {
-  photosDirty.value = true
-}
-
-const closePhotos = () => {
-  photosOpen.value = false
-  if (photosDirty.value) {
-    photosDirty.value = false
-    emit('saved')
-  }
-}
 
 // --- Featured photo (transition stage) --------------------------------------
 const featuredPhotoOpen = ref(false)

@@ -1,7 +1,7 @@
 <template>
   <!-- Top Navigation Bar for Event Detail -->
   <header
-    class="fixed top-0 left-0 right-0 z-50 h-16 premium-chrome glass-manage-header md:border-b md:border-slate-200/30"
+    class="fixed top-0 left-0 right-0 z-50 h-16 premium-chrome glass-manage-header border-b"
     :class="{ 'is-scrolled': isScrolled }"
     :style="{ marginLeft: headerMarginLeft }"
   >
@@ -271,12 +271,11 @@ const goBack = () => {
 </script>
 
 <style scoped>
-/* Below `lg`: opaque, matching EventManageMobileTabBar's own surface — that
-   bar and the Design Studio's sticky toolbar sit directly under this one and
-   are meant to read as one continuous header (hence the 1px overlap hack
-   below), so they have to agree on transparency. At 0.9 alpha the page content
-   scrolling behind this bar competed with the event title on top of it;
-   blur(20px) blurred that content without stopping it.
+/* Below `lg`: opaque. The Design Studio's sticky toolbar docks directly under
+   this one and is meant to read as one continuous header with it, so the two
+   have to agree on transparency. At 0.9 alpha the page content scrolling
+   behind this bar competed with the event title on top of it; blur(20px)
+   blurred that content without stopping it.
 
    The fill itself comes from `.premium-chrome` (MainLayout), which paints the
    page's own background stack sized to the viewport: this bar sits in the top
@@ -285,12 +284,11 @@ const goBack = () => {
    paler than the page and drew a hard colour edge along its bottom lip. This
    one is at the very top, so it needs no `--premium-chrome-top` offset.
 
-   From `lg` there is no tab bar under it — the header, the icon rail and the
-   Design Studio panel are the only chrome, and each used to paint its own
-   near-white fill over `premium-bg`. Three fills that can't match a gradient
-   read as three mismatched panels, so from `lg` all three go transparent and
-   the page's own background is the only one on screen (see the
-   min-width:1024px block). */
+   From `lg` the header, the icon rail and the Design Studio panel are the only
+   chrome, and each used to paint its own near-white fill over `premium-bg`.
+   Three fills that can't match a gradient read as three mismatched panels, so
+   from `lg` all three go transparent and the page's own background is the only
+   one on screen (see the min-width:1024px block). */
 .glass-manage-header {
   transition:
     margin-left 300ms ease,
@@ -300,12 +298,11 @@ const goBack = () => {
     -webkit-backdrop-filter 200ms ease;
 }
 
-/* On mobile, add 1px overlap to prevent sub-pixel gap with tab bar */
-@media (max-width: 767px) {
-  .glass-manage-header {
-    padding-bottom: 1px;
-    margin-bottom: -1px;
-  }
+/* Its own bottom edge below `lg`, where content scrolls straight under it —
+   the hairline the section strip used to draw before the tabs moved to the
+   bottom pill. From `lg` the block below hides it at rest. */
+.glass-manage-header {
+  border-bottom-color: rgba(148, 163, 184, 0.15);
 }
 
 /*

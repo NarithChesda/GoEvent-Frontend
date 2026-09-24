@@ -176,7 +176,7 @@
             @click="emit('activate')"
             class="w-full bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white font-semibold py-3.5 sm:py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center text-sm sm:text-base"
           >
-            <Sparkles class="w-5 h-5 mr-2" />
+            <ShoppingCart class="w-5 h-5 mr-2" />
             {{ t('management.activation.card.activateBtn') }}
           </button>
           <p class="text-xs sm:text-sm text-slate-500 text-center mt-2">
@@ -225,6 +225,7 @@ import {
   Palette,
   PlayCircle,
   Sparkles,
+  ShoppingCart,
 } from 'lucide-vue-next'
 import { formatCurrency } from '../../utils/currency'
 import ActivationStepper from './ActivationStepper.vue'

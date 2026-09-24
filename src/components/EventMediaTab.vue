@@ -278,8 +278,10 @@
     <UploadMediaDrawer
       v-if="showUploadModal && props.eventId"
       :event-id="props.eventId"
+      :initial-photos="media"
       @close="showUploadModal = false"
       @uploaded="handleMediaUploaded"
+      @photos-changed="handlePhotosChanged"
     />
 
     <!-- Delete Confirmation Modal. `v-if` as well as its own `show` prop, so
@@ -555,6 +557,35 @@ watch(showUploadModal, (newValue, oldValue) => {
     uploadBatchStart.value = 0
   }
 })
+
+/** The drawer arranged, pruned or added to the gallery; it reports the whole
+ *  list in its saved order. */
+const handlePhotosChanged = (photos: EventPhoto[]) => {
+  media.value = [...photos]
+  emit('media-updated', media.value)
+}
+
+// The photos can also change from outside this tab — the studio's preview opens
+// the same drawer — and arrive back through `initialMedia`. It used to be read
+// once, on mount, so the grid here went on showing a photo the preview had just
+// removed. Compared by content, not by reference: a change that came from here
+// comes straight back as the same photos, and a host that writes
+// `photos || []` hands over a new empty array on every render.
+watch(
+  () => props.initialMedia,
+  (next) => {
+    if (!next) return
+    const sorted = [...next].sort((a, b) => a.order - b.order)
+    const unchanged =
+      sorted.length === media.value.length &&
+      sorted.every(
+        (photo, index) =>
+          photo.id === media.value[index].id &&
+          photo.is_featured === media.value[index].is_featured,
+      )
+    if (!unchanged) media.value = sorted
+  },
+)
 
 const handleEventUpdated = (updatedEvent: Event) => {
   // Force reactivity by creating a new object reference

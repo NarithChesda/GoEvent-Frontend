@@ -1,8 +1,14 @@
 <template>
+  <!-- The app's MobileTabBar gives way to EventManageMobileTabBar, the page's
+       own pill in the same band — so `has-custom-bottom-bar` keeps the inset
+       vars (and the FAB slots on them) at full height. Not on the error page,
+       which draws no pill. -->
   <MainLayout
     :hide-top-nav="true"
-    :hide-mobile-tab-bar="false"
+    :hide-mobile-tab-bar="true"
+    :has-custom-bottom-bar="!error"
     :contact-fab-can-edit="event?.can_edit ?? false"
+    :contact-fab-has-fab-below="showStudioFab"
   >
     <div class="min-h-screen">
 
@@ -78,11 +84,13 @@
       </div>
     </div>
 
-    <!-- Mobile Tab Bar (fixed position for stable scrolling) -->
+    <!-- Mobile/tablet section pill, floating at the bottom (`lg:hidden`, the
+         same breakpoint EventNavigationTabs' rail appears at). Where the Design
+         Studio has a FAB of its own it is not also a slot in the pill. -->
     <EventManageMobileTabBar
       v-if="event"
       :active-tab="activeTab"
-      :tabs="navigationTabs"
+      :tabs="mobileNavigationTabs"
       :can-view-registration="canViewRegistration"
       :can-view-media="canViewMedia"
       :can-view-template="canViewTemplate"
@@ -94,13 +102,21 @@
       :can-view-tickets="canViewTickets"
       @tab-change="activeTab = $event"
     />
-    <!-- Spacer for the fixed mobile/tablet tab bar. Height comes from that bar's
-         own measurement (`--manage-tabbar-h`, published by
-         EventManageMobileTabBar on mount/resize) — the 52px here is only the
-         pre-measurement fallback, not a second source of truth. Breakpoint must
-         match EventManageMobileTabBar.vue (`lg:hidden`) so tablet portrait keeps
-         the right offset. -->
-    <div v-if="event" class="lg:hidden" style="height: var(--manage-tabbar-h, 52px)"></div>
+
+    <!-- Design Studio FAB — the events list's create FAB, same slot and
+         size, for the one section of this page that is a place to go rather
+         than a list to read. Phones and tablets only: the desktop rail keeps
+         the studio as a tab. Gone while the studio is on screen, where it
+         would lead to where you already are. -->
+    <button
+      v-if="showStudioFab"
+      type="button"
+      class="studio-fab fixed bottom-[var(--fab-bottom)] right-4 w-12 h-12 bg-gradient-to-r from-[#2ecc71] to-[#1e90ff] hover:from-[#27ae60] hover:to-[#1873cc] text-white rounded-full shadow-lg shadow-emerald-500/25 hover:shadow-emerald-600/30 flex items-center justify-center z-[60]"
+      :aria-label="t('management.tabs.designStudio')"
+      @click="activeTab = 'design-studio'"
+    >
+      <Palette class="w-6 h-6" aria-hidden="true" />
+    </button>
 
     <!-- Event Detail -->
     <div
@@ -218,10 +234,13 @@
                 :event-data="event"
                 :can-view-live-preview="!!canViewShowcasePreview"
                 :show-category-specific-sections="showCategorySpecificSections"
+                :preview-first="studioHasDesigns"
+                :active="activeTab === 'design-studio'"
                 @event-updated="handleEventUpdated"
                 @media-updated="handleMediaUpdated"
                 @template-applied="handleTemplateUpdated"
                 @open-activation="activeTab = 'template-payment'"
+                @leave="leaveStudio"
               />
               <EventMediaTab
                 v-else-if="event?.id"
@@ -418,6 +437,7 @@ import { useToast } from '../composables/useToast'
 import {
   Lock,
   AlertTriangle,
+  Palette,
 } from 'lucide-vue-next'
 import MainLayout from '../components/MainLayout.vue'
 import EventAboutSection from '../components/EventAboutSection.vue'
@@ -427,6 +447,7 @@ import EventManageMobileTabBar from '../components/EventManageMobileTabBar.vue'
 import { useAuthStore } from '../stores/auth'
 import { eventsService, apiClient, type Event, type EventPhoto } from '../services/api'
 import { isShowcaseCategory } from '../utils/showcaseCategories'
+import { useDesignCategories } from '../composables/event/useDesignCategories'
 import EventEditDrawer from '../components/EventEditDrawer.vue'
 import type { TabConfig } from '../components/EventNavigationTabs.vue'
 
@@ -547,7 +568,7 @@ const navigationTabs = computed<TabConfig[]>(() => [
   canViewShowcasePreview.value
     ? { id: 'design-studio', label: t('management.tabs.designStudio'), icon: 'monitor', mobileLabel: t('management.tabs.designStudioMobile') }
     : { id: 'design-studio', label: t('management.tabs.showcase'), icon: 'image' },
-  { id: 'template-payment', label: t('management.tabs.templatePayment'), icon: 'credit-card', mobileLabel: t('management.tabs.templateMobile') },
+  { id: 'template-payment', label: t('management.tabs.templatePayment'), icon: 'shopping-cart', mobileLabel: t('management.tabs.templateMobile') },
   { id: 'guest-management', label: t('management.tabs.guestManagement'), icon: 'users', mobileLabel: t('management.tabs.guests') },
   { id: 'expenses', label: t('management.tabs.expenseTracking'), icon: 'wallet', mobileLabel: t('management.tabs.expensesMobile') },
   { id: 'donation', label: t('management.tabs.donations'), icon: 'heart', mobileLabel: t('management.tabs.donations') },
@@ -559,9 +580,24 @@ const navigationTabs = computed<TabConfig[]>(() => [
 // Computed properties
 const canViewRegistration = computed(() => {
   if (!event.value || !authStore.isAuthenticated) return false
-  // Only organizer or collaborators can view registration (no public access)
-  return event.value.can_edit
+  // Only organizer or collaborators can view registration (no public access),
+  // and only on an event that takes registrations at all — without the switch
+  // on (the create/edit drawers' "Registration") the tab has nothing to list.
+  return event.value.can_edit && event.value.registration_required === true
 })
+
+// A deep link to the tab, or turning registration off while on it, lands on
+// the overview rather than on a section the pill no longer offers. Waits for
+// the event: before it loads, nothing is known to be off.
+watch(
+  [event, activeTab],
+  ([loaded, tab]) => {
+    if (loaded && tab === 'registration' && !canViewRegistration.value) {
+      activeTab.value = 'overview'
+    }
+  },
+  { immediate: true },
+)
 
 // Comprehensive permission system for event tabs
 const canViewRestrictedTabs = computed(() => {
@@ -582,6 +618,60 @@ const canViewShowcasePreview = computed(() => {
     canViewRestrictedTabs.value &&
     isShowcaseCategory(event.value?.category_details?.name || event.value?.category_name)
   )
+})
+
+/**
+ * Whether this event's category has invitation designs — which on a phone makes
+ * the Design Studio tab open straight into the live preview (ShowcasePreviewTab's
+ * `previewFirst`). A studio is not enough: a category can have one and no
+ * approved template (Housewarming, as of September 2026), and there the forms
+ * page is still the better screen. An event that already wears a template has
+ * something to show whatever the catalogue says.
+ *
+ * Asked only where it changes anything — a phone, a studio category — and until
+ * the catalogue answers, `hasDesigns` stands in with "has a studio".
+ */
+const designCategories = useDesignCategories()
+
+watch(
+  [isDesktop, canViewShowcasePreview],
+  ([desktop, studio]) => {
+    if (!desktop && studio) void designCategories.load(0)
+  },
+  { immediate: true },
+)
+
+/**
+ * Below `lg`, a studio category's Design Studio is a FAB rather than a slot in
+ * the bottom pill: it is the section an organizer comes to this page for, and
+ * on a phone it opens as a full-screen preview (`studioHasDesigns`) — more a
+ * place than a tab. Everything else ("Showcase", the plain content tab) stays
+ * in the pill.
+ */
+const mobileNavigationTabs = computed(() =>
+  canViewShowcasePreview.value
+    ? navigationTabs.value.filter((tab) => tab.id !== 'design-studio')
+    : navigationTabs.value,
+)
+
+const showStudioFab = computed(
+  () =>
+    !!event.value &&
+    !isDesktop.value &&
+    canViewShowcasePreview.value &&
+    activeTab.value !== 'design-studio',
+)
+
+const studioHasDesigns = computed(() => {
+  const current = event.value
+  if (!current) return false
+  if (current.event_template) return true
+  const category =
+    current.category_details ??
+    (current.category != null
+      ? { id: current.category, name: current.category_name ?? undefined }
+      : null)
+  return designCategories.hasDesigns(category)
 })
 
 // Check if event category supports category-specific showcase features
@@ -942,12 +1032,27 @@ const showMessage = (type: 'success' | 'error', text: string) => {
 
 
 
+/**
+ * Where closing the studio's preview goes, when the preview is the whole tab
+ * (see `studioHasDesigns`). Recorded on the way in; a visit that started on the
+ * studio has nowhere it came from, so it closes onto the overview.
+ */
+let studioReturnTab = 'overview'
+
+const leaveStudio = () => {
+  activeTab.value = studioReturnTab
+}
+
 // Watch for tab changes and reset sub-tab
 watch(
   () => activeTab.value,
-  (tab) => {
+  (tab, previous) => {
     // Reset sub-tab when main tab changes
     activeSubTab.value = ''
+
+    if (tab === 'design-studio' && previous && previous !== 'design-studio') {
+      studioReturnTab = previous
+    }
 
     if (tab === 'design-studio') {
       if (!studioEverOpened.value) {
@@ -1060,6 +1165,41 @@ onUnmounted(() => {
 @media (min-width: 1024px) {
   .manage-header-skeleton {
     background: none;
+  }
+}
+
+/* EventsView's `.create-fab`, less the icon's hover spin (a palette turning
+   says nothing a plus turning into an x does). */
+.studio-fab {
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.studio-fab:active {
+  transform: scale(0.95);
+}
+
+/* Touch fires :hover on tap and leaves it latched, so hover motion is gated. */
+@media (hover: hover) and (pointer: fine) {
+  .studio-fab:hover {
+    transform: scale(1.08);
+  }
+
+  .studio-fab:active:hover {
+    transform: scale(0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-fab {
+    transition-duration: 0.01ms;
+  }
+
+  .studio-fab:active,
+  .studio-fab:hover,
+  .studio-fab:active:hover {
+    transform: none;
   }
 }
 

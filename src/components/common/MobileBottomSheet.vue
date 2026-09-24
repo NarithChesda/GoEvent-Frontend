@@ -1,9 +1,14 @@
 <template>
-  <Teleport to="body">
+  <!-- `contained` renders in place instead of at the document root, positioned
+       against the nearest positioned ancestor at every width: a sheet opened
+       from inside another full-screen surface (the studio's mobile preview)
+       has to rise over that surface, not over the page it hides. -->
+  <Teleport to="body" :disabled="contained">
     <Transition name="sheet-fade">
       <div
         v-if="show"
-        class="sm:hidden fixed inset-0 z-[998] bg-black/40 backdrop-blur-sm"
+        class="inset-0 z-[998] bg-black/40 backdrop-blur-sm"
+        :class="contained ? 'absolute' : 'sm:hidden fixed'"
         @click="$emit('close')"
       />
     </Transition>
@@ -13,8 +18,9 @@
         ref="panelRef"
         role="dialog"
         aria-modal="true"
-        :aria-label="title"
-        class="sm:hidden fixed inset-x-0 bottom-0 z-[999] bg-white rounded-t-3xl shadow-2xl flex flex-col max-h-[85vh] pb-[max(env(safe-area-inset-bottom),0.75rem)]"
+        :aria-label="ariaLabel ?? title"
+        class="inset-x-0 bottom-0 z-[999] bg-white rounded-t-3xl shadow-2xl flex flex-col pb-[max(env(safe-area-inset-bottom),0.75rem)]"
+        :class="contained ? 'absolute max-h-[85%]' : 'sm:hidden fixed max-h-[85vh]'"
       >
         <!-- Drag-to-close area: handle + title, kept out of the scrollable
              body so the gesture doesn't fight list scrolling -->
@@ -59,6 +65,12 @@ const props = defineProps<{
   title?: string
   /** Set the title as a name rather than as a category label. */
   prominentTitle?: boolean
+  /** The dialog's name when its content draws its own heading (no `title`). */
+  ariaLabel?: string
+  /** Render in place over the nearest positioned ancestor, at every width, and
+   *  leave the page scroll and Escape to that ancestor — which owns both while
+   *  it is up (see the template note). */
+  contained?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -127,6 +139,9 @@ const handleEscape = (event: KeyboardEvent) => {
 watch(
   () => props.show,
   (show) => {
+    // Contained, the surface it sits in holds the scroll lock; releasing it on
+    // close here would unlock the page under that surface while it is still up.
+    if (props.contained) return
     if (show) {
       if (isMobileViewport()) document.body.style.overflow = 'hidden'
       document.addEventListener('keydown', handleEscape)
@@ -138,7 +153,7 @@ watch(
 )
 
 onUnmounted(() => {
-  document.body.style.overflow = ''
+  if (!props.contained) document.body.style.overflow = ''
   document.removeEventListener('keydown', handleEscape)
 })
 </script>

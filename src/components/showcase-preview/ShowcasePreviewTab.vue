@@ -154,14 +154,17 @@
       </div>
 
       <!-- Mobile toolbar. The desktop header's title + subtitle are dropped
-           rather than stacked: the mobile tab bar sitting directly above
-           already names this tab, and those two lines cost ~90px of a ~730px
-           usable fold to repeat what the user just tapped.
+           rather than stacked: the user got here by tapping the studio's FAB,
+           and those two lines cost ~90px of a ~730px usable fold to repeat
+           what they just tapped.
            Sticky, because the edit surface below it is ~10 accordion sections
            long and Preview has to stay one tap away from wherever you are in
-           it. -->
+           it.
+           Only for a category with no designs to preview (see `previewIsTab`):
+           everywhere else this tab opens as the preview itself, whose bar and
+           rail carry every control here. -->
       <div
-        v-else
+        v-else-if="!previewIsTab"
         class="premium-chrome studio-mobile-bar"
         :class="{ 'is-activation-cta': showsActivationCta }"
       >
@@ -185,7 +188,7 @@
              wording is not lost: the confirm dialog it opens says the same thing
              before anything is written. EventMediaTab drops its own copy (see
              `hide-populate`) and this one reports the write back through the
-             ref. -->
+             ref. The preview sheet's tool rail carries it too. -->
         <PopulateFromTemplateCard
           v-if="canEdit"
           :event="eventData"
@@ -195,8 +198,8 @@
         />
 
         <!-- Preview: deliberately NOT a FAB — the bottom-right corner on mobile
-             is already a coordinated stack (MobileTabBar's floating pill at
-             z-70, the primary FAB slot at --fab-bottom, ContactUsFAB in
+             is already a coordinated stack (EventManageMobileTabBar's floating
+             pill at z-70, the primary FAB slot at --fab-bottom, ContactUsFAB in
              --fab-stack-2 above it via its own hasFabBelow prop), so a fourth
              floating button there would either hide under the tab bar or force
              this tab to negotiate that stack from the inside.
@@ -239,11 +242,14 @@
            cover/transition stages don't scroll) and never the page behind it.
            Running the forms full-width also drops the ~440px-panel
            compensations further down in <style> — labels, subtitles and
-           section chevrons all come back. -->
+           section chevrons all come back.
+           Where the preview IS the tab (`previewIsTab`) nothing renders here:
+           the sheet covers the page, and ten sections fetching behind it would
+           be work nobody sees. -->
       <template v-if="isMobileStudio">
-        <div v-if="error" class="showcase-preview-tab__error">{{ error }}</div>
+        <div v-if="error && !previewIsTab" class="showcase-preview-tab__error">{{ error }}</div>
 
-        <div v-if="canEdit" class="showcase-studio__mobile-body">
+        <div v-if="canEdit && !previewIsTab" class="showcase-studio__mobile-body">
           <EventMediaTab
             ref="mobileMediaTabRef"
             :event-id="eventId"
@@ -259,7 +265,7 @@
           />
         </div>
 
-        <p v-else class="showcase-preview-tab__no-preview">
+        <p v-else-if="!previewIsTab" class="showcase-preview-tab__no-preview">
           {{ t('management.showcasePreview.mobilePreview.readOnly') }}
         </p>
       </template>
@@ -384,7 +390,7 @@
          whole session just to sit off-screen. -->
     <MobilePreviewSheet
       v-if="isMobileStudio && canViewLivePreview && eventData?.id"
-      :open="mobilePreviewOpen"
+      :open="sheetOpen"
       :frames="visibleFrames"
       :frame-url="frameUrl"
       :can-edit="canEdit"
@@ -393,11 +399,17 @@
       :activation-state="activationResolved ? activationState : undefined"
       :staged-template="stagedTemplateData"
       :register-frame="setFrameRef"
-      @close="closeMobilePreview"
+      :templates-open="showTemplatesModal"
+      :event-data="eventData"
+      :show-music="showCategorySpecificSections"
+      @close="closeSheet"
       @cycle-language="cycleLanguage"
       @languages="onFrameLanguages"
       @activate="showPaymentDrawer = true"
       @active-frame-changed="onMobileActiveFrameChanged"
+      @open-templates="showTemplatesModal = true"
+      @event-updated="onEditorSaved"
+      @populated="onPopulated"
     />
 
     <!-- Parent-side editors for edit intents posted by the frames (logo
@@ -408,6 +420,7 @@
       :event-id="eventId"
       :event-data="eventData"
       @saved="onEditorSaved"
+      @media-updated="onMediaUpdated"
     />
 
     <!-- Checkout, opened straight from the activation pill — the same drawer the
@@ -482,6 +495,15 @@ interface Props {
   /** Passed straight through to the Content panel's EventMediaTab —
    *  controls visibility of category-specific sections (dress code, etc). */
   showCategorySpecificSections?: boolean
+  /** On a phone, open this tab as the live preview itself rather than as the
+   *  forms page. For a category with designs to look at; closing the preview
+   *  then leaves the tab (`leave`). */
+  previewFirst?: boolean
+  /** Whether the manage page is showing this tab. It stays mounted once
+   *  visited (hidden with `v-show`), so with `previewFirst` this is what opens
+   *  and closes the sheet — which is teleported and would otherwise float over
+   *  whatever tab is on screen. */
+  active?: boolean
 }
 
 const props = defineProps<Props>()
@@ -501,6 +523,10 @@ const emit = defineEmits<{
   /** The organizer asked to see the payment record (pending review / receipt) —
    *  EventManageView switches to the activation tab. */
   'open-activation': []
+  /** The preview was closed where it is this tab's whole face (`previewFirst`
+   *  on a phone), so there is no page under it to close onto — the manage page
+   *  returns to the tab the organizer came from. */
+  leave: []
 }>()
 
 const { t } = useAppLanguage()
@@ -742,6 +768,29 @@ watch(
   { immediate: true },
 )
 
+// Where the category has designs to look at, the preview is not something this
+// tab offers — it is the tab. On a phone the forms page was a list of sections
+// the preview already reaches by tapping (texts, agenda, photos, payments...)
+// or from its rail (music, the link preview, auto-fill), so opening onto it put
+// a page between the organizer and the one thing they came to see.
+//
+// So the sheet's open state is simply "this tab is on screen", with no history
+// entry of its own: the tab switch already made one, and back (or the sheet's
+// X, via `leave`) returns to the tab they came from, rather than onto a forms
+// page this mode no longer shows. A category with a studio and no designs (see
+// useDesignCategories) keeps the forms page and the Preview button, and with
+// them the history-backed sheet above.
+const previewIsTab = computed(
+  () => !!props.previewFirst && isMobileStudio.value && props.canViewLivePreview,
+)
+
+const sheetOpen = computed(() => (previewIsTab.value ? !!props.active : mobilePreviewOpen.value))
+
+const closeSheet = () => {
+  if (previewIsTab.value) emit('leave')
+  else closeMobilePreview()
+}
+
 // ---------------------------------------------------------------------------
 // Content panel positioning: the panel is a true extension of
 // EventNavigationTabs.vue's own fixed icon sidebar (same left edge, right at
@@ -903,6 +952,19 @@ const togglePanel = () => {
 
 // Templates: opens the shared BrowseTemplateModal (see template for wiring).
 const showTemplatesModal = ref(false)
+
+// Both overlays are teleported to <body> and neither is backed by history, so a
+// back press that leaves this tab under them — which, where the preview is the
+// tab, is what back does — would leave them floating over whichever tab it
+// lands on. Leaving the tab puts them away.
+watch(
+  () => props.active,
+  (active) => {
+    if (active) return
+    showTemplatesModal.value = false
+    showPaymentDrawer.value = false
+  },
+)
 
 // ---------------------------------------------------------------------------
 // View mode: every visible frame (2 or 3, whatever this event actually has —
@@ -1345,10 +1407,12 @@ const onEditorSaved = (updated?: Event) => {
 }
 
 /**
- * The mobile toolbar owns the auto-fill trigger (EventMediaTab renders none —
- * see `hide-populate`), so the write has to be reported back into the form
- * stack by hand. `refreshContent` is what EventMediaTab runs for its own copy
- * of the card, so both paths end in exactly the same refetch.
+ * The mobile toolbar and the preview sheet's rail own the auto-fill trigger
+ * (EventMediaTab renders none — see `hide-populate`), so the write has to be
+ * reported back into the form stack by hand. `refreshContent` is what
+ * EventMediaTab runs for its own copy of the card, so both paths end in exactly
+ * the same refetch. Where the preview is the tab there is no form stack, and
+ * only the frames are refreshed.
  */
 const mobileMediaTabRef = ref<InstanceType<typeof EventMediaTab> | null>(null)
 
@@ -1709,44 +1773,39 @@ defineExpose({
    title/subtitle block dropped entirely (see the template). Controls are 44px
    here rather than the desktop 36px: this row is thumb input, not mouse input.
 
-   Sticky below the app's own two fixed bars (the 4rem header +
-   EventManageMobileTabBar, whose spacer sits in flow — see EventManageView),
-   and bled out past .showcase-studio__main's 1rem gutters so scrolling form
-   cards pass behind it rather than beside it. */
+   Sticky below the manage page's 4rem header, the only chrome fixed to the top
+   of the screen below `lg` (the section tabs float at the bottom there), and
+   bled out past .showcase-studio__main's 1rem gutters so scrolling form cards
+   pass behind it rather than beside it. */
 .studio-mobile-bar {
   --studio-control-h: 2.75rem;
   position: sticky;
-  /* The tab bar's height is measured and published by EventManageMobileTabBar
-     rather than assumed here — this used to hardcode 52px, which didn't match
-     what that bar actually renders, so once this row was stuck there was a
-     permanent band of page background between the two with scrolling content
-     legible through it. The trailing -1px makes the two overlap by a pixel
-     instead of risking a sub-pixel gap on fractional device pixel ratios (the
-     same trick EventManageTopBar uses against this bar). */
-  top: calc(4rem + var(--manage-tabbar-h, 52px) - 1px);
+  /* The trailing -1px makes this row and the header overlap by a pixel instead
+     of risking a sub-pixel gap on fractional device pixel ratios, with
+     scrolling content showing through it. */
+  top: calc(4rem - 1px);
   z-index: 30;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 0.5rem;
   /* Negative top margin cancels EventManageView's own `py-6` on the content
-     section. Without it this row floated 24px below the fixed tab bar at rest —
+     section. Without it this row floated 24px below the fixed header at rest —
      a band of page background between two pieces of header chrome — and that
      band is also where scrolling cards briefly showed through on their way
-     behind the sticky row. Flush against the tab bar, the two read as one
+     behind the sticky row. Flush against the header, the two read as one
      two-row header (the `md` bump below matches that padding's `md:py-8`). */
   margin: -1.5rem -1rem 1rem -1rem;
   padding: 0.5rem 1rem;
   /* Opaque, not glass: this is fixed chrome that scrolling form cards pass
-     directly behind, and at 0.92 alpha their text read through it (and through
-     the tab labels above). The fill comes from `.premium-chrome` (MainLayout) —
-     the page's own background stack sized to the viewport — so this row, the tab
-     bar and the header are three windows onto one continuous background rather
-     than three flat gradients that can't match it or each other. The offset is
-     this row's own stuck position, i.e. the `top` above; at rest it starts flush
-     against the tab bar (that's what the negative margin buys), so the same
-     offset is right before it sticks too. */
-  --premium-chrome-top: calc(4rem + var(--manage-tabbar-h, 52px) - 1px);
+     directly behind, and at 0.92 alpha their text read through it. The fill
+     comes from `.premium-chrome` (MainLayout) — the page's own background stack
+     sized to the viewport — so this row and the header are two windows onto one
+     continuous background rather than two flat gradients that can't match it or
+     each other. The offset is this row's own stuck position, i.e. the `top`
+     above; at rest it starts flush against the header (that's what the negative
+     margin buys), so the same offset is right before it sticks too. */
+  --premium-chrome-top: calc(4rem - 1px);
   border-bottom: 1px solid rgba(148, 163, 184, 0.15);
 }
 

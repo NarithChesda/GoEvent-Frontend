@@ -34,7 +34,16 @@
     </Transition>
   </template>
 
-  <div v-else-if="visible" class="bg-white/80 backdrop-blur-sm border border-white/40 rounded-2xl shadow-lg p-3.5">
+  <!--
+    Slot variant: the host draws the trigger in its own material (the live
+    preview's dark tool rail, whose buttons this component can't match from
+    here) and shows the result line where its surface shows messages — it
+    arrives through `status`. The dialog below is still this component's, so a
+    host can never reach the write without it.
+  -->
+  <slot v-if="visible && variant === 'slot'" name="trigger" :start="handlePopulateClick" :loading="loading" />
+
+  <div v-else-if="visible && variant === 'card'" class="bg-white/80 backdrop-blur-sm border border-white/40 rounded-2xl shadow-lg p-3.5">
     <div class="flex items-start gap-3">
       <span
         class="w-9 h-9 rounded-lg bg-gradient-to-br from-[#2ecc71]/20 to-[#1e90ff]/20 flex items-center justify-center flex-shrink-0"
@@ -181,7 +190,7 @@
  * right above the very sections it fills — rather than on the Overview tab,
  * which only *summarizes* that content.
  */
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed, onUnmounted, watch } from 'vue'
 import { Wand2, Loader2, AlertTriangle } from 'lucide-vue-next'
 import { eventsService, type Event } from '../services/api'
 import { useAppLanguage } from '@/composables/useAppLanguage'
@@ -193,8 +202,10 @@ interface Props {
    * `card` — the standalone card at the top of the content stack (default).
    * `icon` — the trigger only, for a host toolbar that supplies its own
    * surface and sizing (it reads `--studio-control-h` for its dimensions).
+   * `slot` — the host draws the trigger (`#trigger`, handed `start` and
+   * `loading`) and shows the result line (`status`) itself.
    */
-  variant?: 'card' | 'icon'
+  variant?: 'card' | 'icon' | 'slot'
 }
 
 const props = withDefaults(defineProps<Props>(), { variant: 'card' })
@@ -202,6 +213,9 @@ const props = withDefaults(defineProps<Props>(), { variant: 'card' })
 const emit = defineEmits<{
   /** Content was created — the sections below need to refetch. */
   (e: 'populated'): void
+  /** A result line, success or failure. The card and icon variants draw it
+   *  themselves; the slot variant's host has to. */
+  (e: 'status', message: { type: 'success' | 'error'; text: string }): void
 }>()
 
 const { t } = useAppLanguage()
@@ -216,6 +230,10 @@ const loading = ref(false)
 const dialog = ref<PopulateCheckData | null>(null)
 const message = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 
+watch(message, (next) => {
+  if (next) emit('status', next)
+})
+
 // Stays available for as long as the user can edit — including after a
 // successful run. Populating isn't a one-time onboarding step: people re-run it
 // to restart from the template after experimenting, or to fill gaps left by a
@@ -229,8 +247,13 @@ const hasExistingData = computed(() => !!dialog.value?.existing_data.has_data)
 
 let messageTimer: ReturnType<typeof setTimeout> | null = null
 
+// Marked handled, because the dialog can open over the live preview sheet,
+// whose own Escape handler (on `window`, so it hears this after `document`)
+// would otherwise take the sheet down along with it.
 const onKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape') dialog.value = null
+  if (e.key !== 'Escape') return
+  e.preventDefault()
+  closeDialog()
 }
 
 const openDialog = (check: PopulateCheckData) => {

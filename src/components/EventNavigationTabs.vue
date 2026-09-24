@@ -49,21 +49,7 @@
 
 <script setup lang="ts">
 import { computed, inject, ref, type Ref } from 'vue'
-import {
-  Calendar,
-  FileText,
-  Users,
-  UserPlus,
-  ImageIcon,
-  Monitor,
-  CreditCard,
-  Wallet,
-  BarChart,
-  Star,
-  Mic,
-  Heart,
-  Ticket,
-} from 'lucide-vue-next'
+import { eventTabIcon as getIconComponent } from './eventTabIcons'
 
 export interface TabConfig {
   id: string
@@ -113,26 +99,6 @@ const sidebarLeftPosition = computed(() => {
   const homeSidebarWidth = isCollapsed?.value ? 96 : 256
   return `${homeSidebarWidth}px`
 })
-
-// Icon mapping function
-const getIconComponent = (iconName: string) => {
-  const iconMap: Record<string, any> = {
-    calendar: Calendar,
-    'file-text': FileText,
-    users: Users,
-    'user-plus': UserPlus,
-    image: ImageIcon,
-    monitor: Monitor,
-    'credit-card': CreditCard,
-    'bar-chart': BarChart,
-    wallet: Wallet,
-    star: Star,
-    mic: Mic,
-    heart: Heart,
-    ticket: Ticket,
-  }
-  return iconMap[iconName] || FileText
-}
 
 const visibleTabs = computed(() => {
   return props.tabs.filter((tab) => {

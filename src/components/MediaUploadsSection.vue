@@ -2,6 +2,7 @@
   <div @click="dropdownManager.handleClickOutside">
     <!-- Brand Assets (logos + event video) -->
     <ShowcaseSectionRow
+      v-if="!only"
       :icon="Images"
       :title="t('management.media.mediaUploads.brandAssets.title')"
       :summary="brandAssetsSummary"
@@ -71,7 +72,8 @@
       :title="t('management.media.mediaUploads.music.title')"
       :summary="musicSource !== 'none' ? t('management.media.sectionSummary.set') : t('management.media.sectionSummary.notSet')"
       :filled="musicSource !== 'none'"
-      :expanded="isMusicExpanded"
+      :expanded="isMusicOpen"
+      :standalone="only === 'music'"
       @toggle="toggleMusic"
     >
       <template #actions>
@@ -82,7 +84,7 @@
                leading hairline — see ShowcaseSectionRow), so a menu positioned
                within the row is cut off at the card's edge. -->
           <button
-            v-if="isMusicExpanded && canEdit && musicSource !== 'none'"
+            v-if="isMusicOpen && canEdit && musicSource !== 'none'"
             ref="musicMenuTriggerEl"
             @click.stop="dropdownManager.toggleDropdown('music')"
             :disabled="mediaUpload.isUploading.value('music') || savingMusicSelection"
@@ -90,7 +92,8 @@
             :aria-label="t('management.media.mediaUploads.music.optionsAriaLabel')"
             :aria-expanded="dropdownManager.isOpen('music')"
             aria-haspopup="menu"
-            class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            :class="only ? 'w-10 h-10 inline-flex items-center justify-center' : 'p-1.5'"
+            class="text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <MoreHorizontal class="w-3.5 h-3.5" aria-hidden="true" />
           </button>
@@ -494,6 +497,9 @@ import MusicSelectionModal from './MusicSelectionModal.vue'
 interface Props {
   eventData?: Event
   canEdit: boolean
+  /** Render one row on its own, as the whole of a sheet (the studio's mobile
+   *  preview opens music this way) — see ShowcaseSectionRow's `standalone`. */
+  only?: 'music'
 }
 
 interface Emits {
@@ -512,6 +518,9 @@ const dropdownManager = useDropdownManager(['music'])
 const { getMediaUrl } = useMediaUrl()
 const { isExpanded: isBrandAssetsExpanded, toggle: toggleBrandAssets } = useCollapsibleSection('brandAssets')
 const { isExpanded: isMusicExpanded, toggle: toggleMusic } = useCollapsibleSection('music')
+// On its own there is nothing to collapse into, so it is always open — which is
+// also what puts the header's options menu on screen.
+const isMusicOpen = computed(() => props.only === 'music' || isMusicExpanded.value)
 
 // Create a reactive proxy for the event data to use with payment integration
 // This is needed because usePaymentTemplateIntegration expects a plain object

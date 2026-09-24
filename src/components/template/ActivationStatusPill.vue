@@ -18,7 +18,7 @@
       class="activation-pill__cta"
       @click="emit('activate')"
     >
-      <Sparkles class="w-3.5 h-3.5 flex-shrink-0" />
+      <ShoppingCart class="w-3.5 h-3.5 flex-shrink-0" />
       <span class="activation-pill__cta-label">
         {{ t('management.activation.pill.activateCta') }}
         <template v-if="price"> · {{ formatCurrency(price, 'USD') }}</template>
@@ -48,7 +48,7 @@
  */
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { CheckCircle2, Clock, Eye, Palette, Sparkles } from 'lucide-vue-next'
+import { CheckCircle2, Clock, Eye, Palette, ShoppingCart } from 'lucide-vue-next'
 import { formatCurrency } from '../../utils/currency'
 import type { ActivationState } from '../../composables/useTemplateActivation'
 
