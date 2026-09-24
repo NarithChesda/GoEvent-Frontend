@@ -53,6 +53,15 @@
         ],
         "createdAt": "2026-09-23T22:38:56.182Z",
         "reason": "Claude triage: L100 is the standard Tailwind loading spinner (rounded-full + border-b-2 + animate-spin), not an accent border on a card; pre-existing code, not part of this change"
+      },
+      {
+        "rule": "layout-transition",
+        "value": "*",
+        "files": [
+          "src/components/showcase-preview/ShowcasePreviewTab.vue"
+        ],
+        "createdAt": "2026-09-23T23:36:56.058Z",
+        "reason": "Original author's design, documented in the code (commits dc10203c/d1594bd1): the desktop content panel grows its width from 0 so the reveal never sweeps over the icon rail the way a translateX slide did, and .main animates margin-left in step because the frames must actually reflow into the narrower column (a transform would leave their measured width unchanged). Desktop-only, one 0.3s toggle, no continuous animation."
       }
     ]
   }
