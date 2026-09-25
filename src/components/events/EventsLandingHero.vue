@@ -3,17 +3,36 @@
        real public events. The tile field is decorative — it is what the product
        makes, shown rather than described — so it is inert and aria-hidden. -->
   <section class="relative flex-1 flex flex-col min-h-[100dvh] overflow-hidden">
-    <!-- No sign-in header.
-         This landing used to float a Sign in pill over the top-right corner,
-         because the page's own chrome is hidden in this state (see EventsView).
-         But the hero's primary button is `Create Your First Event`, which opens
-         the create wizard right here and asks the visitor to sign in when they
-         press Create at its end — the same sign-in, reached with an event
-         already worth signing in for. So the pill was the same door, named
-         worse, competing with the one CTA this screen exists to press
-         (goevent-taste: one screen, one primary action). `Discover Events`
-         still reaches the rest of the app, and /explore carries the real nav
-         bar with its own Sign in. -->
+    <!-- The way back in for someone who already has events. The page's own
+         chrome is hidden here (see LandingView / EventsView), so the landing
+         carries its own Sign in, floating over the hero rather than on a bar.
+         It was removed once, when `Create Your First Event` went through
+         sign-in and made this a second copy of the same door. Since the create
+         wizard opens in place and asks for an account only at its last step,
+         it isn't: without this, a returning organizer had to start a new
+         event or detour through /explore to reach the ones they have.
+         It lands on /events, their list, and not on the create flow.
+         Not the gradient pill the nav bar uses: the hero's CTA holds the
+         screen's one gradient (goevent-taste §2). Instead it is made of what
+         the wall is made of: the tiles' bezel, with the icon sunk into it the
+         way their art is (see `.signin-pill`). No mark up here: the wordmark
+         is already the first thing in the hero. -->
+    <header
+      class="absolute inset-x-0 top-0 z-20 flex items-center justify-end px-4 sm:px-6 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 sm:pt-4 sm:pb-4 pointer-events-none"
+    >
+      <!-- In rem, so it scales with the hero's type (the root drops to 75% on
+           laptops): 40px on a phone, the touch target it needs there. -->
+      <RouterLink
+        to="/signin?redirect=%2Fevents"
+        class="signin-pill pointer-events-auto inline-flex items-center gap-2 min-h-[2.5rem] pl-1.5 pr-4 rounded-full text-sm font-medium text-slate-700"
+      >
+        <span class="signin-well" aria-hidden="true">
+          <User class="w-3.5 h-3.5" />
+        </span>
+        <span>{{ t('common.nav.signIn') }}</span>
+      </RouterLink>
+    </header>
+
     <!-- Desktop tile field: absolute, behind the copy, cropped by the section. -->
     <div
       v-if="artReady"
@@ -155,7 +174,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { ArrowRight } from 'lucide-vue-next'
+import { ArrowRight, User } from 'lucide-vue-next'
 import LogoImg from '@/assets/logo-hero.webp'
 import { eventsService } from '@/services/api'
 import { getEventImage } from '@/composables/useEventFormatters'
@@ -830,12 +849,104 @@ onUnmounted(() => {
   }
 }
 
+/*
+ * The Sign in pill, cut from the tiles' material so it reads as one more object
+ * on the wall and not as app chrome laid over it: the same top-lit face, the
+ * same bevel pair and hairline, and the same three-stop cast shadow, scaled to
+ * an object a quarter of a tile's height. Deliberately not the tile's float:
+ * a target that bobs is harder to hit, and it isn't decoration.
+ *
+ * It arrives on the hero's curve, last, after the two calls to action, and
+ * drops from the edge it lives on rather than rising like the copy does.
+ *
+ * Hover and press use the `translate` / `scale` longhands, not `transform`:
+ * the entrance's `both` fill holds `transform` for good once it has played, so
+ * a `transform` transition here would never run.
+ */
+.signin-pill {
+  --signin-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.95), inset 0 -1.5px 0 rgba(15, 23, 42, 0.07),
+    0 0 0 1px rgba(15, 23, 42, 0.07), 0 1px 2px rgba(15, 23, 42, 0.06),
+    0 4px 8px -4px rgba(15, 23, 42, 0.18), 0 12px 20px -10px rgba(15, 23, 42, 0.24);
+  background: linear-gradient(168deg, #ffffff 0%, #ffffff 42%, #eef2f7 100%);
+  box-shadow: var(--signin-shadow);
+  animation: signin-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 340ms both;
+  transition:
+    translate 200ms cubic-bezier(0.23, 1, 0.32, 1),
+    scale 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 200ms ease,
+    color 200ms ease;
+}
+
+/* The icon's well: recessed like `.tile-art`, and holding the brand as a tint,
+   which doesn't count against the screen's one gradient. */
+.signin-well {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  color: #334155;
+  background: linear-gradient(135deg, rgba(46, 204, 113, 0.16), rgba(30, 144, 255, 0.16));
+  box-shadow:
+    inset 0 0 0 1px rgba(15, 23, 42, 0.08),
+    inset 0 1.5px 3px -1px rgba(15, 23, 42, 0.24);
+}
+
+/* Lifted a pixel toward the viewer, with the far shadow opening to match.
+   Pointer-only: a tap would leave the lift stuck on touch screens. */
+@media (hover: hover) and (pointer: fine) {
+  .signin-pill:hover {
+    translate: 0 -1px;
+    color: #0f172a;
+    box-shadow:
+      inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
+      inset 0 -1.5px 0 rgba(15, 23, 42, 0.07),
+      0 0 0 1px rgba(15, 23, 42, 0.09),
+      0 1px 2px rgba(15, 23, 42, 0.06),
+      0 6px 12px -5px rgba(15, 23, 42, 0.22),
+      0 16px 26px -12px rgba(15, 23, 42, 0.3);
+  }
+}
+
+.signin-pill:active {
+  translate: 0 0;
+  scale: 0.97;
+}
+
+.signin-pill:focus {
+  outline: none;
+}
+
+/* An outline, not a ring: Tailwind's ring is a box-shadow and would replace
+   the material's own. */
+.signin-pill:focus-visible {
+  outline: 2px solid #7dd3fc;
+  outline-offset: 2px;
+}
+
+@keyframes signin-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tile-slot,
   .arc-enter,
   .tile,
-  .hero-item {
+  .hero-item,
+  .signin-pill {
     animation: none;
+  }
+
+  .signin-pill:hover {
+    translate: none;
   }
 }
 </style>

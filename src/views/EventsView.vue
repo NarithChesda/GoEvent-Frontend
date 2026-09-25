@@ -1,7 +1,7 @@
 <template>
   <!-- The signed-out landing owns the whole viewport: app nav, tab bar, contact
        FAB and footer all step aside so the hero is the only thing on screen,
-       with its own minimal bar (mark + Sign In) floating over it. -->
+       with its own Sign in floating over its top-right corner. -->
   <MainLayout
     :contact-fab-has-fab-below="showCreateFab"
     :hide-top-nav="showLanding"

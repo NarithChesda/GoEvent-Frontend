@@ -6,7 +6,9 @@
        and it arrives as its own chunk (see below).
 
        The chrome steps aside as it does on the signed-out /events: the hero
-       owns the first screen, and the footer below the sections is the way on. -->
+       owns the first screen. It offers three ways on: create an event (the
+       wizard, below), discover events (/explore), and a Sign in in its corner
+       that takes a returning organizer to their events. -->
   <MainLayout hide-top-nav hide-mobile-tab-bar hide-contact-fab>
     <div class="flex flex-col">
       <EventsLandingHero @create="showCreate = true" />
