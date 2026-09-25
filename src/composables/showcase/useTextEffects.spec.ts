@@ -5,6 +5,7 @@ import { mount } from '@vue/test-utils'
 import type { TextEffectsConfig } from '@/services/api/types/template.types'
 import {
   TEXT_EFFECT_MARK_INK,
+  TEXT_EFFECT_MARK_INK_ON_DARK,
   TEXT_EFFECT_METALS,
   SHEEN_AFTER_REVEAL_MS,
   SHEEN_PASS_MS,
@@ -213,7 +214,35 @@ describe('useTextEffectMarkInk', () => {
   it('offers a tone for every metal a finish can name', () => {
     for (const metal of TEXT_EFFECT_METALS) {
       expect(TEXT_EFFECT_MARK_INK[metal]).toMatch(/^#[0-9a-f]{6}$/)
+      expect(TEXT_EFFECT_MARK_INK_ON_DARK[metal]).toMatch(/^#[0-9a-f]{6}$/)
     }
+  })
+
+  // On a photograph the shadow-side tone sinks; the pale side is what reads.
+  it('answers with the pale side of the metal on a dark ground', () => {
+    const DarkMark = defineComponent({
+      setup() {
+        const markInk = useTextEffectMarkInk()
+        return () =>
+          h('i', {
+            'data-light': markInk('primary') ?? '',
+            'data-dark': markInk('primary', 'dark') ?? '',
+            'data-none': markInk('secondary', 'dark') ?? '',
+          })
+      },
+    })
+    const config = ref<TextEffectsConfig | null>({ primary: { finish: 'relief', metal: 'rose_gold' } })
+    const Host = defineComponent({
+      setup() {
+        provideTextEffects(config)
+        return () => h(DarkMark)
+      },
+    })
+    const mark = mount(Host).find('i')
+    expect(mark.attributes('data-light')).toBe(TEXT_EFFECT_MARK_INK.rose_gold)
+    expect(mark.attributes('data-dark')).toBe(TEXT_EFFECT_MARK_INK_ON_DARK.rose_gold)
+    // A slot with no finish still means "keep your own ink", on any ground.
+    expect(mark.attributes('data-none')).toBe('')
   })
 })
 

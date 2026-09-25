@@ -79,7 +79,12 @@
         <div class="mf__window mf__window--print">
           <div class="mf__embed"><slot /></div>
         </div>
-        <div v-if="$slots.caption" class="mf__caption" :class="{ 'is-khmer': khmer }" :style="{ fontFamily: captionFont }">
+        <div
+          v-if="$slots.caption"
+          class="mf__caption"
+          :class="[captionFinish, { 'is-khmer': khmer }]"
+          :style="{ fontFamily: captionFont }"
+        >
           <slot name="caption" />
         </div>
       </div>
@@ -103,6 +108,12 @@ const props = withDefaults(
     delay?: number
     /** The polaroid's caption face. */
     captionFont?: string
+    /**
+     * That face's slot finish (`fx(slot)`), so a gilded template writes the
+     * venue in its metal like the rest of its display type. The caption is the
+     * element that sets the face; the caller wraps the text in `.tfx-ink`.
+     */
+    captionFinish?: string[]
     khmer?: boolean
     /** The template's ink, for the polaroid's caption to be measured against its paper. */
     ink?: string
@@ -115,6 +126,7 @@ const props = withDefaults(
     light: false,
     delay: 0,
     captionFont: undefined,
+    captionFinish: () => [],
     khmer: false,
     ink: undefined,
     stationery: null,

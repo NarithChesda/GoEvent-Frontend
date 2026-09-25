@@ -498,6 +498,7 @@
         :revealed="isVisible"
         :delay="animationDelays.map + 0.08"
         :caption-font="primaryFont || currentFont"
+        :caption-finish="fx('primary')"
         :khmer="currentLanguage === 'kh'"
         :ink="primaryColor"
         :stationery="stock"
@@ -511,7 +512,7 @@
             :multiline="true"
             :input-style="{ fontFamily: primaryFont || currentFont, color: stockInk }"
           >
-            <span :class="[currentLanguage === 'kh' && 'khmer-text-fix']">{{ locationText }}</span>
+            <span :class="[currentLanguage === 'kh' && 'khmer-text-fix']"><span class="tfx-ink">{{ locationText }}</span></span>
           </InlineEditableText>
         </template>
       </MapFrame>
@@ -590,6 +591,7 @@
               :revealed="isVisible"
               :delay="animationDelays.map"
               :caption-font="primaryFont || currentFont"
+              :caption-finish="fx('primary')"
               :khmer="currentLanguage === 'kh'"
               :ink="primaryColor"
               :stationery="stock"
@@ -603,7 +605,7 @@
                   :multiline="true"
                   :input-style="{ fontFamily: primaryFont || currentFont, color: stockInk }"
                 >
-                  <span :class="[currentLanguage === 'kh' && 'khmer-text-fix']">{{ locationText }}</span>
+                  <span :class="[currentLanguage === 'kh' && 'khmer-text-fix']"><span class="tfx-ink">{{ locationText }}</span></span>
                 </InlineEditableText>
               </template>
             </MapFrame>

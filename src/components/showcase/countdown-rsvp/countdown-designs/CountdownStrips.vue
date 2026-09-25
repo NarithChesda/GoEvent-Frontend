@@ -43,10 +43,18 @@
             class="cds__figure"
             :style="{ '--i': index }"
           >
-            <span class="cds__num" :class="{ 'is-long': [...unit.value].length > 2 }" :style="{ fontFamily: displayFont }">
+            <span
+              class="cds__num"
+              :class="[{ 'is-long': [...unit.value].length > 2 }, src ? fx('primary') : []]"
+              :style="{ fontFamily: displayFont }"
+            >
               <RollingNumber :value="unit.value" />
             </span>
-            <span class="cds__unit" :class="{ 'is-khmer': khmer }" :style="{ fontFamily: textFont }">
+            <span
+              class="cds__unit"
+              :class="{ 'is-khmer': khmer }"
+              :style="{ fontFamily: textFont, color: unitInk ?? undefined }"
+            >
               {{ unit.label }}
             </span>
           </div>
@@ -62,6 +70,7 @@ import EditableRegion from '@/components/showcase-preview/edit/EditableRegion.vu
 import type { EditIntent } from '@/components/showcase-preview/edit/editContext'
 import { PHOTO_DELIVERY, useTemplateProcessor } from '@/composables/showcase/useTemplateProcessor'
 import { useAssetProtection } from '@/composables/showcase/useAssetProtection'
+import { useTextEffect, useTextEffectMarkInk } from '@/composables/showcase/useTextEffects'
 import { cropCentre, cropToCoverGeometry, resolvePhotoCrop, type Size } from '@/utils/photoCrop'
 import RollingNumber from '../RollingNumber.vue'
 import { stripesShapeMask } from '../countdownRsvp'
@@ -93,6 +102,21 @@ const src = computed(() =>
     ? getOptimizedMediaUrl(props.photo.image, { ...PHOTO_DELIVERY, width: 1080, retina: 1 })
     : '',
 )
+
+/**
+ * The figures are this design's display type, in the primary slot — gilded
+ * when the template struck that slot in a metal, as the other designs' are.
+ * The unit labels beside them are too small to carry the fill, so they take a
+ * solid tone of the same metal instead of white: the pale side of it, because
+ * they sit on the scrim, not on a card.
+ *
+ * Only over a photograph. Without one the stripes are plain ink, and on a
+ * gold template the ink is itself pale gold — metal on it would be no figure
+ * at all — so there the figures keep the paper measured against the ink.
+ */
+const fx = useTextEffect()
+const markInk = useTextEffectMarkInk()
+const unitInk = computed(() => (src.value ? markInk('primary', 'dark') : null))
 
 const frameRef = ref<HTMLElement | null>(null)
 const naturalSize = ref<Size | null>(null)
@@ -274,7 +298,8 @@ const imgStyle = computed((): Record<string, string> => {
   transform: none;
 }
 
-/* White figures need a dark foot to stand on, whatever the photograph is. */
+/* Light figures — white, or the pale side of a metal — need a dark foot to
+   stand on, whatever the photograph is. */
 .cds__scrim {
   position: absolute;
   inset: auto 0 0;
@@ -330,6 +355,8 @@ const imgStyle = computed((): Record<string, string> => {
   transform: none;
 }
 
+/* The halo is for white type only: a finish resets it on its ink span and
+   brings its own depth (text-effects.css). */
 .cds__num {
   font-size: clamp(2.5rem, 12.5vw, 3.75rem);
   line-height: 1;
