@@ -29,6 +29,7 @@
         :text-font="textFont"
         :khmer="khmer"
         :photo="photo"
+        :paper-tone="paperTone"
         :bleed-class="bleedClass"
       />
     </div>
@@ -73,6 +74,7 @@ import type {
 } from '@/services/api/types/template.types'
 import { translateRSVP, type SupportedLanguage } from '@/utils/translations'
 import { countdownPhoto, formatCount } from './countdownRsvp'
+import { paperToneOf } from '../calendar-designs/calendarModel'
 import {
   inkOnPaper,
   paperOnInk,
@@ -218,6 +220,7 @@ const textFont = computed(() => props.secondaryFont || props.currentFont)
 
 const tone = computed(() => props.backgroundColor || props.primaryColor)
 const paper = computed(() => paperOnInk(props.primaryColor, props.backgroundColor))
+const paperTone = computed(() => paperToneOf(paper.value))
 
 /** The reply card's stock, and everything printed on it. */
 const stock = computed(() => props.stationery ?? stationeryPaper({ tone: tone.value }))

@@ -100,8 +100,8 @@ export const TEXT_EFFECT_MARK_INK: Record<TextEffectMetal, string> = {
 }
 
 /**
- * The same, for a mark on a DARK ground — a photograph under a scrim, where the
- * countdown's strips set their unit labels beside gilded figures.
+ * The same, for a mark on a DARK ground — a photograph under a dark veil, where
+ * the countdown's strips set their unit labels beside gilded figures.
  *
  * The reasoning above inverts there. `--tfx-low` is the tone that holds up on
  * cream, and on a dark ground it is the one that sinks (about 3:1 over a

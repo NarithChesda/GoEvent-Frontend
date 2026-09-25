@@ -104,11 +104,12 @@ const src = computed(() =>
 )
 
 /**
- * The figures are this design's display type, in the primary slot — gilded
- * when the template struck that slot in a metal, as the other designs' are.
- * The unit labels beside them are too small to carry the fill, so they take a
- * solid tone of the same metal instead of white: the pale side of it, because
- * they sit on the scrim, not on a card.
+ * The figures are this design's display type, in the primary slot — set in the
+ * template's ink over a photograph, and gilded when the template struck that
+ * slot in a metal, as the other designs' are. The unit labels beside them are
+ * too small to carry the fill, so they take a solid tone of the same metal,
+ * chosen for the veil they sit on (see `.cds__scrim`): the pale side on a dark
+ * one, the shadow side on a light one, as on a card.
  *
  * Only over a photograph. Without one the stripes are plain ink, and on a
  * gold template the ink is itself pale gold — metal on it would be no figure
@@ -116,7 +117,7 @@ const src = computed(() =>
  */
 const fx = useTextEffect()
 const markInk = useTextEffectMarkInk()
-const unitInk = computed(() => (src.value ? markInk('primary', 'dark') : null))
+const unitInk = computed(() => (src.value ? markInk('primary', props.paperTone ?? 'light') : null))
 
 const frameRef = ref<HTMLElement | null>(null)
 const naturalSize = ref<Size | null>(null)
@@ -298,16 +299,17 @@ const imgStyle = computed((): Record<string, string> => {
   transform: none;
 }
 
-/* Light figures — white, or the pale side of a metal — need a dark foot to
-   stand on, whatever the photograph is. */
+/* The figures are the template's ink, which a photograph can match anywhere,
+   so they stand on a veil of the paper measured against that ink: dark under
+   a pale gold, the template's own ground (or a warm white) under a deep ink. */
 .cds__scrim {
   position: absolute;
   inset: auto 0 0;
   height: 52%;
   background: linear-gradient(
     to top,
-    rgb(14 11 9 / 0.66),
-    rgb(14 11 9 / 0.3) 48%,
+    color-mix(in srgb, var(--crs-paper) 66%, transparent),
+    color-mix(in srgb, var(--crs-paper) 30%, transparent) 48%,
     transparent
   );
 }
@@ -335,7 +337,7 @@ const imgStyle = computed((): Record<string, string> => {
   justify-content: flex-end;
   gap: 0.3rem;
   padding: 0 0.25rem clamp(1.1rem, 7%, 2rem);
-  color: #fff;
+  color: var(--crs-ink);
   text-align: center;
   opacity: 0;
   transform: translateY(14px);
@@ -344,8 +346,8 @@ const imgStyle = computed((): Record<string, string> => {
     transform 600ms var(--crs-ease-out) calc(560ms + var(--i) * 90ms);
 }
 
-/* Without a photograph the stripes are plain ink, and white on a pale ink is
-   no figure at all — so the figures take the paper measured against it. */
+/* Without a photograph the stripes are plain ink, and ink on ink is no figure
+   at all — so the figures take the paper measured against it. */
 .cds:not(.has-photo) .cds__figure {
   color: var(--crs-paper);
 }
@@ -355,13 +357,14 @@ const imgStyle = computed((): Record<string, string> => {
   transform: none;
 }
 
-/* The halo is for white type only: a finish resets it on its ink span and
-   brings its own depth (text-effects.css). */
+/* A halo of the veil's own paper, lifting the figure off whatever the photo
+   does behind it. A finish resets it on its ink span and brings its own depth
+   (text-effects.css). */
 .cds__num {
   font-size: clamp(2.5rem, 12.5vw, 3.75rem);
   line-height: 1;
   letter-spacing: -0.01em;
-  text-shadow: 0 2px 14px rgb(0 0 0 / 0.28);
+  text-shadow: 0 2px 14px color-mix(in srgb, var(--crs-paper) 40%, transparent);
 }
 
 /* Three digits — an invitation sent more than 99 days out — step down, or

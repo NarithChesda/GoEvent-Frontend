@@ -36,6 +36,12 @@ export interface CountdownDesignProps {
   /** `strips` only: the photograph cut into strips. Null draws plain ink. */
   photo?: EventPhoto | null
   /**
+   * `strips` only: whether `--crs-paper` is a light or a dark ground. Over a
+   * photograph the figures are set in the ink on a veil of that paper, and a
+   * metal's flat mark tone is chosen by the ground it sits on.
+   */
+  paperTone?: 'light' | 'dark'
+  /**
    * `strips` only: the card's negative inline margins, so the band runs edge
    * to edge the way a photo band does. The other designs sit in the column.
    */
