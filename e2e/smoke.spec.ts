@@ -26,12 +26,22 @@ test.describe('app boot', () => {
     expect(consoleErrors).toEqual([])
   })
 
-  test('redirects the root path to /events', async ({ page, stubApi }) => {
+  test('the root path is the landing: create, discover, and sign in to your events', async ({
+    page,
+    stubApi,
+  }) => {
     await stubApi(page)
     await page.goto('/')
     await waitForAppMount(page)
 
-    await expect(page).toHaveURL(/\/events$/)
+    await expect(page).toHaveURL(/\/$/)
+    await expect(page.getByRole('button', { name: 'Create Your First Event' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Discover Events' })).toBeVisible()
+
+    // A returning organizer's way in: it signs them in and lands on their
+    // events, not on the create wizard.
+    await page.getByRole('link', { name: 'Sign In' }).click()
+    await expect(page).toHaveURL(/\/signin\?redirect=%2Fevents$/)
   })
 
   test('serves the SPA shell with the GoEvent title', async ({ page, stubApi }) => {
