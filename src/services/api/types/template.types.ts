@@ -1327,6 +1327,65 @@ export interface GuestInviteDesignConfig {
 }
 
 /**
+ * Composition used for the **photo gallery** on the main content stage — the
+ * event's photographs near the foot of the invitation, 10 to 30 of them on a
+ * typical event.
+ *
+ * Until this existed the gallery was one composition: every photograph at the
+ * card's full width, one after another. That is the right answer for three
+ * photos and a long scroll for thirty, and it drew a wedding, a birthday and a
+ * memorial the same way. The photographs are the one part of an invitation a
+ * guest comes back to look at, so how they are laid down is worth a choice.
+ *
+ * Each design is a composition AND an arrival — the photographs are handed
+ * over one at a time as they scroll into view, in the gesture that design is
+ * named for. Four of the five borrow their material from the photo-stack
+ * transition (`cover_stage_layout.stackLayout`), so a template can carry one
+ * look from its transition into its gallery.
+ *
+ * - `column` — **the default, and what every gallery renders today.** One
+ *              photograph after another at the card's width, uncropped.
+ * - `reel`   — the one horizontal design: a strip of framed photographs bled
+ *              to the card's edges, bowed like a panorama, dealt in from the
+ *              right one by one and then drifting on its own. It takes a swipe
+ *              and a throw. The shortest design at any photo count.
+ * - `prints` — instant-film prints tossed down the page in a zig-zag, each
+ *              overlapping the last, dropped onto its resting tilt as it
+ *              scrolls in. A caption, if the photo has one, written on the
+ *              print's foot. Weddings and birthdays.
+ * - `mosaic` — rounded tiles in two staggered columns, surfacing out of the
+ *              dark as they arrive. No material of its own, so the quietest;
+ *              and the densest. Ceremonies and memorials.
+ * - `booth`  — photo-booth strips of three, side by side at a tilt, each
+ *              frame revealed by a flash. Birthdays and parties.
+ * - `film`   — a contact sheet: two strips of negative, frames numbered on
+ *              the edge, each developing from a warm cast into its own colours.
+ *              Anniversaries, and anything nostalgic.
+ *
+ * The four framed designs (everything but `column`) cut each photo to their
+ * frame through the photo's own `crop_*` region, the same one-region-per-photo
+ * rule the transition stage and the bands follow.
+ *
+ * When the field is absent / `null` the showcase renders `column`, and an
+ * unrecognised value falls back to it too, so every already-published
+ * template is unchanged and no migration is needed.
+ *
+ * Selected per template via `template_assets.gallery_design` and flows through
+ * the showcase exactly like `agenda_design`.
+ */
+export type GalleryDesignType = 'column' | 'reel' | 'prints' | 'mosaic' | 'booth' | 'film'
+
+/**
+ * Configuration for the photo gallery on the showcase. An object rather than a
+ * bare string, matching the other section designs, so a per-design option can
+ * be added as a sibling key without a breaking change.
+ */
+export interface GalleryDesignConfig {
+  /** Which gallery composition to render. Defaults to `column`. */
+  type: GalleryDesignType
+}
+
+/**
  * Composition used for the **Save the Date** title card on the transition
  * stage — the block that carries the label and the event date over the
  * featured photograph, between the cover and the invitation.
@@ -1745,6 +1804,12 @@ export interface PartnerTemplate {
    */
   guest_invite_design?: GuestInviteDesignConfig | null
   /**
+   * Photo gallery design. Null / absent = the `column` every gallery renders
+   * today. Optional because the backend field is pending
+   * (docs/backend-api-requirements/gallery-design.md).
+   */
+  gallery_design?: GalleryDesignConfig | null
+  /**
    * The countdown and the RSVP in a section of their own. Null / absent =
    * both stay inside the info card. Optional because the backend field is
    * pending (docs/backend-api-requirements/countdown-rsvp-design.md).
@@ -1862,6 +1927,8 @@ export interface PartnerTemplateCreatePayload {
   dress_code_design?: DressCodeDesignConfig | null
   /** Guest dedication on the invitation. Pass `null` to remove the block. */
   guest_invite_design?: GuestInviteDesignConfig | null
+  /** Photo gallery design. Pass `null` to fall back to the `column` design. */
+  gallery_design?: GalleryDesignConfig | null
   /** Countdown + RSVP section. Pass `null` to keep both inside the info card. */
   countdown_rsvp_design?: CountdownRsvpDesignConfig | null
   /** Transition-stage Save the Date design. Pass `null` to keep each stage's own default. */

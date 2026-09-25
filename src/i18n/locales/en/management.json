@@ -3478,6 +3478,18 @@
         "ledger": "Ledger (one line per code, nothing hidden)"
       }
     },
+    "galleryDesign": {
+      "sectionTitle": "Photo Gallery Design",
+      "designHint": "How the event's photos are laid out, and how each one arrives as the guest scrolls to it. Every design but the column cuts photos to its own frame, following the framing the organizer set on each photo.",
+      "types": {
+        "column": "Column (one photo after another) — the current look",
+        "reel": "Reel (a sideways strip that drifts and swipes) — shortest",
+        "prints": "Prints (instant photos tossed down the page) — weddings, birthdays",
+        "mosaic": "Mosaic (rounded tiles, two columns) — quiet, most compact",
+        "booth": "Photo booth (strips of three, each frame flashes in) — parties",
+        "film": "Contact sheet (film strips, frames develop) — anniversaries"
+      }
+    },
     "guestInviteDesign": {
       "sectionTitle": "Guest Dedication",
       "designHint": "The invite text and the name of the guest the link was sent to, drawn between the hosts and the date. Shown only on a link sent to a named guest, since a public link has no one to address.",

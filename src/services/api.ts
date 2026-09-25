@@ -137,6 +137,8 @@ export type {
   DressCodeDesignConfig,
   GuestInviteDesignType,
   GuestInviteDesignConfig,
+  GalleryDesignType,
+  GalleryDesignConfig,
   SaveTheDateDesignType,
   SaveTheDateDesignConfig,
   AmbientCreatureEffectType,

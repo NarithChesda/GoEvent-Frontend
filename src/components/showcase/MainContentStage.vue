@@ -535,6 +535,8 @@
                       :secondary-font="secondaryFont"
                       :event-texts="eventTexts"
                       :current-language="currentLanguage"
+                      :gallery-design="galleryDesign"
+                      :bleed-class="bleedMarginClasses"
                       @open-photo="!editIntentCtx && $emit('openPhoto', $event)"
                     />
                   </EditableRegion>
@@ -1007,6 +1009,7 @@ import type {
   AgendaDesignConfig,
   CountdownRsvpDesignConfig,
   DressCodeDesignConfig,
+  GalleryDesignConfig,
   CoverStageLayout,
   EventDetailsDesignConfig,
   GuestInviteDesignConfig,
@@ -1125,6 +1128,8 @@ interface Props {
   /** Agenda list design from template (rail | thread | milestone | ledger | stack) */
   agendaDesign?: AgendaDesignConfig | null
   dressCodeDesign?: DressCodeDesignConfig | null
+  /** Photo gallery composition. Absent/unknown renders `column`. */
+  galleryDesign?: GalleryDesignConfig | null
   /** Guest dedication design from template. Absent / null = no block. */
   guestInviteDesign?: GuestInviteDesignConfig | null
   /** Countdown + RSVP in a section of their own. Absent / null = both stay in the info card. */

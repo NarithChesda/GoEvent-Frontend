@@ -454,6 +454,23 @@
             />
             <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.dressCodeDesign.designHint') }}</p>
           </div>
+
+          <!-- The event's photographs. Until this existed every gallery was one
+               column of full-width photos, which is a long scroll at thirty
+               and draws a birthday the way it draws a memorial. Each design is
+               also an arrival — the photos are handed over one at a time as the
+               guest reaches them — and four of the five borrow their material
+               from the photo-stack transition, so a template can carry one look
+               from its transition into its gallery. -->
+          <div class="p-4 space-y-2">
+            <TemplateFormChoice
+              v-model="galleryDesignModel"
+              :label="t('management.partnerTemplateForm.galleryDesign.sectionTitle')"
+              :options="galleryDesignOptions"
+              :columns="1"
+            />
+            <p :class="FIELD_HINT">{{ t('management.partnerTemplateForm.galleryDesign.designHint') }}</p>
+          </div>
         </section>
 </template>
 
@@ -479,14 +496,19 @@ import {
   Diamond,
   Droplets,
   Feather,
+  Film,
   Flower2,
   Frame,
+  GalleryHorizontalEnd,
+  GalleryVertical,
   Gauge,
   GitCommitVertical,
   Grid3x3,
   Heart,
   IdCard,
+  Images,
   Infinity as InfinityIcon,
+  LayoutDashboard,
   LayoutList,
   LayoutPanelTop,
   MailOpen,
@@ -655,6 +677,21 @@ const dressCodeDesignOptions = computed(() => [
   { value: 'ledger', label: t('management.partnerTemplateForm.dressCodeDesign.types.ledger'), icon: Rows3 },
 ])
 
+// The column leads, because it is what every existing template renders, so the
+// picker opens on no change; the reel follows as the one horizontal answer.
+// The other four carry the photo-stack transition's materials and run from the
+// widest-fitting to the most particular — prints for a wedding or a birthday,
+// the mosaic for anything solemn, the booth for a party, the contact sheet for
+// an anniversary. The event's category never picks one; a partner does.
+const galleryDesignOptions = computed(() => [
+  { value: 'column', label: t('management.partnerTemplateForm.galleryDesign.types.column'), icon: GalleryVertical },
+  { value: 'reel', label: t('management.partnerTemplateForm.galleryDesign.types.reel'), icon: GalleryHorizontalEnd },
+  { value: 'prints', label: t('management.partnerTemplateForm.galleryDesign.types.prints'), icon: Images },
+  { value: 'mosaic', label: t('management.partnerTemplateForm.galleryDesign.types.mosaic'), icon: LayoutDashboard },
+  { value: 'booth', label: t('management.partnerTemplateForm.galleryDesign.types.booth'), icon: Camera },
+  { value: 'film', label: t('management.partnerTemplateForm.galleryDesign.types.film'), icon: Film },
+])
+
 // Off leads, because it is the default and what every existing template is.
 // The four then run from the most traditional to the most playful — the dotted
 // line of a printed Khmer card, the tracked formal line, the reception's place
@@ -774,6 +811,7 @@ const hostCoupleOrnamentModel = enumModel(() => form, 'host_couple_ornament')
 const hostBreaklineStyleModel = enumModel(() => form, 'host_divider_style')
 const agendaDesignModel = enumModel(() => form, 'agenda_design_type')
 const dressCodeDesignModel = enumModel(() => form, 'dress_code_design_type')
+const galleryDesignModel = enumModel(() => form, 'gallery_design_type')
 const guestInviteDesignModel = enumModel(() => form, 'guest_invite_design_type')
 const infoCardDesignModel = enumModel(() => form, 'info_card_design_type')
 const mapStyleModel = enumModel(() => form, 'info_card_map_style')

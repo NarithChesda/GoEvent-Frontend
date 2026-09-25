@@ -3,6 +3,8 @@ import type {
   AgendaDesignType,
   DressCodeDesignConfig,
   DressCodeDesignType,
+  GalleryDesignConfig,
+  GalleryDesignType,
   GuestInviteDesignConfig,
   GuestInviteDesignType,
   InfoCardDesignConfig,
@@ -16,8 +18,9 @@ import { resolveMapStyle } from '@/components/showcase/countdown-rsvp/countdownR
 
 /**
  * The section designs that are a bare choice of composition: the info card, the
- * agenda, the dress code, the Save the Date and the guest dedication. Each is
- * one `{ type }` config on the wire, with no sibling settings — so far.
+ * agenda, the dress code, the photo gallery, the Save the Date and the guest
+ * dedication. Each is one `{ type }` config on the wire, with no sibling
+ * settings — so far.
  *
  * Grouped rather than given a module each because they are the same shape and
  * the same decision asked four times, and because the builders below are the
@@ -39,6 +42,7 @@ export interface SectionDesignsFormState {
   info_card_map_style: InfoCardMapStyle
   agenda_design_type: AgendaDesignType
   dress_code_design_type: DressCodeDesignType
+  gallery_design_type: GalleryDesignType
   /**
    * Save the Date composition on the transition stage. `auto` is not a design —
    * it stores nothing, which leaves each transition stage on the one it shipped
@@ -62,6 +66,7 @@ export const defaultSectionDesigns = (): SectionDesignsFormState => ({
   info_card_map_style: 'window',
   agenda_design_type: 'rail',
   dress_code_design_type: 'portrait',
+  gallery_design_type: 'column',
   save_the_date_design_type: 'auto',
   guest_invite_design_type: 'none',
 })
@@ -78,6 +83,7 @@ export function hydrateSectionDesigns(template: PartnerTemplate | null): Section
     // Absent means the template predates the field, which is exactly
     // 'portrait' — the one composition every dress code section rendered.
     dress_code_design_type: template?.dress_code_design?.type ?? 'portrait',
+    gallery_design_type: hydrateGalleryDesign(template?.gallery_design?.type),
     // No stored value means 'auto' — each transition stage keeps its own
     // default — which is what every template saved before this field existed has.
     save_the_date_design_type: template?.save_the_date_design?.type ?? 'auto',
@@ -104,6 +110,33 @@ export const buildAgendaDesignPayload = (state: SectionDesignsFormState): Agenda
 export const buildDressCodeDesignPayload = (
   state: SectionDesignsFormState,
 ): DressCodeDesignConfig => ({ type: state.dress_code_design_type })
+
+/**
+ * The gallery designs this build ships. A stored value it has never heard of
+ * opens on `column`, which is what the showcase draws for it — so a partner
+ * sees the picker agree with the preview rather than a design selected that
+ * the frame beside it isn't showing.
+ */
+const GALLERY_DESIGN_TYPES: readonly GalleryDesignType[] = [
+  'column',
+  'reel',
+  'prints',
+  'mosaic',
+  'booth',
+  'film',
+]
+
+function hydrateGalleryDesign(type: string | null | undefined): GalleryDesignType {
+  // Absent means the template predates the field, which is exactly 'column' —
+  // the one composition every gallery rendered.
+  return type && (GALLERY_DESIGN_TYPES as readonly string[]).includes(type)
+    ? (type as GalleryDesignType)
+    : 'column'
+}
+
+export const buildGalleryDesignPayload = (state: SectionDesignsFormState): GalleryDesignConfig => ({
+  type: state.gallery_design_type,
+})
 
 /**
  * `auto` is the absence of a choice, so it persists as `null` rather than as a

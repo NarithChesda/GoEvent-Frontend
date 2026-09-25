@@ -8,6 +8,7 @@ import type {
   AgendaDesignConfig,
   DressCodeDesignConfig,
   GuestInviteDesignConfig,
+  GalleryDesignConfig,
   CountdownRsvpDesignConfig,
   AmbientCreaturesConfig,
   CoverStageLayout,
@@ -260,6 +261,12 @@ export interface TemplateAssets {
    * Absent means no block at all — it is additive, so nothing is backfilled.
    */
   guest_invite_design?: GuestInviteDesignConfig | null
+  /**
+   * Photo gallery composition (column | reel | prints | mosaic | booth | film).
+   * Absent / unknown renders `column`, which is what every gallery rendered
+   * before this field existed.
+   */
+  gallery_design?: GalleryDesignConfig | null
   /**
    * The countdown and the RSVP in a section of their own after the info card.
    * Absent keeps both inside the card, as every template drew them — never

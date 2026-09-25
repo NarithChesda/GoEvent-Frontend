@@ -38,6 +38,7 @@ function blankTemplate(overrides: Partial<PartnerTemplate> = {}): PartnerTemplat
     info_card_design: null,
     agenda_design: null,
     dress_code_design: null,
+    gallery_design: null,
     save_the_date_design: null,
     stage_modes: null,
     text_effects: null,
@@ -97,6 +98,7 @@ describe('partner template form config round trip', () => {
     expect(hydrated.host_info_design_type).toBe(fresh.host_info_design_type)
     expect(hydrated.agenda_design_type).toBe(fresh.agenda_design_type)
     expect(hydrated.dress_code_design_type).toBe(fresh.dress_code_design_type)
+    expect(hydrated.gallery_design_type).toBe('column')
     expect(hydrated.info_card_design_type).toBe(fresh.info_card_design_type)
     expect(hydrated.save_the_date_design_type).toBe('auto')
     expect(hydrated.guest_invite_design_type).toBe('none')
@@ -125,6 +127,7 @@ describe('partner template form config round trip', () => {
       host_sync_cover_names: true,
       agenda_design_type: 'thread',
       dress_code_design_type: 'atelier',
+      gallery_design_type: 'booth',
       info_card_design_type: 'engraved',
       save_the_date_design_type: 'engraved',
       guest_invite_design_type: 'place_card',
@@ -192,6 +195,16 @@ describe('partner template form config round trip', () => {
       // Switched on by the partner, so it opens on the design the showcase
       // draws for it rather than as "off", which a save would then persist.
       expect(hydrateForm(template).guest_invite_design_type).toBe('inscribed')
+    })
+
+    it('reads a gallery design this build does not know as the column', () => {
+      const template = blankTemplate({
+        gallery_design: { type: 'carousel' } as unknown as PartnerTemplate['gallery_design'],
+      })
+      // The showcase draws the column for it, so the picker says so — and a
+      // save then writes the column rather than a value no build renders.
+      expect(hydrateForm(template).gallery_design_type).toBe('column')
+      expect(buildConfigPayload(hydrateForm(template)).gallery_design).toEqual({ type: 'column' })
     })
 
     /**
@@ -365,6 +378,7 @@ describe('partner template form config round trip', () => {
         'countdown_rsvp_design',
         'cover_stage_layout',
         'dress_code_design',
+        'gallery_design',
         'event_details_design',
         'falling_effect',
         'guest_invite_design',
